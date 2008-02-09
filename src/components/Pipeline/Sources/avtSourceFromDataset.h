@@ -45,7 +45,7 @@
 #include <pipeline_exports.h>
 
 
-#include <avtTerminatingDatasetSource.h>
+#include <avtOriginatingDatasetSource.h>
 
 
 // ****************************************************************************
@@ -65,13 +65,13 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtSourceFromDataset : public avtTerminatingDatasetSource
+class PIPELINE_API avtSourceFromDataset : public avtOriginatingDatasetSource
 {
   public:
                           avtSourceFromDataset(vtkDataSet **, int);
     virtual              ~avtSourceFromDataset();
 
-    virtual bool          FetchDataset(avtDataSpecification_p,avtDataTree_p &);
+    virtual bool          FetchDataset(avtDataRequest_p,avtDataTree_p &);
 
   protected:
     vtkDataSet          **datasets;

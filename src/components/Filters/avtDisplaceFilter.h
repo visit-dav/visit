@@ -61,7 +61,7 @@ class vtkDataSet;
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Nov 28 16:59:53 PST 2001
-//    Added RefashionDataObjectInfo, PerformRestriction.
+//    Added UpdateDataObjectInfo, ModifyContract.
 //
 //    Hank Childs, Mon May 24 16:16:05 PDT 2004
 //    Added PostExecute to manage extents.
@@ -99,9 +99,9 @@ class AVTFILTERS_API avtDisplaceFilter : public avtStreamer
     virtual void          PreExecute(void);
     virtual void          PostExecute(void);
 
-    virtual void          RefashionDataObjectInfo(void);
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
+    virtual void          UpdateDataObjectInfo(void);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p);
 
 };
 

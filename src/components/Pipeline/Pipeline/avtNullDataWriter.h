@@ -45,7 +45,7 @@
 
 #include <pipeline_exports.h>
 
-#include <avtOriginatingNullDataSink.h>
+#include <avtTerminatingNullDataSink.h>
 #include <avtDataObjectWriter.h>
 
 
@@ -72,7 +72,7 @@ class     avtDataObjectString;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtNullDataWriter : public avtOriginatingNullDataSink,
+class PIPELINE_API avtNullDataWriter : public avtTerminatingNullDataSink,
                        public avtDataObjectWriter
 {
   public:

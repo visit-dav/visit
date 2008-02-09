@@ -143,7 +143,7 @@ avtSourceFromDataset::~avtSourceFromDataset()
 // ****************************************************************************
 
 bool
-avtSourceFromDataset::FetchDataset(avtDataSpecification_p spec,
+avtSourceFromDataset::FetchDataset(avtDataRequest_p spec,
                                    avtDataTree_p &tree)
 {
     int  i;

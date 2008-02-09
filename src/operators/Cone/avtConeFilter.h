@@ -70,7 +70,7 @@ class vtkPolarTransformFilter;
 //
 //  Modifications:
 //    Kathleen Bonnell, Tue May 20 10:23:38 PDT 2003
-//    Added method PerformRestriction.
+//    Added method ModifyContract.
 //
 //    Kathleen Bonnell, Thu Apr 28 10:28:22 PDT 2005
 //    Use vtkVisItCutter instead of vtkCutter, since it has logic to correctly
@@ -109,11 +109,11 @@ class avtConeFilter : public avtPluginStreamer
     vtkPlane                    *planeToClipByLength;
 
     virtual vtkDataSet          *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void                 RefashionDataObjectInfo(void);
+    virtual void                 UpdateDataObjectInfo(void);
     void                         SetUpClipping(void);
     void                         SetUpCone(void);
     void                         SetUpProjection(void);
-    avtPipelineSpecification_p   PerformRestriction(avtPipelineSpecification_p);
+    avtContract_p   ModifyContract(avtContract_p);
 };
 
 

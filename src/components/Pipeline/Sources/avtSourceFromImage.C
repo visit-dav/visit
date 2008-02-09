@@ -145,7 +145,7 @@ avtSourceFromImage::SetImage(vtkImageData *img, float *zb)
 // ****************************************************************************
 
 bool
-avtSourceFromImage::FetchImage(avtDataSpecification_p,
+avtSourceFromImage::FetchImage(avtDataRequest_p,
                                avtImageRepresentation &rep)
 {
     if (zbuffer != NULL)

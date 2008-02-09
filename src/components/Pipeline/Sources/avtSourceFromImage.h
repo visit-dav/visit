@@ -45,7 +45,7 @@
 #include <pipeline_exports.h>
 
 
-#include <avtTerminatingImageSource.h>
+#include <avtOriginatingImageSource.h>
 
 
 class   vtkImageData;
@@ -68,7 +68,7 @@ class   vtkImageData;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtSourceFromImage : public avtTerminatingImageSource
+class PIPELINE_API avtSourceFromImage : public avtOriginatingImageSource
 {
   public:
                            avtSourceFromImage(vtkImageData * = NULL,
@@ -81,7 +81,7 @@ class PIPELINE_API avtSourceFromImage : public avtTerminatingImageSource
     vtkImageData          *image;
     float                 *zbuffer;
 
-    virtual bool           FetchImage(avtDataSpecification_p,
+    virtual bool           FetchImage(avtDataRequest_p,
                                       avtImageRepresentation &);
 };
 

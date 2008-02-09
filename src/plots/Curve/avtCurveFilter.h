@@ -76,9 +76,9 @@ class avtCurveFilter : public avtSingleFilterFacade
   protected:
     avtCurveConstructorFilter    *ccf;
 
-    virtual avtPipelineSpecification_p
-                              PerformRestriction(avtPipelineSpecification_p spec);
-    virtual void              RefashionDataObjectInfo(void);
+    virtual avtContract_p
+                              ModifyContract(avtContract_p spec);
+    virtual void              UpdateDataObjectInfo(void);
     virtual avtFilter        *GetFacadedFilter(void);
 };
 

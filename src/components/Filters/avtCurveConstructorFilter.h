@@ -64,7 +64,7 @@
 //    the plot.
 //
 //    Kathleen Bonnell, Mon Dec 23 08:23:26 PST 2002
-//    Added RefashionDataObjectInfo. 
+//    Added UpdateDataObjectInfo. 
 //    
 //    Hank Childs, Fri Oct  3 11:10:29 PDT 2003
 //    Moved from /plots/Curve.  Renamed to CurveConstructorFilter.
@@ -91,9 +91,9 @@ class AVTFILTERS_API avtCurveConstructorFilter : public avtDatasetToDatasetFilte
     virtual void              Execute(void);
     virtual void              PostExecute(void);
     virtual void              VerifyInput(void);
-    avtPipelineSpecification_p
-                           PerformRestriction(avtPipelineSpecification_p spec);
-    virtual void              RefashionDataObjectInfo(void);
+    avtContract_p
+                           ModifyContract(avtContract_p spec);
+    virtual void              UpdateDataObjectInfo(void);
 };
 
 

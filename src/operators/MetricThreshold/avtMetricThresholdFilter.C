@@ -247,7 +247,7 @@ avtMetricThresholdFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 }
 
 // ****************************************************************************
-//  Method: avtThresholdFilter::RefashionDataObjectInfo
+//  Method: avtThresholdFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicates the zones no longer correspond to the original problem.
@@ -258,7 +258,7 @@ avtMetricThresholdFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 // ****************************************************************************
 
 void
-avtMetricThresholdFilter::RefashionDataObjectInfo(void)
+avtMetricThresholdFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
 }

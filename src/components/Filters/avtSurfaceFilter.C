@@ -99,7 +99,7 @@
 //    Removed cd2pd.
 //
 //    Hank Childs, Mon Jun 18 09:04:39 PDT 2007
-//    Set the active variable here, instead of in PerformRestriction.
+//    Set the active variable here, instead of in ModifyContract.
 //
 // ****************************************************************************
 
@@ -489,7 +489,7 @@ avtSurfaceFilter::SkewTheValue(const double val)
 
 
 // ****************************************************************************
-//  Method: avtSurfaceFilter::RefashionDataObjectInfo
+//  Method: avtSurfaceFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Reflect how the surface filter changes a data object.
@@ -526,7 +526,7 @@ avtSurfaceFilter::SkewTheValue(const double val)
 // ****************************************************************************
 
 void
-avtSurfaceFilter::RefashionDataObjectInfo(void)
+avtSurfaceFilter::UpdateDataObjectInfo(void)
 {
     avtDataValidity &va = GetOutput()->GetInfo().GetValidity();
     va.InvalidateSpatialMetaData();
@@ -594,7 +594,7 @@ avtSurfaceFilter::VerifyInput(void)
 
 
 // ****************************************************************************
-//  Method: avtSurfaceFilter::PerformRestriction
+//  Method: avtSurfaceFilter::ModifyContract
 //
 //  Purpose:
 //    Disable dynamic load balancing if data extents cannot be retrieved now.
@@ -618,8 +618,8 @@ avtSurfaceFilter::VerifyInput(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtSurfaceFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtSurfaceFilter::ModifyContract(avtContract_p spec)
 {
     double dataExtents[2];
     double spatialExtents[6];
@@ -634,27 +634,27 @@ avtSurfaceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     {
         spec->NoDynamicLoadBalancing();
     }
-    if (spec->GetDataSpecification()->MayRequireZones()) 
+    if (spec->GetDataRequest()->MayRequireZones()) 
     {
-        spec->GetDataSpecification()->TurnZoneNumbersOn();
+        spec->GetDataRequest()->TurnZoneNumbersOn();
     }
-    if (spec->GetDataSpecification()->MayRequireNodes()) 
+    if (spec->GetDataRequest()->MayRequireNodes()) 
     {
-        spec->GetDataSpecification()->TurnNodeNumbersOn();
+        spec->GetDataRequest()->TurnNodeNumbersOn();
     }
 
     //
     // We will need the ghost zones so that we can interpolate along domain
     // boundaries and get no cracks in our isosurface.
     //
-    const char *varname = spec->GetDataSpecification()->GetVariable();
+    const char *varname = spec->GetDataRequest()->GetVariable();
     avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
     bool skipGhost = false;
     if (in_atts.ValidVariable(varname) &&
         in_atts.GetCentering(varname) == AVT_NODECENT)
         skipGhost = true;
     if (!skipGhost)
-        spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+        spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
 
     return spec;
 }

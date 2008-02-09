@@ -37,44 +37,45 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtOriginatingImageSink.h                       //
+//                           avtTerminatingImageSink.C                       //
 // ************************************************************************* //
 
-#ifndef AVT_ORIGINATING_IMAGE_SINK_H
-#define AVT_ORIGINATING_IMAGE_SINK_H
-#include <pipeline_exports.h>
-
-
-#include <avtImageSink.h>
-#include <avtOriginatingSink.h>
+#include <avtTerminatingImageSink.h>
 
 
 // ****************************************************************************
-//  Class: avtOriginatingImageSink
+//  Method: avtTerminatingImageSink constructor
 //
 //  Purpose:
-//      A image sink that originates pipeline execution.
+//      Defines the constructor.  Note: this should not be inlined in the
+//      header because it causes problems for certain compilers.
 //
 //  Programmer: Hank Childs
-//  Creation:   May 30, 2001
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
-//    Moved inlined constructor and destructor definitions to .C files
-//    because certain compilers have problems with them.
+//  Creation:   February 5, 2004
 //
 // ****************************************************************************
 
-class PIPELINE_API avtOriginatingImageSink
-    : virtual public avtImageSink, virtual public avtOriginatingSink
+avtTerminatingImageSink::avtTerminatingImageSink()
 {
-  public:
-                      avtOriginatingImageSink();
-    virtual          ~avtOriginatingImageSink();
-};
+    ;
+}
 
 
-#endif
+// ****************************************************************************
+//  Method: avtTerminatingImageSink destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtTerminatingImageSink::~avtTerminatingImageSink()
+{
+    ;
+}
 
 

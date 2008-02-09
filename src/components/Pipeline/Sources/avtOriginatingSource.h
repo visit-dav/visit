@@ -37,37 +37,37 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtTerminatingSource.h                          //
+//                           avtOriginatingSource.h                          //
 // ************************************************************************* //
 
-#ifndef AVT_TERMINATING_SOURCE_H
-#define AVT_TERMINATING_SOURCE_H
+#ifndef AVT_ORIGINATING_SOURCE_H
+#define AVT_ORIGINATING_SOURCE_H
 
 #include <pipeline_exports.h>
 
 #include <void_ref_ptr.h>
 
 #include <avtQueryableSource.h>
-#include <avtDataSpecification.h>
-#include <avtPipelineSpecification.h>
+#include <avtDataRequest.h>
+#include <avtContract.h>
 
 
 class     avtInlinePipelineSource;
 class     avtMetaData;
 
 
-typedef avtDataSpecification_p (*LoadBalanceFunction)(void *,
-                                                   avtPipelineSpecification_p);
+typedef avtDataRequest_p (*LoadBalanceFunction)(void *,
+                                                   avtContract_p);
 typedef bool                   (*DynamicCheckFunction)(void *,
-                                                   avtPipelineSpecification_p);
+                                                   avtContract_p);
 typedef void                   (*InitializeProgressCallback)(void *, int);
 
 
 // ****************************************************************************
-//  Class: avtTerminatingSource
+//  Class: avtOriginatingSource
 //
 //  Purpose:
-//      This is the terminator of a pipeline's update/execute cycle.  As such,
+//      This is the originator of a pipeline's update/execute cycle.  As such,
 //      it owns the actual pipeline object.
 //
 //  Programmer: Hank Childs
@@ -118,31 +118,31 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //
 // ****************************************************************************
 
-class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
+class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
 {
     friend class                   avtInlinePipelineSource;
 
   public:
-                                   avtTerminatingSource();
-    virtual                       ~avtTerminatingSource();
+                                   avtOriginatingSource();
+    virtual                       ~avtOriginatingSource();
 
-    virtual avtTerminatingSource  *GetTerminatingSource(void)  { return this;};
+    virtual avtOriginatingSource  *GetOriginatingSource(void)  { return this;};
 
     avtMetaData                   *GetMetaData(void) { return metadata; };
     void                           GetMeshAuxiliaryData(const char *type,
-                                       void *args, avtPipelineSpecification_p,
+                                       void *args, avtContract_p,
                                        VoidRefList &);
     void                           GetVariableAuxiliaryData(const char *type,
-                                       void *args, avtPipelineSpecification_p,
+                                       void *args, avtContract_p,
                                        VoidRefList &);
     void                           GetMaterialAuxiliaryData(const char *type,
-                                       void *args, avtPipelineSpecification_p,
+                                       void *args, avtContract_p,
                                        VoidRefList &);
     void                           GetSpeciesAuxiliaryData(const char *type,
-                                       void *args, avtPipelineSpecification_p,
+                                       void *args, avtContract_p,
                                        VoidRefList &);
 
-    virtual bool                   Update(avtPipelineSpecification_p);
+    virtual bool                   Update(avtContract_p);
 
     static void                    SetLoadBalancer(LoadBalanceFunction,void *);
     static void                    SetDynamicChecker(DynamicCheckFunction,
@@ -153,8 +153,8 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
                                          { numberOfExecutions = numEx;
                                            haveIssuedProgress = false; };
 
-    virtual avtDataSpecification_p GetFullDataSpecification(void);
-    avtPipelineSpecification_p     GetGeneralPipelineSpecification(void);
+    virtual avtDataRequest_p GetFullDataRequest(void);
+    avtContract_p     GetGeneralContract(void);
 
     // Define this so derived types don't have to.
     virtual void                   Query(PickAttributes *){;};
@@ -175,25 +175,25 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
                                    initializeProgressCallback;
     static void                   *initializeProgressCallbackArgs;
 
-    virtual bool                   FetchData(avtDataSpecification_p) = 0;
+    virtual bool                   FetchData(avtDataRequest_p) = 0;
     virtual void                   FetchMeshAuxiliaryData(const char *type,
-                                       void *args, avtDataSpecification_p,
+                                       void *args, avtDataRequest_p,
                                        VoidRefList &);
     virtual void                   FetchVariableAuxiliaryData(const char *type,
-                                       void *args, avtDataSpecification_p,
+                                       void *args, avtDataRequest_p,
                                        VoidRefList &);
     virtual void                   FetchMaterialAuxiliaryData(const char *type,
-                                       void *args, avtDataSpecification_p,
+                                       void *args, avtDataRequest_p,
                                        VoidRefList &);
     virtual void                   FetchSpeciesAuxiliaryData(const char *type,
-                                       void *args, avtDataSpecification_p,
+                                       void *args, avtDataRequest_p,
                                        VoidRefList &);
 
-    avtDataSpecification_p         BalanceLoad(avtPipelineSpecification_p);
+    avtDataRequest_p         BalanceLoad(avtContract_p);
 
     virtual bool                   UseLoadBalancer(void) { return true; };
     virtual bool                   ArtificialPipeline(void) { return false; };
-    virtual int                    NumStagesForFetch(avtDataSpecification_p);
+    virtual int                    NumStagesForFetch(avtDataRequest_p);
 
  private:
     static LoadBalanceFunction     loadBalanceFunction;
@@ -201,7 +201,7 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
     static DynamicCheckFunction    dynamicCheckFunction;
     static void                   *dynamicCheckFunctionArgs;
 
-    void                           InitPipeline(avtPipelineSpecification_p);
+    void                           InitPipeline(avtContract_p);
     virtual bool                   CanDoDynamicLoadBalancing(void);
 
     // These data members are important when there are multiple executions, like

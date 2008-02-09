@@ -99,7 +99,7 @@ class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
     bool                  cellCenteredOutput;
 
     virtual void          Execute(void);
-    virtual void          RefashionDataObjectInfo(void);
+    virtual void          UpdateDataObjectInfo(void);
 
     void                  GetDimensions(int &, int &, int &, const double *,
                                         bool);
@@ -109,8 +109,8 @@ class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
 
     virtual int           AdditionalPipelineFilters(void) { return 2; };
 
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p);
     
     virtual bool          FilterUnderstandsTransformedRectMesh();
 };

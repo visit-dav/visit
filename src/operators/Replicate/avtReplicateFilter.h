@@ -96,9 +96,9 @@ class avtReplicateFilter : public virtual avtDataTreeStreamer,
 
     virtual void          PostExecute(void);
     virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
-    virtual void          RefashionDataObjectInfo(void);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p);
+    virtual void          UpdateDataObjectInfo(void);
 
     vtkDataSet           *Replicate(vtkDataSet *, double[3]);
     vtkDataSet           *ReplicateRectilinear(vtkRectilinearGrid *, double[3]);

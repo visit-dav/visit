@@ -151,7 +151,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
     // materials and species.
     //
     // The 'currentTimeState' is a data member of the base class that is
-    // set to be the current timestep during ExamineSpecification. 
+    // set to be the current timestep during ExamineContract. 
     // We need that timestep to make sure we are getting the right 
     // materials and species.
     //
@@ -719,7 +719,7 @@ avtSpecMFExpression::AddSpecies(ConstExpr *c)
 
 
 // ****************************************************************************
-//  Method: avtSpecMFExpression::PerformRestriction
+//  Method: avtSpecMFExpression::ModifyContract
 //
 //  Purpose:
 //      This routine allows the filter to change the data specification.
@@ -744,10 +744,10 @@ avtSpecMFExpression::AddSpecies(ConstExpr *c)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtSpecMFExpression::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtSpecMFExpression::ModifyContract(avtContract_p spec)
 {
-    spec->GetDataSpecification()->SetMaintainOriginalConnectivity(true);
+    spec->GetDataRequest()->SetMaintainOriginalConnectivity(true);
     return spec;
 }
 

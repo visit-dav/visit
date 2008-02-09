@@ -45,9 +45,9 @@
 #include <avtDynamicAttribute.h>
 #include <avtExtents.h>
 #include <avtMetaData.h>
-#include <avtOriginatingSink.h>
+#include <avtTerminatingSink.h>
 #include <avtParallel.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtWebpage.h>
 
 #include <vtkSystemIncludes.h> // for VTK_FLOAT
@@ -203,7 +203,7 @@ avtFilter::UpdateProgress(int current, int total)
 // ****************************************************************************
 
 bool
-avtFilter::Update(avtPipelineSpecification_p spec)
+avtFilter::Update(avtContract_p spec)
 {
     debug1 << "Entered update for " << GetType() << endl;
 
@@ -229,8 +229,8 @@ avtFilter::Update(avtPipelineSpecification_p spec)
     // we are actually interested in using.  Give the derived types an
     // opportunity to reduce the data we are interested in.
     //
-    avtPipelineSpecification_p newSpec =
-                                      PerformRestrictionAndDoBookkeeping(spec);
+    avtContract_p newSpec =
+                                      ModifyContractAndDoBookkeeping(spec);
 
     if (debugDump)
         DumpContract(newSpec, "output");
@@ -305,7 +305,7 @@ avtFilter::Update(avtPipelineSpecification_p spec)
 
 
 // ****************************************************************************
-//  Method: avtFilter::PerformRestrictionAndDoBookkeeping
+//  Method: avtFilter::ModifyContractAndDoBookkeeping
 //
 //  Purpose:
 //      Calls perform restriction and does some bookkeeping (like keeping
@@ -336,17 +336,17 @@ avtFilter::Update(avtPipelineSpecification_p spec)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtFilter::PerformRestrictionAndDoBookkeeping(avtPipelineSpecification_p spec)
+avtContract_p
+avtFilter::ModifyContractAndDoBookkeeping(avtContract_p spec)
 {
     int   i;
 
     //
     // Some derived types need to examine a specification as it goes up.
     //
-    ExamineSpecification(spec);
+    ExamineContract(spec);
 
-    avtPipelineSpecification_p newspec = PerformRestriction(spec);
+    avtContract_p newspec = ModifyContract(spec);
     newspec->AddFilter();
     int additionalFilters = AdditionalPipelineFilters();
     for (i = 0 ; i < additionalFilters ; i++)
@@ -360,7 +360,7 @@ avtFilter::PerformRestrictionAndDoBookkeeping(avtPipelineSpecification_p spec)
     int nAttributes = dynamicAttributes.size();
     for (i = 0 ; i < nAttributes ; i++)
     {
-        newspec = dynamicAttributes[i]->PerformRestriction(newspec);
+        newspec = dynamicAttributes[i]->ModifyContract(newspec);
     }
 
     return newspec;
@@ -368,7 +368,7 @@ avtFilter::PerformRestrictionAndDoBookkeeping(avtPipelineSpecification_p spec)
 
 
 // ****************************************************************************
-//  Method: avtFilter::PerformRestriction
+//  Method: avtFilter::ModifyContract
 //
 //  Purpose:
 //      Meta-data can be used to reduce the amount of data that needs to be
@@ -391,22 +391,22 @@ avtFilter::PerformRestrictionAndDoBookkeeping(avtPipelineSpecification_p spec)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtFilter::ModifyContract(avtContract_p spec)
 {
     //
     // By default, all filters admit only VTK_FLOAT data
     //
     vector<int> dataTypes;
     dataTypes.push_back(VTK_FLOAT);
-    spec->GetDataSpecification()->UpdateAdmissibleDataTypes(dataTypes);
+    spec->GetDataRequest()->UpdateAdmissibleDataTypes(dataTypes);
 
     return spec;
 }
 
 
 // ****************************************************************************
-//  Method: avtFilter::GetTerminatingSource
+//  Method: avtFilter::GetOriginatingSource
 //
 //  Purpose:
 //      Gets the terminating source at the top of the pipeline.
@@ -419,8 +419,8 @@ avtFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //
 // ****************************************************************************
 
-avtTerminatingSource *
-avtFilter::GetTerminatingSource(void)
+avtOriginatingSource *
+avtFilter::GetOriginatingSource(void)
 {
     avtDataObject_p input = GetInput();
     if (*input == NULL)
@@ -428,7 +428,7 @@ avtFilter::GetTerminatingSource(void)
         EXCEPTION0(NoInputException);
     }
 
-    return input->GetTerminatingSource();
+    return input->GetOriginatingSource();
 }
 
 
@@ -561,12 +561,12 @@ avtFilter::PassOnDataObjectInfo(void)
         output->GetInfo().Copy(input->GetInfo());
     }
 
-    RefashionDataObjectInfo();
+    UpdateDataObjectInfo();
 }
 
 
 // ****************************************************************************
-//  Method: avtFilter::RefashionDataObjectInfo
+//  Method: avtFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      If the derived type of filter modifies the data object information,
@@ -579,7 +579,7 @@ avtFilter::PassOnDataObjectInfo(void)
 // ****************************************************************************
 
 void
-avtFilter::RefashionDataObjectInfo(void)
+avtFilter::UpdateDataObjectInfo(void)
 {
     ;
 }
@@ -599,7 +599,7 @@ avtFilter::RefashionDataObjectInfo(void)
 avtMetaData *
 avtFilter::GetMetaData(void)
 {
-    avtTerminatingSource *src = GetTerminatingSource();
+    avtOriginatingSource *src = GetOriginatingSource();
     if (src == NULL)
     {
         EXCEPTION0(NoInputException);
@@ -615,7 +615,7 @@ avtFilter::GetMetaData(void)
 
 
 // ****************************************************************************
-//  Method: avtFilter::GetGeneralPipelineSpecification
+//  Method: avtFilter::GetGeneralContract
 //
 //  Purpose:
 //      Gets a pipeline that the load balancer knows not to muck with.
@@ -625,10 +625,10 @@ avtFilter::GetMetaData(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtFilter::GetGeneralPipelineSpecification(void)
+avtContract_p
+avtFilter::GetGeneralContract(void)
 {
-    return GetTerminatingSource()->GetGeneralPipelineSpecification();
+    return GetOriginatingSource()->GetGeneralContract();
 }
 
 
@@ -1090,7 +1090,7 @@ avtFilter::PostExecute(void)
 
 
 // ****************************************************************************
-//  Method: avtFilter::ExamineSpecification
+//  Method: avtFilter::ExamineContract
 //
 //  Purpose:
 //      Allows the base types an opportunity to examine the pipeline
@@ -1102,7 +1102,7 @@ avtFilter::PostExecute(void)
 // ****************************************************************************
 
 void
-avtFilter::ExamineSpecification(avtPipelineSpecification_p)
+avtFilter::ExamineContract(avtContract_p)
 {
     ;
 }
@@ -1307,7 +1307,7 @@ avtFilter::DumpDataObject(avtDataObject_p dob, const char *prefix)
     {
         // If we add the reference to the main web page right now, 
         // all of the filters will be in execution order.
-        avtOriginatingSink::AddDumpReference(webpage->GetName(), GetType(), 
+        avtTerminatingSink::AddDumpReference(webpage->GetName(), GetType(), 
                                              numInExecute);
 
         std::string input_string;
@@ -1343,7 +1343,7 @@ avtFilter::DumpDataObject(avtDataObject_p dob, const char *prefix)
 // ****************************************************************************
 
 void
-avtFilter::DumpContract(avtPipelineSpecification_p spec, const char *prefix)
+avtFilter::DumpContract(avtContract_p spec, const char *prefix)
 {
     if (webpage == NULL)
     {

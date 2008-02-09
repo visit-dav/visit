@@ -75,7 +75,7 @@ class DATABASE_API avtDatasetDatabase : public avtDatabase
 
     avtDataObjectSource      *CreateSource(const char *, int);
 
-    virtual avtDataTree_p     GetOutput(avtDataSpecification_p,
+    virtual avtDataTree_p     GetOutput(avtDataRequest_p,
                                         avtSourceFromDatabase *) = 0;
 };
 

@@ -276,7 +276,7 @@ avtVectorFilter::ExecuteData(vtkDataSet *inDS, int, string)
 
 
 // ****************************************************************************
-//  Method: avtVectorFilter::RefashionDataObjectInfo
+//  Method: avtVectorFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicate that the vector are of dimension 0.
@@ -299,7 +299,7 @@ avtVectorFilter::ExecuteData(vtkDataSet *inDS, int, string)
 // ****************************************************************************
 
 void
-avtVectorFilter::RefashionDataObjectInfo(void)
+avtVectorFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
@@ -331,7 +331,7 @@ avtVectorFilter::SetMagVarName(const string &mname)
 
 
 // ****************************************************************************
-//  Method: avtVectorFilter::PerformRestriction
+//  Method: avtVectorFilter::ModifyContract
 //
 //  Purpose:  Create an expression for the magnitude of the requested
 //            vector variable, so that the vectors are colored correctly.
@@ -357,11 +357,11 @@ avtVectorFilter::SetMagVarName(const string &mname)
 // 
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtVectorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
+avtContract_p
+avtVectorFilter::ModifyContract(avtContract_p contract)
 {
-    avtPipelineSpecification_p rv = pspec;
-    avtDataSpecification_p ds = pspec->GetDataSpecification();
+    avtContract_p rv = contract;
+    avtDataRequest_p ds = contract->GetDataRequest();
 
     //
     // Create the expression definition
@@ -378,35 +378,35 @@ avtVectorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
     elist->AddExpressions(*e);
     delete e;
 
-    // Create a new dpspec so that we can add the secondary var.
-    avtDataSpecification_p nds = new avtDataSpecification(ds->GetVariable(),
+    // Create a new dcontract so that we can add the secondary var.
+    avtDataRequest_p nds = new avtDataRequest(ds->GetVariable(),
                 ds->GetTimestep(), ds->GetRestriction());
     nds->AddSecondaryVariable(magVarName.c_str());
-    rv = new avtPipelineSpecification(pspec, nds);
+    rv = new avtContract(contract, nds);
     
 
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
-    if (pspec->GetDataSpecification()->MayRequireZones() || 
-        pspec->GetDataSpecification()->MayRequireNodes())
+    if (contract->GetDataRequest()->MayRequireZones() || 
+        contract->GetDataRequest()->MayRequireNodes())
     {
         keepNodeZone = true;
         if (data.ValidActiveVariable())
         {
             if (data.GetCentering() == AVT_NODECENT)
             {
-                rv->GetDataSpecification()->TurnNodeNumbersOn();
+                rv->GetDataRequest()->TurnNodeNumbersOn();
             }
             else if (data.GetCentering() == AVT_ZONECENT)
             {
-                rv->GetDataSpecification()->TurnZoneNumbersOn();
+                rv->GetDataRequest()->TurnZoneNumbersOn();
             }
         }
         else 
         {
             // canot determine variable centering, so turn on both
             // node numbers and zone numbers.
-            rv->GetDataSpecification()->TurnNodeNumbersOn();
-            rv->GetDataSpecification()->TurnZoneNumbersOn();
+            rv->GetDataRequest()->TurnNodeNumbersOn();
+            rv->GetDataRequest()->TurnZoneNumbersOn();
         }
     }
     else

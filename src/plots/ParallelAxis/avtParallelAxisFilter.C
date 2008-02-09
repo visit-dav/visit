@@ -154,7 +154,7 @@ avtParallelAxisFilter::VerifyInput(void)
 
 
 // ****************************************************************************
-//  Method: avtParallelAxisFilter::PerformRestriction
+//  Method: avtParallelAxisFilter::ModifyContract
 //
 //  Purpose: Restrict input domains if an interval tree is available.  Also set
 //           up axis position information needed by the plot.
@@ -169,8 +169,8 @@ avtParallelAxisFilter::VerifyInput(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtParallelAxisFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
+avtContract_p
+avtParallelAxisFilter::ModifyContract(avtContract_p in_spec)
 {
     if (!parAxisAtts.AttributesAreConsistent())
     {
@@ -180,7 +180,7 @@ avtParallelAxisFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         return in_spec;
     }
         
-    const char *inPipelineVar = in_spec->GetDataSpecification()->GetVariable();
+    const char *inPipelineVar = in_spec->GetDataRequest()->GetVariable();
     std::string curPipelineVar(inPipelineVar);
     
     stringVector curAxisVarNames = parAxisAtts.GetOrderedAxisNames();
@@ -196,7 +196,7 @@ avtParallelAxisFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
             varTupleIndices.push_back(-1);
     }
 
-    avtPipelineSpecification_p outSpec = new avtPipelineSpecification(in_spec);
+    avtContract_p outSpec = new avtContract(in_spec);
     
     outSpec->NoDynamicLoadBalancing();
     
@@ -259,7 +259,7 @@ avtParallelAxisFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
             }
         }
 
-        outSpec->GetDataSpecification()->GetRestriction()->RestrictDomains(outDomains);
+        outSpec->GetDataRequest()->GetRestriction()->RestrictDomains(outDomains);
     }
 */
 
@@ -764,7 +764,7 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
 
 
 // ****************************************************************************
-//  Method: avtParallelAxisFilter::RefashionDataObjectInfo
+//  Method: avtParallelAxisFilter::UpdateDataObjectInfo
 //
 //  Purpose: Indicates that the topological dimension of the output is not the
 //           same as the input.
@@ -777,7 +777,7 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
 // ****************************************************************************
 
 void
-avtParallelAxisFilter::RefashionDataObjectInfo(void)
+avtParallelAxisFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();

@@ -92,10 +92,10 @@ class avtCracksClipperFilter : virtual public avtPluginFilter,
 
     virtual void          Execute(void);
     virtual void          PostExecute(void);
-    virtual void          RefashionDataObjectInfo(void);
+    virtual void          UpdateDataObjectInfo(void);
     virtual int           AdditionalPipelineFilters(void);
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p);
 
   private:
 };

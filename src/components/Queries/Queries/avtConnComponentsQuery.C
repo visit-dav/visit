@@ -192,10 +192,10 @@ avtConnComponentsQuery::ApplyFilters(avtDataObject_p inData)
 
     // Cause our artificial pipeline to execute.
 
-    avtPipelineSpecification_p pspec = 
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+    avtContract_p contract = 
+        inData->GetOriginatingSource()->GetGeneralContract();
 
-    cclFilter->GetOutput()->Update(pspec);
+    cclFilter->GetOutput()->Update(contract);
     return cclFilter->GetOutput();
 }
 

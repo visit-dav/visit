@@ -349,7 +349,7 @@ avtReflectFilter::PostExecute(void)
 
 
 // ****************************************************************************
-//  Method: avtReflectFilter::PerformRestriction
+//  Method: avtReflectFilter::ModifyContract
 //
 //  Purpose:
 //      Performs a restriction on the specification.  This is in place to
@@ -378,10 +378,10 @@ avtReflectFilter::PostExecute(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtReflectFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtReflectFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p ns = new avtPipelineSpecification(spec);
+    avtContract_p ns = new avtContract(spec);
 
     //
     // If we need to calculate the extents to reflect across, then we will have
@@ -394,20 +394,20 @@ avtReflectFilter::PerformRestriction(avtPipelineSpecification_p spec)
         ns->NoDynamicLoadBalancing();
     }
 
-    if (spec->GetDataSpecification()->MayRequireZones())
+    if (spec->GetDataRequest()->MayRequireZones())
     {
-        ns->GetDataSpecification()->TurnZoneNumbersOn();
+        ns->GetDataRequest()->TurnZoneNumbersOn();
     }
-    if (spec->GetDataSpecification()->MayRequireNodes())
+    if (spec->GetDataRequest()->MayRequireNodes())
     {
-        ns->GetDataSpecification()->TurnNodeNumbersOn();
+        ns->GetDataRequest()->TurnNodeNumbersOn();
     }
 
     return ns;
 }
 
 // ****************************************************************************
-//  Method: avtReflectFilter::RefashionDataObjectInfo
+//  Method: avtReflectFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //     Specifies that this filter transforms the original dataset points. 
@@ -428,7 +428,7 @@ avtReflectFilter::PerformRestriction(avtPipelineSpecification_p spec)
 // ****************************************************************************
  
 void
-avtReflectFilter::RefashionDataObjectInfo(void)
+avtReflectFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
 

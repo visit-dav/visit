@@ -45,7 +45,7 @@
 
 #include <pipeline_exports.h>
 
-#include <avtOriginatingDatasetSink.h>
+#include <avtTerminatingDatasetSink.h>
 #include <avtDataObjectWriter.h>
 
 
@@ -85,7 +85,7 @@ class     avtDataTree;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtDataSetWriter : virtual public avtOriginatingDatasetSink, 
+class PIPELINE_API avtDataSetWriter : virtual public avtTerminatingDatasetSink, 
                          virtual public avtDataObjectWriter
 {
   public:

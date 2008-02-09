@@ -118,8 +118,8 @@ avtTotalRevolvedSurfaceAreaQuery::~avtTotalRevolvedSurfaceAreaQuery()
 avtDataObject_p 
 avtTotalRevolvedSurfaceAreaQuery::ApplyFilters(avtDataObject_p inData)
 {
-    avtPipelineSpecification_p pspec = 
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+    avtContract_p contract = 
+        inData->GetOriginatingSource()->GetGeneralContract();
     //
     // Create an artificial pipeline.
     //
@@ -141,7 +141,7 @@ avtTotalRevolvedSurfaceAreaQuery::ApplyFilters(avtDataObject_p inData)
 
     surface_area->SetInput(dob);
     avtDataObject_p objOut = surface_area->GetOutput();
-    objOut->Update(pspec);
+    objOut->Update(contract);
     return objOut;
 }
 

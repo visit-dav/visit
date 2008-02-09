@@ -622,7 +622,7 @@ class AVTGeneratorPlugin
             h << "    ADD YOUR DATA MEMBERS HERE" << endl;
             h << endl;
             h << "    virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);" << endl;
-            h << "    virtual void              RefashionDataObjectInfo(void);" << endl;
+            h << "    virtual void              UpdateDataObjectInfo(void);" << endl;
             h << "};" << endl;
             h << endl;
             h << endl;
@@ -815,7 +815,7 @@ class AVTGeneratorPlugin
             c << endl;
             c << endl;
             c << "// ****************************************************************************" << endl;
-            c << "//  Method: avt"<<name<<"Filter::RefashionDataObjectInfo" << endl;
+            c << "//  Method: avt"<<name<<"Filter::UpdateDataObjectInfo" << endl;
             c << "//" << endl;
             c << "//  Purpose:" << endl;
             c << "//      Allows the filter to change its output's data object information, which" << endl;
@@ -827,7 +827,7 @@ class AVTGeneratorPlugin
             c << "// ****************************************************************************" << endl;
             c << endl;
             c << "void" << endl;
-            c << "avt"<<name<<"Filter::RefashionDataObjectInfo(void)" << endl;
+            c << "avt"<<name<<"Filter::UpdateDataObjectInfo(void)" << endl;
             c << "{" << endl;
             c << "    IF YOU SEE FUNNY THINGS WITH EXTENTS, ETC, YOU CAN CHANGE THAT HERE." << endl;
             c << "}" << endl;

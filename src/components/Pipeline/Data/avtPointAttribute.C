@@ -116,7 +116,7 @@ avtPointAttribute::GetPoint(double p[3])
 
 
 // ****************************************************************************
-//  Method: avtPointAttribute::PerformRestriction
+//  Method: avtPointAttribute::ModifyContract
 //
 //  Purpose:
 //      Performs a restriction on the pipeline specification.
@@ -130,10 +130,10 @@ avtPointAttribute::GetPoint(double p[3])
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtPointAttribute::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtPointAttribute::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = spec;
+    avtContract_p rv = spec;
 
     int type = attributes.GetValueType();
     if (type == Point::VT_Min || type == Point::VT_Max)
@@ -149,7 +149,7 @@ avtPointAttribute::PerformRestriction(avtPipelineSpecification_p spec)
         }
         if (strcmp(varname, "") != 0)
         {
-            avtDataSpecification_p ds = rv->GetDataSpecification();
+            avtDataRequest_p ds = rv->GetDataRequest();
             const char *curVar = ds->GetVariable();
             if (strcmp(varname, curVar) != 0)
             {
@@ -161,7 +161,7 @@ avtPointAttribute::PerformRestriction(avtPipelineSpecification_p spec)
 
     if (type == Point::VT_Zone || Point::VT_DomainZone)
     {
-        rv->GetDataSpecification()->NeedZoneNumbers();
+        rv->GetDataRequest()->NeedZoneNumbers();
     }
 
     if (type != Point::VT_Tuple)

@@ -285,7 +285,7 @@ avtCoordSwapFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
 
 // ****************************************************************************
-//  Method: avtCoordSwapFilter::RefashionDataObjectInfo
+//  Method: avtCoordSwapFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //    Indicates that the coordinates were swapped.
@@ -296,7 +296,7 @@ avtCoordSwapFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 // ****************************************************************************
 
 void
-avtCoordSwapFilter::RefashionDataObjectInfo(void)
+avtCoordSwapFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &in_atts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &out_atts = GetOutput()->GetInfo().GetAttributes();

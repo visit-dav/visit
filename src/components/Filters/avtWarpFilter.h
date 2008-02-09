@@ -76,9 +76,9 @@ class AVTFILTERS_API avtWarpFilter : public avtStreamer
   protected:
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
     virtual void              PostExecute(void);
-    virtual void              RefashionDataObjectInfo(void);
-    virtual avtPipelineSpecification_p
-                              PerformRestriction(avtPipelineSpecification_p);
+    virtual void              UpdateDataObjectInfo(void);
+    virtual avtContract_p
+                              ModifyContract(avtContract_p);
 };
 
 

@@ -609,7 +609,7 @@ avtTransform::TransformRectilinearToCurvilinear(vtkRectilinearGrid *rgrid)
 
 
 // ****************************************************************************
-//  Method: avtTransform::RefashionDataObjectInfo
+//  Method: avtTransform::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Changes the extents by the transform.
@@ -629,7 +629,7 @@ avtTransform::TransformRectilinearToCurvilinear(vtkRectilinearGrid *rgrid)
 // ****************************************************************************
 
 void
-avtTransform::RefashionDataObjectInfo(void)
+avtTransform::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();

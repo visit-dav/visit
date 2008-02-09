@@ -394,9 +394,9 @@ avtTraceHistoryFilter::PerformIteration(int time, avtDataset_p &ds, bool doDisp)
     ParsingExprList *pel = ParsingExprList::Instance();
     ExpressionList orig_list = *(pel->GetList());
 
-    avtPipelineSpecification_p spec = GetGeneralPipelineSpecification();
-    avtDataSpecification_p dspec = spec->GetDataSpecification();
-    int timestep = dspec->GetTimestep();
+    avtContract_p spec = GetGeneralContract();
+    avtDataRequest_p dataRequest = spec->GetDataRequest();
+    int timestep = dataRequest->GetTimestep();
 
     int newTimeIndex = timestep-time;
     if (newTimeIndex < 0)
@@ -421,12 +421,12 @@ avtTraceHistoryFilter::PerformIteration(int time, avtDataset_p &ds, bool doDisp)
     avtExpressionEvaluatorFilter eef;
     eef.SetInput(data);
     
-    avtDataSpecification_p dspec2 = new avtDataSpecification(dspec);
+    avtDataRequest_p dataRequest2 = new avtDataRequest(dataRequest);
     for (i = 0 ; i < vars.size() ; i++)
     {
         char exp_name[1024];
         SNPRINTF(exp_name, 1024, "AVT_TRACE_HIST_%s", vars[i].c_str());
-        dspec2->AddSecondaryVariable(exp_name);
+        dataRequest2->AddSecondaryVariable(exp_name);
     }
 
     if (doDisp)
@@ -440,17 +440,17 @@ avtTraceHistoryFilter::PerformIteration(int time, avtDataset_p &ds, bool doDisp)
 
         disp.SetVariable(disp_name);
         disp.SetFactor(1.);
-        dspec2->AddSecondaryVariable(disp_name);
+        dataRequest2->AddSecondaryVariable(disp_name);
 
-        avtPipelineSpecification_p spec2 = new avtPipelineSpecification(spec, 
-                                                                       dspec2);
+        avtContract_p spec2 = new avtContract(spec, 
+                                                                       dataRequest2);
         disp.Update(spec2);
         ds = disp.GetTypedOutput();
     }
     else
     {
-        avtPipelineSpecification_p spec2 = new avtPipelineSpecification(spec, 
-                                                                       dspec2);
+        avtContract_p spec2 = new avtContract(spec, 
+                                                                       dataRequest2);
         eef.Update(spec2);
         ds = eef.GetTypedOutput();
     }

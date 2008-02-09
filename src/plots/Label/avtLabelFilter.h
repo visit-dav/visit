@@ -89,7 +89,7 @@ class avtLabelFilter : public avtStreamer
     char                     *labelVariable;
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void              RefashionDataObjectInfo(void);
+    virtual void              UpdateDataObjectInfo(void);
 };
 
 

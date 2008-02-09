@@ -51,10 +51,10 @@
 #include <avtDataObjectString.h>
 #include <avtDataObjectReader.h>
 #include <avtDataObjectWriter.h>
-#include <avtDataSpecification.h>
+#include <avtDataRequest.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
-#include <avtPipelineSpecification.h>
+#include <avtContract.h>
 #include <avtCommonDataFunctions.h>
 
 #include <vtkAppendFilter.h>

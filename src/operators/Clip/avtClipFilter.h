@@ -89,7 +89,7 @@ class vtkUnstructuredGrid;
 //    Add support for structured mesh chunking.
 //
 //    Kathleen Bonnell, Fri Apr 28 10:57:21 PDT 2006 
-//    Add PerformRestriction. 
+//    Add ModifyContract. 
 //
 //    Kathleen Bonnell, Mon Jul 31 11:11:28 PDT 2006 
 //    Add Clip1DRGrid. 
@@ -119,9 +119,9 @@ class avtClipFilter : public avtPluginStructuredChunkStreamer
     virtual void             GetAssignments(vtkDataSet *, const int *,
                       std::vector<avtStructuredMeshChunker::ZoneDesignation>&);
 
-    virtual void             RefashionDataObjectInfo(void);
-    avtPipelineSpecification_p
-                             PerformRestriction(avtPipelineSpecification_p);
+    virtual void             UpdateDataObjectInfo(void);
+    avtContract_p
+                             ModifyContract(avtContract_p);
 
   private:
     bool                     SetUpClipFunctions(vtkImplicitBoolean *, bool&);

@@ -45,7 +45,7 @@
 #include <avtLocateNodeQuery.h>
 #include <avtParallel.h>
 #include <avtQueryableSource.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtNodePickQuery.h>
 #include <float.h>
 #include <snprintf.h>
@@ -117,13 +117,13 @@ void
 avtLocateAndPickNodeQuery::PerformQuery(QueryAttributes *qa)
 {
     // Preparation work
-    avtDataSpecification_p dspec = 
-        GetInput()->GetTerminatingSource()->GetFullDataSpecification();
+    avtDataRequest_p dataRequest = 
+        GetInput()->GetOriginatingSource()->GetFullDataRequest();
 
     avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
     avtDataValidity &inVal = GetInput()->GetInfo().GetValidity();
 
-    pickAtts.SetActiveVariable(dspec->GetVariable());
+    pickAtts.SetActiveVariable(dataRequest->GetVariable());
     pickAtts.SetGhostType(inAtts.GetContainsGhostZones());
     pickAtts.SetTimeStep(qa->GetTimeStep());
     pickAtts.SetRayPoint1(qa->GetDarg1());

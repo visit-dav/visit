@@ -464,7 +464,7 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     // Do the funny business to force an update.
     //
     avtDataObject_p dob = software->GetOutput();
-    dob->Update(GetGeneralPipelineSpecification());
+    dob->Update(GetGeneralContract());
 
     if (atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
         integrateRF->OutputRawValues("integration.data");
@@ -565,7 +565,7 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 
 
 // ****************************************************************************
-//  Method: avtVolumeFilter::PerformRestriction
+//  Method: avtVolumeFilter::ModifyContract
 //
 //  Purpose:
 //      Performs a restriction based on which filter it is using underneath.
@@ -592,17 +592,17 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtVolumeFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtVolumeFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p newspec = NULL;
+    avtContract_p newspec = NULL;
 
     if (primaryVariable != NULL)
     {
         delete [] primaryVariable;
     }
 
-    avtDataSpecification_p ds = spec->GetDataSpecification();
+    avtDataRequest_p ds = spec->GetDataRequest();
     const char *var = ds->GetVariable();
 
     if (atts.GetScaling() == VolumeAttributes::Linear)
@@ -633,11 +633,11 @@ avtVolumeFilter::PerformRestriction(avtPipelineSpecification_p spec)
         e->SetType(Expression::ScalarMeshVar);
         elist->AddExpressions(*e);
         delete e;
-        avtDataSpecification_p nds = new 
-          avtDataSpecification(exprName.c_str(),
+        avtDataRequest_p nds = new 
+          avtDataRequest(exprName.c_str(),
                                ds->GetTimestep(), ds->GetRestriction());
         nds->AddSecondaryVariable(var);
-        newspec = new avtPipelineSpecification(spec, nds);
+        newspec = new avtContract(spec, nds);
         primaryVariable = new char[exprName.size()+1];
         strcpy(primaryVariable, exprName.c_str());
     }
@@ -657,11 +657,11 @@ avtVolumeFilter::PerformRestriction(avtPipelineSpecification_p spec)
         e->SetType(Expression::ScalarMeshVar);
         elist->AddExpressions(*e);
         delete e;
-        avtDataSpecification_p nds = 
-            new avtDataSpecification(exprName,
+        avtDataRequest_p nds = 
+            new avtDataRequest(exprName,
                 ds->GetTimestep(), ds->GetRestriction());
         nds->AddSecondaryVariable(var);
-        newspec = new avtPipelineSpecification(spec, nds);
+        newspec = new avtContract(spec, nds);
         primaryVariable = new char[strlen(exprName)+1];
         strcpy(primaryVariable, exprName);
     }

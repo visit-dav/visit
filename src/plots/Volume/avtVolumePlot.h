@@ -140,8 +140,8 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual void             CustomizeBehavior(void);
     virtual avtLegend_p      GetLegend(void) { return varLegendRefPtr; };
     void                     SetLegendOpacities();
-    virtual avtPipelineSpecification_p
-                             EnhanceSpecification(avtPipelineSpecification_p);
+    virtual avtContract_p
+                             EnhanceSpecification(avtContract_p);
 };
 
 

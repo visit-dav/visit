@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <avtNodeCoordsQuery.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtSILRestrictionTraverser.h>
 #include <vector>
 #include <snprintf.h>
@@ -129,11 +129,11 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
     if (!queryAtts.GetUseGlobalId())
     {
         intVector dlist;
-        avtDataSpecification_p dspec = 
-            GetInput()->GetTerminatingSource()->GetFullDataSpecification();
-        dspec->GetSIL().GetDomainList(dlist);
+        avtDataRequest_p dataRequest = 
+            GetInput()->GetOriginatingSource()->GetFullDataRequest();
+        dataRequest->GetSIL().GetDomainList(dlist);
 
-        if (dlist.size() == 1 && dspec->UsesAllDomains())
+        if (dlist.size() == 1 && dataRequest->UsesAllDomains())
         {
             singleDomain = true;
         }
@@ -191,7 +191,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
         }
         else
         {
-            avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+            avtOriginatingSource *src = GetInput()->GetOriginatingSource();
             int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
             int domain      = qA->GetDomain()  - blockOrigin;
             int ts          = qA->GetTimeStep();
@@ -233,7 +233,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
         }
         else
         {
-            avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+            avtOriginatingSource *src = GetInput()->GetOriginatingSource();
             int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
             int domain      = qA->GetDomain()  - blockOrigin;
             int ts          = qA->GetTimeStep();
@@ -307,7 +307,7 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
             domainUsed = true;
     }
 
-    avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+    avtOriginatingSource *src = GetInput()->GetOriginatingSource();
     if (domainUsed)
     {
         for (int i = 0; i < dlist.size() && !success; ++i) 
@@ -366,7 +366,7 @@ avtNodeCoordsQuery::FindGlobalCoord(double coord[3])
     trav.GetDomainList(dlist);
     bool success = false;
 
-    avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+    avtOriginatingSource *src = GetInput()->GetOriginatingSource();
     for (int i = 0; i < dlist.size() && !success; ++i) 
     {
         success = src->QueryCoords(var, dlist[i], node, ts, coord, false, true);

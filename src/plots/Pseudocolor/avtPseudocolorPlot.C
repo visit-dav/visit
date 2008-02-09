@@ -979,25 +979,25 @@ avtPseudocolorPlot::GetSmoothingLevel()
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtPseudocolorPlot::EnhanceSpecification(avtPipelineSpecification_p spec)
+avtContract_p
+avtPseudocolorPlot::EnhanceSpecification(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = spec;
+    avtContract_p rv = spec;
     if (topoDim == 0)
     {
         string pointVar = atts.GetPointSizeVar();
-        avtDataSpecification_p dspec = spec->GetDataSpecification();
+        avtDataRequest_p dataRequest = spec->GetDataRequest();
 
         //
         // Find out if we REALLY need to add the secondary variable.
         //
         if (atts.GetPointSizeVarEnabled() && 
             pointVar != "default" &&
-            pointVar != dspec->GetVariable() &&
-            !dspec->HasSecondaryVariable(pointVar.c_str()))
+            pointVar != dataRequest->GetVariable() &&
+            !dataRequest->HasSecondaryVariable(pointVar.c_str()))
         {
-            rv = new avtPipelineSpecification(spec);
-            rv->GetDataSpecification()->AddSecondaryVariable(pointVar.c_str());
+            rv = new avtContract(spec);
+            rv->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());
         }
     }
     return rv;

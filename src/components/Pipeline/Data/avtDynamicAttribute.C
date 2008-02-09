@@ -80,7 +80,7 @@ avtDynamicAttribute::~avtDynamicAttribute()
 
 
 // ****************************************************************************
-//  Method: avtDynamicAttribute::PerformRestriction
+//  Method: avtDynamicAttribute::ModifyContract
 //
 //  Purpose:
 //      This gives derived types an opportunity to affect what is going to be
@@ -97,8 +97,8 @@ avtDynamicAttribute::~avtDynamicAttribute()
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtDynamicAttribute::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtDynamicAttribute::ModifyContract(avtContract_p spec)
 {
     return spec;
 }

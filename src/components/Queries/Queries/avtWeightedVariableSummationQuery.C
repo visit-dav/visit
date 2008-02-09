@@ -45,7 +45,7 @@
 #include <avtBinaryMultiplyExpression.h>
 #include <avtRevolvedVolume.h>
 #include <avtSourceFromAVTDataset.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtVMetricArea.h>
 #include <avtVMetricVolume.h>
 
@@ -165,9 +165,9 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     //
     // Set up our base class so it is ready to sum.
     //
-    avtDataSpecification_p dspec = GetInput()->GetTerminatingSource()
-                                     ->GetFullDataSpecification();
-    string varname = dspec->GetVariable();
+    avtDataRequest_p dataRequest = GetInput()->GetOriginatingSource()
+                                     ->GetFullDataRequest();
+    string varname = dataRequest->GetVariable();
     varname = GetVarname(varname);
     SetSumType(varname);
 
@@ -207,27 +207,27 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     //
     // Cause our artificial pipeline to execute.
     //
-    avtPipelineSpecification_p pspec = 
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+    avtContract_p contract = 
+        inData->GetOriginatingSource()->GetGeneralContract();
 
     if (CalculateAverage())
     {
         denomVariableName = "avt_weights";
         // State that we want avt_weights as an output, so it doesn't get
         // thrown out after the multiply.
-        pspec->GetDataSpecification()->AddSecondaryVariable("avt_weights");
+        contract->GetDataRequest()->AddSecondaryVariable("avt_weights");
     }
 
     if (timeVarying) 
     { 
-        avtDataSpecification_p newDS = new 
-            avtDataSpecification(dspec, querySILR);
+        avtDataRequest_p newDS = new 
+            avtDataRequest(dataRequest, querySILR);
         newDS->SetTimestep(queryAtts.GetTimeStep());
 
-        pspec = new avtPipelineSpecification(newDS, pspec->GetPipelineIndex());
+        contract = new avtContract(newDS, contract->GetPipelineIndex());
     }
 
-    multiply->GetOutput()->Update(pspec);
+    multiply->GetOutput()->Update(contract);
     return multiply->GetOutput();
 }
 

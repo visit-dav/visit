@@ -58,7 +58,7 @@
 #include <avtDataAttributes.h>
 #include <avtExtents.h>
 #include <avtParallel.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <BadCellException.h>
 #include <ImproperUseException.h>
@@ -969,7 +969,7 @@ avtHistogramFilter::ArrayVarExecute(vtkDataSet *inDS, int chunk)
 
 
 // ****************************************************************************
-//  Method: avtHistogramFilter::RefashionDataObjectInfo
+//  Method: avtHistogramFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Allows the filter to change its output's data object information, which
@@ -985,7 +985,7 @@ avtHistogramFilter::ArrayVarExecute(vtkDataSet *inDS, int chunk)
 // ****************************************************************************
 
 void
-avtHistogramFilter::RefashionDataObjectInfo(void)
+avtHistogramFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();
     avtDataValidity   &outValidity = GetOutput()->GetInfo().GetValidity();
@@ -1000,7 +1000,7 @@ avtHistogramFilter::RefashionDataObjectInfo(void)
 
 
 // ****************************************************************************
-//  Method: avtHistogramFilter::PerformRestriction
+//  Method: avtHistogramFilter::ModifyContract
 //
 //  Purpose:
 //      Tells the input that we don't want ghost zones.  They cost time to
@@ -1025,10 +1025,10 @@ avtHistogramFilter::RefashionDataObjectInfo(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtHistogramFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtHistogramFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p newspec = new avtPipelineSpecification(spec);
+    avtContract_p newspec = new avtContract(spec);
     if (atts.GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
     {
         newspec->NoDynamicLoadBalancing();
@@ -1036,15 +1036,15 @@ avtHistogramFilter::PerformRestriction(avtPipelineSpecification_p spec)
         if (atts.GetHistogramType() == HistogramAttributes::Variable)
         {
             if (atts.GetWeightVariable() != "default")
-                newspec->GetDataSpecification()->AddSecondaryVariable(
+                newspec->GetDataRequest()->AddSecondaryVariable(
                                              atts.GetWeightVariable().c_str());
         }
     }
     else
     {
-        newspec->GetDataSpecification()->TurnZoneNumbersOn();
+        newspec->GetDataRequest()->TurnZoneNumbersOn();
         avtSILRestriction_p silr = 
-                             newspec->GetDataSpecification()->GetRestriction();
+                             newspec->GetDataRequest()->GetRestriction();
         int domain = atts.GetDomain();
         int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
         domain -= blockOrigin;

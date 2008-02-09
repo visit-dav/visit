@@ -64,7 +64,7 @@ class     ConstExpr;
 //    Added support for integer material indices.
 //
 //    Hank Childs, Fri Oct 24 14:49:23 PDT 2003
-//    Added PerformRestriction.  This is because matvf does not work with
+//    Added ModifyContract.  This is because matvf does not work with
 //    ghost zone communication.  It cannot get the avtMaterial object with
 //    ghost information and it causes an exception.  This will tell the
 //    database that it cannot communicate ghost zones until a better solution
@@ -97,8 +97,8 @@ class EXPRESSION_API avtMatvfExpression : public avtSingleInputExpressionFilter
   protected:
     virtual int               GetVariableDimension(void) { return 1; };
 
-    virtual avtPipelineSpecification_p
-                              PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                              ModifyContract(avtContract_p);
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void)  { return false; };

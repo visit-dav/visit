@@ -125,7 +125,7 @@ avtEvalPointExpression::TransformData(avtDataObject_p input)
     transform.SetInput(termsrc.GetOutput());
 
     avtDataObject_p output = transform.GetOutput();
-    output->Update(GetGeneralPipelineSpecification());
+    output->Update(GetGeneralContract());
 
     mat->Delete();
 

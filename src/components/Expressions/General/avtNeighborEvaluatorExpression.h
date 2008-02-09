@@ -94,8 +94,8 @@ class EXPRESSION_API avtNeighborEvaluatorExpression
     bool                      haveIssuedWarning;
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
-    virtual avtPipelineSpecification_p
-                              PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                              ModifyContract(avtContract_p);
 
     void                      InitializeEvaluation(int, float *);
     void                      EvaluateNeighbor(int, float);

@@ -174,7 +174,7 @@ avtLineoutFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 
 
 // ****************************************************************************
-//  Method: avtLineoutFilter::RefashionDataObjectInfo
+//  Method: avtLineoutFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Allows the filter to change its output's data object information, which
@@ -196,7 +196,7 @@ avtLineoutFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 // ****************************************************************************
 
 void
-avtLineoutFilter::RefashionDataObjectInfo(void)
+avtLineoutFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(1);
     GetOutput()->GetInfo().GetAttributes().SetXLabel("Distance");
@@ -246,7 +246,7 @@ avtLineoutFilter::VerifyInput(void)
 
 
 // ****************************************************************************
-//  Method: avtLineoutFilter::PerformRestriction
+//  Method: avtLineoutFilter::ModifyContract
 //
 //  Purpose:
 //      Calculates the restriction on the meta-data and the line endpoints. 
@@ -272,15 +272,15 @@ avtLineoutFilter::VerifyInput(void)
 // ****************************************************************************
 
 
-avtPipelineSpecification_p
-avtLineoutFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtLineoutFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
+    avtContract_p rv = new avtContract(spec);
 
     useOriginalCells = false;
     if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())
     {
-        rv->GetDataSpecification()->TurnZoneNumbersOn();
+        rv->GetDataRequest()->TurnZoneNumbersOn();
         useOriginalCells = true;
         return rv;
     }
@@ -299,7 +299,7 @@ avtLineoutFilter::PerformRestriction(avtPipelineSpecification_p spec)
 
     intVector domains;
     it->GetElementsList(point1, rayDir, domains);
-    rv->GetDataSpecification()->GetRestriction()->RestrictDomains(domains);
+    rv->GetDataRequest()->GetRestriction()->RestrictDomains(domains);
 
     return rv;
 }

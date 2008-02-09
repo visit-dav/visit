@@ -77,8 +77,8 @@ class EXPRESSION_API avtSpecMFExpression : public avtSingleInputExpressionFilter
   protected:
     bool                      issuedWarning;
 
-    virtual avtPipelineSpecification_p
-                              PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                              ModifyContract(avtContract_p);
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void)  { return false; };

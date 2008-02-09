@@ -187,7 +187,7 @@ avtSourceFromDatabase::~avtSourceFromDatabase()
 // ****************************************************************************
 
 bool
-avtSourceFromDatabase::FetchDataset(avtDataSpecification_p spec,
+avtSourceFromDatabase::FetchDataset(avtDataRequest_p spec,
                                     avtDataTree_p &tree)
 {
     TRY
@@ -294,7 +294,7 @@ avtSourceFromDatabase::FetchDataset(avtDataSpecification_p spec,
     // change.  No good copy constructor for data specification, so make use
     // a two-step process.
     //
-    lastSpec = new avtDataSpecification(spec, 0);
+    lastSpec = new avtDataRequest(spec, 0);
     lastSpec = spec;
 
     // '5723 BEGIN
@@ -325,7 +325,7 @@ avtSourceFromDatabase::FetchDataset(avtDataSpecification_p spec,
 
 void
 avtSourceFromDatabase::FetchVariableAuxiliaryData(const char *type, void *args,
-                              avtDataSpecification_p spec, VoidRefList &output)
+                              avtDataRequest_p spec, VoidRefList &output)
 {
     database->GetAuxiliaryData(spec, output, type, args);
 }
@@ -348,20 +348,20 @@ avtSourceFromDatabase::FetchVariableAuxiliaryData(const char *type, void *args,
 //
 //  Modifications:
 //    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004
-//    Use timestep from DataSpecification.
+//    Use timestep from DataRequest.
 //
 // ****************************************************************************
 
 void
 avtSourceFromDatabase::FetchMeshAuxiliaryData(const char *type, void *args,
-                              avtDataSpecification_p spec, VoidRefList &output)
+                              avtDataRequest_p spec, VoidRefList &output)
 {
     //
     // We only have hooks to the variable defined on the mesh.  We can get
     // the mesh name by accessing the database object.
     //
     string mn = database->GetMetaData(spec->GetTimestep())->MeshForVar(variable);
-    avtDataSpecification_p newspec =new avtDataSpecification(spec, mn.c_str());
+    avtDataRequest_p newspec =new avtDataRequest(spec, mn.c_str());
     database->GetAuxiliaryData(newspec, output, type, args);
 }
 
@@ -384,13 +384,13 @@ avtSourceFromDatabase::FetchMeshAuxiliaryData(const char *type, void *args,
 //
 //  Modifications:
 //    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004
-//    Use timestep from DataSpecification.
+//    Use timestep from DataRequest.
 //
 // ****************************************************************************
 
 void 
 avtSourceFromDatabase::FetchMaterialAuxiliaryData(const char *type, void *args,
-                              avtDataSpecification_p spec, VoidRefList &output)
+                              avtDataRequest_p spec, VoidRefList &output)
 {
     //
     // We only have hooks to the variable defined on the material.  We can get
@@ -398,7 +398,7 @@ avtSourceFromDatabase::FetchMaterialAuxiliaryData(const char *type, void *args,
     //
     string mn   = database->GetMetaData(spec->GetTimestep())->MeshForVar(variable);
     string mat  = database->GetMetaData(spec->GetTimestep())->MaterialOnMesh(mn);
-    avtDataSpecification_p newspec =new avtDataSpecification(spec, mat.c_str());
+    avtDataRequest_p newspec =new avtDataRequest(spec, mat.c_str());
     database->GetAuxiliaryData(newspec, output, type, args);
 }
 
@@ -421,13 +421,13 @@ avtSourceFromDatabase::FetchMaterialAuxiliaryData(const char *type, void *args,
 //
 //  Modifications:
 //    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004
-//    Use timestep from DataSpecification.
+//    Use timestep from DataRequest.
 //
 // ****************************************************************************
 
 void 
 avtSourceFromDatabase::FetchSpeciesAuxiliaryData(const char *type, void *args,
-                              avtDataSpecification_p spec, VoidRefList &output)
+                              avtDataRequest_p spec, VoidRefList &output)
 {
     //
     // We only have hooks to the variable defined on the species.  We can get
@@ -435,13 +435,13 @@ avtSourceFromDatabase::FetchSpeciesAuxiliaryData(const char *type, void *args,
     //
     string mn   = database->GetMetaData(spec->GetTimestep())->MeshForVar(variable);
     string sp   = database->GetMetaData(spec->GetTimestep())->SpeciesOnMesh(mn);
-    avtDataSpecification_p newspec =new avtDataSpecification(spec, sp.c_str());
+    avtDataRequest_p newspec =new avtDataRequest(spec, sp.c_str());
     database->GetAuxiliaryData(newspec, output, type, args);
 }
 
 
 // ****************************************************************************
-//  Method: avtSourceFromDatabase::GetFullDataSpecification
+//  Method: avtSourceFromDatabase::GetFullDataRequest
 //
 //  Purpose:
 //      Gets the full database specification for this variable on this
@@ -470,8 +470,8 @@ avtSourceFromDatabase::FetchSpeciesAuxiliaryData(const char *type, void *args,
 //
 // ****************************************************************************
 
-avtDataSpecification_p
-avtSourceFromDatabase::GetFullDataSpecification(void)
+avtDataRequest_p
+avtSourceFromDatabase::GetFullDataRequest(void)
 {
     const char *acting_var = variable;
     if (*lastSpec != NULL)
@@ -487,8 +487,8 @@ avtSourceFromDatabase::GetFullDataSpecification(void)
     string mesh = md->MeshForVar(variable);
     silr->SetTopSet(mesh.c_str());
 
-    avtDataSpecification_p rv =
-                          new avtDataSpecification(acting_var, timestep, silr);
+    avtDataRequest_p rv =
+                          new avtDataRequest(acting_var, timestep, silr);
 
     // '5723 BEGIN
     if (*lastSpec != NULL)
@@ -561,7 +561,7 @@ avtSourceFromDatabase::DatabaseProgress(int cur, int tot, const char *desc)
 // ****************************************************************************
 
 int
-avtSourceFromDatabase::NumStagesForFetch(avtDataSpecification_p spec)
+avtSourceFromDatabase::NumStagesForFetch(avtDataRequest_p spec)
 {
     return database->NumStagesForFetch(spec);
 }
@@ -719,7 +719,7 @@ avtSourceFromDatabase::GetSIL(int timestate)
 void
 avtSourceFromDatabase::ReleaseData(void)
 {
-    avtTerminatingDatasetSource::ReleaseData();
+    avtOriginatingDatasetSource::ReleaseData();
     if (GetOutput()->GetInfo().GetValidity().GetIsThisDynamic())
     {
         database->FreeUpResources();

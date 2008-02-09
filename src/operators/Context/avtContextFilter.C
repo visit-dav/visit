@@ -253,7 +253,7 @@ avtContextFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
 
 // ****************************************************************************
-//  Method: avtContextFilter::PerformRestriction
+//  Method: avtContextFilter::ModifyContract
 //
 //  Purpose:
 //      Adds the secondary variable we are interested in to the pipeline.
@@ -263,10 +263,10 @@ avtContextFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //
 // **************************************************************************** 
 
-avtPipelineSpecification_p
-avtContextFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtContextFilter::ModifyContract(avtContract_p spec)
 {
-    avtDataSpecification_p ds = spec->GetDataSpecification();
+    avtDataRequest_p ds = spec->GetDataRequest();
     ds->AddSecondaryVariable(atts.GetContext().c_str());
     return spec;
 }

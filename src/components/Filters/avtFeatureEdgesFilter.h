@@ -81,7 +81,7 @@ class AVTFILTERS_API avtFeatureEdgesFilter : public avtStreamer
 
   protected:
     virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void             RefashionDataObjectInfo(void);
+    virtual void             UpdateDataObjectInfo(void);
 };
 
 

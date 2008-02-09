@@ -37,29 +37,26 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtTerminatingDatasetSource.h                      //
+//                        avtTerminatingNullDataSink.h                       //
 // ************************************************************************* //
 
-#ifndef AVT_TERMINATING_DATASET_SOURCE_H
-#define AVT_TERMINATING_DATASET_SOURCE_H
+#ifndef AVT_TERMINATING_NULL_DATA_SINK_H
+#define AVT_TERMINATING_NULL_DATA_SINK_H
 #include <pipeline_exports.h>
 
 
-#include <avtDatasetSource.h>
-#include <avtDatasetVerifier.h>
-#include <avtTerminatingSource.h>
+#include <avtNullDataSink.h>
+#include <avtTerminatingSink.h>
 
 
 // ****************************************************************************
-//  Class: avtTerminatingDatasetSource
+//  Class: avtTerminatingNullDataSink
 //
 //  Purpose:
-//      This defines what a terminating dataset source looks like.  Note that
-//      this uses the dreaded "diamond shaped inheritance" since it looks like
-//      a terminating source and it also looks like a dataset source.
+//      A null data sink that terminates pipeline execution.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 29, 2001
+//  Programmer: Mark C. Miller 
+//  Creation:   January 7, 2003 
 //
 //  Modifications:
 //
@@ -69,21 +66,12 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtTerminatingDatasetSource
-    : virtual public avtDatasetSource, virtual public avtTerminatingSource
+class PIPELINE_API avtTerminatingNullDataSink
+    : virtual public avtNullDataSink, virtual public avtTerminatingSink
 {
   public:
-                              avtTerminatingDatasetSource();
-    virtual                  ~avtTerminatingDatasetSource();
-
-    void                      MergeExtents(vtkDataSet *);
-
-  protected:
-    avtDatasetVerifier        verifier;
-
-    virtual bool              FetchData(avtDataSpecification_p);
-    virtual bool              FetchDataset(avtDataSpecification_p,
-                                           avtDataTree_p &) = 0;
+                      avtTerminatingNullDataSink();
+    virtual          ~avtTerminatingNullDataSink();
 };
 
 

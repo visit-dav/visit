@@ -52,7 +52,7 @@
 #include <avtLineScanFilter.h>
 #include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <DebugStream.h>
 

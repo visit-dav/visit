@@ -43,7 +43,7 @@
 #include <avtVariableSummationQuery.h>
 
 #include <avtCondenseDatasetFilter.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <BadIndexException.h>
 
 using     std::string;
@@ -125,12 +125,12 @@ avtVariableSummationQuery::VerifyInput(void)
     //
     avtSummationQuery::VerifyInput();
 
-    avtDataSpecification_p dspec = GetInput()->GetTerminatingSource()
-                                     ->GetFullDataSpecification();
+    avtDataRequest_p dataRequest = GetInput()->GetOriginatingSource()
+                                     ->GetFullDataRequest();
 
     avtDataAttributes &dataAtts = GetInput()->GetInfo().GetAttributes();
 
-    string varname = dspec->GetVariable();
+    string varname = dataRequest->GetVariable();
     SetVariableName(varname);
     SumGhostValues(false);
     SetSumType(varname);
@@ -197,11 +197,11 @@ avtVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
         SumFromOriginalElement(true);
 
         // Need to request original cell and/or node numbers
-        avtDataSpecification_p oldSpec = inData->GetTerminatingSource()->
-            GetGeneralPipelineSpecification()->GetDataSpecification();
+        avtDataRequest_p oldSpec = inData->GetOriginatingSource()->
+            GetGeneralContract()->GetDataRequest();
 
-        avtDataSpecification_p newDS = new 
-            avtDataSpecification(oldSpec, querySILR);
+        avtDataRequest_p newDS = new 
+            avtDataRequest(oldSpec, querySILR);
         newDS->SetTimestep(queryAtts.GetTimeStep());
 
         if (cent == AVT_ZONECENT)
@@ -218,14 +218,14 @@ avtVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
             newDS->TurnNodeNumbersOn();
         }
 
-        avtPipelineSpecification_p pspec = 
-            new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
+        avtContract_p contract = 
+            new avtContract(newDS, queryAtts.GetPipeIndex());
 
         avtDataObject_p temp;
         CopyTo(temp, inData);
         condense->SetInput(temp);
         avtDataObject_p rv = condense->GetOutput();
-        rv->Update(pspec);
+        rv->Update(contract);
         return rv;
     }
     else 

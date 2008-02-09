@@ -178,7 +178,7 @@ avtReplicateFilter::PostExecute(void)
 
 
 // ****************************************************************************
-//  Method: avtReplicateFilter::PerformRestriction
+//  Method: avtReplicateFilter::ModifyContract
 //
 //  Purpose:
 //      Performs a restriction on the specification.  This is in place to
@@ -196,25 +196,25 @@ avtReplicateFilter::PostExecute(void)
 //  Modifications:
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtReplicateFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtReplicateFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p ns = new avtPipelineSpecification(spec);
+    avtContract_p ns = new avtContract(spec);
 
-    if (spec->GetDataSpecification()->MayRequireZones())
+    if (spec->GetDataRequest()->MayRequireZones())
     {
-        ns->GetDataSpecification()->TurnZoneNumbersOn();
+        ns->GetDataRequest()->TurnZoneNumbersOn();
     }
-    if (spec->GetDataSpecification()->MayRequireNodes())
+    if (spec->GetDataRequest()->MayRequireNodes())
     {
-        ns->GetDataSpecification()->TurnNodeNumbersOn();
+        ns->GetDataRequest()->TurnNodeNumbersOn();
     }
 
     return ns;
 }
 
 // ****************************************************************************
-//  Method: avtReplicateFilter::RefashionDataObjectInfo
+//  Method: avtReplicateFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //     Specifies that this filter transforms the original dataset points. 
@@ -227,7 +227,7 @@ avtReplicateFilter::PerformRestriction(avtPipelineSpecification_p spec)
 // ****************************************************************************
  
 void
-avtReplicateFilter::RefashionDataObjectInfo(void)
+avtReplicateFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
 

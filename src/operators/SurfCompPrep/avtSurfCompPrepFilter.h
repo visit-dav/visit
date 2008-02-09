@@ -83,7 +83,7 @@ class avtSurfCompPrepFilter : virtual public avtPluginFilter,
     SurfCompPrepAttributes   atts;
 
     virtual void          Execute(void);
-    virtual void          RefashionDataObjectInfo(void);
+    virtual void          UpdateDataObjectInfo(void);
     virtual int           AdditionalPipelineFilters(void);
 };
 

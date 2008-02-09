@@ -839,7 +839,7 @@ avtConeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
 
 // ****************************************************************************
-//  Method: avtConeFilter::RefashionDataObjectInfo
+//  Method: avtConeFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Changes to topological dimension of the output to be one less that the
@@ -862,7 +862,7 @@ avtConeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 // ****************************************************************************
 
 void
-avtConeFilter::RefashionDataObjectInfo(void)
+avtConeFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();
@@ -1296,7 +1296,7 @@ PolarExtents(double *b, vtkTransformPolyDataFilter *trans, vtkVisItCutter *cutte
 }
 
 // ****************************************************************************
-//  Method: avtConeFilter::PerformRestriction
+//  Method: avtConeFilter::ModifyContract
 //
 //  Purpose:
 //    Turn on Zone numbers flag if needed, so that original cell array
@@ -1316,20 +1316,20 @@ PolarExtents(double *b, vtkTransformPolyDataFilter *trans, vtkVisItCutter *cutte
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtConeFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtConeFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
+    avtContract_p rv = new avtContract(spec);
 
     if (atts.GetRepresentation() == ConeAttributes::Flattened)
     {
-        if (rv->GetDataSpecification()->MayRequireZones())
+        if (rv->GetDataRequest()->MayRequireZones())
         {
-            rv->GetDataSpecification()->TurnZoneNumbersOn();
+            rv->GetDataRequest()->TurnZoneNumbersOn();
         }
-        if (rv->GetDataSpecification()->MayRequireNodes())
+        if (rv->GetDataRequest()->MayRequireNodes())
         {
-            rv->GetDataSpecification()->TurnNodeNumbersOn();
+            rv->GetDataRequest()->TurnNodeNumbersOn();
         }
     }
     return rv;

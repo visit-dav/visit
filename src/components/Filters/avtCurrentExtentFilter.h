@@ -75,7 +75,7 @@ class AVTFILTERS_API avtCurrentExtentFilter : public avtDatasetToDatasetFilter
 
   protected:
     virtual void          Execute(void);
-    virtual void          RefashionDataObjectInfo(void);
+    virtual void          UpdateDataObjectInfo(void);
     virtual bool          FilterUnderstandsTransformedRectMesh();
 
 };

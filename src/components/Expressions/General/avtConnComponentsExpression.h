@@ -66,7 +66,7 @@ class     avtIntervalTree;
 //    Added variables to track progress. 
 //
 //    Cyrus Harrison, Sat Aug 11 14:41:01 PDT 2007
-//    Added LabelGhostNeighbors and PerformRestriction
+//    Added LabelGhostNeighbors and ModifyContract
 //
 //    Cyrus Harrison, Thu Aug 23 08:35:12 PDT 2007
 //    Added ProcessArguments and option to explicitly disable ghost neighbors
@@ -213,8 +213,8 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
 
     virtual void              Execute(void);
 
-    virtual avtPipelineSpecification_p
-                               PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                               ModifyContract(avtContract_p);
 
     virtual void              LabelGhostNeighbors(vtkDataSet *);
     

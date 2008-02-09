@@ -51,7 +51,7 @@
 #include <vtkVisItCellLocator.h>
 #include <vtkVisItUtility.h>
 #include <NonQueryableInputException.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtExpressionEvaluatorFilter.h>
 
 
@@ -439,25 +439,25 @@ avtLocateQuery::RayIntersectsDataSet(vtkDataSet *ds)
 avtDataObject_p
 avtLocateQuery::ApplyFilters(avtDataObject_p inData)
 {
-    avtDataSpecification_p dspec = 
-        inData->GetTerminatingSource()->GetFullDataSpecification();
+    avtDataRequest_p dataRequest = 
+        inData->GetOriginatingSource()->GetFullDataRequest();
 
-    if (timeVarying || dspec->GetTimestep() == pickAtts.GetTimeStep())
+    if (timeVarying || dataRequest->GetTimestep() == pickAtts.GetTimeStep())
         return avtDatasetQuery::ApplyFilters(inData);
 
-    avtPipelineSpecification_p orig_pspec = inData->GetTerminatingSource()->
-        GetGeneralPipelineSpecification();
+    avtContract_p orig_contract = inData->GetOriginatingSource()->
+        GetGeneralContract();
 
-    avtDataSpecification_p oldSpec = orig_pspec->GetDataSpecification();
-    avtDataSpecification_p newDS = new
-        avtDataSpecification(oldSpec, querySILR);
+    avtDataRequest_p oldSpec = orig_contract->GetDataRequest();
+    avtDataRequest_p newDS = new
+        avtDataRequest(oldSpec, querySILR);
 
     newDS->SetTimestep(pickAtts.GetTimeStep());
 
-    avtPipelineSpecification_p pspec =
-        new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
+    avtContract_p contract =
+        new avtContract(newDS, queryAtts.GetPipeIndex());
     avtDataObject_p rv;
     CopyTo(rv, inData);
-    rv->Update(pspec);
+    rv->Update(contract);
     return rv;
 }

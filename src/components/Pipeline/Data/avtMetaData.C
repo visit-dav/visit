@@ -50,7 +50,7 @@
 #include <avtCommonDataFunctions.h>
 #include <avtFacelist.h>
 #include <avtIntervalTree.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtMixedVariable.h>
 #include <avtTypes.h>
 
@@ -68,7 +68,7 @@
 //
 // ****************************************************************************
 
-avtMetaData::avtMetaData(avtTerminatingSource *s)
+avtMetaData::avtMetaData(avtOriginatingSource *s)
 {
     source = s;
 }
@@ -118,7 +118,7 @@ avtIntervalTree *
 avtMetaData::GetDataExtents(const char *var)
 {
     VoidRefList list;
-    avtPipelineSpecification_p spec = GetPipelineSpecification();
+    avtContract_p spec = GetContract();
     source->GetVariableAuxiliaryData(AUXILIARY_DATA_DATA_EXTENTS, (void*) var,
                                      spec, list);
     if (list.nList == 0)
@@ -162,7 +162,7 @@ avtIntervalTree *
 avtMetaData::GetSpatialExtents(const char *var)
 {
     VoidRefList list;
-    avtPipelineSpecification_p spec = GetPipelineSpecification();
+    avtContract_p spec = GetContract();
     source->GetMeshAuxiliaryData(AUXILIARY_DATA_SPATIAL_EXTENTS, (void*) var,
                                      spec, list);
     if (list.nList == 0)
@@ -207,7 +207,7 @@ avtFacelist *
 avtMetaData::GetExternalFacelist(int domain)
 {
     VoidRefList list;
-    avtPipelineSpecification_p spec = GetPipelineSpecification(domain);
+    avtContract_p spec = GetContract(domain);
     source->GetMeshAuxiliaryData(AUXILIARY_DATA_EXTERNAL_FACELIST, NULL,
                                  spec, list);
     if (list.nList == 0)
@@ -244,12 +244,12 @@ avtMaterial *
 avtMetaData::GetMaterial(int domain, int timestep)
 {
     VoidRefList list;
-    avtPipelineSpecification_p spec = GetPipelineSpecification(domain);
+    avtContract_p spec = GetContract(domain);
     //
-    // If a timestep has been specified, set it in DataSpecification.
+    // If a timestep has been specified, set it in DataRequest.
     //
     if (timestep != -1)
-        spec->GetDataSpecification()->SetTimestep(timestep);
+        spec->GetDataRequest()->SetTimestep(timestep);
 
     source->GetMaterialAuxiliaryData(AUXILIARY_DATA_MATERIAL, NULL, spec,list);
     if (list.nList == 0)
@@ -286,12 +286,12 @@ avtSpecies *
 avtMetaData::GetSpecies(int domain, int timestep)
 {
     VoidRefList list;
-    avtPipelineSpecification_p spec = GetPipelineSpecification(domain);
+    avtContract_p spec = GetContract(domain);
     //
-    // If a timestep has been specified, set it in DataSpecification.
+    // If a timestep has been specified, set it in DataRequest.
     //
     if (timestep != -1)
-        spec->GetDataSpecification()->SetTimestep(timestep);
+        spec->GetDataRequest()->SetTimestep(timestep);
     source->GetSpeciesAuxiliaryData(AUXILIARY_DATA_SPECIES, NULL, spec,list);
     if (list.nList == 0)
     {
@@ -306,7 +306,7 @@ avtMetaData::GetSpecies(int domain, int timestep)
 
 
 // ****************************************************************************
-//  Method: avtMetaData::GetPipelineSpecification
+//  Method: avtMetaData::GetContract
 //
 //  Purpose:
 //      Gets a pipeline specification corresponding to all data.
@@ -316,18 +316,18 @@ avtMetaData::GetSpecies(int domain, int timestep)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtMetaData::GetPipelineSpecification(void)
+avtContract_p
+avtMetaData::GetContract(void)
 {
     //
     // -1 means get an object for the entire dataset.
     //
-    return GetPipelineSpecification(-1);
+    return GetContract(-1);
 }
 
 
 // ****************************************************************************
-//  Method: avtMetaData::GetPipelineSpecification
+//  Method: avtMetaData::GetContract
 //
 //  Purpose:
 //      Gets a pipeline specification corresponding to all data.
@@ -340,22 +340,22 @@ avtMetaData::GetPipelineSpecification(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtMetaData::GetPipelineSpecification(int domain)
+avtContract_p
+avtMetaData::GetContract(int domain)
 {
     //
     // Get the data from the source that represents all data.  Then override it
     // to have only the domain we are interested in.
     //
-    avtDataSpecification_p ds = source->GetFullDataSpecification();
-    avtDataSpecification_p alldata = new avtDataSpecification(ds, domain);
+    avtDataRequest_p ds = source->GetFullDataRequest();
+    avtDataRequest_p alldata = new avtDataRequest(ds, domain);
 
     //
     // Create a pipeline with index -1.  This is the index reserved for an
     // ad-hoc pipeline and it is only to meet the interface.  The load balancer
     // should be aware of this.
     //
-    avtPipelineSpecification_p ps = new avtPipelineSpecification(alldata, -1);
+    avtContract_p ps = new avtContract(alldata, -1);
     ps->UseLoadBalancing(false);
 
     return ps;
@@ -385,12 +385,12 @@ avtMixedVariable *
 avtMetaData::GetMixedVar(const char *varname, int domain, int timestep)
 {
     VoidRefList list;
-    avtPipelineSpecification_p spec = GetPipelineSpecification(domain);
+    avtContract_p spec = GetContract(domain);
     //
-    // If a timestep has been specified, set it in DataSpecification.
+    // If a timestep has been specified, set it in DataRequest.
     //
     if (timestep != -1)
-        spec->GetDataSpecification()->SetTimestep(timestep);
+        spec->GetDataRequest()->SetTimestep(timestep);
 
     // pass the varname, so the source can obtain the proper mixed var.
     source->GetVariableAuxiliaryData(AUXILIARY_DATA_MIXED_VARIABLE, 

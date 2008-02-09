@@ -269,7 +269,7 @@ avtDataSetReader::ReadDataTree(char * &input, int &size, CharStrRef &csr)
 // ****************************************************************************
 
 bool
-avtDataSetReader::FetchDataset(avtDataSpecification_p spec,
+avtDataSetReader::FetchDataset(avtDataRequest_p spec,
                                avtDataTree_p &output)
 {
     vector<int> chunks;

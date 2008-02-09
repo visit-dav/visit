@@ -237,7 +237,7 @@ avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat)
     // called.  We need that index to make sure we are getting the right mat.
     //
     // The 'currentTimeState' is a data member of the base class that is
-    // set to be the current timestep during ExamineSpecification. 
+    // set to be the current timestep during ExamineContract. 
     // We need that timestep to make sure we are getting the right mat.
     //
     avtMaterial *mat = GetMetaData()->GetMaterial(currentDomainsIndex,
@@ -523,7 +523,7 @@ avtMIRvfExpression::AddMaterial(ConstExpr *c)
 
 
 // ****************************************************************************
-//  Method: avtMIRvfExpression::PerformRestriction
+//  Method: avtMIRvfExpression::ModifyContract
 //
 //  Purpose:
 //      This routine allows the filter to change the data specification.
@@ -535,10 +535,10 @@ avtMIRvfExpression::AddMaterial(ConstExpr *c)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtMIRvfExpression::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtMIRvfExpression::ModifyContract(avtContract_p spec)
 {
-    avtSILRestriction_p silr = spec->GetDataSpecification()->GetRestriction();
+    avtSILRestriction_p silr = spec->GetDataRequest()->GetRestriction();
     avtSILRestrictionTraverser trav(silr);
     if (!trav.UsesAllMaterials())
     {
@@ -552,13 +552,13 @@ avtMIRvfExpression::PerformRestriction(avtPipelineSpecification_p spec)
         }
     } 
 
-    spec->GetDataSpecification()->ForceMaterialInterfaceReconstructionOn();
+    spec->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
     return spec;
 }
 
 
 // ****************************************************************************
-//  Method: avtMIRvfExpression::RefashionDataObjectInfo
+//  Method: avtMIRvfExpression::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicates the zones no longer correspond to the original problem.
@@ -569,9 +569,9 @@ avtMIRvfExpression::PerformRestriction(avtPipelineSpecification_p spec)
 // ****************************************************************************
 
 void
-avtMIRvfExpression::RefashionDataObjectInfo(void)
+avtMIRvfExpression::UpdateDataObjectInfo(void)
 {
-    avtSingleInputExpressionFilter::RefashionDataObjectInfo();
+    avtSingleInputExpressionFilter::UpdateDataObjectInfo();
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
 }
 

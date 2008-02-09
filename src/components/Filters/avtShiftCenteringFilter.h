@@ -72,14 +72,14 @@ class vtkPointDataToCellData;
 //    Removed all references to PC atts.
 //
 //    Hank Childs, Wed Feb 27 13:03:32 PST 2002
-//    Added RefashionDataObjectInfo.
+//    Added UpdateDataObjectInfo.
 //
 //    Hank Childs, Thu Feb  5 17:11:06 PST 2004
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
 //    Hank Childs, Wed Aug 11 09:47:46 PDT 2004
-//    Added PerformRestriction.
+//    Added ModifyContract.
 //
 // ****************************************************************************
 
@@ -97,9 +97,9 @@ class AVTFILTERS_API avtShiftCenteringFilter : public avtStreamer
     int                     centeringInstruction;
 
     virtual vtkDataSet     *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void            RefashionDataObjectInfo(void);
-    virtual avtPipelineSpecification_p
-                            PerformRestriction(avtPipelineSpecification_p);
+    virtual void            UpdateDataObjectInfo(void);
+    virtual avtContract_p
+                            ModifyContract(avtContract_p);
 };
 
 

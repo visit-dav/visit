@@ -71,7 +71,7 @@ class avtKerbelFilter : public avtDatasetToDatasetFilter
   protected:
     KerbelAttributes          atts;
     virtual void              Execute(void);
-    virtual void              RefashionDataObjectInfo(void);
+    virtual void              UpdateDataObjectInfo(void);
 };
 
 

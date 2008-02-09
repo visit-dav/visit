@@ -81,7 +81,7 @@ class EXPRESSION_API avtArrayComposeWithBinsExpression
     int                       nvars;
     vector<double>            binRanges;
 
-    virtual void              RefashionDataObjectInfo(void);
+    virtual void              UpdateDataObjectInfo(void);
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual avtVarType        GetVariableType(void) { return AVT_ARRAY_VAR; };
 };

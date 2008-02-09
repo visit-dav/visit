@@ -58,7 +58,7 @@ ClonedDataNetwork::ClonedDataNetwork(DataNetwork *base) : DataNetwork()
     SetNetDB(base->GetNetDB());
     plot = base->GetPlot();
     plottype = base->GetPlottype();
-    SetPipelineSpec(base->GetPipelineSpec());
+    SetContract(base->GetContract());
     SetDataSpec(base->GetDataSpec());
     nodeList = base->GetNodeList();
     clone = true;

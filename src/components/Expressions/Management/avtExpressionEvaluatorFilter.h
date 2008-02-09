@@ -92,7 +92,7 @@ typedef avtDDF *   (*GetDDFCallback)(void *, const char *);
 //   Rename QueryZoneCenter to QueryCoords, added bool arg.
 //
 //   Kathleen Bonnell, Mon Jun 28 08:01:45 PDT 2004 
-//   Added currentTimeState, ExamineSpecification. 
+//   Added currentTimeState, ExamineContract. 
 //
 //   Kathleen Bonnell, Thu Dec 16 17:11:19 PST 2004 
 //   Added another bool arg to QueryCoords. 
@@ -156,15 +156,15 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
     virtual void             PreExecute(void) {}
     virtual void             PostExecute(void) {}
     virtual void             Execute(void);
-    virtual avtPipelineSpecification_p
-                             PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                             ModifyContract(avtContract_p);
     virtual int              AdditionalPipelineFilters(void);
-    virtual void             ExamineSpecification(avtPipelineSpecification_p);
+    virtual void             ExamineContract(avtContract_p);
     virtual bool             FilterUnderstandsTransformedRectMesh();
 
   protected:
     ExprPipelineState            pipelineState;
-    avtPipelineSpecification_p   lastUsedSpec;
+    avtContract_p   lastUsedSpec;
     avtSourceFromAVTDataset     *termsrc;
     std::vector<std::string>     expr_list_fromLastTime;
 

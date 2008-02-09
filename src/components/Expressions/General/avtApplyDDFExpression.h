@@ -81,8 +81,8 @@ class EXPRESSION_API avtApplyDDFExpression
     static void               RegisterGetDDFCallback(GetDDFCallback, void *);
     virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
 
-    avtPipelineSpecification_p 
-                              PerformRestriction(avtPipelineSpecification_p);
+    avtContract_p 
+                              ModifyContract(avtContract_p);
 
   protected:
     avtDDF                   *theDDF;

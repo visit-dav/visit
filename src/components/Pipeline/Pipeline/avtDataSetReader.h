@@ -47,7 +47,7 @@
 #include <array_ref_ptr.h>
 #include <ref_ptr.h>
 
-#include <avtTerminatingDatasetSource.h>
+#include <avtOriginatingDatasetSource.h>
 
 
 // ****************************************************************************
@@ -74,7 +74,7 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtDataSetReader : public avtTerminatingDatasetSource
+class PIPELINE_API avtDataSetReader : public avtOriginatingDatasetSource
 {
   public:
                            avtDataSetReader();
@@ -90,7 +90,7 @@ class PIPELINE_API avtDataSetReader : public avtTerminatingDatasetSource
     avtDataTree_p          dataTree;
     bool                   haveFetchedThisData;
 
-    virtual bool           FetchDataset(avtDataSpecification_p,avtDataTree_p&);
+    virtual bool           FetchDataset(avtDataRequest_p,avtDataTree_p&);
 };
 
 

@@ -62,7 +62,7 @@
 //     Added SetVarName member function
 //
 //     Hank Childs, Fri May 20 14:55:06 PDT 2005
-//     Remove RefashionDataObjectInfo (it was empty).
+//     Remove UpdateDataObjectInfo (it was empty).
 //
 // ****************************************************************************
 

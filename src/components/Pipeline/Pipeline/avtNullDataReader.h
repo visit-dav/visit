@@ -45,7 +45,7 @@
 #include <pipeline_exports.h>
 
 
-#include <avtTerminatingNullDataSource.h>
+#include <avtOriginatingNullDataSource.h>
 
 #include <ref_ptr.h>
 
@@ -67,7 +67,7 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtNullDataReader : public avtTerminatingNullDataSource
+class PIPELINE_API avtNullDataReader : public avtOriginatingNullDataSource
 {
   public:
                                 avtNullDataReader();

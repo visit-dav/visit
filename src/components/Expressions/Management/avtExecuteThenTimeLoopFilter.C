@@ -44,7 +44,7 @@
 
 #include <avtCallback.h>
 #include <avtExpressionEvaluatorFilter.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -177,18 +177,18 @@ avtExecuteThenTimeLoopFilter::Execute(void)
 
     for (i = startTime; i < actualEnd; i+= stride)
     {
-        avtTerminatingSource *src = GetTerminatingSource();
+        avtOriginatingSource *src = GetOriginatingSource();
         avtExpressionEvaluatorFilter eef;
         eef.SetInput(src->GetOutput());
 
-        avtPipelineSpecification_p spec = 
-                new avtPipelineSpecification(GetGeneralPipelineSpecification());
+        avtContract_p spec = 
+                new avtContract(GetGeneralContract());
         int currentTime = (i < endTime ? i : endTime);
         debug5 << "Execute-then-time-loop-filter updating with time slice #" 
                << currentTime << endl;
-        spec->GetDataSpecification()->SetTimestep(currentTime);
+        spec->GetDataRequest()->SetTimestep(currentTime);
 
-        avtPipelineSpecification_p spec2 = PerformRestriction(spec);
+        avtContract_p spec2 = ModifyContract(spec);
         eef.Update(spec2);
 
         // Friend status plus reference points leads to some extra contortions here.

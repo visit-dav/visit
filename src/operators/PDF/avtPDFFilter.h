@@ -79,9 +79,9 @@ class avtPDFFilter : public avtPluginStreamer
 
     virtual void         PreExecute(void);
     virtual void         PostExecute(void);
-    virtual void         RefashionDataObjectInfo(void);
-    virtual avtPipelineSpecification_p
-                         PerformRestriction(avtPipelineSpecification_p);
+    virtual void         UpdateDataObjectInfo(void);
+    virtual avtContract_p
+                         ModifyContract(avtContract_p);
 
   protected:
     PDFAttributes   atts;

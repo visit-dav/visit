@@ -37,14 +37,14 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtOriginatingSink.C                           //
+//                            avtTerminatingSink.C                           //
 // ************************************************************************* //
 
-#include <avtOriginatingSink.h>
+#include <avtTerminatingSink.h>
 
 #include <snprintf.h>
 
-#include <avtPipelineSpecification.h>
+#include <avtContract.h>
 #include <avtParallel.h>
 #include <avtWebpage.h>
 
@@ -59,14 +59,14 @@
 // Define static members.
 //
 
-GuideFunction    avtOriginatingSink::guideFunction     = NULL;
-void            *avtOriginatingSink::guideFunctionArgs = NULL;
-bool             avtOriginatingSink::debugDump         = false;
-avtWebpage      *avtOriginatingSink::webpage           = NULL;
+GuideFunction    avtTerminatingSink::guideFunction     = NULL;
+void            *avtTerminatingSink::guideFunctionArgs = NULL;
+bool             avtTerminatingSink::debugDump         = false;
+avtWebpage      *avtTerminatingSink::webpage           = NULL;
 
 
 // ****************************************************************************
-//  Method: avtOriginatingSink constructor
+//  Method: avtTerminatingSink constructor
 //
 //  Programmer: Hank Childs
 //  Creation:   May 29, 2001
@@ -78,13 +78,13 @@ avtWebpage      *avtOriginatingSink::webpage           = NULL;
 //
 // ****************************************************************************
 
-avtOriginatingSink::avtOriginatingSink()
+avtTerminatingSink::avtTerminatingSink()
 {
 }
 
 
 // ****************************************************************************
-//  Method: avtOriginatingSink destructor
+//  Method: avtTerminatingSink destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -95,14 +95,14 @@ avtOriginatingSink::avtOriginatingSink()
 //
 // ****************************************************************************
 
-avtOriginatingSink::~avtOriginatingSink()
+avtTerminatingSink::~avtTerminatingSink()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtOriginatingSink::Execute
+//  Method: avtTerminatingSink::Execute
 //
 //  Purpose:
 //      Executes the pipeline.  This means possibly executing the pipeline
@@ -144,12 +144,12 @@ avtOriginatingSink::~avtOriginatingSink()
 // ****************************************************************************
 
 void
-avtOriginatingSink::Execute(avtPipelineSpecification_p pipelineSpec)
+avtTerminatingSink::Execute(avtContract_p contract)
 {
     if (debugDump)
         InitializeWebpage();
 
-    int pipelineIndex = pipelineSpec->GetPipelineIndex();
+    int pipelineIndex = contract->GetPipelineIndex();
     if (pipelineIndex < 0)
     {
         //
@@ -168,7 +168,7 @@ avtOriginatingSink::Execute(avtPipelineSpecification_p pipelineSpec)
     {
         debug4 << "No guide function registered with the originating sink,"
                << " doing normal Update." << endl;
-        input->Update(pipelineSpec);
+        input->Update(contract);
     }
     else
     {
@@ -182,7 +182,7 @@ avtOriginatingSink::Execute(avtPipelineSpecification_p pipelineSpec)
                    << "first Update on pipeline " << pipelineIndex << "." 
                    << endl;
             int t = visitTimer->StartTimer();
-            input->Update(pipelineSpec);
+            input->Update(contract);
             visitTimer->StopTimer(t, "First pipeline update.");
         }
 
@@ -199,7 +199,7 @@ avtOriginatingSink::Execute(avtPipelineSpecification_p pipelineSpec)
                 debug4 << "Doing " << iter << " iteration Updating on "
                        << "pipeline " << pipelineIndex << "." << endl;
                 int t = visitTimer->StartTimer();
-                input->Update(pipelineSpec);
+                input->Update(contract);
                 char msg[1024];
                 SNPRINTF(msg, 1024, "Iteration %d of dynamic LB update.",iter);
                 visitTimer->StopTimer(t, msg);
@@ -223,7 +223,7 @@ avtOriginatingSink::Execute(avtPipelineSpecification_p pipelineSpec)
 
 
 // ****************************************************************************
-//  Method: avtOriginatingSink::InputIsReady
+//  Method: avtTerminatingSink::InputIsReady
 //
 //  Purpose:
 //      Called when Execute is done, so that derived types (like Mappers) that
@@ -235,14 +235,14 @@ avtOriginatingSink::Execute(avtPipelineSpecification_p pipelineSpec)
 // ****************************************************************************
 
 void
-avtOriginatingSink::InputIsReady(void)
+avtTerminatingSink::InputIsReady(void)
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtOriginatingSink::DynamicLoadBalanceCleanUp
+//  Method: avtTerminatingSink::DynamicLoadBalanceCleanUp
 //
 //  Purpose:
 //      A hook to allow derived types to perform some clean up after dynamic
@@ -254,14 +254,14 @@ avtOriginatingSink::InputIsReady(void)
 // ****************************************************************************
 
 void
-avtOriginatingSink::DynamicLoadBalanceCleanUp(void)
+avtTerminatingSink::DynamicLoadBalanceCleanUp(void)
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtOriginatingSink::SetGuideFunction
+//  Method: avtTerminatingSink::SetGuideFunction
 //
 //  Purpose:
 //      Sets the load balancer to be consulted when this originating sink
@@ -277,7 +277,7 @@ avtOriginatingSink::DynamicLoadBalanceCleanUp(void)
 // ****************************************************************************
 
 void
-avtOriginatingSink::SetGuideFunction(GuideFunction foo, void *args)
+avtTerminatingSink::SetGuideFunction(GuideFunction foo, void *args)
 {
     guideFunction     = foo;
     guideFunctionArgs = args;
@@ -285,7 +285,7 @@ avtOriginatingSink::SetGuideFunction(GuideFunction foo, void *args)
 
 
 // ****************************************************************************
-//  Method: avtOriginatingSink::GetGuideFunction
+//  Method: avtTerminatingSink::GetGuideFunction
 //
 //  Purpose:
 //      Gets the load balancer to be consulted when this originating sink
@@ -301,7 +301,7 @@ avtOriginatingSink::SetGuideFunction(GuideFunction foo, void *args)
 // ****************************************************************************
 
 void
-avtOriginatingSink::GetGuideFunction(GuideFunction &foo, void *&args)
+avtTerminatingSink::GetGuideFunction(GuideFunction &foo, void *&args)
 {
     foo  = guideFunction;
     args = guideFunctionArgs;
@@ -309,7 +309,7 @@ avtOriginatingSink::GetGuideFunction(GuideFunction &foo, void *&args)
 
 
 // ****************************************************************************
-//  Method: avtOriginatingSink::InitializeWebpage
+//  Method: avtTerminatingSink::InitializeWebpage
 //
 //  Purpose:
 //      Opens up a file stream to write a webpage to.  (For debugDump mode.)
@@ -320,7 +320,7 @@ avtOriginatingSink::GetGuideFunction(GuideFunction &foo, void *&args)
 // ****************************************************************************
 
 void
-avtOriginatingSink::InitializeWebpage(void)
+avtTerminatingSink::InitializeWebpage(void)
 {
     if (webpage != NULL)
     {
@@ -351,7 +351,7 @@ avtOriginatingSink::InitializeWebpage(void)
 
 
 // ****************************************************************************
-//  Method: avtOriginatingSink::FinalizeWebpage
+//  Method: avtTerminatingSink::FinalizeWebpage
 //
 //  Purpose:
 //      Closes file stream we were writing a webpage to.  (For debugDump mode.)
@@ -362,7 +362,7 @@ avtOriginatingSink::InitializeWebpage(void)
 // ****************************************************************************
 
 void
-avtOriginatingSink::FinalizeWebpage(void)
+avtTerminatingSink::FinalizeWebpage(void)
 {
     if (webpage == NULL)
     {
@@ -379,7 +379,7 @@ avtOriginatingSink::FinalizeWebpage(void)
 
 
 // ****************************************************************************
-//  Method: avtOriginatingSink::DumpString
+//  Method: avtTerminatingSink::DumpString
 //
 //  Purpose:
 //      Dumps a string to the webpage.
@@ -396,7 +396,7 @@ avtOriginatingSink::FinalizeWebpage(void)
 // ****************************************************************************
 
 void
-avtOriginatingSink::AddDumpReference(const char *filename, const char *listing,
+avtTerminatingSink::AddDumpReference(const char *filename, const char *listing,
                                      int indentation_level)
 {
     if (webpage == NULL)

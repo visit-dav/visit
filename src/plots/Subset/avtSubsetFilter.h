@@ -88,9 +88,9 @@ class avtSubsetFilter : public avtDataTreeStreamer
     SubsetAttributes      plotAtts;
 
     virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, string);
-    virtual void          RefashionDataObjectInfo(void);
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
+    virtual void          UpdateDataObjectInfo(void);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p);
 
     virtual void          PostExecute(void);
 

@@ -65,7 +65,7 @@
 #include <avtMetaData.h>
 #include <avtParallel.h>
 #include <avtSpatialBoxSelection.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <BadVectorException.h>
 #include <DebugStream.h>
@@ -363,7 +363,7 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 
 
 // ****************************************************************************
-//  Method: avtSliceFilter::PerformRestriction
+//  Method: avtSliceFilter::ModifyContract
 //
 //  Purpose:
 //      Calculates the restriction on the meta-data and the plane 
@@ -439,10 +439,10 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtSliceFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
+    avtContract_p rv = new avtContract(spec);
 
     //
     // Pick returns wrong results (even with transform) when slice lies
@@ -457,36 +457,36 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     // the database can mark their output as non-pickable, which means
     // that we don't need the IDs after all...
     //
-    if (spec->GetDataSpecification()->GetSimplifiedNestingRepresentation())
+    if (spec->GetDataRequest()->GetSimplifiedNestingRepresentation())
         needToTurnOnIds = false;
 
     if (needToTurnOnIds)
     {
-        rv->GetDataSpecification()->TurnZoneNumbersOn();
-        rv->GetDataSpecification()->TurnNodeNumbersOn();
+        rv->GetDataRequest()->TurnZoneNumbersOn();
+        rv->GetDataRequest()->TurnNodeNumbersOn();
     }
 
     // Get the flag indicating whether vectors must be projected during 
     // project to 2D and save for later.
-    doTransformVectors = rv->GetDataSpecification()->TransformVectorsDuringProject();
+    doTransformVectors = rv->GetDataRequest()->TransformVectorsDuringProject();
          
 #if 0
-    if (atts.GetProject2d() && rv->GetDataSpecification()->MayRequireZones())
+    if (atts.GetProject2d() && rv->GetDataRequest()->MayRequireZones())
     {
-        rv->GetDataSpecification()->TurnZoneNumbersOn();
+        rv->GetDataRequest()->TurnZoneNumbersOn();
     }
-    if (atts.GetProject2d() && rv->GetDataSpecification()->MayRequireNodes())
+    if (atts.GetProject2d() && rv->GetDataRequest()->MayRequireNodes())
     {
-        rv->GetDataSpecification()->TurnNodeNumbersOn();
+        rv->GetDataRequest()->TurnNodeNumbersOn();
     }
 
     if (atts.GetOriginType() == SliceAttributes::Zone)
     {
-        rv->GetDataSpecification()->TurnZoneNumbersOn();
+        rv->GetDataRequest()->TurnZoneNumbersOn();
     }
     if (atts.GetOriginType() == SliceAttributes::Node)
     {
-        rv->GetDataSpecification()->TurnNodeNumbersOn();
+        rv->GetDataRequest()->TurnNodeNumbersOn();
     }
 #endif
 
@@ -520,7 +520,7 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
         }
         sel->SetMins(mins);
         sel->SetMaxs(maxs);
-        rv->GetDataSpecification()->AddDataSelection(sel);
+        rv->GetDataRequest()->AddDataSelection(sel);
     }
 
     //
@@ -572,7 +572,7 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
                      normal[2]*origin[2];
         vector<int> domains;
         it->GetElementsList(normal, tmpD, domains);
-        rv->GetDataSpecification()->GetRestriction()->RestrictDomains(domains);
+        rv->GetDataRequest()->GetRestriction()->RestrictDomains(domains);
     }
 
     return rv;
@@ -853,7 +853,7 @@ avtSliceFilter::GetNormal(double &nx, double &ny, double &nz)
 //    Improve error message when zone or node cannot be located.
 //
 //    Eric Brugger, Tue Jan  4 09:11:51 PST 2005
-//    Made SliceByNode use avtTerminatingSource::QueryCoord instead of
+//    Made SliceByNode use avtOriginatingSource::QueryCoord instead of
 //    avtDatasetExaminer::FindNode to match the SliceByZone code so that
 //    this routine succeeds more often.
 //
@@ -927,7 +927,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
       }
       case SliceAttributes::Zone:
       {
-          avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+          avtOriginatingSource *src = GetInput()->GetOriginatingSource();
           int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
           int cellOrigin  = GetInput()->GetInfo().GetAttributes().GetCellOrigin();
           int domain = atts.GetOriginZoneDomain();
@@ -938,8 +938,8 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
           point[0] = FLT_MAX;
           point[1] = FLT_MAX;
           point[2] = FLT_MAX;
-          string var = src->GetFullDataSpecification()->GetVariable();
-          int    ts  = src->GetFullDataSpecification()->GetTimestep();
+          string var = src->GetFullDataRequest()->GetVariable();
+          int    ts  = src->GetFullDataRequest()->GetTimestep();
           bool success = src->QueryCoords(var, domain, zone, ts, point, true,
                          false, atts.GetMeshName().c_str());
 
@@ -993,7 +993,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
       }        
       case SliceAttributes::Node:
       {
-          avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+          avtOriginatingSource *src = GetInput()->GetOriginatingSource();
           int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
           int nodeOrigin  = GetInput()->GetInfo().GetAttributes().GetNodeOrigin();
           int domain = atts.GetOriginNodeDomain();
@@ -1004,8 +1004,8 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
           point[0] = DBL_MAX;
           point[1] = DBL_MAX;
           point[2] = DBL_MAX;
-          string var = src->GetFullDataSpecification()->GetVariable();
-          int    ts  = src->GetFullDataSpecification()->GetTimestep();
+          string var = src->GetFullDataRequest()->GetVariable();
+          int    ts  = src->GetFullDataRequest()->GetTimestep();
           bool success = src->QueryCoords(var, domain, node, ts, point, false,
                          false, atts.GetMeshName().c_str());
 
@@ -1796,7 +1796,7 @@ avtSliceFilter::ReleaseData(void)
 
 
 // ****************************************************************************
-//  Method: avtSliceFilter::RefashionDataObjectInfo
+//  Method: avtSliceFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Changes to topological dimension of the output to be one less that the
@@ -1850,7 +1850,7 @@ avtSliceFilter::ReleaseData(void)
 // ****************************************************************************
 
 void
-avtSliceFilter::RefashionDataObjectInfo(void)
+avtSliceFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();

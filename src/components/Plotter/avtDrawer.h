@@ -82,8 +82,8 @@ class PLOTTER_API avtDrawer : public avtDatasetToImageFilter
     void                  SetViewInfo(vtkCamera *);
 
   protected:
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p);
     virtual void          Execute(void);
 
     avtMapper            *mapper;

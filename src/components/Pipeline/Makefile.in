@@ -232,6 +232,11 @@
 #    Hank Childs, Sat Feb  9 10:09:47 PST 2008
 #    Renamed AbstractFilters to AbstractFilters.
 #
+#    Hank Childs, Sat Feb  9 11:41:21 PST 2008
+#    Rename avtPipelineSpecification to avtContract and
+#    avtDataSpecification to avtDataRequest.
+#    Also swap the terms originating and terminating.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -303,19 +308,19 @@ Data_src= \
   Data/avtWedgeExtractor.C
 
 Pipeline_src= \
+  Pipeline/avtContract.C \
   Pipeline/avtDataObjectReader.C \
   Pipeline/avtDataObjectString.C \
   Pipeline/avtDataObjectWriter.C \
+  Pipeline/avtDataRequest.C \
   Pipeline/avtDataSetReader.C \
   Pipeline/avtDataSetWriter.C \
-  Pipeline/avtDataSpecification.C \
   Pipeline/avtImageReader.C \
   Pipeline/avtImageTiler.C \
   Pipeline/avtImageWriter.C \
   Pipeline/avtNullDataReader.C \
   Pipeline/avtNullDataWriter.C \
   Pipeline/avtParallel.C \
-  Pipeline/avtPipelineSpecification.C \
   Pipeline/avtWebpage.C
 
 AbstractFilters_src= \
@@ -357,11 +362,11 @@ Sinks_src= \
   Sinks/avtImageSink.C \
   Sinks/avtMultipleInputSink.C \
   Sinks/avtNullDataSink.C \
-  Sinks/avtOriginatingDatasetSink.C \
-  Sinks/avtOriginatingImageSink.C \
-  Sinks/avtOriginatingNullDataSink.C \
-  Sinks/avtOriginatingSink.C \
-  Sinks/avtSamplePointsSink.C
+  Sinks/avtSamplePointsSink.C \
+  Sinks/avtTerminatingDatasetSink.C \
+  Sinks/avtTerminatingImageSink.C \
+  Sinks/avtTerminatingNullDataSink.C \
+  Sinks/avtTerminatingSink.C
 
 Sources_src= \
   Sources/avtDataObjectSource.C \
@@ -369,16 +374,16 @@ Sources_src= \
   Sources/avtImageSource.C \
   Sources/avtInlinePipelineSource.C \
   Sources/avtNullDataSource.C \
+  Sources/avtOriginatingDatasetSource.C \
+  Sources/avtOriginatingImageSource.C \
+  Sources/avtOriginatingNullDataSource.C \
+  Sources/avtOriginatingSource.C \
   Sources/avtQueryableSource.C \
   Sources/avtSamplePointsSource.C \
   Sources/avtSourceFromAVTDataset.C \
   Sources/avtSourceFromDataset.C \
   Sources/avtSourceFromImage.C \
-  Sources/avtSourceFromNullData.C \
-  Sources/avtTerminatingDatasetSource.C \
-  Sources/avtTerminatingImageSource.C \
-  Sources/avtTerminatingNullDataSource.C \
-  Sources/avtTerminatingSource.C
+  Sources/avtSourceFromNullData.C
 
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@

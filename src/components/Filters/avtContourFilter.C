@@ -182,7 +182,7 @@ avtContourFilter::~avtContourFilter()
 
 
 // ****************************************************************************
-//  Method: avtContourFilter::PerformRestriction
+//  Method: avtContourFilter::ModifyContract
 //
 //  Purpose:
 //      Restrict the data processed by looking at the data extents.
@@ -230,21 +230,21 @@ avtContourFilter::~avtContourFilter()
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
+avtContract_p
+avtContourFilter::ModifyContract(avtContract_p in_spec)
 {
     int  i, j;
 
-    avtPipelineSpecification_p spec = new avtPipelineSpecification(in_spec);
+    avtContract_p spec = new avtContract(in_spec);
 
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
-        spec->GetDataSpecification()->SetNeedValidFaceConnectivity(true);
+        spec->GetDataRequest()->SetNeedValidFaceConnectivity(true);
 
     const char *varname = NULL;
     if (atts.GetVariable() != "default")
         varname = atts.GetVariable().c_str();
     else 
-        varname = spec->GetDataSpecification()->GetVariable();
+        varname = spec->GetDataRequest()->GetVariable();
 
     //
     // We will need the ghost zones so that we can interpolate along domain
@@ -256,7 +256,7 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         in_atts.GetCentering(varname) == AVT_NODECENT)
         skipGhost = true;
     if (!skipGhost)
-        spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+        spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
 
     //
     // Get the interval tree of data extents.
@@ -350,7 +350,7 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         if (useList[i])
             list.push_back(i);
 
-    spec->GetDataSpecification()->GetRestriction()->RestrictDomains(list);
+    spec->GetDataRequest()->GetRestriction()->RestrictDomains(list);
 
     return spec;
 }
@@ -701,7 +701,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
 
 
 // ****************************************************************************
-//  Method: avtContourFilter::RefashionDataObjectInfo
+//  Method: avtContourFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicates that the topological dimension of the output is not the same
@@ -727,7 +727,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
 // ****************************************************************************
 
 void
-avtContourFilter::RefashionDataObjectInfo(void)
+avtContourFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();

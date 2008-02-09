@@ -86,7 +86,7 @@ class avtThreeSliceFilter : public avtPluginStreamer
     
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
 
-    virtual void            RefashionDataObjectInfo(void);    
+    virtual void            UpdateDataObjectInfo(void);    
     virtual void            ReleaseData(void);
 
     void                    SetPlaneOrientation(double *b);

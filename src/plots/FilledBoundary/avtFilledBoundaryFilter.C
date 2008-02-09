@@ -51,7 +51,7 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDataAttributes.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -307,7 +307,7 @@ avtFilledBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 
 
 // ****************************************************************************
-//  Method: avtFilledBoundaryFilter::RefashionDataObjectInfo
+//  Method: avtFilledBoundaryFilter::UpdateDataObjectInfo
 //
 //  Purpose:  Retrieves the boundary names from the plot attributes and
 //            sets them as labels in the data attributes. 
@@ -324,7 +324,7 @@ avtFilledBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 // ****************************************************************************
 
 void
-avtFilledBoundaryFilter::RefashionDataObjectInfo(void)
+avtFilledBoundaryFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     outAtts.SetLabels(plotAtts.GetBoundaryNames());
@@ -333,7 +333,7 @@ avtFilledBoundaryFilter::RefashionDataObjectInfo(void)
 
  
 // ****************************************************************************
-//  Method: avtFilledBoundaryFilter::PerformRestriction
+//  Method: avtFilledBoundaryFilter::ModifyContract
 //
 //  Purpose:  Turn on domain labels in the data spec if needed.
 //
@@ -352,26 +352,26 @@ avtFilledBoundaryFilter::RefashionDataObjectInfo(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtFilledBoundaryFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtFilledBoundaryFilter::ModifyContract(avtContract_p spec)
 {
     if (plotAtts.GetBoundaryType() == FilledBoundaryAttributes::Material)
     {
-        spec->GetDataSpecification()->ForceMaterialInterfaceReconstructionOn();
+        spec->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
     }
     if (plotAtts.GetDrawInternal())
     {
-        spec->GetDataSpecification()->TurnInternalSurfacesOn();
+        spec->GetDataRequest()->TurnInternalSurfacesOn();
     }
     if (plotAtts.GetCleanZonesOnly())
     {
-        spec->GetDataSpecification()->SetNeedCleanZonesOnly(true);
+        spec->GetDataRequest()->SetNeedCleanZonesOnly(true);
     }
 
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
         string pointVar = plotAtts.GetPointSizeVar();
-        avtDataSpecification_p dspec = spec->GetDataSpecification();
+        avtDataRequest_p dataRequest = spec->GetDataRequest();
 
         //
         // Find out if we REALLY need to add the secondary variable.
@@ -379,17 +379,17 @@ avtFilledBoundaryFilter::PerformRestriction(avtPipelineSpecification_p spec)
         if (plotAtts.GetPointSizeVarEnabled() && 
             pointVar != "default" &&
             pointVar != "\0" &&
-            pointVar != dspec->GetVariable() &&
-            !dspec->HasSecondaryVariable(pointVar.c_str()))
+            pointVar != dataRequest->GetVariable() &&
+            !dataRequest->HasSecondaryVariable(pointVar.c_str()))
         {
-            spec->GetDataSpecification()->AddSecondaryVariable(pointVar.c_str());
+            spec->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());
         }
 
         avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
-        if (spec->GetDataSpecification()->MayRequireZones())
+        if (spec->GetDataRequest()->MayRequireZones())
         {
             keepNodeZone = true;
-            spec->GetDataSpecification()->TurnNodeNumbersOn();
+            spec->GetDataRequest()->TurnNodeNumbersOn();
         }
         else
         {

@@ -1589,8 +1589,8 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 
             // do some magic to update the network so we don't need the reader anymore
             avtDataObject_p tmpDob = rdr->GetOutput();
-            avtPipelineSpecification_p spec = 
-                tmpDob->GetTerminatingSource()->GetGeneralPipelineSpecification();
+            avtContract_p spec = 
+                tmpDob->GetOriginatingSource()->GetGeneralContract();
             tmpDob->Update(spec);
 
             // put the resultant image in the returned list
@@ -2829,8 +2829,8 @@ ViewerEngineManager::GetImage(int index, avtDataObject_p &dob)
     // don't need the reader anymore.
     //
     dob = rdr->GetOutput();
-    avtPipelineSpecification_p spec;
-    spec = dob->GetTerminatingSource()->GetGeneralPipelineSpecification();
+    avtContract_p spec;
+    spec = dob->GetOriginatingSource()->GetGeneralContract();
     dob->Update(spec);
     dob->SetSource(NULL);
 }

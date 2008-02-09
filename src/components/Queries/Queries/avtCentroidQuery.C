@@ -268,9 +268,9 @@ avtCentroidQuery::ApplyFilters(avtDataObject_p inData)
     //
     // Set up our base class so it is ready to sum.
     //
-    avtDataSpecification_p dspec = GetInput()->GetTerminatingSource()
-                                     ->GetFullDataSpecification();
-    string varname = dspec->GetVariable();
+    avtDataRequest_p dataRequest = GetInput()->GetOriginatingSource()
+                                     ->GetFullDataRequest();
+    string varname = dataRequest->GetVariable();
     bool useVar = false;
     if (GetInput()->GetInfo().GetAttributes().ValidVariable(varname))
     {
@@ -309,9 +309,9 @@ avtCentroidQuery::ApplyFilters(avtDataObject_p inData)
     //
     // Cause our artificial pipeline to execute.
     //
-    avtPipelineSpecification_p pspec =
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
-    dob->Update(pspec);
+    avtContract_p contract =
+        inData->GetOriginatingSource()->GetGeneralContract();
+    dob->Update(contract);
     return dob;
 }
 

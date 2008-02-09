@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <avtOriginalDataNumNodesQuery.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <ParsingExprList.h>
 
 
@@ -95,20 +95,20 @@ avtOriginalDataNumNodesQuery::~avtOriginalDataNumNodesQuery()
 avtDataObject_p
 avtOriginalDataNumNodesQuery::ApplyFilters(avtDataObject_p inData)
 {
-    avtDataSpecification_p dspec = inData->GetTerminatingSource()->
-        GetGeneralPipelineSpecification()->GetDataSpecification();
+    avtDataRequest_p dataRequest = inData->GetOriginatingSource()->
+        GetGeneralContract()->GetDataRequest();
 
     string dbVar = ParsingExprList::GetRealVariable(
                        queryAtts.GetVariables()[0]);
-    avtDataSpecification_p new_dspec = new avtDataSpecification(dspec,
+    avtDataRequest_p new_dataRequest = new avtDataRequest(dataRequest,
                                                                 dbVar.c_str());
 
-    avtPipelineSpecification_p pspec = 
-        new avtPipelineSpecification(new_dspec, queryAtts.GetPipeIndex()); 
+    avtContract_p contract = 
+        new avtContract(new_dataRequest, queryAtts.GetPipeIndex()); 
 
     avtDataObject_p retObj;
     CopyTo(retObj, inData);
-    retObj->Update(pspec);
+    retObj->Update(contract);
     return retObj;
 }
 

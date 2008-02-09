@@ -108,7 +108,7 @@ avtSourceFromAVTImage::~avtSourceFromAVTImage()
 // ****************************************************************************
 
 bool
-avtSourceFromAVTImage::FetchImage(avtDataSpecification_p spec,
+avtSourceFromAVTImage::FetchImage(avtDataRequest_p spec,
                           avtImageRepresentation &outImage)
 {
     int timingsHandle = visitTimer->StartTimer();

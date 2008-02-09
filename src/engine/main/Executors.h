@@ -624,7 +624,7 @@ RPCExecutor<PickRPC>::Execute(PickRPC *rpc)
         avtDataObjectSource::RegisterProgressCallback(NULL, NULL);
         avtDataObjectQuery::RegisterProgressCallback(NULL, NULL);
         LoadBalancer::RegisterProgressCallback(NULL, NULL);
-        avtTerminatingSource::RegisterInitializeProgressCallback(NULL, NULL);
+        avtOriginatingSource::RegisterInitializeProgressCallback(NULL, NULL);
         avtDataObjectQuery::RegisterInitializeProgressCallback(NULL, NULL);
         if (rpc->GetNetId() >= 0)
             netmgr->Pick(rpc->GetNetId(), rpc->GetWinId(), rpc->GetPickAtts());
@@ -644,7 +644,7 @@ RPCExecutor<PickRPC>::Execute(PickRPC *rpc)
                                Engine::EngineUpdateProgressCallback, NULL);
     LoadBalancer::RegisterProgressCallback(
                                Engine::EngineUpdateProgressCallback, NULL);
-    avtTerminatingSource::RegisterInitializeProgressCallback(
+    avtOriginatingSource::RegisterInitializeProgressCallback(
                                Engine::EngineInitializeProgressCallback, NULL);
     avtDataObjectQuery::RegisterInitializeProgressCallback(
                                Engine::EngineInitializeProgressCallback, NULL);
@@ -912,7 +912,7 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
                                         (void*)rpc);
     LoadBalancer::RegisterProgressCallback(Engine::EngineUpdateProgressCallback,
                                         (void*)rpc);
-    avtTerminatingSource::RegisterInitializeProgressCallback(
+    avtOriginatingSource::RegisterInitializeProgressCallback(
                                        Engine::EngineInitializeProgressCallback,
                                        (void*)rpc);
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, (void*)rpc);
@@ -997,7 +997,7 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
                                                   NULL);
     LoadBalancer::RegisterProgressCallback(Engine::EngineUpdateProgressCallback,
                                            NULL);
-    avtTerminatingSource::RegisterInitializeProgressCallback(
+    avtOriginatingSource::RegisterInitializeProgressCallback(
                                Engine::EngineInitializeProgressCallback, NULL);
     avtDataObjectQuery::RegisterProgressCallback(
                                Engine::EngineUpdateProgressCallback, NULL);
@@ -1121,7 +1121,7 @@ RPCExecutor<QueryRPC>::Execute(QueryRPC *rpc)
                          Engine::EngineUpdateProgressCallback, (void*) rpc);
     avtDataObjectQuery::RegisterInitializeProgressCallback(
                          Engine::EngineInitializeProgressCallback,(void*) rpc);
-    avtTerminatingSource::RegisterInitializeProgressCallback(
+    avtOriginatingSource::RegisterInitializeProgressCallback(
                          Engine::EngineInitializeProgressCallback,(void*) rpc);
  
     TRY
@@ -1143,7 +1143,7 @@ RPCExecutor<QueryRPC>::Execute(QueryRPC *rpc)
                                Engine::EngineUpdateProgressCallback, NULL);
     avtDataObjectQuery::RegisterInitializeProgressCallback(
                                Engine::EngineInitializeProgressCallback, NULL);
-    avtTerminatingSource::RegisterInitializeProgressCallback(
+    avtOriginatingSource::RegisterInitializeProgressCallback(
                                Engine::EngineInitializeProgressCallback, NULL);
 }
 
@@ -1366,7 +1366,7 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
 
     avtDataObjectSource::RegisterProgressCallback(
                              Engine::EngineUpdateProgressCallback, (void*)rpc);
-    avtTerminatingSource::RegisterInitializeProgressCallback(NULL, NULL);
+    avtOriginatingSource::RegisterInitializeProgressCallback(NULL, NULL);
     LoadBalancer::RegisterProgressCallback(NULL, NULL);
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback,
                                          (void*)rpc);
@@ -1398,7 +1398,7 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
                                Engine::EngineUpdateProgressCallback, NULL);
     LoadBalancer::RegisterProgressCallback(
                                Engine::EngineUpdateProgressCallback, NULL);
-    avtTerminatingSource::RegisterInitializeProgressCallback(
+    avtOriginatingSource::RegisterInitializeProgressCallback(
                                Engine::EngineInitializeProgressCallback, NULL);
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, NULL);
     NetworkManager::RegisterInitializeProgressCallback(NULL, NULL);
@@ -1496,7 +1496,7 @@ RPCExecutor<ConstructDDFRPC>::Execute(ConstructDDFRPC *rpc)
 
     avtDataObjectSource::RegisterProgressCallback(NULL, NULL);
     LoadBalancer::RegisterProgressCallback(NULL, NULL);
-    avtTerminatingSource::RegisterInitializeProgressCallback(NULL, NULL);
+    avtOriginatingSource::RegisterInitializeProgressCallback(NULL, NULL);
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, (void*)rpc);
     TRY
     {
@@ -1513,7 +1513,7 @@ RPCExecutor<ConstructDDFRPC>::Execute(ConstructDDFRPC *rpc)
                                Engine::EngineUpdateProgressCallback, NULL);
     LoadBalancer::RegisterProgressCallback(
                                Engine::EngineUpdateProgressCallback, NULL);
-    avtTerminatingSource::RegisterInitializeProgressCallback(
+    avtOriginatingSource::RegisterInitializeProgressCallback(
                                Engine::EngineInitializeProgressCallback, NULL);
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, NULL);
 }
@@ -1539,7 +1539,7 @@ RPCExecutor<ExportDatabaseRPC>::Execute(ExportDatabaseRPC *rpc)
 
     avtDataObjectSource::RegisterProgressCallback(NULL, NULL);
     LoadBalancer::RegisterProgressCallback(NULL, NULL);
-    avtTerminatingSource::RegisterInitializeProgressCallback(NULL, NULL);
+    avtOriginatingSource::RegisterInitializeProgressCallback(NULL, NULL);
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, (void*)rpc);
     TRY
     {
@@ -1556,7 +1556,7 @@ RPCExecutor<ExportDatabaseRPC>::Execute(ExportDatabaseRPC *rpc)
                                Engine::EngineUpdateProgressCallback, NULL);
     LoadBalancer::RegisterProgressCallback(
                                Engine::EngineUpdateProgressCallback, NULL);
-    avtTerminatingSource::RegisterInitializeProgressCallback(
+    avtOriginatingSource::RegisterInitializeProgressCallback(
                                Engine::EngineInitializeProgressCallback, NULL);
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, NULL);
 }

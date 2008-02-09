@@ -367,7 +367,7 @@ avtDisplaceFilter::PostExecute(void)
 
 
 // ****************************************************************************
-//  Method: avtDisplaceFilter::RefashionDataObjectInfo
+//  Method: avtDisplaceFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //    Indicates that the nodes were transformed.
@@ -388,7 +388,7 @@ avtDisplaceFilter::PostExecute(void)
 // ****************************************************************************
 
 void
-avtDisplaceFilter::RefashionDataObjectInfo(void)
+avtDisplaceFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
     //
@@ -401,7 +401,7 @@ avtDisplaceFilter::RefashionDataObjectInfo(void)
 
 
 // ****************************************************************************
-//  Method: avtDisplaceFilter::PerformRestriction
+//  Method: avtDisplaceFilter::ModifyContract
 //
 //  Purpose:
 //    Turn on Zone numbers flag if needed, so that original cell array
@@ -424,17 +424,17 @@ avtDisplaceFilter::RefashionDataObjectInfo(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtDisplaceFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtDisplaceFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
-    if (rv->GetDataSpecification()->MayRequireZones())
+    avtContract_p rv = new avtContract(spec);
+    if (rv->GetDataRequest()->MayRequireZones())
     {
-        rv->GetDataSpecification()->TurnZoneNumbersOn();
+        rv->GetDataRequest()->TurnZoneNumbersOn();
     }
-    if (rv->GetDataSpecification()->MayRequireNodes())
+    if (rv->GetDataRequest()->MayRequireNodes())
     {
-        rv->GetDataSpecification()->TurnNodeNumbersOn();
+        rv->GetDataRequest()->TurnNodeNumbersOn();
     }
     return rv;
 }

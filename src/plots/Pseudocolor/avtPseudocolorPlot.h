@@ -167,8 +167,8 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     virtual avtMapper          *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
-    virtual avtPipelineSpecification_p     
-                                EnhanceSpecification(avtPipelineSpecification_p);
+    virtual avtContract_p     
+                                EnhanceSpecification(avtContract_p);
     virtual void                CustomizeBehavior(void);
     virtual int                 GetSmoothingLevel();
 

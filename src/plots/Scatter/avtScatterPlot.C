@@ -842,14 +842,14 @@ avtScatterPlot::ReleaseData(void)
 //   
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtScatterPlot::EnhanceSpecification(avtPipelineSpecification_p spec)
+avtContract_p
+avtScatterPlot::EnhanceSpecification(avtContract_p spec)
 {
 #ifdef THE_FILTER_KNOWS_HOW_TO_ADD_ITS_OWN_VARS
     return spec;
 #else
-    avtPipelineSpecification_p rv = spec;
-    avtDataSpecification_p dspec = spec->GetDataSpecification();
+    avtContract_p rv = spec;
+    avtDataRequest_p dataRequest = spec->GetDataRequest();
 
     string var2(atts.GetVar2());
     string var3(atts.GetVar3());
@@ -860,35 +860,35 @@ avtScatterPlot::EnhanceSpecification(avtPipelineSpecification_p spec)
     // Find out if we REALLY need to add the secondary variable.
     //
     if (var2 != "default" &&
-        var2 != dspec->GetVariable() &&
-        !dspec->HasSecondaryVariable(var2.c_str()))
+        var2 != dataRequest->GetVariable() &&
+        !dataRequest->HasSecondaryVariable(var2.c_str()))
     {
         addVar2 = true;
     }
 
     if (var3 != "default" &&
-        var3 != dspec->GetVariable() &&
-        !dspec->HasSecondaryVariable(var3.c_str()))
+        var3 != dataRequest->GetVariable() &&
+        !dataRequest->HasSecondaryVariable(var3.c_str()))
     {
         addVar3 = true;
     }
 
     if (var4 != "default" &&
-        var4 != dspec->GetVariable() &&
-        !dspec->HasSecondaryVariable(var4.c_str()))
+        var4 != dataRequest->GetVariable() &&
+        !dataRequest->HasSecondaryVariable(var4.c_str()))
     {
         addVar4 = true;
     }
 
     if(addVar2 || addVar3 || addVar4)
     {
-        rv = new avtPipelineSpecification(spec);
+        rv = new avtContract(spec);
         if(addVar2)
-            rv->GetDataSpecification()->AddSecondaryVariable(var2.c_str());
+            rv->GetDataRequest()->AddSecondaryVariable(var2.c_str());
         if(addVar3)
-            rv->GetDataSpecification()->AddSecondaryVariable(var3.c_str());
+            rv->GetDataRequest()->AddSecondaryVariable(var3.c_str());
         if(addVar4)
-            rv->GetDataSpecification()->AddSecondaryVariable(var4.c_str());
+            rv->GetDataRequest()->AddSecondaryVariable(var4.c_str());
     }
 
     return rv;

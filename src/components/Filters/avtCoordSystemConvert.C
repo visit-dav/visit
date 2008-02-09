@@ -742,7 +742,7 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
 
 
 // ****************************************************************************
-//  Method: avtCoordSystemConvert::RefashionDataObjectInfo
+//  Method: avtCoordSystemConvert::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Changes the labels of the axes
@@ -758,7 +758,7 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
 // ****************************************************************************
 
 void
-avtCoordSystemConvert::RefashionDataObjectInfo(void)
+avtCoordSystemConvert::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();

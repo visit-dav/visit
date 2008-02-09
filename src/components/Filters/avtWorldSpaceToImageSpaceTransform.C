@@ -450,7 +450,7 @@ avtWorldSpaceToImageSpaceTransform::CalculateOrthographicTransform(
 
 
 // ****************************************************************************
-//  Method: avtWorldSpaceToImageSpaceTransform::PerformRestriction
+//  Method: avtWorldSpaceToImageSpaceTransform::ModifyContract
 //
 //  Purpose:
 //      Calculates the domains list by culling with the domains' spatial
@@ -466,11 +466,11 @@ avtWorldSpaceToImageSpaceTransform::CalculateOrthographicTransform(
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtWorldSpaceToImageSpaceTransform::PerformRestriction(
-                                               avtPipelineSpecification_p spec)
+avtContract_p
+avtWorldSpaceToImageSpaceTransform::ModifyContract(
+                                               avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = spec;
+    avtContract_p rv = spec;
     if (GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
     {
         avtIntervalTree *tree = GetMetaData()->GetSpatialExtents();
@@ -479,8 +479,8 @@ avtWorldSpaceToImageSpaceTransform::PerformRestriction(
             vector<int> domains;
             GetDomainsList(view, domains, tree);
     
-            rv = new avtPipelineSpecification(spec);
-            rv->GetDataSpecification()->GetRestriction()
+            rv = new avtContract(spec);
+            rv->GetDataRequest()->GetRestriction()
                                                     ->RestrictDomains(domains);
         }
     }
@@ -684,7 +684,7 @@ HexIntersectsImageCube(const float hex[8][3])
 
 
 // ****************************************************************************
-//  Method: avtWorldSpaceToImageSpaceTransform::RefashionDataObjectInfo
+//  Method: avtWorldSpaceToImageSpaceTransform::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicate that the spatial meta data is invalid after execution.
@@ -695,7 +695,7 @@ HexIntersectsImageCube(const float hex[8][3])
 // ****************************************************************************
 
 void
-avtWorldSpaceToImageSpaceTransform::RefashionDataObjectInfo(void)
+avtWorldSpaceToImageSpaceTransform::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
 }

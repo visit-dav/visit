@@ -80,7 +80,7 @@ class PIPELINE_API avtDatasetToDatasetFilter
 
     virtual void       PreExecute(void);
     virtual void       PostExecute(void);
-    virtual void       ExamineSpecification(avtPipelineSpecification_p);
+    virtual void       ExamineContract(avtContract_p);
 
     void               SetActiveVariable(const char *);
 };

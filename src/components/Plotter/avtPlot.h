@@ -248,12 +248,12 @@ class PLOTTER_API avtPlot
     virtual const char        *GetName(void) = 0;
 
     avtDataObjectWriter_p      Execute(avtDataObject_p,
-                                       avtPipelineSpecification_p,
+                                       avtContract_p,
                                        const WindowAttributes*);
     avtActor_p                 Execute(avtDataObjectReader_p);
     avtActor_p                 Execute(avtDataObjectReader_p, avtDataObject_p dob);
     avtActor_p                 CombinedExecute(avtDataObject_p,
-                                       avtPipelineSpecification_p,
+                                       avtContract_p,
                                        const WindowAttributes*);
 
     virtual bool               PlotIsImageBased(void) { return false; };
@@ -331,7 +331,7 @@ class PLOTTER_API avtPlot
     float                      cellCountMultiplierForSRThreshold;
 
     avtDataObjectWriter_p      Execute(avtDataObject_p,
-                                       avtPipelineSpecification_p,
+                                       avtContract_p,
                                        const WindowAttributes*,
                                        bool combinedExecute);
     virtual avtDataObject_p    ApplyOperators(avtDataObject_p) = 0;
@@ -354,8 +354,8 @@ class PLOTTER_API avtPlot
 
     avtDataObject_p            intermediateDataObject;
 
-    virtual avtPipelineSpecification_p
-                               EnhanceSpecification(avtPipelineSpecification_p);
+    virtual avtContract_p
+                               EnhanceSpecification(avtContract_p);
     virtual avtDecorationsMapper         
                                *GetDecorationsMapper(void);
 

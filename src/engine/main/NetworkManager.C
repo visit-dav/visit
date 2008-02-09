@@ -757,24 +757,24 @@ NetworkManager::StartNetwork(const string &format,
     avtSILRestriction_p silr =
         new avtSILRestriction(workingNet->GetNetDB()->GetDB()->
 	    GetSIL(time, treatAllDBsAsTimeVarying), atts);
-    avtDataSpecification *dspec = new avtDataSpecification(var.c_str(), time, silr);
+    avtDataRequest *dataRequest = new avtDataRequest(var.c_str(), time, silr);
 
     // Set up some options from the data specification
-    dspec->SetNeedMixedVariableReconstruction(matopts.GetForceMIR());
-    dspec->SetNeedSmoothMaterialInterfaces(matopts.GetSmoothing());
-    dspec->SetNeedCleanZonesOnly(matopts.GetCleanZonesOnly());
-    dspec->SetNeedValidFaceConnectivity(matopts.GetNeedValidConnectivity());
-    dspec->SetMIRAlgorithm(matopts.GetAlgorithm());
-    dspec->SetSimplifyHeavilyMixedZones(matopts.GetSimplifyHeavilyMixedZones());
-    dspec->SetMaxMaterialsPerZone(matopts.GetMaxMaterialsPerZone());
-    dspec->SetIsovolumeMIRVF(matopts.GetIsoVolumeFraction());
-    dspec->SetDiscTol(meshopts.GetDiscretizationTolerance()[0]);
-    dspec->SetFlatTol(meshopts.GetDiscretizationTolerance()[1]);
-    dspec->SetDiscMode(meshopts.GetDiscretizationMode());
-    dspec->SetDiscBoundaryOnly(meshopts.GetDiscretizeBoundaryOnly());
-    dspec->SetPassNativeCSG(meshopts.GetPassNativeCSG());
-    workingNet->SetDataSpec(dspec);
-    workingNet->SetTime(dspec->GetTimestep());
+    dataRequest->SetNeedMixedVariableReconstruction(matopts.GetForceMIR());
+    dataRequest->SetNeedSmoothMaterialInterfaces(matopts.GetSmoothing());
+    dataRequest->SetNeedCleanZonesOnly(matopts.GetCleanZonesOnly());
+    dataRequest->SetNeedValidFaceConnectivity(matopts.GetNeedValidConnectivity());
+    dataRequest->SetMIRAlgorithm(matopts.GetAlgorithm());
+    dataRequest->SetSimplifyHeavilyMixedZones(matopts.GetSimplifyHeavilyMixedZones());
+    dataRequest->SetMaxMaterialsPerZone(matopts.GetMaxMaterialsPerZone());
+    dataRequest->SetIsovolumeMIRVF(matopts.GetIsoVolumeFraction());
+    dataRequest->SetDiscTol(meshopts.GetDiscretizationTolerance()[0]);
+    dataRequest->SetFlatTol(meshopts.GetDiscretizationTolerance()[1]);
+    dataRequest->SetDiscMode(meshopts.GetDiscretizationMode());
+    dataRequest->SetDiscBoundaryOnly(meshopts.GetDiscretizeBoundaryOnly());
+    dataRequest->SetPassNativeCSG(meshopts.GetPassNativeCSG());
+    workingNet->SetDataSpec(dataRequest);
+    workingNet->SetTime(dataRequest->GetTimestep());
 
     // The plot starts out as NULL.
     workingNet->SetPlot(NULL);
@@ -1177,9 +1177,9 @@ NetworkManager::EndNetwork(int windowID)
     // set the pipeline specification
     int pipelineIndex =
         loadBalancer->AddPipeline(workingNet->GetNetDB()->GetFilename());
-    avtPipelineSpecification_p pspec =
-        new avtPipelineSpecification(workingNet->GetDataSpec(), pipelineIndex);
-    workingNet->SetPipelineSpec(pspec);
+    avtContract_p contract =
+        new avtContract(workingNet->GetDataSpec(), pipelineIndex);
+    workingNet->SetContract(contract);
 
     // Connect the workingNet to the workingNetnodeList.
     workingNet->SetTerminalNode(workingNetnodeList[0]);
@@ -1269,7 +1269,7 @@ NetworkManager::UseNetwork(int id)
     }
  
     workingNet = networkCache[id];
-    int pipelineIndex = workingNet->GetPipelineSpec()->GetPipelineIndex();
+    int pipelineIndex = workingNet->GetContract()->GetPipelineIndex();
     loadBalancer->ResetPipeline(pipelineIndex);
 
     if (id != workingNet->GetNetID())
@@ -1662,7 +1662,7 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //    Added sending of window attributes into plot->Execute.
 //
 //    Kathleen Bonnell, Tue Nov 20 12:35:54 PST 2001
-//    Set flag in dataSpec based on value of requireOriginalCells. 
+//    Set flag in dataRequest based on value of requireOriginalCells. 
 //
 //    Hank Childs, Tue Jun 18 16:49:01 PDT 2002
 //    Set MayRequireZones before Executing.
@@ -1715,15 +1715,15 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
         // Hook up the network
         avtDataObject_p output = workingNet->GetOutput();
 
-        workingNet->GetPipelineSpec()->GetDataSpecification()->
+        workingNet->GetContract()->GetDataRequest()->
             SetMayRequireZones(requireOriginalCells); 
-        workingNet->GetPipelineSpec()->GetDataSpecification()->
+        workingNet->GetContract()->GetDataRequest()->
             SetMayRequireNodes(requireOriginalNodes); 
         if (inQueryMode)
-            workingNet->GetPipelineSpec()->NoDynamicLoadBalancing();
+            workingNet->GetContract()->NoDynamicLoadBalancing();
 
         avtDataObjectWriter_p writer = workingNet->GetWriter(output,
-                                          workingNet->GetPipelineSpec(),
+                                          workingNet->GetContract(),
                                           &windowAttributes);
 
         // get the SR multiplier
@@ -3415,7 +3415,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
     TRY
     {
         QueryAttributes qa;
-        qa.SetPipeIndex(networkCache[id]->GetPipelineSpec()->GetPipelineIndex());
+        qa.SetPipeIndex(networkCache[id]->GetContract()->GetPipelineIndex());
         if (pa->GetPickType() != PickAttributes::CurveNode &&
             pa->GetPickType() != PickAttributes::CurveZone)
         {
@@ -3681,7 +3681,7 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
         queryInputs.push_back(queryInput);
     }
 
-    qa->SetPipeIndex(networkCache[ids[0]]->GetPipelineSpec()->GetPipelineIndex());
+    qa->SetPipeIndex(networkCache[ids[0]]->GetContract()->GetPipelineIndex());
     std::string queryName = qa->GetName();
     avtDataObjectQuery *query = NULL;
     avtDataObject_p queryInput; 
@@ -3812,7 +3812,7 @@ NetworkManager::ConstructDDF(int id, ConstructDDFAttributes *atts)
 
     avtDDFConstructor ddfc;
     ddfc.SetInput(dob);
-    avtPipelineSpecification_p spec = networkCache[id]->GetPipelineSpec();
+    avtContract_p spec = networkCache[id]->GetContract();
     loadBalancer->ResetPipeline(spec->GetPipelineIndex());
     avtDDF *d = ddfc.ConstructDDF(atts, spec);
     // This should be cleaned up at some point.
@@ -3961,7 +3961,7 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
     ref_ptr<avtDatabase> db = networkCache[id]->GetNetDB()->GetDatabase();
     wrtr->SetInput(dob);
 
-    wrtr->SetPipelineSpecToUse(networkCache[id]->GetPipelineSpec());
+    wrtr->SetContractToUse(networkCache[id]->GetContract());
     
     string qualFilename;
     if (atts->GetDirname() == "")
@@ -4165,7 +4165,7 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
                 GetIntermediateDataObject();
     }
     qA->GetQueryAtts().SetPipeIndex(networkCache[clonedFromId]->
-        GetPipelineSpec()->GetPipelineIndex());
+        GetContract()->GetPipelineIndex());
 
     //    
     // Pass down the current SILRestriction (via UseSet) in case the query 

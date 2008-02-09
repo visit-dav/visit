@@ -272,11 +272,11 @@ avtConnComponentsVariableQuery::VerifyInput(void)
     // call base class verify
     avtConnComponentsQuery::VerifyInput();
 
-    avtDataSpecification_p dspec = GetInput()->GetTerminatingSource()
-                                     ->GetFullDataSpecification();
+    avtDataRequest_p dataRequest = GetInput()->GetOriginatingSource()
+                                     ->GetFullDataRequest();
 
     // get the variable name
     avtDataAttributes &dataAtts = GetInput()->GetInfo().GetAttributes();
-    variableName = dspec->GetVariable();
+    variableName = dataRequest->GetVariable();
 }
 

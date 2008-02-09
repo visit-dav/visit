@@ -187,7 +187,7 @@ avtMeshLogFilter::PostExecute()
 
 
 // ****************************************************************************
-//  Method: avtMeshLogFilter::RefashionDataObjectInfo
+//  Method: avtMeshLogFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //
@@ -197,7 +197,7 @@ avtMeshLogFilter::PostExecute()
 // ****************************************************************************
 
 void
-avtMeshLogFilter::RefashionDataObjectInfo(void)
+avtMeshLogFilter::UpdateDataObjectInfo(void)
 {
     avtDataValidity &va = GetOutput()->GetInfo().GetValidity();
     va.InvalidateSpatialMetaData();

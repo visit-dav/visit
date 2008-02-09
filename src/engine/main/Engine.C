@@ -81,9 +81,9 @@
 #include <avtDataObjectWriter.h>
 #include <avtDataset.h>
 #include <avtFilter.h>
-#include <avtOriginatingSink.h>
+#include <avtTerminatingSink.h>
 #include <avtParallel.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtTypes.h>
 #include <avtVariableMapper.h>
 #include <vtkDataSetWriter.h>
@@ -659,7 +659,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     LoadBalancer::RegisterAbortCallback(Engine::EngineAbortCallbackParallel, xfer);
     LoadBalancer::RegisterProgressCallback(Engine::EngineUpdateProgressCallback,
                                            NULL);
-    avtTerminatingSource::RegisterInitializeProgressCallback(
+    avtOriginatingSource::RegisterInitializeProgressCallback(
                                        Engine::EngineInitializeProgressCallback, NULL);
 
     visitTimer->StopTimer(setupTimer, "Setting up viewer interface");
@@ -1236,13 +1236,13 @@ Engine::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-dump") == 0)
         {
             avtFilter::DebugDump(true);
-            avtOriginatingSink::DebugDump(true);
+            avtTerminatingSink::DebugDump(true);
             shouldDoDashDump = true;
         }
         else if (strcmp(argv[i], "-info-dump") == 0)
         {
             avtFilter::DebugDump(true);
-            avtOriginatingSink::DebugDump(true);
+            avtTerminatingSink::DebugDump(true);
             avtDataRepresentation::DatasetDump(false);
             shouldDoDashDump = true;
         }
@@ -1708,9 +1708,9 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
                     // We can't tell the reader to read (Update) unless we tell it
                     // what we want it to read.  Fortunately, we can just ask it
                     // for a general specification.
-                    avtTerminatingSource *src = proc_i_dob->GetTerminatingSource();
-                    avtPipelineSpecification_p spec
-                        = src->GetGeneralPipelineSpecification();
+                    avtOriginatingSource *src = proc_i_dob->GetOriginatingSource();
+                    avtContract_p spec
+                        = src->GetGeneralContract();
                     proc_i_dob->Update(spec);
 
                     ui_dob->Merge(*proc_i_dob);

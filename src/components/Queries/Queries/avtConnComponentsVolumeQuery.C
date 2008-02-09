@@ -277,10 +277,10 @@ avtConnComponentsVolumeQuery::ApplyFilters(avtDataObject_p inData)
     cclFilter->SetInput(dob);
     dob = cclFilter->GetOutput();
 
-    avtPipelineSpecification_p pspec = 
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+    avtContract_p contract = 
+        inData->GetOriginatingSource()->GetGeneralContract();
 
-    cclFilter->GetOutput()->Update(pspec);
+    cclFilter->GetOutput()->Update(contract);
 
     return cclFilter->GetOutput();
 }

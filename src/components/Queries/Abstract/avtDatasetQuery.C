@@ -362,13 +362,13 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
     {
         int ii;
         
-        avtPipelineSpecification_p orig_pspec = dob->GetTerminatingSource()->
-            GetGeneralPipelineSpecification();
+        avtContract_p orig_contract = dob->GetOriginatingSource()->
+            GetGeneralContract();
         
-        avtDataSpecification_p oldSpec = orig_pspec->GetDataSpecification();
+        avtDataRequest_p oldSpec = orig_contract->GetDataRequest();
 
-        avtDataSpecification_p newDS = new 
-            avtDataSpecification(oldSpec, querySILR);
+        avtDataRequest_p newDS = new 
+            avtDataRequest(oldSpec, querySILR);
             
         if (timeVarying)
         {
@@ -380,12 +380,12 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
             newDS->AddSecondaryVariable( secondaryVars[ii].c_str() );
         }
         
-        avtPipelineSpecification_p pspec = 
-            new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
+        avtContract_p contract = 
+            new avtContract(newDS, queryAtts.GetPipeIndex());
 
         avtDataObject_p rv;
         CopyTo(rv, dob);
-        rv->Update(pspec);
+        rv->Update(contract);
         return rv;
     }
 }

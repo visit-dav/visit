@@ -56,7 +56,7 @@
 #include <avtGhostData.h>
 #include <avtMatrix.h>
 #include <avtParallel.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtVector.h>
 
 #include <DebugStream.h>

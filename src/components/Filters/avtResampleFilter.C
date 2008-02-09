@@ -562,7 +562,7 @@ avtResampleFilter::ResampleInput(void)
     //
     // Since this is Execute, forcing an update is okay...
     //
-    samples->Update(GetGeneralPipelineSpecification());
+    samples->Update(GetGeneralContract());
 
     if (samples->GetInfo().GetValidity().HasErrorOccurred())
     {
@@ -962,7 +962,7 @@ CreateViewFromBounds(avtViewInfo &view, const double *bounds, double scale[3])
 
 
 // ****************************************************************************
-//  Method: avtResampleFilter::RefashionDataObjectInfo
+//  Method: avtResampleFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicates the zones no longer correspond to the original problem.
@@ -985,7 +985,7 @@ CreateViewFromBounds(avtViewInfo &view, const double *bounds, double scale[3])
 // ****************************************************************************
 
 void
-avtResampleFilter::RefashionDataObjectInfo(void)
+avtResampleFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(
@@ -1122,7 +1122,7 @@ GetCoordinates(float start, float length, int numEls, int myStart, int myStop)
 
 
 // ****************************************************************************
-//  Method: avtResampleFilter::PerformRestriction
+//  Method: avtResampleFilter::ModifyContract
 //
 //  Purpose:
 //      Indicates that we cannot do dynamic load balancing with this filter.
@@ -1150,14 +1150,14 @@ GetCoordinates(float start, float length, int numEls, int myStart, int myStop)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtResampleFilter::PerformRestriction(avtPipelineSpecification_p oldspec)
+avtContract_p
+avtResampleFilter::ModifyContract(avtContract_p oldataRequest)
 {
     //
     // Best copy constructor we have??
     //
-    avtPipelineSpecification_p spec = new avtPipelineSpecification(oldspec,
-                                              oldspec->GetDataSpecification());
+    avtContract_p spec = new avtContract(oldataRequest,
+                                              oldataRequest->GetDataRequest());
 
     //
     // First tell the file format reader that we are going to be doing a
@@ -1179,22 +1179,22 @@ avtResampleFilter::PerformRestriction(avtPipelineSpecification_p oldspec)
     stops[1] = atts.GetMaxY();
     stops[2] = atts.GetMaxZ();
     sel->SetStops(stops);
-    selID = spec->GetDataSpecification()->AddDataSelection(sel);
+    selID = spec->GetDataRequest()->AddDataSelection(sel);
 
     spec->NoDynamicLoadBalancing();
     spec->SetHaveRectilinearMeshOptimizations(true);
-    spec->GetDataSpecification()->SetDesiredGhostDataType(NO_GHOST_DATA);
+    spec->GetDataRequest()->SetDesiredGhostDataType(NO_GHOST_DATA);
     if (atts.GetUseArbitrator())
     {
         if (atts.GetArbitratorVarName() != "default")
-            spec->GetDataSpecification()->
+            spec->GetDataRequest()->
                      AddSecondaryVariable(atts.GetArbitratorVarName().c_str());
     }
     if (primaryVariable != NULL)
     {
         delete [] primaryVariable;
     }
-    const char *pv = spec->GetDataSpecification()->GetVariable();
+    const char *pv = spec->GetDataRequest()->GetVariable();
     primaryVariable = new char[strlen(pv)+1];
     strcpy(primaryVariable, pv);
     return spec;

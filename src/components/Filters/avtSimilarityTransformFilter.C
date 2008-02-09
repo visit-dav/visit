@@ -372,25 +372,25 @@ avtSimilarityTransformFilter::SetupMatrix()
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtSimilarityTransformFilter::PerformRestriction(
-                                               avtPipelineSpecification_p spec)
+avtContract_p
+avtSimilarityTransformFilter::ModifyContract(
+                                               avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
-    if (rv->GetDataSpecification()->MayRequireZones())
+    avtContract_p rv = new avtContract(spec);
+    if (rv->GetDataRequest()->MayRequireZones())
     {
-        rv->GetDataSpecification()->TurnZoneNumbersOn();
+        rv->GetDataRequest()->TurnZoneNumbersOn();
     }
-    if (rv->GetDataSpecification()->MayRequireNodes())
+    if (rv->GetDataRequest()->MayRequireNodes())
     {
-        rv->GetDataSpecification()->TurnNodeNumbersOn();
+        rv->GetDataRequest()->TurnNodeNumbersOn();
     }
     return rv;
 }
 
 
 // ****************************************************************************
-//  Method: avtSimilarityTransformFilter::RefashionDataObjectInfo
+//  Method: avtSimilarityTransformFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      If a 2D plot is being revolved into 3D space, then indicate that it is
@@ -411,12 +411,12 @@ avtSimilarityTransformFilter::PerformRestriction(
 // ****************************************************************************
 
 void
-avtSimilarityTransformFilter::RefashionDataObjectInfo(void)
+avtSimilarityTransformFilter::UpdateDataObjectInfo(void)
 {
     //
     // The base class does some good work about setting extents.  Use that.
     //
-    avtTransform::RefashionDataObjectInfo();
+    avtTransform::UpdateDataObjectInfo();
 
     if (atts.GetDoRotate())
     {

@@ -45,7 +45,7 @@
 #include <vtkDataSetWriter.h>
 
 #include <avtResampleFilter.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <ImproperUseException.h>
 
@@ -100,8 +100,8 @@ avtResamplePreprocessor::Preprocess(void)
     avtResampleFilter resampler(&atts);
     resampler.SetInput(dob);
     
-    avtTerminatingSource *src = dob->GetTerminatingSource();
-    avtPipelineSpecification_p spec = src->GetGeneralPipelineSpecification();
+    avtOriginatingSource *src = dob->GetOriginatingSource();
+    avtContract_p spec = src->GetGeneralContract();
 
     avtDataObject_p output = resampler.GetOutput();
     output->Update(spec);

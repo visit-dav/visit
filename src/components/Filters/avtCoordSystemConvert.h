@@ -67,7 +67,7 @@ typedef enum
 //  Modifications:
 //
 //    Hank Childs, Wed Jun  8 14:50:52 PDT 2005
-//    Added RefashionDataObjectInfo.
+//    Added UpdateDataObjectInfo.
 //
 // ****************************************************************************
 
@@ -92,7 +92,7 @@ class AVTFILTERS_API avtCoordSystemConvert : public avtStreamer
     virtual void          PostExecute(void);
 
     void                  TransformExtents(double *);
-    virtual void          RefashionDataObjectInfo(void);
+    virtual void          UpdateDataObjectInfo(void);
 };
 
 

@@ -170,7 +170,7 @@ avtKerbelFilter::Execute(void)
 
 
 // ****************************************************************************
-//  Method: avtKerbelFilter::RefashionDataObjectInfo
+//  Method: avtKerbelFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Allows the filter to change its output's data object information, which
@@ -182,7 +182,7 @@ avtKerbelFilter::Execute(void)
 // ****************************************************************************
 
 void
-avtKerbelFilter::RefashionDataObjectInfo(void)
+avtKerbelFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
 

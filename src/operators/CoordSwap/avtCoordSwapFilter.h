@@ -84,7 +84,7 @@ class avtCoordSwapFilter : public avtPluginStreamer
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
 
-    void                  RefashionDataObjectInfo(void);
+    void                  UpdateDataObjectInfo(void);
 };
 
 

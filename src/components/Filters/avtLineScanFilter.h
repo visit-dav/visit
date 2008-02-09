@@ -85,7 +85,7 @@ class AVTFILTERS_API avtLineScanFilter : public avtStreamer
                                              { return "avtLineScanFilter"; };
     virtual const char             *GetDescription(void)
                                              { return "Scanning lines"; };
-    virtual void                    RefashionDataObjectInfo(void);
+    virtual void                    UpdateDataObjectInfo(void);
     virtual void                    SetRandomSeed(int s) { seed = s; };
 
     virtual const double           *GetLines() const { return lines; }

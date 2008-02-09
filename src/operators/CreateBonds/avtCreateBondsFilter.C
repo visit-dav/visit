@@ -331,7 +331,7 @@ avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 }
 
 // ****************************************************************************
-//  Method:  avtCreateBondsFilter::PerformRestriction
+//  Method:  avtCreateBondsFilter::ModifyContract
 //
 //  Purpose:
 //    Add element numbers to the secondary variable request.
@@ -343,19 +343,19 @@ avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //  Creation:    August 29, 2006
 //
 // ****************************************************************************
-avtPipelineSpecification_p
-avtCreateBondsFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtCreateBondsFilter::ModifyContract(avtContract_p spec)
 {
     //
     // Get the old specification.
     //
-    avtDataSpecification_p ds = spec->GetDataSpecification();
+    avtDataRequest_p ds = spec->GetDataRequest();
     const char *primaryVariable = ds->GetVariable();
 
     //
     // Make a new one
     //
-    avtDataSpecification_p nds = new avtDataSpecification(ds);
+    avtDataRequest_p nds = new avtDataRequest(ds);
 
     // Remove the bonds variable; we're going to create it here.
     nds->RemoveSecondaryVariable("bonds");
@@ -369,7 +369,7 @@ avtCreateBondsFilter::PerformRestriction(avtPipelineSpecification_p spec)
     //
     // Create the new pipeline spec from the data spec, and return
     //
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec, nds);
+    avtContract_p rv = new avtContract(spec, nds);
 
     return rv;
 }

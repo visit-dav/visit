@@ -261,7 +261,7 @@ avtRemoveCellsFilter::ParseAtts(int domain, vector<int> &cells)
 
 
 // ****************************************************************************
-//  Method: avtRemoveCellsFilter::RefashionDataObjectInfo
+//  Method: avtRemoveCellsFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicates the zones no longer correspond to the original problem.
@@ -272,7 +272,7 @@ avtRemoveCellsFilter::ParseAtts(int domain, vector<int> &cells)
 // ****************************************************************************
 
 void
-avtRemoveCellsFilter::RefashionDataObjectInfo(void)
+avtRemoveCellsFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
 }

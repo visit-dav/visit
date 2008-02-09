@@ -422,7 +422,7 @@ avtDataset::Compact(void)
     //
     // Force an execution.  This is ugly.
     //
-    cf->Update(cf->GetGeneralPipelineSpecification());
+    cf->Update(cf->GetGeneralContract());
 
     //
     // Now copy the compact filter's output's tree into 'this'.

@@ -45,7 +45,7 @@
 #include <file_writer_exports.h>
 
 
-#include <avtOriginatingImageSink.h>
+#include <avtTerminatingImageSink.h>
 
 
 typedef enum
@@ -76,7 +76,7 @@ class vtkImageWriter;
 //    I added a couple member functions and some static data members.
 //
 //    Hank Chlids, Mon Jun  4 09:06:58 PDT 2001
-//    Inherited from avtOriginatingImageSink.
+//    Inherited from avtTerminatingImageSink.
 //
 //    Brad Whitlock, Wed Jan 23 14:57:52 PST 2002
 //    I added a couple new arguments to the Write method that allow some
@@ -100,7 +100,7 @@ class vtkImageWriter;
 //
 // ****************************************************************************
 
-class AVTFILEWRITER_API avtImageFileWriter : public avtOriginatingImageSink
+class AVTFILEWRITER_API avtImageFileWriter : public avtTerminatingImageSink
 {
   public:
                        avtImageFileWriter();

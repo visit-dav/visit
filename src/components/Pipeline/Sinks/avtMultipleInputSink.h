@@ -77,7 +77,7 @@ class PIPELINE_API avtMultipleInputSink : virtual public avtDataObjectSink
 
     virtual avtDataObject_p       GetInput(void);
     virtual void                  SetTypedInput(avtDataObject_p);
-    virtual bool                  UpdateInput(avtPipelineSpecification_p);
+    virtual bool                  UpdateInput(avtContract_p);
 
     avtDataObject_p               GetNthInput(int);
     void                          SetNumSinks(int);

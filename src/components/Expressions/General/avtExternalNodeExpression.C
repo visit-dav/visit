@@ -145,7 +145,7 @@ avtExternalNodeExpression::DeriveVariable(vtkDataSet *in_ds)
     cdf.KeepAVTandVTK(true);
     cdf.BypassHeuristic(true);
     cdf.SetInput(gzff.GetOutput());
-    cdf.Update(GetGeneralPipelineSpecification());
+    cdf.Update(GetGeneralContract());
     avtDataset_p ds2;
     avtDataObject_p output = cdf.GetOutput();
     CopyTo(ds2, output);

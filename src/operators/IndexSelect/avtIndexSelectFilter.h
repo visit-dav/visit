@@ -77,7 +77,7 @@ class vtkVisItExtractRectilinearGrid;
 //    along max boundary. 
 //
 //    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
-//    Added RefashionDataObjectInfo.
+//    Added UpdateDataObjectInfo.
 //
 //    Kathleen Bonnell,  Mon Jan 30 15:10:26 PST 2006 
 //    Add vtkMaskPoints for a points filter. 
@@ -124,11 +124,11 @@ class avtIndexSelectFilter : public avtPluginStreamer
     virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
     virtual void                PreExecute(void);
     virtual void                PostExecute(void);
-    virtual void                RefashionDataObjectInfo(void);
+    virtual void                UpdateDataObjectInfo(void);
     virtual void                VerifyInput(void);
 
-    virtual avtPipelineSpecification_p
-                                PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                                ModifyContract(avtContract_p);
     virtual bool                FilterUnderstandsTransformedRectMesh();
 };
 

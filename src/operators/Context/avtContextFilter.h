@@ -81,8 +81,8 @@ class avtContextFilter : public avtPluginStreamer
     ContextAttributes   atts;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p);
 };
 
 

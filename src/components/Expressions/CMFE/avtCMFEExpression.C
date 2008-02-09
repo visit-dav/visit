@@ -57,7 +57,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <avtMetaData.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
@@ -368,20 +368,20 @@ avtCMFEExpression::Execute()
     // argument.  See extended comment below in section #2.
     std::string expr_var = "_avt_cmfe_expression_";
 
-    avtDataSpecification_p ds = new avtDataSpecification(
-                            dob->GetTerminatingSource()
-                               ->GetGeneralPipelineSpecification()
-                               ->GetDataSpecification(),
+    avtDataRequest_p ds = new avtDataRequest(
+                            dob->GetOriginatingSource()
+                               ->GetGeneralContract()
+                               ->GetDataRequest(),
                               expr_var.c_str());
-    avtPipelineSpecification_p spec = 
-                new avtPipelineSpecification(ds, 1);
+    avtContract_p spec = 
+                new avtContract(ds, 1);
     if (UseIdenticalSIL())
     {
         // This will only work for conn_cmfe.
-        ds = new avtDataSpecification(ds, firstDBSIL);
-        spec = new avtPipelineSpecification(spec, ds);
+        ds = new avtDataRequest(ds, firstDBSIL);
+        spec = new avtContract(spec, ds);
     }
-    spec->GetDataSpecification()->SetTimestep(actualTimestep);
+    spec->GetDataRequest()->SetTimestep(actualTimestep);
 
     avtExpressionEvaluatorFilter *eef = new avtExpressionEvaluatorFilter;
     eef->SetInput(dob);
@@ -588,7 +588,7 @@ avtCMFEExpression::GetTimestate(ref_ptr<avtDatabase> dbp)
 
 
 // ****************************************************************************
-//  Method: avtCMFEExpression::ExamineSpecification
+//  Method: avtCMFEExpression::ExamineContract
 //
 //  Purpose:
 //      Captures what the current database time state is, in case that is
@@ -605,12 +605,12 @@ avtCMFEExpression::GetTimestate(ref_ptr<avtDatabase> dbp)
 // ****************************************************************************
 
 void
-avtCMFEExpression::ExamineSpecification(avtPipelineSpecification_p spec)
+avtCMFEExpression::ExamineContract(avtContract_p spec)
 {
-    avtExpressionFilter::ExamineSpecification(spec);
+    avtExpressionFilter::ExamineContract(spec);
 
-    firstDBTime = spec->GetDataSpecification()->GetTimestep();
-    firstDBSIL  = spec->GetDataSpecification()->GetRestriction();
+    firstDBTime = spec->GetDataRequest()->GetTimestep();
+    firstDBSIL  = spec->GetDataRequest()->GetRestriction();
 }
 
 

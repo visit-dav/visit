@@ -69,7 +69,7 @@ class  vtkVertexFilter;
 //    Added the vertex filter.
 //
 //    Kathleen Bonnell, Mon Aug  9 14:27:08 PDT 2004 
-//    Added magVarName, SetMagVarName and PerformRestriction.
+//    Added magVarName, SetMagVarName and ModifyContract.
 //
 //    Kathleen Bonnell, Tue Oct 12 16:18:37 PDT 2004 
 //    Added keepNodeZone.
@@ -103,9 +103,9 @@ class avtVectorFilter : public avtStreamer
     bool                      keepNodeZone;
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void              RefashionDataObjectInfo(void);
-    virtual avtPipelineSpecification_p
-                              PerformRestriction(avtPipelineSpecification_p);
+    virtual void              UpdateDataObjectInfo(void);
+    virtual avtContract_p
+                              ModifyContract(avtContract_p);
 };
 
 

@@ -81,13 +81,13 @@ class EXPRESSION_API avtMIRvfExpression : public avtSingleInputExpressionFilter
     std::string               zoneid_name;
     std::string               volume_name;
 
-    virtual avtPipelineSpecification_p
-                              PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                              ModifyContract(avtContract_p);
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void)  { return false; };
     virtual void              PreExecute(void);
-    virtual void              RefashionDataObjectInfo(void);
+    virtual void              UpdateDataObjectInfo(void);
 
     void                      AddMaterial(ConstExpr *);
     void                      GetMaterialList(std::vector<bool> &);

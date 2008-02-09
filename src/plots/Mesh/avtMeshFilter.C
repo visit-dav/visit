@@ -158,7 +158,7 @@ avtMeshFilter::~avtMeshFilter()
 //    Fix memory leaks.
 //
 //    Kathleen Bonnell, Thu May 23 10:50:42 PDT 2002 
-//    Only set output topological dimension in RefashionDataObjectInfo. 
+//    Only set output topological dimension in UpdateDataObjectInfo. 
 //
 //    Jeremy Meredith, Tue Jul  9 15:44:14 PDT 2002
 //    Made it throw an exception if it does not get polydata.  The Mesh
@@ -352,7 +352,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
 
 
 // ****************************************************************************
-//  Method: avtMeshFilter::RefashionDataObjectInfo
+//  Method: avtMeshFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //    Indicates that topological dimension of the output is 1.
@@ -382,7 +382,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
 // ****************************************************************************
 
 void
-avtMeshFilter::RefashionDataObjectInfo(void)
+avtMeshFilter::UpdateDataObjectInfo(void)
 {
     //
     // Technically, the topological dimension should be 2 if drawing
@@ -401,7 +401,7 @@ avtMeshFilter::RefashionDataObjectInfo(void)
 
 
 // ****************************************************************************
-//  Method: avtMeshFilter::PerformRestriction
+//  Method: avtMeshFilter::ModifyContract
 //
 //  Purpose:
 //    Turn on Zone numbers flag so that the database does not make
@@ -420,19 +420,19 @@ avtMeshFilter::RefashionDataObjectInfo(void)
 //
 // ****************************************************************************
  
-avtPipelineSpecification_p
-avtMeshFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtMeshFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
+    avtContract_p rv = new avtContract(spec);
 
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 0)
     {
-        rv->GetDataSpecification()->TurnZoneNumbersOn();
+        rv->GetDataRequest()->TurnZoneNumbersOn();
     }
     else
     {
         string pointVar = atts.GetPointSizeVar();
-        avtDataSpecification_p dspec = spec->GetDataSpecification();
+        avtDataRequest_p dataRequest = spec->GetDataRequest();
 
         //
         // Find out if we REALLY need to add the secondary variable.
@@ -440,17 +440,17 @@ avtMeshFilter::PerformRestriction(avtPipelineSpecification_p spec)
         if (atts.GetPointSizeVarEnabled() && 
             pointVar != "default" &&
             pointVar != "\0" &&
-            pointVar != dspec->GetVariable() &&
-            !dspec->HasSecondaryVariable(pointVar.c_str()))
+            pointVar != dataRequest->GetVariable() &&
+            !dataRequest->HasSecondaryVariable(pointVar.c_str()))
         {
-            rv->GetDataSpecification()->AddSecondaryVariable(pointVar.c_str());
+            rv->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());
         }
 
         avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
-        if (spec->GetDataSpecification()->MayRequireZones())
+        if (spec->GetDataRequest()->MayRequireZones())
         {
             keepNodeZone = true;
-            rv->GetDataSpecification()->TurnNodeNumbersOn();
+            rv->GetDataRequest()->TurnNodeNumbersOn();
         }
         else
         {

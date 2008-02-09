@@ -64,10 +64,10 @@ class avtCoordSystemConvert;
 //  Modifications:
 //
 //    Kathleen Bonnell, Wed Nov 28 16:59:53 PST 2001
-//    Added RefashionDataObjectInfo, PerformRestriction.
+//    Added UpdateDataObjectInfo, ModifyContract.
 //
 //    Hank Childs, Tue Mar  5 16:05:25 PST 2002
-//    Removed RefashionDataObjectInfo, since what is was doing is also
+//    Removed UpdateDataObjectInfo, since what is was doing is also
 //    applicable to the base class, so I pushed the logic into it.
 //
 //    Kathleen Bonnell, Thu Apr 10 11:07:48 PDT 2003 

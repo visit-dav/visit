@@ -215,7 +215,7 @@ avtCracksClipperFilter::Execute(void)
         //
         // Force the network to execute
         //
-        density.Update(GetGeneralPipelineSpecification());
+        density.Update(GetGeneralContract());
 
         //
         // Copy output of the exectuion to the output of this fitler.
@@ -227,7 +227,7 @@ avtCracksClipperFilter::Execute(void)
         //
         // Force the network to execute
         //
-        removeCracks.Update(GetGeneralPipelineSpecification());
+        removeCracks.Update(GetGeneralContract());
 
         //
         // Copy output of the exectuion to the output of this fitler.
@@ -239,14 +239,14 @@ avtCracksClipperFilter::Execute(void)
 
 
 // ****************************************************************************
-//  Method: avtCracksClipperFilter::PerformRestriction
+//  Method: avtCracksClipperFilter::ModifyContract
 //
 //  Purpose:
 //    Requests secondary variables needed by this filter, turns on Node and/or
 //    Zone numbers when appropriate. 
 //
 //  Arguments:
-//    pspec     The original pipeline specification.
+//    contract     The original pipeline specification.
 //
 //  Returns:    The modified pipeline specification. 
 //
@@ -266,17 +266,17 @@ avtCracksClipperFilter::Execute(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtCracksClipperFilter::PerformRestriction(avtPipelineSpecification_p pspec)
+avtContract_p
+avtCracksClipperFilter::ModifyContract(avtContract_p contract)
 {
-    avtDataSpecification_p ds = pspec->GetDataSpecification();
+    avtDataRequest_p ds = contract->GetDataRequest();
 
     // Retrieve secondary variables, if any, to pass along to the 
     // newly created DataSpec
     std::vector<CharStrRef> csv = ds->GetSecondaryVariables();
 
-    // Create a new dspec so that we can add secondary vars
-    avtDataSpecification_p nds = new avtDataSpecification(ds->GetVariable(),
+    // Create a new dataRequest so that we can add secondary vars
+    avtDataRequest_p nds = new avtDataRequest(ds->GetVariable(),
                 ds->GetTimestep(), ds->GetRestriction());
 
     // Add any previously existing SecondaryVariables.
@@ -311,32 +311,32 @@ avtCracksClipperFilter::PerformRestriction(avtPipelineSpecification_p pspec)
     nds->AddSecondaryVariable("cracks_vol");
 
     nds->AddSecondaryVariable(atts.GetStrainVar().c_str());
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(pspec, nds);
+    avtContract_p rv = new avtContract(contract, nds);
 
     //
     // Since this filter 'clips' the dataset, the zone and possibly
     // node numbers will be invalid, request them when needed.
     //
-    if (pspec->GetDataSpecification()->MayRequireZones() || 
-        pspec->GetDataSpecification()->MayRequireNodes())
+    if (contract->GetDataRequest()->MayRequireZones() || 
+        contract->GetDataRequest()->MayRequireNodes())
     {
         if (data.ValidActiveVariable())
         {
             if (data.GetCentering() == AVT_NODECENT)
             {
-                rv->GetDataSpecification()->TurnNodeNumbersOn();
+                rv->GetDataRequest()->TurnNodeNumbersOn();
             }
             else if (data.GetCentering() == AVT_ZONECENT)
             {
-                rv->GetDataSpecification()->TurnZoneNumbersOn();
+                rv->GetDataRequest()->TurnZoneNumbersOn();
             }
         }
         else 
         {
             // canot determine variable centering, so turn on both
             // node numbers and zone numbers.
-            rv->GetDataSpecification()->TurnNodeNumbersOn();
-            rv->GetDataSpecification()->TurnZoneNumbersOn();
+            rv->GetDataRequest()->TurnNodeNumbersOn();
+            rv->GetDataRequest()->TurnZoneNumbersOn();
         }
     }
     return rv; 
@@ -344,7 +344,7 @@ avtCracksClipperFilter::PerformRestriction(avtPipelineSpecification_p pspec)
 
 
 // ****************************************************************************
-//  Method: avtCracksClipperFilter::RefashionDataObjectInfo
+//  Method: avtCracksClipperFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //    Informs the pipeline that this filter modifies zones.
@@ -359,7 +359,7 @@ avtCracksClipperFilter::PerformRestriction(avtPipelineSpecification_p pspec)
 // ****************************************************************************
 
 void
-avtCracksClipperFilter::RefashionDataObjectInfo()
+avtCracksClipperFilter::UpdateDataObjectInfo()
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().ZonesSplit();
@@ -371,7 +371,7 @@ avtCracksClipperFilter::RefashionDataObjectInfo()
 //
 //  Purpose:
 //    Removes secondary variables from the pipeline that were requested 
-//    during PerformRestriction.
+//    during ModifyContract.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   Thu Oct 13 08:17:36 PDT 2005

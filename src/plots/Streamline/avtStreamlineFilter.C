@@ -1093,7 +1093,7 @@ avtStreamlineFilter::PostExecute(void)
 
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::RefashionDataObjectInfo
+//  Method: avtStreamlineFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Allows the filter to change its output's data object information, which
@@ -1114,7 +1114,7 @@ avtStreamlineFilter::PostExecute(void)
 // ****************************************************************************
 
 void
-avtStreamlineFilter::RefashionDataObjectInfo(void)
+avtStreamlineFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     if(displayMethod == STREAMLINE_DISPLAY_LINES)

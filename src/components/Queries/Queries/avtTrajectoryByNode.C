@@ -42,7 +42,7 @@
 
 #include <avtTrajectoryByNode.h>
 #include <avtParallel.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <float.h>
 #include <snprintf.h>
 #include <PickVarInfo.h>
@@ -107,8 +107,8 @@ avtTrajectoryByNode::Preparation(const avtDataAttributes &inAtts)
         queryAtts.SetXUnits(inAtts.GetVariableUnits(queryAtts.GetVariables()[0].c_str()));
     if (inAtts.ValidVariable(queryAtts.GetVariables()[1].c_str()))
         queryAtts.SetYUnits(inAtts.GetVariableUnits(queryAtts.GetVariables()[1].c_str()));
-    avtDataSpecification_p dspec = 
-        GetInput()->GetTerminatingSource()->GetFullDataSpecification();
+    avtDataRequest_p dataRequest = 
+        GetInput()->GetOriginatingSource()->GetFullDataRequest();
 
     avtVariableByNodeQuery::Preparation(inAtts);
 }

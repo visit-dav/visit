@@ -45,7 +45,7 @@
 
 #include <ddf_exports.h>
 
-#include <avtOriginatingDatasetSink.h>
+#include <avtTerminatingDatasetSink.h>
 
 #include <vector>
 #include <string>
@@ -67,14 +67,14 @@ class     avtDDF;
 //
 // ****************************************************************************
 
-class AVTDDF_API avtDDFConstructor : public virtual avtOriginatingDatasetSink
+class AVTDDF_API avtDDFConstructor : public virtual avtTerminatingDatasetSink
 {
   public:
                            avtDDFConstructor();
     virtual               ~avtDDFConstructor();
   
     avtDDF                *ConstructDDF(ConstructDDFAttributes *,
-                                        avtPipelineSpecification_p);
+                                        avtContract_p);
 };
 
 

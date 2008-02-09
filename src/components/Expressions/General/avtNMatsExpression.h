@@ -80,8 +80,8 @@ class EXPRESSION_API avtNMatsExpression : public avtSingleInputExpressionFilter
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void)  { return false; };
 
-    virtual avtPipelineSpecification_p
-                             PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                             ModifyContract(avtContract_p);
 };
 
 

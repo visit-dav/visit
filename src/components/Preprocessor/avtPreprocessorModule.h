@@ -45,7 +45,7 @@
 #include <prep_exports.h>
 
 
-#include <avtOriginatingDatasetSink.h>
+#include <avtTerminatingDatasetSink.h>
 
 
 // ****************************************************************************
@@ -59,7 +59,7 @@
 //
 // ****************************************************************************
 
-class PREP_API avtPreprocessorModule : public avtOriginatingDatasetSink
+class PREP_API avtPreprocessorModule : public avtTerminatingDatasetSink
 {
   public:
                               avtPreprocessorModule();

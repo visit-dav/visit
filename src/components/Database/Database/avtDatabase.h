@@ -50,7 +50,7 @@
 
 #include <void_ref_ptr.h>
 
-#include <avtDataSpecification.h>
+#include <avtDataRequest.h>
 #include <avtDataset.h>
 #include <avtIOInformation.h>
 #include <avtTypes.h>
@@ -295,7 +295,7 @@ class DATABASE_API avtDatabase
 
     avtDataObject_p             GetOutput(const char *, int);
 
-    virtual void                GetAuxiliaryData(avtDataSpecification_p,
+    virtual void                GetAuxiliaryData(avtDataRequest_p,
                                                 VoidRefList &,
                                                 const char *type,void *args)=0;
 
@@ -316,8 +316,8 @@ class DATABASE_API avtDatabase
     virtual bool                MetaDataIsInvariant(void);
     virtual bool                SILIsInvariant(void);
     virtual bool                CanDoDynamicLoadBalancing(
-                                                       avtDataSpecification_p);
-    virtual int                 NumStagesForFetch(avtDataSpecification_p);
+                                                       avtDataRequest_p);
+    virtual int                 NumStagesForFetch(avtDataRequest_p);
 
     const avtIOInformation     &GetIOInformation(int stateIndex);
 
@@ -403,8 +403,8 @@ class DATABASE_API avtDatabase
                                                   const char *,
                                                   int,
                                                   const vector<bool> &selsApplied,
-                                                  avtDataSpecification_p =NULL);
-    bool                        GetExtentsFromAuxiliaryData(avtDataSpecification_p spec,
+                                                  avtDataRequest_p =NULL);
+    bool                        GetExtentsFromAuxiliaryData(avtDataRequest_p spec,
                                                             const char *var,
                                                             const char *type,
                                                             double *extents);

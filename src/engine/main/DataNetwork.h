@@ -123,17 +123,17 @@ public:
     void SetTerminalNode(Netnode* t) {terminalNode = t;};
     void AddNode(Netnode *n) { nodeList.push_back(n); };
     void AddFilterNodeAfterExpressionEvaluator(NetnodeFilter *f);
-    void SetPipelineSpec(avtPipelineSpecification_p s) {pspec = s;};
+    void SetContract(avtContract_p s) {contract = s;};
     avtDataObject_p GetOutput(void) { return terminalNode->GetOutput(); };
-    void SetDataSpec(avtDataSpecification_p s) {dspec = s;};
+    void SetDataSpec(avtDataRequest_p s) {dataRequest = s;};
     void SetTime(int time_) {time = time_;};
 
     virtual void ReleaseData(void);
 
-    avtDataSpecification_p& GetDataSpec() {return dspec;};
-    avtPipelineSpecification_p GetPipelineSpec() {return pspec;};
+    avtDataRequest_p& GetDataSpec() {return dataRequest;};
+    avtContract_p GetContract() {return contract;};
     avtDataObjectWriter_p GetWriter(avtDataObject_p dob,
-                                    avtPipelineSpecification_p pspec,
+                                    avtContract_p contract,
                                     WindowAttributes *atts);
     int GetNetID(void) const { return nid; };
     int GetWinID(void) const { return wid; };
@@ -153,12 +153,12 @@ protected:
     int                         wid;
     Netnode                    *terminalNode;
     std::vector<Netnode*>       nodeList;
-    avtDataSpecification_p      dspec;
+    avtDataRequest_p      dataRequest;
     avtDataObjectWriter_p       writer;
     avtActor_p                  plotActor;
     double                      bgColor[3];
     double                      fgColor[3];
-    avtPipelineSpecification_p  pspec;
+    avtContract_p  contract;
     NetnodeDB*                  netdb;
     avtPlot_p                   plot;
     std::string                 plottype;

@@ -173,19 +173,19 @@ avtTotalVolumeQuery::VerifyInput()
 avtDataObject_p 
 avtTotalVolumeQuery::ApplyFilters(avtDataObject_p inData)
 {
-    avtPipelineSpecification_p pspec =
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+    avtContract_p contract =
+        inData->GetOriginatingSource()->GetGeneralContract();
 
     if (timeVarying) 
     { 
-        avtDataSpecification_p oldSpec = inData->GetTerminatingSource()->
-            GetGeneralPipelineSpecification()->GetDataSpecification();
+        avtDataRequest_p oldSpec = inData->GetOriginatingSource()->
+            GetGeneralContract()->GetDataRequest();
 
-        avtDataSpecification_p newDS = new 
-            avtDataSpecification(oldSpec, querySILR);
+        avtDataRequest_p newDS = new 
+            avtDataRequest(oldSpec, querySILR);
         newDS->SetTimestep(queryAtts.GetTimeStep());
 
-        pspec = new avtPipelineSpecification(newDS, pspec->GetPipelineIndex());
+        contract = new avtContract(newDS, contract->GetPipelineIndex());
     }
 
 
@@ -198,7 +198,7 @@ avtTotalVolumeQuery::ApplyFilters(avtDataObject_p inData)
     avtDataObject_p dob = termsrc.GetOutput();
     volume->SetInput(dob);
     avtDataObject_p objOut = volume->GetOutput();
-    objOut->Update(pspec);
+    objOut->Update(contract);
     return objOut;
 }
 

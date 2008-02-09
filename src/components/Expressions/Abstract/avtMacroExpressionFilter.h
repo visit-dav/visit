@@ -79,15 +79,15 @@ class EXPRESSION_API avtMacroExpressionFilter : public avtExpressionFilter
     avtSourceFromAVTDataset      *term_src;
     std::vector<std::string>      expression_arguments;
     ExpressionList                original_list;
-    avtDataSpecification_p        last_spec;
+    avtDataRequest_p        last_spec;
 
     virtual void              Execute(void);
     virtual void              ProcessArguments(ArgsExpr *,ExprPipelineState *);
     virtual void              GetMacro(std::vector<std::string> &,
                                     std::string &, Expression::ExprType &) = 0;
 
-    virtual avtPipelineSpecification_p
-                             PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                             ModifyContract(avtContract_p);
     virtual int              AdditionalPipelineFilters(void);
 
     void                     ReplaceMacroInExpressionList(void);

@@ -46,7 +46,7 @@
 #include <pipeline_exports.h>
 
 #include <avtDataObject.h>
-#include <avtPipelineSpecification.h>
+#include <avtContract.h>
 
 
 typedef   bool (*AbortCallback)(void *);
@@ -54,7 +54,7 @@ typedef   void (*ProgressCallback)(void *, const char *, const char *,int,int);
 
 
 class     avtQueryableSource;
-class     avtTerminatingSource;
+class     avtOriginatingSource;
 
 
 // ****************************************************************************
@@ -96,9 +96,9 @@ class PIPELINE_API avtDataObjectSource
                                     avtDataObjectSource();
     virtual                        ~avtDataObjectSource();
 
-    virtual bool                    Update(avtPipelineSpecification_p) = 0;
+    virtual bool                    Update(avtContract_p) = 0;
 
-    virtual avtTerminatingSource   *GetTerminatingSource(void) = 0;
+    virtual avtOriginatingSource   *GetOriginatingSource(void) = 0;
     virtual avtQueryableSource     *GetQueryableSource(void) = 0;
 
     virtual avtDataObject_p         GetOutput(void) = 0;

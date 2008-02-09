@@ -46,7 +46,7 @@
 
 
 #include <avtImageRepresentation.h>
-#include <avtTerminatingImageSource.h>
+#include <avtOriginatingImageSource.h>
 
 #include <ref_ptr.h>
 
@@ -71,7 +71,7 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtImageReader : public avtTerminatingImageSource
+class PIPELINE_API avtImageReader : public avtOriginatingImageSource
 {
   public:
                                 avtImageReader();
@@ -83,7 +83,7 @@ class PIPELINE_API avtImageReader : public avtTerminatingImageSource
     bool                        haveReadImage;
     avtImageRepresentation      imgRep;
 
-    virtual bool                FetchImage(avtDataSpecification_p,
+    virtual bool                FetchImage(avtDataRequest_p,
                                            avtImageRepresentation &);
 };
 

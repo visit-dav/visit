@@ -49,7 +49,7 @@
 #include <set>
 #include <map>
 
-#include <avtPipelineSpecification.h>
+#include <avtContract.h>
 #include <avtIOInformation.h>
 
 class     avtDatabase;
@@ -161,13 +161,13 @@ class LoadBalancer
                                   LoadBalancer(int nProcs, int rank);
     virtual                      ~LoadBalancer() {;};
 
-    avtDataSpecification_p        Reduce(avtPipelineSpecification_p input);
+    avtDataRequest_p        Reduce(avtContract_p input);
     bool                          CheckDynamicLoadBalancing(
-                                         avtPipelineSpecification_p input);
+                                         avtContract_p input);
     bool                          CheckDynamicLoadBalancing(int);
 
     LoadBalanceScheme             DetermineAppropriateScheme(
-                                      avtPipelineSpecification_p input);
+                                      avtContract_p input);
 
     void                          AddDatabase(const std::string &dbname,
                                               avtDatabase *, int time);

@@ -252,7 +252,7 @@ avtFeatureEdgesFilter::ExecuteData(vtkDataSet *inDS, int, string)
 
 
 // ****************************************************************************
-//  Method: avtFeatureEdgesFilter::RefashionDataObjectInfo
+//  Method: avtFeatureEdgesFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicate that this invalidates the zone numberings.
@@ -264,7 +264,7 @@ avtFeatureEdgesFilter::ExecuteData(vtkDataSet *inDS, int, string)
 // ****************************************************************************
 
 void
-avtFeatureEdgesFilter::RefashionDataObjectInfo(void)
+avtFeatureEdgesFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     outAtts.SetTopologicalDimension(1);

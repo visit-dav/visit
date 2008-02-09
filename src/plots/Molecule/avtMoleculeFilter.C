@@ -173,7 +173,7 @@ avtMoleculeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
 
 // ****************************************************************************
-//  Method: avtMoleculeFilter::RefashionDataObjectInfo
+//  Method: avtMoleculeFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Tell the thing to keep the node and zone number arrays.
@@ -186,7 +186,7 @@ avtMoleculeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 // ****************************************************************************
 
 void
-avtMoleculeFilter::RefashionDataObjectInfo(void)
+avtMoleculeFilter::UpdateDataObjectInfo(void)
 {
     // We're pretending it's a point plot
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
@@ -221,7 +221,7 @@ avtMoleculeFilter::ReleaseData(void)
 
 
 // ****************************************************************************
-//  Method: avtMoleculeFilter::PerformRestriction
+//  Method: avtMoleculeFilter::ModifyContract
 //
 //  Purpose:  
 //    Do nothing; the plot already requests original zones. 
@@ -233,10 +233,10 @@ avtMoleculeFilter::ReleaseData(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtMoleculeFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtMoleculeFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = spec;
+    avtContract_p rv = spec;
 
     return rv;
 }

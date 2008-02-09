@@ -1,0 +1,1 @@
+../../components/Pipeline/Sinks/avtTerminatingImageSink.h

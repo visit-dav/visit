@@ -61,7 +61,7 @@
 //  Modifications:
 //
 //    Jeremy Meredith, Thu Jul 26 12:40:06 PDT 2001
-//    Made it derive from avtOriginatingSink.
+//    Made it derive from avtTerminatingSink.
 //
 //    Hank Childs, Mon Oct  1 09:08:13 PDT 2001
 //    Removed initialization of dataset, image.

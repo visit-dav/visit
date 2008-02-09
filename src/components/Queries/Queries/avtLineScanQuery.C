@@ -57,7 +57,7 @@
 #include <avtLineScanFilter.h>
 #include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtWeightedVariableSummationQuery.h>
 
 #include <DebugStream.h>
@@ -592,9 +592,9 @@ avtLineScanQuery::Execute(avtDataTree_p tree)
     if (numLines % numLinesPerIteration != 0)
         numPasses++;
 
-    avtPipelineSpecification_p pspec =
-        input->GetTerminatingSource()->GetGeneralPipelineSpecification();
-    varname = pspec->GetDataSpecification()->GetVariable();
+    avtContract_p contract =
+        input->GetOriginatingSource()->GetGeneralContract();
+    varname = contract->GetDataRequest()->GetVariable();
 
     for (int i = 0 ; i < numPasses ; i++)
     {
@@ -618,7 +618,7 @@ avtLineScanQuery::Execute(avtDataTree_p tree)
         //
         // Cause our artificial pipeline to execute.
         //
-        filt->GetOutput()->Update(pspec);
+        filt->GetOutput()->Update(contract);
         lines = filt->GetLines();
 
         avtDataset_p ds2 = filt->GetTypedOutput();

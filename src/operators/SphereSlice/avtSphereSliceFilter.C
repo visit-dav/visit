@@ -203,7 +203,7 @@ avtSphereSliceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
 
 // ****************************************************************************
-//  Method: avtSphereSliceFilter::RefashionDataObjectInfo
+//  Method: avtSphereSliceFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Changes to topological dimension of the output to be one less that the
@@ -219,7 +219,7 @@ avtSphereSliceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 // ****************************************************************************
 
 void
-avtSphereSliceFilter::RefashionDataObjectInfo(void)
+avtSphereSliceFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();

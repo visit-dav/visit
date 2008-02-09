@@ -401,7 +401,7 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
 
 
 // ****************************************************************************
-//  Method: avtExpressionFilter::RefashionDataObjectInfo
+//  Method: avtExpressionFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Tells our output that we now have a variable.
@@ -429,7 +429,7 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
 // ****************************************************************************
  
 void
-avtExpressionFilter::RefashionDataObjectInfo(void)
+avtExpressionFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &inputAtts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
@@ -443,7 +443,7 @@ avtExpressionFilter::RefashionDataObjectInfo(void)
 //
 //  Purpose:
 //      Sets the attributes of the expression.  This is separated from 
-//      RefashionDataObjectInfo, since the CMFE infrastructure also uses this
+//      UpdateDataObjectInfo, since the CMFE infrastructure also uses this
 //      method for setting the info, and it uses "inputAtts" from the alternate
 //      database.
 //
@@ -506,7 +506,7 @@ avtExpressionFilter::SetExpressionAttributes(const avtDataAttributes &inputAtts,
 
 
 // ****************************************************************************
-//  Method: avtExpressionFilter::PerformRestriction
+//  Method: avtExpressionFilter::ModifyContract
 //
 //  Purpose:
 //      Determines if there is a request for the derived type's derived 
@@ -518,17 +518,17 @@ avtExpressionFilter::SetExpressionAttributes(const avtDataAttributes &inputAtts,
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtExpressionFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtExpressionFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = spec;
+    avtContract_p rv = spec;
 
-    avtDataSpecification_p ds = spec->GetDataSpecification();
+    avtDataRequest_p ds = spec->GetDataRequest();
     if (ds->HasSecondaryVariable(outputVariableName))
     {
-        avtDataSpecification_p newds = new avtDataSpecification(ds);
+        avtDataRequest_p newds = new avtDataRequest(ds);
         newds->RemoveSecondaryVariable(outputVariableName);
-        rv = new avtPipelineSpecification(spec, newds);
+        rv = new avtContract(spec, newds);
     }
 
     return rv;
@@ -666,7 +666,7 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
 
 
 // ****************************************************************************
-//  Method: avtExpressionFilter::ExamineSpecification
+//  Method: avtExpressionFilter::ExamineContract
 //
 //  Purpose:
 //    Capture current timestep information for use by derived types.
@@ -677,10 +677,10 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
 // ****************************************************************************
 
 void
-avtExpressionFilter::ExamineSpecification(avtPipelineSpecification_p spec)
+avtExpressionFilter::ExamineContract(avtContract_p spec)
 {
-    avtDatasetToDatasetFilter::ExamineSpecification(spec);
-    currentTimeState = spec->GetDataSpecification()->GetTimestep();
+    avtDatasetToDatasetFilter::ExamineContract(spec);
+    currentTimeState = spec->GetDataRequest()->GetTimestep();
 } 
 
 

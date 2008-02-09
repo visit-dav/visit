@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtDataSpecification.C                        //
+//                             avtDataRequest.C                        //
 // ************************************************************************* //
 
-#include <avtDataSpecification.h>
+#include <avtDataRequest.h>
 
 #include <avtSILRestrictionTraverser.h>
 #include <avtWebpage.h>
@@ -62,7 +62,7 @@ using     std::map;
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification constructor
+//  Method: avtDataRequest constructor
 //
 //  Arguments:
 //      var          The variable for this dataset.
@@ -166,7 +166,7 @@ using     std::map;
 //
 // ****************************************************************************
 
-avtDataSpecification::avtDataSpecification(const char *var, int ts,
+avtDataRequest::avtDataRequest(const char *var, int ts,
                                            avtSILRestriction_p s)
 {
     mayRequireZones = false;
@@ -224,7 +224,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification constructor
+//  Method: avtDataRequest constructor
 //
 //  Arguments:
 //      var          The variable for this dataset.
@@ -314,7 +314,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //
 // ****************************************************************************
 
-avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
+avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
 {
     mayRequireZones = false;
     mayRequireNodes = false;
@@ -367,7 +367,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification constructor
+//  Method: avtDataRequest constructor
 //
 //  Arguments:
 //      spec     An old specification that should be copied.
@@ -389,7 +389,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
 //
 // ****************************************************************************
 
-avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
+avtDataRequest::avtDataRequest(avtDataRequest_p spec,
                                            avtSILRestriction_p silr)
 {
     variable = NULL;
@@ -401,7 +401,7 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification constructor
+//  Method: avtDataRequest constructor
 //
 //  Arguments:
 //      spec     An old specification that should be copied.
@@ -420,7 +420,7 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
 //
 // ****************************************************************************
 
-avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
+avtDataRequest::avtDataRequest(avtDataRequest_p spec,
                                            int cdi)
 {
     variable = NULL;
@@ -432,7 +432,7 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification constructor
+//  Method: avtDataRequest constructor
 //
 //  Arguments:
 //      spec     An old specification that should be copied.
@@ -454,7 +454,7 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
 //
 // ****************************************************************************
 
-avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
+avtDataRequest::avtDataRequest(avtDataRequest_p spec,
                                            const char *name)
 {
     variable = NULL;
@@ -479,7 +479,7 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification constructor
+//  Method: avtDataRequest constructor
 //
 //  Arguments:
 //      spec     An old specification that should be copied.
@@ -497,7 +497,7 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
 //
 // ****************************************************************************
 
-avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
+avtDataRequest::avtDataRequest(avtDataRequest_p spec)
 {
     variable = NULL;
     orig_variable = NULL;
@@ -506,7 +506,7 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification assignment operator
+//  Method: avtDataRequest assignment operator
 //
 //  Arguments:
 //      spec    The specification to copy.
@@ -601,8 +601,8 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //
 // ****************************************************************************
 
-avtDataSpecification &
-avtDataSpecification::operator=(const avtDataSpecification &spec)
+avtDataRequest &
+avtDataRequest::operator=(const avtDataRequest &spec)
 {
     if (variable != NULL)
     {
@@ -672,7 +672,7 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification comparison operator
+//  Method: avtDataRequest comparison operator
 //
 //  Arguments:
 //      ds      The data specification to compare against.
@@ -774,7 +774,7 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 // ****************************************************************************
 
 bool
-avtDataSpecification::operator==(const avtDataSpecification &ds)
+avtDataRequest::operator==(const avtDataRequest &ds)
 {
     if (timestep != ds.timestep)
     {
@@ -969,7 +969,7 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification destructor
+//  Method: avtDataRequest destructor
 //
 //  Programmer: Hank Childs
 //  Creation:   May 19, 2001
@@ -984,7 +984,7 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
 //
 // ****************************************************************************
 
-avtDataSpecification::~avtDataSpecification()
+avtDataRequest::~avtDataRequest()
 {
     if (variable != NULL)
     {
@@ -1000,7 +1000,7 @@ avtDataSpecification::~avtDataSpecification()
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification::SetOriginalVariable
+//  Method: avtDataRequest::SetOriginalVariable
 //
 //  Purpose:
 //      Sets the variable that is known to be good on the database.
@@ -1016,7 +1016,7 @@ avtDataSpecification::~avtDataSpecification()
 // ****************************************************************************
 
 void
-avtDataSpecification::SetOriginalVariable(const char *v)
+avtDataRequest::SetOriginalVariable(const char *v)
 {
     if (orig_variable != NULL)
     {
@@ -1032,7 +1032,7 @@ avtDataSpecification::SetOriginalVariable(const char *v)
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification::GetRestriction
+//  Method: avtDataRequest::GetRestriction
 //
 //  Purpose:
 //      Gets the restriction for a SIL.  Performs some error checking to make
@@ -1046,7 +1046,7 @@ avtDataSpecification::SetOriginalVariable(const char *v)
 // ****************************************************************************
 
 avtSILRestriction_p
-avtDataSpecification::GetRestriction(void)
+avtDataRequest::GetRestriction(void)
 {
     if (!sil.useRestriction)
     {
@@ -1058,7 +1058,7 @@ avtDataSpecification::GetRestriction(void)
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification::AddSecondaryVariable
+//  Method: avtDataRequest::AddSecondaryVariable
 //
 //  Purpose:
 //      Adds a secondary variable to an array.
@@ -1072,7 +1072,7 @@ avtDataSpecification::GetRestriction(void)
 // ****************************************************************************
 
 void
-avtDataSpecification::AddSecondaryVariable(const char *var)
+avtDataRequest::AddSecondaryVariable(const char *var)
 {
     char *v2 = new char[strlen(var)+1];
     strcpy(v2, var);
@@ -1087,7 +1087,7 @@ avtDataSpecification::AddSecondaryVariable(const char *var)
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification::HasSecondaryVariable
+//  Method: avtDataRequest::HasSecondaryVariable
 //
 //  Purpose:
 //      Determines if we have a secondary variable.
@@ -1103,7 +1103,7 @@ avtDataSpecification::AddSecondaryVariable(const char *var)
 // ****************************************************************************
 
 bool
-avtDataSpecification::HasSecondaryVariable(const char *var)
+avtDataRequest::HasSecondaryVariable(const char *var)
 {
     for (int i = 0 ; i < secondaryVariables.size() ; i++)
     {
@@ -1118,7 +1118,7 @@ avtDataSpecification::HasSecondaryVariable(const char *var)
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification::RemoveSecondaryVariable
+//  Method: avtDataRequest::RemoveSecondaryVariable
 //
 //  Purpose:
 //      Removes a secondary variable from our list.
@@ -1132,7 +1132,7 @@ avtDataSpecification::HasSecondaryVariable(const char *var)
 // ****************************************************************************
 
 void
-avtDataSpecification::RemoveSecondaryVariable(const char *var)
+avtDataRequest::RemoveSecondaryVariable(const char *var)
 {
     vector<CharStrRef> newList;
     for (int i = 0 ; i < secondaryVariables.size() ; i++)
@@ -1148,7 +1148,7 @@ avtDataSpecification::RemoveSecondaryVariable(const char *var)
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification::VariablesAreTheSame
+//  Method: avtDataRequest::VariablesAreTheSame
 //
 //  Purpose:
 //      This compares variables with the passed object. 
@@ -1164,7 +1164,7 @@ avtDataSpecification::RemoveSecondaryVariable(const char *var)
 // ****************************************************************************
 
 bool
-avtDataSpecification::VariablesAreTheSame(const avtDataSpecification &ds)
+avtDataRequest::VariablesAreTheSame(const avtDataRequest &ds)
 {
     //
     // Assumption here that we don't have NULL pointers.
@@ -1195,7 +1195,7 @@ avtDataSpecification::VariablesAreTheSame(const avtDataSpecification &ds)
 
 
 // ****************************************************************************
-//  Method:  avtDataSpecification::GetSecondaryVariablesWithoutDuplicates
+//  Method:  avtDataRequest::GetSecondaryVariablesWithoutDuplicates
 //
 //  Purpose:
 //    Return the list of secondary variables, removing duplicates of the
@@ -1216,7 +1216,7 @@ avtDataSpecification::VariablesAreTheSame(const avtDataSpecification &ds)
 // ****************************************************************************
 
 vector<CharStrRef>
-avtDataSpecification::GetSecondaryVariablesWithoutDuplicates(void)
+avtDataRequest::GetSecondaryVariablesWithoutDuplicates(void)
 {
     vector<CharStrRef> newList;
     for (int i = 0 ; i < secondaryVariables.size() ; i++)
@@ -1252,7 +1252,7 @@ avtDataSpecification::GetSecondaryVariablesWithoutDuplicates(void)
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification::AddDataSelection
+//  Method: avtDataRequest::AddDataSelection
 //
 //  Purpose: Adds a data selection to the specification
 //
@@ -1270,14 +1270,14 @@ avtDataSpecification::GetSecondaryVariablesWithoutDuplicates(void)
 // ****************************************************************************
 
 int
-avtDataSpecification::AddDataSelection(avtDataSelection *sel)
+avtDataRequest::AddDataSelection(avtDataSelection *sel)
 {
     selList.push_back(sel);
     return selList.size()-1;
 }
 
 // ****************************************************************************
-//  Method: avtDataSpecification::RemoveAllDataSelections
+//  Method: avtDataRequest::RemoveAllDataSelections
 //
 //  Purpose: Removes all data selections from the specification 
 //
@@ -1287,13 +1287,13 @@ avtDataSpecification::AddDataSelection(avtDataSelection *sel)
 // ****************************************************************************
 
 void
-avtDataSpecification::RemoveAllDataSelections()
+avtDataRequest::RemoveAllDataSelections()
 {
     selList.clear();
 }
 
 // ****************************************************************************
-//  Method: avtDataSpecification::GetDataSelection
+//  Method: avtDataRequest::GetDataSelection
 //
 //  Purpose: Gets data selection at the specified index 
 //
@@ -1303,7 +1303,7 @@ avtDataSpecification::RemoveAllDataSelections()
 // ****************************************************************************
 
 const avtDataSelection_p
-avtDataSpecification::GetDataSelection(int id) const
+avtDataRequest::GetDataSelection(int id) const
 {
     if (id < 0 || id >= selList.size())
         return 0;
@@ -1311,7 +1311,7 @@ avtDataSpecification::GetDataSelection(int id) const
 }
 
 // ****************************************************************************
-//  Method: avtDataSpecification::GetAllDataSelections
+//  Method: avtDataRequest::GetAllDataSelections
 //
 //  Purpose: Gets all data selections in the specification 
 //
@@ -1321,14 +1321,14 @@ avtDataSpecification::GetDataSelection(int id) const
 // ****************************************************************************
 
 const std::vector<avtDataSelection_p>
-avtDataSpecification::GetAllDataSelections() const
+avtDataRequest::GetAllDataSelections() const
 {
     return selList;
 }
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification::InitAdmissibleDataTypes
+//  Method: avtDataRequest::InitAdmissibleDataTypes
 //
 //  Purpose: Initialize admissible data types to all true
 //
@@ -1338,7 +1338,7 @@ avtDataSpecification::GetAllDataSelections() const
 // ****************************************************************************
 
 void
-avtDataSpecification::InitAdmissibleDataTypes()
+avtDataRequest::InitAdmissibleDataTypes()
 {
     admissibleDataTypes.clear();
     admissibleDataTypes[VTK_BIT]            = true;
@@ -1356,7 +1356,7 @@ avtDataSpecification::InitAdmissibleDataTypes()
 }
 
 // ****************************************************************************
-//  Method: avtDataSpecification::UpdateAdmissibleDataTypes
+//  Method: avtDataRequest::UpdateAdmissibleDataTypes
 //
 //  Purpose: Merges a set of admissible types into the current list of
 //  admissible types
@@ -1371,7 +1371,7 @@ avtDataSpecification::InitAdmissibleDataTypes()
 // ****************************************************************************
 
 void
-avtDataSpecification::UpdateAdmissibleDataTypes(vector<int> admissibleTypes)
+avtDataRequest::UpdateAdmissibleDataTypes(vector<int> admissibleTypes)
 {
     std::map<int,bool>::iterator it;
     for (it = admissibleDataTypes.begin();
@@ -1392,7 +1392,7 @@ avtDataSpecification::UpdateAdmissibleDataTypes(vector<int> admissibleTypes)
 }
 
 // ****************************************************************************
-//  Method: avtDataSpecification::IsAdmissibleDataType
+//  Method: avtDataRequest::IsAdmissibleDataType
 //
 //  Purpose: Return bool indicating if the given type is admissible 
 //
@@ -1406,7 +1406,7 @@ avtDataSpecification::UpdateAdmissibleDataTypes(vector<int> admissibleTypes)
 // ****************************************************************************
 
 bool
-avtDataSpecification::IsAdmissibleDataType(int theType) const
+avtDataRequest::IsAdmissibleDataType(int theType) const
 {
     std::map<int,bool>::const_iterator fit =
         admissibleDataTypes.find(theType);
@@ -1416,7 +1416,7 @@ avtDataSpecification::IsAdmissibleDataType(int theType) const
 }
 
 // ****************************************************************************
-//  Method: avtDataSpecification::GetAdmissibleDataTypes
+//  Method: avtDataRequest::GetAdmissibleDataTypes
 //
 //  Purpose: Return vector of admissible data types 
 //
@@ -1430,7 +1430,7 @@ avtDataSpecification::IsAdmissibleDataType(int theType) const
 // ****************************************************************************
 
 vector<int>
-avtDataSpecification::GetAdmissibleDataTypes() const
+avtDataRequest::GetAdmissibleDataTypes() const
 {
     vector<int> admissibleTypes;
     std::map<int,bool>::const_iterator it;
@@ -1444,7 +1444,7 @@ avtDataSpecification::GetAdmissibleDataTypes() const
 }
 
 // ****************************************************************************
-//  Method: avtDataSpecification::SetDiscMode
+//  Method: avtDataRequest::SetDiscMode
 //
 //  Purpose: Set discretization mode (for CSG). Handle logic for missing libs 
 //
@@ -1458,7 +1458,7 @@ avtDataSpecification::GetAdmissibleDataTypes() const
 // ****************************************************************************
 
 void
-avtDataSpecification::SetDiscMode(int mode)
+avtDataRequest::SetDiscMode(int mode)
 {
     discMode = mode;
 #if !HAVE_BILIB
@@ -1659,7 +1659,7 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 
 
 // ****************************************************************************
-//  Method: avtDataSpecification::DebugDump
+//  Method: avtDataRequest::DebugDump
 //
 //  Purpose:
 //      Outputs data attributes into a webpage.
@@ -1699,7 +1699,7 @@ YesOrNo(bool b)
 
 
 void
-avtDataSpecification::DebugDump(avtWebpage *webpage)
+avtDataRequest::DebugDump(avtWebpage *webpage)
 {
     char str[1024];
 

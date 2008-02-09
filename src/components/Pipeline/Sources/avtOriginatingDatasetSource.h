@@ -37,32 +37,31 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtTerminatingImageSource.h                        //
+//                        avtOriginatingDatasetSource.h                      //
 // ************************************************************************* //
 
-#ifndef AVT_TERMINATING_IMAGE_SOURCE_H
-#define AVT_TERMINATING_IMAGE_SOURCE_H
+#ifndef AVT_ORIGINATING_DATASET_SOURCE_H
+#define AVT_ORIGINATING_DATASET_SOURCE_H
 
 #include <pipeline_exports.h>
 
-#include <avtImageSource.h>
-#include <avtTerminatingSource.h>
+#include <avtDatasetSource.h>
+#include <avtDatasetVerifier.h>
+#include <avtOriginatingSource.h>
 
 
 // ****************************************************************************
-//  Class: avtTerminatingImageSource
+//  Class: avtOriginatingDatasetSource
 //
 //  Purpose:
-//      A source that terminates a pipeline.  It does an update differently
-//      than what a non-terminating source (filter) would.
+//      This defines what an originating dataset source looks like.  Note that
+//      this uses the dreaded "diamond shaped inheritance" since it looks like
+//      an originating source and it also looks like a dataset source.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   December 18, 2000 
+//  Programmer: Hank Childs
+//  Creation:   May 29, 2001
 //
 //  Modifications:
-//
-//    Hank Childs, Mon Jun  4 08:02:35 PDT 2001
-//    Changed inheritance hierarchy.
 //
 //    Hank Childs, Thu Feb  5 17:11:06 PST 2004
 //    Moved inlined constructor and destructor definitions to .C files
@@ -70,17 +69,21 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtTerminatingImageSource
-    : public virtual avtImageSource, public virtual avtTerminatingSource
+class PIPELINE_API avtOriginatingDatasetSource
+    : virtual public avtDatasetSource, virtual public avtOriginatingSource
 {
   public:
-                                 avtTerminatingImageSource();
-    virtual                     ~avtTerminatingImageSource();
+                              avtOriginatingDatasetSource();
+    virtual                  ~avtOriginatingDatasetSource();
+
+    void                      MergeExtents(vtkDataSet *);
 
   protected:
-    virtual bool                 FetchData(avtDataSpecification_p);
-    virtual bool                 FetchImage(avtDataSpecification_p,
-                                                 avtImageRepresentation &) = 0;
+    avtDatasetVerifier        verifier;
+
+    virtual bool              FetchData(avtDataRequest_p);
+    virtual bool              FetchDataset(avtDataRequest_p,
+                                           avtDataTree_p &) = 0;
 };
 
 

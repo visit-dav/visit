@@ -121,7 +121,7 @@ avtPseudocolorFilter::ExecuteData(vtkDataSet *inDS, int, string)
 
 
 // ****************************************************************************
-//  Method: avtPseudocolorFilter::RefashionDataObjectInfo
+//  Method: avtPseudocolorFilter::UpdateDataObjectInfo
 //
 //  Purpose:  Sets flags in the pipeline.
 //
@@ -133,7 +133,7 @@ avtPseudocolorFilter::ExecuteData(vtkDataSet *inDS, int, string)
 // ****************************************************************************
 
 void
-avtPseudocolorFilter::RefashionDataObjectInfo(void)
+avtPseudocolorFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
     GetOutput()->GetInfo().GetAttributes().SetKeepNodeZoneArrays(keepNodeZone);
@@ -141,7 +141,7 @@ avtPseudocolorFilter::RefashionDataObjectInfo(void)
 
 
 // ****************************************************************************
-//  Method: avtPseudocolorFilter::PerformRestriction
+//  Method: avtPseudocolorFilter::ModifyContract
 //
 //  Purpose:  Turns on Node/Zone numbers when appropriate. 
 // 
@@ -155,16 +155,16 @@ avtPseudocolorFilter::RefashionDataObjectInfo(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtPseudocolorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
+avtContract_p
+avtPseudocolorFilter::ModifyContract(avtContract_p contract)
 {
-    avtPipelineSpecification_p rv = pspec;
+    avtContract_p rv = contract;
 
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
 
     string pointVar = plotAtts.GetPointSizeVar();
-    avtDataSpecification_p dspec = new avtDataSpecification(
-                                       pspec->GetDataSpecification());
+    avtDataRequest_p dataRequest = new avtDataRequest(
+                                       contract->GetDataRequest());
 
     //
     // Find out if we need to add a secondary variable.
@@ -172,33 +172,33 @@ avtPseudocolorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
     if (plotAtts.GetPointSizeVarEnabled() && 
         pointVar != "default" &&
         pointVar != "\0" &&
-        pointVar != dspec->GetVariable() &&
-        !dspec->HasSecondaryVariable(pointVar.c_str()))
+        pointVar != dataRequest->GetVariable() &&
+        !dataRequest->HasSecondaryVariable(pointVar.c_str()))
     {
-        rv->GetDataSpecification()->AddSecondaryVariable(pointVar.c_str());
+        rv->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());
     }
 
 
-    if (pspec->GetDataSpecification()->MayRequireZones())
+    if (contract->GetDataRequest()->MayRequireZones())
     {
         keepNodeZone = true;
         if (data.ValidActiveVariable())
         {
             if (data.GetCentering() == AVT_NODECENT)
             {
-                rv->GetDataSpecification()->TurnNodeNumbersOn();
+                rv->GetDataRequest()->TurnNodeNumbersOn();
             }
             else if (data.GetCentering() == AVT_ZONECENT)
             {
-                rv->GetDataSpecification()->TurnZoneNumbersOn();
+                rv->GetDataRequest()->TurnZoneNumbersOn();
             }
         }
         else 
         {
             // canot determine variable centering, so turn on both
             // node numbers and zone numbers.
-            rv->GetDataSpecification()->TurnNodeNumbersOn();
-            rv->GetDataSpecification()->TurnZoneNumbersOn();
+            rv->GetDataRequest()->TurnNodeNumbersOn();
+            rv->GetDataRequest()->TurnZoneNumbersOn();
         }
     }
     else

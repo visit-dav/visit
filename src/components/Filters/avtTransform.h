@@ -69,7 +69,7 @@ class     vtkRectilinearGrid;
 //    Removed CalcDomainList.
 //
 //    Jeremy Meredith, Mon Sep 24 14:21:13 PDT 2001
-//    Added RefashionDataObjectInfo.  Made inheritance virtual.
+//    Added UpdateDataObjectInfo.  Made inheritance virtual.
 //
 //    Hank Childs, Mon Jan 14 09:01:18 PST 2002
 //    Added data member for transform filter to fix memory leak.
@@ -100,7 +100,7 @@ class AVTFILTERS_API avtTransform : public virtual avtStreamer
   protected:
     virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
     virtual vtkMatrix4x4       *GetTransform() = 0;
-    virtual void                RefashionDataObjectInfo(void);
+    virtual void                UpdateDataObjectInfo(void);
 
     vtkDataSet                 *TransformRectilinear(vtkRectilinearGrid *);
     bool                        OutputIsRectilinear(vtkMatrix4x4 *);

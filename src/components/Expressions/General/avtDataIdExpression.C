@@ -179,7 +179,7 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds)
 
 
 // ****************************************************************************
-//  Method: avtDataIdExpression::PerformRestriction
+//  Method: avtDataIdExpression::ModifyContract
 //
 //  Purpose:
 //      Tells the input create zone ids.
@@ -189,17 +189,17 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtDataIdExpression::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtDataIdExpression::ModifyContract(avtContract_p spec)
 {
     if (doZoneIds && doGlobalNumbering)
-        spec->GetDataSpecification()->TurnGlobalZoneNumbersOn();
+        spec->GetDataRequest()->TurnGlobalZoneNumbersOn();
     else if (doZoneIds && !doGlobalNumbering)
-        spec->GetDataSpecification()->TurnZoneNumbersOn();
+        spec->GetDataRequest()->TurnZoneNumbersOn();
     else if (!doZoneIds && doGlobalNumbering)
-        spec->GetDataSpecification()->TurnGlobalNodeNumbersOn();
+        spec->GetDataRequest()->TurnGlobalNodeNumbersOn();
     else if (!doZoneIds && !doGlobalNumbering)
-        spec->GetDataSpecification()->TurnNodeNumbersOn();
+        spec->GetDataRequest()->TurnNodeNumbersOn();
 
     return spec;
 }

@@ -44,7 +44,7 @@
 
 #include <avtDataObjectSource.h>
 #include <avtQueryableSource.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtWebpage.h>
 
 #include <DebugStream.h>
@@ -108,7 +108,7 @@ avtDataObject::~avtDataObject()
 // ****************************************************************************
 
 bool
-avtDataObject::Update(avtPipelineSpecification_p spec)
+avtDataObject::Update(avtContract_p spec)
 {
     bool rv = false;
     if (source == NULL)
@@ -149,7 +149,7 @@ avtDataObject::SetSource(avtDataObjectSource *src)
 
 
 // ****************************************************************************
-//  Method: avtDataObject::GetTerminatingSource
+//  Method: avtDataObject::GetOriginatingSource
 //
 //  Purpose:
 //      Walks up a pipeline and finds the terminating source.  This passes a
@@ -162,15 +162,15 @@ avtDataObject::SetSource(avtDataObjectSource *src)
 //
 // ****************************************************************************
 
-avtTerminatingSource *
-avtDataObject::GetTerminatingSource(void)
+avtOriginatingSource *
+avtDataObject::GetOriginatingSource(void)
 {
     if (source == NULL)
     {
         EXCEPTION0(NoInputException);
     }
 
-    return source->GetTerminatingSource();
+    return source->GetOriginatingSource();
 }
 
 

@@ -177,14 +177,14 @@ avtBoundaryOpFilter::ExecuteData(vtkDataSet *in_ds, int domain_no, std::string l
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtBoundaryOpFilter::PerformRestriction(avtPipelineSpecification_p in_contract)
+avtContract_p
+avtBoundaryOpFilter::ModifyContract(avtContract_p in_contract)
 {
-    avtPipelineSpecification_p out_contract =
-       new avtPipelineSpecification(in_contract);
+    avtContract_p out_contract =
+       new avtContract(in_contract);
 
-    out_contract->GetDataSpecification()->ForceMaterialInterfaceReconstructionOn();
-    out_contract->GetDataSpecification()->TurnBoundarySurfaceRepresentationOn();
+    out_contract->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
+    out_contract->GetDataRequest()->TurnBoundarySurfaceRepresentationOn();
 
     return out_contract;
 }

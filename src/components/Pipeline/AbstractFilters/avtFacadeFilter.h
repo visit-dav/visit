@@ -81,9 +81,9 @@ class PIPELINE_API avtFacadeFilter : virtual public avtFilter
     virtual avtDataObject_p        GetInput(void);
     virtual avtDataObject_p        GetOutput(void);
 
-    virtual avtTerminatingSource  *GetTerminatingSource(void);
+    virtual avtOriginatingSource  *GetOriginatingSource(void);
     virtual avtQueryableSource    *GetQueryableSource(void);
-    virtual bool                   Update(avtPipelineSpecification_p);
+    virtual bool                   Update(avtContract_p);
     virtual void                   ReleaseData(void);
 
   protected:
@@ -94,9 +94,9 @@ class PIPELINE_API avtFacadeFilter : virtual public avtFilter
 
     virtual void                   Execute(void);
 
-    virtual avtPipelineSpecification_p PerformRestriction(
-                                                  avtPipelineSpecification_p);
-    virtual void                   RefashionDataObjectInfo(void);
+    virtual avtContract_p ModifyContract(
+                                                  avtContract_p);
+    virtual void                   UpdateDataObjectInfo(void);
 };
 
 

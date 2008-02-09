@@ -37,14 +37,14 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtOriginatingImageSink.C                       //
+//                         avtTerminatingNullDataSink.C                      //
 // ************************************************************************* //
 
-#include <avtOriginatingImageSink.h>
+#include <avtTerminatingNullDataSink.h>
 
 
 // ****************************************************************************
-//  Method: avtOriginatingImageSink constructor
+//  Method: avtTerminatingNullDataSink constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
@@ -55,14 +55,14 @@
 //
 // ****************************************************************************
 
-avtOriginatingImageSink::avtOriginatingImageSink()
+avtTerminatingNullDataSink::avtTerminatingNullDataSink()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtOriginatingImageSink destructor
+//  Method: avtTerminatingNullDataSink destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -73,7 +73,7 @@ avtOriginatingImageSink::avtOriginatingImageSink()
 //
 // ****************************************************************************
 
-avtOriginatingImageSink::~avtOriginatingImageSink()
+avtTerminatingNullDataSink::~avtTerminatingNullDataSink()
 {
     ;
 }

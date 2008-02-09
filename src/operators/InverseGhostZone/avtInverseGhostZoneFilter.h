@@ -81,7 +81,7 @@ class avtInverseGhostZoneFilter : public avtPluginStreamer
     InverseGhostZoneAttributes   atts;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void          RefashionDataObjectInfo(void);
+    virtual void          UpdateDataObjectInfo(void);
 };
 
 

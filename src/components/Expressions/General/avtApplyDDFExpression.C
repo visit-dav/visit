@@ -183,7 +183,7 @@ avtApplyDDFExpression::ProcessArguments(ArgsExpr *args,
 
 
 // ****************************************************************************
-//  Method: avtApplyDDFExpression::PerformRestriction
+//  Method: avtApplyDDFExpression::ModifyContract
 //
 //  Purpose:
 //      Tells the pipeline contract that we need additional variables so that
@@ -194,8 +194,8 @@ avtApplyDDFExpression::ProcessArguments(ArgsExpr *args,
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtApplyDDFExpression::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtApplyDDFExpression::ModifyContract(avtContract_p spec)
 {
     if (theDDF == NULL)
     {
@@ -203,16 +203,16 @@ avtApplyDDFExpression::PerformRestriction(avtPipelineSpecification_p spec)
         EXCEPTION2(ExpressionException, outputVariableName, "Could not locate the DDF.");
     }
 
-    avtDataSpecification_p ds = spec->GetDataSpecification();
-    avtDataSpecification_p new_ds = new avtDataSpecification(ds);
+    avtDataRequest_p ds = spec->GetDataRequest();
+    avtDataRequest_p new_ds = new avtDataRequest(ds);
     avtDDFFunctionInfo *info = theDDF->GetFunctionInfo();
     int nVars = info->GetDomainNumberOfTuples();
     for (int i = 0 ; i < nVars ; i++)
         new_ds->AddSecondaryVariable(info->GetDomainTupleName(i).c_str());
     new_ds->AddSecondaryVariable(info->GetCodomainName().c_str());
 
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec, new_ds);
-    rv = avtSingleInputExpressionFilter::PerformRestriction(rv);
+    avtContract_p rv = new avtContract(spec, new_ds);
+    rv = avtSingleInputExpressionFilter::ModifyContract(rv);
     return rv;
 }
 

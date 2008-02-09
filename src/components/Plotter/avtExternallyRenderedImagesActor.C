@@ -47,7 +47,7 @@
 #include <avtExternallyRenderedImagesActor.h>
 #include <avtImage.h>
 #include <avtNullData.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <float.h>
 

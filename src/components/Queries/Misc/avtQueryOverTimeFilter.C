@@ -333,7 +333,7 @@ avtQueryOverTimeFilter::Execute(void)
 
 
 // ****************************************************************************
-//  Method: avtQueryOverTimeFilter::RefashionDataObjectInfo
+//  Method: avtQueryOverTimeFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //    Indicates the zones no longer correspond to the original problem.
@@ -354,7 +354,7 @@ avtQueryOverTimeFilter::Execute(void)
 // ****************************************************************************
 
 void
-avtQueryOverTimeFilter::RefashionDataObjectInfo(void)
+avtQueryOverTimeFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();

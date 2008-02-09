@@ -49,7 +49,7 @@
 #include <string>
 #include <vector>
 
-#include <avtOriginatingDatasetSink.h>
+#include <avtTerminatingDatasetSink.h>
 
 class vtkRectilinearGrid;
 
@@ -96,7 +96,7 @@ typedef enum
 //
 // ****************************************************************************
 
-class AVTFILEWRITER_API avtDatasetFileWriter : public avtOriginatingDatasetSink
+class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
 {
   public:
                        avtDatasetFileWriter();

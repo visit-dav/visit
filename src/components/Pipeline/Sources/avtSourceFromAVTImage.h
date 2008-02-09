@@ -46,7 +46,7 @@
 
 
 #include <avtInlinePipelineSource.h>
-#include <avtTerminatingImageSource.h>
+#include <avtOriginatingImageSource.h>
 
 class avtImageRepresentation;
 
@@ -68,7 +68,7 @@ class avtImageRepresentation;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtSourceFromAVTImage : virtual public avtTerminatingImageSource,
+class PIPELINE_API avtSourceFromAVTImage : virtual public avtOriginatingImageSource,
                                 virtual public avtInlinePipelineSource
 {
   public:
@@ -78,7 +78,7 @@ class PIPELINE_API avtSourceFromAVTImage : virtual public avtTerminatingImageSou
   protected:
     avtImageRepresentation            image;
 
-    virtual bool          FetchImage(avtDataSpecification_p spec,
+    virtual bool          FetchImage(avtDataRequest_p spec,
                              avtImageRepresentation &imageRep);
 };
 

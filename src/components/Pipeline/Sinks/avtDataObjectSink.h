@@ -47,7 +47,7 @@
 
 #include <avtDataObject.h>
 
-#include <avtPipelineSpecification.h>
+#include <avtContract.h>
 
 
 // ****************************************************************************
@@ -92,7 +92,7 @@ class PIPELINE_API avtDataObjectSink
   protected:
     virtual void                  SetTypedInput(avtDataObject_p) = 0;
     virtual void                  ChangedInput(void);
-    virtual bool                  UpdateInput(avtPipelineSpecification_p);
+    virtual bool                  UpdateInput(avtContract_p);
 
   private:
     // These methods are defined to prevent accidental use of bitwise copy

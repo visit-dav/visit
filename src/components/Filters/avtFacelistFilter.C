@@ -63,7 +63,7 @@
 #include <avtDataset.h>
 #include <avtFacelist.h>
 #include <avtMetaData.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <BadIndexException.h>
 #include <DebugStream.h>
@@ -1245,7 +1245,7 @@ avtFacelistFilter::InitializeFilter(void)
 
 
 // ****************************************************************************
-//  Method: avtFacelistFilter::RefashionDataObjectInfo
+//  Method: avtFacelistFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Copies the mutable metadata that is associated with individual 
@@ -1283,7 +1283,7 @@ avtFacelistFilter::InitializeFilter(void)
 // ****************************************************************************
 
 void
-avtFacelistFilter::RefashionDataObjectInfo(void)
+avtFacelistFilter::UpdateDataObjectInfo(void)
 {
     if (*(GetInput()) == NULL)
         return;
@@ -1304,7 +1304,7 @@ avtFacelistFilter::RefashionDataObjectInfo(void)
 
 
 // ****************************************************************************
-//  Method: avtFacelistFilter::PerformRestriction
+//  Method: avtFacelistFilter::ModifyContract
 //
 //  Purpose:
 //      Tell the database that we will need ghost nodes.
@@ -1314,18 +1314,18 @@ avtFacelistFilter::RefashionDataObjectInfo(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtFacelistFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
+avtContract_p
+avtFacelistFilter::ModifyContract(avtContract_p in_spec)
 {
     //
     // Only declare that we want ghost nodes if someone downstream hasn't said
     // that they want ghost zones and also if we are dealing with 3D data.
     //
-    avtPipelineSpecification_p spec = new avtPipelineSpecification(in_spec);
-    if (spec->GetDataSpecification()->GetDesiredGhostDataType() !=
+    avtContract_p spec = new avtContract(in_spec);
+    if (spec->GetDataRequest()->GetDesiredGhostDataType() !=
                                                                GHOST_ZONE_DATA
        && GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
-        spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_NODE_DATA);
+        spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_NODE_DATA);
 
     return spec;
 }

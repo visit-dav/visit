@@ -62,7 +62,7 @@ class  vtkVertexFilter;
 //
 //  Modifications:
 //    Kathleen Bonnell, Tue Aug 30 15:11:01 PDT 2005
-//    Added keepNodeZone & PerformRestriction.
+//    Added keepNodeZone & ModifyContract.
 //
 // ****************************************************************************
 
@@ -93,9 +93,9 @@ class avtTensorFilter : public avtStreamer
     vtkTensorReduceFilter    *reduce;
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void              RefashionDataObjectInfo(void);
-    virtual avtPipelineSpecification_p
-                              PerformRestriction(avtPipelineSpecification_p);
+    virtual void              UpdateDataObjectInfo(void);
+    virtual avtContract_p
+                              ModifyContract(avtContract_p);
 };
 
 

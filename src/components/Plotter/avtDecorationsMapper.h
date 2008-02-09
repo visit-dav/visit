@@ -45,7 +45,7 @@
 
 #include <plotter_exports.h>
 
-#include <avtOriginatingDatasetSink.h>
+#include <avtTerminatingDatasetSink.h>
 #include <avtDrawable.h>
 #include <avtLabelActor.h>
 
@@ -63,7 +63,7 @@ class   vtkDataObjectCollection;
 //
 // ****************************************************************************
 
-class PLOTTER_API avtDecorationsMapper : public avtOriginatingDatasetSink
+class PLOTTER_API avtDecorationsMapper : public avtTerminatingDatasetSink
 {
   public:
                                  avtDecorationsMapper();

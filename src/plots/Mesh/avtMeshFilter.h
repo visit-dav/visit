@@ -68,7 +68,7 @@ class vtkDataSet;
 //    Added string argument to Execute method.
 //
 //    Kathleen Bonnell, Tue Mar 26 15:23:11 PST 2002 
-//    Added PerformRestriction method.
+//    Added ModifyContract method.
 //
 //    Kathleen Bonnell, Thu Feb  5 10:34:16 PST 2004 
 //    Added vtkExtractEdges, removed vtkUniqueFeatureEdges.
@@ -97,9 +97,9 @@ class avtMeshFilter : public avtDataTreeStreamer
     bool                       keepNodeZone;
 
     virtual avtDataTree_p      ExecuteDataTree(vtkDataSet *, int, string);
-    virtual void               RefashionDataObjectInfo(void);
-    virtual avtPipelineSpecification_p     
-                               PerformRestriction(avtPipelineSpecification_p spec);
+    virtual void               UpdateDataObjectInfo(void);
+    virtual avtContract_p     
+                               ModifyContract(avtContract_p spec);
 };
 
 

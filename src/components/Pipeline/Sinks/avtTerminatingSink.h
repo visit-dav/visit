@@ -37,65 +37,86 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                         avtTerminatingImageSource.C                       //
+//                             avtTerminatingSink.h                          //
 // ************************************************************************* //
 
-#include <avtTerminatingImageSource.h>
+#ifndef AVT_TERMINATING_SINK_H
+#define AVT_TERMINATING_SINK_H
+
+#include <pipeline_exports.h>
+
+#include <avtDataObjectSink.h>
+#include <avtContract.h>
+
+class     avtWebpage;
+
+
+typedef  bool (*GuideFunction)(void *, int);
 
 
 // ****************************************************************************
-//  Method: avtTerminatingImageSource constructor
+//  Class: avtTerminatingSink
 //
 //  Purpose:
-//      Defines the constructor.  Note: this should not be inlined in the
-//      header because it causes problems for certain compilers.
+//      This sink object serves as the terminator of a pipeline.  It 
+//      understands that there are many pipelines and what its pipeline index
+//      is.  It also understands that dynamic load balancing may occur and
+//      that it may have to execute a pipeline multiple times.
 //
 //  Programmer: Hank Childs
-//  Creation:   February 5, 2004
+//  Creation:   May 29, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 28 13:18:47 PDT 2001
+//    Added DynamicLoadBalanceCleanUp.
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers 
+//    have problems with them.
+//
+//    Hank Childs, Wed Mar  2 11:16:01 PST 2005
+//    Take a full-blown pipeline specification rather than a data spec and a
+//    pipeline index.
+//
+//    Hank Childs, Thu Dec 21 09:43:22 PST 2006
+//    Add support for debug dumps
+//
+//    Hank Childs, Fri Jun 15 16:11:00 PDT 2007
+//    Add support for indentation of debug dumps.
 //
 // ****************************************************************************
 
-avtTerminatingImageSource::avtTerminatingImageSource()
+class PIPELINE_API avtTerminatingSink : virtual public avtDataObjectSink
 {
-    ;
-}
+  public:
+                              avtTerminatingSink();
+    virtual                  ~avtTerminatingSink();
+
+    void                      Execute(avtContract_p);
+
+    static void               SetGuideFunction(GuideFunction, void *);
+    static void               GetGuideFunction(GuideFunction &, void *&);
+
+    static void               DebugDump(bool d) {debugDump = d;}
+    static void               AddDumpReference(const char *, const char *, int);
+
+  protected:
+    virtual void              InputIsReady(void);
+    virtual void              DynamicLoadBalanceCleanUp(void);
+
+    static bool               debugDump;
+    static avtWebpage        *webpage;
+
+    void                      FinalizeWebpage(void);
+    void                      InitializeWebpage(void);
+
+  private:
+    static GuideFunction      guideFunction;
+    static void              *guideFunctionArgs;
+};
 
 
-// ****************************************************************************
-//  Method: avtTerminatingImageSource destructor
-//
-//  Purpose:
-//      Defines the destructor.  Note: this should not be inlined in the header
-//      because it causes problems for certain compilers.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 5, 2004
-//
-// ****************************************************************************
-
-avtTerminatingImageSource::~avtTerminatingImageSource()
-{
-    ;
-}
-
-
-// ****************************************************************************
-//  Method: avtTerminatingImageSource::FetchData
-//
-//  Purpose:
-//      Defines FetchData, a method that is called when a terminating data
-//      object does an Update.  This layer defines how the information obtained
-//      (the image representation) should be associated with the data object.
-//
-//  Programmer: Hank Childs
-//  Creation:   June 4, 2001
-//
-// ****************************************************************************
-
-bool
-avtTerminatingImageSource::FetchData(avtDataSpecification_p spec)
-{
-    return FetchImage(spec, GetOutputImage());
-}
+#endif
 
 

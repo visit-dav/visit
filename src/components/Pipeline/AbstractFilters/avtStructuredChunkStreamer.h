@@ -83,8 +83,8 @@ class PIPELINE_API avtStructuredChunkStreamer : public avtDataTreeStreamer
     virtual void               GetAssignments(vtkDataSet *, const int *,
                     std::vector<avtStructuredMeshChunker::ZoneDesignation>&)=0;
 
-    virtual avtPipelineSpecification_p
-                               PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                               ModifyContract(avtContract_p);
     virtual void               PreExecute(void);
     virtual void               PostExecute(void);
 };

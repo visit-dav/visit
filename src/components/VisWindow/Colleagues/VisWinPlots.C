@@ -61,7 +61,7 @@
 #include <avtExternallyRenderedImagesActor.h>
 #include <avtLegend.h>
 #include <avtTransparencyActor.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <BadPlotException.h>
 #include <DebugStream.h>
@@ -1532,7 +1532,7 @@ VisWinPlots::GetAllDatasets(void)
         if (*rv == NULL)
         {
             avtDataObject_p clone = dob->Clone();
-            clone->SetSource(dob->GetTerminatingSource());
+            clone->SetSource(dob->GetOriginatingSource());
             CopyTo(rv, clone);
         }
         else

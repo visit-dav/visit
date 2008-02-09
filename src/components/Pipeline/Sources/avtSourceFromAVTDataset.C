@@ -132,7 +132,7 @@ avtSourceFromAVTDataset::~avtSourceFromAVTDataset()
 // ****************************************************************************
 
 bool
-avtSourceFromAVTDataset::FetchDataset(avtDataSpecification_p spec,
+avtSourceFromAVTDataset::FetchDataset(avtDataRequest_p spec,
                                       avtDataTree_p &outtree)
 {
     int timingsHandle = visitTimer->StartTimer();

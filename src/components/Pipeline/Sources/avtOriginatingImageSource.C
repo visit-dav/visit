@@ -37,14 +37,14 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtTerminatingNullDataSource.C                     //
+//                         avtOriginatingImageSource.C                       //
 // ************************************************************************* //
 
-#include <avtTerminatingNullDataSource.h>
+#include <avtOriginatingImageSource.h>
 
 
 // ****************************************************************************
-//  Method: avtTerminatingNullDataSource constructor
+//  Method: avtOriginatingImageSource constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
@@ -55,14 +55,14 @@
 //
 // ****************************************************************************
 
-avtTerminatingNullDataSource::avtTerminatingNullDataSource()
+avtOriginatingImageSource::avtOriginatingImageSource()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtTerminatingNullDataSource destructor
+//  Method: avtOriginatingImageSource destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -73,9 +73,29 @@ avtTerminatingNullDataSource::avtTerminatingNullDataSource()
 //
 // ****************************************************************************
 
-avtTerminatingNullDataSource::~avtTerminatingNullDataSource()
+avtOriginatingImageSource::~avtOriginatingImageSource()
 {
     ;
+}
+
+
+// ****************************************************************************
+//  Method: avtOriginatingImageSource::FetchData
+//
+//  Purpose:
+//      Defines FetchData, a method that is called when a terminating data
+//      object does an Update.  This layer defines how the information obtained
+//      (the image representation) should be associated with the data object.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 4, 2001
+//
+// ****************************************************************************
+
+bool
+avtOriginatingImageSource::FetchData(avtDataRequest_p spec)
+{
+    return FetchImage(spec, GetOutputImage());
 }
 
 

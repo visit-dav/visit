@@ -602,15 +602,15 @@ avtVolumePlot::CustomizeBehavior(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtVolumePlot::EnhanceSpecification(avtPipelineSpecification_p spec)
+avtContract_p
+avtVolumePlot::EnhanceSpecification(avtContract_p spec)
 {
     string ov = atts.GetOpacityVariable();
     if (ov == "default")
     {
         return spec;
     }
-    avtDataSpecification_p ds = spec->GetDataSpecification();
+    avtDataRequest_p ds = spec->GetDataRequest();
     const char *primaryVariable = ds->GetVariable();
     if (ov == primaryVariable)
     {
@@ -626,10 +626,10 @@ avtVolumePlot::EnhanceSpecification(avtPipelineSpecification_p spec)
     // elsewhere, so we can't modify it and return it.  Make a copy and in
     // the new copy, add a secondary variable.
     //
-    avtDataSpecification_p nds = new avtDataSpecification(primaryVariable,
+    avtDataRequest_p nds = new avtDataRequest(primaryVariable,
                                       ds->GetTimestep(), ds->GetRestriction());
     nds->AddSecondaryVariable(ov.c_str());
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec, nds);
+    avtContract_p rv = new avtContract(spec, nds);
 
     return rv;
 }

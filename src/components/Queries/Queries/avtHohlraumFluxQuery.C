@@ -39,7 +39,7 @@
 #include <avtHohlraumFluxQuery.h>
 #include <vtkCleanPolyData.h>
 #include <vtkCellData.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtLineScanFilter.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtParallel.h>

@@ -1069,7 +1069,7 @@ VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo,
     //
     avtSourceFromImage screenCaptureSource(image, zb);
     avtImage_p img = screenCaptureSource.GetTypedOutput();
-    img->Update(screenCaptureSource.GetGeneralPipelineSpecification());
+    img->Update(screenCaptureSource.GetGeneralContract());
     img->SetSource(NULL);
     delete [] zb;
     image->Delete();
@@ -1176,7 +1176,7 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p capturedImage,
     //
     avtSourceFromImage screenCaptureSource(image, keepZBuffer ? capturedImage->GetImage().GetZBuffer() : 0);
     avtImage_p img = screenCaptureSource.GetTypedOutput();
-    img->Update(screenCaptureSource.GetGeneralPipelineSpecification());
+    img->Update(screenCaptureSource.GetGeneralContract());
     img->SetSource(NULL);
     image->Delete();
 

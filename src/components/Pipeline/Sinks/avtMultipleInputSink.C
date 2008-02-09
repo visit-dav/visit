@@ -248,7 +248,7 @@ avtMultipleInputSink::GetNthInput(int n)
 // ****************************************************************************
 
 bool
-avtMultipleInputSink::UpdateInput(avtPipelineSpecification_p spec)
+avtMultipleInputSink::UpdateInput(avtContract_p spec)
 {
     bool modifiedUpstream = false;
     for (int i = 0 ; i < nSinks ; i++)
