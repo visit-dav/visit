@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtSkewnessQuery.h
+../../avt/Queries/Queries/avtSkewnessQuery.h

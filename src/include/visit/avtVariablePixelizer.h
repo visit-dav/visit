@@ -1,1 +1,1 @@
-../../components/Pipeline/Data/avtVariablePixelizer.h
+../../avt/Pipeline/Data/avtVariablePixelizer.h

@@ -1,1 +1,1 @@
-../../components/Database/Ghost/avtUnstructuredPointBoundaries.h
+../../avt/Database/Ghost/avtUnstructuredPointBoundaries.h

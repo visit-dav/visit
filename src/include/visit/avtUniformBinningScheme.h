@@ -1,1 +1,1 @@
-../../components/DDF/avtUniformBinningScheme.h
+../../avt/DDF/avtUniformBinningScheme.h

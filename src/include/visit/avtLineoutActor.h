@@ -1,1 +1,1 @@
-../../components/Plotter/avtLineoutActor.h
+../../avt/Plotter/avtLineoutActor.h

@@ -1,1 +1,1 @@
-../../components/Pipeline/Data/avtMaximumIntensityProjectionRF.h
+../../avt/Pipeline/Data/avtMaximumIntensityProjectionRF.h

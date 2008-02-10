@@ -1,1 +1,1 @@
-../../components/Plotter/avtImageMapper.h
+../../avt/Plotter/avtImageMapper.h

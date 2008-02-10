@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtIndividualRayLengthDistributionQuery.h
+../../avt/Queries/Queries/avtIndividualRayLengthDistributionQuery.h

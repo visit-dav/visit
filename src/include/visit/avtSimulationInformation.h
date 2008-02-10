@@ -1,1 +1,1 @@
-../../components/DBAtts/MetaData/avtSimulationInformation.h
+../../avt/DBAtts/MetaData/avtSimulationInformation.h

@@ -1,1 +1,1 @@
-../../components/DBAtts/MetaData/avtSymmetricTensorMetaData.h
+../../avt/DBAtts/MetaData/avtSymmetricTensorMetaData.h

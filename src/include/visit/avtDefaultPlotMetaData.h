@@ -1,1 +1,1 @@
-../../components/DBAtts/MetaData/avtDefaultPlotMetaData.h
+../../avt/DBAtts/MetaData/avtDefaultPlotMetaData.h

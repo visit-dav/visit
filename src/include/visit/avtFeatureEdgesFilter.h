@@ -1,1 +1,1 @@
-../../components/Filters/avtFeatureEdgesFilter.h
+../../avt/Filters/avtFeatureEdgesFilter.h

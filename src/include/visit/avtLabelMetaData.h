@@ -1,1 +1,1 @@
-../../components/DBAtts/MetaData/avtLabelMetaData.h
+../../avt/DBAtts/MetaData/avtLabelMetaData.h

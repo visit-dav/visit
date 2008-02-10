@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtAreaBetweenCurvesQuery.h
+../../avt/Queries/Queries/avtAreaBetweenCurvesQuery.h

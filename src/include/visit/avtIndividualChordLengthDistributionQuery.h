@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtIndividualChordLengthDistributionQuery.h
+../../avt/Queries/Queries/avtIndividualChordLengthDistributionQuery.h

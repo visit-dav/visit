@@ -1,1 +1,1 @@
-../../components/Plotter/avtColorTables.h
+../../avt/Plotter/avtColorTables.h

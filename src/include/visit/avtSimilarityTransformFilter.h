@@ -1,1 +1,1 @@
-../../components/Filters/avtSimilarityTransformFilter.h
+../../avt/Filters/avtSimilarityTransformFilter.h

@@ -1,1 +1,1 @@
-../../components/MIR/Tet/Wedge.h
+../../avt/MIR/Tet/Wedge.h

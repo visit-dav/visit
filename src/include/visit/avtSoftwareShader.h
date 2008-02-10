@@ -1,1 +1,1 @@
-../../components/Plotter/avtSoftwareShader.h
+../../avt/Plotter/avtSoftwareShader.h

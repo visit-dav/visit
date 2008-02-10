@@ -1,1 +1,1 @@
-../../components/Pipeline/Data/avtLightingModel.h
+../../avt/Pipeline/Data/avtLightingModel.h

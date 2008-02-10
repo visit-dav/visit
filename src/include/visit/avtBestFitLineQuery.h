@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtBestFitLineQuery.h
+../../avt/Queries/Queries/avtBestFitLineQuery.h

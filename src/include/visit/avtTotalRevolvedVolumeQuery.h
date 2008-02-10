@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtTotalRevolvedVolumeQuery.h
+../../avt/Queries/Queries/avtTotalRevolvedVolumeQuery.h

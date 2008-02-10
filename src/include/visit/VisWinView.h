@@ -1,1 +1,1 @@
-../../components/VisWindow/Colleagues/VisWinView.h
+../../avt/VisWindow/Colleagues/VisWinView.h

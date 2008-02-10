@@ -1,1 +1,1 @@
-../../components/Plotter/avtExternallyRenderedImagesActor.h
+../../avt/Plotter/avtExternallyRenderedImagesActor.h

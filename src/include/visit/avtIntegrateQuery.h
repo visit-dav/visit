@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtIntegrateQuery.h
+../../avt/Queries/Queries/avtIntegrateQuery.h

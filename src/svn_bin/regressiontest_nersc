@@ -36,6 +36,9 @@
 #    Hank Childs, Thu Dec 20 17:20:52 PST 2007
 #    Added defer_expr to the skip list.
 #
+#    Hank Childs, Sat Feb  9 15:23:42 PST 2008
+#    Rename components directory to avt.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -312,7 +315,7 @@ find . -name .svn -prune -false -o -name '*.d' -o -name '.depend' -o -name '.par
 # a coorsponding Makefile.in. 'make distclean' should have removed these
 # It also includes some special grep filtering for special cases of some
 # Makefiles that aren't easy for distclean to clean
-find . -name .svn -prune -false -o \( -name 'Makefile' -exec test -e \{\}.in \; \) -print | grep -v ./components/Preprocessor/Makefile\\\|./tools/windowmaker/Makefile\\\|./tools/prep/Makefile\\\|./sim/examples/Makefile\\\|./common/siloobj/Makefile\\\|./common/siloobj_vtk_db/Makefile\\\|./cqscore/Makefile 1>> undistcleaned_files_log.txt
+find . -name .svn -prune -false -o \( -name 'Makefile' -exec test -e \{\}.in \; \) -print | grep -v ./avt/Preprocessor/Makefile\\\|./tools/windowmaker/Makefile\\\|./tools/prep/Makefile\\\|./sim/examples/Makefile\\\|./common/siloobj/Makefile\\\|./common/siloobj_vtk_db/Makefile\\\|./cqscore/Makefile 1>> undistcleaned_files_log.txt
 undistcleanedFilesCount=`wc -l undistcleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2`
 checkAndHandleError $undistcleanedFilesCount warning "make distclean left files; removing manually" undistcleaned_files_log.txt
 if test $undistcleanedFilesCount -ne 0; then

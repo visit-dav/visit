@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtKurtosisQuery.h
+../../avt/Queries/Queries/avtKurtosisQuery.h

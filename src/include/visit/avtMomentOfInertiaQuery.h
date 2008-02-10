@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtMomentOfInertiaQuery.h
+../../avt/Queries/Queries/avtMomentOfInertiaQuery.h

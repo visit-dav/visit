@@ -1,1 +1,1 @@
-../../components/Filters/avtSamplePointCommunicator.h
+../../avt/Filters/avtSamplePointCommunicator.h

@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtOriginalDataNumZonesQuery.h
+../../avt/Queries/Queries/avtOriginalDataNumZonesQuery.h

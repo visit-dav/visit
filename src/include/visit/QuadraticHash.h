@@ -1,1 +1,1 @@
-../../components/MIR/Tet/QuadraticHash.h
+../../avt/MIR/Tet/QuadraticHash.h

@@ -1,1 +1,1 @@
-../../components/Pipeline/AbstractFilters/avtSamplePointsToDataObjectFilter.h
+../../avt/Pipeline/AbstractFilters/avtSamplePointsToDataObjectFilter.h

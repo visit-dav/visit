@@ -1,1 +1,1 @@
-../../components/DBAtts/SIL/avtSILNamespace.h
+../../avt/DBAtts/SIL/avtSILNamespace.h

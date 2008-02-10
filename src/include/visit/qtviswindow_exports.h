@@ -1,1 +1,1 @@
-../../components/QtVisWindow/qtviswindow_exports.h
+../../avt/QtVisWindow/qtviswindow_exports.h

@@ -1,1 +1,1 @@
-../../components/Preprocessor/avtResamplePreprocessor.h
+../../avt/Preprocessor/avtResamplePreprocessor.h

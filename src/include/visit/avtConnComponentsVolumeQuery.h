@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtConnComponentsVolumeQuery.h
+../../avt/Queries/Queries/avtConnComponentsVolumeQuery.h

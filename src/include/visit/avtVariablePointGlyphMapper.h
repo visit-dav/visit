@@ -1,1 +1,1 @@
-../../components/Plotter/avtVariablePointGlyphMapper.h
+../../avt/Plotter/avtVariablePointGlyphMapper.h

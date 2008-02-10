@@ -1,1 +1,1 @@
-../../components/Queries/Abstract/avtCurveQuery.h
+../../avt/Queries/Abstract/avtCurveQuery.h

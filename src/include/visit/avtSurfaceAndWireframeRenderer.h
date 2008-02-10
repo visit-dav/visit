@@ -1,1 +1,1 @@
-../../components/Plotter/avtSurfaceAndWireframeRenderer.h
+../../avt/Plotter/avtSurfaceAndWireframeRenderer.h

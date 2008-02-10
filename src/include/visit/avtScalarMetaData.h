@@ -1,1 +1,1 @@
-../../components/DBAtts/MetaData/avtScalarMetaData.h
+../../avt/DBAtts/MetaData/avtScalarMetaData.h

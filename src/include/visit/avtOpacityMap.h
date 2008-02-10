@@ -1,1 +1,1 @@
-../../components/Pipeline/Data/avtOpacityMap.h
+../../avt/Pipeline/Data/avtOpacityMap.h

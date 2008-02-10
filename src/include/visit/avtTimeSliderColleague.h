@@ -1,1 +1,1 @@
-../../components/VisWindow/Colleagues/avtTimeSliderColleague.h
+../../avt/VisWindow/Colleagues/avtTimeSliderColleague.h

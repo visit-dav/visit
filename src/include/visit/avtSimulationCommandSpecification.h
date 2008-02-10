@@ -1,1 +1,1 @@
-../../components/DBAtts/MetaData/avtSimulationCommandSpecification.h
+../../avt/DBAtts/MetaData/avtSimulationCommandSpecification.h

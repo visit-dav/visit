@@ -1,1 +1,1 @@
-../../components/Queries/Pick/avtCurvePickQuery.h
+../../avt/Queries/Pick/avtCurvePickQuery.h

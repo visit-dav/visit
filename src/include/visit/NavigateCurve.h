@@ -1,1 +1,1 @@
-../../components/VisWindow/Interactors/NavigateCurve.h
+../../avt/VisWindow/Interactors/NavigateCurve.h

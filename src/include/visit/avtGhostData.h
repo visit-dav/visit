@@ -1,1 +1,1 @@
-../../components/Pipeline/Data/avtGhostData.h
+../../avt/Pipeline/Data/avtGhostData.h

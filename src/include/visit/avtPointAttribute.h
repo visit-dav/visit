@@ -1,1 +1,1 @@
-../../components/Pipeline/Data/avtPointAttribute.h
+../../avt/Pipeline/Data/avtPointAttribute.h

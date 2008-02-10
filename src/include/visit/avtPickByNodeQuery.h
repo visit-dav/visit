@@ -1,1 +1,1 @@
-../../components/Queries/Pick/avtPickByNodeQuery.h
+../../avt/Queries/Pick/avtPickByNodeQuery.h

@@ -1,1 +1,1 @@
-../../components/Queries/Abstract/avtDataObjectQuery.h
+../../avt/Queries/Abstract/avtDataObjectQuery.h

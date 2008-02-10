@@ -1,1 +1,1 @@
-../../components/Queries/Abstract/avtMultipleInputQuery.h
+../../avt/Queries/Abstract/avtMultipleInputQuery.h

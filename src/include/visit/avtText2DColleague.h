@@ -1,1 +1,1 @@
-../../components/VisWindow/Colleagues/avtText2DColleague.h
+../../avt/VisWindow/Colleagues/avtText2DColleague.h

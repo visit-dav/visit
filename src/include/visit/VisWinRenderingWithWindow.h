@@ -1,1 +1,1 @@
-../../components/QtVisWindow/VisWinRenderingWithWindow.h
+../../avt/QtVisWindow/VisWinRenderingWithWindow.h

@@ -1,1 +1,1 @@
-../../components/Pipeline/Sinks/avtTerminatingImageSink.h
+../../avt/Pipeline/Sinks/avtTerminatingImageSink.h

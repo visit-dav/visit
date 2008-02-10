@@ -1,1 +1,1 @@
-../../components/Shapelets/avtShapeletDecompose.h
+../../avt/Shapelets/avtShapeletDecompose.h

@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtTotalSurfaceAreaQuery.h
+../../avt/Queries/Queries/avtTotalSurfaceAreaQuery.h

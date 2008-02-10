@@ -1,1 +1,1 @@
-../../components/VisWindow/Colleagues/avtLegendAttributesColleague.h
+../../avt/VisWindow/Colleagues/avtLegendAttributesColleague.h

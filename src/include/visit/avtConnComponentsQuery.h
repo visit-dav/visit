@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtConnComponentsQuery.h
+../../avt/Queries/Queries/avtConnComponentsQuery.h

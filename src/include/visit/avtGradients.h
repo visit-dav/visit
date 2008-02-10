@@ -1,1 +1,1 @@
-../../components/Pipeline/Data/avtGradients.h
+../../avt/Pipeline/Data/avtGradients.h

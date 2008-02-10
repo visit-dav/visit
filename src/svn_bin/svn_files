@@ -56,7 +56,7 @@ push @files, get_recursive    "./common";
 push @files, get_recursive    "./visit_vtk";
 push @files, get_recursive    "./engine";
 push @files, get_recursive    "./launcher";
-push @files, get_recursive    "./components";
+push @files, get_recursive    "./avt";
 push @files, get_recursive    "./vtkqt";
 push @files, get_recursive    "./plots";
 push @files, get_recursive    "./operators";

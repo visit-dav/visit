@@ -1,1 +1,1 @@
-../../components/VisWindow/Interactors/VisitHotPointInteractor.h
+../../avt/VisWindow/Interactors/VisitHotPointInteractor.h

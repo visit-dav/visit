@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtEulerianQuery.h
+../../avt/Queries/Queries/avtEulerianQuery.h

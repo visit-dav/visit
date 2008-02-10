@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtCentroidQuery.h
+../../avt/Queries/Queries/avtCentroidQuery.h

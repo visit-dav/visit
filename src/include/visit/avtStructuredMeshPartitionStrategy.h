@@ -1,1 +1,1 @@
-../../components/Pipeline/AbstractFilters/avtStructuredMeshPartitionStrategy.h
+../../avt/Pipeline/AbstractFilters/avtStructuredMeshPartitionStrategy.h

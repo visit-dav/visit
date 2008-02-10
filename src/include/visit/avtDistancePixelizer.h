@@ -1,1 +1,1 @@
-../../components/Pipeline/Data/avtDistancePixelizer.h
+../../avt/Pipeline/Data/avtDistancePixelizer.h

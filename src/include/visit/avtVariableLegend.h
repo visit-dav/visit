@@ -1,1 +1,1 @@
-../../components/Plotter/avtVariableLegend.h
+../../avt/Plotter/avtVariableLegend.h

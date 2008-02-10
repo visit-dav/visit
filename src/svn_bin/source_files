@@ -69,7 +69,7 @@ push @files, get_svn_recursive    "./src/common";
 push @files, get_svn_recursive    "./src/visit_vtk";
 push @files, get_svn_recursive    "./src/engine";
 push @files, get_svn_recursive    "./src/launcher";
-push @files, get_svn_recursive    "./src/components";
+push @files, get_svn_recursive    "./src/avt";
 push @files, get_svn_recursive    "./src/vtkqt";
 push @files, get_svn_recursive    "./src/plots";
 push @files, get_svn_recursive    "./src/operators";

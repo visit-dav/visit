@@ -1,1 +1,1 @@
-../../components/Pipeline/Data/avtImagePartition.h
+../../avt/Pipeline/Data/avtImagePartition.h

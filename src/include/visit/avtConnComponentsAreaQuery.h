@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtConnComponentsAreaQuery.h
+../../avt/Queries/Queries/avtConnComponentsAreaQuery.h

@@ -1,1 +1,1 @@
-../../components/VisWindow/Interactors/ZoomCurve.h
+../../avt/VisWindow/Interactors/ZoomCurve.h

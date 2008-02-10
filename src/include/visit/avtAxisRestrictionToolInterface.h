@@ -1,1 +1,1 @@
-../../components/VisWindow/Tools/avtAxisRestrictionToolInterface.h
+../../avt/VisWindow/Tools/avtAxisRestrictionToolInterface.h

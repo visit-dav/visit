@@ -1,1 +1,1 @@
-../../components/Plotter/avtLabeledCurveMapper.h
+../../avt/Plotter/avtLabeledCurveMapper.h

@@ -1,1 +1,1 @@
-../../components/Plotter/avtPickActor.h
+../../avt/Plotter/avtPickActor.h

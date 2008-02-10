@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtNodeCoordsQuery.h
+../../avt/Queries/Queries/avtNodeCoordsQuery.h

@@ -306,6 +306,9 @@
 #     Hank Childs, Sat Feb  9 14:18:54 PST 2008
 #     Change clearcase_bin to svn_bin in help section.
 #
+#     Hank Childs, Sat Feb  9 15:23:42 PST 2008
+#     Rename components directory to avt.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -6519,11 +6522,11 @@ function build_visit
            mv -f databases/SimV1Writer/Makefile \
              databases/SimV1Writer/Makefile.orig
            mv -f Make.tmp databases/SimV1Writer/Makefile
-           cat components/Expressions/Makefile | \
+           cat avt/Expressions/Makefile | \
               sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
-           mv -f components/Expressions/Makefile \
-             components/Expressions/Makefile.orig
-           mv -f Make.tmp components/Expressions/Makefile
+           mv -f avt/Expressions/Makefile \
+             avt/Expressions/Makefile.orig
+           mv -f Make.tmp avt/Expressions/Makefile
         else
            cat databases/SimV1/Makefile | \
               sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
@@ -6536,12 +6539,12 @@ function build_visit
            mv -f databases/SimV1Writer/Makefile \
              databases/SimV1Writer/Makefile.orig
            mv -f Make.tmp databases/SimV1Writer/Makefile
-           cat components/Expressions/Makefile | \
+           cat avt/Expressions/Makefile | \
               sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
               Make.tmp
-           mv -f components/Expressions/Makefile \
-             components/Expressions/Makefile.orig
-           mv -f Make.tmp components/Expressions/Makefile
+           mv -f avt/Expressions/Makefile \
+             avt/Expressions/Makefile.orig
+           mv -f Make.tmp avt/Expressions/Makefile
         fi
     elif [[ "$OPSYS" == "SunOS" ]]; then
         # Some Solaris systems hang when compiling Fluent when optimizations

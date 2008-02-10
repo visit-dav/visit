@@ -1,1 +1,1 @@
-../../components/VisWindow/Interactors/Navigate2D.h
+../../avt/VisWindow/Interactors/Navigate2D.h

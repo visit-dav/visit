@@ -1,1 +1,1 @@
-../../components/Filters/avtVertexNormalsFilter.h
+../../avt/Filters/avtVertexNormalsFilter.h

@@ -1,1 +1,1 @@
-../../components/Plotter/avtPointGlypher.h
+../../avt/Plotter/avtPointGlypher.h
