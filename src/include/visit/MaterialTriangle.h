@@ -1,1 +1,1 @@
-../../components/MIR/Tet/MaterialTriangle.h
+../../avt/MIR/Tet/MaterialTriangle.h

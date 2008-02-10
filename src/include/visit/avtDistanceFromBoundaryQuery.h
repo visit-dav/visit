@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtDistanceFromBoundaryQuery.h
+../../avt/Queries/Queries/avtDistanceFromBoundaryQuery.h

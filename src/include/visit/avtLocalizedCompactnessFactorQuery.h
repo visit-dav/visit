@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtLocalizedCompactnessFactorQuery.h
+../../avt/Queries/Queries/avtLocalizedCompactnessFactorQuery.h

@@ -1,1 +1,1 @@
-../../components/VisWindow/Proxies/VisWindowColleagueProxy.h
+../../avt/VisWindow/Proxies/VisWindowColleagueProxy.h

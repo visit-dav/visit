@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtOriginalDataSpatialExtentsQuery.h
+../../avt/Queries/Queries/avtOriginalDataSpatialExtentsQuery.h

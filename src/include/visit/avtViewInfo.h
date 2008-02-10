@@ -1,1 +1,1 @@
-../../components/View/avtViewInfo.h
+../../avt/View/avtViewInfo.h

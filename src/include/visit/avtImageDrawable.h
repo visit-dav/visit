@@ -1,1 +1,1 @@
-../../components/Plotter/avtImageDrawable.h
+../../avt/Plotter/avtImageDrawable.h

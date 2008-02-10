@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtTrajectoryByNode.h
+../../avt/Queries/Queries/avtTrajectoryByNode.h

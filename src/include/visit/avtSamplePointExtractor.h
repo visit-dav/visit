@@ -1,1 +1,1 @@
-../../components/Filters/avtSamplePointExtractor.h
+../../avt/Filters/avtSamplePointExtractor.h

@@ -1,1 +1,1 @@
-../../components/Plotter/avtLabelActor.h
+../../avt/Plotter/avtLabelActor.h

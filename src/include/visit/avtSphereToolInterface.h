@@ -1,1 +1,1 @@
-../../components/VisWindow/Tools/avtSphereToolInterface.h
+../../avt/VisWindow/Tools/avtSphereToolInterface.h

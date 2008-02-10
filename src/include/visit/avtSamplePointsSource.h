@@ -1,1 +1,1 @@
-../../components/Pipeline/Sources/avtSamplePointsSource.h
+../../avt/Pipeline/Sources/avtSamplePointsSource.h

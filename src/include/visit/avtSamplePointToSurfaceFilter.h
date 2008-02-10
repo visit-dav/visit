@@ -1,1 +1,1 @@
-../../components/Filters/avtSamplePointToSurfaceFilter.h
+../../avt/Filters/avtSamplePointToSurfaceFilter.h

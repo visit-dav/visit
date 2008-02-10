@@ -1,1 +1,1 @@
-../../components/Filters/avtSmoothPolyDataFilter.h
+../../avt/Filters/avtSmoothPolyDataFilter.h

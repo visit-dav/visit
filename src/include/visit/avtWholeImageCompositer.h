@@ -1,1 +1,1 @@
-../../components/Filters/avtWholeImageCompositer.h
+../../avt/Filters/avtWholeImageCompositer.h

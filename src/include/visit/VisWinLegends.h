@@ -1,1 +1,1 @@
-../../components/VisWindow/Colleagues/VisWinLegends.h
+../../avt/VisWindow/Colleagues/VisWinLegends.h

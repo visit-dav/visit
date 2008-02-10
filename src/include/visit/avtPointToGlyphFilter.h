@@ -1,1 +1,1 @@
-../../components/Filters/avtPointToGlyphFilter.h
+../../avt/Filters/avtPointToGlyphFilter.h

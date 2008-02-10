@@ -1,1 +1,1 @@
-../../components/View/avtView3D.h
+../../avt/View/avtView3D.h

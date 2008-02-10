@@ -1,1 +1,1 @@
-../../components/VisWindow/Colleagues/VisWinRendering.h
+../../avt/VisWindow/Colleagues/VisWinRendering.h

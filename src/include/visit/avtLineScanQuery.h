@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtLineScanQuery.h
+../../avt/Queries/Queries/avtLineScanQuery.h

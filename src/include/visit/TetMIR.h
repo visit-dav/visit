@@ -1,1 +1,1 @@
-../../components/MIR/Tet/TetMIR.h
+../../avt/MIR/Tet/TetMIR.h

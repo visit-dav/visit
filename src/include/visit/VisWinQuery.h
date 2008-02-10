@@ -1,1 +1,1 @@
-../../components/VisWindow/Colleagues/VisWinQuery.h
+../../avt/VisWindow/Colleagues/VisWinQuery.h

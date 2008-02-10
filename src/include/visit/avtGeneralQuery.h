@@ -1,1 +1,1 @@
-../../components/Queries/Abstract/avtGeneralQuery.h
+../../avt/Queries/Abstract/avtGeneralQuery.h

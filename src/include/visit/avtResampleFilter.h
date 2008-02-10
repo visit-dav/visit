@@ -1,1 +1,1 @@
-../../components/Filters/avtResampleFilter.h
+../../avt/Filters/avtResampleFilter.h

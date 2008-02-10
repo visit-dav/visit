@@ -1,1 +1,1 @@
-../../components/Pipeline/AbstractFilters/avtSweepPlanePartitionStrategy.h
+../../avt/Pipeline/AbstractFilters/avtSweepPlanePartitionStrategy.h

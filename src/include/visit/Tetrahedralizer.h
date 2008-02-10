@@ -1,1 +1,1 @@
-../../components/MIR/Tet/Tetrahedralizer.h
+../../avt/MIR/Tet/Tetrahedralizer.h

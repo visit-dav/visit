@@ -1,1 +1,1 @@
-../../components/Plotter/avtTransparencyActor.h
+../../avt/Plotter/avtTransparencyActor.h

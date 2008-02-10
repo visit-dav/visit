@@ -1,1 +1,1 @@
-../../components/Database/Formats/avtMTSDFileFormatInterface.h
+../../avt/Database/Formats/avtMTSDFileFormatInterface.h

@@ -1,1 +1,1 @@
-../../components/Filters/avtGhostZoneFilter.h
+../../avt/Filters/avtGhostZoneFilter.h

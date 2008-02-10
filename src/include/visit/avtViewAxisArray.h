@@ -1,1 +1,1 @@
-../../components/View/avtViewAxisArray.h
+../../avt/View/avtViewAxisArray.h

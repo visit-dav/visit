@@ -764,6 +764,9 @@ dnl
 dnl    Eric Brugger, Fri Jan 11 12:16:03 PST 2008
 dnl    Added a test for the function strtof.
 dnl
+dnl    Hank Childs, Sat Feb  9 15:22:00 PST 2008
+dnl    Rename components directory to avt.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3768,23 +3771,23 @@ VISIT_VTK_FILES="visit_vtk/Makefile
                  visit_vtk/lightweight/Makefile
                  visit_vtk/full/Makefile
                  visit_vtk/parallel/Makefile"
-COMPONENT_FILES="components/Makefile
-                 components/DBAtts/Makefile
-                 components/DDF/Makefile
-                 components/Database/Makefile
-                 components/Expressions/Makefile
-                 components/FileWriter/Makefile
-                 components/Filters/Makefile
-                 components/Math/Makefile
-                 components/MIR/Makefile
-                 components/Pipeline/Makefile
-                 components/Plotter/Makefile
-                 components/Preprocessor/Makefile
-                 components/Queries/Makefile
-                 components/Shapelets/Makefile
-                 components/View/Makefile
-                 components/VisWindow/Makefile
-                 components/QtVisWindow/Makefile"
+COMPONENT_FILES="avt/Makefile
+                 avt/DBAtts/Makefile
+                 avt/DDF/Makefile
+                 avt/Database/Makefile
+                 avt/Expressions/Makefile
+                 avt/FileWriter/Makefile
+                 avt/Filters/Makefile
+                 avt/Math/Makefile
+                 avt/MIR/Makefile
+                 avt/Pipeline/Makefile
+                 avt/Plotter/Makefile
+                 avt/Preprocessor/Makefile
+                 avt/Queries/Makefile
+                 avt/Shapelets/Makefile
+                 avt/View/Makefile
+                 avt/VisWindow/Makefile
+                 avt/QtVisWindow/Makefile"
 PLOT_FILES="plots/Makefile"
 OPERATOR_FILES="operators/Makefile"
 DATABASE_FILES="databases/Makefile"

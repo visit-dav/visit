@@ -1,1 +1,1 @@
-../../components/Pipeline/Sinks/avtMultipleInputSink.h
+../../avt/Pipeline/Sinks/avtMultipleInputSink.h

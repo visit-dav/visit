@@ -1,1 +1,1 @@
-../../components/DBAtts/MetaData/avtTypes.h
+../../avt/DBAtts/MetaData/avtTypes.h

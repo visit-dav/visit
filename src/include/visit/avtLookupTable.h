@@ -1,1 +1,1 @@
-../../components/Plotter/avtLookupTable.h
+../../avt/Plotter/avtLookupTable.h

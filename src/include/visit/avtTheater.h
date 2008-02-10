@@ -1,1 +1,1 @@
-../../components/Plotter/avtTheater.h
+../../avt/Plotter/avtTheater.h

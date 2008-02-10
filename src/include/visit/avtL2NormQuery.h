@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtL2NormQuery.h
+../../avt/Queries/Queries/avtL2NormQuery.h

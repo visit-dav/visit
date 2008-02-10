@@ -1,1 +1,1 @@
-../../components/Pipeline/Data/avtResampleSelection.h
+../../avt/Pipeline/Data/avtResampleSelection.h

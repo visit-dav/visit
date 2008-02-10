@@ -1,1 +1,1 @@
-../../components/Pipeline/Data/avtRayFunction.h
+../../avt/Pipeline/Data/avtRayFunction.h

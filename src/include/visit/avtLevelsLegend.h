@@ -1,1 +1,1 @@
-../../components/Plotter/avtLevelsLegend.h
+../../avt/Plotter/avtLevelsLegend.h

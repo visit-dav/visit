@@ -1,1 +1,1 @@
-../../components/VisWindow/Tools/avtPointToolInterface.h
+../../avt/VisWindow/Tools/avtPointToolInterface.h

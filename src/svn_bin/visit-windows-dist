@@ -75,6 +75,9 @@
 #   Kathleen Bonnell, Fri Dec 21 13:48:10 PST 2007 
 #   Capture 'SVN_REVISION' for the windows version of visit-config.h.
 # 
+#   Hank Childs, Sat Feb  9 15:23:42 PST 2008
+#   Rename components directory to avt.
+#
 #------------------------------------------------------------------------------
 
 # Need another way to determine we are starting in the right directory.
@@ -173,7 +176,7 @@ rm -rf $VISITSRC/include/visit
 #
 # Move a bunch of the core header files to the new visit directory
 #
-foreach srcdir (common components gui viewer engine mdserver launcher visitpy visit_vtk vtkqt winutil)
+foreach srcdir (common avt gui viewer engine mdserver launcher visitpy visit_vtk vtkqt winutil)
     foreach srcfile (`find $VISITSRC/$srcdir -name "*.h"`)
         mv $srcfile include/VisIt
     end

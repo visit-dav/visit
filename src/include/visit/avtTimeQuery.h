@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtTimeQuery.h
+../../avt/Queries/Queries/avtTimeQuery.h

@@ -1,1 +1,1 @@
-../../components/View/avtViewCurve.h
+../../avt/View/avtViewCurve.h

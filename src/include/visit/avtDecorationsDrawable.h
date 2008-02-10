@@ -1,1 +1,1 @@
-../../components/Plotter/avtDecorationsDrawable.h
+../../avt/Plotter/avtDecorationsDrawable.h

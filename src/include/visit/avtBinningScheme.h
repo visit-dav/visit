@@ -1,1 +1,1 @@
-../../components/DDF/avtBinningScheme.h
+../../avt/DDF/avtBinningScheme.h

@@ -1,1 +1,1 @@
-../../components/VisWindow/Interactors/NavigateAxisArray.h
+../../avt/VisWindow/Interactors/NavigateAxisArray.h

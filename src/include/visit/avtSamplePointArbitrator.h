@@ -1,1 +1,1 @@
-../../components/Pipeline/Data/avtSamplePointArbitrator.h
+../../avt/Pipeline/Data/avtSamplePointArbitrator.h

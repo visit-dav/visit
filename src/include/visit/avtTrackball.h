@@ -1,1 +1,1 @@
-../../components/Math/avtTrackball.h
+../../avt/Math/avtTrackball.h

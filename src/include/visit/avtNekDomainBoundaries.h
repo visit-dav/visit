@@ -1,1 +1,1 @@
-../../components/Database/Ghost/avtNekDomainBoundaries.h
+../../avt/Database/Ghost/avtNekDomainBoundaries.h

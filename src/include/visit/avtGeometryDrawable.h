@@ -1,1 +1,1 @@
-../../components/Plotter/avtGeometryDrawable.h
+../../avt/Plotter/avtGeometryDrawable.h

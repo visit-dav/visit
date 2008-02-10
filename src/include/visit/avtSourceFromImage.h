@@ -1,1 +1,1 @@
-../../components/Pipeline/Sources/avtSourceFromImage.h
+../../avt/Pipeline/Sources/avtSourceFromImage.h

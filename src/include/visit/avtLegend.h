@@ -1,1 +1,1 @@
-../../components/Plotter/avtLegend.h
+../../avt/Plotter/avtLegend.h

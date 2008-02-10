@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtAverageMeanCurvatureQuery.h
+../../avt/Queries/Queries/avtAverageMeanCurvatureQuery.h

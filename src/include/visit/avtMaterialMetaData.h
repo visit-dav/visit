@@ -1,1 +1,1 @@
-../../components/DBAtts/MetaData/avtMaterialMetaData.h
+../../avt/DBAtts/MetaData/avtMaterialMetaData.h

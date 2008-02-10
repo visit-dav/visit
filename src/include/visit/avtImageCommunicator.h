@@ -1,1 +1,1 @@
-../../components/Filters/avtImageCommunicator.h
+../../avt/Filters/avtImageCommunicator.h

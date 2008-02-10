@@ -1,1 +1,1 @@
-../../components/Pipeline/Data/avtPointExtractor.h
+../../avt/Pipeline/Data/avtPointExtractor.h

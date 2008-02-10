@@ -1,1 +1,1 @@
-../../components/Queries/Pick/avtActualZoneCoordsQuery.h
+../../avt/Queries/Pick/avtActualZoneCoordsQuery.h

@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtSummationQuery.h
+../../avt/Queries/Queries/avtSummationQuery.h

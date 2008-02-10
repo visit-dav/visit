@@ -1,1 +1,1 @@
-../../components/Pipeline/Pipeline/avtParallel.h
+../../avt/Pipeline/Pipeline/avtParallel.h

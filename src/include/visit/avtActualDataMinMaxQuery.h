@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtActualDataMinMaxQuery.h
+../../avt/Queries/Queries/avtActualDataMinMaxQuery.h

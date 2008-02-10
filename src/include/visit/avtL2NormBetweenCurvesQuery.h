@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtL2NormBetweenCurvesQuery.h
+../../avt/Queries/Queries/avtL2NormBetweenCurvesQuery.h

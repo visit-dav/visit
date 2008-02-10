@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtWatertightQuery.h
+../../avt/Queries/Queries/avtWatertightQuery.h

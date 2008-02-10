@@ -1,1 +1,1 @@
-../../components/MIR/Base/MIR.h
+../../avt/MIR/Base/MIR.h

@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtMassDistributionQuery.h
+../../avt/Queries/Queries/avtMassDistributionQuery.h

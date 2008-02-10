@@ -1,1 +1,1 @@
-../../components/Plotter/avtLightList.h
+../../avt/Plotter/avtLightList.h

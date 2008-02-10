@@ -1,1 +1,1 @@
-../../components/Queries/Queries/avtVariableByNodeQuery.h
+../../avt/Queries/Queries/avtVariableByNodeQuery.h

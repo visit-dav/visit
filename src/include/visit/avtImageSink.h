@@ -1,1 +1,1 @@
-../../components/Pipeline/Sinks/avtImageSink.h
+../../avt/Pipeline/Sinks/avtImageSink.h

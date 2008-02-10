@@ -1,1 +1,1 @@
-../../components/Pipeline/Data/avtOpacityMapSamplePointArbitrator.h
+../../avt/Pipeline/Data/avtOpacityMapSamplePointArbitrator.h

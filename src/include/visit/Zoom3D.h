@@ -1,1 +1,1 @@
-../../components/VisWindow/Interactors/Zoom3D.h
+../../avt/VisWindow/Interactors/Zoom3D.h

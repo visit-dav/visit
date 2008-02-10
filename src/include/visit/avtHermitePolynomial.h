@@ -1,1 +1,1 @@
-../../components/Math/avtHermitePolynomial.h
+../../avt/Math/avtHermitePolynomial.h

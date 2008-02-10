@@ -1,1 +1,1 @@
-../../components/Queries/Misc/avtQueryFactory.h
+../../avt/Queries/Misc/avtQueryFactory.h

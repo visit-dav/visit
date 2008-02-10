@@ -1,1 +1,1 @@
-../../components/Pipeline/Sinks/avtTerminatingNullDataSink.h
+../../avt/Pipeline/Sinks/avtTerminatingNullDataSink.h

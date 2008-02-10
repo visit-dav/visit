@@ -1,1 +1,1 @@
-../../components/Plotter/avtMesaSurfaceAndWireframeRenderer.h
+../../avt/Plotter/avtMesaSurfaceAndWireframeRenderer.h

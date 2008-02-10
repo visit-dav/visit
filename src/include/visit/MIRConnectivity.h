@@ -1,1 +1,1 @@
-../../components/MIR/Base/MIRConnectivity.h
+../../avt/MIR/Base/MIRConnectivity.h

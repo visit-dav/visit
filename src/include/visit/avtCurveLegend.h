@@ -1,1 +1,1 @@
-../../components/Plotter/avtCurveLegend.h
+../../avt/Plotter/avtCurveLegend.h

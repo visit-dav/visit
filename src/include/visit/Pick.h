@@ -1,1 +1,1 @@
-../../components/VisWindow/Interactors/Pick.h
+../../avt/VisWindow/Interactors/Pick.h

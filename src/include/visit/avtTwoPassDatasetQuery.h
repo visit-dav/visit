@@ -1,1 +1,1 @@
-../../components/Queries/Abstract/avtTwoPassDatasetQuery.h
+../../avt/Queries/Abstract/avtTwoPassDatasetQuery.h

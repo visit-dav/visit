@@ -1,1 +1,1 @@
-../../components/Queries/Abstract/query_exports.h
+../../avt/Queries/Abstract/query_exports.h

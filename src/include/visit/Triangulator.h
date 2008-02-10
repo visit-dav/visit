@@ -1,1 +1,1 @@
-../../components/MIR/Tet/Triangulator.h
+../../avt/MIR/Tet/Triangulator.h

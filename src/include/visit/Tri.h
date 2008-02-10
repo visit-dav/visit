@@ -1,1 +1,1 @@
-../../components/MIR/Tet/Tri.h
+../../avt/MIR/Tet/Tri.h
