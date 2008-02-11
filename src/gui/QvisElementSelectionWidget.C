@@ -134,7 +134,7 @@ QvisElementSelectionWidget::sizeHint() const
     if (s2.width() > maxWidth)
         maxWidth = s2.width();
 
-    return QSize(maxWidth, s1.height() + s3.height());
+    return QSize(maxWidth, s1.height() + s2.height());
 }
 
 // ****************************************************************************
