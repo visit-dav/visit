@@ -174,6 +174,9 @@ QvisColorSelectionWidget::~QvisColorSelectionWidget()
 // Creation:   Tue Dec 5 16:54:00 PST 2000
 //
 // Modifications:
+//    Jeremy Meredith, Mon Feb 11 17:02:27 EST 2008
+//    Fixed a tiny typo (shouldn't have affected anything since the
+//    two grids are the same size).
 //   
 // ****************************************************************************
 
@@ -187,7 +190,7 @@ QvisColorSelectionWidget::sizeHint() const
     // Find the largest width.
     int maxWidth = s1.width();
     if(s2.width() > maxWidth)
-        maxWidth = s3.width();
+        maxWidth = s2.width();
     if(s3.width() > maxWidth)
         maxWidth = s3.width();
 

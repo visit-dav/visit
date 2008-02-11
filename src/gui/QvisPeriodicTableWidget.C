@@ -96,6 +96,8 @@ static int element_type_colors[9][3] = {
 // Creation:   August 11, 2006
 //
 // Modifications:
+//    Jeremy Meredith, Mon Feb 11 15:21:46 EST 2008
+//    Removed setting of ispopup to true; it's not for us to decide.
 //
 // ****************************************************************************
 
@@ -109,8 +111,6 @@ QvisPeriodicTableWidget::QvisPeriodicTableWidget(QWidget *parent, const char *na
     boxSizeValue = 24;
     boxPaddingValue = 2;
     setMinimumSize(minimumSize());
-
-    setIsPopup(true);
 }
 
 // ****************************************************************************
@@ -141,13 +141,15 @@ QvisPeriodicTableWidget::~QvisPeriodicTableWidget()
 // Creation:   August 11, 2006
 //
 // Modifications:
+//    Jeremy Meredith, Mon Feb 11 16:46:57 EST 2008
+//    Default to "-1" element number in case we didn't have anything selected.
 //   
 // ****************************************************************************
 
 void
 QvisPeriodicTableWidget::setSelectedElement(int element)
 {
-    int index;
+    int index = -1;
     for (index = 0; index < numGridSquares; index++)
     {
         if (indexToElement(index)-1 == element)

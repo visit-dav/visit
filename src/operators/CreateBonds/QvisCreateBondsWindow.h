@@ -74,6 +74,9 @@ class QvisElementButton;
 // Creation:   Wed Apr 19 17:23:18 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Mon Feb 11 17:03:15 EST 2008
+//    Added support for wildcards for atomic numbers.  Necessitated
+//    adding an up/down button (since order is now significant).
 //   
 // ****************************************************************************
 
@@ -98,6 +101,8 @@ class QvisCreateBondsWindow : public QvisOperatorWindow
     void elementVariableChanged(const QString &varName);
     void bondsListNew();
     void bondsListDel();
+    void bondsListUp();
+    void bondsListDown();
     void minDistTextChanged(const QString&);
     void maxDistTextChanged(const QString&);
     void minDistReturnPressed();

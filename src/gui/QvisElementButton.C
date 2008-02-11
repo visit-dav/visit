@@ -38,6 +38,7 @@
 
 #include <QvisElementButton.h>
 #include <QvisPeriodicTableWidget.h>
+#include <QvisElementSelectionWidget.h>
 #include <qapplication.h>
 #include <qbrush.h>
 #include <qpainter.h>
@@ -46,7 +47,7 @@
 #include "AtomicProperties.h"
 
 // Static members.
-QvisPeriodicTableWidget *QvisElementButton::sharedpopup = 0;
+QvisElementSelectionWidget *QvisElementButton::sharedpopup = 0;
 QvisElementButton::ElementButtonVector QvisElementButton::buttons;
 
 // ****************************************************************************
@@ -65,15 +66,22 @@ QvisElementButton::ElementButtonVector QvisElementButton::buttons;
 // Notes: Taken largely from QvisColorButton
 //
 // Modifications:
+//    Jeremy Meredith, Mon Feb 11 16:46:57 EST 2008
+//    Changed to use the element selection widget instead of the
+//    simple periodic table widget; the former was created to contain
+//    both a periodic table widget and a "match any element" button
+//    to allow wildcards.
 //
 // ****************************************************************************
 
 QvisElementButton::QvisElementButton(QWidget *parent, const char *name,
     const void *data) : QPushButton(parent, name), number(-1)
 {
+    setText("*");
+
     // Create the button's color selection popup menu.
     if (sharedpopup == 0)
-        sharedpopup = new QvisPeriodicTableWidget(0,"sharedpopup",WType_Popup);
+        sharedpopup = new QvisElementSelectionWidget(0,"sharedpopup",WType_Popup);
     buttons.push_back(this);
 
     // Make the popup active when this button is clicked.
@@ -173,16 +181,21 @@ QvisElementButton::sizePolicy() const
 // Creation:   August 29, 2006
 //
 // Modifications:
+//    Jeremy Meredith, Mon Feb 11 16:46:57 EST 2008
+//    Allow a "-1" element number to mean "any element" wildcard.
 //
 // ****************************************************************************
 
 void
 QvisElementButton::setElementNumber(int e)
 {
-    if (e >= 0 && e < MAX_ELEMENT_NUMBER && number != e)
+    if (e >= -1 && e < MAX_ELEMENT_NUMBER && number != e)
     {
         number = e;
-        setText(element_names[e]);
+        if (e == -1)
+            setText("*");
+        else
+            setText(element_names[e]);
 
         if(isVisible())
             update();
@@ -292,16 +305,21 @@ QvisElementButton::popupPressed()
 // Creation:   August 29, 2006
 //
 // Modifications:
+//    Jeremy Meredith, Mon Feb 11 16:46:57 EST 2008
+//    Allow a "-1" element number to mean "any element" wildcard.
 //
 // ****************************************************************************
 
 void
 QvisElementButton::elementSelected(int element)
 {
-    if (element >= 0 && element < MAX_ELEMENT_NUMBER)
+    if (element >= -1 && element < MAX_ELEMENT_NUMBER)
     {
         number = element;
-        setText(element_names[element]);
+        if (element == -1)
+            setText("*");
+        else
+            setText(element_names[element]);
         emit selectedElement(element);
     }
 }
