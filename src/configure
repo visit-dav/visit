@@ -20071,7 +20071,7 @@ rm -f $TOPDIR/exe/xml2makefile
 
 # If we 're on a Darwin system, make bundles for the gui and the viewer.
 if test "$SHORT_UNAME" = "darwin";  then
-    clearcase_bin/makebundles
+    svn_bin/makebundles
 fi
 
 (cd plots     && ${MAKE-make} dirmakefiles)
