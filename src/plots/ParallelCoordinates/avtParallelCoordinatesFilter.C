@@ -187,6 +187,11 @@ avtParallelCoordinatesFilter::ModifyContract(
 //    Jeremy Meredith, Thu Feb  7 17:46:48 EST 2008
 //    Handle array variables.
 //
+//    Jeremy Meredith, Mon Feb 11 17:47:12 EST 2008
+//    More precise support for sendNullOutput since it can get triggered if
+//    nprocs > ndomains, so we need to make sure we do the right thing with
+//    parallel communication.
+//
 // *****************************************************************************
 
 void
@@ -211,17 +216,6 @@ avtParallelCoordinatesFilter::PreExecute(void)
     ComputeCurrentDataExtentsOverAllDomains();
     InitializeDataTupleInput();
     
-    if (sendNullOutput) return;
-    
-    int axisNum;
-        
-    if (sendNullOutput)
-    {
-        debug3 << "PCP/aPAF/PE2: ParallelCoordinates plot shown/selected axis marks "
-               << "missing or out of order." << endl;
-        return;
-    }
-
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
    
     CreateLabels();
@@ -271,51 +265,56 @@ avtParallelCoordinatesFilter::PreExecute(void)
 //    Jeremy Meredith, Thu Feb  7 17:46:59 EST 2008
 //    Handle array variables and bin-defined axis x-positions.
 //
+//    Jeremy Meredith, Mon Feb 11 17:47:12 EST 2008
+//    More precise support for sendNullOutput since it can get triggered if
+//    nprocs > ndomains, so we need to make sure we do the right thing with
+//    parallel communication.
+//
 // ***************************************************************************
 
 void
 avtParallelCoordinatesFilter::PostExecute(void)
 {
     avtDatasetToDatasetFilter::PostExecute();
-    if (sendNullOutput)
-        return;
-
-    avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
-    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+    if (!sendNullOutput)
+    {
+        avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
+        avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
    
-    outAtts.GetTrueSpatialExtents()->Clear();
-    outAtts.GetCumulativeTrueSpatialExtents()->Clear();
+        outAtts.GetTrueSpatialExtents()->Clear();
+        outAtts.GetCumulativeTrueSpatialExtents()->Clear();
 
-    double spatialExtents[6];
+        double spatialExtents[6];
 
-    if (inAtts.GetTrueSpatialExtents()->HasExtents())
-    {
-        inAtts.GetTrueSpatialExtents()->CopyTo(spatialExtents);
+        if (inAtts.GetTrueSpatialExtents()->HasExtents())
+        {
+            inAtts.GetTrueSpatialExtents()->CopyTo(spatialExtents);
 
-        spatialExtents[0] = axisCount<2 ? 0 : axisXPositions[0];
-        spatialExtents[1] = axisCount<2 ? 1 : axisXPositions[axisCount-1];
-        spatialExtents[2] = 0.0;
-        spatialExtents[3] = 1.0;
+            spatialExtents[0] = axisCount<2 ? 0 : axisXPositions[0];
+            spatialExtents[1] = axisCount<2 ? 1 : axisXPositions[axisCount-1];
+            spatialExtents[2] = 0.0;
+            spatialExtents[3] = 1.0;
 
-        outAtts.GetCumulativeTrueSpatialExtents()->Set(spatialExtents);
+            outAtts.GetCumulativeTrueSpatialExtents()->Set(spatialExtents);
+        }
+        else if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
+        {
+            inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(spatialExtents);
+
+            spatialExtents[0] = axisCount<2 ? 0 : axisXPositions[0];
+            spatialExtents[1] = axisCount<2 ? 1 : axisXPositions[axisCount-1];
+            spatialExtents[2] = 0.0;
+            spatialExtents[3] = 1.0;
+
+            outAtts.GetCumulativeTrueSpatialExtents()->Set(spatialExtents);
+        }
+
+        outAtts.SetXLabel("");
+        outAtts.SetYLabel("");
+
+        outAtts.SetXUnits("");
+        outAtts.SetYUnits("");
     }
-    else if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
-    {
-        inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(spatialExtents);
-
-        spatialExtents[0] = axisCount<2 ? 0 : axisXPositions[0];
-        spatialExtents[1] = axisCount<2 ? 1 : axisXPositions[axisCount-1];
-        spatialExtents[2] = 0.0;
-        spatialExtents[3] = 1.0;
-
-        outAtts.GetCumulativeTrueSpatialExtents()->Set(spatialExtents);
-    }
-
-    outAtts.SetXLabel("");
-    outAtts.SetYLabel("");
-
-    outAtts.SetXUnits("");
-    outAtts.SetYUnits("");
 
     if (parCoordsAtts.GetDrawContext())
     {
