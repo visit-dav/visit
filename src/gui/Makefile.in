@@ -383,6 +383,9 @@
 #    Brad Whitlock, Thu Feb 7 15:06:29 PST 2008
 #    Added QvisAxisAttributesWidget, QvisFontAttributesWidget.
 #
+#    Jeremy Meredith, Mon Feb 11 16:49:26 EST 2008
+#    Added QvisElementSelectionWidget.
+#
 ##############################################################################
 
 ##
@@ -434,6 +437,7 @@ HDRMOC = \
     QvisDialogLineEdit.h \
     QvisMeshManagementWindow.h \
     QvisElementButton.h \
+    QvisElementSelectionWidget.h \
     QvisEngineWindow.h \
     QvisExportDBWindow.h \
     QvisExpressionsWindow.h \

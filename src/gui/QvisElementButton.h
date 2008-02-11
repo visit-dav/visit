@@ -46,6 +46,7 @@
 class QPainter;
 class QPopupMenu;
 class QvisPeriodicTableWidget;
+class QvisElementSelectionWidget;
 
 // ****************************************************************************
 // Class: QvisElementButton
@@ -62,6 +63,11 @@ class QvisPeriodicTableWidget;
 // Notes: Taken largely from QvisColorButton
 //
 // Modifications:
+//    Jeremy Meredith, Mon Feb 11 16:46:57 EST 2008
+//    Changed to use the element selection widget instead of the
+//    simple periodic table widget; the former was created to contain
+//    both a periodic table widget and a "match any element" button
+//    to allow wildcards.
 //   
 // ****************************************************************************
 
@@ -87,11 +93,11 @@ private slots:
     void popupPressed();
     void elementSelected(int element);
 private:
-    int                              number;
-    const void                      *userData;
+    int                                number;
+    const void                        *userData;
 
-    static QvisPeriodicTableWidget  *sharedpopup;
-    static ElementButtonVector       buttons;
+    static QvisElementSelectionWidget *sharedpopup;
+    static ElementButtonVector         buttons;
 };
 
 #endif

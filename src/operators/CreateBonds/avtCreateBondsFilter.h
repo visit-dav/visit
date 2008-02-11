@@ -60,6 +60,12 @@ class vtkDataSet;
 //  Programmer: Jeremy Meredith
 //  Creation:   August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Feb 11 16:39:51 EST 2008
+//    The manual bonding matches now supports wildcards, alleviating the need
+//    for a "simple" mode.  (The default for the manual mode is actually
+//    exactly what the simple mode was going to be anyway.)
+//
 // ****************************************************************************
 
 class avtCreateBondsFilter : public avtPluginDataTreeIterator
@@ -84,9 +90,6 @@ class avtCreateBondsFilter : public avtPluginDataTreeIterator
     virtual avtContract_p
                           ModifyContract(avtContract_p spec);
 
-    bool AtomsShouldBeBondedSimple(float *atomicnumbers,
-                                   vtkPoints *pts,
-                                   int a1, int a2);
     bool AtomsShouldBeBondedManual(float *atomicnumbers,
                                    vtkPoints *pts,
                                    int a1, int a2);

@@ -5,27 +5,16 @@
         element
       </Field>
       <Field name="atomicNumber1" label="Second atomic number" type="intVector">
+         0 -1
       </Field>
       <Field name="atomicNumber2" label="Second atomic number" type="intVector">
+        -1 -1
       </Field>
       <Field name="minDist" label="Minimum distance" type="doubleVector">
+        0.4 0.4
       </Field>
       <Field name="maxDist" label="Maximum distance" type="doubleVector">
-      </Field>
-      <Field name="simpleAlgorithmFlag" label="simpleAlgorithmFlag" type="bool">
-        false
-      </Field>
-      <Field name="simpleMinDistWithH" label="simpleMinDistWithH" type="double">
-        0.400000
-      </Field>
-      <Field name="simpleMaxDistWithH" label="simpleMaxDistWithH" type="double">
-        1.200000
-      </Field>
-      <Field name="simpleMinDistNonH" label="simpleMinDistNonH" type="double">
-        0.400000
-      </Field>
-      <Field name="simpleMaxDistNonH" label="simpleMaxDistNonH" type="double">
-        1.900000
+        1.2 1.9
       </Field>
       <Field name="maxBondsClamp" label="maxBondsClamp" type="int">
         10

@@ -121,6 +121,9 @@ QvisCreateBondsWindow::~QvisCreateBondsWindow()
 // Creation:   August 29, 2006
 //
 // Modifications:
+//    Jeremy Meredith, Mon Feb 11 16:52:06 EST 2008
+//    Support wildcards in matches.  This added a need for an up/down button
+//    (since order is now significant).
 //   
 // ****************************************************************************
 
@@ -151,14 +154,25 @@ QvisCreateBondsWindow::CreateWindowContents()
     mainLayout->setRowStretch(2, 1000);
 
     QVBoxLayout *listLayout = new QVBoxLayout(bondsListGroup, 10);
-    listLayout->addSpacing(10);
+    listLayout->addSpacing(15);
+
+    QLabel *noteLabel = new QLabel("Note: first match is taken, so "
+                                   "order is significant",
+                                   bondsListGroup);
+    QFont ital(noteLabel->font());
+    ital.setItalic(true);
+    noteLabel->setFont(ital);
+    //noteLabel->font().setItalic(true);
+    listLayout->addWidget(noteLabel);
 
     bondsList = new QListView(bondsListGroup);
-    bondsList->setResizeMode(QListView::AllColumns);
     bondsList->addColumn("1st");
     bondsList->addColumn("2nd");
     bondsList->addColumn("Min");
     bondsList->addColumn("Max");
+    bondsList->setColumnWidth(0, 50);
+    bondsList->setColumnWidth(1, 50);
+    bondsList->setResizeMode(QListView::AllColumns);
     bondsList->header()->setClickEnabled(false);
     bondsList->header()->setMovingEnabled(false);
     bondsList->setAllColumnsShowFocus(true);
@@ -175,10 +189,20 @@ QvisCreateBondsWindow::CreateWindowContents()
     delButton = new QPushButton("Del", bondsListGroup);
     listButtonLayout->addWidget(delButton);
 
+    upButton = new QPushButton("Up", bondsListGroup);
+    listButtonLayout->addWidget(upButton);
+
+    downButton = new QPushButton("Down", bondsListGroup);
+    listButtonLayout->addWidget(downButton);
+
     connect(newButton, SIGNAL(pressed()),
             this, SLOT(bondsListNew()));
     connect(delButton, SIGNAL(pressed()),
             this, SLOT(bondsListDel()));
+    connect(upButton, SIGNAL(pressed()),
+            this, SLOT(bondsListUp()));
+    connect(downButton, SIGNAL(pressed()),
+            this, SLOT(bondsListDown()));
 
 
     QGroupBox *bondsDetailsGroup = new QGroupBox("Details", bondsListGroup);
@@ -238,6 +262,9 @@ QvisCreateBondsWindow::CreateWindowContents()
 // Creation:   August 29, 2006
 //
 // Modifications:
+//    Jeremy Meredith, Mon Feb 11 16:52:55 EST 2008
+//    Changed to use IDs.  Added support for atomic number of -1 means "any".
+//    Clear selection after regenerating list if nothing used to be selected.
 //   
 // ****************************************************************************
 
@@ -257,16 +284,16 @@ QvisCreateBondsWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case 0: //elementVariable
+          case CreateBondsAttributes::ID_elementVariable:
             elementVariable->setText(atts->GetElementVariable().c_str());
             break;
-          case 1: //atomicNumber1
-          case 2: //atomicNumber2
-          case 3: //minDist
-          case 4: //maxDist
+          case CreateBondsAttributes::ID_atomicNumber1:
+          case CreateBondsAttributes::ID_atomicNumber2:
+          case CreateBondsAttributes::ID_minDist:
+          case CreateBondsAttributes::ID_maxDist:
             update_bonds_list = true;
             break;
-          case 10: //maxBondsClamp
+          case CreateBondsAttributes::ID_maxBondsClamp:
             maxBonds->setText(QString().sprintf("%d",atts->GetMaxBondsClamp()));
             break;
         default:
@@ -283,10 +310,16 @@ QvisCreateBondsWindow::UpdateWindow(bool doAll)
         //for (int i=0; i<n; i++)
         for (int i=n-1; i>=0; i--)
         {
+            QString el1 = "*";
+            QString el2 = "*";
+            if (atts->GetAtomicNumber1()[i] >= 0)
+                el1 = element_names[atts->GetAtomicNumber1()[i]];
+            if (atts->GetAtomicNumber2()[i] >= 0)
+                el2 = element_names[atts->GetAtomicNumber2()[i]];
+
             QListViewItem *item =
                 new QListViewItem(bondsList,
-                                  element_names[atts->GetAtomicNumber1()[i]],
-                                  element_names[atts->GetAtomicNumber2()[i]],
+                                  el1, el2,
                                   QString().sprintf("%.4f",atts->GetMinDist()[i]),
                                   QString().sprintf("%.4f",atts->GetMaxDist()[i]));
             if (old_index == i)
@@ -296,10 +329,13 @@ QvisCreateBondsWindow::UpdateWindow(bool doAll)
         {
             bondsList->setSelected(new_item, true);
         }
+        else
+        {
+            bondsList->clearSelection();
+        }
     }
     UpdateWindowSingleItem();
 }
-
 
 // ****************************************************************************
 // Method: QvisCreateBondsWindow::GetCurrentValues
@@ -380,23 +416,32 @@ QvisCreateBondsWindow::elementVariableChanged(const QString &varName)
     atts->SetElementVariable(varName.latin1());
     SetUpdate(false);
     Apply();
-    cerr << "atts.size = "<<atts->GetMinDist().size()<<endl;
 }
 
 
-//writeSourceCallback unknown for intVector (variable atomicNumber1)
-
-
-//writeSourceCallback unknown for intVector (variable atomicNumber2)
-
-
-//writeSourceCallback unknown for doubleVector (variable minDist)
-
-
-//writeSourceCallback unknown for doubleVector (variable maxDist)
+// ****************************************************************************
+//  Method:  QvisCreateBondsWindow::UpdateWindowSingleItem
+//
+//  Purpose:
+//    Update the contents specific to the selected item in the list.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 30, 2006
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Feb 11 16:55:15 EST 2008
+//    Set the enabled state of the up/down/del buttons.
+//    Also, use selectedItem instead of currentItem; the behavior is
+//    slightly preferable because it's possible to have a currentItem but
+//    nothing selected.
+//
+// ****************************************************************************
 void QvisCreateBondsWindow::UpdateWindowSingleItem()
 {
-    int index = GetItemIndex(bondsList->currentItem());
+    int index = GetItemIndex(bondsList->selectedItem());
 
     int n = GetListLength();
     if (index < 0 || index >= n)
@@ -405,6 +450,9 @@ void QvisCreateBondsWindow::UpdateWindowSingleItem()
         secondElement->setEnabled(false);
         minDist->setEnabled(false);
         maxDist->setEnabled(false);
+        delButton->setEnabled(false);
+        upButton->setEnabled(false);
+        downButton->setEnabled(false);
         return;
     }
 
@@ -417,21 +465,10 @@ void QvisCreateBondsWindow::UpdateWindowSingleItem()
     secondElement->setElementNumber(atts->GetAtomicNumber2()[index]);
     minDist->setText(QString().sprintf("%.4f",atts->GetMinDist()[index]));
     maxDist->setText(QString().sprintf("%.4f",atts->GetMaxDist()[index]));
-}
 
-void QvisCreateBondsWindow::bondsListNew()
-{
-    atts->GetAtomicNumber1().push_back(0);
-    atts->GetAtomicNumber2().push_back(0);
-    atts->GetMinDist().push_back(0.4);
-    atts->GetMaxDist().push_back(1.2);
-    atts->SelectAtomicNumber1();
-    atts->SelectAtomicNumber2();
-    atts->SelectMinDist();
-    atts->SelectMaxDist();
-    Apply();
-    bondsList->setSelected(bondsList->lastItem(), true);
-    //UpdateWindow(true);
+    delButton->setEnabled(index>=0 && index<=n-1);
+    upButton->setEnabled(index>0 && index<=n-1);
+    downButton->setEnabled(index>=0 && index<n-1);
 }
 
 int QvisCreateBondsWindow::GetItemIndex(QListViewItem *item1)
@@ -493,6 +530,23 @@ void QvisCreateBondsWindow::maxDistTextChanged(const QString &txt)
     atts->SelectMaxDist();
 }
 
+// ****************************************************************************
+//  Method:  QvisCreateBondsWindow::firstElementChanged
+//
+//  Purpose:
+//    callback for when the first element changed
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 30, 2006
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Feb 11 16:57:16 EST 2008
+//    Use the text instead of the atomic number to support wildcards.
+//
+// ****************************************************************************
 void QvisCreateBondsWindow::firstElementChanged(int element)
 {
     QListViewItem *item = bondsList->currentItem();
@@ -502,11 +556,28 @@ void QvisCreateBondsWindow::firstElementChanged(int element)
         return;
 
     atts->GetAtomicNumber1()[index] = element;
-    item->setText(0, element_names[element]);
+    item->setText(0, firstElement->text());
     Apply();
     atts->SelectAtomicNumber1();
 }
 
+// ****************************************************************************
+//  Method:  QvisCreateBondsWindow::secondElementChanged
+//
+//  Purpose:
+//    callback for when the second element changed
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 30, 2006
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Feb 11 16:57:16 EST 2008
+//    Use the text instead of the atomic number to support wildcards.
+//
+// ****************************************************************************
 void QvisCreateBondsWindow::secondElementChanged(int element)
 {
     QListViewItem *item = bondsList->currentItem();
@@ -516,7 +587,7 @@ void QvisCreateBondsWindow::secondElementChanged(int element)
         return;
 
     atts->GetAtomicNumber2()[index] = element;
-    item->setText(1, element_names[element]);
+    item->setText(1, secondElement->text());
     Apply();
     atts->SelectAtomicNumber2();
 }
@@ -535,6 +606,51 @@ int QvisCreateBondsWindow::GetListLength()
     return n1;
 }
 
+// ****************************************************************************
+//  Method:  QvisCreateBondsWindow::bondsListNew
+//
+//  Purpose:
+//    insert a new item item in the bonds list
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 30, 2006
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Feb 11 16:57:16 EST 2008
+//    Changed default to be wildcard atom types.
+//
+// ****************************************************************************
+void QvisCreateBondsWindow::bondsListNew()
+{
+    atts->GetAtomicNumber1().push_back(-1);
+    atts->GetAtomicNumber2().push_back(-1);
+    atts->GetMinDist().push_back(0.4);
+    atts->GetMaxDist().push_back(1.2);
+    atts->SelectAtomicNumber1();
+    atts->SelectAtomicNumber2();
+    atts->SelectMinDist();
+    atts->SelectMaxDist();
+    Apply();
+    bondsList->setSelected(bondsList->lastItem(), true);
+    //UpdateWindow(true);
+}
+
+// ****************************************************************************
+//  Method:  QvisCreateBondsWindow::bondsListDel
+//
+//  Purpose:
+//    delete the currently selected item in the bonds list
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 30, 2006
+//
+// ****************************************************************************
 void QvisCreateBondsWindow::bondsListDel()
 {
     int n = GetListLength();
@@ -561,5 +677,108 @@ void QvisCreateBondsWindow::bondsListDel()
     atts->SelectMaxDist();
     if (bondsList->currentItem())
         bondsList->setSelected(bondsList->currentItem(), true);
+}
+
+// ****************************************************************************
+//  Method:  SwapIndex
+//
+//  Purpose:
+//    Swaps two entries in the CreateBondsAttributes.
+//
+//  Arguments:
+//    atts                      the atts
+//    oldindex, newindex        the indices to swap
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 11, 2008
+//
+// ****************************************************************************
+static void
+SwapIndex(CreateBondsAttributes *atts, int oldindex, int newindex)
+{
+    int    oldAN1 = atts->GetAtomicNumber1()[oldindex];
+    int    oldAN2 = atts->GetAtomicNumber2()[oldindex];
+    double oldMin = atts->GetMinDist()[oldindex];
+    double oldMax = atts->GetMaxDist()[oldindex];
+
+    atts->GetAtomicNumber1()[oldindex] = atts->GetAtomicNumber1()[newindex];
+    atts->GetAtomicNumber2()[oldindex] = atts->GetAtomicNumber2()[newindex];
+    atts->GetMinDist()[oldindex]       = atts->GetMinDist()[newindex];
+    atts->GetMaxDist()[oldindex]       = atts->GetMaxDist()[newindex];
+
+    atts->GetAtomicNumber1()[newindex] = oldAN1;
+    atts->GetAtomicNumber2()[newindex] = oldAN2;
+    atts->GetMinDist()[newindex]       = oldMin;
+    atts->GetMaxDist()[newindex]       = oldMax;
+}
+
+// ****************************************************************************
+//  Method:  QvisCreateBondsWindow::bondsListUp
+//
+//  Purpose:
+//    Move the currently selected bond entry up in the list
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 11, 2008
+//
+// ****************************************************************************
+void QvisCreateBondsWindow::bondsListUp()
+{
+    int n = GetListLength();
+    int index = GetItemIndex(bondsList->currentItem());
+    if (index < 1 || index >= n)
+        return;
+
+    int newindex = index-1;
+    SwapIndex(atts, index, newindex);
+    Apply();
+
+    QListViewItem *item = bondsList->firstChild();
+    for (int i=0; item != NULL; i++, item = item->nextSibling())
+    {
+        if (i==newindex)
+        {
+            bondsList->setSelected(item, true);
+            break;
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method:  QvisCreateBondsWindow::bondsListDown
+//
+//  Purpose:
+//    Move the currently selected bond entry down in the list
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 11, 2008
+//
+// ****************************************************************************
+void QvisCreateBondsWindow::bondsListDown()
+{
+    int n = GetListLength();
+    int index = GetItemIndex(bondsList->currentItem());
+    if (index < 0 || index >= n-1)
+        return;
+
+    int newindex = index+1;
+    SwapIndex(atts, index, newindex);
+    Apply();
+
+    QListViewItem *item = bondsList->firstChild();
+    for (int i=0; item != NULL; i++, item = item->nextSibling())
+    {
+        if (i==newindex)
+        {
+            bondsList->setSelected(item, true);
+            break;
+        }
+    }
 }
 
