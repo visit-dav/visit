@@ -78,6 +78,9 @@
 #   Hank Childs, Sat Feb  9 15:23:42 PST 2008
 #   Rename components directory to avt.
 #
+#   Kathleen Bonnell, Mon Feb 11 14:19:54 PST 2008 
+#   Removed references to defunct 'clearcase_bin' directory.
+#
 #------------------------------------------------------------------------------
 
 # Need another way to determine we are starting in the right directory.
@@ -117,7 +120,6 @@ end
 # Set some directory variables.
 set TOPDIR = `pwd` 
 set SCRIPTDIR = "$TOPDIR/src/svn_bin"
-set SCRIPTDIR2 = "$TOPDIR/src/clearcase_bin"
 
 set VERSION = `cat $TOPDIR/src/VERSION`
 set VisItDev = "$TOPDIR/VisItDev$VERSION"
@@ -277,10 +279,10 @@ foreach configdir (MSVC7.Net/Debug MSVC7.Net/Release MSVC8.Net/Debug MSVC8.Net/R
     cp $VISITSRC/bin/makemoviemain.py bin/$configdir
     echo "copying host config files ..."
     # Copy the host config files to the right bin dir.
-    $SCRIPTDIR2/converttextfile $SCRIPTDIR2/visit-config-open.ini   bin/$configdir/visit-config-open.ini
-    $SCRIPTDIR2/converttextfile $SCRIPTDIR2/visit-config-closed.ini bin/$configdir/visit-config-closed.ini
-    $SCRIPTDIR2/converttextfile $SCRIPTDIR2/visit-config-nersc.ini  bin/$configdir/visit-config-nersc.ini
-    $SCRIPTDIR2/converttextfile $SCRIPTDIR2/visit-config-ornl.ini   bin/$configdir/visit-config-ornl.ini
+    $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-open.ini   bin/$configdir/visit-config-open.ini
+    $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-closed.ini bin/$configdir/visit-config-closed.ini
+    $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-nersc.ini  bin/$configdir/visit-config-nersc.ini
+    $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-ornl.ini   bin/$configdir/visit-config-ornl.ini
     echo "copying help files ..."
     mkdir bin/$configdir/help
     cp $VISITSRC/help/*.{html,helpml} bin/$configdir/help
