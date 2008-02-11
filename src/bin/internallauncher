@@ -278,6 +278,9 @@ $0 = shift @ARGV;
 #    Dave Pugmire, Thu Feb  7 07:45:46 EST 2008
 #    Fixed the addtion of jaguarcnl.ornl.gov specific code for macs.
 #
+#    Jeremy Meredith, Mon Feb 11 15:01:24 EST 2008
+#    Components directory was renamed to avt.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1994,40 +1997,40 @@ else
             print GDBFILE "directory $ENV{VISITHOME}/common/proxybase\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/plugin\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/utility\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/DBAtts/MetaData\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/DBAtts/SIL\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Database/Database\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Database/Formats\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Database/Ghost\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Abstract\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Conditional\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Derivations\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/General\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Management\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Math\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/MeshQuality\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Filters\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Math\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/MIR/Base\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/MIR/Tet\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/MIR/Zoo\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/Data\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/Pipeline\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/PrivateFilters\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/Sinks\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/Sources\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Plotter\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Preprocessor\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/QtVisWindow\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Queries/Abstract\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Queries/Misc\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Queries/Queries\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/View\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/Colleagues\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/Interactors\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/Proxies\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/Tools\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/VisWindow\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/DBAtts/MetaData\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/DBAtts/SIL\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Database/Database\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Database/Formats\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Database/Ghost\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Expressions/Abstract\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Expressions/Conditional\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Expressions/Derivations\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Expressions/General\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Expressions/Management\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Expressions/Math\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Expressions/MeshQuality\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Filters\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Math\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/MIR/Base\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/MIR/Tet\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/MIR/Zoo\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Pipeline/Data\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Pipeline/Pipeline\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Pipeline/PrivateFilters\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Pipeline/Sinks\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Pipeline/Sources\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Plotter\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Preprocessor\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/QtVisWindow\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Queries/Abstract\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Queries/Misc\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Queries/Queries\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/View\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/VisWindow/Colleagues\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/VisWindow/Interactors\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/VisWindow/Proxies\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/VisWindow/Tools\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/VisWindow/VisWindow\n";
             if ($exe_name eq "engine_ser" or $exe_name eq "engine_par")
             {
                 print GDBFILE "directory $ENV{VISITHOME}/engine/main\n";
