@@ -301,6 +301,9 @@
 #   Jeremy Meredith, Thu Jan 24 15:40:17 EST 2008
 #   Added PlainText.
 #
+#   Hank Childs, Sun Feb 10 19:43:59 MST 2008
+#   Added StreamGhostTest.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -326,7 +329,7 @@ H5PART=H5Part
 CCMIO=CCM
 SIMULATION=SimV1 SimV1Writer
 
-SAMPLES=Rect Hex
+SAMPLES=Rect Hex StreamGhostTest
 
 OPTIONAL= VLI
 

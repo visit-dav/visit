@@ -61,6 +61,7 @@
 struct    avtDatasetCollection;
 class     avtMatSpeciesMetaData;
 class     avtDomainBoundaries;
+class     avtStreamingGhostGenerator;
 class     avtStructuredDomainBoundaries;
 class     avtStructuredDomainNesting;
 class     avtFileFormatInterface;
@@ -323,6 +324,9 @@ class     vtkUnstructuredGrid;
 //    Hank Childs, Sun Oct 28 21:09:44 PST 2007
 //    Added Boolean argument to GetDomainBoundaryInformation.
 //
+//    Hank Childs, Sun Feb 10 19:43:59 MST 2008
+//    Add support for streaming ghost generation.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -465,6 +469,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                       avtDatasetCollection &, intVector &, 
                                       avtDataRequest_p,
                                       bool confirmInputMeshHasRightSize = true);
+    avtStreamingGhostGenerator *GetStreamingGhostGenerator(void);
     bool                       CommunicateGhosts(avtGhostDataType,
                                     avtDatasetCollection &, intVector &,
                                     avtDataRequest_p &,
@@ -474,11 +479,11 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                     avtDatasetCollection &, intVector &, 
                                     avtDataRequest_p &,
                                     avtSourceFromDatabase *);
-    bool                     CommunicateGhostZonesFromDomainBoundariesFromFile(
+    bool                       CommunicateGhostZonesFromDomainBoundariesFromFile(
                                     avtDatasetCollection &, intVector &, 
                                     avtDataRequest_p &,
                                     avtSourceFromDatabase *);
-    bool                     CommunicateGhostNodesFromDomainBoundariesFromFile(
+    bool                       CommunicateGhostNodesFromDomainBoundariesFromFile(
                                     avtDatasetCollection &, intVector &, 
                                     avtDataRequest_p &,
                                     avtSourceFromDatabase *, intVector &);
@@ -487,6 +492,10 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                     avtDataRequest_p &,
                                     avtSourceFromDatabase *);
     bool                       CommunicateGhostNodesFromGlobalNodeIds(
+                                    avtDatasetCollection &, intVector &, 
+                                    avtDataRequest_p &,
+                                    avtSourceFromDatabase *);
+    bool                       CommunicateGhostZonesWhileStreaming(
                                     avtDatasetCollection &, intVector &, 
                                     avtDataRequest_p &,
                                     avtSourceFromDatabase *);

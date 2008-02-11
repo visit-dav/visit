@@ -54,6 +54,7 @@
 #include <avtOriginatingSource.h>
 #include <avtIOInformation.h>
 #include <avtSILRestrictionTraverser.h>
+#include <avtStreamingGhostGenerator.h>
 #include <avtTypes.h>
 #include <VisItException.h>
 #include <DebugStream.h>
@@ -539,6 +540,11 @@ LoadBalancer::DetermineAppropriateScheme(avtContract_p input)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Hank Childs, Sun Feb 10 09:43:42 PST 2008
+//    Use the streaming ghost generator to direct the load balancing,
+//    if there is a streaming ghost generator.
+//
 // ****************************************************************************
 
 avtDataRequest_p
@@ -578,9 +584,13 @@ LoadBalancer::Reduce(avtContract_p input)
             vector<int> list;
             trav.GetDomainList(list);
         
+    
             if (pipelineInfo[input->GetPipelineIndex()].current < 0)
                 pipelineInfo[input->GetPipelineIndex()].current  = 0;
             int domain = list[pipelineInfo[input->GetPipelineIndex()].current];
+            int sggDomain = avtStreamingGhostGenerator::LBGetNextDomain();
+            if (sggDomain >= 0)
+                domain = sggDomain;
             vector<int> domainList(1, domain);
             new_data->GetRestriction()
                                    ->RestrictDomainsForLoadBalance(domainList);

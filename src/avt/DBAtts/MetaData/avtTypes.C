@@ -51,6 +51,8 @@ const char *AUXILIARY_DATA_SPATIAL_EXTENTS = "SPATIAL_EXTENTS";
 const char *AUXILIARY_DATA_MIXED_VARIABLE = "MIXED_VARIABLE";
 const char *AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION 
                                                = "DOMAIN_BOUNDARY_INFORMATION";
+const char *AUXILIARY_DATA_STREAMING_GHOST_GENERATION 
+                                               =  "STREAMING_GHOST_GENERATION";
 const char *AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION 
                                                = "DOMAIN_NESTING_INFORMATION";
 const char * AUXILIARY_DATA_GLOBAL_NODE_IDS = "GLOBAL_NODE_IDS";
