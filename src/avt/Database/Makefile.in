@@ -132,6 +132,9 @@
 #    Thomas R. Treadway, Tue Mar 27 12:24:37 PDT 2007
 #    Added $(MESA_LIBS)  
 #
+#    Hank Childs, Sun Feb 10 09:02:07 PST 2008
+#    Added avtStreamingGhostGenerator.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -166,6 +169,8 @@ Formats_src= \
 Ghost_src= \
   Ghost/StructuredBoundary.C \
   Ghost/avtDomainBoundaries.C \
+  Ghost/avtIsenburgSGG.C \
+  Ghost/avtStreamingGhostGenerator.C \
   Ghost/avtStructuredDomainBoundaries.C \
   Ghost/avtUnstructuredDomainBoundaries.C \
   Ghost/avtNekDomainBoundaries.C \

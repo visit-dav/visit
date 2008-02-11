@@ -87,6 +87,7 @@
 #include <avtSILGenerator.h>
 #include <avtSILRestrictionTraverser.h>
 #include <avtSourceFromDatabase.h>
+#include <avtStreamingGhostGenerator.h>
 #include <avtStructuredDomainBoundaries.h>
 #include <avtStructuredDomainNesting.h>
 #include <avtTransformManager.h>
@@ -4930,6 +4931,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //    Cyrus Harrison, Tue Jun 19 11:10:40 PDT 2007
 //    Made sure the warning is actually issued "only once per session"
 //
+//    Hank Childs, Sun Feb 10 19:43:59 MST 2008
+//    Add support for streaming ghost generation.
+//
 // ****************************************************************************
 
 bool
@@ -5005,6 +5009,9 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     bool canUseGlobalNodeIds = !haveDomainWithoutGlobalNodeIds &&
                                haveGlobalNodeIdsForAtLeastOneDom;
 
+    avtStreamingGhostGenerator *sgg = GetStreamingGhostGenerator();
+    bool canDoStreamingGhosts = (sgg != NULL);
+
     visitTimer->StopTimer(portion1, "Prepatory time for ghost zone creation."
                                     "  This also counts synchronization.");
 
@@ -5067,6 +5074,8 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
                                                        spec, src, allDomains);
         else if (canUseGlobalNodeIds)
             s = CommunicateGhostNodesFromGlobalNodeIds(ds, doms, spec, src);
+        else if (canDoStreamingGhosts)  // Zones not Nodes
+            s = CommunicateGhostZonesWhileStreaming(ds, doms, spec, src);
     }
     else if (ghostType == GHOST_ZONE_DATA)
     {
@@ -5075,6 +5084,8 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
                                                                   spec, src);
         else if (canUseGlobalNodeIds)
             s = CommunicateGhostZonesFromGlobalNodeIds(ds, doms, spec, src);
+        else if (canDoStreamingGhosts)
+            s = CommunicateGhostZonesWhileStreaming(ds, doms, spec, src);
     }
     else
     {
@@ -5171,6 +5182,30 @@ avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
     }
 
     return dbi;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetStreamingGhostGenerator
+//
+//  Purpose:
+//      Gets a streaming ghost generator module if one exists.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 10, 2008
+//
+// ****************************************************************************
+
+avtStreamingGhostGenerator *
+avtGenericDatabase::GetStreamingGhostGenerator(void)
+{
+    void_ref_ptr vr = cache.GetVoidRef("any_mesh",
+                                   AUXILIARY_DATA_STREAMING_GHOST_GENERATION,
+                                  -1, -1);
+    if (*vr == NULL)
+        return NULL;
+
+    return (avtStreamingGhostGenerator *) (*vr);
 }
 
 
@@ -6392,6 +6427,36 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     }
 
     return CommunicateGhostZonesFromDomainBoundaries(&upb, ds, doms, spec,src);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CommunicateGhostZonesWhileStreaming
+//
+//  Purpose:
+//      Creates ghost zones while in a streaming mode.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      doms      A list of domains.
+//      spec      A data specification.
+//      src       The source object.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 10, 2008
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CommunicateGhostZonesWhileStreaming(
+                      avtDatasetCollection &ds, intVector &doms, 
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src)
+{
+    avtStreamingGhostGenerator *sgg = GetStreamingGhostGenerator();
+    vtkDataSet *input  = ds.GetDataset(0, 0);
+    vtkDataSet *output = sgg->StreamDataset(input);
+    ds.SetDataset(0,0,output);
+    output->Delete();
 }
 
 
