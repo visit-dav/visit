@@ -2016,7 +2016,7 @@ else
             print GDBFILE "directory $ENV{VISITHOME}/avt/MIR/Zoo\n";
             print GDBFILE "directory $ENV{VISITHOME}/avt/Pipeline/Data\n";
             print GDBFILE "directory $ENV{VISITHOME}/avt/Pipeline/Pipeline\n";
-            print GDBFILE "directory $ENV{VISITHOME}/avt/Pipeline/PrivateFilters\n";
+            print GDBFILE "directory $ENV{VISITHOME}/avt/Pipeline/AbstractFilters\n";
             print GDBFILE "directory $ENV{VISITHOME}/avt/Pipeline/Sinks\n";
             print GDBFILE "directory $ENV{VISITHOME}/avt/Pipeline/Sources\n";
             print GDBFILE "directory $ENV{VISITHOME}/avt/Plotter\n";
