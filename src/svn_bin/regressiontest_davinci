@@ -1,0 +1,453 @@
+#!/bin/sh -x
+
+# ----------------------------------------------------------------------------
+#      Run VisIt regression tests from NERSC source repo on LLNL systems 
+#
+#  Programmer: Mark C. Miller 
+#  Date:       May 16, 2007 
+#
+#  Modifications:
+#    Mark C. Miller, Thu Aug 30 06:07:23 PDT 2007
+#    Added logging of 'changed' message when script itself is changed. 
+#
+#    Mark C. Miller, Thu Aug 30 13:32:54 PDT 2007
+#    Added testing of 'make distclean' target
+#
+#    Mark C. Miller, Thu Sep 13 10:20:08 PDT 2007
+#    Added filtering of distclean for known special cases
+#
+#    Mark C. Miller, Fri Sep 14 08:53:32 PDT 2007
+#    Fixed poor use of 'tr -d' in construction of 'files_to_status' input
+#    to generating list of modifiers.
+#
+#    Mark C. Miller, Tue Nov  6 08:31:40 PST 2007
+#    Fixed problem removing uncleaned files manually.
+#   
+#    Hank Childs, Mon Dec 17 17:05:53 PST 2007
+#    Remove whole scripts from the skipList and replace them with the 
+#    individually failing tests.
+#
+#    Hank Childs, Thu Dec 20 17:20:52 PST 2007
+#    Added QueryGlobalId to the skip list.
+#
+#    Cyrus Harrison, Thu Dec 20 17:54:30 PST 2007
+#    Removed QueryGlobalId from the skip list.
+#
+#    Hank Childs, Thu Dec 20 17:20:52 PST 2007
+#    Added defer_expr to the skip list.
+#
+#    Hank Childs, Sat Feb  9 15:23:42 PST 2008
+#    Rename components directory to avt.
+#
+# ----------------------------------------------------------------------------
+dateTag=`date +%y%b%d`
+svnHost=svn.nersc.gov
+rootTestDir=/usr/common/homes/m/miller86/visit/trunk
+errorLogFile=$rootTestDir/testLogFile_$dateTag
+modifiersFile=$rootTestDir/nersc_repo_modifiers_since_last_pass
+modifiersEmails=
+subjectLeader="DAVINCI-VisIt Testing:"
+rm -f $rootTestDir/testLogFile_*
+errorMsgCount=0;
+touch $errorLogFile
+
+# list of users who want email every night with the log file
+#logrecipients="miller86@llnl.gov childs3@llnl.gov jsmeredith@ornl.gov"
+logrecipients="miller86@llnl.gov"
+
+eqzero() {
+    if test "$1" = "0"; then
+        echo 0
+	return
+    fi
+    if test -z "$1"; then
+        echo 0
+	return
+    fi
+    echo 1
+}
+
+nezero() {
+    if test "$1" != "0"; then
+        echo 0
+	return
+    fi
+    if test -n "$1"; then
+        echo 0
+	return
+    fi
+    echo 1
+}
+
+#
+# Check current error status and, if set, log the given error
+# checkAndHandleError args...
+#     $1 <error-status-flag>
+#     $2 <select warning/fatal/email behavior (other behaviors could be added)>
+#     $3 <short-subject-text>
+#     $4 <optional file or string containing details>
+#
+checkAndHandleError() {
+
+    local errorStatus=$1
+    local handlerBehavior=$2
+    local shortSubject=$3
+    local errorDetails=$4
+    local timeOfError=`date '+%l:%M:%S %p'`
+
+    # there is nothing to do if the error status flag is zero
+    if test "$errorStatus" = "0"; then
+        return
+    fi
+    errorMsgCount=`expr $errorMsgCount + 1`
+
+    # put this error's information in the log file
+    echo "********************************************************************************" >> $errorLogFile
+    echo "Message #$errorMsgCount [$timeOfError]: $shortSubject" >> $errorLogFile
+    if test -n "$errorDetails"; then
+        echo "Details follow..." >> $errorLogFile
+        if test -e $errorDetails; then
+            cat $errorDetails >> $errorLogFile 
+        else
+            echo "$errorDetails" >> $errorLogFile 
+        fi
+    else
+        echo "No details given." >> $errorLogFile
+    fi
+    echo "" >> $errorLogFile
+    echo "" >> $errorLogFile
+    echo "" >> $errorLogFile
+
+    # if this is just a warning, return now
+    if test -n "`echo $handlerBehavior | grep warn`"; then
+        return
+    fi
+
+    # we get here either because the error is fatal or we're flushing the log
+    # at the end of a run
+    emailSubject=$shortSubject
+    if test -n "`echo $handlerBehavior | grep flush`"; then
+        if test `wc -l $errorLogFile | tr -s ' ' | cut -d' ' -f2` -eq 0; then
+            return
+	else
+	    emailSubject="Message(s) from VisIt's Automatic Test Run"
+	fi
+    fi
+
+    # put logfile contents in an email and send it
+    rm -rf mailmsg
+    cat > mailmsg << EOF
+From: visit@llnl.gov 
+Subject: $subjectLeader $emailSubject
+This email was generated from VisIt's Automatic Test Run
+
+One or more messages were logged.
+
+The list of users who have modified VisIt since the
+test suite last succesfully PASSED or PASSED w/SKIPS
+is...
+
+EOF
+    echo $modifiersEmails | tr ' ' '\n' >> mailmsg
+    echo "" >> mailmsg
+
+    cat $errorLogFile >> mailmsg
+
+    # make sure we don't wind up including a user from logrecipients
+    # and modifiers twice
+    emailList="`echo $logrecipients` `echo $modifiersEmails`"
+    emailList=`echo $emailList | tr ' ' '\n' | sort | uniq`
+
+    cat mailmsg | /usr/sbin/sendmail $emailList
+    rm -f mailmsg
+
+    if test -n "`echo $handlerBehavior | grep fatal`"; then
+        arg1Len=`expr length "$errorStatus"`
+        if test $arg1Len -lt 3; then
+            exit $errorStatus
+        else
+            exit 1
+        fi
+    fi
+}
+
+optError=0
+skipIfNoChanges=1
+scriptWasChanged=0
+for options
+do
+   case $1 in
+      "")
+         # handle empty argument
+         ;;
+      -force)
+         skipIfNoChanges=0;
+	 shift
+	 ;;
+      -changed)
+         scriptWasChanged=1;
+	 shift
+	 ;;
+      -help)
+         optError=1
+         shift
+         ;;
+      -*)
+         echo "Unknown option $1"
+         optError=1
+         shift
+         ;;
+   esac
+done
+
+if test $optError -eq 1; then
+    echo "Usage:  $0 <options>"
+    echo "Available options:"
+    echo "        -help             display this help message"
+    echo "        -force            force a test even if no files have changed since last run."
+    echo "        -changed          Used to tell this script to issue the 'changed' log message."
+    exit 1
+fi
+
+# check connectivity to nersc
+ping -c 1 $svnHost 1> /dev/null 2>&1
+checkAndHandleError $? fatal "ping of $svnHost failed"
+pingWorks=`ping -c 5 $svnHost | grep "0% packet loss"`
+checkAndHandleError "`nezero $pingWorks`" fatal "dropped packets to $svnHost"
+
+# check if this script itself has been changed 
+checkAndHandleError $scriptWasChanged warning "regressiontest_nersc was changed"
+
+# Update our current 'checkout' of visit trunk from NERSC
+pushd $rootTestDir 1> /dev/null 2>&1
+rm -f nersc_repo_update_$dateTag
+rm -f nersc_repo_modifiers_$dateTag
+touch nersc_repo_update_$dateTag
+touch nersc_repo_modifiers_$dateTag
+for dir in src data test; do
+    pushd $dir 1> /dev/null 2>&1
+    svn update >> $rootTestDir/nersc_repo_update_$dateTag 2> $rootTestDir/stderr.txt
+    checkAndHandleError $? warning "svn update on $dir failed" $rootTestDir/stderr.txt
+    rm -f stderr.txt
+    cat $rootTestDir/nersc_repo_update_$dateTag | grep '^[ADUCG]' | grep -v revision | tr -s ' ' | cut -d' ' -f2 > files_to_status
+    svn status -u -v >> $rootTestDir/nersc_repo_status_$dateTag 2> $rootTestDir/stderr.txt
+    checkAndHandleError $? warning "svn status on $dir failed" $rootTestDir/stderr.txt
+    rm -f $rootTestDir/stderr.txt
+    grep -f files_to_status $rootTestDir/nersc_repo_status_$dateTag | tr -s ' ' | cut -d' ' -f4 > $rootTestDir/nersc_repo_modifiers_$dateTag
+    rm -f files_to_status stderr.txt
+
+    popd 1> /dev/null 2>&1
+done
+
+# build list of modifiers email addresses
+cat $modifiersFile nersc_repo_modifiers_$dateTag | grep -v '^[0-9]*$' | sort | uniq > ${modifiersFile}_tmp
+rm -f $modifiersFile
+mv ${modifiersFile}_tmp $modifiersFile 
+for u in `cat $modifiersFile`; do
+    uemail=`./nersc_username_to_email $u`
+    modifiersEmails="$modifiersEmails $uemail" 
+done
+
+# See if any files actually changed
+numChangedFiles=`grep '^[ADUCG]' nersc_repo_update_$dateTag | grep -v '^At revision' | wc -l | tr -s ' ' | cut -d' ' -f2`
+if test $numChangedFiles -eq 0; then
+    if test $skipIfNoChanges -eq 1; then
+        checkAndHandleError 1 flush "No Changes Found. Skipping Tests"
+        exit 0
+    else
+        checkAndHandleError 1 warning "Although no changes were found, testing forced"
+    fi
+else
+    checkAndHandleError $numChangedFiles warning "$numChangedFiles files changed" nersc_repo_update_$dateTag
+fi
+
+# make sure we don't have conflicts
+conflictFiles=`grep '^C' nersc_repo_update_$dateTag | tr -s ' ' | cut -d' ' -f2`
+checkAndHandleError "`eqzero $conflictFiles`" fatal "conflicting files" "$conflictFiles"
+
+# build visit
+cd src
+rm -f config.log config.status config.cache config_log.txt make_log.txt
+#find . -name .svn -prune -false -o -name '*.so' -o -name '*.o' -o -name '*.d' -exec rm {} \;
+echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> config_log.txt 2>&1
+echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1>> config_log.txt 2>&1
+LD_LIBRARY_PATH=/usr/local/lib
+export LD_LIBRARY_PATH
+env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel --enable-viewer-mesa-stub=no 1>> config_log.txt 2>&1
+checkAndHandleError $? fatal "FIRST configure failed" config_log.txt 
+cd ..
+
+# test 'make clean' acts as expected
+cd data
+gmake clean 1> ./make_clean.out 2>&1
+cd ..
+gmake clean 1>> ./make_clean.out 2>&1
+rm -f uncleaned_files_log.txt
+find . -name .svn -prune -false -o -name '*.so' -o -name '*.o' -o -name '*_moc.[Ch]' -o -name 'moc_*.[Ch]' 1> uncleaned_files_log.txt
+uncleanedFilesCount=`wc -l uncleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2`
+checkAndHandleError $uncleanedFilesCount warning "make clean left files; removing manually" uncleaned_files_log.txt
+if test $uncleanedFilesCount -ne 0; then
+    cat uncleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2 | xargs -n 1 rm -f
+fi
+
+# test 'make distclean' acts as expected
+cd data
+gmake distclean 1> ./make_distclean.out 2>&1
+cd ..
+make distclean 1>> ./make_distclean.out 2>&1
+rm -f undistcleaned_files_log.txt
+find . -name .svn -prune -false -o -name '*.d' -o -name '.depend' -o -name '.pardepend' 1> undistcleaned_files_log.txt
+# The 2nd find, below, finds only those Makefiles for which there is also
+# a coorsponding Makefile.in. 'make distclean' should have removed these
+# It also includes some special grep filtering for special cases of some
+# Makefiles that aren't easy for distclean to clean
+find . -name .svn -prune -false -o \( -name 'Makefile' -exec test -e \{\}.in \; \) -print | grep -v ./avt/Preprocessor/Makefile\\\|./tools/windowmaker/Makefile\\\|./tools/prep/Makefile\\\|./sim/examples/Makefile\\\|./common/siloobj/Makefile\\\|./common/siloobj_vtk_db/Makefile\\\|./cqscore/Makefile 1>> undistcleaned_files_log.txt
+undistcleanedFilesCount=`wc -l undistcleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2`
+checkAndHandleError $undistcleanedFilesCount warning "make distclean left files; removing manually" undistcleaned_files_log.txt
+if test $undistcleanedFilesCount -ne 0; then
+    cat undistcleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2 | xargs -n 1 rm -f
+fi
+
+# ok, now really go ahead and configure and build VisIt
+cd src
+env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel --enable-viewer-mesa-stub=no 1>> config_log.txt 2>&1
+checkAndHandleError $? fatal "SECOND configure failed" config_log.txt 
+gmake -j 4 1>> make_log.txt 2>&1
+checkAndHandleError $? fatal "gmake -j 4 failed in src" make_log.txt
+cd ..
+
+# short term fix for repo src tree changes
+sed -i -e 's|../src/exe/visitconvert_ser|../exe/visitconvert_ser|' data/Makefile
+sed -i -e 's|../src/bin/visitconvert|../bin/visitconvert|' data/Makefile
+# build data
+cd data
+rm -f make_log.txt
+gmake clean 1> /dev/null 2>&1
+gmake -j 4 test 1>> make_log.txt 2>&1
+checkAndHandleError $? fatal "gmake -j 4 failed in data" make_log.txt 
+cd ..
+
+# set the datestamp used for all test modes
+curdate=`date +%Y-%m-%d-%p%I%M`
+theDay=`date +%A`
+
+# set mode to run in
+modes="davinci,serial davinci,parallel davinci,scalable,parallel"
+
+# set list of tests/modes to skip
+skipList_dueTo_clientServer="\
+          davinci,scalable,parallel:tests/hybrid/locus.py \
+          davinci,scalable,parallel:tests/rendering/saveformats.py \
+          davinci,scalable,parallel:tests/queries/bestfitline.py"
+
+skipList_dueTo_parallelRendering="\
+          davinci,scalable,parallel:tests/databases/boxlib.py"
+
+skipList_dueTo_temporaryBugs="\
+	  davinci,scalable,parallel:tests/databases/defer_expr.py \
+	  davinci,parallel:tests/databases/defer_expr.py \
+	  davinci,serial:tests/databases/defer_expr.py \
+	  davinci,scalable,parallel:tests/databases/netcdf.py:netcdf_1_00,netcdf_1_02 \
+	  davinci,scalable,parallel:tests/operators/transform.py:ops_transform05 \
+	  davinci,serial:tests/databases/silo.py:silo_03,silo_04 \
+	  davinci,serial:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
+	  davinci,parallel:tests/databases/silo.py:silo_03,silo_04 \
+	  davinci,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
+	  davinci,scalable,parallel:tests/databases/silo.py:silo_03,silo_04 \
+	  davinci,scalable,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05"
+
+skipList_for_Davinci="\
+	  davinci,serial:tests/databases/silo.py:silo_20,silo_21,silo_26 \
+	  davinci,scalable:tests/databases/silo.py:silo_20,silo_21,silo_26 \
+	  davinci,scalable,parallel:tests/databases/silo.py:silo_20,silo_21,silo_26 \
+          davinci,serial:tests/databases/vista.py \
+          davinci,scalable:tests/databases/vista.py \
+          davinci,scalable,parallel:tests/databases/vista.py \
+          davinci,serial:tests/databases/visus.py \
+          davinci,scalable:tests/databases/visus.py \
+          davinci,scalable,parallel:tests/databases/visus.py \
+          davinci,serial:tests/databases/fits.py \
+          davinci,scalable:tests/databases/fits.py \
+          davinci,scalable,parallel:tests/databases/fits.py \
+          davinci,serial:tests/databases/exodus.py \
+          davinci,scalable:tests/databases/exodus.py \
+          davinci,scalable,parallel:tests/databases/exodus.py \
+          davinci,serial:tests/databases/itaps.py \
+          davinci,scalable:tests/databases/itaps.py \
+          davinci,scalable,parallel:tests/databases/itaps.py \
+          davinci,serial:tests/databases/leos.py \
+          davinci,scalable:tests/databases/leos.py \
+          davinci,scalable,parallel:tests/databases/leos.py \
+          davinci,serial:tests/queries/conncomp.py \
+          davinci,scalable:tests/queries/conncomp.py \
+          davinci,scalable,parallel:tests/queries/conncomp.py"
+          
+skipList="$skipList_dueTo_clientServer $skipList_dueTo_parallelRendering $skipList_dueTo_temporaryBugs $skipList_for_Davinci"
+
+#
+# Make directory for where to store core files
+#
+rm -rf test/cores
+mkdir test/cores
+
+#
+# run the test(s)
+error=0
+cd test
+
+for m in $modes; do
+
+    if test "$skipList" = ""; then
+        ./runtest -q -p -m "$m" -d "$curdate" -notrackmem
+    else
+        ./runtest -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem
+    fi
+    curerror=$?
+    theMode=`echo $m | tr ',' '_'`
+    rm -f short_summary
+    touch short_summary
+    echo "Failed results should be obtainable from" >> short_summary
+    echo "ftp://ftp.llnl.gov/outgoing/visit_results_${theMode}_${dateTag}.tar.gz" >> short_summary
+    grep 'category\|failed' summary >> short_summary
+    checkAndHandleError $curerror warning "test mode $m failed" short_summary 
+
+    # try to use auto-login, anonymous ftp to
+    # put failed results on ftp.llnl.gov
+    failedPyFiles=`grep failed short_summary | cut -d':' -f1`
+    if test -n "$failedPyFiles"; then
+        mkdir html_$dateTag
+        cp html/index.html html_$dateTag/.
+        for f in $failedPyFiles; do
+            fileKey=`basename $f .py`
+	    cp html/*$fileKey* html_$dateTag/.
+        done
+        mkdir /project/projectdirs/visit/public_html/${dateTag} 1>/dev/null 2>&1
+        cp -r html_$dateTag /project/projectdirs/visit/public_html/${dateTag}/${theMode}
+        chgrp -R visit /project/projectdirs/visit/public_html/${dateTag}/${theMode}
+        chmod -R g+rwX,o-rwX /project/projectdirs/visit/public_html/${dateTag}/${theMode}
+        rm -rf html_$dateTag
+    fi
+
+    if test ! "$curerror" = "0"; then
+        error=1
+    else
+        checkAndHandleError 1 warning "test mode $m succeeded"
+    fi
+done
+
+#
+# Reset last pass modifiers if everything passed
+#
+if test $error -eq 0; then
+    rm -f $modifiersFile
+    touch $modifiersFile
+    if test "$skipList" = ""; then
+        checkAndHandleError 1 flush "Complete Pass -- All tests Passed!!!"
+    else
+        checkAndHandleError 1 flush "Partial Pass - Some tests skipped"
+    fi
+    exit 0
+else
+    checkAndHandleError 1 flush "Tests failed"
+    exit 1
+fi
