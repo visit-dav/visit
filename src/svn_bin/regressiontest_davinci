@@ -398,9 +398,9 @@ cd test
 for m in $modes; do
 
     if test "$skipList" = ""; then
-        ./runtest -q -p -m "$m" -d "$curdate" -notrackmem
+        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -p -m "$m" -d "$curdate" -notrackmem
     else
-        ./runtest -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem
+        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem
     fi
     curerror=$?
     theMode=`echo $m | tr ',' '_'`
