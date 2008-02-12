@@ -397,17 +397,9 @@ def FinishTrackingMemoryUsage(html):
     SetViewCurve(cv)
 
     # Set some annotation options.
+    TurnOffAllAnnotations()
     a = GetAnnotationAttributes()
-    a.axesFlag2D = 1
-    a.xAxisLabels2D = 0
-    a.yAxisLabels2D = 0
-    a.xAxisTitle2D = 0
-    a.yAxisTitle2D = 0
-    a.databaseInfoFlag = 0
-    a.userInfoFlag = 0
-    a.backgroundColor = (255,255,255,255)
-    a.foregroundColor = (0,0,0,0)
-    a.backgroundMode = a.Solid
+    a.axes2D.visible = 1
     SetAnnotationAttributes(a)
 
     # Make axis labels.
@@ -704,6 +696,7 @@ def Test(file, altSWA=0):
     sa.family   = 0
     sa.fileName = cur
     sa.format   = sa.TIFF
+    sa
     SetSaveWindowAttributes(sa)
     SaveWindow()
 
@@ -1377,16 +1370,17 @@ def Exit():
 def TurnOffAllAnnotations():
     global a
     a = AnnotationAttributes()
-    a.axesFlag2D = 0
-    a.axesFlag = 0
-    a.triadFlag = 0
-    a.bboxFlag = 0
+    a.axes2D.visible = 0
+    a.axes3D.visible = 0
+    a.axes3D.triadFlag = 0
+    a.axes3D.bboxFlag = 0
     a.userInfoFlag = 0
     a.databaseInfoFlag = 0
     a.legendInfoFlag = 0
-    a.backgroundMode = 0
-    a.foregroundColor = (0, 0, 0, 255)
     a.backgroundColor = (255, 255, 255, 255)
+    a.foregroundColor = (0, 0, 0, 255)
+    a.backgroundMode = a.Solid  # Solid, Gradient, Image, ImageSphere
+    a.backgroundImage = ""
     SetAnnotationAttributes(a)
 
 # ----------------------------------------------------------------------------
