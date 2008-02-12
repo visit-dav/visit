@@ -7,6 +7,10 @@
 #
 #    Mark C. Miller, Tue Nov 22 09:42:57 PST 2005
 #    Removed refs to sl_io subdirectory
+#
+#    Hank Childs, Mon Feb 11 17:13:30 PST 2008
+#    Rename avt to avt to reflect change in directory names.
+#
 # ****************************************************************************
 
 set VISITDIR = "/data_vobs/VisIt"
@@ -36,42 +40,42 @@ escan $VISITDIR/common/Exceptions/Database/*.C
 escan $VISITDIR/common/Exceptions/Pipeline/*.C
 escan $VISITDIR/common/Exceptions/Plotter/*.C
 escan $VISITDIR/common/Exceptions/VisWindow/*.C
-escan $VISITDIR/components/DBAtts/MetaData/*.C
-escan $VISITDIR/components/DBAtts/SIL/*.C
-escan $VISITDIR/components/Database/Database/*.C
-escan $VISITDIR/components/Database/Formats/*.C
-escan $VISITDIR/components/Database/Ghost/*.C
-escan $VISITDIR/components/Expressions/Abstract/*.C
-escan $VISITDIR/components/Expressions/Conditional/*.C
-escan $VISITDIR/components/Expressions/Derivations/*.C
-escan $VISITDIR/components/Expressions/General/*.C
-escan $VISITDIR/components/Expressions/Management/*.C
-escan $VISITDIR/components/Expressions/Math/*.C
-escan $VISITDIR/components/Expressions/MeshQuality/*.C
-escan $VISITDIR/components/FileWriter/*.C
-escan $VISITDIR/components/Filters/*.C
-escan $VISITDIR/components/Math/*.C
-escan $VISITDIR/components/MIR/Base/*.C
-escan $VISITDIR/components/MIR/Tet/*.C
-escan $VISITDIR/components/MIR/Zoo/*.C
-escan $VISITDIR/components/Pipeline/Data/*.C
-escan $VISITDIR/components/Pipeline/Pipeline/*.C
-escan $VISITDIR/components/Pipeline/PrivateFilters/*.C
-escan $VISITDIR/components/Pipeline/Sinks/*.C
-escan $VISITDIR/components/Pipeline/Sources/*.C
-escan $VISITDIR/components/Plotter/*.C
-escan $VISITDIR/components/Preprocessor/*.C
-escan $VISITDIR/components/QtVisWindow/*.C
-escan $VISITDIR/components/Queries/Abstract/*.C
-escan $VISITDIR/components/Queries/Misc/*.C
-escan $VISITDIR/components/Queries/Pick/*.C
-escan $VISITDIR/components/Queries/Queries/*.C
-escan $VISITDIR/components/View/*.C
-escan $VISITDIR/components/VisWindow/Colleagues/*.C
-escan $VISITDIR/components/VisWindow/Interactors/*.C
-escan $VISITDIR/components/VisWindow/Proxies/*.C
-escan $VISITDIR/components/VisWindow/Tools/*.C
-escan $VISITDIR/components/VisWindow/VisWindow/*.C
+escan $VISITDIR/avt/DBAtts/MetaData/*.C
+escan $VISITDIR/avt/DBAtts/SIL/*.C
+escan $VISITDIR/avt/Database/Database/*.C
+escan $VISITDIR/avt/Database/Formats/*.C
+escan $VISITDIR/avt/Database/Ghost/*.C
+escan $VISITDIR/avt/Expressions/Abstract/*.C
+escan $VISITDIR/avt/Expressions/Conditional/*.C
+escan $VISITDIR/avt/Expressions/Derivations/*.C
+escan $VISITDIR/avt/Expressions/General/*.C
+escan $VISITDIR/avt/Expressions/Management/*.C
+escan $VISITDIR/avt/Expressions/Math/*.C
+escan $VISITDIR/avt/Expressions/MeshQuality/*.C
+escan $VISITDIR/avt/FileWriter/*.C
+escan $VISITDIR/avt/Filters/*.C
+escan $VISITDIR/avt/Math/*.C
+escan $VISITDIR/avt/MIR/Base/*.C
+escan $VISITDIR/avt/MIR/Tet/*.C
+escan $VISITDIR/avt/MIR/Zoo/*.C
+escan $VISITDIR/avt/Pipeline/Data/*.C
+escan $VISITDIR/avt/Pipeline/Pipeline/*.C
+escan $VISITDIR/avt/Pipeline/PrivateFilters/*.C
+escan $VISITDIR/avt/Pipeline/Sinks/*.C
+escan $VISITDIR/avt/Pipeline/Sources/*.C
+escan $VISITDIR/avt/Plotter/*.C
+escan $VISITDIR/avt/Preprocessor/*.C
+escan $VISITDIR/avt/QtVisWindow/*.C
+escan $VISITDIR/avt/Queries/Abstract/*.C
+escan $VISITDIR/avt/Queries/Misc/*.C
+escan $VISITDIR/avt/Queries/Pick/*.C
+escan $VISITDIR/avt/Queries/Queries/*.C
+escan $VISITDIR/avt/View/*.C
+escan $VISITDIR/avt/VisWindow/Colleagues/*.C
+escan $VISITDIR/avt/VisWindow/Interactors/*.C
+escan $VISITDIR/avt/VisWindow/Proxies/*.C
+escan $VISITDIR/avt/VisWindow/Tools/*.C
+escan $VISITDIR/avt/VisWindow/VisWindow/*.C
 escan $VISITDIR/engine/main/*.C
 escan $VISITDIR/engine/parstate/*.C
 escan $VISITDIR/engine/proxy/*.C
