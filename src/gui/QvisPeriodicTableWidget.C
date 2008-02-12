@@ -99,6 +99,9 @@ static int element_type_colors[9][3] = {
 //    Jeremy Meredith, Mon Feb 11 15:21:46 EST 2008
 //    Removed setting of ispopup to true; it's not for us to decide.
 //
+//    Jeremy Meredith, Tue Feb 12 14:00:26 EST 2008
+//    Added support for hinting selectable elements.
+//
 // ****************************************************************************
 
 QvisPeriodicTableWidget::QvisPeriodicTableWidget(QWidget *parent, const char *name,
@@ -111,6 +114,9 @@ QvisPeriodicTableWidget::QvisPeriodicTableWidget(QWidget *parent, const char *na
     boxSizeValue = 24;
     boxPaddingValue = 2;
     setMinimumSize(minimumSize());
+    hintedElements = new bool[numGridSquares];
+    for (int i=0; i<numGridSquares; i++)
+        hintedElements[i] = false;
 }
 
 // ****************************************************************************
@@ -123,11 +129,14 @@ QvisPeriodicTableWidget::QvisPeriodicTableWidget(QWidget *parent, const char *na
 // Creation:   August 11, 2006
 //
 // Modifications:
+//    Jeremy Meredith, Tue Feb 12 14:00:26 EST 2008
+//    Added support for hinting selectable elements.
 //   
 // ****************************************************************************
 
 QvisPeriodicTableWidget::~QvisPeriodicTableWidget()
 {
+    delete[] hintedElements;
 }
 
 
@@ -234,6 +243,10 @@ QvisPeriodicTableWidget::keyPressEvent(QKeyEvent *e)
 // Creation:   August 11, 2006
 //
 // Modifications:
+//    Jeremy Meredith, Tue Feb 12 14:00:26 EST 2008
+//    Added support for hinting selectable elements.  The hinting method
+//    that appeared to be the best combination between noticeable and
+//    distracting, at least on my machine, was simply to boldface the font.
 //
 // ****************************************************************************
 
@@ -250,6 +263,8 @@ QvisPeriodicTableWidget::drawItem(QPainter &paint, int index)
     if (element > MAX_ELEMENT_NUMBER)
         return;
 
+    bool hint = hintedElements[index];
+
     int r = index / numColumns;
     int c = index % numColumns;
     int *colorvals = element_type_colors[periodic_colors[r][c]-1];
@@ -261,11 +276,25 @@ QvisPeriodicTableWidget::drawItem(QPainter &paint, int index)
     QColor color(colorvals[0], colorvals[1], colorvals[2]);
     paint.fillRect(x + 1, y + 1, boxWidth - 2, boxHeight - 2, color);
     drawBox(paint, QRect(x+1,y+1,boxWidth-2,boxHeight-2),
-            color.light(125), color.dark(125), 1);
+            color.light(125),
+            color.dark(125), 1);
+    QFont oldfont(paint.font());
+    if (hint)
+    {
+        QFont newfont(oldfont);
+        //newfont.setItalic(true);
+        //newfont.setUnderline(true);
+        newfont.setBold(true);
+        paint.setFont(newfont);
+    }
     paint.setPen(colorGroup().foreground());
     paint.drawText(QRect(x,y,boxWidth,boxHeight),
                    Qt::AlignHCenter | Qt::AlignVCenter,
                    element_names[element-1]);
+    if (hint)
+    {
+        paint.setFont(oldfont);
+    }
 }
 
 
@@ -330,3 +359,36 @@ QvisPeriodicTableWidget::indexToElement(int index)
 }
 
 
+// ****************************************************************************
+//  Method:  QvisPeriodicTableWidget::setHintedElements
+//
+//  Purpose:
+//    Accept a list of atomic numbers that we will use for hinting.
+//
+//  Arguments:
+//    elements   the list of atomic numbers
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 12, 2008
+//
+// ****************************************************************************
+
+void
+QvisPeriodicTableWidget::setHintedElements(const std::vector<int> &elements)
+{
+    for (int i=0; i<numGridSquares; i++)
+    {
+        hintedElements[i] = false;
+        int element = indexToElement(i);
+        if (element <= 0)
+            continue;
+        for (int j=0; j<elements.size(); j++)
+        {
+            if (elements[j] == element)
+            {
+                hintedElements[i] = true;
+                break;
+            }
+        }
+    }
+}

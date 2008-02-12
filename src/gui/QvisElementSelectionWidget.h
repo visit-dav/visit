@@ -40,6 +40,7 @@
 #define QVIS_ELEMENT_SELECTION_WIDGET_H
 #include <gui_exports.h>
 #include <qwidget.h>
+#include <vector>
 
 // Forward declarations.
 class QPushButton;
@@ -60,6 +61,9 @@ class QvisPeriodicTableWidget;
 // Note: borrowed heavily from Brad's color selection widget
 //
 // Modifications:
+//    Jeremy Meredith, Tue Feb 12 14:01:52 EST 2008
+//    Added support for hinting some elements to the user, e.g. to highlight
+//    the elements that are actually in the database.
 //
 // ****************************************************************************
 
@@ -73,7 +77,9 @@ class GUI_API QvisElementSelectionWidget : public QWidget
     virtual QSize sizeHint() const;
 
     void setSelectedElement(int);
-    signals:
+    void setHintedElements(const std::vector<int>&);
+
+  signals:
     void selectedElement(int);
             public slots:
             virtual void show();

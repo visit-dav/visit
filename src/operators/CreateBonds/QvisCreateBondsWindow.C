@@ -438,6 +438,9 @@ QvisCreateBondsWindow::elementVariableChanged(const QString &varName)
 //    slightly preferable because it's possible to have a currentItem but
 //    nothing selected.
 //
+//    Jeremy Meredith, Tue Feb 12 14:00:26 EST 2008
+//    Added support for hinting selectable elements from what's in the SIL.
+//
 // ****************************************************************************
 void QvisCreateBondsWindow::UpdateWindowSingleItem()
 {
@@ -469,6 +472,41 @@ void QvisCreateBondsWindow::UpdateWindowSingleItem()
     delButton->setEnabled(index>=0 && index<=n-1);
     upButton->setEnabled(index>0 && index<=n-1);
     downButton->setEnabled(index>=0 && index<n-1);
+
+    //
+    // If we have a SIL collection called "elements", and it's not
+    // fully populated (i.e. less than 100 sets in the collection),
+    // then we can help the user by hinting which elements are
+    // used in the current database.
+    //
+    std::vector<int> hints;
+    avtSILRestriction_p sil = GetViewerProxy()->GetPlotSILRestriction();
+    if (sil->GetNumCollections() > 0 &&
+        sil->GetTopSet() != -1)
+    {
+        for (int i=0; i<sil->GetNumCollections(); i++)
+        {
+            avtSILCollection_p col = sil->GetSILCollection(i);
+            if (col->GetCategory() == "element")
+            {
+                const std::vector<int> &sets = col->GetSubsetList();
+                if (sets.size() < 100)
+                {
+                    for (int j = 0; j < sets.size(); j++)
+                    {
+                        avtSILSet_p set = sil->GetSILSet(sets[j]);
+                        const string &name = set->GetName();
+                        int element = ElementNameToAtomicNumber(name.c_str());
+                        if (element != -1)
+                            hints.push_back(element);
+                    }
+                }
+                break;
+            }
+        }
+    }
+    firstElement->setHintedElements(hints);
+    secondElement->setHintedElements(hints);
 }
 
 int QvisCreateBondsWindow::GetItemIndex(QListViewItem *item1)
@@ -692,6 +730,10 @@ void QvisCreateBondsWindow::bondsListDel()
 //  Programmer:  Jeremy Meredith
 //  Creation:    February 11, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Feb 12 13:58:12 EST 2008
+//    Forget to select vectors after making changes.  Fixed now.
+//
 // ****************************************************************************
 static void
 SwapIndex(CreateBondsAttributes *atts, int oldindex, int newindex)
@@ -710,6 +752,11 @@ SwapIndex(CreateBondsAttributes *atts, int oldindex, int newindex)
     atts->GetAtomicNumber2()[newindex] = oldAN2;
     atts->GetMinDist()[newindex]       = oldMin;
     atts->GetMaxDist()[newindex]       = oldMax;
+
+    atts->SelectAtomicNumber1();
+    atts->SelectAtomicNumber2();
+    atts->SelectMinDist();
+    atts->SelectMaxDist();
 }
 
 // ****************************************************************************

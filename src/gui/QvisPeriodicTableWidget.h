@@ -41,6 +41,7 @@
 #include <gui_exports.h>
 #include <qwidget.h>
 #include <QvisGridWidget.h>
+#include <vector>
 
 class QPixmap;
 class QPainter;
@@ -57,6 +58,9 @@ class QPainter;
 // Creation:   July  6, 2006
 //
 // Modifications:
+//    Jeremy Meredith, Tue Feb 12 14:01:52 EST 2008
+//    Added support for hinting some elements to the user, e.g. to highlight
+//    the elements that are actually in the database.
 //
 // ****************************************************************************
 
@@ -69,6 +73,7 @@ public:
     virtual ~QvisPeriodicTableWidget();
 
     void setSelectedElement(int e);
+    void setHintedElements(const std::vector<int>&);
 
 signals:
     void   selectedElement(int element);
@@ -81,6 +86,8 @@ private:
     int  indexToElement(int);
     virtual bool isValidIndex(int);
     virtual void emitSelection();
+
+    bool *hintedElements;
 };
 
 #endif

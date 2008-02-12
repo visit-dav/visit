@@ -52,6 +52,7 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtSTSDFileFormatInterface.h>
+#include <AtomicProperties.h>
 
 #include <Expression.h>
 
@@ -129,6 +130,8 @@ avtPOSCARFileFormat::FreeUpResources(void)
 //  Creation:   January  8, 2008
 //
 //  Modifications:
+//    Jeremy Meredith, Tue Feb 12 14:09:24 EST 2008
+//    Support element types as an enumerated scalar.
 //
 // ****************************************************************************
 
@@ -158,13 +161,23 @@ avtPOSCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     AddScalarVarToMetaData(md, "species", "mesh", AVT_NODECENT);
     if (element_map.size() > 0)
-        AddScalarVarToMetaData(md, "element", "mesh", AVT_NODECENT);        
+    {
+        avtScalarMetaData *el_smd =
+            new avtScalarMetaData("element", "mesh", AVT_NODECENT);
+        el_smd->isEnumeration = true;
+        for (int i=0; i<element_map.size(); i++)
+        {
+            el_smd->enumNames.push_back(element_names[element_map[i]-1]);
+            el_smd->enumValues.push_back(element_map[i]);
+        }
+        md->Add(el_smd);
+    }
     if (cx.size() > 0)
-        AddScalarVarToMetaData(md, "cx", "mesh", AVT_NODECENT);        
+        AddScalarVarToMetaData(md, "cx", "mesh", AVT_NODECENT);
     if (cy.size() > 0)
-        AddScalarVarToMetaData(md, "cy", "mesh", AVT_NODECENT);        
+        AddScalarVarToMetaData(md, "cy", "mesh", AVT_NODECENT);
     if (cz.size() > 0)
-        AddScalarVarToMetaData(md, "cz", "mesh", AVT_NODECENT);        
+        AddScalarVarToMetaData(md, "cz", "mesh", AVT_NODECENT);
 }
 
 
