@@ -19,6 +19,9 @@
 #   Brad Whitlock, Wed Mar 14 11:55:31 PDT 2007
 #   Modified for new source layout.
 #
+#   Hank Childs, Mon Feb 11 17:13:30 PST 2008
+#   Renamed components directory to be avt.
+#
 ###############################################################################
 from distutils.core import setup, Extension
 import os, string
@@ -51,8 +54,8 @@ srcdirs = ("../../common/comm",
 "../../common/Exceptions/VisWindow",
 "../../common/expr",
 "../../common/parser",
-"../../components/DBAtts/MetaData",
-"../../components/DBAtts/SIL",
+"../../avt/DBAtts/MetaData",
+"../../avt/DBAtts/SIL",
 "../../viewer/rpc",
 "../../viewer/proxy",
 ".",
