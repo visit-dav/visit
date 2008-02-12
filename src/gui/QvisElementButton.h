@@ -69,6 +69,10 @@ class QvisElementSelectionWidget;
 //    both a periodic table widget and a "match any element" button
 //    to allow wildcards.
 //   
+//    Jeremy Meredith, Tue Feb 12 14:01:52 EST 2008
+//    Added support for hinting some elements to the user, e.g. to highlight
+//    the elements that are actually in the database.
+//
 // ****************************************************************************
 
 class GUI_API QvisElementButton : public QPushButton
@@ -85,6 +89,7 @@ public:
 
     int elementNumber() const;
     void setElementNumber(int);
+    void setHintedElements(const std::vector<int>&);
 
 signals:
     void selectedElement(int element);

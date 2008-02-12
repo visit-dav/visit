@@ -131,6 +131,9 @@ avtOUTCARFileFormat::OpenFileAtBeginning()
 //    Jeremy Meredith, Fri Apr 20 15:01:36 EDT 2007
 //    Added support for magnetization fields.
 //
+//    Jeremy Meredith, Tue Feb 12 14:09:24 EST 2008
+//    Support element types as an enumerated scalar.
+//
 // ****************************************************************************
 
 void
@@ -157,7 +160,16 @@ avtOUTCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
     }
     md->Add(mmd_bbox);
 
-    AddScalarVarToMetaData(md, "element", "mesh", AVT_NODECENT);
+    avtScalarMetaData *el_smd =
+        new avtScalarMetaData("element", "mesh", AVT_NODECENT);
+    el_smd->isEnumeration = true;
+    for (int i=0; i<element_types.size(); i++)
+    {
+        el_smd->enumNames.push_back(element_names[i]);
+        el_smd->enumValues.push_back(element_types[i]);
+    }
+    md->Add(el_smd);
+
     if (ntimesteps != 0)
     {
         // If only initial consitions are saved, then we don't

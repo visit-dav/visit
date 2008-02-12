@@ -323,3 +323,23 @@ QvisElementButton::elementSelected(int element)
         emit selectedElement(element);
     }
 }
+
+// ****************************************************************************
+//  Method:  QvisElementButton::setHintedElements
+//
+//  Purpose:
+//    Accept a list of atomic numbers that we will use for hinting.
+//
+//  Arguments:
+//    elements   the list of atomic numbers
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 12, 2008
+//
+// ****************************************************************************
+
+void
+QvisElementButton::setHintedElements(const std::vector<int> &elements)
+{
+    sharedpopup->setHintedElements(elements);
+}

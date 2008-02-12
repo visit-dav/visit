@@ -316,3 +316,24 @@ QvisElementSelectionWidget::handleSelectedElement(int element)
     // Emit the element changed signal.
     emit selectedElement(element);
 }
+
+
+// ****************************************************************************
+//  Method:  QvisElementSelectionWidget::setHintedElements
+//
+//  Purpose:
+//    Accept a list of atomic numbers that we will use for hinting.
+//
+//  Arguments:
+//    elements   the list of atomic numbers
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 12, 2008
+//
+// ****************************************************************************
+
+void
+QvisElementSelectionWidget::setHintedElements(const std::vector<int> &elements)
+{
+    periodicTable->setHintedElements(elements);
+}
