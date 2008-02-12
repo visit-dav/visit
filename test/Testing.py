@@ -1071,50 +1071,129 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 #   Adjusted case with the absolute value of the base values are very near
 #   zero (e.g. less than square of numdifftol), to switch to absolute
 #   diffs.
+#
+#   Mark C. Miller, Thu Jan 31 17:51:21 PST 2008
+#   Modified the algorithm in a subtle way. Since the string.replace() calls
+#   are applied repeatedly over the entire input string, it was possible for
+#   an earlier replace to be corrupted by a later replace. The new algorithm
+#   uses a two-step replace process. As numbers are found in the input string,
+#   they are compared for magnitude of numerial difference to their counter
+#   parts in the baseline string. If the difference is BELOW threshold, we aim
+#   to replace the 'current' numerical value in inText with the baseline value
+#   in baseText. This has the effect of preventing the numerical difference
+#   from causing a REAL difference when the two strings are diff'd later on.
+#   If the difference is NOT below threshold, we skip this replacement. That
+#   has the effect of causing a REAL difference when the two strings are
+#   diff'd later. When the replacement is performed (e.g. the numerical 
+#   difference is below threshold), we perform the replacement in two steps.
+#   In the first pass over the string, we replace each current value with
+#   a unique replacement 'tag.' The string we use must be unique over all
+#   words in inText. In the second pass, we replace each of these replacement
+#   tags with the actual baseline string thereby making that word in the
+#   string identical to the baseline result and effectively eliminating it
+#   from effecting the text difference.
 # ----------------------------------------------------------------------------
 
 def FilterTestText(inText, baseText):
     global numdifftol
 
-    # note, this substitution is applied to the entire string
+    #
+    # We have to filter out the absolute path information we might see in
+    # this string. runtest passes the value for visitTopDir here.
+    #
     inText = string.replace(inText, "%s/data/"%visitTopDir, "VISIT_TOP_DIR/data/")
     inText = string.replace(inText, "%s/test/"%visitTopDir, "VISIT_TOP_DIR/test/")
+
+    #
+    # Only consider doing any string substitution if numerical diff threshold
+    # is non-zero
+    #
     if numdifftol != 0.0:
+
+	# this is to support using VisIt tests to test Silo updates
         if silo == 1:
             tmpText = string.replace(inText, "/view/visit_VOBowner_testsilo", "")      
 	else:
             tmpText = string.replace(inText, "/view/visit_VOBowner_testopt", "")      
+
+
+	#
+	# Break the strings into words. Make a pass looking for words that
+	# form numbers. Whenever we have numbers, compute their difference
+	# and compare it to threshold. If its above threshold, do nothing.
+	# The strings will wind up triggering a text difference. If its below
+	# threshold, eliminate the word from effecting text difference by
+	# setting it identical to corresponding baseline word. In the first
+	# loop, set it to a unique tag. In the second loop, set the tag to 
+	# the correct baseline word.
+	#
 	baseWords = string.split(baseText)
 	inWords = string.split(tmpText)
 	outText=""
         transTab = string.maketrans(string.digits, string.digits)
+	replMap = {}
 	for w in range(len(baseWords)):
             try:
-		inWordsT = string.translate(inWords[w], transTab, '><,()')
-		baseWordsT = string.translate(baseWords[w], transTab, '><,()')
-		if inWordsT.count(".") > 1 and inWordsT.endswith("."):
-		    inWordsT = inWordsT.rstrip(".")
-		if baseWordsT.count(".") > 1 and baseWordsT.endswith("."):
-		    baseWordsT = baseWordsT.rstrip(".")
-	        inVal = string.atof(inWordsT)
-	        baseVal = string.atof(baseWordsT)
+		inWordT = string.translate(inWords[w], transTab, '><,()')
+		baseWordT = string.translate(baseWords[w], transTab, '><,()')
+		replTag = "@@@%06d@@@"%w
+		if inWordT.count(".") == 2 and inWordT.endswith(".") or \
+		   baseWordT.count(".") == 2 and baseWordT.endswith("."):
+		    inWordT = inWordT.rstrip(".")
+		    baseWordT = baseWordT.rstrip(".")
+
+		#
+		# Attempt to convert ths word to a number. Exception indicates
+		# it wasn't a number and we can move on to next word
+		#
+	        inVal = string.atof(inWordT)
+	        baseVal = string.atof(baseWordT)
+
+		#
+		# If the value is too close to zero, don't use a relative
+		# difference. Use an absolute difference but compare it
+		# to the threshold squared too.
+		#
 		tooSmall = False
-		if baseVal < numdifftol * numdifftol:
+		if baseVal < numdifftol * numdifftol and \
+		  -baseVal < numdifftol * numdifftol:
 		    valDiff = inVal - baseVal
 		    tooSmall = True
                 else:
 		    valDiff = (inVal - baseVal) / baseVal
 		if valDiff < 0:
 		    valDiff = -valDiff
+
+		#
+		# We only need to worry about string replacements if the values
+		# are actually different. And then, only if their difference
+		# is below threshold (or square of threshold for values near zero).
+		#
                 if valDiff != 0:
 		    if tooSmall:
 		        if valDiff < numdifftol * numdifftol:
-                            tmpText = string.replace(tmpText, "%s"%inWordsT, "%s"%baseWordsT, 1)
+                            tmpText = string.replace(tmpText, "%s"%inWordT, "%s"%replTag, 1)
+			    replMap[replTag] = baseWordT
 		    else:
                         if valDiff < numdifftol:
-                            tmpText = string.replace(tmpText, "%s"%inWordsT, "%s"%baseWordsT, 1)
+                            tmpText = string.replace(tmpText, "%s"%inWordT, "%s"%replTag, 1)
+			    replMap[replTag] = baseWordT
+
+	    #
+	    # This word wasn't a number, move on
+	    #
             except ValueError:
 	        outText = outText + inWords[w]
+
+        #
+	# Ok, at this point, the string has had all its numerical results that differe
+	# from baseline replaced with unique tags of the form '@@@%06d@@@'. Now, make a 
+	# final pass over the string and replace each of these tags with their corresponding
+	# true baseline text
+	#
+	for w in range(len(replMap)):
+            tmpText = string.replace(tmpText, "%s"%replMap.keys()[w], "%s"%replMap.values()[w], 1)
+
         return tmpText
     else:
         if silo == 1:
