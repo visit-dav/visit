@@ -215,7 +215,7 @@ pingWorks=`ping -c 5 $svnHost | grep "0% packet loss"`
 checkAndHandleError "`nezero $pingWorks`" fatal "dropped packets to $svnHost"
 
 # check if this script itself has been changed 
-checkAndHandleError $scriptWasChanged warning "regressiontest_nersc was changed"
+checkAndHandleError $scriptWasChanged warning "regressiontest_davinci was changed"
 
 # Update our current 'checkout' of visit trunk from NERSC
 pushd $rootTestDir 1> /dev/null 2>&1
@@ -243,7 +243,7 @@ cat $modifiersFile nersc_repo_modifiers_$dateTag | grep -v '^[0-9]*$' | sort | u
 rm -f $modifiersFile
 mv ${modifiersFile}_tmp $modifiersFile 
 for u in `cat $modifiersFile`; do
-    uemail=`./nersc_username_to_email $u`
+    uemail=`./src/svn_bin/nersc_username_to_email $u`
     modifiersEmails="$modifiersEmails $uemail" 
 done
 
@@ -397,21 +397,19 @@ cd test
 for m in $modes; do
 
     if test "$skipList" = ""; then
-        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -p -m "$m" -d "$curdate" -notrackmem
+        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -m "$m" -notrackmem -pixdiff 5 -avgdiff 5 -numdiff 0.0001
     else
-        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem
+        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -s "$skipList" -m "$m" -notrackmem -pixdiff 5 -avgdiff 5 -numdiff 0.0001
     fi
     curerror=$?
     theMode=`echo $m | tr ',' '_'`
     rm -f short_summary
     touch short_summary
-    echo "Failed results should be obtainable from" >> short_summary
-    echo "ftp://ftp.llnl.gov/outgoing/visit_results_${theMode}_${dateTag}.tar.gz" >> short_summary
+    echo "Failed results should be obtainable on davinci.nersc.gov" >> short_summary
+    echo "/project/projectdirs/visit/public_html/${dateTag}/${theMode}/index.html" >> short_summary
     grep 'category\|failed' summary >> short_summary
     checkAndHandleError $curerror warning "test mode $m failed" short_summary 
 
-    # try to use auto-login, anonymous ftp to
-    # put failed results on ftp.llnl.gov
     failedPyFiles=`grep failed short_summary | cut -d':' -f1`
     if test -n "$failedPyFiles"; then
         mkdir html_$dateTag
