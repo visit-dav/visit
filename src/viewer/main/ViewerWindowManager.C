@@ -6655,7 +6655,10 @@ ViewerWindowManager::ReplaceDatabase(const EngineKey &key,
 // Creation:   Tue Jul 27 10:19:17 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 11 17:10:16 PST 2008
+//   Fixed call to CloseFile so it passes the name of the database to close
+//   on the mdserver so the database gets re-read.
+//
 // ****************************************************************************
 
 void
@@ -6727,7 +6730,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
             }
 
             // Clear all knowledge of the file from the cache
-            fs->CloseFile(hDB);
+            fs->CloseFile(host, db);
             fs->ClearFile(hDB);
 
             // Get the file's metadata again.
