@@ -52,8 +52,7 @@ errorMsgCount=0;
 touch $errorLogFile
 
 # list of users who want email every night with the log file
-#logrecipients="miller86@llnl.gov childs3@llnl.gov jsmeredith@ornl.gov"
-logrecipients="miller86@llnl.gov"
+logrecipients="miller86@llnl.gov childs3@llnl.gov jsmeredith@ornl.gov"
 
 eqzero() {
     if test "$1" = "0"; then
