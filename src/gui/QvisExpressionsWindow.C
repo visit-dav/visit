@@ -293,6 +293,7 @@ const char *expr_misc[] = {
     "conn_components",
     "curl",
     "divergence",
+    "enumerate",
     "gauss_curvature",
     "gradient",
     "ij_gradient",
@@ -1053,6 +1054,9 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Cyrus Harrison, Thu Jan 31 09:45:30 PST 2008
 //    Added value_for_material
 //
+//    Jeremy Meredith, Wed Feb 13 12:27:50 EST 2008
+//    Added enumerate
+//
 // ****************************************************************************
 
 void
@@ -1141,6 +1145,11 @@ QvisExpressionsWindow::insertFunction(int id)
     else if(str == "value_for_material")
     {
         definitionEdit->insert("(<var>, <material-name-or-number>)");
+        doParens = false;
+    }
+    else if (str == "enumerate")
+    {
+        definitionEdit->insert("(<var>, [<val-if-0>, <val-if-1>, ...])");
         doParens = false;
     }
 
