@@ -6,6 +6,8 @@
     </Field>
     <Field name="openOptions" label="openOptions" type="attVector" subtype="DBOptionsAttributes">
     </Field>
+    <Field name="Enabled" label="Enabled" type="intVector">
+    </Field>
     <Function name="MergeNewFromPluginInfo" user="true" member="true">
     </Function>
     <Function name="GetOpenOptionsForID" user="true" member="true">

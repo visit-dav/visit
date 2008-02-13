@@ -20,6 +20,7 @@ FileOpenOptions::MergeNewFromPluginInfo(const DBPluginInfoAttributes *dbinfo)
         {
             typeNames.push_back(name);
             typeIDs.push_back(id);
+            Enabled.push_back(true);
             AddOpenOptions(opts_from);
         }
         else
@@ -90,3 +91,4 @@ FileOpenOptions::GetOpenOptionsForID(const std::string &id)
     }
     return NULL;
 }
+

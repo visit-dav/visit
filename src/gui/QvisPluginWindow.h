@@ -76,6 +76,9 @@ class QPushButton;
 //    Jeremy Meredith, Wed Jan 23 16:49:01 EST 2008
 //    Populate database tab.  Also observe FileOpenOptions.
 //
+//    Dave Pugmire, Wed Feb 13 15:43:24 EST 2008
+//    Update the FileOpenOptions for enable/disable DB plugins.
+//
 // ****************************************************************************
 
 class GUI_API QvisPluginWindow : public QvisPostableWindowSimpleObserver
@@ -106,6 +109,8 @@ private slots:
     void tabSelected(const QString &tabLabel);
     void databaseOptionsSetButtonClicked();
     void databaseSelectedItemChanged(QListViewItem*);
+    void selectAllReadersButtonClicked();
+    void unSelectAllReadersButtonClicked();
 private:
     PluginManagerAttributes *pluginAtts;
     FileOpenOptions         *fileOpenOptions;
@@ -118,12 +123,14 @@ private:
     QVBox           *pageDatabases;
     QListView       *listDatabases;
     QPushButton     *databaseOptionsSetButton;
+    QPushButton *selectAllReadersButton;
+    QPushButton *unSelectAllReadersButton;
 
     std::vector<QCheckListItem*> plotItems;
     std::vector<std::string>     plotIDs;
     std::vector<QCheckListItem*> operatorItems;
     std::vector<std::string>     operatorIDs;
-    std::vector<QListViewItem*>  databaseItems;
+    std::vector<QCheckListItem*>  databaseItems;
     std::vector<int>             databaseIndexes;
 
     int             activeTab;

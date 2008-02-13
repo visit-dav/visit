@@ -181,6 +181,10 @@ QvisPluginWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //    Also, made the tab widget resize instead of the empty space
 //    when the window grows.
 //
+//    Dave Pugmire, Wed Feb 13 15:43:24 EST 2008
+//    Allow the ability enable/disable DB plugins. Add two buttons to select
+//    unselect all. Provide an "X" next to the plugin if read options are available.
+//
 // ****************************************************************************
 
 void
@@ -228,21 +232,33 @@ QvisPluginWindow::CreateWindowContents()
     // Create the database page
     //
     pageDatabases = new QVBox(central, "pageDatabases");
-    //pageDatabases->setFrameStyle(QFrame::NoFrame);
     pageDatabases->setSpacing(10);
     pageDatabases->setMargin(10);
     tabs->addTab(pageDatabases, "Databases");
 
     listDatabases = new QListView(pageDatabases, "listDatabases");
+    listDatabases->addColumn("  ");
     listDatabases->addColumn("Name");
+    listDatabases->addColumn("Open Options");
     listDatabases->setAllColumnsShowFocus(true);
-    //listDatabases->setColumnAlignment(1, Qt::AlignHCenter);
+    listDatabases->setColumnAlignment(0, Qt::AlignHCenter);
+    listDatabases->setColumnAlignment(2, Qt::AlignLeft);
 
-    databaseOptionsSetButton = new QPushButton("Set Default Open Options",
-                                              pageDatabases);
+    QGroupBox *grpBox = new QGroupBox( 2, Horizontal, "Selection", pageDatabases );
+    QHBox *box = new QHBox( grpBox, "hBox" );
+    box->setSpacing(10);
+    box->setMargin(10);
+
+    // Add select all and unselect all buttons.
+    selectAllReadersButton = new QPushButton("Select all", box );
+    connect( selectAllReadersButton, SIGNAL(clicked()), this, SLOT(selectAllReadersButtonClicked()));
+    unSelectAllReadersButton = new QPushButton("Unselect all", box );
+    connect( unSelectAllReadersButton, SIGNAL(clicked()), this, SLOT(unSelectAllReadersButtonClicked()));
+    
+    databaseOptionsSetButton = new QPushButton("Set Default Open Options", pageDatabases);
     connect(databaseOptionsSetButton, SIGNAL(clicked()),
             this, SLOT(databaseOptionsSetButtonClicked()));
-    connect(listDatabases, SIGNAL(selectionChanged(QListViewItem*)),
+    connect(listDatabases, SIGNAL(selectionChanged(QListViewItem*)), 
             this, SLOT(databaseSelectedItemChanged(QListViewItem*)));
 
     // Show the appropriate page based on the activeTab setting.
@@ -322,6 +338,9 @@ QvisPluginWindow::Update(Subject *s)
 //    Cyrus Harrison, Mon Feb  4 09:46:24 PST 2008
 //    Resolved AIX linking error w/ auto std::string to QString conversion.
 //
+//    Dave Pugmire, Wed Feb 13 15:43:24 EST 2008
+//    Update the FileOpenOptions for enable/disable DB plugins.
+//
 // ****************************************************************************
 
 void
@@ -375,13 +394,15 @@ QvisPluginWindow::UpdateWindow(bool doAll)
         databaseIndexes.clear();
         for (i=0; i<fileOpenOptions->GetNumOpenOptions(); i++)
         {
-            QListViewItem *item = new QListViewItem(listDatabases);
-            item->setText(0,fileOpenOptions->GetTypeNames()[i].c_str());
+            QCheckListItem *item = new QCheckListItem(listDatabases, "", QCheckListItem::CheckBox);
+            item->setOn(fileOpenOptions->GetEnabled()[i]);
+            item->setText(1,fileOpenOptions->GetTypeNames()[i].c_str());
+            if (fileOpenOptions->GetOpenOptions(i).GetNumberOfOptions() == 0)
+                item->setText(2, "  " );
+            else
+                item->setText(2, "  X " );
             databaseItems.push_back(item);
             databaseIndexes.push_back(i);
-
-            if (fileOpenOptions->GetOpenOptions(i).GetNumberOfOptions() == 0)
-                item->setEnabled(false);
         }
         databaseOptionsSetButton->setEnabled(false);
     }
@@ -412,6 +433,9 @@ QvisPluginWindow::UpdateWindow(bool doAll)
 //    Only issue the warning if the enabled/disabled plugins are changed.
 //    Do updates for the default file opening options.
 //
+//    Dave Pugmire, Wed Feb 13 15:43:24 EST 2008
+//    Update the FileOpenOptions for enable/disable DB plugins.
+//
 // ****************************************************************************
 
 void
@@ -433,6 +457,15 @@ QvisPluginWindow::Apply(bool dontIgnore)
         bool newvalue = operatorItems[i]->isOn();
         int  &value =
             pluginAtts->GetEnabled()[pluginAtts->GetIndexByID(operatorIDs[i])];
+        if (bool(value) != newvalue)
+            dirty = true;
+        value = newvalue;
+    }
+
+    for (i=0; i<databaseItems.size(); i++)
+    {
+        bool newvalue = databaseItems[i]->isOn();
+        int &value = fileOpenOptions->GetEnabled()[i];
         if (bool(value) != newvalue)
             dirty = true;
         value = newvalue;
@@ -662,4 +695,48 @@ QvisPluginWindow::databaseSelectedItemChanged(QListViewItem *item)
             break;
         }
     }
+}
+
+// ****************************************************************************
+//  Method:  QvisPluginWindow::selectAllReadersButtonClicked()
+//
+//  Purpose:
+//    Enable all the DB plugins.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    February 13, 2008
+//
+// ****************************************************************************
+void
+QvisPluginWindow::selectAllReadersButtonClicked()
+{
+    for ( int i = 0; i < fileOpenOptions->GetEnabled().size(); i++ )
+        fileOpenOptions->GetEnabled()[i] = true;
+
+    UpdateWindow(false);
+}
+
+// ****************************************************************************
+//  Method:  QvisPluginWindow::unSelectAllReadersButtonClicked()
+//
+//  Purpose:
+//    Disable all the DB plugins.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    February 13, 2008
+//
+// ****************************************************************************
+void
+QvisPluginWindow::unSelectAllReadersButtonClicked()
+{
+    for ( int i = 0; i < fileOpenOptions->GetEnabled().size(); i++ )
+        fileOpenOptions->GetEnabled()[i] = false;
+
+    UpdateWindow(false);
 }
