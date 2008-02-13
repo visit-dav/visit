@@ -304,6 +304,9 @@
 #   Hank Childs, Sun Feb 10 19:43:59 MST 2008
 #   Added StreamGhostTest.
 #
+#   Hank Childs, Wed Feb 13 11:23:51 PST 2008
+#   Added AugDecomp.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -337,6 +340,7 @@ REQUIRED=\
  ANALYZE \
  ANSYS \
  AUXFile \
+ AugDecomp \
  BOV \
  BOW \
  Claw \
