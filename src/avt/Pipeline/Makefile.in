@@ -240,6 +240,9 @@
 #    Hank Childs, Sat Feb  9 14:37:42 PST 2008
 #    Rename "streamer" classes to "data tree iterators".
 #
+#    Cyrus Harrison, Wed Feb 13 10:33:22 PST 2008
+#    Added avtDebugDumpOptions
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -318,6 +321,7 @@ Pipeline_src= \
   Pipeline/avtDataRequest.C \
   Pipeline/avtDataSetReader.C \
   Pipeline/avtDataSetWriter.C \
+  Pipeline/avtDebugDumpOptions.C \
   Pipeline/avtImageReader.C \
   Pipeline/avtImageTiler.C \
   Pipeline/avtImageWriter.C \
