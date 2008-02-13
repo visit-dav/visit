@@ -36,85 +36,55 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* //
-//                             avtTerminatingSink.h                          //
-// ************************************************************************* //
-
-#ifndef AVT_TERMINATING_SINK_H
-#define AVT_TERMINATING_SINK_H
+#ifndef AVT_DEBUG_DUMP_OPTIONS_H
+#define AVT_DEBUG_DUMP_OPTIONS_H
 
 #include <pipeline_exports.h>
-
-#include <avtDataObjectSink.h>
-#include <avtContract.h>
-
-class     avtWebpage;
-
-
-typedef  bool (*GuideFunction)(void *, int);
-
+#include <visitstream.h>
+#include <string>
 
 // ****************************************************************************
-//  Class: avtTerminatingSink
+// Class: avtDebugDumpOptions
 //
-//  Purpose:
-//      This sink object serves as the terminator of a pipeline.  It 
-//      understands that there are many pipelines and what its pipeline index
-//      is.  It also understands that dynamic load balancing may occur and
-//      that it may have to execute a pipeline multiple times.
+// Purpose:
+//     Provides static members that define global debug dump options.
+//     These options were migrated from the avtFilter, avtTerminatingSink
+//     and avtDataRepresentation classes b/c of growing redundancy. 
 //
-//  Programmer: Hank Childs
-//  Creation:   May 29, 2001
 //
-//  Modifications:
+// Programmer: Cyrus Harrison
+// Creation:   Feburary 13, 2009
 //
-//    Hank Childs, Fri Sep 28 13:18:47 PDT 2001
-//    Added DynamicLoadBalanceCleanUp.
-//
-//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
-//    Moved inlined destructor definition to .C file because certain compilers 
-//    have problems with them.
-//
-//    Hank Childs, Wed Mar  2 11:16:01 PST 2005
-//    Take a full-blown pipeline specification rather than a data spec and a
-//    pipeline index.
-//
-//    Hank Childs, Thu Dec 21 09:43:22 PST 2006
-//    Add support for debug dumps
-//
-//    Hank Childs, Fri Jun 15 16:11:00 PDT 2007
-//    Add support for indentation of debug dumps.
-//
-//    Cyrus Harrison, Wed Feb 13 11:31:58 PST 2008
-//    Global debug dump flag was migrated to avtDebugDumpOptions.
+// Modifications: 
 //
 // ****************************************************************************
 
-class PIPELINE_API avtTerminatingSink : virtual public avtDataObjectSink
+class PIPELINE_API avtDebugDumpOptions
 {
   public:
-                              avtTerminatingSink();
-    virtual                  ~avtTerminatingSink();
-
-    void                      Execute(avtContract_p);
-
-    static void               SetGuideFunction(GuideFunction, void *);
-    static void               GetGuideFunction(GuideFunction &, void *&);
-
-    static void               AddDumpReference(const char *, const char *, int);
-
-  protected:
-    virtual void              InputIsReady(void);
-    virtual void              DynamicLoadBalanceCleanUp(void);
-
-    static avtWebpage        *webpage;
-
-    void                      FinalizeWebpage(void);
-    void                      InitializeWebpage(void);
-
+    virtual                  ~avtDebugDumpOptions();
+    
+    static void               EnableDump();
+    static void               DisableDump();
+    static bool               DumpEnabled() {return doDump;}
+    
+    static void               EnableDatasetDump();
+    static void               DisableDatasetDump();
+    static bool               DatasetDumpEnabled() {return doDatasetDump;}
+    
+    static const std::string &GetDumpDirectory() {return outputDir;}
+    static void               SetDumpDirectory(const std::string &);
+    
   private:
-    static GuideFunction      guideFunction;
-    static void              *guideFunctionArgs;
+    // we dont want anyone creating an instance of this class, so make
+    // its constructor private.
+    avtDebugDumpOptions();
+    
+    // static members
+    static std::string   outputDir;
+    static bool          doDump;
+    static bool          doDatasetDump;
+    
 };
 
 

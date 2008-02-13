@@ -281,6 +281,10 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Mon Feb 11 15:01:24 EST 2008
 #    Components directory was renamed to avt.
 #
+#    Cyrus Harrison, Wed Feb 13 14:24:35 PST 2008
+#    Added info about optional output directory argument for -dump and 
+#    -info-dump
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -617,9 +621,14 @@ $fullusage = "$usage
                              Have only every Nth processor output timing info.
                              Prevents overwhelming parallel file systems.
         -env                 Print env. variables VisIt will use when run.
-        -dump                Dump intermediate results from AVT filters,
+        -dump (dump_dir)     Dump intermediate results from AVT filters,
                              scalably rendered images, and html pages.
-        -info-dump           Dump html pages only.
+                             Takes an optional argument that specifies the 
+                             directory for -dump output files.
+        -info-dump (dump_dir) 
+                             Dump html pages only. 
+                             Takes an optional argument that specifies the 
+                             directory for -info-dump output files.
         -gdb                 Run under gdb.
         -gdb-gui             Run the gui under gdb.
         -gdb-cli             Run the cli under gdb.

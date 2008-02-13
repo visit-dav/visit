@@ -42,6 +42,7 @@
 
 #include <avtFilter.h>
 
+#include <avtDebugDumpOptions.h>
 #include <avtDynamicAttribute.h>
 #include <avtExtents.h>
 #include <avtMetaData.h>
@@ -57,14 +58,16 @@
 #include <NoInputException.h>
 #include <TimingsManager.h>
 
+#include <visitstream.h>
+
 #include <string>
 #include <vector>
 
 using std::string;
 using std::vector;
+using std::ostringstream;
 
 
-bool avtFilter::debugDump    = false;
 int  avtFilter::numInExecute = 0;
 
 
@@ -200,6 +203,9 @@ avtFilter::UpdateProgress(int current, int total)
 //    Hank Childs, Mon Dec 10 14:17:47 PST 2007
 //    Added debug statement for when the filter decides *not* to execute.
 //
+//    Cyrus Harrison, Wed Feb 13 13:37:29 PST 2008
+//    Updated to use avtDebugDumpOptions.
+//
 // ****************************************************************************
 
 bool
@@ -207,6 +213,9 @@ avtFilter::Update(avtContract_p spec)
 {
     debug1 << "Entered update for " << GetType() << endl;
 
+    
+    bool debug_dump = avtDebugDumpOptions::DumpEnabled();
+    
     CheckAbort();
 
     //
@@ -218,7 +227,7 @@ avtFilter::Update(avtContract_p spec)
         EXCEPTION0(NoInputException);
     }
 
-    if (debugDump)
+    if (debug_dump)
     {
         InitializeWebpage();
         DumpContract(spec, "input");
@@ -232,7 +241,7 @@ avtFilter::Update(avtContract_p spec)
     avtContract_p newSpec =
                                       ModifyContractAndDoBookkeeping(spec);
 
-    if (debugDump)
+    if (debug_dump )
         DumpContract(newSpec, "output");
 
     bool modifiedUpstream = UpdateInput(newSpec);
@@ -254,13 +263,13 @@ avtFilter::Update(avtContract_p spec)
             debug1 << "Executing " << GetType() << endl;
             UpdateProgress(0, 0);
             ResolveDynamicAttributes();
-            if (debugDump)
+            if (debug_dump)
                 DumpDataObject(GetInput(), "input");
             numInExecute++;
             PreExecute();
             Execute();
             PostExecute();
-            if (debugDump)
+            if (debug_dump)
                 DumpDataObject(GetOutput(), "output");
             UpdateProgress(1, 0);
             debug1 << "Done executing " << GetType() << endl;
@@ -279,7 +288,7 @@ avtFilter::Update(avtContract_p spec)
         }
         ENDTRY
 
-        if (debugDump)
+        if (debug_dump)
             FinalizeWebpage();
         inExecute = false;
         numInExecute--;
@@ -1213,6 +1222,10 @@ avtFilter::SearchDataForDataExtents(double *, const char *)
 //  Programmer: Hank Childs
 //  Creation:   June 15, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, 
+//    Added support for optional -dump output directory.
+//
 // ****************************************************************************
 
 void
@@ -1224,24 +1237,43 @@ avtFilter::InitializeWebpage(void)
                << endl;
         delete webpage;
     }
-
+    
     static int filter_id = 0;
-    char name[128];
+    
+    ostringstream oss;
+    
+    const string &dump_dir = avtDebugDumpOptions::GetDumpDirectory();
+
     if (PAR_Size() > 1)
     {
-        int rank = PAR_Rank();
-        sprintf(name, "filt%d.%d.html", filter_id, rank);
+        oss << dump_dir 
+            << "filt" 
+            << filter_id 
+            << "." 
+            << PAR_Rank()
+            << ".html";    
+        //sprintf(name, "filt%d.%d.html", filter_id, rank);
     }
     else
-        sprintf(name, "filt%d.html", filter_id);
+    {
+        oss << dump_dir 
+            << "filt" 
+            << filter_id 
+            << ".html";    
+    }
     filter_id++;
-    webpage = new avtWebpage(name);
+    
+    string file_name = oss.str();
+    webpage = new avtWebpage(file_name.c_str());
 
-    // Now set up our webpage.
-    char pagename[128];
-    sprintf(pagename, "%s dump info", GetType());
-    webpage->InitializePage(pagename);
-    webpage->WriteTitle(pagename);
+    // reset ostringstr;
+    oss.str("");
+    oss <<  GetType() << " dump info";
+    string pagename = oss.str();
+    
+    // Now set up our webpage.    
+    webpage->InitializePage(pagename.c_str());
+    webpage->WriteTitle(pagename.c_str());
     webpage->AddOnPageLink("input_contract", "Input contract");
     webpage->AddOnPageLink("output_contract", "Output contract");
     webpage->AddOnPageLink("input_data_object", "Input data object");
@@ -1292,6 +1324,9 @@ avtFilter::FinalizeWebpage(void)
 //    Hank Childs, Fri Jun 15 12:41:41 PDT 2007
 //    Moved some code to Initialize and FinalizeWebpage.
 //
+//    Cyrus Harrison, Wed Feb 13 13:51:32 PST 2008
+//    Output dir should not be included dump reference. 
+//
 // ****************************************************************************
 
 void
@@ -1307,7 +1342,17 @@ avtFilter::DumpDataObject(avtDataObject_p dob, const char *prefix)
     {
         // If we add the reference to the main web page right now, 
         // all of the filters will be in execution order.
-        avtTerminatingSink::AddDumpReference(webpage->GetName(), GetType(), 
+        
+        // we need the webpage name without the directory
+        const string &dump_dir = avtDebugDumpOptions::GetDumpDirectory();
+        string ref_name(webpage->GetName());
+        
+        // strip dump_dir from ref_name if necesary
+        if( dump_dir != "" && ref_name.find(dump_dir) == 0)
+            ref_name = ref_name.substr(dump_dir.length());
+        
+        avtTerminatingSink::AddDumpReference(ref_name.c_str(),
+                                             GetType(), 
                                              numInExecute);
 
         std::string input_string;
