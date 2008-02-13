@@ -103,7 +103,10 @@ class     avtWebpage;
 //    Added a static data member to keep track of the number of filters
 //    currently executing (which also informs the amount of sub-pipelines
 //    that are executing, which allows for formatting the debug dump).
-
+//
+//    Cyrus Harrison, Wed Feb 13 10:19:20 PST 2008
+//    Removed debug dump flag b/c this is now handled by avtDebugDumpOptions.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFilter
@@ -125,25 +128,21 @@ class PIPELINE_API avtFilter
 
     virtual avtOriginatingSource       *GetOriginatingSource(void);
     virtual avtQueryableSource         *GetQueryableSource(void);
-    avtContract_p          GetGeneralContract(void);
+    avtContract_p                       GetGeneralContract(void);
     virtual void                        ReleaseData(void);
-
-    static void                         DebugDump(bool d) {debugDump = d;}
 
   protected:
     bool                                modified;
     bool                                inExecute;
 
-    static bool                         debugDump;
     static int                          numInExecute;
     avtWebpage                         *webpage;
     std::vector<avtDynamicAttribute *>  dynamicAttributes;
 
     virtual void                        Execute(void) = 0;
-    avtContract_p          ModifyContractAndDoBookkeeping(
-                                               avtContract_p);
-    virtual avtContract_p  ModifyContract(
-                                               avtContract_p);
+    avtContract_p                       ModifyContractAndDoBookkeeping
+                                                              (avtContract_p);
+    virtual avtContract_p               ModifyContract(avtContract_p);
 
     virtual void                        ChangedInput(void);
     virtual void                        InitializeFilter(void);

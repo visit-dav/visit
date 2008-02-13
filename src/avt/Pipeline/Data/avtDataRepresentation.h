@@ -108,6 +108,9 @@ typedef enum
 //    Remove const return type of assignment operator, to prevent the compiler
 //    from defining a second assignment operator for the non-const case.
 //
+//    Cyrus Harrison, Wed Feb 13 10:25:48 PST 2008
+//    Removed DatasetDump option b/c it was migrated to avtDebugDumpOptions.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRepresentation
@@ -139,8 +142,6 @@ class PIPELINE_API avtDataRepresentation
 
     const char         *DebugDump(avtWebpage *, const char *);
 
-    static void         DatasetDump(bool d) {datasetDump = d;}
-
   protected:
     vtkDataSet         *asVTK;
     unsigned char      *asChar;
@@ -157,7 +158,6 @@ class PIPELINE_API avtDataRepresentation
 
     static bool         initializedNullDataset;
     static vtkDataSet  *nullDataset;
-    static bool         datasetDump;
 
     unsigned char      *GetDataString(int &, DataSetType &, bool);
     static void         InitializeNullDataset(void);

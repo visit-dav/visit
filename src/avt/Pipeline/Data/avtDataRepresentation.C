@@ -59,6 +59,7 @@
 #include <vtkUnstructuredGridReader.h>
 
 #include <avtCommonDataFunctions.h>
+#include <avtDebugDumpOptions.h>
 #include <avtParallel.h>
 #include <avtWebpage.h>
 
@@ -76,7 +77,6 @@ using std::ostringstream;
 //
 bool          avtDataRepresentation::initializedNullDataset = false;
 vtkDataSet   *avtDataRepresentation::nullDataset = NULL;
-bool          avtDataRepresentation::datasetDump = true;
 
 
 // ****************************************************************************
@@ -919,6 +919,9 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    Prevent ABRs (array bounds reads) when dealing with bad array sizes.
 //    This is particularly needed for singleton expressions.
 //
+//    Cyrus Harrison, Wed Feb 13 09:40:09 PST 2008
+//    Added support for optional -dump output directory.
+//
 // **************************************************************************** 
 
 const char *
@@ -928,14 +931,16 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
     {
         return "EMPTY DATA SET";
     }
+    
+    const int strsize = 4096;
+    static char str[strsize];
 
     ostringstream oss;
     
-    const int strsize = 4096;
-    char name[strsize];
-    static char str[strsize];
-
-    if(datasetDump)
+    bool dataset_dump = avtDebugDumpOptions::DatasetDumpEnabled();
+    string vtk_fname ="";
+    
+    if(dataset_dump)
     {
         int  i;
         static int times = 0;
@@ -965,18 +970,32 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
                 newDS->GetFieldData()->AddArray(arr);
             }
         }
-
-        if (PAR_Size() > 1)
+        
+        const string &dump_dir = avtDebugDumpOptions::GetDumpDirectory();
+        
+        ostringstream oss_vtk_fname;
+        
+        int rank = PAR_Rank();
+        if (rank > 1)
         {
-            int rank = PAR_Rank();
-            SNPRINTF(name,strsize,"%s%d.%d.vtk", prefix, times, rank);
+            // %s%d.%d.vtk
+            oss_vtk_fname << prefix
+                          << times << "."
+                          << rank  << ".vtk";
         }
         else
-            SNPRINTF(name,strsize,"%s%d.vtk", prefix, times);
+        {
+            // %s%d.vtk
+            oss_vtk_fname << prefix
+                          << times << ".vtk";
+        }
         times++;
+        vtk_fname = oss_vtk_fname.str();
+        string vtk_fpath = dump_dir + vtk_fname;
+        
         vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
         wrtr->SetInput(newDS);
-        wrtr->SetFileName(name);
+        wrtr->SetFileName(vtk_fpath.c_str());
         wrtr->Write();
         wrtr->Delete();
         newDS->Delete();
@@ -1013,9 +1032,9 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         break;
     }
 
-    if (datasetDump)
+    if (dataset_dump)
     {
-        oss << name << "<br> " << mesh_type << " ";
+        oss << vtk_fname << "<br> " << mesh_type << " ";
     }
     
     if (dims[0] > 0)
@@ -1077,6 +1096,8 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
             oss << "</ul>";
         }
     }
+    
+    
     
     SNPRINTF(str,strsize,oss.str().c_str());
     return str;

@@ -79,6 +79,7 @@
 #include <avtDataObjectReader.h>
 #include <avtDataObjectString.h>
 #include <avtDataObjectWriter.h>
+#include <avtDebugDumpOptions.h>
 #include <avtDataset.h>
 #include <avtFilter.h>
 #include <avtTerminatingSink.h>
@@ -1116,6 +1117,9 @@ Engine::ProcessInput()
 //    Got rid of the setenv thing entirely and instead called SetPluginDir on
 //    the individual plugin managers.
 //
+//    Cyrus Harrison, Wed Feb 13 11:06:03 PST 2008
+//    Change -dump and -info dump to set new avtDebugDumpOptions object. 
+//
 // ****************************************************************************
 
 void
@@ -1235,16 +1239,28 @@ Engine::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-dump") == 0)
         {
-            avtFilter::DebugDump(true);
-            avtTerminatingSink::DebugDump(true);
             shouldDoDashDump = true;
+            avtDebugDumpOptions::EnableDump();
+            
+            // check for optional -dump output directory
+            if( i+1 < argc && argv[i+1][0] !='-')
+            {
+                avtDebugDumpOptions::SetDumpDirectory(argv[i+1]);
+                ++i;
+            }
         }
         else if (strcmp(argv[i], "-info-dump") == 0)
         {
-            avtFilter::DebugDump(true);
-            avtTerminatingSink::DebugDump(true);
-            avtDataRepresentation::DatasetDump(false);
             shouldDoDashDump = true;
+            avtDebugDumpOptions::EnableDump();
+            avtDebugDumpOptions::DisableDatasetDump();
+            
+            // check for optional -dump output directory
+            if( i+1 < argc && argv[i+1][0] !='-')
+            {
+                avtDebugDumpOptions::SetDumpDirectory(argv[i+1]);
+                ++i;
+            }
         }
         else if (strcmp(argv[i], "-vtk-debug") == 0)
         {
@@ -1275,7 +1291,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
             DatabasePluginManager::Instance()->SetPluginDir(argv[i+1]);
             ++i;
         }
-	
+        
     }
     avtCallback::SetSoftwareRendering(!haveHWAccel);
 }

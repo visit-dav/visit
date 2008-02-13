@@ -45,6 +45,7 @@
 #include <snprintf.h>
 
 #include <avtContract.h>
+#include <avtDebugDumpOptions.h>
 #include <avtParallel.h>
 #include <avtWebpage.h>
 
@@ -54,6 +55,10 @@
 #include <NoInputException.h>
 #include <TimingsManager.h>
 
+#include <visitstream.h>
+
+using std::string;
+using std::ostringstream;
 
 //
 // Define static members.
@@ -61,7 +66,6 @@
 
 GuideFunction    avtTerminatingSink::guideFunction     = NULL;
 void            *avtTerminatingSink::guideFunctionArgs = NULL;
-bool             avtTerminatingSink::debugDump         = false;
 avtWebpage      *avtTerminatingSink::webpage           = NULL;
 
 
@@ -141,12 +145,16 @@ avtTerminatingSink::~avtTerminatingSink()
 //    Hank Childs, Wed Mar  2 11:17:20 PST 2005
 //    Take a pipeline specification rather than a data specification.
 //
+//    Cyrus Harrison, Wed Feb 13 14:15:16 PST 2008
+//    Modified to use new avtDebugDumpOptions methods. 
+//
 // ****************************************************************************
 
 void
 avtTerminatingSink::Execute(avtContract_p contract)
 {
-    if (debugDump)
+    bool debug_dump = avtDebugDumpOptions::DumpEnabled();
+    if (debug_dump)
         InitializeWebpage();
 
     int pipelineIndex = contract->GetPipelineIndex();
@@ -217,7 +225,7 @@ avtTerminatingSink::Execute(avtContract_p contract)
 
     InputIsReady();
 
-    if (debugDump)
+    if (debug_dump)
         FinalizeWebpage();
 }
 
@@ -317,6 +325,10 @@ avtTerminatingSink::GetGuideFunction(GuideFunction &foo, void *&args)
 //  Programmer: Hank Childs
 //  Creation:   December 21, 2006
 //
+//  Modifications:
+//    Cyrus Harrison, Wed Feb 13 09:27:01 PST 2008
+//    Added support for optional -dump directory.
+//
 // ****************************************************************************
 
 void
@@ -329,22 +341,33 @@ avtTerminatingSink::InitializeWebpage(void)
                << "or maybe there was an error the last time." << endl;
         delete webpage;
     }
-
     static int id = 0;
-    char name[128];
+
+    ostringstream oss;
+    const string &dump_dir = avtDebugDumpOptions::GetDumpDirectory();
+    
     if (PAR_Size() > 1)
     {
-        int rank = PAR_Rank();
-        sprintf(name, "visit_dump_%d.%d.html", id, rank);
+        oss << dump_dir 
+            << "visit_dump_"
+            << id << "."
+            << PAR_Rank() << ".html";
     }
     else
-        sprintf(name, "visit_dump_%d.html", id);
+    {
+       oss << dump_dir 
+            << "visit_dump_"
+            << id << ".html";
+    }
 
-    webpage = new avtWebpage(name);
+    string file_name = oss.str();
+    webpage = new avtWebpage(file_name.c_str());
     webpage->InitializePage("VisIt pipeline contents");
-    char title[128];
-    sprintf(title, "Pipeline %d", id);
-    webpage->WriteTitle(title);
+    
+    oss.str("");
+    oss << "Pipeline " << id;
+    string title = oss.str();
+    webpage->WriteTitle(title.c_str());
 
     id++;
 }
