@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Subset" type="plot" label="Subset" version="1.0" vartype="subset" iconFile="Subset.xpm">
+  <Plugin name="Subset" type="plot" label="Subset" version="1.0" vartype="subset,mesh" iconFile="Subset.xpm">
     <Attribute name="SubsetAttributes" purpose="This class contains the plot attributes for the subset boundary plot." persistent="true" codefile="SubsetAttributes.code">
       <Enum name="Subset_Type">
         Domain

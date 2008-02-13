@@ -319,6 +319,10 @@ SubsetViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
 //    Brad Whitlock, Wed Feb 21 14:31:20 PST 2007
 //    Changed API.
 //
+//    Jeremy Meredith, Wed Feb 13 14:57:31 EST 2008
+//    Allowed meshes to pass through with a single category, even though
+//    they are not a subset variable.
+//
 // ****************************************************************************
 
 void
@@ -434,7 +438,18 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
           break;
 
       default:
-          EXCEPTION1(InvalidVariableException, vn);
+          if (vn == meshName)
+          {
+              debug5 << "Variable for subset plot is a mesh."<<endl; 
+              subsetAtts->SetSubsetType(SubsetAttributes::EnumScalar);
+              defaultAtts->SetSubsetType(SubsetAttributes::EnumScalar);
+              sprintf(temp, "Whole mesh (%s)", vn.c_str());
+              sv.push_back(temp);
+          }
+          else
+          {
+              EXCEPTION1(InvalidVariableException, vn);
+          }
           break;
     }
     
