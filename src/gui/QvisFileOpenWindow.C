@@ -2095,6 +2095,9 @@ QvisFileOpenWindow::closeEvent(QCloseEvent *e)
 //    DBPluginInfoAttributes now follows the active plots, but we want to
 //    show the ones for the host chosen in this window's combo box.
 //
+//    Dave Pugmire, Wed Feb 13 15:43:24 EST 2008
+//    Only add this DB plugin if the user has enabled it for loading.
+//
 // ****************************************************************************
 void
 QvisFileOpenWindow::UpdateFileFormatComboBox()
@@ -2112,9 +2115,18 @@ QvisFileOpenWindow::UpdateFileFormatComboBox()
     fileFormatComboBox->clear();
     int nTypes = plugins.GetTypes().size();
     fileFormatComboBox->insertItem("Guess from file name/extension");
+    FileOpenOptions *opts = GetViewerState()->GetFileOpenOptions();
+    
     for (int i = 0 ; i < nTypes ; i++)
     {
-        fileFormatComboBox->insertItem(plugins.GetTypes()[i].c_str());
+        for (int j=0; j<opts->GetNumOpenOptions(); j++)
+        {
+            if (opts->GetTypeNames()[j] == plugins.GetTypes()[i] && opts->GetEnabled()[j] )
+            {
+                fileFormatComboBox->insertItem(plugins.GetTypes()[i].c_str());
+                break;
+            }
+        }
     }
 
     if (!oldtype.isNull())
