@@ -155,6 +155,7 @@
 #include <avtViscousStressExpression.h>
 #include <avtPerformColorTableLookupExpression.h>
 #include <avtPerMaterialValueExpression.h>
+#include <avtApplyEnumerationExpression.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -517,6 +518,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtVectorCrossProductExpression();
     if (functionName == "dot")
         return new avtBinaryMultiplyExpression();
+    if (functionName == "enumerate")
+        return new avtApplyEnumerationExpression();
     if (functionName == "array_compose")
         return new avtArrayComposeExpression();
     if (functionName == "array_compose_with_bins")

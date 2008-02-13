@@ -199,6 +199,9 @@
 #   Hank Childs, Sat Feb  9 14:47:37 PST 2008
 #   Rename avtExpressionStreamer to avtExpressionDataTreeIterator.
 #
+#   Jeremy Meredith, Wed Feb 13 12:11:56 EST 2008
+#   Add avtApplyEnumerationExpression.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -262,6 +265,7 @@ Derivations_src=\
 
 General_src= \
   General/avtApplyDDFExpression.C \
+  General/avtApplyEnumerationExpression.C \
   General/avtArrayComposeExpression.C \
   General/avtArrayComposeWithBinsExpression.C \
   General/avtArrayDecomposeExpression.C \
