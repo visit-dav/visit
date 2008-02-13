@@ -471,6 +471,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Cyrus Harrison, Tue Jan 29 08:51:41 PST 2008
 //    Added value_for_material (& val4mat alias)
 //
+//    Hank Childs, Wed Feb 13 11:21:40 PST 2008
+//    Make module an alias for mod.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -504,7 +507,7 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtSquareRootExpression();
     if ((functionName == "sq") || (functionName == "sqr"))
         return new avtSquareExpression();
-    if (functionName == "mod")
+    if (functionName == "mod" || functionName == "modulo")
         return new avtModuloExpression();
     if (functionName == "ceil")
         return new avtCeilingExpression();
