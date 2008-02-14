@@ -1553,6 +1553,11 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
 //  Programmer: Cyrus Harrison
 //  Creation:   November 28, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Thu Feb 14 11:36:45 PST 2008
+//    Enclosed variable name with < & > in the expression defintion to fix 
+//    problems with strange variable names.
+// 
 // ****************************************************************************
 
 void
@@ -1567,7 +1572,7 @@ avtDatabase::AddVectorMagnitudeExpressions(avtDatabaseMetaData *md)
         Expression new_expr;
         SNPRINTF(buff,1024, "%s_magnitude", vec_name);
         new_expr.SetName(buff);
-        SNPRINTF(buff,1024, "magnitude(%s)", vec_name);
+        SNPRINTF(buff,1024, "magnitude(<%s>)", vec_name);
         new_expr.SetDefinition(buff);
         new_expr.SetType(Expression::ScalarMeshVar);
         new_expr.SetAutoExpression(true);
@@ -1585,7 +1590,7 @@ avtDatabase::AddVectorMagnitudeExpressions(avtDatabaseMetaData *md)
             Expression new_expr;
             SNPRINTF(buff,1024, "%s_magnitude", vec_name);
             new_expr.SetName(buff);
-            SNPRINTF(buff,1024, "magnitude(%s)", vec_name);
+            SNPRINTF(buff,1024, "magnitude(<%s>)", vec_name);
             new_expr.SetDefinition(buff);
             new_expr.SetType(Expression::ScalarMeshVar);
             new_expr.SetAutoExpression(true);
