@@ -709,14 +709,17 @@ QvisPluginWindow::databaseSelectedItemChanged(QListViewItem *item)
 //  Programmer:  Dave Pugmire
 //  Creation:    February 13, 2008
 //
+//  Modifications:
+//    Dave Pugmire, Thu Feb 14 14:08:50 EST 2008
+//    Bug fix. The message to save settings and restart visit on Apply was not
+//    being shown. Just set the checkbox state. No need to call update window.
+//
 // ****************************************************************************
 void
 QvisPluginWindow::selectAllReadersButtonClicked()
 {
-    for ( int i = 0; i < fileOpenOptions->GetEnabled().size(); i++ )
-        fileOpenOptions->GetEnabled()[i] = true;
-
-    UpdateWindow(false);
+    for (int i=0; i<databaseItems.size(); i++)
+        databaseItems[i]->setOn(true);
 }
 
 // ****************************************************************************
@@ -731,12 +734,15 @@ QvisPluginWindow::selectAllReadersButtonClicked()
 //  Programmer:  Dave Pugmire
 //  Creation:    February 13, 2008
 //
+//  Modifications:
+//    Dave Pugmire, Thu Feb 14 14:08:50 EST 2008
+//    Bug fix. The message to save settings and restart visit on Apply was not
+//    being shown. Just set the checkbox state. No need to call update window.
+//
 // ****************************************************************************
 void
 QvisPluginWindow::unSelectAllReadersButtonClicked()
 {
-    for ( int i = 0; i < fileOpenOptions->GetEnabled().size(); i++ )
-        fileOpenOptions->GetEnabled()[i] = false;
-
-    UpdateWindow(false);
+    for (int i=0; i<databaseItems.size(); i++)
+        databaseItems[i]->setOn(false);
 }
