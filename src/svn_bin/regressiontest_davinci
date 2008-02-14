@@ -278,22 +278,22 @@ cd ..
 
 # test 'make clean' acts as expected
 cd data
-gmake clean 1> ./make_clean.out 2>&1
-cd ..
-gmake clean 1>> ./make_clean.out 2>&1
+gmake clean 1> ../make_clean.out 2>&1
+cd ../src
+gmake clean 1>> ../make_clean.out 2>&1
 rm -f uncleaned_files_log.txt
 find . -name .svn -prune -false -o -name '*.so' -o -name '*.o' -o -name '*_moc.[Ch]' -o -name 'moc_*.[Ch]' 1> uncleaned_files_log.txt
 uncleanedFilesCount=`wc -l uncleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2`
 checkAndHandleError $uncleanedFilesCount warning "make clean left files; removing manually" uncleaned_files_log.txt
-if test $uncleanedFilesCount -ne 0; then
+if test -n "$uncleanedFilesCount" -a $uncleanedFilesCount -ne 0; then
     cat uncleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2 | xargs -n 1 rm -f
 fi
 
 # test 'make distclean' acts as expected
 cd data
-gmake distclean 1> ./make_distclean.out 2>&1
-cd ..
-make distclean 1>> ./make_distclean.out 2>&1
+gmake distclean 1> ../make_distclean.out 2>&1
+cd ../src
+make distclean 1>> ../make_distclean.out 2>&1
 rm -f undistcleaned_files_log.txt
 find . -name .svn -prune -false -o -name '*.d' -o -name '.depend' -o -name '.pardepend' 1> undistcleaned_files_log.txt
 # The 2nd find, below, finds only those Makefiles for which there is also
@@ -303,21 +303,17 @@ find . -name .svn -prune -false -o -name '*.d' -o -name '.depend' -o -name '.par
 find . -name .svn -prune -false -o \( -name 'Makefile' -exec test -e \{\}.in \; \) -print | grep -v ./avt/Preprocessor/Makefile\\\|./tools/windowmaker/Makefile\\\|./tools/prep/Makefile\\\|./sim/examples/Makefile\\\|./common/siloobj/Makefile\\\|./common/siloobj_vtk_db/Makefile\\\|./cqscore/Makefile 1>> undistcleaned_files_log.txt
 undistcleanedFilesCount=`wc -l undistcleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2`
 checkAndHandleError $undistcleanedFilesCount warning "make distclean left files; removing manually" undistcleaned_files_log.txt
-if test $undistcleanedFilesCount -ne 0; then
+if test -n "$undistcleanedFilesCount" -a test $undistcleanedFilesCount -ne 0; then
     cat undistcleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2 | xargs -n 1 rm -f
 fi
 
 # ok, now really go ahead and configure and build VisIt
-cd src
 env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel --enable-viewer-mesa-stub=no 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "SECOND configure failed" config_log.txt 
 gmake -j 4 1>> make_log.txt 2>&1
 checkAndHandleError $? fatal "gmake -j 4 failed in src" make_log.txt
 cd ..
 
-# short term fix for repo src tree changes
-sed -i -e 's|../src/exe/visitconvert_ser|../exe/visitconvert_ser|' data/Makefile
-sed -i -e 's|../src/bin/visitconvert|../bin/visitconvert|' data/Makefile
 # build data
 cd data
 rm -f make_log.txt
@@ -365,9 +361,9 @@ skipList_for_Davinci="\
           davinci,serial:tests/databases/visus.py \
           davinci,scalable:tests/databases/visus.py \
           davinci,scalable,parallel:tests/databases/visus.py \
-          davinci,serial:tests/databases/fits.py \
-          davinci,scalable:tests/databases/fits.py \
-          davinci,scalable,parallel:tests/databases/fits.py \
+          davinci,serial:tests/databases/FITs.py \
+          davinci,scalable:tests/databases/FITs.py \
+          davinci,scalable,parallel:tests/databases/FITs.py \
           davinci,serial:tests/databases/exodus.py \
           davinci,scalable:tests/databases/exodus.py \
           davinci,scalable,parallel:tests/databases/exodus.py \
