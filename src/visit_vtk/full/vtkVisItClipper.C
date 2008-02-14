@@ -126,7 +126,7 @@ AdjustPercentToZeroCrossing(const float *const pts, int ptId1, int ptId2,
     // These equations were obtained from various web resources. However,
     // I am suspect of the equation for the B coefficient as cited on the
     // web. Several sources cite the equation with the commented line. However,
-    // there is an assemtry in it where the coefficient of the a[5] term does
+    // there is an asymmetry in it where the coefficient of the a[5] term does
     // not include a xd*z0 contribution analagous to the a[3] and a[4] terms.
     // Empirical results from its use have shown that indeed it is in error.
     // The commented line and this comment is left here in case anyone
