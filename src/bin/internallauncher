@@ -285,6 +285,9 @@ $0 = shift @ARGV;
 #    Added info about optional output directory argument for -dump and 
 #    -info-dump
 #
+#    Jeremy Meredith, Thu Feb 14 13:00:03 EST 2008
+#    Added the -viewerdisplay <dpy> argument.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -547,6 +550,9 @@ $fullusage = "$usage
                              with no terminal; similar to python's '-i' flag.
         -fullscreen          Create the viewer window in full screen mode.
                              May not be compatible with all window managers.
+        -viewerdisplay <dpy> Have the viewer use a different display than the
+                             current value of DISPLAY.  Can be useful for
+                             powerwall displays with a separate console.
         -cycleregex <string> A regex-style regular expression to be used
                              in extracting cycle numbers from file names. It
                              is best to bracket this string in single
@@ -913,6 +919,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-hw-pre" )          { $pre_command = shift; }
     elsif ($arg eq "-hw-post" )         { $post_command = shift; }
     elsif ($arg eq "-sshtunneling" )    { $ssh_tunneling = 1; push @visitargs, $arg; }
+    elsif ($arg eq "-viewerdisplay" )   { $viewerdisplay = shift; push @visitargs, $arg, $viewerdisplay; }
     else                         { push @visitargs, $arg; }
 }
 
@@ -1556,6 +1563,16 @@ $ENV{TRAP_FPE} = "";
 # to a remote display.  The message messes up the communication between
 # the GUI and Viewer.
 $ENV{MESA_GLX_FX} = disable;
+
+# The -viewerdisplay argument allows the user to specify an argument
+# that the viewer should use, no matter what the GUI was using.  This
+# can be useful for wall-type displays with a separate console, e.g.
+# the console on :0 and the DMX server on :2, you could run
+# env DISPLAY=:0 visit -viewerdisplaay :2
+if ($exe_name eq "viewer" and defined $viewerdisplay)
+{
+    $ENV{DISPLAY} = $viewerdisplay;
+}
 
 
 # If logging is true and we are running the mdserver, then add usage
