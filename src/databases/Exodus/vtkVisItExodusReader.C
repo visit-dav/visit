@@ -61,7 +61,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <ctype.h>
-#include "netcdf.h"
 #include "exodusII.h"
 
 

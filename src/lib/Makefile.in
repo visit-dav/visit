@@ -367,7 +367,7 @@ create_ccmio_link:
 
 create_itaps_link:
 	libDirs=`echo "@ITAPS_LIB@" | tr -s ' ' | tr ' ' '\n' | grep '^-L' | sed -e 's|^-L\(.*\)|\1|'` ; \
-	libFiles=`echo "@ITAPS_LIB@" | tr -s ' ' | tr ' ' '\n' | grep '^-l' | sed -e 's|^-l\(.*\)|\1|'` ; \
+	libFiles=`echo "@ITAPS_LIB@" | tr -s ' ' | tr ' ' '\n' | grep '^-l' | grep -v 'netcdf\|hdf\|exoIIv2c' | sed -e 's|^-l\(.*\)|\1|'` ; \
 	for d in $$libDirs; do \
 	    for f in $$libFiles; do \
 	        if test -e $$d/lib$$f.a ; then \
