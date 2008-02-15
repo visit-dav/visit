@@ -188,7 +188,10 @@ OnionPeelViewerPluginInfo::GetClientAtts(AttributeSubject *atts)
 //
 //    Kathleen Bonnell, Thu Jan 26 07:33:29 PST 2006 
 //    Add silTopSet to argslist for GetCollectionIndex. 
-//   
+//
+//    Brad Whitlock, Fri Feb 15 15:32:57 PST 2008
+//    Delete silAtts.
+//
 // ****************************************************************************
 
 void
@@ -265,7 +268,9 @@ OnionPeelViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                         }
                     }
                 }
-            } 
+            }
+
+            delete silAtts;
         } 
     }
 

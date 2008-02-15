@@ -595,7 +595,7 @@ LineoutListItem::HandleTool(const avtToolInterface &ti)
 bool
 LineoutListItem::InitializeTool(avtToolInterface &ti)
 {
-    bool success;
+    bool success = false;
     for (int i = 0; i < nQueries; i++)
     {
         if (queries[i]->CanHandleTool()) 
