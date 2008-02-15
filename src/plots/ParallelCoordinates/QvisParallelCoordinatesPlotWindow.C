@@ -313,6 +313,11 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Changed axis list to QListView to support multiple columns.
 //    Added min/max extents columns for each axis, and a button to reset them.
 //
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.  Added
+//    visualAxisNames.
+//
 // ****************************************************************************
 
 void
@@ -344,7 +349,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
         QColor                tempcolor;
         switch(i)
         {
-          case ParallelCoordinatesAttributes::ID_orderedAxisNames:
+          case ParallelCoordinatesAttributes::ID_visualAxisNames:
           case ParallelCoordinatesAttributes::ID_extentMinima:
           case ParallelCoordinatesAttributes::ID_extentMaxima:
             axisList->blockSignals(true);
@@ -356,8 +361,8 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
                     emin.sprintf("%f",atts->GetExtentMinima()[ax]);
                 if (atts->GetExtentMaxima()[ax] < +1e+37)
                     emax.sprintf("%f",atts->GetExtentMaxima()[ax]);
-                if (atts->GetOrderedAxisNames().size() > ax)
-                    name = atts->GetOrderedAxisNames()[ax];
+                if (atts->GetVisualAxisNames().size() > ax)
+                    name = atts->GetVisualAxisNames()[ax];
                 else
                     name.sprintf("Axis %02d",ax);
                 QListViewItem *item =
@@ -439,7 +444,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
     axisDelButton->setEnabled(axisList->currentItem()!= NULL);
     axisUpButton->setEnabled(axisList->currentItem()!= axisList->firstChild());
     axisDownButton->setEnabled(axisList->currentItem()!= axisList->lastItem());
-    axisNewButton->setEnabled(atts->GetOrderedAxisNames().size() > 0);
+    axisNewButton->setEnabled(atts->GetScalarAxisNames().size() > 0);
     axisResetExtentsButton->setEnabled(atts->GetExtentMinima().size() > 0);
     axisList->setEnabled(atts->GetExtentMinima().size() > 0);
 }
@@ -791,6 +796,10 @@ QvisParallelCoordinatesPlotWindow::delAxis()
 //    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
 //    Changed axis list to QListView to support multiple columns.
 //
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.
+//
 // ****************************************************************************
 
 void
@@ -810,7 +819,7 @@ QvisParallelCoordinatesPlotWindow::moveAxisUp()
         return;
 
     // must make a local copy
-    stringVector axes = atts->GetOrderedAxisNames();
+    stringVector axes = atts->GetScalarAxisNames();
     int naxes = axes.size();
 
     // can't move first axis up in list
@@ -844,6 +853,10 @@ QvisParallelCoordinatesPlotWindow::moveAxisUp()
 //    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
 //    Changed axis list to QListView to support multiple columns.
 //
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.
+//
 // ****************************************************************************
 
 void
@@ -863,7 +876,7 @@ QvisParallelCoordinatesPlotWindow::moveAxisDown()
         return;
 
     // must make a local copy
-    stringVector axes = atts->GetOrderedAxisNames();
+    stringVector axes = atts->GetScalarAxisNames();
     int naxes = axes.size();
  
     // can't move last axis down in list

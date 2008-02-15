@@ -24,6 +24,9 @@ Definition:
 //   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
 //   Verifies that default plot variable is scalar if in threshold variable list.
 //
+//    Jeremy Meredith, Fri Feb 15 13:14:22 EST 2008
+//    Added support for AxisRestrictionAttributes.
+//
 // ****************************************************************************
 
 bool
@@ -79,6 +82,36 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
                     toolAxisMin + toolSliderMinima[toolVarNum]*toolAxisRange;
                 upperBounds[listVarNum] =
                     toolAxisMin + toolSliderMaxima[toolVarNum]*toolAxisRange;
+            }
+        }
+
+        retval = true;
+    }
+    else if (atts->TypeName() == "AxisRestrictionAttributes")
+    {
+        const AxisRestrictionAttributes *arAtts =
+            (const AxisRestrictionAttributes*)atts;
+
+        stringVector toolVarNames = arAtts->GetNames();
+        doubleVector toolMinima   = arAtts->GetMinima();
+        doubleVector toolMaxima   = arAtts->GetMaxima();
+
+        for (int lv=0; lv < listedVarNames.size(); lv++)
+        {
+            for (int tv=0; tv < toolVarNames.size(); tv++)
+            {
+                if (toolVarNames[tv] == listedVarNames[lv])
+                {
+                    lowerBounds[lv] = toolMinima[tv];
+                    upperBounds[lv] = toolMaxima[tv];
+                }
+                else if (toolVarNames[tv] == defaultVarName &&
+                         listedVarNames[lv] == "default" &&
+                         defaultVarIsScalar)
+                {
+                    lowerBounds[lv] = toolMinima[tv];
+                    upperBounds[lv] = toolMaxima[tv];
+                }
             }
         }
 

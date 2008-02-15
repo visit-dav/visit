@@ -71,7 +71,7 @@ public:
 // Class: ToggleLockTimeAction
 //
 // Purpose:
-//   Handles the lock view action.
+//   Handles the lock time action.
 //
 // Notes:      
 //
@@ -87,6 +87,31 @@ class VIEWER_API ToggleLockTimeAction : public ViewerToggleAction
 public:
     ToggleLockTimeAction(ViewerWindow *win);
     virtual ~ToggleLockTimeAction(){}
+
+    virtual void Execute();
+    virtual bool Toggled() const;
+};
+
+// ****************************************************************************
+// Class: ToggleLockToolAction
+//
+// Purpose:
+//   Handles the lock tool action.
+//
+// Notes:      
+//
+// Programmer: Jeremy Meredith
+// Creation:   February 15, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class VIEWER_API ToggleLockToolAction : public ViewerToggleAction
+{
+public:
+    ToggleLockToolAction(ViewerWindow *win);
+    virtual ~ToggleLockToolAction(){}
 
     virtual void Execute();
     virtual bool Toggled() const;

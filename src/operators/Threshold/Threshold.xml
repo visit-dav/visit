@@ -41,6 +41,9 @@
         ExtentsAttributes.h
       </Include>
       <Include file="header" quoted="false">
+        AxisRestrictionAttributes.h
+      </Include>
+      <Include file="header" quoted="false">
         DebugStream.h
       </Include>
     </Attribute>
