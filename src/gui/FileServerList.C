@@ -1536,7 +1536,7 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
                 // definition, which is only updated when we change the selected
                 // files. Copy the time step names over the virtual file
                 // definition.
-                if(newMetaData->GetIsVirtualDatabase())
+                if(newMetaData != 0 && newMetaData->GetIsVirtualDatabase())
                 {
                     const stringVector &states = newMetaData->GetTimeStepNames();
                     virtualFiles[filename.FullName()] = states;

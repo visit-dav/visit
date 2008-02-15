@@ -1418,25 +1418,32 @@ NetworkManager::SetGlobalCellCount(int netId, int cellCount)
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Modified to get information for specific window
 //
+//    Brad Whitlock, Fri Feb 15 15:30:31 PST 2008
+//    Test value of iterator.
+//
 // ****************************************************************************
 int
 NetworkManager::GetScalableThreshold(int windowID) const
 {
-    int scalableAutoThreshold;
-    RenderingAttributes::TriStateMode scalableActivationMode;
+    int scalableAutoThreshold = RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD;
+    RenderingAttributes::TriStateMode scalableActivationMode = 
+       (RenderingAttributes::TriStateMode)RenderingAttributes::DEFAULT_SCALABLE_ACTIVATION_MODE;
 
     // since we're in a const method, we can't use the [] operator to index
     // into the map directly becuase that operator will modify the map if the
     // key is new
     std::map<int, EngineVisWinInfo>::const_iterator it;
     it = viswinMap.find(windowID);
-    const EngineVisWinInfo &viswinInfo = it->second;
-    const WindowAttributes &windowAttributes = viswinInfo.windowAttributes; 
+    if(it != viswinMap.end())
+    {
+        const EngineVisWinInfo &viswinInfo = it->second;
+        const WindowAttributes &windowAttributes = viswinInfo.windowAttributes; 
 
-    scalableAutoThreshold =
-        windowAttributes.GetRenderAtts().GetScalableAutoThreshold();
-    scalableActivationMode = 
-        windowAttributes.GetRenderAtts().GetScalableActivationMode();
+        scalableAutoThreshold =
+            windowAttributes.GetRenderAtts().GetScalableAutoThreshold();
+        scalableActivationMode = 
+            windowAttributes.GetRenderAtts().GetScalableActivationMode();
+    }
 
     int t = RenderingAttributes::GetEffectiveScalableThreshold(
                                     scalableActivationMode,
@@ -4372,6 +4379,9 @@ NetworkManager::CallProgressCallback(const char *module, const char *msg,
 //    Changed default format to PNG, to avoid patent issues with old TIFF
 //    libraries.
 //
+//    Brad Whitlock, Fri Feb 15 15:27:21 PST 2008
+//    Delete fileWriter.
+//
 // ****************************************************************************
 static void
 DumpImage(avtDataObject_p img, const char *fmt, bool allprocs)
@@ -4396,6 +4406,7 @@ DumpImage(avtDataObject_p img, const char *fmt, bool allprocs)
     fileWriter->SetFormat(SaveWindowAttributes::PNG);
     int compress = 1;
     fileWriter->Write(tmpName, img, 100, false, compress, false);
+    delete fileWriter;
 
     if (allprocs)
         numDumpsAll++;

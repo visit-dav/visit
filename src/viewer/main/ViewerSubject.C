@@ -3774,6 +3774,9 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Brad Whitlock, Thu Jan 24 12:00:29 PDT 2008
 //    Added argument to ViewerPlotList::AddPlot().
 //
+//    Brad Whitlock, Fri Feb 15 14:54:34 PST 2008
+//    Delete the adn from the default plot.
+//
 // ****************************************************************************
 
 int
@@ -4036,6 +4039,9 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
                     plotList->AddPlot(type, dp->plotVar, false, false, true, adn);
                     defaultPlotsAdded = true;
                 }
+
+                if(adn != 0)
+                    delete adn;
             }
 
             //

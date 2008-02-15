@@ -926,6 +926,9 @@ MDServerConnection::GetCurrentSIL() const
 //   Enhancements to attribute groups allowed separate vectors for the
 //   read and write options, so I switched to this simpler organization.
 //
+//   Brad Whitlock, Fri Feb 15 15:23:49 PST 2008
+//   Protect a with NULL test.
+//
 // ****************************************************************************
 
 DBPluginInfoAttributes *
@@ -949,11 +952,17 @@ MDServerConnection::GetDBPluginInfo()
         hasWriter[i] = manager->PluginHasWriter(fullname);
         CommonDatabasePluginInfo *info =manager->GetCommonPluginInfo(fullname);
         DBOptionsAttributes *a = info->GetReadOptions();
-        rv->AddDbReadOptions(*a);
-        delete a;
+        if(a != 0)
+        {
+            rv->AddDbReadOptions(*a);
+            delete a;
+        }
         a = info->GetWriteOptions();
-        rv->AddDbWriteOptions(*a);
-        delete a;
+        if(a != 0)
+        {
+            rv->AddDbWriteOptions(*a);
+            delete a;
+        }
     }
     rv->SetTypes(types);
     rv->SetTypesFullNames(fullnames);
@@ -1350,6 +1359,9 @@ MDServerConnection::ReadCWD()
 //   I moved the code to stat files out of this method so we now just get
 //   file list (on UNIX anyway).
 //
+//   Brad Whitlock, Fri Feb 15 15:20:21 PST 2008
+//   Protect closedir() with NULL test.
+//
 // ****************************************************************************
 
 void
@@ -1457,10 +1469,10 @@ MDServerConnection::ReadFileList()
             fl.sizes.push_back(0);
             fl.access.push_back(1);
         }
+
+        closedir(dir);
     }
     visitTimer->StopTimer(timeid, "Copying filenames");
-
-    closedir(dir);
 #endif
 
     // Sort the file list.

@@ -186,6 +186,9 @@ IndexSelectViewerPluginInfo::GetClientAtts(AttributeSubject *atts)
 //    Kathleen Bonnell, Thu Jun  7 10:18:37 PDT 2007
 //    Add logic to retrieve sbuset and category names from SIL.
 //
+//    Brad Whitlock, Fri Feb 15 15:15:01 PST 2008
+//    Delete silAtts.
+//
 // ****************************************************************************
 
 void
@@ -261,7 +264,9 @@ IndexSelectViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
                         }
                     }
                 }
-            } 
+            }
+
+            delete silAtts;
         } 
     }
 

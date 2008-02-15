@@ -5196,6 +5196,9 @@ QvisGUIApplication::GetVirtualDatabaseDefinitions(
 //   The new method merges the old selected files list with the new, updated
 //   selected files list.
 //
+//   Brad Whitlock, Fri Feb 15 14:53:27 PST 2008
+//   Fixed the comparison of the stringVectors.
+//
 // ****************************************************************************
 
 void
@@ -5288,7 +5291,7 @@ QvisGUIApplication::RefreshFileList()
 
             // If the virtual file definitions are different then reopen the
             // database on the viewer so that plots are reexecuted.
-            if(oldDef != newDef)
+            if(oldDef->second != newDef->second)
             {
                 debug1 << "Telling the viewer to check " << fileName.c_str()
                        << " for new time states." << endl;

@@ -181,6 +181,10 @@ using std::vector;
 //    Brad Whitlock, Fri Dec 14 14:13:02 PST 2007
 //    Add case identifiers for fields.
 //
+//    Brad Whitlock, Fri Feb 15 15:01:39 PST 2008
+//    Added some tests that should prevent source from being flagged as an
+//    error in Klockwork.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1173,13 +1177,16 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << "    // " << attType << " for each one of them." << endl;
                   
         c << "    children = searchNode->GetChildren();" << endl;
-        c << "    for(i = 0; i < searchNode->GetNumChildren(); ++i)" << endl;
+        c << "    if(children != 0)" << endl;
         c << "    {" << endl;
-        c << "        if(children[i]->GetKey() == std::string(\"" << attType << "\"))" << endl;
+        c << "        for(i = 0; i < searchNode->GetNumChildren(); ++i)" << endl;
         c << "        {" << endl;
-        c << "            " << attType << " temp;" << endl;
-        c << "            temp.SetFromNode(children[i]);" << endl;
-        c << "            Add" << Name << "(temp);" << endl;
+        c << "            if(children[i]->GetKey() == std::string(\"" << attType << "\"))" << endl;
+        c << "            {" << endl;
+        c << "                " << attType << " temp;" << endl;
+        c << "                temp.SetFromNode(children[i]);" << endl;
+        c << "                Add" << Name << "(temp);" << endl;
+        c << "            }" << endl;
         c << "        }" << endl;
         c << "    }" << endl << endl;
     }
@@ -1233,7 +1240,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << endl;
         c << "    // Iterate through the vector \"index\" times. " << endl;
         c << "    for(int i = 0; i < index; ++i)" << endl;
-        c << "        ++pos;" << endl;
+        c << "        if(pos != " << name << ".end()) ++pos;" << endl;
         c << endl;
         c << "    // If pos is still a valid iterator, remove that element." << endl;
         c << "    if(pos != " << name << ".end())" << endl;
