@@ -67,6 +67,10 @@
 //
 //    Dave Bremer, Thu Nov 15 16:44:42 PST 2007
 //    Small fix for ascii format in case windows-style CRLF is used.
+//
+//    Dave Bremer, Wed Feb  6 19:12:55 PST 2008
+//    Refactored the constructor, moving some functionality into 
+//    other methods, and deferring some significant computation.
 // ****************************************************************************
 
 class avtNek3DFileFormat : public avtMTMDFileFormat
@@ -143,6 +147,10 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
     int *aBlockLocs;           //For parallel format, make a table for looking up blocks.
                                //This has 2 ints per block, with proc # and local block #.
 
+    virtual void           ParseMetaDataFile(const char *filename);
+    virtual void           ParseNekFileHeader();
+    virtual void           ReadBlockLocations();
+
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     virtual void           UpdateCyclesAndTimes();
     virtual void           GetDomainSizeAndVarOffset(int timestate, const char *var, 
@@ -153,7 +161,6 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
     void                   ByteSwap32(void *aVals, int nVals);
     void                   ByteSwap64(void *aVals, int nVals);
     void                   FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLineLen);
-    void                   GetDomainCorners(int domain, float *outCorners);
 
 };
 
