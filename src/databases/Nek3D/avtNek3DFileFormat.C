@@ -196,12 +196,22 @@ using     std::string;
 //
 //    Dave Bremer, Thu Nov 15 16:44:42 PST 2007
 //    Added a small fix for the case in which there are more than 9 output dirs
+//
+//    Dave Bremer, Wed Feb  6 19:12:55 PST 2008
+//    Refactored the constructor, moving some functionality into other methods, 
+//    and deferring some significant computation. I also rewrote the 
+//    constructor for the parallel case, to make one process read the data and
+//    broadcast it out, thinking it would help with performance.  It doesn't 
+//    make much difference in practice, so the code could be changed to follow 
+//    the serial path in all cases.
 // ****************************************************************************
 
 avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
     : avtMTMDFileFormat(filename)
 {
-    version = "1.0";
+    int t0 = visitTimer->StartTimer();
+
+    version = "";
     bSwapEndian = false;
     fileTemplate = "";
     iFirstTimestep = 1;
@@ -231,7 +241,106 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
     iPrecision = 4;
     aBlockLocs = NULL;
 
-    string tag, buf2;
+
+#ifndef PARALLEL
+    ParseMetaDataFile(filename);
+    ParseNekFileHeader();
+#else
+    int nProcs, iRank, err;
+    MPI_Comm_rank(VISIT_MPI_COMM, &iRank);
+    MPI_Comm_size(VISIT_MPI_COMM, &nProcs);
+
+    int iBufSize = 0;
+    char *mpiBuf = NULL;
+    int iLenInternalMembers = (char *)(&aCycles) - (char *)(&iFirstTimestep);
+    if (iRank == 0)
+    {
+        int t1 = visitTimer->StartTimer();
+        ParseMetaDataFile(filename);
+        visitTimer->StopTimer(t1, "avtNek3DFileFormat constructor, parse md file");
+
+        int t2 = visitTimer->StartTimer();
+        ParseNekFileHeader();
+        visitTimer->StopTimer(t2, "avtNek3DFileFormat constructor, parse header");
+
+        iBufSize += version.size() + sizeof(int);
+        iBufSize += fileTemplate.size() + sizeof(int);
+        iBufSize += iLenInternalMembers;
+    }
+    int t3 = visitTimer->StartTimer();
+    err = MPI_Bcast( &iBufSize, 1, MPI_INT, 0, VISIT_MPI_COMM );
+    if (err != MPI_SUCCESS)
+        EXCEPTION1(ImproperUseException, 
+            "Error in MPI_Bcast, in avtNek3DFileFormat constructor");
+
+    mpiBuf = new char[iBufSize];
+
+    if (iRank == 0)
+    {
+        char *currPos = mpiBuf;
+        int len0 = version.length();
+        int len1 = fileTemplate.length();
+
+        memcpy(currPos, &len0, sizeof(int));
+        memcpy(currPos+sizeof(int), version.data(), len0);
+        currPos += sizeof(int)+len0;
+
+        memcpy(currPos, &len1, sizeof(int));
+        memcpy(currPos+sizeof(int), fileTemplate.data(), len1);
+        currPos += sizeof(int)+len1;
+
+        memcpy(currPos, &iFirstTimestep, iLenInternalMembers);
+        currPos += iLenInternalMembers;
+    }
+
+    err = MPI_Bcast( mpiBuf, iBufSize, MPI_CHAR, 0, VISIT_MPI_COMM );
+    if (err != MPI_SUCCESS)
+        EXCEPTION1(ImproperUseException, 
+            "Error in MPI_Bcast, in avtNek3DFileFormat constructor");
+
+    if (iRank != 0)
+    {
+        int len0=0, len1=0;
+        char *currPos = mpiBuf;
+
+        memcpy(&len0, currPos, sizeof(int));
+        version.append(currPos+sizeof(int), len0);
+        currPos += sizeof(int)+len0;
+
+        memcpy(&len1, currPos, sizeof(int));
+        fileTemplate.append(currPos+sizeof(int), len1);
+        currPos += sizeof(int)+len1;
+
+        memcpy(&iFirstTimestep, currPos, iLenInternalMembers);
+        currPos += iLenInternalMembers;
+    }
+    delete[] mpiBuf;
+    visitTimer->StopTimer(t3, "avtNek3DFileFormat constructor, broadcast data");
+#endif
+
+    visitTimer->StopTimer(t0, "avtNek3DFileFormat constructor");
+}
+
+
+
+
+// ****************************************************************************
+//  Method: avtNek3DFileFormat::ParseNekFileHeader
+//
+//  Purpose:
+//      This method is called as part of initialization.  It parses the text
+//      file which is a companion to the series of .fld files that make up a
+//      dataset.
+//
+//  Programmer: David Bremer
+//  Creation:   Wed Feb  6 19:12:55 PST 2008
+//
+// ****************************************************************************
+
+void           
+avtNek3DFileFormat::ParseMetaDataFile(const char *filename)
+{
+    string tag;
     char buf[2048];
     ifstream  f(filename);
     int ii, jj;
@@ -281,34 +390,10 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
 
         if (STREQUAL("endian:", tag.c_str())==0)
         {
-            string  endianness;
-            f >> endianness;
-
             //This tag is deprecated.  There's a float written into each binary file
             //from which endianness can be determined.
-            /*
-            bool bDataIsBigEndian;
-
-            if (STREQUAL("big", endianness.c_str())==0)
-            {
-                bDataIsBigEndian = true;
-            }
-            else if (STREQUAL("little", endianness.c_str())==0)
-            {
-                bDataIsBigEndian = false;
-            }
-            else
-            {
-                EXCEPTION1(InvalidDBTypeException, 
-                   "Value following endian: must be \"big\" or \"little\"" );
-            }
-            int iTest = 1;
-            char *pTest = (char *)(&iTest);
-            if ((*pTest == 1) && bDataIsBigEndian)
-                bSwapEndian = true;
-            else if ((*pTest == 0) && !bDataIsBigEndian)
-                bSwapEndian = true;
-            */
+            string  dummy_endianness;
+            f >> dummy_endianness;
         }
         else if (STREQUAL("filetemplate:", tag.c_str())==0)
         {
@@ -405,6 +490,29 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
             fileTemplate[ii] = '\\';
     }
 #endif
+    if (f.is_open())
+        f.close();
+}
+
+
+// ****************************************************************************
+//  Method: avtNek3DFileFormat::ParseNekFileHeader
+//
+//  Purpose:
+//      This method is called as part of initialization.  Some of the file
+//      metadata is written in the header of each timestep, and this method
+//      reads and parses that metadata.
+//
+//  Programmer: David Bremer
+//  Creation:   Wed Feb  6 19:12:55 PST 2008
+//
+// ****************************************************************************
+
+void
+avtNek3DFileFormat::ParseNekFileHeader()
+{
+    string buf2, tag;
+    int ii, jj;
 
     //Now read the header out of one the files to get block and variable info
     char *blockfilename = new char[ fileTemplate.size() + 64 ];
@@ -412,7 +520,8 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
         sprintf(blockfilename, fileTemplate.c_str(), iFirstTimestep);
     else
         sprintf(blockfilename, fileTemplate.c_str(), 0, 0, iFirstTimestep);
-    f.open(blockfilename);
+
+    ifstream  f(blockfilename);
 
     if (iNumOutputDirs == 1)
     {
@@ -512,17 +621,20 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
     }
     iBlocksPerFile = iNumBlocks/iNumOutputDirs;
 
+    if (bBinary)
+    {
+        if (iNumOutputDirs == 1)
+            iHeaderSize = 84;
+        else
+            iHeaderSize = 132+4+iBlocksPerFile*sizeof(int);
+    }
+    else
+    {
+        iHeaderSize = 80;
+    }
 
     if (bBinary)
     {
-        // Compute the size of the header.  In all cases so far, the header size
-        // for binary files has been 84.
-        int iDomainSize, d1, d2, d3;
-        GetDomainSizeAndVarOffset(iFirstTimestep, NULL, iDomainSize, d1, d2, d3);
-    
-        f.seekg( -iBlocksPerFile*iDomainSize*iPrecision, std::ios_base::end );
-        iHeaderSize = (int)f.tellg();
-
         // Determine endianness and whether we need to swap bytes.
         // If this machine's endian matches the file's, the read will 
         // put 6.54321 into this float.
@@ -550,64 +662,103 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
                     "Error reading file, while trying to determine endianness." );
             }
         }
+    }
+    delete[] blockfilename;
+}
 
-        // In each parallel file, in the header, there's a table that maps 
-        // each local block to a global id which starts at 1.  Here, I make 
-        // an inverse map, from a zero-based global id to a proc num and local
-        // offset.
-        if (iNumOutputDirs > 1)
+
+
+// ****************************************************************************
+//  Method: avtNek3DFileFormat::ReadBlockLocations
+//
+//  Purpose:
+//      For the parallel binary format, there is a mapping from global block 
+//      index to filenumber/local offset, which is distributed through the
+//      files.  This method reads that information.
+//
+//  Programmer: David Bremer
+//  Creation:   Wed Feb  6 19:12:55 PST 2008
+//
+// ****************************************************************************
+
+void
+avtNek3DFileFormat::ReadBlockLocations()
+{
+    // In each parallel file, in the header, there's a table that maps 
+    // each local block to a global id which starts at 1.  Here, I make 
+    // an inverse map, from a zero-based global id to a proc num and local
+    // offset.
+    if (!bBinary || iNumOutputDirs == 1 || aBlockLocs != NULL)
+        return;
+
+    int t0 = visitTimer->StartTimer();
+
+    int iRank = 0, nProcs = 1;
+#ifdef PARALLEL
+    MPI_Comm_rank(VISIT_MPI_COMM, &iRank);
+    MPI_Comm_size(VISIT_MPI_COMM, &nProcs);
+#endif
+
+    ifstream f;
+    int ii, jj;
+    aBlockLocs = new int[2*iNumBlocks];
+    for (ii = 0; ii < 2*iNumBlocks; ii++)
+    {
+        aBlockLocs[ii] = 0;
+    }
+    char *blockfilename = new char[ fileTemplate.size() + 64 ];
+    int *tmpBlocks = new int[iBlocksPerFile];
+    for (ii = iRank; ii < iNumOutputDirs; ii+=nProcs)
+    {
+        sprintf(blockfilename, fileTemplate.c_str(), ii, ii, iFirstTimestep);
+        int t0 = visitTimer->StartTimer();
+        f.open(blockfilename);
+        visitTimer->StopTimer(t0, "avtNek3DFileFormat constructor, time to open a file");
+        if (!f.is_open())
         {
-            f.close();
-            aBlockLocs = new int[2*iNumBlocks];
-            for (ii = 0; ii < 2*iNumBlocks; ii++)
-            {
-                aBlockLocs[ii] = -999;
-            }
-            int *tmpBlocks = new int[iBlocksPerFile];
-            for (ii = 0; ii < iNumOutputDirs; ii++)
-            {
-                sprintf(blockfilename, fileTemplate.c_str(), ii, ii, iFirstTimestep);
-                f.open(blockfilename);
-                if (!f.is_open())
-                {
-                    char msg[1024];
-                    sprintf(msg, "Could not open file %s.", filename);
-                    EXCEPTION1(InvalidDBTypeException, msg);
-                }
-                f.seekg( 136, std::ios_base::beg );
-                f.read( (char *)tmpBlocks, iBlocksPerFile*sizeof(int) );
-                f.close();
-                if (bSwapEndian)
-                    ByteSwap32(tmpBlocks, iBlocksPerFile);
+            char msg[1024];
+            sprintf(msg, "Could not open file %s.", filename);
+            EXCEPTION1(InvalidDBTypeException, msg);
+        }
+        f.seekg( 136, std::ios_base::beg );
+        f.read( (char *)tmpBlocks, iBlocksPerFile*sizeof(int) );
+        f.close();
+        if (bSwapEndian)
+            ByteSwap32(tmpBlocks, iBlocksPerFile);
 
-                for (jj = 0; jj < iBlocksPerFile; jj++)
-                {
-                    int iBlockID = tmpBlocks[jj]-1;
+        for (jj = 0; jj < iBlocksPerFile; jj++)
+        {
+            int iBlockID = tmpBlocks[jj]-1;
 
-                    if ( iBlockID < 0  ||  
-                         iBlockID >= iNumBlocks ||
-                         aBlockLocs[iBlockID*2]   != -999  ||
-                         aBlockLocs[iBlockID*2+1] != -999 )
-                    {
-                        EXCEPTION1(InvalidDBTypeException, 
-                                   "Error reading parallel file block IDs.");
-                    }
-                    aBlockLocs[iBlockID*2  ] = ii;
-                    aBlockLocs[iBlockID*2+1] = jj;
-                }
+            if ( iBlockID < 0  ||  
+                 iBlockID >= iNumBlocks ||
+                 aBlockLocs[iBlockID*2]   != 0  ||
+                 aBlockLocs[iBlockID*2+1] != 0 )
+            {
+                EXCEPTION1(InvalidDBTypeException, 
+                            "Error reading parallel file block IDs.");
             }
-            delete[] tmpBlocks;
+            aBlockLocs[iBlockID*2  ] = ii;
+            aBlockLocs[iBlockID*2+1] = jj;
         }
     }
-    else
-    {
-        iHeaderSize = 80;
-    }
-
     delete[] blockfilename;
-    if (f.is_open())
-        f.close();
+    delete[] tmpBlocks;
+#ifdef PARALLEL
+    int *aTmpBlockLocs = new int[2*iNumBlocks];
+
+    MPI_Allreduce(aBlockLocs, aTmpBlockLocs, 2*iNumBlocks, 
+                  MPI_INT, MPI_BOR, VISIT_MPI_COMM);
+    delete[] aBlockLocs;
+    aBlockLocs = aTmpBlockLocs;
+#endif
+
+    visitTimer->StopTimer(t0, "avtNek3DFileFormat  reading block locations");
 }
+
+
+
+
 
 
 // ****************************************************************************
@@ -810,6 +961,7 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshna
     float *pts = (float *)points->GetVoidPointer(0);
 
     UpdateCyclesAndTimes();   //This call also finds which timesteps have a mesh.
+    ReadBlockLocations();
 
     if (fdMesh == NULL || 
         (iNumOutputDirs > 1 && aBlockLocs[domain*2] != iCurrMeshProc))
@@ -967,6 +1119,7 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
     int iTimestep = timestate + iFirstTimestep;
     const int nPts = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
     int ii;
+    ReadBlockLocations();
 
     if (iTimestep != iCurrTimestep || 
         (iNumOutputDirs > 1 && aBlockLocs[domain*2] != iCurrVarProc))
@@ -1003,6 +1156,7 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
 
     GetDomainSizeAndVarOffset(iTimestep, varname, nFloatsInDomain, 
                               iBinaryOffset, iAsciiOffset, iHasMesh);
+
     if (iNumOutputDirs > 1)
         domain = aBlockLocs[domain*2 + 1];
 
@@ -1060,6 +1214,7 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
             var++;
         }
     }
+
     return rv;
 }
 
@@ -1106,6 +1261,7 @@ avtNek3DFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
     int iTimestep = timestate + iFirstTimestep;
     const int nPts = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
     int ii;
+    ReadBlockLocations();
 
     if (iTimestep != iCurrTimestep || 
         (iNumOutputDirs > 1 && aBlockLocs[domain*2] != iCurrVarProc))
@@ -1551,225 +1707,3 @@ avtNek3DFileFormat::FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLine
 
 
 
-
-
-/*
-void
-avtNek3DFileFormat::CreateNeighborList(vector<int> &outList)
-{
-    int ii, ff, pp;
-    float corners[24];
-
-    int  f[6][4] = { {0, 2, 4, 6},
-                     {1, 3, 5, 7},
-                     {0, 1, 4, 5}, 
-                     {2, 3, 6, 7},
-                     {0, 1, 2, 3},
-                     {4, 5, 6, 7} };
-
-    outList.resize(iNumBlocks*6);
-
-    Face *faces = new Face[iNumBlocks*6];
-
-    //Fill in the face structs
-    for (ii = 0; ii < iNumBlocks; ii++)
-    {
-        GetDomainCorners(ii, corners);
-
-        for (ff = 0; ff < 6; ff++)
-        {
-            for (pp = 0; pp < 4; pp++)
-            {
-                faces[ii*6 + ff].pts[pp*3  ] = corners[f[ff][pp]*3  ];
-                faces[ii*6 + ff].pts[pp*3+1] = corners[f[ff][pp]*3+1];
-                faces[ii*6 + ff].pts[pp*3+2] = corners[f[ff][pp]*3+2];
-            }
-            faces[ii*6 + ff].domain = ii;
-            faces[ii*6 + ff].side = ff;
-            faces[ii*6 + ff].Sort();
-        }
-    }
-
-    //Sort the face structs
-    qsort(faces, iNumBlocks*6, sizeof(Face), avtNek3DFileFormat::CompareFaces);
-
-    //Scan the faces for matching pairs
-    for (ii = 0; ii < iNumBlocks*6; ii++)
-    {
-        if ( ii == iNumBlocks*6-1 )
-        {
-            outList[faces[ii].domain*6   + faces[ii].side]   = -1;
-        }
-        else if ( CompareFaces(faces+ii, faces+ii+1) == 0 )
-        {
-            outList[faces[ii].domain*6   + faces[ii].side]   = faces[ii+1].domain;
-            outList[faces[ii+1].domain*6 + faces[ii+1].side] = faces[ii].domain;
-            ii++;
-        }
-        else
-        {
-            outList[faces[ii].domain*6   + faces[ii].side]   = -1;
-        }
-    }
-
-    delete[] faces;
-}
-
-
-void
-avtNek3DFileFormat::Face::Sort()
-{
-    //Do a bubble sort on the 4 points
-    int hh, ii, jj, kk;
-    for (hh = 0; hh < 3; hh++)
-    {    
-        bool anySwaps = false;
-        for (ii = 0; ii < 3; ii++)       //iterate over 3 pairs
-        {
-            for (jj = 0; jj < 3; jj++)   //compare the current pair of points
-            {
-                if (pts[ii*3+jj] < pts[(ii+1)*3+jj])
-                {
-                    break;
-                }
-                else if (pts[ii*3+jj] > pts[(ii+1)*3+jj])
-                {
-                    float tmp;
-                    for (kk = 0; kk < 3; kk++)   //swap points
-                    {
-                        tmp = pts[ii*3+kk];  
-                        pts[ii*3+kk] = pts[(ii+1)*3+kk];  
-                        pts[(ii+1)*3+kk] = tmp;
-                    }
-                    anySwaps = true;
-                    break;
-                }
-            }
-        }
-        if (!anySwaps)
-            break;
-    }
-}
-
-
-int
-avtNek3DFileFormat::CompareFaces(const void *f0, const void *f1)
-{
-    Face *face0 = (Face *)f0;
-    Face *face1 = (Face *)f1;
-
-    for (int ii = 0; ii < 12; ii++)
-    {
-        if (face0->pts[ii] < face1->pts[ii])
-            return -1;
-        else if (face0->pts[ii] > face1->pts[ii])
-            return 1;
-    }
-    return 0;
-}
-*/
-
-
-
-void
-avtNek3DFileFormat::GetDomainCorners(int domain, float *outCorners)
-{
-int iRank = 0;
-#ifdef PARALLEL
-MPI_Comm_rank(VISIT_MPI_COMM, &iRank);
-printf("rank %d, getting domain %d\n", iRank, domain);    
-#endif
-    
-    const int nPts = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
-    int ii, dd, cc;
-    UpdateCyclesAndTimes();   //This call also finds which timesteps have a mesh.
-
-    if (fdMesh == NULL || 
-        (iNumOutputDirs > 1 && aBlockLocs[domain*2] != iCurrMeshProc))
-    {
-        if (fdMesh)
-            fclose(fdMesh);
-
-        char *meshfilename = new char[ fileTemplate.size() + 256 ];
-
-        if (iNumOutputDirs == 1)
-        {
-            sprintf(meshfilename, fileTemplate.c_str(), iTimestepsWithMesh[0]);
-        }
-        else
-        {
-            iCurrMeshProc = aBlockLocs[domain*2];
-            sprintf(meshfilename, fileTemplate.c_str(), 
-                    iCurrMeshProc, iCurrMeshProc, iTimestepsWithMesh[0]);
-        }
-        fdMesh = fopen(meshfilename, "rb");
-        if (!fdMesh)
-            EXCEPTION1(InvalidFilesException, meshfilename);
-        delete [] meshfilename;
-
-        if (!bBinary)
-            FindAsciiDataStart(fdMesh, iAsciiMeshFileStart, iAsciiMeshFileLineLen);
-    }
-
-    if (iNumOutputDirs > 1)
-        domain = aBlockLocs[domain*2 + 1];
-
-    int nFloatsInDomain = 0, d1, d2, d3;
-    GetDomainSizeAndVarOffset(iTimestepsWithMesh[0], NULL, nFloatsInDomain, 
-                              d1, d2, d3);
-
-    int aCornerOffsets[8] = {0, 
-                             iBlockSize[0]-1, 
-                             iBlockSize[0]*(iBlockSize[1]-1),
-                             iBlockSize[0]*(iBlockSize[1]-1) + iBlockSize[0]-1,
-                             iBlockSize[0]*iBlockSize[1]*(iBlockSize[2]-1),
-                             iBlockSize[0]*iBlockSize[1]*(iBlockSize[2]-1) + iBlockSize[0]-1,
-                             iBlockSize[0]*iBlockSize[1]*(iBlockSize[2]-1) + iBlockSize[0]*(iBlockSize[1]-1),
-                             iBlockSize[0]*iBlockSize[1]*(iBlockSize[2]-1) + iBlockSize[0]*(iBlockSize[1]-1) + iBlockSize[0]-1};
-    if (bBinary)
-    {
-        //In the parallel format, the whole mesh comes before all the vars.
-        if (iNumOutputDirs > 1)
-            nFloatsInDomain = iDim*iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
-
-        double tmp[24];
-        for (dd = 0; dd < 3; dd++)   //for each dim
-        {
-            for (cc = 0; cc < 8; cc++)
-            {
-                fseek(fdMesh, 
-                      iHeaderSize + 
-                      (nFloatsInDomain*domain + nPts*dd + aCornerOffsets[cc])*iPrecision,
-                      SEEK_SET);
-                if (iPrecision == 4)
-                    fread(outCorners + cc*3+dd, sizeof(float), 1, fdMesh);
-                else
-                    fread(tmp + cc*3+dd, sizeof(double), 1, fdMesh);
-            }
-        }
-
-        if (iPrecision == 4)
-        {
-            if (bSwapEndian)
-                ByteSwap32(outCorners, 24);
-        }
-        else 
-        {
-            if (bSwapEndian)
-                ByteSwap64(tmp, 24);
-            for (ii = 0; ii < 24; ii++)
-                outCorners[ii] = (float)tmp[ii];
-        }
-    }
-    else
-    {
-        for (cc = 0; cc < 8; cc++)
-        {
-            fseek(fdMesh, iAsciiMeshFileStart + 
-                          domain*iAsciiMeshFileLineLen*nPts + 
-                          aCornerOffsets[cc]*iAsciiMeshFileLineLen, SEEK_SET);
-            fscanf(fdMesh, " %f %f %f", outCorners, outCorners+1, outCorners+2);
-            outCorners += 3;
-        }
-    }
-}
