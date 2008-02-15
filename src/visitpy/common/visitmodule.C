@@ -7543,6 +7543,191 @@ visit_SetPlotOptions(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Method: visit_GetPlotOptions
+//
+// Purpose: 
+//   Returns a copy of the plot options for the first active plot or the first
+//   plot if no plots are active.
+//
+// Arguments:
+//
+// Returns:    A PyObject copy of the plot attributes or None if there are 
+//             no plots.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 15 10:09:18 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetPlotOptions(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *retval = 0;
+    MUTEX_LOCK();
+        if(GetViewerState()->GetPlotList()->GetNumPlots() > 0)
+        {
+            // Get the plot type of the first selected plot.
+            int plotType = 0;
+            for(int i = 0; i < GetViewerState()->GetPlotList()->GetNumPlots(); ++i)
+            {
+                const Plot &p = GetViewerState()->GetPlotList()->operator[](i);
+                if(p.GetActiveFlag())
+                {
+                    plotType = p.GetPlotType();
+                    break;
+                }
+            }
+
+            AttributeSubject *plotAtts = GetViewerState()->GetPlotAttributes(plotType);
+            retval = GetPyObjectPluginAttributes(plotAtts, true);
+        }
+        else
+        {
+            VisItErrorFunc("There are no plots.");
+        }
+    MUTEX_UNLOCK();
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: visit_GetOperatorOptions
+//
+// Purpose: 
+//   Returns a copy of the operator options for i'th operator in the the first 
+//   active plot or the first plot if no plots are active.
+//
+// Arguments:
+//
+// Returns:    A PyObject copy of the operator attributes or None if there are 
+//             no plots.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 15 10:09:18 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetOperatorOptions(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int operatorIndex = 0;
+    if(!PyArg_ParseTuple(args, "i", &operatorIndex))
+        return NULL;
+
+    int plotIndex = 0, plotType = -1, operatorType = 0;
+    PyObject *retval = 0;
+    MUTEX_LOCK();
+        PlotList plCopy(*GetViewerState()->GetPlotList());
+
+        if(plCopy.GetNumPlots() > 0)
+        {
+            // Get the plot type of the first selected plot.
+            for(int i = 0; i < plCopy.GetNumPlots(); ++i)
+            {
+                const Plot &p = plCopy[i];
+                if(p.GetActiveFlag())
+                {
+                    plotIndex = i;
+                    plotType = p.GetPlotType();
+                    break;
+                }
+            }
+
+            // Let's check that the operator index that was passed is in range.
+            if(operatorIndex < 0 || operatorIndex >= plCopy[plotIndex].GetOperators().size())
+            {
+                VisItErrorFunc("The supplied operator index was out of range.");
+            }
+            else
+            {
+                // Let's see if there are multiple types of the same operator since we'll
+                // have to do a little more work in that case.
+                const Plot &p = plCopy[plotIndex];
+                int opCount = 0;
+                operatorType = p.GetOperators()[operatorIndex];
+                for(int op = 0; op < p.GetOperators().size(); ++op)
+                {
+                    if(p.GetOperators()[op] == operatorType)
+                        ++opCount;
+                }
+
+                if(opCount == 1 || p.GetActiveOperator() == operatorIndex)
+                {
+                    AttributeSubject *opAtts = GetViewerState()->
+                        GetOperatorAttributes(operatorType);
+                    retval = GetPyObjectPluginAttributes(opAtts, true);
+                }
+                else
+                {
+                    // We need to do more work.
+                    debug3 << "GetOperatorOptions: Must set the active operator "
+                              "prior to returning operator attributes."
+                           << endl;
+
+                    // Create the arguments to SetActivePlots.
+                    intVector activePlots, activeOperatorIds, expandedPlots;
+                    for(int i = 0; i < plCopy.GetNumPlots(); ++i)
+                    {
+                        const Plot &p = plCopy[i];
+                        if(p.GetActiveFlag())
+                            activePlots.push_back(i);
+                        activeOperatorIds.push_back(p.GetActiveOperator());
+                        expandedPlots.push_back(p.GetExpandedFlag()?1:0);
+                    }
+                    activeOperatorIds[plotIndex] = operatorIndex;
+                    expandedPlots[plotIndex] = 1;
+                    GetViewerMethods()->SetActivePlots(activePlots, 
+                        activeOperatorIds, expandedPlots);
+
+                    // Wait for the selected operator attributes to come back.
+                    MUTEX_UNLOCK();
+                    Synchronize();
+                    MUTEX_LOCK();
+
+                    // Create the current operator attributes since they've now 
+                    // come back for the selected operator
+                    AttributeSubject *opAtts = GetViewerState()->
+                        GetOperatorAttributes(operatorType);
+                    retval = GetPyObjectPluginAttributes(opAtts, true);
+
+                    // Restore the active operator and plot expansion for the 
+                    // affected plot.
+                    debug3 << "GetOperatorOptions: Restoring the active operator."
+                           << endl;
+                    activeOperatorIds[plotIndex] = plCopy[plotIndex].GetActiveOperator();
+                    expandedPlots[plotIndex] = plCopy[plotIndex].GetExpandedFlag()?1:0;
+                    GetViewerMethods()->SetActivePlots(activePlots, 
+                        activeOperatorIds, expandedPlots);
+
+                    // Wait for the old operator attributes to come back.
+                    MUTEX_UNLOCK();
+                    Synchronize();
+                    MUTEX_LOCK();
+                }
+            }
+        }
+        else
+        {
+            VisItErrorFunc("There are no plots so there can't be any operators.");
+        }
+    MUTEX_UNLOCK();
+
+    return retval;
+}
+
+// ****************************************************************************
 // Function: visit_SetPlotSILRestriction
 //
 // Purpose:
@@ -12888,6 +13073,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Jeremy Meredith, Mon Feb  4 13:41:43 EST 2008
 //   Added Get/SetViewAxisArray.
 //
+//   Brad Whitlock, Fri Feb 15 11:21:24 PST 2008
+//   Added GetPlotOptions, GetOperatorOptions.
+//
 // ****************************************************************************
 
 static void
@@ -13256,6 +13444,8 @@ AddDefaultMethods()
                                                 visit_GetActiveTimeSlider_doc);
     AddMethod("GetDomains", visit_GetDomains, visit_GetDomains_doc);
     AddMethod("GetMaterials", visit_GetMaterials, visit_GetMaterials_doc);
+    AddMethod("GetOperatorOptions", visit_GetOperatorOptions, NULL/*DOCUMENT ME*/);
+    AddMethod("GetPlotOptions", visit_GetPlotOptions, NULL/*DOCUMENT ME*/);
     AddMethod("GetTimeSliders", visit_GetTimeSliders,visit_GetTimeSliders_doc);
     AddMethod("ListDomains", visit_ListDomains, visit_List_doc);
     AddMethod("ListMaterials", visit_ListMaterials, visit_List_doc);

@@ -45,5 +45,6 @@
 // This function registers callback handlers for the supported state objects.
 //
 void RegisterCallbackHandlers(CallbackManager *cb, ViewerState *vs, ViewerRPCCallbacks *rpcCB);
+PyObject *GetPyObjectPluginAttributes(AttributeSubject *subj, bool useCurrent);
 
 #endif
