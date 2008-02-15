@@ -2717,6 +2717,7 @@ ViewerFileServer::CreateNode(DataNode *parentNode,
 // Arguments:
 //   parentNode : The node on which to look for attribute nodes.
 //   sourceToDB : The map of source ids -> database names.
+//   configVersion : The version from the config file.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 25 16:49:01 PST 2004
@@ -2730,13 +2731,15 @@ ViewerFileServer::CreateNode(DataNode *parentNode,
 
 void
 ViewerFileServer::SetFromNode(DataNode *parentNode,
-    const std::map<std::string,std::string> &sourceToDB)
+    const std::map<std::string,std::string> &sourceToDB,
+    const std::string &configVersion)
 {
     DataNode *cLNode = parentNode->GetNode("DatabaseCorrelationList");
     if(cLNode != 0)
     {
         // Read the database correlation list into a temporary.
         DatabaseCorrelationList dbcl;
+        dbcl.ProcessOldVersions(parentNode, configVersion.c_str());
         dbcl.SetFromNode(parentNode);
 
         // Since the database correlations in the temporary may

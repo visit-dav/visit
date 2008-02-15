@@ -64,6 +64,9 @@ class DataNode;
 //   Mark C. Miller, Thu Mar 25 10:45:18 PST 2004
 //   Added method, SetAttsLe
 //
+//   Brad Whitlock, Wed Feb 13 14:36:23 PST 2008
+//   Added ProcessOldVersions.
+//
 // ****************************************************************************
  
 class STATE_API AttributeSubjectMap
@@ -90,6 +93,8 @@ public:
 
     bool CreateNode(DataNode *parentNode);
     void SetFromNode(DataNode *parentNode, AttributeSubject *factoryObj);
+    void ProcessOldVersions(DataNode *parentNode, const std::string &configVersion,
+                            AttributeSubject *factoryObj);
 
   private:
     void ResizeMap(const int);

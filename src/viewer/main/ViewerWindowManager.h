@@ -399,6 +399,9 @@ typedef struct {
 //    Hank Childs, Thu Feb  7 11:04:00 PST 2008
 //    Added method SynchronizeTimeLockedWindows.
 //
+//    Brad Whitlock, Wed Feb 13 14:15:27 PST 2008
+//    Added argument to SetFromNode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -567,7 +570,8 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     void CreateNode(DataNode *parentNode, 
                     const std::map<std::string, std::string> &, bool detailed);
     void SetFromNode(DataNode *parentNode,
-                     const std::map<std::string, std::string> &);
+                     const std::map<std::string, std::string> &,
+                     const std::string &);
     static bool SessionContainsErrors(DataNode *);
 
     static GlobalAttributes              *GetClientAtts();

@@ -460,7 +460,8 @@ public:
     bool SetFullFrameScaling(bool, double *);
 
     void CreateNode(DataNode *, const std::map<std::string, std::string> &);
-    bool SetFromNode(DataNode *, const std::map<std::string, std::string> &);
+    bool SetFromNode(DataNode *, const std::map<std::string, std::string> &,
+                     const std::string &);
     static bool SessionContainsErrors(DataNode *);
 
     void SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE);

@@ -459,7 +459,7 @@ class VIEWER_API ViewerPlot : public ViewerBase
     // Let the plot read/write itself to a config file.
     //
     void CreateNode(DataNode *);
-    void SetFromNode(DataNode *);
+    void SetFromNode(DataNode *, const std::string &);
     static bool SessionContainsErrors(DataNode *);
     void InitializePlot(Plot &p) const;
     void RegisterViewerPlotList(ViewerPlotList *vpl);

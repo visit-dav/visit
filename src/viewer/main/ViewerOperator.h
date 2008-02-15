@@ -140,7 +140,7 @@ class VIEWER_API ViewerOperator : public ViewerBase
     bool ExecuteEngineRPC() const;
 
     void CreateNode(DataNode *);
-    void SetFromNode(DataNode *);
+    void SetFromNode(DataNode *, const std::string &);
 
   protected:
     ViewerPlot                   *plot;

@@ -452,6 +452,9 @@ class avtDefaultPlotMetaData;
 //    Jeremy Meredith, Mon Feb  4 13:29:43 EST 2008
 //    Added SetViewAxisArray.
 //
+//    Brad Whitlock, Wed Feb 13 14:12:15 PST 2008
+//    Added argument to SetFromNode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -479,7 +482,8 @@ public:
     void BlockSocketSignals(bool);
 
     void CreateNode(DataNode *node, bool detailed);
-    bool SetFromNode(DataNode *node, const std::map<std::string,std::string>&);
+    bool SetFromNode(DataNode *node, const std::map<std::string,std::string>&,
+                    const std::string &);
 
     void PostponeAction(ViewerActionBase *);
 public slots:

@@ -930,7 +930,6 @@ DataNode::SetStringVector(const stringVector &vec)
 //
 // Arguments:
 //   key : The name of the node to look for.
-//   parentNode : The root of the tree to search.
 //
 // Returns:    
 //   A pointer to the node having the specified key, or 0 if the node
@@ -940,11 +939,68 @@ DataNode::SetStringVector(const stringVector &vec)
 // Creation:   Thu Sep 28 12:07:56 PDT 2000
 //
 // Modifications:
+//   Brad Whitlock, Thu Feb 14 11:29:24 PDT 2008
+//   Removed recursion so we only get the results that we're looking for or
+//   we get NULL if the item we're looking for does not exist.
+//
+// ****************************************************************************
+
+DataNode *
+DataNode::GetNode(const std::string &key)
+{
+    DataNode *retval = 0;
+
+    if(key == Key)
+        retval = this;
+    else if(NodeType == INTERNAL_NODE)
+    {
+        if(Length == 1)
+        {
+            DataNode *node = (DataNode *)(Data);
+            if(key == node->Key)
+                retval = node;
+        }
+        else if(Length > 1)
+        {
+            DataNode **nodeArray = (DataNode **)(Data);
+
+            for(int i = 0; i < Length; ++i)
+            {
+                if(key == nodeArray[i]->Key)
+                {
+                    retval = nodeArray[i];
+                    break;
+                }
+            }
+        }        
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: DataNode::SearchForNode
+//
+// Purpose: 
+//   Recursively searches for the named node in the tree.
+//
+// Arguments:
+//   key        : The key to search for.
+//   parentNode : Optional argument providing the root of the tree to search.
+//
+// Returns:    A DataNode on success; NULL on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 14 14:51:17 PST 2008
+//
+// Modifications:
 //   
 // ****************************************************************************
 
 DataNode *
-DataNode::GetNode(const std::string &key, DataNode *parentNode)
+DataNode::SearchForNode(const std::string &key, DataNode *parentNode)
 {
     DataNode *searchNode, *intermediate, *retval = 0;
 
@@ -961,7 +1017,7 @@ DataNode::GetNode(const std::string &key, DataNode *parentNode)
         if(searchNode->Length == 1)
         {
             DataNode *nodeArray = (DataNode *)(searchNode->Data);
-            intermediate = GetNode(key, nodeArray);
+            intermediate = SearchForNode(key, nodeArray);
             if(intermediate != 0)
             {
                 retval = intermediate;
@@ -973,11 +1029,11 @@ DataNode::GetNode(const std::string &key, DataNode *parentNode)
 
             for(int i = 0; i < searchNode->Length; ++i)
             {
-                intermediate = GetNode(key, nodeArray[i]);
+                intermediate = SearchForNode(key, nodeArray[i]);
                 if(intermediate != 0)
                 {
                     retval = intermediate;
-                       break;
+                    break;
                 }
             }
         }

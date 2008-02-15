@@ -400,7 +400,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool ConstructDDF(const EngineKey &ek, int id);
 
     void CreateNode(DataNode *) const;
-    void SetFromNode(DataNode *);
+    void SetFromNode(DataNode *, const std::string &);
 
     void UpdateExpressionsFromPlot(const ViewerPlot *);
 

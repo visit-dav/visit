@@ -323,7 +323,7 @@ class VIEWER_API ViewerQueryManager : public ViewerBase
     void            ViewDimChanged(ViewerWindow *);
 
     void            CreateNode(DataNode *);
-    void            SetFromNode(DataNode *);
+    void            SetFromNode(DataNode *, const std::string &);
 
     void            InitializeQueryList(void);
 

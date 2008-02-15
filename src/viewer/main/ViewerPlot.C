@@ -4533,7 +4533,8 @@ ViewerPlot::CreateNode(DataNode *parentNode)
 //   Lets the plot reset its values from a config file.
 //
 // Arguments:
-//   parentNode : The config file information DataNode pointer.
+//   parentNode    : The config file information DataNode pointer.
+//   configVersion : The config file version.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 16 13:10:51 PST 2003
@@ -4549,7 +4550,7 @@ ViewerPlot::CreateNode(DataNode *parentNode)
 // ****************************************************************************
 
 void
-ViewerPlot::SetFromNode(DataNode *parentNode)
+ViewerPlot::SetFromNode(DataNode *parentNode, const std::string &configVersion)
 {
     DataNode *node;
 
@@ -4616,6 +4617,10 @@ ViewerPlot::SetFromNode(DataNode *parentNode)
     if((node = plotNode->GetNode("expandedFlag")) != 0)
         expandedFlag = node->AsBool();
 
+    // Give the plot attributes a chance to update the plotNode contents
+    // from an older version.
+    curPlotAtts->ProcessOldVersions(plotNode, configVersion.c_str());
+
     // Read in the current plot attributes.
     curPlotAtts->SetFromNode(plotNode);
     SetPlotAtts(curPlotAtts);
@@ -4624,13 +4629,19 @@ ViewerPlot::SetFromNode(DataNode *parentNode)
     // Read in the plot keyframes.
     //
     if((node = plotNode->GetNode("plotKeyframes")) != 0)
+    {
+        plotAtts->ProcessOldVersions(node, configVersion, curPlotAtts);
         plotAtts->SetFromNode(node, curPlotAtts);
+    }
 
     //
     // Read in the database keyframes.
     //
     if((node = plotNode->GetNode("databaseKeyframes")) != 0)
+    {
+        databaseAtts->ProcessOldVersions(node, configVersion, curDatabaseAtts);
         databaseAtts->SetFromNode(node, curDatabaseAtts);
+    }
 
     //
     // Add operators.
@@ -4659,7 +4670,7 @@ ViewerPlot::SetFromNode(DataNode *parentNode)
 
                         // Let the operator finish initializing itself.
                         if(index != -1)
-                            operators[index]->SetFromNode(opNode);
+                            operators[index]->SetFromNode(opNode, configVersion);
                     }
                 }
             }
@@ -4681,6 +4692,7 @@ ViewerPlot::SetFromNode(DataNode *parentNode)
     if((node = plotNode->GetNode("CompactSILRestrictionAttributes")) != 0)
     {
         CompactSILRestrictionAttributes csilr;
+        csilr.ProcessOldVersions(plotNode, configVersion.c_str());
         csilr.SetFromNode(plotNode);
 
         //

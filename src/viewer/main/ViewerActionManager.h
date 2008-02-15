@@ -83,6 +83,9 @@ typedef ViewerRPC::ViewerRPCType ActionIndex;
 //   Brad Whitlock, Mon Feb 12 17:54:31 PST 2007
 //   Added ViewerBase base class.
 //
+//   Brad Whitlock, Wed Feb 13 14:18:00 PST 2008
+//   Added argument to SetFromNode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerActionManager : public ViewerBase
@@ -124,7 +127,7 @@ public:
     stringVector GetActionGroupNames(bool=true) const;
 
     void CreateNode(DataNode *parentNode);
-    void SetFromNode(DataNode *parentNode);
+    void SetFromNode(DataNode *parentNode, const std::string &);
 private:
     ViewerActionBase *GetAction(ActionIndex) const;
     int         GetNumberOfActionGroupMemberships(ActionIndex index) const;

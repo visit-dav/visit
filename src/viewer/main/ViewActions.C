@@ -844,6 +844,7 @@ SaveViewAction::CreateNode(DataNode *parentNode)
 //
 // Arguments:
 //   parentNode : The node that we're looking at for the config.
+//   configVersion : The version from the config file.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 1 14:58:58 PST 2003
@@ -860,10 +861,14 @@ SaveViewAction::CreateNode(DataNode *parentNode)
 //   Hank Childs, Wed Oct 15 12:58:19 PDT 2003
 //   Copy over eye angle.
 //
+//   Brad Whitlock, Wed Feb 13 14:20:21 PST 2008
+//   Added configVersion to satisfy new interface.
+//
 // ****************************************************************************
 
 void
-SaveViewAction::SetFromNode(DataNode *parentNode)
+SaveViewAction::SetFromNode(DataNode *parentNode, 
+    const std::string &configVersion)
 {
     if(parentNode == 0)
         return;
@@ -892,6 +897,7 @@ SaveViewAction::SetFromNode(DataNode *parentNode)
         {
             // Read the view from the config node.
             ViewCurveAttributes viewAtts;
+            viewAtts.ProcessOldVersions(views[i], configVersion.c_str());
             viewAtts.SetFromNode(views[i]);
 
             // Create the curve view.
@@ -908,6 +914,7 @@ SaveViewAction::SetFromNode(DataNode *parentNode)
         {
             // Read the view from the config node.
             View2DAttributes viewAtts;
+            viewAtts.ProcessOldVersions(views[i], configVersion.c_str());
             viewAtts.SetFromNode(views[i]);
 
             // Create the curve view.
@@ -924,6 +931,7 @@ SaveViewAction::SetFromNode(DataNode *parentNode)
         {
             // Read the view from the config node.
             View3DAttributes viewAtts;
+            viewAtts.ProcessOldVersions(views[i], configVersion.c_str());
             viewAtts.SetFromNode(views[i]);
 
             // Create the curve view.
@@ -944,6 +952,7 @@ SaveViewAction::SetFromNode(DataNode *parentNode)
             //
             // Read the view from the config node.
             ViewAttributes viewAtts;
+            viewAtts.ProcessOldVersions(views[i], configVersion.c_str());
             viewAtts.SetFromNode(views[i]);
 
             // Use the information to create the appropriate view type.

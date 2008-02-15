@@ -516,7 +516,8 @@ ViewerOperator::CreateNode(DataNode *parentNode)
 //   Lets the operator reset its values from a config file.
 //
 // Arguments:
-//   parentNode : The config file information DataNode pointer.
+//   parentNode    : The config file information DataNode pointer.
+//   configVersion : The version from the config file.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 16 13:10:51 PST 2003
@@ -526,7 +527,7 @@ ViewerOperator::CreateNode(DataNode *parentNode)
 // ****************************************************************************
 
 void
-ViewerOperator::SetFromNode(DataNode *parentNode)
+ViewerOperator::SetFromNode(DataNode *parentNode, const std::string &configVersion)
 {
     if(parentNode == 0)
         return;
@@ -534,6 +535,10 @@ ViewerOperator::SetFromNode(DataNode *parentNode)
     DataNode *operatorNode = parentNode->GetNode("ViewerOperator");
     if(operatorNode == 0)
         return;
+
+    // Give the operator a chance to try and update its data node representation
+    // from an older representation before we set from node.
+    operatorAtts->ProcessOldVersions(operatorNode, configVersion.c_str());
 
     // Let the operator try to initialize its attributes.
     operatorAtts->SetFromNode(operatorNode);
