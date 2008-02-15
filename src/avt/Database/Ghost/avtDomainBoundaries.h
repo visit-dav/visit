@@ -89,6 +89,9 @@ class avtMaterial;
 //    Hank Childs, Thu Jan 26 10:04:34 PST 2006
 //    Add virtual method "CreatesRobustGhostNodes".
 //
+//    Hank Childs, Thu Feb 14 17:12:38 PST 2008
+//    Add virtual method "CanOnlyCreateGhostNodes".
+//
 // ****************************************************************************
 
 class DATABASE_API avtDomainBoundaries
@@ -123,6 +126,8 @@ class DATABASE_API avtDomainBoundaries
                                                vector<int> &)  =0;
     virtual bool                      CreatesRobustGhostNodes(void) 
                                                               { return true; };
+    virtual bool                      CanOnlyCreateGhostNodes(void) 
+                                                              { return false; };
     virtual bool                      RequiresCommunication(avtGhostDataType) = 0;
     virtual bool                      ConfirmMesh(vector<int>      domainNum,
                                                vector<vtkDataSet*> meshes)  =0;

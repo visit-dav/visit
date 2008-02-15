@@ -4934,6 +4934,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //    Hank Childs, Sun Feb 10 19:43:59 MST 2008
 //    Add support for streaming ghost generation.
 //
+//    Hank Childs, Thu Feb 14 17:08:39 PST 2008
+//    Add support for modules that only create ghost nodes.
+//
 // ****************************************************************************
 
 bool
@@ -5027,6 +5030,12 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
                 ghostType = GHOST_ZONE_DATA;
         if (md->GetMesh(meshname)->meshType == AVT_UNSTRUCTURED_MESH)
             ghostType = GHOST_ZONE_DATA;
+    }
+    if (ghostType == GHOST_ZONE_DATA)
+    {
+        if (hasDomainBoundaryInfo)
+            if (dbi->CanOnlyCreateGhostNodes())
+                ghostType = GHOST_NODE_DATA;
     }
 
     //
