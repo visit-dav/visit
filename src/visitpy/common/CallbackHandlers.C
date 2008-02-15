@@ -156,6 +156,8 @@ SUPPORTED_STATE_OBJECTS
 // Creation:   Tue Feb  5 11:18:13 PST 2008
 //
 // Modifications:
+//   Brad Whitlock, Fri Feb 15 11:42:55 PST 2008
+//   I changed the plugin name matching scheme.
 //   
 // ****************************************************************************
 
@@ -172,13 +174,13 @@ GetPlotConstructorFunction(AttributeSubject *subj)
         ScriptingPlotPluginInfo *info=pluginManager->GetScriptingPluginInfo(id);
         if(info == 0)
             continue;
-        std::string attName(info->GetName());
-        attName +=  "Attributes";
-        if(attName == subj->TypeName())
+        AttributeSubject *pluginAtts = info->AllocAttributes();
+        if(pluginAtts->TypeName() == subj->TypeName())
         {
             pluginIndex = i;
             break;
         }
+        delete pluginAtts;
     }
 
     if(pluginIndex != -1)
@@ -222,7 +224,9 @@ GetPlotConstructorFunction(AttributeSubject *subj)
 // Creation:   Tue Feb  5 11:18:13 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Feb 15 11:42:55 PST 2008
+//   I changed the plugin name matching scheme.
+//
 // ****************************************************************************
 
 static PyObject *
@@ -238,13 +242,13 @@ GetOperatorConstructorFunction(AttributeSubject *subj)
         ScriptingOperatorPluginInfo *info=pluginManager->GetScriptingPluginInfo(id);
         if(info == 0)
             continue;
-        std::string attName(info->GetName());
-        attName +=  "Attributes";
-        if(attName == subj->TypeName())
+        AttributeSubject *pluginAtts = info->AllocAttributes();
+        if(pluginAtts->TypeName() == subj->TypeName())
         {
             pluginIndex = i;
             break;
         }
+        delete pluginAtts;
     }
 
     if(pluginIndex != -1)
@@ -272,6 +276,48 @@ GetOperatorConstructorFunction(AttributeSubject *subj)
 }
 
 // ****************************************************************************
+// Method: GetPyObjectPluginAttributes
+//
+// Purpose: 
+//   Instantiates the Python version of plugin attributes.
+//
+// Arguments:
+//   subj       : The plugin attributes to instantiate.
+//   useCurrent : True if the current attributes should be created; false causes
+//                the default attributes to be created.
+// Returns:    
+//
+// Note:       Moved from plugin_state_callback_handler
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 14 16:44:50 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PyObject *
+GetPyObjectPluginAttributes(AttributeSubject *subj, bool useCurrent)
+{
+    PyObject *ctor = GetPlotConstructorFunction(subj);
+    if(ctor == 0)
+        ctor = GetOperatorConstructorFunction(subj);
+    if(ctor == 0)
+        return 0;
+
+    // We have a contructor function by now. Let's call it with a 0
+    // as the argument so we instantiate a new object based on the
+    // default attributes.
+    PyObject *tuple = PyTuple_New(1);
+    PyTuple_SET_ITEM(tuple, 0, PyLong_FromLong(useCurrent?1L:0L));
+    PyObject *state = PyObject_Call(ctor, tuple, NULL);
+    Py_DECREF(tuple);
+    Py_DECREF(ctor);
+
+    return state;
+}
+
+// ****************************************************************************
 // Method: plugin_state_callback_handler
 //
 // Purpose: 
@@ -294,6 +340,9 @@ GetOperatorConstructorFunction(AttributeSubject *subj)
 //   Brad Whitlock, Wed Feb  6 10:39:09 PST 2008
 //   Added support for callback data.
 //
+//   Brad Whitlock, Thu Feb 14 16:47:01 PST 2008
+//   Moved code to GetPyObjectPluginAttributes.
+//
 // ****************************************************************************
 
 //
@@ -314,20 +363,10 @@ plugin_state_callback_handler(Subject *s, void *data)
     CallbackManager::CallbackHandlerData *cbData = (CallbackManager::CallbackHandlerData *)data;
     if(cbData->pycb != 0)
     {
-        PyObject *ctor = GetPlotConstructorFunction(subj);
-        if(ctor == 0)
-            ctor = GetOperatorConstructorFunction(subj);
-        if(ctor == 0)
+        // Instantiate the Python wrapped version of the plugin attributes.
+        PyObject *state = GetPyObjectPluginAttributes(subj, false);
+        if(state == 0)
             return;
-
-        // We have a contructor function by now. Let's call it with a 0
-        // as the argument so we instantiate a new object based on the
-        // default attributes.
-        PyObject *tuple = PyTuple_New(1);
-        PyTuple_SET_ITEM(tuple, 0, PyLong_FromLong(0L));
-        PyObject *state = PyObject_Call(ctor, tuple, NULL);
-        Py_DECREF(tuple);
-        Py_DECREF(ctor);
 
         // HACK! We had to save off the value of the subject that generated the 
         //       callback because who knows what those values are right now. We're
@@ -344,6 +383,7 @@ plugin_state_callback_handler(Subject *s, void *data)
 
         // Now that we've wrapped the state object, call the user's
         // Python callback function.
+        PyObject *tuple = 0;
         if(cbData->pycb_data != 0)
         {
             tuple = PyTuple_New(2);
