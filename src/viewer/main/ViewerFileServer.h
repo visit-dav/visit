@@ -324,7 +324,8 @@ public:
                                           const std::map<std::string,std::string> &,
                                           bool detailed);
     void                       SetFromNode(DataNode *,
-                                           const std::map<std::string,std::string> &);
+                                           const std::map<std::string,std::string> &,
+                                           const std::string &);
     std::string                GetPluginErrors(const std::string &host);
 
     void                       UpdateDBPluginInfo(const std::string &host);

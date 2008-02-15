@@ -1810,6 +1810,9 @@ ViewerSubject::LaunchEngineOnStartup()
 //   Cyrus Harrison, Fri Mar 16 09:21:24 PDT 2007
 //   Added call to SetFromNode from the ViewerEngineManager
 //
+//   Brad Whitlock, Wed Feb 13 14:06:56 PST 2008
+//   Added configVersion to the calls to SetFromNode.
+//
 // ****************************************************************************
 
 void
@@ -1842,12 +1845,18 @@ ViewerSubject::DelayedProcessSettings()
             return;
         }
 
+        // Get the version
+        std::string configVersion(VERSION);
+        DataNode *version = visitRoot->GetNode("Version");
+        if(version != 0)
+            configVersion = version->AsString();
+
         // Let the important objects read their settings.
         std::map<std::string, std::string> empty;
-        ViewerFileServer::Instance()->SetFromNode(searchNode, empty);
-        ViewerWindowManager::Instance()->SetFromNode(searchNode, empty);
-        ViewerQueryManager::Instance()->SetFromNode(searchNode);
-        ViewerEngineManager::Instance()->SetFromNode(searchNode);
+        ViewerFileServer::Instance()->SetFromNode(searchNode, empty, configVersion);
+        ViewerWindowManager::Instance()->SetFromNode(searchNode, empty, configVersion);
+        ViewerQueryManager::Instance()->SetFromNode(searchNode, configVersion);
+        ViewerEngineManager::Instance()->SetFromNode(searchNode, configVersion);
 
         delete localSettings;  localSettings = 0;
     }
@@ -2797,11 +2806,15 @@ ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
 //   Added support for ViewerEngineManager to restore its settings
 //   from a node. 
 //
+//   Brad Whitlock, Wed Feb 13 14:08:18 PST 2008
+//   Added configVersion argument.
+//
 // ****************************************************************************
 
 bool
 ViewerSubject::SetFromNode(DataNode *parentNode, 
-    const std::map<std::string,std::string> &sourceToDB)
+    const std::map<std::string,std::string> &sourceToDB, 
+    const std::string &configVersion)
 {
     bool fatalError = true;
 
@@ -2816,10 +2829,10 @@ ViewerSubject::SetFromNode(DataNode *parentNode,
     fatalError = ViewerWindowManager::Instance()->SessionContainsErrors(vsNode);
     if(!fatalError)
     {
-        ViewerFileServer::Instance()->SetFromNode(vsNode, sourceToDB);
-        ViewerWindowManager::Instance()->SetFromNode(vsNode, sourceToDB);
-        ViewerQueryManager::Instance()->SetFromNode(vsNode);
-        ViewerEngineManager::Instance()->SetFromNode(vsNode);
+        ViewerFileServer::Instance()->SetFromNode(vsNode, sourceToDB, configVersion);
+        ViewerWindowManager::Instance()->SetFromNode(vsNode, sourceToDB, configVersion);
+        ViewerQueryManager::Instance()->SetFromNode(vsNode, configVersion);
+        ViewerEngineManager::Instance()->SetFromNode(vsNode, configVersion);
     }
 
     return fatalError;

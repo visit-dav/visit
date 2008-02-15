@@ -885,3 +885,57 @@ AttributeSubjectMap::SetFromNode(DataNode *parentNode,
         }
     }
 }
+
+// ****************************************************************************
+// Method: AttributeSubjectMap::ProcessOldVersions
+//
+// Purpose: 
+//   Initializes the map using the data in the config file.
+//
+// Arguments:
+//   parentNode    : The data node that will be used to initialize the map.
+//   configVersion : The version from the config file.
+//   obj           : The object that we use to create new instances of attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 13 14:43:42 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AttributeSubjectMap::ProcessOldVersions(DataNode *parentNode,
+    const std::string &configVersion, AttributeSubject *obj)
+{
+    //
+    // Look for the required nodes.
+    //
+    if(parentNode == 0)
+        return;
+
+    DataNode *mapNode = parentNode->GetNode("AttributeSubjectMap");
+    if(mapNode == 0)
+        return;
+
+    DataNode *indicesNode = mapNode->GetNode("indices");
+    if(indicesNode == 0)
+        return;
+
+    DataNode *attsNode = mapNode->GetNode("attributes");
+    if(attsNode == 0)
+        return;
+
+    //
+    // Now that we have all of the nodes that we need, process old versions
+    // of each of the input data nodes.
+    //
+    const intVector &iv = indicesNode->AsIntVector();
+    DataNode **attsObjects = attsNode->GetChildren();
+    const int numAtts = attsNode->GetNumChildren();
+    for(int i = 0; i < iv.size(); ++i)
+    {
+        if(i < numAtts)
+            obj->ProcessOldVersions(attsObjects[i], configVersion.c_str());
+    }
+}

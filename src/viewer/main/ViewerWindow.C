@@ -8097,8 +8097,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Lets the window reset its values from a config file.
 //
 // Arguments:
-//   parentNode : The config file information DataNode pointer.
-//   sourceToDB : The source to DB map.
+//   parentNode    : The config file information DataNode pointer.
+//   sourceToDB    : The source to DB map.
+//   configVersion : The version from the config file.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jun 30 13:11:52 PST 2003
@@ -8166,11 +8167,15 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //   Added new axis array window mode.
 //
+//   Brad Whitlock, Wed Feb 13 14:02:15 PST 2008
+//   Added configVersion so we can let the objects process older versions.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::SetFromNode(DataNode *parentNode, 
-    const std::map<std::string, std::string> &sourceToDB)
+    const std::map<std::string, std::string> &sourceToDB, 
+    const std::string &configVersion)
 {
     DataNode *node;
 
@@ -8310,7 +8315,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     //
     // Read in the plot list.
     //
-    if(GetPlotList()->SetFromNode(windowNode, sourceToDB))
+    if(GetPlotList()->SetFromNode(windowNode, sourceToDB, configVersion))
         SendUpdateFrameMessage();
 
     //
@@ -8320,7 +8325,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     {
         ViewCurveAttributes viewCurveAtts;
         avtViewCurve viewCurve;
-
+        viewCurveAtts.ProcessOldVersions(windowNode, configVersion.c_str());
         viewCurveAtts.SetFromNode(windowNode);
         viewCurve.SetFromViewCurveAttributes(&viewCurveAtts);
         SetViewCurve(viewCurve);
@@ -8329,7 +8334,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     {
         View2DAttributes view2dAtts;
         avtView2D view2d;
-
+        view2dAtts.ProcessOldVersions(windowNode, configVersion.c_str());
         view2dAtts.SetFromNode(windowNode);
         view2d.SetFromView2DAttributes(&view2dAtts);
         SetView2D(view2d);
@@ -8338,7 +8343,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     {
         View3DAttributes view3dAtts;
         avtView3D view3d;
-
+        view3dAtts.ProcessOldVersions(windowNode, configVersion.c_str());
         view3dAtts.SetFromNode(windowNode);
         view3d.SetFromView3DAttributes(&view3dAtts);
         SetView3D(view3d);
@@ -8348,7 +8353,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     {
         ViewAxisArrayAttributes viewAxisArrayAtts;
         avtViewAxisArray viewAxisArray;
-
+        viewAxisArrayAtts.ProcessOldVersions(windowNode, configVersion.c_str());
         viewAxisArrayAtts.SetFromNode(windowNode);
         viewAxisArray.SetFromViewAxisArrayAttributes(&viewAxisArrayAtts);
         SetViewAxisArray(viewAxisArray);
@@ -8503,6 +8508,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     if((node = windowNode->GetNode("AnnotationAttributes")) != 0)
     {
         AnnotationAttributes annot;
+        annot.ProcessOldVersions(windowNode, configVersion.c_str());
         annot.SetFromNode(windowNode);
         SetAnnotationAttributes(&annot);
     }
@@ -8513,6 +8519,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     if((node = windowNode->GetNode("AnnotationObjectList")) != 0)
     {
         AnnotationObjectList annots;
+        annots.ProcessOldVersions(windowNode, configVersion.c_str());
         annots.SetFromNode(windowNode);
         visWindow->DeleteAllAnnotationObjects();
         visWindow->CreateAnnotationObjectsFromList(annots);
@@ -8524,6 +8531,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     if((node = windowNode->GetNode("LightList")) != 0)
     {
         LightList lights;
+        lights.ProcessOldVersions(windowNode, configVersion.c_str());
         lights.SetFromNode(windowNode);
         SetLightList(&lights);
     }
@@ -8534,6 +8542,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     if((node = windowNode->GetNode("InteractorAttributes")) != 0)
     {
         InteractorAttributes interactorAtts;
+        interactorAtts.ProcessOldVersions(windowNode, configVersion.c_str());
         interactorAtts.SetFromNode(windowNode);
         SetInteractorAtts(&interactorAtts);
     }
@@ -8543,21 +8552,33 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     //
     ViewCurveAttributes tmpViewCurve;
     if((node = windowNode->GetNode("viewCurveKeyframes")) != 0)
+    {
+        viewCurveAtts->ProcessOldVersions(node, configVersion, &tmpViewCurve);
         viewCurveAtts->SetFromNode(node, &tmpViewCurve);
+    }
     View2DAttributes tmpView2D;
     if((node = windowNode->GetNode("view2DKeyframes")) != 0)
+    {
+        view2DAtts->ProcessOldVersions(node, configVersion, &tmpView2D);
         view2DAtts->SetFromNode(node, &tmpView2D);
+    }
     View3DAttributes tmpView3D;
     if((node = windowNode->GetNode("view3DKeyframes")) != 0)
+    {
+        view3DAtts->ProcessOldVersions(node, configVersion, &tmpView3D);
         view3DAtts->SetFromNode(node, &tmpView3D);
+    }
     ViewAxisArrayAttributes tmpViewAxisArray;
     if((node = windowNode->GetNode("viewAxisArrayKeyframes")) != 0)
+    {
+        viewAxisArrayAtts->ProcessOldVersions(node, configVersion, &tmpViewAxisArray);
         viewAxisArrayAtts->SetFromNode(node, &tmpViewAxisArray);
+    }
 
     //
     // Let other objects get their information.
     //
-    actionMgr->SetFromNode(windowNode);
+    actionMgr->SetFromNode(windowNode, configVersion);
 
     //
     // Read in and set the interaction mode.

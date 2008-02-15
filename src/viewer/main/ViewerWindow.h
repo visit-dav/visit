@@ -435,6 +435,9 @@ class ViewerToolbar;
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //
+//    Brad Whitlock, Wed Feb 13 14:04:22 PST 2008
+//    Added configVersion to SetFromNode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -454,7 +457,8 @@ public:
                     const std::map<std::string, std::string> &, 
                     bool detailed);
     void SetFromNode(DataNode *parentNode,
-                     const std::map<std::string, std::string> &);
+                     const std::map<std::string, std::string> &,
+                     const std::string &configVersion);
     static bool SessionContainsErrors(DataNode *parentNode);
 
     void SetSize(const int width, const int height);

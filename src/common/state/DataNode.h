@@ -81,6 +81,9 @@ typedef enum
 //   Added an additional RemoveNode method that takes a DataNode as an
 //   argument.
 //
+//   Brad Whitlock, Thu Feb 14 14:49:19 PST 2008
+//   Added SearchForNode and make GetNode not recurse.
+//
 // ****************************************************************************
 
 class STATE_API DataNode
@@ -172,7 +175,8 @@ public:
     void SetStringVector(const stringVector &vec);
 
     // Node operations
-    DataNode *GetNode(const std::string &key, DataNode *parentNode = 0);
+    DataNode *GetNode(const std::string &key);
+    DataNode *SearchForNode(const std::string &key, DataNode *parentNode = 0);
     void AddNode(DataNode *node);
     void RemoveNode(DataNode *node, bool deleteNode = true);
     void RemoveNode(const std::string &key, bool deleteNode = true);

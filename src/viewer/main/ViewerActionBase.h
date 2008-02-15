@@ -100,7 +100,7 @@ public:
     virtual bool AllowInToolbar() const    { return true; }
 
     virtual bool CreateNode(DataNode *)    { return false; }
-    virtual void SetFromNode(DataNode *)   { }
+    virtual void SetFromNode(DataNode *,const std::string &)   { }
 
     // Methods to add the action to the menu and toolbar.
     virtual void ConstructMenu(QPopupMenu *menu) = 0;

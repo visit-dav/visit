@@ -80,4 +80,6 @@
     </Field>
     <Function name="GetDiscernibleBackgroundColor" user="true" member="true">
     </Function>
+    <Function name="ProcessOldVersions" user="true" member="true">
+    </Function>
   </Attribute>

@@ -3423,7 +3423,8 @@ ViewerQueryManager::CreateNode(DataNode *parentNode)
 //   config file.
 //
 // Arguments:
-//   parentNode : The node where the query manager's data is stored.
+//   parentNode    : The node where the query manager's data is stored.
+//   configVersion : The version from the config file.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 22 10:16:07 PDT 2003
@@ -3433,7 +3434,8 @@ ViewerQueryManager::CreateNode(DataNode *parentNode)
 // ****************************************************************************
 
 void
-ViewerQueryManager::SetFromNode(DataNode *parentNode)
+ViewerQueryManager::SetFromNode(DataNode *parentNode, 
+    const std::string &configVersion)
 {
     if(parentNode == 0)
         return;

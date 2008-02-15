@@ -3454,15 +3454,21 @@ ViewerEngineManager::CreateNode(DataNode *parentNode) const
 //   Restores material and mesh management attributes 
 //
 // Arguments:
-//   parentNode : The parent node that will contain the data for this object.
+//   parentNode    : The parent node that will contain the data for this object.
+//   configVersion : The version of the config file.
 //
 // Programmer: Cyrus Harrison
 // Creation:   Thu Mar 15 11:30:11 PDT 2007
 //
+// Modifications:
+//   Brad Whitlock, Wed Feb 13 14:45:27 PST 2008
+//   Added configVersion.
+//
 // ****************************************************************************
 
 void
-ViewerEngineManager::SetFromNode(DataNode *parentNode)
+ViewerEngineManager::SetFromNode(DataNode *parentNode, 
+    const std::string &configVersion)
 {
     if(parentNode == 0)
         return;
@@ -3471,6 +3477,11 @@ ViewerEngineManager::SetFromNode(DataNode *parentNode)
     DataNode *vem_node = parentNode->GetNode("ViewerEngineManager");
     if(vem_node == 0)
         return;
+
+    // Allow changes to be made to the contents of the vem_node before
+    // we call SetFromNode.
+    GetMaterialClientAtts()->ProcessOldVersions(vem_node, configVersion.c_str());
+    GetMeshManagementClientAtts()->ProcessOldVersions(vem_node, configVersion.c_str());
 
     // restore material and mesh management attributes
     GetMaterialClientAtts()->SetFromNode(vem_node);

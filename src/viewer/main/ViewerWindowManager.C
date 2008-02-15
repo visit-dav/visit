@@ -9025,9 +9025,10 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
 //   in a config file's DataNode.
 //
 // Arguments:
-//   parentNode : The node from which to get information about how to initialize
-//                the ViewerWindowManager.
-//   sourceToDB : The source to DB map.
+//   parentNode    : The node from which to get information about how to initialize
+//                   the ViewerWindowManager.
+//   sourceToDB    : The source to DB map.
+//   configVersion : The version from the config file.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jun 30 12:56:30 PDT 2003
@@ -9067,11 +9068,15 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
 //   Brad Whitlock, Fri Nov 10 10:00:49 PDT 2006
 //   Added sourceToDB argument.
 //
+//   Brad Whitlock, Wed Feb 13 14:12:47 PST 2008
+//   Added configVersion argument.
+//
 // ****************************************************************************
 
 void
 ViewerWindowManager::SetFromNode(DataNode *parentNode,
-    const std::map<std::string,std::string> &sourceToDB)
+    const std::map<std::string,std::string> &sourceToDB, 
+    const std::string &configVersion)
 {
     if(parentNode == 0)
         return;
@@ -9112,7 +9117,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
     //
     // Create the right number of windows.
     //
-    DataNode *windowsNode = parentNode->GetNode("Windows");
+    DataNode *windowsNode = searchNode->GetNode("Windows");
     if(windowsNode == 0)
         return;
 
@@ -9278,7 +9283,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
         referenced[i] = false;
         if(windows[i] != 0 && childCount < newNWindows)
         {
-            windows[i]->SetFromNode(wNodes[childCount++], sourceToDB);
+            windows[i]->SetFromNode(wNodes[childCount++], sourceToDB, configVersion);
             if(windows[i]->GetPlotList()->GetNumPlots() > 0)
                 referenced[i] = true;
         }
@@ -9349,7 +9354,9 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
 // Creation:   Wed Jan 11 15:10:44 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Feb 14 14:44:40 PST 2008
+//   Fixed since GetNode no longer recursively returns children.
+//
 // ****************************************************************************
 
 bool
@@ -9360,11 +9367,11 @@ ViewerWindowManager::SessionContainsErrors(DataNode *parentNode)
     if(parentNode == 0)
         return fatalError;
 
-    DataNode *searchNode = parentNode->GetNode("ViewerWindowManager");
-    if(searchNode == 0)
+    DataNode *windowMgrNode = parentNode->GetNode("ViewerWindowManager");
+    if(windowMgrNode == 0)
         return fatalError;
 
-    DataNode *windowsNode = parentNode->GetNode("Windows");
+    DataNode *windowsNode = windowMgrNode->GetNode("Windows");
     if(windowsNode == 0)
         return fatalError;
 

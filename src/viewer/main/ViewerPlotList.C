@@ -2447,7 +2447,10 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Brad Whitlock, Tue Jan 22 13:47:50 PST 2008
 //    Only override the default SIL restriction from another plot if
 //    we're allowing plots to inherit a SIL restriction.
-//    
+//
+//    Brad Whitlock, Wed Feb 13 14:24:01 PST 2008
+//    Added version to SetFromNode.
+//
 // ****************************************************************************
 
 int
@@ -2492,7 +2495,7 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     //
     if(attributesNode != 0) 
     {
-        newPlot->SetFromNode(attributesNode);
+        newPlot->SetFromNode(attributesNode, std::string(VERSION));
     }
 
     //
@@ -7965,8 +7968,9 @@ ViewerPlotList::CreateNode(DataNode *parentNode,
 //   Lets the plot list reset its values from a config file.
 //
 // Arguments:
-//   parentNode : The config file information DataNode pointer.
-//   sourceToDB : The source to DB map.
+//   parentNode    : The config file information DataNode pointer.
+//   sourceToDB    : The source to DB map.
+//   configVersion : The version from the config file.
 //
 // Returns:    True if we have created plots that should be realized;
 //             False otherwise.
@@ -8008,7 +8012,8 @@ ViewerPlotList::CreateNode(DataNode *parentNode,
 
 bool
 ViewerPlotList::SetFromNode(DataNode *parentNode,
-    const std::map<std::string, std::string> &sourceToDB)
+    const std::map<std::string, std::string> &sourceToDB, 
+    const std::string &configVersion)
 {
     DataNode *node;
     ViewerFileServer *fs = ViewerFileServer::Instance();
@@ -8408,7 +8413,7 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
                     ///////////////// Done reformatting pre 1.3 session files ////////////////
 
                     // Let the plot finish initializing itself.
-                    plot->SetFromNode(plotNode);
+                    plot->SetFromNode(plotNode, configVersion);
 
                     // Add the plot to the plot list.
                     int plotId = SimpleAddPlot(plot, false);
@@ -8479,7 +8484,10 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
 // Creation:   Wed Jan 11 14:52:49 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Feb 14 14:56:43 PST 2008
+//   Use SearchForNode to get the ViewerPlostList node in case we have an
+//   old pre-1.3 session file. GetNode no longer recurses.
+//
 // ****************************************************************************
 
 bool
@@ -8490,7 +8498,7 @@ ViewerPlotList::SessionContainsErrors(DataNode *parentNode)
     if(parentNode == 0)
         return fatalError;
 
-    DataNode *plotlistNode = parentNode->GetNode("ViewerPlotList");
+    DataNode *plotlistNode = parentNode->SearchForNode("ViewerPlotList");
     if(plotlistNode == 0)
         return fatalError;
 

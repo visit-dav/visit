@@ -303,11 +303,10 @@ ViewerConfigManager::ProcessConfigSettings(DataNode *node)
     if(viewerNode == 0)
         return;
 
-    // Get the defaults node. If it cannot be found, use the VIEWER node so
-    // we still support older config files.
-    DataNode *defaultsNode = visitRoot->GetNode("DEFAULT_VALUES");
+    // Get the defaults node. 
+    DataNode *defaultsNode = viewerNode->GetNode("DEFAULT_VALUES");
     if(defaultsNode == 0)
-        defaultsNode = viewerNode;
+        return;
 
     //
     // Unselect all fields in the connected AttributeSubjects so we can
@@ -508,6 +507,9 @@ ViewerConfigManager::ExportEntireState(const std::string &filename)
 //   Brad Whitlock, Wed Jan 11 11:59:43 PDT 2006
 //   I made it an error if the session file could not be located.
 //
+//   Brad Whitlock, Wed Feb 13 14:10:51 PST 2008
+//   Pass the config version to the SetFromNode method.
+//
 // ****************************************************************************
 
 void
@@ -534,8 +536,10 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
         {
             std::string differentVersionMessage;
             DataNode *versionNode = visitRoot->GetNode("Version");
+            std::string configVersion(VERSION);
             if(versionNode != 0)
             {
+                configVersion = versionNode->AsString();
                 if(versionNode->AsString() != VERSION)
                 {
                     differentVersionMessage +=
@@ -616,7 +620,8 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
                 }               
 
                 // Let the parent read its settings.
-                bool fatalError = parent->SetFromNode(viewerNode, sourceToDB);
+                bool fatalError = parent->SetFromNode(viewerNode, sourceToDB, 
+                    configVersion.c_str());
 
                 if(fatalError)
                 {

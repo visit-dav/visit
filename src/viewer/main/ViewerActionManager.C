@@ -1348,17 +1348,20 @@ ViewerActionManager::CreateNode(DataNode *parentNode)
 //   Lets each action initialize itself from data in the node.
 //
 // Arguments:
-//   parentNode : The node from which config information is read.
+//   parentNode    : The node from which config information is read.
+//   configVersion : The version from the config file.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jul 1 10:15:23 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb 13 14:03:06 PST 2008
+//   Added configVersion.
+//
 // ****************************************************************************
 
 void
-ViewerActionManager::SetFromNode(DataNode *parentNode)
+ViewerActionManager::SetFromNode(DataNode *parentNode, const std::string &configVersion)
 {
     if(parentNode == 0)
         return;
@@ -1372,7 +1375,7 @@ ViewerActionManager::SetFromNode(DataNode *parentNode)
     {
         ViewerActionBase *action = GetAction(ActionIndex(i));
         if(action != 0)
-            action->SetFromNode(mgrNode);
+            action->SetFromNode(mgrNode, configVersion);
     }
 }
 

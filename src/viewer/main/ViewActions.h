@@ -230,6 +230,9 @@ public:
 //   Brad Whitlock, Wed Apr 27 15:15:35 PST 2005
 //   I added CopyFrom.
 //
+//   Brad Whitlock, Wed Feb 13 14:19:32 PST 2008
+//   Added argument to SetFromNode.
+//
 // ****************************************************************************
 
 class VIEWER_API SaveViewAction : public ViewerMultipleAction
@@ -258,7 +261,7 @@ public:
     virtual bool ChoiceToggled(int i) const { return false;}
 
     virtual bool CreateNode(DataNode *);
-    virtual void SetFromNode(DataNode *);
+    virtual void SetFromNode(DataNode *, const std::string &);
 private:
     void DeleteViewsFromInterface();
     void DeleteViews();
