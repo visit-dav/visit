@@ -383,13 +383,16 @@ avtParallelCoordinatesPlot::CustomizeMapper(avtDataObjectInformation &info)
 //    Jeremy Meredith, Thu Feb  7 17:51:12 EST 2008
 //    Exit early if we had an array variable.
 //
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.
 //
 // ****************************************************************************
 
 avtContract_p
 avtParallelCoordinatesPlot::EnhanceSpecification(avtContract_p in_spec)
 {
-    if (atts.GetOrderedAxisNames().size() == 0)
+    if (atts.GetScalarAxisNames().size() == 0)
     {
         // nothing to do; this means we have an array variable
         return in_spec;
@@ -402,7 +405,7 @@ avtParallelCoordinatesPlot::EnhanceSpecification(avtContract_p in_spec)
         return in_spec;
     }
 
-    stringVector curAxisVarNames = atts.GetOrderedAxisNames();
+    stringVector curAxisVarNames = atts.GetScalarAxisNames();
     stringVector needSecondaryVars;
     const char *inPipelineVar = in_spec->GetDataRequest()->GetVariable();
     std::string outPipelineVar(inPipelineVar);

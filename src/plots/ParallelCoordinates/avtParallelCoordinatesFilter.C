@@ -192,6 +192,10 @@ avtParallelCoordinatesFilter::ModifyContract(
 //    nprocs > ndomains, so we need to make sure we do the right thing with
 //    parallel communication.
 //
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.
+//
 // *****************************************************************************
 
 void
@@ -199,7 +203,7 @@ avtParallelCoordinatesFilter::PreExecute(void)
 {
     avtDatasetToDatasetFilter::PreExecute();
 
-    axisCount = parCoordsAtts.GetOrderedAxisNames().size();
+    axisCount = parCoordsAtts.GetScalarAxisNames().size();
     PrepareForArrayVariable();
 
     if (!parCoordsAtts.AttributesAreConsistent())
@@ -374,6 +378,10 @@ avtParallelCoordinatesFilter::PostExecute(void)
 //    Jeremy Meredith, Thu Feb  7 17:46:59 EST 2008
 //    Handle array variables and bin-defined axis x-positions.
 //
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -387,7 +395,7 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
         return NULL;
     }
 
-    stringVector curAxisVarNames = parCoordsAtts.GetOrderedAxisNames();
+    stringVector curAxisVarNames = parCoordsAtts.GetScalarAxisNames();
     
     int cellArrayCount  = in_ds->GetCellData()->GetNumberOfArrays();
     int pointArrayCount = in_ds->GetPointData()->GetNumberOfArrays();
@@ -683,6 +691,10 @@ avtParallelCoordinatesFilter::ReleaseData(void)
 //    Jeremy Meredith, Fri Feb  8 12:32:36 EST 2008
 //    Support unifying extents across all axes.
 //
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.
+//
 // ****************************************************************************
 
 void
@@ -761,7 +773,7 @@ avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
         double *varDataExtents = new double[axisCount*2];
         for (axisNum = 0; axisNum < axisCount; axisNum++)
         {
-            string axisVarName = parCoordsAtts.GetOrderedAxisNames()[axisNum];
+            string axisVarName = parCoordsAtts.GetScalarAxisNames()[axisNum];
             GetDataExtents(&(varDataExtents[2*axisNum]), axisVarName.c_str());
         }
 
@@ -789,7 +801,7 @@ avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
         // update the internal data members we need to have set
         for (axisNum = 0; axisNum < axisCount; axisNum++)
         {
-            string axisVarName = parCoordsAtts.GetOrderedAxisNames()[axisNum];
+            string axisVarName = parCoordsAtts.GetScalarAxisNames()[axisNum];
 
             outAtts.GetCumulativeTrueDataExtents(axisVarName.c_str())->
                 Set(&(varDataExtents[2*axisNum]));

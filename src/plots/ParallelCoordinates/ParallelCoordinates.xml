@@ -15,7 +15,9 @@
       QvisParallelCoordinatesPlotWizard.h
     </Files>
     <Attribute name="ParallelCoordinatesAttributes" purpose="This class contains the plot attributes for the ParallelCoordinates plot." persistent="true" exportAPI="" exportInclude="" codefile="ParallelCoordinates.code">
-      <Field name="orderedAxisNames" label="orderedAxisNames" type="stringVector">
+      <Field name="scalarAxisNames" label="scalarAxisNames" type="stringVector">
+      </Field>
+      <Field name="visualAxisNames" label="visualAxisNames" type="stringVector">
       </Field>
       <Field name="extentMinima" label="extentMinima" type="doubleVector">
       </Field>

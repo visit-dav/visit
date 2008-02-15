@@ -3828,7 +3828,7 @@ ViewerMethods::ToggleLockTime()
 // Method: ViewerMethods::TurnOffAllLocks
 //
 // Purpose: 
-//   Toggles the viewer's lock tools flag.
+//   Turns off view, tool, time locks in all windows.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Nov 11 11:48:22 PDT 2002
@@ -3845,22 +3845,24 @@ ViewerMethods::TurnOffAllLocks()
 }
 
 // ****************************************************************************
-// Method: ViewerMethods::TurnOffAllLocks
+// Method: ViewerMethods::ToggleLockTools
 //
 // Purpose: 
-//   Turns off view, tool, time locks in all windows.
+//   Toggles the viewer's lock tools flag.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 23 10:25:19 PST 2008
 //
 // Modifications:
+//    Jeremy Meredith, Fri Feb 15 13:24:51 EST 2008
+//    Fixed RPC type.
 //   
 // ****************************************************************************
 
 void
 ViewerMethods::ToggleLockTools()
 {
-    state->GetViewerRPC()->SetRPCType(ViewerRPC::TurnOffAllLocksRPC);
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::ToggleLockToolsRPC);
     state->GetViewerRPC()->Notify();
 }
 

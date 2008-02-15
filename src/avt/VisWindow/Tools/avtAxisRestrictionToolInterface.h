@@ -41,6 +41,8 @@
 #include <viswindow_exports.h>
 #include <avtToolInterface.h>
 
+#include <string>
+
 // ****************************************************************************
 // Class: avtAxisRestrictionToolInterface
 //
@@ -54,6 +56,8 @@
 // Creation:   February  1, 2008
 //
 // Modifications:
+//    Jeremy Meredith, Fri Feb 15 10:49:22 EST 2008
+//    Added axis names support.
 //
 // ****************************************************************************
 
@@ -65,9 +69,11 @@ class VISWINDOW_API avtAxisRestrictionToolInterface : public avtToolInterface
 
     void ResetNumberOfAxes(int);
 
+    void SetAxisName(int, const std::string &);
     void SetAxisMin(int, double);
     void SetAxisMax(int, double);
 
+    std::string GetAxisName(int) const;
     double GetAxisMin(int) const;
     double GetAxisMax(int) const;
 };

@@ -53,6 +53,7 @@
 #include <avtVector.h>
 
 using std::vector;
+using std::string;
 
 const float VisitAxisRestrictionTool::radius = 1/60.;
 
@@ -428,6 +429,9 @@ VisitAxisRestrictionTool::UpdateText()
 //    Set the min/max to something that's obviously supposed to be a semantic
 //    min/max limit if the hotpoints are all the way at the end of the axis.
 //   
+//    Jeremy Meredith, Fri Feb 15 13:21:20 EST 2008
+//    Added axis names to the axis restriction tool.
+//
 // ****************************************************************************
 
 void
@@ -436,6 +440,8 @@ VisitAxisRestrictionTool::CallCallback()
     Interface.ResetNumberOfAxes(axesMin.size());
     for (int ax=0; ax<axesMin.size(); ax++)
     {
+        Interface.SetAxisName(ax, axesNames[ax]);
+
         if (origHotPoints[ax*2+1].pt.y <= 0)
         {
             Interface.SetAxisMin(ax, -1e+37);
@@ -693,6 +699,9 @@ VisitAxisRestrictionTool::MoveCallback(VisitInteractiveTool *it, CB_ENUM e,
 //    Jeremy Meredith, Thu Feb  7 17:59:55 EST 2008
 //    Added support for array variables and bin-defined x positions.
 //
+//    Jeremy Meredith, Fri Feb 15 13:21:20 EST 2008
+//    Added axis names to the axis restriction tool.
+//
 // ****************************************************************************
 void
 VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
@@ -727,6 +736,7 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
     }
 
     // create the new axes limits
+    axesNames.resize(naxes);
     axesXPos.resize(naxes);
     axesMin.resize(naxes);
     axesMax.resize(naxes);
@@ -739,6 +749,7 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
         int dim = atts.GetVariableDimension(var);
         avtExtents *e = atts.GetVariableComponentExtents(var);
         const vector<double> &bins = atts.GetVariableBinRanges(var);
+        const vector<string> &subnames = atts.GetVariableSubnames(var);
         if (!e || !e->HasExtents())
         {
             char str[100];
@@ -755,6 +766,7 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
                 axesXPos[k] = k;
             axesMin[k] = extents[2*k+0];
             axesMax[k] = extents[2*k+1];
+            axesNames[k] = subnames[k];
         }
         delete[] extents;
     }
@@ -783,6 +795,7 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
                 axesXPos[axis] = axis;
                 axesMin[axis] = extents[0];
                 axesMax[axis] = extents[1];
+                axesNames[axis] = var;
             }
         }
     }

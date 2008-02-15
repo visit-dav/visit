@@ -68,6 +68,9 @@ class vtkTextActor;
 //    Jeremy Meredith, Thu Feb  7 17:59:55 EST 2008
 //    Added support for array variables and bin-defined x positions.
 //
+//    Jeremy Meredith, Fri Feb 15 13:21:20 EST 2008
+//    Added axis names to the axis restriction tool.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitAxisRestrictionTool : public VisitInteractiveTool
@@ -116,6 +119,7 @@ class VISWINDOW_API VisitAxisRestrictionTool : public VisitInteractiveTool
     static const float         radius;
     double                     focalDepth;
     std::vector<vtkTextActor*> posTextActors;
+    std::vector<std::string>   axesNames;
     std::vector<double>        axesMin;
     std::vector<double>        axesMax;
     std::vector<double>        axesXPos;

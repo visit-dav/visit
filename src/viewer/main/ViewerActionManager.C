@@ -418,6 +418,9 @@ public:
 //   Brad Whitlock, Wed Jan 23 10:37:43 PST 2008
 //   Added TurnOffAllLocksAction.
 //
+//   Jeremy Meredith, Fri Feb 15 13:15:03 EST 2008
+//   Added ToggleLockTimeAction.
+//
 // ****************************************************************************
 
 
@@ -441,6 +444,7 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) :
 
     AddAction(new ToggleLockViewAction(win), ViewerRPC::ToggleLockViewModeRPC);
     AddAction(new ToggleLockTimeAction(win), ViewerRPC::ToggleLockTimeRPC);
+    AddAction(new ToggleLockToolAction(win), ViewerRPC::ToggleLockToolsRPC);
     AddAction(new TurnOffAllLocksAction(win), ViewerRPC::TurnOffAllLocksRPC);
 
     AddAction(new AddWindowAction(win), ViewerRPC::AddWindowRPC);

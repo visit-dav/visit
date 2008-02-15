@@ -46,6 +46,8 @@
 #include <timelockoff.xpm>
 #include <viewlockon.xpm>
 #include <viewlockoff.xpm>
+#include <toollockon.xpm>
+#include <toollockoff.xpm>
 
 // ****************************************************************************
 // Method: ToggleLockViewAction::ToggleLockViewAction
@@ -127,6 +129,44 @@ bool
 ToggleLockTimeAction::Toggled() const
 {
     return window->GetTimeLock();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: ToggleLockToolAction::ToggleLockToolAction
+//
+// Purpose: 
+//   Constructor for the ToggleLockToolAction class.
+//
+// Arguments:
+//   win : The viewer window that owns this action.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February 15, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ToggleLockToolAction::ToggleLockToolAction(ViewerWindow *win) :
+    ViewerToggleAction(win, "ToggleLockToolAction")
+{
+    SetAllText("Lock tools");
+    if (!win->GetNoWinMode())
+        SetIcons(QPixmap(toollockon_xpm), QPixmap(toollockoff_xpm));
+}
+
+void
+ToggleLockToolAction::Execute()
+{
+    windowMgr->ToggleLockTools(windowId);
+}
+
+bool
+ToggleLockToolAction::Toggled() const
+{
+    return window->GetToolLock();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

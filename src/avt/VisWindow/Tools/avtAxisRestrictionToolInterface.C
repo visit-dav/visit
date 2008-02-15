@@ -76,15 +76,50 @@ avtAxisRestrictionToolInterface::~avtAxisRestrictionToolInterface()
 //  Programmer:  Jeremy Meredith
 //  Creation:    February  1, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 15 13:21:20 EST 2008
+//    Added axis names to the axis restriction attributes.
+//
 // ****************************************************************************
 void
 avtAxisRestrictionToolInterface::ResetNumberOfAxes(int n)
 {
     AxisRestrictionAttributes *a = (AxisRestrictionAttributes *)atts;
+    stringVector aname(n, "");
     doubleVector amin(n, -1e+37);
     doubleVector amax(n, +1e+37);
+    a->SetNames(aname);
     a->SetMinima(amin);
     a->SetMaxima(amax);
+}
+
+// ****************************************************************************
+//  Method:  avtAxisRestrictionToolInterface::SetAxisName
+//
+//  Purpose:
+//    Sets the name for an axis.
+//
+//  Arguments:
+//    i          the axis name to set 
+//    s          the name 
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 15, 2008
+//
+// ****************************************************************************
+void
+avtAxisRestrictionToolInterface::SetAxisName(int i, const std::string &s)
+{
+    AxisRestrictionAttributes *a = (AxisRestrictionAttributes *)atts;
+    stringVector &n = a->GetNames();
+    if (n.size() <= i)
+    {
+        // don't bother erroring, either exit or resize
+        return;
+        //m.resize(i+1, -1e+37);
+    }
+    n[i] = s;
+    a->SelectAll();
 }
 
 // ****************************************************************************
@@ -143,6 +178,31 @@ avtAxisRestrictionToolInterface::SetAxisMax(int i, double x)
     }
     m[i] = x;
     a->SelectAll();
+}
+
+// ****************************************************************************
+//  Method:  avtAxisRestrictionToolInterface::GetAxisName
+//
+//  Purpose:
+//    Gets the name for an axis.
+//
+//  Arguments:
+//    i          the axis value to retrieve 
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  1, 2008
+//
+// ****************************************************************************
+std::string
+avtAxisRestrictionToolInterface::GetAxisName(int i) const
+{
+    AxisRestrictionAttributes *a = (AxisRestrictionAttributes *)atts;
+    const stringVector &n = a->GetNames();
+    if (n.size() <= i)
+    {
+        return "";
+    }
+    return n[i];
 }
 
 // ****************************************************************************

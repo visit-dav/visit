@@ -222,6 +222,10 @@ QvisParallelCoordinatesPlotWizard::~QvisParallelCoordinatesPlotWizard()
 // Creation:   Mon Jun 19 15:16:00 PDT 2006
 //
 // Modifications:
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.  Added
+//    visualAxisNames.
 //   
 // ****************************************************************************
 
@@ -229,7 +233,7 @@ void
 QvisParallelCoordinatesPlotWizard::CreateAxisVariablePage(QFrame **f,
     QvisParallelCoordinatesWidget **s, int axisOrdinal, const char *promptText)
 {
-    const std::vector<std::string> names = parAxisAtts->GetOrderedAxisNames();
+    const std::vector<std::string> names = parAxisAtts->GetScalarAxisNames();
     std::string leftAxisVarName = names[names.size()-1];
 
     QFrame *frame = new QFrame(NULL, "frame");
@@ -433,21 +437,29 @@ QvisParallelCoordinatesPlotWizard::CreateFinishPage(QFrame **f,
 //    Jeremy Meredith, Mon Feb  4 16:06:57 EST 2008
 //    Drop the axis extents in the plot attributes -- they were not used.
 //
+//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
+//    Renamed orderedAxisNames to scalarAxisNames to distinguish these
+//    as names of actual scalars instead of just display names.  Added
+//    visualAxisNames.
+//
 // ****************************************************************************
 
 void
 QvisParallelCoordinatesPlotWizard::InitializeParallelCoordinatesAttributes(
                                                          const std::string &varName)
 {
-    stringVector axisNames;
+    stringVector saxisNames;
+    stringVector vaxisNames;
     doubleVector extMins;
     doubleVector extMaxs;
     
-    axisNames.push_back(varName);
+    saxisNames.push_back(varName);
+    vaxisNames.push_back(varName);
     extMins.push_back(-1e+37);
     extMaxs.push_back(+1e+37);
 
-    parAxisAtts->SetOrderedAxisNames(axisNames);
+    parAxisAtts->SetScalarAxisNames(saxisNames);
+    parAxisAtts->SetVisualAxisNames(vaxisNames);
     parAxisAtts->SetExtentMinima(extMins);
     parAxisAtts->SetExtentMaxima(extMaxs);
 }
