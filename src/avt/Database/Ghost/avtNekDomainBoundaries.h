@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtNekDomainBoundaries.h                          //
+//                           avtNekDomainBoundaries.h                        //
 // ************************************************************************* //
 
 #ifndef AVT_NEK_DOMAIN_BOUNDARIES_H
@@ -45,6 +45,7 @@
 
 #include <database_exports.h>
 
+#include <avtDomainBoundaries.h>
 #include <avtGhostData.h>
 
 #include <vector>
@@ -74,9 +75,14 @@ class avtMaterial;
 //    Rewrote the matching algorithm to scale better.  Changed face matching
 //    to match 3 points instead of 4.  Added a flag to enable/disable caching
 //    the adjacency structure.
+//
+//    Hank Childs, Thu Feb 14 17:04:56 PST 2008
+//    Inherit from avtDomainBoundaries.  Also add method 
+//    CanOnlyCreateGhostNodes.
+//   
 // ****************************************************************************
 
-class DATABASE_API avtNekDomainBoundaries
+class DATABASE_API avtNekDomainBoundaries : public avtDomainBoundaries
 {
   public:
                  avtNekDomainBoundaries();
@@ -111,7 +117,7 @@ class DATABASE_API avtNekDomainBoundaries
     virtual void                      CreateGhostNodes(vector<int>   domainNum,
                                                vector<vtkDataSet*>   meshes,
                                                vector<int> &allDomains);
-    virtual bool                      CreatesRobustGhostNodes(void) 
+    virtual bool                      CanOnlyCreateGhostNodes(void)
                                                               { return true; };
     virtual bool                      RequiresCommunication(avtGhostDataType);
     virtual bool                      ConfirmMesh(vector<int>      domainNum,
