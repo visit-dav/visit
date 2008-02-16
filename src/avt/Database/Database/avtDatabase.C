@@ -727,6 +727,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Hank Childs, Sun Oct 28 09:51:53 PST 2007
 //    Added support for ghost data on the exterior of the boundary.
 //
+//    Hank Childs, Fri Feb 15 16:19:02 PST 2008
+//    Fix possible buffer overwrite.
+//
 // ****************************************************************************
 
 void
@@ -855,7 +858,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             //
             if (smd->hasDataExtents)
             {
-                double extents[2];
+                double extents[6]; // 6 is probably too much, but better to be safe
                 extents[0] = smd->minDataExtents;
                 extents[1] = smd->maxDataExtents;
     
@@ -863,7 +866,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             }
             else
             {
-                double extents[2];
+                double extents[6]; // 6 is probably too much, but better to be safe
                 if (GetExtentsFromAuxiliaryData(spec, var_list[i],
                         AUXILIARY_DATA_DATA_EXTENTS, extents))
                 {
@@ -890,14 +893,14 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             //
             if (vmd->hasDataExtents)
             {
-                double extents [2];
+                double extents[6]; // 6 is probably too much, but better to be safe
                 extents[0] = vmd->minDataExtents;
                 extents[1] = vmd->maxDataExtents;
                 atts.GetTrueDataExtents(var_list[i])->Set(extents);
             }
             else
             {
-                double extents[2];
+                double extents[6]; // 6 is probably too much, but better to be safe
                 if (GetExtentsFromAuxiliaryData(spec, var_list[i],
                         AUXILIARY_DATA_DATA_EXTENTS, extents))
                 {
@@ -974,14 +977,14 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             atts.SetYLabel(cmd->yLabel);
             if (cmd->hasDataExtents)
             {
-                double extents [2];
+                double extents[6]; // 6 is probably too much, but better to be safe
                 extents[0] = cmd->minDataExtents;
                 extents[1] = cmd->maxDataExtents;
                 atts.GetTrueDataExtents(var_list[i])->Set(extents);
             }
             else
             {
-                double extents[2];
+                double extents[6]; // 6 is probably too much, but better to be safe
                 if (GetExtentsFromAuxiliaryData(spec, var_list[i],
                         AUXILIARY_DATA_DATA_EXTENTS, extents))
                 {

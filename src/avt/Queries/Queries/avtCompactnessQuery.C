@@ -451,6 +451,9 @@ avtCompactnessQuery::PostExecute(void)
 //    Remove call to SetSoure(NULL) as it now removes information necessary
 //    for the dataset.
 //
+//    Hank Childs, Fri Feb 15 15:30:32 PST 2008
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void
@@ -548,6 +551,14 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
     if (ds_1d_nogz->GetDataObjectType() != VTK_POLY_DATA)
     {
         debug1 << "Did not get poly data from ghost zone filter output\n";
+        gzFilter1->Delete();
+        gzFilter2->Delete();
+        geomFilter->Delete();
+        boundaryFilter->Delete();
+        delete [] cellArea;
+        delete [] cellVol;
+        delete [] cellCentX;
+        delete [] cellCentY;
         return;
     }
     vtkPolyData *pd_1d_nogz_allpts = (vtkPolyData*)ds_1d_nogz;
@@ -556,8 +567,8 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
     // If we had stripped some lines by using a ghost zone filter, then
     // we had better make sure the points attached to them go away.
     //
-    vtkPolyDataRelevantPointsFilter *relPts;
-    relPts = vtkPolyDataRelevantPointsFilter::New();
+    vtkPolyDataRelevantPointsFilter *relPts =
+                                    vtkPolyDataRelevantPointsFilter::New();
     relPts->SetInput(pd_1d_nogz_allpts);
     vtkPolyData *pd_1d_nogz = relPts->GetOutput();
     relPts->Update();

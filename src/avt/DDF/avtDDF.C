@@ -145,6 +145,11 @@ avtDDF::CreateGrid(void)
 //  Programmer: Hank Childs
 //  Creation:   February 12, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 15 16:15:16 PST 2008
+//    Fix memory leak with error condition.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -179,6 +184,7 @@ avtDDF::ApplyFunction(vtkDataSet *ds)
 
     if (hasError)
     {
+        delete [] arr;
         debug1 << "Could not locate one of the tuples from the "
                << "domain.  Or the variables have different centerings."
                << endl;

@@ -3305,6 +3305,10 @@ NetworkManager::StopQueryMode(void)
 //    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
 //    Fix memory leak associated with silr->MakeAttributes(). 
 //
+//    Hank Childs, Fri Feb 15 13:19:51 PST 2008
+//    Add else statement to make Klocwork happy.  Also make sure we don't
+//    delete already freed memory during error condition.
+//
 // ****************************************************************************
  
 void
@@ -3455,6 +3459,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                     visitTimer->StopTimer(queryTimer, lQ->GetType());
                     *pa = *(lQ->GetPickAtts());
                     delete lQ;
+                    lQ = NULL;
                 }
             }
             else if (pa->GetPickType() == PickAttributes::Node)
@@ -3477,6 +3482,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                     visitTimer->StopTimer(queryTimer, lQ->GetType());
                     *pa = *(lQ->GetPickAtts());
                     delete lQ;
+                    lQ = NULL;
                 }
             }
             else if (pa->GetPickType() == PickAttributes::DomainNode)
@@ -3488,6 +3494,11 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
             {
                 skipLocate = true;
                 pQ = new avtPickByZoneQuery;
+            }
+            else
+            {
+                // This should never happen, as per confirmation with Kathleen.
+                EXCEPTION0(ImproperUseException);
             }
             if (skipLocate || pa->GetLocationSuccessful())
             {
@@ -3526,6 +3537,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
             }
 
             delete pQ;
+            pQ = NULL;
             bool doACQuery = (bool)UnifyMaximumValue(
                                    (int)pa->GetNeedActualCoords());
             if (doACQuery)
@@ -3544,6 +3556,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                     visitTimer->StopTimer(queryTimer, acq->GetType());
                     *pa = *(acq->GetPickAtts());
                     delete acq;
+                    acq = NULL;
                 }
             }
         }
@@ -3557,6 +3570,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
             visitTimer->StopTimer(queryTimer, cpQ->GetType());
             *pa = *(cpQ->GetPickAtts());
             delete cpQ;
+            cpQ = NULL;
         }
         visitTimer->DumpTimings();
     }
@@ -3644,6 +3658,9 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 //
 //    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
 //    Fix memory leak associated with silr->MakeAttributes().
+//
+//    Hank Childs, Fri Feb 15 13:13:21 PST 2008
+//    Prevent possible problem of freeing freed memory during error condition.
 //
 // ****************************************************************************
 
@@ -3748,6 +3765,7 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
             query->PerformQuery(qa);
             visitTimer->StopTimer(queryTimer, query->GetType());
             delete query;
+            query = NULL;
         }
         visitTimer->DumpTimings();
     }

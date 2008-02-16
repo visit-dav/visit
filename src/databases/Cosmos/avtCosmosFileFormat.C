@@ -60,6 +60,7 @@
 #include <BadDomainException.h>
 #include <BadIndexException.h>
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
 #include <InvalidTimeStepException.h>
@@ -956,6 +957,9 @@ avtCosmosFileFormat::ReadInTimes()
 //    Hank Childs, Fri Aug 27 16:54:45 PDT 2004
 //    Rename ghost data array.
 //
+//    Hank Childs, Fri Feb 15 15:48:33 PST 2008
+//    Throw an exception in an error case.
+//
 // ****************************************************************************
 
 void
@@ -965,7 +969,7 @@ avtCosmosFileFormat::ReadMesh(int domain)
     if (!meshInfoLoaded[domain])
         ReadMeshInfo(domain);
 
-    vtkDataSet *rv;
+    vtkDataSet *rv = NULL;
 
     int ptDim[3];
     int i;
@@ -1015,6 +1019,8 @@ avtCosmosFileFormat::ReadMesh(int domain)
         case cylindrical:
             rv = CalculateMesh2DCylindrical(start, delta, ptDim); 
             break;
+        default:
+            EXCEPTION0(ImproperUseException);
     }
 
     // Add in the ghost zones
@@ -1671,13 +1677,18 @@ avtCosmosFileFormat::FillVectorVar3DSpherical(float *ptr, float *values[3],
 //  Programmer:  Akira Haddox
 //  Creation:    June 16, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 15 15:45:37 PST 2008
+//    Throw an exception in error case.
+//
 // ****************************************************************************
 
 void
 avtCosmosFileFormat::FillVectorVar2DCartesian(float *ptr, float *values[3],
                                               int nCells)
 {
-    float *xVal, *yVal;
+    float *xVal = NULL, *yVal = NULL;
     //
     // Find which two sets of values we're using.
     //
@@ -1696,6 +1707,7 @@ avtCosmosFileFormat::FillVectorVar2DCartesian(float *ptr, float *values[3],
             yVal = values[1];
             break;
         default:
+            EXCEPTION0(ImproperUseException);
             break;
     }
     

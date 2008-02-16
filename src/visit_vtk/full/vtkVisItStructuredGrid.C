@@ -141,6 +141,12 @@ vtkVisItStructuredGrid::~vtkVisItStructuredGrid()
 //
 //  Programmer: Dave Bremer
 //  Creation:   May 25, 2007
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 15 11:56:28 PST 2008
+//    Add a check in case a new cell type is added later.
+//
 // ****************************************************************************
 
 vtkCell *
@@ -283,7 +289,9 @@ vtkVisItStructuredGrid::GetCell(vtkIdType cellId)
     
     // Extract point coordinates and point ids. NOTE: the ordering of the vtkQuad
     // and vtkHexahedron cells are tricky.
-    int NumberOfIds = cell->PointIds->GetNumberOfIds();
+    int NumberOfIds = 0;
+    if (cell != NULL)
+        cell->PointIds->GetNumberOfIds();
     for (i=0; i<NumberOfIds; i++)
     {
         idx = cell->PointIds->GetId(i);

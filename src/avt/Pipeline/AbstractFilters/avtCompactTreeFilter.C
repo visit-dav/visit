@@ -142,6 +142,10 @@ avtCompactTreeFilter::avtCompactTreeFilter()
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Hank Childs, Fri Feb 15 15:26:56 PST 2008
+//    Fix memory leak.
+//   
 // ****************************************************************************
 
 void
@@ -335,6 +339,7 @@ avtCompactTreeFilter::Execute(void)
             debug1 << "    in the tree.  This can happen if avtDataAttribute labels" << endl;
             debug1 << "    were set incorrectly by a filter. Tree can not be compacted.\n" << endl;
             SetOutputDataTree(inTree);
+            delete pmap;
             return;
         }
 

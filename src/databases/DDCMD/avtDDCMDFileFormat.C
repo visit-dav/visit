@@ -503,6 +503,9 @@ avtDDCMDFileFormat::CopyExchangeDataToBlocks()
 //    Kathleen Bonnell, Thu Oct 11 10:11:20 PDT 2007
 //    Add the 'b' designation to fopen commands.
 // 
+//    Hank Childs, Fri Feb 15 15:58:07 PST 2008
+//    Add a check for a valid file name.
+//
 // ****************************************************************************
 
 void
@@ -531,6 +534,10 @@ avtDDCMDFileFormat::ReadProcessorChunk()
     sprintf(string, "%s/cgrid#%6.6d", fname.c_str(), fileNumber);
     debug1 << "Opening " << string << endl;
     file = fopen(string, "rb");
+    if (file == NULL)
+    {
+        EXCEPTION1(InvalidFilesException, string);
+    }
     fseek(file, fileOffset, SEEK_SET);
     debug1 << "fileOffset=" << fileOffset << ",nRecords=" << nRecords << endl;
 
@@ -549,6 +556,10 @@ avtDDCMDFileFormat::ReadProcessorChunk()
                 sprintf(string, "%s/cgrid#%6.6d", fname.c_str(), fileNumber);
                 debug1 << "Opening " << string << endl;
                 file = fopen(string, "rb");
+                if (file == NULL)
+                {
+                    EXCEPTION1(InvalidFilesException, string);
+                }
             }
         }
         int cnt = fread(buffer, lRec, nRecords, file);
@@ -689,6 +700,11 @@ avtDDCMDFileFormat::ReadData()
 //
 //  Programmer: Eric Brugger
 //  Creation:   Fri Aug 31 15:27:59 PST 2007
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 15 16:00:20 PST 2008
+//    Fix memory leak.
 //
 // ****************************************************************************
 
@@ -900,6 +916,8 @@ avtDDCMDFileFormat::ReadHeader(const char *filename)
     debug1 << "coordsUnit=" << coordsUnit << endl;
     debug1 << "xMin=" << xMin << ",yMin=" << yMin << ",zMin=" << zMin << endl;
     debug1 << "dX=" << dX << ",dY=" << dY << ",dZ=" << dZ << endl;
+
+    free(obj);
 }
 
 

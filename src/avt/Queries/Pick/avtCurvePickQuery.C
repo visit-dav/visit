@@ -303,6 +303,9 @@ avtCurvePickQuery::GetPickAtts()
 //
 //  Modifications:
 //    
+//    Hank Childs, Fri Feb 15 15:55:06 PST 2008
+//    Initialize variable to make Klocwork happy.
+//
 // ****************************************************************************
 
 int
@@ -320,7 +323,7 @@ avtCurvePickQuery::FindClosestPoint(vtkDataSet *ds)
 
     vtkIdType foundPoint = -1; 
     double pt[3] = {rayPt1[0], rayPt1[1], 0.};
-    double dist, rad = minDist;
+    double dist = minDist, rad = minDist;
     foundPoint = pointLocator->FindClosestPointWithinRadius(rad, pt, dist);
 
     if (foundPoint >= 0 && dist < minDist)

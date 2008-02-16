@@ -626,6 +626,9 @@ ReArrangeTuple2ToTuple3(T *start, vtkIdType nTuples)
 //
 // Modifications:
 //   
+//    Hank Childs, Fri Feb 15 16:37:42 PST 2008
+//    Throw an exception if assumptions are violated.
+//
 // ****************************************************************************
 
 void
@@ -651,6 +654,10 @@ avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
         whole_buff = (void *)(new float[whole_nelem]);
     else if(dataFormat == DoubleData)
         whole_buff = (void *)(new double[whole_nelem]);
+    else
+    {
+        EXCEPTION0(ImproperUseException);
+    }
 
     if(gzipped)
     {

@@ -71,6 +71,14 @@ void vtkVisItOpenGLTexture::ReleaseGraphicsResources(vtkWindow *renWin)
   this->Modified();
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 15 12:07:11 PST 2008
+//    Fix possible memory leak.
+//   
+// ****************************************************************************
+
 // Implement base class method.
 void vtkVisItOpenGLTexture::Load(vtkRenderer *ren)
 {
@@ -198,6 +206,8 @@ void vtkVisItOpenGLTexture::Load(vtkRenderer *ren)
       int srcLength;
 
       srcLength = xsize*bytesPerPixel;
+      if (resultData != NULL)
+          delete [] resultData;
       resultData = new unsigned char [rowLength*ysize];
       
       src = dataPtr;
