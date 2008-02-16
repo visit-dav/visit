@@ -85,20 +85,19 @@ vtkVisItPolyDataNormals::vtkVisItPolyDataNormals()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 13, 2003
 //
+//  Modifications:
+//    Hank Childs, Fri Feb 15 12:03:46 PST 2008
+//    Remove some downcast calls.
+//
 // ****************************************************************************
 int
 vtkVisItPolyDataNormals::RequestData(vtkInformation *vtkNotUsed(request),
-    vtkInformationVector **inputVector, vtkInformationVector *outputVector)
+    vtkInformationVector **vtkNotUsed(inputVector),
+    vtkInformationVector *vtkNotUsed(outputVector))
 {
-    // get the info objects
-    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
-    vtkInformation *outInfo = outputVector->GetInformationObject(0);
-
     // get the input and output
-    vtkPolyData *input = vtkPolyData::SafeDownCast(
-        inInfo->Get(vtkDataObject::DATA_OBJECT()));
-    vtkPolyData *output = vtkPolyData::SafeDownCast(
-        outInfo->Get(vtkDataObject::DATA_OBJECT()));
+    vtkPolyData *input = GetPolyDataInput(0);
+    vtkPolyData *output = GetOutput();
 
     if (ComputePointNormals)
     {

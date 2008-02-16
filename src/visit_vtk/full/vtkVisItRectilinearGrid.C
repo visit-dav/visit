@@ -98,6 +98,7 @@ vtkVisItRectilinearGrid::vtkVisItRectilinearGrid()
 //
 //  Programmer: Dave Bremer
 //  Creation:   May 25, 2007
+//
 // ****************************************************************************
 
 vtkVisItRectilinearGrid::~vtkVisItRectilinearGrid()
@@ -134,6 +135,12 @@ vtkVisItRectilinearGrid::~vtkVisItRectilinearGrid()
 //
 //  Programmer: Dave Bremer
 //  Creation:   May 25, 2007
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 15 11:56:28 PST 2008
+//    Add a check in case a new cell type is added later.
+//
 // ****************************************************************************
 
 vtkCell *
@@ -242,6 +249,10 @@ vtkVisItRectilinearGrid::GetCell(vtkIdType cellId)
         cell = this->Voxel;
         break;
     }
+
+    if (cell == NULL)
+        return NULL;
+
     // Extract point coordinates and point ids
     for (npts=0,loc[2]=kMin; loc[2]<=kMax; loc[2]++)
     {

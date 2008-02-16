@@ -71,6 +71,9 @@
 //    Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001 
 //    Added avtLUT.
 //
+//    Hank Childs, Fri Feb 15 15:42:08 PST 2008
+//    Initialize edgeFilter.
+//
 // ****************************************************************************
 
 avtContourPlot::avtContourPlot()
@@ -81,6 +84,7 @@ avtContourPlot::avtContourPlot()
     avtLUT        = new avtLookupTable;
     numLevels     = 0;
     contourFilter = NULL; 
+    edgeFilter    = NULL;
 
     //
     // This is to allow the legend to reference counted so the behavior can
@@ -103,6 +107,9 @@ avtContourPlot::avtContourPlot()
 //    Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001
 //    Added avtLUT.
 //
+//    Hank Childs, Fri Feb 15 15:42:08 PST 2008
+//    Initialize edgeFilter.
+//
 // ****************************************************************************
 
 avtContourPlot::~avtContourPlot()
@@ -117,6 +124,12 @@ avtContourPlot::~avtContourPlot()
     {
         delete contourFilter;
         contourFilter = NULL;
+    }
+
+    if (edgeFilter != NULL)
+    {
+        delete edgeFilter;
+        edgeFilter = NULL;
     }
 
     if (avtLUT != NULL)
@@ -641,6 +654,9 @@ avtContourPlot::ApplyOperators(avtDataObject_p input)
 //
 //  Modifications:
 //
+//    Hank Childs, Fri Feb 15 15:43:37 PST 2008
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -648,7 +664,9 @@ avtContourPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     if (atts.GetWireframe())
     {
-        avtFeatureEdgesFilter *edgeFilter = new avtFeatureEdgesFilter();
+        if (edgeFilter != NULL)
+            delete edgeFilter;
+        edgeFilter = new avtFeatureEdgesFilter();
         edgeFilter->SetInput(input);
         return edgeFilter->GetOutput();
     }
@@ -774,6 +792,11 @@ avtContourPlot::CustomizeMapper(avtDataObjectInformation &info)
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 15 15:42:57 PST 2008
+//    Release data with edge filter.
+//
 // ****************************************************************************
 
 void
@@ -784,6 +807,10 @@ avtContourPlot::ReleaseData(void)
     if (contourFilter != NULL)
     {
         contourFilter->ReleaseData();
+    }
+    if (edgeFilter != NULL)
+    {
+        edgeFilter->ReleaseData();
     }
 }
 

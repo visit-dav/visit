@@ -54,6 +54,15 @@ vtkVisItTensorGlyph::~vtkVisItTensorGlyph()
 {
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//   Hank Childs, Fri Feb 15 11:43:54 PST 2008
+//   Strengthen tests for mismatched data types.  Also fix possible memory 
+//   leak.
+//   
+// ****************************************************************************
+
 int 
 vtkVisItTensorGlyph::RequestData(
   vtkInformation *vtkNotUsed(request),
@@ -108,17 +117,13 @@ vtkVisItTensorGlyph::RequestData(
   vtkDataArray *outOrigNodes = NULL;
   vtkDataArray *outOrigCells = NULL;
 
-  if (this->GetSource() == NULL)
+  if (this->GetSource() == NULL || source == NULL || input == NULL || output == NULL)
     {
     vtkErrorMacro("No source.");
     return 1;
     }
 
   numDirs = (this->ThreeGlyphs?3:1)*(this->Symmetric+1);
-  
-  pts = new vtkIdType[source->GetMaxCellSize()];
-  trans = vtkTransform::New();
-  matrix = vtkMatrix4x4::New();
   
   // set up working matrices
   m[0] = m0; m[1] = m1; m[2] = m2; 
@@ -139,6 +144,10 @@ vtkVisItTensorGlyph::RequestData(
     return 1;
     }
 
+  pts = new vtkIdType[source->GetMaxCellSize()];
+  trans = vtkTransform::New();
+  matrix = vtkMatrix4x4::New();
+  
   inOrigNodes = pd->GetArray("avtOriginalNodeNumbers");
   inOrigCells = pd->GetArray("avtOriginalCellNumbers");
 

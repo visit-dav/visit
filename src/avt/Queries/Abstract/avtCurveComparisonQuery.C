@@ -138,6 +138,9 @@ avtCurveComparisonQuery::~avtCurveComparisonQuery()
 //    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006 
 //    Curves now represented as 1D RectilinearGrids.
 // 
+//    Hank Childs, Fri Feb 15 15:51:24 PST 2008
+//    Add extra error checking.
+//
 // ****************************************************************************
 
 void 
@@ -213,7 +216,11 @@ avtCurveComparisonQuery::Execute(void)
     // We know that there is only one leaf node.  It is the curve.
     //
     vtkDataSet *curve1 = tree1->GetSingleLeaf();
+    if (curve1 == NULL)
+        EXCEPTION0(ImproperUseException);
     vtkDataSet *curve2 = tree2->GetSingleLeaf();
+    if (curve2 == NULL)
+        EXCEPTION0(ImproperUseException);
 
     int  i;
 

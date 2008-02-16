@@ -318,6 +318,14 @@ void vtkVisItStreamLine::PrintSelf(ostream& os, vtkIndent indent)
 }
 
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 15 11:58:10 PST 2008
+//    Fix memory leak in error condition.
+//   
+// ****************************************************************************
+
 VTK_THREAD_RETURN_TYPE
 vtkVisItStreamLine::ThreadedIntegrate( void *arg)
 {
@@ -364,8 +372,6 @@ vtkVisItStreamLine::ThreadedIntegrate( void *arg)
         cellScalars->Allocate(inScalars->GetNumberOfComponents()*VTK_CELL_SIZE);
     }
 
-    w = new double[input->GetMaxCellSize()];
-
     // Set the function set to be integrated
     vtkInterpolatedVelocityField* func = vtkInterpolatedVelocityField::New();
     func->AddDataSet(input);
@@ -375,6 +381,8 @@ vtkVisItStreamLine::ThreadedIntegrate( void *arg)
         vtkGenericWarningMacro("No integrator is specified.");
         return VTK_THREAD_RETURN_VALUE;
     }
+
+    w = new double[input->GetMaxCellSize()];
 
     // Create a new integrator, the type is the same as Integrator
     vtkInitialValueProblemSolver* integrator = self->GetIntegrator()->NewInstance();

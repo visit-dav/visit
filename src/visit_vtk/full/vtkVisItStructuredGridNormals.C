@@ -83,20 +83,20 @@ vtkVisItStructuredGridNormals::vtkVisItStructuredGridNormals()
 //  Programmer:  Hank Childs
 //  Creation:    December 28, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 15 11:53:21 PST 2008
+//    Take out some VTK uckiness.
+//
 // ****************************************************************************
 int
 vtkVisItStructuredGridNormals::RequestData(vtkInformation *vtkNotUsed(request),
-    vtkInformationVector **inputVector, vtkInformationVector *outputVector)
+    vtkInformationVector **vtkNotUsed(inputVector), 
+    vtkInformationVector *vtkNotUsed(outputVector))
 {
-    // get the info objects
-    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
-    vtkInformation *outInfo = outputVector->GetInformationObject(0);
-
     // get the input and output
-    vtkStructuredGrid *input = vtkStructuredGrid::SafeDownCast(
-        inInfo->Get(vtkDataObject::DATA_OBJECT()));
-    vtkStructuredGrid *output = vtkStructuredGrid::SafeDownCast(
-        outInfo->Get(vtkDataObject::DATA_OBJECT()));
+    vtkStructuredGrid *input = GetStructuredGridInput(0);
+    vtkStructuredGrid *output = GetOutput();
 
     int dims[3];
     input->GetDimensions(dims);

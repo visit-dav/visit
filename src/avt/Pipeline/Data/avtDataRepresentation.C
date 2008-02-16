@@ -247,12 +247,17 @@ avtDataRepresentation::avtDataRepresentation(char *d, int dl, int dom,
 //
 //    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
 //    Added compression data members
+//
+//    Hank Childs, Fri Feb 15 16:17:18 PST 2008
+//    Initialize more data members.
+//
 // ****************************************************************************
 
 avtDataRepresentation::avtDataRepresentation(const avtDataRepresentation &rhs)
 {
-    asVTK = NULL;
-    asChar = NULL;
+    asVTK        = NULL;
+    asChar       = NULL;
+    asCharLength = 0;
 
     if (rhs.asVTK)
     {

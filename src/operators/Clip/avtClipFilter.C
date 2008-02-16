@@ -345,6 +345,9 @@ avtClipFilter::ProcessOneChunk(vtkDataSet *inDS, int dom, std::string, bool)
 //  Programmer: Hank Childs
 //  Creation:   March 27, 2005
 //
+//    Hank Childs, Fri Feb 15 15:24:05 PST 2008
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void
@@ -408,6 +411,7 @@ avtClipFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
             }
 
     ifuncs->Delete();
+    delete [] pt_dist;
 }
 
 
@@ -578,6 +582,9 @@ avtClipFilter::ModifyContract(avtContract_p spec)
 //
 //  Modifications:
 //
+//    Hank Childs, Fri Feb 15 14:45:45 PST 2008
+//    Initialize some variables to make Klockwork happy.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -617,7 +624,7 @@ avtClipFilter::Clip1DRGrid(vtkImplicitBoolean *ifuncs, bool inv,
         if ((dist <= 0 && inv) || (lastDist > 0 && !inv))
             whichCase += 2;
 
-        double x1, x2, d1, d2, v1, v2, newX, newVal;
+        double x1, x2, d1 = 0., d2 = 1., v1, v2, newX = 0., newVal = 0.;
         switch(whichCase)
         {
             case 1 : 
@@ -658,3 +665,5 @@ avtClipFilter::Clip1DRGrid(vtkImplicitBoolean *ifuncs, bool inv,
     outVal->Delete();
     return outGrid;
 }
+
+

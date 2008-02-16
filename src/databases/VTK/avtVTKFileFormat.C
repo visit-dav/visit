@@ -315,6 +315,11 @@ avtVTKFileFormat::ReadInDataset(void)
 //  Programmer: Mark C. Miller 
 //  Creation:   September 15, 2005 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 15 11:25:32 PST 2008
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void *
@@ -328,9 +333,7 @@ avtVTKFileFormat::GetAuxiliaryData(const char *var,
         vtkIntArray *matarr = vtkIntArray::SafeDownCast(GetVar(matvarname));
 
         int ntuples = matarr->GetNumberOfTuples();
-        int *matlist = new int[ntuples];
-        memcpy(matlist, matarr->GetPointer(0), ntuples*sizeof(int));
-        matarr->Delete();
+        int *matlist = matarr->GetPointer(0);
 
         int *matnostmp = new int[matnos.size()];
         char **matnamestmp = new char*[matnames.size()];
@@ -356,6 +359,7 @@ avtVTKFileFormat::GetAuxiliaryData(const char *var,
 
         delete [] matnostmp;
         delete [] matnamestmp;
+        matarr->Delete();
 
         df = avtMaterial::Destruct;
         rv = mat;

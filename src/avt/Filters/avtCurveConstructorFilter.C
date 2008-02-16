@@ -149,6 +149,9 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    I determine if there's a problem by looking at the geometry, and
 //    if necessary flip the last two points in each group of 4. 
 //
+//    Hank Childs, Fri Feb 15 15:52:46 PST 2008
+//    Throw an exception in an error condition.
+//
 // ****************************************************************************
 
 void avtCurveConstructorFilter::Execute()
@@ -285,6 +288,10 @@ void avtCurveConstructorFilter::Execute()
         else if (ds[j]->GetDataObjectType() == VTK_POLY_DATA)
         {
             data = ((vtkPolyData*)ds[j])->GetPoints()->GetData();
+        }
+        else
+        {
+            EXCEPTION0(ImproperUseException);
         }
         npts = data->GetNumberOfTuples();
         x = data->GetComponent(0, 0);

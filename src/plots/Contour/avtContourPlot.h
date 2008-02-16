@@ -47,6 +47,7 @@
 #include <ContourAttributes.h>
 
 class     avtContourFilter;
+class     avtFeatureEdgesFilter;
 class     avtLevelsLegend;
 class     avtLevelsMapper;
 class     avtLookupTable;
@@ -106,6 +107,9 @@ class     avtLookupTable;
 //    Eric Brugger, Thu Mar 25 16:38:17 PST 2004
 //    I added the GetDataExtents method.
 //
+//    Hank Childs, Fri Feb 15 15:41:15 PST 2008
+//    Fix memory leak by adding new data member.
+//
 // ****************************************************************************
 
 class
@@ -130,6 +134,7 @@ avtContourPlot : public avtSurfaceDataPlot
 
   protected:
      avtContourFilter        *contourFilter;
+     avtFeatureEdgesFilter   *edgeFilter;
      avtLevelsMapper         *levelsMapper;
      avtLevelsLegend         *levelsLegend;
      avtLegend_p              levLegendRefPtr;
