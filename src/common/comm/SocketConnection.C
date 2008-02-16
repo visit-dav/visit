@@ -46,6 +46,7 @@
 #include <unistd.h>
 #include <signal.h>
 #endif
+#include <SysCall.h>
 #include <LostConnectionException.h>
 
 // ****************************************************************************
@@ -459,7 +460,9 @@ SocketConnection::DirectWrite(const unsigned char *buf, long ntotal)
 // Creation:   Mon Mar 25 16:01:17 PST 2002
 //
 // Modifications:
-//   
+//    Tom Fogal, Sat Feb 16 15:47:15 EST 2008
+//    Restart the system call if it gets interrupted.
+//
 // ****************************************************************************
 
 bool
@@ -474,15 +477,19 @@ SocketConnection::NeedsRead(bool blocking) const
     int ret = 0;
     if(blocking)
     {
-        ret = select(descriptor+1, &readSet, (fd_set *)NULL, (fd_set *)NULL,
-                     NULL);
+        ret = RESTART_SELECT(descriptor+1, &readSet,
+                             static_cast<fd_set*>(NULL),
+                             static_cast<fd_set*>(NULL),
+                             static_cast<struct timeval *>(NULL));
     }
     else
     {
         // Create a null timeout that will cause select to poll.
         struct timeval timeout = {0,0};
-        ret = select(descriptor+1, &readSet, (fd_set *)NULL, (fd_set *)NULL,
-                     &timeout);
+        ret = RESTART_SELECT(descriptor+1, &readSet,
+                             static_cast<fd_set*>(NULL),
+                             static_cast<fd_set*>(NULL),
+                             &timeout);
     }
 
     return (ret > 0);
