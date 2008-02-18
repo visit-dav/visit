@@ -247,11 +247,11 @@ QvisTransformWindow::CreateWindowContents()
     inputCoord->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *inputCoordLayout = new QVBoxLayout(inputCoord,0,0);
     inputCoordLayout->setSpacing(10);
-    QRadioButton *iCart = new QRadioButton("Cartesian", inputCoord);
+    QRadioButton *iCart = new QRadioButton("Cartesian (x,y,z)", inputCoord);
     inputCoordLayout->addWidget(iCart);
-    QRadioButton *iCyl  = new QRadioButton("Cylindrical", inputCoord);
+    QRadioButton *iCyl  = new QRadioButton("Cylindrical (r,phi,z)", inputCoord);
     inputCoordLayout->addWidget(iCyl);
-    QRadioButton *iSph  = new QRadioButton("Spherical", inputCoord);
+    QRadioButton *iSph  = new QRadioButton("Spherical (r,phi,theta)", inputCoord);
     inputCoordLayout->addWidget(iSph);
 
     QVGroupBox *outputFrame = new QVGroupBox("Output coordinates", secondPage, "outputFrame");
@@ -262,11 +262,11 @@ QvisTransformWindow::CreateWindowContents()
     outputCoord->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *outputCoordLayout = new QVBoxLayout(outputCoord,0,0);
     outputCoordLayout->setSpacing(10);
-    QRadioButton *oCart = new QRadioButton("Cartesian", outputCoord);
+    QRadioButton *oCart = new QRadioButton("Cartesian (x,y,z)", outputCoord);
     outputCoordLayout->addWidget(oCart);
-    QRadioButton *oCyl  = new QRadioButton("Cylindrical", outputCoord);
+    QRadioButton *oCyl  = new QRadioButton("Cylindrical (r,phi,z)", outputCoord);
     outputCoordLayout->addWidget(oCyl);
-    QRadioButton *oSph  = new QRadioButton("Spherical", outputCoord);
+    QRadioButton *oSph  = new QRadioButton("Spherical (r,phi,theta)", outputCoord);
     outputCoordLayout->addWidget(oSph);
 
     secondPageLayout->addStretch(100);
