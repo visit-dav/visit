@@ -17,6 +17,13 @@
 #    Added support for array variable expressions, raw database array
 #    variables, clamping plot limits, and changing viewports.
 #
+#    Jeremy Meredith, Mon Feb 18 16:50:02 EST 2008
+#    Renamed orderedAxisNames to scalarAxisNames.
+#    Added setting of visualAxisNames in one of the places we create the plot
+#    from a list of scalar.  This isn't strictly necessary, since the
+#    plot can do this for us, but the GUI Wizard knows to do this, and so
+#    setting visualAxisNames matches the GUI behavior more closely.
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -53,7 +60,8 @@ SetDefaultPlotOptions(p)
 
 # Set up a simple 3 variable parallel coordinates plot.
 AddPlot("ParallelCoordinates", "hardyglobal")
-p.orderedAxisNames = ("hardyglobal", "shepardglobal", "chromeVf")
+p.scalarAxisNames = ("hardyglobal", "shepardglobal", "chromeVf")
+p.visualAxisNames = p.scalarAxisNames # unnecessary, but strictly correct
 p.extentMinima = (-1e+37, -1e+37, -1e+37)
 p.extentMaxima = (+1e+37, +1e+37, +1e+37)
 SetPlotOptions(p)
@@ -75,7 +83,8 @@ SetPlotOptions(p)
 Test("parcoords_03")
 
 # Add an axis and make sure it works
-p.orderedAxisNames = ("hardyglobal", "shepardglobal", "chromeVf", "radial")
+p.scalarAxisNames = ("hardyglobal", "shepardglobal", "chromeVf", "radial")
+p.visualAxisNames = () # test to make sure it works without setting this
 p.extentMinima = (-1e+37, -1e+37, -1e+37, -1e+37)
 p.extentMaxima = (+1e+37, +1e+37, +1e+37, +1e+37)
 p.drawLinesOnlyIfExtentsOn = 1
