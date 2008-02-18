@@ -59,6 +59,30 @@ using std::map;
 
 VisWinPathTracker *VisWinPathTracker::instance=0;
 
+// ****************************************************************************
+//  Method: FindLastSlash
+//
+//  Purpose:  Searches backward through a string for a slash, either
+//            unix-style or windows-style.
+//
+//  Returns:  The position of the slash, string::npos if not found.
+//
+//  Arguments:
+//     subject  The string to search.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   February 13, 2008
+//
+// ****************************************************************************
+int
+FindLastSlash(const string &subject)
+{
+    int idx = subject.rfind("/");
+    if (idx == string::npos)
+        idx = subject.rfind("\\");
+    return idx;
+}
+
 
 // ****************************************************************************
 //  Method: VisWinPathTracker constructor
@@ -293,6 +317,9 @@ VisWinPathTracker::GetSmartDirectory(const std::string &path)
 //    Kathleen Bonnell, Thu Dec  6 09:34:01 PST 2007 
 //    Changed "/" to SLASH_STRING for windows compatibility. 
 //
+//    Kathleen Bonnell, Wed Feb 13 07:52:58 PST 2008 
+//    Call FindLastSlash, which searches for unix and windows style slashes.
+//
 // ****************************************************************************
 
 void
@@ -337,7 +364,7 @@ VisWinPathTracker::UpdatePaths()
     for ( itr = entires.begin(); itr != entires.end(); ++itr)
     {
         if( dir_common == itr->second.GetDirectory())
-            sdir = dir_common.substr(dir_common.rfind(SLASH_STRING)+1);
+            sdir = dir_common.substr(FindLastSlash(dir_common)+1);
         else
             sdir = itr->second.GetDirectory().substr(dir_common_size+1);
         
@@ -363,6 +390,9 @@ VisWinPathTracker::UpdatePaths()
 //    Kathleen Bonnell, Thu Dec  6 09:34:01 PST 2007 
 //    Changed '/' to SLASH_CHAR for windows compatibility. 
 //
+//    Kathleen Bonnell, Wed Feb 13 07:52:58 PST 2008 
+//    Check for both unix and windows style slashes.
+//
 // ****************************************************************************
 
 std::string VisWinPathTracker::GetSubPath(const std::string &path,
@@ -379,7 +409,7 @@ std::string VisWinPathTracker::GetSubPath(const std::string &path,
     for ( i = 0; i < size && cdepth != depth; i++)
     {
         // if we encounter a slash, update depth
-        if(path[i] == SLASH_CHAR)
+        if(path[i] == '/' || path[i] == '\\')
         {
             pos= i;
             cdepth++;
@@ -480,6 +510,9 @@ VisWinPathTracker::Entry::Entry()
 //    Kathleen Bonnell, Thu Dec  6 09:34:01 PST 2007 
 //    Changed "/" to SLASH_STRING for windows compatibility. 
 //
+//    Kathleen Bonnell, Wed Feb 13 07:52:58 PST 2008 
+//    Call FindLastSlash, which searches for unix and windows style slashes.
+//
 // ****************************************************************************
 
 
@@ -491,7 +524,7 @@ VisWinPathTracker::Entry::Entry(const std::string &path)
     directory = path;
     fileName  = path;
     
-    int idx = directory.rfind(SLASH_STRING);
+    int idx = FindLastSlash(directory);
     if(idx != string::npos)
     {
         fileName  = directory.substr(idx+1);

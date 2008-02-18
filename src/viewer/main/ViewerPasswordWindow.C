@@ -59,6 +59,8 @@ extern ViewerSubject *viewerSubject;
 // Static members
 ViewerPasswordWindow *ViewerPasswordWindow::instance = NULL;
 ViewerConnectionProgressDialog *ViewerPasswordWindow::dialog = NULL;
+bool ViewerPasswordWindow::needToChangeUsername = false;
+
 #if defined(PANTHERHACK)
 // Broken on Panther
 #else

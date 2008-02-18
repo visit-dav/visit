@@ -108,6 +108,29 @@ ViewerChangeUsernameWindow::~ViewerChangeUsernameWindow()
 {
 }
 
+// ****************************************************************************
+// Method: ViewerChangeUsernameWindow::getUsername
+//
+// Purpose: 
+//   Retrieve the username from the widget.
+//
+// Returns:    Returns the username name if this has been instantiated, 
+//             NULL otherwise. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   February 13, 2008 
+//
+// ****************************************************************************
+
+const char *
+ViewerChangeUsernameWindow::getUsername()
+{
+    // if never instantiated, no user name has been set here
+    if (!instance)
+        return NULL;
+
+    return instance->usernameedit->text().latin1();
+}
 
 // ****************************************************************************
 // Method: ViewerChangeUsernameWindow::changeUsername

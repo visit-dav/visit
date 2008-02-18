@@ -36,8 +36,8 @@
 *
 *****************************************************************************/
 
-#ifndef VIEWERPASSWORDWINDOW_H
-#define VIEWERPASSWORDWINDOW_H
+#ifndef VIEWERCHANGEUSERNAMEWINDOW_H
+#define VIEWERCHANGEUSERNAMEWINDOW_H
 
 #include <visit-config.h>
 #include <qdialog.h>
@@ -55,6 +55,10 @@ class QLabel;
 //  Programmer:  Hank Childs
 //  Creation:    November 11, 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Feb 13 14:05:03 PST 2008
+//    Added static getUsername method.
+//
 // ****************************************************************************
 
 class ViewerChangeUsernameWindow : public QDialog
@@ -65,6 +69,7 @@ class ViewerChangeUsernameWindow : public QDialog
     ~ViewerChangeUsernameWindow();
 
     static bool changeUsername(const char *hostname);
+    static const char* getUsername(void);
 
   private:
     QLineEdit *usernameedit;
