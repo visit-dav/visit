@@ -227,17 +227,24 @@ void
 ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
     AttributeSubject *atts, ViewerPlot *plot)
 {
-    //
-    // Copy over the default atts
-    //
-    *(ParallelCoordinatesAttributes*)atts = *defaultAtts;
-
-    // If we had scalar names, we're done.  Otherwise,
-    // we must be an array variable; try to get some names
-    // for its components....
+    // If we had scalar names, we can just copy the default atts
+    // and return.
     if (defaultAtts->GetScalarAxisNames().size() != 0)
-        return;
+    {
+        // One helpful thing we can do: make sure the user set the
+        // visual axis names.  They really should have, but since
+        // we can blindly copy them from the scalar axis names in
+        // this case, no harm doing it for them.
+        if (defaultAtts->GetVisualAxisNames().size() == 0)
+            defaultAtts->SetVisualAxisNames(defaultAtts->GetScalarAxisNames());
 
+        *(ParallelCoordinatesAttributes*)atts = *defaultAtts;
+
+        return;
+    }
+
+    // Otherwise,  we must be an array variable; try to get
+    // some names for its components....
     const avtDatabaseMetaData *md = plot->GetMetaData();
     const std::string &var = plot->GetVariableName();
     const avtArrayMetaData *array = md->GetArray(var);
@@ -252,10 +259,14 @@ ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
             ParsingExprList::GetExpression(plot->GetVariableName());
         if (exp == NULL || exp->GetType() != Expression::ArrayMeshVar)
         {
-            EXCEPTION1(ImproperUseException,
-                       "ParallelCoordinatesAttributes::InitializePlotAtts: "
-                       "variable wasn't an array database variable, an "
-                       "array expression, or a list of scalars.");
+            debug3 << "ParallelCoordinatesAttributes::InitializePlotAtts: "
+                   << "variable wasn't an array database variable, an "
+                   << "array expression, or a list of scalars.  This can "
+                   << "happen if the user attempts to create this plot "
+                   << "without the use off a wizard, e.g. in the case of "
+                   << "the cli.  Assuming this is the case and continuing "
+                   << "without error.\n";
+            return;
         }
         // If we have any problems walking the expression tree, just return;
         // the worst case scenario if we don't populate the visual axis
