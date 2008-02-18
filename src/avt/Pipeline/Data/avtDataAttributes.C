@@ -2585,6 +2585,9 @@ avtDataAttributes::SetTime(double d)
 //    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
 //    Added component extents for array variables.
 //
+//    Kathleen Bonnell, Tue Feb 12 11:47:08 PST 2008
+//    Check for binRange size before writing.
+//
 // ****************************************************************************
 
 void
@@ -2676,8 +2679,11 @@ avtDataAttributes::Write(avtDataObjectString &str,
         }
         // Write the binRanges (if any).  Number of binRanges already
         // communicated in mass "int" writing phase.
-        wrtr->WriteDouble(str, &(variables[i].binRange[0]), 
-                          variables[i].binRange.size());
+        if (variables[i].binRange.size() > 0)
+        {
+            wrtr->WriteDouble(str, &(variables[i].binRange[0]), 
+                              variables[i].binRange.size());
+        }
         variables[i].trueData->Write(str, wrtr);
         variables[i].cumulativeTrueData->Write(str, wrtr);
         variables[i].effectiveData->Write(str, wrtr);

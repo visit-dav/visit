@@ -73,6 +73,10 @@ class ViewerConnectionProgressDialog;
 //    Hank Childs, Sat Nov 10 11:31:34 PST 2007
 //    Add a new button for changing the username.
 //
+//    Kathleen Bonnell, Wed Feb 13 14:05:03 PST 2008 
+//    Added static methods to retrieve and reset the value of 
+//    'needToChangeUsername'. 
+//
 // ****************************************************************************
 
 class ViewerPasswordWindow : public QDialog
@@ -83,6 +87,8 @@ class ViewerPasswordWindow : public QDialog
     ~ViewerPasswordWindow();
 
     static const char *getPassword(const char *, const char *, bool = false);
+    static const bool getNeedToChangeUsername() { return needToChangeUsername; }
+    static void resetNeedToChangeUsername() { needToChangeUsername = false; }
     static void authenticate(const char *, const char *, int);
     static void SetConnectionProgressDialog(ViewerConnectionProgressDialog *d)
     {
@@ -102,7 +108,7 @@ private slots:
 #endif
     QLineEdit *passedit;
     QLabel    *label;
-    bool       needToChangeUsername;
+    static bool       needToChangeUsername;
     static ViewerConnectionProgressDialog *dialog;
     static ViewerPasswordWindow *instance;
 };

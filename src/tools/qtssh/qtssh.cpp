@@ -1,4 +1,5 @@
 #include <ViewerPasswordWindow.h>
+#include <ViewerChangeUsernameWindow.h>
 #include <qapplication.h>
 #include <windows.h>
 #include <stdlib.h>
@@ -9,6 +10,32 @@
 
 // Globals
 static char *username = 0;
+class DoUsernameWindow { };
+
+
+// ****************************************************************************
+// Function: graphicalGetUsername
+//
+// Purpose: This is the callback function for getting the username from the
+//          user. It uses the ViewerChangeUsernameWindow class to get the 
+//          username graphically.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   February 13, 2008 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+const char *
+graphicalGetUsername(const char *host)
+{
+    bool okay = ViewerChangeUsernameWindow::changeUsername(host);
+    if (okay)
+        return ViewerChangeUsernameWindow::getUsername();
+    else
+        return NULL;
+}
 
 // ****************************************************************************
 // Function: graphicalGetPassword
@@ -25,13 +52,23 @@ static char *username = 0;
 //   I made the okay parameter be 0 if the password window returns NULL
 //   for a password. This lets us quit without crashing.
 //
+//   Kathleen Bonnell, Wed Feb 13 14:05:03 PST 2008
+//   Added test for 'needToChangeUsername'.  Throw exception if necessary so
+//   that RunRemoteCommand can get the correct username.
+//
 // ****************************************************************************
 
 const char *
 graphicalGetPassword(const char *host, int *okay)
 {
+    ViewerPasswordWindow::resetNeedToChangeUsername();
     const char *retval = ViewerPasswordWindow::getPassword(username, host);
+    if (ViewerPasswordWindow::getNeedToChangeUsername())
+    {
+        throw DoUsernameWindow();
+    }
     *okay = (retval != 0);
+
     return retval;
 }
 
@@ -55,13 +92,18 @@ graphicalGetPassword(const char *host, int *okay)
 //   Added support for standard SSH-style remote port forwarding arguments
 //   of the form "-R rp:lh:lp:".
 //
+//   Kathleen Bonnell, Wed Feb 13 14:05:03 PST 2008
+//   Applied Paul Selby's fix to prevent '-l launchername' from being applied
+//   as '-l username' here.  Surround 'RunRemoteCommand' in try-catch block
+//   in order to allow user to change the Username..
+// 
 // ****************************************************************************
 
 int
 main(int argc, char *argv[])
 {
     const char *host = "localhost";
-    bool userSpecified = false;
+    bool shouldDeleteUsername = true;
     bool first = true;
     const char **commands = new const char*[100];
     int i, command_count = 0;
@@ -87,15 +129,22 @@ main(int argc, char *argv[])
     for(i = 1; i < argc; ++i)
     {
         char *arg = argv[i];
-        if(arg[0] == '-')
+        if(!first)
+        {
+            // Store the pointer into the option list.
+            commands[command_count++] = arg;
+        }
+        else if(arg[0] == '-')
         {
             if(strcmp(arg, "-l") == 0)
             {
                 if(i+1 < argc)
                 {
-                    delete [] username;
+                    if(shouldDeleteUsername)
+                        delete [] username;
                     username = argv[i+1];
                     ++i;
+                    shouldDeleteUsername = false;
                 }
             }
             else if(strcmp(arg, "-p") == 0)
@@ -171,23 +220,20 @@ main(int argc, char *argv[])
             {
                 printArgs = true;
             }
-            else if(!first)
+            else
             {
-                // Store the pointer into the option list.
-                commands[command_count++] = arg;
+                qDebug("Unknown option: %s", arg);
+                if(shouldDeleteUsername)
+                    delete [] username;
+                return -1;
             }
         }
-        else if(first)
+        else
         {
             // The first option without a '-' character must be the hostname.
             first = false;
             hostSpecified = true;
             host = arg;
-        }
-        else
-        {
-            // Store the pointer into the option list.
-            commands[command_count++] = arg;
         }
     }
 
@@ -207,6 +253,8 @@ main(int argc, char *argv[])
         qDebug("    -l username     Sets the user login name.");
         qDebug("    -p portnum      Sets the port number used to connect.");
         qDebug("    -D              Prints command line arguments.");
+        if(shouldDeleteUsername)
+            delete [] username;
         return -1;
     }
 
@@ -214,11 +262,33 @@ main(int argc, char *argv[])
     _close(0);
 
     // Run the command on the remote machine.
-    RunRemoteCommand(username, host, port, commands, command_count,
-                     graphicalGetPassword, 1, portfwd);
+    bool keepTrying = true;
+
+	while (keepTrying)
+    {
+        try
+        {
+            RunRemoteCommand(username, host, port, commands, command_count,
+                             graphicalGetPassword, 1, portfwd);
+            keepTrying = false;
+        }
+        catch(DoUsernameWindow)
+        {
+            const char *n = graphicalGetUsername(host);
+            if (n != NULL)
+            {
+                if (!shouldDeleteUsername)
+                {
+                    username = new char[namelen];
+                    shouldDeleteUsername = true; 
+                }
+                strncpy(username, n, namelen);
+            }
+        }
+    }
 
     // Clean up.
-    if(!userSpecified)
+    if(shouldDeleteUsername)
         delete [] username;
     delete [] commands;
 
