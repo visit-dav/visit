@@ -129,6 +129,9 @@ QvisParallelCoordinatesPlotWindow::~QvisParallelCoordinatesPlotWindow()
 //    Changed axis list to QListView to support multiple columns.
 //    Added min/max extents columns for each axis, and a button to reset them.
 //
+//    Jeremy Meredith, Mon Feb 18 16:18:06 EST 2008
+//    Changed some wording slightly.
+//
 // ****************************************************************************
 
 void
@@ -183,8 +186,8 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     connect(axisDownButton, SIGNAL(clicked()),
             this, SLOT(moveAxisDown()));
 
-    axisResetExtentsButton = new QPushButton("Reset all axis extents", axisGroup,
-                                     "axisResetExtentsButton");
+    axisResetExtentsButton = new QPushButton("Reset all axis restrictions",
+                                           axisGroup,"axisResetExtentsButton");
     axisLayout->addWidget(axisResetExtentsButton, 4, 0);
     connect(axisResetExtentsButton, SIGNAL(clicked()),
             this, SLOT(resetAxisExtents()));
@@ -207,7 +210,7 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 
     // Lines color
     linesOnlyIfExtents = new QCheckBox(
-                                 "... but only when extents have been limited",
+                         "... but only when axis extents have been restricted",
                                        drawLines, "linesOnlyIfExtents");
     connect(linesOnlyIfExtents, SIGNAL(toggled(bool)),
             this, SLOT(linesOnlyIfExtentsToggled(bool)));
@@ -317,6 +320,9 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Renamed orderedAxisNames to scalarAxisNames to distinguish these
 //    as names of actual scalars instead of just display names.  Added
 //    visualAxisNames.
+//
+//    Jeremy Meredith, Mon Feb 18 16:17:21 EST 2008
+//    Don't enable de/up/down buttons if we were created from an array var.
 //
 // ****************************************************************************
 
@@ -441,9 +447,12 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
     axisList->setCurrentItem(item);
 
     // Set enabled states
-    axisDelButton->setEnabled(axisList->currentItem()!= NULL);
-    axisUpButton->setEnabled(axisList->currentItem()!= axisList->firstChild());
-    axisDownButton->setEnabled(axisList->currentItem()!= axisList->lastItem());
+    axisDelButton->setEnabled(atts->GetScalarAxisNames().size() > 0 &&
+                              axisList->currentItem()!= NULL);
+    axisUpButton->setEnabled(atts->GetScalarAxisNames().size() > 0 &&
+                             axisList->currentItem()!= axisList->firstChild());
+    axisDownButton->setEnabled(atts->GetScalarAxisNames().size() > 0 &&
+                               axisList->currentItem()!= axisList->lastItem());
     axisNewButton->setEnabled(atts->GetScalarAxisNames().size() > 0);
     axisResetExtentsButton->setEnabled(atts->GetExtentMinima().size() > 0);
     axisList->setEnabled(atts->GetExtentMinima().size() > 0);
@@ -719,14 +728,20 @@ QvisParallelCoordinatesPlotWindow::resetAxisExtents()
 //    Changed axis list to QListView to support multiple columns.
 //    Added min/max extents columns for each axis, and a button to reset them.
 //
+//    Jeremy Meredith, Mon Feb 18 16:17:21 EST 2008
+//    Don't enable de/up/down buttons if we were created from an array var.
+//
 // ****************************************************************************
 
 void
 QvisParallelCoordinatesPlotWindow::axisSelected(QListViewItem*)
 {
-    axisDelButton->setEnabled(axisList->currentItem()!= NULL);
-    axisUpButton->setEnabled(axisList->currentItem()!= axisList->firstChild());
-    axisDownButton->setEnabled(axisList->currentItem()!= axisList->lastItem());
+    axisDelButton->setEnabled(atts->GetScalarAxisNames().size() > 0 &&
+                              axisList->currentItem()!= NULL);
+    axisUpButton->setEnabled(atts->GetScalarAxisNames().size() > 0 &&
+                             axisList->currentItem()!= axisList->firstChild());
+    axisDownButton->setEnabled(atts->GetScalarAxisNames().size() > 0 &&
+                               axisList->currentItem()!= axisList->lastItem());
 }
 
 // ****************************************************************************

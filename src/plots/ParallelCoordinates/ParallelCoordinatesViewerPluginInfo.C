@@ -48,6 +48,8 @@
 #include <Expression.h>
 #include <ColorAttribute.h>
 #include <ExprNode.h>
+#include <avtArrayMetaData.h>
+#include <avtDatabaseMetaData.h>
 
 #include <InvalidVariableException.h>
 #include <ImproperUseException.h>
@@ -212,6 +214,13 @@ ParallelCoordinatesViewerPluginInfo::AllocAvtPlot()
 //    Jeremy Meredith, Thu Feb  7 17:49:50 EST 2008
 //    Took out all the parsing.  It was never a good idea.
 //
+//    Jeremy Meredith, Mon Feb 18 14:51:40 EST 2008
+//    Added a little smarts to attempt to populate the axis names.
+//    Note that this did require adding some minimal parsing in -- however,
+//    we are not relying on it; if it fails, everything still works, except
+//    that the GUI window can't tell the user what the axis names are until
+//    the axis restriction tool has been used to limit the axis extents.
+//
 // ****************************************************************************
 
 void
@@ -221,6 +230,64 @@ ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
     //
     // Copy over the default atts
     //
+    *(ParallelCoordinatesAttributes*)atts = *defaultAtts;
+
+    // If we had scalar names, we're done.  Otherwise,
+    // we must be an array variable; try to get some names
+    // for its components....
+    if (defaultAtts->GetScalarAxisNames().size() != 0)
+        return;
+
+    const avtDatabaseMetaData *md = plot->GetMetaData();
+    const std::string &var = plot->GetVariableName();
+    const avtArrayMetaData *array = md->GetArray(var);
+    stringVector subNames;
+    if (array)
+    {
+        subNames = array->compNames;
+    }
+    else
+    {
+        Expression *exp =
+            ParsingExprList::GetExpression(plot->GetVariableName());
+        if (exp == NULL || exp->GetType() != Expression::ArrayMeshVar)
+        {
+            EXCEPTION1(ImproperUseException,
+                       "ParallelCoordinatesAttributes::InitializePlotAtts: "
+                       "variable wasn't an array database variable, an "
+                       "array expression, or a list of scalars.");
+        }
+        // If we have any problems walking the expression tree, just return;
+        // the worst case scenario if we don't populate the visual axis
+        // name list is that the GUI window is temporarily blank.
+        ExprNode *root = ParsingExprList::GetExpressionTree(exp);
+        if (root->GetTypeName() != "Function")
+            return;
+        FunctionExpr *fn = dynamic_cast<FunctionExpr*>(root);
+        if (fn->GetName() != "array_compose" &&
+            fn->GetName() != "array_compose_with_bins")
+            return;
+        ArgsExpr *argsExpr = fn->GetArgsExpr();
+        vector<ArgExpr*> *args = argsExpr ? argsExpr->GetArgs() : NULL;
+        if (!args)
+            return;
+        for (int i=0; i<args->size(); i++)
+        {
+            ExprNode *arg = (ExprNode*)((*args)[i]->GetExpr());
+            if (arg->GetTypeName() == "List")
+                break;
+            subNames.push_back(arg->GetPos().GetText(exp->GetDefinition()));
+        }
+    }
+
+    doubleVector extMin(subNames.size(), -1e+37);
+    doubleVector extMax(subNames.size(), +1e+37);
+
+    // Set up the default attributes to contain these values, so
+    // if the user hits reset, the axis names are retained.
+    defaultAtts->SetVisualAxisNames(subNames);
+    defaultAtts->SetExtentMinima(extMin);
+    defaultAtts->SetExtentMaxima(extMax);
     *(ParallelCoordinatesAttributes*)atts = *defaultAtts;
 }
 
