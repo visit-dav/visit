@@ -147,6 +147,9 @@ vtkVisItStructuredGrid::~vtkVisItStructuredGrid()
 //    Hank Childs, Fri Feb 15 11:56:28 PST 2008
 //    Add a check in case a new cell type is added later.
 //
+//    Hank Childs, Tue Feb 19 08:47:50 PST 2008
+//    Fix stupid problem with last change.
+//
 // ****************************************************************************
 
 vtkCell *
@@ -291,7 +294,7 @@ vtkVisItStructuredGrid::GetCell(vtkIdType cellId)
     // and vtkHexahedron cells are tricky.
     int NumberOfIds = 0;
     if (cell != NULL)
-        cell->PointIds->GetNumberOfIds();
+        NumberOfIds = cell->PointIds->GetNumberOfIds();
     for (i=0; i<NumberOfIds; i++)
     {
         idx = cell->PointIds->GetId(i);
