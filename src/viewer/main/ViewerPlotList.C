@@ -62,6 +62,7 @@
 #include <Plot.h>
 #include <PlotList.h>
 #include <PlotPluginManager.h>
+#include <OperatorPluginManager.h>
 #include <RecursiveExpressionException.h>
 #include <SILRestrictionAttributes.h>
 #include <GlobalAttributes.h>
@@ -2451,6 +2452,10 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Brad Whitlock, Wed Feb 13 14:24:01 PST 2008
 //    Added version to SetFromNode.
 //
+//    Jeremy Meredith, Tue Feb 19 14:30:56 EST 2008
+//    Update the expression list here; since some operators can now create
+//    new variables, the expression list might change when a plot is created.
+//
 // ****************************************************************************
 
 int
@@ -2527,6 +2532,7 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
         }
     }
     UpdateSILRestrictionAtts();
+    UpdateExpressionList(true);
 
     //
     // If we added a plot, it's possible that a time slider was created if
@@ -5318,6 +5324,10 @@ ViewerPlotList::SetPlotSILRestriction(bool applyToAll)
 //    Added optional bool argument, indicates whether the operator should be 
 //    initialized from its Default or Client atts. 
 //
+//    Jeremy Meredith, Tue Feb 19 14:30:56 EST 2008
+//    Update the expression list here; since some operators can now create new
+//    variables, the expression list might change when an operator is added.
+//
 // ****************************************************************************
 
 void
@@ -5358,6 +5368,7 @@ ViewerPlotList::AddOperator(const int type, bool applyToAll, const bool fromDefa
     // Update the client attributes. (the plot list)
     //
     UpdatePlotList();
+    UpdateExpressionList(true);
 
     //
     // Update the frame.
@@ -5481,6 +5492,10 @@ ViewerPlotList::DemoteOperator(int operatorId, bool applyToAll)
 //   Brad Whitlock, Tue Jan 17 12:08:44 PDT 2006
 //   Added a line of code to update the vis window.
 //
+//    Jeremy Meredith, Tue Feb 19 14:30:56 EST 2008
+//    Update the expression list here; since some operators can now create new
+//    variables, the expression list might change when an operator is removed.
+//
 // ****************************************************************************
 
 void
@@ -5510,6 +5525,7 @@ ViewerPlotList::RemoveOperator(int operatorId, bool applyToAll)
         // Update the client attributes.
         //
         UpdatePlotList();
+        UpdateExpressionList(true);
         UpdatePlotAtts(false);
 
         //
@@ -5538,6 +5554,10 @@ ViewerPlotList::RemoveOperator(int operatorId, bool applyToAll)
 //    Eric Brugger, Mon Nov 18 07:50:16 PST 2002
 //    I added support for keyframing.
 //
+//    Jeremy Meredith, Tue Feb 19 14:30:56 EST 2008
+//    Update the expression list here; since some operators can now create new
+//    variables, the expression list might change when an operator is removed.
+//
 // ****************************************************************************
 
 void
@@ -5558,6 +5578,7 @@ ViewerPlotList::RemoveLastOperator(bool applyToAll)
     // Update the client attributes.
     //
     UpdatePlotList();
+    UpdateExpressionList(true);
     UpdatePlotAtts(false);
 
     //
@@ -5585,6 +5606,10 @@ ViewerPlotList::RemoveLastOperator(bool applyToAll)
 //    Eric Brugger, Mon Nov 18 07:50:16 PST 2002
 //    I added support for keyframing.
 //
+//    Jeremy Meredith, Tue Feb 19 14:30:56 EST 2008
+//    Update the expression list here; since some operators can now create new
+//    variables, the expression list might change when an operator is removed.
+//
 // ****************************************************************************
 
 void
@@ -5605,6 +5630,7 @@ ViewerPlotList::RemoveAllOperators(bool applyToAll)
     // Update the client attributes.
     //
     UpdatePlotList();
+    UpdateExpressionList(true);
     UpdatePlotAtts(false);
 
     //
@@ -7006,6 +7032,47 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
     //
     ExpressionList newList;
     fileServer->GetAllExpressions(newList, host, db, t);    
+
+    //
+    // Update the expression list with the set of variables
+    // created by the operators in the active plots.
+    //
+
+    // First, remove the old ones since we're about to regenerate them.
+    for (int i=newList.GetNumExpressions()-1 ; i>=0; --i)
+    {
+        if (newList[i].GetFromOperator())
+        {
+            newList.RemoveExpressions(i);
+        }
+    }
+
+    // Then add everything created by any active plots' operators.
+    for (int i=0 ; i < nPlots ; i++)
+    {
+        if (!plots[i].active)
+            continue;
+
+        ViewerPlot *plot = plots[i].plot;
+        for (int j = 0 ; j < plot->GetNOperators() ; j++)
+        {
+            ViewerOperator *oper = plot->GetOperator(j);
+            vector<string> newVars = oper->GetCreatedVariableNames();
+            for (int k = 0 ; k < newVars.size() ; k++)
+            {
+                const string &mesh = plot->GetMeshName();
+                char def[1000];
+                SNPRINTF(def, 1000, "constant(%s,0)", mesh.c_str());
+                Expression exp;
+                exp.SetName(newVars[k]);
+                exp.SetDefinition(def);
+                exp.SetType(Expression::ScalarMeshVar);
+                exp.SetFromOperator(true);
+                newList.AddExpressions(exp);
+            }
+        }
+    }
+
 
     //
     // If the new expression list is different from the expression list

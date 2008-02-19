@@ -156,6 +156,7 @@
 #include <avtPerformColorTableLookupExpression.h>
 #include <avtPerMaterialValueExpression.h>
 #include <avtApplyEnumerationExpression.h>
+#include <avtConstantFunctionExpression.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -473,6 +474,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //
 //    Hank Childs, Wed Feb 13 11:21:40 PST 2008
 //    Make module an alias for mod.
+//
+//    Jeremy Meredith, Tue Feb 19 14:19:18 EST 2008
+//    Added "constant".
 //
 // ****************************************************************************
 
@@ -879,6 +883,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtHSVColorComposeExpression;
     if (functionName == "colorlookup")
         return new avtPerformColorTableLookupExpression;
+    if (functionName == "constant")
+        return new avtConstantFunctionExpression;
 
     return NULL;
 }

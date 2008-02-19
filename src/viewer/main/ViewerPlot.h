@@ -278,6 +278,10 @@ class avtToolInterface;
 //    Hank Childs, Thu Aug 30 15:57:55 PDT 2007
 //    Added AdaptsToAnyWindowMode.
 //
+//    Jeremy Meredith, Tue Feb 19 14:30:14 EST 2008
+//    Save the meshname for the plot's variable.  This is useful for
+//    operators that create their own variables.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot : public ViewerBase
@@ -329,6 +333,7 @@ class VIEWER_API ViewerPlot : public ViewerBase
     bool SetVariableName(const std::string &name);
     const std::string &GetVariableName() const;
     const avtCentering GetVariableCentering() const;
+    const std::string &GetMeshName() const;
 
     //
     // Get/Set the SIL restriction, get metadata, get expressions.
@@ -505,6 +510,7 @@ class VIEWER_API ViewerPlot : public ViewerBase
     std::string             hostName;
     std::string             databaseName;
     std::string             variableName;
+    std::string             meshName;
     std::vector<double>     dataExtents;
     bool                    followsTime;
 

@@ -27,6 +27,9 @@
     <Field name="fromDB" label="fromDB" type="bool">
       false
     </Field>
+    <Field name="fromOperator" label="fromOperator" type="bool">
+      false
+    </Field>
     <Field name="dbName" label="dbName" type="string">
       __none__
     </Field>

@@ -202,6 +202,9 @@
 #   Jeremy Meredith, Wed Feb 13 12:11:56 EST 2008
 #   Add avtApplyEnumerationExpression.
 #
+#   Jeremy Meredith, Tue Feb 19 14:18:03 EST 2008
+#   Added constant creation function.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -271,6 +274,7 @@ General_src= \
   General/avtArrayDecomposeExpression.C \
   General/avtColorComposeExpression.C \
   General/avtConnComponentsExpression.C \
+  General/avtConstantFunctionExpression.C \
   General/avtCurlExpression.C \
   General/avtDataIdExpression.C \
   General/avtDegreeExpression.C \

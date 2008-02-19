@@ -193,6 +193,9 @@ int ViewerPlot::numPlotsCreated = 0;
 //    Kathleen Bonnell, Thu Mar 22 19:44:41 PDT 2007
 //    Added xScaleMode, yScaleMode. 
 //
+//    Jeremy Meredith, Tue Feb 19 14:23:59 EST 2008
+//    Added explicit storage for meshname.
+//
 // ****************************************************************************
 
 ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
@@ -308,6 +311,14 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     char tmp[100];
     SNPRINTF(tmp, 100, "Plot%04d", numPlotsCreated++);
     plotName = std::string(tmp);
+
+    //
+    // Set the meshname for this variable.  This is stored separately from
+    // the variable name because if an operator creates new variables, we
+    // will lose track of the original variable for this plot, but we
+    // at least know it must be defined on the same mesh.
+    //
+    meshName = GetMetaData()->MeshForVar(variableName);
 }
 
 // ****************************************************************************
@@ -1402,6 +1413,10 @@ ViewerPlot::GetExpressions() const
 //    Brad Whitlock, Wed Feb 14 10:23:38 PDT 2007
 //    Added code to update the plot's alternate display.
 //
+//    Jeremy Meredith, Tue Feb 19 14:24:28 EST 2008
+//    Set the meshname data member, and do it independent of what we
+//    find for the SIL/SILR.
+//
 // ****************************************************************************
 
 bool
@@ -1423,68 +1438,67 @@ ViewerPlot::SetVariableName(const std::string &name)
         ClearActors();
         notifyQuery = true;
 
+        avtDatabaseMetaData *md = (avtDatabaseMetaData *)GetMetaData();
+        if(md != 0)
+        {
+            //
+            // Get the Mesh for the desired variable.
+            //
+            TRY
+            {
+                meshName = md->MeshForVar(std::string(name));
+            }
+            CATCH2(InvalidVariableException,e)
+            {
+                Error(e.Message().c_str());
+                CATCH_RETURN2(2, false);
+            }
+            ENDTRY
+        }
+
         //
         // Determine if we need to also set a new SIL restriction.
         //
-        if(silr->GetWholes().size() > 0)
+        if(silr->GetWholes().size() > 0  &&  md != NULL)
         {
             TRY
             {
-                avtDatabaseMetaData *md = (avtDatabaseMetaData *)GetMetaData();
-                if(md != 0)
+                //
+                // The new variable has a different top set from the
+                // old variable. Set the top set in the SIL restriction.
+                //
+                avtSILSet_p current = silr->GetSILSet(silr->GetTopSet());
+                if (meshName != current->GetName())
                 {
-                    //
-                    // Get the Mesh for the desired variable.
-                    //
-                    std::string meshName;
-                    TRY
+                    avtSILRestriction_p new_sil = 
+                                               new avtSILRestriction(silr);
+                    int topSet = 0;
+                    for (int i = 0; i < new_sil->GetWholes().size(); i++)
                     {
-                        meshName = md->MeshForVar(std::string(name));
-                    }
-                    CATCH2(InvalidVariableException,e)
-                    {
-                        Error(e.Message().c_str());
-                        CATCH_RETURN2(2, false);
-                    }
-                    ENDTRY
-
-                    //
-                    // The new variable has a different top set from the
-                    // old variable. Set the top set in the SIL restriction.
-                    //
-                    avtSILSet_p current = silr->GetSILSet(silr->GetTopSet());
-                    if (meshName != current->GetName())
-                    {
-                        avtSILRestriction_p new_sil = 
-                                                   new avtSILRestriction(silr);
-                        int topSet = 0;
-                        for (int i = 0; i < new_sil->GetWholes().size(); i++)
+                        current = 
+                               new_sil->GetSILSet(new_sil->GetWholes()[i]);
+                        if(meshName == current->GetName())
                         {
-                            current = 
-                                   new_sil->GetSILSet(new_sil->GetWholes()[i]);
-                            if(meshName == current->GetName())
-                            {
-                                topSet = new_sil->GetWholes()[i];
-                                break;
-                            }
+                            topSet = new_sil->GetWholes()[i];
+                            break;
                         }
-                        //
-                        // Change the top set in the current SIL restriction.
-                        // This is sufficient due to the previous call to
-                        // ClearActors(). Note that we must select all sets
-                        // under the new top set.
-                        //
-                        new_sil->SetTopSet(topSet);
-                        new_sil->TurnOffAll();
-                        new_sil->TurnOnSet(topSet);
-                        silr = new_sil;
-
-                        //
-                        // Set a flag to return that indicates the SIL
-                        // restriction was changed.
-                        //
-                        retval = true;
                     }
+                    //
+                    // Change the top set in the current SIL restriction.
+                    // This is sufficient due to the previous call to
+                    // ClearActors(). Note that we must select all sets
+                    // under the new top set.
+                    //
+                    new_sil->SetTopSet(topSet);
+                    new_sil->TurnOffAll();
+                    new_sil->TurnOnSet(topSet);
+                    silr = new_sil;
+
+                    //
+                    // Set a flag to return that indicates the SIL
+                    // restriction was changed.
+                    //
+                    retval = true;
                 }
             }
             CATCH(VisItException)
@@ -1557,6 +1571,29 @@ const std::string &
 ViewerPlot::GetVariableName() const
 {
     return variableName;
+}
+
+
+// ****************************************************************************
+//  Method:  ViewerPlot::GetMeshName
+//
+//  Purpose:
+//    Return the mesh name on which the plot variable is defined.
+//    This can be useful for operators that create new variables, since
+//    we might lose the original variable's name but we know that the
+//    meshname must remain consistent.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 19, 2008
+//
+// ****************************************************************************
+const std::string &
+ViewerPlot::GetMeshName() const
+{
+    return meshName;
 }
 
 // ****************************************************************************
@@ -5132,6 +5169,9 @@ ViewerPlot::GetWindowId() const
 //    Assume that I should handle the error the same way 
 //    as when  md->GetMesh(meshName) returns NULL.
 //
+//    Jeremy Meredith, Tue Feb 19 14:29:52 EST 2008
+//    Use the saved meshname; we don't have to query it again here.
+//
 // ****************************************************************************
 
 avtMeshType
@@ -5141,7 +5181,6 @@ ViewerPlot::GetMeshType() const
     if (!md)
         return AVT_UNKNOWN_MESH;
     
-    string meshName = md->MeshForVar(variableName);
     const avtMeshMetaData *mmd = md->GetMesh(meshName);
     if (mmd)
         return mmd->meshType;
