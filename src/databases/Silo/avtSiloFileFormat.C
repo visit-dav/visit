@@ -3645,6 +3645,12 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 //  Programmer: Cyrus Harrison
 //  Creation:   September 7, 2007
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Thu Feb 14 11:26:40 PST 2008
+//    Guard against read mask problem that occurs with treat all dbs as time 
+//    varying.
+//
 // ****************************************************************************
 
 void
@@ -3656,11 +3662,18 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
     debug1 << "avtSiloFileFormat: using MultiMeshadj Object" <<endl;
     // loop indices
     int i,j;
-
+    
+    // guard against improper read mask that occurs when treat all dbs as 
+    // time varying is enabled. 
+    long prev_read_mask = DBGetDataReadMask();
+    DBSetDataReadMask(prev_read_mask | DBMMADJNodelists | DBMMADJZonelists);
+    
     // Get the MultiMeshAdjacency object
     DBmultimeshadj *mmadj_obj = DBGetMultimeshadj(dbfile,
                                                   "Domain_Decomposition",
                                                   0,NULL);
+    // restore prev read mask
+    DBSetDataReadMask(prev_read_mask);
     bool ok = true;
     // Make sure we only have structured meshes.
     DBReadVar(dbfile, "NumDomains", &ndomains);
@@ -3679,8 +3692,7 @@ avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
         // Clean the  multi mesh adj object and throw an exception
         DBFreeMultimeshadj(mmadj_obj);
         EXCEPTION1(InvalidVariableException,
-                "VisIt only supports MultiMeshadj objects with "
-                "structured meshes");
+                "Could not find a valid Silo MultiMeshadj object");
     }
 
     if (needConnectivityInfo)
