@@ -68,6 +68,7 @@
 #include <avtApplyDDFExpression.h>
 #include <avtCallback.h>
 #include <avtColorTables.h>
+#include <avtDebugDumpOptions.h>
 #include <avtExtents.h>
 #include <avtNullData.h>
 #include <avtDataObjectQuery.h>
@@ -184,6 +185,9 @@ void                      *NetworkManager::progressCallbackArgs = NULL;
 //    Hank Childs, Sat Feb 18 11:31:23 PST 2006
 //    Added a call back for the apply ddf expression.
 //
+//    Cyrus Harrison, Tue Feb 19 08:42:51 PST 2008
+//    Removed dumpRenders (now controled by avtDebugDumpOptions)
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
@@ -193,7 +197,6 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
     requireOriginalNodes = false;
     inQueryMode = false;
     uniqueNetworkId = 0;
-    dumpRenders = false;
 
     // stuff to support scalable rendering. We always have window 0
     NewVisWindow(0);
@@ -1974,6 +1977,10 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //
+//    Cyrus Harrison, Tue Feb 19 09:33:47 PST 2008
+//    Changed to use avtDebugDumpOptions::DumpEnabled to determine if
+//    debug sr images should be created.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -2002,6 +2009,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
     std::vector<int>& plotsCurrentlyInWindow = viswinMap[windowID].plotsCurrentlyInWindow;
     std::vector<avtPlot_p>& imageBasedPlots = viswinMap[windowID].imageBasedPlots;
 
+    bool dump_renders = avtDebugDumpOptions::DumpEnabled();
+    
     TRY
     {
         int t1 = visitTimer->StartTimer();
@@ -2376,7 +2385,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             
             visitTimer->StopTimer(t3, "Screen capture for SR");
 
-            if (dumpRenders)
+            if (dump_renders)
                 DumpImage(theImage, "before_OpaqueComposite");
 
             avtWholeImageCompositer *imageCompositer;
@@ -2431,7 +2440,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             // Dump the composited image when debugging.  Note that we only
             // want all processors to dump it if we have done an Allreduce
             // in the compositor, and this only happens in two pass mode.
-            if (dumpRenders)
+            if (dump_renders)
                 DumpImage(compositedImageAsDataObject,
                           "after_OpaqueComposite", two_pass_mode);
             CallProgressCallback("NetworkManager", "Compositing", 1, 1);
@@ -2466,7 +2475,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             
                 visitTimer->StopTimer(t1, "Second-pass screen capture for SR");
 
-                if (dumpRenders)
+                if (dump_renders)
                     DumpImage(theImage2, "before_TranslucentComposite");
 
                 avtTiledImageCompositor imageCompositer2;
@@ -2644,7 +2653,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             writer = compositedImageAsDataObject->InstantiateWriter();
             writer->SetInput(compositedImageAsDataObject);
 
-            if (dumpRenders)
+            if (dump_renders)
                 DumpImage(compositedImageAsDataObject,
                           "after_AllComposites", false);
             delete imageCompositer;
@@ -4400,6 +4409,9 @@ NetworkManager::CallProgressCallback(const char *module, const char *msg,
 //    Brad Whitlock, Fri Feb 15 15:27:21 PST 2008
 //    Delete fileWriter.
 //
+//    Cyrus Harrison, Tue Feb 19 08:38:12 PST 2008
+//    Added support for optional debug dump directory.
+//
 // ****************************************************************************
 static void
 DumpImage(avtDataObject_p img, const char *fmt, bool allprocs)
@@ -4414,16 +4426,18 @@ DumpImage(avtDataObject_p img, const char *fmt, bool allprocs)
 
 #ifdef PARALLEL
     if (allprocs)
-        sprintf(tmpName, "%s_%03d_%03d.png", fmt, PAR_Rank(), numDumpsAll);
+        SNPRINTF(tmpName, 256, "%s_%03d_%03d.png", fmt, PAR_Rank(), numDumpsAll);
     else
-        sprintf(tmpName, "%s_%03d.png", fmt, numDumps);
+        SNPRINTF(tmpName, 256, "%s_%03d.png", fmt, numDumps);
 #else
-    sprintf(tmpName, "%s_%03d.png", fmt, numDumps);
+    SNPRINTF(tmpName, 256, "%s_%03d.png", fmt, numDumps);
 #endif
+
+    string dump_image = avtDebugDumpOptions::GetDumpDirectory() + tmpName;
 
     fileWriter->SetFormat(SaveWindowAttributes::PNG);
     int compress = 1;
-    fileWriter->Write(tmpName, img, 100, false, compress, false);
+    fileWriter->Write(dump_image.c_str(), img, 100, false, compress, false);
     delete fileWriter;
 
     if (allprocs)

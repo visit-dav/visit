@@ -167,6 +167,10 @@ avtDebugDumpOptions::DisableDatasetDump()
 //  Programmer:    Cyrus Harrison
 //  Creation:      Feburary 13, 2008
 //
+//  Modifications:
+//    Cyrus Harrison, Tue Feb 19 08:29:10 PST 2008
+//    Support for Windows directories. 
+//
 // ****************************************************************************
 
 void
@@ -175,9 +179,10 @@ avtDebugDumpOptions::SetDumpDirectory(const string &odir)
     string res_dir = odir;
     if(res_dir != "")
     {
-        // make sure it has a "/" suffix
-        if (res_dir[res_dir.length()-1] !='/')
-            res_dir += '/';
+        // make sure it has a "/" or "\" (windows) suffix
+        string slash = string(SLASH_STRING);
+        if (res_dir[res_dir.length()-1] != slash[0] )
+            res_dir += slash;
         // make sure the dir exists!
         VisItStat_t s;
         VisItStat(res_dir.c_str(), &s);

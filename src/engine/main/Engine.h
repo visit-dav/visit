@@ -163,6 +163,9 @@ class ProcessAttributes;
 //    Jeremy Meredith, Wed Jan 23 16:50:36 EST 2008
 //    Added setEFileOpenOptionsRPC.
 //
+//    Cyrus Harrison, Tue Feb 19 08:42:51 PST 2008
+//    Removed shouldDoDashDump (flag now contained in avtDebugDumpOptions)
+//
 // ****************************************************************************
 
 class Engine
@@ -268,8 +271,6 @@ class Engine
     // The load balancer
     LoadBalancer       *lb;
 
-    // Whether or not to do -dump.
-    bool                shouldDoDashDump;
 
     // The Xfer object
 #ifdef PARALLEL
