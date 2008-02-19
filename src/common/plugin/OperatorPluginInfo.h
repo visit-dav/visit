@@ -55,6 +55,9 @@ class QWidget;
 class avtPluginFilter;
 class ViewerPlot;
 
+#include <vector>
+#include <string>
+
 // ****************************************************************************
 //  Class: *OperatorPluginInfo
 //
@@ -100,6 +103,9 @@ class ViewerPlot;
 //    Brad Whitlock, Tue Apr 25 16:46:49 PST 2006
 //    Added new methods to the operator plugin that allow it to control
 //    the types of variables that the GUI puts in the variable list.
+//
+//    Jeremy Meredith, Mon Feb 18 17:44:40 EST 2008
+//    Added way for operators to create new variable names.
 //
 // ****************************************************************************
 
@@ -153,6 +159,10 @@ class PLUGIN_API ViewerOperatorPluginInfo : public virtual CommonOperatorPluginI
     virtual bool Removeable() const { return true; }
     virtual bool Moveable() const { return true; }
     virtual bool AllowsSubsequentOperators() const { return true; }
+    virtual std::vector<std::string> GetCreatedVariableNames()
+    {
+        return std::vector<std::string>();
+    }
 };
 
 class PLUGIN_API EngineOperatorPluginInfo : public virtual CommonOperatorPluginInfo

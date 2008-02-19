@@ -565,6 +565,9 @@ QvisExpressionsWindow::CreateWindowContents()
 //    are two expressions with the same name.  Keep in mind we need
 //    a map from the list-position index to expressionlist index.
 //
+//    Jeremy Meredith, Tue Feb 19 14:20:57 EST 2008
+//    Don't display expressions that were created by operators.
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::UpdateWindow(bool)
@@ -576,6 +579,8 @@ QvisExpressionsWindow::UpdateWindow(bool)
     int pos = 0;
     for (int i=0; i<exprList->GetNumExpressions(); i++)
     {
+        if (exprList->GetExpressions(i).GetFromOperator())
+            continue;
         if (displayAllVars->isChecked() ||
             !exprList->GetExpressions(i).GetFromDB())
         {

@@ -450,6 +450,27 @@ ViewerOperator::AllowsSubsequentOperators() const
 
 
 // ****************************************************************************
+//  Method:  ViewerOperator::GetCreatedVariableNames
+//
+//  Purpose:
+//    Return whether or not the given viewer operator creates new
+//    variables.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 18, 2008
+//
+// ****************************************************************************
+std::vector<std::string>
+ViewerOperator::GetCreatedVariableNames()
+{
+    return viewerPluginInfo->GetCreatedVariableNames();
+}
+
+
+// ****************************************************************************
 //  Method:  
 //
 //  Purpose:

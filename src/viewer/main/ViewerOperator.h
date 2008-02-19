@@ -52,6 +52,8 @@ class ViewerPlot;
 class ViewerOperatorPluginInfo;
 class avtPluginFilter;
 
+#include <vector>
+#include <string>
 
 // ****************************************************************************
 //  Class: ViewerOperator
@@ -111,6 +113,9 @@ class avtPluginFilter;
 //    Brad Whitlock, Mon Feb 12 17:49:49 PST 2007
 //    Added ViewerBase base class.
 //
+//    Jeremy Meredith, Tue Feb 19 14:23:39 EST 2008
+//    Allow operators to create new variables.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerOperator : public ViewerBase
@@ -138,6 +143,8 @@ class VIEWER_API ViewerOperator : public ViewerBase
 
     bool NeedsRecalculation() const;
     bool ExecuteEngineRPC() const;
+
+    std::vector<std::string> GetCreatedVariableNames();
 
     void CreateNode(DataNode *);
     void SetFromNode(DataNode *, const std::string &);

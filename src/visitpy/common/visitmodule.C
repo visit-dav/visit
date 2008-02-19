@@ -3018,6 +3018,9 @@ visit_DefineSpeciesExpression(PyObject *self, PyObject *args)
 //   of database expressions and auto expressions. Also added descriptive error
 //   messages if no expression is deleted. 
 //
+//   Jeremy Meredith, Tue Feb 19 14:37:10 EST 2008
+//   Don't allow users to delete expressions created by an operator.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3054,6 +3057,12 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
                 {
                     SNPRINTF(buff,512,
                              "Cannot delete database expression \"%s\".",
+                             exprName);
+                }
+                else if(expr.GetFromOperator())
+                {
+                    SNPRINTF(buff,512,
+                             "Cannot delete operator expression \"%s\".",
                              exprName);
                 }
                 else // delete the expression
