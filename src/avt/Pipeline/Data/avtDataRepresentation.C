@@ -927,6 +927,9 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    Cyrus Harrison, Wed Feb 13 09:40:09 PST 2008
 //    Added support for optional -dump output directory.
 //
+//    Cyrus Harrison, Tue Feb 19 11:41:18 PST 2008
+//    Fixed a bug with naming -dump vtk output files in the parallel case. 
+//
 // **************************************************************************** 
 
 const char *
@@ -980,13 +983,12 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         
         ostringstream oss_vtk_fname;
         
-        int rank = PAR_Rank();
-        if (rank > 1)
+        if (PAR_Size() > 1)
         {
             // %s%d.%d.vtk
             oss_vtk_fname << prefix
                           << times << "."
-                          << rank  << ".vtk";
+                          << PAR_Rank() << ".vtk";
         }
         else
         {
