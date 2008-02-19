@@ -154,6 +154,9 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //    Jeremy Meredith, Wed Jan 23 16:50:36 EST 2008
 //    Added setEFileOpenOptionsRPC.
 //
+//    Cyrus Harrison, Tue Feb 19 08:42:51 PST 2008
+//    Removed shouldDoDashDump (flag now contained in avtDebugDumpOptions)
+//
 // ****************************************************************************
 
 Engine::Engine()
@@ -172,7 +175,6 @@ Engine::Engine()
     metaData = NULL;
     silAtts = NULL;
     commandFromSim = NULL;
-    shouldDoDashDump = false;
     
     quitRPC = NULL;
     keepAliveRPC = NULL;
@@ -475,6 +477,9 @@ Engine::Finalize(void)
 //    Jeremy Meredith, Wed Jan 23 16:50:36 EST 2008
 //    Added setEFileOpenOptionsRPC.
 //
+//    Cyrus Harrison, Tue Feb 19 08:42:51 PST 2008
+//    Removed shouldDoDashDump (flag now contained in avtDebugDumpOptions)
+//
 // ****************************************************************************
 
 void
@@ -519,8 +524,6 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     // code to set the display and decide if we are using Mesa.
     //
     netmgr = new NetworkManager;
-    if (shouldDoDashDump)
-        netmgr->DumpRenders();
 
 #if !defined(_WIN32)
     // Set up the alarm signal handler.
@@ -1120,6 +1123,9 @@ Engine::ProcessInput()
 //    Cyrus Harrison, Wed Feb 13 11:06:03 PST 2008
 //    Change -dump and -info dump to set new avtDebugDumpOptions object. 
 //
+//    Cyrus Harrison, Tue Feb 19 08:42:51 PST 2008
+//    Removed shouldDoDashDump (flag now contained in avtDebugDumpOptions)
+//
 // ****************************************************************************
 
 void
@@ -1239,7 +1245,6 @@ Engine::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-dump") == 0)
         {
-            shouldDoDashDump = true;
             avtDebugDumpOptions::EnableDump();
             
             // check for optional -dump output directory
@@ -1251,7 +1256,6 @@ Engine::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-info-dump") == 0)
         {
-            shouldDoDashDump = true;
             avtDebugDumpOptions::EnableDump();
             avtDebugDumpOptions::DisableDatasetDump();
             

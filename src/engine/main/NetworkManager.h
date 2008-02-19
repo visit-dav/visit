@@ -309,6 +309,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Hank Childs, Fri Feb  1 15:44:46 PST 2008
 //    Add an arguement to GetDBFromCache for loading plugins.
 //
+//    Cyrus Harrison, Tue Feb 19 08:42:51 PST 2008
+//    Removed dumpRenders (now controled by avtDebugDumpOptions)
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -329,7 +332,7 @@ class NetworkManager
                                const CompactSILRestrictionAttributes &,
                                const MaterialAttributes &,
                                const MeshManagementAttributes &,
-			       bool);
+                               bool);
     void          DefineDB(const std::string &, const std::string &,
                            const stringVector &, int, const std::string &);
     void          AddFilter(const std::string&,
@@ -387,8 +390,6 @@ class NetworkManager
     void          ConstructDDF(const int, ConstructDDFAttributes *);
     avtDDF       *GetDDF(const char *);
 
-    void          DumpRenders(void) { dumpRenders = true; };
-
     void          CloneNetwork(const int id);
     void          AddQueryOverTimeFilter(QueryOverTimeAttributes *,
                                          const int clonedFromId);
@@ -421,7 +422,6 @@ class NetworkManager
 
     std::map<int, EngineVisWinInfo>   viswinMap;
 
-    bool                        dumpRenders;
 
     std::vector<avtDDF *>       ddf;
     std::vector<std::string>    ddf_names;
