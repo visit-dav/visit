@@ -222,13 +222,13 @@ Test("silo_25")
 
 #
 # Test objects existing past 2Gig limit in a >2 Gig file
-# Large File Support. Note the VOB filesystem doesn't
-# support files this large. So, the data lives in
-# /usr/gapps/visit/data
+# Large File Support. Because file is large, it is NOT
+# part of the repo. We create a sym-link to it from the
+# data dir.
 #
 DeleteAllPlots()
 CloseDatabase("../data/multi_ucd3d.silo")
-OpenDatabase("/usr/gapps/visit/data/largefile.silo")
+OpenDatabase("../data/largefile.silo")
 AddPlot("Curve","sincurve")
 AddPlot("Curve","coscurve")
 DrawPlots()
