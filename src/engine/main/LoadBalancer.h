@@ -153,6 +153,9 @@ struct IOInfo
 //    Added DetermineAppropriateLoadBalanceScheme 
 //    Removed avtIOInformation and avtDatabaseMetaData args from AddDatabase
 //
+//    Hank Childs, Tue Feb 19 08:56:54 PST 2008
+//    Add data member domainListForStreaming.
+//
 // ****************************************************************************
 
 class LoadBalancer
@@ -161,7 +164,7 @@ class LoadBalancer
                                   LoadBalancer(int nProcs, int rank);
     virtual                      ~LoadBalancer() {;};
 
-    avtDataRequest_p        Reduce(avtContract_p input);
+    avtDataRequest_p              Reduce(avtContract_p input);
     bool                          CheckDynamicLoadBalancing(
                                          avtContract_p input);
     bool                          CheckDynamicLoadBalancing(int);
@@ -201,6 +204,9 @@ class LoadBalancer
     std::map<std::string, IOInfo>     ioMap;
     std::vector<LBInfo>               pipelineInfo;
     std::map<std::string, avtDatabase *>  dbMap;
+
+    // Special data member for -lb-stream option.
+    std::vector<int>                  domainListForStreaming;
 };
 
 

@@ -468,6 +468,9 @@ $fullusage = "$usage
                              dynamically among the other processors.  This mode
                              has limitations in the types of queries it can 
                              perform.  Under development.
+        -lb-stream           Similar to -lb-block, but have the domains travel
+                             down the pipeline one at a time, instead of all
+                             together.  Under development.
 
     Database differencing options
     ---------------------------------------------------------------------------

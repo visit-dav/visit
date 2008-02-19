@@ -127,7 +127,11 @@ class DATABASE_API avtIsenburgSGG : public avtStreamingGhostGenerator
 #ifndef GHOST_3D_BLOCK_H
 #define GHOST_3D_BLOCK_H
 
-//#define ENABLE_PARALLEL_MODE
+#ifdef PARALLEL
+#define ENABLE_PARALLEL_MODE
+#include <mpi.h>
+#endif
+
 #define ENABLE_DEBUG_CHECK
 
 class Ghost3Dface;

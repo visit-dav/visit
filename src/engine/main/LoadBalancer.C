@@ -314,6 +314,12 @@ LoadBalancer::CheckDynamicLoadBalancing(int index)
 //    "-allowdynamic".  Finally, cache our answer so that we don't make the
 //    same calculation repeatedly in DLB mode.
 //
+//    Hank Childs, Thu Feb 14 15:54:36 PST 2008
+//    This function is misnamed.  It really has to do with whether or not we
+//    are *streaming* ... not necessarily doing dynamic load balancing 
+//    (DLB implies streaming, but streaming does not imply DLB).
+//    Return true if we are streaming.  Renaming will come later.
+//
 // ****************************************************************************
 
 bool
@@ -333,9 +339,10 @@ LoadBalancer::CheckDynamicLoadBalancing(avtContract_p input)
     //
     if (!allowDynamic)
     {
-        lbinfo.doDLB = false;
+        // Almost always false.
+        lbinfo.doDLB = false || (scheme == LOAD_BALANCE_STREAM);
         lbinfo.haveInitializedDLB = true;
-        return false;
+        return lbinfo.doDLB;
     }
 
     //
@@ -567,7 +574,7 @@ LoadBalancer::Reduce(avtContract_p input)
     if (nProcs <= 1)
     {
         bool doDynLB = CheckDynamicLoadBalancing(input);
-        if (!doDynLB)
+        if (!doDynLB && scheme != LOAD_BALANCE_STREAM)
         {
             pipelineInfo[input->GetPipelineIndex()].complete = true;
             return data;
@@ -583,7 +590,6 @@ LoadBalancer::Reduce(avtContract_p input)
 
             vector<int> list;
             trav.GetDomainList(list);
-        
     
             if (pipelineInfo[input->GetPipelineIndex()].current < 0)
                 pipelineInfo[input->GetPipelineIndex()].current  = 0;
@@ -614,8 +620,55 @@ LoadBalancer::Reduce(avtContract_p input)
     static int lastDomDoneMsg = GetUniqueMessageTag();
     static int newDomToDoMsg = GetUniqueMessageTag();
 
+    if (scheme == LOAD_BALANCE_STREAM)
+    {
+        if (pipelineInfo[input->GetPipelineIndex()].current < 0)
+        {
+            pipelineInfo[input->GetPipelineIndex()].current = 0;
+
+            //
+            // We probably want to do something more sophisticated in the future 
+            // (like walking through a SIL).  For now, just use the "chunks"
+            // mechanism set up with convenience methods.
+            //
+            vector<int> list;
+            trav.GetDomainList(list);
+
+            int amountPer = list.size() / nProcs;
+            int oneExtraUntil = list.size() % nProcs;
+            int lastDomain = 0;
+            for (int i = 0 ; i < nProcs ; i++)
+            {
+                if (i == rank)
+                {
+                    int amount = amountPer + (i < oneExtraUntil ? 1 : 0);
+                    for (int j = 0 ; j < amount ; j++)
+                    {
+                        domainListForStreaming.push_back(list[j+lastDomain]);
+                    }
+                }
+                lastDomain += amountPer + (i < oneExtraUntil ? 1 : 0);
+            }
+        }
+
+        int domain = domainListForStreaming[pipelineInfo[input->GetPipelineIndex()].current];
+        int sggDomain = avtStreamingGhostGenerator::LBGetNextDomain();
+        if (sggDomain >= 0)
+            domain = sggDomain;
+        vector<int> domainList(1, domain);
+        new_data->GetRestriction()
+                               ->RestrictDomainsForLoadBalance(domainList);
+        UpdateProgress(pipelineInfo[input->GetPipelineIndex()].current,
+                       domainListForStreaming.size());
+        pipelineInfo[input->GetPipelineIndex()].current++;
+        if (pipelineInfo[input->GetPipelineIndex()].current == domainListForStreaming.size())
+        {
+            pipelineInfo[input->GetPipelineIndex()].complete = true;
+            domainListForStreaming.clear();
+        }
+    }
     // Can we do dynamic load balancing?
-    if (! CheckDynamicLoadBalancing(input))
+    else if (! CheckDynamicLoadBalancing(input))
     {
         //
         // We probably want to do something more sophisticated in the future 
@@ -1118,7 +1171,8 @@ static bool
 DynamicCheckerCallback(void *ptr, avtContract_p spec)
 {
     LoadBalancer *lb = (LoadBalancer *) ptr;
-    return lb->CheckDynamicLoadBalancing(spec);
+    bool rv = lb->CheckDynamicLoadBalancing(spec);
+    return rv;
 }
 
 

@@ -38,12 +38,20 @@
 
 #include <avtIsenburgSGG.h>
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnsignedCharArray.h>
+
+#include <avtParallel.h>
+
+#include <DebugStream.h>
 
 
 // ****************************************************************************
@@ -151,7 +159,26 @@ void
 avtIsenburgSGG::FinalizeDomainInformation(void)
 {
     int sizeOfData = 4; // single float
+
+    // HACK: Reproducing the load balancing taking place in "LoadBalancer" here.
+    int nProcs = PAR_Size();
+    int amountPer = numDomains / nProcs;
+    int oneExtraUntil = numDomains % nProcs;
+    int domain = 0;
+    for (int i = 0 ; i < nProcs ; i++)
+    {
+        int amount = amountPer + (i < oneExtraUntil ? 1 : 0);
+        for (int j = 0 ; j < amount ; j++)
+        {
+            blocks[domain++].proc_id = i;
+        }
+    }
+
+#ifdef PARALLEL
+    ghost3dmodule->init(VISIT_MPI_COMM, blocks, numDomains, sizeOfData, 0);
+#else
     ghost3dmodule->init(blocks, numDomains, sizeOfData);
+#endif
 }
 
 
@@ -302,7 +329,7 @@ avtIsenburgSGG::StreamDataset(vtkDataSet *ds)
     offset += dims[2];
     if (offset < size_out[2])
     {
-        ds->GetPoint(dims[0]*dims[1]*(dims[2]-1), pt1);
+        ds->GetPoint(dims[0]*dims[1]*(dims[2]-1)-1, pt1);
         ds->GetPoint(dims[0]*dims[1]*dims[2] -1, pt2);
         int numExtra = size_out[2] - offset;
         for (i = 0 ; i < numExtra ; i++)
