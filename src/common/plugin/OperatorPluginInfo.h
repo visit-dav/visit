@@ -54,6 +54,7 @@ class QvisWizard;
 class QWidget;
 class avtPluginFilter;
 class ViewerPlot;
+class ExpressionList;
 
 #include <vector>
 #include <string>
@@ -105,7 +106,9 @@ class ViewerPlot;
 //    the types of variables that the GUI puts in the variable list.
 //
 //    Jeremy Meredith, Mon Feb 18 17:44:40 EST 2008
-//    Added way for operators to create new variable names.
+//    Added way for operators to create new variables.  The expression
+//    definition is intended for intialization; the filter should override
+//    the actual values of the variable.
 //
 // ****************************************************************************
 
@@ -159,10 +162,7 @@ class PLUGIN_API ViewerOperatorPluginInfo : public virtual CommonOperatorPluginI
     virtual bool Removeable() const { return true; }
     virtual bool Moveable() const { return true; }
     virtual bool AllowsSubsequentOperators() const { return true; }
-    virtual std::vector<std::string> GetCreatedVariableNames()
-    {
-        return std::vector<std::string>();
-    }
+    virtual ExpressionList *GetCreatedVariables(const char *mesh) {return NULL;}
 };
 
 class PLUGIN_API EngineOperatorPluginInfo : public virtual CommonOperatorPluginInfo

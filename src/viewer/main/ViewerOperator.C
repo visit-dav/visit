@@ -462,11 +462,15 @@ ViewerOperator::AllowsSubsequentOperators() const
 //  Programmer:  Jeremy Meredith
 //  Creation:    February 18, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Feb 19 15:39:42 EST 2008
+//    Allow operators to construct full expressions for their new variables.
+//
 // ****************************************************************************
-std::vector<std::string>
-ViewerOperator::GetCreatedVariableNames()
+ExpressionList *
+ViewerOperator::GetCreatedVariables(const char *mesh)
 {
-    return viewerPluginInfo->GetCreatedVariableNames();
+    return viewerPluginInfo->GetCreatedVariables(mesh);
 }
 
 

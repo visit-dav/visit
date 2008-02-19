@@ -59,6 +59,10 @@ class     vtkDataArray;
 //  Creation:   February 19, 2008
 //
 //  Modifications:
+//    Jeremy Meredith, Tue Feb 19 16:04:11 EST 2008
+//    By having this function specify it only had one argument, it was
+//    possible to clobber other constant creations.  I upped it to 2 and
+//    had the second arg push a textual representation on the state.
 //
 // ****************************************************************************
 
@@ -76,7 +80,7 @@ class EXPRESSION_API avtConstantFunctionExpression
     virtual vtkDataArray *DeriveVariable(vtkDataSet *);
     virtual bool          IsPointVariable()  { return true; }
     virtual int           GetVariableDimension() { return 1; }
-    virtual int           NumVariableArguments(void) { return 1; }
+    virtual int           NumVariableArguments(void) { return 2; }
   private:
     float   value;
 };
