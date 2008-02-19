@@ -6971,6 +6971,11 @@ ViewerPlotList::UpdateSILRestrictionAtts()
 //   Brad Whitlock, Fri Feb 18 10:41:43 PDT 2005
 //   I moved some of the logic into the file server.
 //
+//   Jeremy Meredith, Tue Feb 19 16:27:12 EST 2008
+//   Added ability for operators to create new variables.  Specifically, the
+//   operator reports new expressions we will add to the expression list when
+//   they are created, and the operator is expected to override its values.
+//
 // ****************************************************************************
 
 void
@@ -7054,19 +7059,17 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
             continue;
 
         ViewerPlot *plot = plots[i].plot;
+        const string &mesh = plot->GetMeshName();
         for (int j = 0 ; j < plot->GetNOperators() ; j++)
         {
             ViewerOperator *oper = plot->GetOperator(j);
-            vector<string> newVars = oper->GetCreatedVariableNames();
-            for (int k = 0 ; k < newVars.size() ; k++)
+            ExpressionList *vars = oper->GetCreatedVariables(mesh.c_str());
+            if (!vars)
+                continue;
+
+            for (int k = 0 ; k < vars->GetNumExpressions() ; k++)
             {
-                const string &mesh = plot->GetMeshName();
-                char def[1000];
-                SNPRINTF(def, 1000, "constant(%s,0)", mesh.c_str());
-                Expression exp;
-                exp.SetName(newVars[k]);
-                exp.SetDefinition(def);
-                exp.SetType(Expression::ScalarMeshVar);
+                Expression exp = vars->GetExpressions(k);
                 exp.SetFromOperator(true);
                 newList.AddExpressions(exp);
             }

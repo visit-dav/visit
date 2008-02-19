@@ -51,6 +51,7 @@ class DataNode;
 class ViewerPlot;
 class ViewerOperatorPluginInfo;
 class avtPluginFilter;
+class ExpressionList;
 
 #include <vector>
 #include <string>
@@ -116,6 +117,9 @@ class avtPluginFilter;
 //    Jeremy Meredith, Tue Feb 19 14:23:39 EST 2008
 //    Allow operators to create new variables.
 //
+//    Jeremy Meredith, Tue Feb 19 15:39:42 EST 2008
+//    Allow operators to construct full expressions for their new variables.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerOperator : public ViewerBase
@@ -144,7 +148,7 @@ class VIEWER_API ViewerOperator : public ViewerBase
     bool NeedsRecalculation() const;
     bool ExecuteEngineRPC() const;
 
-    std::vector<std::string> GetCreatedVariableNames();
+    ExpressionList *GetCreatedVariables(const char *mesh);
 
     void CreateNode(DataNode *);
     void SetFromNode(DataNode *, const std::string &);

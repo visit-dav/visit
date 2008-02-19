@@ -1002,6 +1002,9 @@ avtFunctionExpr::CreateFilters(string functionName)
 //      Set a temporary output variable name for those cases where parsing
 //      throws an exception.
 //
+//      Jeremy Meredith, Tue Feb 19 16:19:24 EST 2008
+//      Fixed the ordering of naming for internal variable names.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -1030,7 +1033,7 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
     // Ask the filter how many variable arguments it has.  Pop that number
     // of arguments off the stack and store them on a stack.
     int nvars = f->NumVariableArguments();
-    string outputName = functionName + "(";
+    string argsText;
     vector<string> inputStack;
     int i;
     for (i = 0; i < nvars; i++)
@@ -1040,18 +1043,20 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
             inputName = state->PopName();
         else
         {
-            EXCEPTION2(ExpressionException, outputName, "Parsing of your expression has "
+            EXCEPTION2(ExpressionException, functionName,
+                       "Parsing of your expression has "
                        "failed.  Failures of the type VisIt's parser has "
                        "encountered are often caused when an expression is "
                        "given less arguments than that expression expects.");
         }
 
         inputStack.push_back(inputName);
-        outputName += inputName;
-        if (i != 0)
-            outputName += ",";
+        if (i == 0)
+            argsText = inputName;
+        else
+            argsText = inputName + "," + argsText;
     }
-    outputName += ")";
+    string outputName = functionName + "(" + argsText + ")";
 
     // Take the stack of variable names and feed them to the function in
     // reverse order.

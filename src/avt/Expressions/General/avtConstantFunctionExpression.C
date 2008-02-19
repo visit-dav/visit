@@ -46,7 +46,8 @@
 #include <vtkFloatArray.h>
 #include <ExpressionException.h>
 #include <avtExprNode.h>
-
+#include <ExprPipelineState.h>
+#include <snprintf.h>
 
 // ****************************************************************************
 //  Method: avtConstantFunctionExpression constructor
@@ -115,6 +116,26 @@ avtConstantFunctionExpression::DeriveVariable(vtkDataSet *in_ds)
     return rv;
 }
 
+// ****************************************************************************
+//  Method:  avtConstantFunctionExpression::ProcessArguments
+//
+//  Purpose:
+//    Process the arguments for this function.
+//
+//  Arguments:
+//    args       the arguments to the function
+//    state      the pipeline state
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 19, 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Feb 19 16:04:11 EST 2008
+//    By having this function specify it only had one argument, it was
+//    possible to clobber other constant creations.  I upped it to 2 and
+//    had the second arg push a textual representation on the state.
+//
+// ****************************************************************************
 void
 avtConstantFunctionExpression::ProcessArguments(ArgsExpr *args,
                                                 ExprPipelineState *state)
@@ -152,5 +173,9 @@ avtConstantFunctionExpression::ProcessArguments(ArgsExpr *args,
         value = dynamic_cast<avtIntegerConstExpr*>(expr1)->GetValue();
     else
         value = dynamic_cast<avtFloatConstExpr*>(expr1)->GetValue();
+
+    char strrep[30];
+    SNPRINTF(strrep, 30, "'%e'", value);
+    state->PushName(string(strrep));    
 }
 
