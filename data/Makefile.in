@@ -364,9 +364,19 @@ test: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./mu
 	./lineout_test
 	-@if test -e /home/visit/data/sesame.pdb; then \
 	    ln -sf /home/visit/data/sesame.pdb . ;\
+        elif test -e /project/projectdirs/visit/data/sesame.pdb; then \
+	    ln -sf /project/projectdirs/visit/data/sesame.pdb . ;\
 	else \
 	    echo "" > SESAME_NOT_FOUND ;\
 	    ln -sf SESAME_NOT_FOUND sesame.pdb ;\
+	fi
+	-@if test -e /usr/gapps/visit/data/largefile.silo; then \
+	    ln -sf /usr/gapps/visit/data/largefile.silo . ;\
+        elif test -e /project/projectdirs/visit/data/largefile.silo; then \
+	    ln -sf /project/projectdirs/visit/data/largefile.silo . ;\
+	else \
+	    echo "" > LARGEFILE_NOT_FOUND ;\
+	    ln -sf LARGEFILE_NOT_FOUND largefile.silo ;\
 	fi
 	@PDB_EXEC@
 
