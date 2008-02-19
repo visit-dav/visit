@@ -170,6 +170,10 @@ EOF
     fi
 }
 
+# set up the environment
+PATH=/usr/common/usg/bin:/usr/common/mss/bin:/usr/common/pbs/bin:/usr/common/homes/m/miller86/bin:/usr/common/mss/bin:/usr/common/usg/bin:/usr/local/bin:/usr/bin/X11:/usr/bin:/bin:/usr/lib/java/jre/bin:.
+export:PATH
+
 optError=0
 skipIfNoChanges=1
 scriptWasChanged=0
@@ -355,27 +359,9 @@ skipList_for_Davinci="\
 	  davinci,serial:tests/databases/silo.py:silo_20,silo_21,silo_26 \
 	  davinci,scalable:tests/databases/silo.py:silo_20,silo_21,silo_26 \
 	  davinci,scalable,parallel:tests/databases/silo.py:silo_20,silo_21,silo_26 \
-          davinci,serial:tests/databases/vista.py \
-          davinci,scalable:tests/databases/vista.py \
-          davinci,scalable,parallel:tests/databases/vista.py \
-          davinci,serial:tests/databases/visus.py \
-          davinci,scalable:tests/databases/visus.py \
-          davinci,scalable,parallel:tests/databases/visus.py \
-          davinci,serial:tests/databases/FITs.py \
-          davinci,scalable:tests/databases/FITs.py \
-          davinci,scalable,parallel:tests/databases/FITs.py \
-          davinci,serial:tests/databases/exodus.py \
-          davinci,scalable:tests/databases/exodus.py \
-          davinci,scalable,parallel:tests/databases/exodus.py \
-          davinci,serial:tests/databases/itaps.py \
-          davinci,scalable:tests/databases/itaps.py \
-          davinci,scalable,parallel:tests/databases/itaps.py \
           davinci,serial:tests/databases/leos.py \
           davinci,scalable:tests/databases/leos.py \
-          davinci,scalable,parallel:tests/databases/leos.py \
-          davinci,serial:tests/queries/conncomp.py \
-          davinci,scalable:tests/queries/conncomp.py \
-          davinci,scalable,parallel:tests/queries/conncomp.py"
+          davinci,scalable,parallel:tests/databases/leos.py"
           
 skipList="$skipList_dueTo_clientServer $skipList_dueTo_parallelRendering $skipList_dueTo_temporaryBugs $skipList_for_Davinci"
 
