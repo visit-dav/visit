@@ -1123,6 +1123,9 @@ Engine::ProcessInput()
 //    Cyrus Harrison, Wed Feb 13 11:06:03 PST 2008
 //    Change -dump and -info dump to set new avtDebugDumpOptions object. 
 //
+//    Hank Childs, Thu Feb 14 15:27:13 PST 2008
+//    Added -lb-stream.
+//
 //    Cyrus Harrison, Tue Feb 19 08:42:51 PST 2008
 //    Removed shouldDoDashDump (flag now contained in avtDebugDumpOptions)
 //
@@ -1279,6 +1282,10 @@ Engine::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-lb-stride") == 0)
         {
             LoadBalancer::SetScheme(LOAD_BALANCE_STRIDE_ACROSS_BLOCKS);
+        }
+        else if (strcmp(argv[i], "-lb-stream") == 0)
+        {
+            LoadBalancer::SetScheme(LOAD_BALANCE_STREAM);
         }
         else if (strcmp(argv[i], "-lb-random") == 0)
         {
