@@ -3777,6 +3777,9 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Brad Whitlock, Fri Feb 15 14:54:34 PST 2008
 //    Delete the adn from the default plot.
 //
+//    Hank Childs, Tue Feb 19 10:28:15 PST 2008
+//    Fix bug introduced by Klocwork fix.
+//
 // ****************************************************************************
 
 int
@@ -4018,13 +4021,12 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         //
         if(addDefaultPlots && !plotList->FileInUse(host, db))
         {
-            DataNode *adn = NULL;
             bool defaultPlotsAdded = false;
 
             for(i=0; i<md->GetNumDefaultPlots(); i++)
             {
                 const avtDefaultPlotMetaData *dp = md->GetDefaultPlot(i);
-                adn = CreateAttributesDataNode(dp);
+                DataNode *adn = CreateAttributesDataNode(dp);
 
                 //
                 // Use the plot plugin manager to get the plot type index from
@@ -4040,8 +4042,11 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
                     defaultPlotsAdded = true;
                 }
 
-                if(adn != 0)
+                if (adn != NULL)
+                {
                     delete adn;
+                    adn = NULL;
+                }
             }
 
             //
@@ -4052,9 +4057,6 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
             {
                 plotList->RealizePlots();
             } 
-
-            if (adn != NULL)
-                delete adn;
         }
         else
         {
