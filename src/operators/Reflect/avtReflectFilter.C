@@ -448,7 +448,7 @@ avtReflectFilter::UpdateDataObjectInfo(void)
 
 
 // ****************************************************************************
-//  Method: avtReflectFilter::ExecuteData
+//  Method: avtReflectFilter::ExecuteDataTree
 //
 //  Purpose:
 //      Sends the specified input and output through the Reflect filter.
