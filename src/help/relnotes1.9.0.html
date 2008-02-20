@@ -67,6 +67,9 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>VisIt now automatically saves a crash recovery file every 5 minutes. If VisIt crashes, the next time you run VisIt, you will be prompted as to whether you want to restore the crash recovery session file to return to the last saved state. This crash recovery option can be disabled in the <b>Preferences</b> window.</li>
 
     <li>VisIt's ZeusMP reader now supports cylindrical coordinates.</li>
+
+    <li>VisIt's Clip operator now has a 'fast' vs. 'accurate' option, with
+    a new 'accurate' option being the default.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.9.0</font></b></p>
 <ul>
@@ -94,6 +97,9 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>VisIt's viewer can crash when receiving commands from a simulation
     while already communicating with the simulation for other
     operations.</li>
+
+    <li>VisIt's Clip operator no longer generates bad clips when using
+    multiple planes.</li>
 
 </ul>
 <p>Click the following link to view the release notes for the previous version

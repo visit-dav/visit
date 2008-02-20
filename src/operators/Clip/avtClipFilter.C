@@ -214,19 +214,92 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 
 
 // ****************************************************************************
-//  Method: avtClipFilter::ProcessOneChunk
+//  Method: avtClipFilter::ClipAgainstPlanes
+//
+//  Purpose:
+//      Clips a vtkDataSet against a list of planes and returns the resultant
+//      vtkUnstructuredGrid.
+//
+//  Programmer: Sean Ahern
+//  Creation:   February 19, 2008
+//
+// ****************************************************************************
+
+vtkUnstructuredGrid *
+avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool nodesCritical,
+                                 vtkPlane *p1, vtkPlane *p2,
+                                 vtkPlane *p3)
+{
+    // The three planes.
+    vtkImplicitBoolean *funcs1 = NULL, *funcs2 = NULL, *funcs3 = NULL;
+    funcs1 = vtkImplicitBoolean::New();
+    funcs1->AddFunction(p1);
+    if (p2 != NULL)
+    {
+        funcs2 = vtkImplicitBoolean::New();
+        funcs2->AddFunction(p2);
+    }
+    if (p3 != NULL)
+    {
+        funcs3 = vtkImplicitBoolean::New();
+        funcs3->AddFunction(p3);
+    }
+
+    // Set up and apply the clipping filters.
+    vtkUnstructuredGrid *ug = vtkUnstructuredGrid::New();
+
+    vtkVisItClipper *clipper1 = NULL, *clipper2 = NULL,
+                    *clipper3 = NULL, *last = NULL;
+
+    clipper1 = vtkVisItClipper::New();
+    clipper1->SetInput(in);
+    clipper1->SetClipFunction(funcs1);
+    clipper1->SetInsideOut(true);
+    clipper1->SetRemoveWholeCells(nodesCritical);
+    last = clipper1;
+
+    if (p2 != NULL)
+    {
+        clipper2 = vtkVisItClipper::New();
+        clipper2->SetInput(clipper1->GetOutput());
+        clipper2->SetClipFunction(funcs2);
+        clipper2->SetInsideOut(true);
+        clipper2->SetRemoveWholeCells(nodesCritical);
+        last = clipper2;
+    }
+    if (p3 != NULL)
+    {
+        clipper3 = vtkVisItClipper::New();
+        clipper3->SetInput(clipper2->GetOutput());
+        clipper3->SetClipFunction(funcs3);
+        clipper3->SetInsideOut(true);
+        clipper3->SetRemoveWholeCells(nodesCritical);
+        last = clipper3;
+    }
+    last->SetOutput(ug);
+    last->Update();
+
+    funcs1->Delete();
+    clipper1->Delete();
+    if (p2 != NULL)
+    {
+        funcs2->Delete();
+        clipper2->Delete();
+    }
+    if (p3 != NULL)
+    {
+        funcs3->Delete();
+        clipper3->Delete();
+    }
+
+    return ug;
+}
+
+// ****************************************************************************
+//  Method: avtClipFilter::ExecuteDataTree
 //
 //  Purpose:
 //      Sends the specified input and output through the Clip filter.
-//
-//  Arguments:
-//      in_ds      The input dataset.
-//      dom        The domain number.
-//      label      The label.
-//      isChunked  Whether or not the data set is produced by the structured
-//                 mesh chunker -- not important for this module.
-//
-//  Returns:       The output unstructured grid.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   August  8, 2003
@@ -261,157 +334,192 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Wed Sep  6 16:49:15 PDT 2006
 //    Fix memory issue.
 //
+//    Sean Ahern, Thu Feb 14 16:51:22 EST 2008
+//    Converted to ExecuteDataTree, since I moved avtClipFilter from an
+//    avtStreamer to an avtSIMODataTreeIterator.  Added pipelined clips to get
+//    accurate cell clips when multiple planes are used.
+//
 // ****************************************************************************
 
-vtkDataSet *
-avtClipFilter::ProcessOneChunk(vtkDataSet *inDS, int dom, std::string, bool)
+avtDataTree_p
+avtClipFilter::ExecuteDataTree(vtkDataSet *inDS, int domain, std::string label)
 {
-    vtkVisItClipper *fastClipper = vtkVisItClipper::New();
-    vtkImplicitBoolean *ifuncs = vtkImplicitBoolean::New();
+    if (inDS == NULL || inDS->GetNumberOfPoints() == 0 || inDS->GetNumberOfCells() == 0)
+        return NULL;
+
+    vtkDataSet *outDS[3];
+    int nDataSets = 0;
+    // Gather global plane clipping information.
+    bool nodesAreCritical = GetInput()->GetInfo().GetAttributes().NodesAreCritical();
  
-    bool inverse = false; 
-    bool funcSet = SetUpClipFunctions(ifuncs, inverse);
-    if (!funcSet)
+    if (atts.GetFuncType() == ClipAttributes::Plane)
     {
-        // we have no functions to work with!
-        fastClipper->Delete();
-        ifuncs->Delete();
-        // The chunk streamer filters (which clip inherits from) has the model
-        // that the base class will remove a reference (i.e. ->Delete()) the
-        // returned data set.  This is a different model that the normal
-        // streamer classes where you do your own memory management.  So we need
-        // to increment the reference count of this object before returning;
-        inDS->Register(NULL);
-        return inDS;
-    }
-
-    bool nodesAreCritical =  GetInput()->
-                                  GetInfo().GetAttributes().NodesAreCritical();
-
-    //
-    // Set up and apply the clipping filters
-    // 
-    vtkDataSet *outDS = NULL;
-
-    bool doFast = true;
-    if  (inDS->GetDataObjectType() == VTK_RECTILINEAR_GRID)
-    {
-        int dims[3];       
-        ((vtkRectilinearGrid*)inDS)->GetDimensions(dims);
-        if (dims[1] <= 1 && dims[2] <= 1)
+        // Set up the planes.
+        vector<vtkPlane*> planes;
+        vector<vtkPlane*> inversePlanes;
+        if (atts.GetPlane1Status() == true)
         {
-            doFast = false;
-            outDS = Clip1DRGrid(ifuncs, inverse, (vtkRectilinearGrid*)inDS);
+            vtkPlane *plane = vtkPlane::New();
+            plane->SetOrigin(atts.GetPlane1Origin());
+            plane->SetNormal(atts.GetPlane1Normal());
+            planes.push_back(plane);
+
+            vtkPlane *inversePlane = vtkPlane::New();
+            inversePlane->SetOrigin(atts.GetPlane1Origin());
+            double n[3];
+            plane->GetNormal(n);
+            n[0] = -n[0];
+            n[1] = -n[1];
+            n[2] = -n[2];
+            inversePlane->SetNormal(n);
+            inversePlanes.push_back(inversePlane);
         }
-    }
-    if (doFast)
-    {
-        outDS = vtkUnstructuredGrid::New();
-        fastClipper->SetInput(inDS);
-        fastClipper->SetOutput((vtkUnstructuredGrid*)outDS);
-        fastClipper->SetClipFunction(ifuncs);
-        fastClipper->SetInsideOut(inverse);
-        fastClipper->SetRemoveWholeCells(nodesAreCritical);
-        fastClipper->Update();
-    }
-
-    ifuncs->Delete();
-
-    if (outDS != NULL)
-    {
-        if (outDS->GetNumberOfCells() == 0)
+        if (atts.GetPlane2Status() == true)
         {
-            outDS->Delete();
-            outDS = NULL;
+            vtkPlane *plane = vtkPlane::New();
+            plane->SetNormal(atts.GetPlane2Normal());
+            plane->SetOrigin(atts.GetPlane2Origin());
+            planes.push_back(plane);
+
+            vtkPlane *inversePlane = vtkPlane::New();
+            inversePlane->SetOrigin(atts.GetPlane2Origin());
+            double n[3];
+            plane->GetNormal(n);
+            n[0] = -n[0];
+            n[1] = -n[1];
+            n[2] = -n[2];
+            inversePlane->SetNormal(n);
+            inversePlanes.push_back(inversePlane);
         }
-        else
+        if (atts.GetPlane3Status() == true)
         {
-            debug5 << "After clipping, domain " << dom << " has " 
-                   << outDS->GetNumberOfCells() << " cells." << endl;
+            vtkPlane *plane = vtkPlane::New();
+            plane->SetNormal(atts.GetPlane3Normal());
+            plane->SetOrigin(atts.GetPlane3Origin());
+            planes.push_back(plane);
+
+            vtkPlane *inversePlane = vtkPlane::New();
+            inversePlane->SetOrigin(atts.GetPlane3Origin());
+            double n[3];
+            plane->GetNormal(n);
+            n[0] = -n[0];
+            n[1] = -n[1];
+            n[2] = -n[2];
+            inversePlane->SetNormal(n);
+            inversePlanes.push_back(inversePlane);
         }
-    }
+        int planeCount = planes.size();
 
-    fastClipper->Delete();
-    return outDS;  // Calling function will free outDS.
-}
+        // Check if we have any work to do.
+        if (planeCount == 0)
+        {
+            // Nothing to do!  Just return an avtDataTree of our input.
+            outDS[nDataSets++] = inDS;
+            avtDataTree_p outDT = new avtDataTree(nDataSets, outDS, domain, label);
+            return outDT;
+        }
 
-
-// ****************************************************************************
-//  Method: avtClipFilter::GetAssignments
-//
-//  Purpose:
-//      Get the assignments for the clip.
-//
-//  Programmer: Hank Childs
-//  Creation:   March 27, 2005
-//
-//    Hank Childs, Fri Feb 15 15:24:05 PST 2008
-//    Fix memory leak.
-//
-// ****************************************************************************
-
-void
-avtClipFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
-                     std::vector<avtStructuredMeshChunker::ZoneDesignation> &d)
-{
-    int i, j, k;
-    vtkImplicitBoolean *ifuncs = vtkImplicitBoolean::New();
- 
-    bool inverse = false; 
-    bool funcSet = SetUpClipFunctions(ifuncs, inverse);
-    if (!funcSet)
-    {
-        // we have no functions to work with!
-        ifuncs->Delete();
-        EXCEPTION0(ImproperUseException);
-    }
-
-    int pt_dims[3];
-    pt_dims[0] = dims[0]+1;
-    pt_dims[1] = dims[1]+1;
-    pt_dims[2] = dims[2]+1;
-    int npts = pt_dims[0]*pt_dims[1]*pt_dims[2];
-    bool *pt_dist = new bool[npts];
-    for (i = 0 ; i < npts ; i++)
-    {
-        double pt[3];
-        in_ds->GetPoint(i, pt);
-        bool pos_dist = ifuncs->EvaluateFunction(pt) >= 0;
-        pt_dist[i] = (pos_dist && !inverse) || (!pos_dist && inverse);
-    }
-
-    for (k = 0 ; k < dims[2] ; k++)
-        for (j = 0 ; j < dims[1] ; j++)
-            for (i = 0 ; i < dims[0] ; i++)
+        if (atts.GetPlaneInverse() == true)
+        {
+            // Only one clip needed here.
+            switch(planeCount)
             {
-                bool oneIn = false;
-                bool oneOut = false;
-                for (int l = 0 ; l < 8 ; l++)
-                {
-                    int i2 = (l & 1 ? i+1 : i);
-                    int j2 = (l & 2 ? j+1 : j);
-                    int k2 = (l & 4 ? k+1 : k);
-                    int index = k2*pt_dims[0]*pt_dims[1] + j2*pt_dims[0] + i2;
-                    if (pt_dist[index])
-                        oneIn = true;
-                    else
-                        oneOut = true;
-                }
-                int index = k*dims[0]*dims[1] + j*dims[0] + i;
-                if (oneIn && oneOut)
-                    d[index] = avtStructuredMeshChunker::TO_BE_PROCESSED;
-                else if (!oneOut)
-                    d[index] = avtStructuredMeshChunker::RETAIN;
-                else if (!oneIn)
-                    d[index] = avtStructuredMeshChunker::DISCARD;
-                else
-                {
-                    EXCEPTION0(ImproperUseException); // should be impossible
-                }
+            case 1:
+                // The inverse of the first plane.
+                outDS[nDataSets++] =
+                    ClipAgainstPlanes(inDS, nodesAreCritical,
+                                      inversePlanes[0]);
+                break;
+            case 2:
+                // The first plane, and the inverse of the second plane.
+                outDS[nDataSets++] =
+                    ClipAgainstPlanes(inDS, nodesAreCritical,
+                                      inversePlanes[0],
+                                      inversePlanes[1]);
+                break;
+            case 3:
+                // The first plane, the second plane, and the inverse of the second plane.
+                outDS[nDataSets++] =
+                    ClipAgainstPlanes(inDS, nodesAreCritical,
+                                      inversePlanes[0],
+                                      inversePlanes[1],
+                                      inversePlanes[2]);
+                break;
+            default:
+                break;
             }
+        } else
+        {
+            // Up to three separate clips required.
+            if (planeCount >= 1)
+            {
+                // The first plane.
+                outDS[nDataSets++] = ClipAgainstPlanes(inDS, nodesAreCritical, planes[0]);
+            }
+            if (planeCount >= 2)
+            {
+                // The inverse of the first plane, and the second plane.
+                outDS[nDataSets++] =
+                    ClipAgainstPlanes(inDS, nodesAreCritical,
+                                      inversePlanes[0], planes[1]);
+            }
+            if (planeCount >= 3)
+            {
+                // The inverse of the first plane, the inverse of the second
+                // plane, and the third plane.
+                outDS[nDataSets++] =
+                    ClipAgainstPlanes(inDS, nodesAreCritical,
+                                      inversePlanes[0],
+                                      inversePlanes[1], planes[2]);
+            }
+        }
 
-    ifuncs->Delete();
-    delete [] pt_dist;
+        // Delete the planes
+        vector<vtkPlane*>::iterator it;
+        for(it = planes.begin(); it != planes.end(); it++)
+            (*it)->Delete();
+        for(it = inversePlanes.begin(); it != inversePlanes.end(); it++)
+            (*it)->Delete();
+    }
+
+    if (atts.GetFuncType() == ClipAttributes::Sphere)
+    {
+        vtkImplicitBoolean *funcs = vtkImplicitBoolean::New();
+        double  rad = atts.GetRadius();
+        double *cent;
+        cent = atts.GetCenter();
+        vtkSphere *sphere = vtkSphere::New();
+        sphere->SetCenter(cent);
+        sphere->SetRadius(rad);
+        funcs->AddFunction(sphere);
+        sphere->Delete();
+        bool inverse = atts.GetSphereInverse();
+
+        vtkVisItClipper *clipper = vtkVisItClipper::New();
+        clipper->SetInput(inDS);
+        clipper->SetClipFunction(funcs);
+        clipper->SetInsideOut(inverse);
+        clipper->SetRemoveWholeCells(nodesAreCritical);
+        vtkUnstructuredGrid *ug = vtkUnstructuredGrid::New();
+        clipper->SetOutput(ug);
+        clipper->Update();
+
+        outDS[nDataSets++] = ug;
+
+        funcs->Delete();
+        clipper->Delete();
+    }
+
+    // Create a data tree from the grids.
+    if (nDataSets == 0)
+        return NULL;
+
+    avtDataTree_p outDT = new avtDataTree(nDataSets, outDS, domain, label);
+    for(int i=0;i<nDataSets;i++)
+        if(outDS[i] != NULL)
+            outDS[i]->Delete();
+
+    return outDT;
 }
 
 
@@ -437,8 +545,6 @@ avtClipFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
 bool
 avtClipFilter::SetUpClipFunctions(vtkImplicitBoolean *funcs, bool &inv)
 {
-    funcs->SetOperationTypeToUnion();
-
     bool success = false;
     if (atts.GetFuncType() == ClipAttributes::Plane)
     {
@@ -581,9 +687,8 @@ avtClipFilter::ModifyContract(avtContract_p spec)
 //  Creation:   July 31, 2006 
 //
 //  Modifications:
-//
-//    Hank Childs, Fri Feb 15 14:45:45 PST 2008
-//    Initialize some variables to make Klockwork happy.
+//      Hank Childs, Fri Feb 15 14:45:45 PST 2008
+//      Initialize some variables to make Klockwork happy.
 //
 // ****************************************************************************
 
@@ -665,5 +770,3 @@ avtClipFilter::Clip1DRGrid(vtkImplicitBoolean *ifuncs, bool inv,
     outVal->Delete();
     return outGrid;
 }
-
-

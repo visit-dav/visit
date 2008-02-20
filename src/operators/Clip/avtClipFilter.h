@@ -94,9 +94,17 @@ class vtkUnstructuredGrid;
 //    Kathleen Bonnell, Mon Jul 31 11:11:28 PDT 2006 
 //    Add Clip1DRGrid. 
 //
+//    Sean Ahern, Thu Feb 14 16:18:05 EST 2008
+//    Converted to an avtSIMODataTreeIterator to handle multi-plane clip
+//    bugs.  Added pipelined clips to get accurate cell clips when
+//    multiple planes are used.
+//
 // ****************************************************************************
 
-class avtClipFilter : public avtPluginStructuredChunkDataTreeIterator
+class vtkPlane;
+
+class avtClipFilter : public avtSIMODataTreeIterator,
+                      public virtual avtPluginFilter
 {
   public:
                              avtClipFilter();
@@ -114,14 +122,14 @@ class avtClipFilter : public avtPluginStructuredChunkDataTreeIterator
   protected:
     ClipAttributes           atts;
 
-    virtual vtkDataSet      *ProcessOneChunk(vtkDataSet *, int, 
-                                             std::string, bool);
-    virtual void             GetAssignments(vtkDataSet *, const int *,
-                      std::vector<avtStructuredMeshChunker::ZoneDesignation>&);
+    virtual avtDataTree_p    ExecuteDataTree(vtkDataSet *, int, std::string);
 
     virtual void             UpdateDataObjectInfo(void);
-    avtContract_p
-                             ModifyContract(avtContract_p);
+    avtContract_p            ModifyContract(avtContract_p);
+    virtual vtkUnstructuredGrid *ClipAgainstPlanes(vtkDataSet*, bool,
+                                                   vtkPlane*,
+                                                   vtkPlane* = NULL,
+                                                   vtkPlane* = NULL);
 
   private:
     bool                     SetUpClipFunctions(vtkImplicitBoolean *, bool&);
