@@ -64,13 +64,16 @@ class     vtkDataArray;
 //    possible to clobber other constant creations.  I upped it to 2 and
 //    had the second arg push a textual representation on the state.
 //
+//    Jeremy Meredith, Wed Feb 20 10:00:31 EST 2008
+//    Support either nodal or zonal values.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtConstantFunctionExpression
     : public avtMultipleInputExpressionFilter
 {
   public:
-                          avtConstantFunctionExpression();
+                          avtConstantFunctionExpression(bool nodal);
     virtual              ~avtConstantFunctionExpression();
 
     virtual const char   *GetType() { return "avtConstantFunctionExpression"; }
@@ -78,10 +81,11 @@ class EXPRESSION_API avtConstantFunctionExpression
     virtual void          ProcessArguments(ArgsExpr*, ExprPipelineState *);
   protected:
     virtual vtkDataArray *DeriveVariable(vtkDataSet *);
-    virtual bool          IsPointVariable()  { return true; }
+    virtual bool          IsPointVariable()  { return nodal; }
     virtual int           GetVariableDimension() { return 1; }
     virtual int           NumVariableArguments(void) { return 2; }
   private:
+    bool    nodal;
     float   value;
 };
 
