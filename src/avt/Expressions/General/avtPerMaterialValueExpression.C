@@ -117,6 +117,9 @@ avtPerMaterialValueExpression::~avtPerMaterialValueExpression()
 //
 //  Modifications:
 //
+//    Cyrus Harrison, Tue Feb 12 13:38:13 PST 2008
+//    Added support for datasets with ghost zones. 
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -147,13 +150,16 @@ avtPerMaterialValueExpression::DeriveVariable(vtkDataSet *in_ds)
     
     }
 
-
+    
+    
     // prepare result array
     vtkFloatArray *res = vtkFloatArray::New();
     res->SetNumberOfTuples(ncells);
     
+    // Request ghost adjusted values if required. 
     avtMaterial      *mat = GetMetaData()->GetMaterial(currentDomainsIndex,
-                                                       currentTimeState);
+                                                       currentTimeState,
+                                                       doPostGhost);
     if(mat == NULL ) // error
     {
        EXCEPTION2(ExpressionException, outputVariableName,                         
@@ -161,11 +167,13 @@ avtPerMaterialValueExpression::DeriveVariable(vtkDataSet *in_ds)
     }
     
     // get the mixed var
-    // note: this will only exists in domains that have mixed vars,
-    // so it can be null
+    // note: this will only exist in domains that have mixed vars,
+    // so it can be null. 
+    // Request ghost adjusted values if required. 
     avtMixedVariable *mvar = GetMetaData()->GetMixedVar(activeVariable,
                                                         currentDomainsIndex,
-                                                        currentTimeState); 
+                                                        currentTimeState,
+                                                        doPostGhost); 
     
     // get the material index from give material number or name
     int n_mats = mat->GetNMaterials();
@@ -333,12 +341,26 @@ avtPerMaterialValueExpression::ProcessArguments(ArgsExpr *args,
 //
 //  Modifications:
 //
+//    Cyrus Harrison, Tue Feb 12 13:38:13 PST 2008
+//    Request post ghost material info, to allow val4mat to be used with  
+//    ghost zones.
+//
 // ****************************************************************************
 
 avtContract_p
 avtPerMaterialValueExpression::ModifyContract(avtContract_p spec)
 {
-    spec->GetDataRequest()->SetMaintainOriginalConnectivity(true);
+    // check for ghost zones and no material selection
+    if(spec->GetDataRequest()->GetDesiredGhostDataType() == GHOST_ZONE_DATA &&
+       !spec->GetDataRequest()->MustDoMaterialInterfaceReconstruction() )
+    {
+        spec->GetDataRequest()->SetNeedPostGhostMaterialInfo(true);
+        doPostGhost = true;
+    }
+    else
+    {
+        doPostGhost = false;
+    }
     return spec;
 }
 

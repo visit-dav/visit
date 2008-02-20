@@ -80,6 +80,9 @@ class     ConstExpr;
 //    Cyrus Harrison, Mon Jun 18 10:52:45 PDT 2007
 //    Ensure that the output is always scalar (added GetVariableDimension)
 //
+//    Cyrus Harrison, Tue Feb 19 13:20:50 PST 2008
+//    Added doPostGhost memeber. 
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMatvfExpression : public avtSingleInputExpressionFilter
@@ -106,6 +109,7 @@ class EXPRESSION_API avtMatvfExpression : public avtSingleInputExpressionFilter
 
     void                      AddMaterial(ConstExpr *);
 
+    bool                      doPostGhost;
     bool                      issuedWarning;
     std::vector<std::string>  matNames;
     std::vector<int>          matIndices;

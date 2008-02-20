@@ -2901,6 +2901,10 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //    Cyrus Harrison, Wed Jan 30 13:26:28 PST 2008
 //    Added support for passing variable name from a mixed variable request. 
 //
+//    Cyrus Harrison, Tue Feb 12 14:53:48 PST 2008
+//    Added support for passing variable name to a post ghost mixed variable 
+//    request. 
+//
 // ****************************************************************************
 
 void
@@ -2918,8 +2922,9 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
     avtSILSpecification sil = spec->GetSIL();
     const char *var = spec->GetVariable();
     if ((strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0) ||
-        (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0) || 
-        (strcmp(type, AUXILIARY_DATA_MIXED_VARIABLE) == 0))
+        (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0)    || 
+        (strcmp(type, AUXILIARY_DATA_MIXED_VARIABLE) == 0)  ||
+        (strcmp(type, AUXILIARY_DATA_POST_GHOST_MIXED_VARIABLE) == 0))
     {
         if (args != NULL)
             var = (char *) args;
@@ -4535,6 +4540,10 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added calls to set Vars and Vars2nd members of dataset collection.
 //    Added data specification to call to get material.
+//
+//    Cyrus Harrison, Tue Feb 12 14:54:34 PST 2008
+//    Added support for caching post ghost material & mixed var objects. 
+//
 // ****************************************************************************
 
 void
@@ -4557,6 +4566,8 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
     md->SetContainsGlobalZoneIds(meshname, false);
     md->SetContainsGlobalNodeIds(meshname, false);
 
+    
+    bool post_ghost = spec->NeedPostGhostMaterialInfo();
     //
     // Set up some things we will want for later.
     //
@@ -4668,8 +4679,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
                     doSelect = true;
             }
 
-            // if we're not doing material selection for sure, set nmats to 1
-            if (!doSelect)
+            // if we're not doing material selection and we dont need post 
+            // ghost material info set nmats to 1
+            if (!doSelect && !post_ghost)
                 nmats = 1;
         }
 
@@ -4785,6 +4797,36 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
             if (single_ds != NULL)
             {
                 single_ds->Delete();
+            }
+            
+            // we still may need to cache material & mixed var info 
+            // 
+            if(post_ghost)
+            {
+                // Get the material
+                ds.matnames[i] = matnames;
+                avtMaterial *mat = GetMaterial(domains[i], var, ts, spec);
+                ds.SetMaterial(i, mat);
+
+                // Get the mixed variables
+                void_ref_ptr vr=cache.GetVoidRef(var,
+                                                 AUXILIARY_DATA_MIXED_VARIABLE,
+                                                 ts, domains[i]);
+                if (*vr != NULL)
+                {
+                    ds.AddMixVar(i, vr);
+                }
+                
+                for (int kk = 0 ; kk < vars2nd.size() ; kk++)
+                {
+                    vr = cache.GetVoidRef(*(vars2nd[kk]),
+                                            AUXILIARY_DATA_MIXED_VARIABLE, ts,
+                                            domains[i]);
+                    if (*vr != NULL)
+                    {
+                        ds.AddMixVar(i, vr);
+                    }
+                }
             }
         }
 
@@ -4943,6 +4985,10 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //    Hank Childs, Thu Feb 14 17:08:39 PST 2008
 //    Add support for modules that only create ghost nodes.
 //
+//    Cyrus Harrison, Fri Feb 15 09:35:20 PST 2008
+//    Changed MustMaintainOriginalConnectivity warning to only mention
+//    specmf, since the matvf + ghost zones restriction was resolved. 
+//
 // ****************************************************************************
 
 bool
@@ -5060,10 +5106,10 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
         const char *warning = "Because of the way VisIt organizes data, "
               "it is not possible to create ghost zones for this plot.  "
               "This problem is likely coming about because you are " 
-              "using the matvf or specmf expressions.  Contact a VisIt "
+              "using the specmf expression.  Contact a VisIt "
               "developer for more information.  This message will only "
               "be issued once per session.";
-        // We only need to issue the warning if we actuall would have done 
+        // We only need to issue the warning if we actually would have done 
         // something.
         if ((hasDomainBoundaryInfo || canUseGlobalNodeIds) && 
             allDomains.size() > 1 && !issuedOriginalConnectivityWarning)
@@ -5325,6 +5371,9 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 //
+//    Cyrus Harrison, Tue Feb 19 13:11:03 PST 2008
+//    Added support for post ghost material and mixed var objects. 
+//
 // ****************************************************************************
 
 bool
@@ -5347,9 +5396,12 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     int ts = spec->GetTimestep();
     avtDatabaseMetaData *md = GetMetaData(ts);
     const char *varname = spec->GetVariable();
-    avtVarType type = md->DetermineVarType(varname);
-    string meshname = md->MeshForVar(varname);
+    avtVarType type  = md->DetermineVarType(varname);
+    string meshname  = md->MeshForVar(varname);
+    string matonmesh = md->MaterialOnMesh(meshname);
 
+    bool post_ghost = spec->NeedPostGhostMaterialInfo();
+    
     // Setup materials
     int anymats    = false;
     int allmats    = true; 
@@ -5671,8 +5723,28 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         vector<avtMaterial*> newMatList = dbi->ExchangeMaterial(doms, matList);
 
         for (i = 0 ; i < doms.size() ; i++)
+        {
             ds.SetMaterial(i, newMatList[i]);
-        ds.MaterialsShouldBeFreed();
+            // cache post ghost material object if requested 
+            if(post_ghost)
+            {
+                void_ref_ptr vr = void_ref_ptr(newMatList[i],
+                                               avtMaterial::Destruct);
+                debug5 << "avtGenericDatabase - Caching:"
+                       << matonmesh  << " ("
+                       << AUXILIARY_DATA_POST_GHOST_MATERIAL 
+                       << ") for timestep, domain =  " 
+                       << ts << "," << doms[i] << endl;
+
+                cache.CacheVoidRef(matonmesh.c_str(),
+                                   AUXILIARY_DATA_POST_GHOST_MATERIAL, 
+                                   ts,
+                                   doms[i], vr);
+            }
+        }
+        
+        if(!post_ghost)
+            ds.MaterialsShouldBeFreed();
 
         // mixvars
         if (nummixvars > 0)
@@ -5704,9 +5776,25 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 for (j = 0 ; j < doms.size() ; j++)
                     if (newMixvarList[j] != NULL)
                     {
+                        string mixv_name = newMixvarList[j]->GetVarname();
                         void_ref_ptr vr = void_ref_ptr(newMixvarList[j],
-                                              avtMixedVariable::Destruct);
+                                                   avtMixedVariable::Destruct);
                         ds.ReplaceMixVar(j, vr);
+                        
+                        // cache post ghost mixed var object if requested 
+                        if(post_ghost)
+                        {
+                            debug5 << "avtGenericDatabase - Caching:"
+                                   << mixv_name  << " ("
+                                   << AUXILIARY_DATA_POST_GHOST_MIXED_VARIABLE
+                                   << ") for timestep, domain = " 
+                                   << ts  << "," << doms[j] << endl;
+                            cache.CacheVoidRef(mixv_name.c_str(),
+                                     AUXILIARY_DATA_POST_GHOST_MIXED_VARIABLE,
+                                               ts,
+                                               doms[j],
+                                               vr);
+                        }
                     }
             }
         }

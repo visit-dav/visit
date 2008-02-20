@@ -59,6 +59,8 @@ class     ExprPipelineState;
 //  Creation:   January 29, 2008
 //
 //  Modifications:
+//    Cyrus Harrison, Tue Feb 19 13:20:50 PST 2008
+//    Added doPostGhost memeber. 
 //
 // ****************************************************************************
 
@@ -83,7 +85,8 @@ class EXPRESSION_API avtPerMaterialValueExpression
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void)  { return false; };
-
+    
+    bool                      doPostGhost;
     int                       matNumber;
     std::string               matName;
 };

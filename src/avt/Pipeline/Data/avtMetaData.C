@@ -238,10 +238,14 @@ avtMetaData::GetExternalFacelist(int domain)
 //    Kathleen Bonnell, Mon Jun 28 08:05:38 PDT 2004
 //    Added optional timestep argument.
 //
+//    Cyrus Harrison, Wed Jan 30 13:23:30 PST 2008
+//    Added post ghost argument, providing access to ghost corrected Material
+//    objects.
+//    
 // ****************************************************************************
 
 avtMaterial *
-avtMetaData::GetMaterial(int domain, int timestep)
+avtMetaData::GetMaterial(int domain, int timestep, bool post_ghost)
 {
     VoidRefList list;
     avtContract_p spec = GetContract(domain);
@@ -251,7 +255,22 @@ avtMetaData::GetMaterial(int domain, int timestep)
     if (timestep != -1)
         spec->GetDataRequest()->SetTimestep(timestep);
 
-    source->GetMaterialAuxiliaryData(AUXILIARY_DATA_MATERIAL, NULL, spec,list);
+    // look for ghost corrected material object if needed
+    if(post_ghost)
+    {
+        source->GetMaterialAuxiliaryData(AUXILIARY_DATA_POST_GHOST_MATERIAL, 
+                                         NULL,
+                                         spec,
+                                         list);
+    }
+    else // look standard material object
+    {
+        source->GetMaterialAuxiliaryData(AUXILIARY_DATA_MATERIAL, 
+                                         NULL,
+                                         spec,
+                                         list);    
+    }
+    
     if (list.nList == 0)
     {
         return NULL;
@@ -374,15 +393,23 @@ avtMetaData::GetContract(int domain)
 //  Creation:   July 1, 2004 
 //
 //  Modifications:
+//
 //    Cyrus Harrison, Wed Jan 30 13:23:30 PST 2008
 //    Added variable name argument to GetMixedVar, allowing this method
 //    to be used when the desired mixed var differs from the active
 //    variable in the contract. 
 //
+//    Cyrus Harrison, Wed Jan 30 13:23:30 PST 2008
+//    Added post ghost argument, providing access to ghost corrected Mixed 
+//    Variable objects.
+//    
 // ****************************************************************************
 
 avtMixedVariable *
-avtMetaData::GetMixedVar(const char *varname, int domain, int timestep)
+avtMetaData::GetMixedVar(const char *varname, 
+                         int domain, 
+                         int timestep,
+                         bool post_ghost)
 {
     VoidRefList list;
     avtContract_p spec = GetContract(domain);
@@ -393,10 +420,26 @@ avtMetaData::GetMixedVar(const char *varname, int domain, int timestep)
         spec->GetDataRequest()->SetTimestep(timestep);
 
     // pass the varname, so the source can obtain the proper mixed var.
-    source->GetVariableAuxiliaryData(AUXILIARY_DATA_MIXED_VARIABLE, 
-                                     (void*)varname, 
-                                     spec,
-                                     list);
+    
+    // look for ghost corrected mixvar object if needed
+    if(post_ghost)
+    {
+        source->GetVariableAuxiliaryData(
+                                      AUXILIARY_DATA_POST_GHOST_MIXED_VARIABLE, 
+                                         (void*)varname, 
+                                         spec,
+                                         list);
+    }
+    else
+    {
+        // look for standard mixvar object
+        source->GetVariableAuxiliaryData(AUXILIARY_DATA_MIXED_VARIABLE, 
+                                         (void*)varname, 
+                                         spec,
+                                         list);
+    }
+    
+    
     if (list.nList == 0)
     {
         return NULL;

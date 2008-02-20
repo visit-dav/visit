@@ -164,6 +164,9 @@ using     std::map;
 //    Brad Whitlock, Wed Jan 23 15:43:52 PST 2008
 //    Added transformVectorsDuringProject.
 //
+//    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
+//    Added needPostGhostMaterialInfo.
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts,
@@ -203,6 +206,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
     discBoundaryOnly = false;
     passNativeCSG = false;
     transformVectorsDuringProject = true;
+    needPostGhostMaterialInfo = false;
 
     InitAdmissibleDataTypes();
 
@@ -312,6 +316,9 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
 //    Brad Whitlock, Wed Jan 23 15:44:19 PST 2008
 //    Added transformVectorsDuringProject.
 //
+//    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
+//    Added needPostGhostMaterialInfo.
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
@@ -346,7 +353,8 @@ avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
     discBoundaryOnly = false;
     passNativeCSG = false;
     transformVectorsDuringProject = true;
-
+    needPostGhostMaterialInfo = false;
+    
     InitAdmissibleDataTypes();
 
     timestep  = ts;
@@ -599,6 +607,9 @@ avtDataRequest::avtDataRequest(avtDataRequest_p spec)
 //    Brad Whitlock, Wed Jan 23 15:44:43 PST 2008
 //    Added transformVectorsDuringProject.
 //
+//    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
+//    Added needPostGhostMaterialInfo.
+//
 // ****************************************************************************
 
 avtDataRequest &
@@ -662,8 +673,8 @@ avtDataRequest::operator=(const avtDataRequest &spec)
     discBoundaryOnly                = spec.discBoundaryOnly;
     passNativeCSG                   = spec.passNativeCSG;
     transformVectorsDuringProject   = spec.transformVectorsDuringProject;
-
-    secondaryVariables = spec.secondaryVariables;
+    needPostGhostMaterialInfo       = spec.needPostGhostMaterialInfo;
+    secondaryVariables              = spec.secondaryVariables;
 
     selList = spec.selList;
 
@@ -770,6 +781,9 @@ avtDataRequest::operator=(const avtDataRequest &spec)
 //
 //    Brad Whitlock, Wed Jan 23 15:45:02 PST 2008
 //    Added transformVectorsDuringProject.
+//
+//    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
+//    Added needPostGhostMaterialInfo.
 //
 // ****************************************************************************
 
@@ -962,6 +976,9 @@ avtDataRequest::operator==(const avtDataRequest &ds)
         return false;
 
     if (transformVectorsDuringProject != ds.transformVectorsDuringProject)
+        return false;
+
+    if (needPostGhostMaterialInfo != ds.needPostGhostMaterialInfo)
         return false;
  
     return true;
@@ -1684,6 +1701,9 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //    Hank Childs, Fri Feb  1 12:51:44 PST 2008
 //    Add dumping of admissibleDataTypes.
 //
+//    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
+//    Added needPostGhostMaterialInfo.
+//
 // ****************************************************************************
 
 static const char *
@@ -1780,6 +1800,7 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("passNativeCSG", YesOrNo(passNativeCSG));
     webpage->AddTableEntry2("usesAllDomains", YesOrNo(usesAllDomains));
     webpage->AddTableEntry2("transformVectorsDuringProject", YesOrNo(transformVectorsDuringProject));
+    webpage->AddTableEntry2("needPostGhostMaterialInfo", YesOrNo(needPostGhostMaterialInfo));
     webpage->EndTable();
 }
 
