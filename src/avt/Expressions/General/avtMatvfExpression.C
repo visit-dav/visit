@@ -150,6 +150,9 @@ avtMatvfExpression::PreExecute(void)
 //    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
 //    Fixed memory leak caused by cut-n-paste error
 //
+//    Cyrus Harrison, Tue Feb 12 13:38:13 PST 2008
+//    Added support for datasets with ghost zones. 
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -158,7 +161,11 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds)
     int    i, j;
 
     int ncells = in_ds->GetNumberOfCells();
-
+   
+    
+    debug5 << "avtMatvfExpression: Using post ghost material object ?  " 
+           << doPostGhost <<endl;
+           
     //
     // The 'currentDomainsIndex' is a data member of the base class that is
     // set to be the id of the current domain right before DeriveVariable is
@@ -168,8 +175,14 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds)
     // set to be the current timestep during ExamineContract. 
     // We need that timestep to make sure we are getting the right mat.
     //
+    // doPostGhost allows us to request ghost corrected material data 
+    // if necessary.
+    //
+
     avtMaterial *mat = GetMetaData()->GetMaterial(currentDomainsIndex,
-                                                  currentTimeState);
+                                                  currentTimeState,
+                                                  doPostGhost);
+    
     if (mat == NULL)
     {
         debug1 << "Could not find a material object." << endl;
@@ -598,12 +611,27 @@ avtMatvfExpression::AddMaterial(ConstExpr *c)
 //    Hank Childs, Wed Aug 11 08:03:38 PDT 2004
 //    Account for changes in the data specification.
 //
+//    Cyrus Harrison, Tue Feb 12 13:38:13 PST 2008
+//    Request post ghost material info, to allow matvf to be used with  
+//    ghost zones.
+//
 // ****************************************************************************
 
 avtContract_p
 avtMatvfExpression::ModifyContract(avtContract_p spec)
 {
-    spec->GetDataRequest()->SetMaintainOriginalConnectivity(true);
+    // check for ghost zones and no material selection
+    if(spec->GetDataRequest()->GetDesiredGhostDataType() == GHOST_ZONE_DATA &&
+       !spec->GetDataRequest()->MustDoMaterialInterfaceReconstruction() )
+    {
+        spec->GetDataRequest()->SetNeedPostGhostMaterialInfo(true);
+        doPostGhost = true;
+    }
+    else
+    {
+        doPostGhost = false;
+    }
+    
     return spec;
 }
 

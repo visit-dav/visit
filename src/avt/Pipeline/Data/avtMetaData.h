@@ -106,6 +106,9 @@ class     avtOriginatingSource;
 //    to be used when the desired mixed var differs from the active
 //    variable in the contract. 
 //
+//    Cyrus Harrison, Wed Feb 20 09:14:15 PST 2008
+//    Added post ghost option to GetMaterial & GetMixedVar
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMetaData
@@ -118,9 +121,11 @@ class PIPELINE_API avtMetaData
     avtIntervalTree             *GetSpatialExtents(const char *var = NULL);
 
     avtFacelist                 *GetExternalFacelist(int);
-    avtMaterial                 *GetMaterial(int, int = -1);
+    avtMaterial                 *GetMaterial(int, int = -1, bool = false);
     avtSpecies                  *GetSpecies(int, int = -1);
-    avtMixedVariable            *GetMixedVar(const char *,int, int = -1);
+    avtMixedVariable            *GetMixedVar(const char *,int, 
+                                             int = -1,
+                                             bool = false);
 
   protected:
     avtOriginatingSource        *source;

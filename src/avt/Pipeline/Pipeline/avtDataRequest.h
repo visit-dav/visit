@@ -196,6 +196,9 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //    Brad Whitlock, Wed Jan 23 15:43:25 PST 2008
 //    Added transformVectorsDuringProject.
 //
+//    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
+//    Added needPostGhostMaterialInfo.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRequest
@@ -412,6 +415,11 @@ class PIPELINE_API avtDataRequest
                                      { return transformVectorsDuringProject; }
     void                         SetTransformVectorsDuringProject(bool b)
                                      { transformVectorsDuringProject = b; }
+    
+    bool                         NeedPostGhostMaterialInfo() const
+                                     { return needPostGhostMaterialInfo; }
+    void                         SetNeedPostGhostMaterialInfo(bool b)
+                                     { needPostGhostMaterialInfo = b; }
 
     void                         DebugDump(avtWebpage *);
 
@@ -461,6 +469,7 @@ class PIPELINE_API avtDataRequest
     bool                         discBoundaryOnly;
     bool                         passNativeCSG;
     bool                         transformVectorsDuringProject;
+    bool                         needPostGhostMaterialInfo;
 
     //
     // If we are processing in parallel, this information may have been lost.
