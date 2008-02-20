@@ -101,7 +101,7 @@ class     PlotInfoAttributes;
 //                         things like resampling onto an area smaller than
 //                         the true extents to get more bang for our buck with
 //                         splatting, etc.
-//      Cumulative Variants: If we are doing dynamic load balancing, we can't
+//      Cumulative Variants: If we are doing streaming, we can't
 //                         what know some extents until we are done executing.
 //                         Then we can take all of the pieces and unify them.
 //                         This is where the pieces are stored.

@@ -129,6 +129,11 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 //    Hank Childs, Thu Jan 24 12:56:48 PST 2008
 //    Add debug statement.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 bool
@@ -179,7 +184,7 @@ avtTimeLoopFilter::Update(avtContract_p spec)
 
         avtContract_p contract = 
             new avtContract(newDS, spec->GetPipelineIndex());
-        contract->NoDynamicLoadBalancing();
+        contract->NoStreaming();
 
         modified |= avtFilter::Update(contract);
         

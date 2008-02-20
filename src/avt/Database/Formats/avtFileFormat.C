@@ -81,6 +81,13 @@ const double avtFileFormat::FORMAT_INVALID_TIME  = INVALID_TIME / 10.0;
 //  Programmer: Hank Childs
 //  Creation:   October 8, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtFileFormat::avtFileFormat()
@@ -88,7 +95,7 @@ avtFileFormat::avtFileFormat()
     cache = NULL;
     materialName = NULL;
     doMaterialSelection = false;
-    canDoDynamicLoadBalancing = true;
+    canDoStreaming = true;
     metadata = NULL;
     closingFile = false;
 }

@@ -54,8 +54,8 @@
 
 LoadBalanceFunction  avtOriginatingSource::loadBalanceFunction     = NULL;
 void                *avtOriginatingSource::loadBalanceFunctionArgs = NULL;
-DynamicCheckFunction  avtOriginatingSource::dynamicCheckFunction     = NULL;
-void                 *avtOriginatingSource::dynamicCheckFunctionArgs = NULL;
+StreamingCheckFunction  avtOriginatingSource::streamingCheckFunction  = NULL;
+void                *avtOriginatingSource::streamingCheckFunctionArgs = NULL;
 InitializeProgressCallback
                      avtOriginatingSource::initializeProgressCallback = NULL;
 void                *avtOriginatingSource::initializeProgressCallbackArgs=NULL;
@@ -280,26 +280,34 @@ avtOriginatingSource::SetLoadBalancer(LoadBalanceFunction foo, void *args)
 
 
 // ****************************************************************************
-//  Method: avtOriginatingSource::SetDynamicChecker
+//  Method: avtOriginatingSource::SetStreamingChecker
 //
 //  Purpose:
-//      Sets the load balancer to be consulted to determine if load
-//      balancing will be dynamic.
+//      Sets the load balancer to be consulted to determine if the processing
+//      type will be streaming.
 //
 //  Arguments:
-//      foo     The function that will call a load balancer dynamic checker.
+//      foo     The function that will call a checker for streamer.
 //      args    The arguments for the function.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   September 19, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 void
-avtOriginatingSource::SetDynamicChecker(DynamicCheckFunction foo, void *args)
+avtOriginatingSource::SetStreamingChecker(StreamingCheckFunction foo,
+                                          void *args)
 {
-    dynamicCheckFunction     = foo;
-    dynamicCheckFunctionArgs = args;
+    streamingCheckFunction     = foo;
+    streamingCheckFunctionArgs = args;
 }
 
 
@@ -561,6 +569,11 @@ avtOriginatingSource::BalanceLoad(avtContract_p spec)
 //    If there will be multiple executions (like for the time loop filter), 
 //    then we want to declare the correct number of stages.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 void
@@ -568,9 +581,9 @@ avtOriginatingSource::InitPipeline(avtContract_p spec)
 {
     if (!ArtificialPipeline())
     {
-        if (!CanDoDynamicLoadBalancing())
+        if (!CanDoStreaming())
         {
-            spec->NoDynamicLoadBalancing();
+            spec->NoStreaming();
         }
 
         //
@@ -585,23 +598,23 @@ avtOriginatingSource::InitPipeline(avtContract_p spec)
         GetOutput()->GetInfo().GetValidity().SetUsingAllDomains(uadom);
 
         if (initializeProgressCallback != NULL &&
-            dynamicCheckFunction       != NULL)
+            streamingCheckFunction       != NULL)
         {
             //
             // Each filter is a stage, plus a stage to get the data.
-            // In dynamic load balancing, there are only calculate/send stages.
+            // With streaming, there are only calculate/send stages.
             //
             int nstages;
-            if (dynamicCheckFunction(dynamicCheckFunctionArgs,spec))
+            if (streamingCheckFunction(streamingCheckFunctionArgs,spec))
             {
                 nstages = 1;
-                GetOutput()->GetInfo().GetValidity().SetIsThisDynamic(true);
+                GetOutput()->GetInfo().GetValidity().SetWhetherStreaming(true);
             }
             else
             {
                 int sourceStages = NumStagesForFetch(data);
                 nstages = spec->GetNFilters() + sourceStages;
-                GetOutput()->GetInfo().GetValidity().SetIsThisDynamic(false);
+                GetOutput()->GetInfo().GetValidity().SetWhetherStreaming(false);
                 if (numberOfExecutions > 1)
                     nstages *= numberOfExecutions;
             }
@@ -666,7 +679,7 @@ avtOriginatingSource::GetGeneralContract(void)
 
 
 // ****************************************************************************
-//  Method: avtOriginatingSource::CanDoDynamicLoadBalancing
+//  Method: avtOriginatingSource::CanDoStreaming
 //
 //  Purpose:
 //      Returns whether or not this source can do dynamic load balancing.
@@ -674,10 +687,17 @@ avtOriginatingSource::GetGeneralContract(void)
 //  Programmer: Hank Childs
 //  Creation:   October 25, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 bool
-avtOriginatingSource::CanDoDynamicLoadBalancing(void)
+avtOriginatingSource::CanDoStreaming(void)
 {
     //
     // We'd like to do it unless we have a reason not to.

@@ -327,6 +327,11 @@ class     vtkUnstructuredGrid;
 //    Hank Childs, Sun Feb 10 19:43:59 MST 2008
 //    Add support for streaming ghost generation.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -348,8 +353,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     virtual bool               HasInvariantMetaData(void) const;
     virtual bool               HasInvariantSIL(void) const;
-    virtual bool               CanDoDynamicLoadBalancing(
-                                                       avtDataRequest_p);
+    virtual bool               CanDoStreaming(avtDataRequest_p);
 
     virtual void               ActivateTimestep(int stateIndex);
 

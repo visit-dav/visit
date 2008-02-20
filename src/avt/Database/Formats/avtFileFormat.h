@@ -42,6 +42,7 @@
 
 #ifndef AVT_FILE_FORMAT_H
 #define AVT_FILE_FORMAT_H
+
 #include <database_exports.h>
 
 // For NULL
@@ -108,6 +109,12 @@ class     avtVariableCache;
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Moved implementations of GuessCycle/GuessTime to .C file. Added
 //    optional regular expression to guide the guessing.
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -138,8 +145,8 @@ class DATABASE_API avtFileFormat
 
     virtual bool          CanCacheVariable(const char *) { return true; };
 
-    bool                  CanDoDynamicLoadBalancing(void)
-                              { return canDoDynamicLoadBalancing; };
+    bool                  CanDoStreaming(void)
+                              { return canDoStreaming; };
 
     virtual void          RegisterVariableList(const char *,
                                           const std::vector<CharStrRef> &) {;};
@@ -190,7 +197,7 @@ class DATABASE_API avtFileFormat
     avtVariableCache     *cache;
     avtDatabaseMetaData  *metadata;
     bool                  doMaterialSelection;
-    bool                  canDoDynamicLoadBalancing;
+    bool                  canDoStreaming;
     bool                  closingFile;
     char                 *materialName;
     std::vector<int>      fileIndicesForDescriptorManager;

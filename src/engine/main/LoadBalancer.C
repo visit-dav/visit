@@ -76,7 +76,7 @@ using     std::set;
 
 static avtDataRequest_p    ReduceCallback(void *,
                                                    avtContract_p);
-static bool                      DynamicCheckerCallback(void *,
+static bool                      StreamingCheckerCallback(void *,
                                                    avtContract_p);
 static bool                      ContinueCallback(void *, int);
 
@@ -232,6 +232,11 @@ LoadBalancer::UpdateProgress(int current, int total)
 //    Jeremy Meredith, Thu Sep 20 00:49:26 PDT 2001
 //    Added the registration of the DynamicChecker callback.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 LoadBalancer::LoadBalancer(int np, int r)
@@ -248,44 +253,8 @@ LoadBalancer::LoadBalancer(int np, int r)
     // Register callbacks with the avt pipeline.
     //
     avtOriginatingSource::SetLoadBalancer(ReduceCallback, this);
-    avtOriginatingSource::SetDynamicChecker(DynamicCheckerCallback, this);
+    avtOriginatingSource::SetStreamingChecker(StreamingCheckerCallback, this);
     avtTerminatingSink::SetGuideFunction(ContinueCallback, this);
-}
-
-
-// ****************************************************************************
-//  Method: LoadBalancer::CheckDynamicLoadBalancing
-//
-//  Purpose:
-//      Takes in the pipeline index and reports whether or not it will be 
-//      dynamically load balanced.  It is assumed that the other flavor of
-//      check dynamic load balancing has been called and the results have been
-//      cached.
-//
-//  Arguments:
-//      index   A pipelineIndex.
-//
-//  Returns:    true if dynamic; false if static or none
-//
-//  Programmer: Hank Childs
-//  Creation:   February 27, 2005
-//
-// ****************************************************************************
-
-bool
-LoadBalancer::CheckDynamicLoadBalancing(int index)
-{
-    if (index > pipelineInfo.size())
-    {
-        EXCEPTION0(ImproperUseException);
-    }
-    LBInfo &lbinfo = pipelineInfo[index];
-    if (!lbinfo.haveInitializedDLB)
-    {
-        EXCEPTION0(ImproperUseException);
-    }
-
-    return lbinfo.doDLB;
 }
 
 
@@ -362,8 +331,8 @@ LoadBalancer::CheckDynamicLoadBalancing(avtContract_p input)
     std::string dbname = lbinfo.db;
     avtDatabase *db = dbMap[dbname];
     if (input->GetPipelineIndex() == 0 ||
-        input->ShouldUseDynamicLoadBalancing() == false || 
-        db->CanDoDynamicLoadBalancing(data) == false)
+        input->ShouldUseStreaming() == false || 
+        db->CanDoStreaming(data) == false)
     {
         lbinfo.doDLB = false;
         lbinfo.haveInitializedDLB = true;
@@ -1165,10 +1134,17 @@ ReduceCallback(void *ptr, avtContract_p spec)
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 19, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 static bool
-DynamicCheckerCallback(void *ptr, avtContract_p spec)
+StreamingCheckerCallback(void *ptr, avtContract_p spec)
 {
     LoadBalancer *lb = (LoadBalancer *) ptr;
     bool rv = lb->CheckDynamicLoadBalancing(spec);

@@ -633,6 +633,11 @@ avtBehavior::GetRenderOrder(bool antialiased)
 //    Beef up test when we need original elements for pick and the points
 //    have been transformed.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 bool
@@ -640,7 +645,7 @@ avtBehavior::RequiresReExecuteForQuery(const bool needInvT,
                                        const bool needZones)
 {
     bool retval = false;
-    if (GetInfo().GetValidity().GetIsThisDynamic())
+    if (GetInfo().GetValidity().AreWeStreaming())
         retval = true;
     else if (info.GetAttributes().GetTopologicalDimension() == 0) 
     {

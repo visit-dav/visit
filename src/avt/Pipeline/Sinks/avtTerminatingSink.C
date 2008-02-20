@@ -110,7 +110,7 @@ avtTerminatingSink::~avtTerminatingSink()
 //
 //  Purpose:
 //      Executes the pipeline.  This means possibly executing the pipeline
-//      multiple times when dynamic load balancing is necessary.
+//      multiple times when streaming is necessary.
 //
 //  Arguments:
 //      spec    The pipeline specification this pipeline should use.
@@ -147,6 +147,11 @@ avtTerminatingSink::~avtTerminatingSink()
 //
 //    Cyrus Harrison, Wed Feb 13 14:15:16 PST 2008
 //    Modified to use new avtDebugDumpOptions methods. 
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
 //
 // ****************************************************************************
 
@@ -196,7 +201,7 @@ avtTerminatingSink::Execute(avtContract_p contract)
 
         //
         // Now make a copy and continue if there are going to be multiple
-        // updates (ie dynamic load balancing mode).
+        // updates (ie streaming mode).
         //
         int iter = 1;
         if (guideFunction(guideFunctionArgs, pipelineIndex))
@@ -209,14 +214,14 @@ avtTerminatingSink::Execute(avtContract_p contract)
                 int t = visitTimer->StartTimer();
                 input->Update(contract);
                 char msg[1024];
-                SNPRINTF(msg, 1024, "Iteration %d of dynamic LB update.",iter);
+                SNPRINTF(msg, 1024, "Iteration %d of streaming update.",iter);
                 visitTimer->StopTimer(t, msg);
                 dob->Merge(*input);
                 iter++;
             }
             input->Copy(*dob);
             int t2 = visitTimer->StartTimer();
-            DynamicLoadBalanceCleanUp();
+            StreamingCleanUp();
             visitTimer->StopTimer(t2, "Time to do DLB clean up");
         }
         debug4 << "Done with iterating Updates on pipeline "
@@ -250,19 +255,25 @@ avtTerminatingSink::InputIsReady(void)
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSink::DynamicLoadBalanceCleanUp
+//  Method: avtTerminatingSink::StreamingCleanUp
 //
 //  Purpose:
-//      A hook to allow derived types to perform some clean up after dynamic
-//      load balancing.
+//      A hook to allow derived types to perform some clean up after streaming.
 //
 //  Programmer: Hank Childs
 //  Creation:   September 28, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 void
-avtTerminatingSink::DynamicLoadBalanceCleanUp(void)
+avtTerminatingSink::StreamingCleanUp(void)
 {
     ;
 }

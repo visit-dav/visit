@@ -265,24 +265,31 @@ avtFileFormatInterface::TurnMaterialSelectionOn(const char *matname)
 
 
 // ****************************************************************************
-//  Method: avtFileFormatInterface::CanDoDynamicLoadBalancing
+//  Method: avtFileFormatInterface::CanDoStreaming
 //
 //  Purpose:
-//      Indicates if the file format supports dynamic load balancing.   
+//      Indicates if the file format supports streaming.   
 //
 //  Programmer: Hank Childs
 //  Creation:   March 14, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 bool
-avtFileFormatInterface::CanDoDynamicLoadBalancing(void)
+avtFileFormatInterface::CanDoStreaming(void)
 {
     int nFormats = GetNumberOfFileFormats();
     for (int i = 0 ; i < nFormats ; i++)
     {
         avtFileFormat *ff = GetFormat(i);
-        if (! ff->CanDoDynamicLoadBalancing())
+        if (! ff->CanDoStreaming())
         {
             return false;
         }

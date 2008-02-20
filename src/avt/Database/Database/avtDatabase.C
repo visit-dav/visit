@@ -1968,10 +1968,10 @@ avtDatabase::GetIOInformation(int stateIndex)
 
 
 // ****************************************************************************
-//  Method: avtDatabase::CanDoDynamicLoadBalancing
+//  Method: avtDatabase::CanDoStreaming
 //
 //  Purpose:
-//      Determines whether or not we can do dynamic load balancing.
+//      Determines whether or not we can do streaming.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 25, 2001
@@ -1981,10 +1981,15 @@ avtDatabase::GetIOInformation(int stateIndex)
 //    Hank Childs, Sun Feb 27 11:20:39 PST 2005
 //    Added data specification argument.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 bool
-avtDatabase::CanDoDynamicLoadBalancing(avtDataRequest_p)
+avtDatabase::CanDoStreaming(avtDataRequest_p)
 {
     return true;
 }

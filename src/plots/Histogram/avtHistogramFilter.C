@@ -1023,6 +1023,11 @@ avtHistogramFilter::UpdateDataObjectInfo(void)
 //    Hank Childs, Tue Dec 11 20:25:22 PST 2007
 //    Add support for weighting by a variable.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -1031,7 +1036,7 @@ avtHistogramFilter::ModifyContract(avtContract_p spec)
     avtContract_p newspec = new avtContract(spec);
     if (atts.GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
     {
-        newspec->NoDynamicLoadBalancing();
+        newspec->NoStreaming();
 
         if (atts.GetHistogramType() == HistogramAttributes::Variable)
         {

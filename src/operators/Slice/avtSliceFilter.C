@@ -437,6 +437,11 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    Brad Whitlock, Wed Jan 23 15:49:00 PST 2008
 //    Set the doTransformVectors flag.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -524,11 +529,11 @@ avtSliceFilter::ModifyContract(avtContract_p spec)
     }
 
     //
-    // If we need zone or node ids, we can't do dynamic load balancing.
+    // If we need zone or node ids, we can't do streaming.
     //
     if (atts.GetOriginType() == SliceAttributes::Zone ||
         atts.GetOriginType() == SliceAttributes::Node)
-        rv->NoDynamicLoadBalancing();
+        rv->NoStreaming();
 
     //
     // Get the interval tree.  If we can't use the interval tree, then exit
@@ -540,7 +545,7 @@ avtSliceFilter::ModifyContract(avtContract_p spec)
     if (it == NULL)
     {
         if (atts.GetOriginType() == SliceAttributes::Percent)
-            rv->NoDynamicLoadBalancing();
+            rv->NoStreaming();
         return rv;
     }
 

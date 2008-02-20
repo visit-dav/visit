@@ -206,6 +206,11 @@ avtFilter::UpdateProgress(int current, int total)
 //    Cyrus Harrison, Wed Feb 13 13:37:29 PST 2008
 //    Updated to use avtDebugDumpOptions.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 bool
@@ -301,7 +306,7 @@ avtFilter::Update(avtContract_p spec)
     //
     // If we are doing dynamic load balancing, clean up as we go.
     //
-    if (GetInput()->GetInfo().GetValidity().GetIsThisDynamic() ||
+    if (GetInput()->GetInfo().GetValidity().AreWeStreaming() ||
         GetInput()->IsTransient())
     {
         if (GetInput()->GetSource() != NULL)

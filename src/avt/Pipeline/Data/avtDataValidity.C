@@ -105,6 +105,11 @@ avtDataValidity::~avtDataValidity()
 //    Kathleen Bonnell, Thu Oct 26 09:17:08 PDT 2006 
 //    Added nodesPreserved.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 void
@@ -118,7 +123,7 @@ avtDataValidity::Reset(void)
     operationFailed                   = false;
     usingAllData                      = false;
     usingAllDomains                   = false;
-    isThisDynamic                     = false;
+    streaming                       = false;
     pointsWereTransformed             = false;
     wireframeRenderingIsInappropriate = false;
     normalsAreInappropriate           = false;
@@ -182,6 +187,11 @@ avtDataValidity::Reset(void)
 //    Kathleen Bonnell, Thu Oct 26 09:17:08 PDT 2006 
 //    Added nodesPreserved.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 void
@@ -195,7 +205,7 @@ avtDataValidity::Copy(const avtDataValidity &di)
     operationFailed                   = di.operationFailed;
     usingAllData                      = di.usingAllData;
     usingAllDomains                   = di.usingAllDomains;
-    isThisDynamic                     = di.isThisDynamic;
+    streaming                       = di.streaming;
     pointsWereTransformed             = di.pointsWereTransformed;
     wireframeRenderingIsInappropriate = di.wireframeRenderingIsInappropriate;
     normalsAreInappropriate           = di.normalsAreInappropriate;
@@ -259,6 +269,11 @@ avtDataValidity::Copy(const avtDataValidity &di)
 //    Kathleen Bonnell, Thu Oct 26 09:17:08 PDT 2006 
 //    Added nodesPreserved.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 void
@@ -273,7 +288,7 @@ avtDataValidity::Merge(const avtDataValidity &di)
                                && di.dataMetaDataPreserved;
     usingAllData             = usingAllData && di.usingAllData;
     usingAllDomains          = usingAllDomains && di.usingAllDomains;
-    isThisDynamic            = isThisDynamic && di.isThisDynamic;
+    streaming              = streaming && di.streaming;
     pointsWereTransformed   = pointsWereTransformed || di.pointsWereTransformed;
     wireframeRenderingIsInappropriate = wireframeRenderingIsInappropriate ||
                                         di.wireframeRenderingIsInappropriate;
@@ -367,6 +382,11 @@ avtDataValidity::Merge(const avtDataValidity &di)
 //    Kathleen Bonnell, Thu Oct 26 09:17:08 PDT 2006 
 //    Added nodesPreserved.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 void
@@ -384,7 +404,7 @@ avtDataValidity::Write(avtDataObjectString &str,
     vals[5] = (operationFailed ? 1 : 0);
     vals[6] = (usingAllData ? 1 : 0);
     vals[7] = (usingAllDomains ? 1 : 0);
-    vals[8] = (isThisDynamic ? 1 : 0);
+    vals[8] = (streaming ? 1 : 0);
     vals[9] = (pointsWereTransformed ? 1 : 0);
     vals[10] = (wireframeRenderingIsInappropriate ? 1 : 0);
     vals[11] = (normalsAreInappropriate ? 1 : 0);
@@ -453,6 +473,11 @@ avtDataValidity::Write(avtDataObjectString &str,
 //
 //    Kathleen Bonnell, Thu Oct 26 09:17:08 PDT 2006 
 //    Added nodesPreserved.
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
 //
 // ****************************************************************************
 
@@ -527,11 +552,11 @@ avtDataValidity::Read(char *input)
     input += sizeof(int); size += sizeof(int);
     SetUsingAllDomains((uadom == 1 ? true : false));
 
-    // read is this dynamic
+    // read is streaming
     int itd;
     memcpy(&itd, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
-    SetIsThisDynamic((itd == 1 ? true : false));
+    SetWhetherStreaming((itd == 1 ? true : false));
 
     // read points were transformed
     int pwt;
@@ -639,8 +664,8 @@ avtDataValidity::DebugDump(avtWebpage *webpage)
                             YesOrNo(usingAllData));
     webpage->AddTableEntry2("The pipeline is using all of the domains",
                             YesOrNo(usingAllDomains));
-    webpage->AddTableEntry2("The pipeline execution is using dynamic load balancing",
-                            YesOrNo(isThisDynamic));
+    webpage->AddTableEntry2("The pipeline execution is using streaming",
+                            YesOrNo(streaming));
     webpage->AddTableEntry2("The points have been transformed",
                             YesOrNo(pointsWereTransformed));
     webpage->AddTableEntry2("Wireframe rendering would be inappropriate",

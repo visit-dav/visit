@@ -569,7 +569,7 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     ENDTRY
 
     avtDataValidity &validity = src->GetOutput()->GetInfo().GetValidity();
-    bool canDoCollectiveCommunication = !validity.GetIsThisDynamic();
+    bool canDoCollectiveCommunication = !validity.AreWeStreaming();
 #ifdef PARALLEL
     int t1 = visitTimer->StartTimer();
     if (canDoCollectiveCommunication)
@@ -4317,10 +4317,10 @@ avtGenericDatabase::PrepareMaterialSelect(int dom, bool forceMIROn,
 
 
 // ****************************************************************************
-//  Method: avtGenericDatabase::CanDoDynamicLoadBalancing
+//  Method: avtGenericDatabase::CanDoStreaming
 //
 //  Purpose:
-//      Determines whether or not we can do dynamic load balancing.
+//      Determines whether or not we can do streaming.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 25, 2001
@@ -4330,10 +4330,15 @@ avtGenericDatabase::PrepareMaterialSelect(int dom, bool forceMIROn,
 //    Hank Childs, Sun Feb 27 11:20:39 PST 2005
 //    Added argument and significantly beefed up logic.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 bool
-avtGenericDatabase::CanDoDynamicLoadBalancing(avtDataRequest_p dataspec)
+avtGenericDatabase::CanDoStreaming(avtDataRequest_p dataspec)
 {
     // 
     // Make sure the plugin has registered any domain boundary information
@@ -4342,9 +4347,10 @@ avtGenericDatabase::CanDoDynamicLoadBalancing(avtDataRequest_p dataspec)
     ActivateTimestep(dataspec->GetTimestep());
 
     //
-    // If the plugin is doing collective communication, then we can't do DLB.
+    // If the plugin is doing collective communication, then we can't do 
+    // streaming.
     //
-    if (!Interface->CanDoDynamicLoadBalancing())
+    if (!Interface->CanDoStreaming())
         return false;
 
     //

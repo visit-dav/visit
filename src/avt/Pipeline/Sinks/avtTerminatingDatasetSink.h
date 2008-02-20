@@ -42,8 +42,8 @@
 
 #ifndef AVT_TERMINATING_DATASET_SINK_H
 #define AVT_TERMINATING_DATASET_SINK_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtDatasetSink.h>
 #include <avtTerminatingSink.h>
@@ -67,6 +67,11 @@
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtTerminatingDatasetSink
@@ -77,7 +82,7 @@ class PIPELINE_API avtTerminatingDatasetSink
     virtual          ~avtTerminatingDatasetSink();
 
   protected:
-    virtual void      DynamicLoadBalanceCleanUp(void);
+    virtual void      StreamingCleanUp(void);
 };
 
 

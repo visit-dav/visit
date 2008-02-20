@@ -129,6 +129,13 @@ class avtZWFileFormatInterface : public avtFileFormatInterface
 //  Programmer: Mark C. Miller 
 //  Creation:   Thu Jul 26 18:55:05 PDT 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 class avtZipWrapperFileFormat : public avtMTMDFileFormat
 {
@@ -156,8 +163,8 @@ class avtZipWrapperFileFormat : public avtMTMDFileFormat
                                { return realFileFormat->HasVarsDefinedOnSubMeshes(); }; 
     bool                   PerformsMaterialSelection()
                                { return realFileFormat->PerformsMaterialSelection(); }; 
-    bool                   CanDoDynamicLoadBalancing()
-                               { return realFileFormat->CanDoDynamicLoadBalancing(); };
+    bool                   CanDoStreaming()
+                               { return realFileFormat->CanDoStreaming(); };
 
     // Methods where data is pushed down to this dummied up format object
     // from avtFileFormatInterface loops that we record for later query/ back out.

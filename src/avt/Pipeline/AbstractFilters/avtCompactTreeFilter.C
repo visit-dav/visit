@@ -146,16 +146,21 @@ avtCompactTreeFilter::avtCompactTreeFilter()
 //    Hank Childs, Fri Feb 15 15:26:56 PST 2008
 //    Fix memory leak.
 //   
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 void
 avtCompactTreeFilter::Execute(void)
 {
     if (executionDependsOnDLB && 
-        GetInput()->GetInfo().GetValidity().GetIsThisDynamic())
+        GetInput()->GetInfo().GetValidity().AreWeStreaming())
     {
         //
-        //  Dynamic load balancing executes this filter during cleanup
+        //  We execute this filter during cleanup when streaming, 
         //  so no need to execute it at the the end of the avtPlot pipeline.
         //
         SetOutputDataTree(GetInputDataTree());

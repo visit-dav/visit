@@ -61,7 +61,7 @@ typedef ref_ptr<avtContract> avtContract_p;
 //      This is the specification of a pipeline.  This includes the
 //      specification of which data you want, as well as a pipeline index to
 //      be used later for load balancing and a boolean value indicating if
-//      dynamic load balancing is possible.
+//      streaming is possible.
 //
 //  Programmer: Hank Childs
 //  Creation:   May 28, 2001
@@ -86,6 +86,11 @@ typedef ref_ptr<avtContract> avtContract_p;
 //    operator to prevent accidental use of default, bitwise copy 
 //    implementations.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtContract
@@ -97,10 +102,10 @@ class PIPELINE_API avtContract
                                                  avtDataRequest_p);
     virtual            ~avtContract();
 
-    bool                ShouldUseDynamicLoadBalancing(void)
-                               { return canDoDynamic; };
-    void                NoDynamicLoadBalancing(void)
-                               { canDoDynamic = false; };
+    bool                ShouldUseStreaming(void)
+                               { return canDoStreaming; };
+    void                NoStreaming(void)
+                               { canDoStreaming = false; };
     void                SetDataRequest(avtDataRequest_p ds)
                                { data = ds; };
 
@@ -131,7 +136,7 @@ class PIPELINE_API avtContract
   protected:
     avtDataRequest_p    data;
     int                       pipelineIndex;
-    bool                      canDoDynamic;
+    bool                      canDoStreaming;
     bool                      useLoadBalancing;
     bool                      haveCurvilinearMeshOptimizations;
     bool                      haveRectilinearMeshOptimizations;

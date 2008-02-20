@@ -178,6 +178,12 @@ bool avtSiloFileFormat::madeGlobalSiloCalls = false;
 //
 //    Mark C. Miller, Wed May 30 08:25:05 PDT 2007
 //    Added this bogus comment to test svn update behavior
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
@@ -236,7 +242,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
     hasDisjointElements = false;
 
 #ifdef PARALLEL
-    canDoDynamicLoadBalancing = false;
+    canDoStreaming = false;
 #endif
 
     topDir = "/";
@@ -3147,6 +3153,11 @@ avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
 //    Hank Childs, Mon Oct  8 13:01:31 PDT 2007
 //    Added an argument to force the operation.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 void
@@ -3254,7 +3265,7 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile,
         // Hard to characterize when we would or would not be
         // able to do dynamic load balancing, so just turn it off.
         //
-        canDoDynamicLoadBalancing = false;
+        canDoStreaming = false;
     }
 
     if (numGroups > 0)

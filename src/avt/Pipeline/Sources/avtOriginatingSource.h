@@ -58,7 +58,7 @@ class     avtMetaData;
 
 typedef avtDataRequest_p (*LoadBalanceFunction)(void *,
                                                    avtContract_p);
-typedef bool                   (*DynamicCheckFunction)(void *,
+typedef bool                   (*StreamingCheckFunction)(void *,
                                                    avtContract_p);
 typedef void                   (*InitializeProgressCallback)(void *, int);
 
@@ -116,6 +116,11 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //    Hank Childs, Wed Feb  7 13:18:28 PST 2007
 //    Add support for progress from time queries.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
@@ -145,7 +150,7 @@ class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
     virtual bool                   Update(avtContract_p);
 
     static void                    SetLoadBalancer(LoadBalanceFunction,void *);
-    static void                    SetDynamicChecker(DynamicCheckFunction,
+    static void                    SetStreamingChecker(StreamingCheckFunction,
                                                      void *);
     static void                    RegisterInitializeProgressCallback(
                                            InitializeProgressCallback, void *);
@@ -198,11 +203,11 @@ class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
  private:
     static LoadBalanceFunction     loadBalanceFunction;
     static void                   *loadBalanceFunctionArgs;
-    static DynamicCheckFunction    dynamicCheckFunction;
-    static void                   *dynamicCheckFunctionArgs;
+    static StreamingCheckFunction  streamingCheckFunction;
+    static void                   *streamingCheckFunctionArgs;
 
     void                           InitPipeline(avtContract_p);
-    virtual bool                   CanDoDynamicLoadBalancing(void);
+    virtual bool                   CanDoStreaming(void);
 
     // These data members are important when there are multiple executions, like
     // with the time loop filter.  This information is important to keep track

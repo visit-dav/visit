@@ -590,6 +590,11 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    Hank Childs, Sun Mar 13 10:00:01 PST 2005
 //    Tell filters upstream that we have rectilinear optimizations.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -666,7 +671,7 @@ avtVolumeFilter::ModifyContract(avtContract_p spec)
         strcpy(primaryVariable, exprName);
     }
 
-    newspec->NoDynamicLoadBalancing();
+    newspec->NoStreaming();
     newspec->SetHaveRectilinearMeshOptimizations(true);
     return newspec;
 }

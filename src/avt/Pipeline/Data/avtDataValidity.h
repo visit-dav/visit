@@ -114,6 +114,11 @@ class     avtWebpage;
 //    Define private copy constructor and assignment operator to prevent
 //    accidental use of default, bitwise copy implementations.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataValidity
@@ -179,10 +184,10 @@ class PIPELINE_API avtDataValidity
     bool                     GetUsingAllDomains(void)
                                    { return usingAllDomains; };
 
-    void                     SetIsThisDynamic(bool itd)
-                                   { isThisDynamic = itd; };
-    bool                     GetIsThisDynamic(void)
-                                   { return isThisDynamic; };
+    void                     SetWhetherStreaming(bool itd)
+                                   { streaming = itd; };
+    bool                     AreWeStreaming(void)
+                                   { return streaming; };
 
     void                     SetPointsWereTransformed(bool pwt)
                                    { pointsWereTransformed = pwt; };
@@ -244,7 +249,7 @@ class PIPELINE_API avtDataValidity
     bool                     operationFailed;
     bool                     usingAllData;
     bool                     usingAllDomains;
-    bool                     isThisDynamic;
+    bool                     streaming;
     bool                     pointsWereTransformed;
     bool                     wireframeRenderingIsInappropriate;
     bool                     normalsAreInappropriate;
