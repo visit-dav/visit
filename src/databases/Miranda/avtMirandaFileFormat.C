@@ -96,6 +96,11 @@ typedef int int32_t;
 //  Modifications:
 //    Dave Bremer and Kathleen Bonnell, Mon Mar 19 19:04:11 PDT 2007
 //    Fix fopen on windows.  Add error checking.
+//
+//    Dave Bremer, Wed Feb 20 15:25:12 PST 2008
+//    Added support for version 1.2 of the .raw files, which specifies block
+//    ordering using a tag of the form "fileorder: ZYX", rather than using a
+//    separate grid file per process.  Also allow comments that use a full line.
 // ****************************************************************************
 
 avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttributes *readOpts)
@@ -109,17 +114,20 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
 
     dim = 3;
     flatDim = -1;
-        
+    iFileOrder[0] = -1;
+    iFileOrder[1] = -1;
+    iFileOrder[2] = -1;
+
     // Verify that the 'magic' and version number are right
     f >> buf1 >> buf2;
     if (buf1 != "VERSION")
     {
         EXCEPTION1(InvalidDBTypeException, "Not a raw miranda file." );
     }
-    if (buf2 != "1.0" && buf2 != "1.1")
+    if (buf2 != "1.0" && buf2 != "1.1" && buf2 != "1.2")
     {
         EXCEPTION1(InvalidDBTypeException, 
-                   "Only raw miranda version 1.0 and 1.1 are supported." );
+                   "Only raw miranda version 1.0, 1.1, and 1.2 are supported." );
     }
 
     // Process a tag at a time until all lines have been read
@@ -131,7 +139,11 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
             break;
         }
 
-        if (STREQUAL("gridfiles:", tag.c_str())==0)
+        if (tag[0] == '#')
+        {
+            SkipToEndOfLine( f, false );
+        }
+        else if (STREQUAL("gridfiles:", tag.c_str())==0)
         {
             f >> gridTemplate;
             SkipToEndOfLine( f );
@@ -217,6 +229,28 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
                 SkipToEndOfLine( f );
             }
         }
+        else if (STREQUAL("fileorder:", tag.c_str())==0)
+        {
+            //order will be some permutation of xyz or XYZ, or YZ, xy, etc.
+            string  order;
+            f >> order;
+            if (order.size() != 2 && order.size() != 3)
+                EXCEPTION1(InvalidDBTypeException, "Error parsing file.  "
+                    "fileorder: should be followed by a permutation of XYZ");
+
+            for (ii = 0 ; ii < order.size() ; ii++)
+            {
+                if ('x' <= order[ii] && order[ii] <= 'z')
+                    iFileOrder[ii] = order[ii] - 'x';
+                else if ('X' <= order[ii] && order[ii] <= 'Z')
+                    iFileOrder[ii] = order[ii] - 'X';
+                else
+                    EXCEPTION1(InvalidDBTypeException, "Error parsing file.  "
+                        "fileorder: should be followed by a permutation of XYZ");
+            }
+            if (order.size()==2)
+                iFileOrder[2] = 3 - (iFileOrder[0]+iFileOrder[1]);
+        }
         else
         {
             sprintf(buf, "Error parsing file.  Unknown tag %s", tag.c_str());
@@ -269,7 +303,9 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
     iNumBlocks[1] = iGlobalDim[1] / iBlockSize[1];
     iNumBlocks[2] = iGlobalDim[2] / iBlockSize[2];
     
-    domainMap.resize( iNumBlocks[0]*iNumBlocks[1]*iNumBlocks[2]*3, -1 );
+    //domainMap is only used if the file order is unspecified
+    if (iFileOrder[0] == -1)
+        domainMap.resize( iNumBlocks[0]*iNumBlocks[1]*iNumBlocks[2]*3, -1 );
 
     // Rearrange data if it is flat in one dimension
     if (iGlobalDim[2] == 1)
@@ -294,6 +330,11 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         fStride[2] = tmpStride;
         iNumBlocks[2] = 1;
         iBlockSize[2] = 1;
+
+        if (iFileOrder[0] == 2)
+            iFileOrder[0] = 1;
+        else if (iFileOrder[1] == 2)
+            iFileOrder[1] = 1;
     }
     else if (iGlobalDim[0] == 1)
     {
@@ -317,6 +358,9 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         fStride[2] = tmpStride;
         iNumBlocks[2] = 1;
         iBlockSize[2] = 1;
+
+        iFileOrder[0]--;
+        iFileOrder[1]--;
     }
 
 }
@@ -559,81 +603,109 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //  Purpose:
 //      Gets the location of a domain in block space, 
 //      i.e. within 0 .. iNumBlocks-1.  
-//      TODO:  This approach migh not scale well with many blocks and procs.
-//      Perhaps all the queries should be done at once by one processor and
-//      the results broadcast using MPI.
 //
 //  Programmer: Dave Bremer
 //  Creation:   Feb 1, 2007
 //
+//  Modifications:
+//    Dave Bremer, Wed Feb 20 15:25:12 PST 2008
+//    Changed the computation of the mapping to use either iFileOrder, if set,
+//    or the grid files.
 // ****************************************************************************
 
 void
 avtMirandaFileFormat::DomainToIJK(int domain, int &i, int &j, int &k)
 {
-    if (domainMap[domain*3] == -1)
+
+    if (iFileOrder[0] != -1)
     {
-        char filename[512];
-        string tok;
-        double blockOrigin[3];
-        int ii;
-        
-        sprintf(filename, gridTemplate.c_str(), domain);
-        ifstream  f(filename);
-        if (!f.good())
-        {
-            EXCEPTION1(InvalidFilesException, filename);
-        }
-        
-        f >> tok;
-        if (tok != "origin:")
-        {
-            EXCEPTION1(InvalidFilesException, filename);        
-        }
-        blockOrigin[0] = GetFortranDouble( f );
-        blockOrigin[1] = GetFortranDouble( f );
-        blockOrigin[2] = GetFortranDouble( f );
-        f.close();
+        int out[3];
 
         if (dim == 3)
         {
-            for (ii = 0 ; ii < 3 ; ii++)
-            {
-                double dIndex = (blockOrigin[ii] - fOrigin[ii]) / 
-                                (fStride[ii]*iBlockSize[ii]);
-                domainMap[domain*3 + ii] = (int)floor(0.5 + dIndex);
-            }
+            out[iFileOrder[0]] = domain % iNumBlocks[iFileOrder[0]];
+            out[iFileOrder[1]] = (domain / iNumBlocks[iFileOrder[0]]) % iNumBlocks[iFileOrder[1]];
+            out[iFileOrder[2]] = domain / (iNumBlocks[iFileOrder[0]] * iNumBlocks[iFileOrder[1]]);
+            i = out[0];
+            j = out[1];
+            k = out[2];
         }
         else
         {
-            if (flatDim == 0)
-            {
-                blockOrigin[0] = blockOrigin[1];
-                blockOrigin[1] = blockOrigin[2];
-            }
-            else if (flatDim == 1)
-            {
-                blockOrigin[1] = blockOrigin[2];
-            }
-            for (ii = 0 ; ii < 2 ; ii++)
-            {
-                double dIndex = (blockOrigin[ii] - fOrigin[ii]) / 
-                                (fStride[ii]*iBlockSize[ii]);
-                domainMap[domain*3 + ii] = (int)floor(0.5 + dIndex);
-            }
-            domainMap[domain*3 + 2] = 0;
+            int lenInFastDir = iNumBlocks[iFileOrder[0]];
+
+            out[iFileOrder[0]] = domain % lenInFastDir;
+            out[iFileOrder[1]] = domain / lenInFastDir;
+            i = out[0];
+            j = out[1];
+            k = 0;
         }
+        /* This is only true if blocks come in ZYX order, which is normally
+        true, but not guaranteed.
+        k = domain % iNumBlocks[2];
+        j = (domain / iNumBlocks[2]) % iNumBlocks[1];
+        i = domain / (iNumBlocks[1] * iNumBlocks[2]);
+        */
     }
-    i = domainMap[domain*3 + 0];
-    j = domainMap[domain*3 + 1];
-    k = domainMap[domain*3 + 2];
+    else
+    {
+        if (domainMap[domain*3] == -1)
+        {
+            char filename[512];
+            string tok;
+            double blockOrigin[3];
+            int ii;
+            
+            sprintf(filename, gridTemplate.c_str(), domain);
+            ifstream  f(filename);
+            if (!f.good())
+            {
+                EXCEPTION1(InvalidFilesException, filename);
+            }
+            
+            f >> tok;
+            if (tok != "origin:")
+            {
+                EXCEPTION1(InvalidFilesException, filename);        
+            }
+            blockOrigin[0] = GetFortranDouble( f );
+            blockOrigin[1] = GetFortranDouble( f );
+            blockOrigin[2] = GetFortranDouble( f );
+            f.close();
     
-    /* This is only true if blocks come in ZYX order, which is normally
-       true, but not guaranteed.
-    i = domain / (iNumBlocks[1] * iNumBlocks[2]);
-    j = (domain / iNumBlocks[2]) % iNumBlocks[1];
-    k = domain % iNumBlocks[2];
-    */
+            if (dim == 3)
+            {
+                for (ii = 0 ; ii < 3 ; ii++)
+                {
+                    double dIndex = (blockOrigin[ii] - fOrigin[ii]) / 
+                                    (fStride[ii]*iBlockSize[ii]);
+                    domainMap[domain*3 + ii] = (int)floor(0.5 + dIndex);
+                }
+            }
+            else
+            {
+                if (flatDim == 0)
+                {
+                    blockOrigin[0] = blockOrigin[1];
+                    blockOrigin[1] = blockOrigin[2];
+                }
+                else if (flatDim == 1)
+                {
+                    blockOrigin[1] = blockOrigin[2];
+                }
+                for (ii = 0 ; ii < 2 ; ii++)
+                {
+                    double dIndex = (blockOrigin[ii] - fOrigin[ii]) / 
+                                    (fStride[ii]*iBlockSize[ii]);
+                    domainMap[domain*3 + ii] = (int)floor(0.5 + dIndex);
+                }
+                domainMap[domain*3 + 2] = 0;
+            }
+        }
+        i = domainMap[domain*3 + 0];
+        j = domainMap[domain*3 + 1];
+        k = domainMap[domain*3 + 2];
+    }
 }
 
 
