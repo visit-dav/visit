@@ -478,6 +478,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Jeremy Meredith, Tue Feb 19 14:19:18 EST 2008
 //    Added "constant".
 //
+//    Jeremy Meredith, Wed Feb 20 10:01:27 EST 2008
+//    Split "constant" into point_constant and cell_constant.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -883,8 +886,10 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtHSVColorComposeExpression;
     if (functionName == "colorlookup")
         return new avtPerformColorTableLookupExpression;
-    if (functionName == "constant")
-        return new avtConstantFunctionExpression;
+    if (functionName == "cell_constant")
+        return new avtConstantFunctionExpression(false);
+    if (functionName == "point_constant")
+        return new avtConstantFunctionExpression(true);
 
     return NULL;
 }

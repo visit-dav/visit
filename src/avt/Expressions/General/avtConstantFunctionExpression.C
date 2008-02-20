@@ -59,10 +59,15 @@
 //  Programmer: Jeremy Meredith
 //  Creation:   February 19, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Feb 20 10:00:31 EST 2008
+//    Support either nodal or zonal values.
+//
 // ****************************************************************************
 
-avtConstantFunctionExpression::avtConstantFunctionExpression()
+avtConstantFunctionExpression::avtConstantFunctionExpression(bool n)
 {
+    nodal = n;
     value = 0;
 }
 
@@ -99,16 +104,20 @@ avtConstantFunctionExpression::~avtConstantFunctionExpression()
 //  Programmer:   Jeremy Meredith
 //  Creation:     February 19, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Feb 20 10:00:31 EST 2008
+//    Support either nodal or zonal values.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtConstantFunctionExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int npts   = in_ds->GetNumberOfPoints();
+    int nvals = nodal ? in_ds->GetNumberOfPoints() : in_ds->GetNumberOfCells();
 
     vtkFloatArray *rv = vtkFloatArray::New();
-    rv->SetNumberOfTuples(npts);
-    for (int i = 0 ; i < npts ; i++)
+    rv->SetNumberOfTuples(nvals);
+    for (int i = 0 ; i < nvals ; i++)
     {
         rv->SetTuple1(i, value);
     }

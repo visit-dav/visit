@@ -290,6 +290,7 @@ const char *expr_mesh[] = {
 };
 
 const char *expr_misc[] = {
+    "cell_constant",
     "conn_components",
     "curl",
     "divergence",
@@ -300,6 +301,7 @@ const char *expr_misc[] = {
     "ijk_gradient",
     "Laplacian",
     "mean_curvature",
+    "point_constant",
     "recenter",
     "resrad",
     "surface_normal",
@@ -1062,6 +1064,9 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Jeremy Meredith, Wed Feb 13 12:27:50 EST 2008
 //    Added enumerate
 //
+//    Jeremy Meredith, Wed Feb 20 10:01:59 EST 2008
+//    Added cell_constant and point_constant.
+//
 // ****************************************************************************
 
 void
@@ -1155,6 +1160,11 @@ QvisExpressionsWindow::insertFunction(int id)
     else if (str == "enumerate")
     {
         definitionEdit->insert("(<var>, [<val-if-0>, <val-if-1>, ...])");
+        doParens = false;
+    }
+    else if (str == "cell_constant" || str == "point_constant")
+    {
+        definitionEdit->insert("(<meshvar>, <constantvalue>)");
         doParens = false;
     }
 
