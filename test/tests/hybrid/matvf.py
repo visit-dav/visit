@@ -23,6 +23,9 @@
 #    Hank Childs, Mon Jan  3 09:28:39 PST 2005
 #    Added tests for materror.
 #
+#    Cyrus Harrison, Tue Feb 12 15:16:36 PST 2008
+#    Added explicit tests for matvf w/ ghost zones. 
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -178,5 +181,49 @@ Test("matvf_09")
 ReplaceDatabase("../data/rect2d.silo")
 RemoveLastOperator()
 Test("matvf_10")
+
+
+CloseDatabase("../data/rect2d.silo")
+OpenDatabase("../data/thinplane.silo")
+
+# tests for matvf w/ ghost zones
+
+# test standard
+DeleteAllPlots()
+DefineScalarExpression("mvf_2", "matvf(mat,2)")
+AddPlot("Pseudocolor", "mvf_2")
+atts = PseudocolorAttributes(1)
+atts.minFlag = 1
+atts.min = 0.0
+atts.maxFlag = 1
+atts.max = 1.0
+atts.centering = atts.Natural
+SetPlotOptions(atts)
+DrawPlots()
+Test("matvf_post_ghost_1")
+
+# test with ghosts
+atts = PseudocolorAttributes(1)
+atts.minFlag = 1
+atts.min = 0.0
+atts.maxFlag = 1
+atts.max = 1.0
+atts.centering = atts.Nodal
+SetPlotOptions(atts)
+DrawPlots()
+Test("matvf_post_ghost_2")
+
+# switch back to ensure w/ ghost case caching does not alter w/o ghosts
+atts = PseudocolorAttributes(1)
+atts.minFlag = 1
+atts.min = 0.0
+atts.maxFlag = 1
+atts.max = 1.0
+atts.centering = atts.Zonal
+SetPlotOptions(atts)
+DrawPlots()
+Test("matvf_post_ghost_3")
+
+
 
 Exit()
