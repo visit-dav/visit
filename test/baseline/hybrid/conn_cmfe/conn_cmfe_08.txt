@@ -1,2 +1,2 @@
-Pseudocolor:  (ImproperUseException)
-viewer: The pipeline object is being used improperly: After parsing, expression has no real variables.
+Pseudocolor:  (ExpressionException)
+viewer: The 'conn_cmfe' expression failed because The database comparison expression expects two arguments: the database variable and a mesh to sample onto.
