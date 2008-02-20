@@ -1148,6 +1148,11 @@ GetCoordinates(float start, float length, int numEls, int myStart, int myStop)
 //    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
 //    Added support for resample data selection
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -1181,7 +1186,7 @@ avtResampleFilter::ModifyContract(avtContract_p oldataRequest)
     sel->SetStops(stops);
     selID = spec->GetDataRequest()->AddDataSelection(sel);
 
-    spec->NoDynamicLoadBalancing();
+    spec->NoStreaming();
     spec->SetHaveRectilinearMeshOptimizations(true);
     spec->GetDataRequest()->SetDesiredGhostDataType(NO_GHOST_DATA);
     if (atts.GetUseArbitrator())

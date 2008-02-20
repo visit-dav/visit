@@ -1703,6 +1703,11 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //    Hank Childs, Sun Mar  6 07:29:34 PST 2005
 //    Turn off dynamic load balancing if we are in query mode.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -1730,7 +1735,7 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
         workingNet->GetContract()->GetDataRequest()->
             SetMayRequireNodes(requireOriginalNodes); 
         if (inQueryMode)
-            workingNet->GetContract()->NoDynamicLoadBalancing();
+            workingNet->GetContract()->NoStreaming();
 
         avtDataObjectWriter_p writer = workingNet->GetWriter(output,
                                           workingNet->GetContract(),

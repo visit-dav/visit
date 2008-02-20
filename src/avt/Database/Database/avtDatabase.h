@@ -280,6 +280,11 @@ typedef struct {
 //    Cyrus Harrison, Wed Nov 28 10:11:41 PST 2007
 //    Added AddVectorMagnitudeExpressions.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -315,8 +320,7 @@ class DATABASE_API avtDatabase
     virtual void                FreeUpResources(void);
     virtual bool                MetaDataIsInvariant(void);
     virtual bool                SILIsInvariant(void);
-    virtual bool                CanDoDynamicLoadBalancing(
-                                                       avtDataRequest_p);
+    virtual bool                CanDoStreaming(avtDataRequest_p);
     virtual int                 NumStagesForFetch(avtDataRequest_p);
 
     const avtIOInformation     &GetIOInformation(int stateIndex);

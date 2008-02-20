@@ -1043,8 +1043,13 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Hank Childs, Tue Jul 11 14:34:06 PDT 2006
 //    Added double arguments.
 //
-//   Dave Bremer, Fri Dec  8 17:52:22 PST 2006
-//   Changed the double arguments to vectors of doubles.
+//    Dave Bremer, Fri Dec  8 17:52:22 PST 2006
+//    Changed the double arguments to vectors of doubles.
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
 //
 // ****************************************************************************
 
@@ -1122,7 +1127,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             int networkId = plot->GetNetworkID();
             avtDataObjectReader_p rdr = plot->GetReader();
             avtDataObject_p dob = rdr->GetOutput();
-            bool isDyn = dob->GetInfo().GetValidity().GetIsThisDynamic();
+            bool isDyn = dob->GetInfo().GetValidity().AreWeStreaming();
             if (isDyn)
             {
                 ViewerEngineManager::Instance()->StartQuery(engineKey, true,
@@ -1325,7 +1330,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
     if (canBeDLBPlots)
     {
         //
-        // If we had to regenerate plots done with dynamic load balancing, tell
+        // If we had to regenerate plots done with streaming, tell
         // them that we are done with queries.
         //
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
@@ -1340,7 +1345,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             int networkId = plot->GetNetworkID();
             avtDataObjectReader_p rdr = plot->GetReader();
             avtDataObject_p dob = rdr->GetOutput();
-            bool isDyn = dob->GetInfo().GetValidity().GetIsThisDynamic();
+            bool isDyn = dob->GetInfo().GetValidity().AreWeStreaming();
             if (isDyn)
             {
                 ViewerEngineManager::Instance()->StartQuery(engineKey, false, 

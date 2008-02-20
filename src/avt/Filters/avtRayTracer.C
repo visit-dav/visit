@@ -676,6 +676,11 @@ avtRayTracer::ReleaseData(void)
 //    Hank Childs, Wed Nov 21 11:53:21 PST 2001
 //    Don't assume we can get an interval tree.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -696,7 +701,7 @@ avtRayTracer::ModifyContract(avtContract_p spec)
         }
     }
 
-    rv->NoDynamicLoadBalancing();
+    rv->NoStreaming();
     return rv;
 }
 

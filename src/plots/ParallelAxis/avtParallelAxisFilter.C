@@ -164,8 +164,13 @@ avtParallelAxisFilter::VerifyInput(void)
 //
 //  Modifications:
 //
-//      Mark Blair, Wed Aug 16 16:46:00 PDT 2006
-//      Added check for attribute consistency.
+//    Mark Blair, Wed Aug 16 16:46:00 PDT 2006
+//    Added check for attribute consistency.
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
 //
 // ****************************************************************************
 
@@ -198,7 +203,7 @@ avtParallelAxisFilter::ModifyContract(avtContract_p in_spec)
 
     avtContract_p outSpec = new avtContract(in_spec);
     
-    outSpec->NoDynamicLoadBalancing();
+    outSpec->NoStreaming();
     
 /* Add this interval tree code eventually (mb)
     bool atLeastOneTree = false;

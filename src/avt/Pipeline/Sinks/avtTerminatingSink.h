@@ -60,7 +60,7 @@ typedef  bool (*GuideFunction)(void *, int);
 //  Purpose:
 //      This sink object serves as the terminator of a pipeline.  It 
 //      understands that there are many pipelines and what its pipeline index
-//      is.  It also understands that dynamic load balancing may occur and
+//      is.  It also understands that streaming may occur and
 //      that it may have to execute a pipeline multiple times.
 //
 //  Programmer: Hank Childs
@@ -88,6 +88,11 @@ typedef  bool (*GuideFunction)(void *, int);
 //    Cyrus Harrison, Wed Feb 13 11:31:58 PST 2008
 //    Global debug dump flag was migrated to avtDebugDumpOptions.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtTerminatingSink : virtual public avtDataObjectSink
@@ -105,7 +110,7 @@ class PIPELINE_API avtTerminatingSink : virtual public avtDataObjectSink
 
   protected:
     virtual void              InputIsReady(void);
-    virtual void              DynamicLoadBalanceCleanUp(void);
+    virtual void              StreamingCleanUp(void);
 
     static avtWebpage        *webpage;
 

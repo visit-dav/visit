@@ -80,19 +80,26 @@ avtTerminatingDatasetSink::~avtTerminatingDatasetSink()
 
 
 // ****************************************************************************
-//  Method: avtTerminatingDatasetSink::DynamicLoadBalanceCleanUp
+//  Method: avtTerminatingDatasetSink::StreamingCleanUp
 //
 //  Purpose:
 //      A hook from the base class that allows us to clean up the data tree
-//      after dynamic load balancing.
+//      after streaming.
 //
 //  Programmer: Hank Childs
 //  Creation:   September 28, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 void
-avtTerminatingDatasetSink::DynamicLoadBalanceCleanUp(void)
+avtTerminatingDatasetSink::StreamingCleanUp(void)
 {
     avtDataset_p dataset = GetTypedInput();
     dataset->Compact();

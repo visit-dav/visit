@@ -204,6 +204,12 @@ class    avtVariableCache;
 //
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added method SetCycleTimeInDatabaseMetaData
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
@@ -234,7 +240,7 @@ class DATABASE_API avtFileFormatInterface
 
     bool                    CanCacheVariable(const char *);
 
-    bool                    CanDoDynamicLoadBalancing(void);
+    bool                    CanDoStreaming(void);
     const char             *GetType(void);
     bool                    HasVarsDefinedOnSubMeshes(void);
     bool                    PerformsMaterialSelection(void);

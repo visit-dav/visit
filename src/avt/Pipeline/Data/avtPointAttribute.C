@@ -128,6 +128,11 @@ avtPointAttribute::GetPoint(double p[3])
 //    Brad Whitlock, Fri Jun 28 13:12:59 PST 2002
 //    I removed a semi-colon that should not have been there.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -166,7 +171,7 @@ avtPointAttribute::ModifyContract(avtContract_p spec)
 
     if (type != Point::VT_Tuple)
     {
-        rv->NoDynamicLoadBalancing();
+        rv->NoStreaming();
     }
 
     return rv;

@@ -228,6 +228,11 @@ avtContourFilter::~avtContourFilter()
 //    were explicitly set, then we could set a percent or nLevels without
 //    needing to know the actual data extents.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -293,7 +298,7 @@ avtContourFilter::ModifyContract(avtContract_p in_spec)
             SetIsoValues(extents[0], extents[1]);
         else
         {
-            spec->NoDynamicLoadBalancing();
+            spec->NoStreaming();
             return spec;
         }
     }

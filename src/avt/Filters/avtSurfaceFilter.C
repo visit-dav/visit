@@ -616,6 +616,11 @@ avtSurfaceFilter::VerifyInput(void)
 //    Hank Childs, Mon Jun 18 09:04:39 PDT 2007
 //    Ask for the secondary variable before this method is called.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -632,7 +637,7 @@ avtSurfaceFilter::ModifyContract(avtContract_p spec)
     }
     else
     {
-        spec->NoDynamicLoadBalancing();
+        spec->NoStreaming();
     }
     if (spec->GetDataRequest()->MayRequireZones()) 
     {

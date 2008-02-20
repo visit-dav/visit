@@ -376,6 +376,11 @@ avtReflectFilter::PostExecute(void)
 //    Kathleen Bonnell, Wed Jun  2 09:21:46 PDT 2004 
 //    Turn on node numbers when required. 
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -391,7 +396,7 @@ avtReflectFilter::ModifyContract(avtContract_p spec)
     if (atts.GetUseXBoundary() || atts.GetUseYBoundary() ||
         atts.GetUseZBoundary())
     {
-        ns->NoDynamicLoadBalancing();
+        ns->NoStreaming();
     }
 
     if (spec->GetDataRequest()->MayRequireZones())

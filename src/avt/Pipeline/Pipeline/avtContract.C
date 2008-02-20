@@ -66,6 +66,11 @@
 //    Hank Childs, Sun Mar 13 09:49:16 PST 2005
 //    Initialize haveStructuredMeshOptimizations.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtContract::avtContract(avtDataRequest_p d,
@@ -73,7 +78,7 @@ avtContract::avtContract(avtDataRequest_p d,
 {
     data             = new avtDataRequest(d);
     pipelineIndex    = pi;
-    canDoDynamic     = true;
+    canDoStreaming   = true;
     useLoadBalancing = true;
     nFilters         = 0;
     haveCurvilinearMeshOptimizations = false;
@@ -163,6 +168,11 @@ avtContract::~avtContract()
 //    Hank Childs, Tue Dec 18 14:11:56 PST 2007
 //    Added const qualified argument.
 //
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtContract &
@@ -170,7 +180,7 @@ avtContract::operator=(const avtContract &ps)
 {
     data             = new avtDataRequest(ps.data);
     pipelineIndex    = ps.pipelineIndex;
-    canDoDynamic     = ps.canDoDynamic;
+    canDoStreaming   = ps.canDoStreaming;
     useLoadBalancing = ps.useLoadBalancing;
     nFilters         = ps.nFilters;
     haveCurvilinearMeshOptimizations = ps.haveCurvilinearMeshOptimizations;
@@ -210,6 +220,13 @@ avtContract::UseLoadBalancing(bool newVal)
 //  Programmer: Hank Childs
 //  Creation:   June 15, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 static const char *
@@ -234,8 +251,8 @@ avtContract::DebugDump(avtWebpage *webpage)
     webpage->AddTableHeader2("Field", "Value");
     sprintf(str, "%d", pipelineIndex);
     webpage->AddTableEntry2("Pipeline index", str);
-    webpage->AddTableEntry2("Supports dynamic load balancing", 
-                            YesOrNo(canDoDynamic));
+    webpage->AddTableEntry2("Can do streaming", 
+                            YesOrNo(canDoStreaming));
     webpage->AddTableEntry2("Should use load balancing", 
                             YesOrNo(useLoadBalancing));
     webpage->AddTableEntry2("Have curvilinear optimizations", 

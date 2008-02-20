@@ -156,6 +156,10 @@ struct IOInfo
 //    Hank Childs, Tue Feb 19 08:56:54 PST 2008
 //    Add data member domainListForStreaming.
 //
+//    Hank Childs, Tue Feb 19 22:05:02 PST 2008
+//    Remove unused method for checking whether we are doing dynamic load
+//    balancing.
+//
 // ****************************************************************************
 
 class LoadBalancer
@@ -167,7 +171,6 @@ class LoadBalancer
     avtDataRequest_p              Reduce(avtContract_p input);
     bool                          CheckDynamicLoadBalancing(
                                          avtContract_p input);
-    bool                          CheckDynamicLoadBalancing(int);
 
     LoadBalanceScheme             DetermineAppropriateScheme(
                                       avtContract_p input);

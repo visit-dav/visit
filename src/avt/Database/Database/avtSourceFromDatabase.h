@@ -42,8 +42,8 @@
 
 #ifndef AVT_SOURCE_FROM_DATABASE_H
 #define AVT_SOURCE_FROM_DATABASE_H
-#include <database_exports.h>
 
+#include <database_exports.h>
 
 #include <avtOriginatingDatasetSource.h>
 #include <avtDataTree.h>

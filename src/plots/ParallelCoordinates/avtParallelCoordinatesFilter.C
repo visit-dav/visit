@@ -132,13 +132,17 @@ avtParallelCoordinatesFilter::~avtParallelCoordinatesFilter()
 // ****************************************************************************
 //  Method: avtParallelCoordinatesFilter::ModifyContract
 //
-//  Purpose: Disable dynamic load balancing.  We can eventually do an
-//           interval tree here.
+//  Purpose: Disable streaming.  We can eventually do an interval tree here.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   February  7, 2008
 //
 //  Modifications:
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
 //
 // ****************************************************************************
 
@@ -148,7 +152,7 @@ avtParallelCoordinatesFilter::ModifyContract(
 {
     avtContract_p outSpec = new avtContract(in_spec);
     
-    outSpec->NoDynamicLoadBalancing();
+    outSpec->NoStreaming();
 
     return outSpec;
 }

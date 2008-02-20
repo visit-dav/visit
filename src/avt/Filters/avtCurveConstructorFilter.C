@@ -480,12 +480,19 @@ avtCurveConstructorFilter::VerifyInput(void)
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 26, 2002 
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//    Rename "dynamic" to "streaming", since we really care about whether we
+//    are streaming, not about whether we are doing dynamic load balancing.
+//    And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtContract_p
 avtCurveConstructorFilter::ModifyContract(avtContract_p spec)
 {
-    spec->NoDynamicLoadBalancing();
+    spec->NoStreaming();
     return spec;
 }
 

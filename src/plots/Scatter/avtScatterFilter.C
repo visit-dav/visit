@@ -1362,6 +1362,11 @@ avtScatterFilter::NeedSpatialExtents() const
 //   Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
 //   API change for avtIntervalTree.
 //
+//   Hank Childs, Tue Feb 19 19:45:43 PST 2008
+//   Rename "dynamic" to "streaming", since we really care about whether we
+//   are streaming, not about whether we are doing dynamic load balancing.
+//   And the two are no longer synonymous.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -1441,7 +1446,7 @@ avtScatterFilter::ModifyContract(avtContract_p spec)
 
     // If we need any extents that were not available, no DLB.
     if(needXExtents || needYExtents || needZExtents || needColorExtents)
-        rv->NoDynamicLoadBalancing();
+        rv->NoStreaming();
 
     // Pick which domains should be considered using the interval tree.
     for(int i = 0; i < 4; ++i)
