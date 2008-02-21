@@ -356,12 +356,9 @@ skipList_dueTo_temporaryBugs="\
 	  davinci,scalable,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05"
 
 skipList_for_Davinci="\
-	  davinci,serial:tests/databases/silo.py:silo_20,silo_21,silo_26 \
-	  davinci,scalable:tests/databases/silo.py:silo_20,silo_21,silo_26 \
-	  davinci,scalable,parallel:tests/databases/silo.py:silo_20,silo_21,silo_26 \
-          davinci,serial:tests/databases/leos.py \
-          davinci,scalable:tests/databases/leos.py \
-          davinci,scalable,parallel:tests/databases/leos.py"
+	  davinci,serial:tests/databases/silo.py:silo_20,silo_21 \
+	  davinci,scalable:tests/databases/silo.py:silo_20,silo_21 \
+	  davinci,scalable,parallel:tests/databases/silo.py:silo_20,silo_21"
           
 skipList="$skipList_dueTo_clientServer $skipList_dueTo_parallelRendering $skipList_dueTo_temporaryBugs $skipList_for_Davinci"
 
@@ -388,7 +385,7 @@ for m in $modes; do
     rm -f short_summary
     touch short_summary
     echo "Failed results should be obtainable on davinci.nersc.gov" >> short_summary
-    echo "/project/projectdirs/visit/public_html/${dateTag}/${theMode}/index.html" >> short_summary
+    echo "file:///project/projectdirs/visit/public_html/${dateTag}/${theMode}/index.html" >> short_summary
     grep 'category\|failed' summary >> short_summary
     checkAndHandleError $curerror warning "test mode $m failed" short_summary 
 
@@ -396,15 +393,47 @@ for m in $modes; do
     if test -n "$failedPyFiles"; then
         mkdir html_$dateTag
         cp html/index.html html_$dateTag/.
-        for f in $failedPyFiles; do
-            fileKey=`basename $f .py`
-	    cp html/*$fileKey* html_$dateTag/.
-        done
+
+        # loop through short summary, finding only those files that need to be
+        # copied for 'posting' of failed results.
+        theCat=""
+        while read thisLine; do
+            newCat=`echo "$thisLine" | grep -e '--- category' | tr '-' ' ' | tr -s ' ' | cut -d' ' -f3`
+            if test -n "$newCat"; then
+                theCat=$newCat
+                echo "theCat = \"$theCat\""
+            else
+                if test -z "$theCat"; then
+                    continue
+                fi
+                thePyFileBase=`echo "$thisLine" | tr -s ' ' | cut -d' ' -f1 | cut -d'.' -f1`
+                for baseFile in ./baseline/$theCat/$thePyFileBase/*; do
+                    if test -d $baseFile; then
+                        continue
+                    fi
+                    baseNameTxt=`basename $baseFile .txt`
+                    baseNameTif=`basename $baseFile .tif`
+                    baseName=""
+                    if test -f ./baseline/$theCat/$thePyFileBase/$baseNameTxt.txt; then
+                        baseName=$baseNameTxt
+                    elif test -f ./baseline/$theCat/$thePyFileBase/$baseNameTif.tif; then
+                        baseName=$baseNameTif
+                        cp html/[cdb]_$baseName.jpg html_$dateTag/. 1>/dev/null 2>&1
+                        cp html/[cdb]_${baseName}_thumb.jpg html_$dateTag/. 1>/dev/null 2>&1
+                    fi
+                    cp html/$baseName.html html_$dateTag/.
+                done
+            fi
+        done < short_summary
+
+        # 'post' the results by copying to public directory
         mkdir /project/projectdirs/visit/public_html/${dateTag} 1>/dev/null 2>&1
         cp -r html_$dateTag /project/projectdirs/visit/public_html/${dateTag}/${theMode}
         chgrp -R visit /project/projectdirs/visit/public_html/${dateTag}/${theMode}
         chmod -R g+rwX,o-rwX /project/projectdirs/visit/public_html/${dateTag}/${theMode}
         rm -rf html_$dateTag
+
+        # update the top-level index.html file
     fi
 
     if test ! "$curerror" = "0"; then
