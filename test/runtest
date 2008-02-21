@@ -835,7 +835,7 @@ for t in $testcases; do
         fi
         # wait to get engine pids for max of 25 seconds
         n=0
-        while test ! -f engine_pids.txt -o $n -lt 25; do
+        while test ! -f engine_pids.txt -a $n -lt 25; do
             sleep 1
             n=`expr $n + 1`
         done
