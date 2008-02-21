@@ -357,8 +357,10 @@ skipList_dueTo_temporaryBugs="\
 
 skipList_for_Davinci="\
 	  davinci,serial:tests/databases/silo.py:silo_20,silo_21 \
-	  davinci,scalable:tests/databases/silo.py:silo_20,silo_21 \
-	  davinci,scalable,parallel:tests/databases/silo.py:silo_20,silo_21"
+	  davinci,parallel:tests/databases/silo.py:silo_20,silo_21 \
+	  davinci,scalable,parallel:tests/databases/silo.py:silo_20,silo_21 \
+          davinci,parallel:tests/queries/database.py:QueryMinMaxCurve \
+          davinci,scalable,parallel:tests/queries/database.py:QueryMinMaxCurve"
           
 skipList="$skipList_dueTo_clientServer $skipList_dueTo_parallelRendering $skipList_dueTo_temporaryBugs $skipList_for_Davinci"
 
