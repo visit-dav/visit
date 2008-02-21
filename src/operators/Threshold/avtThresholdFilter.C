@@ -286,7 +286,8 @@ avtThresholdFilter::ProcessOneChunk(
         return ThresholdToPointMesh(in_ds);
     }
 
-    if (fromChunker) {
+    if (fromChunker) 
+    {
         //
         // If in_ds is from the chunker, then the zones in in_ds are all
         // ones we identified that we wanted.  So just return them.
@@ -295,7 +296,6 @@ avtThresholdFilter::ProcessOneChunk(
         return in_ds;
     }
     
-    vtkThreshold *threshold;
 
     vtkDataSet *curOutDataSet = in_ds;
 
@@ -309,7 +309,7 @@ avtThresholdFilter::ProcessOneChunk(
     
     for (int curVarNum = 0; curVarNum < curVariables.size(); curVarNum++)
     {
-        threshold = vtkThreshold::New();
+        vtkThreshold *threshold = vtkThreshold::New();
 
         std::map<std::string,int>::iterator iterFind;
         bool bypassThreshold = false;
@@ -330,6 +330,11 @@ avtThresholdFilter::ProcessOneChunk(
             curVarName = curVariables[curVarNum].c_str();
             
             threshold->SetInput(curOutDataSet);
+            // We registered curOutDataSet so it wouldn't be deleted.  But now that
+            // we have fed it back into the threshold filter, we are done with it.
+            // So decrement its reference count.
+            if (curOutDataSet != in_ds)
+                curOutDataSet->Delete();
 
             threshold->SetInputArrayToProcess(
                 0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS_THEN_CELLS,
@@ -365,7 +370,6 @@ avtThresholdFilter::ProcessOneChunk(
             }
             else
             {
-                curOutDataSet->Register(NULL);
                 threshold->Delete();
         
                 sprintf (errMsg, "Data for variable \"%s\" is not currently available.",
@@ -386,7 +390,13 @@ avtThresholdFilter::ProcessOneChunk(
             break;
         }
 
-        curOutDataSet->Register(NULL);
+        if (bypassThreshold == false)
+        {
+            // We want this to stay in scope even after we delete the threshold
+            // filter.  Register it.  If this goes on to another iteration, we'll
+            // delete it after we connect it with the threshold filter again.
+            curOutDataSet->Register(NULL);
+        }
 
         threshold->Delete();
     }
