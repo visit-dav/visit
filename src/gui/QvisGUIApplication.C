@@ -7848,7 +7848,10 @@ QvisGUIApplication::RemoveCrashRecoveryFile(bool removeViewerFile) const
 // Creation:   Thu Jan 31 11:06:42 PST 2008
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Thu Feb 21 14:19:15 PST 2008
+//   Removed status message for crash recovery file creation b/c in certain 
+//   instances it would popup in a confusing way. (This resolves '8501)
+//
 // ****************************************************************************
 
 void
@@ -7856,7 +7859,6 @@ QvisGUIApplication::SaveCrashRecoveryFile()
 {
     debug1 << "Saving crash recovery file: "
           << CrashRecoveryFile().latin1() << endl;
-    Status("Saving crash recovery file...");
     SaveSessionFile(CrashRecoveryFile());
     Synchronize(CLEAR_STATUS_TAG);
 }
