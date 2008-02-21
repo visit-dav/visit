@@ -1617,10 +1617,12 @@ else:
    OpenComputeEngine("localhost")
 
 # get unix process attributes for engine and viewer
-
-if leakcheck:
-    engineProcAtts=GetProcessAttributes("engine")
-    viewerProcAtts=GetProcessAttributes("viewer")
+engineProcAtts=GetProcessAttributes("engine")
+viewerProcAtts=GetProcessAttributes("viewer")
+epids = open("engine_pids.txt", 'wt')
+for p in engineProcAtts.pids:
+    epids.write(int(p))
+epids.close()
 
 # set up our html output
 html = open("html/%s_%s.html" % (category, pyfilebase), 'wt')

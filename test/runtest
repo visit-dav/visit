@@ -236,6 +236,9 @@
 #
 #    Mark C. Miller, Tue Jan 29 14:59:48 PST 2008
 #    Modified setting of PYTHONPATH to include 
+#
+#    Mark C. Miller, Wed Feb 20 21:18:29 PST 2008
+#    Added logic to limit engine process ids
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -793,6 +796,7 @@ for t in $testcases; do
     fi
 
     # run the test or skip it depending on 'skipIt'
+    rm -f engine_pids.txt
     if test "$skipIt" = "true"; then
 	skippedATest=1
 	runtime=skipped
@@ -829,6 +833,15 @@ for t in $testcases; do
 		fi
             fi
         fi
+        # wait to get engine pids for max of 25 seconds
+        n=0
+        while test ! -f engine_pids.txt -o $n -lt 25; do
+            sleep 1
+            n=`expr $n + 1`
+        done
+        while read epid; do
+ 	    ./limitTest $limitSeconds 15 $epid &
+        done < engine_pids.txt
 	limitProcId=0
 	if test $testProcId -ne 0; then
  	    ./limitTest $limitSeconds 15 $testProcId &
