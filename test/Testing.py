@@ -1621,7 +1621,7 @@ engineProcAtts=GetProcessAttributes("engine")
 viewerProcAtts=GetProcessAttributes("viewer")
 epids = open("engine_pids.txt", 'wt')
 for p in engineProcAtts.pids:
-    epids.write(int(p))
+    epids.write("%d\n"%int(p))
 epids.close()
 
 # set up our html output
