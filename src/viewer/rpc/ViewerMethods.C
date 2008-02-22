@@ -5155,3 +5155,22 @@ ViewerMethods::SetCreateVectorMagnitudeExpressions(int flag)
     state->GetViewerRPC()->Notify();
 }
 
+// ****************************************************************************
+//  Method: ViewerMethods::SetSuppressMessages
+//
+//  Purpose: Tells viewer to turn on/off message suppression.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   February 21, 2008
+//
+// ****************************************************************************
+
+void
+ViewerMethods::SetSuppressMessages(int flag)
+{
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::SetSuppressMessagesRPC);
+    state->GetViewerRPC()->SetIntArg1(flag);
+    state->GetViewerRPC()->Notify();
+}
+
+

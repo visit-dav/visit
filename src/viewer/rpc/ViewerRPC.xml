@@ -179,6 +179,7 @@
       SetPlotFollowsTimeRPC
       TurnOffAllLocksRPC
       SetDefaultFileOpenOptionsRPC
+      SetSuppressMessagesRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

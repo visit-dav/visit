@@ -7848,7 +7848,9 @@ QvisGUIApplication::RemoveCrashRecoveryFile(bool removeViewerFile) const
 // Creation:   Thu Jan 31 11:06:42 PST 2008
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Thu Feb 21 16:17:01 PST 2008
+//    Suppressed message about creation of crash recovery session file.
+//
 // ****************************************************************************
 
 void
@@ -7856,9 +7858,12 @@ QvisGUIApplication::SaveCrashRecoveryFile()
 {
     debug1 << "Saving crash recovery file: "
           << CrashRecoveryFile().latin1() << endl;
-    Status("Saving crash recovery file...");
+    // we dont want to bug the user with info about the crash recovery
+    // session being created, so suppress viewer messages.
+    GetViewerMethods()->SetSuppressMessages(true);
     SaveSessionFile(CrashRecoveryFile());
     Synchronize(CLEAR_STATUS_TAG);
+    GetViewerMethods()->SetSuppressMessages(false);
 }
 
 //

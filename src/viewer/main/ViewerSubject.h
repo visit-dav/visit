@@ -455,6 +455,9 @@ class avtDefaultPlotMetaData;
 //    Brad Whitlock, Wed Feb 13 14:12:15 PST 2008
 //    Added argument to SetFromNode.
 //
+//    Cyrus Harrison,Thu Feb 21 15:04:14 PST 2008
+//    Added SetSuppressMessages()
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -642,6 +645,8 @@ private:
     void UpdatePlotInfoAtts();
 
     void SetDefaultFileOpenOptions();
+    void SetSuppressMessages();
+        
 
 private slots:
     void AddInputToXfer(ViewerClientConnection *, AttributeSubject *subj);
