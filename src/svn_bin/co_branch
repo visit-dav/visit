@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/sh
 #
 #  Script: co_branch
 # 
@@ -13,12 +13,15 @@
 #    Hank Childs, Sat Jun 23 15:47:53 PDT 2007
 #    Added support for RC branches.
 #
+#    Hank Childs, Fri Feb 22 10:27:16 PST 2008
+#    Ported from ksh to bash.
+#
 # *****************************************************************************
 
 issueHelp="no"
 CDPATH="" # Prevent unneeded echoing of chdir's.
 
-P=$(whence $0)
+P=$(which $0)
 P2=${P%/*}
 . ${P2}/visit_svn_helper
 
@@ -238,5 +241,5 @@ echo "Your check out is ready!"
 echo "cd to the \"$1\" directory to access the working copy."
 echo ""
 
-return 0
+exit 0
 

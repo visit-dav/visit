@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/sh
 #
 #  Script: co_trunk
 # 
@@ -10,6 +10,9 @@
 #
 #  Modifications:
 #
+#    Hank Childs, Mon Aug 13 14:24:48 PDT 2007
+#    Ported to bash from ksh
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -17,7 +20,7 @@ issueHelp="no"
 # Supresses print statement when you change directories
 CDPATH=""
 
-P=$(whence $0)
+P=$(which $0)
 P2=${P%/*}
 . ${P2}/visit_svn_helper
 
@@ -151,5 +154,5 @@ echo "Your check out is ready"
 echo "cd to the \"trunk\" directory to access the working copy"
 echo ""
 
-return 0
+exit 0
 
