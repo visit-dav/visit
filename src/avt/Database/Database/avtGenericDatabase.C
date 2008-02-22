@@ -5374,6 +5374,10 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    Cyrus Harrison, Tue Feb 19 13:11:03 PST 2008
 //    Added support for post ghost material and mixed var objects. 
 //
+//    Cyrus Harrison, Fri Feb 22 09:17:34 PST 2008
+//    Fixed a problem where a material name could be requested on mesh 
+//    with no materials - resulting in an error.
+//
 // ****************************************************************************
 
 bool
@@ -5398,8 +5402,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     const char *varname = spec->GetVariable();
     avtVarType type  = md->DetermineVarType(varname);
     string meshname  = md->MeshForVar(varname);
-    string matonmesh = md->MaterialOnMesh(meshname);
-
+    
     bool post_ghost = spec->NeedPostGhostMaterialInfo();
     
     // Setup materials
@@ -5715,6 +5718,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         src->DatabaseProgress(localstage++, nlocalstage,
                               "Creating ghost zones for materials");
 
+        // get the proper mesh name
+        string matonmesh = md->MaterialOnMesh(meshname);
         // materials
         vector<avtMaterial*> matList;
         for (i = 0 ; i < doms.size() ; i++)

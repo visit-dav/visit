@@ -5873,6 +5873,9 @@ avtDatabaseMetaData::MeshForVar(const std::string &invar) const
 //    Brad Whitlock, Wed Mar 7 15:06:22 PST 2007
 //    Changed for automatic generation.
 //
+//    Cyrus Harrison, Fri Feb 22 09:01:53 PST 2008
+//    Provided better exception message if a material was not found.
+//
 // ****************************************************************************
 
 std::string
@@ -5906,7 +5909,9 @@ avtDatabaseMetaData::MaterialOnMesh(const std::string &mesh) const
         return rv;
     }
 
-    EXCEPTION1(InvalidVariableException, mesh);
+    std::string err_msg = "Cannot find Material Object for mesh =\"";
+    err_msg +=  mesh + "\".";
+    EXCEPTION1(VisItException,err_msg.c_str());
 }
 
 // ****************************************************************************
