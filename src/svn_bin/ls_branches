@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/sh
 #
 #  Script: ls_branches
 # 
@@ -9,6 +9,9 @@
 #  Creation:   May 7, 2007
 #
 #  Modifications:
+#
+#    Hank Childs, Fri Feb 22 10:57:49 PST 2008
+#    Port from ksh to sh.
 #
 # *****************************************************************************
 
@@ -22,7 +25,7 @@ if [[ $# != 0 ]] ; then
    fi
 fi
 
-P=$(whence $0)
+P=$(which $0)
 P2=${P%/*}
 . ${P2}/visit_svn_helper
 
