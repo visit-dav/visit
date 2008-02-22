@@ -420,11 +420,12 @@ for m in $modes; do
                         baseName=$baseNameTxt
                     elif test -f ./baseline/$theCat/$thePyFileBase/$baseNameTif.tif; then
                         baseName=$baseNameTif
-                        cp html/[cdb]_$baseName.jpg html_$dateTag/. 1>/dev/null 2>&1
-                        cp html/[cdb]_${baseName}_thumb.jpg html_$dateTag/. 1>/dev/null 2>&1
+                        cp html/[cdb]_${baseName}.jpg html_${dateTag}/. 1>/dev/null 2>&1
+                        cp html/[cdb]_${baseName}_thumb.jpg html_${dateTag}/. 1>/dev/null 2>&1
                     fi
-                    cp html/$baseName.html html_$dateTag/.
+                    cp html/$baseName.html html_$dateTag/. 1>/dev/null 2>&1
                 done
+                cp html/${theCat}_${thePyFileBase}.html html_${dateTag}/. 1>/dev/null 2>&1
             fi
         done < short_summary
 
@@ -435,7 +436,48 @@ for m in $modes; do
         chmod -R g+rwX,o-rwX /project/projectdirs/visit/public_html/${dateTag}/${theMode}
         rm -rf html_$dateTag
 
-        # update the top-level index.html file
+        # update top-level index.html file
+        rm -f index.html
+        echo "<html><head><title>VisIt Regression Results For Davinci</title></head><body bgcolor=\"#a0a0f0\">" > index.html
+        echo "<H1>Results of VisIt Regression Tests on Davinci</H1>" >> index.html
+        echo "<table border>" >> index.html
+        echo "<tr>" >> index.html
+        echo "   <td><b>Timestamp</b></td>" >> index.html
+        echo "   <td><b>Mode</b></td>" >> index.html
+        echo "   <td><b>Result</b></td>" >> index.html
+        echo "</tr>" >> index.html
+
+        ls -1t /project/projectdirs/visit/public_html/*/*/index.html | while read testLine; do
+
+            theMode=`echo $testLine | cut -d'/' -f7 | cut -d'_' -f2-`
+            theRelDir=`echo $testLine | cut -d'/' -f6-`
+            theRelDir="./${theRelDir}"
+            theTimeStamp=`ls -l --time-style=+"%A_%b_%e_%I:%M%p" $testLine | tr -s ' ' | cut -d' ' -f6`
+
+            echo "<tr>" >> index.html
+            echo "<td>${theTimeStamp}</td>" >> index.html
+            echo "<td><a href=\"${theRelDir}\">${theMode}</a></td>" >> index.html
+
+            hasFailed=`grep -m 1 Failed $testLine 2>/dev/null`
+            if test "$hasFailed" = ""; then
+                hasFailed=`grep -m 1 Unacceptable $testLine 2>/dev/null`
+            fi
+            hasSkips=`grep -m 1 Skipped $testLine 2>/dev/null`
+            if test "$hasFailed" = ""; then
+                if test "$hasSkips" = ""; then
+                    echo "<td bgcolor="#00ff00"><b>Passed</b></td>" >> index.html
+                else
+                    echo "<td bgcolor="#0000ff"><b>Passed w/Skips</b></td>" >> index.html
+                fi
+            else
+                echo "<td bgcolor="#ff0000"><b>Failed</b></td>" >> index.html
+            fi
+            echo "</tr>" >> index.html
+        done
+
+        echo "</table>" >> index.html
+        echo "</html>" >> index.html
+
     fi
 
     if test ! "$curerror" = "0"; then
