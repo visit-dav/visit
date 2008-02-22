@@ -100,6 +100,9 @@ class ViewerState;
 //   Jeremy Meredith, Mon Feb  4 13:33:29 EST 2008
 //   Added remaining support for axis array window modality.
 //
+//   Cyrus Harrision, Thu Feb 21 15:18:49 PST 2008
+//   Added SetSuppressMessages
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -301,6 +304,8 @@ public:
     void SetCreateMeshQualityExpressions(int flag);
     void SetCreateTimeDerivativeExpressions(int flag);
     void SetCreateVectorMagnitudeExpressions(int flag);
+    
+    void SetSuppressMessages(int flag);
 
     void SetMeshManagementAttributes();
     void SetDefaultMeshManagementAttributes();

@@ -7430,6 +7430,9 @@ ViewerSubject::SendKeepAlives()
 //    Jeremy Meredith, Mon Feb  4 13:31:02 EST 2008
 //    Added remaining axis array view support.
 //
+//    Cyrus Harrison, Thu Feb 21 16:12:44 PST 2008
+//    Add SetSuppressMessages
+//
 // ****************************************************************************
 
 void
@@ -7789,19 +7792,22 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::SetTreatAllDBsAsTimeVaryingRPC:
         SetTreatAllDBsAsTimeVarying();
-	break;
+        break;
     case ViewerRPC::SetCreateMeshQualityExpressionsRPC:
         SetCreateMeshQualityExpressions();
-	break;
+        break;
     case ViewerRPC::SetCreateTimeDerivativeExpressionsRPC:
         SetCreateTimeDerivativeExpressions();
-	break;
+        break;
     case ViewerRPC::SetCreateVectorMagnitudeExpressionsRPC:
         SetCreateVectorMagnitudeExpressions();
-	break;
+        break;
     case ViewerRPC::SetDefaultFileOpenOptionsRPC:
         SetDefaultFileOpenOptions();
-	break;
+        break;
+    case ViewerRPC::SetSuppressMessagesRPC:
+        SetSuppressMessages();
+        break;
     case ViewerRPC::MaxRPC:
         break;
     default:
@@ -9295,6 +9301,26 @@ ViewerSubject::SetCreateVectorMagnitudeExpressions()
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
     wM->SetCreateVectorMagnitudeExpressions(
         GetViewerState()->GetViewerRPC()->GetIntArg1());
+}
+
+// ****************************************************************************
+//  Method:  ViewerSubject::SetSuppressMessages()
+//
+//  Purpose: Handle a SetSuppressMessages RPC
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    February  21, 2008
+//
+// ****************************************************************************
+
+void
+ViewerSubject::SetSuppressMessages()
+{
+    bool value = (bool) GetViewerState()->GetViewerRPC()->GetIntArg1();
+    if(value)
+        EnableMessageSuppression();
+    else
+        DisableMessageSuppression();
 }
 
 

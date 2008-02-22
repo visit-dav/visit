@@ -48,6 +48,7 @@
 
 ViewerState   *ViewerBase::base_viewerState = 0;
 ViewerMethods *ViewerBase::base_viewerMethods = 0;
+bool           ViewerBase::suppressMessages = false;
 
 // ****************************************************************************
 // Method: ViewerBase::ViewerBase
@@ -155,12 +156,15 @@ ViewerBase::GetViewerMethods()
 //   Brad Whitlock, Fri Mar 19 16:12:00 PST 2004
 //   Added code to print errors to debug1.
 //
+//   Cyrus Harrison, Thu Feb 21 15:01:20 PST 2008
+//   Added check for message suppression.
+//
 // ****************************************************************************
 
 void
 ViewerBase::Error(const char *message)
 {
-    if ((message == 0) || (strlen(message) < 1))
+    if ((message == 0) || (strlen(message) < 1) || suppressMessages )
         return;
 
     // Send the message to the observers of the viewer's messageAtts.
@@ -190,12 +194,15 @@ ViewerBase::Error(const char *message)
 //   Brad Whitlock, Fri Mar 19 16:12:00 PST 2004
 //   Added code to print errors to debug1.
 //
+//   Cyrus Harrison, Thu Feb 21 15:01:20 PST 2008
+//   Added check for message suppression.
+//
 // ****************************************************************************
 
 void
 ViewerBase::Warning(const char *message)
 {
-    if ((message == 0) || (strlen(message) < 1))
+    if ((message == 0) || (strlen(message) < 1) || suppressMessages)
         return;
 
     // Send the message to the observers of the viewer's messageAtts.
@@ -225,12 +232,15 @@ ViewerBase::Warning(const char *message)
 //   Brad Whitlock, Fri Mar 19 16:12:00 PST 2004
 //   Added code to print errors to debug1.
 //
+//   Cyrus Harrison, Thu Feb 21 15:01:20 PST 2008
+//   Added check for message suppression.
+//
 // ****************************************************************************
 
 void
 ViewerBase::Message(const char *message)
 {
-    if ((message == 0) || (strlen(message) < 1))
+    if ((message == 0) || (strlen(message) < 1) || suppressMessages )
         return;
 
     // Send the message to the observers of the viewer's messageAtts.
