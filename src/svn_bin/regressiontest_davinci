@@ -477,6 +477,7 @@ for m in $modes; do
 
         echo "</table>" >> index.html
         echo "</html>" >> index.html
+        cp index.html /project/projectdirs/visit/public_html/.
 
     fi
 
