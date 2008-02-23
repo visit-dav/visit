@@ -732,7 +732,7 @@ for t in $testcases; do
     name=`basename $t`
     runtime=infinite
     base=`echo $name | cut -d. -f1`
-    limitSeconds=`echo $timeLimt | cut -d' ' -f2`
+    limitSeconds=`echo $timeLimit | cut -d' ' -f2`
 
     export VISIT_TEST_CATEGORY
     export VISIT_TEST_NAME
