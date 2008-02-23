@@ -1273,14 +1273,7 @@ def TestText(file, inText):
 
     else:
 
-        baseCkSum = GetCkSum(file, altbase, "txt")
-        cksumOp = os.popen("cksum current/%s.txt"%file)
-        line = cksumOp.readline()
-        words = string.split(line)
-        curCkSum = words[0]
-        cksumOp.close()
-	if (baseCkSum != curCkSum):
-	    nchanges = nlines = 100000
+        nchanges = nlines = -1
 
     # did the test fail? 
     failed = (nchanges > 0)
@@ -1292,7 +1285,9 @@ def TestText(file, inText):
         if failed:
 	    if skipMe: log.write("    Test case '%s' SKIPPED\n" % file) 
 	    else: log.write("    Test case '%s' FAILED\n" % file) 
-        else : log.write("    Test case '%s' PASSED\n" % file) 
+        else:
+	    if (nchanges < 0): log.write("    Test case '%s' UNKNOWN\n" % file) 
+	    else: log.write("    Test case '%s' PASSED\n" % file) 
         log.close()
 
     # write to the html file
@@ -1300,6 +1295,8 @@ def TestText(file, inText):
     if (failed):
         if skipMe: color = "#0000ff"
 	else: color = "#ff0000"
+    else:
+        if (nchanges < 0): color = "#00ffff"
     html.write(" <tr>\n")
     html.write("  <td bgcolor=\"%s\"><a href=\"%s.html\">%s</a></td>\n" % (color, file, file))
     html.write("  <td colspan=5 align=center>%d modifications totalling %d lines</td>\n" % (nchanges,nlines))
