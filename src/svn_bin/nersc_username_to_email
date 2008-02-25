@@ -1,4 +1,21 @@
 #!/bin/sh
+#
+#  Script: nersc_username_to_email
+#
+#  Purpose: 
+#     This script is used by our regression suite to send e-mails to developers 
+#     where there are failures.
+# 
+#  Note:  You should use your NERSC username and your normal e-mail adress.
+#
+#  Modifications:
+#
+#    Hank Childs, Mon Feb 25 11:18:06 PST 2008
+#    Added modifications log.  Also removed developers shelly, mblair, and 
+#    tarwater.
+#
+# *****************************************************************************
+
 
 case $1 in
     "ahern")
@@ -13,23 +30,14 @@ case $1 in
     "miller86")
         emaddr=miller86@llnl.gov
         ;;
-    "mblair")
-        emaddr=blair4@llnl.gov
-        ;;
     "whitlocb")
         emaddr=whitlock2@llnl.gov
-        ;;
-    "shelly")
-        emaddr=prevost3@llnl.gov
         ;;
     "cyrush")
         emaddr=harrison37@llnl.gov
         ;;
     "dbremer")
         emaddr=bremer4@llnl.gov
-        ;;
-    "tarwater")
-        emaddr=tarwater1@llnl.gov
         ;;
     "treadway")
         emaddr=treadway1@llnl.gov
