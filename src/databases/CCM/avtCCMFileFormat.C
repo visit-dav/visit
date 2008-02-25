@@ -68,6 +68,7 @@
 
 #include <set>
 #include <deque>
+#include <algorithm>
 
 using     std::string;
 
