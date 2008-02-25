@@ -82,6 +82,7 @@
 
 using std::vector;
 using std::string;
+using namespace std;
 
 
 void GetDataScalarRange(vtkDataSet *, double *, const char *, bool);
@@ -1222,6 +1223,9 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname,
 //    Gunther H. Weber, Fri Feb  1 11:55:59 PST 2008
 //    Skip nan, -inf and +inf in min/max calculation
 //
+//    Cyrus Harrison, Mon Feb 25 11:03:03 PST 2008
+//    Changed std::isfinite to isfinite to work around an AIX compiler bug.
+//
 // ****************************************************************************
 
 template <class T> static bool
@@ -1235,7 +1239,7 @@ GetScalarRange(T *buf, int n, double *exts, unsigned char *ghosts)
         if ((ghosts != NULL) && (ghosts[i] != '\0'))
             continue;
 
-        if (!std::isfinite(*buf))
+        if (!isfinite(*buf))
             continue;
 
         if (!setOne)
@@ -1517,6 +1521,9 @@ GetDataAllComponentsRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Gunther H. Weber, Fri Feb  1 11:55:59 PST 2008
 //    Skip nan, -inf and +inf in min/max calculation
 //
+//    Cyrus Harrison, Mon Feb 25 11:03:03 PST 2008
+//    Changed std::isfinite to isfinite to work around an AIX compiler bug.
+//
 // ****************************************************************************
 
 template <class T> static void
@@ -1532,7 +1539,7 @@ GetMagnitudeRange(T *buf, int n, int ncomps, double *exts,
         for (int j = 0; j < ncomps; j++, buf++)
             mag += *buf * *buf;
 
-        if (!std::isfinite(mag))
+        if (!isfinite(mag))
             continue;
 
         if (mag < exts[0])
@@ -1653,6 +1660,9 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Gunther H. Weber, Fri Feb  1 11:55:59 PST 2008
 //    Skip nan, -inf and +inf in min/max calculation
 //
+//    Cyrus Harrison, Mon Feb 25 11:03:03 PST 2008
+//    Changed std::isfinite to isfinite to work around an AIX compiler bug.
+//
 // ****************************************************************************
 
 void
@@ -1705,7 +1715,7 @@ GetDataMajorEigenvalueRange(vtkDataSet *ds, double *exts, const char *vname,
 
         double val = MajorEigenvalue(ptr);
 
-        if (!std::isfinite(val))
+        if (!isfinite(val))
             continue;
 
         exts[0] = (exts[0] < val ? exts[0] : val);

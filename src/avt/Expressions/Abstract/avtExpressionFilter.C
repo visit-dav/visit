@@ -62,6 +62,7 @@
 #include <DebugStream.h>
 #include <ExpressionException.h>
 
+using namespace std;
 
 // ****************************************************************************
 //  Method: avtExpressionFilter constructor
@@ -280,6 +281,9 @@ avtExpressionFilter::PostExecute(void)
 //    Jeremy Meredith, Thu Feb  7 18:02:12 EST 2008
 //    Added support for updating the component extents of array variables.
 //
+//    Cyrus Harrison, Mon Feb 25 13:22:19 PST 2008
+//    Changed std::isfinite to isfinite to work around an AIX compiler bug.
+//
 // ****************************************************************************
 
 void
@@ -355,7 +359,7 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
                 value = MajorEigenvalue(val);
             // else ... we handle array variables below
 
-            if(!std::isfinite(value))
+            if(!isfinite(value))
             {
                 // Ignore nan, -inf, and inf
                 continue;

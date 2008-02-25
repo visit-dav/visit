@@ -324,6 +324,9 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Jeremy Meredith, Mon Feb 18 16:17:21 EST 2008
 //    Don't enable de/up/down buttons if we were created from an array var.
 //
+//    Cyrus Harrison, Mon Feb 25 13:42:21 PST 2008
+//    Resolved AIX QString init error. 
+//
 // ****************************************************************************
 
 void
@@ -333,7 +336,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
     double r;
 
     QString oldAxis = axisList->currentItem() ? 
-        axisList->currentItem()->text(0) : "";
+        axisList->currentItem()->text(0) : QString("");
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
