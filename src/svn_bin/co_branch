@@ -19,6 +19,9 @@
 #    Hank Childs, Fri Feb 22 10:52:45 PST 2008
 #    Add "-user" flag, so multiple developers can share a branch.
 #
+#    Hank Childs, Mon Feb 25 09:04:07 PST 2008
+#    Remove print statements that were left in.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -29,10 +32,8 @@ P2=${P%/*}
 . ${P2}/visit_svn_helper
 
 user=$SVN_NERSC_NAME
-echo "Num args is $#"
 if [[ $# == 4 ]] ; then
    if [[ "$3" == "-user" ]] ; then
-echo "Got user $4"
        user=$4
    else
        issueHelp="yes"
