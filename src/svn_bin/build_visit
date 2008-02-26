@@ -6102,8 +6102,13 @@ function build_ccmio
     #
     info_box "Building CCMIO . . . (~1 minutes)" 1>&3
     echo "Building CCMIO"
-    $MAKE batch CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-       CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS"
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        env RELEASE=1 SHARED=1 $MAKE CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+           CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS"
+    else
+        env RELEASE=1 STATIC=1 $MAKE CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+           CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS"
+    fi
 ##  if [[ $? != 0 ]] ; then
 ##     echo "CCMIO build failed.  Giving up"
 ##     return 1
