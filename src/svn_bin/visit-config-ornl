@@ -117,6 +117,34 @@
                 <Field name="hostAliases" type="string">photon##.ornl.gov photon##</Field>
                 <Field name="arguments" type="stringVector">"-dir" "/apps/visit"</Field>
             </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">ewok</Field>
+                    <Field name="host" type="string">ewok.ccs.ornl.gov</Field>
+                    <Field name="numProcessors" type="int">2</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">qsub/mpirun</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/apps/visit/ewok" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">ewok*.ccs.ornl.gov</Field>
+                    <Field name="tunnelSSH" type="bool">true</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">jaguarcnl</Field>
+                    <Field name="host" type="string">jaguarcnl.ccs.ornl.gov</Field>
+                    <Field name="numProcessors" type="int">2</Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">debug</Field>
+                    <Field name="bankSet" type="bool">true</Field>
+                    <Field name="bank" type="string">STF006</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">qsub/aprun</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/lustre/scratch/pugmire/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">jaguar*</Field>
+                    <Field name="tunnelSSH" type="bool">true</Field>
+                </Object>
             <Field name="activeProfile" type="int">0</Field>
         </Object>
     </Object>
