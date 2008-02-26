@@ -240,10 +240,44 @@ import java.util.prefs.BackingStoreException;
 //   Jeremy Meredith, Mon Feb  4 13:43:57 EST 2008
 //   Added axis array view support.
 //
+//   Brad Whitlock, Fri Feb 22 16:50:05 PST 2008
+//   Refactored some code into ViewerState and ViewerMethods. State objects
+//   are now located in ViewerState. Viewer rpc's are now located in
+//   ViewerMethods. Added JavaDoc comments.
+//
 // ****************************************************************************
-
+/**
+ * ViewerProxy is the main class that users of the Java VisIt Interface need to
+ * use in order to control VisIt from Java. This class provides methods to
+ * launch VisIt's viewer and control it.
+ *
+ * <br>Example usage:<br>
+ *   <p class="example">
+ *   ViewerProxy proxy = new ViewerProxy();<br>
+ *   <i>// Set the path to the visit launch script</i><br>
+ *   proxy.SetBinPath("/usr/local/apps/visit/bin");<br>
+ *   <i>// Add arguments before we launch the viewer.</i><br>
+ *   proxy.AddArgument("-debug");<br>
+ *   proxy.AddArgument("5"); <br>
+ *   <i>// Launch the viewer, listening on port 5600</i><br>
+ *   if(proxy.Create(5600))<br>
+ *   {<br>
+ *   &nbsp;&nbsp;&nbsp;&nbsp;<i>// Now that the viewer is running, do stuff.</i><br>
+ *   &nbsp;&nbsp;&nbsp;&nbsp;proxy.GetViewerMethods().OpenDatabase(proxy.GetDataPath()+"globe.silo");<br>
+ *   &nbsp;&nbsp;&nbsp;&nbsp;proxy.AddPlots("Pseudocolor", "speed");<br>
+ *   &nbsp;&nbsp;&nbsp;&nbsp;proxy.DrawPlots();<br>
+ *   &nbsp;&nbsp;&nbsp;&nbsp;proxy.SaveWindow();<br>
+ *   &nbsp;&nbsp;&nbsp;&nbsp;<i>// We're done so close the viewer.</i><br>
+ *   &nbsp;&nbsp;&nbsp;&nbsp;proxy.Close();<br>
+ *   }<br>
+ *   </p>
+ * @author Brad Whitlock
+ */
 public class ViewerProxy implements SimpleObserver
 {
+    /**
+     * Contructor for the ViewerProxy class. Basic initialization is performed.
+     */
     public ViewerProxy()
     {
         viewer = new RemoteProcess("visit");
@@ -260,56 +294,8 @@ public class ViewerProxy implements SimpleObserver
         messageObserver = new MessageObserver();
         syncNotifier = new SyncNotifier();
 
-        // State objects
-        rpc = new ViewerRPC();
-        postponedAction = new PostponedAction();
-        syncAtts = new SyncAttributes();
-        appearanceAtts = new AppearanceAttributes();
-        pluginAtts = new PluginManagerAttributes();
-        globalAtts = new GlobalAttributes();
-        correlationList = new DatabaseCorrelationList();
-        plotList = new PlotList();
-        hostProfiles = new HostProfileList();
-        messageAtts = new MessageAttributes();
-        saveAtts = new SaveWindowAttributes();
-        statusAtts = new StatusAttributes();
-        engineList = new EngineList();
-        colorTableAtts = new ColorTableAttributes();
-        expressionList = new ExpressionList();
-        annotationAtts = new AnnotationAttributes();
-        silRestrictionAtts = new SILRestrictionAttributes();
-        viewAxisArray = new ViewAxisArrayAttributes();
-        viewCurve = new ViewCurveAttributes();
-        view2D = new View2DAttributes();
-        view3D = new View3DAttributes();
-        lightList = new LightList();
-        materialAtts = new MaterialAttributes();
-        animationAtts = new AnimationAttributes();
-        pickAtts = new PickAttributes();
-        printerAtts = new PrinterAttributes();
-        windowInfo = new WindowInformation();
-        renderAtts = new RenderingAttributes();
-        keyframeAtts = new KeyframeAttributes();
-        queryList = new QueryList();
-        queryAtts = new QueryAttributes();
-        globalLineoutAtts = new GlobalLineoutAttributes();
-        annotationObjectList = new AnnotationObjectList();
-        queryOverTimeAtts = new QueryOverTimeAttributes();
-        interactorAtts = new InteractorAttributes();
-        silAtts = new SILRestrictionAttributes();
-        processAtts = new ProcessAttributes();
-        dbPluginInfoAtts = new DBPluginInfoAttributes();
-        exportDBAtts = new ExportDBAttributes();
-        constructDDFAtts = new ConstructDDFAttributes();
-        clientMethod = new ClientMethod();
-        clientInformation = new ClientInformation();
-        clientInformationList = new ClientInformationList();
-        movieAtts = new MovieAttributes();
-        meshManagementAtts = new MeshManagementAttributes();
-        logRPC = new ViewerRPC();
-        plotInfoAtts = new PlotInfoAttributes();
-        metaData = new avtDatabaseMetaData();
-        fileOpenOptions = new FileOpenOptions();
+        state = new ViewerState();
+        methods = new ViewerMethods(this);
 
         // Create the plugin managers.
         plotPlugins = new PluginManager("plot");
@@ -345,36 +331,74 @@ public class ViewerProxy implements SimpleObserver
         }
     }
 
-    // Close the viewer when the object is garbage collected.
+    /**
+     * Closes VisIt's viewer when the object is garbage collected.
+     */
     protected void finalize() throws Throwable
     {
         Close();
         super.finalize();
     }
 
-    // Sets the location of the visit binary.
+    /**
+     * Sets the location of the visit binary that Java will launch. The
+     * version of VisIt must be the same version as the Java client.
+     *
+     * @param path An absolute path to the "bin" directory containing
+     *             the "visit" script.
+     */
     public void SetBinPath(String path)
     {
         viewer.SetBinPath(path);
     }
 
+    /**
+     * Gets the data path directory, which is often a "data" directory 
+     * peer to the "bin" directory provided via SetBinPath.
+     *
+     * @return The data path directory that you can use to access VisIt's
+     *         built-in data files.
+     */
     public String GetDataPath()
     {
         return dataPath;
     }
 
-    // Adds extra arguments to the viewer's command line.
+    /**
+     * Adds extra arguments to the viewer's command line so you can
+     * launch VisIt with arguments that you provide.
+     *
+     * @param arg A command line option to be added to the viewer command
+     *            line. Note that once the viewer is launched, this method
+     *            has no effect.
+     */
     public void AddArgument(String arg)
     {
         viewer.AddArgument(arg);
     }
 
+    /**
+     * Prints a message to the console if the ViewerProxy object is 
+     * in verbose mode.
+     *
+     * @param msg The message to print.
+     */
     public synchronized void PrintMessage(String msg)
     {
         if(verbose)
             System.out.println(msg);
     }
 
+    /**
+     * Launches VisIt's viewer and performs the rest of the initialization
+     * of the ViewerProxy class, including loading plugins, starting a listener
+     * thread to read from the viewer.
+     *
+     * @param port The default port that will be used to listen for the
+     *             viewer when it wants to connect back to the ViewerProxy.
+     *             VisIt usually defaults to port 5600.
+     * @return true on success; false on failure.
+     */
     // Launches the viewer and sets up state objects.
     public boolean Create(int port)
     {
@@ -390,65 +414,17 @@ public class ViewerProxy implements SimpleObserver
             // in the same order as in ViewerState.h.
 
             xfer.SetRemoteProcess(viewer);
-            xfer.Add(rpc);
-            xfer.Add(postponedAction);
-            xfer.Add(syncAtts);
-            xfer.Add(messageAtts);
-            xfer.Add(statusAtts);
-            xfer.Add(metaData);
-            xfer.Add(silAtts);
-            xfer.Add(dbPluginInfoAtts);
-            xfer.Add(exportDBAtts);
-            xfer.Add(constructDDFAtts);
-            xfer.Add(clientMethod);
-            xfer.Add(clientInformation);
-            xfer.Add(clientInformationList);
-            // The following objects can be sent to the viewer anytime.
-            xfer.Add(pluginAtts);
-            xfer.Add(appearanceAtts);
-            xfer.Add(globalAtts);
-            xfer.Add(correlationList);
-            xfer.Add(plotList);
-            xfer.Add(hostProfiles);
-            xfer.Add(saveAtts);
-            xfer.Add(engineList);
-            xfer.Add(colorTableAtts);
-            xfer.Add(expressionList);
-            xfer.Add(annotationAtts);
-            xfer.Add(silRestrictionAtts);
-            xfer.Add(viewAxisArray);
-            xfer.Add(viewCurve);
-            xfer.Add(view2D);
-            xfer.Add(view3D);
-            xfer.Add(lightList);
-            xfer.Add(animationAtts);
-            xfer.Add(pickAtts);
-            xfer.Add(printerAtts);
-            xfer.Add(windowInfo);
-            xfer.Add(renderAtts);
-            xfer.Add(keyframeAtts);
-            xfer.Add(queryList);
-            xfer.Add(queryAtts);
-	    xfer.Add(materialAtts);
-            xfer.Add(globalLineoutAtts);
-            xfer.Add(annotationObjectList);
-            xfer.Add(queryOverTimeAtts);
-            xfer.Add(interactorAtts);
-            xfer.Add(processAtts);
-            xfer.Add(movieAtts);
-            xfer.Add(meshManagementAtts);
-            xfer.Add(logRPC);
-            xfer.Add(plotInfoAtts);
-            xfer.Add(fileOpenOptions);
+            for(int i = 0; i < state.GetNumStateObjects(); ++i)
+                xfer.Add(state.GetStateObject(i));
 
             // hook up the message observer.
-            messageObserver.Attach(messageAtts);
+            messageObserver.Attach(state.GetMessageAttributes());
 
             // Hook up the syncAtts notifier.
-            syncAtts.Attach(syncNotifier);
+            state.GetSyncAttributes().Attach(syncNotifier);
 
             // Hook up this object to the plugin atts.
-            pluginAtts.Attach(this);
+            state.GetPluginManagerAttributes().Attach(this);
 
             // Start reading input from the viewer so we can load the
             // plugins that the viewer has loaded.
@@ -473,29 +449,62 @@ public class ViewerProxy implements SimpleObserver
         return retval;
     }
 
-    // Starts automatic processing of information from the viewer.
+    /**
+     * Starts automatic processing of information from the viewer. If automatic
+     * processing is enabled then the ViewerProxy will listen for new state
+     * from the viewer on a socket. For most applications, this is desireable.
+     *
+     */
     public void StartProcessing()
     {
         PrintMessage("Starting to read from input from viewer.");
         xfer.StartProcessing();
     }
 
-    // Stops automatic processing of information from the viewer.
+    /**
+     * Stops automatic processing of information from the viewer.
+     */
     public void StopProcessing()
     {
         PrintMessage("Stopped reading input from viewer.");
         xfer.StopProcessing();
     }
 
-    // Sets the synchronous flag which determines if there is a synchronization
-    // step after sending a viewer rpc.
+    /**
+     * Sets whether the ViewerProxy will force synchronization with the
+     * viewer after calling methods from the ViewerMethods object. Simple 
+     * applications applications should perform synchronous processing since
+     * it makes the values returned from ViewerMethods functions take into
+     * account any errors that may have occurred while processing a request.
+     *
+     * Event-based applications should disable synchronous processing so they
+     * can send off commands to the viewer without blocking for return values.
+     * In the event that synchronization is truely needed in that case, you
+     * can always call the Synchronize() method.
+     *
+     * @param val true for synchronous processing; false for asynchronous.
+     */
     public void SetSynchronous(boolean val)
     {
         synchronous = val;
     }
 
-    // Sets a flag that determines if messages from the viewer are printed to
-    // the console.
+    /**
+     * Return whether the proxy is running with synchronization.
+     *
+     * @return true for synchronous processing; false for asynchronous.
+     */
+    public boolean GetSynchronous()
+    {
+        return synchronous;
+    }
+
+    /**
+     * Sets a flag that determines if messages from the viewer are printed to
+     * the console.
+     *
+     * @param val True to make the ViewerProxy print verbose output.
+     */
     public void SetVerbose(boolean val)
     {
         verbose = val;
@@ -507,1286 +516,38 @@ public class ViewerProxy implements SimpleObserver
         syncNotifier.SetVerbose(val);
     }
 
-//
-// Viewer RPC's
-//
+    /**
+     * Tells the ViewerProxy to close the viewer. The ViewerProxy should not
+     * be used after calling  this method since calling Create() again will
+     * not currently relaunch the viewer properly.
+     *
+     * @return true
+     */
     public boolean Close()
     {
         PrintMessage("Closing the viewer.");
         xfer.StopProcessing();
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLOSERPC);
-        rpc.Notify();
+        methods.Close();
         viewer.Close();
         return true;
     }
 
-    public boolean AddWindow()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ADDWINDOWRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean CloneWindow()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLONEWINDOWRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean DeleteWindow()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_DELETEWINDOWRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetWindowLayout(int layout)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETWINDOWLAYOUTRPC);
-        rpc.SetWindowLayout(layout);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetActiveWindow(int windowId)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETACTIVEWINDOWRPC);
-        rpc.SetWindowId(windowId);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean IconifyAllWindows()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ICONIFYALLWINDOWSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean DeIconifyAllWindows()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_DEICONIFYALLWINDOWSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public void SetWindowArea(int x, int y, int w, int h)
-    {
-        String tmp = new String(x + "x" + y + "+" + x + "+" + y);
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETWINDOWAREARPC);
-        rpc.SetWindowArea(tmp);
-        rpc.Notify();
-    }
-
-    public void ShowAllWindows()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SHOWALLWINDOWSRPC);
-        rpc.Notify();
-    }
-
-    public boolean HideAllWindows()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_HIDEALLWINDOWSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ClearWindow()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLEARWINDOWRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ClearAllWindows()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLEARALLWINDOWSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SaveWindow()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SAVEWINDOWRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean PrintWindow()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_PRINTWINDOWRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean DisableRedraw()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_DISABLEREDRAWRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean RedrawWindow()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_REDRAWRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean OpenDatabase(String database)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_OPENDATABASERPC);
-        rpc.SetDatabase(database);
-        rpc.SetIntArg1(0);
-        rpc.SetBoolFlag(true);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean OpenDatabase(String database, int timeState)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_OPENDATABASERPC);
-        rpc.SetDatabase(database);
-        rpc.SetIntArg1(timeState);
-        rpc.SetBoolFlag(true);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean OpenDatabase(String database, int timeState,
-                                boolean addDefaultPlots)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_OPENDATABASERPC);
-        rpc.SetDatabase(database);
-        rpc.SetIntArg1(timeState);
-        rpc.SetBoolFlag(addDefaultPlots);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean CloseDatabase(String database)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLOSEDATABASERPC);
-        rpc.SetDatabase(database);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ReOpenDatabase(String database)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_REOPENDATABASERPC);
-        rpc.SetDatabase(database);
-        rpc.SetWindowLayout(1);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean CheckForNewStates(String database)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CHECKFORNEWSTATESRPC);
-        rpc.SetDatabase(database);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ReplaceDatabase(String database, int timeState)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_REPLACEDATABASERPC);
-        rpc.SetDatabase(database);
-        rpc.SetIntArg1(timeState);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean OverlayDatabase(String database)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_OVERLAYDATABASERPC);
-        rpc.SetDatabase(database);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean RequestMetaData(String database, int ts)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_REQUESTMETADATARPC);
-        rpc.SetDatabase(database);
-        rpc.SetStateNumber(ts);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ClearCache(String hostName, String simName)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLEARCACHERPC);
-        rpc.SetProgramHost(hostName);
-        rpc.SetProgramSim(simName);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ClearCacheForAllEngines()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLEARCACHEFORALLENGINESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean OpenComputeEngine(String hostName, Vector argv)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_OPENCOMPUTEENGINERPC);
-        rpc.SetProgramHost(hostName);
-        rpc.SetProgramOptions(argv);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean CloseComputeEngine(String hostName, String simName)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLOSECOMPUTEENGINERPC);
-        rpc.SetProgramHost(hostName);
-        rpc.SetProgramSim(simName);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public void InterruptComputeEngine()
+    /**
+     * Sends an interruption message to the viewer, which can be used to
+     * interrupt processing of multiple domain datasets in the compute engine.
+     *
+     */
+    public void SendInterruption()
     {
         xfer.SendInterruption();
     }
 
-    public boolean AnimationSetNFrames(int nFrames)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ANIMATIONSETNFRAMESRPC);
-        rpc.SetNFrames(nFrames);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean AnimationPlay()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ANIMATIONPLAYRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean AnimationReversePlay()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ANIMATIONREVERSEPLAYRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean AnimationStop()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ANIMATIONSTOPRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean TimeSliderNextState()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_TIMESLIDERNEXTSTATERPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean TimeSliderPreviousState()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_TIMESLIDERPREVIOUSSTATERPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetTimeSliderState(int state)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETTIMESLIDERSTATERPC);
-        rpc.SetStateNumber(state);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean AddPlot(int type, String var)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ADDPLOTRPC);
-        rpc.SetPlotType(type);
-        rpc.SetVariable(var);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean AddPlot(String plotName, String var)
-    {
-        boolean retval = false;
-        int type = plotPlugins.IndexFromName(plotName);
-        if(type > -1)
-        {
-            rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ADDPLOTRPC);
-            rpc.SetPlotType(type);
-            rpc.SetVariable(var);
-            rpc.Notify();
-            retval = synchronous ? Synchronize() : true;
-        }
-
-        return retval;
-    }
-
-    public boolean SetPlotFrameRange(int frame0, int frame1)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPLOTFRAMERANGERPC);
-        rpc.SetFrameRange(frame0, frame1);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean DeletePlotKeyframe(int frame)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_DELETEPLOTKEYFRAMERPC);
-        rpc.SetFrame(frame);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean DeleteActivePlots()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_DELETEACTIVEPLOTSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean HideActivePlots()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_HIDEACTIVEPLOTSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean DrawPlots()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_DRAWPLOTSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetActivePlots(Vector activePlots, Vector activeOperators,
-                                  Vector expandedPlots)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETACTIVEPLOTSRPC);
-        rpc.SetActivePlotIds(activePlots);
-        rpc.SetActiveOperatorIds(activeOperators);
-        rpc.SetExpandedPlotIds(expandedPlots);
-        rpc.SetBoolFlag(true);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetActivePlots(Vector ids)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETACTIVEPLOTSRPC);
-        rpc.SetActivePlotIds(ids);
-        rpc.SetBoolFlag(false);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetActivePlots(int[] ids)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETACTIVEPLOTSRPC);
-        Vector iv = new Vector();
-        for(int i = 0; i < ids.length; ++i)
-            iv.addElement(new Integer(ids[i]));
-        rpc.SetActivePlotIds(iv);
-        rpc.SetBoolFlag(false);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetActivePlot(int index)
-    {
-        int[] ids = new int[1];
-        ids[0] = index;
-        return SetActivePlots(ids);
-    }
-
-    public boolean ChangeActivePlotsVar(String var)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CHANGEACTIVEPLOTSVARRPC);
-        rpc.SetVariable(var);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean AddOperator(int oper)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ADDOPERATORRPC);
-        rpc.SetOperatorType(oper);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean AddOperator(String type)
-    {
-        int oper = operatorPlugins.IndexFromName(type);
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ADDOPERATORRPC);
-        rpc.SetOperatorType(oper);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean PromoteOperator(int operatorId)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_PROMOTEOPERATORRPC);
-        rpc.SetOperatorType(operatorId);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean DemoteOperator(int operatorId)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_DEMOTEOPERATORRPC);
-        rpc.SetOperatorType(operatorId);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean RemoveOperator(int operatorId)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_REMOVEOPERATORRPC);
-        rpc.SetOperatorType(operatorId);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean RemoveLastOperator()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_REMOVELASTOPERATORRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean RemoveAllOperators()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_REMOVEALLOPERATORSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetDefaultPlotOptions(int type)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTPLOTOPTIONSRPC);
-        rpc.SetPlotType(type);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetPlotOptions(int type)
-    {
-        boolean retval = false;
-        if(type >= 0)
-        {
-            rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPLOTOPTIONSRPC);
-            rpc.SetPlotType(type);
-            rpc.Notify();
-            retval = synchronous ? Synchronize() : true;
-        }
-        else
-        {
-            PrintMessage("SetPlotOptions: " + type + 
-                         " is an invalid plot index.");
-        }
-
-        return retval;
-    }
-
-    public boolean SetPlotOptions(String type)
-    {
-        return SetPlotOptions(plotPlugins.IndexFromName(type));
-    }
-
-    public boolean ResetPlotOptions(int type)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETPLOTOPTIONSRPC);
-        rpc.SetPlotType(type);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetDefaultOperatorOptions(int type)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTOPERATOROPTIONSRPC);
-        rpc.SetOperatorType(type);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetOperatorOptions(int type)
-    {
-        boolean retval = false;
-        if(type >= 0)
-        {
-            rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETOPERATOROPTIONSRPC);
-            rpc.SetOperatorType(type);
-            rpc.Notify();
-            retval = synchronous ? Synchronize() : true;
-        }
-        else
-        {
-            PrintMessage("SetPlotOptions: " + type + 
-                         " is an invalid operator index.");
-        }
-
-        return retval;
-    }
-
-    public boolean SetOperatorOptions(String type)
-    {
-        return SetOperatorOptions(operatorPlugins.IndexFromName(type));
-    }
-
-    public boolean ResetOperatorOptions(int type)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETOPERATOROPTIONSRPC);
-        rpc.SetOperatorType(type);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetActiveContinuousColorTable(String colorTableName)
-    {
-        if(colorTableAtts.GetColorTableIndex(colorTableName) != -1)
-        {
-            colorTableAtts.SetActiveContinuous(colorTableName);
-            colorTableAtts.Notify();
-
-            // Update the color table. This has the effect of making all plots
-            // use the default color table update to use the new active color
-            // table.
-            boolean sync = synchronous;
-            synchronous = false;
-            UpdateColorTable(colorTableName);
-            synchronous = sync;
-        }
-
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetActiveDiscreteColorTable(String colorTableName)
-    {
-        if(colorTableAtts.GetColorTableIndex(colorTableName) != -1)
-        {
-            colorTableAtts.SetActiveDiscrete(colorTableName);
-            colorTableAtts.Notify();
-        }
-
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean DeleteColorTable(String colorTableName)
-    {
-        // If it's a valid color table name, make it active.
-        int index = colorTableAtts.GetColorTableIndex(colorTableName);
-        if(index != -1)
-        {
-            // Remove the color table from the list and update.
-            colorTableAtts.RemoveColorTable(index);
-            colorTableAtts.Notify();
-
-            // Update the color table. The specified color table will no
-            // longer exist in the list of color tables so all plots that used
-            // that color table will have their color tables changed to something
-            // else.
-            boolean sync = synchronous;
-            synchronous = false;
-            UpdateColorTable(colorTableName);
-            synchronous = sync;
-        }
-
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean UpdateColorTable(String colorTableName)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_UPDATECOLORTABLERPC);
-        rpc.SetColorTableName(colorTableName);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ExportColorTable(String colorTableName)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_EXPORTCOLORTABLERPC);
-        rpc.SetColorTableName(colorTableName);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean InvertBackgroundColor()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_INVERTBACKGROUNDRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean WriteConfigFile()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_WRITECONFIGFILERPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ExportEntireState(String filename)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_EXPORTENTIRESTATERPC);
-        rpc.SetVariable(filename);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ImportEntireState(String filename, boolean inVisItDir)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_IMPORTENTIRESTATERPC);
-        rpc.SetVariable(filename);
-        rpc.SetBoolFlag(inVisItDir);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ImportEntireStateWithDifferentSources(String filename, boolean inVisItDir, Vector sources)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_IMPORTENTIRESTATEWITHDIFFERENTSOURCESRPC);
-        rpc.SetVariable(filename);
-        rpc.SetBoolFlag(inVisItDir);
-        rpc.SetProgramOptions(sources);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetRenderingAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETRENDERINGATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-
-    public boolean SetCenterOfRotation(double[] pt)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETCENTEROFROTATIONRPC);
-        rpc.SetQueryPoint1(pt);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ChooseCenterOfRotation()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CHOOSECENTEROFROTATIONRPC);
-        rpc.SetBoolFlag(false);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ChooseCenterOfRotation(double[] pt)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CHOOSECENTEROFROTATIONRPC);
-        rpc.SetBoolFlag(true);
-        rpc.SetQueryPoint1(pt);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetViewAxisArray()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETVIEWAXISARRAYRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetViewCurve()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETVIEWCURVERPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetView2D()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETVIEW2DRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetView3D()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETVIEW3DRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ClearViewKeyframes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLEARVIEWKEYFRAMESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean DeleteViewKeyframe(int frame)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_DELETEVIEWKEYFRAMERPC);
-        rpc.SetFrame(frame);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetViewKeyframe()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETVIEWKEYFRAMERPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ResetView()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETVIEWRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean RecenterView()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RECENTERVIEWRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ToggleMaintainViewMode()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_TOGGLEMAINTAINVIEWMODERPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ToggleSpinMode()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_TOGGLESPINMODERPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ToggleCameraViewMode()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_TOGGLECAMERAVIEWMODERPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean UndoView()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_UNDOVIEWRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean RedoView()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_REDOVIEWRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ToggleLockViewMode()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_TOGGLELOCKVIEWMODERPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ToggleLockTools()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_TOGGLELOCKTOOLSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ToggleLockTime()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_TOGGLELOCKTIMERPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetWindowMode(int mode)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETWINDOWMODERPC);
-        rpc.SetWindowMode(mode);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ToggleBoundingBoxMode()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_TOGGLEBOUNDINGBOXMODERPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean EnableTool(int tool, boolean enabled)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ENABLETOOLRPC);
-        rpc.SetToolId(tool);
-        rpc.SetBoolFlag(enabled);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean CopyViewToWindow(int from, int to)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_COPYVIEWTOWINDOWRPC);
-        rpc.SetWindowLayout(from);
-        rpc.SetWindowId(to);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean CopyLightingToWindow(int from, int to)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_COPYLIGHTINGTOWINDOWRPC);
-        rpc.SetWindowLayout(from);
-        rpc.SetWindowId(to);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean CopyAnnotationsToWindow(int from, int to)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_COPYANNOTATIONSTOWINDOWRPC);
-        rpc.SetWindowLayout(from);
-        rpc.SetWindowId(to);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean CopyPlotsToWindow(int from, int to)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_COPYPLOTSTOWINDOWRPC);
-        rpc.SetWindowLayout(from);
-        rpc.SetWindowId(to);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetAnnotationAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETANNOTATIONATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetDefaultAnnotationAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTANNOTATIONATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ResetAnnotationAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETANNOTATIONATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean AddAnnotationObject(int annotType)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ADDANNOTATIONOBJECTRPC);
-        rpc.SetIntArg1(annotType);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean HideActiveAnnotationObjects()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_HIDEACTIVEANNOTATIONOBJECTSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean DeleteActiveAnnotationObjects()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_DELETEACTIVEANNOTATIONOBJECTSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean RaiseActiveAnnotationObjects()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RAISEACTIVEANNOTATIONOBJECTSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean LowerActiveAnnotationObjects()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_LOWERACTIVEANNOTATIONOBJECTSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetAnnotationObjectOptions()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETANNOTATIONOBJECTOPTIONSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetDefaultAnnotationObjectList()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTANNOTATIONOBJECTLISTRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ResetAnnotationObjectList()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETANNOTATIONOBJECTLISTRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetLightList()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETLIGHTLISTRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetDefaultLightList()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTLIGHTLISTRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ResetLightList()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETLIGHTLISTRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetAnimationAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETANIMATIONATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetAppearanceAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETAPPEARANCERPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ProcessExpressions()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_PROCESSEXPRESSIONSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ClearPickPoints()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLEARPICKPOINTSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ClearReferenceLines()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLEARREFLINESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetViewExtents(int t)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETVIEWEXTENTSTYPERPC);
-        rpc.SetWindowLayout(t);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean DatabaseQuery(String queryName, Vector vars)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_DATABASEQUERYRPC);
-        rpc.SetQueryName(queryName);
-        rpc.SetQueryVariables(vars);
-        rpc.SetIntArg1(0);
-        rpc.SetIntArg2(0);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean DatabaseQuery(String queryName, Vector vars,
-                   int arg1, int arg2)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_DATABASEQUERYRPC);
-        rpc.SetQueryName(queryName);
-        rpc.SetQueryVariables(vars);
-        rpc.SetIntArg1(arg1);
-        rpc.SetIntArg2(arg2);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean PointQuery(String queryName, double[] pt, Vector vars)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_POINTQUERYRPC);
-        rpc.SetQueryName(queryName);
-        rpc.SetQueryPoint1(pt);
-        rpc.SetQueryVariables(vars);
-        rpc.SetIntArg1(-1);
-        rpc.SetIntArg2(-1);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean PointQuery(String queryName, double[] pt, Vector vars,
-                              int arg1, int arg2)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_POINTQUERYRPC);
-        rpc.SetQueryName(queryName);
-        rpc.SetQueryPoint1(pt);
-        rpc.SetQueryVariables(vars);
-        rpc.SetIntArg1(arg1);
-        rpc.SetIntArg2(arg2);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean LineQuery(String queryName, double[] pt1, double[] pt2,
-        Vector vars)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_LINEQUERYRPC);
-        rpc.SetQueryName(queryName);
-        rpc.SetQueryPoint1(pt1);
-        rpc.SetQueryPoint2(pt2);
-        rpc.SetQueryVariables(vars);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean Pick(int x, int y, Vector vars)
-    {
-        double[] pt = new double[3];
-        pt[0] = (double)x;
-        pt[1] = (double)y;
-        pt[2] = 0.;
-        return PointQuery("ScreenZonePick", pt, vars);
-    }
-
-    public boolean Lineout(double x0, double y0, double x1, double y1, Vector vars)
-    {
-        double[] pt1 = new double[3];
-        pt1[0] = x0;
-        pt1[1] = y0;
-        pt1[2] = 0.;
-        double[] pt2 = new double[3];
-        pt2[0] = x1;
-        pt2[1] = y1;
-        pt2[2] = 0.;
-        return LineQuery("Lineout", pt1, pt2, vars);
-    }
-
-    public boolean SetMaterialAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETMATERIALATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetDefaultMaterialAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTMATERIALATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ResetMaterialAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETMATERIALATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetKeyframeAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETKEYFRAMEATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetGlobalLineoutAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETGLOBALLINEOUTATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetPickAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPICKATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetDefaultPickAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTPICKATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ResetPickAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETPICKATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ResetPickLetter()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETPICKLETTERRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetQueryOverTimeAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETQUERYOVERTIMEATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetDefaultQueryOverTimeAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTQUERYOVERTIMEATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ResetQueryOverTimeAttributes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETQUERYOVERTIMEATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetInteractorAttriubes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETINTERACTORATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetDefaultInteractorAttriubes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTINTERACTORATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ResetQueryInteractorAttriubes()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETINTERACTORATTRIBUTESRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ShowToolbars(boolean forAllWindows)
-    {
-        if(forAllWindows)
-            rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SHOWTOOLBARSFORALLWINDOWSRPC);
-        else
-            rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SHOWTOOLBARSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean HideToolbars(boolean forAllWindows)
-    {
-        if(forAllWindows)
-            rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_HIDETOOLBARSFORALLWINDOWSRPC);
-        else
-            rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_HIDETOOLBARSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean OpenClient(String clientName, String program, Vector args)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_OPENCLIENTRPC);
-        rpc.SetDatabase(clientName);
-        rpc.SetProgramHost(program);
-        rpc.SetProgramOptions(args);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean SetTryHarderCyclesTimes(int flag)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETTRYHARDERCYCLESTIMESRPC);
-        rpc.SetIntArg1(flag);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean ResizeWindow(int win, int w, int h)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESIZEWINDOWRPC);
-        rpc.SetWindowId(win);
-        rpc.SetIntArg1(w);
-        rpc.SetIntArg2(h);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean MoveWindow(int win, int x, int y)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_MOVEWINDOWRPC);
-        rpc.SetWindowId(win);
-        rpc.SetIntArg1(x);
-        rpc.SetIntArg2(y);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean MoveAndResizeWindow(int win, int x, int y, int w, int h)
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_MOVEANDRESIZEWINDOWRPC);
-        rpc.SetWindowId(win);
-        rpc.SetIntArg1(x);
-        rpc.SetIntArg2(y);
-        rpc.SetIntArg3(w);
-        rpc.SetWindowLayout(h);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;
-    }
-
-    public boolean TurnOffAllLocks()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_TURNOFFALLLOCKSRPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;    
-    }
-
-    public boolean SetPlotFollowsTime()
-    {
-        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPLOTFOLLOWSTIMERPC);
-        rpc.Notify();
-        return synchronous ? Synchronize() : true;    
-    }
-
+    /**
+     * Sends a synchronization message to the viewer and blocks until the 
+     * viewer's reply to that message is read on the listener thread.
+     *
+     * @return true if there were no errors; false otherwise.
+     */
     public synchronized boolean Synchronize()
     {
         // Clear any error in the message observer.
@@ -1799,9 +560,9 @@ public class ViewerProxy implements SimpleObserver
         syncNotifier.SetUpdate(false);
 
         // Send a new synchronization tag
-        syncAtts.SetSyncTag(syncCount);
-        syncAtts.Notify();
-        syncAtts.SetSyncTag(-1);
+        GetViewerState().GetSyncAttributes().SetSyncTag(syncCount);
+        GetViewerState().GetSyncAttributes().Notify();
+        GetViewerState().GetSyncAttributes().SetSyncTag(-1);
 
         // Wait until the syncNotifier notifies us that it's okay to proceed.
         boolean noErrors = true;
@@ -1822,146 +583,264 @@ public class ViewerProxy implements SimpleObserver
         return noErrors && !messageObserver.GetErrorFlag();
     }
 
+    /**
+     * Gets the last error message that was encountered. This method can be
+     * called after a Synchronize() call to get any errors that were posted.
+     *
+     * @return The last error message.
+     */
     public String GetLastError()
     {
         return messageObserver.GetLastError();
     }
 
-//
-// Methods to get the state objects
-//
-    public MessageAttributes GetMessageAttributes() { return messageAtts; }
-    public AnnotationAttributes GetAnnotationAttributes() { return annotationAtts; }
-    public GlobalAttributes GetGlobalAttributes() { return globalAtts;}
-    public DatabaseCorrelationList GetDatabaseCorrelationList() { return correlationList; }
-    public PlotList GetPlotList() { return plotList; }
-    public PluginManagerAttributes GetPluginAtts() { return pluginAtts;}
-    public HostProfileList GetHostProfiles() { return hostProfiles; }
-    public AppearanceAttributes GetAppearanceAttributes() { return appearanceAtts; }
-    public ViewAxisArrayAttributes GetViewAxisArray() { return viewAxisArray; }
-    public ViewCurveAttributes GetViewCurve() { return viewCurve; }
-    public View2DAttributes GetView2D() { return view2D; }
-    public View3DAttributes GetView3D() { return view3D; }
-    public ColorTableAttributes GetColorTableAttributes() { return colorTableAtts; }
-    public SaveWindowAttributes GetSaveWindowAttributes() { return saveAtts; }
-    public StatusAttributes GetStatusAttributes() { return statusAtts; }
-    public EngineList GetEngineList() { return engineList; }
-    public LightList GetLightList() { return lightList; }
-    public AnimationAttributes GetAnimationAttributes() { return animationAtts; }
-    public ExpressionList GetExpressionList() { return expressionList; }
-    public PickAttributes GetPickAttributes() { return pickAtts; }
-    public WindowInformation GetWindowInformation() { return windowInfo; }
-    public RenderingAttributes GetRenderingAttributes() { return renderAtts; }
-    public QueryList GetQueryList() { return queryList; }
-    public QueryAttributes GetQueryAttributes() { return queryAtts; }
-    public MaterialAttributes GetMaterialAttributes() { return materialAtts; }
-    public GlobalLineoutAttributes GetGlobalLineoutAttributes() { return globalLineoutAtts; }
-    public AnnotationObjectList GetAnnotationObjectList() { return annotationObjectList; }
-    public QueryOverTimeAttributes GetQueryOverTimeAttributes() { return queryOverTimeAtts; }
-    public InteractorAttributes GetInteractorAttributes() { return interactorAtts; }
-    public ProcessAttributes GetProcessAttributes() { return processAtts; }
-    public DBPluginInfoAttributes GetPluginInfoAttributes() { return dbPluginInfoAtts; }
-    public ExportDBAttributes GetExportDBAttributes() { return exportDBAtts; }
-    public ClientMethod GetClientMethod() { return clientMethod; }
-    public ClientInformation GetClientInformation() { return clientInformation; }
-    public final ClientInformationList GetClientInformationList() { return clientInformationList; }
-    public MovieAttributes GetMovieAttributes() { return movieAtts; }
-    public MeshManagementAttributes GetMeshManagementAttributes() { return meshManagementAtts; }
-    public ConstructDDFAttributes GetDDFAttributes() { return constructDDFAtts; }
-    public PlotInfoAttributes GetPlotInfoAttributes() { return plotInfoAtts; }
-    public avtDatabaseMetaData GetMetaData() { return metaData; }
+    /**
+     * Returns the ViewerState object, which is the container object that
+     * holds all of the state objects that can be observed or manipulated
+     * in VisIt.
+     *
+     * One will commonly get the viewer state and then get one of its state
+     * objects and make changes to it before calling the Notify() method on
+     * that state object to affect changes in the viewer.
+     *
+     * @return The ViewerState object.
+     * @see ViewerState
+     */
+    public ViewerState GetViewerState()
+    {
+        return state;
+    }
 
+    /**
+     * Returns the ViewerMethods object, which is the container object that
+     * maps all method calls through it into ViewerRPC calls to the viewer.
+     * There are a lot of methods that can be called and it improves maintainability
+     * to have the methods separated out.
+     *
+     * @return The ViewerMethods object.
+     */
+    public ViewerMethods GetViewerMethods()
+    {
+        return methods;
+    }
+
+    /**
+     * Convenience method that looks up the index of the named plot plugin
+     * in the plot plugin manager.
+     *
+     * @param plotName The name of the plot to look for.
+     * @return The index of the plot in the plugin manager.
+     */
     public int GetPlotIndex(String plotName)
     {
         return plotPlugins.IndexFromName(plotName);
     }
- 
+
+    /**
+     * Convenience method that looks up the name of the plot plugin
+     * in the plot plugin manager, given an index.
+     *
+     * @param index The index of the plot.
+     * @return The name of the plot in the plugin manager.
+     */
     public String GetPlotName(int index) throws ArrayIndexOutOfBoundsException
     { 
         return plotPlugins.GetPluginName(index);
     }
 
+    /**
+     * Convenience method that returns the plot plugin version for the 
+     * specified plugin index.
+     *
+     * @param index The index of the plot.
+     * @return The version of the plot in the plugin manager.
+     */
     public String GetPlotVersion(int index) throws ArrayIndexOutOfBoundsException
     { 
         return plotPlugins.GetPluginVersion(index);
     }
 
+    /**
+     * Convenience method that returns the state object for the plot plugin.
+     * You can access the state object via ViewerState too.
+     *
+     * @param index The index of the plot.
+     * @return The plot's state object. This is the object that you'd use to
+     *         make changes in the plot's attributes, programmatically or through
+     *         a GUI window, etc.
+     */
     public Plugin GetPlotAttributes(int index) throws ArrayIndexOutOfBoundsException
     {
         return plotPlugins.GetPluginAttributes(index);
     }
 
+    /**
+     * Convenience method that returns the state object for the plot plugin.
+     * You can access the state object via ViewerState too.
+     *
+     * @param plotName The name of the plot.
+     * @return The plot's state object. This is the object that you'd use to
+     *         make changes in the plot's attributes, programmatically or through
+     *         a GUI window, etc.
+     */
     public Plugin GetPlotAttributes(String plotName) throws ArrayIndexOutOfBoundsException
     {
         int index = plotPlugins.IndexFromName(plotName);
         return plotPlugins.GetPluginAttributes(index);
     }
 
+    /**
+     * Returns the number of plot plugins that were loaded.
+     *
+     * @return The number of plot plugins that were loaded.
+     */
     public int GetNumPlotPlugins()
     {
         return plotPlugins.GetNumPlugins();
     }
 
-    public int GetOperatorIndex(String plotName)
+    /**
+     * Convenience method that looks up the index of the named operator plugin
+     * in the operator plugin manager.
+     *
+     * @param operatorName The name of the plot to look for.
+     * @return The index of the operator in the plugin manager.
+     */
+    public int GetOperatorIndex(String operatorName)
     {
-        return operatorPlugins.IndexFromName(plotName);
+        return operatorPlugins.IndexFromName(operatorName);
     }
 
+    /**
+     * Convenience methods that looks up the name of the operator plugin
+     * in the operator plugin manager, given an index.
+     *
+     * @param index The index of the operator.
+     * @return The name of the operator in the plugin manager.
+     */
     public String GetOperatorName(int index) throws ArrayIndexOutOfBoundsException
     { 
         return operatorPlugins.GetPluginName(index);
     }
 
+    /**
+     * Convenience methods that returns the Operator plugin version for the 
+     * specified plugin index.
+     *
+     * @param index The index of the Operator.
+     * @return The version of the Operator in the plugin manager.
+     */
     public String GetOperatorVersion(int index) throws ArrayIndexOutOfBoundsException
     { 
         return operatorPlugins.GetPluginVersion(index);
     }
-    
+
+    /**
+     * Convenience method that returns the state object for the operator plugin.
+     * You can access the state object via ViewerState too.
+     *
+     * @param index The index of the operator.
+     * @return The operator's state object. This is the object that you'd use to
+     *         make changes in the operator's attributes, programmatically or through
+     *         a GUI window, etc.
+     */
     public Plugin GetOperatorAttributes(int index) throws ArrayIndexOutOfBoundsException
     {
         return operatorPlugins.GetPluginAttributes(index);
     }
 
+    /**
+     * Convenience method that returns the state object for the operator plugin.
+     * You can access the state object via ViewerState too.
+     *
+     * @param operatorName The name of the plot.
+     * @return The operator's state object. This is the object that you'd use to
+     *         make changes in the operator's attributes, programmatically or through
+     *         a GUI window, etc.
+     */
     public Plugin GetOperatorAttributes(String operatorName) throws ArrayIndexOutOfBoundsException
     {
         int index = operatorPlugins.IndexFromName(operatorName);
         return operatorPlugins.GetPluginAttributes(index);
     }
 
+    /**
+     * Returns the number of operator plugins that were loaded.
+     *
+     * @return The number of operator plugins that were loaded.
+     */
     public int GetNumOperatorPlugins()
     {
         return operatorPlugins.GetNumPlugins();
     }
 
-//
-// SimpleObserver interface
-//
+    //
+    // SimpleObserver interface
+    //
+
+    /**
+     * This method implements the SimpleObserver interface and is called when
+     * an observed state object changes, in this case, the plugin manager 
+     * attributes state object. We use this method to load plugins when we get
+     * the list of loaded plugins from the viewer.
+     *
+     * @param s The state object that was modified - in this case the plugin
+     *          manager attributes.
+     */
     public void Update(AttributeSubject s)
     {
-        if(s == pluginAtts)
+        if(s == GetViewerState().GetPluginManagerAttributes())
         {
             LoadPlugins();
         }
     }
 
+    /**
+     * This method implements the SimpleObserver interface and is called when
+     * we want to prevent updates from an observed state object to have an effect
+     * on this observer.
+     *
+     * @param val True to make the update have an effect; false otherwise.
+     */
     public void SetUpdate(boolean val) { doUpdate = val; }
+
+    /**
+     * This method implements the SimpleObserver interface and is called when
+     * we want to determine whether updates to a state object should cause this
+     * object's Update method to be called.
+     *
+     * @return True if updates are enabled; false otherwise.
+     */
     public boolean GetUpdate() { return doUpdate; }
 
+    /**
+     * Returns whether plugins have been loaded.
+     *
+     * @return True if have been loaded; false otherwise.
+     */
     public boolean PluginsLoaded()
     {
         return pluginsLoaded;
     }
 
+    /**
+     * Loads VisIt's plugins according to the list specified in the plugin
+     * manager attributes. When the ViewerProxy calls this method, the 
+     * client/viewer state object interface is completed.
+     *
+     * @return True if have been loaded; false otherwise.
+     */
     private void LoadPlugins()
     {
         if(!pluginsLoaded)
         {
             // Try loading the plot plugins. If they can all be loaded,
             // add them to xfer.
-            plotPlugins.LoadPlugins(pluginAtts);
+            plotPlugins.LoadPlugins(GetViewerState().GetPluginManagerAttributes());
             for(int i = 0; i < plotPlugins.GetNumPlugins(); ++i)
             {
                  Plugin p = plotPlugins.GetPluginAttributes(i);
+                 state.RegisterPlotAttributes((AttributeSubject)p);
                  if(p != null)
                      xfer.Add((AttributeSubject)p);
                  else
@@ -1970,10 +849,11 @@ public class ViewerProxy implements SimpleObserver
 
             // Try loading the operator plugins. If they can all be loaded,
             // add them to xfer.
-            operatorPlugins.LoadPlugins(pluginAtts);
+            operatorPlugins.LoadPlugins(GetViewerState().GetPluginManagerAttributes());
             for(int i = 0; i < operatorPlugins.GetNumPlugins(); ++i)
             {
                  Plugin p = operatorPlugins.GetPluginAttributes(i);
+                 state.RegisterOperatorAttributes((AttributeSubject)p);
                  if(p != null)
                      xfer.Add((AttributeSubject)p);
                  else
@@ -1983,10 +863,13 @@ public class ViewerProxy implements SimpleObserver
             pluginsLoaded = true;
         }
     }
-//
-// Data members
-//
+
+    //
+    // Data members
+    //
     private RemoteProcess        viewer;
+    private ViewerMethods        methods;
+    private ViewerState          state;
     private Xfer                 xfer;
     private PluginManager        plotPlugins;
     private PluginManager        operatorPlugins;
@@ -1998,57 +881,4 @@ public class ViewerProxy implements SimpleObserver
     private boolean              doUpdate;
     private boolean              verbose;
     private String               dataPath;
-
-//
-// State objects
-//
-    private ViewerRPC                rpc;
-    private PostponedAction          postponedAction;
-    private SyncAttributes           syncAtts;
-    private AppearanceAttributes     appearanceAtts;
-    private PluginManagerAttributes  pluginAtts;
-    private GlobalAttributes         globalAtts;
-    private DatabaseCorrelationList  correlationList;
-    private PlotList                 plotList;
-    private HostProfileList          hostProfiles;
-    private MessageAttributes        messageAtts;
-    private SaveWindowAttributes     saveAtts;
-    private StatusAttributes         statusAtts;
-    private EngineList               engineList;
-    private ColorTableAttributes     colorTableAtts;
-    private ExpressionList           expressionList;
-    private AnnotationAttributes     annotationAtts;
-    private SILRestrictionAttributes silRestrictionAtts;
-    private avtDatabaseMetaData      metaData;
-    private ViewAxisArrayAttributes  viewAxisArray;
-    private ViewCurveAttributes      viewCurve;
-    private View2DAttributes         view2D;
-    private View3DAttributes         view3D;
-    private LightList                lightList;
-    private AnimationAttributes      animationAtts;
-    private PickAttributes           pickAtts;
-    private PrinterAttributes        printerAtts;
-    private WindowInformation        windowInfo;
-    private RenderingAttributes      renderAtts;
-    private KeyframeAttributes       keyframeAtts;
-    private QueryList                queryList;
-    private QueryAttributes          queryAtts;
-    private MaterialAttributes       materialAtts;
-    private GlobalLineoutAttributes  globalLineoutAtts;
-    private AnnotationObjectList     annotationObjectList;
-    private QueryOverTimeAttributes  queryOverTimeAtts;
-    private InteractorAttributes     interactorAtts;
-    private SILRestrictionAttributes silAtts;
-    private ProcessAttributes        processAtts;
-    private DBPluginInfoAttributes   dbPluginInfoAtts;
-    private ExportDBAttributes       exportDBAtts;
-    private ConstructDDFAttributes   constructDDFAtts;
-    private ClientMethod             clientMethod;
-    private ClientInformation        clientInformation;
-    private ClientInformationList    clientInformationList;
-    private MovieAttributes          movieAtts;
-    private MeshManagementAttributes meshManagementAtts;
-    private ViewerRPC                logRPC;
-    private PlotInfoAttributes       plotInfoAtts;
-    private FileOpenOptions          fileOpenOptions;
 }

@@ -53,15 +53,30 @@ package llnl.visit;
 // Modifications:
 //   
 // ****************************************************************************
-
+/**
+ * Yield the thread's cpu time until it ultimately starts sleeping and 
+ * waking on a timeout.
+ *
+ * @author Brad Whitlock
+ */
 class Yielder
-{
+{ 
+   /**
+     * Constructor for the Yielder class.
+     *
+     * @param maxt The maximum timeout
+     */
     public Yielder(int maxt)
     {
         idlecount = 0;
         maxtimeout = maxt;
     }
 
+   /**
+     * Yields the CPU so the thread does not do any work.
+     *
+     * @param maxt The maximum timeout
+     */
     public void yield() throws java.lang.InterruptedException
     {
         ++idlecount;
@@ -87,6 +102,11 @@ class Yielder
         }
     }
 
+   /**
+     * Resets the idle count.
+     *
+     * @param maxt The maximum timeout
+     */
     public void reset()
     {
         idlecount = 0;

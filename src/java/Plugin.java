@@ -52,9 +52,19 @@ package llnl.visit;
 // Modifications:
 //   
 // ****************************************************************************
-
+/**
+ * Defines the interface that all plugin classes must provide.
+ *
+ * @author Brad Whitlock
+ */
 public interface Plugin
 {
+    /**
+     * Returns the plugin's name.
+     */
     public String GetName();
+    /**
+     * Returns the plugin's version string.
+     */
     public String GetVersion();
 }

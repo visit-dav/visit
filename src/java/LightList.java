@@ -224,6 +224,20 @@ public class LightList extends AttributeSubject
         }
     }
 
+    public String toString(String indent)
+    {
+        String str = new String();
+        str = str + indent + "light0 = {\n" + light0.toString(indent + "    ") + indent + "}\n";
+        str = str + indent + "light1 = {\n" + light1.toString(indent + "    ") + indent + "}\n";
+        str = str + indent + "light2 = {\n" + light2.toString(indent + "    ") + indent + "}\n";
+        str = str + indent + "light3 = {\n" + light3.toString(indent + "    ") + indent + "}\n";
+        str = str + indent + "light4 = {\n" + light4.toString(indent + "    ") + indent + "}\n";
+        str = str + indent + "light5 = {\n" + light5.toString(indent + "    ") + indent + "}\n";
+        str = str + indent + "light6 = {\n" + light6.toString(indent + "    ") + indent + "}\n";
+        str = str + indent + "light7 = {\n" + light7.toString(indent + "    ") + indent + "}\n";
+        return str;
+    }
+
     public void SetAllEnabled(boolean val)
     {
         light0.SetEnabledFlag(val);

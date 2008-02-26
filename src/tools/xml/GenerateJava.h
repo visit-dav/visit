@@ -104,6 +104,9 @@ using std::vector;
 //    Brad Whitlock, Wed Mar 14 17:50:07 PST 2007
 //    Change the names of the attVector access functions.
 //
+//    Brad Whitlock, Mon Feb 25 14:04:48 PST 2008
+//    Added methods to create toString methods in Java.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -240,6 +243,10 @@ class AttsGeneratorField : public virtual Field
             c << "(" << name << " == obj." << name << ")";
         }
     }
+
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+    }
 };
 
 //
@@ -268,6 +275,10 @@ class AttsGeneratorInt : public virtual Int , public virtual AttsGeneratorField
     {
         c << indent << "Set" << Name << "(buf.ReadInt());" << endl;
         return true;
+    }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
 };
 
@@ -352,6 +363,10 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual AttsGener
         c << indent << "Set" << Name << "(buf.ReadIntArray());" << endl;
         return true;
     }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + intArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+    }
 };
 
 
@@ -410,6 +425,10 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGen
         c << indent << "Set" << Name << "(buf.ReadIntVector());" << endl;
         return true;
     }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + intVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+    }
 };
 
 
@@ -442,6 +461,10 @@ class AttsGeneratorBool : public virtual Bool , public virtual AttsGeneratorFiel
         c << indent << "Set" << Name << "(buf.ReadBool());" << endl;
         return true;
     }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + boolToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+    }
 };
 
 
@@ -468,6 +491,10 @@ class AttsGeneratorFloat : public virtual Float , public virtual AttsGeneratorFi
     {
         c << indent << "Set" << Name << "(buf.ReadFloat());" << endl;
         return true;
+    }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + floatToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
 };
 
@@ -552,6 +579,10 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual AttsG
         c << indent << "Set" << Name << "(buf.ReadFloatArray());" << endl;
         return true;
     }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + floatArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+    }
 };
 
 
@@ -578,6 +609,10 @@ class AttsGeneratorDouble : public virtual Double , public virtual AttsGenerator
     {
         c << indent << "Set" << Name << "(buf.ReadDouble());" << endl;
         return true;
+    }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + doubleToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
 };
 
@@ -663,6 +698,10 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Att
         c << indent << "Set" << Name << "(buf.ReadDoubleArray());" << endl;
         return true;
     }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + doubleArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+    }
 };
 
 //
@@ -718,6 +757,10 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual A
         c << indent << "Set" << Name << "(buf.ReadDoubleVector());" << endl;
         return true;
     }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + doubleVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+    }
 };
 
 
@@ -749,6 +792,10 @@ class AttsGeneratorUChar : public virtual UChar , public virtual AttsGeneratorFi
     {
         c << indent << "Set" << Name << "(buf.ReadByte());" << endl;
         return true;
+    }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + ucharToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
 };
 
@@ -833,6 +880,10 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual AttsG
         c << indent << "Set" << Name << "(buf.ReadByteArray());" << endl;
         return true;
     }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + ucharArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+    }
 };
 
 
@@ -889,6 +940,10 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Att
         c << indent << "Set" << Name << "(buf.ReadByteVector());" << endl;
         return true;
     }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + ucharVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+    }
 };
 
 
@@ -928,6 +983,10 @@ class AttsGeneratorString : public virtual String , public virtual AttsGenerator
     {
         c << indent << "Set" << Name << "(buf.ReadString());" << endl;
         return true;
+    }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
 };
 
@@ -981,6 +1040,10 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual A
         c << indent << "Set" << Name << "(buf.ReadStringVector());" << endl;
         return true;
     }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + stringVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+    }
 };
 
 
@@ -1017,6 +1080,10 @@ class AttsGeneratorColorTable : public virtual ColorTable , public virtual AttsG
     {
         c << indent << "Set" << Name << "(buf.ReadString());" << endl;
         return true;
+    }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
 };
 
@@ -1072,6 +1139,14 @@ class AttsGeneratorColor : public virtual Color , public virtual AttsGeneratorFi
         c << indent << name << ".Read(buf);" << endl;
         return false;
     }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + indent + \"" << name << " = {\" + ";
+        c << name << ".Red() + \", \" + ";
+        c << name << ".Green() + \", \" + ";
+        c << name << ".Blue() + \", \" + ";
+        c << name << ".Alpha() + \"}\\n\";" << endl;
+    }
 };
 
 
@@ -1098,6 +1173,10 @@ class AttsGeneratorLineStyle : public virtual LineStyle , public virtual AttsGen
     {
         c << indent << "Set" << Name << "(buf.ReadInt());" << endl;
         return true;
+    }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
 };
 
@@ -1126,6 +1205,10 @@ class AttsGeneratorLineWidth : public virtual LineWidth , public virtual AttsGen
         c << indent << "Set" << Name << "(buf.ReadInt());" << endl;
         return true;
     }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+    }
 };
 
 
@@ -1152,6 +1235,10 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual AttsGenerat
     {
         c << indent << "Set" << Name << "(buf.ReadDouble());" << endl;
         return true;
+    }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + doubleToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
 };
 
@@ -1195,6 +1282,10 @@ class AttsGeneratorVariableName : public virtual VariableName,
         c << indent << "Set" << Name << "(buf.ReadString());" << endl;
         return true;
     }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+    }
 };
 
 
@@ -1236,6 +1327,10 @@ class AttsGeneratorAtt : public virtual Att , public virtual AttsGeneratorField
     {
         c << indent << name << ".Read(buf);" << endl;
         return false;
+    }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + indent + \"" << name << " = {\\n\" + " << name << ".toString(indent + \"    \") + indent + \"}\\n\";" << endl;
     }
 };
 
@@ -1384,6 +1479,20 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << indent << "}" << endl;
         return false;
     }
+
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + indent + \""<<name<<" = {\\n\";" << endl;
+        c << indent << "for(int i = 0; i < "<<name<<".size(); ++i)" << endl;
+        c << indent << "{" << endl;
+        c << indent << "    AttributeSubject s = (AttributeSubject)"<<name<<".elementAt(i);" << endl;
+        c << indent << "    str = str + s.toString(indent + \"    \");" << endl;
+        c << indent << "    if(i < "<<name<<".size()-1)" << endl;
+        c << indent << "        str = str + \", \";" << endl;
+        c << indent << "    str = str + \"\\n\";" << endl;
+        c << indent << "}" << endl;
+        c << indent << "str = str + \"}\\n\";" << endl;
+    }
 };
 
 
@@ -1420,6 +1529,17 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
         c << indent << "Set" << Name << "(buf.ReadInt());" << endl;
         return true;
     }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + indent + \"" << name <<" = \";" << endl;
+        for(int i = 0; i < enumType->values.size(); ++i)
+        {
+            QString constName(enumType->type + QString("_") + enumType->values[i]);
+            c << indent << "if(" << name << " == " << constName.upper() << ")" << endl;
+            c << indent << "    str = str + \"" << constName.upper() << "\";" << endl;
+        }
+        c << indent << "str = str + \"\\n\";" << endl;
+    }
 };
 
 
@@ -1446,6 +1566,10 @@ class AttsGeneratorScaleMode : public virtual ScaleMode , public virtual AttsGen
     {
         c << indent << "Set" << Name << "(buf.ReadInt());" << endl;
         return true;
+    }
+    virtual void WriteToString(ostream &c, const QString &indent)
+    {
+        c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent);" << endl;       
     }
 };
 
@@ -1878,6 +2002,25 @@ class AttsGeneratorAttribute
         h << endl;
     }
 
+    void WriteToString(ostream &h)
+    {
+        h << "    public String toString(String indent)" << endl;
+        h << "    {" << endl;
+        h << "        String str = new String();" << endl;
+        for (int i = 0; i < fields.size(); ++i)
+        {
+            fields[i]->WriteToString(h, "        ");
+        }
+        h << "        return str;" << endl;
+        h << "    }" << endl;
+        h << endl;
+//        h << "    public String toString()" << endl;
+//        h << "    {" << endl;
+//        h << "        return toString(new String());" << endl;
+//        h << "    }" << endl;
+//        h << endl;
+    }
+
     // ------------------------------------------------------------------------
     // ------------------------------------------------------------------------
     void WriteSource(ostream &h)
@@ -1971,6 +2114,11 @@ class AttsGeneratorAttribute
         // Write the ReadAtts method
         //
         WriteSourceReadAtts(h);
+
+        //
+        // Write the toString method
+        //
+        WriteToString(h);
 
         //
         // Write out AttributeGroupVector convenience methods.

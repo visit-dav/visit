@@ -192,6 +192,25 @@ public class ColorTableAttributes extends AttributeSubject
         }
     }
 
+    public String toString(String indent)
+    {
+        String str = new String();
+        str = str + stringVectorToString("names", names, indent) + "\n";
+        str = str + indent + "colorTables = {\n";
+        for(int i = 0; i < colorTables.size(); ++i)
+        {
+            AttributeSubject s = (AttributeSubject)colorTables.elementAt(i);
+            str = str + s.toString(indent + "    ");
+            if(i < colorTables.size()-1)
+                str = str + ", ";
+            str = str + "\n";
+        }
+        str = str + "}\n";
+        str = str + stringToString("activeContinuous", activeContinuous, indent) + "\n";
+        str = str + stringToString("activeDiscrete", activeDiscrete, indent) + "\n";
+        return str;
+    }
+
     // Attributegroup convenience methods
     public void AddColorTables(ColorControlPointList obj)
     {
