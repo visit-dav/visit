@@ -979,7 +979,7 @@ for t in $testcases; do
     elif test "$error" = "115"; then
         echo -e "    $name:\tkilled after $timeLimit seconds" >> summary
         anyerror=1
-        echo -e "  <td align=center bgcolor=\"#880000\"><b><i>Killed</b></i></td>" >> html/index.html
+        echo -e "  <td align=center bgcolor=\"#880000\"><b><i>Self-Killed after $limitSeconds\"</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Killed after $timeLimit seconds when running test file: $t"
         fi
@@ -993,7 +993,7 @@ for t in $testcases; do
     elif test "$error" = "118"; then
         echo -e "    $name:\tkilled after $limitSeconds seconds" >> summary
         anyerror=1
-        echo -e "  <td align=center bgcolor=\"#880000\"><b><i>Killed</b></i></td>" >> html/index.html
+        echo -e "  <td align=center bgcolor=\"#880000\"><b><i>OS-Killed after $limitSeconds\"</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Killed after $limitSeconds seconds when running test file: $t"
         fi
