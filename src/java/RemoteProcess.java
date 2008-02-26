@@ -67,14 +67,25 @@ import java.util.Vector;
 //   Brad Whitlock, Tue Jul 29 11:16:19 PDT 2003
 //   I removed the code that put -nread and -nwrite on the command line.
 //
+//   Brad Whitlock, Tue Feb 26 13:13:33 PST 2008
+//   Added javadoc comments.
+//
 // ****************************************************************************
-
+/**
+ * Launch a VisIt process and exchange information with it via sockets.
+ *
+ * @author Brad Whitlock
+ */
 class RemoteProcess implements Runnable
 {
 //
 // public methods
 //
-
+    /**
+     * Constructor for the RemoteProcess class.
+     *
+     * @param exename The name of the program to execute.
+     */
     public RemoteProcess(String exename)
     {
         exeName = new String(exename);
@@ -86,21 +97,41 @@ class RemoteProcess implements Runnable
         verbose = false;
     }
 
+    /**
+     * Adds to the list of command line arguments that will be provided
+     * to the process.
+     *
+     * @param arg A new command line argument.
+     */
     public void AddArgument(String arg)
     {
         args.addElement(arg);
     }
 
+    /**
+     * Sets the path to the executable program.
+     *
+     * @param path The local file system path to the program.
+     */
     public void SetBinPath(String path)
     {
         binPath = new String(path);
     }
 
+    /**
+     * Sets whether verbose output should be used.
+     *
+     * @param val More information is printed if true; false is quiet.
+     */
     public void SetVerbose(boolean val)
     {
         verbose = val;
     }
 
+    /**
+     * Closes the remote process.
+     *
+     */
     public void Close()
     {
         conn.Close();
@@ -111,22 +142,44 @@ class RemoteProcess implements Runnable
         viewerLaunched = false;
     }
 
+    /**
+     * Writes an array of bytes to the socket bound for the remote process.
+     *
+     * @param buf The buffer to send to the remote process.
+     */
     public int DirectWrite(byte[] buf) throws IOException
     {
         conn.DirectWrite(buf);
         return buf.length;
     }
 
+    /**
+     * Reads an array of bytes from the remote process' socket.
+     *
+     * @param ntotal The largest amount that can be read.
+     * @return The buffer that was read
+     */
     public byte[] DirectRead(int ntotal) throws LostConnectionException, IOException
     {
         return conn.DirectRead(ntotal);
     }
-   
+
+    /**
+     * Returns the number of bytes available for read.
+     *
+     * @return The number of bytes waiting to be read.
+     */
     public int CanRead()
     {
         return (viewerLaunched && !waitingForLaunch) ? conn.CanRead() : 0;
     }
 
+    /**
+     * Launches the process and connects to it.
+     *
+     * @param port The port on which we'll listen.
+     * @return true on success; false otherwise.
+     */
     public boolean Open(int port)
     {
         if(!StartMakingConnection(port))
@@ -150,25 +203,43 @@ class RemoteProcess implements Runnable
 //
 // private methods
 //
-
+    /**
+     * Starts the connection to the process.
+     *
+     * @param port The port on which we'll listen.
+     * @return true on success; false otherwise.
+     */
     private boolean StartMakingConnection(int port)
     {
         PrintMessage("Starting to make connection to viewer.");
         return conn.StartConnection(port);
     }
 
+    /**
+     * Creates the sockets that complete the connection to the process.
+     *
+     * @return true on success; false otherwise.
+     */
     private boolean FinishMakingConnections()
     {
         PrintMessage("Finishing making connection to viewer.");
         return conn.CreateSockets();
     }
 
+    /**
+     * Prints a message to the console in verbose mode.
+     *
+     */
     private synchronized void PrintMessage(String msg)
     {
         if(verbose)
             System.out.println(msg);
     }
 
+    /**
+     * Spawns the process to which we want to connect.
+     * @return true on success; false on failure.
+     */
     private boolean LaunchLocal()
     {
         args.addElement("-host");
@@ -198,6 +269,9 @@ class RemoteProcess implements Runnable
         return success;
     }
 
+    /**
+     * Helper method that launches the process on another thread.
+     */
     private void LaunchHelper() throws java.io.IOException
     {
         // Create a command string.
@@ -228,7 +302,9 @@ class RemoteProcess implements Runnable
         }
     }
 
-    // This is a thread callback function that launches the viewer.
+    /**
+     * Thread callback function that launches the viewer.
+     */
     public void run()
     {
         try
@@ -245,6 +321,14 @@ class RemoteProcess implements Runnable
         }
     }
 
+    /**
+     * Waits for the process to launch by waiting for the error
+     * stream to print some launch-related messages from the VisIt
+     * launcher script. This is a synchronization mechanism between 
+     * the threads that start the remote process.
+     *
+     * @return The messages that were read.
+     */
     private String WaitForLaunch()
     {
         String retval = new String("");

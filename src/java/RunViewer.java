@@ -36,6 +36,7 @@
 //
 // ****************************************************************************
 
+import llnl.visit.Axes3D;
 import llnl.visit.ViewerProxy;
 import llnl.visit.ColorAttribute;
 import llnl.visit.AnnotationAttributes;
@@ -68,6 +69,9 @@ import llnl.visit.AnnotationAttributes;
 //
 //   Brad Whitlock, Thu Jul 26 15:44:08 PST 2007
 //   Added support for -dv instead of -vob.
+//
+//   Brad Whitlock, Mon Feb 25 11:07:24 PDT 2008
+//   Changed to new ViewerProxy interface.
 //
 // ****************************************************************************
 
@@ -125,7 +129,7 @@ public class RunViewer
             viewer.SetSynchronous(sync);
 
             // Show the windows.
-            viewer.ShowAllWindows();
+            viewer.GetViewerMethods().ShowAllWindows();
 
             work(args);
 
@@ -166,34 +170,36 @@ public class RunViewer
     protected void work(String[] args)
     {
         // Do a plot
-        if(viewer.OpenDatabase(viewer.GetDataPath() + "globe.silo"))
+        if(viewer.GetViewerMethods().OpenDatabase(viewer.GetDataPath() + "globe.silo"))
         {
-            viewer.AddPlot("Pseudocolor", "u");
-            viewer.AddPlot("Mesh", "mesh1");
-            viewer.DrawPlots();
-            viewer.SaveWindow();
+            viewer.GetViewerMethods().AddPlot("Pseudocolor", "u");
+            viewer.GetViewerMethods().AddPlot("Mesh", "mesh1");
+            viewer.GetViewerMethods().DrawPlots();
+            viewer.GetViewerMethods().SaveWindow();
 
             // Change some annotation attributes.
-            AnnotationAttributes a = viewer.GetAnnotationAttributes();
+            AnnotationAttributes a = viewer.GetViewerState().GetAnnotationAttributes();
             a.SetBackgroundMode(AnnotationAttributes.BACKGROUNDMODE_GRADIENT);
             a.SetGradientBackgroundStyle(AnnotationAttributes.GRADIENTSTYLE_RADIAL);
             a.SetGradientColor1(new ColorAttribute(0,0,255));
             a.SetGradientColor2(new ColorAttribute(0,0,0));
             a.SetForegroundColor(new ColorAttribute(255,255,255));
-            a.SetAxesType(AnnotationAttributes.AXES_STATICEDGES);
-            a.SetAxesFlag(true);
+            Axes3D a3d = new Axes3D(a.GetAxes3D());
+            a3d.SetAxesType(Axes3D.AXES_STATICEDGES);
+            a3d.SetVisible(true);
+            a.SetAxes3D(a3d);
             a.Notify();
-            viewer.SetAnnotationAttributes();
+            viewer.GetViewerMethods().SetAnnotationAttributes();
 
             // Change the active color table
-            viewer.SetActiveContinuousColorTable("rainbow");
+            viewer.GetViewerMethods().SetActiveContinuousColorTable("rainbow");
 
-            viewer.SetActivePlot(0);
-            viewer.ChangeActivePlotsVar("v");
-            viewer.SaveWindow();
+            viewer.GetViewerMethods().SetActivePlot(0);
+            viewer.GetViewerMethods().ChangeActivePlotsVar("v");
+            viewer.GetViewerMethods().SaveWindow();
 
-            viewer.ChangeActivePlotsVar("t");
-            viewer.SaveWindow();
+            viewer.GetViewerMethods().ChangeActivePlotsVar("t");
+            viewer.GetViewerMethods().SaveWindow();
         }
         else
         {

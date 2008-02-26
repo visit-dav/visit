@@ -120,6 +120,10 @@
 #   Jeremy Meredith, Mon Feb  4 13:43:24 EST 2008
 #   Added ViewAxisArrayAttributes.java.
 #
+#   Brad Whitlock, Fri Feb 22 16:48:30 PST 2008
+#   Refactored some of ViewerProxy into ViewerState and ViewerMethods. Added
+#   javadoc target.
+#
 ##############################################################################
 
 ##
@@ -157,6 +161,12 @@ AnnotationAttributes.java \
 AnnotationObject.java \
 AnnotationObjectList.java \
 AppearanceAttributes.java \
+Axes2D.java \
+Axes3D.java \
+AxisAttributes.java \
+AxisLabels.java \
+AxisTickMarks.java \
+AxisTitles.java \
 BoxExtents.java \
 ClientInformation.java \
 ClientInformationList.java \
@@ -177,6 +187,7 @@ ExportDBAttributes.java \
 Expression.java \
 ExpressionList.java \
 FileOpenOptions.java \
+FontAttributes.java \
 GaussianControlPoint.java \
 GaussianControlPointList.java \
 GlobalAttributes.java \
@@ -234,11 +245,13 @@ RemoteProcess.java \
 SimpleObserver.java \
 SyncNotifier.java \
 Version.java \
+ViewerMethods.java \
 ViewerProxy.java \
+ViewerState.java \
 Xfer.java \
 Yielder.java
 
-MAIN_SRC = NIFGUI.java RunViewer.java TryLighting.java TryQuery.java PlotAtts.java
+MAIN_SRC = NIFGUI.java RunViewer.java TryLighting.java TryQuery.java PlotAtts.java GetMetaData.java
 MAIN_CLASS = $(MAIN_SRC:.java=.class)
 
 VERSIONWRITER = versionwriter
@@ -276,7 +289,13 @@ main:
 jar: package
 	$(JAR) cvf $(JARFILE) llnl 
 
-pack: jar main
+javadoc:
+	$(RM) -rf docs
+	mkdir docs
+	javadoc -d docs $(PACKAGE_SRC) $(PACKAGE_STATE_SRC) $(METADATA_SRC)
+	cp stylesheet.css docs
+
+pack: jar main javadoc
 	$(RM) jvisit.tar
 	$(RM) -rf src
 	mkdir src
@@ -286,7 +305,7 @@ pack: jar main
 	cp Makefile src
 	cp ../plots/*/*.java src/plots
 	cp ../operators/*/*.java src/operators
-	tar -cf jvisit.tar $(JARFILE) src $(MAIN_CLASS) images
+	tar -cf jvisit.tar $(JARFILE) src docs $(MAIN_CLASS) images
 	$(RM) -rf src
 
 ##

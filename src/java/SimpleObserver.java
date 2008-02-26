@@ -52,12 +52,42 @@ package llnl.visit;
 // Creation:   Thu Aug 8 12:46:13 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Feb 26 15:13:30 PST 2008
+//   Added javadoc comments.
+//
 // ****************************************************************************
-
+/**
+ * The SimpleObserver interface defines the methods that all observers of
+ * AttributeSubject objects must define.
+ *
+ * @author Brad Whitlock
+ */
 public interface SimpleObserver
 {
+    /**
+     * This method is called when an object observed by this object
+     * is modified and its observers are notified by the state object's
+     * Notify() method.
+     *
+     * @param s The state object that caused the Update() method to
+     *          be called.
+     */
     public void Update(AttributeSubject s);
+
+    /**
+     * Sets a flag in the implementing class that determines whether or
+     * not the Update() method should be called in response to the
+     * state object's Notify() method being called.
+     *
+     * @param val true if the Update() method should be called in response to
+     *            a Notify().
+     */
     public void SetUpdate(boolean val);
+
+    /**
+     * Returns that flag indicating whether or not Update() should be 
+     * called in response to a state object's Notify().
+     * @return The flag indicating whether Update() should be called.
+     */
     public boolean GetUpdate();
 }

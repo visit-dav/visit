@@ -63,6 +63,9 @@ import llnl.visit.QueryAttributes;
 //   Brad Whitlock, Mon Jun 6 17:25:34 PST 2005
 //   I made it use GetDataPath to locate the data.
 //
+//   Brad Whitlock, Mon Feb 25 11:07:24 PDT 2008
+//   Changed to new ViewerProxy interface.
+//
 // ****************************************************************************
 
 public class TryQuery extends RunViewer implements SimpleObserver
@@ -73,37 +76,37 @@ public class TryQuery extends RunViewer implements SimpleObserver
         doUpdate = true;
 
         // Make this object observe the light attributes.
-        viewer.GetQueryAttributes().Attach(this);
+        viewer.GetViewerState().GetQueryAttributes().Attach(this);
     }
 
     protected void work(String[] args)
     {
         // Try and open a database
-        if(viewer.OpenDatabase(viewer.GetDataPath() + "curv2d.silo"))
+        if(viewer.GetViewerMethods().OpenDatabase(viewer.GetDataPath() + "curv2d.silo"))
         {
-            viewer.AddPlot("Mesh", "curvmesh2d");
-            viewer.AddPlot("Pseudocolor", "d");
-            viewer.DrawPlots();
+            viewer.GetViewerMethods().AddPlot("Mesh", "curvmesh2d");
+            viewer.GetViewerMethods().AddPlot("Pseudocolor", "d");
+            viewer.GetViewerMethods().DrawPlots();
 
             // Set the colortable to one that has white at the bottom values.
-            viewer.SetActiveContinuousColorTable("calewhite");
+            viewer.GetViewerMethods().SetActiveContinuousColorTable("calewhite");
 
             // Create the variable list.
             Vector vars = new Vector();
             vars.addElement(new String("default"));
 
             // Do some picks.
-            viewer.Pick(300, 300, vars);
-            viewer.Pick(450, 350, vars);
-            viewer.Pick(600, 400, vars);
+            viewer.GetViewerMethods().Pick(300, 300, vars);
+            viewer.GetViewerMethods().Pick(450, 350, vars);
+            viewer.GetViewerMethods().Pick(600, 400, vars);
 
             // Do some lineouts.
-            viewer.Lineout(-4.01261, 1.91818, 2.52975, 3.78323, vars);
-            viewer.SetActiveWindow(1);
-            viewer.Lineout(-3.89903, 1.79309, 2.91593, 3.40794, vars);
+            viewer.GetViewerMethods().Lineout(-4.01261, 1.91818, 2.52975, 3.78323, vars);
+            viewer.GetViewerMethods().SetActiveWindow(1);
+            viewer.GetViewerMethods().Lineout(-3.89903, 1.79309, 2.91593, 3.40794, vars);
 
             // Change the window layout.
-            viewer.SetWindowLayout(2);
+            viewer.GetViewerMethods().SetWindowLayout(2);
         }
         else
             System.out.println("Could not open the database!");

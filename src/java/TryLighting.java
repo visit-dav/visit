@@ -78,6 +78,9 @@ import llnl.visit.plots.PseudocolorAttributes;
 //   Brad Whitlock, Fri Sep 22 15:15:02 PST 2006
 //   I fixed a problem with the brightness of lights 2,3 being set to 0.
 //
+//   Brad Whitlock, Mon Feb 25 11:07:24 PDT 2008
+//   Changed to new ViewerProxy interface.
+//
 // ****************************************************************************
 
 public class TryLighting extends RunViewer implements SimpleObserver
@@ -88,29 +91,29 @@ public class TryLighting extends RunViewer implements SimpleObserver
         doUpdate = true;
 
         // Make this object observe the light attributes.
-        viewer.GetLightList().Attach(this);
+        viewer.GetViewerState().GetLightList().Attach(this);
     }
 
     protected void work(String[] args)
     {
         // Try and open a database
-        if(viewer.OpenDatabase(viewer.GetDataPath() + "globe.silo"))
+        if(viewer.GetViewerMethods().OpenDatabase(viewer.GetDataPath() + "globe.silo"))
         {
-            viewer.AddPlot("Pseudocolor", "w");
+            viewer.GetViewerMethods().AddPlot("Pseudocolor", "w");
 
             // Set the pseudocolor attributes
             PseudocolorAttributes p = (PseudocolorAttributes)viewer.GetPlotAttributes("Pseudocolor");
             p.SetColorTableName("Default");
             p.SetOpacity(1.);
             p.Notify();
-            viewer.SetPlotOptions("Pseudocolor");
-            viewer.DrawPlots();
+            viewer.GetViewerMethods().SetPlotOptions("Pseudocolor");
+            viewer.GetViewerMethods().DrawPlots();
 
             // Set the colortable to one that has white at the bottom values.
-            viewer.SetActiveContinuousColorTable("calewhite");
+            viewer.GetViewerMethods().SetActiveContinuousColorTable("calewhite");
 
             // Set the view
-            View3DAttributes v = viewer.GetView3D();
+            View3DAttributes v = viewer.GetViewerState().GetView3DAttributes();
             v.SetViewNormal(0.456808, 0.335583, 0.823839);
             v.SetFocus(-0.927295, -1.22113, 1.01159);
             v.SetViewUp(-0.184554, 0.941716, -0.281266);
@@ -118,9 +121,9 @@ public class TryLighting extends RunViewer implements SimpleObserver
             v.SetNearPlane(-34.641);
             v.SetFarPlane(34.641);
             v.Notify();
-            viewer.SetView3D();
+            viewer.GetViewerMethods().SetView3D();
 
-            LightList ll = viewer.GetLightList();
+            LightList ll = viewer.GetViewerState().GetLightList();
             ll.SetAllEnabled(false);
 
             // Create a red light
@@ -133,8 +136,8 @@ public class TryLighting extends RunViewer implements SimpleObserver
             newLight1.SetEnabledFlag(true);
             ll.SetLight0(newLight1);
             ll.Notify();
-            viewer.SetLightList();
-            viewer.SaveWindow();
+            viewer.GetViewerMethods().SetLightList();
+            viewer.GetViewerMethods().SaveWindow();
 
             // Create a green light
             System.out.println("Setting up green light.");
@@ -146,8 +149,8 @@ public class TryLighting extends RunViewer implements SimpleObserver
             newLight2.SetEnabledFlag(true);
             ll.SetLight1(newLight2);
             ll.Notify();
-            viewer.SetLightList();
-            viewer.SaveWindow();
+            viewer.GetViewerMethods().SetLightList();
+            viewer.GetViewerMethods().SaveWindow();
 
             // Create a blue light
             System.out.println("Setting up blue light.");
@@ -159,8 +162,8 @@ public class TryLighting extends RunViewer implements SimpleObserver
             newLight3.SetEnabledFlag(true);
             ll.SetLight2(newLight3);
             ll.Notify();
-            viewer.SetLightList();
-            viewer.SaveWindow();
+            viewer.GetViewerMethods().SetLightList();
+            viewer.GetViewerMethods().SaveWindow();
         }
         else
             System.out.println("Could not open the database!");

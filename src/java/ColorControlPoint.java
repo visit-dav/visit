@@ -51,7 +51,9 @@ package llnl.visit;
 // Creation:   Mon Aug 12 12:17:09 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 25 15:20:00 PST 2008
+//   Added toString implementation.
+//
 // ****************************************************************************
 
 public class ColorControlPoint extends AttributeSubject
@@ -165,6 +167,13 @@ public class ColorControlPoint extends AttributeSubject
         }
     }
 
+    public String toString(String indent)
+    {
+        String str = new String();
+        str = str + intArrayToString("colors", colors, indent) + "\n";
+        str = str + floatToString("position", position, indent) + "\n";
+        return str;
+    }
 
     // Attributes
     private int[] colors;

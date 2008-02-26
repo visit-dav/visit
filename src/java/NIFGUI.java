@@ -70,6 +70,9 @@ import llnl.visit.plots.CurveAttributes;
 //   Brad Whitlock, Wed Nov 7 15:56:34 PST 2007
 //   Added -dv argument.
 //
+//   Brad Whitlock, Mon Feb 25 11:07:24 PDT 2008
+//   Changed to new ViewerProxy interface.
+//
 // ****************************************************************************
 
 public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemListener
@@ -330,7 +333,7 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
     //
     protected void SaveWindow(String imageName)
     {
-        SaveWindowAttributes s = viewer.GetSaveWindowAttributes();
+        SaveWindowAttributes s = viewer.GetViewerState().GetSaveWindowAttributes();
         s.SetWidth(visitImageWidth);
         s.SetHeight(visitImageHeight);
         s.SetFamily(false);
@@ -340,7 +343,7 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
         s.SetOutputToCurrentDirectory(true);
         s.SetFileName(imageName);
         s.Notify();
-        viewer.SaveWindow();
+        viewer.GetViewerMethods().SaveWindow();
         viewer.Synchronize();
     }
 
@@ -349,14 +352,14 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
     //
     protected void DeleteAllPlots()
     {
-        int nplots = viewer.GetPlotList().GetNumPlots();
+        int nplots = viewer.GetViewerState().GetPlotList().GetNumPlots();
         if(nplots > 0)
         {
             int ids[] = new int[nplots];
             for(int i = 0; i < nplots; ++i)
                 ids[i] = i;
-            viewer.SetActivePlots(ids);
-            viewer.DeleteActivePlots();
+            viewer.GetViewerMethods().SetActivePlots(ids);
+            viewer.GetViewerMethods().DeleteActivePlots();
         }
     }
 
@@ -366,14 +369,14 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
     //
     protected void DeleteAllButWindow1()
     {
-        Vector windows = new Vector(viewer.GetGlobalAttributes().GetWindows());
+        Vector windows = new Vector(viewer.GetViewerState().GetGlobalAttributes().GetWindows());
         for(int i = 0; i < windows.size(); ++i)
         {
             int window = ((Integer)windows.elementAt(i)).intValue();
             if(window != 1)
             {
-                viewer.SetActiveWindow(window);
-                viewer.DeleteWindow();
+                viewer.GetViewerMethods().SetActiveWindow(window);
+                viewer.GetViewerMethods().DeleteWindow();
             }
         }
     }
@@ -395,14 +398,14 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
                 UpdateButton1();
                 DeleteAllButWindow1();
                 DeleteAllPlots();
-                viewer.HideAllWindows();
+                viewer.GetViewerMethods().HideAllWindows();
                 visitVisible = false;
                 visitActiveButton = -1;
             }
             else
             {
                 visitActiveButton = 1;
-                viewer.ShowAllWindows();
+                viewer.GetViewerMethods().ShowAllWindows();
                 viewer.Synchronize();
 
                 visitVisible = true;
@@ -422,9 +425,9 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
         // can programmatically tell VisIt to do complex things but you might
         // want to tell it to restore a session file here instead.
         //
-        viewer.OpenDatabase(visitDatabase);
-        viewer.AddPlot("Pseudocolor", visitPlotVar);
-        viewer.DrawPlots();
+        viewer.GetViewerMethods().OpenDatabase(visitDatabase);
+        viewer.GetViewerMethods().AddPlot("Pseudocolor", visitPlotVar);
+        viewer.GetViewerMethods().DrawPlots();
     }
 
     protected void UpdateButton1()
@@ -455,14 +458,14 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
                 UpdateButton2();
                 DeleteAllButWindow1();
                 DeleteAllPlots();
-                viewer.HideAllWindows();
+                viewer.GetViewerMethods().HideAllWindows();
                 visitVisible = false;
                 visitActiveButton = -1;
             }
             else
             {
                 visitActiveButton = 2;
-                viewer.ShowAllWindows();
+                viewer.GetViewerMethods().ShowAllWindows();
                 viewer.Synchronize();
 
                 visitVisible = true;
@@ -483,13 +486,13 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
         // Perform a lineout, which will result in a second vis window getting generated.
         Vector vars = new Vector();
         vars.addElement(new String("default"));
-        viewer.Lineout(-4.17647, 9.14941, -0.905884, -9.60353, vars);
+        viewer.GetViewerMethods().Lineout(-4.17647, 9.14941, -0.905884, -9.60353, vars);
         viewer.Synchronize();
 
         try
         {
             // Go to window 2
-            viewer.SetActiveWindow(2);
+            viewer.GetViewerMethods().SetActiveWindow(2);
 
             // Set the Curve plot attributes
             CurveAttributes curveAtts = (CurveAttributes)viewer.GetPlotAttributes("Curve"); 
@@ -497,7 +500,7 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
             curveAtts.SetShowPoints(true);
             curveAtts.SetColor(new ColorAttribute(0,0,255,255));
             curveAtts.Notify();
-            viewer.SetPlotOptions("Curve");
+            viewer.GetViewerMethods().SetPlotOptions("Curve");
         }
         catch(ArrayIndexOutOfBoundsException e)
         {
@@ -505,7 +508,7 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
             addOutput("Could not get the Curve plot attributes.");
         }
  
-        viewer.DrawPlots();
+        viewer.GetViewerMethods().DrawPlots();
     }
 
     protected void UpdateButton2()
@@ -536,14 +539,14 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
                 UpdateButton3();
                 DeleteAllButWindow1();
                 DeleteAllPlots();
-                viewer.HideAllWindows();
+                viewer.GetViewerMethods().HideAllWindows();
                 visitVisible = false;
                 visitActiveButton = -1;
             }
             else
             {
                 visitActiveButton = 3;
-                viewer.ShowAllWindows();
+                viewer.GetViewerMethods().ShowAllWindows();
                 viewer.Synchronize();
 
                 visitVisible = true;
@@ -563,9 +566,9 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
         // can programmatically tell VisIt to do complex things but you might
         // want to tell it to restore a session file here instead.
         //
-        viewer.OpenDatabase(visitDatabase);
-        viewer.AddPlot("Surface", visitPlotVar);
-        viewer.DrawPlots();
+        viewer.GetViewerMethods().OpenDatabase(visitDatabase);
+        viewer.GetViewerMethods().AddPlot("Surface", visitPlotVar);
+        viewer.GetViewerMethods().DrawPlots();
     }
 
     protected void UpdateButton3()

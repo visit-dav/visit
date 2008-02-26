@@ -64,6 +64,9 @@ import llnl.visit.plots.PseudocolorAttributes;
 //   Brad Whitlock, Thu Jul 14 12:15:42 PDT 2005
 //   Updated.
 //
+//   Brad Whitlock, Mon Feb 25 11:07:24 PDT 2008
+//   Changed to new ViewerProxy interface.
+//
 // ****************************************************************************
 
 public class PlotAtts extends RunViewer
@@ -75,22 +78,22 @@ public class PlotAtts extends RunViewer
 
     protected void work(String[] args)
     {
-        if(viewer.OpenDatabase(viewer.GetDataPath() + "globe.silo"))
+        if(viewer.GetViewerMethods().OpenDatabase(viewer.GetDataPath() + "globe.silo"))
         {
             // Create a plot.
-            viewer.AddPlot("Pseudocolor", "u");
+            viewer.GetViewerMethods().AddPlot("Pseudocolor", "u");
 
             // Set the pseudocolor attributes
             PseudocolorAttributes p = (PseudocolorAttributes)viewer.GetPlotAttributes("Pseudocolor");
             p.SetOpacity(0.3);
             p.Notify();
-            viewer.SetPlotOptions("Pseudocolor");
+            viewer.GetViewerMethods().SetPlotOptions("Pseudocolor");
 
             // Draw the plot
-            viewer.DrawPlots();
+            viewer.GetViewerMethods().DrawPlots();
 
             // Set the view
-            View3DAttributes v = viewer.GetView3D();
+            View3DAttributes v = viewer.GetViewerState().GetView3DAttributes();
             v.SetViewNormal(0.456808, 0.335583, 0.823839);
             v.SetFocus(-0.927295, -1.22113, 1.01159);
             v.SetViewUp(-0.184554, 0.941716, -0.281266);
@@ -98,7 +101,7 @@ public class PlotAtts extends RunViewer
             v.SetNearPlane(-34.641);
             v.SetFarPlane(34.641);
             v.Notify();
-            viewer.SetView3D();
+            viewer.GetViewerMethods().SetView3D();
         }
         else
             System.out.println("Could not open the database!");
