@@ -64,7 +64,6 @@
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 
-#include <BJHash.h>
 #include <DebugStream.h>
 #include <Expression.h>
 
