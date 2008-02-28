@@ -25,14 +25,21 @@
 #ifndef __vtkVisItDataSetMapper_h
 #define __vtkVisItDataSetMapper_h
 #include <visit_vtk_exports.h>
-#include "vtkMapper.h"
+#include "vtkDataSetMapper.h"
 
 class vtkPolyDataMapper;
 class vtkRectilinearGridMapper;
 class vtkStructuredGridMapper;
 class vtkDataSetSurfaceFilter;
 
-class VISIT_VTK_API vtkVisItDataSetMapper : public vtkMapper 
+// ****************************************************************************
+// Modifications:
+//   Dave Bremer, Wed Feb 27 15:59:48 PST 2008
+//   Make this class derive from vtkDataSetMapper.  This change was made 
+//   because the factory wants to return these objects as vtkDataSetMapper*
+// ****************************************************************************
+
+class VISIT_VTK_API vtkVisItDataSetMapper : public vtkDataSetMapper 
 {
 public:
   static vtkVisItDataSetMapper *New();
@@ -50,14 +57,6 @@ public:
   // resources to release.
   void ReleaseGraphicsResources(vtkWindow *);
 
-  // Description:
-  // Get the mtime also considering the lookup table.
-  unsigned long GetMTime();
-
-  // Description:
-  // Set the Input of this mapper.
-  void SetInput(vtkDataSet *input);
-  vtkDataSet *GetInput();
 
   typedef enum {TEXTURE_NO_POINTS,
                 TEXTURE_USING_POINTSPRITES
@@ -83,8 +82,6 @@ protected:
   vtkVisItDataSetMapper();
   ~vtkVisItDataSetMapper();
 
-  vtkDataSetSurfaceFilter   *GeometryExtractor;
-  vtkPolyDataMapper         *PolyDataMapper;
   vtkRectilinearGridMapper  *RectilinearGridMapper;
   vtkStructuredGridMapper   *StructuredGridMapper;
   PointTextureMode           PointTextureMethod;
@@ -92,7 +89,6 @@ protected:
   bool                       SceneIs3D;
 
   virtual void ReportReferences(vtkGarbageCollector*);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
 private:
   vtkVisItDataSetMapper(const vtkVisItDataSetMapper&);  // Not implemented.
   void operator=(const vtkVisItDataSetMapper&);  // Not implemented.
