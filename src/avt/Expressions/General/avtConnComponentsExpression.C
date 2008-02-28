@@ -263,6 +263,9 @@ avtConnComponentsExpression::GetNumberOfComponents()
 //    Cyrus Harrison, Thu Aug 23 08:53:25 PDT 2007
 //    Support enable ghost neighbors option.
 //
+//    Cyrus Harrison, Wed Feb 27 16:23:56 PST 2008
+//    Special logic for datasets that only contain ghost zones. 
+//
 // ****************************************************************************
 void
 avtConnComponentsExpression::Execute()
@@ -374,8 +377,10 @@ avtConnComponentsExpression::Execute()
         result_arrays[i] = res_array;
         result_sets[i]   = res_set;
 
-        // add result as new leaf
-        leaves[i] = new avtDataTree(res_set,domain_ids[i]);
+        if(res_array->GetNumberOfTuples() > 0) // add result as new leaf
+            leaves[i] = new avtDataTree(res_set,domain_ids[i]);
+        else // if the dataset only contained ghost zones we could end up here
+            leaves[i] = NULL;
 
         // update progress
         UpdateProgress(currentProgress++,totalSteps);
