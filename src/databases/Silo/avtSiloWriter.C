@@ -768,6 +768,9 @@ avtSiloWriter::CloseFile(void)
 //    Hank Childs, Fri Feb  1 09:15:25 PST 2008
 //    Re-order nodes for voxels.
 //
+//    Cyrus Harrison, Tue Feb 26 17:42:45 PST 2008
+//    Replaced deprecated DBPutZoneList call with  DBPutZoneList2 call
+//
 // ****************************************************************************
 
 void
@@ -807,6 +810,7 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
     //
     // Put the zone list into a digestable form for Silo.
     //
+    vector<int> shapetype;
     vector<int> shapecnt;
     vector<int> shapesize;
     vector<int> zonelist;
@@ -833,6 +837,8 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
             shapecnt[lastshape]++;
         else
         {
+            int silo_type = VTKZoneTypeToSiloZoneType(cell->GetCellType());
+            shapetype.push_back(silo_type);
             shapesize.push_back(thisshapesize);
             shapecnt.push_back(1);  // 1 is the # of shapes we have seen with
                                     // this size ie the one we are processing.
@@ -889,11 +895,14 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
     //
     int *zl = &(zonelist[0]);
     int lzl = zonelist.size();
+    int *st = &(shapetype[0]);
     int *ss = &(shapesize[0]);
     int *sc = &(shapecnt[0]);
     int nshapes = shapesize.size();
-    DBPutZonelist(dbfile, "zonelist", nzones, dim, zl, lzl, 0, ss, sc,nshapes);
 
+    DBPutZonelist2(dbfile, "zonelist", nzones, dim, zl, lzl, 
+                   0, 0, 0, st, ss, sc,nshapes, NULL);
+    
     //
     // Now write the actual mesh.
     //
@@ -1100,6 +1109,9 @@ avtSiloWriter::WriteRectilinearMesh(DBfile *dbfile, vtkRectilinearGrid *rg,
 //    Added code to compute and store spatial extents and zone counts
 //    for this chunk
 //
+//    Cyrus Harrison, Tue Feb 26 17:42:45 PST 2008
+//    Replaced deprecated DBPutZoneList call with  DBPutZoneList2 call
+//
 // ****************************************************************************
 
 void
@@ -1140,6 +1152,7 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
     // We will be writing this dataset out as an unstructured mesh in Silo.
     // So we will need a zonelist.  Construct that now.
     //
+    vector<int> shapetype;
     vector<int> shapecnt;
     vector<int> shapesize;
     vector<int> zonelist;
@@ -1166,6 +1179,8 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
             shapecnt[lastshape]++;
         else
         {
+            int silo_type = VTKZoneTypeToSiloZoneType(cell->GetCellType());
+            shapetype.push_back(silo_type);
             shapesize.push_back(thisshapesize);
             shapecnt.push_back(1);  // 1 is the # of shapes we have seen with
                                     // this size ie the one we are processing.
@@ -1177,11 +1192,13 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
     //
     int *zl = &(zonelist[0]);
     int lzl = zonelist.size();
+    int *st = &(shapetype[0]);
     int *ss = &(shapesize[0]);
     int *sc = &(shapecnt[0]);
     int nshapes = shapesize.size();
-    DBPutZonelist(dbfile, "zonelist", nzones, ndims, zl,lzl,0, ss, sc,nshapes);
 
+    DBPutZonelist2(dbfile, "zonelist", nzones, ndims, zl, lzl, 
+                   0, 0, 0, st, ss, sc,nshapes, NULL);
     //
     // Now write the actual mesh.
     //
@@ -1715,3 +1732,56 @@ avtSiloWriter::WriteMaterials(DBfile *dbfile, vtkCellData *cd, int chunk)
 }
 
 
+// ****************************************************************************
+//  Method: avtSiloWriter::VTKZoneTypeToSiloZoneType
+//
+//  Purpose:
+//      Converts a VTK cell type to the proper Silo zone type.
+//
+//  Arguments:
+//      vtk_zonetype     Input VTK zone type.
+//
+//  Returns:     Silo zone type
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   February 26, 2007
+//
+// ****************************************************************************
+
+int
+avtSiloWriter::VTKZoneTypeToSiloZoneType(int vtk_zonetype)
+{
+    int  silo_zonetype = -1;
+
+    switch (vtk_zonetype)
+    {
+      case VTK_POLYGON:
+        silo_zonetype = DB_ZONETYPE_POLYGON;
+        break;
+      case VTK_TRIANGLE:
+        silo_zonetype = DB_ZONETYPE_TRIANGLE;
+        break;
+      case VTK_PIXEL:
+      case VTK_QUAD:
+        silo_zonetype = DB_ZONETYPE_QUAD;
+        break;
+      case VTK_TETRA:
+        silo_zonetype = DB_ZONETYPE_TET;
+        break;
+      case VTK_PYRAMID:
+        silo_zonetype = DB_ZONETYPE_PYRAMID;
+        break;
+      case VTK_WEDGE:
+        silo_zonetype = DB_ZONETYPE_PRISM;
+        break;
+      case VTK_VOXEL:
+      case VTK_HEXAHEDRON:
+        silo_zonetype = DB_ZONETYPE_HEX;
+        break;
+      case VTK_LINE:
+        silo_zonetype = DB_ZONETYPE_BEAM;
+        break;
+    }
+
+    return silo_zonetype;
+}

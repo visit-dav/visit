@@ -90,6 +90,10 @@ class DBOptionsAttributes;
 //    Cyrus Harrison, Thu Aug 16 20:50:24 PDT 2007
 //    Added dir to hold output directory.
 //
+//    Cyrus Harrison, Wed Feb 27 07:57:35 PST 2008
+//    Added VTKZoneTypeToSiloZoneType helper method to help with 
+//    DBPutZoneList2 migration. 
+//
 // ****************************************************************************
 
 class
@@ -148,6 +152,7 @@ avtSiloWriter : public virtual avtDatabaseWriter
     void           WriteQuadvars(DBfile *, vtkPointData *, vtkCellData *,
                                     int, int *);
     void           WriteMaterials(DBfile *, vtkCellData *, int);
+    int            VTKZoneTypeToSiloZoneType(int);
 };
 
 
