@@ -17,6 +17,9 @@
 #    Hank Childs, Mon Feb 25 14:08:56 PST 2008
 #    Add back previous developers.
 #
+#    Randy Hudson, Wed Feb 27 12:05:00 CST 2008
+#    Add case for me (userid "rhudson").
+#
 # *****************************************************************************
 
 
@@ -72,6 +75,10 @@ case $1 in
     # Dave Pugmire, Oak Ridge National Laboratory
     "pugmire")
         emaddr=pugmire@ornl.gov
+        ;;
+    # Randy Hudson, University of Chicago, Argonne National Laboratory
+    "rhudson")
+        emaddr=hudson@mcs.anl.gov
         ;;
     *)
         emaddr=visit@llnl.gov
