@@ -110,6 +110,10 @@ avtConditionalExpression::~avtConditionalExpression()
 //    Hank Childs, Tue Mar 13 10:02:16 PDT 2007
 //    Improve error message.
 //
+//    Cyrus Harrison, Wed Feb 27 16:47:41 PST 2008
+//    Test to make sure input data arrays have the same number of tuples and
+//    issue an error message if this happens. 
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -174,6 +178,18 @@ avtConditionalExpression::DeriveVariable(vtkDataSet *in_ds)
         EXCEPTION2(ExpressionException, outputVariableName, msg);
     }
 
+    // sanity check: make sure the input arrays have the same # of tuples
+    int d1_nvals = data1->GetNumberOfTuples();
+    int d2_nvals = data2->GetNumberOfTuples();
+    int d3_nvals = data2->GetNumberOfTuples();
+    
+    if ( d1_nvals != d2_nvals || d2_nvals != d3_nvals )
+    {
+        std::string msg = " the input datasets for the \"if\" expression "
+                          " do not have the same number of tuples!";
+        EXCEPTION2(ExpressionException, outputVariableName, msg.c_str());
+    }
+    
     //
     // Set up a VTK variable reflecting the calculated variable
     //
