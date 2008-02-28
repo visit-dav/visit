@@ -301,6 +301,10 @@
 //    Brad Whitlock, Thu Jan 31 10:45:58 PST 2008
 //    Added crash recovery timer.
 //
+//    Sean Ahern, Wed Feb 27 20:32:55 EST 2008
+//    Made the Mac use Command-Q to quit, just like other Mac applications.
+//    I had to move Query and Query-over-time to use 'Y' instead.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -403,7 +407,11 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     id = filePopup->insertItem(tr("Restore session with sources . . ."), this, SIGNAL(restoreSessionWithSources()));
     id = filePopup->insertItem(tr("Save session . . ."), this, SIGNAL(saveSession()));
     filePopup->insertSeparator();
+#ifdef Q_WS_MACX
+    filePopup->insertItem( tr("&Quit"), this, SIGNAL(quit()), CTRL+Key_Q );
+#else
     filePopup->insertItem( tr("E&xit"), this, SIGNAL(quit()), CTRL+Key_X );
+#endif
 
     //
     // Add the Controls menu.
@@ -423,8 +431,13 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     id = ctrls->insertItem(materialIcon, tr("&Material Options . . ."), this, SIGNAL(activateMaterialWindow()), CTRL+Key_M);
     id = ctrls->insertItem(tr("&Mesh management . . ."), this, SIGNAL(activateMeshManagementWindow()), CTRL+SHIFT+Key_M);
     id = ctrls->insertItem(pickIcon, tr("&Pick . . ."), this, SIGNAL(activatePickWindow()), CTRL+SHIFT+Key_P );
-    id = ctrls->insertItem(tr("&Query . . ."), this, SIGNAL(activateQueryWindow()), CTRL+Key_Q );
+#ifdef Q_WS_MACX
+    id = ctrls->insertItem(tr("Quer&y . . ."), this, SIGNAL(activateQueryWindow()), CTRL+Key_Y );
+    id = ctrls->insertItem(tr("Quer&y over time options . . ."), this, SIGNAL(activateQueryOverTimeWindow()), CTRL+SHIFT+Key_Y );
+#else
     id = ctrls->insertItem(tr("&Query over time options . . ."), this, SIGNAL(activateQueryOverTimeWindow()), CTRL+SHIFT+Key_Q );
+    id = ctrls->insertItem(tr("&Query . . ."), this, SIGNAL(activateQueryWindow()), CTRL+Key_Q );
+#endif
     id = ctrls->insertItem(subsetIcon, tr("S&ubset . . ."), this, SIGNAL(activateSubsetWindow()), CTRL+Key_U);
     id = ctrls->insertItem(viewIcon, tr("&View . . ."), this, SIGNAL(activateViewWindow()), CTRL+Key_V);
 
