@@ -49,12 +49,13 @@ vtkStandardNewMacro(vtkVisItDataSetMapper);
 //   Hank Childs, Thu Dec 28 11:04:05 PST 2006
 //   Initialize SceneIs3D.
 //
+//   Dave Bremer, Wed Feb 27 15:59:48 PST 2008
+//   Make this class derive from vtkDataSetMapper, letting it
+//   initialize two members that we had been initializing.
 // ****************************************************************************
 
 vtkVisItDataSetMapper::vtkVisItDataSetMapper()
 {
-  this->GeometryExtractor = NULL;
-  this->PolyDataMapper = NULL;
   this->RectilinearGridMapper = NULL;
   this->StructuredGridMapper = NULL;
   this->PointTextureMethod = TEXTURE_NO_POINTS;
@@ -62,17 +63,15 @@ vtkVisItDataSetMapper::vtkVisItDataSetMapper()
   this->SceneIs3D = true;
 }
 
+
+// ****************************************************************************
+// Modifications:
+//   Dave Bremer, Wed Feb 27 15:59:48 PST 2008
+//   Make this class derive from vtkDataSetMapper, letting it
+//   delete two members that we had been deleting.
+// ****************************************************************************
 vtkVisItDataSetMapper::~vtkVisItDataSetMapper()
 {
-  // delete internally created objects.
-  if ( this->GeometryExtractor )
-    {
-    this->GeometryExtractor->Delete();
-    }
-  if ( this->PolyDataMapper )
-    {
-    this->PolyDataMapper->Delete();
-    }
   if ( this->RectilinearGridMapper )
     {
     this->RectilinearGridMapper->Delete();
@@ -83,23 +82,6 @@ vtkVisItDataSetMapper::~vtkVisItDataSetMapper()
     }
 }
 
-void vtkVisItDataSetMapper::SetInput(vtkDataSet *input)
-{
-  if (input)
-    {
-    this->SetInputConnection(0, input->GetProducerPort());
-    }
-  else 
-    {
-    // Setting a NULL input removes the connection.
-    this->SetInputConnection(0, 0);
-    }
-}
-
-vtkDataSet *vtkVisItDataSetMapper::GetInput()
-{
-  return this->Superclass::GetInputAsDataSet();
-}
 
 // ****************************************************************************
 //  Modifications:
@@ -107,14 +89,15 @@ vtkDataSet *vtkVisItDataSetMapper::GetInput()
 //    Hank Childs, Sun Apr  1 11:21:14 PDT 2007
 //    Tell rgrid and sgrid mappers to release graphics resources.
 //
+//    Dave Bremer, Wed Feb 27 15:59:48 PST 2008
+//    Make this class derive from vtkDataSetMapper, and use its 
+//    implementation of ReleaseGraphicsResources.
 // ****************************************************************************
 
 void vtkVisItDataSetMapper::ReleaseGraphicsResources( vtkWindow *renWin )
 {
-  if (this->PolyDataMapper)
-    {
-    this->PolyDataMapper->ReleaseGraphicsResources( renWin );
-    }
+  vtkDataSetMapper::ReleaseGraphicsResources(renWin);
+
   if ( this->RectilinearGridMapper )
     {
     this->RectilinearGridMapper->ReleaseGraphicsResources( renWin );
@@ -254,6 +237,16 @@ void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
   this->TimeToDraw = mapper->GetTimeToDraw();
 }
 
+
+
+
+// ****************************************************************************
+// Modifications:
+//   Dave Bremer, Wed Feb 27 15:59:48 PST 2008
+//   Make this class derive from vtkDataSetMapper, and use its PrintSelf
+//   method to print two of the members.
+// ****************************************************************************
+
 void vtkVisItDataSetMapper::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
@@ -267,24 +260,6 @@ void vtkVisItDataSetMapper::PrintSelf(ostream& os, vtkIndent indent)
     os << indent << "Poly Mapper: (none)\n";
     }
 
-  if ( this->RectilinearGridMapper )
-    {
-    os << indent << "RGrid Mapper: (" << this->RectilinearGridMapper << ")\n";
-    }
-  else
-    {
-    os << indent << "RGrid Mapper: (none)\n";
-    }
-
-  if ( this->StructuredGridMapper )
-    {
-    os << indent << "SGrid Mapper: (" << this->StructuredGridMapper << ")\n";
-    }
-  else
-    {
-    os << indent << "SGrid Mapper: (none)\n";
-    }
-
   if ( this->GeometryExtractor )
     {
     os << indent << "Geometry Extractor: (" << this->GeometryExtractor << ")\n";
@@ -295,44 +270,20 @@ void vtkVisItDataSetMapper::PrintSelf(ostream& os, vtkIndent indent)
     }
 }
 
-unsigned long vtkVisItDataSetMapper::GetMTime()
-{
-  unsigned long mTime=this->vtkMapper::GetMTime();
-  unsigned long time;
-
-  if ( this->LookupTable != NULL )
-    {
-    time = this->LookupTable->GetMTime();
-    mTime = ( time > mTime ? time : mTime );
-    }
-
-  return mTime;
-}
-
-//----------------------------------------------------------------------------
-int vtkVisItDataSetMapper::FillInputPortInformation(
-  int vtkNotUsed(port), vtkInformation* info)
-{
-  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
-  return 1;
-}
-
 //----------------------------------------------------------------------------
 // Modifications:
 //
 //   Hank Childs, Sun Apr  1 11:21:14 PDT 2007
 //   Fix memory leak! ... added mappers to garbage collector.
 //
+//   Dave Bremer, Wed Feb 27 15:59:48 PST 2008
+//   Make this class derive from vtkDataSetMapper, and use its ReportReferences
+//   method for two members.
 // ****************************************************************************
 void vtkVisItDataSetMapper::ReportReferences(vtkGarbageCollector* collector)
 {
   this->Superclass::ReportReferences(collector);
-  // These filters share our input and are therefore involved in a
-  // reference loop.
-  vtkGarbageCollectorReport(collector, this->GeometryExtractor,
-                            "GeometryExtractor");
-  vtkGarbageCollectorReport(collector, this->PolyDataMapper,
-                            "PolyDataMapper");
+
   vtkGarbageCollectorReport(collector, this->RectilinearGridMapper,
                             "RectilinearGridMapper");
   vtkGarbageCollectorReport(collector, this->StructuredGridMapper,
