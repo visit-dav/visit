@@ -763,7 +763,7 @@ for t in $testcases; do
 	fi
     done
 
-    # handle specialized settings for this test such as enviornment
+    # handle specialized settings for this test such as environment
     # or how the test is invoked
     theEnv=
     theEnv=`cat $t | grep '^# *ENV:' | cut -d':' -f2`
