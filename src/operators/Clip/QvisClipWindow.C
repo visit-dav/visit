@@ -49,7 +49,6 @@
 #include <qlayout.h>
 #include <qlineedit.h>
 #include <qradiobutton.h>
-#include <qtabwidget.h>
 #include <qvbox.h>
 #include <qhbox.h>
 
@@ -137,26 +136,50 @@ QvisClipWindow::~QvisClipWindow()
 //   Gunther H. Weber, Tue Aug 14 19:46:03 PDT 2007
 //   Added radio buttons to select clip plane manipulated by plane tool
 //
+//   Sean Ahern, Wed Feb 27 16:17:11 EST 2008
+//   Added 'fast' vs. 'accurate' quality options.  I also removed the tab
+//   widget, as it shouldn't be used in the way it was.
+//
 // ****************************************************************************
 
 void
 QvisClipWindow::CreateWindowContents()
 {
-    tabWidget = new QTabWidget(central, "tabWidget");
-    connect(tabWidget, SIGNAL(currentChanged(QWidget *)),
-            this, SLOT(tabWidgetChanged(QWidget *)));
-    topLayout->addWidget(tabWidget);
+    qualityGroup = new QButtonGroup(central, "Quality");
+    QHBoxLayout *qualityLayout = new QHBoxLayout(qualityGroup);
+    qualityLayout->addWidget(new QLabel("Quality:", qualityGroup));
+    QRadioButton *fastQuality = new QRadioButton("Fast", qualityGroup);
+    qualityLayout->addWidget(fastQuality);
+    QRadioButton *accurateQuality = new QRadioButton("Accurate", qualityGroup);
+    qualityLayout->addWidget(accurateQuality);
+    topLayout->addWidget(qualityGroup);
+    connect(qualityGroup, SIGNAL(clicked(int)),
+            this, SLOT(qualityChanged(int)));
+
+    typeGroup = new QButtonGroup(central, "Type");
+    QHBoxLayout *typeLayout = new QHBoxLayout(typeGroup);
+    typeLayout->addWidget(new QLabel("Slice type:", typeGroup));
+    QRadioButton *planeType = new QRadioButton("Plane", typeGroup);
+    typeLayout->addWidget(planeType);
+    QRadioButton *sphereType = new QRadioButton("Sphere", typeGroup);
+    typeLayout->addWidget(sphereType);
+    topLayout->addWidget(typeGroup);
+    connect(typeGroup, SIGNAL(clicked(int)),
+            this, SLOT(sliceTypeChanged(int)));
+
+    QVGroupBox *frame = new QVGroupBox("Clip parameters", central,
+                                       "clipParameters");
+    topLayout->addWidget(frame);
 
     // 
-    // Plane tab 
+    // Plane widgets 
     // 
-    planeBox = new QVBox(central, "planeBox");
-    tabWidget->addTab(planeBox, "Plane(s)");
-    planeBox->setMargin(10);
-    planeBox->setSpacing(5);
+    planeWidgets = new QVBox(frame, "planeWidgets");
+    planeWidgets->setMargin(10);
+    planeWidgets->setSpacing(5);
 
     // Plane1 Group
-    CreatePlaneGroup(planeBox, (QWidget **)&plane1Status,
+    CreatePlaneGroup(planeWidgets, (QWidget **)&plane1Status,
 #if QT_VERSION < 0x030200
         (QWidget **)&plane1Group,
 #endif
@@ -166,7 +189,7 @@ QvisClipWindow::CreateWindowContents()
         SLOT(processPlane1Normal()), 1);
 
     // Plane2 Group
-    CreatePlaneGroup(planeBox, (QWidget **)&plane2Status,
+    CreatePlaneGroup(planeWidgets, (QWidget **)&plane2Status,
 #if QT_VERSION < 0x030200
         (QWidget **)&plane2Group,
 #endif
@@ -176,7 +199,7 @@ QvisClipWindow::CreateWindowContents()
         SLOT(processPlane2Normal()), 2);
 
     // Plane3 Group
-    CreatePlaneGroup(planeBox, (QWidget **)&plane3Status,
+    CreatePlaneGroup(planeWidgets, (QWidget **)&plane3Status,
 #if QT_VERSION < 0x030200
         (QWidget **)&plane3Group,
 #endif
@@ -186,14 +209,14 @@ QvisClipWindow::CreateWindowContents()
         SLOT(processPlane3Normal()), 3);
 
     // Plane Inverse
-    planeInverse = new QCheckBox("Inverse", planeBox, "planeInverse");
+    planeInverse = new QCheckBox("Inverse", planeWidgets, "planeInverse");
     planeInverse->setChecked(false);
     connect(planeInverse, SIGNAL(toggled(bool)),
             this, SLOT(planeInverseToggled(bool)));
 
-    // Plane tool controlls
-    QLabel *planeToolControlledClipPlaneLabel = new QLabel("Plane tool controls:", planeBox, "planeToolControlledClipPlaneLabel");
-    planeToolControlledClipPlane = new QButtonGroup(planeBox, "planeToolControlledClipPlane");
+    // Plane tool controls
+    QLabel *planeToolControlledClipPlaneLabel = new QLabel("Plane tool controls:", planeWidgets, "planeToolControlledClipPlaneLabel");
+    planeToolControlledClipPlane = new QButtonGroup(planeWidgets, "planeToolControlledClipPlane");
     planeToolControlledClipPlane->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *planeToolControlledClipPlaneLayout = new QHBoxLayout(planeToolControlledClipPlane);
     planeToolControlledClipPlaneLayout->setSpacing(10);
@@ -209,34 +232,35 @@ QvisClipWindow::CreateWindowContents()
             this, SLOT(planeToolControlledClipPlaneChanged(int)));
  
     // 
-    // Sphere tab
+    // Sphere widgets
     // 
-    QVBox *vertBox = new QVBox(central, "vertBox");
-    sphereBox = new QGrid(2, Qt::Horizontal, vertBox, "sphereBox");
-    sphereBox->setMargin(10);
-    sphereBox->setSpacing(10);
-    tabWidget->addTab(vertBox, "Sphere");
+    sphereWidgets = new QWidget(frame, "sphereWidgets");
+    QGridLayout *sphereLayout = new QGridLayout(sphereWidgets, 3, 2, 10, 10);
 
     // Sphere center
-    new QLabel("Center", sphereBox, "centerLabel");
-    centerLineEdit = new QLineEdit(sphereBox, "center");
+    sphereLayout->addWidget(new QLabel("Center", sphereWidgets,
+                                       "centerLabel"),
+                            0, 0, Qt::AlignRight);
+    centerLineEdit = new QLineEdit(sphereWidgets, "center");
+    sphereLayout->addWidget(centerLineEdit, 0, 1);
     connect(centerLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processCenterText()));
 
     // Sphere Radius 
-    new QLabel("Radius", sphereBox, "radiusLabel");
-    radiusLineEdit = new QLineEdit(sphereBox, "radius");
+    sphereLayout->addWidget(new QLabel("Radius", sphereWidgets,
+                                       "radiusLabel"),
+                            1, 0, Qt::AlignRight);
+    radiusLineEdit = new QLineEdit(sphereWidgets, "radius");
+    sphereLayout->addWidget(radiusLineEdit, 1, 1);
     connect(radiusLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processRadiusText()));
 
     // Sphere Inverse
-    sphereInverse = new QCheckBox("Inverse", sphereBox, "sphereInverse");
+    sphereInverse = new QCheckBox("Inverse", sphereWidgets, "sphereInverse");
     sphereInverse->setChecked(false);
+    sphereLayout->addMultiCellWidget(sphereInverse, 2, 2, 0, 1);
     connect(sphereInverse, SIGNAL(toggled(bool)),
             this, SLOT(sphereInverseToggled(bool)));
-
-    QHBox *sphereDummy = new QHBox(vertBox, "sphereDummy");
-    vertBox->setStretchFactor(sphereDummy, 20);
 }
 
 // ****************************************************************************
@@ -380,7 +404,7 @@ QvisClipWindow::UpdateWindow(bool doAll)
         switch(i)
         {
         case 0: // funcType
-            tabWidget->blockSignals(true);
+            typeGroup->setButton(clipAtts->GetFuncType());
             if (clipAtts->GetFuncType() == ClipAttributes::Plane)
             {
                 plane1Status->setChecked(clipAtts->GetPlane1Status());
@@ -405,7 +429,8 @@ QvisClipWindow::UpdateWindow(bool doAll)
                 temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
                 plane3Normal->setText(temp);
                 planeInverse->setChecked(clipAtts->GetPlaneInverse());
-                tabWidget->showPage(planeBox);
+                sphereWidgets->hide();
+                planeWidgets->show();
             }
             else if (clipAtts->GetFuncType() == ClipAttributes::Sphere)
             {
@@ -416,9 +441,10 @@ QvisClipWindow::UpdateWindow(bool doAll)
                 temp.setNum(r);
                 radiusLineEdit->setText(temp);
                 sphereInverse->setChecked(clipAtts->GetSphereInverse());
-                tabWidget->showPage(sphereBox);
+                planeWidgets->hide();
+                sphereWidgets->show();
             }
-            tabWidget->blockSignals(false);
+            central->updateGeometry();
             break;
         case 1: // plane1Status
             plane1Status->blockSignals(true);
@@ -470,7 +496,7 @@ QvisClipWindow::UpdateWindow(bool doAll)
             planeInverse->setChecked(clipAtts->GetPlaneInverse());
             planeInverse->blockSignals(false);
             break;
-	case 11: //planeToolControlledClipPlane
+        case 11: //planeToolControlledClipPlane
             planeToolControlledClipPlane->blockSignals(true);
             planeToolControlledClipPlane->setButton(clipAtts->GetPlaneToolControlledClipPlane());
             planeToolControlledClipPlane->blockSignals(false);
@@ -490,6 +516,10 @@ QvisClipWindow::UpdateWindow(bool doAll)
             sphereInverse->setChecked(clipAtts->GetSphereInverse());
             sphereInverse->blockSignals(false);
             break;
+        case 15: // quality
+            qualityGroup->blockSignals(true);
+            qualityGroup->setButton(clipAtts->GetQuality());
+            qualityGroup->blockSignals(false);
         }
     } // end for
 
@@ -751,6 +781,34 @@ QvisClipWindow::GetCurrentValues(int which_widget)
 //
 
 // ****************************************************************************
+// Method: QvisClipWindow::qualityChanged
+//
+// Purpose:
+//   This is a Qt slot function that is called when user selects a different 
+//   clip quality.
+//
+// Arguments:
+//   int : The currently active quality.
+//
+// Programmer: Sean Ahern
+// Creation:   2 February 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisClipWindow::qualityChanged(int quality)
+{
+    if (quality == 0)
+        clipAtts->SetQuality(ClipAttributes::Fast);
+    else
+        clipAtts->SetQuality(ClipAttributes::Accurate);
+
+    Apply();
+}
+
+// ****************************************************************************
 // Method: QvisClipWindow::processPlane1Origin
 //
 // Purpose: 
@@ -941,14 +999,14 @@ QvisClipWindow::processRadiusText()
 
 
 // ****************************************************************************
-// Method: QvisClipWindow::tabWidgetChanged
+// Method: QvisClipWindow::sliceTypeChanged
 //
 // Purpose:
 //   This is a Qt slot function that is called when user selects a different 
-//   tab in the tab widget.
+//   slice type.
 //
 // Arguments:
-//   which : The currently active tab.
+//   int : The currently active slice type.
 //
 // Programmer: Kathleen Bonnell  
 // Creation:   May 7, 2001 
@@ -960,15 +1018,30 @@ QvisClipWindow::processRadiusText()
 //   Brad Whitlock, Thu Oct 31 11:53:01 PDT 2002
 //   Changed to work with the updated state object.
 //
+//   Sean Ahern, Wed Feb 27 20:53:39 EST 2008
+//   Removed the tabs, as it was an invalid way of using this visual
+//   paradigm.
+//
 // ****************************************************************************
 
 void
-QvisClipWindow::tabWidgetChanged(QWidget *which)
+QvisClipWindow::sliceTypeChanged(int type)
 {
-    if (which == planeBox)
-       clipAtts->SetFuncType(ClipAttributes::Plane);
+    if (type == 0)
+    {
+        clipAtts->SetFuncType(ClipAttributes::Plane);
+        sphereWidgets->hide();
+        planeWidgets->show();
+    }
     else
-       clipAtts->SetFuncType(ClipAttributes::Sphere);
+    {
+        clipAtts->SetFuncType(ClipAttributes::Sphere);
+        planeWidgets->hide();
+        sphereWidgets->show();
+    }
+
+    QWidget *top = central->parentWidget();
+    top->adjustSize();
 
     Apply();
 }
@@ -1146,4 +1219,3 @@ QvisClipWindow::sphereInverseToggled(bool val)
     clipAtts->SetSphereInverse(val);
     Apply();
 }
-
