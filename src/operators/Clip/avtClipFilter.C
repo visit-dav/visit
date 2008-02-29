@@ -349,9 +349,45 @@ avtClipFilter::ExecuteDataTree(vtkDataSet *inDS, int domain, std::string label)
 
     vtkDataSet *outDS[3];
     int nDataSets = 0;
+
+    if (atts.GetQuality() == ClipAttributes::Accurate)
+    {
+        nDataSets = ComputeAccurateClip(inDS, outDS, atts, domain, label);
+    } else
+    {
+        nDataSets = ComputeFastClip(inDS, outDS, atts, domain, label);
+    }
+
+    // Count the cells for debugging.
+    int cellCount = 0;
+    for(int i=0;i<nDataSets;i++)
+        cellCount += outDS[i]->GetNumberOfCells();
+    debug4 << "After clipping, domain " << domain << " has " <<
+        cellCount << " cells."  << endl;
+
+    // Create a data tree from the grids.
+    if (nDataSets == 0)
+        return NULL;
+    avtDataTree_p outDT = new avtDataTree(nDataSets, outDS, domain, label);
+    for(int i=0;i<nDataSets;i++)
+    {
+        if(outDS[i] != NULL)
+        {
+            outDS[i]->Delete();
+        }
+    }
+
+    return outDT;
+}
+
+int
+avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
+                                   ClipAttributes &atts, int domain, std::string label)
+{
     // Gather global plane clipping information.
     bool nodesAreCritical = GetInput()->GetInfo().GetAttributes().NodesAreCritical();
- 
+    int nDataSets = 0;
+
     if (atts.GetFuncType() == ClipAttributes::Plane)
     {
         // Set up the planes.
@@ -415,8 +451,7 @@ avtClipFilter::ExecuteDataTree(vtkDataSet *inDS, int domain, std::string label)
         {
             // Nothing to do!  Just return an avtDataTree of our input.
             outDS[nDataSets++] = inDS;
-            avtDataTree_p outDT = new avtDataTree(nDataSets, outDS, domain, label);
-            return outDT;
+            return 1;
         }
 
         if (atts.GetPlaneInverse() == true)
@@ -428,22 +463,22 @@ avtClipFilter::ExecuteDataTree(vtkDataSet *inDS, int domain, std::string label)
                 // The inverse of the first plane.
                 outDS[nDataSets++] =
                     ClipAgainstPlanes(inDS, nodesAreCritical,
-                                      inversePlanes[0]);
+                                    inversePlanes[0]);
                 break;
             case 2:
                 // The first plane, and the inverse of the second plane.
                 outDS[nDataSets++] =
                     ClipAgainstPlanes(inDS, nodesAreCritical,
-                                      inversePlanes[0],
-                                      inversePlanes[1]);
+                                    inversePlanes[0],
+                                    inversePlanes[1]);
                 break;
             case 3:
                 // The first plane, the second plane, and the inverse of the second plane.
                 outDS[nDataSets++] =
                     ClipAgainstPlanes(inDS, nodesAreCritical,
-                                      inversePlanes[0],
-                                      inversePlanes[1],
-                                      inversePlanes[2]);
+                                    inversePlanes[0],
+                                    inversePlanes[1],
+                                    inversePlanes[2]);
                 break;
             default:
                 break;
@@ -461,7 +496,7 @@ avtClipFilter::ExecuteDataTree(vtkDataSet *inDS, int domain, std::string label)
                 // The inverse of the first plane, and the second plane.
                 outDS[nDataSets++] =
                     ClipAgainstPlanes(inDS, nodesAreCritical,
-                                      inversePlanes[0], planes[1]);
+                                    inversePlanes[0], planes[1]);
             }
             if (planeCount >= 3)
             {
@@ -469,8 +504,8 @@ avtClipFilter::ExecuteDataTree(vtkDataSet *inDS, int domain, std::string label)
                 // plane, and the third plane.
                 outDS[nDataSets++] =
                     ClipAgainstPlanes(inDS, nodesAreCritical,
-                                      inversePlanes[0],
-                                      inversePlanes[1], planes[2]);
+                                    inversePlanes[0],
+                                    inversePlanes[1], planes[2]);
             }
         }
 
@@ -510,16 +545,75 @@ avtClipFilter::ExecuteDataTree(vtkDataSet *inDS, int domain, std::string label)
         clipper->Delete();
     }
 
-    // Create a data tree from the grids.
-    if (nDataSets == 0)
-        return NULL;
+    return nDataSets;
+}
 
-    avtDataTree_p outDT = new avtDataTree(nDataSets, outDS, domain, label);
-    for(int i=0;i<nDataSets;i++)
-        if(outDS[i] != NULL)
-            outDS[i]->Delete();
+int
+avtClipFilter::ComputeFastClip(vtkDataSet *inDS, vtkDataSet **outDS,
+                               ClipAttributes &atts, int domain, std::string label)
+{
+    vtkVisItClipper *fastClipper = vtkVisItClipper::New();
+    vtkImplicitBoolean *ifuncs = vtkImplicitBoolean::New();
+    vtkDataSet *output = NULL;
+ 
+    int nDataSets = 0;
+    bool inverse = false; 
+    bool funcSet = SetUpClipFunctions(ifuncs, inverse);
+    if (!funcSet)
+    {
+        // we have no functions to work with.  Just return the input dataset.
+        fastClipper->Delete();
+        ifuncs->Delete();
 
-    return outDT;
+        outDS[0] = inDS;
+        return 1;
+    }
+
+    bool nodesAreCritical =
+        GetInput()->GetInfo().GetAttributes().NodesAreCritical();
+
+    //
+    // Set up and apply the clipping filters
+    // 
+    bool doFast = true;
+    if  (inDS->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        int dims[3];       
+        ((vtkRectilinearGrid*)inDS)->GetDimensions(dims);
+        if (dims[1] <= 1 && dims[2] <= 1)
+        {
+            doFast = false;
+            output = Clip1DRGrid(ifuncs, inverse, (vtkRectilinearGrid*)inDS);
+        }
+    }
+    if (doFast)
+    {
+        vtkUnstructuredGrid *ug = vtkUnstructuredGrid::New();
+        fastClipper->SetInput(inDS);
+        fastClipper->SetOutput(ug);
+        fastClipper->SetClipFunction(ifuncs);
+        fastClipper->SetInsideOut(inverse);
+        fastClipper->SetRemoveWholeCells(nodesAreCritical);
+        fastClipper->Update();
+
+        output = ug;
+    }
+
+    ifuncs->Delete();
+
+    if (output != NULL)
+    {
+        if (output->GetNumberOfCells() == 0)
+        {
+            output->Delete();
+            return 0;
+        }
+    }
+
+    fastClipper->Delete();
+
+    outDS[0] = output;
+    return 1;
 }
 
 

@@ -102,6 +102,8 @@ private slots:
     void processRadiusText();
     void planeInverseToggled(bool);
     void planeToolControlledClipPlaneChanged(int val);
+    void qualityChanged(int);
+    void sliceTypeChanged(int);
     void sphereInverseToggled(bool);
     void plane1StatusToggled(bool);
     void plane2StatusToggled(bool);
@@ -115,6 +117,8 @@ private:
 #endif
          QWidget **, QWidget **, const char *, const char *, const char *, int);
 
+    QButtonGroup *qualityGroup;
+    QButtonGroup *typeGroup;
     QLineEdit    *plane1Origin;
     QLineEdit    *plane2Origin;
     QLineEdit    *plane3Origin;
@@ -139,8 +143,8 @@ private:
     QButtonGroup *planeToolControlledClipPlane;
     QCheckBox    *sphereInverse;
     QTabWidget   *tabWidget;
-    QVBox        *planeBox;
-    QGrid        *sphereBox;
+    QVBox        *planeWidgets;
+    QWidget      *sphereWidgets;
 
     ClipAttributes *clipAtts;
 };

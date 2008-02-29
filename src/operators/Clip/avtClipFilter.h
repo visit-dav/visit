@@ -123,6 +123,16 @@ class avtClipFilter : public avtSIMODataTreeIterator,
     ClipAttributes           atts;
 
     virtual avtDataTree_p    ExecuteDataTree(vtkDataSet *, int, std::string);
+    int                      ComputeAccurateClip(vtkDataSet *inDS,
+                                                 vtkDataSet **outDS,
+                                                 ClipAttributes &atts,
+                                                 int domain,
+                                                 std::string label);
+    int                      ComputeFastClip(vtkDataSet *inDS,
+                                             vtkDataSet **outDS,
+                                             ClipAttributes &atts,
+                                             int domain,
+                                             std::string label);
 
     virtual void             UpdateDataObjectInfo(void);
     avtContract_p            ModifyContract(avtContract_p);
@@ -139,5 +149,3 @@ class avtClipFilter : public avtSIMODataTreeIterator,
 
 
 #endif
-
-

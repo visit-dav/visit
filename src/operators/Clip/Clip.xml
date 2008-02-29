@@ -11,6 +11,13 @@
         Plane2
         Plane3
       </Enum>
+      <Enum name="Quality">
+        Fast
+        Accurate
+      </Enum>
+      <Field name="quality" label="Quality" type="enum" subtype="Quality">
+        Fast
+      </Field>
       <Field name="funcType" label="Style" type="enum" subtype="ClipStyle">
         Plane
       </Field>
