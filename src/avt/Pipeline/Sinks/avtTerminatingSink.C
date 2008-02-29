@@ -154,6 +154,9 @@ avtTerminatingSink::~avtTerminatingSink()
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Thu Feb 28 17:11:10 PST 2008
+//    Add debug statement about memory usage.
+//
 // ****************************************************************************
 
 void
@@ -199,12 +202,15 @@ avtTerminatingSink::Execute(avtContract_p contract)
             input->Update(contract);
             visitTimer->StopTimer(t, "First pipeline update.");
 
-            int size = -1, rss = -1;
-            GetMemorySize(size, rss);
-            if (size > 0 && rss > 0)
+            if (debug3_real)
             {
-                debug3 << "Memory after first execution was: size = " << size 
-                       << ", rss = " << rss << endl;
+                int size = -1, rss = -1;
+                GetMemorySize(size, rss);
+                if (size > 0 && rss > 0)
+                {
+                    debug3 << "Memory after first execution was: size = " << size 
+                               << ", rss = " << rss << endl;
+                }
             }
         }
 
@@ -228,12 +234,15 @@ avtTerminatingSink::Execute(avtContract_p contract)
                 dob->Merge(*input);
                 iter++;
 
-                int size = -1, rss = -1;
-                GetMemorySize(size, rss);
-                if (size > 0 && rss > 0)
+                if (debug3_real)
                 {
-                    debug3 << "Memory after iteration " << iter 
-                           << " was: size = " << size << ", rss = " << rss << endl;
+                    int size = -1, rss = -1;
+                    GetMemorySize(size, rss);
+                    if (size > 0 && rss > 0)
+                    {
+                        debug3 << "Memory after iteration " << iter 
+                               << " was: size = " << size << ", rss = " << rss << endl;
+                    }
                 }
             }
             input->Copy(*dob);
