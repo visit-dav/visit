@@ -207,6 +207,41 @@ LongestCommonSuffixLength(const char * const *list, int listN)
 
 
 // ****************************************************************************
+//  Function: GetMemorySize
+//
+//  Purpose:
+//      Gets the amount of memory in use and the RSS (resident set size).
+//
+//  Programmer: Hank Childs (from code from Peter Lindstrom)
+//  Creation:   February 28, 2008
+//
+// ****************************************************************************
+
+void
+GetMemorySize(int &size, int &rss)
+{
+    size = -1;
+    rss  = -1;
+#if !defined(_WIN32)
+    FILE *file = fopen("/proc/self/statm", "r");
+    if (file == NULL)
+    {
+        return;
+    }
+
+    int count = fscanf(file, "%d%d", &size, &rss);
+    if (count != 2)
+    {
+        return;
+    }
+    size *= getpagesize();
+    rss  *= getpagesize();
+    fclose(file);
+#endif
+}
+
+
+// ****************************************************************************
 //  Function: WaitUntilFile
 //
 //  Purpose:
