@@ -54,6 +54,7 @@
 #include <ImproperUseException.h>
 #include <NoInputException.h>
 #include <TimingsManager.h>
+#include <Utility.h>
 
 #include <visitstream.h>
 
@@ -197,6 +198,14 @@ avtTerminatingSink::Execute(avtContract_p contract)
             int t = visitTimer->StartTimer();
             input->Update(contract);
             visitTimer->StopTimer(t, "First pipeline update.");
+
+            int size = -1, rss = -1;
+            GetMemorySize(size, rss);
+            if (size > 0 && rss > 0)
+            {
+                debug3 << "Memory after first execution was: size = " << size 
+                       << ", rss = " << rss << endl;
+            }
         }
 
         //
@@ -218,6 +227,14 @@ avtTerminatingSink::Execute(avtContract_p contract)
                 visitTimer->StopTimer(t, msg);
                 dob->Merge(*input);
                 iter++;
+
+                int size = -1, rss = -1;
+                GetMemorySize(size, rss);
+                if (size > 0 && rss > 0)
+                {
+                    debug3 << "Memory after iteration " << iter 
+                           << " was: size = " << size << ", rss = " << rss << endl;
+                }
             }
             input->Copy(*dob);
             int t2 = visitTimer->StartTimer();
