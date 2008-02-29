@@ -191,6 +191,10 @@ avtVTKFileFormat::~avtVTKFileFormat()
 //    Hank Childs, Mon Jun 11 21:27:04 PDT 2007
 //    Add support for files with no extensions.
 //
+//    Kathleen Bonnell, Fri Feb 29 09:02:44 PST 2008 
+//    Support VTK_IMAGE_DATA (returned from vtkXMLImageDataReader), convert it
+//    to rectilinear, as we do with StructuredPoints data.
+//
 // ****************************************************************************
 
 void
@@ -298,7 +302,8 @@ avtVTKFileFormat::ReadInDataset(void)
         vtk_time = dataset->GetFieldData()->GetArray("TIME")->GetTuple1(0);
     }
 
-    if (dataset->GetDataObjectType() == VTK_STRUCTURED_POINTS)
+    if (dataset->GetDataObjectType() == VTK_STRUCTURED_POINTS ||
+        dataset->GetDataObjectType() == VTK_IMAGE_DATA)
     {
         //
         // The old dataset passed in will be deleted, a new one will be 
