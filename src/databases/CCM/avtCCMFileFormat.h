@@ -48,6 +48,9 @@
 #include <vectortypes.h>
 #include <map>
 
+using std::string;
+using std::vector;
+
 class vtkCellArray;
 class vtkIdList;
 class vtkPoints;
@@ -61,6 +64,11 @@ class vtkUnstructuredGrid;
 //
 //  Programmer: Brad Whitlock, Thu Aug 2 15:11:25 PST 2007
 //  Creation:   Thu Aug 2 15:01:17 PST 2007
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Feb 28 16:42:02 PST 2008
+//    Added methods CanCacheVariable, RegisterVariableList, GetCellMapData, and
+//    vars activeVisItVar, varsOnSubmesh, and ccmProblem.
 //
 // ****************************************************************************
 
@@ -92,6 +100,10 @@ public:
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
+    virtual bool           CanCacheVariable(const char *);
+    virtual void           RegisterVariableList(const char *,
+                                                const vector<CharStrRef> &);
+
 
 protected:
     class FaceInfo
@@ -156,13 +168,17 @@ protected:
     void              TesselateCells2D(const int, const CellInfoVector &civ, 
                                        vtkPoints *points, 
                                        vtkUnstructuredGrid *ugrid);
+    void              GetCellMapData(const int, const string &, intVector &);
 
     bool              ccmOpened;
     bool              ccmStateFound;
     CCMIOID           ccmRoot;
     CCMIOID           ccmState;
+    CCMIOID           ccmProblem;
     CCMIOError        ccmErr;
     VarFieldMap       varsToFields;
+    stringVector      varsOnSubmesh;
+    string            activeVisItVar;
 
     DataArrayVector   originalCells; 
 
