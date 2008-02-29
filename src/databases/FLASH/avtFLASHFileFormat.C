@@ -70,7 +70,18 @@
 
 #include <visit-hdf5.h>
 
-#define FLASH3 8
+
+//  "file format version" == 8.  Uses NDIM (value 1, 2 or 3) for size of 2nd 
+//  index of "bounding box", "coordinates" & "block size"
+#define FLASH3_FFV8 8
+
+//  "file format version" == 9.  Uses MDIM (value always 3) for size of 2nd 
+//  index of "bounding box", "coordinates" & "block size"
+#define FLASH3_FFV9 9
+
+//  Until further notice, this (maximum dimension) will always be "3"
+#define MDIM 3
+
 
 using std::vector;
 using std::string;
@@ -107,12 +118,22 @@ static string GetNiceParticleName(const string &varname)
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 27, 2005
 //
+//  Changes:
+//    Randy HUDSON, June 12, 2007
+//    Added printing of node type, block-center coordinates and processor number.
+//
 // ****************************************************************************
 void
 avtFLASHFileFormat::Block::Print(ostream &out)
 {
     out << "---- BLOCK: "<<ID<<endl;
     out << "  level = "<<level<<endl;
+    out << "  node type = "<<nodetype<<endl;
+    out << "  coordinates of block center = ";
+    for (int c=0; c<3; c++)
+        out << coords[c]<< " ";
+    out << endl;
+    out << "  processor number = "<<procnum<<endl;
     out << "  parentID = "<<parentID<<endl;
     out << "  childrenIDs = ";
     for (int c=0; c<8; c++)
@@ -184,6 +205,15 @@ avtFLASHFileFormat::FinalizeHDF5(void)
 //    Mark C. Miller, Mon Mar  5 22:04:50 PST 2007
 //    Added initialization of HDF5, simParamsHaveBeenRead
 //
+//    Randy HUDSON, July 5, 2007
+//    Moved initialization of numProcessors here from ReadProcessorNumbers()
+//
+//    Randy HUDSON, July 10, 2007
+//    Added initialization of file_has_procnum
+//
+//    Randy HUDSON, January 30, 2008
+//    Added initialization of fileFormatVersion
+//
 // ****************************************************************************
 
 avtFLASHFileFormat::avtFLASHFileFormat(const char *cfilename)
@@ -194,6 +224,9 @@ avtFLASHFileFormat::avtFLASHFileFormat(const char *cfilename)
     dimension = 0;
     numBlocks = 0;
     numLevels = 0;
+    numProcessors = 0;
+    file_has_procnum = false;
+    fileFormatVersion = -1;
 
     // do HDF5 library initialization on consturction of first instance
     if (avtFLASHFileFormat::objcnt == 0)
@@ -316,6 +349,9 @@ avtFLASHFileFormat::GetTime()
 //    Jeremy Meredith, Thu Aug 25 15:07:36 PDT 2005
 //    Added particle support.
 //
+//    Randy HUDSON, June 23, 2007
+//    Added code for vector of leaf blocks for morton curve.
+//
 // ****************************************************************************
 
 void
@@ -331,6 +367,7 @@ avtFLASHFileFormat::FreeUpResources(void)
     particleVarNames.clear();
     particleVarTypes.clear();
     particleOriginalIndexMap.clear();
+    leafBlocks.clear();
 }
 
 
@@ -358,8 +395,18 @@ avtFLASHFileFormat::FreeUpResources(void)
 //    Hank Childs, Wed Jan 11 09:40:17 PST 2006
 //    Change mesh type to AMR.
 //
-//    Randy HUDSON, Tue, Apr 3, 2007
+//    Randy HUDSON, Apr 3, 2007
 //    Added support for Morton curve.
+//
+//    Randy HUDSON, June 12, 2007
+//    Added support for subsets by processor number.
+//
+//    Randy HUDSON, June 18, 2007
+//    Added support for creating subsets of Morton curve.
+//
+//    Randy HUDSON, July 19, 2007
+//    Added support for concurrent block-level and block-processor subset pairs
+//      for both domain and morton curve meshes
 //
 // ****************************************************************************
 
@@ -372,11 +419,12 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         BuildDomainNesting();
 
     // grids
+    //    for block and level SIL categories
     if (numBlocks > 0)
     {
         avtMeshMetaData *mesh = new avtMeshMetaData;
-        mesh->name = "mesh";
-        mesh->originalName = "mesh";
+        mesh->name = "mesh_blockandlevel";
+        mesh->originalName = "mesh_blockandlevel";
 
         mesh->meshType = AVT_AMR_MESH;
         mesh->topologicalDimension = dimension;
@@ -396,12 +444,15 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->numBlocks = numBlocks;
         mesh->blockTitle = "Blocks";
         mesh->blockPieceName = "block";
+        // Level as group
         mesh->numGroups = numLevels;
         mesh->groupTitle = "Levels";
         mesh->groupPieceName = "level";
         mesh->numGroups = numLevels;
+
         vector<int> groupIds(numBlocks);
         vector<string> pieceNames(numBlocks);
+        // Level as group
         for (int i = 0; i < numBlocks; i++)
         {
             char tmpName[64];
@@ -413,11 +464,66 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->groupIds = groupIds;
         md->Add(mesh);
 
+        // grid variables
+        for (int v = 0 ; v < varNames.size(); v++)
+        {
+            // Create var names for unique submenu for block and level
+            string composite = "mesh_blockandlevel/" + varNames[v];
+            AddScalarVarToMetaData(md, composite, "mesh_blockandlevel", AVT_ZONECENT);
+        }
+    }
+
+    //    for block and processor SIL categories
+    if (numBlocks > 0)
+    {
+        avtMeshMetaData *bpmesh = new avtMeshMetaData;
+        bpmesh->originalName = "mesh_blockandproc";
+        bpmesh->name = "mesh_blockandproc";
+
+        bpmesh->meshType = AVT_AMR_MESH;
+        bpmesh->topologicalDimension = dimension;
+        bpmesh->spatialDimension = dimension;
+        bpmesh->blockOrigin = 1;
+        bpmesh->groupOrigin = 0;
+
+        bpmesh->hasSpatialExtents = true;
+        bpmesh->minSpatialExtents[0] = minSpatialExtents[0];
+        bpmesh->maxSpatialExtents[0] = maxSpatialExtents[0];
+        bpmesh->minSpatialExtents[1] = minSpatialExtents[1];
+        bpmesh->maxSpatialExtents[1] = maxSpatialExtents[1];
+        bpmesh->minSpatialExtents[2] = minSpatialExtents[2];
+        bpmesh->maxSpatialExtents[2] = maxSpatialExtents[2];
+
+        // spoof a group/domain mesh for the AMR hierarchy
+        bpmesh->numBlocks = numBlocks;
+        bpmesh->blockTitle = "Blocks";
+        bpmesh->blockPieceName = "block";
+        // Processor number as group
+        bpmesh->numGroups = numProcessors;
+        bpmesh->groupTitle = "Processors";
+        bpmesh->groupPieceName = "processor";
+        bpmesh->numGroups = numProcessors;
+
+        vector<int> groupIds(numBlocks);
+        vector<string> pieceNames(numBlocks);
+        // Processor number as group
+        for (int i = 0; i < numBlocks; i++)
+        {
+            char tmpName[64];
+            sprintf(tmpName,"processor%d,block%d",blocks[i].procnum, blocks[i].ID);
+            groupIds[i] = blocks[i].procnum;
+            pieceNames[i] = tmpName;
+        }
+        bpmesh->blockNames = pieceNames;
+        bpmesh->groupIds = groupIds;
+        md->Add(bpmesh);
 
         // grid variables
         for (int v = 0 ; v < varNames.size(); v++)
         {
-            AddScalarVarToMetaData(md, varNames[v], "mesh", AVT_ZONECENT);
+            // Create var names for unique submenu for block and level
+            string composite = "mesh_blockandproc/" + varNames[v];
+            AddScalarVarToMetaData(md, composite, "mesh_blockandproc", AVT_ZONECENT);
         }
     }
 
@@ -462,27 +568,99 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
 
     // Morton curve
+    //    for block and level SIL categories
     if (numBlocks > 0)
     {
-        avtMeshMetaData *mesh = new avtMeshMetaData;
-        mesh->name = "morton";
-        mesh->originalName = "morton";
+        avtMeshMetaData *mcblmesh = new avtMeshMetaData;
+        mcblmesh->name = "morton_blockandlevel";
+        mcblmesh->originalName = "morton_blockandlevel";
 
-        mesh->meshType = AVT_UNSTRUCTURED_MESH;
-        mesh->topologicalDimension = 1;    //    It's a curve
-        mesh->spatialDimension = dimension;
-        mesh->blockOrigin = 1;
-        mesh->groupOrigin = 1;
+        mcblmesh->meshType = AVT_UNSTRUCTURED_MESH;
+        mcblmesh->topologicalDimension = 1;    //    It's a curve
+        mcblmesh->spatialDimension = dimension;
+        mcblmesh->blockOrigin = 1;
+        mcblmesh->groupOrigin = 1;
 
-        mesh->hasSpatialExtents = true;
-        mesh->minSpatialExtents[0] = minSpatialExtents[0];
-        mesh->maxSpatialExtents[0] = maxSpatialExtents[0];
-        mesh->minSpatialExtents[1] = minSpatialExtents[1];
-        mesh->maxSpatialExtents[1] = maxSpatialExtents[1];
-        mesh->minSpatialExtents[2] = minSpatialExtents[2];
-        mesh->maxSpatialExtents[2] = maxSpatialExtents[2];
+        mcblmesh->hasSpatialExtents = true;
+        mcblmesh->minSpatialExtents[0] = minSpatialExtents[0];
+        mcblmesh->maxSpatialExtents[0] = maxSpatialExtents[0];
+        mcblmesh->minSpatialExtents[1] = minSpatialExtents[1];
+        mcblmesh->maxSpatialExtents[1] = maxSpatialExtents[1];
+        mcblmesh->minSpatialExtents[2] = minSpatialExtents[2];
+        mcblmesh->maxSpatialExtents[2] = maxSpatialExtents[2];
 
-        md->Add(mesh);
+        // DEFINING SUBSETS ON M. CURVE MESH (LIKE THAT ON BASE MESH "mesh")
+        // spoof a group/domain mesh for the AMR hierarchy
+        mcblmesh->numBlocks = numBlocks;
+        mcblmesh->blockTitle = "Blocks";
+        mcblmesh->blockPieceName = "block";
+        // Level as group
+        mcblmesh->numGroups = numLevels;
+        mcblmesh->groupTitle = "Levels";
+        mcblmesh->groupPieceName = "level";
+        mcblmesh->numGroups = numLevels;
+
+        vector<int> groupIds(numBlocks);
+        vector<string> pieceNames(numBlocks);
+        // Level as group
+        for (int i = 0; i < numBlocks; i++)
+        {
+            char tmpName[64];
+            sprintf(tmpName,"level%d,block%d",blocks[i].level, blocks[i].ID);
+            groupIds[i] = blocks[i].level-1;
+            pieceNames[i] = tmpName;
+        }
+        mcblmesh->blockNames = pieceNames;
+        mcblmesh->groupIds = groupIds;
+
+        md->Add(mcblmesh);
+    }
+    //    for block and processor SIL categories
+    if (numBlocks > 0)
+    {
+        avtMeshMetaData *mcbpmesh = new avtMeshMetaData;
+        mcbpmesh->name = "morton_blockandproc";
+        mcbpmesh->originalName = "morton_blockandproc";
+
+        mcbpmesh->meshType = AVT_UNSTRUCTURED_MESH;
+        mcbpmesh->topologicalDimension = 1;    //    It's a curve
+        mcbpmesh->spatialDimension = dimension;
+        mcbpmesh->blockOrigin = 1;
+        mcbpmesh->groupOrigin = 0;
+
+        mcbpmesh->hasSpatialExtents = true;
+        mcbpmesh->minSpatialExtents[0] = minSpatialExtents[0];
+        mcbpmesh->maxSpatialExtents[0] = maxSpatialExtents[0];
+        mcbpmesh->minSpatialExtents[1] = minSpatialExtents[1];
+        mcbpmesh->maxSpatialExtents[1] = maxSpatialExtents[1];
+        mcbpmesh->minSpatialExtents[2] = minSpatialExtents[2];
+        mcbpmesh->maxSpatialExtents[2] = maxSpatialExtents[2];
+
+        // DEFINING SUBSETS ON M. CURVE MESH (LIKE THAT ON BASE MESH "mesh")
+        // spoof a group/domain mesh for the AMR hierarchy
+        mcbpmesh->numBlocks = numBlocks;
+        mcbpmesh->blockTitle = "Blocks";
+        mcbpmesh->blockPieceName = "block";
+        // Processor number as group
+        mcbpmesh->numGroups = numProcessors;
+        mcbpmesh->groupTitle = "Processors";
+        mcbpmesh->groupPieceName = "processor";
+        mcbpmesh->numGroups = numProcessors;
+
+        vector<int> groupIds(numBlocks);
+        vector<string> pieceNames(numBlocks);
+        // Processor number as group
+        for (int i = 0; i < numBlocks; i++)
+        {
+            char tmpName[64];
+            sprintf(tmpName,"processor%d,block%d",blocks[i].procnum, blocks[i].ID);
+            groupIds[i] = blocks[i].procnum;
+            pieceNames[i] = tmpName;
+        }
+        mcbpmesh->blockNames = pieceNames;
+        mcbpmesh->groupIds = groupIds;
+
+        md->Add(mcbpmesh);
     }
 
     // Populate cycle and time
@@ -525,8 +703,15 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Kathleen Bonnell, Thu Jul 20 11:22:13 PDT 2006
 //    Added support for FLASH3 formats.
 //
-//    Randy HUDSON, Tue, Apr 3, 2007
+//    Randy HUDSON, Apr 3, 2007
 //    Added support for Morton curve.
+//
+//    Randy HUDSON, June 18, 2007
+//    Added support for creating subsets of Morton curve.
+//
+//    Randy HUDSON, July 19, 2007
+//    Added support for concurrent block-level and block-processor subset pairs
+//      for both domain and morton curve meshes
 //
 // ****************************************************************************
 
@@ -535,7 +720,44 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
 {
     ReadAllMetaData();
 
-    if (string(meshname) == "mesh")
+    if (string(meshname) == "mesh_blockandlevel")
+    {
+        // rectilinear mesh
+        vtkFloatArray  *coords[3];
+        int i;
+        for (i = 0 ; i < 3 ; i++)
+        {
+            coords[i] = vtkFloatArray::New();
+            coords[i]->SetNumberOfTuples(block_ndims[i]);
+            for (int j = 0 ; j < block_ndims[i] ; j++)
+            {
+                if (i+1 > dimension)
+                {
+                    coords[i]->SetComponent(j, 0, 0);
+                }
+                else
+                {
+                    double minExt = blocks[domain].minSpatialExtents[i];
+                    double maxExt = blocks[domain].maxSpatialExtents[i];
+                    double c = minExt + double(j) *
+                        (maxExt-minExt) / double(block_ndims[i]-1);
+                    coords[i]->SetComponent(j, 0, c);
+                }
+            }
+        }
+   
+        vtkRectilinearGrid  *rGrid = vtkRectilinearGrid::New(); 
+        rGrid->SetDimensions(block_ndims);
+        rGrid->SetXCoordinates(coords[0]);
+        coords[0]->Delete();
+        rGrid->SetYCoordinates(coords[1]);
+        coords[1]->Delete();
+        rGrid->SetZCoordinates(coords[2]);
+        coords[2]->Delete();
+
+        return rGrid;
+    }
+    else if (string(meshname) == "mesh_blockandproc")
     {
         // rectilinear mesh
         vtkFloatArray  *coords[3];
@@ -584,7 +806,7 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
         hid_t xtype, ytype, ztype; 
  
         double *ddata = new double[numParticles];
-        if (fileFormatVersion < FLASH3)
+        if (fileFormatVersion < FLASH3_FFV8)
         {
             xtype = H5Tcreate(H5T_COMPOUND, sizeof(double));
             ytype = H5Tcreate(H5T_COMPOUND, sizeof(double));
@@ -595,7 +817,7 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
         }
         if (dimension >= 1)
         {
-            if (fileFormatVersion < FLASH3)
+            if (fileFormatVersion < FLASH3_FFV8)
             {
                 H5Dread(pointId, xtype, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
             }
@@ -612,7 +834,7 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
 
         if (dimension >= 2)
         {
-            if (fileFormatVersion < FLASH3) 
+            if (fileFormatVersion < FLASH3_FFV8) 
             {
                 H5Dread(pointId, ytype, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
             }
@@ -628,7 +850,7 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
 
         if (dimension >= 3)
         {
-            if (fileFormatVersion < FLASH3) 
+            if (fileFormatVersion < FLASH3_FFV8) 
             {
                  H5Dread(pointId, ztype, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
             }
@@ -649,7 +871,7 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
                 pts[i*3 + d] = 0;
         }
 
-        if (fileFormatVersion < FLASH3)
+        if (fileFormatVersion < FLASH3_FFV8)
         {
             H5Tclose(xtype);
             H5Tclose(ytype);
@@ -792,12 +1014,90 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
 
         return pd;
     }
-    else if (string(meshname) == "morton")
+    else if (string(meshname) == "morton_blockandlevel")
     {
-        return GetMortonCurve();
+        return GetMortonCurveSubset(domain);
+    }
+    else if (string(meshname) == "morton_blockandproc")
+    {
+        return GetMortonCurveSubset(domain);
     }
 
     return NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtFLASHFileFormat::GetMortonCurveSubset
+//          (Version of GetMortonCurve() for subsets)
+//
+//  Purpose:
+//      Build and return the subset, for block "domain", of the Morton space-filling
+//         curve as a vtkPolyData object.
+//      The morton curve connects leaf blocks.
+//      The two segments of the curve that enter and leave block "domain" are built.
+//
+//  Programmer: Randy HUDSON
+//  Creation:   June 15, 2007
+//
+// ****************************************************************************
+
+vtkPolyData *
+avtFLASHFileFormat::GetMortonCurveSubset(int domain)
+{
+    vtkPolyData *pdata = vtkPolyData::New();
+    vtkPoints *points = vtkPoints::New();
+    vtkCellArray *lines = vtkCellArray::New();
+
+    //
+    // One cell per line segment, and unique end points (ones that coincide
+    // are duplicated in vtkPoints)
+    // Read centers of leaf blocks and insert into point object
+    //
+
+    //  LEAF-BLOCK MORTON CURVE
+    vector<int>::iterator i = find(leafBlocks.begin(), leafBlocks.end(), domain);
+    if (i != leafBlocks.end())  //  "domain" is in "leafBlocks"
+    {
+        if (i == leafBlocks.begin())
+        {
+            points->InsertPoint(0, blocks[domain].coords[0], blocks[domain].coords[1], blocks[domain].coords[2]);
+            points->InsertPoint(1, blocks[*(i+1)].coords[0], blocks[*(i+1)].coords[1], blocks[*(i+1)].coords[2]);
+            // Each cell is a (2-point) line segment
+            lines->InsertNextCell(2);
+            lines->InsertCellPoint(0);
+            lines->InsertCellPoint(1);
+        }
+        else if (i == (leafBlocks.end()-1))
+        {
+            points->InsertPoint(0, blocks[*(i-1)].coords[0], blocks[*(i-1)].coords[1], blocks[*(i-1)].coords[2]);
+            points->InsertPoint(1, blocks[domain].coords[0], blocks[domain].coords[1], blocks[domain].coords[2]);
+            // Each cell is a (2-point) line segment
+            lines->InsertNextCell(2);
+            lines->InsertCellPoint(0);
+            lines->InsertCellPoint(1);
+        }
+        else    //  "domain" is neither end block
+        {
+            // Interior points are duplicated so neighboring segments don't share them
+            points->InsertPoint(0, blocks[*(i-1)].coords[0], blocks[*(i-1)].coords[1], blocks[*(i-1)].coords[2]);
+            points->InsertPoint(1, blocks[domain].coords[0], blocks[domain].coords[1], blocks[domain].coords[2]);
+            points->InsertPoint(2, blocks[domain].coords[0], blocks[domain].coords[1], blocks[domain].coords[2]);
+            points->InsertPoint(3, blocks[*(i+1)].coords[0], blocks[*(i+1)].coords[1], blocks[*(i+1)].coords[2]);
+            // Each cell is a (2-point) line segment
+            lines->InsertNextCell(2);
+            lines->InsertCellPoint(0);
+            lines->InsertCellPoint(1);
+            lines->InsertNextCell(2);
+            lines->InsertCellPoint(2);
+            lines->InsertCellPoint(3);
+        }
+
+        pdata->SetPoints(points);
+        pdata->SetLines(lines);
+    }
+   
+    return pdata;
 }
 
 
@@ -889,12 +1189,21 @@ avtFLASHFileFormat::GetMortonCurve()
 //    Mark C. Miller, Thu Apr  6 17:06:33 PDT 2006
 //    Added conditional compilation for hssize_t type
 //
+//    Randy HUDSON, July 19, 2007
+//    Added support for concurrent block-level and block-processor subset pairs
+//      for both domain and morton curve meshes
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtFLASHFileFormat::GetVar(int domain, const char *vname)
 {
     ReadAllMetaData();
+
+    // Strip prefix (submenu name (either "mesh_blockandlevel/" or "mesh_blockandproc/")) to leave actual var name
+    string vn_str = vname;
+    size_t pos = vn_str.find("/"); // position of "/" in str
+    string vn_substr = vn_str.substr (pos+1); // get from just after "/" to the end
 
     if (particleOriginalIndexMap.count(vname))
     {
@@ -914,7 +1223,7 @@ avtFLASHFileFormat::GetVar(int domain, const char *vname)
         if (vartype == H5T_NATIVE_DOUBLE)
         {
             double *ddata = new double[numParticles];
-            if (fileFormatVersion < FLASH3)
+            if (fileFormatVersion < FLASH3_FFV8)
             {
                 hid_t h5type = H5Tcreate(H5T_COMPOUND, sizeof(double));
                 H5Tinsert(h5type, varname.c_str(), 0, H5T_NATIVE_DOUBLE);
@@ -958,10 +1267,10 @@ avtFLASHFileFormat::GetVar(int domain, const char *vname)
         // It's a grid variable
         //
 
-        hid_t varId = H5Dopen(fileId, vname);
+        hid_t varId = H5Dopen(fileId, vn_substr.c_str());
         if (varId < 0)
         {
-            EXCEPTION1(InvalidVariableException, vname);
+            EXCEPTION1(InvalidVariableException, vn_substr.c_str());
         }
 
         hid_t spaceId = H5Dget_space(varId);
@@ -971,7 +1280,7 @@ avtFLASHFileFormat::GetVar(int domain, const char *vname)
 
         if (ndims != 4)
         {
-            EXCEPTION1(InvalidVariableException, vname);
+            EXCEPTION1(InvalidVariableException, vn_substr.c_str());
         }
 
         int ntuples = dims[1]*dims[2]*dims[3];  //dims[0]==numBlocks
@@ -1064,7 +1373,7 @@ avtFLASHFileFormat::GetVar(int domain, const char *vname)
         else
         {
             // ERROR: UKNOWN TYPE
-            EXCEPTION1(InvalidVariableException, vname);
+            EXCEPTION1(InvalidVariableException, vn_substr.c_str());
         }
 
         // Done with hyperslab
@@ -1130,14 +1439,18 @@ avtFLASHFileFormat::GetVectorVar(int domain, const char *varname)
 //    Jeremy Meredith, Tue Sep 27 14:24:45 PDT 2005
 //    Added support for files containing only particles, and no grids.
 //
-//    Randy HUDSON, Wed, Apr 4, 2007
+//    Randy HUDSON, Apr 4, 2007
 //    Added call to ReadNodeTypes.
 //    Added call to ReadCoordinates.
+//
+//    Randy HUDSON, June 12, 2007
+//    Added call to ReadProcessorNumbers.
 //
 // ****************************************************************************
 void
 avtFLASHFileFormat::ReadAllMetaData()
 {
+
     if (fileId >= 0)
     {
         return;
@@ -1151,7 +1464,7 @@ avtFLASHFileFormat::ReadAllMetaData()
 
     ReadVersionInfo(fileId);
 
-    if (fileFormatVersion < FLASH3)
+    if (fileFormatVersion < FLASH3_FFV8)
     {
         ReadParticleAttributes(); // FLASH2 version
     }
@@ -1176,7 +1489,127 @@ avtFLASHFileFormat::ReadAllMetaData()
         DetermineGlobalLogicalExtentsForAllBlocks();
         ReadNodeTypes();
         ReadCoordinates();
+        ReadProcessorNumbers();
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtFLASHFileFormat::ReadProcessorNumbers
+//
+//  Purpose:
+//      Read the ID's of the processors the blocks were processed on
+//
+//  Programmer: Randy HUDSON
+//  Creation:   June 12, 2007
+//
+//  Modifications:
+//    Randy HUDSON, Apr 4, 2007
+//    Added support for (old) files w/o "processor number".
+//
+// ****************************************************************************
+
+// Support for files w/o "processor number"
+void avtFLASHFileFormat::ReadProcessorNumbers()
+{
+    hid_t rootId = H5Gopen(fileId, "/");
+    if (rootId < 0)
+    {
+        debug5 << "[avtFLASHFileFormat::ReadProcessorNumbers] - Didn't open root group" << endl;
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+    hsize_t num_obj;
+    herr_t errId = H5Gget_num_objs(rootId, &num_obj);
+    if (errId < 0)
+    {
+        debug5 << "[avtFLASHFileFormat::ReadProcessorNumbers] - Can't get # of objects in root group" << endl;
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+    hsize_t idx;
+    string objname = "processor number";
+    char namefromfile[17];
+    for (idx=0; idx<num_obj; idx++)
+    {
+       ssize_t objsize = H5Gget_objname_by_idx(rootId, idx, NULL, 0);
+       if (objsize == 16)
+       {
+           ssize_t objsize = H5Gget_objname_by_idx(rootId, idx, namefromfile, 17);
+           string tempstr = namefromfile;
+           if (tempstr == objname)  //  If this file contains processor numbers
+           {
+               file_has_procnum = true;
+           }
+       }
+    }
+    H5Gclose(rootId);
+
+    if (file_has_procnum)
+    {
+        //
+        // Read the processor number description for the blocks
+        //
+        hid_t procnumId = H5Dopen(fileId, "processor number");
+        if (procnumId < 0)
+        {
+            EXCEPTION1(InvalidFilesException, filename.c_str());
+        }
+
+        hid_t procnumSpaceId = H5Dget_space(procnumId);
+    
+        hsize_t procnum_dims[1];
+        hsize_t procnum_ndims = H5Sget_simple_extent_dims(procnumSpaceId,
+                                                          procnum_dims,NULL);
+
+        if (procnum_ndims != 1 || procnum_dims[0] != numBlocks)
+        {
+            EXCEPTION1(InvalidFilesException, filename.c_str());
+        }
+
+        hid_t procnum_raw_data_type = H5Dget_type(procnumId);
+        hid_t procnum_data_type = H5Tget_native_type(procnum_raw_data_type,
+                                                     H5T_DIR_ASCEND);
+    
+        int *procnum_array = new int[numBlocks];
+        H5Dread(procnumId, procnum_data_type, H5S_ALL, H5S_ALL, H5P_DEFAULT,
+                procnum_array);
+
+        //  numProcessors = 0;
+        int highProcessor = -1;
+        for (int b=0; b<numBlocks; b++)
+        {
+            int pnum = procnum_array[b];
+            if (pnum > highProcessor) {
+                highProcessor = pnum;
+                //          numProcessors += pnum;
+                numProcessors++;
+            }
+            blocks[b].procnum = pnum;
+        }
+
+        // Done with the type
+        H5Tclose(procnum_data_type);
+        H5Tclose(procnum_raw_data_type);
+
+        // Done with the space
+        H5Sclose(procnumSpaceId);
+
+        // Done with the variable; don't leak it
+        H5Dclose(procnumId);
+
+        // Delete the raw array
+        delete[] procnum_array;
+    }
+    else
+    {
+        numProcessors = 1;
+        for (int b=0; b<numBlocks; b++)
+        {
+            blocks[b].procnum = 0;
+        }
+    }
+//  //  Use EXCEPTION1 as clean exit after above test:
+//  EXCEPTION1(InvalidFilesException, filename.c_str());
+
 }
 
 
@@ -1188,6 +1621,10 @@ avtFLASHFileFormat::ReadAllMetaData()
 //
 //  Programmer: Randy HUDSON
 //  Creation:   April 4, 2007
+//
+//  Changes:
+//    Randy Hudson, February 11, 2008
+//    Changed code to distinguish between file format versions 8 and 9.
 //
 // ****************************************************************************
 void avtFLASHFileFormat::ReadCoordinates()
@@ -1202,41 +1639,68 @@ void avtFLASHFileFormat::ReadCoordinates()
     }
 
     hid_t coordinatesSpaceId = H5Dget_space(coordinatesId);
-    
+
     hsize_t coordinates_dims[2];
-    hsize_t coordinates_ndims = H5Sget_simple_extent_dims(coordinatesSpaceId,
-                                                         coordinates_dims,NULL);
+    hsize_t coordinates_ndims = H5Sget_simple_extent_dims(coordinatesSpaceId, coordinates_dims, NULL);
 
-    if (coordinates_ndims != 2 ||
-        coordinates_dims[0] != numBlocks ||
-        coordinates_dims[1] != dimension)
-     {
-        EXCEPTION1(InvalidFilesException, filename.c_str());
-    }
-    double *coordinates_array = new double[numBlocks * dimension];
-    H5Dread(coordinatesId, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, coordinates_array);
-
-    for (int b=0; b<numBlocks; b++)
+    if (fileFormatVersion <= FLASH3_FFV8)
     {
-         double *coords = &coordinates_array[dimension*b];
-         if (dimension == 1)
-         {
-             blocks[b].coords[0] = coords[0];
-             blocks[b].coords[1] = 0.0;
-             blocks[b].coords[2] = 0.0;
-         }
-         else if (dimension == 2)
-         {
-             blocks[b].coords[0] = coords[0];
-             blocks[b].coords[1] = coords[1];
-             blocks[b].coords[2] = 0.0;
-         }
-         else if (dimension == 3)
-         {
+        if (coordinates_ndims != 2 ||
+            coordinates_dims[0] != numBlocks ||
+            coordinates_dims[1] != dimension)
+        {
+            EXCEPTION1(InvalidFilesException, filename.c_str());
+        }
+
+        double *coordinates_array = new double[numBlocks * dimension];
+        H5Dread(coordinatesId, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, coordinates_array);
+
+        for (int b=0; b<numBlocks; b++)
+        {
+             double *coords = &coordinates_array[dimension*b];
+             if (dimension == 1)
+             {
+                 blocks[b].coords[0] = coords[0];
+                 blocks[b].coords[1] = 0.0;
+                 blocks[b].coords[2] = 0.0;
+             }
+             else if (dimension == 2)
+             {
+                 blocks[b].coords[0] = coords[0];
+                 blocks[b].coords[1] = coords[1];
+                 blocks[b].coords[2] = 0.0;
+             }
+             else if (dimension == 3)
+             {
+                 blocks[b].coords[0] = coords[0];
+                 blocks[b].coords[1] = coords[1];
+                 blocks[b].coords[2] = coords[2];
+             }
+        }
+        // Delete the raw array
+        delete [] coordinates_array;
+    }
+    else if (fileFormatVersion == FLASH3_FFV9)
+    {
+        if (coordinates_ndims != 2 ||
+            coordinates_dims[0] != numBlocks ||
+            coordinates_dims[1] != MDIM)
+        {
+            EXCEPTION1(InvalidFilesException, filename.c_str());
+        }
+
+        double *coordinates_array = new double[numBlocks * MDIM];
+        H5Dread(coordinatesId, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, coordinates_array);
+
+        for (int b=0; b<numBlocks; b++)
+        {
+             double *coords = &coordinates_array[MDIM*b];
              blocks[b].coords[0] = coords[0];
              blocks[b].coords[1] = coords[1];
              blocks[b].coords[2] = coords[2];
-         }
+        }
+        // Delete the raw array
+        delete[] coordinates_array;
     }
 
     // Done with the space
@@ -1244,9 +1708,6 @@ void avtFLASHFileFormat::ReadCoordinates()
 
     // Done with the variable; don't leak it
     H5Dclose(coordinatesId);
-
-    // Delete the raw array
-    delete[] coordinates_array;
 }
 
 
@@ -1258,6 +1719,10 @@ void avtFLASHFileFormat::ReadCoordinates()
 //
 //  Programmer: Randy HUDSON
 //  Creation:   April 4, 2007
+//
+//  Changes:
+//    Randy HUDSON, June 23, 2007
+//    Added code to build the vector of leaf blocks for subsets of the Morton curve.
 //
 // ****************************************************************************
 
@@ -1291,7 +1756,7 @@ void avtFLASHFileFormat::ReadNodeTypes()
     H5Dread(nodetypeId, nodetype_data_type, H5S_ALL, H5S_ALL, H5P_DEFAULT,
             nodetype_array);
 
-     numLeafBlocks = 0;
+    numLeafBlocks = 0;
     for (int b=0; b<numBlocks; b++)
     {
         int ntype = nodetype_array[b];
@@ -1299,6 +1764,7 @@ void avtFLASHFileFormat::ReadNodeTypes()
         if (ntype == LEAF_NODE)
         {
             numLeafBlocks++;
+            leafBlocks.push_back(b);
         }
     }
 
@@ -1445,6 +1911,9 @@ void avtFLASHFileFormat::ReadBlockStructure()
 //    Force read data type to double; in other words, don't assume it was
 //    saved as double precision values.
 //
+//    Randy Hudson, February 11, 2008
+//    Changed code to distinguish between file format versions 8 and 9.
+//
 // ****************************************************************************
 void avtFLASHFileFormat::ReadBlockExtents()
 {
@@ -1460,56 +1929,107 @@ void avtFLASHFileFormat::ReadBlockExtents()
     hid_t bboxSpaceId = H5Dget_space(bboxId);
     
     hsize_t bbox_dims[3];
-    hsize_t bbox_ndims = H5Sget_simple_extent_dims(bboxSpaceId,bbox_dims,NULL);
+    hsize_t bbox_ndims = H5Sget_simple_extent_dims(bboxSpaceId, bbox_dims, NULL);
 
-    if (bbox_ndims != 3 ||
-        bbox_dims[0] != numBlocks ||
-        bbox_dims[1] != dimension ||
-        bbox_dims[2] != 2)
+    if (fileFormatVersion <= FLASH3_FFV8)
     {
-        EXCEPTION1(InvalidFilesException, filename.c_str());
-    }
-
-    double *bbox_array = new double[numBlocks * dimension * 2];
-    H5Dread(bboxId, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, bbox_array);
-
-    minSpatialExtents[0] = FLT_MAX;
-    minSpatialExtents[1] = FLT_MAX;
-    minSpatialExtents[2] = FLT_MAX;
-    maxSpatialExtents[0] = -FLT_MAX;
-    maxSpatialExtents[1] = -FLT_MAX;
-    maxSpatialExtents[2] = -FLT_MAX;
-
-    for (int b=0; b<numBlocks; b++)
-    {
-        double *bbox_line = &bbox_array[dimension*2*b];
-        for (int d=0; d<3; d++)
+        if (bbox_ndims != 3 ||
+            bbox_dims[0] != numBlocks ||
+            bbox_dims[1] != dimension ||
+            bbox_dims[2] != 2)
         {
-            if (d+1 <= dimension)
+            EXCEPTION1(InvalidFilesException, filename.c_str());
+        }
+
+        double *bbox_array = new double[numBlocks * dimension * 2];
+        H5Dread(bboxId, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, bbox_array);
+    
+        minSpatialExtents[0] = FLT_MAX;
+        minSpatialExtents[1] = FLT_MAX;
+        minSpatialExtents[2] = FLT_MAX;
+        maxSpatialExtents[0] = -FLT_MAX;
+        maxSpatialExtents[1] = -FLT_MAX;
+        maxSpatialExtents[2] = -FLT_MAX;
+    
+        for (int b=0; b<numBlocks; b++)
+        {
+            double *bbox_line = &bbox_array[dimension*2*b];
+            for (int d=0; d<3; d++)
+            {
+                if (d+1 <= dimension)
+                {
+                    blocks[b].minSpatialExtents[d] = bbox_line[d*2 + 0];
+                    blocks[b].maxSpatialExtents[d] = bbox_line[d*2 + 1];
+                }
+                else
+                {
+                    blocks[b].minSpatialExtents[d] = 0;
+                    blocks[b].maxSpatialExtents[d] = 0;
+                }
+    
+                if (blocks[b].minSpatialExtents[0] < minSpatialExtents[0])
+                    minSpatialExtents[0] = blocks[b].minSpatialExtents[0];
+                if (blocks[b].minSpatialExtents[1] < minSpatialExtents[1])
+                    minSpatialExtents[1] = blocks[b].minSpatialExtents[1];
+                if (blocks[b].minSpatialExtents[2] < minSpatialExtents[2])
+                    minSpatialExtents[2] = blocks[b].minSpatialExtents[2];
+    
+                if (blocks[b].maxSpatialExtents[0] > maxSpatialExtents[0])
+                    maxSpatialExtents[0] = blocks[b].maxSpatialExtents[0];
+                if (blocks[b].maxSpatialExtents[1] > maxSpatialExtents[1])
+                    maxSpatialExtents[1] = blocks[b].maxSpatialExtents[1];
+                if (blocks[b].maxSpatialExtents[2] > maxSpatialExtents[2])
+                    maxSpatialExtents[2] = blocks[b].maxSpatialExtents[2];
+            }
+        }
+        // Delete the raw array
+        delete[] bbox_array;
+    }
+    else if (fileFormatVersion == FLASH3_FFV9)
+    {
+        if (bbox_ndims != 3 ||
+            bbox_dims[0] != numBlocks ||
+            bbox_dims[1] != MDIM ||
+            bbox_dims[2] != 2)
+        {
+            EXCEPTION1(InvalidFilesException, filename.c_str());
+        }
+    
+        double *bbox_array = new double[numBlocks * MDIM * 2];
+        H5Dread(bboxId, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, bbox_array);
+    
+        minSpatialExtents[0] = FLT_MAX;
+        minSpatialExtents[1] = FLT_MAX;
+        minSpatialExtents[2] = FLT_MAX;
+        maxSpatialExtents[0] = -FLT_MAX;
+        maxSpatialExtents[1] = -FLT_MAX;
+        maxSpatialExtents[2] = -FLT_MAX;
+    
+        for (int b=0; b<numBlocks; b++)
+        {
+            double *bbox_line = &bbox_array[MDIM*2*b];
+            for (int d=0; d<3; d++)
             {
                 blocks[b].minSpatialExtents[d] = bbox_line[d*2 + 0];
                 blocks[b].maxSpatialExtents[d] = bbox_line[d*2 + 1];
+    
+                if (blocks[b].minSpatialExtents[0] < minSpatialExtents[0])
+                    minSpatialExtents[0] = blocks[b].minSpatialExtents[0];
+                if (blocks[b].minSpatialExtents[1] < minSpatialExtents[1])
+                    minSpatialExtents[1] = blocks[b].minSpatialExtents[1];
+                if (blocks[b].minSpatialExtents[2] < minSpatialExtents[2])
+                    minSpatialExtents[2] = blocks[b].minSpatialExtents[2];
+    
+                if (blocks[b].maxSpatialExtents[0] > maxSpatialExtents[0])
+                    maxSpatialExtents[0] = blocks[b].maxSpatialExtents[0];
+                if (blocks[b].maxSpatialExtents[1] > maxSpatialExtents[1])
+                    maxSpatialExtents[1] = blocks[b].maxSpatialExtents[1];
+                if (blocks[b].maxSpatialExtents[2] > maxSpatialExtents[2])
+                    maxSpatialExtents[2] = blocks[b].maxSpatialExtents[2];
             }
-            else
-            {
-                blocks[b].minSpatialExtents[d] = 0;
-                blocks[b].maxSpatialExtents[d] = 0;
-            }
-
-            if (blocks[b].minSpatialExtents[0] < minSpatialExtents[0])
-                minSpatialExtents[0] = blocks[b].minSpatialExtents[0];
-            if (blocks[b].minSpatialExtents[1] < minSpatialExtents[1])
-                minSpatialExtents[1] = blocks[b].minSpatialExtents[1];
-            if (blocks[b].minSpatialExtents[2] < minSpatialExtents[2])
-                minSpatialExtents[2] = blocks[b].minSpatialExtents[2];
-
-            if (blocks[b].maxSpatialExtents[0] > maxSpatialExtents[0])
-                maxSpatialExtents[0] = blocks[b].maxSpatialExtents[0];
-            if (blocks[b].maxSpatialExtents[1] > maxSpatialExtents[1])
-                maxSpatialExtents[1] = blocks[b].maxSpatialExtents[1];
-            if (blocks[b].maxSpatialExtents[2] > maxSpatialExtents[2])
-                maxSpatialExtents[2] = blocks[b].maxSpatialExtents[2];
-        }
+        }    
+        // Delete the raw array
+        delete[] bbox_array;
     }
 
     // Done with the space
@@ -1517,9 +2037,6 @@ void avtFLASHFileFormat::ReadBlockExtents()
 
     // Done with the variable; don't leak it
     H5Dclose(bboxId);
-
-    // Delete the raw array
-    delete[] bbox_array;
 }
 
 
@@ -1621,7 +2138,7 @@ void avtFLASHFileFormat::ReadRefinementLevels()
 void avtFLASHFileFormat::ReadSimulationParameters(hid_t file_id,
     bool timeAndCycleOnly)
 {
-    if (fileFormatVersion < FLASH3)
+    if (fileFormatVersion < FLASH3_FFV8)
     {
         //
         // Read the simulation parameters
@@ -1755,7 +2272,6 @@ void avtFLASHFileFormat::ReadUnknownNames()
 
         varNames[v] = tmpstring;
     }
-
 
     // Done with the type
     H5Tclose(unk_raw_data_type);
@@ -2129,6 +2645,10 @@ avtFLASHFileFormat::GetAuxiliaryData(const char *var, int dom,
 //    Add test for particles files, as version test cannot be done for them
 //    in the usual manner.
 //
+//    Randy Hudson, February 19, 2008
+//       Added code to read the "sim info" hdf5 dataset so "file format version"
+//       could be read from it, since the latter now has 2 values.
+//
 // ****************************************************************************
 
 void
@@ -2152,7 +2672,7 @@ avtFLASHFileFormat::ReadVersionInfo(hid_t file_id)
     if (h5_PN >= 0)
     {
         debug5 << " Found particle names, assuming FLASH3" << endl;
-        fileFormatVersion = FLASH3;
+        fileFormatVersion = FLASH3_FFV8;
         H5Dclose(h5_PN);
 
         // turn back on error reporting
@@ -2177,9 +2697,33 @@ avtFLASHFileFormat::ReadVersionInfo(hid_t file_id)
         }
         else
         {
-            debug5 << "sim info found, assuming FLASH3."  << endl;
-            fileFormatVersion = FLASH3; // FLASH3 
+            debug5 << "sim info found; reading it to get file format version."  << endl;
+
+            //
+            // Read the "sim info" components
+            //
+            hid_t si_type = H5Tcreate(H5T_COMPOUND, sizeof(sim_info_t));
+            H5Tinsert(si_type, "file format version", HOFFSET(sim_info_t, file_format_version), H5T_STD_I32LE);
+            H5Tinsert(si_type, "setup call",          HOFFSET(sim_info_t, setup_call),          H5T_STRING);
+            H5Tinsert(si_type, "file creation time",  HOFFSET(sim_info_t, file_creation_time),  H5T_STRING);
+            H5Tinsert(si_type, "flash version",       HOFFSET(sim_info_t, flash_version),       H5T_STRING);
+            H5Tinsert(si_type, "build date",          HOFFSET(sim_info_t, build_date),          H5T_STRING);
+            H5Tinsert(si_type, "build dir",           HOFFSET(sim_info_t, build_dir),           H5T_STRING);
+            H5Tinsert(si_type, "build machine",       HOFFSET(sim_info_t, build_machine),       H5T_STRING);
+            H5Tinsert(si_type, "cflags",              HOFFSET(sim_info_t, cflags),              H5T_STRING);
+            H5Tinsert(si_type, "fflags",              HOFFSET(sim_info_t, fflags),              H5T_STRING);
+            H5Tinsert(si_type, "setup time stamp",    HOFFSET(sim_info_t, setup_time_stamp),    H5T_STRING);
+            H5Tinsert(si_type, "build time stamp",    HOFFSET(sim_info_t, build_time_stamp),    H5T_STRING);
+    
+            H5Dread(h5_SI, si_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, &simInfo);
+    
+            // Done with the type
+            H5Tclose(si_type);
+    
+            // Done with the variable; don't leak it
             H5Dclose(h5_SI);
+
+            fileFormatVersion = simInfo.file_format_version;
         }
         // turn back on error reporting
         H5Eset_auto(old_errorfunc, old_clientdata);
@@ -2208,6 +2752,9 @@ avtFLASHFileFormat::ReadVersionInfo(hid_t file_id)
 //  Creation:    July 18, 2006 
 //
 //  Modifications:
+//     Randy Hudson, February, 2008
+//        Changed test of fileFormatVersion from "!=8" to "<8" to accomodate
+//        new value.
 //
 // ****************************************************************************
 
@@ -2215,7 +2762,8 @@ void
 avtFLASHFileFormat::ReadIntegerScalars(hid_t file_id)
 {
     // Should only be used for FLASH3 files
-    if (fileFormatVersion != FLASH3)
+
+    if (fileFormatVersion < FLASH3_FFV8)
         return;
 
     hid_t intScalarsId = H5Dopen(file_id, "integer scalars");
@@ -2284,6 +2832,9 @@ avtFLASHFileFormat::ReadIntegerScalars(hid_t file_id)
 //  Creation:    July 18, 2006 
 //
 //  Modifications:
+//     Randy Hudson, February, 2008
+//        Changed test of fileFormatVersion from "!=8" to "<8" to accomodate
+//        new value.
 //
 // ****************************************************************************
 
@@ -2291,7 +2842,8 @@ void
 avtFLASHFileFormat::ReadRealScalars(hid_t file_id)
 {
     // Should only be used for FLASH3 files
-    if (fileFormatVersion != FLASH3)
+
+    if (fileFormatVersion < FLASH3_FFV8)
         return;
 
     hid_t realScalarsId = H5Dopen(file_id, "real scalars");
@@ -2354,6 +2906,9 @@ avtFLASHFileFormat::ReadRealScalars(hid_t file_id)
 //  Creation:    July 18, 2006 
 //
 //  Modifications:
+//     Randy Hudson, February, 2008
+//        Changed test of fileFormatVersion from "!=8" to "<8" to accomodate
+//        new value.
 //
 // ****************************************************************************
 
@@ -2361,7 +2916,8 @@ void
 avtFLASHFileFormat::ReadParticleAttributes_FLASH3()
 {
     // Should only be used for FLASH3 files
-    if (fileFormatVersion != FLASH3)
+
+    if (fileFormatVersion < FLASH3_FFV8)
         return;
 
     // temporarily disable error reporting
@@ -2513,6 +3069,10 @@ avtFLASHFileFormat::ReadParticleAttributes_FLASH3()
 //    Hank Childs, Thu Mar  8 10:00:33 PST 2007
 //    Use version macro to get around hsize_t/hssize_t problem.
 //
+//     Randy Hudson, February, 2008
+//        Changed test of fileFormatVersion from "!=8" to "<8" to accomodate
+//        new value.
+//
 // ****************************************************************************
 
 void
@@ -2520,7 +3080,8 @@ avtFLASHFileFormat::ReadParticleVar(hid_t pointId, const char *vname,
     double *ddata)
 {
     // Should only be used for FLASH3 files
-    if (fileFormatVersion != FLASH3)
+
+    if (fileFormatVersion < FLASH3_FFV8)
         return;
 
     hsize_t dataspace = H5Dget_space(pointId);
@@ -2545,4 +3106,3 @@ avtFLASHFileFormat::ReadParticleVar(hid_t pointId, const char *vname,
     H5Sclose(dataspace);
     H5Sclose(memspace);
 }
-

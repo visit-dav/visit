@@ -85,6 +85,18 @@
 //    Randy HUDSON, Tue, Apr 3, 2007
 //    Added support for Morton curve
 //
+//    Randy HUDSON, Mon, June 18, 2007
+//    Added support for creating subsets of Morton curve.
+//
+//    Randy HUDSON, July, 2007
+//    Added support for subsets by processor number.
+//
+//    Randy Hudson, August, 2007
+//    Added support for concurrent subsets by block-level and block-processornumber 
+//    pairs for both the domain and Morton curve.
+//
+//    Randy Hudson, February, 2008
+//    Added struct for "sim info" HDF5 DATASET so "file format version" can be read 
 // ****************************************************************************
 
 class avtFLASHFileFormat : public avtSTMDFileFormat
@@ -138,8 +150,12 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     void FinalizeHDF5();
 
     vtkPolyData* GetMortonCurve();
+    vtkPolyData* GetMortonCurveSubset(int domain);
+
     void ReadNodeTypes();
     void ReadCoordinates();
+
+    void ReadProcessorNumbers();
 
   protected:
     struct SimParams
@@ -160,6 +176,7 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
         int level;
         int nodetype;
         double coords[3];
+        int procnum;
         int parentID;
         int childrenIDs[8];
         int neighborIDs[6];
@@ -176,13 +193,28 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     {
         char name[20];
         int value;
-    };
-    
+    };    
     struct RealScalars
     {
         char name[20];
         double value;
-    }; 
+    };
+    //  Since 2 "file format version"s (FFV) for FLASH3, need to read "sim info" 
+    //    structure to read the FFV directly
+    struct sim_info_t
+    {
+        int file_format_version;
+        char setup_call[400];
+        char file_creation_time[80];
+        char flash_version[80];
+        char build_date[80];
+        char build_dir[80];
+        char build_machine[80];
+        char cflags[400];
+        char fflags[400];
+        char setup_time_stamp[80];
+        char build_time_stamp[80];
+    };
 
   protected:
     static int                objcnt;
@@ -190,6 +222,8 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     int                       dimension;
     int                       numBlocks;
     int                       numLevels;
+    int                       numProcessors;
+    bool                      file_has_procnum;
     static const int          LEAF_NODE = 1;
     int                       numLeafBlocks;
     int                       numParticles;
@@ -197,6 +231,7 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     std::string               particleHDFVarName;
     hid_t                     fileId;
     SimParams                 simParams;
+    sim_info_t                simInfo;
     std::vector<Block>        blocks;
     int                       numChildrenPerBlock;
     int                       numNeighborsPerBlock;
@@ -208,6 +243,7 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     std::vector<std::string>  particleVarNames;
     std::vector<hid_t>        particleVarTypes;
     std::map<std::string,int> particleOriginalIndexMap;
+    std::vector<int>          leafBlocks;
 };
 
 
