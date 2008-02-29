@@ -163,6 +163,9 @@ using std::vector;
 //   Split "Apply operators and selections ..." checkbox into an apply
 //   operators and an apply selection checkbox.
 //
+//   Gunther H. Weber, Fri Feb 29 15:38:57 PST 2008
+//   Fixed Qt warning caused by previous change.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
@@ -260,7 +263,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
 	    
     topLayout->addMultiCellWidget(plotListBox, 2, 2, 0, 3);
 
-    QHBoxLayout *applyLayout = new QHBoxLayout(this, 0, 0, "applyLayout");
+    QHBoxLayout *applyLayout = new QHBoxLayout(0, 0, 0, "applyLayout");
     veryTopLayout->addLayout(applyLayout);
 
     // Begin label text
