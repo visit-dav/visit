@@ -83,10 +83,14 @@ ostream &operator << (ostream &os, const CCMIOID &id);
 //  Programmer: Brad Whitlock
 //  Creation:   Thu Aug 2 15:01:17 PST 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
+//    Added varsOnSubmesh.
+//
 // ****************************************************************************
 
 avtCCMFileFormat::avtCCMFileFormat(const char *filename)
-    : avtSTMDFileFormat(&filename, 1), varsToFields()
+    : avtSTMDFileFormat(&filename, 1), varsToFields(), varsOnSubmesh()
 {
     ccmOpened = false;
     ccmStateFound = false;
@@ -118,6 +122,10 @@ avtCCMFileFormat::~avtCCMFileFormat()
 //  Programmer: Brad Whitlock
 //  Creation:   Thu Aug 2 15:01:17 PST 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
+//    Added varsOnSubmesh.
+//
 // ****************************************************************************
 
 void
@@ -129,7 +137,7 @@ avtCCMFileFormat::FreeUpResources(void)
         CCMIOCloseFile(&ccmErr, ccmRoot);
         ccmErr = kCCMIONoErr;
     }
-    for (int i = 0; i < originalCells.size(); i++)
+    for (int i = 0; i < originalCells.size(); ++i)
     {
         if (originalCells[i] != NULL)
         {
@@ -139,6 +147,27 @@ avtCCMFileFormat::FreeUpResources(void)
     }
     originalCells.clear();
     varsToFields.clear();
+    varsOnSubmesh.clear();
+}    
+
+
+// ****************************************************************************
+//  Method:  avtCCMFileFormat::CanCacheVariable
+//
+//  Purpose:
+//    Determines if the given variable can be cached above the layer of the
+//    plugin. In some cases, particularly where different ghosting is used
+//    for different variables, the mesh variable cannot be cached.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    February 28, 2008 
+//
+// ***************************************************************************
+
+bool
+avtCCMFileFormat::CanCacheVariable(const char *varname)
+{
+    return varsOnSubmesh.empty();
 }
 
 // ****************************************************************************
@@ -203,7 +232,7 @@ avtCCMFileFormat::GetState()
     if (!ccmStateFound)
     {
         // first try default state
-        CCMIOGetState(&ccmErr, GetRoot(), "default", NULL, &ccmState);
+        CCMIOGetState(&ccmErr, GetRoot(), "default", &ccmProblem, &ccmState);
         if (ccmErr == kCCMIONoErr)
         {
             ccmStateFound = true;
@@ -216,6 +245,9 @@ avtCCMFileFormat::GetState()
                 == kCCMIONoErr)
             {
                 ccmStateFound = true;
+                int j = 0;
+                CCMIONextEntity(NULL, GetRoot(), kCCMIOProblemDescription, 
+                                &j, &ccmProblem);
             }
             else
             {
@@ -335,7 +367,7 @@ avtCCMFileFormat::GetFaces(CCMIOID faceID, CCMIOEntity faceType,
     CCMIOReadMap(&ccmErr, mapID, &faces[0], kCCMIOStart, kCCMIOEnd);
 
     unsigned int pos = 0;
-    for (unsigned int i = 0; i < faces.size(); i++)
+    for (unsigned int i = 0; i < faces.size(); ++i)
     {
         FaceInfo newFace;
         newFace.id = faces[i];
@@ -355,7 +387,7 @@ avtCCMFileFormat::GetFaces(CCMIOID faceID, CCMIOEntity faceType,
         if (nVerts > maxSize)
             maxSize = nVerts;
 
-        for (unsigned int j = 0; j < nVerts; j++)
+        for (unsigned int j = 0; j < nVerts; ++j)
         {
             newFace.nodes.push_back(faceNodes[pos+1+j]);
         }
@@ -390,6 +422,10 @@ avtCCMFileFormat::GetFaces(CCMIOID faceID, CCMIOEntity faceType,
 //  Creation:   Thu Aug 2 15:01:17 PST 2007
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
+//    Fixed determination of centering for Vector variables.  Added code to 
+//    determine if any variables are defined only on parts of the mesh, by 
+//    reading the number of cells, then mapData size for each var.
 //
 // ****************************************************************************
 
@@ -411,6 +447,21 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     debug4 << mName << "Found " << nblocks << " domains in the file." << endl;
 
 #if 0
+    // this will be useful for subsetting by the cell type
+    int nCellTypes = 0;
+    if (CCMIOIsValidEntity(ccmProblem))
+    {
+        // Determine the number of kCCMIOCellTypes present.
+        int i = 0;
+        CCMIOID next;
+        while(CCMIONextEntity(NULL, ccmProblem, kCCMIOCellType, &i, &next)
+              == kCCMIONoErr)
+        ++nCellTypes;
+    }
+#endif
+
+
+#if 0
     // Read the simulation title.
     char *title = NULL;
     ccmErr = CCMIOGetTitle(&ccmErr, GetRoot(), &title);
@@ -421,7 +472,7 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
 #endif
 
-    for (int i = 0; i < nblocks; i++)
+    for (unsigned int i = 0; i < nblocks; ++i)
         originalCells.push_back(NULL);
     // Determine the spatial dimensions.
     int dims = 3;
@@ -452,13 +503,23 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Find variable data
     if (hasSolution)
     {
+        // Determine number of cells, in order to find out
+        // which variables are NOT defined on entire mesh.
+        CCMIOError err = kCCMIONoErr;
+        CCMIOID cellsID;
+        CCMIOSize nCells;
+        CCMIOGetEntity(&err, topology, kCCMIOCells, 0, &cellsID);
+        CCMIOEntitySize(&err, cellsID, &nCells, NULL);
+
         debug5 << mName << "Reading variable information" << endl;
 
         CCMIOID field, phase = solution;
         int h = 0;
+        int i = 0;
         bool oldFile = CCMIONextEntity(NULL, solution, kCCMIOFieldPhase, 
                                        &h, &phase) != kCCMIONoErr;
 
+        h = 0;
         while(oldFile ||
               CCMIONextEntity(NULL, solution, kCCMIOFieldPhase, &h, &phase) ==
                                                                    kCCMIONoErr)
@@ -466,11 +527,11 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             debug5 << mName << "CCMIONextEntity for solution " << solution
                    << " returned h=" << h << ", phase = " << phase << endl;
 
-            int phaseNum = 0;
             if (oldFile)
                 phase = solution;
             else
             {
+                int phaseNum = 0;
                 CCMIOGetEntityIndex(NULL, phase, &phaseNum);
             }
 
@@ -478,7 +539,6 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             // first field from the current phase. Since we're iterating
             // over phases so far, we need to reset i to 0 here to get the
             // first field.
-            int i = 0;
             while(CCMIONextEntity(NULL, phase, kCCMIOField, &i, &field) ==
                   kCCMIONoErr)
             {
@@ -490,6 +550,7 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 CCMIODimensionality cdims;
                 CCMIOID fieldData, mapID;
                 CCMIODataLocation type;
+                CCMIOID varField = field;
 
                 debug5 << mName << "CCMIONextEntity for phase " << phase
                        << " returned i=" << i << ", field = " << field << endl;
@@ -497,7 +558,22 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 // Get the field's name, dims, and data type.
                 CCMIOReadField(&ccmErr, field, name, sName, &cdims, &datatype);
                 debug5 << mName << "CCMIOReadField for field " << field
-                       << " returned name=" << name << ", sName = " << sName << endl;
+                       << " returned name=" << name << ", sName = " 
+                       << sName << endl;
+
+                if (cdims == kCCMIOVector)
+                {
+                    CCMIOID scalar;
+                    CCMIOError err = kCCMIONoErr;
+                    CCMIOReadMultiDimensionalFieldData(&err, field, 
+                                             kCCMIOVectorX, &scalar);
+                    if (err == kCCMIONoErr)
+                    {
+                        // componentized vector, use the X component scalar
+                        // in order to retrieve more info about the vector
+                        field = scalar;
+                    }
+                }
 
                 char *usename;
                 if (oldFile)
@@ -513,22 +589,26 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     CCMIOReadOptstr(&ccmErr, field, "Units", NULL, units);
                 }
 
-                // Reset j to 0 to get the first field data. We read the field data
-                // to determine the variable centering.
+                // Reset j to 0 to get the first field data. We read the 
+                // field data to determine the variable centering.
                 int j = 0;
                 avtCentering centering = AVT_UNKNOWN_CENT;
+                CCMIOSize cellVarSize = 0;
+
                 while (CCMIONextEntity(NULL, field, kCCMIOFieldData, 
                        &j, &fieldData) == kCCMIONoErr)
                 {
                     debug5 << mName << "CCMIONextEntity for field " << field
-                           << " returned kCCMIONoErr, j=" << j << ",fieldData=" << fieldData << endl;
+                           << " returned kCCMIONoErr, j=" << j 
+                           << ",fieldData=" << fieldData << endl;
 
                     // Read information about the field.
                     CCMIOReadFieldDataf(&ccmErr, fieldData, &mapID, &type,
                                         NULL, kCCMIOStart, kCCMIOEnd);
                     if(ccmErr != kCCMIONoErr)
                     {
-                        debug5 << mName << "CCMIOReadFieldDataf failed." << endl;
+                        debug5 << mName << "CCMIOReadFieldDataf failed." 
+                               << endl;
                         continue;
                     }
 
@@ -536,23 +616,35 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     if (type == kCCMIOVertex)
                     { 
                         centering = AVT_NODECENT;
-                        debug4 << "Var " << usename << " is node centered" << endl;
+                        debug4 << "Var " << usename << " is node centered" 
+                               << endl;
                     } 
                     else if (type == kCCMIOCell)
                     { 
                         centering = AVT_ZONECENT;
-                        debug4 << "Var " << usename << " is zone centered" << endl;
+                        debug4 << "Var " << usename << " is zone centered" 
+                               << endl;
+                        CCMIOSize n;
+                        CCMIOIndex max;
+                        CCMIOEntitySize(&ccmErr, fieldData, &n, &max);
+                        cellVarSize += n;
                     } 
                     else if (type == kCCMIOFace)
                     { 
-                        debug4 << "Var " << usename << " is face-centered, ignoring for now. " << endl;
+                        debug4 << "Var " << usename << " is face-centered, "
+                               << "ignoring for now. " << endl;
                     }
                 }
 
+                if (cellVarSize != nCells)
+                {
+                    varsOnSubmesh.push_back(usename);
+                }
                 // If we don't have metadata for the variable yet, add it.
                 if(varsToFields.find(usename) == varsToFields.end())
                 {
-                    // Variables with an unsupported centering are tagged invalid.
+                    // Variables with an unsupported centering are tagged 
+                    // invalid.
                     bool validVariable = (centering != AVT_UNKNOWN_CENT);
 
                     if(cdims==kCCMIOScalar)
@@ -566,7 +658,7 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                         }
                         smd->validVariable = validVariable;
                         md->Add(smd);
-                        varsToFields[usename] = field;
+                        varsToFields[usename] = varField;
                     }
                     else if(cdims==kCCMIOVector)
                     {
@@ -579,7 +671,7 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                         }
                         vmd->validVariable = validVariable;
                         md->Add(vmd);
-                        varsToFields[usename] = field;
+                        varsToFields[usename] = varField;
                     }
                     else if(cdims==kCCMIOTensor)
                     {
@@ -591,13 +683,14 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                             tmd->units = units;
                         }
 #if 1
-                        // Just make tensor vars display for now. Don't plot them.
+                        // Just make tensor vars display for now. 
+                        // Don't plot them.
                         tmd->validVariable = false;
 #else
                         tmd->validVariable = validVariable;
 #endif
                         md->Add(tmd);
-                        varsToFields[usename] = field;
+                        varsToFields[usename] = varField;
                     }
                 }
 
@@ -635,6 +728,10 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Brad Whitlock, Tue Dec 18 12:57:28 PST 2007
 //    Added support for 2D polygonal shapes.
 //
+//    Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
+//    If the primary variable (activeVisItVar) is defined only on a portion of
+//    the mesh, only retrieve (and tesselate) those cells it is defined upon.
+// 
 // ****************************************************************************
 
 #ifndef MDSERVER
@@ -716,6 +813,7 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
             pts += 3;
         }
 
+
         // Get the topology information
         CCMIOID faceID, cellsID;
         unsigned int nIFaces = 0, nCells = 0, size = 0;
@@ -728,6 +826,8 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
         CCMIOEntitySize(&ccmErr, cellsID, &nCells, NULL);
         cells.resize(nCells);
         cellInfo.resize(nCells);
+        for (i = 0; i < nCells; ++i)
+            cellInfo[i].id = i+1;
         cellMatType.resize(nCells);
         // this gets the cell types and the map that stores the cell ids
         CCMIOReadCells(&ccmErr, cellsID, &mapID, &cellMatType[0], 
@@ -766,6 +866,27 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
         
         GetFaces(faceID, kCCMIOInternalFaces, nIFaces, 
                  minFaceSize, maxFaceSize, cellInfo);
+
+
+        if (find(varsOnSubmesh.begin(), varsOnSubmesh.end(), activeVisItVar) 
+                != varsOnSubmesh.end())
+
+        {
+            // need to reduce the number of cells we actually process.
+            intVector validCells;
+            CellInfoVector vcv;
+            GetCellMapData(dom, activeVisItVar, validCells);
+          
+            for (i = 0; i < cellInfo.size(); ++i)
+            {
+                if (find(validCells.begin(), validCells.end(), cellInfo[i].id)
+                         != validCells.end())
+                {
+                    vcv.push_back(cellInfo[i]);
+                }
+            }
+            cellInfo = vcv;
+        }
 
         ugrid = vtkUnstructuredGrid::New();
 
@@ -830,6 +951,89 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
 }
 
 // ****************************************************************************
+//  Method:  avtCCMFileFormat::RegisterVariableList
+//
+//  Purpose:
+//    Records the active variable name so only cells valid for the var
+//    will be retrieved during GetMesh calls.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    February 28, 2008
+//
+// ***************************************************************************
+
+void
+avtCCMFileFormat::RegisterVariableList(const char *primaryVar,
+                                       const std::vector<CharStrRef> &)
+{
+    activeVisItVar = primaryVar;
+}
+
+
+// ****************************************************************************
+//  Method:  avtCCMFileFormat::GetCellMapData
+//
+//  Purpose:
+//    Retrieves the map data for a given var, which specifies the cell
+//    ids the var is defined upon. 
+//
+//  Arguments:
+//    domain     The required domain.
+//    var        The requested variable name.
+//    mapData    A place to store the retrieved map data.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    February 28, 2008
+//
+// ***************************************************************************
+
+void
+avtCCMFileFormat::GetCellMapData(const int domain, const string &var, 
+    intVector &mapData)
+{
+    VarFieldMap::const_iterator pos = varsToFields.find(var.c_str());
+    if (pos == varsToFields.end())
+        EXCEPTION1(InvalidVariableException, var);
+
+    mapData.clear();
+  
+    CCMIOSize n;
+    CCMIOIndex fmax;
+    CCMIOError ferr = kCCMIONoErr;
+    int j = 0, cnt = 0;
+    CCMIOID fieldData, mapID;
+    CCMIODimensionality cdims;
+    CCMIOID field = pos->second; 
+  
+    CCMIOReadField(&ferr, field, NULL, NULL, &cdims, NULL);
+    if (cdims == kCCMIOVector)
+    {
+        CCMIOID scalar;
+        ferr = kCCMIONoErr;
+        CCMIOReadMultiDimensionalFieldData(&ferr, field, 
+                                             kCCMIOVectorX, &scalar);
+        if (ferr == kCCMIONoErr)
+        {
+            // componentized vector, use the X component scalar
+            // in order to retrieve more info about the vector
+            field = scalar;
+        }
+    }
+    ferr = kCCMIONoErr;
+    while(CCMIONextEntity(NULL, field, kCCMIOFieldData, &j, &fieldData)
+                                                              == kCCMIONoErr)
+    {
+        CCMIOEntitySize(&ferr, fieldData, &n, &fmax);
+        CCMIOReadFieldDataf(&ferr, fieldData, &mapID, NULL, NULL, 
+                            kCCMIOStart, kCCMIOEnd);
+        mapData.resize(cnt+n);
+        CCMIOReadMap(&ferr, mapID, &mapData[cnt], kCCMIOStart, kCCMIOEnd);
+        cnt += n;
+    } 
+}
+
+
+// ****************************************************************************
 //  Method: avtCCMFileFormat::GetVar
 //
 //  Purpose:
@@ -845,6 +1049,11 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Thu Aug 2 15:01:17 PST 2007
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
+//    avtOriginalCellNumbers array now contains CCM cellid, so enusre that
+//    the data array is indexed-into correctly, by mapping the original cell
 //
 // ****************************************************************************
 
@@ -870,7 +1079,7 @@ avtCCMFileFormat::GetVar(int domain, const char *varname)
     if (originalCells[domain] == NULL)
     {
         rv->SetNumberOfValues(nvalues);
-        for (unsigned int i = 0 ; i < nvalues ; i++)
+        for (unsigned int i = 0 ; i < nvalues ; ++i)
         {
             rv->SetValue(i, data[i]);
         }
@@ -887,9 +1096,15 @@ avtCCMFileFormat::GetVar(int domain, const char *varname)
         debug4 << mName << "numCells = " << numCells << endl;
         unsigned int *oc = ocarray->GetPointer(0);
         rv->SetNumberOfValues(numCells);
+        std::map<int, int> cellIdMap;
+        for (unsigned int i = 0; i < mapData.size(); i++)
+        {
+            cellIdMap[mapData[i]] = i;
+        }
+
         for (unsigned int i = 0 ; i < numCells ; i++)
         {
-            rv->SetValue(i, data[oc[i*2+1]]);
+            rv->SetValue(i, data[cellIdMap[oc[i*2+1]]]);
         }
     }
 
@@ -914,6 +1129,12 @@ avtCCMFileFormat::GetVar(int domain, const char *varname)
 //  Programmer: Brad Whitlock
 //  Creation:   Thu Aug 2 15:01:17 PST 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
+//    avtOriginalCellNumbers array now contains CCM cellid, so enusre that
+//    the data array is indexed-into correctly, by mapping the original cell
+//    id through an cellIdMap of valid cell ids (obtained from MapData).
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -928,7 +1149,9 @@ avtCCMFileFormat::GetVectorVar(int domain, const char *varname)
     CCMIOID scalar;
     CCMIOID field = pos->second;
     CCMIOError err;
+
     CCMIOReadMultiDimensionalFieldData(&err, field, kCCMIOVectorX, &scalar);
+
     if (err == kCCMIOVersionErr)
     {
         // If we are reading an older version of the file,
@@ -978,9 +1201,16 @@ avtCCMFileFormat::GetVectorVar(int domain, const char *varname)
         unsigned int *oc = ocarray->GetPointer(0);
         rv->SetNumberOfTuples(numCells);
         float *v = rv->WritePointer(0, numCells*3);
-        for (unsigned int i = 0 ; i < numCells; i++)
+      
+        std::map<int, int> cellIdMap;
+        for (unsigned int i = 0; i < mapData.size(); ++i)
         {
-            unsigned int id = oc[i*2+1];
+            cellIdMap[mapData[i]] = i;
+        }
+
+        for (unsigned int i = 0 ; i < numCells; ++i)
+        {
+            unsigned int id = cellIdMap[oc[i*2+1]];
             v[i*3+0] = data[id*3+0];
             v[i*3+1] = data[id*3+1];
             v[i*3+2] = data[id*3+2];
@@ -990,6 +1220,28 @@ avtCCMFileFormat::GetVectorVar(int domain, const char *varname)
 }
 
 
+// ***************************************************************************
+//  Method: avtCCMFileFormat::ReadScalar
+//
+//  Purpose:
+//    Reads scalar data from the file.
+//
+//  Arguments:
+//    field      The ID of the field to read. 
+//    mapData    A place to store data specifying which cells the scalar 
+//               is defined upon.
+//    data       A place to store the scalar data.
+//    readingVector       Indicates if an old-style vector is being read.
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
+//    Loop through field entities, as a var may be delineated by cell types,
+//    thus being represented by multiple 'fields'.  Correctly resize mapData 
+//    and data each time through the loop.  Combined code for Cell and Node 
+//    data as they were exactly the same.
+//
+// ***************************************************************************
+
 void
 avtCCMFileFormat::ReadScalar(CCMIOID field, intVector &mapData, 
                              floatVector &data, bool readingVector)
@@ -998,16 +1250,16 @@ avtCCMFileFormat::ReadScalar(CCMIOID field, intVector &mapData,
     const char *mName = "avtCCMFileFormat::ReadScalar: ";
     CCMIOSize n;
     CCMIOIndex fmax;
-    int j = 0;
+    int j = 0, cnt = 0;
     CCMIOID fieldData, mapID;
     CCMIODataLocation type;
 
+    mapData.clear();
+    data.clear();
     // Read each piece of field data
-#if 0
+    // The fields may be delineated by cell types, so there may be 
+    // multiple fields for the same variable.
     while (CCMIONextEntity(NULL, field, kCCMIOFieldData, &j, &fieldData)
-                                                               == kCCMIONoErr)
-#endif
-    if (CCMIONextEntity(NULL, field, kCCMIOFieldData, &j, &fieldData)
                                                                == kCCMIONoErr)
     {
         // Figure out how big this data is so we can read it. If we were
@@ -1015,41 +1267,26 @@ avtCCMFileFormat::ReadScalar(CCMIOID field, intVector &mapData,
         // array, in which case we would need to find the maximum ID and
         // make the array that size.
         CCMIOEntitySize(&ccmErr, fieldData, &n, &fmax);
-        mapData.resize(n);
         CCMIOReadFieldDataf(&ccmErr, fieldData, &mapID, &type, NULL,
                             kCCMIOStart, kCCMIOEnd);
-        CCMIOReadMap(&ccmErr, mapID, &mapData[0], kCCMIOStart, kCCMIOEnd);
 
-        // We are only going to process cell data.  Vertex data would
-        // be processed similarly. If your appliation has only one value
-        // for boundary data, you would separate the face data into
-        // each boundary and combine it together.  If your application
-        // stores boundary data on each face you could read it in using
-        // similar procedures for the cell and vertex data.  Note that
-        // the file may not contain all types of data.
-        if (type == kCCMIOCell)
+        if (type == kCCMIOCell || type == kCCMIOVertex)
         {
+            mapData.resize(cnt +n);
+            CCMIOReadMap(&ccmErr, mapID, &mapData[cnt], kCCMIOStart, kCCMIOEnd);
             if (readingVector)
-                data.resize(3 * n);
+                data.resize(cnt +(3 * n));
             else
-                data.resize(n);
-            debug4 << mName << "Reading cell data n=" << n << endl;
+                data.resize(cnt + n);
+            if (type == kCCMIOCell)
+                debug4 << mName << "Reading cell data n= " << n << endl;
+            else 
+                debug4 << mName << "Reading node data n= " << n << endl;
             // If we want double precision we should use
             // CCMIOReadFieldDatad().
             CCMIOReadFieldDataf(&ccmErr, fieldData, &mapID, NULL,
-                                &data[0], kCCMIOStart, kCCMIOEnd);
-        }
-        else if (type == kCCMIOVertex)
-        {
-            if (readingVector)
-                data.resize(3 * n);
-            else
-                data.resize(n);
-            // If we want double precision we should use
-            // CCMIOReadFieldDatad().
-            debug4 << mName << "Reading node data n=" << n << endl;
-            CCMIOReadFieldDataf(&ccmErr, fieldData, &mapID, NULL,
-                                &data[0], kCCMIOStart, kCCMIOEnd);
+                                &data[cnt], kCCMIOStart, kCCMIOEnd);
+            cnt += n;
         }
 #if 0
         else if (type == kCCMIOFace)
@@ -1080,12 +1317,17 @@ avtCCMFileFormat::ReadScalar(CCMIOID field, intVector &mapData,
 //  Programmer: Kathleen Bonnell 
 //  Creation:   October 1, 2007 
 //
+//  Modifications:
+//     Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
+//     Use cellid stored in CellInfo in avtOriginalCellNumbers array.
+//
 // ****************************************************************************
 
 void
 avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ, 
                                 vtkPoints *points, vtkUnstructuredGrid *ugrid)
 {
+#ifndef MDSERVER
     const char *mName = "avtCCMFileFormat::TesselateCell: ";
     unsigned int i, j, k;
     unsigned int tetCount = 0;
@@ -1100,13 +1342,14 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
     originalCells[dom]->SetNumberOfComponents(2);
     originalCells[dom]->Allocate(civ.size()*3);
 
-    for (i = 0; i < civ.size(); i++)
+    for (i = 0; i < civ.size(); ++i)
     {
         const CellInfo &ci = civ[i];
+        oc[1] = ci.id;
         int nFaces  = ci.faces.size();
         int nPts = 0;
         double fbounds[6*nFaces];
-        for (j = 0; j < nFaces; j++)
+        for (j = 0; j < nFaces; ++j)
         {
             nPts += ci.faces[j].nodes.size();
             fbounds[j*6+0] = VTK_LARGE_FLOAT;
@@ -1123,11 +1366,11 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
                              VTK_LARGE_FLOAT, -VTK_LARGE_FLOAT};
 
         int cnt = 0;
-        for (j = 0; j < nFaces; j++)
+        for (j = 0; j < nFaces; ++j)
         {
             nodes = ci.faces[j].nodes;
                 
-            for (k = 0; k < nodes.size(); k++)
+            for (k = 0; k < nodes.size(); ++k)
             {
                 cnt++;
                 pt = points->GetPoint(nodes[k]-1);
@@ -1162,11 +1405,11 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
             
         double cc[3];
         double fc[3];
-        for (j = 0; j < 3; j++)
+        for (j = 0; j < 3; ++j)
             cc[j] = (cbounds[2*j+1]+cbounds[2*j])/2.0; 
-        for (j = 0; j < nFaces; j++)
+        for (j = 0; j < nFaces; ++j)
         {
-            for (k = 0; k < 3; k++)
+            for (k = 0; k < 3; ++k)
                 fc[k] = (fbounds[2*k+1+(6*j)]+fbounds[2*k+(6*j)])/2.0; 
 
             nodes = ci.faces[j].nodes;
@@ -1175,7 +1418,7 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
             tess.BeginPolygon();
             tess.BeginContour();
                 
-            for (k = 0; k < nodes.size(); k++)
+            for (k = 0; k < nodes.size(); ++k)
             {
                 cnt++;
                 pt = points->GetPoint(nodes[k]-1);
@@ -1189,7 +1432,7 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
         verts[3] = centerId;
         if (tess.GetNumTriangles() > 0)
         {
-            for (k = 0; k < tess.GetNumTriangles(); k++)
+            for (k = 0; k < tess.GetNumTriangles(); ++k)
             {
                 int a, b, c;
                 tess.GetTriangle(k, a, b, c);
@@ -1197,7 +1440,6 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
                 verts[1] = b; 
                 verts[2] = c; 
                 ugrid->InsertNextCell(VTK_TETRA, 4, verts);
-                oc[1] = i; // looping on cells, i = current cell
                 ((vtkUnsignedIntArray*)originalCells[dom])->
                     InsertNextTupleValue(oc);
             }
@@ -1213,8 +1455,10 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
     ugrid->GetCellData()->AddArray(originalCells[dom]);
     ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
 
-    debug4 << mName << "Input number of polyhedral cells: " << civ.size() << endl;
+    debug4 << mName << "Input number of polyhedral cells: " << civ.size() 
+           << endl;
     debug4 << mName << "Output tetrahedral cells: " << tetCount << endl;
+#endif
 }
 
 // ****************************************************************************
@@ -1237,6 +1481,8 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
 // Creation:   Tue Dec 18 12:54:56 PST 2007
 //
 // Modifications:
+//     Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
+//     Use cellid stored in CellInfo in avtOriginalCellNumbers array.
 //   
 // ****************************************************************************
 
@@ -1244,7 +1490,7 @@ typedef std::pair<int,int> edge_pair;
 
 void
 avtCCMFileFormat::TesselateCells2D(const int dom, const CellInfoVector &civ, 
-                                   vtkPoints *points, vtkUnstructuredGrid *ugrid)
+                                 vtkPoints *points, vtkUnstructuredGrid *ugrid)
 {
 #ifndef MDSERVER
     unsigned int i, j, k;
@@ -1261,9 +1507,10 @@ avtCCMFileFormat::TesselateCells2D(const int dom, const CellInfoVector &civ,
 
     const double n[3] = {0., 0., 1.};
 
-    for (i = 0; i < civ.size(); i++)
+    for (i = 0; i < civ.size(); ++i)
     {
         const CellInfo &ci = civ[i];
+        oc[1] = ci.id;
         tess.SetNormal(n);
         tess.BeginPolygon();
 
@@ -1275,7 +1522,7 @@ avtCCMFileFormat::TesselateCells2D(const int dom, const CellInfoVector &civ,
 
         // Put all of the line segments in a pool of free edges.
         std::set<edge_pair> freeEdges;
-        for (int f = 0; f < ci.faces.size(); f++)
+        for (int f = 0; f < ci.faces.size(); ++f)
         {
              edge_pair e01(ci.faces[f].nodes[0]-1, ci.faces[f].nodes[1]-1);
              freeEdges.insert(e01);
@@ -1348,7 +1595,7 @@ avtCCMFileFormat::TesselateCells2D(const int dom, const CellInfoVector &civ,
         vtkIdType verts[4];
         if (tess.GetNumTriangles() > 0)
         {
-            for (k = 0; k < tess.GetNumTriangles(); k++)
+            for (k = 0; k < tess.GetNumTriangles(); ++k)
             {
                 int a, b, c;
                 tess.GetTriangle(k, a, b, c);
@@ -1357,7 +1604,6 @@ avtCCMFileFormat::TesselateCells2D(const int dom, const CellInfoVector &civ,
                 verts[2] = c; 
                 ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
 
-                oc[1] = i; // looping on cells, i = current cell
                 ((vtkUnsignedIntArray*)originalCells[dom])->
                     InsertNextTupleValue(oc);
             }
@@ -1400,7 +1646,7 @@ avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray,
     int nnodes = 0;
     vtkIdList *cellNodes = vtkIdList::New();
       
-    for (i = 0; i < faces.size(); i++)
+    for (i = 0; i < faces.size(); ++i)
     {
         useface = true;
         int nnodes = faces[i].nodes.size(); 
@@ -1408,7 +1654,7 @@ avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray,
         {
             return; 
         }
-        for (j = 0; useface && j <nnodes; j++)
+        for (j = 0; useface && j <nnodes; ++j)
         {
             useface = (count(uniqueNodes.begin(), uniqueNodes.end(), 
                              faces[i].nodes[j]-1) == 0);
@@ -1419,7 +1665,7 @@ avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray,
             {
                 usedBF = (ci.faceTypes[i] == 0);
                 // reorder this face
-                for (j = 0; j < nnodes; j++)
+                for (j = 0; j < nnodes; ++j)
                 {
                     uniqueNodes.push_back(faces[i].nodes[j]-1);
                 }
@@ -1430,7 +1676,7 @@ avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray,
             }
             else
             {
-                for (j = 0; j < nnodes; j++)
+                for (j = 0; j < nnodes; ++j)
                 {
                     uniqueNodes.push_back(faces[i].nodes[j]-1);
                     cellNodes->InsertNextId(faces[i].nodes[j]-1);
@@ -1467,7 +1713,7 @@ avtCCMFileFormat::BuildTet(const CellInfo &ci, vtkCellArray *cellArray,
     bool lastNodeFound = false;
     vtkIdList *cellNodes = vtkIdList::New();
 
-    for (i = 0; i < faces.size(); i++)
+    for (i = 0; i < faces.size(); ++i)
     {
         if (faces[i].nodes.size() != 3)
         {
@@ -1494,9 +1740,9 @@ avtCCMFileFormat::BuildTet(const CellInfo &ci, vtkCellArray *cellArray,
         cellNodes->InsertNextId(faces[0].nodes[2]-1);  
     } 
       
-    for (i = 1; !lastNodeFound && i < faces.size(); i++)
+    for (i = 1; !lastNodeFound && i < faces.size(); ++i)
     {
-        for (j = 0; !lastNodeFound && j <faces[i].nodes.size(); j++)
+        for (j = 0; !lastNodeFound && j <faces[i].nodes.size(); ++j)
         {
            if ((count(uniqueNodes.begin(), uniqueNodes.end(), 
                       faces[i].nodes[j]-1) == 0)) 
@@ -1536,12 +1782,12 @@ avtCCMFileFormat::BuildPyramid(const CellInfo &ci, vtkCellArray *cellArray,
     int baseFace = 0;
     vtkIdList *cellNodes = vtkIdList::New();
 
-    for (i = 0; i < faces.size(); i++)
+    for (i = 0; i < faces.size(); ++i)
     {
         if (faces[i].nodes.size() == 4)
         {
             baseFace = i;
-            for (j = 0; j < 4; j++)
+            for (j = 0; j < 4; ++j)
             {
                 uniqueNodes.push_back(faces[i].nodes[j]-1);
                 cellNodes->InsertNextId(faces[i].nodes[j]-1);
@@ -1549,7 +1795,7 @@ avtCCMFileFormat::BuildPyramid(const CellInfo &ci, vtkCellArray *cellArray,
         }
     }
     int triFace = (baseFace+1) % 4;
-    for (i = 0; i < 3; i++) // only 3 nodes in the triangle-face
+    for (i = 0; i < 3; ++i) // only 3 nodes in the triangle-face
     {
         if ((count(uniqueNodes.begin(), uniqueNodes.end(), 
              faces[triFace].nodes[i]-1)) == 0)
@@ -1584,7 +1830,7 @@ avtCCMFileFormat::BuildWedge(const CellInfo &ci, vtkCellArray *cellArray,
     unsigned int i, j;
     const FaceInfoVector &faces = ci.faces;
     vtkIdList *cellNodes = vtkIdList::New();
-    for (i = 0; i < faces.size(); i++)
+    for (i = 0; i < faces.size(); ++i)
     {
         if (faces[i].nodes.size() == 3)
         {
