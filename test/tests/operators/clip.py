@@ -84,5 +84,50 @@ name = "clip%02d" %(test_idx)
 Test(name)
 test_idx += 1
 
+# Test accurate vs. fast.
+DeleteAllPlots()
+OpenDatabase("../data/globe.silo")
+AddPlot("Mesh", "mesh1")
+c = ClipAttributes()
+c.funcType = c.Plane  # Plane, Sphere
+c.plane1Status = 1
+c.plane2Status = 1
+c.plane3Status = 0
+c.plane1Origin = (0, 2.37883, 0)
+c.plane2Origin = (0, 2.37883, 0)
+c.plane3Origin = (0, 2.37883, 0)
+c.plane1Normal = (1, 0, 0)
+c.plane2Normal = (0, 1, 0)
+c.plane3Normal = (0, 0, 1)
+c.planeInverse = 0
+c.center = (0, 0, 0)
+c.radius = 1
+c.sphereInverse = 0
+AddOperator("Clip")
+SetOperatorOptions(c)
+
+v = View3DAttributes()
+v.viewNormal = (0.0548192, 0.0422395, 0.997602)
+v.focus = (0.427242, 3.08232, -0.155563)
+v.viewUp = (0.195041, 0.979406, -0.0521867)
+v.viewAngle = 30
+v.parallelScale = 4.21585
+v.nearPlane = -34.5981
+v.farPlane = 34.5981
+v.imagePan = (0, 0)
+v.imageZoom = 1
+v.perspective = 1
+v.eyeAngle = 2
+v.centerOfRotationSet = 0
+v.centerOfRotation = (0, -0.0372553, 0)
+
+DrawPlots()
+SetView3D(v)
+
+Test("clip_globe_fast")
+
+c.quality = c.Accurate
+SetOperatorOptions(c)
+Test("clip_globe_accurate")
 
 Exit()
