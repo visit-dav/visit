@@ -43,7 +43,7 @@ class VISIT_VTK_API vtkVisItDataSetMapper : public vtkDataSetMapper
 {
 public:
   static vtkVisItDataSetMapper *New();
-  vtkTypeRevisionMacro(vtkVisItDataSetMapper,vtkMapper);
+  vtkTypeRevisionMacro(vtkVisItDataSetMapper, vtkDataSetMapper);
   void PrintSelf(ostream& os, vtkIndent indent);
   void Render(vtkRenderer *ren, vtkActor *act);
 
