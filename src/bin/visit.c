@@ -181,6 +181,9 @@ int ReadKey(const char *key, char **keyval);
  *   When parsing args, moved around the order of testing for spaces and
  *   surrounding quotes, to fix problem with path-with-spaces used with -o. 
  * 
+ *   Kathleen Bonnell, Fri Feb 29 16:43:46 PST 2008 
+ *   Added call to free printCommand. 
+ *
  *****************************************************************************/
 
 int
@@ -445,6 +448,7 @@ main(int argc, char *argv[])
      * Free memory
      */
     free(command);
+    free(printCommand);
     for(i = 0; i < nComponentArgs; ++i)
         free(componentArgs[i]);
     free(visitpath);
@@ -472,6 +476,8 @@ main(int argc, char *argv[])
  *            should be freed by the caller.
  *
  * Modifications:
+ *   Kathleen Bonnell, Fri Feb 29 16:43:46 PST 2008 
+ *   Only malloc keyval if it is null. 
  *
  *****************************************************************************/
 
@@ -484,7 +490,8 @@ ReadKeyFromRoot(HKEY which_root, const char *key, char **keyval)
 
     /* Try and read the key from the system registry. */
     sprintf(regkey, "VISIT%s", VERSION);
-    *keyval = (char *)malloc(500);
+    if (keyval == 0)
+        *keyval = (char *)malloc(500);
     if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
     {
         DWORD keyType, strSize = 500;
@@ -582,6 +589,9 @@ ReadKey(const char *key, char **keyval)
  *   Account for the fact that VisIt may be built with MSVC8, so location of
  *   config dir and binaries differs -- use new _VISIT_MSVC define. 
  *   
+ *   Kathleen Bonnell, Fri Feb 29 16:43:46 PST 2008 
+ *   Added call to free visituserpath and visitdevdir.
+ *
  *****************************************************************************/
 
 char *
@@ -633,6 +643,7 @@ AddEnvironment(int useShortFileName)
             visitpath = (char *)malloc(strlen(tmpdir) + 1);
             strcpy(visitpath, tmpdir);
         }
+        free(visitdevdir);
     }
 
 
@@ -713,6 +724,7 @@ AddEnvironment(int useShortFileName)
     free(ssh);
     free(sshargs);
     free(visitsystemconfig);
+    free(visituserpath);
 
     return visitpath;
 }
