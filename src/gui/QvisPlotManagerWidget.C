@@ -435,6 +435,9 @@ QvisPlotManagerWidget::SetSourceVisible(bool val)
 //   Brad Whitlock, Thu Dec 20 12:13:33 PST 2007
 //   Moved variable menu creation to a helper method.
 //  
+//   Gunther H. Weber, Fri Feb 29 18:35:18 PST 2008
+//   Fixed disappearing variables menu problem.
+//
 // ****************************************************************************
 
 void
@@ -448,10 +451,8 @@ QvisPlotManagerWidget::CreateMenus(QMenuBar *menuBar)
     // run along the top of the screen instead of being part of each window.
     plotMenuBar = menuBar;
 #else
-    QVBox *menuContainer = new QVBox(this);
-    plotMenuBar = new QMenuBar(menuContainer, "plotMenu");
-    topLayout->addMultiCellWidget(menuContainer, 3, 3, 0, 3);
-    menuContainer->setMaximumHeight(plotMenuBar->height() + 4);
+    plotMenuBar = new QMenuBar(this, "plotMenu");
+    topLayout->addMultiCellWidget(plotMenuBar, 3, 3, 0, 3);
 #endif
 
     // Create the Plot menu. Each time we highlight a plot, we
