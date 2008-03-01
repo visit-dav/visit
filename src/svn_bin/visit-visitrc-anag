@@ -1,5 +1,5 @@
 import time
-time.sleep(0.01)
+time.sleep(0.05)
 
 def SetupSlice():
     # Get the name of the first variable in the file
@@ -48,17 +48,22 @@ def SetupIsosurf():
     m = GetMetaData(filename)
     varname = m.GetScalars(0).name
     
-    AddPlot("Pseudocolor", varname)
-    AddOperator("Isosurface")
     IsosurfaceAtts = IsosurfaceAttributes()
     if m.GetMeshes(0).spatialDimension == 2:
-        IsosurfaceAtts.contourNLevels = 10
+        AddPlot("Contour", varname)
+        ContourAtts = ContourAttributes()
+        ContourAtts.colorType = ContourAtts.ColorBySingleColor  # ColorBySingleColor, ColorByMultipleColors, ColorByColorTabl
+        ContourAtts.singleColor = (0, 0, 0, 255)
+        ContourAtts.contourNLevels = 10
+        SetPlotOptions(ContourAtts)
     else:
+        AddPlot("Pseudocolor", varname)
+        AddOperator("Isosurface")
         IsosurfaceAtts.contourNLevels = 1
-    IsosurfaceAtts.contourMethod = IsosurfaceAtts.Level  # Level, Value, Percent
-    IsosurfaceAtts.scaling = IsosurfaceAtts.Linear  # Linear, Log
-    IsosurfaceAtts.variable = varname
-    SetOperatorOptions(IsosurfaceAtts)
+        IsosurfaceAtts.contourMethod = IsosurfaceAtts.Level  # Level, Value, Percent
+        IsosurfaceAtts.scaling = IsosurfaceAtts.Linear  # Linear, Log
+        IsosurfaceAtts.variable = varname
+        SetOperatorOptions(IsosurfaceAtts)
 
 RegisterMacro("Contours", SetupIsosurf)
 
