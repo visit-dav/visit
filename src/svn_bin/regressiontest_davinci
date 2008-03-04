@@ -39,6 +39,9 @@
 #    Hank Childs, Sat Feb  9 15:23:42 PST 2008
 #    Rename components directory to avt.
 #
+#    Mark C. Miller, Tue Mar  4 14:02:51 PST 2008
+#    Increased time limit to 20 minutes. Often davinci is heavily loaded.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -388,9 +391,9 @@ cd test
 for m in $modes; do
 
     if test "$skipList" = ""; then
-        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -m "$m" -l 600 -notrackmem -pixdiff 5 -avgdiff 5 -numdiff 0.0001
+        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -m "$m" -l 1200 -notrackmem -pixdiff 5 -avgdiff 5 -numdiff 0.0001
     else
-        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -s "$skipList" -m "$m" -l 600 -notrackmem -pixdiff 5 -avgdiff 5 -numdiff 0.0001
+        env PYTHONPATH=/usr/common/homes/m/miller86/visit/py_mods/lib/python ./runtest -q -s "$skipList" -m "$m" -l 1200 -notrackmem -pixdiff 5 -avgdiff 5 -numdiff 0.0001
     fi
     curerror=$?
     theMode=`echo $m | tr ',' '_'`
