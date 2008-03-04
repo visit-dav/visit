@@ -2381,7 +2381,7 @@ EOF
        if [[ -e /usr/lib64/libGL.so && ! -e /usr/lib/libGL.so &&
           ! -e /usr/X11R6/lib/libGL.so ]] ; then
           echo "Fixing OpenGLs path to /usr/lib64"
-          patch -p0 <<\EOF
+          patch -p1 <<\EOF
 diff -rp qt-x11-free-3.3.8.orig/config.tests/x11/opengl.test qt-x11-free-3.3.8/config.tests/x11/opengl.test
 *** qt-x11-free-3.3.8.orig/config.tests/x11/opengl.test	Mon Jun 16 01:50:04 2003
 --- qt-x11-free-3.3.8/config.tests/x11/opengl.test	Fri Feb  8 15:20:03 2008
