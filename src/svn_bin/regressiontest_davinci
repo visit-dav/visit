@@ -359,8 +359,6 @@ skipList_for_Davinci="\
 	  davinci,serial:tests/databases/silo.py:silo_20,silo_21 \
 	  davinci,parallel:tests/databases/silo.py:silo_20,silo_21 \
 	  davinci,scalable,parallel:tests/databases/silo.py:silo_20,silo_21 \
-          davinci,parallel:tests/queries/database.py \
-          davinci,scalable,parallel:tests/queries/database.py \
           davinci,serial:tests/meshtype/csg.py:csg_02 \
           davinci,parallel:tests/meshtype/csg.py:csg_02 \
           davinci,scalable,parallel:tests/meshtype/csg.py:csg_02 \
