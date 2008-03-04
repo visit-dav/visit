@@ -1029,6 +1029,11 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
 //  Programmer:  Hank Childs
 //  Creation:    March 10, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Mar  4 13:29:48 PST 2008
+//    Account for domains that do not have mixed variables.
+//
 // ****************************************************************************
 
 vector<avtMixedVariable*>
@@ -1048,6 +1053,45 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
 
     vector<avtMixedVariable *> out(mixvars.size(), NULL);
 
+    //
+    // Pretty ugly -- we need to come up with the mixed variable's name.  It
+    // could be that not a single domain on the processor has a valid mixed
+    // variable.  In that case we need to do global communication to find it.
+    // (It really does happen that a domain with no mixed zones gets ghost
+    // zones that are mixed.)
+    //
+    const char *mixvarname = NULL;
+    for (int i = 0 ; i < mixvars.size() ; i++)
+        if (mixvars[i] != NULL)
+            mixvarname = mixvars[i]->GetVarname().c_str();
+
+#ifdef PARALLEL
+    int rank;
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+
+    int length = 0;
+    if (mixvarname != NULL)
+    {
+        length = strlen(mixvarname)+1;
+    }
+    struct {int length; int rank;} len_rank_out, len_rank_in={length, rank};
+
+    MPI_Allreduce(&len_rank_in, &len_rank_out, 1, MPI_2INT, MPI_MAXLOC,
+                  VISIT_MPI_COMM);
+    length = len_rank_out.length;
+
+    char *mvname = new char[length];
+    if (mixvarname != NULL)
+    {
+        strcpy(mvname, mixvarname);
+    }
+
+    MPI_Bcast(mvname, length, MPI_CHAR, len_rank_out.rank, VISIT_MPI_COMM);
+    mixvarname = mvname;
+#else
+    char *mvname = NULL;
+#endif
+
     for (i = 0; i < domainNum.size(); ++i)
     {
         avtMixedVariable *oldMV = mixvars[i];
@@ -1055,17 +1099,26 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
         //
         // Estimate the sizes we will need for the new object.
         //
-        int newMixlen  = oldMV->GetMixlen();
+        int newMixlen  = (oldMV != NULL ? oldMV->GetMixlen(): 0);
         for (j = 0 ; j < nTotalDomains ; j++)
             newMixlen += nGainedMixlen[j][domainNum[i]];
+
+        if (newMixlen <= 0)
+        {
+            out[i] = NULL;
+            continue;
+        }
 
         //
         // Start by copying in everything from this domain's mixvar object.
         //
-        float       *new_buff = new float[newMixlen];
-        const float *old_buff = mixvars[i]->GetBuffer();
-        int mixlen_cnt        = oldMV->GetMixlen();
-        memcpy(new_buff, old_buff, sizeof(float)*mixlen_cnt);
+        float  *new_buff      = new float[newMixlen];
+        int     mixlen_cnt    = (oldMV != NULL ? oldMV->GetMixlen() : 0);
+        if (mixlen_cnt > 0)
+        {
+            const float *old_buff = oldMV->GetBuffer();
+            memcpy(new_buff, old_buff, sizeof(float)*mixlen_cnt);
+        }
 
         //
         // Now copy over the ghost information.  By iterating over the
@@ -1079,7 +1132,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
             mixlen_cnt += nGainedMixlen[j][domainNum[i]];
         }          
 
-        out[i] = new avtMixedVariable(new_buff, newMixlen,oldMV->GetVarname());
+        out[i] = new avtMixedVariable(new_buff, newMixlen,mixvarname);
         delete [] new_buff;
     }
 
@@ -1103,6 +1156,9 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
                 delete [] nGainedMixlen[i];
         delete [] nGainedMixlen;
     }
+
+    if (mvname != NULL)
+        delete [] mvname;
 
     return out;
 }
@@ -1832,6 +1888,11 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
 //  Programmer:  Hank Childs
 //  Creation:    March 10, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Mar  4 13:40:54 PST 2008
+//    Do not assume mixvar is non-NULL for all domains.
+//
 // ****************************************************************************
 
 void
@@ -1931,7 +1992,9 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                 // and populate the buffer.
                 mixGained[sendDom][recvDom] = nMixlen;
                 vals[sendDom][recvDom] = new float[nMixlen];
-                const float *buff = givingVar->GetBuffer();
+                const float *buff = NULL;
+                if (givingVar != NULL)
+                    buff = givingVar->GetBuffer();
                 nMixlen = 0;
                 for (i = 0; i < nCells; ++i)
                 {
@@ -2037,7 +2100,9 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                 // and populate the buffer.
                 mixGained[sendDom][recvDom] = nMixlen;
                 float *sendBuff = new float[nMixlen];
-                const float *buff = givingVar->GetBuffer();
+                const float *buff = NULL;
+                if (givingVar != NULL)
+                    buff = givingVar->GetBuffer();
                 nMixlen = 0;
                 for (i = 0; i < nCells; ++i)
                 {
