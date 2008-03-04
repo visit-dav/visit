@@ -464,7 +464,7 @@ for m in $modes; do
             theMode=`echo $testLine | cut -d'/' -f7 | cut -d'_' -f2-`
             theRelDir=`echo $testLine | cut -d'/' -f6-`
             theRelDir="./${theRelDir}"
-            theTimeStamp=`ls -l --time-style=+"%A_%b_%e_%I:%M%p" $testLine | tr -s ' ' | cut -d' ' -f6`
+            theTimeStamp=`ls -l --time-style=+"%A_%b_%d_%I:%M%p" $testLine | tr -s ' ' | cut -d' ' -f6`
 
             echo "<tr>" >> index.html
             echo "<td>${theTimeStamp}</td>" >> index.html
