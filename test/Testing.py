@@ -1046,26 +1046,6 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
     return (totpixels, plotpixels, diffpixels, dmean)
 
 # ----------------------------------------------------------------------------
-# Function: GetReplaceTag
-#
-# Purpose: Form a replacement tag: a base-26 'number' consisting of capitol
-#          letters representing the digits of the argument, 'wordIndex'
-# ----------------------------------------------------------------------------
-def GetReplaceTag(wordIndex):
-    base = 26
-    basePower = 1
-    while basePower <= wordIndex:
-        basePower = basePower * base
-    basePower = basePower / base
-    result = ""
-    while basePower >= 1:
-        digit = int(wordIndex / basePower)
-        wordIndex = wordIndex - digit * basePower
-        basePower = basePower / 26
-        result = result + string.ascii_letters[26+digit]
-    return result
-
-# ----------------------------------------------------------------------------
 # Function: FilterTestText
 #
 # Purpose:
@@ -1109,6 +1089,12 @@ def GetReplaceTag(wordIndex):
 #   Fixed some issues with the replace algorithm. Changed how near-zero
 #   diffs are handled back to 'ordinary' relative diff. Made it more graceful
 #   if it is unable to import PIL. Made text diff'ing proceed without PIL.
+#
+#   Mark C. Miller, Tue Mar  4 19:53:19 PST 2008
+#   Discovered that string managment was taking a non-trivial portion of
+#   total test time for text-oriented tests. So, found a better way to handle
+#   the replacements using string slicing. Now, replacements are handled as
+#   we march word-for-word through the strings.
 # ----------------------------------------------------------------------------
 
 def FilterTestText(inText, baseText):
@@ -1135,33 +1121,27 @@ def FilterTestText(inText, baseText):
 
 
 	#
-	# Break the strings into words. Make a pass looking for words that
+	# Break the strings into words. Pass over words looking for words that
 	# form numbers. Whenever we have numbers, compute their difference
 	# and compare it to threshold. If its above threshold, do nothing.
 	# The strings will wind up triggering a text difference. If its below
 	# threshold, eliminate the word from effecting text difference by
-	# setting it identical to corresponding baseline word. In the first
-	# loop, set it to a unique tag. In the second loop, set the tag to 
-	# the correct baseline word.
+	# setting it identical to corresponding baseline word.
 	#
 	baseWords = string.split(baseText)
 	inWords = string.split(tmpText)
 	outText=""
         transTab = string.maketrans(string.digits, string.digits)
-	replMap = {}
         inStart = 0
-        baseStart = 0
 	for w in range(len(baseWords)):
             try:
 		inWordT = string.translate(inWords[w], transTab, '><,()')
-                inStart = string.find(tmpText, inWordT, inStart)
 		baseWordT = string.translate(baseWords[w], transTab, '><,()')
-                baseStart = string.find(baseText, baseWordT, baseStart)
-		replTag = "@@@%s@@@"%GetReplaceTag(w)
 		if inWordT.count(".") == 2 and inWordT.endswith(".") or \
 		   baseWordT.count(".") == 2 and baseWordT.endswith("."):
 		    inWordT = inWordT.rstrip(".")
 		    baseWordT = baseWordT.rstrip(".")
+                inStart = string.find(tmpText, inWordT, inStart)
 
 		#
 		# Attempt to convert this word to a number. Exception indicates
@@ -1170,15 +1150,8 @@ def FilterTestText(inText, baseText):
 	        inVal = string.atof(inWordT)
 	        baseVal = string.atof(baseWordT)
 
-                #
-                # Replace this number in the string with its special replacement tag
-                #
-                tmpText = string.replace(tmpText, "%s"%inWordT, "%s"%replTag, 1)
-
 		#
-		# If the value is too close to zero, don't use a relative
-		# difference. Use an absolute difference but compare it
-		# to the threshold squared too.
+		# Compute a relative difference measure for these two numbers
 		#
                 numAtor = abs(inVal - baseVal)
                 denAtor = abs(max(inVal, baseVal))
@@ -1194,29 +1167,28 @@ def FilterTestText(inText, baseText):
                             valDiff = numAtor / denAtor
 
                 #
-                # Set the replacement to either base word or current depending on difference
-                # tolerance
-                if valDiff < numdifftol:
-                    replMap[replTag] = baseWordT
-                else:
-                    replMap[replTag] = inWordT
+                # We want to ignore diffs that are deemed below threshold given
+                # the relative diff. measure above. To affect this, we need to
+                # replace the numbers in the input text that differ with their
+                # cooresponding numbers in the baseline text. This will have the
+                # effect of making the HTML difference ignore this value.
+                # So, we do this replace only if the diff is non-zero and less
+                # than threshold.
+                #
+                if valDiff > 0 and valDiff < numdifftol:
+                    tmpText = tmpText[:inStart] + baseWordT + tmpText[inStart+len(inWordT):]
+
+                inStart = inStart + len(inWordT)
 
 	    #
 	    # This word wasn't a number, move on
 	    #
             except ValueError:
-	        outText = outText + inWords[w]
-
-        #
-	# Ok, at this point, the string has had all its numerical results that differ
-	# from baseline replaced with unique tags of the form '@@@%06d@@@'. Now, make a 
-	# final pass over the string and replace each of these tags with their corresponding
-	# true baseline text
-	#
-	for w in range(len(replMap)):
-            tmpText = string.replace(tmpText, "%s"%replMap.keys()[w], "%s"%replMap.values()[w], 1)
+                # ignore exceptions
+                pass
 
         return tmpText
+
     else:
         if silo == 1:
             return string.replace(inText, "/view/visit_VOBowner_testsilo", "")
