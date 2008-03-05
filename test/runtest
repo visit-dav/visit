@@ -239,6 +239,10 @@
 #
 #    Mark C. Miller, Wed Feb 20 21:18:29 PST 2008
 #    Added logic to limit engine process ids
+#
+#    Mark C. Miller, Tue Mar  4 18:36:42 PST 2008
+#    Reduced time to wait to get engine pids from 25 to 10 seconds; check
+#    for existence of engine_pids.txt file before trying to read it.
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -833,15 +837,18 @@ for t in $testcases; do
 		fi
             fi
         fi
-        # wait to get engine pids for max of 25 seconds
+        # wait to get engine pids for max of 10 seconds
         n=0
-        while test ! -f engine_pids.txt -a $n -lt 25; do
+        while test ! -f engine_pids.txt -a $n -lt 10; do
             sleep 1
             n=`expr $n + 1`
         done
-        while read epid; do
- 	    ./limitTest $limitSeconds 15 $epid &
-        done < engine_pids.txt
+        if test -f engine_pids.txt; then
+            while read epid; do
+ 	        ./limitTest $limitSeconds 15 $epid &
+            done < engine_pids.txt
+            rm -f engine_pids.txt
+        fi
 	limitProcId=0
 	if test $testProcId -ne 0; then
  	    ./limitTest $limitSeconds 15 $testProcId &
