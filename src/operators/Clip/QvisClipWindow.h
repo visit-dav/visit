@@ -75,6 +75,10 @@ class ClipAttributes;
 //   Added Qt version-specific coding so we can still use versions older than
 //   3.2.
 //
+//   Cyrus Harrison, Wed Mar  5 10:25:39 PST 2008
+//   Removed tabWidget and slot for tabWidgetChanged 
+//   (to Match Sean's changes in QvisClipWindow.C)
+//
 // ****************************************************************************
 
 class QvisClipWindow : public QvisOperatorWindow
@@ -108,7 +112,6 @@ private slots:
     void plane1StatusToggled(bool);
     void plane2StatusToggled(bool);
     void plane3StatusToggled(bool);
-    void tabWidgetChanged(QWidget *);
 private:
     // Method to create plane widgets.
     void CreatePlaneGroup(QWidget *, QWidget **,
@@ -142,7 +145,6 @@ private:
     QCheckBox    *planeInverse;
     QButtonGroup *planeToolControlledClipPlane;
     QCheckBox    *sphereInverse;
-    QTabWidget   *tabWidget;
     QVBox        *planeWidgets;
     QWidget      *sphereWidgets;
 
