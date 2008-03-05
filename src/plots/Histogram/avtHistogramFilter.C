@@ -128,6 +128,9 @@ avtHistogramFilter::SetAttributes(const HistogramAttributes &h_atts)
 //    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
 //    Support for log, sqrt scaling.
 //
+//    Hank Childs, Wed Mar  5 09:54:20 PST 2008
+//    Don't get the data range if the min and max are already specified.
+//
 // ****************************************************************************
 
 void
@@ -140,12 +143,13 @@ avtHistogramFilter::PreExecute(void)
     if (atts.GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
     {
         bool extentsSpecified = atts.GetSpecifyRange();
+        if (extentsSpecified)
+            GetDataExtents(dataValueRange, pipelineVariable);
 
-	GetDataExtents( dataValueRange, pipelineVariable);
-	SetWorkingMin( (extentsSpecified ? atts.GetMin() : dataValueRange[0]) );
-	SetWorkingMax( (extentsSpecified ? atts.GetMax() : dataValueRange[1]) );
-	SetWorkingNumBins( atts.GetNumBins() );
-	
+        SetWorkingMin( (extentsSpecified ? atts.GetMin() : dataValueRange[0]) );
+        SetWorkingMax( (extentsSpecified ? atts.GetMax() : dataValueRange[1]) );
+        SetWorkingNumBins( atts.GetNumBins() );
+        
         if (bins != NULL)
             delete [] bins;
         bins = new float[workingNumBins];
@@ -237,8 +241,8 @@ avtHistogramFilter::PostExecute(void)
             for (i = 0 ; i < workingNumBins ; i++)
                 bins[i] = 0.;
         }
-	workingRange[0] = 0.;
-	workingRange[1] = (float)workingNumBins;
+        workingRange[0] = 0.;
+        workingRange[1] = (float)workingNumBins;
     }
 
     float *newBins = new float[workingNumBins];
@@ -439,28 +443,28 @@ avtHistogramFilter::PostExecute(void)
     {
         if(GetInput()->GetInfo().GetAttributes().GetVariableUnits() != "")
         {
-	    string xlabel = "";
-	    if ( atts.GetDataScale() == HistogramAttributes::Linear )
-		xlabel = string( "Variable " ) + pipelineVariable;
-	    else if ( atts.GetDataScale() == HistogramAttributes::Log )
-		xlabel = string( "Variable log10(" ) + pipelineVariable + string(") ");
-	    if ( atts.GetDataScale() == HistogramAttributes::SquareRoot )
-		xlabel = string( "Variable sqrt(" ) + pipelineVariable + string(") ");
-	    
+            string xlabel = "";
+            if ( atts.GetDataScale() == HistogramAttributes::Linear )
+                xlabel = string( "Variable " ) + pipelineVariable;
+            else if ( atts.GetDataScale() == HistogramAttributes::Log )
+                xlabel = string( "Variable log10(" ) + pipelineVariable + string(") ");
+            if ( atts.GetDataScale() == HistogramAttributes::SquareRoot )
+                xlabel = string( "Variable sqrt(" ) + pipelineVariable + string(") ");
+            
             outAtts.SetXLabel( xlabel );
             outAtts.SetXUnits(GetInput()->GetInfo().GetAttributes().GetVariableUnits());
         }
         else
-	{
-	    string str = "";
-	    if ( atts.GetDataScale() == HistogramAttributes::Linear )
-		str = pipelineVariable;
-	    else if ( atts.GetDataScale() == HistogramAttributes::Log )
-		str = string( "log10(" ) + pipelineVariable + string(") ");
-	    if ( atts.GetDataScale() == HistogramAttributes::SquareRoot )
-	        str = string( "sqrt(" ) + pipelineVariable + string(") ");	    
+        {
+            string str = "";
+            if ( atts.GetDataScale() == HistogramAttributes::Linear )
+                str = pipelineVariable;
+            else if ( atts.GetDataScale() == HistogramAttributes::Log )
+                str = string( "log10(" ) + pipelineVariable + string(") ");
+            if ( atts.GetDataScale() == HistogramAttributes::SquareRoot )
+                str = string( "sqrt(" ) + pipelineVariable + string(") ");            
             outAtts.SetXUnits(str );
-	}
+        }
     }
 
     if (atts.GetBasedOn() == HistogramAttributes::ManyVarsForSingleZone)
@@ -505,11 +509,11 @@ avtHistogramFilter::PostExecute(void)
             else
                 yunits = atts.GetWeightVariable();
         }
-	string str = yunits;
-	if ( atts.GetBinScale() == HistogramAttributes::Log )
-	    str = "log10(" + yunits + ") ";
-	else if ( atts.GetBinScale() == HistogramAttributes::SquareRoot )
-	    str = "sqrt(" + yunits + ") ";
+        string str = yunits;
+        if ( atts.GetBinScale() == HistogramAttributes::Log )
+            str = "log10(" + yunits + ") ";
+        else if ( atts.GetBinScale() == HistogramAttributes::SquareRoot )
+            str = "sqrt(" + yunits + ") ";
 
         outAtts.SetYUnits(str);
     }
@@ -592,6 +596,9 @@ avtHistogramFilter::ExecuteData(vtkDataSet *inDS, int chunk, std::string)
 //    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
 //    Support for log, sqrt scaling.    
 //
+//    Hank Childs, Wed Mar  5 10:17:00 PST 2008
+//    Don't recenter nodal data to be zonal.
+//
 // ****************************************************************************
 
 void
@@ -601,41 +608,9 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
     // Get the variable that we are binning by.
     //
     const char *var = pipelineVariable;
-    vtkDataArray *bin_arr = NULL;
-    bool ownBinArr = false;
-    
-    // if we have points obtain point data
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
-    {
-        // in the point case, get point date
-        bin_arr = inDS->GetPointData()->GetArray(var);
-    }
-    else if (inDS->GetPointData()->GetArray(var) != NULL)
-    {
-        // in the 2d or 3d case make sure to get zone centered data
-        vtkDataSet *new_in_ds = (vtkDataSet *) inDS->NewInstance();
-
-        // convert to zone centered 
-        new_in_ds->CopyStructure(inDS);
-        new_in_ds->GetPointData()->AddArray(
-                                          inDS->GetPointData()->GetArray(var));
-
-        vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
-        pd2cd->SetInput(new_in_ds);
-        pd2cd->Update();
-
-        bin_arr = pd2cd->GetOutput()->GetCellData()->GetArray(var);
-        bin_arr->Register(NULL);
-        ownBinArr = true;
-
-        new_in_ds->Delete();
-        pd2cd->Delete();
-    }
-    else
-    {
-        // otherwise simply use zone data
+    vtkDataArray *bin_arr = inDS->GetPointData()->GetArray(var);
+    if (bin_arr == NULL)
         bin_arr = inDS->GetCellData()->GetArray(var);
-    }
     if (bin_arr == NULL)
         EXCEPTION0(ImproperUseException);
 
@@ -657,17 +632,14 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
         if (ghosts != NULL && ghosts[i] != '\0')
             continue;
         float val = bin_arr->GetTuple1(i);
-	int index = ComputeBinIndex( val );
-	if ( index < 0 )
-	    continue;
+        int index = ComputeBinIndex( val );
+        if ( index < 0 )
+            continue;
 
         if (index >= workingNumBins)
             index = workingNumBins-1;
         bins[index] += 1;
     }
-
-    if (ownBinArr)
-        bin_arr->Delete();
 }
 
 
@@ -760,10 +732,10 @@ avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
     {
         if (ghosts != NULL && ghosts[i] != '\0')
             continue;
-	float val = bin_arr->GetTuple1(i);
-	int index = ComputeBinIndex( val );
-	if ( index < 0 )
-	    continue;
+        float val = bin_arr->GetTuple1(i);
+        int index = ComputeBinIndex( val );
+        if ( index < 0 )
+            continue;
         if (index >= workingNumBins)
             index = workingNumBins-1;
         float amount = amount_arr->GetTuple1(i);
@@ -882,10 +854,10 @@ avtHistogramFilter::VariableExecute(vtkDataSet *inDS)
     {
         if (ghosts != NULL && ghosts[i] != '\0')
             continue;
-	float val = histIndexVar->GetTuple1(i);
-	int index = ComputeBinIndex( val );
-	if ( index < 0 )
-	    continue;
+        float val = histIndexVar->GetTuple1(i);
+        int index = ComputeBinIndex( val );
+        if ( index < 0 )
+            continue;
         if (index >= workingNumBins)
             index = workingNumBins-1;
         float amount = weightVar->GetTuple1(i);
@@ -1080,28 +1052,28 @@ avtHistogramFilter::ComputeBinIndex( const float &value ) const
 {
     // Value out of bounds, just return.
     if ( value < workingRange[0] || value > workingRange[1] )
-	return -1;
+        return -1;
 
     // If we have a zero range, return 0
     if ( workingRange[0] == workingRange[1] )
-	return 0;
+        return 0;
     
     int index = 0;
     if ( atts.GetDataScale() == HistogramAttributes::Linear )
     {
-	index = (int)((value - workingRange[0]) / binStep);
+        index = (int)((value - workingRange[0]) / binStep);
     }
     else if ( atts.GetDataScale() == HistogramAttributes::SquareRoot )
     {
-	float sign = (value < 0 ? -1.0 : 1.0);
-	float x = sign * sqrt( fabs(value) );
-	index = (int)((x - sqrtWorkingRange[0]) / sqrtBinStep);	
+        float sign = (value < 0 ? -1.0 : 1.0);
+        float x = sign * sqrt( fabs(value) );
+        index = (int)((x - sqrtWorkingRange[0]) / sqrtBinStep);        
     }
     else if ( atts.GetDataScale() == HistogramAttributes::Log )
     {
-	float sign = (value < 0 ? -1.0 : 1.0);
-	float x = sign * log10( fabs( value ) + 1.0 );
-	index = (int)((x - logWorkingRange[0]) / logBinStep);
+        float sign = (value < 0 ? -1.0 : 1.0);
+        float x = sign * log10( fabs( value ) + 1.0 );
+        index = (int)((x - logWorkingRange[0]) / logBinStep);
     }
 
     return index;
@@ -1122,21 +1094,21 @@ void
 avtHistogramFilter::ScaleBins()
 {
     if ( atts.GetBinScale() == HistogramAttributes::Linear )
-	return;
+        return;
     else if ( atts.GetBinScale() == HistogramAttributes::Log )
     {
-	for ( int i = 0; i < workingNumBins; i++ )
-	{
-	    float x = bins[i];
-	    if ( x > 0.0 )
-		x = log10(x);
-	    bins[i] = x;
-	}
+        for ( int i = 0; i < workingNumBins; i++ )
+        {
+            float x = bins[i];
+            if ( x > 0.0 )
+                x = log10(x);
+            bins[i] = x;
+        }
     }
     else if ( atts.GetBinScale() == HistogramAttributes::SquareRoot )
     {
-	for ( int i = 0; i < workingNumBins; i++ )
-	    bins[i] = sqrt( bins[i] );
+        for ( int i = 0; i < workingNumBins; i++ )
+            bins[i] = sqrt( bins[i] );
     }    
 }
 
@@ -1182,11 +1154,11 @@ avtHistogramFilter::GetWorkingMin() const
     switch ( atts.GetDataScale() )
     {
     case  HistogramAttributes::Linear:
-	return workingRange[0];
+        return workingRange[0];
     case  HistogramAttributes::Log:
-	return logWorkingRange[0];
+        return logWorkingRange[0];
     case HistogramAttributes::SquareRoot:
-	return sqrtWorkingRange[0];	
+        return sqrtWorkingRange[0];        
     default:
         return workingRange[0];
     }
@@ -1235,11 +1207,11 @@ avtHistogramFilter::GetWorkingMax() const
     switch ( atts.GetDataScale() )
     {
     case  HistogramAttributes::Linear:
-	return workingRange[1];
+        return workingRange[1];
     case  HistogramAttributes::Log:
-	return logWorkingRange[1];
-    case HistogramAttributes::SquareRoot:	
-	return sqrtWorkingRange[1];	
+        return logWorkingRange[1];
+    case HistogramAttributes::SquareRoot:        
+        return sqrtWorkingRange[1];        
     default :
         return workingRange[1];
     }

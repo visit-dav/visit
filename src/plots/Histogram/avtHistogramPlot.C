@@ -204,6 +204,9 @@ avtHistogramPlot::GetMapper(void)
 //    Hank Childs, Wed Dec 12 11:00:20 PST 2007
 //    Retire 2D amount ... it is now captured by mesh coord type.
 //
+//    Hank Childs, Tue Mar  4 16:39:04 PST 2008
+//    Do not insert a volume weighting for frequency counts.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -240,7 +243,10 @@ avtHistogramPlot::ApplyOperators(avtDataObject_p input)
 
     HistogramFilter = new avtHistogramFilter;
     HistogramFilter->SetAttributes(atts);
-    HistogramFilter->SetInput(af->GetOutput());
+    if (atts.GetHistogramType() != HistogramAttributes::Frequency)
+        HistogramFilter->SetInput(af->GetOutput());
+    else
+        HistogramFilter->SetInput(input);
     return HistogramFilter->GetOutput();
 #endif
     return input;
