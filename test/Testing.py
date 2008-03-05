@@ -1045,6 +1045,25 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 
     return (totpixels, plotpixels, diffpixels, dmean)
 
+# ----------------------------------------------------------------------------
+# Function: GetReplaceTag
+#
+# Purpose: Form a replacement tag: a base-26 'number' consisting of capitol
+#          letters representing the digits of the argument, 'wordIndex'
+# ----------------------------------------------------------------------------
+def GetReplaceTag(wordIndex):
+    base = 26
+    basePower = 1
+    while basePower <= wordIndex:
+        basePower = basePower * base
+    basePower = basePower / base
+    result = ""
+    while basePower >= 1:
+        digit = int(wordIndex / basePower)
+        wordIndex = wordIndex - digit * basePower
+        basePower = basePower / 26
+        result = result + string.ascii_letters[26+digit]
+    return result
 
 # ----------------------------------------------------------------------------
 # Function: FilterTestText
@@ -1085,6 +1104,11 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 #   tags with the actual baseline string thereby making that word in the
 #   string identical to the baseline result and effectively eliminating it
 #   from effecting the text difference.
+#
+#   Mark C. Miller, Tue Mar  4 18:35:45 PST 2008
+#   Fixed some issues with the replace algorithm. Changed how near-zero
+#   diffs are handled back to 'ordinary' relative diff. Made it more graceful
+#   if it is unable to import PIL. Made text diff'ing proceed without PIL.
 # ----------------------------------------------------------------------------
 
 def FilterTestText(inText, baseText):
@@ -1125,52 +1149,57 @@ def FilterTestText(inText, baseText):
 	outText=""
         transTab = string.maketrans(string.digits, string.digits)
 	replMap = {}
+        inStart = 0
+        baseStart = 0
 	for w in range(len(baseWords)):
             try:
 		inWordT = string.translate(inWords[w], transTab, '><,()')
+                inStart = string.find(tmpText, inWordT, inStart)
 		baseWordT = string.translate(baseWords[w], transTab, '><,()')
-		replTag = "@@@%06d@@@"%w
+                baseStart = string.find(baseText, baseWordT, baseStart)
+		replTag = "@@@%s@@@"%GetReplaceTag(w)
 		if inWordT.count(".") == 2 and inWordT.endswith(".") or \
 		   baseWordT.count(".") == 2 and baseWordT.endswith("."):
 		    inWordT = inWordT.rstrip(".")
 		    baseWordT = baseWordT.rstrip(".")
 
 		#
-		# Attempt to convert ths word to a number. Exception indicates
+		# Attempt to convert this word to a number. Exception indicates
 		# it wasn't a number and we can move on to next word
 		#
 	        inVal = string.atof(inWordT)
 	        baseVal = string.atof(baseWordT)
+
+                #
+                # Replace this number in the string with its special replacement tag
+                #
+                tmpText = string.replace(tmpText, "%s"%inWordT, "%s"%replTag, 1)
 
 		#
 		# If the value is too close to zero, don't use a relative
 		# difference. Use an absolute difference but compare it
 		# to the threshold squared too.
 		#
-		tooSmall = False
-		if baseVal < numdifftol * numdifftol and \
-		  -baseVal < numdifftol * numdifftol:
-		    valDiff = inVal - baseVal
-		    tooSmall = True
+                numAtor = abs(inVal - baseVal)
+                denAtor = abs(max(inVal, baseVal))
+                if numAtor == 0:
+                    valDiff = 0
                 else:
-		    valDiff = (inVal - baseVal) / baseVal
-		if valDiff < 0:
-		    valDiff = -valDiff
+                    if inVal == 0 or baseVal == 0: # for identically zero, use abs diff
+                        valDiff = numAtor
+                    else:
+                        if denAtor == 0:
+                            valDiff = numdifftol
+                        else:
+                            valDiff = numAtor / denAtor
 
-		#
-		# We only need to worry about string replacements if the values
-		# are actually different. And then, only if their difference
-		# is below threshold (or square of threshold for values near zero).
-		#
-                if valDiff != 0:
-		    if tooSmall:
-		        if valDiff < numdifftol * numdifftol:
-                            tmpText = string.replace(tmpText, "%s"%inWordT, "%s"%replTag, 1)
-			    replMap[replTag] = baseWordT
-		    else:
-                        if valDiff < numdifftol:
-                            tmpText = string.replace(tmpText, "%s"%inWordT, "%s"%replTag, 1)
-			    replMap[replTag] = baseWordT
+                #
+                # Set the replacement to either base word or current depending on difference
+                # tolerance
+                if valDiff < numdifftol:
+                    replMap[replTag] = baseWordT
+                else:
+                    replMap[replTag] = inWordT
 
 	    #
 	    # This word wasn't a number, move on
@@ -1179,7 +1208,7 @@ def FilterTestText(inText, baseText):
 	        outText = outText + inWords[w]
 
         #
-	# Ok, at this point, the string has had all its numerical results that differe
+	# Ok, at this point, the string has had all its numerical results that differ
 	# from baseline replaced with unique tags of the form '@@@%06d@@@'. Now, make a 
 	# final pass over the string and replace each of these tags with their corresponding
 	# true baseline text
@@ -1258,22 +1287,17 @@ def TestText(file, inText):
     O.close()
 
     nchanges = nlines = 0
-    if usePIL:
 
-        # diff the baseline and current text files
-        d = HtmlDiff.Differencer(base, cur)
-        (nchanges, nlines) = d.Difference("html/%s.html"%file, file)
+    # diff the baseline and current text files
+    d = HtmlDiff.Differencer(base, cur)
+    (nchanges, nlines) = d.Difference("html/%s.html"%file, file)
 
-        # save the diff output 
-        diffComm = "diff " + base + " " + cur
-        diffOut = commands.getoutput(diffComm)
-        O = open(diff, 'w')
-        O.write(diffOut)
-        O.close()
-
-    else:
-
-        nchanges = nlines = -1
+    # save the diff output 
+    diffComm = "diff " + base + " " + cur
+    diffOut = commands.getoutput(diffComm)
+    O = open(diff, 'w')
+    O.write(diffOut)
+    O.close()
 
     # did the test fail? 
     failed = (nchanges > 0)
@@ -1531,7 +1555,11 @@ modes    = string.split(os.environ['VISIT_TEST_MODES'],",")
 skipCases = string.split(os.environ['VISIT_TEST_SKIP_CASES'],",")
 
 if usePIL:
-    from PIL import Image, ImageChops, ImageStat
+    try:
+        from PIL import Image, ImageChops, ImageStat
+    except:
+        print "WARNING: unable to import modules from PIL" 
+        usePIL = 0
 else:
     if os.path.isfile("baseline/cksums.txt"):
         cksumFile = open("baseline/cksums.txt","r")
