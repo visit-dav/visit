@@ -143,7 +143,7 @@ avtHistogramFilter::PreExecute(void)
     if (atts.GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
     {
         bool extentsSpecified = atts.GetSpecifyRange();
-        if (extentsSpecified)
+        if (!extentsSpecified)
             GetDataExtents(dataValueRange, pipelineVariable);
 
         SetWorkingMin( (extentsSpecified ? atts.GetMin() : dataValueRange[0]) );
