@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<Object name="VisIt">
+    <Field name="Version" type="string">1.9.0</Field>
+    <Object name="VIEWER">
+        <Object name="DEFAULT_VALUES">
+            <Object name="HostProfileList">
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">cosmea - parallel</Field>
+                    <Field name="host" type="string">login01.cosmea.mcs.anl.gov</Field>
+                    <Field name="numProcessors" type="int">16</Field>
+                    <Field name="numNodesSet" type="bool">true</Field>
+                    <Field name="numNodes" type="int">4</Field>
+                    <Field name="timeLimitSet" type="bool">true</Field>
+                    <Field name="timeLimit" type="string">1:00:00</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">qsub/mpiexec</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/gfs/software/software/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="launchArgsSet" type="bool">true</Field>
+                    <Field name="sublaunchArgsSet" type="bool">true</Field>
+                    <Field name="sublaunchArgs" type="string">-env MV2_ON_DEMAND_THRESHOLD 1024</Field>
+                    <Field name="hostAliases" type="string">login## login##.cosmea login##.cosmea.mcs login##.cosmea.mcs.anl login##.cosmea.mcs.anl.gov cosmea.mcs.anl.gov cosmea.mcs.anl cosmea.mcs cosmea</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">cosmea - serial</Field>
+                    <Field name="host" type="string">login01.cosmea.mcs.anl.gov</Field>
+                    <Field name="numProcessors" type="int">16</Field>
+                    <Field name="numNodesSet" type="bool">true</Field>
+                    <Field name="numNodes" type="int">4</Field>
+                    <Field name="timeLimitSet" type="bool">true</Field>
+                    <Field name="timeLimit" type="string">1:00:00</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">qsub/mpiexec</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/gfs/software/software/visit" </Field>
+                    <Field name="launchArgsSet" type="bool">true</Field>
+                    <Field name="sublaunchArgsSet" type="bool">true</Field>
+                    <Field name="sublaunchArgs" type="string">-env MV2_ON_DEMAND_THRESHOLD 1024</Field>
+                    <Field name="hostAliases" type="string">login## login##.cosmea login##.cosmea.mcs login##.cosmea.mcs.anl login##.cosmea.mcs.anl.gov cosmea.mcs.anl.gov cosmea.mcs.anl cosmea.mcs cosmea</Field>
+                </Object>
+                <Field name="activeProfile" type="int">1</Field>
+            </Object>
+        </Object>
+    </Object>
+</Object>
