@@ -8,7 +8,7 @@
 # Date:   October 26, 1996
 #
 # Usage
-#    visit-install [-c open | closed | ornl | nersc] [-g group] [-gw] [-l] [-dmg]
+#    visit-install [-c open | closed | ornl | nersc | anl] [-g group] [-gw] [-l] [-dmg]
 #                  [-beta | -private] version platform directory
 #
 #    The default is to install this version as the current version.
@@ -161,6 +161,8 @@
 #    directory inadvertently also required that the install directory
 #    already exist.
 #
+#    Dave Bremer, Wed Mar  5 14:02:40 CST 2008
+#    Added anl (Argonne National Lab) site option.
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -228,7 +230,7 @@ while ($option_found == true)
 end
 
 if ($#argv != 3) then
-   echo "Usage: visit-install [-c open | closed | ornl | nersc] [-g group] [-b bank] [-gw] [-l] [-dmg]"
+   echo "Usage: visit-install [-c open | closed | ornl | nersc | anl] [-g group] [-b bank] [-gw] [-l] [-dmg]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
    echo "                     This will install all of its files and subdirectories"
@@ -341,8 +343,9 @@ while ($config == prompt)
    echo "   3) LLNL closed network"
    echo "   4) NERSC network"
    echo "   5) ORNL network"
+   echo "   6) ANL network"
    echo ""
-   echo "(1,2,3,4,5):"
+   echo "(1,2,3,4,5,6):"
 
    set config = $<
    switch ($config)
@@ -361,14 +364,17 @@ while ($config == prompt)
       case 5:
          set config = ornl
          breaksw
+      case 6:
+         set config = anl
+         breaksw
       default:
          set config = prompt
          breaksw
    endsw
 end
 
-if ($config != none && $config != open && $config != closed && $config != nersc && $config != ornl) then
-   echo "Illegal configuration option, choices are none, open, closed, ornl, and nersc."
+if ($config != none && $config != open && $config != closed && $config != nersc && $config != ornl && $config != anl) then
+   echo "Illegal configuration option, choices are none, open, closed, ornl, nersc, and anl."
    exit (1)
 endif
 
@@ -513,6 +519,8 @@ else if ($config == open) then
    ln -s visit-config-open  "$dir"/$version+/.visit/config_template
 else if ($config == ornl) then
    ln -s visit-config-ornl "$dir"/$version+/.visit/config_template
+else if ($config == anl) then
+   ln -s visit-config-anl "$dir"/$version+/.visit/config_template
 endif
 if (-e "$dir"/$version+/.visit/config_template) then
     sed -e "s/bdivp/$bank/" "$dir"/$version+/.visit/config_template > "$dir"/$version+/.visit/config

@@ -1309,6 +1309,7 @@ cp $VisItDir/svn_bin/visit-config-nersc  $verdir/.visit
 cp $VisItDir/svn_bin/visit-config-open   $verdir/.visit
 cp $VisItDir/svn_bin/visit-config-ornl   $verdir/.visit
 cp $VisItDir/svn_bin/visit-config-anag   $verdir/.visit
+cp $VisItDir/svn_bin/visit-config-anl    $verdir/.visit
 if (-e $verdir/.visit/visit-config-$Configuration) then
     ln -s visit-config-$Configuration $verdir/.visit/config
 endif
