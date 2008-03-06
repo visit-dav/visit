@@ -28,6 +28,7 @@
       VariableRelated
       ShapeRelated
       ConnectedComponentsRelated
+      Miscellaneous
       NumGroups
     </Enum>
     <Enum name="QueryMode">

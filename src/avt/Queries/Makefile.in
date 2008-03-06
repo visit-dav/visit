@@ -172,6 +172,9 @@
 #   Cyrus Harrison, Tue Dec 18 12:05:23 PST 2007
 #   Added avtShapeletsDecomposeQuery
 #
+#   Cyrus Harrison, Wed Mar  5 08:54:06 PST 2008
+#   Added avtMemoryUsageQuery
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -243,6 +246,7 @@ Queries_src= \
  Queries/avtLocateAndPickNodeQuery.C  \
  Queries/avtLocateAndPickZoneQuery.C  \
  Queries/avtMassDistributionQuery.C  \
+ Queries/avtMemoryUsageQuery.C  \
  Queries/avtMinMaxQuery.C  \
  Queries/avtMomentOfInertiaQuery.C  \
  Queries/avtNodeCoordsQuery.C \
