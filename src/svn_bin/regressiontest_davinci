@@ -42,6 +42,9 @@
 #    Mark C. Miller, Tue Mar  4 14:02:51 PST 2008
 #    Increased time limit to 20 minutes. Often davinci is heavily loaded.
 #
+#    Mark C. Miller, Thu Mar  6 10:03:17 PST 2008
+#    Forgot to 'post' the py file source code for failed tests. Added it.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -439,6 +442,7 @@ for m in $modes; do
                     cp html/$baseName.html html_$dateTag/. 1>/dev/null 2>&1
                 done
                 cp html/${theCat}_${thePyFileBase}.html html_${dateTag}/. 1>/dev/null 2>&1
+                cp html/${theCat}_${thePyFileBase}_py.html html_${dateTag}/. 1>/dev/null 2>&1
             fi
         done < short_summary
 
