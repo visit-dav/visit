@@ -1095,6 +1095,10 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 #   total test time for text-oriented tests. So, found a better way to handle
 #   the replacements using string slicing. Now, replacements are handled as
 #   we march word-for-word through the strings.
+#
+#   Mark C. Miller, Thu Mar  6 09:39:43 PST 2008
+#   Made logic for relative diff clearer. Switched to use min operation in
+#   denominator and switch order of min/abs there.
 # ----------------------------------------------------------------------------
 
 def FilterTestText(inText, baseText):
@@ -1150,21 +1154,18 @@ def FilterTestText(inText, baseText):
 	        inVal = string.atof(inWordT)
 	        baseVal = string.atof(baseWordT)
 
-		#
-		# Compute a relative difference measure for these two numbers
-		#
-                numAtor = abs(inVal - baseVal)
-                denAtor = abs(max(inVal, baseVal))
-                if numAtor == 0:
+                #
+                # Compute a relative difference measure for these two numbers
+                # This logic was taken from www.math.utah.edu/~beebe/software/ndiff
+                #
+                if inVal == baseVal:
                     valDiff = 0
+                elif inVal == 0 and baseVal != 0:
+                    valDiff = numdifftol # treat as above threshold 
+                elif inVal != 0 and baseVal == 0:
+                    valDiff = numdifftol # treat as above threshold 
                 else:
-                    if inVal == 0 or baseVal == 0: # for identically zero, use abs diff
-                        valDiff = numAtor
-                    else:
-                        if denAtor == 0:
-                            valDiff = numdifftol
-                        else:
-                            valDiff = numAtor / denAtor
+                    valDiff = abs(inVal - baseVal) / min(abs(inVal), abs(baseVal))
 
                 #
                 # We want to ignore diffs that are deemed below threshold given
