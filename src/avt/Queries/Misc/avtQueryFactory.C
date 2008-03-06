@@ -75,6 +75,7 @@
 #include <avtLocateAndPickZoneQuery.h>
 #include <avtKurtosisQuery.h>
 #include <avtMassDistributionQuery.h>
+#include <avtMemoryUsageQuery.h>
 #include <avtMomentOfInertiaQuery.h>
 #include <avtNodeCoordsQuery.h>
 #include <avtOriginalDataMinMaxQuery.h>
@@ -266,6 +267,9 @@ avtQueryFactory::Instance()
 //
 //    Cyrus Harrison, Tue Dec 18 14:15:58 PST 2007
 //    Added Shapelet Decomposition Query.
+//
+//    Cyrus Harrison, Wed Mar  5 08:56:01 PST 2008
+//    Added Memory Usage Query. 
 //
 // ****************************************************************************
 
@@ -616,7 +620,10 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
             shapelet_query->SetRecompOutputFileName("");
         query = shapelet_query;
     }
-
+    else if( qname == "Memory Usage")
+    {
+        query = new avtMemoryUsageQuery();
+    }
     
     if (query == NULL && !foundAQuery)
     {
