@@ -438,6 +438,10 @@ avtKullLiteFileFormat::ReadInPrimaryMesh(int fi)
 //  Programmer: Hank Childs
 //  Creation:   July 28, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Mar  6 15:15:03 PST 2008
+//    Fix the search for the 'top' node for Pyramids.
+//
 // ****************************************************************************
 
 bool
@@ -657,28 +661,40 @@ avtKullLiteFileFormat::ClassifyAndAdd3DZone(pdb_mesh3d *mesh3d, int zone,
     {
         int points[5];
         // Find the base
-        int i;
-        for (i = 0; i < nodes.size(); i++)
-            if (nodes[i].size() == 4)
+        int base;
+        for (base = 0; base < nodes.size(); base++)
+            if (nodes[base].size() == 4)
                 break;
-        points[0] = nodes[i][0];
-        points[1] = nodes[i][1];
-        points[2] = nodes[i][2];
-        points[3] = nodes[i][3];
+        points[0] = nodes[base][0];
+        points[1] = nodes[base][1];
+        points[2] = nodes[base][2];
+        points[3] = nodes[base][3];
 
         // Find the top point
-        if (i == 0)
-            ++i;
-        if (!(nodes[i][0] == points[0] || nodes[i][0] == points[1]
-              || nodes[i][0] == points[2] || nodes[i][0] == points[3]))
-            points[4] = nodes[i][0];
-        else if (!(nodes[i][1] == points[0] || nodes[i][1] == points[1]
-              || nodes[i][1] == points[2] || nodes[i][1] == points[3]))
-            points[4] = nodes[i][1];
-        else if (!(nodes[i][2] == points[0] || nodes[i][2] == points[1]
-              || nodes[i][2] == points[2] || nodes[i][2] == points[3]))
-            points[4] = nodes[i][2];
+        // Need to look at all faces that aren't the base,
+        // searching for the 1 node that is not a part of the base
+        for (int i = 0; i < nodes.size(); ++i)
+        {
+            if (i == base)
+                continue;
 
+            bool allMatch = true;
+            int j;
+            for (j = 0; j < nodes[i].size(); j++)
+            {
+                allMatch = nodes[i][j] == points[0] ||
+                           nodes[i][j] == points[1] ||
+                           nodes[i][j] == points[2] ||
+                           nodes[i][j] == points[3];
+                if (!allMatch)
+                    break;
+            }
+            if (!allMatch)
+            {
+                points[4] = nodes[i][j];
+                break;
+            }
+        }
         cellId = ugrid->InsertNextCell(type, 5, points);
     }
     else if (type == VTK_WEDGE)
