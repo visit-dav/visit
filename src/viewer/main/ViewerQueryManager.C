@@ -3660,6 +3660,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Cyrus Harrison, Tue Dec 18 14:18:07 PST 2007
 //    Added Shapelet Decomposition Query
 //
+//    Cyrus Harrison, Wed Mar  5 16:07:09 PST 2008
+//    Added Memory Usage Query.
+//
 // ****************************************************************************
 
 void
@@ -3688,7 +3691,8 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::Groups tr = QueryList::TimeRelated;
     QueryList::Groups vr = QueryList::VariableRelated;
     QueryList::Groups sr = QueryList::ShapeRelated;
-    QueryList::Groups ccl_r = QueryList::ConnectedComponentsRelated;
+    QueryList::Groups ccl_r  = QueryList::ConnectedComponentsRelated;
+    QueryList::Groups misc_r = QueryList::Miscellaneous;
     
     QueryList::WindowType basic = QueryList::Basic;
     QueryList::WindowType sp  = QueryList::SinglePoint;
@@ -3783,6 +3787,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("TrajectoryByZone", dq, vr, dzv, 1, TrajVars, to, 2);
     queryTypes->AddQuery("TrajectoryByNode", dq, vr, dnv, 1, TrajVars, to, 2);
     queryTypes->AddQuery("Best Fit Line", dq, mr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Memory Usage", dq, misc_r, basic, 1, 0, qo);
     queryTypes->SelectAll();
 }
 
