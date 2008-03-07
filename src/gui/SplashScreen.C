@@ -121,6 +121,11 @@
 //    Brad Whitlock, Mon Jan  7 16:30:14 PST 2008
 //    Changed how the splashscreen looks.
 //
+//    Eric Brugger, Thu Mar  6 16:33:40 PST 2008
+//    Changed the date on the splash screen and the size and location of
+//    the patch level so that it wouldn't overlap the main version number
+//    and look better.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
@@ -192,13 +197,12 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
         for(int i = 0; i < pictures.size(); ++i)
         {
             QPainter painter(&pictures[i]);
-            double scale = 4.;
+            double scale = 1.5;
             painter.scale(scale, scale);
             QFont font("helvetica", 20, QFont::Bold, true);
             font.setItalic(false);
-            int x = pictures[i].width() - 2*(10 + QFontMetrics(font).width(ver));
+            int x = 250;
             int y = pictures[i].height() - 8;
-            int offset = 4;
             painter.setPen(black);
             painter.drawText(int(x / scale), int(y / scale), ver);
         }
@@ -221,7 +225,7 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
     QString versionText;
     versionText.sprintf("VisIt %s, svn revision %s", VERSION, SVN_REVISION);
     lLayout->addWidget(new QLabel(versionText, this, "versionText"));
-    lLayout->addWidget(new QLabel("January 2008", this, "dateCompiled"));
+    lLayout->addWidget(new QLabel("March 2008", this, "dateCompiled"));
 
     copyrightButton = 0;
     contributorButton = 0;
