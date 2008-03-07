@@ -449,12 +449,16 @@ avtGeometryDrawable::UpdateScaleFactor()
 //  Programmer:  Kathleen Bonnell
 //  Creation:    August 13, 2002
 //
+//  Modifications:
+//    Dave Bremer, Fri Mar  7 10:43:49 PST 2008
+//    Added a NULL check just for consistency with other methods.
 // ****************************************************************************
 
 void
 avtGeometryDrawable::TurnLightingOn()
 {
-   mapper->GlobalLightingOn();
+    if (mapper != NULL)
+        mapper->GlobalLightingOn();
 }
 
 
@@ -467,12 +471,16 @@ avtGeometryDrawable::TurnLightingOn()
 //  Programmer:  Kathleen Bonnell
 //  Creation:    August 13, 2002
 //
+//  Modifications:
+//    Dave Bremer, Fri Mar  7 10:43:49 PST 2008
+//    Added a NULL check just for consistency with other methods.
 // ****************************************************************************
 
 void
 avtGeometryDrawable::TurnLightingOff()
 {
-   mapper->GlobalLightingOff();
+    if (mapper != NULL)
+        mapper->GlobalLightingOff();
 }
 
 // ****************************************************************************
@@ -484,12 +492,16 @@ avtGeometryDrawable::TurnLightingOff()
 //  Programmer:  Kathleen Bonnell
 //  Creation:    August 13, 2002
 //
+//  Modifications:
+//    Dave Bremer, Fri Mar  7 10:43:49 PST 2008
+//    Added a NULL check just for consistency with other methods.
 // ****************************************************************************
 
 void
 avtGeometryDrawable::SetAmbientCoefficient(const double amb)
 {
-   mapper->GlobalSetAmbientCoefficient(amb);
+    if (mapper != NULL)
+        mapper->GlobalSetAmbientCoefficient(amb);
 }
 
 // ****************************************************************************
