@@ -225,17 +225,26 @@ avtMapper::MapperChangedInput(void)
 //  Programmer: Hank Childs
 //  Creation:   December 27, 2000
 //
+//  Modifications:
+//    Dave Bremer, Fri Mar  7 10:43:49 PST 2008
+//    When this object clears itself, it should clear the drawable's 
+//    reference to 'this' as well.
 // ****************************************************************************
 
 void
 avtMapper::ClearSelf(void)
 {
-    //
-    // This probably doesn't need to be done, but it will guarantee that we are
-    // never in an inconsistent state (where we have a valid drawable, but no
-    // mappers).
-    //
-    drawable = NULL;
+    if (*drawable != NULL)
+    {
+        ((avtGeometryDrawable *)*drawable)->SetMapper(NULL);
+
+        //
+        // This probably doesn't need to be done, but it will guarantee that we are
+        // never in an inconsistent state (where we have a valid drawable, but no
+        // mappers).
+        //
+        drawable = NULL;
+    }
 
     if (mappers != NULL)
     {
