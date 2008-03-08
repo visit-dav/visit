@@ -1,6 +1,12 @@
-Initialization: light0
+Initialization: light7
     SetDefaultEnabledStates();
 
+Target: xml2java
+Initialization: light7
+    light7 = new LightAttributes();
+        SetDefaultEnabledStates();
+
+Target: xml2atts
 Function: GetLight
 Declaration: const LightAttributes &GetLight(int i) const;
 Definition:
@@ -123,3 +129,34 @@ LightList::SetDefaultEnabledStates()
     light7.SetEnabledFlag(false);
 }
 
+Target: xml2java
+Function: SetAllEnabled
+Declaration: SetAllEnabled
+Definition:
+    public void SetAllEnabled(boolean val)
+    {
+        light0.SetEnabledFlag(val);
+        light1.SetEnabledFlag(val);
+        light2.SetEnabledFlag(val);
+        light3.SetEnabledFlag(val);
+        light4.SetEnabledFlag(val);
+        light5.SetEnabledFlag(val);
+        light6.SetEnabledFlag(val);
+        light7.SetEnabledFlag(val);
+        SelectAll();
+    }
+
+Function: SetDefaultEnabledStates
+Declaration: SetDefaultEnabledStates
+Definition:
+    public void SetDefaultEnabledStates()
+    {
+        light0.SetEnabledFlag(true);
+        light1.SetEnabledFlag(false);
+        light2.SetEnabledFlag(false);
+        light3.SetEnabledFlag(false);
+        light4.SetEnabledFlag(false);
+        light5.SetEnabledFlag(false);
+        light6.SetEnabledFlag(false);
+        light7.SetEnabledFlag(false);
+    }

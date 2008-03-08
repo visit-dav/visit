@@ -3,11 +3,24 @@ Declaration: static const int DEFAULT_SCALABLE_AUTO_THRESHOLD;
 Definition: const int RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD = 2000000;
 
 
+Target: xml2java
+Constant: DEFAULT_SCALABLE_AUTO_THRESHOLD
+Declaration: DEFAULT_SCALABLE_AUTO_THRESHOLD
+Definition:     public final static int DEFAULT_SCALABLE_AUTO_THRESHOLD = 2000000;
+
+
+Target: xml2atts
 Constant: DEFAULT_SCALABLE_ACTIVATION_MODE
 Declaration: static const int DEFAULT_SCALABLE_ACTIVATION_MODE;
 Definition: const int RenderingAttributes::DEFAULT_SCALABLE_ACTIVATION_MODE = Auto;
 
 
+Target: xml2java
+Constant: DEFAULT_SCALABLE_ACTIVATION_MODE
+Declaration: DEFAULT_SCALABLE_ACTIVATION_MODE
+Definition:     public final static int DEFAULT_SCALABLE_ACTIVATION_MODE = TRISTATEMODE_AUTO;
+
+Target: xml2atts
 Function: GetEffectiveScalableThreshold
 Declaration: static int GetEffectiveScalableThreshold(TriStateMode mode, int autoThreshold);
 Definition:

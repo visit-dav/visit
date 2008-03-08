@@ -78,5 +78,7 @@
       </Function>
       <Function name="VarChangeRequiresReset" user="true" member="true">
       </Function>
+      <Function name="PySubsetAttributes_SetDefaults" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

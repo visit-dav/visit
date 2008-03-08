@@ -1,3 +1,13 @@
+Target: xml2java
+Initialization: databaseInfoFont
+    databaseInfoFont = new FontAttributes();
+        databaseInfoFont.SetHeight(0.07);
+
+Initialization: userInfoFont
+    userInfoFont = new FontAttributes();
+        userInfoFont.SetHeight(0.05);
+
+Target: xml2atts
 Initialization: databaseInfoFont
     databaseInfoFont.SetHeight(0.07);
 

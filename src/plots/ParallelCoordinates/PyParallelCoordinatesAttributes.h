@@ -46,11 +46,11 @@
 //
 void            PyParallelCoordinatesAttributes_StartUp(ParallelCoordinatesAttributes *subj, void *data);
 void            PyParallelCoordinatesAttributes_CloseDown();
- PyMethodDef *   PyParallelCoordinatesAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyParallelCoordinatesAttributes_GetMethodTable(int *nMethods);
 bool            PyParallelCoordinatesAttributes_Check(PyObject *obj);
- ParallelCoordinatesAttributes *  PyParallelCoordinatesAttributes_FromPyObject(PyObject *obj);
- PyObject *      PyParallelCoordinatesAttributes_New();
- PyObject *      PyParallelCoordinatesAttributes_Wrap(const ParallelCoordinatesAttributes *attr);
+ParallelCoordinatesAttributes *  PyParallelCoordinatesAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyParallelCoordinatesAttributes_New();
+PyObject *      PyParallelCoordinatesAttributes_Wrap(const ParallelCoordinatesAttributes *attr);
 void            PyParallelCoordinatesAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyParallelCoordinatesAttributes_SetDefaults(const ParallelCoordinatesAttributes *atts);
 std::string     PyParallelCoordinatesAttributes_GetLogString();

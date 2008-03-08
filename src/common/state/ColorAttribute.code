@@ -1272,3 +1272,66 @@ ColorAttribute::RgbToRgbStr(unsigned char rgb[3], char *s)
     }
 }
 
+Target: xml2java
+Function: Red
+Declaration: Red
+Definition:
+    public int Red()
+    { 
+       int mask = 0xff;
+       return mask & color[0];
+    }
+
+Function: Green
+Declaration: Green
+Definition:
+    public int Green()
+    { 
+       int mask = 0xff;
+       return mask & color[1];
+    }
+
+Function: Blue
+Declaration: Blue
+Definition:
+    public int Blue()
+    { 
+       int mask = 0xff;
+       return mask & color[2];
+    }
+
+Function: Alpha
+Declaration: Alpha
+Definition:
+    public int Alpha()
+    { 
+       int mask = 0xff;
+       return mask & color[3];
+    }
+
+Function: ColorAttribute2
+Declaration: ColorAttribute2
+Definition:
+    public ColorAttribute(int r, int g, int b)
+    {
+        super(1);
+        color = new byte[4];
+        color[0] = (byte)(0xff & r);
+        color[1] = (byte)(0xff & g);
+        color[2] = (byte)(0xff & b);
+        color[3] = (byte)(0xff & 255);
+    }
+
+Function: ColorAttribute3
+Declaration: ColorAttribute3
+Definition:
+    public ColorAttribute(int r, int g, int b, int a)
+    {
+        super(1);
+        color = new byte[4];
+        color[0] = (byte)(0xff & r);
+        color[1] = (byte)(0xff & g);
+        color[2] = (byte)(0xff & b);
+        color[3] = (byte)(0xff & a);
+    }
+

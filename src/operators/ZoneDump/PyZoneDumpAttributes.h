@@ -46,11 +46,11 @@
 //
 void            PyZoneDumpAttributes_StartUp(ZoneDumpAttributes *subj, void *data);
 void            PyZoneDumpAttributes_CloseDown();
- PyMethodDef *   PyZoneDumpAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyZoneDumpAttributes_GetMethodTable(int *nMethods);
 bool            PyZoneDumpAttributes_Check(PyObject *obj);
- ZoneDumpAttributes *  PyZoneDumpAttributes_FromPyObject(PyObject *obj);
- PyObject *      PyZoneDumpAttributes_New();
- PyObject *      PyZoneDumpAttributes_Wrap(const ZoneDumpAttributes *attr);
+ZoneDumpAttributes *  PyZoneDumpAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyZoneDumpAttributes_New();
+PyObject *      PyZoneDumpAttributes_Wrap(const ZoneDumpAttributes *attr);
 void            PyZoneDumpAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyZoneDumpAttributes_SetDefaults(const ZoneDumpAttributes *atts);
 std::string     PyZoneDumpAttributes_GetLogString();

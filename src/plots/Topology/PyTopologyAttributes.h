@@ -46,11 +46,11 @@
 //
 void            PyTopologyAttributes_StartUp(TopologyAttributes *subj, void *data);
 void            PyTopologyAttributes_CloseDown();
- PyMethodDef *   PyTopologyAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyTopologyAttributes_GetMethodTable(int *nMethods);
 bool            PyTopologyAttributes_Check(PyObject *obj);
- TopologyAttributes *  PyTopologyAttributes_FromPyObject(PyObject *obj);
- PyObject *      PyTopologyAttributes_New();
- PyObject *      PyTopologyAttributes_Wrap(const TopologyAttributes *attr);
+TopologyAttributes *  PyTopologyAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyTopologyAttributes_New();
+PyObject *      PyTopologyAttributes_Wrap(const TopologyAttributes *attr);
 void            PyTopologyAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyTopologyAttributes_SetDefaults(const TopologyAttributes *atts);
 std::string     PyTopologyAttributes_GetLogString();

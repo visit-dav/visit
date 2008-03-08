@@ -60,6 +60,10 @@ class QPushButton;
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:20:35 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 class XMLEditIncludes : public QFrame
 {
@@ -72,12 +76,15 @@ class XMLEditIncludes : public QFrame
     void UpdateWindowContents();
     void UpdateWindowSensitivity();
     void UpdateWindowSingleItem();
+    void targetTextChanged(const QString&);
     void includeTextChanged(const QString&);
     void fileGroupChanged(int);
     void quotedGroupChanged(int);
     void includelistNew();
     void includelistDel();
   private:
+    int CountIncludes(const QString &) const;
+
     XMLDocument    *xmldoc;
 
     QPushButton    *newButton;
@@ -91,6 +98,7 @@ class XMLEditIncludes : public QFrame
     QButtonGroup   *fileGroup;
     QButtonGroup   *quotedGroup;
     QLineEdit      *file;
+    QLineEdit      *target;
 };
 
 #endif

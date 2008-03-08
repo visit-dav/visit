@@ -46,11 +46,11 @@
 //
 void            PyResamplePluginAttributes_StartUp(ResamplePluginAttributes *subj, void *data);
 void            PyResamplePluginAttributes_CloseDown();
- PyMethodDef *   PyResamplePluginAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyResamplePluginAttributes_GetMethodTable(int *nMethods);
 bool            PyResamplePluginAttributes_Check(PyObject *obj);
- ResamplePluginAttributes *  PyResamplePluginAttributes_FromPyObject(PyObject *obj);
- PyObject *      PyResamplePluginAttributes_New();
- PyObject *      PyResamplePluginAttributes_Wrap(const ResamplePluginAttributes *attr);
+ResamplePluginAttributes *  PyResamplePluginAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyResamplePluginAttributes_New();
+PyObject *      PyResamplePluginAttributes_Wrap(const ResamplePluginAttributes *attr);
 void            PyResamplePluginAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyResamplePluginAttributes_SetDefaults(const ResamplePluginAttributes *atts);
 std::string     PyResamplePluginAttributes_GetLogString();

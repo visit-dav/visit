@@ -68,7 +68,11 @@
 //    Cyrus Harrison, Wed Mar  7 09:03:38 PST 2007
 //    Allow for engine-specific code in a plugin's source files.
 //
+//    Brad Whitlock, Fri Mar 7 10:02:36 PDT 2008
+//    Changed layout.
+//
 // ****************************************************************************
+
 XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
     : QFrame(p, n)
 {
@@ -77,72 +81,70 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
 
     topLayout->addWidget(new QLabel("CXXFLAGS", this), row, 0);
     CXXFLAGS = new QLineEdit(this);
-    topLayout->addMultiCellWidget(CXXFLAGS, row,row, 1,2);
+    topLayout->addWidget(CXXFLAGS, row, 1);
     row++;
 
     topLayout->addWidget(new QLabel("LDFLAGS", this), row, 0);
     LDFLAGS = new QLineEdit(this);
-    topLayout->addMultiCellWidget(LDFLAGS, row,row, 1,2);
+    topLayout->addWidget(LDFLAGS, row, 1);
     row++;
 
     topLayout->addWidget(new QLabel("LIBS", this), row, 0);
     LIBS = new QLineEdit(this);
-    topLayout->addMultiCellWidget(LIBS, row,row, 1,2);
+    topLayout->addWidget(LIBS, row, 1);
     row++;
 
     customGFiles = new QCheckBox("GUI Files", this);
     GFiles = new QLineEdit(this);
     topLayout->addWidget(customGFiles, row, 0);
-    topLayout->addMultiCellWidget(GFiles, row,row, 1,2);
+    topLayout->addWidget(GFiles, row, 1);
     row++;
 
     customWFiles = new QCheckBox("GUI Widget Files", this);
     WFiles = new QLineEdit(this);
     topLayout->addWidget(customWFiles, row, 0);
-    topLayout->addMultiCellWidget(WFiles, row,row, 1,2);
+    topLayout->addWidget(WFiles, row,1);
     row++;
 
     customSFiles = new QCheckBox("Scripting Files", this);
     SFiles = new QLineEdit(this);
     topLayout->addWidget(customSFiles, row, 0);
-    topLayout->addMultiCellWidget(SFiles, row,row, 1,2);
+    topLayout->addWidget(SFiles, row,1);
     row++;
 
     customVFiles = new QCheckBox("Viewer Files", this);
     VFiles = new QLineEdit(this);
     topLayout->addWidget(customVFiles, row, 0);
-    topLayout->addMultiCellWidget(VFiles, row,row, 1,2);
+    topLayout->addWidget(VFiles, row,1);
     row++;
 
     customVWFiles = new QCheckBox("Viewer Widget Files", this);
     VWFiles = new QLineEdit(this);
     topLayout->addWidget(customVWFiles, row, 0);
-    topLayout->addMultiCellWidget(VWFiles, row,row, 1,2);
+    topLayout->addWidget(VWFiles, row,1);
     row++;
 
     customMFiles = new QCheckBox("MDServer Files", this);
     MFiles = new QLineEdit(this);
     topLayout->addWidget(customMFiles, row, 0);
-    topLayout->addMultiCellWidget(MFiles, row,row, 1,2);
+    topLayout->addWidget(MFiles, row,1);
     row++;
 
     customEFiles = new QCheckBox("Engine Files", this);
     EFiles = new QLineEdit(this);
     topLayout->addWidget(customEFiles, row, 0);
-    topLayout->addMultiCellWidget(EFiles, row,row, 1,2);
+    topLayout->addWidget(EFiles, row,1);
     row++;
 
     engSpecificCode = new QCheckBox("Plugin has code specific to the Engine",
                                     this);
-    topLayout->addMultiCellWidget(engSpecificCode, row,row, 0,2);
+    topLayout->addMultiCellWidget(engSpecificCode, row,row, 0,1);
     row++;
 
     mdSpecificCode = new QCheckBox("Plugin has code specific to the MDServer "
                                    "(Database Plugins only)", this);
-    topLayout->addMultiCellWidget(mdSpecificCode, row,row, 0,2);
+    topLayout->addMultiCellWidget(mdSpecificCode, row,row, 0,1);
     row++;
-
-
 
     topLayout->setRowStretch(row, 100);
     row++;
@@ -153,7 +155,7 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
             this, SLOT(ldflagsTextChanged(const QString&)));
     connect(LIBS, SIGNAL(textChanged(const QString&)),
             this, SLOT(libsTextChanged(const QString&)));
-   connect(GFiles, SIGNAL(textChanged(const QString&)),
+    connect(GFiles, SIGNAL(textChanged(const QString&)),
             this, SLOT(gfilesTextChanged(const QString&)));
     connect(SFiles, SIGNAL(textChanged(const QString&)),
             this, SLOT(sfilesTextChanged(const QString&)));

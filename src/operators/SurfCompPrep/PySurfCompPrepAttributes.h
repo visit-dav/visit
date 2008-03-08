@@ -46,13 +46,15 @@
 //
 void            PySurfCompPrepAttributes_StartUp(SurfCompPrepAttributes *subj, void *data);
 void            PySurfCompPrepAttributes_CloseDown();
-PyMethodDef    *PySurfCompPrepAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PySurfCompPrepAttributes_GetMethodTable(int *nMethods);
 bool            PySurfCompPrepAttributes_Check(PyObject *obj);
-SurfCompPrepAttributes *PySurfCompPrepAttributes_FromPyObject(PyObject *obj);
-PyObject       *PySurfCompPrepAttributes_NewPyObject();
-PyObject       *PySurfCompPrepAttributes_WrapPyObject(const SurfCompPrepAttributes *attr);
-std::string     PySurfCompPrepAttributes_GetLogString();
+SurfCompPrepAttributes *  PySurfCompPrepAttributes_FromPyObject(PyObject *obj);
+PyObject *      PySurfCompPrepAttributes_New();
+PyObject *      PySurfCompPrepAttributes_Wrap(const SurfCompPrepAttributes *attr);
+void            PySurfCompPrepAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PySurfCompPrepAttributes_SetDefaults(const SurfCompPrepAttributes *atts);
+std::string     PySurfCompPrepAttributes_GetLogString();
+std::string     PySurfCompPrepAttributes_ToString(const SurfCompPrepAttributes *, const char *);
 
 #endif
 

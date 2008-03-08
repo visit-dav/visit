@@ -46,11 +46,11 @@
 //
 void            PyLineoutAttributes_StartUp(LineoutAttributes *subj, void *data);
 void            PyLineoutAttributes_CloseDown();
- PyMethodDef *   PyLineoutAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyLineoutAttributes_GetMethodTable(int *nMethods);
 bool            PyLineoutAttributes_Check(PyObject *obj);
- LineoutAttributes *  PyLineoutAttributes_FromPyObject(PyObject *obj);
- PyObject *      PyLineoutAttributes_New();
- PyObject *      PyLineoutAttributes_Wrap(const LineoutAttributes *attr);
+LineoutAttributes *  PyLineoutAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyLineoutAttributes_New();
+PyObject *      PyLineoutAttributes_Wrap(const LineoutAttributes *attr);
 void            PyLineoutAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyLineoutAttributes_SetDefaults(const LineoutAttributes *atts);
 std::string     PyLineoutAttributes_GetLogString();

@@ -76,5 +76,7 @@
       </Function>
       <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
+      <Function name="PyBoundaryAttributes_SetDefaults" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

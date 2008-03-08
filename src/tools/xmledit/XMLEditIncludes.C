@@ -57,6 +57,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:21:32 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 XMLEditIncludes::XMLEditIncludes(QWidget *p, const QString &n)
     : QFrame(p, n)
@@ -76,7 +80,7 @@ XMLEditIncludes::XMLEditIncludes(QWidget *p, const QString &n)
 
     hLayout->addSpacing(10);
 
-    QGridLayout *topLayout = new QGridLayout(hLayout, 4,2, 5);
+    QGridLayout *topLayout = new QGridLayout(hLayout, 5,2, 5);
     topLayout->addColSpacing(1, 20);
     int row = 0;
 
@@ -98,6 +102,11 @@ XMLEditIncludes::XMLEditIncludes(QWidget *p, const QString &n)
     topLayout->addWidget(bracketsButton, row, 1);
     row++;
 
+    topLayout->addWidget(new QLabel("Target", this), row, 0);
+    target = new QLineEdit(this);
+    topLayout->addWidget(target, row, 1);
+    row++;
+
     topLayout->addWidget(new QLabel("Include file", this), row, 0);
     file = new QLineEdit(this);
     topLayout->addWidget(file, row, 1);
@@ -117,10 +126,42 @@ XMLEditIncludes::XMLEditIncludes(QWidget *p, const QString &n)
             this, SLOT(quotedGroupChanged(int)));
     connect(file, SIGNAL(textChanged(const QString&)),
             this, SLOT(includeTextChanged(const QString&)));
+    connect(target, SIGNAL(textChanged(const QString&)),
+            this, SLOT(targetTextChanged(const QString&)));
     connect(newButton, SIGNAL(clicked()),
             this, SLOT(includelistNew()));
     connect(delButton, SIGNAL(clicked()),
             this, SLOT(includelistDel()));
+}
+
+// ****************************************************************************
+// Method: XMLEditIncludes::CountIncludes
+//
+// Purpose: 
+//   Return the number of include having a given name.
+//
+// Arguments:
+//  name : The name of the include that we're interested in.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 6 15:53:04 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+XMLEditIncludes::CountIncludes(const QString &name) const
+{
+    Attribute *a = xmldoc->attribute;
+    int count = 0;
+    for (int j=0; j<a->includes.size(); j++)
+        count += (name == a->includes[j]->include) ? 1 : 0;
+    return count;
 }
 
 // ****************************************************************************
@@ -132,6 +173,10 @@ XMLEditIncludes::XMLEditIncludes(QWidget *p, const QString &n)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:21:32 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 void
 XMLEditIncludes::UpdateWindowContents()
@@ -141,7 +186,14 @@ XMLEditIncludes::UpdateWindowContents()
     includelist->clear();
     for (int i=0; i<a->includes.size(); i++)
     {
-        includelist->insertItem(a->includes[i]->include);
+        if(CountIncludes(a->includes[i]->include) > 1)
+        { 
+            QString id; id.sprintf("%s [%s]", a->includes[i]->include.latin1(),
+               a->includes[i]->target.latin1());
+            includelist->insertItem(id);
+        }
+        else
+            includelist->insertItem(a->includes[i]->include);
     }
 
     BlockAllSignals(false);
@@ -157,6 +209,10 @@ XMLEditIncludes::UpdateWindowContents()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:21:32 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 void
 XMLEditIncludes::UpdateWindowSensitivity()
@@ -164,6 +220,7 @@ XMLEditIncludes::UpdateWindowSensitivity()
     bool active = includelist->currentItem() != -1;
 
     delButton->setEnabled(includelist->count() > 0);
+    target->setEnabled(active);
     file->setEnabled(active);
     CButton->setEnabled(active);
     HButton->setEnabled(active);
@@ -184,6 +241,9 @@ XMLEditIncludes::UpdateWindowSensitivity()
 //    Brad Whitlock, Tue May 20 12:11:43 PDT 2003
 //    I fixed a bug with quoted vs angle brackets being backwards.
 //
+//    Brad Whitlock, Thu Mar 6 16:21:32 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 
 void
@@ -196,6 +256,7 @@ XMLEditIncludes::UpdateWindowSingleItem()
 
     if (index == -1)
     {
+        target->setText("");
         file->setText("");
         fileGroup->setButton(-1);
         quotedGroup->setButton(-1);
@@ -203,8 +264,9 @@ XMLEditIncludes::UpdateWindowSingleItem()
     else
     {
         Include *n = a->includes[index];
+        target->setText(n->target);
         file->setText(n->include);
-        fileGroup->setButton((n->target == "source") ? 0 : 1);
+        fileGroup->setButton((n->destination == "source") ? 0 : 1);
         quotedGroup->setButton(n->quoted ? 0 : 1);
     }
 
@@ -225,11 +287,16 @@ XMLEditIncludes::UpdateWindowSingleItem()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:21:32 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 void
 XMLEditIncludes::BlockAllSignals(bool block)
 {
     includelist->blockSignals(block);
+    target->blockSignals(block);
     file->blockSignals(block);
 }
 
@@ -244,6 +311,10 @@ XMLEditIncludes::BlockAllSignals(bool block)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:21:32 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 void
 XMLEditIncludes::includeTextChanged(const QString &text)
@@ -256,10 +327,35 @@ XMLEditIncludes::includeTextChanged(const QString &text)
 
     QString newinclude = text.stripWhiteSpace();
     n->include = newinclude;
-
+    if(CountIncludes(newinclude) > 1)
+    {
+        newinclude += "[";
+        newinclude += n->target;
+        newinclude += "]";
+    }
     BlockAllSignals(true);
     includelist->changeItem(newinclude, index);
     BlockAllSignals(false);
+}
+
+// ****************************************************************************
+//  Method:  XMLEditIncludes::targetTextChanged
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Thu Mar 6 15:56:05 PST 2008
+//
+// ****************************************************************************
+void
+XMLEditIncludes::targetTextChanged(const QString &text)
+{
+    Attribute *a = xmldoc->attribute;
+    int index = includelist->currentItem();
+    if (index == -1)
+        return;
+    Include *n = a->includes[index];
+
+    n->target = text;
+    includeTextChanged(n->include);
 }
 
 // ****************************************************************************
@@ -278,7 +374,7 @@ XMLEditIncludes::fileGroupChanged(int fg)
         return;
     Include *n = a->includes[index];
 
-    n->target = (fg == 0) ? "source" : "header";
+    n->destination = (fg == 0) ? "source" : "header";
 }
 
 // ****************************************************************************
@@ -311,6 +407,10 @@ XMLEditIncludes::quotedGroupChanged(int qg)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:28:33 PST 2008
+//    Added default target.
+//
 // ****************************************************************************
 void
 XMLEditIncludes::includelistNew()
@@ -332,7 +432,7 @@ XMLEditIncludes::includelistNew()
             newid++;
     }
     
-    Include *n = new Include("header",false);
+    Include *n = new Include("header",false, "xml2atts");
     n->include = newname;
     
     a->includes.push_back(n);

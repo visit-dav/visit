@@ -101,104 +101,27 @@
 //    Hank Childs, Thu Jan 10 14:33:30 PST 2008
 //    Added filenames, specifiedFilenames.
 //
+//    Brad Whitlock, Thu Mar 6 11:50:13 PDT 2008
+//    Made it use the Plugin base class.
+//
 // ****************************************************************************
 
-class ProjectFileGeneratorPlugin
+class ProjectFileGeneratorPlugin : public Plugin
 {
-  public:
-    QString name;
-    QString type;
-    QString label;
-    QString version;
-    QString vartype;
-    QString dbtype;
-    bool    haswriter;
-    bool    hasoptions;
-    bool    enabledByDefault;
-    bool    has_MDS_specific_code;
-    bool    hasEngineSpecificCode;
-    bool    onlyEnginePlugin;
-    bool    noEnginePlugin;
-    bool    specifiedFilenames;  // for DB plugins
-
-    vector<QString> cxxflags;
-    vector<QString> ldflags;
-    vector<QString> libs;
-    vector<QString> extensions; // for DB plugins
-    vector<QString> filenames;  // for DB plugins
-    bool customgfiles;
-    vector<QString> gfiles;     // gui
-    bool customsfiles;
-    vector<QString> sfiles;     // scripting
-    bool customvfiles;
-    vector<QString> vfiles;     // viewer
-    bool custommfiles;
-    vector<QString> mfiles;     // mdserver
-    bool customefiles;
-    vector<QString> efiles;     // engine
-    bool customwfiles;
-    vector<QString> wfiles;     // widgets
-    bool customvwfiles;
-    vector<QString> vwfiles;    // viewer widgets
-    vector<QString> defaultgfiles;
-    vector<QString> defaultsfiles;
-    vector<QString> defaultvfiles;
-    vector<QString> defaultmfiles;
-    vector<QString> defaultefiles;
-    vector<QString> defaultwfiles;
-
-    Attribute *atts;
   public:
     ProjectFileGeneratorPlugin(const QString &n,const QString &l,
              const QString &t,const QString &vt,const QString &dt,
-             const QString &v, const QString&w, bool hw, bool ho, 
+             const QString &v, const QString&ifile, bool hw, bool ho, 
              bool onlyengine, bool noengine)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt),
-          haswriter(hw), hasoptions(ho), onlyEnginePlugin(onlyengine), 
-          noEnginePlugin(noengine), atts(NULL)
+        :  Plugin(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine)
     {
-        enabledByDefault = true;
-        customgfiles = false;
-        customsfiles = false;
-        customvfiles = false;
-        custommfiles = false;
-        customefiles = false;
-        customwfiles = false;
-        customvwfiles = false;
-        gfiles.clear();
-        sfiles.clear();
-        vfiles.clear();
-        mfiles.clear();
-        efiles.clear();
-        wfiles.clear();
-        vwfiles.clear();
-        if (type == "database")
-        {
-            QString filter = QString("avt") + name + "FileFormat.C";
-            defaultmfiles.push_back(filter);
-            defaultefiles.push_back(filter);
-        }
-        else if (type == "plot")
-        {
-            QString filter = QString("avt") + name + "Filter.C";
-            defaultvfiles.push_back(filter);
-            defaultefiles.push_back(filter);
-            QString widgets = QString("Qvis") + name + "PlotWindow.h";
-            defaultwfiles.push_back(widgets);
-        }
-        else if (type == "operator")
-        {
-            QString filter = QString("avt") + name + "Filter.C";
-            defaultvfiles.push_back(filter);
-            defaultefiles.push_back(filter);
-        }
     }
 
     void Print(ostream &out)
     {
         out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< endl;
         if (atts)
-            atts->Print(cout);
+            atts->Print(out);
     }
 
 protected:

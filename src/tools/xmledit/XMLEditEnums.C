@@ -88,6 +88,9 @@ XMLEditEnums::XMLEditEnums(QWidget *p, const QString &n)
     row++;
 
     valuelist = new QMultiLineEdit(this);
+    QFont monospaced("Courier");
+    valuelist->setFont(monospaced);
+    valuelist->setWordWrap(QTextEdit::NoWrap);
     topLayout->addMultiCellWidget(valuelist, row,row, 0,1);
     row++;
 

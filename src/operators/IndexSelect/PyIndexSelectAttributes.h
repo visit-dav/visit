@@ -46,11 +46,11 @@
 //
 void            PyIndexSelectAttributes_StartUp(IndexSelectAttributes *subj, void *data);
 void            PyIndexSelectAttributes_CloseDown();
- PyMethodDef *   PyIndexSelectAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyIndexSelectAttributes_GetMethodTable(int *nMethods);
 bool            PyIndexSelectAttributes_Check(PyObject *obj);
- IndexSelectAttributes *  PyIndexSelectAttributes_FromPyObject(PyObject *obj);
- PyObject *      PyIndexSelectAttributes_New();
- PyObject *      PyIndexSelectAttributes_Wrap(const IndexSelectAttributes *attr);
+IndexSelectAttributes *  PyIndexSelectAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyIndexSelectAttributes_New();
+PyObject *      PyIndexSelectAttributes_Wrap(const IndexSelectAttributes *attr);
 void            PyIndexSelectAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyIndexSelectAttributes_SetDefaults(const IndexSelectAttributes *atts);
 std::string     PyIndexSelectAttributes_GetLogString();

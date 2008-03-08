@@ -58,45 +58,48 @@
 //   Brad Whitlock, Wed Mar 7 16:05:46 PST 2007
 //   Added keyframing check box.
 //
+//   Brad Whitlock, Fri Mar 7 11:20:58 PDT 2008
+//   Changed layout.
+//
 // ****************************************************************************
 
 XMLEditAttribute::XMLEditAttribute(QWidget *p, const QString &n)
     : QFrame(p, n)
 {
-    QGridLayout *topLayout = new QGridLayout(this, 8,3, 5);
+    QGridLayout *topLayout = new QGridLayout(this, 8,2, 5);
     int row = 0;
 
     name = new QLineEdit(this);
     topLayout->addWidget(new QLabel("Name", this), row, 0);
-    topLayout->addMultiCellWidget(name, row,row, 1,2);
+    topLayout->addWidget(name, row,1);
     row++;
 
     purpose = new QLineEdit(this);
     topLayout->addWidget(new QLabel("Purpose", this), row, 0);
-    topLayout->addMultiCellWidget(purpose, row,row, 1,2);
+    topLayout->addWidget(purpose, row,1);
     row++;
 
     codefile = new QLineEdit(this);
     topLayout->addWidget(new QLabel("Code file", this), row, 0);
-    topLayout->addMultiCellWidget(codefile, row,row, 1,2);
+    topLayout->addWidget(codefile, row,1);
     row++;
 
     exportAPI = new QLineEdit(this);
     topLayout->addWidget(new QLabel("Export API", this), row, 0);
-    topLayout->addMultiCellWidget(exportAPI, row,row, 1,2);
+    topLayout->addWidget(exportAPI, row,1);
     row++;
 
     exportInclude = new QLineEdit(this);
     topLayout->addWidget(new QLabel("Export include", this), row, 0);
-    topLayout->addMultiCellWidget(exportInclude, row,row, 1,2);
+    topLayout->addWidget(exportInclude, row,1);
     row++;
 
     persistent = new QCheckBox("Persistent", this);
-    topLayout->addMultiCellWidget(persistent, row,row, 0,2);
+    topLayout->addWidget(persistent, row,0);
     row++;
 
     keyframe = new QCheckBox("Generate keyframing methods", this);
-    topLayout->addMultiCellWidget(keyframe, row,row, 0,2);
+    topLayout->addMultiCellWidget(keyframe, row,row, 0,1);
     row++;
 
     topLayout->setRowStretch(row, 100);
@@ -130,6 +133,9 @@ XMLEditAttribute::XMLEditAttribute(QWidget *p, const QString &n)
 //    Brad Whitlock, Wed Mar 7 16:06:43 PST 2007
 //    Added keyframe.
 //
+//    Brad Whitlock, Thu Mar 6 14:51:29 PST 2008
+//    Adapted to newer CodeFile implementation.
+//
 // ****************************************************************************
 void
 XMLEditAttribute::UpdateWindowContents()
@@ -142,7 +148,7 @@ XMLEditAttribute::UpdateWindowContents()
     name->setText(a->name);
     purpose->setText(a->purpose);
     if (a->codeFile)
-        codefile->setText(a->codeFile->filebase);
+        codefile->setText(a->codeFile->FileBase());
     else
         codefile->setText("");
     if (plugin)

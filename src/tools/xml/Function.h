@@ -40,7 +40,7 @@
 #define FUNCTION_H
 
 #include <qstring.h>
-#include "CodeFile.h"
+#include <visitstream.h>
 
 // ****************************************************************************
 //  Class:  Function
@@ -59,6 +59,9 @@
 //    Hank Childs, Tue Aug 28 14:36:10 PDT 2007
 //    Add a Boolean to indicate whether the function was used.
 //
+//    Brad Whitlock, Wed Feb 27 15:55:37 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 class Function
 {
@@ -68,17 +71,19 @@ class Function
     QString def;
     bool    user;
     bool    member;
+    QString target;
     bool    usedThisFunction;
   public:
-    Function(const QString &n, const QString &dc, const QString &df, bool u, bool m)
-        : name(n), decl(dc), def(df), user(u), member(m)
+    Function(const QString &n, const QString &dc, const QString &df, bool u,
+        bool m, const QString &t) : name(n), decl(dc), def(df), user(u), 
+        member(m), target(t)
     {
         usedThisFunction = false;
     }
-    void Print(ostream &out)
+    void Print(ostream &out, const QString &generatorName = QString::null)
     {
-        out << "        Function: " << decl << endl;
-        //out << func;
+        if(generatorName.isEmpty() || generatorName == target)
+            out << "        Function: (" << target << ") " << decl << endl;
     }
 };
 

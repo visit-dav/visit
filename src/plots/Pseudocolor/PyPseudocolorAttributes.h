@@ -46,13 +46,15 @@
 //
 void            PyPseudocolorAttributes_StartUp(PseudocolorAttributes *subj, void *data);
 void            PyPseudocolorAttributes_CloseDown();
-PyMethodDef    *PyPseudocolorAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyPseudocolorAttributes_GetMethodTable(int *nMethods);
 bool            PyPseudocolorAttributes_Check(PyObject *obj);
-PseudocolorAttributes *PyPseudocolorAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyPseudocolorAttributes_NewPyObject();
-PyObject       *PyPseudocolorAttributes_WrapPyObject(const PseudocolorAttributes *attr);
-std::string     PyPseudocolorAttributes_GetLogString();
+PseudocolorAttributes *  PyPseudocolorAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyPseudocolorAttributes_New();
+PyObject *      PyPseudocolorAttributes_Wrap(const PseudocolorAttributes *attr);
+void            PyPseudocolorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyPseudocolorAttributes_SetDefaults(const PseudocolorAttributes *atts);
+std::string     PyPseudocolorAttributes_GetLogString();
+std::string     PyPseudocolorAttributes_ToString(const PseudocolorAttributes *, const char *);
 
 #endif
 

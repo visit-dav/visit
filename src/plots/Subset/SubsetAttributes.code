@@ -37,3 +37,18 @@ SubsetAttributes::VarChangeRequiresReset()
     return true;
 }
 
+Target: xml2python
+Function: PySubsetAttributes_SetDefaults
+Declaration: PySubsetAttributes_SetDefaults
+Definition:
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Mon Dec  2 18:06:04 PST 2002
+//    Make defaultAtts point to the passed atts directly.
+//
+// ****************************************************************************
+void
+PySubsetAttributes_SetDefaults(const SubsetAttributes *atts)
+{
+    defaultAtts = const_cast<SubsetAttributes*>(atts);
+}

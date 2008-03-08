@@ -4,6 +4,7 @@ Postfix:
     if(colorControlPoints.GetNumControlPoints() < 2)
          SetDefaultColorControlPoints();
 
+Target: xml2atts
 Initialization: colorControlPoints
     SetDefaultColorControlPoints();
 
@@ -11,6 +12,13 @@ Initialization: freeformOpacity
     for(int i = 0; i < 256; ++i)
         freeformOpacity[i] = (unsigned char)i;
 
+Target: xml2java
+Initialization: freeformOpacity
+    freeformOpacity = new byte[256];
+        for(int i = 0; i < 256; ++i)
+            freeformOpacity[i] = (byte)i;
+
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const VolumeAttributes &obj) const;
 Definition:
@@ -402,3 +410,79 @@ VolumeAttributes::AnyNonTransferFunctionMembersAreDifferent(const VolumeAttribut
 
     return !same;
 }
+
+Target: xml2python
+Function: VolumeAttributes_SetFreeformOpacity
+Declaration: VolumeAttributes_SetFreeformOpacity
+Definition:
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Fri Oct 14 08:24:34 PDT 2005
+//    Added custom code, to parse different types of args:
+//    (int index, int val) -- sets the opacity value at the specified index
+//    (list or tuple object) --  as long as it is numeric and has length
+//    of 256, will set the opacity values to the values in the list or tuple.
+//
+// ****************************************************************************
+
+static PyObject *
+VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
+{
+//
+// THIS METHOD IS CUSTOM CODED!!!!!!.
+//
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    unsigned char *cvals = obj->data->GetFreeformOpacity();
+    int opacity, index;
+    if(PyArg_ParseTuple(args, "ii", &index, &opacity))
+    {
+        if(index >= 0 && index < 256)
+        {
+            if(opacity < 0) opacity = 0;
+            if(opacity > 255) opacity = 255;
+            cvals[index] = (unsigned char)(opacity);
+        }
+    }
+    else
+    {
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+        {
+            return NULL;
+        }
+        if(PyTuple_Check(tuple) || PyList_Check(tuple))
+        {
+            if(PySequence_Size(tuple) != 256)
+                return NULL;
+
+            PyErr_Clear();
+            for(int i = 0; i < PySequence_Size(tuple); ++i)
+            {
+                int c;
+                PyObject *item = PySequence_GetItem(tuple, i);
+                if(PyInt_Check(item))
+                    c = int(PyInt_AS_LONG(item));
+                else if(PyFloat_Check(item))
+                    c = int(PyFloat_AS_DOUBLE(item));
+                else if(PyLong_Check(item))
+                    c = int(PyLong_AsDouble(item));
+                else
+                    c = 0;
+                Py_DECREF(item);
+                if(c < 0) c = 0;
+                if(c > 255) c = 255;
+                cvals[i] = (unsigned char)(c);
+           }
+        }
+        else
+            return NULL;
+    }
+
+    // Mark the freeformOpacity in the object as modified.
+    obj->data->SelectFreeformOpacity();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+

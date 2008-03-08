@@ -46,13 +46,15 @@
 //
 void            PyProjectAttributes_StartUp(ProjectAttributes *subj, void *data);
 void            PyProjectAttributes_CloseDown();
-PyMethodDef    *PyProjectAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyProjectAttributes_GetMethodTable(int *nMethods);
 bool            PyProjectAttributes_Check(PyObject *obj);
-ProjectAttributes *PyProjectAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyProjectAttributes_NewPyObject();
-PyObject       *PyProjectAttributes_WrapPyObject(const ProjectAttributes *attr);
-std::string     PyProjectAttributes_GetLogString();
+ProjectAttributes *  PyProjectAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyProjectAttributes_New();
+PyObject *      PyProjectAttributes_Wrap(const ProjectAttributes *attr);
+void            PyProjectAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyProjectAttributes_SetDefaults(const ProjectAttributes *atts);
+std::string     PyProjectAttributes_GetLogString();
+std::string     PyProjectAttributes_ToString(const ProjectAttributes *, const char *);
 
 #endif
 

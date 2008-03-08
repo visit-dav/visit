@@ -51,26 +51,32 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    April 15, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Feb 28 10:09:16 PDT 2008
+//    Added target, renamed old target to destination.
+//
 // ****************************************************************************
 class Include
 {
   public:
     QString include;
-    QString target;
+    QString destination;
     bool    quoted;
+    QString target;
   public:
-    Include(const QString &t, bool q) : target(t), quoted(q)
+    Include(const QString &d, bool q, const QString &t) : destination(d), quoted(q), target(t)
     {
-        if (t != "header" && t != "source")
-            throw QString().sprintf("Bad target file '%s' for include.",t.latin1());
+        if (d != "header" && d != "source")
+            throw QString().sprintf("Bad destination file '%s' for include.",d.latin1());
     }
     void SetInclude(const QString &i)
     {
         include = i;
     }
-    void Print(ostream &out)
+    void Print(ostream &out, const QString &generatorName = QString::null)
     {
-        out << "        Include: " << include << endl;
+        if(generatorName.isEmpty() || generatorName == target)
+            out << "        Include: (" << target << ") " << include << endl;
     }
 };
 

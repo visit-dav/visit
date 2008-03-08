@@ -46,11 +46,11 @@
 //
 void            PyCreateBondsAttributes_StartUp(CreateBondsAttributes *subj, void *data);
 void            PyCreateBondsAttributes_CloseDown();
- PyMethodDef *   PyCreateBondsAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyCreateBondsAttributes_GetMethodTable(int *nMethods);
 bool            PyCreateBondsAttributes_Check(PyObject *obj);
- CreateBondsAttributes *  PyCreateBondsAttributes_FromPyObject(PyObject *obj);
- PyObject *      PyCreateBondsAttributes_New();
- PyObject *      PyCreateBondsAttributes_Wrap(const CreateBondsAttributes *attr);
+CreateBondsAttributes *  PyCreateBondsAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyCreateBondsAttributes_New();
+PyObject *      PyCreateBondsAttributes_Wrap(const CreateBondsAttributes *attr);
 void            PyCreateBondsAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyCreateBondsAttributes_SetDefaults(const CreateBondsAttributes *atts);
 std::string     PyCreateBondsAttributes_GetLogString();

@@ -42,6 +42,7 @@
 #include <map>
 #include <utility>
 #include <qstring.h>
+#include <qstringlist.h>
 #include <visitstream.h>
 
 #include <XMLParserUtil.h>
@@ -62,24 +63,41 @@
 //    Jeremy Meredith, Thu Jan 31 14:55:32 EST 2008
 //    Prevent hang on badly formatted .code files.
 //
+//    Brad Whitlock, Wed Feb 27 14:35:40 PST 2008
+//    Added support for other XML tool targets in the code file. Encapsulated
+//    the data and added accessor methods.
+//
 // ****************************************************************************
 class CodeFile
 {
-  public:
+  private:
+    typedef std::map<QString, std::pair<QString,QString> > QStringPairMap;
+    typedef std::map<QString, QString> QStringQStringMap;
+    QString currentTarget;
     QString filename;
     QString filepath;
     QString filebase;
-    std::map<QString, std::pair<QString,QString> > code;
-    std::map<QString, std::pair<QString,QString> > func;
-    std::map<QString, std::pair<QString,QString> > var;
-    std::map<QString, std::pair<QString,QString> > constant;
-    std::map<QString, QString>                     init;
+    QStringPairMap    code;
+    QStringPairMap    func;
+    QStringPairMap    var;
+    QStringPairMap    constant;
+    QStringQStringMap init;
   public:
     CodeFile(const QString &f) : filename(f)
     {
-        filepath=FilePath(filename);
-        filebase=FileBase(filename);
+        currentTarget = "xml2atts";
+        filepath = ::FilePath(filename);
+        filebase = ::FileBase(filename);
     }
+    const QString &FileBase() const { return filebase; }
+    void           SetFileBase(const QString &s) { filebase = s; }
+
+    const QString &FilePath() const              { return filepath; }
+    void           SetFilePath(const QString &s) { filepath = s; }
+
+    const QString &FileName() const { return filename; }
+    void           SetFileName(const QString &s) { filename = s; }
+
     void Parse()
     {
         ifstream in(filename.latin1(), ios::in);
@@ -98,7 +116,11 @@ class CodeFile
             if (!keyword.isNull())
             {
                 QString name = buff.mid(keyword.length()).simplifyWhiteSpace();
-                if (keyword      == "Function:")
+                if (keyword      == "Target:")
+                {
+                    ParseTarget(buff, name, in);
+                }
+                else if (keyword      == "Function:")
                 {
                     ParseFunction(buff, name, in);
                 }
@@ -125,6 +147,80 @@ class CodeFile
 
         in.close();
     }
+
+    bool HasCode(const QString &name) const
+    { 
+        return HasItem(code, name); 
+    }
+    bool GetCode(const QString &name, QStringList &targets, QStringList &first, 
+                 QStringList &second) const
+    {
+        return GetItem(code, name, targets, first, second);
+    }
+    void GetAllCodes(QStringList &targets, QStringList &names, QStringList &first, 
+                 QStringList &second) const
+    {
+        GetAllItems(code, targets, names, first, second);
+    }
+
+    bool HasFunction(const QString &name) const
+    { 
+        return HasItem(func, name); 
+    }
+    bool GetFunction(const QString &name, QStringList &targets, QStringList &first, 
+                 QStringList &second) const
+    {
+        return GetItem(func, name, targets, first, second);
+    }
+    void GetAllFunctions(QStringList &targets, QStringList &names, QStringList &first, 
+                 QStringList &second) const
+    {
+        GetAllItems(func, targets, names, first, second);
+    }
+
+    bool HasVariable(const QString &name) const
+    { 
+        return HasItem(var, name); 
+    }
+    bool GetVariable(const QString &name, QStringList &targets, QStringList &first, 
+                 QStringList &second) const
+    {
+        return GetItem(var, name, targets, first, second);
+    }
+    void GetAllVariables(QStringList &targets, QStringList &names, QStringList &first, 
+                 QStringList &second) const
+    {
+        GetAllItems(var, targets, names, first, second);
+    }
+
+    bool HasConstant(const QString &name) const
+    { 
+        return HasItem(constant, name); 
+    }
+    bool GetConstant(const QString &name, QStringList &language, QStringList &first, 
+                     QStringList &second) const
+    {
+        return GetItem(constant, name, language, first, second);
+    }
+    void GetAllConstants(QStringList &targets, QStringList &names, QStringList &first, 
+                 QStringList &second) const
+    {
+        GetAllItems(constant, targets, names, first, second);
+    }
+
+    bool HasInit(const QString &name) const
+    { 
+        return HasItem(init, name); 
+    }
+    bool GetInit(const QString &name, QStringList &targets, QStringList &def) const
+    {
+        return GetItem(init, name, targets, def);
+    }
+    void GetAllInits(QStringList &targets, QStringList &names, QStringList &def) const
+    {
+        GetAllItems(init, targets, names, def);
+    }
+private:
     QString GetKeyword(const QString &buff)
     {
         QString keyword;
@@ -132,6 +228,10 @@ class CodeFile
         if (buff.left(9)       == "Function:")
         {
             keyword = buff.left(9);
+        }
+        else if (buff.left(7)  == "Target:")
+        {
+            keyword = buff.left(7);
         }
         else if (buff.left(5)  == "Code:")
         {
@@ -151,6 +251,15 @@ class CodeFile
         }
 
         return keyword;
+    }
+    void ParseTarget(QString &buff, const QString &name, istream &in)
+    {
+        currentTarget = name.stripWhiteSpace();
+
+        // Get the next line.
+        char cbuff[4096];
+        in.getline(cbuff, 4096);
+        buff=cbuff;
     }
     void ParseFunction(QString &buff, const QString &name, istream &in)
     {
@@ -180,7 +289,7 @@ class CodeFile
         while (def.right(2) == "\n\n")
             def = def.left(def.length() - 1);
 
-        func[name] = std::pair<QString,QString>(decl,def);
+        func[Key(name)] = std::pair<QString,QString>(decl,def);
     }
     void ParseVariable(QString &buff, const QString &name, istream &in)
     {
@@ -215,7 +324,7 @@ class CodeFile
         while (def.right(2) == "\n\n")
             def = def.left(def.length() - 1);
 
-        constant[name] = std::pair<QString,QString>(decl,def);
+        constant[Key(name)] = std::pair<QString,QString>(decl,def);
     }
     void ParseCode(QString &buff, const QString &name, istream &in)
     {
@@ -258,7 +367,7 @@ class CodeFile
         if (postfix == "\n")
             postfix = QString();
 
-        code[name] = std::pair<QString,QString>(prefix,postfix);
+        code[Key(name)] = std::pair<QString,QString>(prefix,postfix);
     }
     void ParseInitialization(QString &buff, const QString &name, istream &in)
     {
@@ -280,7 +389,128 @@ class CodeFile
             initcode = initcode.left(initcode.length() - 1);
         }
 
-        init[name] = initcode;
+        init[Key(name)] = initcode;
+    }
+
+    QString Key(const QString &key) const
+    {
+        return MakeKey(currentTarget, key);
+    }
+
+    QString MakeKey(const QString &target, const QString &key) const
+    {
+        return target + "," + key;
+    }
+
+    void SplitKey(const QString &key, QString &target, QString &name) const
+    {
+        int comma = key.find(",");
+        if(comma != -1)
+        {
+            target = key.left(comma);
+            name = key.mid(comma+1);
+        }
+        else
+        {
+            target = "xml2atts";
+            name = key;
+        }
+    }
+
+    bool HasItem(const QStringPairMap &m, const QString &name) const
+    {
+        for(QStringPairMap::const_iterator it = m.begin(); it != m.end(); ++it)
+        {
+            QString target, key;
+            SplitKey(it->first, target, key);
+            if(key == name)
+                return true;
+        }
+        return false;
+    }
+
+    bool GetItem(const QStringPairMap &m, const QString &name, 
+                 QStringList &targets, QStringList &first, 
+                 QStringList &second) const
+    {
+        bool retval = false;
+        for(QStringPairMap::const_iterator it = m.begin(); it != m.end(); ++it)
+        {
+            QString target, key;
+            SplitKey(it->first, target, key);
+            if(key == name)
+            {
+                targets += target;
+                first += it->second.first;
+                second += it->second.second;
+                retval = true;
+            }
+        }
+        return retval;
+    }
+
+    void GetAllItems(const QStringPairMap &m,
+                     QStringList &targets,
+                     QStringList &names,
+                     QStringList &first, 
+                     QStringList &second) const
+    {
+        for(QStringPairMap::const_iterator it = m.begin(); it != m.end(); ++it)
+        {
+            QString target, key;
+            SplitKey(it->first, target, key);
+            
+            targets += target;
+            names += key;
+            first += it->second.first;
+            second += it->second.second;
+        }
+    }
+
+    void GetAllItems(const QStringQStringMap &m,
+                     QStringList &targets,
+                     QStringList &names,
+                     QStringList &defs) const
+    {
+        for(QStringQStringMap::const_iterator it = m.begin(); it != m.end(); ++it)
+        {
+            QString target, key;
+            SplitKey(it->first, target, key);
+            
+            targets += target;
+            names += key;
+            defs += it->second;
+        }
+    }
+
+    bool HasItem(const QStringQStringMap &m, const QString &name) const
+    {
+        for(QStringQStringMap::const_iterator it = m.begin(); it != m.end(); ++it)
+        {
+            QString target, key;
+            SplitKey(it->first, target, key);
+            if(key == name)
+                return true;
+        }
+        return false;
+    }
+
+    bool GetItem(const QStringQStringMap &m, const QString &name, 
+                 QStringList &targets, QStringList &first) const
+    {
+        bool retval = false;
+        for(QStringQStringMap::const_iterator it = m.begin(); it != m.end(); ++it)
+        {
+            QString target, key;
+            SplitKey(it->first, target, key);
+            if(key == name)
+            {
+                targets += target;
+                first += it->second;
+                retval = true;
+            }
+        }
+        return retval;
     }
 };
 

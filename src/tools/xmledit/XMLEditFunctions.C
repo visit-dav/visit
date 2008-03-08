@@ -58,6 +58,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 15:42:34 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 XMLEditFunctions::XMLEditFunctions(QWidget *p, const QString &n)
     : QFrame(p, n)
@@ -79,6 +83,11 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p, const QString &n)
 
     QGridLayout *topLayout = new QGridLayout(hLayout, 7,2, 5);
     int row = 0;
+
+    topLayout->addWidget(new QLabel("Target", this), row, 0);
+    target = new QLineEdit(this);
+    topLayout->addWidget(target, row, 1);
+    row++;
 
     topLayout->addWidget(new QLabel("Name", this), row, 0);
     name = new QLineEdit(this);
@@ -109,6 +118,7 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p, const QString &n)
     definition = new QMultiLineEdit(this);
     QFont monospaced("Courier");
     definition->setFont(monospaced);
+    definition->setWordWrap(QTextEdit::NoWrap);
     topLayout->addMultiCellWidget(definition, row,row, 0,1);
     row++;
 
@@ -126,6 +136,8 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p, const QString &n)
             this, SLOT(typeGroupChanged(int)));
     connect(member, SIGNAL(clicked()),
             this, SLOT(memberChanged()));
+    connect(target, SIGNAL(textChanged(const QString&)),
+            this, SLOT(targetTextChanged(const QString&)));
     connect(declaration, SIGNAL(textChanged(const QString&)),
             this, SLOT(declarationTextChanged(const QString&)));
     connect(definition, SIGNAL(textChanged()),
@@ -137,6 +149,36 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p, const QString &n)
 }
 
 // ****************************************************************************
+// Method: XMLEditFunctions::CountFunctions
+//
+// Purpose: 
+//   Return the number of functions having a given name.
+//
+// Arguments:
+//  name : The name of the function that we're interested in.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 6 15:53:04 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+XMLEditFunctions::CountFunctions(const QString &name) const
+{
+    Attribute *a = xmldoc->attribute;
+    int funcCount = 0;
+    for (int j=0; j<a->functions.size(); j++)
+        funcCount += (name == a->functions[j]->name) ? 1 : 0;
+    return funcCount;
+}
+
+// ****************************************************************************
 //  Method:  XMLEditFunctions::UpdateWindowContents
 //
 //  Purpose:
@@ -145,16 +187,30 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p, const QString &n)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 15:49:31 PST 2008
+//    Added support for multiple targets.
+//
 // ****************************************************************************
 void
 XMLEditFunctions::UpdateWindowContents()
 {
     BlockAllSignals(true);
     Attribute *a = xmldoc->attribute;
+
     functionlist->clear();
     for (int i=0; i<a->functions.size(); i++)
     {
-        functionlist->insertItem(a->functions[i]->name);
+        if(CountFunctions(a->functions[i]->name) > 1)
+        {
+            QString id; id.sprintf("%s [%s]", a->functions[i]->name.latin1(),
+               a->functions[i]->target.latin1());
+            functionlist->insertItem(id);
+        }
+        else
+        {
+            functionlist->insertItem(a->functions[i]->name);
+        }
     }
 
     BlockAllSignals(false);
@@ -170,6 +226,9 @@ XMLEditFunctions::UpdateWindowContents()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Brad Whitlock, Thu Mar 6 15:50:09 PST 2008
+//  Added target.
+//
 // ****************************************************************************
 void
 XMLEditFunctions::UpdateWindowSensitivity()
@@ -178,6 +237,7 @@ XMLEditFunctions::UpdateWindowSensitivity()
 
     delButton->setEnabled(functionlist->count() > 0);
     name->setEnabled(active);
+    target->setEnabled(active);
     declaration->setEnabled(active);
     definition->setEnabled(active);
     newFunctionButton->setEnabled(active);
@@ -194,6 +254,10 @@ XMLEditFunctions::UpdateWindowSensitivity()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 15:50:51 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 void
 XMLEditFunctions::UpdateWindowSingleItem()
@@ -208,6 +272,7 @@ XMLEditFunctions::UpdateWindowSingleItem()
         name->setText("");
         typeGroup->setButton(-1);
         member->setChecked(false);
+        target->setText("");
         declaration->setText("");
         definition->setText("");
     }
@@ -216,6 +281,7 @@ XMLEditFunctions::UpdateWindowSingleItem()
         Function *f = a->functions[index];
         name->setText(f->name);
         typeGroup->setButton(f->user ? 0 : 1);
+        target->setText(f->target);
         declaration->setText(f->decl);
         definition->setText(f->def);
         member->setChecked(f->member);
@@ -239,6 +305,10 @@ XMLEditFunctions::UpdateWindowSingleItem()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 15:50:51 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 void
 XMLEditFunctions::BlockAllSignals(bool block)
@@ -246,6 +316,7 @@ XMLEditFunctions::BlockAllSignals(bool block)
     functionlist->blockSignals(block);
     name->blockSignals(block);
     member->blockSignals(block);
+    target->blockSignals(block);
     declaration->blockSignals(block);
     definition->blockSignals(block);
 }
@@ -261,6 +332,10 @@ XMLEditFunctions::BlockAllSignals(bool block)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 15:55:17 PST 2008
+//    Added support for multiple targets.
+//
 // ****************************************************************************
 void
 XMLEditFunctions::nameTextChanged(const QString &text)
@@ -273,7 +348,12 @@ XMLEditFunctions::nameTextChanged(const QString &text)
 
     QString newname = text.stripWhiteSpace();
     f->name = newname;
-
+    if(CountFunctions(newname) > 1)
+    {
+        newname += "[";
+        newname += f->target;
+        newname += "]";
+    }
     BlockAllSignals(true);
     functionlist->changeItem(newname, index);
     BlockAllSignals(false);
@@ -315,6 +395,26 @@ XMLEditFunctions::memberChanged()
     Function *f = a->functions[index];
 
     f->member = member->isChecked();
+}
+
+// ****************************************************************************
+//  Method:  XMLEditFunctions::targetTextChanged
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Thu Mar 6 15:56:05 PST 2008
+//
+// ****************************************************************************
+void
+XMLEditFunctions::targetTextChanged(const QString &text)
+{
+    Attribute *a = xmldoc->attribute;
+    int index = functionlist->currentItem();
+    if (index == -1)
+        return;
+    Function *f = a->functions[index];
+
+    f->target = text;
+    nameTextChanged(f->name);
 }
 
 // ****************************************************************************
@@ -361,6 +461,10 @@ XMLEditFunctions::definitionChanged()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 15:57:07 PST 2008
+//    Added default target of xml2atts.
+//
 // ****************************************************************************
 void
 XMLEditFunctions::functionlistNew()
@@ -382,7 +486,7 @@ XMLEditFunctions::functionlistNew()
             newid++;
     }
     
-    Function *f = new Function(newname,"","",true,true);
+    Function *f = new Function(newname,"","",true,true,"xml2atts");
     
     a->functions.push_back(f);
     UpdateWindowContents();

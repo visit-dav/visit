@@ -46,13 +46,15 @@
 //
 void            PyKerbelAttributes_StartUp(KerbelAttributes *subj, void *data);
 void            PyKerbelAttributes_CloseDown();
-PyMethodDef    *PyKerbelAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyKerbelAttributes_GetMethodTable(int *nMethods);
 bool            PyKerbelAttributes_Check(PyObject *obj);
-KerbelAttributes *PyKerbelAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyKerbelAttributes_NewPyObject();
-PyObject       *PyKerbelAttributes_WrapPyObject(const KerbelAttributes *attr);
-std::string     PyKerbelAttributes_GetLogString();
+KerbelAttributes *  PyKerbelAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyKerbelAttributes_New();
+PyObject *      PyKerbelAttributes_Wrap(const KerbelAttributes *attr);
+void            PyKerbelAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyKerbelAttributes_SetDefaults(const KerbelAttributes *atts);
+std::string     PyKerbelAttributes_GetLogString();
+std::string     PyKerbelAttributes_ToString(const KerbelAttributes *, const char *);
 
 #endif
 

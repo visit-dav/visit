@@ -40,7 +40,6 @@
 #define CODE_H
 
 #include <qstring.h>
-#include "CodeFile.h"
 
 // ****************************************************************************
 //  Class:  Code
@@ -51,6 +50,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 11, 2002
 //
+//  Modifications:
+//   Brad Whitlock, Thu Feb 28 09:36:39 PDT 2008
+//   Added target.
+//
 // ****************************************************************************
 class Code
 {
@@ -58,14 +61,16 @@ class Code
     QString name;
     QString prefix;
     QString postfix;
+    QString target;
   public:
-    Code(const QString &n, const QString &pre, const QString &post)
-        : name(n), prefix(pre), postfix(post)
+    Code(const QString &n, const QString &pre, const QString &post,
+         const QString &t) : name(n), prefix(pre), postfix(post), target(t)
     {
     }
-    void Print(ostream &out)
+    void Print(ostream &out, const QString &generatorName = QString::null)
     {
-        out << "        Code: " << name << endl;
+        if(generatorName.isEmpty() || generatorName == target)
+            out << "        Code: (" << target << ") " << name << endl;
     }
 };
 

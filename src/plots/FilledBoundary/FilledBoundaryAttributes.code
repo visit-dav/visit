@@ -74,3 +74,20 @@ FilledBoundaryAttributes::VarChangeRequiresReset()
     return true;
 }
 
+Target: xml2python
+Function: PyFilledBoundaryAttributes_SetDefaults
+Declaration: PyFilledBoundaryAttributes_SetDefaults
+Definition: 
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 18 13:49:42 PDT 2003
+//    Make defaultAtts point to the passed atts directly.
+//
+// ****************************************************************************
+
+void
+PyFilledBoundaryAttributes_SetDefaults(const FilledBoundaryAttributes *atts)
+{
+    defaultAtts = const_cast<FilledBoundaryAttributes*>(atts);
+}
+

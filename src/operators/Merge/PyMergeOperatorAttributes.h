@@ -46,13 +46,15 @@
 //
 void            PyMergeOperatorAttributes_StartUp(MergeOperatorAttributes *subj, void *data);
 void            PyMergeOperatorAttributes_CloseDown();
-PyMethodDef    *PyMergeOperatorAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyMergeOperatorAttributes_GetMethodTable(int *nMethods);
 bool            PyMergeOperatorAttributes_Check(PyObject *obj);
-MergeOperatorAttributes *PyMergeOperatorAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyMergeOperatorAttributes_NewPyObject();
-PyObject       *PyMergeOperatorAttributes_WrapPyObject(const MergeOperatorAttributes *attr);
-std::string     PyMergeOperatorAttributes_GetLogString();
+MergeOperatorAttributes *  PyMergeOperatorAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyMergeOperatorAttributes_New();
+PyObject *      PyMergeOperatorAttributes_Wrap(const MergeOperatorAttributes *attr);
+void            PyMergeOperatorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyMergeOperatorAttributes_SetDefaults(const MergeOperatorAttributes *atts);
+std::string     PyMergeOperatorAttributes_GetLogString();
+std::string     PyMergeOperatorAttributes_ToString(const MergeOperatorAttributes *, const char *);
 
 #endif
 

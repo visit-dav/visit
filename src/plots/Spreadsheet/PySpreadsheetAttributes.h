@@ -46,11 +46,12 @@
 //
 void            PySpreadsheetAttributes_StartUp(SpreadsheetAttributes *subj, void *data);
 void            PySpreadsheetAttributes_CloseDown();
-PyMethodDef    *PySpreadsheetAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PySpreadsheetAttributes_GetMethodTable(int *nMethods);
 bool            PySpreadsheetAttributes_Check(PyObject *obj);
-SpreadsheetAttributes *PySpreadsheetAttributes_FromPyObject(PyObject *obj);
-PyObject       *PySpreadsheetAttributes_NewPyObject();
-PyObject       *PySpreadsheetAttributes_WrapPyObject(const SpreadsheetAttributes *attr);
+SpreadsheetAttributes *  PySpreadsheetAttributes_FromPyObject(PyObject *obj);
+PyObject *      PySpreadsheetAttributes_New();
+PyObject *      PySpreadsheetAttributes_Wrap(const SpreadsheetAttributes *attr);
+void            PySpreadsheetAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PySpreadsheetAttributes_SetDefaults(const SpreadsheetAttributes *atts);
 std::string     PySpreadsheetAttributes_GetLogString();
 std::string     PySpreadsheetAttributes_ToString(const SpreadsheetAttributes *, const char *);

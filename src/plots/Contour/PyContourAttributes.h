@@ -46,11 +46,11 @@
 //
 void            PyContourAttributes_StartUp(ContourAttributes *subj, void *data);
 void            PyContourAttributes_CloseDown();
-PyMethodDef    *PyContourAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyContourAttributes_GetMethodTable(int *nMethods);
 bool            PyContourAttributes_Check(PyObject *obj);
-ContourAttributes *PyContourAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyContourAttributes_New();
-PyObject       *PyContourAttributes_Wrap(const ContourAttributes *attr);
+ContourAttributes *  PyContourAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyContourAttributes_New();
+PyObject *      PyContourAttributes_Wrap(const ContourAttributes *attr);
 void            PyContourAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyContourAttributes_SetDefaults(const ContourAttributes *atts);
 std::string     PyContourAttributes_GetLogString();

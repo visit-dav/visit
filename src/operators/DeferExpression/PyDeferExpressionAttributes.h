@@ -46,13 +46,15 @@
 //
 void            PyDeferExpressionAttributes_StartUp(DeferExpressionAttributes *subj, void *data);
 void            PyDeferExpressionAttributes_CloseDown();
-PyMethodDef    *PyDeferExpressionAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyDeferExpressionAttributes_GetMethodTable(int *nMethods);
 bool            PyDeferExpressionAttributes_Check(PyObject *obj);
-DeferExpressionAttributes *PyDeferExpressionAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyDeferExpressionAttributes_NewPyObject();
-PyObject       *PyDeferExpressionAttributes_WrapPyObject(const DeferExpressionAttributes *attr);
-std::string     PyDeferExpressionAttributes_GetLogString();
+DeferExpressionAttributes *  PyDeferExpressionAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyDeferExpressionAttributes_New();
+PyObject *      PyDeferExpressionAttributes_Wrap(const DeferExpressionAttributes *attr);
+void            PyDeferExpressionAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyDeferExpressionAttributes_SetDefaults(const DeferExpressionAttributes *atts);
+std::string     PyDeferExpressionAttributes_GetLogString();
+std::string     PyDeferExpressionAttributes_ToString(const DeferExpressionAttributes *, const char *);
 
 #endif
 

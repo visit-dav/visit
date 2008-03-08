@@ -8,6 +8,18 @@
     </Function>
     <Function name="IndexForName" user="true" member="true">
     </Function>
+    <Function name="GetAnnotation2" user="true" member="true">
+    </Function>
+    <Function name="SetTimeSliderOptions" user="true" member="true">
+    </Function>
+    <Function name="SetText2DOptions" user="true" member="true">
+    </Function>
+    <Function name="SetText3DOptions" user="true" member="true">
+    </Function>
+    <Function name="SetLine2DOptions" user="true" member="true">
+    </Function>
+    <Function name="SetImageOptions" user="true" member="true">
+    </Function>
     <Include file="source" quoted="false">
       snprintf.h
     </Include>

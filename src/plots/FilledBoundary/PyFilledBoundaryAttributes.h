@@ -46,11 +46,11 @@
 //
 void            PyFilledBoundaryAttributes_StartUp(FilledBoundaryAttributes *subj, void *data);
 void            PyFilledBoundaryAttributes_CloseDown();
-PyMethodDef    *PyFilledBoundaryAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyFilledBoundaryAttributes_GetMethodTable(int *nMethods);
 bool            PyFilledBoundaryAttributes_Check(PyObject *obj);
-FilledBoundaryAttributes *PyFilledBoundaryAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyFilledBoundaryAttributes_New();
-PyObject       *PyFilledBoundaryAttributes_Wrap(const FilledBoundaryAttributes *attr);
+FilledBoundaryAttributes *  PyFilledBoundaryAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyFilledBoundaryAttributes_New();
+PyObject *      PyFilledBoundaryAttributes_Wrap(const FilledBoundaryAttributes *attr);
 void            PyFilledBoundaryAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyFilledBoundaryAttributes_SetDefaults(const FilledBoundaryAttributes *atts);
 std::string     PyFilledBoundaryAttributes_GetLogString();
