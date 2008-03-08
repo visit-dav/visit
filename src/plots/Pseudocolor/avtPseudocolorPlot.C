@@ -266,28 +266,16 @@ avtPseudocolorPlot::GetMapper(void)
 //    Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
 //    Added pcfilter->SetPlotAtts. 
 //
+//    Cyrus Harrison, Fri Mar  7 11:37:07 PST 2008
+//    Moved recentering code to the ApplyRenderingTransormation so centering
+//    will not alter query results. (Resolving '8511)
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 {
     avtDataObject_p dob = input; 
-
-    if ((atts.GetCentering() == 1) || (atts.GetCentering() == 2))
-    {
-        //
-        // It was requested that we shift centering.  If we asked for zonal
-        // data and the data is already zonal, then this will effectively
-        // be a no-op.
-        //
-        if (filter != NULL)
-        {
-            delete filter;
-        }
-        filter = new avtShiftCenteringFilter(atts.GetCentering());
-        filter->SetInput(dob);
-        dob = filter->GetOutput();
-    }
     if (input->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
         if (pcfilter != NULL)
@@ -331,13 +319,33 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 //    Removed glyph filter (replaced by glyphMapper).  Record topological 
 //    dimension for use by EhanceSpecification. 
 //
+//    Cyrus Harrison, Fri Mar  7 11:37:07 PST 2008
+//    Added recentering code previously in ApplyOperators so centering
+//    will not alter query results. (Resolving '8511)
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
-    topoDim = input->GetInfo().GetAttributes().GetTopologicalDimension(); 
-    return input;
+    avtDataObject_p dob = input; 
+    topoDim = dob->GetInfo().GetAttributes().GetTopologicalDimension(); 
+    if ((atts.GetCentering() == 1) || (atts.GetCentering() == 2))
+    {
+        //
+        // It was requested that we shift centering.  If we asked for zonal
+        // data and the data is already zonal, then this will effectively
+        // be a no-op.
+        //
+        if (filter != NULL)
+        {
+            delete filter;
+        }
+        filter = new avtShiftCenteringFilter(atts.GetCentering());
+        filter->SetInput(dob);
+        dob = filter->GetOutput();
+    }
+    return dob;
 }
 
 
