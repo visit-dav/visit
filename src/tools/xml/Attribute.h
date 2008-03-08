@@ -38,15 +38,9 @@
 
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
-
+#include <set>
+#include "AttributeBase.h"
 #include "Field.h"
-#include "Function.h"
-#include "Code.h"
-#include "Constant.h"
-#include "CodeFile.h"
-#include "Include.h"
-
-#include <visitstream.h>
 
 // ****************************************************************************
 //  Class:  Attribute
@@ -93,63 +87,31 @@
 //    Brad Whitlock, Wed Feb 28 19:15:07 PST 2007
 //    Added access and keyframe.
 //
+//    Brad Whitlock, Thu Feb 28 10:01:01 PDT 2008
+//    Update to deal with more restricted CodeFile. Also added support for
+//    different code targets. Made it inherit from AttributeBase.
+//
 // ****************************************************************************
 
-class Attribute
+class Attribute : public AttributeBase
 {
   public:
-    QString name;
-    QString purpose;
-    bool    persistent;
-    bool    keyframe;
-    QString exportAPI;
-    QString exportInclude;
     vector<Field*> fields;
-    vector<Function*> functions;
-    vector<Constant*> constants;
-    vector<Include*>  includes;
-    vector<Code*>     codes;
-    CodeFile *codeFile;
   public:
     Attribute(const QString &n, const QString &p, const QString &f,
               const QString &e, const QString &ei)
-        : name(n), purpose(p), exportAPI(e), exportInclude(ei)
+        : AttributeBase(n,p,f,e,ei), fields()
     {
-        if (name.isNull()) name = "";
-        if (purpose.isNull()) purpose = "";
-        if (f.isNull())
-            codeFile = NULL;
-        else
-            codeFile = new CodeFile(f);
-        if (codeFile)
-            codeFile->Parse();
-        persistent = true;
-        keyframe = true;
     }
-    bool HasFunction(const QString &f)
+
+    virtual ~Attribute()
     {
-        for (int i=0; i<functions.size(); i++)
-            if (functions[i]->name == f && functions[i]->user == false)
-                return true;
-        return false;
+        for (int i = 0; i < fields.size(); ++i)
+            delete fields[i];
+        fields.clear();
     }
-    void PrintFunction(ostream &out, const QString &f)
-    {
-        for (int i=0; i<functions.size(); i++)
-            if (functions[i]->name == f && functions[i]->user == false)
-                out << functions[i]->def;
-    }
-    void DeleteFunction(ostream &out, const QString &f)
-    {
-        for (int i=0; i<functions.size(); i++)
-            if (functions[i]->name == f && functions[i]->user == false)
-            {
-                for (int j=i+1; j<functions.size(); j++)
-                    functions[j-1] = functions[j];
-                return;
-            }
-    }
-    void Print(ostream &out)
+
+    virtual void Print(ostream &out)
     {
         int i;
         out << "    Attribute: " << name << " (" << purpose << ")" << endl;
@@ -162,6 +124,7 @@ class Attribute
         for (i=0; i<constants.size(); i++)
             constants[i]->Print(out);
     }
+
     void SaveXML(ostream &out, QString indent)
     {
         StartOpenTag(out, "Attribute", indent);
@@ -172,7 +135,7 @@ class Attribute
         WriteTagAttr(out, "exportAPI", exportAPI);
         WriteTagAttr(out, "exportInclude", exportInclude);
         if (codeFile)
-            WriteTagAttr(out, "codefile", codeFile->filebase);
+            WriteTagAttr(out, "codefile", codeFile->FileBase());
         FinishOpenTag(out);
 
         int i;
@@ -208,7 +171,7 @@ class Attribute
                              f->enabler->name + ":" +
                              JoinValues(f->enableval,','));
             }
-            if (! f->initcode.isEmpty())
+            if (f->initcode.size() > 0)
             {
                 WriteTagAttr(out, "init", "true");
             }
@@ -239,35 +202,51 @@ class Attribute
             WriteCloseTag(out, "Field", indent);
         }
 
+        // Only take the first of the functions with the same name since we
+        // don't need multiple Function XML entries for multiple targets.
+        std::set<QString> usedNames;
         for (i=0; i<functions.size(); i++)
         {
             Function *f = functions[i];
-            StartOpenTag(out, "Function", indent);
-            WriteTagAttr(out, "name", f->name);
-            WriteTagAttr(out, "user", Bool2Text(f->user));
-            WriteTagAttr(out, "member", Bool2Text(f->member));
-            FinishOpenTag(out);
+            if(usedNames.count(f->name) == 0)
+            {
+                usedNames.insert(f->name);
 
-            WriteCloseTag(out, "Function", indent);
+                StartOpenTag(out, "Function", indent);
+                WriteTagAttr(out, "name", f->name);
+                WriteTagAttr(out, "user", Bool2Text(f->user));
+                WriteTagAttr(out, "member", Bool2Text(f->member));
+                FinishOpenTag(out);
+
+                WriteCloseTag(out, "Function", indent);
+            }
         }
 
+        usedNames.clear();
         for (i=0; i<constants.size(); i++)
         {
             Constant *c = constants[i];
-            StartOpenTag(out, "Constant", indent);
-            WriteTagAttr(out, "name", c->name);
-            WriteTagAttr(out, "member", Bool2Text(c->member));
-            FinishOpenTag(out);
+            if(usedNames.count(c->name) == 0)
+            {
+                usedNames.insert(c->name);
 
-            WriteCloseTag(out, "Constant", indent);
+                StartOpenTag(out, "Constant", indent);
+                WriteTagAttr(out, "name", c->name);
+                WriteTagAttr(out, "member", Bool2Text(c->member));
+                FinishOpenTag(out);
+
+                WriteCloseTag(out, "Constant", indent);
+            }
         }
 
         for (i=0; i<includes.size(); i++)
         {
             Include *n = includes[i];
             StartOpenTag(out, "Include", indent);
-            WriteTagAttr(out, "file", n->target);
+            WriteTagAttr(out, "file", n->destination);
             WriteTagAttr(out, "quoted", Bool2Text(n->quoted));
+            if(n->target != "xml2atts")
+                WriteTagAttr(out, "target", n->target);
             FinishOpenTag(out);
 
             WriteValue(out, n->include, indent);
@@ -277,19 +256,26 @@ class Attribute
 
         WriteCloseTag(out, "Attribute", indent);
     }
+
     void SaveCodeFile()
     {
         if (!codeFile)
             return;
 
-        ofstream out(codeFile->filename, ios::out);
+        ofstream out(codeFile->FileName(), ios::out);
         if (!out)
             throw "Could not open code file for saving\n";
 
         int i;
+        QString currentTarget = "xml2atts";
         for (i=0; i<codes.size(); i++)
         {
             Code *c = codes[i];
+            if(currentTarget != c->target)
+            {
+                out << "Target: " << c->target << endl;
+                currentTarget = c->target;
+            }
             out << "Code: " << c->name << endl;
             out << "Prefix:" << endl;
             if (! c->prefix.isEmpty())
@@ -311,11 +297,23 @@ class Attribute
         for (i=0; i<fields.size(); i++)
         {
             Field *f = fields[i];
-            if (! f->initcode.isEmpty())
+            
+            for(std::map<QString,QString>::const_iterator it = f->initcode.begin();
+                it != f->initcode.end(); ++it)
             {
-                out << "Initialization: " << f->name << endl;
-                out << f->initcode << endl;
-                if (!(f->initcode.isEmpty()) && !(f->initcode.right(1) == "\n"))
+                QString initcode(it->second);
+                if(!initcode.isEmpty())
+                {
+                    if(currentTarget != it->first)
+                    {
+                        out << "Target: " << it->first << endl;
+                        currentTarget = it->first;
+                    }
+
+                    out << "Initialization: " << f->name << endl;
+                    out << initcode << endl;
+                }
+                if (!(initcode.isEmpty()) && !(initcode.right(1) == "\n"))
                     out << endl;
             }
         }
@@ -323,6 +321,11 @@ class Attribute
         for (i=0; i<constants.size(); i++)
         {
             Constant *c = constants[i];
+            if(currentTarget != c->target)
+            {
+                out << "Target: " << c->target << endl;
+                currentTarget = c->target;
+            }
             out << "Constant: " << c->name << endl;
             out << "Declaration: " << c->decl << endl;
             out << "Definition: " << c->def << endl;
@@ -332,6 +335,11 @@ class Attribute
         for (i=0; i<functions.size(); i++)
         {
             Function *f = functions[i];
+            if(currentTarget != f->target)
+            {
+                out << "Target: " << f->target << endl;
+                currentTarget = f->target;
+            }
             out << "Function: " << f->name << endl;
             out << "Declaration: " << f->decl << endl;
             out << "Definition:" << endl << f->def << endl;

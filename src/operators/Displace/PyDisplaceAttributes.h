@@ -46,13 +46,15 @@
 //
 void            PyDisplaceAttributes_StartUp(DisplaceAttributes *subj, void *data);
 void            PyDisplaceAttributes_CloseDown();
-PyMethodDef    *PyDisplaceAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyDisplaceAttributes_GetMethodTable(int *nMethods);
 bool            PyDisplaceAttributes_Check(PyObject *obj);
-DisplaceAttributes *PyDisplaceAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyDisplaceAttributes_NewPyObject();
-PyObject       *PyDisplaceAttributes_WrapPyObject(const DisplaceAttributes *attr);
-std::string     PyDisplaceAttributes_GetLogString();
+DisplaceAttributes *  PyDisplaceAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyDisplaceAttributes_New();
+PyObject *      PyDisplaceAttributes_Wrap(const DisplaceAttributes *attr);
+void            PyDisplaceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyDisplaceAttributes_SetDefaults(const DisplaceAttributes *atts);
+std::string     PyDisplaceAttributes_GetLogString();
+std::string     PyDisplaceAttributes_ToString(const DisplaceAttributes *, const char *);
 
 #endif
 

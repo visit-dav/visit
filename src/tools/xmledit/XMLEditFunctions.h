@@ -60,6 +60,10 @@ class QPushButton;
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 15:45:09 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 class XMLEditFunctions : public QFrame
 {
@@ -75,11 +79,14 @@ class XMLEditFunctions : public QFrame
     void nameTextChanged(const QString&);
     void typeGroupChanged(int);
     void memberChanged();
+    void targetTextChanged(const QString&);
     void declarationTextChanged(const QString&);
     void definitionChanged();
     void functionlistNew();
     void functionlistDel();
   private:
+    int CountFunctions(const QString &) const;
+
     XMLDocument    *xmldoc;
 
     QPushButton    *newButton;
@@ -91,6 +98,7 @@ class XMLEditFunctions : public QFrame
     QRadioButton   *newFunctionButton;
     QRadioButton   *replaceBuiltinButton;
     QCheckBox      *member;
+    QLineEdit      *target;
     QLineEdit      *declaration;
     QMultiLineEdit *definition;
 };

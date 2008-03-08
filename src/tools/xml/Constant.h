@@ -40,7 +40,6 @@
 #define CONSTANT_H
 
 #include <qstring.h>
-#include "CodeFile.h"
 
 // ****************************************************************************
 //  Class:  Constant
@@ -51,6 +50,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    April 12, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Feb 28 09:39:49 PDT 2008
+//    Added target.
+//
 // ****************************************************************************
 class Constant
 {
@@ -59,15 +62,17 @@ class Constant
     QString decl;
     QString def;
     bool    member;
+    QString target;
   public:
-    Constant(const QString &n, const QString &dc, const QString &df, bool m)
-        : name(n), decl(dc), def(df), member(m)
+    Constant(const QString &n, const QString &dc, const QString &df, bool m,
+             const QString &t)
+        : name(n), decl(dc), def(df), member(m), target(t)
     {
     }
-    void Print(ostream &out)
+    void Print(ostream &out, const QString &generatorName = QString::null)
     {
-        out << "        Constant: " << decl << endl;
-        //out << func;
+        if(generatorName.isEmpty() || generatorName == target)
+            out << "        Constant: (" << target << ") " << decl << endl;
     }
 };
 

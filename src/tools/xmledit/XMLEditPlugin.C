@@ -43,6 +43,7 @@
 #include <qbuttongroup.h>
 #include <qcheckbox.h>
 #include <qcombobox.h>
+#include <qgroupbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qlineedit.h>
@@ -80,6 +81,9 @@
 //    Hank Childs, Thu Jan 10 13:56:32 PST 2008
 //    Added the ability to have a plugin only open explicit filenames.
 //
+//    Brad Whitlock, Fri Mar 7 10:35:57 PDT 2008
+//    Reorganized some widgets.
+//
 // ****************************************************************************
 
 XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
@@ -97,113 +101,150 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     topLayout->addWidget(attButton,    row, 1);
     row++;
 
-    name = new QLineEdit(this);
-    topLayout->addWidget(new QLabel("Name", this), row, 0);
-    topLayout->addWidget(name, row, 1);
-    row++;
+    //
+    // General plugin attributes
+    //
+    int pRow = 0;
+    pluginGroup = new QGroupBox(this, "pluginGroup");
+    pluginGroup->setTitle("General Plugin attributes");
+    topLayout->addMultiCellWidget(pluginGroup, row, row, 0, 4);
+    ++row;
+    QVBoxLayout *innerPluginLayout = new QVBoxLayout(pluginGroup);
+    innerPluginLayout->setMargin(10);
+    innerPluginLayout->addSpacing(15);
+    QGridLayout *pluginLayout = new QGridLayout(innerPluginLayout, 3, 6);
+    pluginLayout->setSpacing(5);
 
-    label = new QLineEdit(this);
-    topLayout->addWidget(new QLabel("Label", this), row, 0);
-    topLayout->addWidget(label, row, 1);
-    row++;
-
-    version = new QLineEdit(this);
-    topLayout->addWidget(new QLabel("Version", this), row, 0);
-    topLayout->addWidget(version, row, 1);
-    row++;
-
-    pluginType = new QComboBox(this);
+    pluginType = new QComboBox(pluginGroup);
     pluginType->insertItem("");
     pluginType->insertItem("Plot");
     pluginType->insertItem("Operator");
     pluginType->insertItem("Database");
-    topLayout->addWidget(new QLabel("Plugin type", this), row, 0);
-    topLayout->addWidget(pluginType, row, 1);
-    row++;
+    pluginLayout->addWidget(new QLabel("Plugin type", pluginGroup), pRow, 0);
+    pluginLayout->addWidget(pluginType, pRow, 1);
 
-    hasIcon = new QCheckBox("Has icon", this);
-    hasIcon->setChecked(false);
-    topLayout->addWidget(hasIcon, row, 0);
-    iconFile = new QLineEdit(this);
-    iconFile->setEnabled(false);
-    topLayout->addWidget(iconFile, row, 1);
-    row++;
-
-    hasWriter = new QCheckBox("File format can also write data", this);
-    hasWriter->setChecked(false);
-    topLayout->addMultiCellWidget(hasWriter, row,row, 0,1);
-    row++;
-
-    hasOptions = new QCheckBox("File format provides options for reading or writing data.", this);
-    hasOptions->setChecked(false);
-    topLayout->addMultiCellWidget(hasOptions, row,row, 0,1);
-    row++;
-
-    enabledByDefault = new QCheckBox("Plugin is enabled by default", this);
+    enabledByDefault = new QCheckBox("Plugin is enabled by default", pluginGroup);
     enabledByDefault->setChecked(true);
-    topLayout->addMultiCellWidget(enabledByDefault, row,row, 0,1);
-    row++;
+    pluginLayout->addMultiCellWidget(enabledByDefault, pRow, pRow, 4, 5);
+    pRow++;
 
-    topLayout->addWidget(new QLabel("Variable types", this), row, 0);
+    name = new QLineEdit(pluginGroup);
+    pluginLayout->addWidget(new QLabel("Name", pluginGroup), pRow, 0);
+    pluginLayout->addWidget(name, pRow, 1);
 
-    varTypeMesh            = new QCheckBox("Mesh", this);
-    varTypeScalar          = new QCheckBox("Scalar", this);
-    varTypeVector          = new QCheckBox("Vector", this);
-    varTypeMaterial        = new QCheckBox("Material", this);
-    varTypeSubset          = new QCheckBox("Subset", this);
-    varTypeSpecies         = new QCheckBox("Species", this);
-    varTypeCurve           = new QCheckBox("Curve", this);
-    varTypeTensor          = new QCheckBox("Tensor", this);
-    varTypeSymmetricTensor = new QCheckBox("Symmetric Tensor", this);
-    varTypeLabel           = new QCheckBox("Label", this);
-    varTypeArray           = new QCheckBox("Array", this);
+    label = new QLineEdit(pluginGroup);
+    pluginLayout->addWidget(new QLabel("Label", pluginGroup), pRow, 2);
+    pluginLayout->addWidget(label, pRow, 3);
 
-    QHBoxLayout *varTypeLayout1 = new QHBoxLayout();
-    varTypeLayout1->addWidget(varTypeMesh);
-    varTypeLayout1->addWidget(varTypeScalar);
-    varTypeLayout1->addWidget(varTypeVector);
-    varTypeLayout1->addWidget(varTypeMaterial);
-    topLayout->addLayout(varTypeLayout1, row, 1);
-    row++;
-    QHBoxLayout *varTypeLayout2 = new QHBoxLayout();
-    varTypeLayout2->addWidget(varTypeSubset);
-    varTypeLayout2->addWidget(varTypeSpecies);
-    varTypeLayout2->addWidget(varTypeCurve);
-    varTypeLayout2->addWidget(varTypeLabel);
-    topLayout->addLayout(varTypeLayout2, row, 1);
-    row++;
-    QHBoxLayout *varTypeLayout3 = new QHBoxLayout();
-    varTypeLayout3->addWidget(varTypeTensor);
-    varTypeLayout3->addWidget(varTypeSymmetricTensor);
-    varTypeLayout3->addWidget(varTypeArray);
-    topLayout->addLayout(varTypeLayout3, row, 1);
-    row++;
+    version = new QLineEdit(pluginGroup);
+    pluginLayout->addWidget(new QLabel("Version", pluginGroup), pRow, 4);
+    pluginLayout->addWidget(version, pRow, 5);
+    pRow++;
 
-    dbType = new QComboBox(this);
+    hasIcon = new QCheckBox("Has icon", pluginGroup);
+    hasIcon->setChecked(false);
+    pluginLayout->addWidget(hasIcon, pRow, 0);
+    iconFile = new QLineEdit(pluginGroup);
+    iconFile->setEnabled(false);
+    pluginLayout->addMultiCellWidget(iconFile, pRow,pRow, 1,5);
+    pRow++;
+
+    //
+    // Plot plugin attributes
+    //
+    plotPluginGroup = new QGroupBox(this, "plotPluginGroup");
+    plotPluginGroup->setTitle("Plot Plugin attributes");
+    topLayout->addMultiCellWidget(plotPluginGroup, row, row, 0, 4);
+    ++row;
+    QVBoxLayout *innerPlotPluginLayout = new QVBoxLayout(plotPluginGroup);
+    innerPlotPluginLayout->setMargin(10);
+    innerPlotPluginLayout->addSpacing(15);
+    QGridLayout *plotPluginLayout = new QGridLayout(innerPlotPluginLayout, 4, 6);
+    plotPluginLayout->setSpacing(5);
+    int plRow = 0;
+
+    plotPluginLayout->addMultiCellWidget(
+        new QLabel("Variable types accepted by the plot", plotPluginGroup),
+        plRow,plRow, 0,5);
+    ++plRow;
+
+    varTypeMesh            = new QCheckBox("Mesh", plotPluginGroup);
+    varTypeScalar          = new QCheckBox("Scalar", plotPluginGroup);
+    varTypeVector          = new QCheckBox("Vector", plotPluginGroup);
+    varTypeMaterial        = new QCheckBox("Material", plotPluginGroup);
+    varTypeSubset          = new QCheckBox("Subset", plotPluginGroup);
+    varTypeSpecies         = new QCheckBox("Species", plotPluginGroup);
+    varTypeCurve           = new QCheckBox("Curve", plotPluginGroup);
+    varTypeTensor          = new QCheckBox("Tensor", plotPluginGroup);
+    varTypeSymmetricTensor = new QCheckBox("Symmetric Tensor", plotPluginGroup);
+    varTypeLabel           = new QCheckBox("Label", plotPluginGroup);
+    varTypeArray           = new QCheckBox("Array", plotPluginGroup);
+
+    plotPluginLayout->addWidget(varTypeMesh, plRow, 0);
+    plotPluginLayout->addWidget(varTypeScalar, plRow, 1);
+    plotPluginLayout->addWidget(varTypeVector, plRow, 2);
+    plotPluginLayout->addWidget(varTypeMaterial, plRow, 3);
+    plotPluginLayout->addWidget(varTypeSubset, plRow, 4);
+    plotPluginLayout->addWidget(varTypeSpecies, plRow, 5);
+    ++plRow;
+
+    plotPluginLayout->addWidget(varTypeCurve, plRow, 0);
+    plotPluginLayout->addWidget(varTypeTensor, plRow, 1);
+    plotPluginLayout->addWidget(varTypeSymmetricTensor, plRow, 2);
+    plotPluginLayout->addWidget(varTypeLabel, plRow, 3);
+    plotPluginLayout->addWidget(varTypeArray, plRow, 4);
+    //plotPluginLayout->addWidget(, plRow, 5);
+    ++plRow;
+
+    //
+    // Database plugin attributes
+    //
+    dbPluginGroup = new QGroupBox(this, "dbPluginGroup");
+    dbPluginGroup->setTitle("Database Plugin attributes");
+    topLayout->addMultiCellWidget(dbPluginGroup, row, row, 0, 4);
+    ++row;
+    QVBoxLayout *innerdbPluginLayout = new QVBoxLayout(dbPluginGroup);
+    innerdbPluginLayout->setMargin(10);
+    innerdbPluginLayout->addSpacing(15);
+    QGridLayout *dbPluginLayout = new QGridLayout(innerdbPluginLayout, 6, 4);
+    dbPluginLayout->setSpacing(5);
+    int dbRow = 0;
+
+    dbType = new QComboBox(dbPluginGroup);
     dbType->insertItem("");
     dbType->insertItem("STSD - Generic single time single domain");
     dbType->insertItem("MTSD - Generic multi  time single domain");
     dbType->insertItem("STMD - Generic single time multi  domain");
     dbType->insertItem("MTMD - Generic multi  time multi  domain");
     dbType->insertItem("Custom - Fully customized database type");
-    topLayout->addWidget(new QLabel("Database type", this), row, 0);
-    topLayout->addWidget(dbType, row, 1);
-    row++;
+    dbPluginLayout->addWidget(new QLabel("Database type", dbPluginGroup), dbRow, 0);
+    dbPluginLayout->addWidget(dbType, dbRow, 1);
+    dbRow++;
 
-    topLayout->addWidget(new QLabel("Extensions", this), row, 0);
-    extensions = new QLineEdit(this);
-    topLayout->addMultiCellWidget(extensions, row,row, 1,2);
-    row++;
+    dbPluginLayout->addWidget(new QLabel("Extensions", dbPluginGroup), dbRow, 0);
+    extensions = new QLineEdit(dbPluginGroup);
+    dbPluginLayout->addWidget(extensions, dbRow, 1);
+    dbRow++;
 
-    specifiedFilenames = new QCheckBox("Format uses explicit filenames", this);
+    hasWriter = new QCheckBox("File format can also write data", dbPluginGroup);
+    hasWriter->setChecked(false);
+    dbPluginLayout->addMultiCellWidget(hasWriter, dbRow,dbRow, 0,1);
+    dbRow++;
+
+    hasOptions = new QCheckBox("File format provides options for reading or writing data.", dbPluginGroup);
+    hasOptions->setChecked(false);
+    dbPluginLayout->addMultiCellWidget(hasOptions, dbRow,dbRow, 0,1);
+    dbRow++;
+
+    specifiedFilenames = new QCheckBox("Format uses explicit filenames", dbPluginGroup);
     specifiedFilenames->setChecked(false);
-    topLayout->addMultiCellWidget(specifiedFilenames, row,row, 0,1);
-    row++;
+    dbPluginLayout->addMultiCellWidget(specifiedFilenames, dbRow,dbRow, 0,1);
+    dbRow++;
 
-    topLayout->addWidget(new QLabel("Filenames", this), row, 0);
-    filenames = new QLineEdit(this);
-    topLayout->addMultiCellWidget(filenames, row,row, 1,2);
-    row++;
+    dbPluginLayout->addWidget(new QLabel("Filenames", dbPluginGroup), dbRow, 0);
+    filenames = new QLineEdit(dbPluginGroup);
+    dbPluginLayout->addWidget(filenames, dbRow,1);
+    dbRow++;
 
     topLayout->setRowStretch(row, 100);
     row++;
@@ -458,6 +499,9 @@ XMLEditPlugin::UpdateWindowContents()
 //    Hank Childs, Thu Jan 10 13:56:32 PST 2008
 //    Added the ability to have a plugin only open explicit filenames.
 //
+//    Brad Whitlock, Fri Mar 7 10:58:47 PDT 2008
+//    Added group boxes.
+//
 // ****************************************************************************
 
 void
@@ -468,10 +512,12 @@ XMLEditPlugin::UpdateWindowSensitivity()
     bool op       = plugin && (xmldoc->plugin->type == "operator");
     bool db       = plugin && (xmldoc->plugin->type == "database");
 
+    pluginGroup->setEnabled(plugin);
     name->setEnabled(plugin);
     label->setEnabled(plugin);
     version->setEnabled(plugin);
     pluginType->setEnabled(plugin);
+    plotPluginGroup->setEnabled(plot);
     varTypeMesh->setEnabled(plot);
     varTypeScalar->setEnabled(plot);
     varTypeVector->setEnabled(plot);
@@ -483,6 +529,7 @@ XMLEditPlugin::UpdateWindowSensitivity()
     varTypeSymmetricTensor->setEnabled(plot);
     varTypeLabel->setEnabled(plot);
     varTypeArray->setEnabled(plot);
+    dbPluginGroup->setEnabled(db);
     dbType->setEnabled(db);
     extensions->setEnabled(db);
     filenames->setEnabled(db && xmldoc->plugin->specifiedFilenames);

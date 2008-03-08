@@ -75,6 +75,9 @@
 //    Brad Whitlock, Wed Feb 28 18:42:51 PST 2007
 //    Added public/protected/private.
 //
+//    Brad Whitlock, Fri Mar 7 10:26:23 PDT 2008
+//    Made values/code monospace.
+//
 // ****************************************************************************
 
 XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
@@ -223,6 +226,9 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
     row++;
 
     values = new QMultiLineEdit(this);
+    QFont monospaced("Courier");
+    values->setFont(monospaced);
+    values->setWordWrap(QTextEdit::NoWrap);
     topLayout->addMultiCellWidget(values, row,row, 1,4);
 
     connect(fieldlist, SIGNAL(selectionChanged()),
@@ -345,6 +351,9 @@ XMLEditFields::UpdateWindowSensitivity()
 //     Brad Whitlock, Wed Feb 28 18:49:14 PST 2007
 //     Added access.
 //
+//     Brad Whitlock, Thu Mar 6 15:00:08 PST 2008
+//     Deal with multi-target init codes.
+//
 // ****************************************************************************
 
 void
@@ -458,7 +467,7 @@ XMLEditFields::UpdateWindowSingleItem()
             }
         }
 
-        if (f->initcode.isNull())
+        if (f->initcode.size() < 1)
         {
             init->setChecked(false);
             values->setText(JoinValues(f->GetValueAsText(), '\n'));
@@ -466,7 +475,7 @@ XMLEditFields::UpdateWindowSingleItem()
         else
         {
             init->setChecked(true);
-            values->setText(f->initcode);
+            values->setText(f->InitCodeAsString());
         }
     }
 
@@ -916,6 +925,10 @@ XMLEditFields::variableTypeClicked(int bIndex)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 15:36:09 PST 2008
+//    Updated.
+//
 // ****************************************************************************
 void
 XMLEditFields::initChanged()
@@ -928,7 +941,7 @@ XMLEditFields::initChanged()
 
     if (init->isChecked())
     {
-        f->initcode=values->text();
+        f->SetInitCodeFromString(values->text());
     }
     else
     {
@@ -947,7 +960,7 @@ XMLEditFields::initChanged()
             {
             }
         }
-        f->initcode = QString();
+        f->SetInitCodeFromString(QString());
     }
 }
 
@@ -956,6 +969,10 @@ XMLEditFields::initChanged()
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
+//
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 15:38:41 PST 2008
+//    Updated init coding.
 //
 // ****************************************************************************
 void
@@ -969,7 +986,7 @@ XMLEditFields::valuesChanged()
 
     if (init->isChecked())
     {
-        f->initcode=values->text();
+        f->SetInitCodeFromString(values->text());
     }
     else
     {
@@ -988,7 +1005,7 @@ XMLEditFields::valuesChanged()
             {
             }
         }
-        f->initcode = QString();
+        f->SetInitCodeFromString(QString());
     }
 }
 

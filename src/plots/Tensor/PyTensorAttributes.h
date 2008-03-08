@@ -46,13 +46,15 @@
 //
 void            PyTensorAttributes_StartUp(TensorAttributes *subj, void *data);
 void            PyTensorAttributes_CloseDown();
-PyMethodDef    *PyTensorAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyTensorAttributes_GetMethodTable(int *nMethods);
 bool            PyTensorAttributes_Check(PyObject *obj);
-TensorAttributes *PyTensorAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyTensorAttributes_NewPyObject();
-PyObject       *PyTensorAttributes_WrapPyObject(const TensorAttributes *attr);
-std::string     PyTensorAttributes_GetLogString();
+TensorAttributes *  PyTensorAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyTensorAttributes_New();
+PyObject *      PyTensorAttributes_Wrap(const TensorAttributes *attr);
+void            PyTensorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyTensorAttributes_SetDefaults(const TensorAttributes *atts);
+std::string     PyTensorAttributes_GetLogString();
+std::string     PyTensorAttributes_ToString(const TensorAttributes *, const char *);
 
 #endif
 

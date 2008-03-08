@@ -124,7 +124,7 @@
         Rasterization
       </Field>
       <Field name="rendererSamples" label="Render samples" type="float" enabler="rendererType:SLIVR">
-        3.
+        3.000000
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
@@ -147,6 +147,8 @@
       <Function name="GetEqualSpacingFlag" user="true" member="true">
       </Function>
       <Function name="AnyNonTransferFunctionMembersAreDifferent" user="true" member="true">
+      </Function>
+      <Function name="VolumeAttributes_SetFreeformOpacity" user="false" member="true">
       </Function>
       <Include file="source" quoted="false">
         ColorControlPoint.h

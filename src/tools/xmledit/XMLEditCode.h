@@ -59,6 +59,10 @@ class QPushButton;
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:00:06 PST 2008
+//    Added target support.
+//
 // ****************************************************************************
 class XMLEditCode : public QFrame
 {
@@ -71,12 +75,15 @@ class XMLEditCode : public QFrame
     void UpdateWindowContents();
     void UpdateWindowSensitivity();
     void UpdateWindowSingleItem();
+    void targetTextChanged(const QString&);
     void nameTextChanged(const QString&);
     void prefixChanged();
     void postfixChanged();
     void codelistNew();
     void codelistDel();
   private:
+    int CountCodes(const QString &) const;
+
     XMLDocument     *xmldoc;
 
     QPushButton    *newButton;
@@ -84,6 +91,7 @@ class XMLEditCode : public QFrame
 
     QListBox       *codelist;
     QLineEdit      *name;
+    QLineEdit      *target;
     QMultiLineEdit *prefix;
     QMultiLineEdit *postfix;
 };

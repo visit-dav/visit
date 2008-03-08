@@ -46,11 +46,11 @@
 //
 void            PyParallelAxisAttributes_StartUp(ParallelAxisAttributes *subj, void *data);
 void            PyParallelAxisAttributes_CloseDown();
- PyMethodDef *   PyParallelAxisAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyParallelAxisAttributes_GetMethodTable(int *nMethods);
 bool            PyParallelAxisAttributes_Check(PyObject *obj);
- ParallelAxisAttributes *  PyParallelAxisAttributes_FromPyObject(PyObject *obj);
- PyObject *      PyParallelAxisAttributes_New();
- PyObject *      PyParallelAxisAttributes_Wrap(const ParallelAxisAttributes *attr);
+ParallelAxisAttributes *  PyParallelAxisAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyParallelAxisAttributes_New();
+PyObject *      PyParallelAxisAttributes_Wrap(const ParallelAxisAttributes *attr);
 void            PyParallelAxisAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyParallelAxisAttributes_SetDefaults(const ParallelAxisAttributes *atts);
 std::string     PyParallelAxisAttributes_GetLogString();

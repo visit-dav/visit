@@ -46,11 +46,11 @@
 //
 void            PyLineSurfaceAttributes_StartUp(LineSurfaceAttributes *subj, void *data);
 void            PyLineSurfaceAttributes_CloseDown();
- PyMethodDef *   PyLineSurfaceAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyLineSurfaceAttributes_GetMethodTable(int *nMethods);
 bool            PyLineSurfaceAttributes_Check(PyObject *obj);
- LineSurfaceAttributes *  PyLineSurfaceAttributes_FromPyObject(PyObject *obj);
- PyObject *      PyLineSurfaceAttributes_New();
- PyObject *      PyLineSurfaceAttributes_Wrap(const LineSurfaceAttributes *attr);
+LineSurfaceAttributes *  PyLineSurfaceAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyLineSurfaceAttributes_New();
+PyObject *      PyLineSurfaceAttributes_Wrap(const LineSurfaceAttributes *attr);
 void            PyLineSurfaceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyLineSurfaceAttributes_SetDefaults(const LineSurfaceAttributes *atts);
 std::string     PyLineSurfaceAttributes_GetLogString();

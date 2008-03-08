@@ -1,3 +1,10 @@
+Target: xml2java
+Constant: DEFAULT_FULL_FRAME_AUTO_THRESHOLD
+Declaration: DEFAULT_FULL_FRAME_AUTO_THRESHOLD
+Definition: 
+    public final static double DEFAULT_FULL_FRAME_AUTO_THRESHOLD = 100.0;
+
+Target: xml2atts
 Constant: DEFAULT_FULL_FRAME_AUTO_THRESHOLD
 Declaration: static const double DEFAULT_FULL_FRAME_AUTO_THRESHOLD;
 Definition: const double View2DAttributes::DEFAULT_FULL_FRAME_AUTO_THRESHOLD = 100.0;

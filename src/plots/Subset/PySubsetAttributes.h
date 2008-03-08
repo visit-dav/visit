@@ -46,11 +46,11 @@
 //
 void            PySubsetAttributes_StartUp(SubsetAttributes *subj, void *data);
 void            PySubsetAttributes_CloseDown();
-PyMethodDef    *PySubsetAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PySubsetAttributes_GetMethodTable(int *nMethods);
 bool            PySubsetAttributes_Check(PyObject *obj);
-SubsetAttributes *PySubsetAttributes_FromPyObject(PyObject *obj);
-PyObject       *PySubsetAttributes_New();
-PyObject       *PySubsetAttributes_Wrap(const SubsetAttributes *attr);
+SubsetAttributes *  PySubsetAttributes_FromPyObject(PyObject *obj);
+PyObject *      PySubsetAttributes_New();
+PyObject *      PySubsetAttributes_Wrap(const SubsetAttributes *attr);
 void            PySubsetAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PySubsetAttributes_SetDefaults(const SubsetAttributes *atts);
 std::string     PySubsetAttributes_GetLogString();

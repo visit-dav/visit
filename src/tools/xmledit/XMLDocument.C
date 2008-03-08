@@ -120,6 +120,9 @@ class ErrorHandler : public QXmlErrorHandler
 //    Hank Childs, Tue May 24 10:19:40 PDT 2005
 //    Added argument for hasoptions.
 //
+//    Brad Whitlock, Thu Mar 6 14:48:36 PST 2008
+//    Adapted to updated CodeFile implementation.
+//
 // ****************************************************************************
 
 void
@@ -185,7 +188,7 @@ XMLDocument::open(const QString &file)
         }
         if (attribute && attribute->codeFile)
         {
-            stat(attribute->codeFile->filename.latin1(), &s);
+            stat(attribute->codeFile->FileName().latin1(), &s);
             if (!(s.st_mode & S_IWUSR))
             {
                 QMessageBox::warning(0,"Warning","Code file is not writable.");
@@ -217,6 +220,10 @@ XMLDocument::open(const QString &file)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
+//
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 14:50:21 PST 2008
+//    Adapted to newer CodeFile implementation.
 //
 // ****************************************************************************
 void
@@ -313,11 +320,11 @@ XMLDocument::save(const QString &file)
 
     if (attribute->codeFile)
     {
-        attribute->codeFile->filepath = FilePath(file);
-        attribute->codeFile->filename = attribute->codeFile->filebase;
-        if (! attribute->codeFile->filepath.isEmpty())
-            attribute->codeFile->filename = attribute->codeFile->filepath +
-                                            attribute->codeFile->filename;
+        attribute->codeFile->SetFilePath(FilePath(file));
+        attribute->codeFile->SetFileName(attribute->codeFile->FileBase());
+        if (! attribute->codeFile->FilePath().isEmpty())
+            attribute->codeFile->SetFileName(attribute->codeFile->FilePath() +
+                                            attribute->codeFile->FileName());
     }
 
     try {

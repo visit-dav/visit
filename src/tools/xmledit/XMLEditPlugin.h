@@ -46,6 +46,7 @@ class QLineEdit;
 class QButtonGroup;
 class QComboBox;
 class QCheckBox;
+class QGroupBox;
 
 // ****************************************************************************
 //  Class:  XMLEditPlugin
@@ -82,6 +83,9 @@ class QCheckBox;
 //    Hank Childs, Thu Jan 10 13:56:32 PST 2008
 //    Added the ability to have a plugin only open explicit filenames.
 //
+//    Brad Whitlock, Fri Mar 7 10:55:40 PDT 2008
+//    Added some group boxes.
+//
 // ****************************************************************************
 
 class XMLEditPlugin : public QFrame
@@ -113,6 +117,7 @@ class XMLEditPlugin : public QFrame
     XMLDocument     *xmldoc;
 
     QButtonGroup    *attpluginGroup;
+    QGroupBox       *pluginGroup;
     QComboBox       *pluginType;
     QLineEdit       *name;
     QLineEdit       *label;
@@ -122,6 +127,7 @@ class XMLEditPlugin : public QFrame
     QCheckBox       *hasOptions;
     QCheckBox       *enabledByDefault;
     QLineEdit       *iconFile;
+    QGroupBox       *plotPluginGroup;
     QCheckBox       *varTypeMesh;
     QCheckBox       *varTypeScalar;
     QCheckBox       *varTypeVector;
@@ -133,6 +139,7 @@ class XMLEditPlugin : public QFrame
     QCheckBox       *varTypeSymmetricTensor;
     QCheckBox       *varTypeLabel;
     QCheckBox       *varTypeArray;
+    QGroupBox       *dbPluginGroup;
     QComboBox       *dbType;
     QLineEdit       *extensions;
     QLineEdit       *filenames;

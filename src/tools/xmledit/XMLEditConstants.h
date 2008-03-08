@@ -59,6 +59,10 @@ class QPushButton;
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:10:40 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 class XMLEditConstants : public QFrame
 {
@@ -72,18 +76,22 @@ class XMLEditConstants : public QFrame
     void UpdateWindowSensitivity();
     void UpdateWindowSingleItem();
     void nameTextChanged(const QString&);
+    void targetTextChanged(const QString&);
     void memberChanged();
     void declarationTextChanged(const QString&);
     void definitionChanged();
     void constantlistNew();
     void constantlistDel();
   private:
+    int CountConstants(const QString &) const;
+
     XMLDocument     *xmldoc;
 
     QPushButton    *newButton;
     QPushButton    *delButton;
 
     QListBox       *constantlist;
+    QLineEdit      *target;
     QLineEdit      *name;
     QCheckBox      *member;
     QLineEdit      *declaration;

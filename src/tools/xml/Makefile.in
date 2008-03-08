@@ -61,10 +61,29 @@
 #    Brad Whitlock, Tue Oct 9 12:07:23 PDT 2007
 #    Added header file dependencies.
 #
+#    Brad Whitlock, Fri Mar 7 09:36:22 PDT 2008
+#    Added better header file dependencies.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
+
+# Force recompilation when any of these header files change.
+DEPENDENT_HEADERS=\
+Attribute.h \
+AttributeBase.h \
+Code.h \
+CodeFile.h \
+Constant.h \
+Enum.h \
+Field.h \
+Function.h \
+Include.h \
+Plugin.h \
+PluginBase.h \
+XMLParser.h \
+XMLParserUtil.h
 
 PROGRAM1 = $(tmpbin)/xmltest
 DEFINES1 = -DTEST_ONLY
@@ -104,31 +123,31 @@ all: $(PROGRAM1) $(PROGRAM2) $(PROGRAM3) $(PROGRAM4) $(PROGRAM5) $(PROGRAM6) $(P
 clean:
 	$(RM) $(OBJ) $(PROGRAM1) $(PROGRAM2) $(PROGRAM3) $(PROGRAM4) $(PROGRAM5) $(PROGRAM6) $(PROGRAM7) $(PROGRAM8) $(PROGRAM9)
 
-$(PROGRAM1): $(SRC)
+$(PROGRAM1): $(SRC) $(DEPENDENT_HEADERS)
 	$(CXX) main1.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES1)
 
-$(PROGRAM2): $(SRC) GenerateAtts.h
+$(PROGRAM2): $(SRC) GenerateAtts.h $(DEPENDENT_HEADERS)
 	$(CXX) main2.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES2)
 
-$(PROGRAM3): $(SRC) GenerateWindow.h
+$(PROGRAM3): $(SRC) GenerateWindow.h $(DEPENDENT_HEADERS)
 	$(CXX) main3.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES3)
 
-$(PROGRAM4): $(SRC) GenerateInfo.h
+$(PROGRAM4): $(SRC) GenerateInfo.h $(DEPENDENT_HEADERS)
 	$(CXX) main4.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES4)
 
-$(PROGRAM5): $(SRC) GenerateMakefile.h
+$(PROGRAM5): $(SRC) GenerateMakefile.h $(DEPENDENT_HEADERS)
 	$(CXX) main5.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES5)
 
-$(PROGRAM6): $(SRC) GenerateAVT.h
+$(PROGRAM6): $(SRC) GenerateAVT.h $(DEPENDENT_HEADERS)
 	$(CXX) main6.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES6)
 
-$(PROGRAM7): $(SRC) GeneratePython.h
+$(PROGRAM7): $(SRC) GeneratePython.h $(DEPENDENT_HEADERS)
 	$(CXX) main7.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES7)
 
-$(PROGRAM8): $(SRC) GenerateJava.h
+$(PROGRAM8): $(SRC) GenerateJava.h $(DEPENDENT_HEADERS)
 	$(CXX) main8.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES8)
 
-$(PROGRAM9): $(SRC) GenerateProjectFile.h
+$(PROGRAM9): $(SRC) GenerateProjectFile.h $(DEPENDENT_HEADERS)
 	$(CXX) main9.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES9)
 
 @TARGETS@

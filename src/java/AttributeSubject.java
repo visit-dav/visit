@@ -364,7 +364,7 @@ public abstract class AttributeSubject extends java.lang.Object
 
     protected String ucharToString(String name, byte val, String indent)
     {
-        Byte iv = new Byte(val);
+        Integer iv = new Integer((int)val);
         return indent + name + " = " + iv.toString();
     }
 
@@ -373,7 +373,7 @@ public abstract class AttributeSubject extends java.lang.Object
         String s = indent + name + " = {";
         for(int i = 0; i < val.length; ++i)
         {
-            Byte v = new Byte(val[i]);
+            Integer v = new Integer((int)val[i]);
             s = s + v.toString();
             if(i < val.length - 1)
                 s = s + ", ";
@@ -387,7 +387,9 @@ public abstract class AttributeSubject extends java.lang.Object
         String s = indent + name + " = {";
         for(int i = 0; i < val.size(); ++i)
         {
-            s = s + val.elementAt(i).toString();
+            Byte b = (Byte)val.elementAt(i);
+            Integer v = new Integer(b.intValue());
+            s = s + v.toString();
             if(i < val.size() - 1)
                 s = s + ", ";
         }

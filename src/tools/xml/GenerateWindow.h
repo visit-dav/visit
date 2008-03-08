@@ -38,18 +38,12 @@
 
 #ifndef GENERATE_WINDOW_H
 #define GENERATE_WINDOW_H
-#if !defined(_WIN32)
-#include <sys/time.h>
-#else
-#include <time.h>
-#endif
-#include <visit-config.h>
-#ifdef TIME_WITH_SYS_TIME
-#include <time.h>
-#endif
 #include <set>
 
 #include "Field.h"
+#include "PluginBase.h"
+
+#define GENERATOR_NAME "xml2window"
 
 // ****************************************************************************
 //  File:  GenerateWindow
@@ -136,13 +130,18 @@
 //    Brad Whitlock, Mon Dec 17 11:21:58 PST 2007
 //    Made it use new Attribute ids instead of ints.
 //
+//    Brad Whitlock, Wed Mar 5 11:42:27 PDT 2008
+//    Added generatorName.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
 {
+  protected:
+    QString generatorName;
   public:
     WindowGeneratorField(const QString &t, const QString &n, const QString &l)
-        : Field(t,n,l)
+        : Field(t,n,l), generatorName(GENERATOR_NAME)
     {
     }
     // helper functions
@@ -1349,35 +1348,25 @@ class WindowFieldFactory
 };
 
 // ----------------------------------------------------------------------------
+// Modifications:
+//   Brad Whitlock, Thu Feb 28 12:03:30 PDT 2008
+//   Made it use a base class so it can inherit some methods.
+//
 // ----------------------------------------------------------------------------
-class WindowGeneratorAttribute
+#include "GeneratorBase.h"
+
+class WindowGeneratorAttribute : public GeneratorBase
 {
   public:
-    QString name;
-    QString purpose;
-    bool    persistent, keyframe;
-    QString exportAPI;
-    QString exportInclude;
+    vector<WindowGeneratorField*> fields;
     QString windowname;
     QString plugintype;
-    vector<WindowGeneratorField*> fields;
-    vector<Function*> functions;
-    vector<Constant*> constants;
-    vector<Include*>  includes;
-    vector<Code*>     codes;
-    CodeFile *codeFile;
   public:
     WindowGeneratorAttribute(const QString &n, const QString &p, const QString &f,
                              const QString &e, const QString &ei)
-        : name(n), purpose(p), exportAPI(e), exportInclude(ei)
+        : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME), fields(), 
+          plugintype(), windowname()
     {
-        if (f.isNull())
-            codeFile = NULL;
-        else
-            codeFile = new CodeFile(f);
-        if (codeFile)
-            codeFile->Parse();
-
         plugintype = "";
         if (name.right(9) == "Attribute")
             windowname = QString("Qvis") + name.left(name.length() - 9) + "Window";
@@ -1386,29 +1375,13 @@ class WindowGeneratorAttribute
         else
             windowname = QString("Qvis") + name + QString("Window");
     }
-    bool HasFunction(const QString &f)
+    virtual ~WindowGeneratorAttribute()
     {
-        for (int i=0; i<functions.size(); i++)
-            if (functions[i]->name == f && functions[i]->user == false)
-                return true;
-        return false;
+        for (int i = 0; i < fields.size(); ++i)
+            delete fields[i];
+        fields.clear();
     }
-    void PrintFunction(ostream &out, const QString &f)
-    {
-        for (int i=0; i<functions.size(); i++)
-            if (functions[i]->name == f && functions[i]->user == false)
-                out << functions[i]->def;
-    }
-    void DeleteFunction(ostream &out, const QString &f)
-    {
-        for (int i=0; i<functions.size(); i++)
-            if (functions[i]->name == f && functions[i]->user == false)
-            {
-                for (int j=i+1; j<functions.size(); j++)
-                    functions[j-1] = functions[j];
-                return;
-            }
-    }
+
     void Print(ostream &out)
     {
         out << "    Attribute: " << name << " (" << purpose << ")" << endl;
@@ -1417,62 +1390,6 @@ class WindowGeneratorAttribute
             fields[i]->Print(out);
         for (i=0; i<functions.size(); i++)
             functions[i]->Print(out);
-    }
-
-    QString CurrentTime()
-    {
-        char *tstr[] = {"PDT", "PST"};
-        char s1[10], s2[10], s3[10];
-        time_t t;
-        char *c = NULL;
-        int h,m,s,y;
-        t = time(NULL);
-        c = asctime(localtime(&t));
-        // Read the hour.
-        sscanf(c, "%s %s %s %d:%d:%d %d", s1, s2, s3, &h, &m, &s, &y);
-        // Reformat the string a little.
-        QString retval;
-        retval.sprintf("%s %s %s %02d:%02d:%02d %s %d",
-                       s1, s2, s3, h, m, s, tstr[h > 12], y);
-
-        return retval;
-    }
-
-    void WriteClassComment(ostream &c, const QString &purpose)
-    {
-        c << "// ****************************************************************************" << endl;
-        c << "// Class: " << windowname << endl;
-        c << "//" << endl;
-        c << "// Purpose: " << endl;
-        c << "//   " << purpose.latin1() << endl;
-        c << "//" << endl;
-        c << "// Notes:      This class was automatically generated!" << endl;
-        c << endl;
-        c << "// Programmer: xml2window" << endl;
-        c << "// Creation:   " << CurrentTime() << endl;
-        c << "//" << endl;
-        c << "// Modifications:" << endl;
-        c << "//   " << endl;
-        c << "// ****************************************************************************" << endl;
-        c << endl;
-    }
-
-    void WriteMethodComment(ostream &c, const QString &methodName,
-                           const QString &purpose)
-    {
-        c << "// ****************************************************************************" << endl;
-        c << "// Method: " << windowname << "::" << methodName.latin1() << endl;
-        c << "//" << endl;
-        c << "// Purpose: " << endl;
-        c << "//   " << purpose.latin1() << endl;
-        c << "//" << endl;
-        c << "// Programmer: xml2window" << endl;
-        c << "// Creation:   " << CurrentTime() << endl;
-        c << "//" << endl;
-        c << "// Modifications:" << endl;
-        c << "//   " << endl;
-        c << "// ****************************************************************************" << endl;
-        c << endl;
     }
 
     // ************************************************************************
@@ -1641,7 +1558,7 @@ class WindowGeneratorAttribute
         c << endl;
 
         // constructor
-        WriteMethodComment(c, windowname, "Constructor");
+        WriteMethodComment(c, windowname, windowname, "Constructor");
         c << windowname<<"::"<<windowname<<"("
           << (plugintype=="" ? "" : "const int type,") << endl
           << "                         "<<name<<" *subj," << endl
@@ -1674,7 +1591,7 @@ class WindowGeneratorAttribute
         c << endl;
 
         // destructor
-        WriteMethodComment(c, QString("~") + windowname, "Destructor");
+        WriteMethodComment(c, windowname, QString("~") + windowname, "Destructor");
         c << windowname<<"::~"<<windowname<<"()" << endl;
         c << "{" << endl;
         c << "}" << endl;
@@ -1682,7 +1599,7 @@ class WindowGeneratorAttribute
         c << endl;
 
         // CreateWindowContents
-        WriteMethodComment(c, "CreateWindowContents", "Creates the widgets for the window.");
+        WriteMethodComment(c, windowname, "CreateWindowContents", "Creates the widgets for the window.");
         c << "void" << endl;
         c << windowname<<"::CreateWindowContents()" << endl;
         c << "{" << endl;
@@ -1702,7 +1619,7 @@ class WindowGeneratorAttribute
         c << endl;
 
         // updatewindow
-        WriteMethodComment(c, "UpdateWindow",
+        WriteMethodComment(c, windowname, "UpdateWindow",
                            "Updates the widgets in the window when the subject changes.");
         c << "void" << endl;
         c << windowname << "::UpdateWindow(bool doAll)" << endl;
@@ -1786,7 +1703,7 @@ class WindowGeneratorAttribute
         c << endl;
 
         // getcurrent
-        WriteMethodComment(c, "GetCurrentValues",
+        WriteMethodComment(c, windowname, "GetCurrentValues",
                            "Gets values from certain widgets and stores them in the subject.");
         c << "void" << endl;
         c << windowname << "::GetCurrentValues(int which_widget)" << endl;
@@ -1812,7 +1729,7 @@ class WindowGeneratorAttribute
         if(plugintype != "operator")
         {
             // Apply
-            WriteMethodComment(c, "Apply", "Called to apply changes in the subject.");
+            WriteMethodComment(c, windowname, "Apply", "Called to apply changes in the subject.");
             c << "void" << endl;
             c << windowname<<"::Apply(bool ignore)" << endl;
             c << "{" << endl;
@@ -1844,7 +1761,7 @@ class WindowGeneratorAttribute
         if(plugintype != "operator")
         {
             // apply
-            WriteMethodComment(c, "apply", "Qt slot function called when apply button is clicked.");
+            WriteMethodComment(c, windowname, "apply", "Qt slot function called when apply button is clicked.");
             c << "void" << endl;
             c << windowname << "::apply()" << endl;
             c << "{" << endl;
@@ -1854,7 +1771,7 @@ class WindowGeneratorAttribute
             c << endl;
 
             // makeDefault
-            WriteMethodComment(c, "makeDefault", "Qt slot function called when \"Make default\" button is clicked.");
+            WriteMethodComment(c, windowname, "makeDefault", "Qt slot function called when \"Make default\" button is clicked.");
             c << "void" << endl;
             c << windowname<<"::makeDefault()" << endl;
             c << "{" << endl;
@@ -1869,7 +1786,7 @@ class WindowGeneratorAttribute
             c << endl;
 
             // reset
-            WriteMethodComment(c, "reset", "Qt slot function called when reset button is clicked.");
+            WriteMethodComment(c, windowname, "reset", "Qt slot function called when reset button is clicked.");
             c << "void" << endl;
             c << windowname << "::reset()" << endl;
             c << "{" << endl;
@@ -1911,50 +1828,22 @@ class WindowGeneratorAttribute
 //   Hank Childs, Thu Jan 10 14:33:30 PST 2008
 //   Added filenames, specifiedFilenames.
 //
+//   Brad Whitlock, Wed Mar 5 12:00:40 PDT 2008
+//   Made it use a base class.
+//
 // ----------------------------------------------------------------------------
-class WindowGeneratorPlugin
+
+class WindowGeneratorPlugin : public PluginBase
 {
   public:
-    QString name;
-    QString type;
-    QString label;
-    QString version;
-    QString vartype;
-    QString dbtype;
-    QString windowname;
-    bool    enabledByDefault;
-    bool    has_MDS_specific_code;
-    bool    hasEngineSpecificCode;
-    bool    specifiedFilenames;  // for DB plugins
-
-    vector<QString> cxxflags;
-    vector<QString> ldflags;
-    vector<QString> libs;
-    vector<QString> extensions; // for DB plugins
-    vector<QString> filenames;  // for DB plugins
-    bool customgfiles;
-    vector<QString> gfiles;     // gui
-    bool customsfiles;
-    vector<QString> sfiles;     // scripting
-    bool customvfiles;
-    vector<QString> vfiles;     // viewer
-    bool custommfiles;
-    vector<QString> mfiles;     // mdserver
-    bool customefiles;
-    vector<QString> efiles;     // engine
-    bool customwfiles;
-    vector<QString> wfiles;     // widgets
-    bool customvwfiles;
-    vector<QString> vwfiles;    // viewer widgets
-
     WindowGeneratorAttribute *atts;
+    QString windowname;
   public:
-    WindowGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &, bool,bool,bool, bool)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
+    WindowGeneratorPlugin(const QString &n,const QString &l,const QString &t,
+          const QString &vt,const QString &dt,const QString &v,const QString &ifile,
+          bool hw,bool ho,bool onlyengine,bool noengine)
+        : PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine), atts(NULL), windowname()
     {
-        enabledByDefault = true;
-        has_MDS_specific_code = false;
-        hasEngineSpecificCode = false;
         if (type == "plot")
             windowname = QString("Qvis")+name+QString("PlotWindow");
         else if (type == "operator")
@@ -1964,7 +1853,7 @@ class WindowGeneratorPlugin
     {
         out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< endl;
         if (atts)
-            atts->Print(cout);
+            atts->Print(out);
     }
     void WriteHeader(ostream &h)
     {

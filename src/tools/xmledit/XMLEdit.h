@@ -54,6 +54,7 @@ class XMLEditFunctions;
 class XMLEditConstants;
 class XMLEditIncludes;
 class XMLEditCode;
+class XMLEditCodeGeneratorWindow;
 
 // ****************************************************************************
 //  Class:  XMLEdit
@@ -63,6 +64,10 @@ class XMLEditCode;
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
+//
+//  Modifications:
+//    Brad Whitlock, Fri Mar 7 15:02:37 PST 2008
+//    Added code generation window.
 //
 // ****************************************************************************
 class XMLEdit : public QMainWindow
@@ -78,6 +83,7 @@ class XMLEdit : public QMainWindow
     void save();
     void saveAs();
     void updateTab(QWidget *tab);
+    void generateCode();
   private:
     QString  filename;
     QTabWidget  *tabs;
@@ -92,6 +98,8 @@ class XMLEdit : public QMainWindow
     XMLEditConstants *constantstab;
     XMLEditIncludes  *includestab;
     XMLEditCode      *codetab;
+
+    XMLEditCodeGeneratorWindow *codeGenerationWindow;
 };
 
 #endif

@@ -49,6 +49,8 @@
 
 using std::vector;
 
+#define GENERATOR_NAME "xml2python"
+
 inline char toupper(char c)
 {
     if (c>='a' && c<='z')
@@ -148,39 +150,21 @@ inline char toupper(char c)
 //    Brad Whitlock, Tue Jan 29 11:18:05 PDT 2008
 //    Improved the accessibility of nested AttributeSubjects.
 //
+//    Brad Whitlock, Thu Feb 28 16:29:56 PST 2008
+//    Made use of base classes. Added support for code file.
+//
 // ****************************************************************************
-
-// ----------------------------------------------------------------------------
-//                             Utility Functions
-// ----------------------------------------------------------------------------
-
-QString
-CurrentTime()
-{
-    char *tstr[] = {"PDT", "PST"};
-    char s1[10], s2[10], s3[10], tmpbuf[200];
-    time_t t;
-    char *c = NULL;
-    int h,m,s,y;
-    t = time(NULL);
-    c = asctime(localtime(&t));
-    // Read the hour.
-    sscanf(c, "%s %s %s %d:%d:%d %d", s1, s2, s3, &h, &m, &s, &y);
-    // Reformat the string a little.
-    sprintf(tmpbuf, "%s %s %s %02d:%02d:%02d %s %d",
-            s1, s2, s3, h, m, s, tstr[h > 12], y);
-
-    return QString(tmpbuf);
-}
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 class PythonGeneratorField : public virtual Field
 {
+  protected:
+    QString generatorName;
   public:
     PythonGeneratorField(const QString &t, const QString &n, const QString &l)
-        : Field(t,n,l)
+        : Field(t,n,l), generatorName(GENERATOR_NAME)
     {
     }
 
@@ -235,26 +219,23 @@ class PythonGeneratorField : public virtual Field
         return ret;
     }
 
-    virtual void WritePyObjectMethods(ostream &c, const QString &className)
+    virtual void WriteSetMethod(ostream &c, const QString &className)
     {
-        // Do not add any methods if the field is internal.
-        if(internal)
-            return;
+        c << "static PyObject *" << endl;
+        c << className << "_" << MethodNameSet() << "(PyObject *self, PyObject *args)" << endl;
+        c << "{" << endl;
+        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
+        c << endl;
+        WriteSetMethodBody(c, className);
+        c << endl;
+        c << "    Py_INCREF(Py_None);" << endl;
+        c << "    return Py_None;" << endl;
+        c << "}" << endl;
+        c << endl;
+    }
 
-        if(ProvidesSetMethod())
-        {
-            c << "static PyObject *" << endl;
-            c << className << "_" << MethodNameSet() << "(PyObject *self, PyObject *args)" << endl;
-            c << "{" << endl;
-            c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
-            c << endl;
-            WriteSetMethodBody(c, className);
-            c << endl;
-            c << "    Py_INCREF(Py_None);" << endl;
-            c << "    return Py_None;" << endl;
-            c << "}" << endl;
-            c << endl;
-        }
+    virtual void WriteGetMethod(ostream &c, const QString &className)
+    {
         c << "static PyObject *" << endl;
         c << className << "_" << MethodNameGet() << "(PyObject *self, PyObject *args)" << endl;
         c << "{" << endl;
@@ -263,8 +244,6 @@ class PythonGeneratorField : public virtual Field
         c << "    return retval;" << endl;
         c << "}" << endl;
         c << endl;
-
-        WriteAdditionalMethods(c, className);
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
@@ -2712,35 +2691,31 @@ class PythonFieldFactory
 };
 
 // ----------------------------------------------------------------------------
+//  Modifications:
+//    Brad Whitlock, Thu Feb 28 16:29:20 PST 2008
+//    Made it use a base class.
+//
 // ----------------------------------------------------------------------------
-class PythonGeneratorAttribute
+#include <GeneratorBase.h>
+
+class PythonGeneratorAttribute : public GeneratorBase
 {
   public:
-    QString name;
-    QString purpose;
-    bool    persistent, keyframe, visitpy_api;
-    QString exportAPI;
-    QString exportInclude;
     vector<PythonGeneratorField*> fields;
-    vector<Function*> functions;
-    vector<Constant*> constants;
-    vector<Include*>  includes;
-    vector<Code*>     codes;
-    CodeFile *codeFile;
+    bool visitpy_api;
   public:
     PythonGeneratorAttribute(const QString &n, const QString &p, const QString &f,
-                             const QString &e, const QString &ei)
-        : name(n), purpose(p), exportAPI(e), exportInclude(ei)
+                           const QString &e, const QString &ei)
+        : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME), fields()
     {
-        if (f.isNull())
-            codeFile = NULL;
-        else
-            codeFile = new CodeFile(f);
-        if (codeFile)
-            codeFile->Parse();
-        persistent = false;
-        keyframe = true;
         visitpy_api = true;
+    }
+
+    virtual ~PythonGeneratorAttribute()
+    {
+        for (int i = 0; i < fields.size(); ++i)
+            delete fields[i];
+        fields.clear();
     }
 
     void DisableVISITPY() { visitpy_api = false; }
@@ -2759,26 +2734,7 @@ class PythonGeneratorAttribute
         for (i=0; i<fields.size(); i++)
             fields[i]->Print(out);
         for (i=0; i<functions.size(); i++)
-            functions[i]->Print(out);
-    }
-
-    void WriteHeaderClassComment(ostream &h)
-    {
-        h << "// ****************************************************************************" << endl;
-        h << "// Class: " << name << endl;
-        h << "//" << endl;
-        h << "// Purpose:" << endl;
-        h << "//    " << purpose << endl;
-        h << "//" << endl;
-        h << "// Notes:      Autogenerated by xml2python." << endl;
-        h << "//" << endl;
-        h << "// Programmer: xml2python" << endl;
-        h << "// Creation:   " << CurrentTime() << endl;
-        h << "//" << endl; 
-        h << "// Modifications:" << endl;
-        h << "//   " << endl;
-        h << "// ****************************************************************************" << endl;
-        h << endl;
+            functions[i]->Print(out, generatorName);
     }
 
     void WriteHeader(ostream &h)
@@ -2788,27 +2744,28 @@ class PythonGeneratorAttribute
         h << "#define PY_" << name.upper() << "_H" << endl;
         h << "#include <Python.h>" << endl;
         h << "#include <"<<name<<".h>" << endl;
-        QString api("");
+        QString api(""), api2(" ");
         if(visitpy_api)
         {
              h << "#include <visitpy_exports.h>" << endl;
              api = "VISITPY_API";
+             api2 = "VISITPY_API ";
         }
         h << endl;
         h << "//" << endl;
         h << "// Functions exposed to the VisIt module." << endl;
         h << "//" << endl;
-        h << "void "<<api<<"           Py"<<name<<"_StartUp("<<name<<" *subj, void *data);" << endl;
-        h << "void "<<api<<"           Py"<<name<<"_CloseDown();" << endl;
-        h << api << " " << "PyMethodDef * "<<"  Py"<<name<<"_GetMethodTable(int *nMethods);" << endl;
-        h << "bool "<<api<<"           Py"<<name<<"_Check(PyObject *obj);" << endl;
-        h << api << " " << name << " * "<<" Py"<<name<<"_FromPyObject(PyObject *obj);" << endl;
-        h << api << " " << "PyObject * "<<"     Py"<<name<<"_New();" << endl;
-        h << api << " " << "PyObject * "<<"     Py"<<name<<"_Wrap(const " << name << " *attr);" << endl;
-        h << "void "<<api<<"           Py"<<name<<"_SetParent(PyObject *obj, PyObject *parent);" << endl;
-        h << "void "<<api<<"           Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << endl;
-        h << "std::string "<<api<<"    Py"<<name<<"_GetLogString();" << endl;
-        h << "std::string "<<api<<"    Py"<<name<<"_ToString(const " << name << " *, const char *);" << endl;
+        h << "void "<<api2<<"          Py"<<name<<"_StartUp("<<name<<" *subj, void *data);" << endl;
+        h << "void "<<api2<<"          Py"<<name<<"_CloseDown();" << endl;
+        h << api << "PyMethodDef * "<<"  Py"<<name<<"_GetMethodTable(int *nMethods);" << endl;
+        h << "bool "<<api2<<"          Py"<<name<<"_Check(PyObject *obj);" << endl;
+        h << api << name << " * "<<" Py"<<name<<"_FromPyObject(PyObject *obj);" << endl;
+        h << api << "PyObject * "<<"     Py"<<name<<"_New();" << endl;
+        h << api << "PyObject * "<<"     Py"<<name<<"_Wrap(const " << name << " *attr);" << endl;
+        h << "void "<<api2<<"          Py"<<name<<"_SetParent(PyObject *obj, PyObject *parent);" << endl;
+        h << "void "<<api2<<"          Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << endl;
+        h << "std::string "<<api2<<"   Py"<<name<<"_GetLogString();" << endl;
+        h << "std::string "<<api2<<"   Py"<<name<<"_ToString(const " << name << " *, const char *);" << endl;
         h << endl;
         h << "#endif" << endl;
         h << endl;
@@ -2880,9 +2837,44 @@ class PythonGeneratorAttribute
         // Write the rest of the methods.
         for(int i = 0; i < fields.size(); ++i)
         {
-            fields[i]->WritePyObjectMethods(c, name);
+            // Do not add any methods if the field is internal.
+            if(fields[i]->internal)
+                continue;
+
+            if(fields[i]->ProvidesSetMethod())
+            {
+                QString sName(name + "_" + fields[i]->MethodNameSet());
+                if(HasFunction(sName))
+                {
+                    PrintFunction(c, sName);
+                    c << endl;
+                }
+                else
+                    fields[i]->WriteSetMethod(c, name);
+            }
+
+            QString gName(name + "_" + fields[i]->MethodNameGet());
+            if(HasFunction(gName))
+            {
+                PrintFunction(c, gName);
+                c << endl;
+            }
+            else
+                fields[i]->WriteGetMethod(c, name);
+
+            fields[i]->WriteAdditionalMethods(c, name);
         }
         c << endl;
+    }
+
+    void WriteUserDefinedFunctions(ostream &c)
+    { 
+        for(int i = 0; i < functions.size(); ++i)
+        {
+            if(functions[i]->target == generatorName &&
+               functions[i]->user)
+                c << functions[i]->def << endl;
+        }
     }
 
     void WritePyObjectMethodTable(ostream &c)
@@ -2894,6 +2886,12 @@ class PythonGeneratorAttribute
         {
             fields[i]->WritePyObjectMethodTable(c, name);
         }
+        for(int i = 0; i < functions.size(); ++i)
+        {
+            if(functions[i]->target == generatorName &&
+               functions[i]->user)
+                c << functions[i]->decl << ", " << endl;
+        }
         c << "    {NULL, NULL}" << endl;
         c << "};" << endl;
         c << endl;
@@ -2901,12 +2899,24 @@ class PythonGeneratorAttribute
 
     void WriteGetAttrFunction(ostream &c)
     {
+        QString mName(name + "_getattr");
+        if(HasFunction(mName))
+        {
+            PrintFunction(c, mName);
+            c << endl;
+            return;
+        }
+
         c << "static PyObject *" << endl;
-        c << name << "_getattr(PyObject *self, char *name)" << endl;
+        c << mName << "(PyObject *self, char *name)" << endl;
         c << "{" << endl;
+        if(HasCode(mName, 0))
+            PrintCode(c, mName, 0);
         for(int i = 0; i < fields.size(); ++i)
             fields[i]->WriteGetAttr(c, name);
         c << endl;
+        if(HasCode(mName, 1))
+            PrintCode(c, mName, 1);
         c << "    return Py_FindMethod("<<name<<"_methods, self, name);" << endl;
         c << "}" << endl;
         c << endl;
@@ -2914,9 +2924,19 @@ class PythonGeneratorAttribute
 
     void WriteSetAttrFunction(ostream &c)
     {
+        QString mName(name + "_setattr");
+        if(HasFunction(mName))
+        {
+            PrintFunction(c, mName);
+            c << endl;
+            return;
+        }
+
         c << "static int" << endl;
-        c << name << "_setattr(PyObject *self, char *name, PyObject *args)" << endl;
+        c << mName << "(PyObject *self, char *name, PyObject *args)" << endl;
         c << "{" << endl;
+        if(HasCode(mName, 0))
+            PrintCode(c, mName, 0);
         c << "    // Create a tuple to contain the arguments since all of the Set" << endl;
         c << "    // functions expect a tuple." << endl;
         c << "    PyObject *tuple = PyTuple_New(1);" << endl;
@@ -2940,6 +2960,9 @@ class PythonGeneratorAttribute
             fields[i]->WriteSetAttr(c, name, i == index);
         c << endl;
 
+        if(HasCode(mName, 1))
+            PrintCode(c, mName, 1);
+
         c << "    if(obj != NULL)" << endl;
         c << "        Py_DECREF(obj);" << endl;
         c << endl;
@@ -2951,11 +2974,23 @@ class PythonGeneratorAttribute
 
     void WritePrintFunction(ostream &c)
     {
+        QString mName(name + "_print");
+        if(HasFunction(mName))
+        {
+            PrintFunction(c, mName);
+            c << endl;
+            return;
+        }
+
         c << "static int" << endl;
-        c << name << "_print(PyObject *v, FILE *fp, int flags)" << endl;
+        c << mName << "(PyObject *v, FILE *fp, int flags)" << endl;
         c << "{" << endl;
         c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << endl;
+        if(HasCode(mName, 0))
+            PrintCode(c, mName, 0);
         c << "    fprintf(fp, \"%s\", Py" << name << "_ToString(obj->data, \"\").c_str());" << endl;
+        if(HasCode(mName, 1))
+            PrintCode(c, mName, 1);
         c << "    return 0;" << endl;
         c << "}" << endl;
         c << endl;
@@ -2963,25 +2998,45 @@ class PythonGeneratorAttribute
 
     void WriteToStringFunction(ostream &c)
     {
+        QString mName(QString("Py") + name + "_ToString");
+        if(HasFunction(mName))
+        {
+            PrintFunction(c, mName);
+            c << endl;
+            return;
+        }
+
         c << "std::string" << endl;
-        c << "Py" << name << "_ToString(const "<<name<<" *atts, const char *prefix)" << endl;
+        c << mName << "(const "<<name<<" *atts, const char *prefix)" << endl;
         c << "{" << endl;
         c << "    std::string str; " << endl;
         c << "    char tmpStr[1000]; " << endl;
         c << endl;
+        if(HasCode(mName, 0))
+            PrintCode(c, mName, 0);
         for(int i = 0; i < fields.size(); ++i)
         {
             if(!fields[i]->internal)
                 fields[i]->StringRepresentation(c, name);
         }
+        if(HasCode(mName, 1))
+            PrintCode(c, mName, 1);
         c << "    return str;" << endl;
         c << "}" << endl << endl;
     }
 
     void WriteStringRepresentationFunction(ostream &c)
     {
+        QString mName(name + "_str");
+        if(HasFunction(mName))
+        {
+            PrintFunction(c, mName);
+            c << endl;
+            return;
+        }
+
         c << "PyObject *" << endl;
-        c << name << "_str(PyObject *v)" << endl;
+        c << mName << "(PyObject *v)" << endl;
         c << "{" << endl;
         c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << endl;
         c << "    return PyString_FromString(Py" << name << "_ToString(obj->data,\"\").c_str());" << endl;
@@ -3124,30 +3179,46 @@ class PythonGeneratorAttribute
         QString shortName(name);
         shortName.replace(QRegExp("Attributes"), "Atts");
 
-        c << "std::string" << endl;
-        c << "Py" << name << "_GetLogString()" << endl;
-        c << "{" << endl;
-        c << "    std::string s(\"" << shortName << " = " << name << "()\\n\");" << endl;
-        c << "    if(currentAtts != 0)" << endl;
-        c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\");" << endl;
-        c << "    return s;" << endl;
-        c << "}" << endl;
+        QString GetLogString(QString("Py") + name + "_GetLogString");
+        if(HasFunction(GetLogString))
+            PrintFunction(c, GetLogString);
+        else
+        { 
+            c << "std::string" << endl;
+            c << "Py" << name << "_GetLogString()" << endl;
+            c << "{" << endl;
+            c << "    std::string s(\"" << shortName << " = " << name << "()\\n\");" << endl;
+            c << "    if(currentAtts != 0)" << endl;
+            c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\");" << endl;
+            c << "    return s;" << endl;
+            c << "}" << endl;
+        }
         c << endl;
 
-        c << "static void" << endl;
-        c << "Py" << name << "_CallLogRoutine(Subject *subj, void *data)" << endl;
-        c << "{" << endl;
-        c << "    "<<name<<" *atts = ("<<name<<" *)subj;" << endl;
-        c << "    typedef void (*logCallback)(const std::string &);" << endl;
-        c << "    logCallback cb = (logCallback)data;" << endl;
-        c << endl;
-        c << "    if(cb != 0)" << endl;
-        c << "    {" << endl;
-        c << "        std::string s(\"" << shortName << " = " << name << "()\\n\");" << endl;
-        c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\");" << endl;
-        c << "        cb(s);" << endl;
-        c << "    }" << endl;
-        c << "}" << endl;
+        QString CallLogRoutine(QString("Py") + name + "_CallLogRoutine");
+        if(HasFunction(CallLogRoutine))
+            PrintFunction(c, CallLogRoutine);
+        else
+        { 
+            c << "static void" << endl;
+            c << CallLogRoutine << "(Subject *subj, void *data)" << endl;
+            c << "{" << endl;
+            c << "    "<<name<<" *atts = ("<<name<<" *)subj;" << endl;
+            if(HasCode(CallLogRoutine, 0))
+                PrintCode(c, CallLogRoutine, 0);
+            c << "    typedef void (*logCallback)(const std::string &);" << endl;
+            c << "    logCallback cb = (logCallback)data;" << endl;
+            c << endl;
+            c << "    if(cb != 0)" << endl;
+            c << "    {" << endl;
+            c << "        std::string s(\"" << shortName << " = " << name << "()\\n\");" << endl;
+            c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\");" << endl;
+            c << "        cb(s);" << endl;
+            c << "    }" << endl;
+            if(HasCode(CallLogRoutine, 1))
+                PrintCode(c, CallLogRoutine, 1);
+            c << "}" << endl;
+        }
     }
 
     void WriteExposedInterface(ostream &c)
@@ -3158,21 +3229,33 @@ class PythonGeneratorAttribute
         c << "//" << endl;
         c << "///////////////////////////////////////////////////////////////////////////////" << endl;
         c << endl;
-        c << "PyObject *" << endl;
-        c << name << "_new(PyObject *self, PyObject *args)" << endl;
-        c << "{" << endl;
-        c << "    int useCurrent = 0;" << endl;
-        c << "    if (!PyArg_ParseTuple(args, \"i\", &useCurrent))" << endl;
-        c << "    {" << endl;
-        c << "        if (!PyArg_ParseTuple(args, \"\"))" << endl;
-        c << "            return NULL;" << endl;
-        c << "        else" << endl;
-        c << "            PyErr_Clear();" << endl;
-        c << "    }" << endl;
+
+        QString Py_new(name + "_new");
+        if(HasFunction(Py_new))
+            PrintFunction(c, Py_new);
+        else
+        { 
+            c << "PyObject *" << endl;
+            c << Py_new << "(PyObject *self, PyObject *args)" << endl;
+            c << "{" << endl;
+            if(HasCode(Py_new, 0))
+                PrintCode(c, Py_new, 0);
+            c << "    int useCurrent = 0;" << endl;
+            c << "    if (!PyArg_ParseTuple(args, \"i\", &useCurrent))" << endl;
+            c << "    {" << endl;
+            c << "        if (!PyArg_ParseTuple(args, \"\"))" << endl;
+            c << "            return NULL;" << endl;
+            c << "        else" << endl;
+            c << "            PyErr_Clear();" << endl;
+            c << "    }" << endl;
+            c << endl;
+            if(HasCode(Py_new, 1))
+                PrintCode(c, Py_new, 1);
+            c << "    return (PyObject *)New"<<name<<"(useCurrent);" << endl;
+            c << "}" << endl;
+        }
         c << endl;
-        c << "    return (PyObject *)New"<<name<<"(useCurrent);" << endl;
-        c << "}" << endl;
-        c << endl;
+
         c << "//" << endl;
         c << "// Plugin method table. These methods are added to the visitmodule's methods." << endl;
         c << "//" << endl;
@@ -3185,35 +3268,58 @@ class PythonGeneratorAttribute
         c << endl;
         WriteCallLogRoutineMethod(c);
         c << endl;
-        c << "void" << endl;
-        c << "Py"<<name<<"_StartUp("<<name<<" *subj, void *data)" << endl;
-        c << "{" << endl;
-        c << "    if(subj == 0)" << endl;
-        c << "        return;" << endl;
+
+        QString StartUp(QString("Py") + name + "_StartUp");
+        if(HasFunction(StartUp))
+            PrintFunction(c, StartUp);
+        else
+        { 
+            c << "void" << endl;
+            c << StartUp << "("<<name<<" *subj, void *data)" << endl;
+            c << "{" << endl;
+            c << "    if(subj == 0)" << endl;
+            c << "        return;" << endl;
+            c << endl;
+            if(HasCode(StartUp, 0))
+                PrintCode(c, StartUp, 0);
+            c << "    currentAtts = subj;" << endl;
+            c << "    Py" << name << "_SetDefaults(subj);" << endl;
+            c << endl;
+            c << "    //" << endl;
+            c << "    // Create the observer that will be notified when the attributes change." << endl;
+            c << "    //" << endl;
+            c << "    if("<<name<<"Observer == 0)" << endl;
+            c << "    {" << endl;
+            c << "        "<<name<<"Observer = new ObserverToCallback(subj," << endl;
+            c << "            Py"<<name<<"_CallLogRoutine, (void *)data);" << endl;
+            c << "    }" << endl;
+            c << endl;
+            if(HasCode(StartUp, 1))
+                PrintCode(c, StartUp, 1);
+            c << "}" << endl;
+        }
         c << endl;
-        c << "    currentAtts = subj;" << endl;
-        c << "    Py" << name << "_SetDefaults(subj);" << endl;
+
+        QString CloseDown(QString("Py") + name + "_CloseDown");
+        if(HasFunction(CloseDown))
+            PrintFunction(c, CloseDown);
+        else
+        { 
+            c << "void" << endl;
+            c << CloseDown << "()" << endl;
+            c << "{" << endl;
+            if(HasCode(CloseDown, 0))
+                PrintCode(c, CloseDown, 0);
+            c << "    delete defaultAtts;" << endl;
+            c << "    defaultAtts = 0;" << endl;
+            c << "    delete "<<name<<"Observer;" << endl;
+            c << "    "<<name<<"Observer = 0;" << endl;
+            if(HasCode(CloseDown, 1))
+                PrintCode(c, CloseDown, 1);
+            c << "}" << endl;
+        }
         c << endl;
-        c << "    //" << endl;
-        c << "    // Create the observer that will be notified when the attributes change." << endl;
-        c << "    //" << endl;
-        c << "    if("<<name<<"Observer == 0)" << endl;
-        c << "    {" << endl;
-        c << "        "<<name<<"Observer = new ObserverToCallback(subj," << endl;
-        c << "            Py"<<name<<"_CallLogRoutine, (void *)data);" << endl;
-        c << "    }" << endl;
-        c << endl;
-        c << "}" << endl;
-        c << endl;
-        c << "void" << endl;
-        c << "Py"<<name<<"_CloseDown()" << endl;
-        c << "{" << endl;
-        c << "    delete defaultAtts;" << endl;
-        c << "    defaultAtts = 0;" << endl;
-        c << "    delete "<<name<<"Observer;" << endl;
-        c << "    "<<name<<"Observer = 0;" << endl;
-        c << "}" << endl;
-        c << endl;
+
         c << "PyMethodDef *" << endl;
         c << "Py"<<name<<"_GetMethodTable(int *nMethods)" << endl;
         c << "{" << endl;
@@ -3227,40 +3333,83 @@ class PythonGeneratorAttribute
         c << "    return (obj->ob_type == &"<<name<<"Type);" << endl;
         c << "}" << endl;
         c << endl;
-        c << name << " *" << endl;
-        c << "Py"<<name<<"_FromPyObject(PyObject *obj)" << endl;
-        c << "{" << endl;
-        c << "    "<<name<<"Object *obj2 = ("<<name<<"Object *)obj;" << endl;
-        c << "    return obj2->data;" << endl;
-        c << "}" << endl;
+
+        QString FromPyObject(QString("Py") + name + "_FromPyObject");
+        if(HasFunction(FromPyObject))
+            PrintFunction(c, FromPyObject);
+        else
+        { 
+            c << name << " *" << endl;
+            c << FromPyObject << "(PyObject *obj)" << endl;
+            c << "{" << endl;
+            c << "    "<<name<<"Object *obj2 = ("<<name<<"Object *)obj;" << endl;
+            c << "    return obj2->data;" << endl;
+            c << "}" << endl;
+        }
         c << endl;
-        c << "PyObject *" << endl;
-        c << "Py"<<name<<"_New()" << endl;
-        c << "{" << endl;
-        c << "    return New"<<name<<"(0);" << endl;
-        c << "}" << endl;
+
+        QString PyNew(QString("Py") + name + "_New");
+        if(HasFunction(PyNew))
+            PrintFunction(c, PyNew);
+        else
+        { 
+            c << "PyObject *" << endl;
+            c << PyNew << "()" << endl;
+            c << "{" << endl;
+            c << "    return New"<<name<<"(0);" << endl;
+            c << "}" << endl;
+        }
         c << endl;
-        c << "PyObject *" << endl;
-        c << "Py"<<name<<"_Wrap(const " << name << " *attr)" << endl;
-        c << "{" << endl;
-        c << "    return Wrap"<<name<<"(attr);" << endl;
-        c << "}" << endl;
+
+        QString Wrap(QString("Py") + name + "_Wrap");
+        if(HasFunction(Wrap))
+            PrintFunction(c, Wrap);
+        else
+        { 
+            c << "PyObject *" << endl;
+            c << Wrap << "(const " << name << " *attr)" << endl;
+            c << "{" << endl;
+            c << "    return Wrap"<<name<<"(attr);" << endl;
+            c << "}" << endl;
+        }
         c << endl;
-        c << "void" << endl;
-        c << "Py"<<name<<"_SetParent(PyObject *obj, PyObject *parent)" << endl;
-        c << "{" << endl;
-        c << "    "<<name<<"Object *obj2 = ("<<name<<"Object *)obj;" << endl;
-        c << "    obj2->parent = parent;" << endl;
-        c << "}" << endl;
+
+        QString SetParent(QString("Py") + name + "_SetParent");
+        if(HasFunction(SetParent))
+            PrintFunction(c, SetParent);
+        else
+        { 
+            c << "void" << endl;
+            c << SetParent << "(PyObject *obj, PyObject *parent)" << endl;
+            c << "{" << endl;
+            c << "    "<<name<<"Object *obj2 = ("<<name<<"Object *)obj;" << endl;
+            if(HasCode(SetParent, 0))
+                PrintCode(c, SetParent, 0);
+            c << "    obj2->parent = parent;" << endl;
+            if(HasCode(SetParent, 1))
+                PrintCode(c, SetParent, 1);
+            c << "}" << endl;
+        }
         c << endl;
-        c << "void" << endl;
-        c << "Py"<<name<<"_SetDefaults(const " << name << " *atts)" << endl;
-        c << "{" << endl;
-        c << "    if(defaultAtts)" << endl;
-        c << "        delete defaultAtts;" << endl;
-        c << endl;
-        c << "    defaultAtts = new " << name << "(*atts);" << endl;
-        c << "}" << endl;
+        
+        QString SetDefaults(QString("Py") + name + "_SetDefaults");
+        if(HasFunction(SetDefaults))
+            PrintFunction(c, SetDefaults);
+        else
+        {    
+            c << "void" << endl;
+            c << SetDefaults << "(const " << name << " *atts)" << endl;
+            c << "{" << endl;
+            if(HasCode(SetDefaults, 0))
+                PrintCode(c, SetDefaults, 0);
+            c << "    if(defaultAtts)" << endl;
+            c << "        delete defaultAtts;" << endl;
+            c << endl;
+            c << "    defaultAtts = new " << name << "(*atts);" << endl;
+            if(HasCode(SetDefaults, 1))
+                PrintCode(c, SetDefaults, 1);
+            c << "}" << endl;
+        }
         c << endl;
     }
 
@@ -3278,6 +3427,7 @@ class PythonGeneratorAttribute
         WriteInternalPrototypes(c);
         WriteToStringFunction(c);
         WritePyObjectMethods(c);
+        WriteUserDefinedFunctions(c);
         WritePyObjectMethodTable(c);
         WriteTypeFunctions(c);
         WriteExposedInterface(c);
@@ -3294,62 +3444,34 @@ class PythonGeneratorAttribute
 //  Hank Childs, Thu Jan 10 14:33:30 PST 2008
 //  Added filenames, specifiedFilenames.
 //
+//   Brad Whitlock, Thu Feb 28 16:26:46 PST 2008
+//   Made it use a base class.
+//
 // ----------------------------------------------------------------------------
-class PythonGeneratorPlugin
+#include <PluginBase.h>
+
+class PythonGeneratorPlugin : public PluginBase
 {
   public:
-    QString name;
-    QString type;
-    QString label;
-    QString version;
-    QString varType;
-    QString dbtype;
-    bool    enabledByDefault;
-    bool    has_MDS_specific_code;
-    bool    hasEngineSpecificCode;
-    bool    specifiedFilenames;  // for DB plugins
-
-    vector<QString> cxxflags;
-    vector<QString> ldflags;
-    vector<QString> libs;
-    vector<QString> extensions; // for DB plugins
-    vector<QString> filenames;  // for DB plugins
-    bool customgfiles;
-    vector<QString> gfiles;     // gui
-    bool customsfiles;
-    vector<QString> sfiles;     // scripting
-    bool customvfiles;
-    vector<QString> vfiles;     // viewer
-    bool custommfiles;
-    vector<QString> mfiles;     // mdserver
-    bool customefiles;
-    vector<QString> efiles;     // engine
-    bool customwfiles;
-    vector<QString> wfiles;     // widget
-    bool customvwfiles;
-    vector<QString> vwfiles;    // viewer widget
-
     PythonGeneratorAttribute *atts;
   public:
     PythonGeneratorPlugin(const QString &n,const QString &l,const QString &t,
-                          const QString &vt,const QString &dt,const QString &v,
-                          const QString &, bool,bool,bool,bool) 
-          : name(n), type(t), label(l), version(v), varType(vt), dbtype(dt), 
-            atts(NULL)
+        const QString &vt,const QString &dt, const QString &v, const QString &ifile,
+        bool hw, bool ho, bool onlyengine, bool noengine) : 
+        PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine), atts(NULL)
     {
-        enabledByDefault = true;
-        has_MDS_specific_code = false;
-        hasEngineSpecificCode = false;
     }
+
     void Print(ostream &out)
     {
         out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< endl;
         if (atts)
         {
             atts->DisableVISITPY();
-            atts->Print(cout);
+            atts->Print(out);
         }
     }
+
     void WriteHeader(ostream &h)
     {
         if (atts)

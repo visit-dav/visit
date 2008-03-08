@@ -647,6 +647,7 @@ $fullusage = "$usage
         -gdb-viewer          Run the viewer under gdb.
         -gdb-engine          Run the engine under gdb.
         -gdb-mdserver        Run the mdserver under gdb.
+        -gdb-xmledit         Run xmledit under gdb.
         -break <funcname>    Add the specified breakpoint in gdb.
         -xterm               Run gdb in an xterm window.
         -newconsole          Run any VisIt component in a new console window.
@@ -817,6 +818,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-gdb-viewer")       { if($exe_name eq "viewer") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
     elsif ($arg eq "-gdb-engine")       { if($exe_name eq "engine") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
     elsif ($arg eq "-gdb-mdserver")     { if($exe_name eq "mdserver") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
+    elsif ($arg eq "-gdb-xmledit")     { if($exe_name eq "xmledit") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
     elsif ($arg eq "-gdb-vcl")          { if($exe_name eq "vcl") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
     elsif ($arg eq "-xterm")            { if($debug_gdb) {$gdb_xterm = 1;} else {push @visitargs, $arg;}}
     elsif ($arg eq "-newconsole")       { $use_new_console = 1; }
@@ -2094,6 +2096,11 @@ else
             if ($exe_name eq "cli")
             {
                 print GDBFILE "directory $ENV{VISITHOME}/visitpy\n";
+            }
+            if ($exe_name eq "xmledit")
+            {
+                print GDBFILE "directory $ENV{VISITHOME}/tools/xml\n";
+                print GDBFILE "directory $ENV{VISITHOME}/tools/xmledit\n";
             }
             print GDBFILE "directory $ENV{VISITHOME}/visit_vtk/full\n";
             print GDBFILE "directory $ENV{VISITHOME}/visit_vtk/lightweight\n";

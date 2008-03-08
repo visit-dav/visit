@@ -7,6 +7,7 @@
     <Function name="GetColorTableIndex"           user="true"></Function>
     <Function name="GetColorControlPoints1"       user="true"></Function>
     <Function name="GetColorControlPoints2"       user="true"></Function>
+    <Function name="GetActiveColorControlPoints"  user="true"></Function>
     <Function name="AddColorTable"                user="true"></Function>
     <Function name="RemoveColorTable1"            user="true"></Function>
     <Function name="RemoveColorTable2"            user="true"></Function>

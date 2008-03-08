@@ -56,6 +56,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:11:47 PST 2008
+//    Added targets.
+//
 // ****************************************************************************
 XMLEditConstants::XMLEditConstants(QWidget *p, const QString &n)
     : QFrame(p, n)
@@ -78,6 +82,11 @@ XMLEditConstants::XMLEditConstants(QWidget *p, const QString &n)
     QGridLayout *topLayout = new QGridLayout(hLayout, 6,2, 5);
     int row = 0;
 
+    topLayout->addWidget(new QLabel("Target", this), row, 0);
+    target = new QLineEdit(this);
+    topLayout->addWidget(target, row, 1);
+    row++;
+
     topLayout->addWidget(new QLabel("Name", this), row, 0);
     name = new QLineEdit(this);
     topLayout->addWidget(name, row, 1);
@@ -98,6 +107,7 @@ XMLEditConstants::XMLEditConstants(QWidget *p, const QString &n)
     definition = new QMultiLineEdit(this);
     QFont monospaced("Courier");
     definition->setFont(monospaced);
+    definition->setWordWrap(QTextEdit::NoWrap);
     topLayout->addMultiCellWidget(definition, row,row, 0,1);
     row++;
 
@@ -106,6 +116,8 @@ XMLEditConstants::XMLEditConstants(QWidget *p, const QString &n)
 
     connect(constantlist, SIGNAL(selectionChanged()),
             this, SLOT(UpdateWindowSingleItem()));
+    connect(target, SIGNAL(textChanged(const QString&)),
+            this, SLOT(targetTextChanged(const QString&)));
     connect(name, SIGNAL(textChanged(const QString&)),
             this, SLOT(nameTextChanged(const QString&)));
     connect(member, SIGNAL(clicked()),
@@ -121,6 +133,36 @@ XMLEditConstants::XMLEditConstants(QWidget *p, const QString &n)
 }
 
 // ****************************************************************************
+// Method: XMLEditConstants::CountConstants
+//
+// Purpose: 
+//   Return the number of constants having a given name.
+//
+// Arguments:
+//  name : The name of the constants that we're interested in.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 6 15:53:04 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+XMLEditConstants::CountConstants(const QString &name) const
+{
+    Attribute *a = xmldoc->attribute;
+    int constantCount = 0;
+    for (int j=0; j<a->constants.size(); j++)
+        constantCount += (name == a->constants[j]->name) ? 1 : 0;
+    return constantCount;
+}
+
+// ****************************************************************************
 //  Method:  XMLEditConstants::UpdateWindowContents
 //
 //  Purpose:
@@ -128,6 +170,10 @@ XMLEditConstants::XMLEditConstants(QWidget *p, const QString &n)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
+//
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:12:45 PST 2008
+//    Added targets.
 //
 // ****************************************************************************
 void
@@ -139,7 +185,14 @@ XMLEditConstants::UpdateWindowContents()
     constantlist->clear();
     for (int i=0; i<a->constants.size(); i++)
     {
-        constantlist->insertItem(a->constants[i]->name);
+        if(CountConstants(a->constants[i]->name) > 1)
+        { 
+           QString id; id.sprintf("%s [%s]", a->constants[i]->name.latin1(),
+               a->constants[i]->target.latin1());
+            constantlist->insertItem(id);
+        }
+        else
+            constantlist->insertItem(a->constants[i]->name);
     }
 
     BlockAllSignals(false);
@@ -155,6 +208,10 @@ XMLEditConstants::UpdateWindowContents()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:12:45 PST 2008
+//    Added targets.
+//
 // ****************************************************************************
 void
 XMLEditConstants::UpdateWindowSensitivity()
@@ -162,6 +219,7 @@ XMLEditConstants::UpdateWindowSensitivity()
     bool active = constantlist->currentItem() != -1;
 
     delButton->setEnabled(constantlist->count() > 0);
+    target->setEnabled(active);
     name->setEnabled(active);
     declaration->setEnabled(active);
     definition->setEnabled(active);
@@ -177,6 +235,10 @@ XMLEditConstants::UpdateWindowSensitivity()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:12:45 PST 2008
+//    Added targets.
+//
 // ****************************************************************************
 void
 XMLEditConstants::UpdateWindowSingleItem()
@@ -188,6 +250,7 @@ XMLEditConstants::UpdateWindowSingleItem()
 
     if (index == -1)
     {
+        target->setText("");
         name->setText("");
         member->setChecked(false);
         declaration->setText("");
@@ -196,6 +259,7 @@ XMLEditConstants::UpdateWindowSingleItem()
     else
     {
         Constant *c = a->constants[index];
+        target->setText(c->target);
         name->setText(c->name);
         declaration->setText(c->decl);
         definition->setText(c->def);
@@ -219,11 +283,16 @@ XMLEditConstants::UpdateWindowSingleItem()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:12:45 PST 2008
+//    Added targets.
+//
 // ****************************************************************************
 void
 XMLEditConstants::BlockAllSignals(bool block)
 {
     constantlist->blockSignals(block);
+    target->blockSignals(block);
     name->blockSignals(block);
     member->blockSignals(block);
     declaration->blockSignals(block);
@@ -241,6 +310,10 @@ XMLEditConstants::BlockAllSignals(bool block)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:12:45 PST 2008
+//    Added targets.
+//
 // ****************************************************************************
 void
 XMLEditConstants::nameTextChanged(const QString &text)
@@ -253,10 +326,35 @@ XMLEditConstants::nameTextChanged(const QString &text)
 
     QString newname = text.stripWhiteSpace();
     c->name = newname;
-
+    if(CountConstants(newname) > 1)
+    {
+        newname += "[";
+        newname += c->target;
+        newname += "]";
+    }
     BlockAllSignals(true);
     constantlist->changeItem(text, index);
     BlockAllSignals(false);
+}
+
+// ****************************************************************************
+//  Method:  XMLEditConstants::targetTextChanged
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Thu Mar 6 15:56:05 PST 2008
+//
+// ****************************************************************************
+void
+XMLEditConstants::targetTextChanged(const QString &text)
+{
+    Attribute *a = xmldoc->attribute;
+    int index = constantlist->currentItem();
+    if (index == -1)
+        return;
+    Constant *c = a->constants[index];
+
+    c->target = text;
+    nameTextChanged(c->name);
 }
 
 // ****************************************************************************
@@ -322,6 +420,10 @@ XMLEditConstants::definitionChanged()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:17:13 PST 2008
+//    Added xml2atts target.
+//
 // ****************************************************************************
 void
 XMLEditConstants::constantlistNew()
@@ -343,7 +445,7 @@ XMLEditConstants::constantlistNew()
             newid++;
     }
     
-    Constant *c = new Constant(newname,"","",false);
+    Constant *c = new Constant(newname,"","",false, "xml2atts");
     
     a->constants.push_back(c);
     UpdateWindowContents();

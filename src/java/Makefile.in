@@ -124,6 +124,9 @@
 #   Refactored some of ViewerProxy into ViewerState and ViewerMethods. Added
 #   javadoc target.
 #
+#   Brad Whitlock, Wed Feb 27 14:29:55 PST 2008
+#   Added TryAnnotations.java
+#
 ##############################################################################
 
 ##
@@ -251,7 +254,7 @@ ViewerState.java \
 Xfer.java \
 Yielder.java
 
-MAIN_SRC = NIFGUI.java RunViewer.java TryLighting.java TryQuery.java PlotAtts.java GetMetaData.java
+MAIN_SRC = NIFGUI.java RunViewer.java TryLighting.java TryQuery.java PlotAtts.java GetMetaData.java TryAnnotations.java
 MAIN_CLASS = $(MAIN_SRC:.java=.class)
 
 VERSIONWRITER = versionwriter

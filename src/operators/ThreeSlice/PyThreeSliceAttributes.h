@@ -46,13 +46,15 @@
 //
 void            PyThreeSliceAttributes_StartUp(ThreeSliceAttributes *subj, void *data);
 void            PyThreeSliceAttributes_CloseDown();
-PyMethodDef    *PyThreeSliceAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyThreeSliceAttributes_GetMethodTable(int *nMethods);
 bool            PyThreeSliceAttributes_Check(PyObject *obj);
-ThreeSliceAttributes *PyThreeSliceAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyThreeSliceAttributes_NewPyObject();
-PyObject       *PyThreeSliceAttributes_WrapPyObject(const ThreeSliceAttributes *attr);
-std::string     PyThreeSliceAttributes_GetLogString();
+ThreeSliceAttributes *  PyThreeSliceAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyThreeSliceAttributes_New();
+PyObject *      PyThreeSliceAttributes_Wrap(const ThreeSliceAttributes *attr);
+void            PyThreeSliceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyThreeSliceAttributes_SetDefaults(const ThreeSliceAttributes *atts);
+std::string     PyThreeSliceAttributes_GetLogString();
+std::string     PyThreeSliceAttributes_ToString(const ThreeSliceAttributes *, const char *);
 
 #endif
 

@@ -94,6 +94,9 @@
 //    Jeremy Meredith, Fri Mar 16 14:15:24 EDT 2007
 //    Set Color's length to 4 so the XML editor will set its values properly.
 //
+//    Brad Whitlock, Thu Feb 28 09:47:50 PDT 2008
+//    Changed init to a map so there can be inits for many targets.
+//
 // ****************************************************************************
 
 
@@ -126,7 +129,7 @@ class Field
     Field            *enabler;
     vector<QString>   enableval;
 
-    QString           initcode;
+    std::map<QString,QString> initcode;
     int               varTypes;
 
     int               index;
@@ -161,9 +164,68 @@ class Field
         codeFile = f->codeFile;
         accessType = f->accessType;
     }
-    void SetInitCode(const QString &ic)
+    void SetInitCode(const QString &target, const QString &ic)
     {
-        initcode = ic;
+        initcode[target] = ic;
+    }
+    QString InitCodeAsString() const
+    {
+        QString s;
+        QString currentTarget;
+        bool multipleTargets = false;
+        std::map<QString,QString>::const_iterator it;
+        for(it = initcode.begin(); it != initcode.end(); ++it)
+        {
+            if(currentTarget.isEmpty())
+                currentTarget = it->first;
+            if(currentTarget != it->first)
+            {
+                multipleTargets = true;
+                break;
+            }
+        }
+        if(multipleTargets)
+        {
+            for(it = initcode.begin(); it != initcode.end(); ++it)
+            {
+                s = s + "Target: " + it->first + "\n";
+                s = s + it->second;
+            }
+        }
+        else
+        {
+            for(it = initcode.begin(); it != initcode.end(); ++it)
+                s = s + it->second;
+        }
+        return s;
+    }
+    void SetInitCodeFromString(const QString &value)
+    {
+        initcode.clear();
+
+        // s contains a string with various targets and init codes.
+        QStringList lines(QStringList::split("\n", value));
+        QString currentTarget("xml2atts");
+        QString currentInit;
+        for(int i = 0; i < lines.size(); ++i)
+        {
+            if(lines[i].left(7) == QString("Target:"))
+            {
+                QString target = lines[i].mid(7).stripWhiteSpace();
+                if(!currentInit.isEmpty())
+                {
+                    initcode[currentTarget] = currentInit;
+                }
+                currentTarget = target;
+                currentInit = "";
+            }
+            else
+                currentInit += (lines[i] + "\n");
+        }
+        if(!currentInit.isEmpty())
+        {
+            initcode[currentTarget] = currentInit;
+        }
     }
     virtual QString GetSubtype() { return ""; };
     virtual void SetSubtype(const QString &) {  };
@@ -221,6 +283,81 @@ class Field
             cout << endl;
         }
     }
+
+    bool HasCode(const QString &cName, int part, const QString &generatorName = QString::null)
+    {
+        bool retval = false;
+        QStringList targets, prefix, postfix;
+        if(codeFile!=NULL && codeFile->GetCode(cName, targets, prefix, postfix))
+        {
+            for (int i=0; i<targets.size(); i++)
+                if(generatorName.isEmpty() || generatorName == targets[i])
+                {
+                    if(part == 0)
+                        retval = !prefix[i].isNull();
+                    else
+                        retval = !postfix[i].isNull();
+                    break;
+                }
+        }
+        return retval;
+    }
+
+    void PrintCode(ostream &out, const QString &cName, int part, const QString &generatorName = QString::null)
+    {
+        QStringList targets, prefix, postfix;
+        if(codeFile!=NULL && codeFile->GetCode(cName, targets, prefix, postfix))
+        {
+            for (int i=0; i<targets.size(); i++)
+                if(generatorName.isEmpty() || generatorName == targets[i])
+                {
+                    if(part == 0)
+                        out << prefix[i];
+                    else
+                        out << postfix[i];
+                    break;
+                }
+        }
+    }
+
+    bool PrintInit(ostream &out, const QString &generatorName = QString::null) const
+    {
+        // Look through the map for the init code that is for the generatorName 
+        // that was passed.
+        for(std::map<QString,QString>::const_iterator it = initcode.begin();
+            it != initcode.end(); ++it)
+        {
+            if(generatorName.isEmpty() || generatorName == it->first)
+            {
+                out << it->second;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void
+    WriteMethodComment(ostream &out, const QString &className,
+        const QString &methodName, const QString &purposeString,
+        const QString &generatorName) const
+    {
+        out << "// ****************************************************************************" << endl;
+        out << "// Method: " << className << "::" << methodName << endl;
+        out << "//" << endl;
+        out << "// Purpose: " << endl;
+        out << "//   " << purposeString << endl;
+        out << "//" << endl;
+        out << "// Note:       Autogenerated by xml2atts." << endl;
+        out << "//" << endl;
+        out << "// Programmer: " << generatorName << endl;
+        out << "// Creation:   omitted" << endl;
+        out << "//" << endl;
+        out << "// Modifications:" << endl;
+        out << "//   " << endl;
+        out << "// ****************************************************************************" << endl;
+        out << endl;
+    }
+
     virtual vector<QString> GetValueAsText() = 0;
 };
 

@@ -54,6 +54,9 @@
 #include <XMLEditIncludes.h>
 #include <XMLEditCode.h>
 #include <XMLDocument.h>
+#include <XMLToolIds.h>
+#include <XMLEditCodeGeneratorWindow.h>
+#include <XMLEditCodeSelectionDialog.h>
 
 #include <visitstream.h>
 
@@ -62,6 +65,10 @@
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
+//
+//  Modifications:
+//    Brad Whitlock, Fri Mar 7 13:19:55 PST 2008
+//    Added "Generate code" menu option.
 //
 // ****************************************************************************
 XMLEdit::XMLEdit(const QString &file, QWidget *p, const QString &n)
@@ -75,6 +82,8 @@ XMLEdit::XMLEdit(const QString &file, QWidget *p, const QString &n)
     filemenu->insertItem( "&Open",  this, SLOT(open()),  CTRL+Key_O );
     filemenu->insertItem( "&Save",  this, SLOT(save()),  CTRL+Key_S );
     filemenu->insertItem( "Save &as",  this, SLOT(saveAs()),  CTRL+Key_A );
+    filemenu->insertSeparator();
+    filemenu->insertItem( "&Generate code",  this, SLOT(generateCode()),  CTRL+Key_G );
     filemenu->insertSeparator();
     filemenu->insertItem( "E&xit", this, SLOT(close()),  CTRL+Key_X );
 
@@ -112,6 +121,7 @@ XMLEdit::XMLEdit(const QString &file, QWidget *p, const QString &n)
             this, SLOT(updateTab(QWidget*)));
 
     setCentralWidget(tabs);
+    codeGenerationWindow = 0;
 
     OpenFile(file);
 }
@@ -292,4 +302,64 @@ XMLEdit::updateTab(QWidget *tab)
         codetab->UpdateWindowContents();
     else
         cerr << "UNKNOWN TAB IN " << __FILE__ << " LINE " << __LINE__ << endl;
+}
+
+// ****************************************************************************
+// Method: XMLEdit::generateCode
+//
+// Purpose: 
+//   Invokes the code generation window to call various XML tools on the 
+//   XML file that we saved.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 7 14:23:15 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+XMLEdit::generateCode()
+{
+    // First save the file.
+    bool firstGeneration = false;
+    if(xmldoc->filename == "untitled.xml")
+    {
+        saveAs();
+        firstGeneration = true;
+    }
+    else
+        SaveFile(xmldoc->filename);
+
+    // Set up initial
+    bool plugin   = (xmldoc->docType == "Plugin");
+    bool useTool[ID_XML_MAX], toolEnabled[ID_XML_MAX];
+    useTool[ID_XML2ATTS] = true;
+    useTool[ID_XML2JAVA] = true;
+    useTool[ID_XML2PYTHON] = true;
+    useTool[ID_XML2WINDOW] = firstGeneration;
+    useTool[ID_XML2MAKEFILE] = firstGeneration;
+    useTool[ID_XML2INFO] = firstGeneration;
+    useTool[ID_XML2AVT] = firstGeneration;
+
+    toolEnabled[ID_XML2ATTS] = true;
+    toolEnabled[ID_XML2JAVA] = true;
+    toolEnabled[ID_XML2PYTHON] = true;
+    toolEnabled[ID_XML2WINDOW] = plugin;
+    toolEnabled[ID_XML2MAKEFILE] = plugin;
+    toolEnabled[ID_XML2INFO] = plugin;
+    toolEnabled[ID_XML2AVT] = plugin;
+
+    // Call the dialog that lets the user pick which items to regenerate.
+    if(XMLEditCodeSelectionDialog::selectTools("Select items to generate",
+       useTool, toolEnabled))
+    {
+        if(codeGenerationWindow == 0)
+            codeGenerationWindow = new XMLEditCodeGeneratorWindow(0,"codeGeneratorWindow");
+        codeGenerationWindow->setCaption(QString("Generate code for ") + 
+            xmldoc->filename);
+
+        // Generate the code for the selected tools.
+        codeGenerationWindow->GenerateCode(xmldoc->filename, useTool);
+    }
 }

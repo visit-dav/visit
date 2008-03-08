@@ -46,11 +46,12 @@
 //
 void            PyMoleculeAttributes_StartUp(MoleculeAttributes *subj, void *data);
 void            PyMoleculeAttributes_CloseDown();
-PyMethodDef    *PyMoleculeAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyMoleculeAttributes_GetMethodTable(int *nMethods);
 bool            PyMoleculeAttributes_Check(PyObject *obj);
-MoleculeAttributes *PyMoleculeAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyMoleculeAttributes_NewPyObject();
-PyObject       *PyMoleculeAttributes_WrapPyObject(const MoleculeAttributes *attr);
+MoleculeAttributes *  PyMoleculeAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyMoleculeAttributes_New();
+PyObject *      PyMoleculeAttributes_Wrap(const MoleculeAttributes *attr);
+void            PyMoleculeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyMoleculeAttributes_SetDefaults(const MoleculeAttributes *atts);
 std::string     PyMoleculeAttributes_GetLogString();
 std::string     PyMoleculeAttributes_ToString(const MoleculeAttributes *, const char *);

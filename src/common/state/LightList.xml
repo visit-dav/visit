@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
   <Attribute name="LightList" purpose="This class contains a list of LightAttributes." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="LightList.code">
-    <Field name="light0" label="light0" type="att" subtype="LightAttributes" init="true">
+    <Field name="light0" label="light0" type="att" subtype="LightAttributes">
     </Field>
     <Field name="light1" label="light1" type="att" subtype="LightAttributes">
     </Field>
@@ -14,7 +14,7 @@
     </Field>
     <Field name="light6" label="light6" type="att" subtype="LightAttributes">
     </Field>
-    <Field name="light7" label="light7" type="att" subtype="LightAttributes">
+    <Field name="light7" label="light7" type="att" subtype="LightAttributes" init="true">
     </Field>
     <Function name="GetLight" user="true" member="true">
     </Function>
@@ -27,5 +27,7 @@
     <Function name="SetLight" user="true" member="true">
     </Function>
     <Function name="SetDefaultEnabledStates" user="true" member="true">
+    </Function>
+    <Function name="SetAllEnabled" user="true" member="true">
     </Function>
   </Attribute>

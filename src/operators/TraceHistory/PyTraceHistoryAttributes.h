@@ -46,11 +46,11 @@
 //
 void            PyTraceHistoryAttributes_StartUp(TraceHistoryAttributes *subj, void *data);
 void            PyTraceHistoryAttributes_CloseDown();
- PyMethodDef *   PyTraceHistoryAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyTraceHistoryAttributes_GetMethodTable(int *nMethods);
 bool            PyTraceHistoryAttributes_Check(PyObject *obj);
- TraceHistoryAttributes *  PyTraceHistoryAttributes_FromPyObject(PyObject *obj);
- PyObject *      PyTraceHistoryAttributes_New();
- PyObject *      PyTraceHistoryAttributes_Wrap(const TraceHistoryAttributes *attr);
+TraceHistoryAttributes *  PyTraceHistoryAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyTraceHistoryAttributes_New();
+PyObject *      PyTraceHistoryAttributes_Wrap(const TraceHistoryAttributes *attr);
 void            PyTraceHistoryAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyTraceHistoryAttributes_SetDefaults(const TraceHistoryAttributes *atts);
 std::string     PyTraceHistoryAttributes_GetLogString();

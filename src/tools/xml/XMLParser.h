@@ -202,6 +202,8 @@ class XMLParser : public QXmlDefaultHandler
         currentPlugin = NULL;
         plugin    = NULL;
         attribute = NULL;
+        currentConstants = NULL;
+        currentFunctions = NULL;
         fieldFactory = fieldFactory_;
     }
     bool startDocument()
@@ -338,14 +340,14 @@ class XMLParser : public QXmlDefaultHandler
 
             if (currentAttribute->codeFile)
             {
-                std::map<QString, std::pair<QString,QString> >::iterator it;
-                for (it = currentAttribute->codeFile->code.begin();
-                     it != currentAttribute->codeFile->code.end();
-                     it++)
+                QStringList targets, names, first, second;
+                currentAttribute->codeFile->GetAllCodes(targets, names, first, second);
+                for(int i = 0; i < targets.size(); ++i)
                 {
-                    currentAttribute->codes.push_back(new Code(it->first,
-                                                               it->second.first,
-                                                               it->second.second));
+                    currentAttribute->codes.push_back(new Code(names[i],
+                                                               first[i],
+                                                               second[i],
+                                                               targets[i]));
                 }
             }
         }
@@ -357,48 +359,69 @@ class XMLParser : public QXmlDefaultHandler
         {
             QString file   = atts.value("file");
             QString quoted = atts.value("quoted");
+            QString target = atts.value("target");
             bool    quote = false;
             if (!quoted.isNull()) 
                 quote = Text2Bool(quoted);
+            if (target.isNull()) 
+                target = "xml2atts";
 
-            currentInclude = new Include(file, quote);
+            currentInclude = new Include(file, quote, target);
         }
         else if (tag == "Constant")
         {
             QString member = atts.value("member");
+
             if (!currentAttribute)
                 throw QString().sprintf("No current attribute when specifying constant %s",name.latin1());
-            if (!currentAttribute->codeFile)
-                throw QString().sprintf("No codefile found for constant %s.",name.latin1());
-            if (!currentAttribute->codeFile->constant.count(name))
-                throw QString().sprintf("no constant %s in codefile.",name.latin1());
-
             CodeFile *codeFile = currentAttribute->codeFile;
+            if (!codeFile)
+                throw QString().sprintf("No codefile found for constant %s.",name.latin1());
+            if (!codeFile->HasConstant(name))
+                throw QString().sprintf("no constant %s in codefile.", name.latin1());
 
-            currentConstant = new Constant(name,
-                                           codeFile->constant[name].first,
-                                           codeFile->constant[name].second,
-                                           Text2Bool(member));
+            // Get the constant definitions
+            QStringList targets, first, second;
+            codeFile->GetConstant(name, targets, first, second);
+            currentConstants = new Constant *[targets.size() + 1];
+            for(int i = 0; i < targets.size(); ++i)
+            {
+                currentConstants[i] = new Constant(name,
+                                                   first[i],
+                                                   second[i],
+                                                   Text2Bool(member),
+                                                   targets[i]);
+            }
+            currentConstants[targets.size()] = NULL;
         }
         else if (tag == "Function")
         {
             QString user   = atts.value("user");
             QString member = atts.value("member");
-            if (!currentAttribute)
-                throw QString().sprintf("No current attribute when specifying function %s",name.latin1());
-            if (!currentAttribute->codeFile)
-                throw QString().sprintf("No codefile found for function %s.",name.latin1());
-            if (!currentAttribute->codeFile->func.count(name))
-                throw QString().sprintf("no function %s in codefile.",name.latin1());
-
-            CodeFile *codeFile = currentAttribute->codeFile;
-
             if (member.isNull())
                 member = "true";
-            currentFunction = new Function(name,
-                                           codeFile->func[name].first,
-                                           codeFile->func[name].second,
-                                           Text2Bool(user), Text2Bool(member));
+
+            if (!currentAttribute)
+                throw QString().sprintf("No current attribute when specifying function %s",name.latin1());
+            CodeFile *codeFile = currentAttribute->codeFile;
+            if (!codeFile)
+                throw QString().sprintf("No codefile found for function %s.",name.latin1());
+            if (!codeFile->HasFunction(name))
+                throw QString().sprintf("no function %s in codefile.",name.latin1());
+
+            // Get the function definitions
+            QStringList targets, first, second;
+            codeFile->GetFunction(name, targets, first, second);
+            currentFunctions = new Function*[targets.size()+1];
+            for(int i = 0; i < targets.size(); ++i)
+            {
+                currentFunctions[i] = new Function(name,
+                                                   first[i],
+                                                   second[i],
+                                                   Text2Bool(user), Text2Bool(member),
+                                                   targets[i]);
+            }
+            currentFunctions[targets.size()] = NULL;
         }
         else if (tag == "CXXFLAGS")
         {
@@ -510,9 +533,13 @@ class XMLParser : public QXmlDefaultHandler
             {
                 if (!currentAttribute->codeFile)
                     throw QString().sprintf("No codefile found for initializer for %s.",name.latin1());
-                if (!currentAttribute->codeFile->init.count(name))
+                if (!currentAttribute->codeFile->HasInit(name))
                     throw QString().sprintf("no initializer for %s in codefile.",name.latin1());
-                currentField->SetInitCode(currentAttribute->codeFile->init[name]);
+
+                QStringList targets, defs;
+                currentAttribute->codeFile->GetInit(name, targets, defs);
+                for(int i = 0; i < targets.size(); ++i)
+                    currentField->SetInitCode(targets[i], defs[i]);
             }
 
             int i;
@@ -605,8 +632,10 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "Function")
         {
-            currentAttribute->functions.push_back(currentFunction);
-            currentFunction = NULL;
+            for(Function **f = currentFunctions; *f != NULL; ++f)
+                currentAttribute->functions.push_back(*f);
+            delete [] currentFunctions;
+            currentFunctions = NULL;
         }
         else if (tag == "CXXFLAGS")
         {
@@ -629,8 +658,10 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "Constant")
         {
-            currentAttribute->constants.push_back(currentConstant);
-            currentConstant = NULL;
+            for(Constant **c = currentConstants; *c != NULL; ++c)
+                currentAttribute->constants.push_back(*c);
+            delete [] currentConstants;
+            currentConstants = NULL;
         }
         else
         {
@@ -642,9 +673,9 @@ class XMLParser : public QXmlDefaultHandler
     }
   private:
     int             currentFileComponents;
-    Function       *currentFunction;
-    Constant       *currentConstant;
     Include        *currentInclude;
+    Constant      **currentConstants;
+    Function      **currentFunctions;
     Field          *currentField;
     EnumType       *currentEnum;
     Attribute      *currentAttribute;

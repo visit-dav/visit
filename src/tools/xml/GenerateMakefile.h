@@ -41,6 +41,7 @@
 
 #include "Field.h"
 #include <visit-config.h> // for the plugin extension.
+#include "Plugin.h"
 
 // ****************************************************************************
 //  File:  GenerateMakefile
@@ -230,79 +231,25 @@
 //   Hank Childs, Thu Jan 10 14:33:30 PST 2008
 //   Added filenames, specifiedFilenames.
 //
+//   Brad Whitlock, Thu Feb 28 16:54:23 PST 2008
+//   Made it use a base class.
+//
 // ****************************************************************************
 
-class MakefileGeneratorPlugin
+class MakefileGeneratorPlugin : public Plugin
 {
   public:
-    QString name;
-    QString type;
-    QString label;
-    QString version;
-    QString vartype;
-    QString dbtype;
-    bool    haswriter;
-    bool    hasoptions;
-    bool    enabledByDefault;
-    bool    has_MDS_specific_code;
-    bool    hasEngineSpecificCode;
-    bool    onlyEnginePlugin;
-    bool    noEnginePlugin;
-    bool    specifiedFilenames;  // for DB plugins
-
-    vector<QString> cxxflags;
-    vector<QString> ldflags;
-    vector<QString> libs;
-    vector<QString> extensions; // for DB plugins
-    vector<QString> filenames;  // for DB plugins
-    bool customgfiles;
-    vector<QString> gfiles;     // gui
-    bool customsfiles;
-    vector<QString> sfiles;     // scripting
-    bool customvfiles;
-    vector<QString> vfiles;     // viewer
-    bool custommfiles;
-    vector<QString> mfiles;     // mdserver
-    bool customefiles;
-    vector<QString> efiles;     // engine
-    bool customwfiles;
-    vector<QString> wfiles;     // widgets
-    bool customvwfiles;
-    vector<QString> vwfiles;    // viewer widgets
-    vector<QString> defaultgfiles;
-    vector<QString> defaultsfiles;
-    vector<QString> defaultvfiles;
-    vector<QString> defaultmfiles;
-    vector<QString> defaultefiles;
-    vector<QString> defaultwfiles;
-
-    Attribute *atts;
-  public:
     MakefileGeneratorPlugin(const QString &n,const QString &l,const QString &t,
-                            const QString &vt,const QString &dt,
-                            const QString &v, const QString&w, bool hw,bool ho,
-                            bool onlyengine, bool noengine)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), 
-          haswriter(hw), hasoptions(ho), onlyEnginePlugin(onlyengine), 
-          noEnginePlugin(noengine), atts(NULL)
+        const QString &vt,const QString &dt, const QString &v, const QString &ifile,
+        bool hw, bool ho, bool onlyengine, bool noengine) : 
+        Plugin(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine)
     {
-        enabledByDefault = true;
-        has_MDS_specific_code = false;
-        hasEngineSpecificCode = false;
-        customgfiles = false;
-        customsfiles = false;
-        customvfiles = false;
-        custommfiles = false;
-        customefiles = false;
-        customwfiles = false;
-        customvwfiles = false;
-        gfiles.clear();
-        sfiles.clear();
-        vfiles.clear();
-        mfiles.clear();
-        efiles.clear();
-        wfiles.clear();
-        vwfiles.clear();
+        defaultgfiles.clear();
+        defaultsfiles.clear();
+        defaultvfiles.clear();
+        defaultmfiles.clear();
+        defaultefiles.clear();
+        defaultwfiles.clear();
         if (type == "database")
         {
             QString filter = QString("avt") + name + "FileFormat.C";
@@ -327,12 +274,11 @@ class MakefileGeneratorPlugin
             defaultefiles.push_back(filter);
         }
     }
-    void Print(ostream &out)
+
+    virtual ~MakefileGeneratorPlugin()
     {
-        out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< endl;
-        if (atts)
-            atts->Print(cout);
     }
+
     void WriteMakefile(ostream &out)
     {
         const char *visithome = getenv("VISITARCHHOME");

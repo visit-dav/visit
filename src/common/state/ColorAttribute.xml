@@ -8,6 +8,10 @@
     </Field>
     <Function name="ColorAttribute" user="true" member="true">
     </Function>
+    <Function name="ColorAttribute2" user="true" member="true">
+    </Function>
+    <Function name="ColorAttribute3" user="true" member="true">
+    </Function>
     <Function name="SetRgb" user="true" member="true">
     </Function>
     <Function name="SetRgba" user="true" member="true">

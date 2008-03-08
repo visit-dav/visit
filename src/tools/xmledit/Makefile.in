@@ -51,6 +51,9 @@
 #    Jeremy Meredith, Thu Jun  7 13:23:18 EDT 2007
 #    Build rules for _moc.C are now in make-targets.in. Remove them from here.
 #
+#    Brad Whitlock, Fri Mar 7 16:38:40 PST 2008
+#    Added new files.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -65,6 +68,8 @@ SRC=XMLEditMain.C \
     XMLEditFields.C \
     XMLEditFunctions.C \
     XMLEditCode.C \
+    XMLEditCodeGeneratorWindow.C \
+    XMLEditCodeSelectionDialog.C \
     XMLEditConstants.C \
     XMLEditIncludes.C \
     XMLEditMakefile.C
@@ -75,6 +80,8 @@ WIDGET=XMLEdit.h \
        XMLEditFields.h \
        XMLEditFunctions.h \
        XMLEditCode.h \
+       XMLEditCodeGeneratorWindow.h \
+       XMLEditCodeSelectionDialog.h \
        XMLEditConstants.h \
        XMLEditIncludes.h \
        XMLEditMakefile.h

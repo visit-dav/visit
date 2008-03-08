@@ -38,6 +38,7 @@
 
 #ifndef PLUGIN_H
 #define PLUGIN_H
+#include <PluginBase.h>
 
 #include <qstring.h>
 #include <visitstream.h>
@@ -99,47 +100,16 @@
 //    Hank Childs, Thu Jan 10 14:06:42 PST 2008
 //    Add specifiedFilenames and filenames.
 //
+//    Brad Whitlock, Thu Feb 28 13:46:51 PST 2008
+//    Made it inherit PluginBase, a new base class that allows all of the
+//    basic attributes to be shared between Plugin and the various
+//    AttsGeneratorPlugin classes.
+//
 // ****************************************************************************
 
-class Plugin
+class Plugin : public PluginBase
 {
   public:
-    QString name;
-    QString type;
-    QString label;
-    QString version;
-    QString vartype;
-    QString dbtype;
-    QString iconFile;
-
-    bool haswriter;
-    bool hasoptions;
-    bool specifiedFilenames;  // For DB plugins
-    bool enabledByDefault;
-    bool has_MDS_specific_code;
-    bool hasEngineSpecificCode;
-    bool onlyEnginePlugin;
-    bool noEnginePlugin;
-
-    vector<QString> cxxflags;
-    vector<QString> ldflags;
-    vector<QString> libs;
-    vector<QString> extensions; // for DB plugins
-    vector<QString> filenames; // for DB plugins
-    bool customgfiles;
-    vector<QString> gfiles;     // gui
-    bool customsfiles;
-    vector<QString> sfiles;     // scripting
-    bool customvfiles;
-    vector<QString> vfiles;     // viewer
-    bool custommfiles;
-    vector<QString> mfiles;     // mdserver
-    bool customefiles;
-    vector<QString> efiles;     // engine
-    bool customwfiles;
-    vector<QString> wfiles;     // widget
-    bool customvwfiles;
-    vector<QString> vwfiles;    // viewer widget
     vector<QString> defaultgfiles;
     vector<QString> defaultsfiles;
     vector<QString> defaultvfiles;
@@ -153,28 +123,15 @@ class Plugin
            const QString &vt,const QString &dt,const QString &v, 
            const QString &ifile, bool hw, bool ho, bool onlyengine,
            bool noengine)
-        :  name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), 
-           iconFile(ifile), haswriter(hw), hasoptions(ho), 
-           onlyEnginePlugin(onlyengine), noEnginePlugin(noengine), atts(NULL)
+        :  PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine),
+           defaultgfiles(),
+           defaultsfiles(),
+           defaultvfiles(),
+           defaultmfiles(),
+           defaultefiles(),
+           defaultwfiles(),
+           atts(NULL)
     {
-        enabledByDefault = true;
-        specifiedFilenames = false;
-        has_MDS_specific_code = false;
-        hasEngineSpecificCode = false;
-        customgfiles = false;
-        customsfiles = false;
-        customvfiles = false;
-        custommfiles = false;
-        customefiles = false;
-        customwfiles = false;
-        customvwfiles = false;
-        gfiles.clear();
-        sfiles.clear();
-        vfiles.clear();
-        mfiles.clear();
-        efiles.clear();
-        wfiles.clear();
-        vwfiles.clear();
         if (type == "database")
         {
             QString filter = QString("avt") + name + "FileFormat.C";
@@ -195,7 +152,8 @@ class Plugin
             defaultvfiles.push_back(filter);
             defaultefiles.push_back(filter);
         }
-    };
+    }
+
     void Print(ostream &out)
     {
         out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< endl;

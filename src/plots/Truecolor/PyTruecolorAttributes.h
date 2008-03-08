@@ -46,13 +46,15 @@
 //
 void            PyTruecolorAttributes_StartUp(TruecolorAttributes *subj, void *data);
 void            PyTruecolorAttributes_CloseDown();
-PyMethodDef    *PyTruecolorAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyTruecolorAttributes_GetMethodTable(int *nMethods);
 bool            PyTruecolorAttributes_Check(PyObject *obj);
-TruecolorAttributes *PyTruecolorAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyTruecolorAttributes_NewPyObject();
-PyObject       *PyTruecolorAttributes_WrapPyObject(const TruecolorAttributes *attr);
-std::string     PyTruecolorAttributes_GetLogString();
+TruecolorAttributes *  PyTruecolorAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyTruecolorAttributes_New();
+PyObject *      PyTruecolorAttributes_Wrap(const TruecolorAttributes *attr);
+void            PyTruecolorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyTruecolorAttributes_SetDefaults(const TruecolorAttributes *atts);
+std::string     PyTruecolorAttributes_GetLogString();
+std::string     PyTruecolorAttributes_ToString(const TruecolorAttributes *, const char *);
 
 #endif
 

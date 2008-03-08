@@ -61,6 +61,9 @@ import java.nio.ByteBuffer;
 //   Brad Whitlock, Tue Dec 10 17:02:12 PST 2002
 //   I added methods to read/write byte vectors.
 //
+//   Brad Whitlock, Wed Feb 27 11:25:51 PDT 2008
+//   Fixed a problem with reading doubles.
+//
 // ****************************************************************************
 
 public class CommunicationBuffer
@@ -416,11 +419,11 @@ public class CommunicationBuffer
             b[i] = buf[i];
         if(remoteInfo.IntFormat == CommunicationHeader.B32)
         {
-            d = ByteBuffer.wrap(b).order(ByteOrder.nativeOrder()).getFloat();
+            d = ByteBuffer.wrap(b).order(ByteOrder.nativeOrder()).getDouble();
         }
         else if(remoteInfo.IntFormat == CommunicationHeader.L32)
         {
-            d = ByteBuffer.wrap(b).order(ByteOrder.nativeOrder()).getFloat();
+            d = ByteBuffer.wrap(b).order(ByteOrder.nativeOrder()).getDouble();
         }
 
         Shift(8);

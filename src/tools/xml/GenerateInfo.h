@@ -40,14 +40,7 @@
 #define GENERATE_INFO_H
 
 #include "Field.h"
-#include <stdlib.h>
-#include <sys/types.h>
-#include <time.h>
-
-#include <snprintf.h>
-#if defined(_WIN32)
-#include <windows.h>
-#endif
+#include "Plugin.h"
 
 // ****************************************************************************
 //  File:  GenerateInfo
@@ -153,55 +146,6 @@
 //    Brad Whitlock, Sat Sep 29 14:49:09 PST 2007
 //    Replace getenv("USER") with a safer function so we don't crash on Windows.
 //
-// ****************************************************************************
-
-// ----------------------------------------------------------------------------
-//                             Utility Functions
-// ----------------------------------------------------------------------------
-
-QString
-CurrentTime()
-{
-    char *tstr[] = {"PDT", "PST"};
-    char s1[10], s2[10], s3[10], tmpbuf[200];
-    time_t t;
-    char *c = NULL;
-    int h,m,s,y;
-    t = time(NULL);
-    c = asctime(localtime(&t));
-    // Read the hour.
-    sscanf(c, "%s %s %s %d:%d:%d %d", s1, s2, s3, &h, &m, &s, &y);
-    // Reformat the string a little.
-    sprintf(tmpbuf, "%s %s %s %02d:%02d:%02d %s %d",
-            s1, s2, s3, h, m, s, tstr[h > 12], y);
-
-    return QString(tmpbuf);
-}
-
-const char *
-UserName()
-{
-     static char user_buffer[100];
-     const char *user = getenv("USER");
-     if(user != 0)
-         SNPRINTF(user_buffer, 100, "%s -- ", user);
-     else
-     {
-#if defined(_WIN32)
-         char tmp[100];
-         DWORD maxLen = 100;
-         GetUserName((LPTSTR)tmp, (LPDWORD)&maxLen);
-         SNPRINTF(user_buffer, 100, "%s -- ", tmp);
-#else
-         user_buffer[0] = '\0';
-#endif
-     }
-     return user_buffer;
-}
-
-// ----------------------------------------------------------------------------
-//
-// Modifications:
 //   Mark C. Miller, Wed Jul 25 16:42:47 PDT 2007
 //   Fixed allocation for ffl in SetupDatabase to use nTimesteps, not nList
 //
@@ -215,63 +159,25 @@ UserName()
 //   Hank Childs, Thu Jan 10 14:33:30 PST 2008
 //   Added filenames, specifiedFilenames.
 //
-// ----------------------------------------------------------------------------
-class InfoGeneratorPlugin
+//   Brad Whitlock, Thu Feb 28 16:51:35 PST 2008
+//   Made it use a base class.
+//
+// ****************************************************************************
+
+class InfoGeneratorPlugin : public Plugin
 {
   public:
-    QString name;
-    QString type;
-    QString label;
-    QString version;
-    QString vartype;
-    QString dbtype;
-    QString iconFile;
-    bool    haswriter;
-    bool    hasoptions;
-    bool    enabledByDefault;
-    bool    has_MDS_specific_code;
-    bool    hasEngineSpecificCode;
-    bool    onlyEnginePlugin;
-    bool    noEnginePlugin;
-    bool    specifiedFilenames;  // for DB plugins
-
-    vector<QString> cxxflags;
-    vector<QString> ldflags;
-    vector<QString> libs;
-    vector<QString> extensions; // for DB plugins
-    vector<QString> filenames;  // for DB plugins
-    bool customgfiles;
-    vector<QString> gfiles;     // gui
-    bool customsfiles;
-    vector<QString> sfiles;     // scripting
-    bool customvfiles;
-    vector<QString> vfiles;     // viewer
-    bool custommfiles;
-    vector<QString> mfiles;     // mdserver
-    bool customefiles;
-    vector<QString> efiles;     // engine
-    bool customwfiles;
-    vector<QString> wfiles;     // widgets
-    bool customvwfiles;
-    vector<QString> vwfiles;    // viewer widgets
-
-    Attribute *atts;
-  public:
     InfoGeneratorPlugin(const QString &n,const QString &l,const QString &t,
-        const QString &vt,const QString &dt,const QString &v,
-        const QString &ifile, bool hw, bool ho, bool onlyengine, bool noengine) : name(n), type(t), label(l),
-        version(v), vartype(vt), dbtype(dt), iconFile(ifile), haswriter(hw),
-        hasoptions(ho), onlyEnginePlugin(onlyengine), noEnginePlugin(noengine),
-        atts(NULL)
+        const QString &vt,const QString &dt, const QString &v, const QString &ifile,
+        bool hw, bool ho, bool onlyengine, bool noengine) : 
+        Plugin(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine)
     {
-        enabledByDefault = true;
     }
-    void Print(ostream &out)
+
+    virtual ~InfoGeneratorPlugin()
     {
-        out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< endl;
-        if (atts)
-            atts->Print(cout);
     }
+
     void WriteInfoHeader(ostream &h)
     {
         if (type=="operator")

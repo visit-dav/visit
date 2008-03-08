@@ -523,10 +523,10 @@ ProcessFile(QString file)
 
     if (print)
     {
-        cerr << "-----------------------------------------------------------------" << endl;
-        cerr << "               Parsed document of type " << docType << endl;
-        cerr << "-----------------------------------------------------------------" << endl;
-        cerr << endl;
+        cout << "-----------------------------------------------------------------" << endl;
+        cout << "               Parsed document of type " << docType << endl;
+        cout << "-----------------------------------------------------------------" << endl;
+        cout << endl;
     }
 
     // test mode
@@ -856,6 +856,9 @@ ProcessFile(QString file)
             cerr << "No project files to generate for non-plugins." << endl;
         }
 #endif
+
+        cout.flush();
+        cerr.flush();
 
         delete attribute;
         delete plugin;

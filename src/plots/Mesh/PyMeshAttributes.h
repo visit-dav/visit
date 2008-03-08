@@ -46,13 +46,15 @@
 //
 void            PyMeshAttributes_StartUp(MeshAttributes *subj, void *data);
 void            PyMeshAttributes_CloseDown();
-PyMethodDef    *PyMeshAttributes_GetMethodTable(int *nMethods);
+PyMethodDef *   PyMeshAttributes_GetMethodTable(int *nMethods);
 bool            PyMeshAttributes_Check(PyObject *obj);
-MeshAttributes *PyMeshAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyMeshAttributes_NewPyObject();
-PyObject       *PyMeshAttributes_WrapPyObject(const MeshAttributes *attr);
-std::string     PyMeshAttributes_GetLogString();
+MeshAttributes *  PyMeshAttributes_FromPyObject(PyObject *obj);
+PyObject *      PyMeshAttributes_New();
+PyObject *      PyMeshAttributes_Wrap(const MeshAttributes *attr);
+void            PyMeshAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyMeshAttributes_SetDefaults(const MeshAttributes *atts);
+std::string     PyMeshAttributes_GetLogString();
+std::string     PyMeshAttributes_ToString(const MeshAttributes *, const char *);
 
 #endif
 

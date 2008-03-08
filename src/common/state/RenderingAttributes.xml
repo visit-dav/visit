@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="RenderingAttributes" purpose="This class contains special rendering attributes like antialiasing and stero settings." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="RenderingAttributes.code">
+  <Attribute name="RenderingAttributes" purpose="This class contains special rendering attributes like antialiasing and stero settings." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="RenderingAttributes.code">
     <Enum name="GeometryRepresentation">
       Surfaces
       Wireframe
@@ -49,7 +49,7 @@
     <Field name="specularPower" label="specularPower" type="float">
       10.000000
     </Field>
-    <Field name="specularColor" label="specularColor" type="color">
+    <Field name="specularColor" label="specularColor" type="color" length="4">
       255
       255
       255
@@ -64,15 +64,15 @@
     <Field name="doDepthCueing" label="Do Depth Cueing" type="bool">
       false
     </Field>
-    <Field name="startCuePoint" type="doubleArray" length="3">
-      -10.
-      0.
-      0.
+    <Field name="startCuePoint" label="startCuePoint" type="doubleArray" length="3">
+      -10.000000
+      0.000000
+      0.000000
     </Field>
-    <Field name="endCuePoint" type="doubleArray" length="3">
-      10.
-      0.
-      0.
+    <Field name="endCuePoint" label="endCuePoint" type="doubleArray" length="3">
+      10.000000
+      0.000000
+      0.000000
     </Field>
     <Field name="compressionActivationMode" label="compressionActivationMode" type="enum" subtype="TriStateMode">
       Never

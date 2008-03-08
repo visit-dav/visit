@@ -16,3 +16,21 @@ LabelAttributes::VarChangeRequiresReset()
     return true;
 }
 
+Target: xml2python
+Function: PyLabelAttributes_SetDefaults
+Declaration: PyLabelAttributes_SetDefaults
+Definition:
+// ****************************************************************************
+// Modifications:
+//   Brad Whitlock, Thu Aug 4 14:35:00 PST 2005
+//   Make defaultAtts point to the passed atts directly.
+//
+// ****************************************************************************
+
+void
+PyLabelAttributes_SetDefaults(const LabelAttributes *atts)
+{
+    defaultAtts = const_cast<LabelAttributes*>(atts);
+}
+
+

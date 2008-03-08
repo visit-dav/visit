@@ -71,3 +71,19 @@ BoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
     if (VersionLessThan(configVersion, "1.1.5"))
         searchNode->RemoveNode("wireframe");
 }
+
+Target: xml2python
+Function: PyBoundaryAttributes_SetDefaults
+Declaration: PyBoundaryAttributes_SetDefaults
+Definition:
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Mon Dec  2 18:06:04 PST 2002
+//    Make defaultAtts point to the passed atts directly.
+//
+// ****************************************************************************
+void
+PyBoundaryAttributes_SetDefaults(const BoundaryAttributes *atts)
+{
+    defaultAtts = const_cast<BoundaryAttributes*>(atts);
+}

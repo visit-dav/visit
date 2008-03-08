@@ -49,6 +49,8 @@
 
 using std::vector;
 
+#define GENERATOR_NAME "xml2java"
+
 // ****************************************************************************
 //  File:  GenerateAtts
 //
@@ -107,41 +109,20 @@ using std::vector;
 //    Brad Whitlock, Mon Feb 25 14:04:48 PST 2008
 //    Added methods to create toString methods in Java.
 //
+//    Brad Whitlock, Thu Feb 28 16:06:19 PST 2008
+//    Made use of base classes for easier maintenance.
+//
 // ****************************************************************************
 
-// ----------------------------------------------------------------------------
-//                             Utility Functions
-// ----------------------------------------------------------------------------
-
-QString
-CurrentTime()
+class JavaGeneratorField : public virtual Field
 {
-    char *tstr[] = {"PDT", "PST"};
-    char s1[10], s2[10], s3[10], tmpbuf[200];
-    time_t t;
-    char *c = NULL;
-    int h,m,s,y;
-    t = time(NULL);
-    c = asctime(localtime(&t));
-    // Read the hour.
-    sscanf(c, "%s %s %s %d:%d:%d %d", s1, s2, s3, &h, &m, &s, &y);
-    // Reformat the string a little.
-    sprintf(tmpbuf, "%s %s %s %02d:%02d:%02d %s %d",
-            s1, s2, s3, h, m, s, tstr[h > 12], y);
-
-    return QString(tmpbuf);
-}
-
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-
-class AttsGeneratorField : public virtual Field
-{
+  protected:
+    QString generatorName;
   public:
     bool generatePlugin;
 
-    AttsGeneratorField(const QString &t, const QString &n, const QString &l)
-        : Field(t,n,l)
+    JavaGeneratorField(const QString &t, const QString &n, const QString &l)
+        : Field(t,n,l), generatorName(GENERATOR_NAME)
     {
         generatePlugin = false;
     }
@@ -232,11 +213,29 @@ class AttsGeneratorField : public virtual Field
               << name << "[i] == obj." << name
               << "[i]);" << endl << endl;
         }
+        else if (isVector)
+        {
+            c << "        // Compare the elements in the " << name << " vector." << endl;
+            c << "        boolean " << name << "_equal = (obj." << name << ".size() == " << name << ".size());" << endl; 
+            c << "        for(i = 0; (i < " << name << ".size()) && "
+              << name << "_equal; ++i)" << endl;
+            c << "        {" << endl;
+            c << "            // Make references to " << GetVectorStorageName() << " from Object." << endl;
+            c << "            " << GetVectorStorageName() << " " << name << "1 = (" << GetVectorStorageName() << ")" << name << ".elementAt(i);" << endl;
+            c << "            " << GetVectorStorageName() << " " << name << "2 = (" << GetVectorStorageName() << ")obj." << name << ".elementAt(i);" << endl;
+            c << "            " << name << "_equal = " << name << "1.equals(" << name << "2);" << endl;
+            c << "        }" << endl;
+        }
+    }
+
+    virtual QString GetVectorStorageName() const
+    {
+        return "";
     }
 
     virtual void WriteSourceComparison(ostream &c)
     {
-        if (isArray)
+        if (isArray || isVector)
             c << name << "_equal";
         else
         {
@@ -252,11 +251,11 @@ class AttsGeneratorField : public virtual Field
 //
 // ------------------------------------ Int -----------------------------------
 //
-class AttsGeneratorInt : public virtual Int , public virtual AttsGeneratorField
+class JavaGeneratorInt : public virtual Int , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorInt(const QString &n, const QString &l)
-        : Int(n,l), AttsGeneratorField("int",n,l), Field("int",n,l) { }
+    JavaGeneratorInt(const QString &n, const QString &l)
+        : Int(n,l), JavaGeneratorField("int",n,l), Field("int",n,l) { }
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
@@ -286,11 +285,11 @@ class AttsGeneratorInt : public virtual Int , public virtual AttsGeneratorField
 //
 // -------------------------------- IntArray --------------------------------
 //
-class AttsGeneratorIntArray : public virtual IntArray , public virtual AttsGeneratorField
+class JavaGeneratorIntArray : public virtual IntArray , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorIntArray(const QString &s, const QString &n, const QString &l)
-        : IntArray(s,n,l), AttsGeneratorField("intArray",n,l), Field("intArray",n,l) { }
+    JavaGeneratorIntArray(const QString &s, const QString &n, const QString &l)
+        : IntArray(s,n,l), JavaGeneratorField("intArray",n,l), Field("intArray",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -373,11 +372,11 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual AttsGener
 //
 // -------------------------------- IntVector --------------------------------
 //
-class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGeneratorField
+class JavaGeneratorIntVector : public virtual IntVector , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorIntVector(const QString &n, const QString &l)
-        : IntVector(n,l), AttsGeneratorField("intVector",n,l), Field("intVector",n,l) { }
+    JavaGeneratorIntVector(const QString &n, const QString &l)
+        : IntVector(n,l), JavaGeneratorField("intVector",n,l), Field("intVector",n,l) { }
 
     virtual void AddImports(UniqueStringList &sl) 
     { 
@@ -429,17 +428,21 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGen
     {
         c << indent << "str = str + intVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
+    virtual QString GetVectorStorageName() const
+    {
+        return "Integer";
+    }
 };
 
 
 // 
 // ----------------------------------- Bool -----------------------------------
 //
-class AttsGeneratorBool : public virtual Bool , public virtual AttsGeneratorField
+class JavaGeneratorBool : public virtual Bool , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorBool(const QString &n, const QString &l)
-        : Bool(n,l), AttsGeneratorField("boolean",n,l), Field("boolean",n,l) { }
+    JavaGeneratorBool(const QString &n, const QString &l)
+        : Bool(n,l), JavaGeneratorField("boolean",n,l), Field("boolean",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -471,11 +474,11 @@ class AttsGeneratorBool : public virtual Bool , public virtual AttsGeneratorFiel
 //
 // ----------------------------------- Float ----------------------------------
 //
-class AttsGeneratorFloat : public virtual Float , public virtual AttsGeneratorField
+class JavaGeneratorFloat : public virtual Float , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorFloat(const QString &n, const QString &l)
-        : Float(n,l), AttsGeneratorField("float",n,l), Field("float",n,l) { }
+    JavaGeneratorFloat(const QString &n, const QString &l)
+        : Float(n,l), JavaGeneratorField("float",n,l), Field("float",n,l) { }
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
@@ -502,11 +505,11 @@ class AttsGeneratorFloat : public virtual Float , public virtual AttsGeneratorFi
 //
 // -------------------------------- FloatArray -------------------------------
 //
-class AttsGeneratorFloatArray : public virtual FloatArray , public virtual AttsGeneratorField
+class JavaGeneratorFloatArray : public virtual FloatArray , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorFloatArray(const QString &s, const QString &n, const QString &l)
-        : FloatArray(s,n,l), AttsGeneratorField("floatArray",n,l), Field("floatArray",n,l) { }
+    JavaGeneratorFloatArray(const QString &s, const QString &n, const QString &l)
+        : FloatArray(s,n,l), JavaGeneratorField("floatArray",n,l), Field("floatArray",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -589,11 +592,11 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual AttsG
 //
 // ---------------------------------- Double ----------------------------------
 //
-class AttsGeneratorDouble : public virtual Double , public virtual AttsGeneratorField
+class JavaGeneratorDouble : public virtual Double , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorDouble(const QString &n, const QString &l)
-        : Double(n,l), AttsGeneratorField("double",n,l), Field("double",n,l) { }
+    JavaGeneratorDouble(const QString &n, const QString &l)
+        : Double(n,l), JavaGeneratorField("double",n,l), Field("double",n,l) { }
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
@@ -620,11 +623,11 @@ class AttsGeneratorDouble : public virtual Double , public virtual AttsGenerator
 //
 // -------------------------------- DoubleArray -------------------------------
 //
-class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual AttsGeneratorField
+class JavaGeneratorDoubleArray : public virtual DoubleArray , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorDoubleArray(const QString &s, const QString &n, const QString &l)
-        : DoubleArray(s,n,l), AttsGeneratorField("doubleArray",n,l), Field("doubleArray",n,l) { }
+    JavaGeneratorDoubleArray(const QString &s, const QString &n, const QString &l)
+        : DoubleArray(s,n,l), JavaGeneratorField("doubleArray",n,l), Field("doubleArray",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -707,11 +710,11 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Att
 //
 // ------------------------------- DoubleVector -------------------------------
 //
-class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual AttsGeneratorField
+class JavaGeneratorDoubleVector : public virtual DoubleVector , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorDoubleVector(const QString &n, const QString &l)
-        : DoubleVector(n,l), AttsGeneratorField("doubleVector",n,l), Field("doubleVector",n,l) { }
+    JavaGeneratorDoubleVector(const QString &n, const QString &l)
+        : DoubleVector(n,l), JavaGeneratorField("doubleVector",n,l), Field("doubleVector",n,l) { }
 
     virtual void AddImports(UniqueStringList &sl) 
     { 
@@ -761,17 +764,21 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual A
     {
         c << indent << "str = str + doubleVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
+    virtual QString GetVectorStorageName() const
+    {
+        return "Double";
+    }
 };
 
 
 //
 // ----------------------------------- UChar ----------------------------------
 //
-class AttsGeneratorUChar : public virtual UChar , public virtual AttsGeneratorField
+class JavaGeneratorUChar : public virtual UChar , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorUChar(const QString &n, const QString &l)
-        : UChar(n,l), AttsGeneratorField("uchar",n,l), Field("uchar",n,l) { }
+    JavaGeneratorUChar(const QString &n, const QString &l)
+        : UChar(n,l), JavaGeneratorField("uchar",n,l), Field("uchar",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -803,11 +810,11 @@ class AttsGeneratorUChar : public virtual UChar , public virtual AttsGeneratorFi
 //
 // -------------------------------- UCharArray --------------------------------
 //
-class AttsGeneratorUCharArray : public virtual UCharArray , public virtual AttsGeneratorField
+class JavaGeneratorUCharArray : public virtual UCharArray , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorUCharArray(const QString &s, const QString &n, const QString &l)
-        : UCharArray(s,n,l), AttsGeneratorField("byte",n,l), Field("ucharArray",n,l) { }
+    JavaGeneratorUCharArray(const QString &s, const QString &n, const QString &l)
+        : UCharArray(s,n,l), JavaGeneratorField("byte",n,l), Field("ucharArray",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -820,7 +827,7 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual AttsG
         if(valueSet)
         {
             for (int i = 0; i < length; ++i)
-                c << "        " << name << "["<<i<<"] = " << int(val[i]) << ";" << endl;
+                c << "        " << name << "["<<i<<"] = (byte)" << int(val[i]) << ";" << endl;
         }
         else
         {
@@ -890,11 +897,11 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual AttsG
 //
 // ------------------------------- UCharVector -------------------------------
 //
-class AttsGeneratorUCharVector : public virtual UCharVector , public virtual AttsGeneratorField
+class JavaGeneratorUCharVector : public virtual UCharVector , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorUCharVector(const QString &n, const QString &l)
-        : UCharVector(n,l), AttsGeneratorField("ucharVector",n,l), Field("ucharVector",n,l) { }
+    JavaGeneratorUCharVector(const QString &n, const QString &l)
+        : UCharVector(n,l), JavaGeneratorField("ucharVector",n,l), Field("ucharVector",n,l) { }
 
     virtual void AddImports(UniqueStringList &sl) 
     { 
@@ -944,17 +951,21 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Att
     {
         c << indent << "str = str + ucharVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
+    virtual QString GetVectorStorageName() const
+    {
+        return "Byte";
+    }
 };
 
 
 //
 // ---------------------------------- String ----------------------------------
 //
-class AttsGeneratorString : public virtual String , public virtual AttsGeneratorField
+class JavaGeneratorString : public virtual String , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorString(const QString &n, const QString &l)
-        : String(n,l), AttsGeneratorField("string",n,l), Field("string",n,l) { }
+    JavaGeneratorString(const QString &n, const QString &l)
+        : String(n,l), JavaGeneratorField("string",n,l), Field("string",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -988,17 +999,21 @@ class AttsGeneratorString : public virtual String , public virtual AttsGenerator
     {
         c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
+    virtual void WriteSourceComparison(ostream &c)
+    {
+        c << "(" << name << ".equals(obj." << name << "))";
+    }
 };
 
 
 //
 // ------------------------------- StringVector -------------------------------
 //
-class AttsGeneratorStringVector : public virtual StringVector , public virtual AttsGeneratorField
+class JavaGeneratorStringVector : public virtual StringVector , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorStringVector(const QString &n, const QString &l)
-        : StringVector(n,l), AttsGeneratorField("stringVector",n,l), Field("stringVector",n,l) { }
+    JavaGeneratorStringVector(const QString &n, const QString &l)
+        : StringVector(n,l), JavaGeneratorField("stringVector",n,l), Field("stringVector",n,l) { }
 
     virtual void AddImports(UniqueStringList &sl) 
     { 
@@ -1044,17 +1059,21 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual A
     {
         c << indent << "str = str + stringVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
+    virtual QString GetVectorStorageName() const
+    {
+        return "String";
+    }
 };
 
 
 //
 // -------------------------------- ColorTable --------------------------------
 //
-class AttsGeneratorColorTable : public virtual ColorTable , public virtual AttsGeneratorField
+class JavaGeneratorColorTable : public virtual ColorTable , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorColorTable(const QString &n, const QString &l)
-        : ColorTable(n,l), AttsGeneratorField("colortable",n,l), Field("colortable",n,l) { }
+    JavaGeneratorColorTable(const QString &n, const QString &l)
+        : ColorTable(n,l), JavaGeneratorField("colortable",n,l), Field("colortable",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -1085,17 +1104,21 @@ class AttsGeneratorColorTable : public virtual ColorTable , public virtual AttsG
     {
         c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
+    virtual void WriteSourceComparison(ostream &c)
+    {
+        c << "(" << name << ".equals(obj." << name << "))";
+    }
 };
 
 
 //
 // ----------------------------------- Color ----------------------------------
 //
-class AttsGeneratorColor : public virtual Color , public virtual AttsGeneratorField
+class JavaGeneratorColor : public virtual Color , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorColor(const QString &n, const QString &l)
-        : Color(n,l), AttsGeneratorField("color",n,l), Field("color",n,l) { }
+    JavaGeneratorColor(const QString &n, const QString &l)
+        : Color(n,l), JavaGeneratorField("color",n,l), Field("color",n,l) { }
 
     virtual void AddImports(UniqueStringList &sl) 
     { 
@@ -1153,11 +1176,11 @@ class AttsGeneratorColor : public virtual Color , public virtual AttsGeneratorFi
 //
 // --------------------------------- LineStyle --------------------------------
 //
-class AttsGeneratorLineStyle : public virtual LineStyle , public virtual AttsGeneratorField
+class JavaGeneratorLineStyle : public virtual LineStyle , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorLineStyle(const QString &n, const QString &l)
-        : LineStyle(n,l), AttsGeneratorField("linestyle",n,l), Field("linestyle",n,l) { }
+    JavaGeneratorLineStyle(const QString &n, const QString &l)
+        : LineStyle(n,l), JavaGeneratorField("linestyle",n,l), Field("linestyle",n,l) { }
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
@@ -1184,11 +1207,11 @@ class AttsGeneratorLineStyle : public virtual LineStyle , public virtual AttsGen
 //
 // --------------------------------- LineWidth --------------------------------
 //
-class AttsGeneratorLineWidth : public virtual LineWidth , public virtual AttsGeneratorField
+class JavaGeneratorLineWidth : public virtual LineWidth , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorLineWidth(const QString &n, const QString &l)
-        : LineWidth(n,l), AttsGeneratorField("linewidth",n,l), Field("linewidth",n,l) { }
+    JavaGeneratorLineWidth(const QString &n, const QString &l)
+        : LineWidth(n,l), JavaGeneratorField("linewidth",n,l), Field("linewidth",n,l) { }
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
@@ -1215,11 +1238,11 @@ class AttsGeneratorLineWidth : public virtual LineWidth , public virtual AttsGen
 //
 // --------------------------------- Opacity ----------------------------------
 //
-class AttsGeneratorOpacity : public virtual Opacity , public virtual AttsGeneratorField
+class JavaGeneratorOpacity : public virtual Opacity , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorOpacity(const QString &n, const QString &l)
-        : Opacity(n,l), AttsGeneratorField("opacity",n,l), Field("opacity",n,l) { }
+    JavaGeneratorOpacity(const QString &n, const QString &l)
+        : Opacity(n,l), JavaGeneratorField("opacity",n,l), Field("opacity",n,l) { }
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
@@ -1246,12 +1269,12 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual AttsGenerat
 //
 // -------------------------------- VariableName --------------------------------
 //
-class AttsGeneratorVariableName : public virtual VariableName,
-    public virtual AttsGeneratorField
+class JavaGeneratorVariableName : public virtual VariableName,
+    public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorVariableName(const QString &n, const QString &l)
-        : VariableName(n,l), AttsGeneratorField("variablename",n,l),
+    JavaGeneratorVariableName(const QString &n, const QString &l)
+        : VariableName(n,l), JavaGeneratorField("variablename",n,l),
           Field("variablename",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
@@ -1286,17 +1309,21 @@ class AttsGeneratorVariableName : public virtual VariableName,
     {
         c << indent << "str = str + stringToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
     }
+    virtual void WriteSourceComparison(ostream &c)
+    {
+        c << "(" << name << ".equals(obj." << name << "))";
+    }
 };
 
 
 //
 // ------------------------------------ Att -----------------------------------
 //
-class AttsGeneratorAtt : public virtual Att , public virtual AttsGeneratorField
+class JavaGeneratorAtt : public virtual Att , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorAtt(const QString &t, const QString &n, const QString &l)
-        : Att(t,n,l), AttsGeneratorField("att",n,l), Field("att",n,l) { }
+    JavaGeneratorAtt(const QString &t, const QString &n, const QString &l)
+        : Att(t,n,l), JavaGeneratorField("att",n,l), Field("att",n,l) { }
 
     virtual void AddImports(UniqueStringList &sl) 
     { 
@@ -1332,17 +1359,21 @@ class AttsGeneratorAtt : public virtual Att , public virtual AttsGeneratorField
     {
         c << indent << "str = str + indent + \"" << name << " = {\\n\" + " << name << ".toString(indent + \"    \") + indent + \"}\\n\";" << endl;
     }
+    virtual void WriteSourceComparison(ostream &c)
+    {
+        c << "(" << name << ".equals(obj." << name << "))";
+    }
 };
 
 
 //
 // --------------------------------- AttVector --------------------------------
 //
-class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGeneratorField
+class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorAttVector(const QString &t, const QString &n, const QString &l)
-        : AttVector(t,n,l), AttsGeneratorField("attVector",n,l), Field("attVector",n,l) { }
+    JavaGeneratorAttVector(const QString &t, const QString &n, const QString &l)
+        : AttVector(t,n,l), JavaGeneratorField("attVector",n,l), Field("attVector",n,l) { }
 
     virtual void AddImports(UniqueStringList &sl) 
     { 
@@ -1430,29 +1461,6 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << "    }" << endl << endl;
     }
 
-    virtual void WriteSourceComparisonPrecalc(ostream &c)
-    {
-        QString s = attType;
-        c << "        boolean " << name << "_equal = (obj." << name 
-          << ".size() == " << name << ".size());" << endl;
-        c << "        for(i = 0; (i < " << name << ".size()) && " << name
-          << "_equal; ++i)" << endl;
-        c << "        {" << endl;
-        c << "            // Make references to " << s << " from Object." << endl;
-        c << "            " << s << " " << name << "1 = (" << s << ")"
-          << name << ".elementAt(i);" << endl;
-        c << "            " << s << " " << name << "2 = (" << s << ")obj."
-          << name << ".elementAt(i);" << endl;
-        c << "            " << name << "_equal = "
-          << name << "1.equals(" << name << "2);" << endl;
-        c << "        }" << endl << endl;
-    }
-
-    virtual void WriteSourceComparison(ostream &c)
-    {
-        c << name << "_equal";
-    }
-
     virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)
     {
         c << indent << "{" << endl;
@@ -1493,17 +1501,22 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << indent << "}" << endl;
         c << indent << "str = str + \"}\\n\";" << endl;
     }
+
+    virtual QString GetVectorStorageName() const
+    {
+        return attType;
+    }
 };
 
 
 //
 // ----------------------------------- Enum -----------------------------------
 //
-class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorField
+class JavaGeneratorEnum : public virtual Enum , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorEnum(const QString &t, const QString &n, const QString &l)
-        : Enum(t,n,l), AttsGeneratorField("enum",n,l), Field("enum",n,l) { }
+    JavaGeneratorEnum(const QString &t, const QString &n, const QString &l)
+        : Enum(t,n,l), JavaGeneratorField("enum",n,l), Field("enum",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -1546,11 +1559,11 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
 //
 // --------------------------------- ScaleMode --------------------------------
 //
-class AttsGeneratorScaleMode : public virtual ScaleMode , public virtual AttsGeneratorField
+class JavaGeneratorScaleMode : public virtual ScaleMode , public virtual JavaGeneratorField
 {
   public:
-    AttsGeneratorScaleMode(const QString &n, const QString &l)
-        : ScaleMode(n,l), AttsGeneratorField("scalemode",n,l), Field("scalemode",n,l) { }
+    JavaGeneratorScaleMode(const QString &n, const QString &l)
+        : ScaleMode(n,l), JavaGeneratorField("scalemode",n,l), Field("scalemode",n,l) { }
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
@@ -1584,112 +1597,87 @@ class AttsGeneratorScaleMode : public virtual ScaleMode , public virtual AttsGen
 //
 // ----------------------------------------------------------------------------
 
-class AttsFieldFactory
+class JavaFieldFactory
 {
   public:
-    static AttsGeneratorField *createField(const QString &name,
+    static JavaGeneratorField *createField(const QString &name,
                                            const QString &type,
                                            const QString &subtype,
                                            const QString &length,
                                            const QString &label)
     {
-        AttsGeneratorField *f = NULL;
+        JavaGeneratorField *f = NULL;
         if      (type.isNull())          throw QString().sprintf("Field %s was specified with no type.",name.latin1());
-        else if (type == "int")          f = new AttsGeneratorInt(name,label);
-        else if (type == "intArray")     f = new AttsGeneratorIntArray(length,name,label);
-        else if (type == "intVector")    f = new AttsGeneratorIntVector(name,label);
-        else if (type == "bool")         f = new AttsGeneratorBool(name,label);
-        else if (type == "float")        f = new AttsGeneratorFloat(name,label);
-        else if (type == "floatArray")   f = new AttsGeneratorFloatArray(length,name,label);
-        else if (type == "double")       f = new AttsGeneratorDouble(name,label);
-        else if (type == "doubleArray")  f = new AttsGeneratorDoubleArray(length,name,label);
-        else if (type == "doubleVector") f = new AttsGeneratorDoubleVector(name,label);
-        else if (type == "uchar")        f = new AttsGeneratorUChar(name,label);
-        else if (type == "ucharArray")   f = new AttsGeneratorUCharArray(length,name,label);
-        else if (type == "ucharVector")  f = new AttsGeneratorUCharVector(name,label);
-        else if (type == "string")       f = new AttsGeneratorString(name,label);
-        else if (type == "stringVector") f = new AttsGeneratorStringVector(name,label);
-        else if (type == "colortable")   f = new AttsGeneratorColorTable(name,label);
-        else if (type == "color")        f = new AttsGeneratorColor(name,label);
-        else if (type == "opacity")      f = new AttsGeneratorOpacity(name,label);
-        else if (type == "linestyle")    f = new AttsGeneratorLineStyle(name,label);
-        else if (type == "linewidth")    f = new AttsGeneratorLineWidth(name,label);
-        else if (type == "variablename") f = new AttsGeneratorVariableName(name,label);
-        else if (type == "att")          f = new AttsGeneratorAtt(subtype,name,label);
-        else if (type == "attVector")    f = new AttsGeneratorAttVector(subtype,name,label);
-        else if (type == "enum")         f = new AttsGeneratorEnum(subtype, name, label);
-        else if (type == "scalemode")    f = new AttsGeneratorScaleMode(name,label);
+        else if (type == "int")          f = new JavaGeneratorInt(name,label);
+        else if (type == "intArray")     f = new JavaGeneratorIntArray(length,name,label);
+        else if (type == "intVector")    f = new JavaGeneratorIntVector(name,label);
+        else if (type == "bool")         f = new JavaGeneratorBool(name,label);
+        else if (type == "float")        f = new JavaGeneratorFloat(name,label);
+        else if (type == "floatArray")   f = new JavaGeneratorFloatArray(length,name,label);
+        else if (type == "double")       f = new JavaGeneratorDouble(name,label);
+        else if (type == "doubleArray")  f = new JavaGeneratorDoubleArray(length,name,label);
+        else if (type == "doubleVector") f = new JavaGeneratorDoubleVector(name,label);
+        else if (type == "uchar")        f = new JavaGeneratorUChar(name,label);
+        else if (type == "ucharArray")   f = new JavaGeneratorUCharArray(length,name,label);
+        else if (type == "ucharVector")  f = new JavaGeneratorUCharVector(name,label);
+        else if (type == "string")       f = new JavaGeneratorString(name,label);
+        else if (type == "stringVector") f = new JavaGeneratorStringVector(name,label);
+        else if (type == "colortable")   f = new JavaGeneratorColorTable(name,label);
+        else if (type == "color")        f = new JavaGeneratorColor(name,label);
+        else if (type == "opacity")      f = new JavaGeneratorOpacity(name,label);
+        else if (type == "linestyle")    f = new JavaGeneratorLineStyle(name,label);
+        else if (type == "linewidth")    f = new JavaGeneratorLineWidth(name,label);
+        else if (type == "variablename") f = new JavaGeneratorVariableName(name,label);
+        else if (type == "att")          f = new JavaGeneratorAtt(subtype,name,label);
+        else if (type == "attVector")    f = new JavaGeneratorAttVector(subtype,name,label);
+        else if (type == "enum")         f = new JavaGeneratorEnum(subtype, name, label);
+        else if (type == "scalemode")    f = new JavaGeneratorScaleMode(name,label);
 
         // Special built-in AVT enums -- but they don't really need to be treated like enums for this program.
-        else if (type == "avtCentering")      f = new AttsGeneratorInt(name, label);
-        else if (type == "avtVarType")        f = new AttsGeneratorInt(name, label);
-        else if (type == "avtSubsetType")     f = new AttsGeneratorInt(name, label);
-        else if (type == "avtExtentType")     f = new AttsGeneratorInt(name, label);
-        else if (type == "avtMeshType")       f = new AttsGeneratorInt(name, label);
-        else if (type == "avtGhostType")      f = new AttsGeneratorInt(name, label);
-        else if (type == "avtMeshCoordType")  f = new AttsGeneratorInt(name, label);
-        else if (type == "LoadBalanceScheme") f = new AttsGeneratorInt(name, label);
+        else if (type == "avtCentering")      f = new JavaGeneratorInt(name, label);
+        else if (type == "avtVarType")        f = new JavaGeneratorInt(name, label);
+        else if (type == "avtSubsetType")     f = new JavaGeneratorInt(name, label);
+        else if (type == "avtExtentType")     f = new JavaGeneratorInt(name, label);
+        else if (type == "avtMeshType")       f = new JavaGeneratorInt(name, label);
+        else if (type == "avtGhostType")      f = new JavaGeneratorInt(name, label);
+        else if (type == "avtMeshCoordType")  f = new JavaGeneratorInt(name, label);
+        else if (type == "LoadBalanceScheme") f = new JavaGeneratorInt(name, label);
 
         if (!f)
-            throw QString().sprintf("AttsFieldFactory: unknown type for field %s: %s",name.latin1(),type.latin1());
+            throw QString().sprintf("JavaFieldFactory: unknown type for field %s: %s",name.latin1(),type.latin1());
 
         return f;
     }
 };
 
 // ----------------------------------------------------------------------------
+//  Modifications:
+//    Brad Whitlock, Thu Feb 28 16:29:20 PST 2008
+//    Made it use a base class.
+//
 // ----------------------------------------------------------------------------
+#include <GeneratorBase.h>
 
-class AttsGeneratorAttribute
+class JavaGeneratorAttribute : public GeneratorBase
 {
   public:
-    QString name;
-    QString purpose;
-    bool    persistent, keyframe;
-    QString exportAPI;
-    QString exportInclude;
-    QString pluginType;
-    QString pluginName;
+    vector<JavaGeneratorField*> fields;
     QString pluginVersion;
-
-    vector<AttsGeneratorField*> fields;
-    vector<Function*> functions;
-    vector<Constant*> constants;
-    vector<Include*>  includes;
-    vector<Code*>     codes;
-    CodeFile *codeFile;
+    QString pluginName;
+    QString pluginType;
   public:
-    AttsGeneratorAttribute(const QString &n, const QString &p, const QString &f,
+    JavaGeneratorAttribute(const QString &n, const QString &p, const QString &f,
                            const QString &e, const QString &ei)
-        : name(n), purpose(p), exportAPI(e), exportInclude(ei), pluginType(""),
-          pluginName(""), pluginVersion("1.0")
+        : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME), fields(), pluginVersion("1.0"),
+          pluginName(), pluginType()
     {
-        if (f.isNull())
-            codeFile = NULL;
-        else
-            codeFile = new CodeFile(f);
-        if (codeFile)
-            codeFile->Parse();
-        persistent = false;
     }
 
-    virtual ~AttsGeneratorAttribute()
+    virtual ~JavaGeneratorAttribute()
     {
-        int i;
-        for (i = 0; i < fields.size(); ++i)
+        for (int i = 0; i < fields.size(); ++i)
             delete fields[i];
         fields.clear();
-        for (i = 0; i < functions.size(); ++i)
-            delete functions[i];
-        functions.clear();
-        for (i = 0; i < constants.size(); ++i)
-            delete constants[i];
-        constants.clear();
-        for (i = 0; i < includes.size(); ++i)
-            delete includes[i];
-        includes.clear();
-
-        delete codeFile;
     }
 
     void Print(ostream &out)
@@ -1700,325 +1688,12 @@ class AttsGeneratorAttribute
         int i;
         for (i = 0; i < fields.size(); ++i)
             fields[i]->Print(out);
-        for (i = 0; i<includes.size(); ++i)
-            includes[i]->Print(out);
-        for (i = 0; i<functions.size(); ++i)
-            functions[i]->Print(out);
-        for (i = 0; i<constants.size(); ++i)
-            constants[i]->Print(out);
-    }
-
-    void WriteSourceClassComment(ostream &h)
-    {
-        h << "// ****************************************************************************" << endl;
-        h << "// Class: " << name << endl;
-        h << "//" << endl;
-        h << "// Purpose:" << endl;
-        h << "//    " << purpose << endl;
-        h << "//" << endl;
-        h << "// Notes:      Autogenerated by xml2java." << endl;
-        h << "//" << endl;
-        h << "// Programmer: xml2java" << endl;
-        h << "// Creation:   " << CurrentTime() << endl;
-        h << "//" << endl; 
-        h << "// Modifications:" << endl;
-        h << "//   " << endl;
-        h << "// ****************************************************************************" << endl;
-        h << endl;
-    }
-
-    void WriteSourceImports(ostream &h)
-    {
-        UniqueStringList sysincludes;
-
-        if(pluginType == "plot" || pluginType == "operator")
-        {
-            sysincludes.AddString("import llnl.visit.AttributeSubject;\n");
-            sysincludes.AddString("import llnl.visit.CommunicationBuffer;\n");
-            sysincludes.AddString("import llnl.visit.Plugin;\n");
-        }
-
-        for (int i = 0; i < fields.size(); ++i)
-            fields[i]->AddImports(sysincludes);
-        sysincludes.Write(h);
-        h << endl;
-    }
-
-    int CalculateTotalWidth()
-    {
-        int retval = 0;
-
-        // Iterate through the list of attibutes and find the one with
-        // the longest name.
-        for (int i = 0; i < fields.size(); ++i)
-        {
-            int len = fields[i]->GetCPPName().length();
-
-            if (len > retval)
-                retval = len;
-        }
- 
-        return retval;
-    }
-
-    bool HaveAGVectors()
-    {
-        for (int i = 0; i < fields.size(); ++i)
-            if (fields[i]->type=="attVector")
-                return true;
-        return false;
-    }
-
-    bool HaveArrays()
-    {
-        for (int i = 0; i < fields.size(); ++i)
-            if (fields[i]->isArray)
-                return true;
-        return false;
-    }
-
-    bool HaveVectors()
-    {
-        for (int i = 0; i < fields.size(); ++i)
-            if (fields[i]->isVector)
-                return true;
-        return false;
-    }
-
-    // ------------------------------------------------------------------------
-    // ------------------------------------------------------------------------
-
-    void WriteSourceConstructor(ostream &c)
-    {
-        c << "    public " << name << "()" << endl;
-        c << "    {" << endl;
-        c << "        super(" << fields.size() << ");" << endl;
-        c << endl;
-
-        for (int i = 0; i < fields.size(); ++i)
-        {
-            c << "    ";
-            fields[i]->WriteSourceSetDefault(c);
-        }
-        c << "    }" << endl << endl;
-    }
-
-    void WriteSourceCopyConstructor(ostream &c)
-    {
-        c << "    public " << name << "(" << name << " obj)" << endl;
-        c << "    {" << endl;
-        c << "        super(" << fields.size() << ");" << endl;
-        c << endl;
-
-        bool skipLine = false;
-        if (HaveArrays() || HaveVectors())
-        {
-            c << "        int i;" << endl;
-            skipLine = true;
-        }
-        if(skipLine)
-            c << endl;
-        for (int i = 0; i < fields.size(); ++i)
-        {
-            fields[i]->WriteSourceCopyCode(c);
-        }
-        c << endl << "        SelectAll();" << endl;
-        c << "    }" << endl << endl;
-    }
-
-    void WriteSourceComparison(ostream &c)
-    {
-        c << "    public boolean equals(" << name << " obj)" << endl;
-        c << "    {" << endl;
-
-        if(HaveArrays() || HaveVectors())
-        {
-            c << "        int i;" << endl << endl;
-        }
-
-        // Create bool values to evaluate the arrays.
-        QString prevValue("true");
-        for (int i = 0; i < fields.size(); ++i)
-        {
-            if (!fields[i]->ignoreEquality)
-                fields[i]->WriteSourceComparisonPrecalc(c);
-        }
-
-        c << "        // Create the return value" << endl;
-        c << "        return (";
-
-        // Create a big boolean return statement.
-        if (fields.size() == 0)
-        {
-            c << "true";
-        }
-        else
-        {
-            for (int i = 0; i < fields.size(); ++i)
-            {
-                if (i > 0)
-                    c << "                ";
-
-                if (!fields[i]->ignoreEquality)
-                    fields[i]->WriteSourceComparison(c);
-                else
-                    c << "true /* can ignore " << fields[i]->name << " */";
-
-                if (i < fields.size() - 1)
-                    c << " &&" << endl;
-            }
-        }
-        c << ");" << endl;
-        c << "    }" << endl << endl;
-    }
-
-    void WriteSourceEnumsAndConstants(ostream &h)
-    {
-        // Write the enums out as groups of static int constants.
-        if(EnumType::enums.size() > 0)
-            h << "    // Enum values" << endl;
-        int i;
-        for (i = 0; i < EnumType::enums.size(); ++i)
-        {
-            for (int j = 0; j < EnumType::enums[i]->values.size(); ++j)
-            {
-                QString constName(EnumType::enums[i]->type + QString("_") + EnumType::enums[i]->values[j]);
-                h << "    public final static int " << constName.upper() << " = " << j << ";" << endl;
-            }
-            h << endl;
-        }
-
-        //
-        // Write any constants that have been specified.
-        //
-        if(constants.size() > 0)
-            h << "    // Constants" << endl;
-        for (i = 0; i < constants.size(); ++i)
-        {
-            QString def(constants[i]->def);
-            if (def.simplifyWhiteSpace().isEmpty())
-                continue;
-
-            // Remove const
-            int index = def.find("const");
-            if(index >= 0)
-            {
-                def.remove(index, 6);
-            }
-
-            // Remove the class name
-            index = def.find("::");
-            if(index >= 0)
-            {
-                int index2 = def.findRev(" ", index);
-                if(index2 >= 0)
-                    def.remove(index2+1, index-index2+1);
-            }
-
-            // Find an equals sign and then look to see if the constant
-            // value matches any of the enums' values. If so, alter the
-            // constant definition so it prints the right enum value.
-            bool noEnumMatches = true;
-            index = def.find("=");
-            if(index >= 0)
-            {
-                QString value(def.mid(index + 2, def.length() - index - 4));
-                for (int j = 0; j < EnumType::enums.size() && noEnumMatches; ++j)
-                {
-                    for (int k = 0; k < EnumType::enums[j]->values.size() && noEnumMatches; ++k)
-                    {
-                        if(EnumType::enums[j]->values[k] == value)
-                        {
-                            noEnumMatches = false;
-                            QString constName(EnumType::enums[j]->type + QString("_") + EnumType::enums[j]->values[k]);
-                            h << "    public final static " << def.left(index + 2)
-                              << constName.upper() << ";\n" << endl;
-                        }
-                    }
-                }
-            }
-
-            if(noEnumMatches)
-                h << "    public final static " << def << endl;
-        }
-
-        if (EnumType::enums.size() || constants.size())
-            h << endl;
-    }
-
-    void WriteSourceWriteAtts(ostream &h)
-    {
-        h << "    // Write and read methods." << endl;
-        h << "    public void WriteAtts(CommunicationBuffer buf)" << endl;
-        h << "    {" << endl;
-        for (int i = 0; i < fields.size(); ++i)
-        {
-            h << "        if(WriteSelect(" << i << ", buf))" << endl;
-            fields[i]->WriteSourceWriteAtts(h, "        ");
-        }
-        h << "    }" << endl;
-        h << endl;
-    }
-
-    void WriteSourceReadAtts(ostream &h)
-    {
-        h << "    public void ReadAtts(int n, CommunicationBuffer buf)" << endl;
-        h << "    {" << endl;
-        if(fields.size() > 1)
-        {
-            h << "        for(int i = 0; i < n; ++i)" << endl;
-            h << "        {" << endl;
-            h << "            int index = (int)buf.ReadByte();" << endl;
-            h << "            switch(index)" << endl;
-            h << "            {" << endl;
-            for (int i = 0; i < fields.size(); ++i)
-            {
-                h << "            case " << i << ":" << endl;
-                if(!fields[i]->WriteSourceReadAtts(h, "                "))
-                    h << "                Select(" << i << ");" << endl;
-                h << "                break;" << endl;
-            }
-            h << "            }" << endl;
-            h << "        }" << endl;
-        }
-        else if(fields.size() == 1)
-        {
-            h << "        buf.ReadByte();" << endl;
-            if(!fields[0]->WriteSourceReadAtts(h, "        "))
-                 h << "        Select(0);" << endl;
-        }
-        h << "    }" << endl;
-        h << endl;
-    }
-
-    void WriteSourceAGVectorFunctions(ostream &h)
-    {
-        if (HaveAGVectors())
-        {
-            h << "    // Attributegroup convenience methods" << endl;
-            for (int i = 0; i < fields.size(); ++i)
-                fields[i]->WriteSourceAGVectorFunctions(h);
-        }
-        h << endl;
-    }
-
-    void WriteToString(ostream &h)
-    {
-        h << "    public String toString(String indent)" << endl;
-        h << "    {" << endl;
-        h << "        String str = new String();" << endl;
-        for (int i = 0; i < fields.size(); ++i)
-        {
-            fields[i]->WriteToString(h, "        ");
-        }
-        h << "        return str;" << endl;
-        h << "    }" << endl;
-        h << endl;
-//        h << "    public String toString()" << endl;
-//        h << "    {" << endl;
-//        h << "        return toString(new String());" << endl;
-//        h << "    }" << endl;
-//        h << endl;
+        for (i=0; i<includes.size(); i++)
+            includes[i]->Print(out, generatorName);
+        for (i=0; i<functions.size(); i++)
+            functions[i]->Print(out, generatorName);
+        for (i=0; i<constants.size(); i++)
+            constants[i]->Print(out, generatorName);
     }
 
     // ------------------------------------------------------------------------
@@ -2049,7 +1724,7 @@ class AttsGeneratorAttribute
         //
         // Write the class header comment
         //
-        WriteSourceClassComment(h);
+        WriteClassComment(h, purpose);
 
         if(generatePlugin)
             h << "public class " << name << " extends AttributeSubject implements Plugin" << endl;
@@ -2126,6 +1801,11 @@ class AttsGeneratorAttribute
         WriteSourceAGVectorFunctions(h);
 
         //
+        // Write user-defined functions 
+        //
+        WriteUserDefinedFunctions(h);
+
+        //
         // Write out all the private attributes
         //
         h << "    // Attributes" << endl;
@@ -2137,6 +1817,322 @@ class AttsGeneratorAttribute
         h << "}" << endl;
         h << endl;
     }
+
+private:
+    void WriteSourceImports(ostream &h)
+    {
+        UniqueStringList sysincludes;
+
+        if(pluginType == "plot" || pluginType == "operator")
+        {
+            sysincludes.AddString("import llnl.visit.AttributeSubject;\n");
+            sysincludes.AddString("import llnl.visit.CommunicationBuffer;\n");
+            sysincludes.AddString("import llnl.visit.Plugin;\n");
+        }
+
+        for (int i = 0; i < fields.size(); ++i)
+            fields[i]->AddImports(sysincludes);
+
+        // Add some includes based on the includes from the XML file
+        for(int i = 0; i < includes.size(); ++i)
+        {
+            if(includes[i]->target == generatorName)
+            {
+                QString importLine;
+                importLine.sprintf("import %s;\n", includes[i]->include.latin1());
+                sysincludes.AddString(importLine);
+            }
+        }
+
+        sysincludes.Write(h);
+        h << endl;
+    }
+
+    int CalculateTotalWidth()
+    {
+        int retval = 0;
+
+        // Iterate through the list of attibutes and find the one with
+        // the longest name.
+        for (int i = 0; i < fields.size(); ++i)
+        {
+            int len = fields[i]->GetCPPName().length();
+
+            if (len > retval)
+                retval = len;
+        }
+ 
+        return retval;
+    }
+
+    bool HaveAGVectors()
+    {
+        for (int i = 0; i < fields.size(); ++i)
+            if (fields[i]->type=="attVector")
+                return true;
+        return false;
+    }
+
+    bool HaveArrays()
+    {
+        for (int i = 0; i < fields.size(); ++i)
+            if (fields[i]->isArray)
+                return true;
+        return false;
+    }
+
+    bool HaveVectors()
+    {
+        for (int i = 0; i < fields.size(); ++i)
+            if (fields[i]->isVector)
+                return true;
+        return false;
+    }
+
+    // ------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+
+    void WriteSourceConstructor(ostream &c)
+    {
+        c << "    public " << name << "()" << endl;
+        c << "    {" << endl;
+        c << "        super(" << fields.size() << ");" << endl;
+        c << endl;
+
+        if(HasCode(name, 0))
+            PrintCode(c, name, 0);
+
+        int i;
+        for (i = 0; i < fields.size(); ++i)
+        {
+            c << "    ";
+            if(!fields[i]->PrintInit(c, generatorName))
+                fields[i]->WriteSourceSetDefault(c);
+        }
+
+        if(HasCode(name, 1))
+            PrintCode(c, name, 1);
+
+        c << "    }" << endl << endl;
+    }
+
+    void WriteSourceCopyConstructor(ostream &c)
+    {
+        c << "    public " << name << "(" << name << " obj)" << endl;
+        c << "    {" << endl;
+        c << "        super(" << fields.size() << ");" << endl;
+        c << endl;
+
+        bool skipLine = false;
+        if (HaveArrays() || HaveVectors())
+        {
+            c << "        int i;" << endl;
+            skipLine = true;
+        }
+        if(skipLine)
+            c << endl;
+        for (int i = 0; i < fields.size(); ++i)
+        {
+            fields[i]->WriteSourceCopyCode(c);
+        }
+        c << endl << "        SelectAll();" << endl;
+        c << "    }" << endl << endl;
+    }
+
+    void WriteSourceComparison(ostream &c)
+    {
+        if(HasFunction("equals"))
+        {
+            PrintFunction(c, "equals");
+            c << endl;
+            return;
+        }
+        c << "    public boolean equals(" << name << " obj)" << endl;
+        c << "    {" << endl;
+
+        if(HaveArrays() || HaveVectors())
+        {
+            c << "        int i;" << endl << endl;
+        }
+
+        // Create bool values to evaluate the arrays.
+        QString prevValue("true");
+        for (int i = 0; i < fields.size(); ++i)
+        {
+            if (!fields[i]->ignoreEquality)
+                fields[i]->WriteSourceComparisonPrecalc(c);
+        }
+
+        c << "        // Create the return value" << endl;
+        c << "        return (";
+
+        // Create a big boolean return statement.
+        if (fields.size() == 0)
+        {
+            c << "true";
+        }
+        else
+        {
+            for (int i = 0; i < fields.size(); ++i)
+            {
+                if (i > 0)
+                    c << "                ";
+
+                if (!fields[i]->ignoreEquality)
+                    fields[i]->WriteSourceComparison(c);
+                else
+                    c << "true /* can ignore " << fields[i]->name << " */";
+
+                if (i < fields.size() - 1)
+                    c << " &&" << endl;
+            }
+        }
+        c << ");" << endl;
+        c << "    }" << endl << endl;
+    }
+
+    void WriteSourceEnumsAndConstants(ostream &h)
+    {
+        // Write the enums out as groups of static int constants.
+        if(EnumType::enums.size() > 0)
+            h << "    // Enum values" << endl;
+        int i;
+        for (i = 0; i < EnumType::enums.size(); ++i)
+        {
+            for (int j = 0; j < EnumType::enums[i]->values.size(); ++j)
+            {
+                QString constName(EnumType::enums[i]->type + QString("_") + EnumType::enums[i]->values[j]);
+                h << "    public final static int " << constName.upper() << " = " << j << ";" << endl;
+            }
+            h << endl;
+        }
+
+        //
+        // Write any constants that have been specified.
+        //
+        bool haveConstants = false;
+        for (i = 0; i < constants.size(); ++i)
+        {
+            if(constants[i]->target == generatorName)
+                haveConstants = true;
+        }
+        if(haveConstants)
+            h << "    // Constants" << endl;
+        for (i = 0; i < constants.size(); ++i)
+        {
+            if(constants[i]->target != generatorName)
+                continue;
+
+            QString def(constants[i]->def);
+            if (def.simplifyWhiteSpace().isEmpty())
+                continue;
+
+            h << def << endl;
+        }
+
+        if (EnumType::enums.size() || constants.size())
+            h << endl;
+    }
+
+    void WriteSourceWriteAtts(ostream &h)
+    {
+        h << "    // Write and read methods." << endl;
+        if(HasFunction("WriteAtts"))
+        {
+            PrintFunction(h, "WriteAtts");
+            h << endl;
+            return;
+        }
+        h << "    public void WriteAtts(CommunicationBuffer buf)" << endl;
+        h << "    {" << endl;
+        for (int i = 0; i < fields.size(); ++i)
+        {
+            h << "        if(WriteSelect(" << i << ", buf))" << endl;
+            fields[i]->WriteSourceWriteAtts(h, "        ");
+        }
+        h << "    }" << endl;
+        h << endl;
+    }
+
+    void WriteSourceReadAtts(ostream &h)
+    {
+        if(HasFunction("ReadAtts"))
+        {
+            PrintFunction(h, "ReadAtts");
+            h << endl;
+            return;
+        }
+        h << "    public void ReadAtts(int n, CommunicationBuffer buf)" << endl;
+        h << "    {" << endl;
+        if(fields.size() > 1)
+        {
+            h << "        for(int i = 0; i < n; ++i)" << endl;
+            h << "        {" << endl;
+            h << "            int index = (int)buf.ReadByte();" << endl;
+            h << "            switch(index)" << endl;
+            h << "            {" << endl;
+            for (int i = 0; i < fields.size(); ++i)
+            {
+                h << "            case " << i << ":" << endl;
+                if(!fields[i]->WriteSourceReadAtts(h, "                "))
+                    h << "                Select(" << i << ");" << endl;
+                h << "                break;" << endl;
+            }
+            h << "            }" << endl;
+            h << "        }" << endl;
+        }
+        else if(fields.size() == 1)
+        {
+            h << "        buf.ReadByte();" << endl;
+            if(!fields[0]->WriteSourceReadAtts(h, "        "))
+                 h << "        Select(0);" << endl;
+        }
+        h << "    }" << endl;
+        h << endl;
+    }
+
+    void WriteSourceAGVectorFunctions(ostream &h)
+    {
+        if (HaveAGVectors())
+        {
+            h << "    // Attributegroup convenience methods" << endl;
+            for (int i = 0; i < fields.size(); ++i)
+                fields[i]->WriteSourceAGVectorFunctions(h);
+        }
+        h << endl;
+    }
+
+    void WriteToString(ostream &h)
+    {
+        h << "    public String toString(String indent)" << endl;
+        h << "    {" << endl;
+        if(HasCode("toString", 0))
+            PrintCode(h, "toString", 0);
+        h << "        String str = new String();" << endl;
+        for (int i = 0; i < fields.size(); ++i)
+        {
+            fields[i]->WriteToString(h, "        ");
+        }
+        if(HasCode("toString", 1))
+            PrintCode(h, "toString", 1);
+        h << "        return str;" << endl;
+        h << "    }" << endl;
+        h << endl;
+//        h << "    public String toString()" << endl;
+//        h << "    {" << endl;
+//        h << "        return toString(new String());" << endl;
+//        h << "    }" << endl;
+//        h << endl;
+    }
+
+    void WriteUserDefinedFunctions(ostream &h)
+    {
+        for (int i=0; i<functions.size(); i++)
+            if (functions[i]->target == generatorName)
+            {
+                h << functions[i]->def << endl;
+            }
+    }
 };
 
 // ----------------------------------------------------------------------------
@@ -2145,58 +2141,29 @@ class AttsGeneratorAttribute
 //   Hank Childs, Thu Jan 10 14:33:30 PST 2008
 //   Added filenames, specifiedFilenames.
 //
+//   Brad Whitlock, Thu Feb 28 16:26:46 PST 2008
+//   Made it use a base class.
+//
 // ----------------------------------------------------------------------------
-class AttsGeneratorPlugin
+#include <PluginBase.h>
+
+class JavaGeneratorPlugin : public PluginBase
 {
   public:
-    QString name;
-    QString type;
-    QString label;
-    QString version;
-    QString vartype;
-    QString dbtype;
-    bool    enabledByDefault;
-    bool    has_MDS_specific_code;
-    bool    hasEngineSpecificCode;
-    bool    specifiedFilenames;  // for DB plugins
-
-    vector<QString> cxxflags;
-    vector<QString> ldflags;
-    vector<QString> libs;
-    vector<QString> extensions; // for DB plugins
-    vector<QString> filenames;  // for DB plugins
-    bool customgfiles;
-    vector<QString> gfiles;     // gui
-    bool customsfiles;
-    vector<QString> sfiles;     // scripting
-    bool customvfiles;
-    vector<QString> vfiles;     // viewer
-    bool custommfiles;
-    vector<QString> mfiles;     // mdserver
-    bool customefiles;
-    vector<QString> efiles;     // engine
-    bool customwfiles;
-    vector<QString> wfiles;     // widgets
-    bool customvwfiles;
-    vector<QString> vwfiles;    // viewer widgets
-
-    AttsGeneratorAttribute *atts;
+    JavaGeneratorAttribute *atts;
   public:
-    AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,
-                        const QString &vt,const QString &dt,const QString &v,
-                        const QString &, bool,bool,bool,bool)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), 
-          atts(NULL)
+    JavaGeneratorPlugin(const QString &n,const QString &l,const QString &t,
+        const QString &vt,const QString &dt, const QString &v, const QString &ifile,
+        bool hw, bool ho, bool onlyengine, bool noengine) : 
+        PluginBase(n,l,t,vt,dt,v,ifile,hw,ho,onlyengine,noengine), atts(NULL)
     {
-        enabledByDefault = true;
-        has_MDS_specific_code = false;
-        hasEngineSpecificCode = false;
     }
+
     void Print(ostream &out)
     {
         out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< endl;
         if (atts)
-            atts->Print(cout);
+            atts->Print(out);
     }
 };
 
@@ -2204,10 +2171,10 @@ class AttsGeneratorPlugin
 // ----------------------------------------------------------------------------
 //                           Override default types
 // ----------------------------------------------------------------------------
-#define FieldFactory AttsFieldFactory
-#define Field        AttsGeneratorField
-#define Attribute    AttsGeneratorAttribute
-#define Enum         AttsGeneratorEnum
-#define Plugin       AttsGeneratorPlugin
+#define FieldFactory JavaFieldFactory
+#define Field        JavaGeneratorField
+#define Attribute    JavaGeneratorAttribute
+#define Enum         JavaGeneratorEnum
+#define Plugin       JavaGeneratorPlugin
 
 #endif

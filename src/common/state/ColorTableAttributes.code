@@ -477,3 +477,120 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("activeColorTable")) != 0)
         SetActiveContinuous(node->AsString());
 }
+
+Target: xml2java
+Function: GetColorTableIndex
+Declaration: GetColorTableIndex
+Definition:
+    public int GetColorTableIndex(String name)
+    {
+        int retval = -1;
+        for(int i = 0; i < names.size(); ++i)
+        {
+            String n = (String)names.elementAt(i);
+            if(n.equals(name))
+            {
+                retval = i;
+                break;
+            }
+        }
+
+        return retval;
+    }
+
+Function: GetColorControlPoints1
+Declaration: GetColorControlPoints1
+Definition:
+    public ColorControlPointList GetColorControlPoints(int index)
+    {
+        if(index >= 0 && index < colorTables.size())
+            return (ColorControlPointList)colorTables.elementAt(index);
+        else
+            return null;
+    }
+
+Function: GetColorControlPoints2
+Declaration: GetColorControlPoints2
+Definition:
+    public ColorControlPointList GetColorControlPoints(String name)
+    {
+        int index = GetColorTableIndex(name);
+        if(index >= 0 && index < colorTables.size())
+            return (ColorControlPointList)colorTables.elementAt(index);
+        else
+            return null;
+    }
+
+Function: GetActiveColorControlPoints
+Declaration: GetActiveColorControlPoints
+Definition:
+    public ColorControlPointList GetActiveColorControlPoints()
+    {
+        int index = GetColorTableIndex(activeContinuous);
+        if(index >= 0 && index < colorTables.size())
+            return (ColorControlPointList)colorTables.elementAt(index);
+        else
+            return null;
+    }
+
+Function: AddColorTable
+Declaration: AddColorTable
+Definition:
+    public void AddColorTable(String name, ColorControlPointList cpts)
+    {
+        names.addElement(new String(name));
+        Select(0);
+        AddColorTables(cpts);
+    }
+
+Function: RemoveColorTable1
+Declaration: RemoveColorTable1
+Definition:
+    public void RemoveColorTable(String name)
+    {
+        int index = GetColorTableIndex(name);
+        RemoveColorTable(index);
+    }
+
+Function: RemoveColorTable2
+Declaration: RemoveColorTable2
+Definition:
+    public void RemoveColorTable(int index)
+    {
+        if(index >= 0 && index < names.size())
+        {
+            String nameAt = (String)names.elementAt(index);
+            boolean isActiveContinuous = nameAt.equals(activeContinuous);
+            boolean isActiveDiscrete = nameAt.equals(activeDiscrete);
+
+            // Remove the name from the vector.
+            names.remove(index);
+            Select(0);
+
+            // Remove the color table from the vector.
+            RemoveColorTables(index);
+
+            // If it is the active color table that was removed, reset the
+            // active color table to the first element.
+            if(isActiveContinuous)
+            {
+                if(names.size() > 0)
+                {
+                    nameAt = (String)names.elementAt(0);
+                    SetActiveContinuous(nameAt);
+                }
+                else
+                    SetActiveContinuous("");
+            }
+            if(isActiveDiscrete)
+            {
+                if(names.size() > 0)
+                {
+                    nameAt = (String)names.elementAt(0);
+                    SetActiveDiscrete(nameAt);
+                }
+                else
+                    SetActiveDiscrete("");
+            }
+        }
+    }

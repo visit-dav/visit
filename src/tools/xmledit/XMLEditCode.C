@@ -56,6 +56,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modificiations:
+//    Brad Whitlock, Thu Mar 6 16:00:56 PST 2008
+//    Added support for target.
+//
 // ****************************************************************************
 XMLEditCode::XMLEditCode(QWidget *p, const QString &n)
     : QFrame(p, n)
@@ -78,6 +82,11 @@ XMLEditCode::XMLEditCode(QWidget *p, const QString &n)
     QGridLayout *topLayout = new QGridLayout(hLayout, 6,2, 5);
     int row = 0;
 
+    topLayout->addWidget(new QLabel("Target", this), row, 0);
+    target = new QLineEdit(this);
+    topLayout->addWidget(target, row, 1);
+    row++;
+
     topLayout->addWidget(new QLabel("Name", this), row, 0);
     name = new QLineEdit(this);
     topLayout->addWidget(name, row, 1);
@@ -90,6 +99,7 @@ XMLEditCode::XMLEditCode(QWidget *p, const QString &n)
 
     prefix = new QMultiLineEdit(this);
     prefix->setFont(monospaced);
+    prefix->setWordWrap(QTextEdit::NoWrap);
     topLayout->addMultiCellWidget(prefix, row,row, 0,1);
     row++;
 
@@ -98,6 +108,7 @@ XMLEditCode::XMLEditCode(QWidget *p, const QString &n)
 
     postfix = new QMultiLineEdit(this);
     postfix->setFont(monospaced);
+    postfix->setWordWrap(QTextEdit::NoWrap);
     topLayout->addMultiCellWidget(postfix, row,row, 0,1);
     row++;
 
@@ -106,6 +117,8 @@ XMLEditCode::XMLEditCode(QWidget *p, const QString &n)
 
     connect(codelist, SIGNAL(selectionChanged()),
             this, SLOT(UpdateWindowSingleItem()));
+    connect(target, SIGNAL(textChanged(const QString&)),
+            this, SLOT(targetTextChanged(const QString&)));
     connect(name, SIGNAL(textChanged(const QString&)),
             this, SLOT(nameTextChanged(const QString&)));
     connect(prefix, SIGNAL(textChanged()),
@@ -119,6 +132,36 @@ XMLEditCode::XMLEditCode(QWidget *p, const QString &n)
 }
 
 // ****************************************************************************
+// Method: XMLEditCode::CountCodes
+//
+// Purpose: 
+//   Return the number of codes having a given name.
+//
+// Arguments:
+//  name : The name of the code that we're interested in.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 6 15:53:04 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+XMLEditCode::CountCodes(const QString &name) const
+{
+    Attribute *a = xmldoc->attribute;
+    int codeCount = 0;
+    for (int j=0; j<a->codes.size(); j++)
+        codeCount += (name == a->codes[j]->name) ? 1 : 0;
+    return codeCount;
+}
+
+// ****************************************************************************
 //  Method:  XMLEditCode::UpdateWindowContents
 //
 //  Purpose:
@@ -126,6 +169,10 @@ XMLEditCode::XMLEditCode(QWidget *p, const QString &n)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
+//
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:01:50 PST 2008
+//    Added target.
 //
 // ****************************************************************************
 void
@@ -137,7 +184,14 @@ XMLEditCode::UpdateWindowContents()
     codelist->clear();
     for (int i=0; i<a->codes.size(); i++)
     {
-        codelist->insertItem(a->codes[i]->name);
+        if(CountCodes(a->codes[i]->name) > 1)
+        { 
+           QString id; id.sprintf("%s [%s]", a->codes[i]->name.latin1(),
+               a->codes[i]->target.latin1());
+            codelist->insertItem(id);
+        }
+        else
+            codelist->insertItem(a->codes[i]->name);
     }
 
     BlockAllSignals(false);
@@ -153,6 +207,10 @@ XMLEditCode::UpdateWindowContents()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:04:06 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 void
 XMLEditCode::UpdateWindowSensitivity()
@@ -160,6 +218,7 @@ XMLEditCode::UpdateWindowSensitivity()
     bool active = codelist->currentItem() != -1;
 
     delButton->setEnabled(codelist->count() > 0);
+    target->setEnabled(active);
     name->setEnabled(active);
     prefix->setEnabled(active);
     postfix->setEnabled(active);
@@ -174,6 +233,10 @@ XMLEditCode::UpdateWindowSensitivity()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:05:54 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 void
 XMLEditCode::UpdateWindowSingleItem()
@@ -185,6 +248,7 @@ XMLEditCode::UpdateWindowSingleItem()
 
     if (index == -1)
     {
+        target->setText("");
         name->setText("");
         prefix->setText("");
         postfix->setText("");
@@ -192,6 +256,7 @@ XMLEditCode::UpdateWindowSingleItem()
     else
     {
         Code *c = a->codes[index];
+        target->setText(c->target);
         name->setText(c->name);
         prefix->setText(c->prefix);
         postfix->setText(c->postfix);
@@ -214,11 +279,16 @@ XMLEditCode::UpdateWindowSingleItem()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:05:54 PST 2008
+//    Added target.
+//
 // ****************************************************************************
 void
 XMLEditCode::BlockAllSignals(bool block)
 {
     codelist->blockSignals(block);
+    target->blockSignals(block);
     name->blockSignals(block);
     prefix->blockSignals(block);
     postfix->blockSignals(block);
@@ -247,10 +317,35 @@ XMLEditCode::nameTextChanged(const QString &text)
 
     QString newname = text.stripWhiteSpace();
     c->name = newname;
-
+    if(CountCodes(newname) > 1)
+    {
+        newname += "[";
+        newname += c->target;
+        newname += "]";
+    }
     BlockAllSignals(true);
     codelist->changeItem(text, index);
     BlockAllSignals(false);
+}
+
+// ****************************************************************************
+//  Method:  XMLEditCode::targetTextChanged
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Thu Mar 6 15:56:05 PST 2008
+//
+// ****************************************************************************
+void
+XMLEditCode::targetTextChanged(const QString &text)
+{
+    Attribute *a = xmldoc->attribute;
+    int index = codelist->currentItem();
+    if (index == -1)
+        return;
+    Code *c = a->codes[index];
+
+    c->target = text;
+    nameTextChanged(c->name);
 }
 
 // ****************************************************************************
@@ -297,6 +392,10 @@ XMLEditCode::postfixChanged()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Mar 6 16:07:22 PST 2008
+//    Added default target of xml2atts.
+//
 // ****************************************************************************
 void
 XMLEditCode::codelistNew()
@@ -318,7 +417,7 @@ XMLEditCode::codelistNew()
             newid++;
     }
     
-    Code *c = new Code(newname,"","");
+    Code *c = new Code(newname,"","", "xml2atts");
     
     a->codes.push_back(c);
     UpdateWindowContents();
