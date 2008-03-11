@@ -307,6 +307,9 @@
 #   Hank Childs, Wed Feb 13 11:23:51 PST 2008
 #   Added AugDecomp.
 #
+#   Hank Childs, Mon Mar 10 20:16:32 PDT 2008
+#   Added CEAucd, based on reader by Thierry Carard.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -343,6 +346,7 @@ REQUIRED=\
  AugDecomp \
  BOV \
  BOW \
+ CEAucd \
  Claw \
  CMAT \
  CTRL \
