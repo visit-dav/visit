@@ -45,17 +45,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void VISITPY_API           PyAxisTitles_StartUp(AxisTitles *subj, void *data);
-void VISITPY_API           PyAxisTitles_CloseDown();
+void VISITPY_API          PyAxisTitles_StartUp(AxisTitles *subj, void *data);
+void VISITPY_API          PyAxisTitles_CloseDown();
 VISITPY_API PyMethodDef *   PyAxisTitles_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyAxisTitles_Check(PyObject *obj);
+bool VISITPY_API          PyAxisTitles_Check(PyObject *obj);
 VISITPY_API AxisTitles *  PyAxisTitles_FromPyObject(PyObject *obj);
 VISITPY_API PyObject *      PyAxisTitles_New();
 VISITPY_API PyObject *      PyAxisTitles_Wrap(const AxisTitles *attr);
-void VISITPY_API           PyAxisTitles_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyAxisTitles_SetDefaults(const AxisTitles *atts);
-std::string VISITPY_API    PyAxisTitles_GetLogString();
-std::string VISITPY_API    PyAxisTitles_ToString(const AxisTitles *, const char *);
+void VISITPY_API          PyAxisTitles_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API          PyAxisTitles_SetDefaults(const AxisTitles *atts);
+std::string VISITPY_API   PyAxisTitles_GetLogString();
+std::string VISITPY_API   PyAxisTitles_ToString(const AxisTitles *, const char *);
 
 #endif
 

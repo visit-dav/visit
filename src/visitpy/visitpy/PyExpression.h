@@ -45,17 +45,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void VISITPY_API           PyExpression_StartUp(Expression *subj, void *data);
-void VISITPY_API           PyExpression_CloseDown();
+void VISITPY_API          PyExpression_StartUp(Expression *subj, void *data);
+void VISITPY_API          PyExpression_CloseDown();
 VISITPY_API PyMethodDef *   PyExpression_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyExpression_Check(PyObject *obj);
+bool VISITPY_API          PyExpression_Check(PyObject *obj);
 VISITPY_API Expression *  PyExpression_FromPyObject(PyObject *obj);
 VISITPY_API PyObject *      PyExpression_New();
 VISITPY_API PyObject *      PyExpression_Wrap(const Expression *attr);
-void VISITPY_API           PyExpression_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyExpression_SetDefaults(const Expression *atts);
-std::string VISITPY_API    PyExpression_GetLogString();
-std::string VISITPY_API    PyExpression_ToString(const Expression *, const char *);
+void VISITPY_API          PyExpression_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API          PyExpression_SetDefaults(const Expression *atts);
+std::string VISITPY_API   PyExpression_GetLogString();
+std::string VISITPY_API   PyExpression_ToString(const Expression *, const char *);
 
 #endif
 

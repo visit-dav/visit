@@ -45,17 +45,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void VISITPY_API           PyFileOpenOptions_StartUp(FileOpenOptions *subj, void *data);
-void VISITPY_API           PyFileOpenOptions_CloseDown();
+void VISITPY_API          PyFileOpenOptions_StartUp(FileOpenOptions *subj, void *data);
+void VISITPY_API          PyFileOpenOptions_CloseDown();
 VISITPY_API PyMethodDef *   PyFileOpenOptions_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyFileOpenOptions_Check(PyObject *obj);
+bool VISITPY_API          PyFileOpenOptions_Check(PyObject *obj);
 VISITPY_API FileOpenOptions *  PyFileOpenOptions_FromPyObject(PyObject *obj);
 VISITPY_API PyObject *      PyFileOpenOptions_New();
 VISITPY_API PyObject *      PyFileOpenOptions_Wrap(const FileOpenOptions *attr);
-void VISITPY_API           PyFileOpenOptions_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyFileOpenOptions_SetDefaults(const FileOpenOptions *atts);
-std::string VISITPY_API    PyFileOpenOptions_GetLogString();
-std::string VISITPY_API    PyFileOpenOptions_ToString(const FileOpenOptions *, const char *);
+void VISITPY_API          PyFileOpenOptions_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API          PyFileOpenOptions_SetDefaults(const FileOpenOptions *atts);
+std::string VISITPY_API   PyFileOpenOptions_GetLogString();
+std::string VISITPY_API   PyFileOpenOptions_ToString(const FileOpenOptions *, const char *);
 
 #endif
 

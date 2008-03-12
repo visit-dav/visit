@@ -309,6 +309,9 @@
 #     Hank Childs, Sat Feb  9 15:23:42 PST 2008
 #     Rename components directory to avt.
 #
+#     Brad Whitlock, Wed Mar 12 11:15:09 PDT 2008
+#     Fixed Mesa build on AIX.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -1930,7 +1933,7 @@ diff -c Mesa-6.4.2.orig/configs/aix Mesa-6.4.2/configs/aix
   
 ! CFLAGS = -O -DAIXV3
 ! CXXFLAGS = -O -DAIXV3
-  MKLIB_OPTIONS =
+! MKLIB_OPTIONS =
   
   # Library names (actual file names)
 ! GL_LIB_NAME = libGL.a
@@ -1946,7 +1949,7 @@ diff -c Mesa-6.4.2.orig/configs/aix Mesa-6.4.2/configs/aix
   
 ! CFLAGS = -O -DAIXV3 -DUSE_MGL_NAMESPACE
 ! CXXFLAGS = -O -DAIXV3 -DUSE_MGL_NAMESPACE
-  MKLIB_OPTIONS =
+! MKLIB_OPTIONS = -static
   
   # Library names (actual file names)
 ! GL_LIB_NAME = libMesaGL.a
