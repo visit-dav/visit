@@ -221,7 +221,7 @@ class PythonGeneratorField : public virtual Field
 
     virtual void WriteSetMethod(ostream &c, const QString &className)
     {
-        c << "static PyObject *" << endl;
+        c << "/*static*/ PyObject *" << endl;
         c << className << "_" << MethodNameSet() << "(PyObject *self, PyObject *args)" << endl;
         c << "{" << endl;
         c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
@@ -236,7 +236,7 @@ class PythonGeneratorField : public virtual Field
 
     virtual void WriteGetMethod(ostream &c, const QString &className)
     {
-        c << "static PyObject *" << endl;
+        c << "/*static*/ PyObject *" << endl;
         c << className << "_" << MethodNameGet() << "(PyObject *self, PyObject *args)" << endl;
         c << "{" << endl;
         c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << endl;
@@ -1957,7 +1957,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "        return NULL;" << endl;
             c << "    if(!Py" << AttType << "_Check(newValue))" << endl;
             c << "    {" << endl;
-            c << "        VisItErrorFunc(\"The " << name << " field can only be set with " << AttType << " objects.\");" << endl;
+            c << "        fprintf(stderr, \"The " << name << " field can only be set with " << AttType << " objects.\\n\");" << endl;
             c << "        return NULL;" << endl;
             c << "    }" << endl;
             c << endl;
@@ -2748,8 +2748,8 @@ class PythonGeneratorAttribute : public GeneratorBase
         if(visitpy_api)
         {
              h << "#include <visitpy_exports.h>" << endl;
-             api = "VISITPY_API";
-             api2 = "VISITPY_API ";
+             api = "VISITPY_API ";
+             api2 = "VISITPY_API";
         }
         h << endl;
         h << "//" << endl;
@@ -2907,7 +2907,7 @@ class PythonGeneratorAttribute : public GeneratorBase
             return;
         }
 
-        c << "static PyObject *" << endl;
+        c << "PyObject *" << endl;
         c << mName << "(PyObject *self, char *name)" << endl;
         c << "{" << endl;
         if(HasCode(mName, 0))
@@ -3418,9 +3418,8 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << copyright_str.c_str() << endl;
         c << "#include <Py" << name << ".h>" << endl;
         c << "#include <ObserverToCallback.h>" << endl;
+        c << "#include <stdio.h>" << endl;
         WriteIncludedHeaders(c);
-        c << endl;
-        c << "extern void VisItErrorFunc(const char *);" << endl;
         c << endl;
         WriteHeaderComment(c);
         WritePyObjectStruct(c);

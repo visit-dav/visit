@@ -45,17 +45,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void VISITPY_API           PyFontAttributes_StartUp(FontAttributes *subj, void *data);
-void VISITPY_API           PyFontAttributes_CloseDown();
+void VISITPY_API          PyFontAttributes_StartUp(FontAttributes *subj, void *data);
+void VISITPY_API          PyFontAttributes_CloseDown();
 VISITPY_API PyMethodDef *   PyFontAttributes_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyFontAttributes_Check(PyObject *obj);
+bool VISITPY_API          PyFontAttributes_Check(PyObject *obj);
 VISITPY_API FontAttributes *  PyFontAttributes_FromPyObject(PyObject *obj);
 VISITPY_API PyObject *      PyFontAttributes_New();
 VISITPY_API PyObject *      PyFontAttributes_Wrap(const FontAttributes *attr);
-void VISITPY_API           PyFontAttributes_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyFontAttributes_SetDefaults(const FontAttributes *atts);
-std::string VISITPY_API    PyFontAttributes_GetLogString();
-std::string VISITPY_API    PyFontAttributes_ToString(const FontAttributes *, const char *);
+void VISITPY_API          PyFontAttributes_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API          PyFontAttributes_SetDefaults(const FontAttributes *atts);
+std::string VISITPY_API   PyFontAttributes_GetLogString();
+std::string VISITPY_API   PyFontAttributes_ToString(const FontAttributes *, const char *);
 
 #endif
 
