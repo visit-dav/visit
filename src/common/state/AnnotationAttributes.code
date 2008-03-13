@@ -1,8 +1,28 @@
-Target: xml2java
-Initialization: databaseInfoFont
-    databaseInfoFont = new FontAttributes();
-        databaseInfoFont.SetHeight(0.07);
+Target: xml2python
+Code: AnnotationAttributes_getattr
+Prefix:
+Postfix:
+    // Try and handle legacy AnnotationAttributes
+    extern PyObject *AnnotationAttributes_Legacy_getattr(PyObject *, const char *);
+    PyObject *retval = NULL;
+    retval = AnnotationAttributes_Legacy_getattr(self, name);
+    if(retval != NULL)
+        return retval;
 
+Code: AnnotationAttributes_setattr
+Prefix:
+Postfix:
+    if(obj == NULL)
+    {
+        extern PyObject *AnnotationAttributes_Legacy_setattr(PyObject *, const char *, PyObject *);
+        obj = AnnotationAttributes_Legacy_setattr(self, name, tuple);
+    }
+
+Target: xml2atts
+Initialization: userInfoFont
+    userInfoFont.SetHeight(0.05);
+
+Target: xml2java
 Initialization: userInfoFont
     userInfoFont = new FontAttributes();
         userInfoFont.SetHeight(0.05);
@@ -11,9 +31,12 @@ Target: xml2atts
 Initialization: databaseInfoFont
     databaseInfoFont.SetHeight(0.07);
 
-Initialization: userInfoFont
-    userInfoFont.SetHeight(0.05);
+Target: xml2java
+Initialization: databaseInfoFont
+    databaseInfoFont = new FontAttributes();
+        databaseInfoFont.SetHeight(0.07);
 
+Target: xml2atts
 Function: GetDiscernibleBackgroundColor
 Declaration: const ColorAttribute GetDiscernibleBackgroundColor() const;
 Definition:
@@ -212,3 +235,4 @@ AnnotationAttributes::ProcessOldVersions(DataNode *parentNode,
         }
     }
 }
+
