@@ -69,6 +69,9 @@
 #    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
 #    Added -lexpr for MacOS X.
 #
+#    Brad Whitlock, Wed Mar 12 15:58:12 PDT 2008
+#    Added proxy example.
+#
 ##############################################################################
 
 ##
@@ -88,6 +91,10 @@ OBJ=$(SRC:.C=.o)
 LIB=libviewerproxy
 LIBS=-ldbatts -lavtexceptions -lviewerrpc -lcomm -lmisc -lstate -lplugin -lexpr -lparser -lutility
 
+PROXYEXAMPLE=proxyexample
+PROXYEXAMPLE_SRC=proxyexample.C
+PROXYEXAMPLE_OBJ=$(PROXYEXAMPLE_SRC:.C=.o)
+PROXYEXAMPLE_LIBS=$(LIBS) -lviewerproxy $(PY_LIB)
 
 ##
 ## Standard targets...
@@ -95,8 +102,11 @@ LIBS=-ldbatts -lavtexceptions -lviewerrpc -lcomm -lmisc -lstate -lplugin -lexpr 
 all: $(LIBSHARED)
 
 clean:
-	$(RM) $(LIBSHARED)
-	$(RM) $(OBJ)
+	$(RM) $(LIBSHARED) $(tmpbin)/$(PROXYEXAMPLE)
+	$(RM) $(OBJ) $(PROXYEXAMPLE_OBJ)
+
+$(PROXYEXAMPLE): $(LIBSHARED) $(PROXYEXAMPLE_OBJ)
+	$(CXX) -o $(tmpbin)/$(PROXYEXAMPLE) $(PROXYEXAMPLE_OBJ) $(LDFLAGS) $(PY_LDFLAGS) $(PROXYEXAMPLE_LIBS)
 
 ##
 ## Automatic dependency stuff
