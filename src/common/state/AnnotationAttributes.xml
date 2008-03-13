@@ -27,12 +27,12 @@
     <Field name="userInfoFlag" label="userInfoFlag" type="bool">
       true
     </Field>
-    <Field name="userInfoFont" label="User font" type="att" subtype="FontAttributes" init="userInfoFont">
+    <Field name="userInfoFont" label="User font" type="att" subtype="FontAttributes" init="true">
     </Field>
     <Field name="databaseInfoFlag" label="databaseInfoFlag" type="bool">
       true
     </Field>
-    <Field name="databaseInfoFont" label="Database info font" type="att" subtype="FontAttributes" init="databaseInfoFont">
+    <Field name="databaseInfoFont" label="Database info font" type="att" subtype="FontAttributes" init="true">
     </Field>
     <Field name="databaseInfoExpansionMode" label="Path Expansion:" type="enum" subtype="PathExpansionMode" enabler="databaseInfoFlag:true">
       File
