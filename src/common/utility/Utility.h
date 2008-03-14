@@ -63,8 +63,12 @@ typedef enum {CONFIGSTATE_IOERROR,
               CONFIGSTATE_SUCCESS} ConfigStateEnum;
 
 #if defined(_WIN32)
-typedef struct _stat VisItStat_t;
-typedef off_t VisItOff_t;
+  typedef struct _stat VisItStat_t;
+  typedef off_t VisItOff_t;
+  typedef unsigned short mode_t;
+  #ifndef S_ISDIR
+    #define S_ISDIR(m) (((m) &S_IFMT) == S_IFDIR)
+  #endif
 #else
 
 #if SIZEOF_OFF64_T > 4

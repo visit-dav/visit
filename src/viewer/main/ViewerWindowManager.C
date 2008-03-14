@@ -9868,9 +9868,13 @@ bool ViewerWindowManager::SetCreateVectorMagnitudeExpressions(bool newVal)
 //  Programmer: Ellen Tarwater
 //  Creation:   December 20, 2007 
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008
+//    Made return-type be void.
+//
 // ****************************************************************************
 
-bool ViewerWindowManager::SetPlotFollowsTime()
+void ViewerWindowManager::SetPlotFollowsTime()
 {
     windows[activeWindow]->SetPlotFollowsTime();
 }

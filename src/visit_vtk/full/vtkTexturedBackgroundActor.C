@@ -226,12 +226,17 @@ vtkTexturedBackgroundActor::GetInitializedMapper()
 // Creation:   Mon Nov 19 16:50:28 PST 2007
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Mar  6 10:07:53 PST 2008
+//   Return early if we don't have a new imagefile.
 //   
 // ****************************************************************************
 
 vtkTexture *
 vtkTexturedBackgroundActor::GetTexture(const char *newFile)
 {
+    if (newFile == 0 || strlen(newFile) == 0)
+        return NULL;
+
     vtkTexture *tex = 0;
     bool replace = false;
     if(imageFile != 0)

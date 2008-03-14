@@ -366,6 +366,9 @@ avtLineoutFilter::PostExecute(void)
 //    Kathleen Bonnell, Mon Sep 11 16:47:08 PDT 2006 
 //    Removed calculation of ClosestPointOnLine, no longer using cell centers. 
 //
+//    Kathleen Bonnell, Thu Mar  6 09:07:33 PST 2008 
+//    Removed unused variable.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -396,7 +399,7 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
     outVal->Delete();
 
     vtkIdList *ptIds = vtkIdList::New();
-    double currentPoint[3], closestPoint[3];
+    double currentPoint[3];
     double sum = 0.;
     int i, j;
     double newX = 0., oldX = -1., newVal = 0.;
@@ -810,6 +813,9 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 //    Kathleen Bonnell, Mon Sep 11 16:47:08 PDT 2006 
 //    Removed calculation of ClosestPointOnLine, no longer using cell centers. 
 //
+//    Kathleen Bonnell, Thu Mar  6 09:07:33 PST 2008 
+//    Removed unused variable.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -880,7 +886,6 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
         }
     }
 
-    double closestPoint[3];
     double newX = 0., oldX = -1, newVal = 0.;
 
     int ptsType = pts->GetDataType();

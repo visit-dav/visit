@@ -46,7 +46,6 @@ class QButtonGroup;
 class QGrid;
 class QLineEdit;
 class QLabel;
-class QTabWidget;
 class QVBox;
 class QVGroupBox;
 class ClipAttributes;

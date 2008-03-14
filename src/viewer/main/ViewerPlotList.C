@@ -4880,7 +4880,7 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
 	    tmpSilr->SetTopSet(topSet);
 
             // Storage for SIL set indices
-            int idx[defaultSILRestrictionFromDatabase.size()];
+            int *idx = new int[defaultSILRestrictionFromDatabase.size()];
 
             // Initialize to '-1' so that we can spot errors
             for (int i=0; i<defaultSILRestrictionFromDatabase.size(); ++i)
@@ -4963,6 +4963,7 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
                         debug1 << "Invalid descriptor " << *it << std::endl;
                 }
             }
+            delete [] idx;
         }
 
         // Save SIL restriction in cache

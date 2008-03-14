@@ -331,6 +331,8 @@ avtCCMFileFormat::GetIDsForDomain(int dom,
 //  Creation:   September 5, 2007 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008
+//    Removed unused variable.
 //
 // ****************************************************************************
 
@@ -346,7 +348,7 @@ avtCCMFileFormat::GetFaces(CCMIOID faceID, CCMIOEntity faceType,
         return; 
     }
     int getFacesTimer = visitTimer->StartTimer();
-    CCMIOID mapID, cellsID;
+    CCMIOID mapID;
     unsigned int nCells = 0, size = 0;
     intVector faces, faceNodes, faceCells;
 
@@ -1318,8 +1320,11 @@ avtCCMFileFormat::ReadScalar(CCMIOID field, intVector &mapData,
 //  Creation:   October 1, 2007 
 //
 //  Modifications:
-//     Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
-//     Use cellid stored in CellInfo in avtOriginalCellNumbers array.
+//    Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
+//    Use cellid stored in CellInfo in avtOriginalCellNumbers array.
+//
+//    Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008 
+//    Change fbounds to doubleVector to get around compiler problem on Windows. 
 //
 // ****************************************************************************
 
@@ -1348,16 +1353,16 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
         oc[1] = ci.id;
         int nFaces  = ci.faces.size();
         int nPts = 0;
-        double fbounds[6*nFaces];
+        doubleVector fbounds;
         for (j = 0; j < nFaces; ++j)
         {
             nPts += ci.faces[j].nodes.size();
-            fbounds[j*6+0] = VTK_LARGE_FLOAT;
-            fbounds[j*6+1] = -VTK_LARGE_FLOAT;
-            fbounds[j*6+2] = VTK_LARGE_FLOAT;
-            fbounds[j*6+3] = -VTK_LARGE_FLOAT;
-            fbounds[j*6+4] = VTK_LARGE_FLOAT;
-            fbounds[j*6+5] = -VTK_LARGE_FLOAT;
+            fbounds.push_back(VTK_LARGE_FLOAT);
+            fbounds.push_back(-VTK_LARGE_FLOAT);
+            fbounds.push_back(VTK_LARGE_FLOAT);
+            fbounds.push_back(-VTK_LARGE_FLOAT);
+            fbounds.push_back(VTK_LARGE_FLOAT);
+            fbounds.push_back(-VTK_LARGE_FLOAT);
         }
         intVector nodes;
         double *pt;
@@ -1481,8 +1486,11 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
 // Creation:   Tue Dec 18 12:54:56 PST 2007
 //
 // Modifications:
-//     Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
-//     Use cellid stored in CellInfo in avtOriginalCellNumbers array.
+//   Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
+//   Use cellid stored in CellInfo in avtOriginalCellNumbers array.
+//   
+//   Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008 
+//   Remove unused variables.
 //   
 // ****************************************************************************
 
@@ -1493,7 +1501,7 @@ avtCCMFileFormat::TesselateCells2D(const int dom, const CellInfoVector &civ,
                                  vtkPoints *points, vtkUnstructuredGrid *ugrid)
 {
 #ifndef MDSERVER
-    unsigned int i, j, k;
+    unsigned int i, k;
     vtkPoints *pts = vtkPoints::New();
     pts->Allocate(points->GetNumberOfPoints());
     VertexManager uniqueVerts(pts);
@@ -1631,6 +1639,8 @@ avtCCMFileFormat::TesselateCells2D(const int dom, const CellInfoVector &civ,
 // Creation:   October 1, 2007 
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008 
+//   Remove unused variables.
 //   
 // ****************************************************************************
 
@@ -1638,7 +1648,7 @@ void
 avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray, 
                            intVector &cellTypes)
 {
-    unsigned int i, j, k;
+    unsigned int i, j;
     const FaceInfoVector &faces = ci.faces;
     intVector uniqueNodes; 
     bool useface;
@@ -1700,6 +1710,8 @@ avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray,
 // Creation:   October 1, 2007 
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008
+//   Fix '==' '=' mix-up.
 //   
 // ****************************************************************************
 
@@ -1747,7 +1759,7 @@ avtCCMFileFormat::BuildTet(const CellInfo &ci, vtkCellArray *cellArray,
            if ((count(uniqueNodes.begin(), uniqueNodes.end(), 
                       faces[i].nodes[j]-1) == 0)) 
            {
-               lastNodeFound == true;
+               lastNodeFound = true;
                uniqueNodes.push_back(faces[i].nodes[j]-1);
                cellNodes->InsertNextId(faces[i].nodes[j]-1);  
            }
@@ -1820,6 +1832,8 @@ avtCCMFileFormat::BuildPyramid(const CellInfo &ci, vtkCellArray *cellArray,
 // Creation:   October 1, 2007 
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008 
+//   Remove unused variables.
 //   
 // ****************************************************************************
 
@@ -1827,7 +1841,7 @@ void
 avtCCMFileFormat::BuildWedge(const CellInfo &ci, vtkCellArray *cellArray, 
                              intVector &cellTypes)
 {
-    unsigned int i, j;
+    unsigned int i;
     const FaceInfoVector &faces = ci.faces;
     vtkIdList *cellNodes = vtkIdList::New();
     for (i = 0; i < faces.size(); ++i)

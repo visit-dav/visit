@@ -44,7 +44,7 @@ class vtkDataArraySelection;
 class vtkUnsignedCharArray;
 class vtkCellArray;
 
-class VTK_IO_EXPORT vtkCEAucdReader : public vtkUnstructuredGridAlgorithm
+class vtkCEAucdReader : public vtkUnstructuredGridAlgorithm
 {
    public:
       static vtkCEAucdReader *New();

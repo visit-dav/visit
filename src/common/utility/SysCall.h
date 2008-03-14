@@ -44,7 +44,11 @@
 #define VISIT_SYSCALL_H
 
 #include <cerrno>
+#ifdef WIN32
+#include <winsock2.h>
+#else
 #include <sys/select.h>
+#endif
 
 inline int
 RESTART_SELECT(int n_fds, fd_set *rd_fds, fd_set *wr_fds, fd_set *except_fds,
