@@ -327,6 +327,9 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Cyrus Harrison, Mon Feb 25 13:42:21 PST 2008
 //    Resolved AIX QString init error. 
 //
+//    Kathleen Bonnell, Thu Mar  6 09:47:34 PST 2008
+//    Cannot convert a std::string to a QString on windows, must use .c_str().
+//
 // ****************************************************************************
 
 void
@@ -371,7 +374,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
                 if (atts->GetExtentMaxima()[ax] < +1e+37)
                     emax.sprintf("%f",atts->GetExtentMaxima()[ax]);
                 if (atts->GetVisualAxisNames().size() > ax)
-                    name = atts->GetVisualAxisNames()[ax];
+                    name = (atts->GetVisualAxisNames()[ax]).c_str();
                 else
                     name.sprintf("Axis %02d",ax);
                 QListViewItem *item =

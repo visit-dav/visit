@@ -42,7 +42,7 @@
 
 #ifndef AVT_LINEOUT_FILTER_H
 #define AVT_LINEOUT_FILTER_H
-
+#include <filters_exports.h>
 
 #include <avtPluginDataTreeIterator.h>
 
@@ -92,9 +92,12 @@ class vtkRectilinearGrid;
 //    Hank Childs, Fri Jan 25 09:59:29 PST 2008
 //    Remove ignoreGlobal, which was unused.
 //
+//    Kathleen Bonnell, Thu Mar  6 09:07:33 PST 2008 
+//    Add AVT_FILTERS_API for build on windows.
+//
 // ****************************************************************************
 
-class avtLineoutFilter : public avtDataTreeIterator
+class AVTFILTERS_API avtLineoutFilter : public avtDataTreeIterator
 {
   public:
                              avtLineoutFilter();

@@ -6565,6 +6565,7 @@ avtGenericDatabase::CommunicateGhostZonesWhileStreaming(
     vtkDataSet *output = sgg->StreamDataset(input);
     ds.SetDataset(0,0,output);
     output->Delete();
+    return true;
 }
 
 

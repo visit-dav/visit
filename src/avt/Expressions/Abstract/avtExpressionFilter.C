@@ -284,6 +284,9 @@ avtExpressionFilter::PostExecute(void)
 //    Cyrus Harrison, Mon Feb 25 13:22:19 PST 2008
 //    Changed std::isfinite to isfinite to work around an AIX compiler bug.
 //
+//    Kathleen Bonnell, Thu Mar  6 09:15:46 PST 2008 
+//    Use _finite for Windows.
+//
 // ****************************************************************************
 
 void
@@ -359,7 +362,12 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
                 value = MajorEigenvalue(val);
             // else ... we handle array variables below
 
+#ifndef _WIN32
             if(!isfinite(value))
+#else
+            if(!_finite(value))
+#endif
+
             {
                 // Ignore nan, -inf, and inf
                 continue;

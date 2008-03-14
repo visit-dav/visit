@@ -283,6 +283,8 @@ foreach configdir (MSVC7.Net/Debug MSVC7.Net/Release MSVC8.Net/Debug MSVC8.Net/R
     $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-closed.ini bin/$configdir/visit-config-closed.ini
     $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-nersc.ini  bin/$configdir/visit-config-nersc.ini
     $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-ornl.ini   bin/$configdir/visit-config-ornl.ini
+    $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-anl.ini   bin/$configdir/visit-config-anl.ini
+    echo "copying help files ..."
     echo "copying help files ..."
     mkdir bin/$configdir/help
     cp $VISITSRC/help/*.{html,helpml} bin/$configdir/help
@@ -340,10 +342,19 @@ cd $VisItDev
 #
 echo "Copying dlls from release to debug for MSVC7.Net"
 cd $VisItDev/bin/MSVC7.Net/Release
-cp *.dll ../Debug/
+
+foreach dllfile (`find ./ -name "*.dll"`)
+   if(!(-e ../Debug/$dllfile)) then
+       cp $dllfile ../Debug/
+   endif
+end
 echo "Copying libs from release to debug for MSVC7.Net"
 cd $VisItDev/lib/MSVC7.Net/Release
-cp *.lib ../Debug/
+foreach libfile (`find ./ -name "*.lib"`)
+   if(!(-e ../Debug/$libfile)) then
+       cp $libfile ../Debug/
+   endif
+end
 cd $VisItDev
 
 echo "Copying dlls from release to debug for MSVC8.Net"

@@ -81,17 +81,18 @@ public:
     HANDLE                tid;
     CRITICAL_SECTION      mutex;
 
-    void THREAD_INIT()   { tid = INVALID_HANDLE; }
+    void THREAD_INIT()   { tid = INVALID_HANDLE_VALUE; }
     void MUTEX_CREATE()  { InitializeCriticalSection(&mutex); }
     void MUTEX_DESTROY() { }
     void MUTEX_LOCK()    { EnterCriticalSection(&mutex); }
     void MUTEX_UNLOCK()  { LeaveCriticalSection(&mutex); }
 
-    bool CreateThread(THREAD_RETURN (*thread_cb)(THREAD_ARGUMENT), THREAD_ARGUMENT cbData)
+    bool CreateThread(THREAD_RETURN thread_cb (THREAD_ARGUMENT), THREAD_ARGUMENT cbData)
     {
         // Create the thread with the WIN32 API.
         DWORD Id;
-        return (tid = CreateThread(0, 0, thread_cb, cbData, 0, &Id) != INVALID_HANDLE_VALUE;
+        tid = ::CreateThread(0, 0, thread_cb, cbData, 0, &Id);
+        return (tid != INVALID_HANDLE_VALUE);
     }
 #else
 #define THREAD_RETURN     void*
@@ -331,7 +332,9 @@ work_callback(THREAD_ARGUMENT data)
 // Creation:   Tue Feb  5 11:57:34 PST 2008
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Thu Mar  6 09:04:09 PST 2008
+//   Add windows-specifics.
+// 
 // ****************************************************************************
 
 void
@@ -344,7 +347,11 @@ CallbackManager::StartWork()
     void **cbData = new void*[1];
     cbData[0] = (void*)this;
 
+#ifndef _WIN32
     if(!threading->CreateThread(work_callback, (THREAD_ARGUMENT)cbData))
+#else
+    if(!threading->CreateThread(&work_callback, (THREAD_ARGUMENT)cbData))
+#endif
     {
         delete [] cbData;
         cerr << "VisIt: Error - Could not create work thread." << endl;

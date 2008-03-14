@@ -153,6 +153,14 @@ inline char toupper(char c)
 //    Brad Whitlock, Thu Feb 28 16:29:56 PST 2008
 //    Made use of base classes. Added support for code file.
 //
+//    Kathleen Bonnell, Mon Mar 10 16:27:24 PDT 2008 
+//    For enum fields, to get around Windows compiler limitations for nested
+//    blocks and string-literals, modified: 
+//    StringRepresentation ==> to use case instead of if-else, to use 
+//    adjacent strings instead of single long string;
+//    WriteGetAttr =>  changed else-if to simple if as 'then' is a return;
+//    WriteSetMethodBody ==> use adjacent strings instead of single long string
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -2292,15 +2300,20 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             c << MethodNameSet() << "(" << GetCPPName(true,className) << "(ival));" << endl;
         c << "    else" << endl;
         c << "    {" << endl;
-        c << "        fprintf(stderr, \"An invalid " << name << " value was given. \"" << endl;
-        c << "                        \"Valid values are in the range of [0," << enumType->values.size()-1 << "]. \"" << endl;
-        c << "                        \"You can also use the following names: \"" << endl;
+        c << "        fprintf(stderr, \"An invalid " << name 
+          << " value was given. \"" << endl;
+        c << "                        \"Valid values are in the range of [0," 
+          << enumType->values.size()-1 << "]. \"" << endl;
+        c << "                        \"You can also use the following names: \"" 
+          << endl;
         c << "                        \"";
         for(int i = 0; i < enumType->values.size(); ++i)
         {
             c << enumType->values[i];
             if(i < enumType->values.size() - 1)
                 c << ", ";
+            if(i  > 0 && i%4==0)
+                c << "\"\n                        \"";
         }
         c << ".\");" << endl;
         c << "        return NULL;" << endl;
@@ -2321,38 +2334,32 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             c << enumType->values[j];
             if(j < enumType->values.size() - 1)
                 c << ", ";
+            if(j  > 0 && j%4==0)
+            {
+                c << "\"\n        \"";
+            }
         }
         c << "\";" << endl;
 
+        c << "    switch (atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ")\n    {\n";
+
         for(int i = 0; i < enumType->values.size(); ++i)
         {
-            c << "    ";
-            if(i == 0)
-            {
-                c << "if(atts->";
-                if(accessType == Field::AccessPublic)
-                    c << name;
-                else
-                    c << MethodNameGet() << "()";
-                c << " == " << classname << "::" << enumType->values[i] << ")" << endl;
-            }
-            else if(i < enumType->values.size() - 1)
-            {
-                c << "else if";
-                c << "(atts->";
-                if(accessType == Field::AccessPublic)
-                    c << name;
-                else
-                    c << MethodNameGet() << "()";
-                c << " == " << classname << "::" << enumType->values[i] << ")" << endl;
-            }
-            else
-                c << "else" << endl;
-            c << "    {" << endl;
-            c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s" << enumType->values[i] << "  # %s\\n\", prefix, prefix, " << name << "_names);" << endl;
-            c << "        str += tmpStr;" << endl;
-            c << "    }" << endl;
+            c << "      case " << classname << "::" << enumType->values[i] << ":\n";
+            c << "          SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s" 
+              << enumType->values[i] << "  # %s\\n\", prefix, prefix, " 
+              << name << "_names);" << endl;
+            c << "          str += tmpStr;" << endl;
+            c << "          break;" << endl;
         }
+        c << "      default:" << endl;
+        c << "          break;\n    }" << endl;
+
         c << endl;
     }
 
@@ -2362,16 +2369,13 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             return;
 
         c << "    if(strcmp(name, \"" << name << "\") == 0)" << endl;
-        c << "        return " << classname << "_" << MethodNameGet() << "(self, NULL);" << endl;
+        c << "        return " << classname << "_" << MethodNameGet() 
+          << "(self, NULL);" << endl;
 
         for(int i = 0; i < enumType->values.size(); ++i)
         {
             c << "    ";
-            if(i == 0)
-                c << "if";
-            else
-                c << "else if";
-
+            c << "if";
             c << "(strcmp(name, \"";
             c << enumType->values[i];
             c << "\") == 0)" << endl;

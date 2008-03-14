@@ -54,6 +54,7 @@
 #include <vtkCellArray.h>
 
 #include <float.h>
+#include <algorithm>
 
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>

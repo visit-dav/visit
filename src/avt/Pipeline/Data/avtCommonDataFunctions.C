@@ -1226,6 +1226,9 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname,
 //    Cyrus Harrison, Mon Feb 25 11:03:03 PST 2008
 //    Changed std::isfinite to isfinite to work around an AIX compiler bug.
 //
+//    Kathleen Bonnell, Thu Mar  6 09:15:46 PST 2008 
+//    Use _finite on Windows. 
+//
 // ****************************************************************************
 
 template <class T> static bool
@@ -1239,7 +1242,11 @@ GetScalarRange(T *buf, int n, double *exts, unsigned char *ghosts)
         if ((ghosts != NULL) && (ghosts[i] != '\0'))
             continue;
 
+#ifndef _WIN32
         if (!isfinite(*buf))
+#else
+        if (!_finite(*buf))
+#endif
             continue;
 
         if (!setOne)
@@ -1524,6 +1531,9 @@ GetDataAllComponentsRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Cyrus Harrison, Mon Feb 25 11:03:03 PST 2008
 //    Changed std::isfinite to isfinite to work around an AIX compiler bug.
 //
+//    Kathleen Bonnell, Thu Mar  6 09:15:46 PST 2008 
+//    Use _finite on Windows. 
+//
 // ****************************************************************************
 
 template <class T> static void
@@ -1539,7 +1549,11 @@ GetMagnitudeRange(T *buf, int n, int ncomps, double *exts,
         for (int j = 0; j < ncomps; j++, buf++)
             mag += *buf * *buf;
 
+#ifndef _WIN32
         if (!isfinite(mag))
+#else
+        if (!_finite(mag))
+#endif
             continue;
 
         if (mag < exts[0])
@@ -1663,6 +1677,9 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Cyrus Harrison, Mon Feb 25 11:03:03 PST 2008
 //    Changed std::isfinite to isfinite to work around an AIX compiler bug.
 //
+//    Kathleen Bonnell, Thu Mar  6 09:15:46 PST 2008 
+//    Use _finite on Windows. 
+//
 // ****************************************************************************
 
 void
@@ -1715,7 +1732,11 @@ GetDataMajorEigenvalueRange(vtkDataSet *ds, double *exts, const char *vname,
 
         double val = MajorEigenvalue(ptr);
 
+#ifndef _WIN32
         if (!isfinite(val))
+#else
+        if (!_finite(val))
+#endif
             continue;
 
         exts[0] = (exts[0] < val ? exts[0] : val);

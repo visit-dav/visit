@@ -242,7 +242,7 @@ avtSubdivideQuadsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     int *numQuads = new int[maxSubdivs+1];
     int *numNewPts = new int[maxSubdivs+1];
     int base = 1;
-    for (int i = 0 ; i <= maxSubdivs ; i++)
+    for (i = 0 ; i <= maxSubdivs ; i++)
     {
         numQuads[i] = base*base;
         numNewPts[i] = (base+1)*(base+1) - 4;

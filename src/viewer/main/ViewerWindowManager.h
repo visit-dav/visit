@@ -402,6 +402,9 @@ typedef struct {
 //    Brad Whitlock, Wed Feb 13 14:15:27 PST 2008
 //    Added argument to SetFromNode.
 //
+//    Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008 
+//    Made return type of SetPlotFollowsTime be 'void'.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -548,7 +551,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     bool SetCreateMeshQualityExpressions(bool val);
     bool SetCreateTimeDerivativeExpressions(bool val);
     bool SetCreateVectorMagnitudeExpressions(bool val);
-    bool SetPlotFollowsTime();
+    void SetPlotFollowsTime();
 
     void ReplaceDatabase(const EngineKey &key,
                          const std::string &database,
