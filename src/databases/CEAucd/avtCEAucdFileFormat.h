@@ -68,11 +68,9 @@ class avtCEAucdFileFormat : public avtSTMDFileFormat
                        avtCEAucdFileFormat(const char *);
     virtual           ~avtCEAucdFileFormat() {;};
 
-/*
     virtual void      *GetAuxiliaryData(const char *var, int domain,
                                         const char *type, void *args, 
                                         DestructorFunction &);
- */
 
     void               AddFileInThisDirectory(const std::string &);
     virtual int        GetCycle(void);
@@ -91,6 +89,7 @@ class avtCEAucdFileFormat : public avtSTMDFileFormat
 
     vtkCEAucdReader          *reader;
     bool                      readInData;
+    int                       domainRead;
 
     std::string               fileOpened;
     std::string               stem;
