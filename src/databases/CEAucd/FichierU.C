@@ -58,7 +58,6 @@ FichierU::FichierU(const string& fileName, ifstream* istr, long offset, long tai
    bool closeFile = false;
    if( istr == 0 )
    {
-cerr << "Opening " << istr << endl;
       istr = new ifstream( fileName.c_str(), ios::in | ios::binary );
       closeFile = true;
    }
@@ -66,14 +65,10 @@ cerr << "Opening " << istr << endl;
    ifstream& ufic = *istr;
    if(ufic.good())
    {
-cerr <<"Is good" << endl;
       ufic.seekg(offset, ios::beg);
       char c;
-char buff[8];
-      ufic.read(buff, 8);
       ufic.read(&c,1);
       
-cerr <<"Case is " << (int) c << endl;
       switch(c)
       {
 	case 0x07 :

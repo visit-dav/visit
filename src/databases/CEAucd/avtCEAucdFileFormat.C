@@ -62,6 +62,7 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtMaterial.h>
 
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
@@ -92,6 +93,8 @@ avtCEAucdFileFormat::avtCEAucdFileFormat(const char *filename)
     readRoot   = false;
     setUpFiles = false;
     reader     = NULL;
+    readInData = false;
+    domainRead = -1;
 }
 
 
@@ -157,24 +160,23 @@ avtCEAucdFileFormat::ReadRootFile(void)
     if (!setUpFiles)
         SetUpFiles();
 
-    cerr << "Ignoring FichierU" << endl;
-    //if (root != "")
-    if (0)
+    if (root != "")
     {
-cerr << "Trying fichieru" << endl;
-cerr << "File is " << root << endl;
-        FichierU fichieru(root, NULL, 0, 0);
+        // For some reason, need to jump ahead 512 bytes for U_00000.
+        // Ask Thierry.
+        int amount = 0;
+        if (strstr(root.c_str(), "U_00000") != NULL)
+            amount = 512;
+        FichierU fichieru(root, NULL, amount, 0);
 
         dtime     = fichieru.getTime();
         cycle     = fichieru.getNumCycle();
         dimension = fichieru.getDim();
         int nmat  = fichieru.getNbMat();
-cerr << "Nmat = " << nmat << endl;
         for (int i = 0 ; i < nmat ; i++)
         {
             matnames.push_back(fichieru.getMatName(i));
         }
-cerr << "Done trying fichieru" << endl;
     }
     else
     {
@@ -401,15 +403,8 @@ avtCEAucdFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     rdr->SetFileName(domains[0].c_str());
     vtkInformation *request = vtkInformation::New(); 
     request->Set(vtkDemandDrivenPipeline::REQUEST_INFORMATION());
-    rdr->ProcessRequest(request, e->GetInputInformation(), e->GetOutputInformation());
-/*
-    cerr << "Done Process request" << endl;
-    cerr << "Num nodes = " << rdr->GetNumberOfNodes() << endl;
-    cerr << "Num cells = " << rdr->GetNumberOfCells() << endl;
-    cerr << "Num mats = " << rdr->GetNumberOfMaterials() << endl;
-    cerr << "Num point arrays = " << rdr->GetNumberOfPointArrays() << endl;
-    cerr << "Num cell arrays = " << rdr->GetNumberOfCellArrays() << endl;
- */
+    rdr->ProcessRequest(request, e->GetInputInformation(), 
+                                 e->GetOutputInformation());
 
     for (i = 0 ; i < rdr->GetNumberOfCellArrays() ; i++)
     {
@@ -424,32 +419,14 @@ avtCEAucdFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         nodeCentered[name] = true;
     }
 
-    //
-    // CODE TO ADD A MATERIAL
-    //
-    // string mesh_for_mat = meshname; // ??? -- could be multiple meshes
-    // string matname = ...
-    // int nmats = ...;
-    // vector<string> mnames;
-    // for (int i = 0 ; i < nmats ; i++)
-    // {
-    //     char str[32];
-    //     sprintf(str, "mat%d", i);
-    //     -- or -- 
-    //     strcpy(str, "Aluminum");
-    //     mnames.push_back(str);
-    // }
-    // 
-    // Here's the call that tells the meta-data object that we have a mat:
-    //
-    // AddMaterialToMetaData(md, matname, mesh_for_mat, nmats, mnames);
-    //
-    //
+    int nmats = matnames.size();
+    AddMaterialToMetaData(md, "materials", meshname, nmats, matnames);
 
     //
     // Set up expressions for vectors.
     //
-    for (v = 0 ; v < 2 ; v++)
+    int numberOfCenterings = 2;
+    for (v = 0 ; v < numberOfCenterings ; v++)
     {
         vector<const char *> vnames;
         if (v == 0)
@@ -535,7 +512,7 @@ avtCEAucdFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 vtkDataSet *
 avtCEAucdFileFormat::GetMesh(int domain, const char *meshname)
 {
-    if (!readInData)
+    if (!readInData || domain != domainRead)
         ReadInData(domain);
 
     vtkDataSet *mesh = reader->GetOutput();
@@ -566,14 +543,23 @@ avtCEAucdFileFormat::GetMesh(int domain, const char *meshname)
 vtkDataArray *
 avtCEAucdFileFormat::GetVar(int domain, const char *varname)
 {
-    if (!readInData)
+    if (!readInData || domain != domainRead)
         ReadInData(domain);
 
     vtkDataSet *mesh = reader->GetOutput();
+    vtkDataArray *arr = NULL;
     if (nodeCentered[varname])
-        return mesh->GetPointData()->GetArray(varname);
+        arr = mesh->GetPointData()->GetArray(varname);
     else
-        return mesh->GetCellData()->GetArray(varname);
+        arr = mesh->GetCellData()->GetArray(varname);
+ 
+    if (arr == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    arr->Register(NULL);
+    return arr;
 }
 
 
@@ -618,6 +604,9 @@ void
 avtCEAucdFileFormat::RegisterVariableList(const char *primaryVariable,
                                   const std::vector<CharStrRef> &secondaryVars)
 {
+    if (!readRoot)
+       ReadRootFile();
+
     variables.clear();
     variables.push_back(primaryVariable);
     for (int i = 0 ; i < secondaryVars.size() ; i++)
@@ -647,8 +636,14 @@ avtCEAucdFileFormat::RegisterVariableList(const char *primaryVariable,
 void
 avtCEAucdFileFormat::ReadInData(int domain)
 {
+    if (reader != NULL)
+        reader->Delete();
+
     reader = vtkCEAucdReader::New();
     reader->SetFileName(domains[domain].c_str());
+/*
+ * I THINK THIS CODE TELLS VISIT ONLY TO READ CERTAIN ARRAYS, BUT IT DOESN'T
+ * SEEM TO BE PLAYING WELL WITH THE VTK READER.
     reader->DisableAllCellArrays();
     reader->DisableAllPointArrays();
     for (int i = 0 ; i < variables.size() ; i++)
@@ -658,8 +653,119 @@ avtCEAucdFileFormat::ReadInData(int domain)
         else
             reader->SetCellArrayStatus(variables[i].c_str(), 1);
     }
+ */
+    reader->Update();
 
     readInData = true;
+    domainRead = domain;
+}
+
+
+// ****************************************************************************
+//  Method: avtCEAucdFileFormat::GetAuxiliaryData
+//
+//  Purpose:
+//      Gets the auxiliary data specified.
+//
+//  Arguments:
+//      var        The variable of interest.
+//      dom        The domain of interest.
+//      type       The type of auxiliary data.
+//      <unnamed>  The arguments for that type -- not used.
+//      df         Destructor function.
+//
+//  Returns:    The auxiliary data.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 14, 2008
+//
+// ****************************************************************************
+
+
+void *
+avtCEAucdFileFormat::GetAuxiliaryData(const char *var, int dom,
+                                        const char * type, void *,
+                                        DestructorFunction &df)
+{
+    int   i;
+
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) != 0)
+        return NULL;
+
+    int nMaterials = matnames.size();
+    if (nMaterials == 0)
+        return NULL;
+
+    std::vector<float *> mats(nMaterials);
+    int nCells = 0;
+    for (i = 0 ; i < nMaterials ; i++)
+    {
+        char name[1024];
+        SNPRINTF(name, 1024, "frac_pres[%d]", i);
+        vtkFloatArray *arr = (vtkFloatArray *) 
+                            reader->GetOutput()->GetCellData()->GetArray(name);
+        if (arr == NULL)
+        {
+            EXCEPTION0(ImproperUseException);
+        }
+        mats[i] = arr->GetPointer(0);
+        nCells = arr->GetNumberOfTuples();
+    }
+
+    vector<int> material_list(nCells);
+    vector<int> mix_mat;
+    vector<int> mix_next;
+    vector<int> mix_zone;
+    vector<float> mix_vf;
+
+    // Build the appropriate data structures
+    for (i = 0; i < nCells; ++i)
+    {
+        int j;
+
+        // First look for pure materials
+        int nmats = 0;
+        int lastMat = -1;
+        for (j = 0; j < nMaterials; ++j)
+        {
+            if (mats[j][i] > 0)
+            {
+                nmats++;
+                lastMat = j;
+            }
+        }
+
+        if (nmats == 1)
+        {
+            material_list[i] = lastMat;
+            continue;
+        }
+
+        // For unpure materials, we need to add entries to the tables.
+        material_list[i] = -1 * (1 + mix_zone.size());
+        for (j = 0; j < nMaterials; ++j)
+        {
+            if (mats[j][i] <= 0)
+                continue;
+            // For each material that's present, add to the tables
+            mix_zone.push_back(i);
+            mix_mat.push_back(j);
+            mix_vf.push_back(mats[j][i]);
+            mix_next.push_back(mix_zone.size() + 1);
+        }
+
+        // When we're done, the last entry is a '0' in the mix_next
+        mix_next[mix_next.size() - 1] = 0;
+    }
+
+    int mixed_size = mix_zone.size();
+    avtMaterial * mat = new avtMaterial(nMaterials, matnames, nCells,
+                                        &(material_list[0]), mixed_size,
+                                        &(mix_mat[0]), &(mix_next[0]),
+                                        &(mix_zone[0]), &(mix_vf[0]));
+
+    df = avtMaterial::Destruct;
+    return (void*) mat;
 }
 
 
