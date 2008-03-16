@@ -223,7 +223,7 @@ avtCEAucdFileFormat::SetUpFiles(void)
 
     std::string extension = ".inp";
     char underscore = '_';
-    int underscore_pos[2];
+    int underscore_pos[2] = { 0, 0 };
     if (filename.find(underscore, 0) == string::npos)
     {
         EXCEPTION1(InvalidFilesException, fileOpened.c_str());
@@ -235,7 +235,7 @@ avtCEAucdFileFormat::SetUpFiles(void)
         {
             // 1 underscore.  Either U_00000 (root file) or UCD_00000.inp
             // (1 file of a single-domain data set.)
-            if (filename.find(extension, underscore_pos[0]+1) == string::npos)
+            if (filename.find(extension, underscore_pos[0]+1) != string::npos)
             {
                 int extension_pos = filename.find(extension, 
                                                   underscore_pos[0]+1);
