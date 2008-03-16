@@ -3,7 +3,7 @@
 *-----------------------------------*/
 /*!
  \brief Implementation of class FichierU (component .Kernel)
- \author Thierry Carrard
+ \author Thierry Carrard CEA/DAM
  \date 15 Fevrier 2005
 
  Modifications history :
