@@ -231,6 +231,10 @@ avtGenericDatabase::GetFilename(int ts)
 //    the unacceptable [] <> () with the acceptable {}'s since it seems 
 //    more natural than the former _ character used to replace them.
 //
+//    Hank Childs, Sun Mar 16 07:10:49 PDT 2008
+//    Change substitutions for (, }, [, ], <, and > to use an underscore,
+//    instead of { & }, since that was screwing up expressions.
+//
 // ****************************************************************************
 
 void
@@ -258,19 +262,19 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState,
     replacementStrs.push_back("_colon_");
 
     forbiddenChars.push_back('[');
-    replacementStrs.push_back("{");
+    replacementStrs.push_back("_");
     forbiddenChars.push_back(']');
-    replacementStrs.push_back("}");
+    replacementStrs.push_back("_");
 
     forbiddenChars.push_back('<');
-    replacementStrs.push_back("{");
+    replacementStrs.push_back("_");
     forbiddenChars.push_back('>');
-    replacementStrs.push_back("}");
+    replacementStrs.push_back("_");
 
     forbiddenChars.push_back('(');
-    replacementStrs.push_back("{");
+    replacementStrs.push_back("_");
     forbiddenChars.push_back(')');
-    replacementStrs.push_back("}");
+    replacementStrs.push_back("_");
 
     md->ReplaceForbiddenCharacters(forbiddenChars, replacementStrs);
 }
@@ -3488,13 +3492,13 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             delete material_used;
         }
 
-        if (out_ds != NULL && out_ds[d]->GetNumberOfCells() == 0)
+        if (out_ds[d] != NULL && out_ds[d]->GetNumberOfCells() == 0)
         {
             out_ds[d]->Delete();
             out_ds[d] = NULL;
         }
 
-        if (out_ds[d] && needBoundarySurfaces)
+        if (out_ds[d] != NULL && needBoundarySurfaces)
         {
             //
             // We need to extract the internal boundaries

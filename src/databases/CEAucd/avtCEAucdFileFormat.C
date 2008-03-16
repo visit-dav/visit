@@ -440,6 +440,13 @@ avtCEAucdFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             if (strstr(vnames[i], "[0]") != NULL)
             {
+                if (strcmp(vnames[i], "frac_pres[0]") == 0)
+                    continue;
+
+                char iName[1024];
+                strcpy(iName, vnames[i]);
+                char *ptrI = strstr(iName, "[0]");
+
                 char jName[1024];
                 strcpy(jName, vnames[i]);
                 char *ptrJ = strstr(jName, "[0]");
@@ -464,6 +471,15 @@ avtCEAucdFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
      
                 if (foundJ && foundK)
                 {
+                    // VisIt doesn't like [0] and will turn it to {0}. 
+                    // We should do the same.
+                    ptrI[0] = '_';
+                    ptrI[2] = '_';
+                    ptrJ[0] = '_';
+                    ptrJ[2] = '_';
+                    ptrK[0] = '_';
+                    ptrK[2] = '_';
+
                     Expression vec_expr;
                     char vec_name[1024];
                     int lengthBeforeIndex = ptrJ-jName;
@@ -473,10 +489,10 @@ avtCEAucdFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     vec_expr.SetName(vec_name);
                     char defn[1024];
                     if (dimension == 2)
-                        SNPRINTF(defn, 1024, "{%s, %s}", vnames[i], jName);
+                        SNPRINTF(defn, 1024, "{%s, %s}", iName, jName);
                     else
                         SNPRINTF(defn, 1024, "{%s, %s, %s}", 
-                                       vnames[i], jName, kName);
+                                       iName, jName, kName);
                     vec_expr.SetDefinition(defn);
                     vec_expr.SetType(Expression::VectorMeshVar);
                     md->AddExpression(&vec_expr);
