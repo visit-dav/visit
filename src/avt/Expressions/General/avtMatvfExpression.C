@@ -153,6 +153,10 @@ avtMatvfExpression::PreExecute(void)
 //    Cyrus Harrison, Tue Feb 12 13:38:13 PST 2008
 //    Added support for datasets with ghost zones. 
 //
+//    Cyrus Harrison, Mon Mar 17 09:44:22 PDT 2008
+//    Make sure to only request post ghost Material object if the
+//    dataset has ghost zones. 
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -161,11 +165,7 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds)
     int    i, j;
 
     int ncells = in_ds->GetNumberOfCells();
-   
-    
-    debug5 << "avtMatvfExpression: Using post ghost material object ?  " 
-           << doPostGhost <<endl;
-           
+              
     //
     // The 'currentDomainsIndex' is a data member of the base class that is
     // set to be the id of the current domain right before DeriveVariable is
@@ -179,6 +179,15 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds)
     // if necessary.
     //
 
+    // only ask for post ghost Material info if the dataset actuall
+    // has ghost zones
+    
+    if(!in_ds->GetCellData()->GetArray("avtGhostZones"))
+        doPostGhost = false;
+    
+    debug5 << "avtMatvfExpression: Using post ghost material object ?  " 
+           << doPostGhost <<endl;
+    
     avtMaterial *mat = GetMetaData()->GetMaterial(currentDomainsIndex,
                                                   currentTimeState,
                                                   doPostGhost);
