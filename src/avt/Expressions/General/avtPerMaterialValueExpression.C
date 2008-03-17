@@ -120,6 +120,10 @@ avtPerMaterialValueExpression::~avtPerMaterialValueExpression()
 //    Cyrus Harrison, Tue Feb 12 13:38:13 PST 2008
 //    Added support for datasets with ghost zones. 
 //
+//    Cyrus Harrison, Mon Mar 17 10:06:17 PDT 2008
+//    Make sure to only request post ghost Material & Mixedvar objects 
+//    if the dataset has ghost zones. 
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -150,7 +154,11 @@ avtPerMaterialValueExpression::DeriveVariable(vtkDataSet *in_ds)
     
     }
 
+    if(!in_ds->GetCellData()->GetArray("avtGhostZones"))
+        doPostGhost = false;
     
+    debug5 << "avtPerMaterialValueExpression: Using post ghost material "
+              " and mixedvar objects ?  " << doPostGhost <<endl;
     
     // prepare result array
     vtkFloatArray *res = vtkFloatArray::New();
