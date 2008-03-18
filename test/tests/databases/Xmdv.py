@@ -14,6 +14,9 @@
 #    Brad Whitlock, Wed Aug 10 10:00:45 PDT 2005
 #    Fixed due to a change in the Label plot.
 #
+#    Hank Childs, Tue Mar 18 15:40:57 PDT 2008
+#    Reflect change in variable names.
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -98,7 +101,7 @@ e.filename = "xmdv2"
 ExportDatabase(e)
 DeleteAllPlots()
 OpenDatabase("xmdv2.okc")
-AddPlot("Pseudocolor", "vel{0}")
+AddPlot("Pseudocolor", "vel_0_")
 DrawPlots()
 Test("Xmdv_05")
 
