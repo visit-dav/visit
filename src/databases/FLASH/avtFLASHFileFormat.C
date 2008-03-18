@@ -44,6 +44,7 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
