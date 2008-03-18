@@ -44,13 +44,17 @@
 
 #include <string>
 
+#include <vtkCellData.h>
 #include <vtkFloatArray.h>
+#include <vtkIntArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
+#include <avtGhostData.h>
 
 #include <Expression.h>
 
@@ -849,6 +853,58 @@ avtXDMFFileFormat::ParseAttribute(int iDomain, int iGrid,
 
 
 // ****************************************************************************
+//  Method: avtXDMFFileFormat::ParseGridInformation
+//
+//  Purpose:
+//      Parse an Information node within a grid node in the DOM tree.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Mon Mar 17 13:22:09 PDT 2008
+//
+// ****************************************************************************
+
+void
+avtXDMFFileFormat::ParseGridInformation(string &ghostOffsets)
+{
+    bool haveGhostOffsets = false;
+
+    //
+    // Process the attributes in the start tag.
+    //
+    while (xdmfParser.GetNextAttribute())
+    {
+        if (strcmp(xdmfParser.GetAttributeName(), "Name") == 0)
+        {
+            if (strcmp(xdmfParser.GetAttributeValue(), "GhostOffsets") == 0)
+                haveGhostOffsets = true;
+        }
+        else if (strcmp(xdmfParser.GetAttributeName(), "Value") == 0)
+        {
+            if (haveGhostOffsets)
+                ghostOffsets = string(xdmfParser.GetAttributeValue());
+        }
+    }
+
+    //
+    // Process the rest of the information.
+    //
+    XDMFParser::ElementType elementType = xdmfParser.GetNextElement();
+    while (elementType != XDMFParser::TYPE_EOF)
+    {
+        if (elementType == XDMFParser::TYPE_START_TAG)
+        {
+            xdmfParser.SkipToEndTag();
+        }
+        else if (elementType == XDMFParser::TYPE_END_TAG)
+        {
+            break;
+        }
+        elementType = xdmfParser.GetNextElement();
+    }
+}
+
+
+// ****************************************************************************
 //  Method: avtXDMFFileFormat::ParseUniformGrid
 //
 //  Purpose:
@@ -856,6 +912,10 @@ avtXDMFFileFormat::ParseAttribute(int iDomain, int iGrid,
 //
 //  Programmer: Eric Brugger
 //  Creation:   Fri Nov 16 13:08:36 PST 2007
+//
+//  Modifications:
+//    Eric Brugger, Mon Mar 17 13:22:09 PDT 2008
+//    Added logic to read ghost offsets.
 //
 // ****************************************************************************
 
@@ -871,6 +931,7 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
     DataItem *meshData[3];
     VarInfo  *varInfo = NULL;
     vector<VarInfo*> varList;
+    string    ghostOffsets;
 
     //
     // Process the elements of the grid.
@@ -892,6 +953,10 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
             {
                 if ((varInfo = ParseAttribute(iDomain, iGrid, gridName)) != NULL)
                     varList.push_back(varInfo);
+            }
+            else if (strcmp(xdmfParser.GetElementName(), "Information") == 0)
+            {
+                ParseGridInformation(ghostOffsets);
             }
             else
             {
@@ -1013,6 +1078,26 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
     {
         sscanf(numberOfElements.c_str(), "%d %d %d", &meshInfo->dimensions[2],
                &meshInfo->dimensions[1], &meshInfo->dimensions[0]);
+    }
+
+    if (ghostOffsets != "")
+    {
+        meshInfo->ghostOffsets = new int[6];
+        for (int i = 0; i < 6; i++)
+            meshInfo->ghostOffsets[i] = 0;
+        if (meshInfo->topologicalDimension == 2)
+        {
+            sscanf(ghostOffsets.c_str(), "%d %d %d %d",
+                &meshInfo->ghostOffsets[0], &meshInfo->ghostOffsets[1],
+                &meshInfo->ghostOffsets[2], &meshInfo->ghostOffsets[3]);
+        }
+        else
+        {
+            sscanf(ghostOffsets.c_str(), "%d %d %d %d %d %d",
+                &meshInfo->ghostOffsets[0], &meshInfo->ghostOffsets[1],
+                &meshInfo->ghostOffsets[2], &meshInfo->ghostOffsets[3],
+                &meshInfo->ghostOffsets[4], &meshInfo->ghostOffsets[5]);
+        }
     }
 
     for (int i = 0; i < nMeshData; i++)
@@ -1514,6 +1599,85 @@ avtXDMFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
 
 // ****************************************************************************
+//  Method: avtXDMFFileFormat::GetStructuredGhostZones
+//
+//  Purpose:
+//    Retrieves ghost zone information from the structured mesh and adds it
+//    to the dataset.
+//
+//  Arguments:
+//      meshInfo    The MeshInfo structure describing the mesh.
+//      ds          The vtkDataSet in which to store the ghost level
+//                  information.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Mon Mar 17 13:22:09 PDT 2008
+//
+// ****************************************************************************
+
+void
+avtXDMFFileFormat::GetStructuredGhostZones(MeshInfo *meshInfo, vtkDataSet *ds)
+{
+    //
+    // Return if we don't have any ghost zone information.
+    //
+    if (meshInfo->ghostOffsets == NULL)
+        return;
+
+    unsigned char realVal = 0;
+    unsigned char ghostVal = 0;
+    avtGhostData::AddGhostZoneType(ghostVal,
+        DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+    int ncells = ds->GetNumberOfCells();
+    vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+    ghostCells->SetName("avtGhostZones");
+    ghostCells->SetNumberOfComponents(1);
+    ghostCells->SetNumberOfTuples(ncells);
+
+    unsigned char *buf = ghostCells->GetPointer(0);
+    for (int i = 0; i < ncells; i++)
+        buf[i] = ghostVal;
+
+    int iMin[3], iMax[3];
+    for (int i = 0; i < 3; i++)
+    {
+        iMin[i] = meshInfo->ghostOffsets[i*2];
+        iMax[i] = meshInfo->dimensions[i] - 1 - meshInfo->ghostOffsets[i*2+1];
+    }
+    for (int k = iMin[2]; k < iMax[2]; k++)
+    {
+        for (int j = iMin[1]; j < iMax[1]; j++)
+        {
+            for (int i = iMin[0]; i < iMax[0]; i++)
+            {
+                int ndx = k * (meshInfo->dimensions[1]-1) *
+                              (meshInfo->dimensions[0]-1) +
+                          j * (meshInfo->dimensions[0]-1) + i;
+                buf[ndx] = realVal;
+            }
+        }
+    }
+    ds->GetCellData()->AddArray(ghostCells);
+    ghostCells->Delete();
+
+    vtkIntArray *realDims = vtkIntArray::New();
+    realDims->SetName("avtRealDims");
+    realDims->SetNumberOfValues(6);
+    realDims->SetValue(0, iMin[0]);
+    realDims->SetValue(1, iMax[0]);
+    realDims->SetValue(2, iMin[1]);
+    realDims->SetValue(3, iMax[1]);
+    realDims->SetValue(4, iMin[2]);
+    realDims->SetValue(5, iMax[2]);
+    ds->GetFieldData()->AddArray(realDims);
+    ds->GetFieldData()->CopyFieldOn("avtRealDims");
+    realDims->Delete();
+
+    ds->SetUpdateGhostLevel(0);
+}
+
+
+// ****************************************************************************
 //  Method: avtXDMFFileFormat::GetCurvilinearMesh
 //
 //  Purpose:
@@ -1651,6 +1815,10 @@ avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
 //  Programmer: brugger -- generated by xml2avt
 //  Creation:   Wed Nov 14 11:28:35 PDT 2007
 //
+//  Modifications:
+//    Eric Brugger, Mon Mar 17 13:22:09 PDT 2008
+//    Added code to add ghost zone information.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1704,6 +1872,13 @@ avtXDMFFileFormat::GetMesh(int domain, const char *meshname)
         break;
     }
     
+    //
+    // If we have a structured mesh, get the ghost zone infomation.
+    //
+    if (meshInfo->type == AVT_RECTILINEAR_MESH ||
+        meshInfo->type == AVT_CURVILINEAR_MESH)
+        GetStructuredGhostZones(meshInfo, ds);
+
     return ds;
 }
 
