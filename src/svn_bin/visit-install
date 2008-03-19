@@ -280,7 +280,7 @@ if (! -e $fname1) then
               else
                  echo "But I could find these distributions that you downloaded:"
               endif
-              ls -1 $base*.tar.* | sed 's/'$base'./\t/g' | sed 's/.tar.gz//g' | sed 's/.tar.Z//g'
+              ls -1 $base*.tar.* | sed 's/'$base'\./    /g' | sed 's/.tar.gz//g' | sed 's/.tar.Z//g'
               if ($num_dist == 1) then
                   echo "Either try specifying visit-install again with this "
                   echo "distribution, or, if you think you specified the distribution"
