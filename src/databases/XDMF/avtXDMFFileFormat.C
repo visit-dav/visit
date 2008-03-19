@@ -1990,28 +1990,95 @@ avtXDMFFileFormat::GetVar(int domain, const char *varname)
 vtkDataArray *
 avtXDMFFileFormat::GetVectorVar(int domain, const char *varname)
 {
+    debug2 << "avtXDMFFileFormat::GetVectorVar: domain = " << domain
+           << ",varname = " << varname << endl;
+
     //
-    // If you do have a vector variable, here is some code that may be helpful.
+    // Determine the variable to return.
     //
-    // int ncomps = YYY;  // This is the rank of the vector - typically 2 or 3.
-    // int ntuples = XXX; // this is the number of entries in the variable.
-    // vtkFloatArray *rv = vtkFloatArray::New();
-    // int ucomps = (ncomps == 2 ? 3 : ncomps);
-    // rv->SetNumberOfComponents(ucomps);
-    // rv->SetNumberOfTuples(ntuples);
-    // float *one_entry = new float[ucomps];
-    // for (int i = 0 ; i < ntuples ; i++)
-    // {
-    //      int j;
-    //      for (j = 0 ; j < ncomps ; j++)
-    //           one_entry[j] = ...
-    //      for (j = ncomps ; j < ucomps ; j++)
-    //           one_entry[j] = 0.;
-    //      rv->SetTuple(i, one_entry); 
-    // }
+    VarInfo *varInfo = NULL;
+    for (unsigned int i = 0; i < fileVarList.size(); i++)
+    {
+        if (strcmp(fileVarList[i]->name.c_str(), varname) == 0)
+        {
+            varInfo = fileVarList[i];
+            break;
+        }
+    }
+    if (varInfo == NULL)
+    {
+        avtCallback::IssueWarning("GetVectorVar: Invalid variable name.");
+        return NULL;
+    }
+    if (varInfo->blockList.size() > 0)
+    {
+        if (domain >= varInfo->blockList.size())
+        {
+            return NULL;
+        }
+        else
+        {
+            varInfo = varInfo->blockList[domain];
+            if (varInfo == NULL)
+            {
+                return NULL;
+            }
+        }
+    }
+
     //
-    // delete [] one_entry;
-    // return rv;
+    // The last dimension is the number of components in the vector, so
+    // the variable must have at least 2 dimensions.
     //
-    return NULL;
+    if (varInfo->varData->nDims < 2)
+    {
+        avtCallback::IssueWarning("GetVectorVar: Not enough dimensions.");
+        return NULL;
+    }
+
+    //
+    // Determine the size of the data.
+    //
+    int ntuples = 1;
+    for (int i = 0; i < varInfo->varData->nDims - 1; i++)
+        ntuples *= varInfo->varData->dims[i];
+    int ncomps = varInfo->varData->dims[varInfo->varData->nDims-1];
+    int ucomps = (ncomps == 2 ? 3 : ncomps);
+
+    //
+    // Create the data array.
+    //
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfComponents(ucomps);
+    rv->SetNumberOfTuples(ntuples);
+
+    //
+    // Read the data.
+    //
+    float *buf = new float[ntuples*ncomps];
+    if (!ReadHDFDataItem(varInfo->varData, buf, ntuples * ncomps))
+    {
+        avtCallback::IssueWarning("GetVectorVar: Error reading the variable.");
+        delete [] buf;
+        rv->Delete();
+        return NULL;
+    }
+
+    //
+    // Copy the data into the vtk array.
+    //
+    float *one_entry = new float[ucomps];
+    for (int j = ncomps; j < ucomps; j++)
+        one_entry[j] = 0.;
+    for (int i = 0; i < ntuples; i++)
+    {
+        for (int j = 0; j < ncomps; j++)
+            one_entry[j] = buf[i*ncomps+j];
+        rv->SetTuple(i, one_entry); 
+    }
+
+    delete [] one_entry;
+    delete [] buf;
+
+    return rv;
 }
