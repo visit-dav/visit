@@ -105,6 +105,9 @@ class CommonDatabasePluginInfo;
 //    Added ability to specify a format to try *before* the ones guessed
 //    from file extensions.
 //
+//    Jeremy Meredith, Wed Mar 19 14:06:16 EDT 2008
+//    Renamed default format to fallback format for clarity.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
@@ -118,7 +121,7 @@ class DATABASE_API avtDatabaseFactory
                                            std::vector<std::string> &,
                                            const char * = NULL, bool = false,
                                            bool = false);
-    static void                  SetDefaultFormat(const char *);
+    static void                  SetFallbackFormat(const char *);
     static void                  SetFormatToTryFirst(const char *);
     static void                  SetDefaultFileOpenOptions(const
                                                            FileOpenOptions &f);
@@ -142,7 +145,7 @@ class DATABASE_API avtDatabaseFactory
                                                const char * const *, int,
                                                int, int, int, bool, bool);
 
-    static char                 *defaultFormat;
+    static char                 *fallbackFormat;
     static char                 *formatToTryFirst;
     static bool                  createMeshQualityExpressions;
     static bool                  createTimeDerivativeExpressions;
