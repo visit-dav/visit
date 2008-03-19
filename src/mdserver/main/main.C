@@ -204,6 +204,9 @@ main(int argc, char *argv[])
 //   Jeremy Meredith, Thu Jan 24 14:46:20 EST 2008
 //   Added the assume_format argument.
 //
+//    Jeremy Meredith, Wed Mar 19 13:47:09 EDT 2008
+//    Obsolete -default_format, add -fallback_format in its place.
+//
 // ****************************************************************************
 
 bool
@@ -225,11 +228,11 @@ ProcessCommandLine(int argc, char *argv[])
         {
             runApp = false;
         }
-        else if (strcmp(argv[i], "-default_format") == 0)
+        else if (strcmp(argv[i], "-fallback_format") == 0)
         {
             if ((i+1) < argc)
             {
-                avtDatabaseFactory::SetDefaultFormat(argv[i+1]);
+                avtDatabaseFactory::SetFallbackFormat(argv[i+1]);
                 i++;
             }
         }

@@ -291,6 +291,10 @@ $0 = shift @ARGV;
 #    Hank Childs, Sat Feb 23 09:57:21 PST 2008
 #    Feed arguments into MOAB in a way that it will accept.
 #
+#    Jeremy Meredith, Wed Mar 19 14:19:32 EDT 2008
+#    Added code to obsolete -default_format.  This can be removed in future
+#    versions.  Replaced it with -fallback_format.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -537,8 +541,8 @@ $fullusage = "$usage
         -nopty               Run without PTYs.
         -verbose             Prints status information during pipeline
                              execution.
-        -default_format      Sets the database plugin format to use as a
-                             default if a file type cannot be determined
+        -fallback_format     Sets the database plugin format to use as a
+                             fallback if a file type cannot be determined
                              from its extension.
         -assume_format       Sets the database plugin format to try before
                              all others when attempting to guess the format.
@@ -812,6 +816,26 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-launchengine")     { if (scalar(@ARGV)>0) {$launchengine = shift;}
                                           if ($launchengine eq "") { $launchengine="localhost"; }
                                           elsif ($launchengine =~ /^-/) { unshift @ARGV, $launchengine; $launchengine = "localhost";}}
+    elsif ($arg eq "-default_format" )
+    {
+        # NOTE: This code was added for 1.9.0 to obsolete -default_format.
+        # It can be removed in later versions after we're sure no one is
+        # still using -default_format.
+        print STDERR "\n";
+        print STDERR "ERROR: -default_format was obsoleted due to ambiguity.\n";
+        print STDERR "\n";
+        print STDERR "Please choose one of these more specific options instead:\n";
+        print STDERR "       -assume_format <fmt>\n";
+        print STDERR "       -fallback_format <fmt>\n";
+        print STDERR "\n";
+        print STDERR "An assumed format is tried before any file extension\n";
+        print STDERR "matching logic and is useful for choosing between file\n";
+        print STDERR "format reader plugins supporting the same extensions.\n";
+        print STDERR "A fallback format is tried last, and is typically used\n";
+        print STDERR "to specify a format reader for files which do not have\n";
+        print STDERR "an extension matching those known by the file readers.\n";
+        exit(1);
+    }
     elsif ($arg eq "-gdb")              { $debug_gdb = 1; $gdb_xterm = 1;}
     elsif ($arg eq "-gdb-gui")          { if($exe_name eq "gui") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
     elsif ($arg eq "-gdb-cli")          { if($exe_name eq "cli") {$debug_gdb = 1;} else {push @visitargs, $arg;}}

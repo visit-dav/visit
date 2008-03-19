@@ -78,7 +78,7 @@ using std::vector;
 //
 // Static data members
 //
-char    *avtDatabaseFactory::defaultFormat = "Silo";
+char    *avtDatabaseFactory::fallbackFormat = "Silo";
 char    *avtDatabaseFactory::formatToTryFirst = NULL;
 bool    avtDatabaseFactory::createMeshQualityExpressions = true;
 bool    avtDatabaseFactory::createTimeDerivativeExpressions = true;
@@ -92,10 +92,10 @@ void CheckPermissions(const char *);
 
 
 // ****************************************************************************
-//  Method: avtDatabaseFactory::SetDefaultFormat
+//  Method: avtDatabaseFactory::SetFallbackFormat
 //
 //  Purpose:
-//      Sets the default format to use if the file type cannot be determined
+//      Sets the fallback format to use if the file type cannot be determined
 //      by looking at extensions.
 //
 //  Arguments:
@@ -104,10 +104,14 @@ void CheckPermissions(const char *);
 //  Programmer: Hank Childs
 //  Creation:   May 9, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Mar 19 14:09:36 EDT 2008
+//    Renamed defaultFormat to fallbackFormat for clarity.
+//
 // ****************************************************************************
 
 void
-avtDatabaseFactory::SetDefaultFormat(const char *f)
+avtDatabaseFactory::SetFallbackFormat(const char *f)
 {
     //
     // It's quite possible that the current format string is pointing to 
@@ -115,8 +119,8 @@ avtDatabaseFactory::SetDefaultFormat(const char *f)
     // might be pointing to something in the program portion of memory, which
     // would be a bad thing to delete.  So just leak it.  It's only a few
     // bytes.
-    defaultFormat = new char[strlen(f)+1];
-    strcpy(defaultFormat, f);
+    fallbackFormat = new char[strlen(f)+1];
+    strcpy(fallbackFormat, f);
 }
 
 
@@ -248,6 +252,10 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    calling SetupDatabase, no matter how we determined which plugin
 //    we're using.
 //
+//    Jeremy Meredith, Wed Mar 19 14:09:36 EDT 2008
+//    Renamed defaultFormat to fallbackFormat for clarity.
+//    Also, allow an assumed format to fail and fall back on other readers.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -353,11 +361,19 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
                     defaultFileOpenOptions.GetOpenOptionsForID(formatid);
                 if (opts && info)
                     info->SetReadOptions(new DBOptionsAttributes(*opts));
-                plugins.push_back(info ? info->GetName(): "");
-                rv = SetupDatabase(info, filelist, filelistN,
-                                   timestep, fileIndex,
-                                   nBlocks, forceReadAllCyclesAndTimes,
-                                   treatAllDBsAsTimeVarying);
+                TRY
+                {
+                    plugins.push_back(info ? info->GetName(): "");
+                    rv = SetupDatabase(info, filelist, filelistN,
+                                       timestep, fileIndex,
+                                       nBlocks, forceReadAllCyclesAndTimes,
+                                       treatAllDBsAsTimeVarying);
+                }
+                CATCHALL(...)
+                {
+                    rv = NULL;
+                }
+                ENDTRY
             }
         }
     }
@@ -389,20 +405,20 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     }
 
     //
-    // If no file extension match, then we default to the given database type
+    // If no file extension match, then we fall back to the given database type
     //
-    string defaultDatabaseType(defaultFormat);
+    string fallbackDatabaseType(fallbackFormat);
     if (rv == NULL)
     {
-        int defaultindex = dbmgr->GetAllIndexFromName(defaultDatabaseType);
-        if (defaultindex != -1)
+        int fallbackindex = dbmgr->GetAllIndexFromName(fallbackDatabaseType);
+        if (fallbackindex != -1)
         {
-            string defaultid = dbmgr->GetAllID(defaultindex);
+            string fallbackid = dbmgr->GetAllID(fallbackindex);
             CommonDatabasePluginInfo *info = 
-                                         dbmgr->GetCommonPluginInfo(defaultid);
+                                         dbmgr->GetCommonPluginInfo(fallbackid);
             // Set the opening options
             const DBOptionsAttributes *opts = 
-                defaultFileOpenOptions.GetOpenOptionsForID(defaultid);
+                defaultFileOpenOptions.GetOpenOptionsForID(fallbackid);
             if (opts && info)
                 info->SetReadOptions(new DBOptionsAttributes(*opts));
             plugins.push_back(info ? info->GetName() : "");
@@ -414,8 +430,8 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
         {
             char msg[1000];
             SNPRINTF(msg, sizeof(msg),
-                    "The default file format plugin '%s' was not available.",
-                    defaultDatabaseType.c_str());
+                    "The fallback file format plugin '%s' was not available.",
+                    fallbackDatabaseType.c_str());
             EXCEPTION1(ImproperUseException, msg);
         }
     }
