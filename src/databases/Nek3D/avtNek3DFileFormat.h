@@ -161,7 +161,7 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
     void                   ByteSwap32(void *aVals, int nVals);
     void                   ByteSwap64(void *aVals, int nVals);
     void                   FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLineLen);
-
+    void                   GetFileName(int timestep, int pardir, char *outFileName, int bufSize);
 };
 
 

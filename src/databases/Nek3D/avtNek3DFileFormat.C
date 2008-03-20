@@ -61,6 +61,7 @@
 #include <avtDatabase.h>
 #include <avtNekDomainBoundaries.h>
 #include <avtVariableCache.h>
+#include <snprintf.h>
 
 #include <Expression.h>
 
@@ -335,6 +336,9 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
 //  Programmer: David Bremer
 //  Creation:   Wed Feb  6 19:12:55 PST 2008
 //
+//  Modifications:
+//    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
+//    Changed sprintf to SNPRINTF.
 // ****************************************************************************
 
 void           
@@ -446,7 +450,7 @@ avtNek3DFileFormat::ParseMetaDataFile(const char *filename)
         }
         else
         {
-            sprintf(buf, "Error parsing file.  Unknown tag %s", tag.c_str());
+            SNPRINTF(buf, 2048, "Error parsing file.  Unknown tag %s", tag.c_str());
             EXCEPTION1(InvalidDBTypeException, buf);
         }
     }
@@ -506,6 +510,9 @@ avtNek3DFileFormat::ParseMetaDataFile(const char *filename)
 //  Programmer: David Bremer
 //  Creation:   Wed Feb  6 19:12:55 PST 2008
 //
+//  Modified:
+//    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
+//    Use the GetFileName method.
 // ****************************************************************************
 
 void
@@ -516,11 +523,8 @@ avtNek3DFileFormat::ParseNekFileHeader()
 
     //Now read the header out of one the files to get block and variable info
     char *blockfilename = new char[ fileTemplate.size() + 64 ];
-    if (iNumOutputDirs == 1)
-        sprintf(blockfilename, fileTemplate.c_str(), iFirstTimestep);
-    else
-        sprintf(blockfilename, fileTemplate.c_str(), 0, 0, iFirstTimestep);
 
+    GetFileName(iFirstTimestep, 0, blockfilename, fileTemplate.size() + 64);
     ifstream  f(blockfilename);
 
     if (iNumOutputDirs == 1)
@@ -679,6 +683,9 @@ avtNek3DFileFormat::ParseNekFileHeader()
 //  Programmer: David Bremer
 //  Creation:   Wed Feb  6 19:12:55 PST 2008
 //
+//  Modified:
+//    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
+//    Use the GetFileName method.  Changed sprintf to SNPRINTF.
 // ****************************************************************************
 
 void
@@ -710,14 +717,14 @@ avtNek3DFileFormat::ReadBlockLocations()
     int *tmpBlocks = new int[iBlocksPerFile];
     for (ii = iRank; ii < iNumOutputDirs; ii+=nProcs)
     {
-        sprintf(blockfilename, fileTemplate.c_str(), ii, ii, iFirstTimestep);
         int t0 = visitTimer->StartTimer();
+        GetFileName(iFirstTimestep, ii, blockfilename, fileTemplate.size() + 64);
         f.open(blockfilename);
         visitTimer->StopTimer(t0, "avtNek3DFileFormat constructor, time to open a file");
         if (!f.is_open())
         {
             char msg[1024];
-            sprintf(msg, "Could not open file %s.", filename);
+            SNPRINTF(msg, 1024, "Could not open file %s.", filename);
             EXCEPTION1(InvalidDBTypeException, msg);
         }
         f.seekg( 136, std::ios_base::beg );
@@ -857,6 +864,9 @@ avtNek3DFileFormat::FreeUpResources(void)
 //
 //    Dave Bremer, Fri Jan 18 16:21:34 PST 2008
 //    Added domain boundary metadata.
+//
+//    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
+//    Changed sprintf to SNPRINTF.
 // ****************************************************************************
 
 void
@@ -886,7 +896,7 @@ avtNek3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*time
     for (ii = 0; ii < iNumSFields; ii++)
     {
         char scalarVarName[32];
-        sprintf(scalarVarName, "s%d", ii+1);
+        SNPRINTF(scalarVarName, 32, "s%d", ii+1);
         AddScalarVarToMetaData(md, scalarVarName, meshname, AVT_NODECENT);
     }
 
@@ -943,6 +953,8 @@ avtNek3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*time
 //    Kathleen Bonnell, Wed Nov 28 09:43:34 PST 2007 
 //    Added space in args list between 'const char *' and '/*meshname*/'.
 // 
+//    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
+//    Use the GetFileName method.
 // ****************************************************************************
 
 vtkDataSet *
@@ -969,18 +981,15 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshna
         if (fdMesh)
             fclose(fdMesh);
 
-        char *meshfilename = new char[ fileTemplate.size() + 256 ];
+        char *meshfilename = new char[ fileTemplate.size() + 64 ];
 
-        if (iNumOutputDirs == 1)
-        {
-            sprintf(meshfilename, fileTemplate.c_str(), iTimestepsWithMesh[0]);
-        }
-        else
-        {
+        iCurrMeshProc = 0;
+        if (iNumOutputDirs > 1)
             iCurrMeshProc = aBlockLocs[domain*2];
-            sprintf(meshfilename, fileTemplate.c_str(), 
-                    iCurrMeshProc, iCurrMeshProc, iTimestepsWithMesh[0]);
-        }
+
+        GetFileName(iTimestepsWithMesh[0], iCurrMeshProc, 
+                    meshfilename, fileTemplate.size() + 64);
+
         fdMesh = fopen(meshfilename, "rb");
         if (!fdMesh)
             EXCEPTION1(InvalidFilesException, meshfilename);
@@ -1111,6 +1120,9 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshna
 //
 //    Dave Bremer, Thu Nov 15 16:44:42 PST 2007
 //    Small fix for ascii format in case windows-style CRLF is used.
+//
+//    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
+//    Use the GetFileName method.
 // ****************************************************************************
 
 vtkDataArray *
@@ -1127,17 +1139,15 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
         if (fdVar)
             fclose(fdVar);
 
-        char *filename = new char[ fileTemplate.size() + 256 ];
-        if (iNumOutputDirs == 1)
-        {
-            sprintf(filename, fileTemplate.c_str(), iTimestep);
-        }
-        else
-        {
+        char *filename = new char[ fileTemplate.size() + 64 ];
+
+        iCurrVarProc = 0;
+        if (iNumOutputDirs > 1)
             iCurrVarProc = aBlockLocs[domain*2];
-            sprintf(filename, fileTemplate.c_str(), 
-                    iCurrVarProc, iCurrVarProc, iTimestep);
-        }
+
+        GetFileName(iTimestep, iCurrVarProc, 
+                    filename, fileTemplate.size() + 64);
+
         fdVar = fopen(filename, "rb");
         if (!fdVar)
             EXCEPTION1(InvalidFilesException, filename);
@@ -1253,6 +1263,9 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
 //
 //    Dave Bremer, Thu Nov 15 16:44:42 PST 2007
 //    Small fix for ascii format in case windows-style CRLF is used.
+//
+//    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
+//    Use the GetFileName method.
 // ****************************************************************************
 
 vtkDataArray *
@@ -1269,17 +1282,14 @@ avtNek3DFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
         if (fdVar)
             fclose(fdVar);
 
-        char *filename = new char[ fileTemplate.size() + 256 ];
-        if (iNumOutputDirs == 1)
-        {
-            sprintf(filename, fileTemplate.c_str(), iTimestep);
-        }
-        else
-        {
+        char *filename = new char[ fileTemplate.size() + 64 ];
+        iCurrVarProc = 0;
+        if (iNumOutputDirs > 1)
             iCurrVarProc = aBlockLocs[domain*2];
-            sprintf(filename, fileTemplate.c_str(), 
-                    iCurrVarProc, iCurrVarProc, iTimestep);
-        }
+
+        GetFileName(iTimestep, iCurrVarProc, 
+                    filename, fileTemplate.size() + 64);
+
         fdVar = fopen(filename, "rb");
         if (!fdVar)
             EXCEPTION1(InvalidFilesException, filename);
@@ -1431,6 +1441,53 @@ avtNek3DFileFormat::GetTimes(std::vector<double> &outTimes)
 
 
 // ****************************************************************************
+//  Method: avtNek3DFileFormat::GetFileName
+//
+//  Purpose:
+//      Create a filename from the template and other info.
+//
+//  Programmer: Dave Bremer
+//  Creation:   March 19, 2008
+//
+// ****************************************************************************
+
+void
+avtNek3DFileFormat::GetFileName(int timestep, int pardir, char *outFileName, int bufSize)
+{
+    int nPrintfTokens = 0;
+    int ii;
+
+    for (ii = 0; ii < fileTemplate.size()-1; ii++)
+    {
+        if (fileTemplate[ii] == '%' && fileTemplate[ii+1] != '%')
+            nPrintfTokens++;
+    }
+
+    if (iNumOutputDirs == 1 && nPrintfTokens != 1)
+    {
+        EXCEPTION1(ImproperUseException, 
+            "The filetemplate tag must receive only one printf token for serial Nek files.");
+    }
+    else if (iNumOutputDirs > 1 && (nPrintfTokens < 2 || nPrintfTokens > 3))
+    {
+        EXCEPTION1(ImproperUseException, 
+            "The filetemplate tag must receive either 2 or 3 printf tokens for parallel Nek files.");
+    }
+    int len;
+    if (iNumOutputDirs == 1)
+        len = SNPRINTF(outFileName, bufSize, fileTemplate.c_str(), timestep);
+    else if (nPrintfTokens == 2)
+        len = SNPRINTF(outFileName, bufSize, fileTemplate.c_str(), pardir, timestep);
+    else
+        len = SNPRINTF(outFileName, bufSize, fileTemplate.c_str(), pardir, pardir, timestep);
+
+    if (len >= bufSize)
+        EXCEPTION1(ImproperUseException, 
+            "An internal buffer was too small to hold a file name.");
+}
+
+
+// ****************************************************************************
 //  Method: avtNek3DFileFormat::UpdateCyclesAndTimes
 //
 //  Purpose:
@@ -1447,6 +1504,9 @@ avtNek3DFileFormat::GetTimes(std::vector<double> &outTimes)
 //
 //    Dave Bremer, Wed Nov 14 15:00:13 PST 2007
 //    Added support for the parallel version of the file.
+//
+//    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
+//    Use the GetFileName method.
 // ****************************************************************************
 
 void
@@ -1471,16 +1531,15 @@ avtNek3DFileFormat::UpdateCyclesAndTimes()
         t = 0.0;
         c = 0;
 
+        GetFileName(iFirstTimestep+ii, 0, meshfilename, fileTemplate.size() + 64);
+        f.open(meshfilename);
+
         if (iNumOutputDirs == 1)
         {
-            sprintf(meshfilename, fileTemplate.c_str(), iFirstTimestep+ii);
-            f.open(meshfilename);
             f >> dummy >> dummy >> dummy >> dummy >> t >> c >> v;  //skip #blocks and block size
         }
         else
         {
-            sprintf(meshfilename, fileTemplate.c_str(), 0, 0, iFirstTimestep+ii);
-            f.open(meshfilename);
             f >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy;
             f >> t >> c >> dummy;
             //while (f.get() == ' ')  //read past the first char of the next tag
