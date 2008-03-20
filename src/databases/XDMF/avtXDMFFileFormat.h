@@ -186,6 +186,9 @@ class DomainInfo
 //    Eric Brugger, Wed Mar 19 12:37:11 PDT 2008
 //    Added OpenFile and CloseFile.
 //
+//    Eric Brugger, Thu Mar 20 08:24:54 PDT 2008
+//    Added GetRectilinearMesh.
+//
 // ****************************************************************************
 
 class avtXDMFFileFormat : public avtSTMDFileFormat
@@ -256,6 +259,7 @@ class avtXDMFFileFormat : public avtSTMDFileFormat
     void                   ParseXMLFile(void);
 
     void                   GetStructuredGhostZones(MeshInfo *, vtkDataSet *ds);
+    vtkDataSet            *GetRectilinearMesh(MeshInfo *);
     vtkDataSet            *GetCurvilinearMesh(MeshInfo *);
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);

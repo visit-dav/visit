@@ -372,6 +372,9 @@ avtXDMFFileFormat::DetermineFileAndDataset(const char *input,
 //    hides the details of caching multiple open files so that files
 //    typically only need to be opened once.
 //
+//    Eric Brugger, Thu Mar 20 10:10:15 PDT 2008
+//    I added error checking for the input arguments.
+//
 // ****************************************************************************
 
 int
@@ -379,6 +382,12 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf,
     int lbuf)
 {
     hid_t     file_id, dataset_id, dataspace_id;
+
+    //
+    // Do some error checking.
+    //
+    if (dataItem == NULL || buf == NULL || lbuf <= 0)
+        return 0;
 
     //
     // If cdata is NULL, then read it from the file.
@@ -1087,6 +1096,9 @@ avtXDMFFileFormat::ParseGridInformation(string &ghostOffsets)
 //    Eric Brugger, Mon Mar 17 13:22:09 PDT 2008
 //    Added logic to read ghost offsets.
 //
+//    Eric Brugger, Thu Mar 20 10:10:15 PDT 2008
+//    I changed some of the geometry type strings that were incorrect.
+//
 // ****************************************************************************
 
 void
@@ -1178,9 +1190,9 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
         meshInfo->geometryType = MeshInfo::TYPE_XY;
     else if (geometryType == "X_Y_Z")
         meshInfo->geometryType = MeshInfo::TYPE_X_Y_Z;
-    else if (geometryType == "VXVYVZ")
+    else if (geometryType == "VxVyVz")
         meshInfo->geometryType = MeshInfo::TYPE_VXVYVZ;
-    else if (geometryType == "ORIGIN_DXDYDZ")
+    else if (geometryType == "Origin_DxDyDz")
         meshInfo->geometryType = MeshInfo::TYPE_ORIGIN_DXDYDZ;
     else
     {
@@ -1857,6 +1869,113 @@ avtXDMFFileFormat::GetStructuredGhostZones(MeshInfo *meshInfo, vtkDataSet *ds)
 
 
 // ****************************************************************************
+//  Method: avtXDMFFileFormat::GetRectilinearMesh
+//
+//  Purpose:
+//      Gets the rectilinear mesh associated with this mesh info.  The mesh
+//      is returned as a vtkRectilinearGrid.
+//
+//  Arguments:
+//      meshInfo    The MeshInfo structure describing the mesh.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Mar 20 08:26:23 PDT 2008
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
+{
+    //
+    // Create the VTK object.
+    //
+    vtkRectilinearGrid   *rgrid   = vtkRectilinearGrid::New();
+
+    //
+    // Tell the grid what its dimensions are and populate the points array.
+    //
+    rgrid->SetDimensions(meshInfo->dimensions);
+
+    vtkFloatArray *xcoords = vtkFloatArray::New();
+    xcoords->SetNumberOfTuples(meshInfo->dimensions[0]);
+    float *xpts = xcoords->GetPointer(0);
+    vtkFloatArray *ycoords = vtkFloatArray::New();
+    ycoords->SetNumberOfTuples(meshInfo->dimensions[1]);
+    float *ypts = ycoords->GetPointer(0);
+    vtkFloatArray *zcoords = vtkFloatArray::New();
+    zcoords->SetNumberOfTuples(meshInfo->dimensions[2]);
+    float *zpts = zcoords->GetPointer(0);
+
+    rgrid->SetXCoordinates(xcoords);
+    xcoords->Delete();
+    rgrid->SetYCoordinates(ycoords);
+    ycoords->Delete();
+    rgrid->SetZCoordinates(zcoords);
+    zcoords->Delete();
+
+    //
+    // Populate the coordinates.  Put in 3D points with z=0 if the
+    // mesh is 2D.
+    //
+    float origin[3], dxdydz[3];
+
+    switch (meshInfo->geometryType)
+    {
+      case MeshInfo::TYPE_X_Y_Z:
+        if (!ReadHDFDataItem(meshInfo->meshData[0], xpts, meshInfo->dimensions[0]))
+        {
+            rgrid->Delete();
+            return NULL;
+        }
+        if (!ReadHDFDataItem(meshInfo->meshData[1], ypts, meshInfo->dimensions[1]))
+        {
+            rgrid->Delete();
+            return NULL;
+        }
+        if (meshInfo->meshData[2] == NULL)
+        {
+            zpts[0] = 0.;
+        }
+        else
+        {
+            if (!ReadHDFDataItem(meshInfo->meshData[2], zpts, meshInfo->dimensions[2]))
+            {
+                rgrid->Delete();
+                return NULL;
+            }
+        }
+        break;
+
+      case MeshInfo::TYPE_ORIGIN_DXDYDZ:
+        if (!ReadHDFDataItem(meshInfo->meshData[0], origin, 3))
+        {
+            rgrid->Delete();
+            return NULL;
+        }
+        if (!ReadHDFDataItem(meshInfo->meshData[1], dxdydz, 3))
+        {
+            rgrid->Delete();
+            return NULL;
+        }
+        for (int i = 0; i < meshInfo->dimensions[0]; i++)
+            xpts[i] = origin[0] + i * dxdydz[0];
+        for (int j = 0; j < meshInfo->dimensions[1]; j++)
+            ypts[j] = origin[1] + j * dxdydz[1];
+        for (int k = 0; k < meshInfo->dimensions[2]; k++)
+            zpts[k] = origin[2] + k * dxdydz[2];
+
+        break;
+
+      default:
+        avtCallback::IssueWarning("GetMesh: Invalid GeometryType.");
+        break;
+    }
+
+    return rgrid;
+}
+
+
+// ****************************************************************************
 //  Method: avtXDMFFileFormat::GetCurvilinearMesh
 //
 //  Purpose:
@@ -1868,6 +1987,11 @@ avtXDMFFileFormat::GetStructuredGhostZones(MeshInfo *meshInfo, vtkDataSet *ds)
 //
 //  Programmer: Eric Brugger
 //  Creation:   Fri Nov 30 13:10:08 PST 2007
+//
+//  Modifications:
+//    Eric Brugger, Thu Mar 20 10:10:15 PDT 2008
+//    Corrected the coding for the case where the geomtery type was
+//    TYPE_VXVYVZ and there were only 2 coordinate arrays.
 //
 // ****************************************************************************
 
@@ -1943,7 +2067,7 @@ avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
                 sgrid->Delete();
                 return NULL;
             }
-            if (!ReadHDFDataItem(meshInfo->meshData[2], zcoords, nnodes))
+            if (meshInfo->meshData[2] == NULL)
             {
                 for (int i = 0; i < nnodes; i++)
                 {
@@ -1954,6 +2078,12 @@ avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
             }
             else
             {
+                if (!ReadHDFDataItem(meshInfo->meshData[2], zcoords, nnodes))
+                {
+                    delete [] xcoords; delete [] ycoords; delete [] zcoords;
+                    sgrid->Delete();
+                    return NULL;
+                }
                 for (int i = 0; i < nnodes; i++)
                 {
                     *pts++ = *xcoords++;
@@ -1997,6 +2127,9 @@ avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
 //  Modifications:
 //    Eric Brugger, Mon Mar 17 13:22:09 PDT 2008
 //    Added code to add ghost zone information.
+//
+//    Eric Brugger, Thu Mar 20 08:26:23 PDT 2008
+//    Added code to handle rectilinear meshes.
 //
 // ****************************************************************************
 
@@ -2043,6 +2176,7 @@ avtXDMFFileFormat::GetMesh(int domain, const char *meshname)
     switch (meshInfo->type)
     {
       case AVT_RECTILINEAR_MESH:
+        ds = GetRectilinearMesh(meshInfo);
         break;
       case AVT_CURVILINEAR_MESH:
         ds = GetCurvilinearMesh(meshInfo);
