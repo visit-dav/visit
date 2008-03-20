@@ -323,6 +323,9 @@ VisitHotPointInteractor::SetNullInteractor()
 //   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
 //   Replaced Pick2D with Pick.
 //
+//   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
+//   Added SPREADSHEET_PICK 
+//
 // ****************************************************************************
 
 void
@@ -345,6 +348,7 @@ VisitHotPointInteractor::Start2DMode(INTERACTION_MODE mode)
         break;
     case NODE_PICK:
     case ZONE_PICK:
+    case SPREADSHEET_PICK:
         if(pick == NULL)
         {
             pick = new Pick(proxy);
@@ -415,6 +419,9 @@ VisitHotPointInteractor::Start2DMode(INTERACTION_MODE mode)
 //   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
 //   Replaced Pick3D with Pick.
 //
+//   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
+//   Added SPREADSHEET_PICK 
+//
 // ****************************************************************************
 
 void
@@ -460,6 +467,7 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
         break;
     case ZONE_PICK: // fall-through
     case NODE_PICK:
+    case SPREADSHEET_PICK:
         if(pick == NULL)
         {
             pick = new Pick(proxy);
@@ -522,6 +530,9 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
 //   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
 //   Replaced Pick3D and Pick2D with Pick.
 //
+//   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
+//   Added SPREADSHEET_PICK 
+//
 // ****************************************************************************
 
 void
@@ -552,6 +563,7 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
         break;
     case ZONE_PICK:
     case NODE_PICK:
+    case SPREADSHEET_PICK:
         if(pick == NULL)
         {
             pick = new Pick(proxy);
@@ -591,6 +603,9 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
 //   Jeremy Meredith, Mon Feb  4 13:24:08 EST 2008
 //   Added zoom interactor for AxisArray mode.
 //
+//   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
+//   Added SPREADSHEET_PICK 
+//
 // ****************************************************************************
 void
 VisitHotPointInteractor::StartAxisArrayMode(INTERACTION_MODE mode)
@@ -622,6 +637,7 @@ VisitHotPointInteractor::StartAxisArrayMode(INTERACTION_MODE mode)
         break;
       case ZONE_PICK:
       case NODE_PICK:
+      case SPREADSHEET_PICK:
         if (pick == NULL)
         {
             pick = new Pick(proxy);

@@ -548,6 +548,8 @@ VisWinRenderingWithWindow::SetLargeIcons(bool val)
 //   Brad Whitlock, Fri Feb 27 16:22:40 PST 2004
 //   I made the code work with Qt 3.
 //
+//   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
+//   Added SPREADSHEET_PICK 
 // ****************************************************************************
 
 void
@@ -559,7 +561,7 @@ VisWinRenderingWithWindow::SetCursorForMode(INTERACTION_MODE m)
     // Determine the new cursor index. The arrow cursor is 0 and the pick
     // cursor is 1.
     //
-    if(m == ZONE_PICK || m == NODE_PICK)
+    if(m == ZONE_PICK || m == NODE_PICK || m == SPREADSHEET_PICK)
         newCursorIndex = 1;
     else
         newCursorIndex = 0;

@@ -39,7 +39,7 @@
 #include <VisWindowTypes.h>
 
 static const char *INTERACTION_MODE_strings[] = {"NAVIGATE", "ZONE_PICK",
-    "NODE_PICK", "ZOOM", "LINEOUT"};
+    "NODE_PICK", "ZOOM", "LINEOUT", "SPREADSHEET_PICK"};
 
 // ****************************************************************************
 // Function: INTERACTION_MODE_ToString
@@ -51,14 +51,16 @@ static const char *INTERACTION_MODE_strings[] = {"NAVIGATE", "ZONE_PICK",
 // Creation:   Tue Jul 15 16:44:12 PST 2003
 //
 // Modifications:
-//   
+//    Gunther H. Weber, Wed Mar 19 16:08:41 PDT 2008
+//    Updadated bounds for new SPREADSHEET_PICK
+//
 // ****************************************************************************
 
 std::string
 INTERACTION_MODE_ToString(INTERACTION_MODE m)
 {
     int index = int(m);
-    if(m < NAVIGATE || m > LINEOUT) index = 0;
+    if(m < NAVIGATE || m > SPREADSHEET_PICK) index = 0;
     return INTERACTION_MODE_strings[index];
 }
 
@@ -66,7 +68,7 @@ std::string
 INTERACTION_MODE_ToString(int m)
 {
     int index = m;
-    if(index < 0 || index > 4) index = 0;
+    if(index < 0 || index > 5) index = 0;
     return INTERACTION_MODE_strings[index];
 }
 
@@ -80,6 +82,8 @@ INTERACTION_MODE_ToString(int m)
 // Creation:   Tue Jul 15 16:44:44 PST 2003
 //
 // Modifications:
+//    Gunther H. Weber, Wed Mar 19 16:08:41 PDT 2008
+//    Updadated bounds for new SPREADSHEET_PICK
 //   
 // ****************************************************************************
 
@@ -88,7 +92,7 @@ INTERACTION_MODE_FromString(const std::string &s, INTERACTION_MODE &m)
 {
     m = NAVIGATE;
 
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < 6; ++i)
     {
         if(s == INTERACTION_MODE_strings[i])
         {

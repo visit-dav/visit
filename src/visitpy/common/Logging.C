@@ -1090,7 +1090,7 @@ static void log_ClearPickPointsRPC(ViewerRPC *rpc, char *str)
 static void log_SetWindowModeRPC(ViewerRPC *rpc, char *str)
 {
     const char *wmodes[] = {"navigate", "zone pick", "node pick", "zoom",
-                            "lineout"};
+                            "lineout", "spreadsheet pick"};
     SNPRINTF(str, SLEN, "SetWindowMode(\"%s\")\n", wmodes[rpc->GetWindowMode()]);
 }
 
