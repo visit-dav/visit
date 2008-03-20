@@ -294,6 +294,7 @@ avtCCMFileFormat::GetIDsForDomain(int dom,
     if(ret)
     {
         hasSolution = true;
+        ccmErr = kCCMIONoErr;
         // Try and read the vertices, topology, and solution ids for this 
         // processor.
         CCMIOReadProcessor(&ccmErr, processor, &vertices, &topology, NULL, 
@@ -302,6 +303,7 @@ avtCCMFileFormat::GetIDsForDomain(int dom,
         {
             // That didn't work. (Maybe no solution). See if we can at least 
             // get the vertices and processor.
+            ccmErr = kCCMIONoErr;
             CCMIOReadProcessor(&ccmErr, processor, &vertices, &topology, NULL, 
                                NULL);
             if(ccmErr == kCCMIONoErr)
