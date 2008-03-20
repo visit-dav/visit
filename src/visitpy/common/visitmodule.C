@@ -6520,6 +6520,9 @@ visit_SetColorTexturingEnabled(PyObject *self, PyObject *args)
 //   Added zone pick, node pick and lineout, ensured mode numbers being
 //   set from string names is correct. (based on WindowActions).
 //
+//   Gunther H. Weber, Wed Mar 19 18:52:36 PDT 2008
+//   Added spreadsheet pick 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6545,6 +6548,8 @@ visit_SetWindowMode(PyObject *self, PyObject *args)
             mode = 3;
         else if(strcmp(cMode, "lineout") == 0)
             mode = 4;
+        else if (strcmp(cMode, "spreadsheet pick") == 0)
+            mode = 5;
         else
             mode = 0;
 

@@ -59,6 +59,9 @@ using namespace std;
 //    Kathleen Bonnell, Fri Jun 27 16:43:23 PDT 2003 
 //    Pick renamed ZonePick, added NodePick. 
 //
+//    Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
+//    Added SPREADSHEET_PICK 
+//
 // ****************************************************************************
 
 BadInteractorException::BadInteractorException(INTERACTION_MODE mode)
@@ -80,6 +83,9 @@ BadInteractorException::BadInteractorException(INTERACTION_MODE mode)
         break;
       case LINEOUT:
         modeS = "Lineout";
+        break;
+      case SPREADSHEET_PICK:
+        modeS = "SpreadsheetPick";
         break;
       default:
         modeS = "Unaccounted For Mode";

@@ -55,6 +55,9 @@
 //    value that gets passed along to the callbacks.  Also added a default
 //    constructor so the new values get appropriate defaults.
 //
+//    Gunther H. Weber, Wed Mar 19 16:06:04 PDT 2008
+//    Added SPREADSHEET_PICK to INTERACTION_MODE
+//
 // ************************************************************************* //
 
 
@@ -68,10 +71,11 @@
 typedef enum
 {
     NAVIGATE         = 0,
-    ZONE_PICK,      /* 1 */
-    NODE_PICK,      /* 2 */
-    ZOOM,           /* 3 */
-    LINEOUT         /* 4 */
+    ZONE_PICK,       /* 1 */
+    NODE_PICK,       /* 2 */
+    ZOOM,            /* 3 */
+    LINEOUT,         /* 4 */
+    SPREADSHEET_PICK /* 5*/
 }  INTERACTION_MODE;
 
 typedef enum

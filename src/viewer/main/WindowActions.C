@@ -67,6 +67,7 @@
 #include <navigatemode.xpm>
 #include <nodepickmode.xpm>
 #include <zonepickmode.xpm>
+#include <spreadsheetpickmode.xpm>
 #include <zoommode.xpm>
 #include <lineoutmode.xpm>
 #include <VisWindowTypes.h>
@@ -988,6 +989,8 @@ InvertBackgroundAction::Execute()
 //   Kathleen Bonnell, Thu Jul  8 12:52:46 PDT 2004 
 //   Change order of ZonePick and NodePick for NoWin mode.
 //   
+//   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
+//   Added Spreadsheet Pick choice 
 // ****************************************************************************
 
 SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
@@ -1004,6 +1007,7 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
         AddChoice("Node Pick", "Node Pick mode", QPixmap(nodepickmode_xpm));
         AddChoice("Zoom", "Zoom mode", QPixmap(zoommode_xpm));
         AddChoice("Lineout", "Lineout mode", QPixmap(lineoutmode_xpm));
+        AddChoice("Spreadsheet Pick", "Spreadsheet Pick mode", QPixmap(spreadsheetpickmode_xpm));
     }
     else 
     {
@@ -1012,6 +1016,7 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
         AddChoice("Node Pick");
         AddChoice("Zoom");
         AddChoice("Lineout");
+        AddChoice("Spreadsheet Pick");
     }
 }
 
@@ -1126,6 +1131,9 @@ SetWindowModeAction::Enabled() const
 //   Jeremy Meredith, Mon Feb  4 13:24:08 EST 2008
 //   Added zoom interactor for AxisArray mode.
 //
+//   Gunther H. Weber, Wed Mar 19 18:47:34 PDT 2008
+//   Added logic for spreadsheet pick 
+//
 // ****************************************************************************
 
 bool
@@ -1152,6 +1160,10 @@ SetWindowModeAction::ChoiceEnabled(int i) const
         retval = (window->GetWindowMode() == WINMODE_2D) &&
                  PlotPluginManager::Instance()->PluginAvailable("Curve_1.0") &&
                  OperatorPluginManager::Instance()->PluginAvailable("Lineout_1.0");
+    }
+    else if(i == 5) // spreadsheet pick
+    {
+        retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
     }
 
     return retval;

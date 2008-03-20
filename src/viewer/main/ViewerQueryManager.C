@@ -1875,6 +1875,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Brad Whitlock, Thu Jan 24 11:57:14 PDT 2008
 //    Added new arguments to ViewerPlotList::AddPlot.
 //
+//    Gunther H. Weber, Wed Mar 19 18:50:34 PDT 2008
+//    Added logic for spreadsheet pick mode
+//
 // ****************************************************************************
 
 bool
@@ -2245,7 +2248,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             // If so, detect to see if there is a spreadsheet plot in the 
             // current window.  If so, use it.  If not, create it.
             //
-            bool doSpreadsheet = (pickAtts->GetCreateSpreadsheet());
+            bool doSpreadsheet = (pickAtts->GetCreateSpreadsheet()) ||
+                (win->GetInteractionMode() == SPREADSHEET_PICK);
             if (doSpreadsheet)
             {
                 int  i;
