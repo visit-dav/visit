@@ -643,6 +643,9 @@ ParentProcess::GetWriteConnection(int i) const
 //   Hank Childs, Wed Dec 19 08:51:45 PST 2007
 //   Added print statement.
 //
+//   Kathleen Bonnell, Thu Mar 20 08:02:44 PDT 2008 
+//   Added possbile IP resolution failure to the error message for non-windows.
+//
 // ****************************************************************************
 
 int
@@ -680,8 +683,8 @@ ParentProcess::GetClientSocketDescriptor(int port)
     // Disable the Nagle algorithm 
     debug5 << mName << "Setting socket options" << endl;
     int opt = 1;
-    if(setsockopt(s, IPPROTO_TCP, TCP_NODELAY, (const char FAR *)&opt, sizeof(int))
-       == SOCKET_ERROR)
+    if(setsockopt(s, IPPROTO_TCP, TCP_NODELAY, (const char FAR *)&opt, 
+                  sizeof(int)) == SOCKET_ERROR)
     {
         LogWindowsSocketError(mName, "setsockopt");
     }
@@ -708,7 +711,11 @@ ParentProcess::GetClientSocketDescriptor(int port)
     debug5 << mName << "Calling connect" << endl;
     debug5 << "(If you see no messages after this one, VisIt was not able\n"
            << "to connect to the client machine.  Nine times out of ten, this\n"
-           << "is a firewall issue on the client machine.)" << endl;
+           << "is a firewall issue on the client machine. It could also mean\n"
+           << "that VisIt was unable to resolve the IP address for the client\n"
+           << "machine.  You may need to verify the contents of /etc/hosts.)" 
+           << endl;
+
     if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
     {
         debug5 << mName << "Could not connect! (error="<<errno<<")" << endl;
