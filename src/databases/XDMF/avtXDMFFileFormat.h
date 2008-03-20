@@ -47,6 +47,8 @@
 
 #include <XDMFParser.h>
 
+#include <hdf5.h>
+
 #include <string>
 #include <vector>
 
@@ -178,8 +180,11 @@ class DomainInfo
 //  Creation:   Wed Nov 14 11:28:35 PDT 2007
 //
 //  Modifications:
-//    Eric brugger, Mon Mar 17 13:20:14 PDT 2008
+//    Eric Brugger, Mon Mar 17 13:20:14 PDT 2008
 //    Added ParseGridInformation and GetStructuredGhostZones.
+//
+//    Eric Brugger, Wed Mar 19 12:37:11 PDT 2008
+//    Added OpenFile and CloseFile.
 //
 // ****************************************************************************
 
@@ -226,6 +231,12 @@ class avtXDMFFileFormat : public avtSTMDFileFormat
     vector<DomainInfo*>    fileDomainList;
 
     char                   filename[1024], datasetname[1024];
+
+    hid_t                 *hdfFiles;
+
+    hid_t                  OpenFile(int);
+    hid_t                  OpenFile(const char *);
+    virtual void           CloseFile(int);
 
     int                    DetermineFileAndDataset(const char *, char *,
                                char *) const;
