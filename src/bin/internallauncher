@@ -295,6 +295,10 @@ $0 = shift @ARGV;
 #    Added code to obsolete -default_format.  This can be removed in future
 #    versions.  Replaced it with -fallback_format.
 #
+#    Sean Ahern, Thu Mar 20 13:52:30 EDT 2008
+#    Unset DYLD_LIBRARY_PATH on Darwin so that we can't be hit by anything the
+#    user might have set.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1254,6 +1258,10 @@ for ($os) {
         last;
     };
     /darwin/ && do {
+        # Unset the DYLD_LIBRARY_PATH variable so we don't conflict with other
+        # things the user might have set.
+        $ENV{DYLD_LIBRARY_PATH} = "";
+
         if ($req_compiler eq "ppc") {
                 push @supportedarchs, "darwin-ppc";
         }
