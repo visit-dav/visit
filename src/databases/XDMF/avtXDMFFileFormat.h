@@ -189,6 +189,9 @@ class DomainInfo
 //    Eric Brugger, Thu Mar 20 08:24:54 PDT 2008
 //    Added GetRectilinearMesh.
 //
+//    Eric Brugger, Thu Mar 20 16:10:37 PDT 2008
+//    Added ReadDataItem and ReadXMLDataItem.
+//
 // ****************************************************************************
 
 class avtXDMFFileFormat : public avtSTMDFileFormat
@@ -244,6 +247,8 @@ class avtXDMFFileFormat : public avtSTMDFileFormat
     int                    DetermineFileAndDataset(const char *, char *,
                                char *) const;
     int                    ReadHDFDataItem(DataItem *, void *, int);
+    int                    ReadXMLDataItem(DataItem *, void *, int);
+    int                    ReadDataItem(DataItem *, void *, int);
     void                   AddVarInfo(bool, int, VarInfo *);
     DataItem              *ParseDataItem();
     void                   ParseTopology(string &, string &);

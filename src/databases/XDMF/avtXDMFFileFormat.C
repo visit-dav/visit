@@ -357,6 +357,75 @@ avtXDMFFileFormat::DetermineFileAndDataset(const char *input,
 
 
 // ****************************************************************************
+//  Method: avtXDMFFileFormat::ReadXMLDataItem
+//
+//  Purpose:
+//      Read a data item in XML format.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Mar 20 16:14:36 PDT 2008
+//
+// ****************************************************************************
+
+int
+avtXDMFFileFormat::ReadXMLDataItem(DataItem *dataItem, void *buf, int lbuf)
+{
+    //
+    // Check that the size of the dataset and buffer match.
+    //
+    int ldataItem = 1;
+    for (int i = 0; i < dataItem->nDims; i++)
+        ldataItem *= dataItem->dims[i];
+    if (ldataItem != lbuf)
+    {
+        avtCallback::IssueWarning("Dimensions don't match buffer size.");
+        return 0;
+    }
+
+    //
+    // Open the file and seek to the start of the data.
+    //
+    FILE *file = fopen(fname.c_str(), "r");
+    fseek(file, dataItem->cdataOffset, SEEK_SET);
+
+    //
+    // Read the data.  We will read lbuf values and not make any type
+    // of check to see if there is not any additional trailing stuff.
+    //
+    int i;
+    for (i = 0; i < lbuf; i++)
+    {
+        //
+        // Read the value.  Fscanf will skip over any leading
+        // white space.
+        //
+        double value;
+        if (fscanf(file, "%lf", &value) == 1)
+        {
+            ((float *)buf)[i] = (float) value;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    //
+    // Close the file.
+    //
+    fclose(file);
+
+    if (i != lbuf)
+    {
+        avtCallback::IssueWarning("Not enough values in the data item.");
+        return 0;
+    }
+
+    return 1;
+}
+
+
+// ****************************************************************************
 //  Method: avtXDMFFileFormat::ReadHDFDataItem
 //
 //  Purpose:
@@ -375,19 +444,15 @@ avtXDMFFileFormat::DetermineFileAndDataset(const char *input,
 //    Eric Brugger, Thu Mar 20 10:10:15 PDT 2008
 //    I added error checking for the input arguments.
 //
+//    Eric Brugger, Thu Mar 20 16:14:36 PDT 2008
+//    I moved the error checking to ReadDataItem.
+//
 // ****************************************************************************
 
 int
-avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf,
-    int lbuf)
+avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lbuf)
 {
     hid_t     file_id, dataset_id, dataspace_id;
-
-    //
-    // Do some error checking.
-    //
-    if (dataItem == NULL || buf == NULL || lbuf <= 0)
-        return 0;
 
     //
     // If cdata is NULL, then read it from the file.
@@ -492,6 +557,45 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf,
     }
 
     return 1;
+}
+
+
+// ****************************************************************************
+//  Method: avtXDMFFileFormat::ReadDataItem
+//
+//  Purpose:
+//      Read a data item.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Mar 20 16:14:36 PDT 2008
+//
+// ****************************************************************************
+
+int
+avtXDMFFileFormat::ReadDataItem(DataItem *dataItem, void *buf, int lbuf)
+{
+    //
+    // Do some error checking.
+    //
+    if (dataItem == NULL || buf == NULL || lbuf <= 0)
+        return 0;
+
+    //
+    // Read the data based on the format.
+    //
+    switch (dataItem->format)
+    {
+      case DataItem::DATA_FORMAT_XML:
+        return ReadXMLDataItem(dataItem, buf, lbuf);
+
+        break;
+      case DataItem::DATA_FORMAT_HDF:
+        return ReadHDFDataItem(dataItem, buf, lbuf);
+
+        break;
+    }
+    
+    return 0;
 }
 
 
@@ -1881,6 +1985,10 @@ avtXDMFFileFormat::GetStructuredGhostZones(MeshInfo *meshInfo, vtkDataSet *ds)
 //  Programmer: Eric Brugger
 //  Creation:   Thu Mar 20 08:26:23 PDT 2008
 //
+//  Modifications:
+//    Eric Brugger, Thu Mar 20 16:14:36 PDT 2008
+//    I replaced ReadHDFDataItem with ReadDataItem.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1922,12 +2030,12 @@ avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
     switch (meshInfo->geometryType)
     {
       case MeshInfo::TYPE_X_Y_Z:
-        if (!ReadHDFDataItem(meshInfo->meshData[0], xpts, meshInfo->dimensions[0]))
+        if (!ReadDataItem(meshInfo->meshData[0], xpts, meshInfo->dimensions[0]))
         {
             rgrid->Delete();
             return NULL;
         }
-        if (!ReadHDFDataItem(meshInfo->meshData[1], ypts, meshInfo->dimensions[1]))
+        if (!ReadDataItem(meshInfo->meshData[1], ypts, meshInfo->dimensions[1]))
         {
             rgrid->Delete();
             return NULL;
@@ -1938,7 +2046,7 @@ avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
         }
         else
         {
-            if (!ReadHDFDataItem(meshInfo->meshData[2], zpts, meshInfo->dimensions[2]))
+            if (!ReadDataItem(meshInfo->meshData[2], zpts, meshInfo->dimensions[2]))
             {
                 rgrid->Delete();
                 return NULL;
@@ -1947,12 +2055,12 @@ avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
         break;
 
       case MeshInfo::TYPE_ORIGIN_DXDYDZ:
-        if (!ReadHDFDataItem(meshInfo->meshData[0], origin, 3))
+        if (!ReadDataItem(meshInfo->meshData[0], origin, 3))
         {
             rgrid->Delete();
             return NULL;
         }
-        if (!ReadHDFDataItem(meshInfo->meshData[1], dxdydz, 3))
+        if (!ReadDataItem(meshInfo->meshData[1], dxdydz, 3))
         {
             rgrid->Delete();
             return NULL;
@@ -1993,6 +2101,9 @@ avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
 //    Corrected the coding for the case where the geomtery type was
 //    TYPE_VXVYVZ and there were only 2 coordinate arrays.
 //
+//    Eric Brugger, Thu Mar 20 16:14:36 PDT 2008
+//    I replaced ReadHDFDataItem with ReadDataItem.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -2024,7 +2135,7 @@ avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
     switch (meshInfo->geometryType)
     {
       case MeshInfo::TYPE_XYZ:
-        if (!ReadHDFDataItem(meshInfo->meshData[0], pts, 3 * nnodes))
+        if (!ReadDataItem(meshInfo->meshData[0], pts, 3 * nnodes))
         {
             sgrid->Delete();
             return NULL;
@@ -2034,7 +2145,7 @@ avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
       case MeshInfo::TYPE_XY:
         {
             float *coords = new float[2*nnodes];
-            if (!ReadHDFDataItem(meshInfo->meshData[0], coords, 2 * nnodes))
+            if (!ReadDataItem(meshInfo->meshData[0], coords, 2 * nnodes))
             {
                 delete [] coords;
                 sgrid->Delete();
@@ -2055,13 +2166,13 @@ avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
             float *xcoords = new float[nnodes];
             float *ycoords = new float[nnodes];
             float *zcoords = new float[nnodes];
-            if (!ReadHDFDataItem(meshInfo->meshData[0], xcoords, nnodes))
+            if (!ReadDataItem(meshInfo->meshData[0], xcoords, nnodes))
             {
                 delete [] xcoords; delete [] ycoords; delete [] zcoords;
                 sgrid->Delete();
                 return NULL;
             }
-            if (!ReadHDFDataItem(meshInfo->meshData[1], ycoords, nnodes))
+            if (!ReadDataItem(meshInfo->meshData[1], ycoords, nnodes))
             {
                 delete [] xcoords; delete [] ycoords; delete [] zcoords;
                 sgrid->Delete();
@@ -2078,7 +2189,7 @@ avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
             }
             else
             {
-                if (!ReadHDFDataItem(meshInfo->meshData[2], zcoords, nnodes))
+                if (!ReadDataItem(meshInfo->meshData[2], zcoords, nnodes))
                 {
                     delete [] xcoords; delete [] ycoords; delete [] zcoords;
                     sgrid->Delete();
@@ -2213,6 +2324,10 @@ avtXDMFFileFormat::GetMesh(int domain, const char *meshname)
 //  Programmer: brugger -- generated by xml2avt
 //  Creation:   Wed Nov 14 11:28:35 PDT 2007
 //
+//  Modifications:
+//    Eric Brugger, Thu Mar 20 16:14:36 PDT 2008
+//    I replaced ReadHDFDataItem with ReadDataItem.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2271,7 +2386,7 @@ avtXDMFFileFormat::GetVar(int domain, const char *varname)
     // Read the data.
     //
     void *buf = rv->GetVoidPointer(0);
-    if (!ReadHDFDataItem(varInfo->varData, buf, ntuples))
+    if (!ReadDataItem(varInfo->varData, buf, ntuples))
     {
         rv->Delete();
         rv = NULL;
@@ -2297,6 +2412,10 @@ avtXDMFFileFormat::GetVar(int domain, const char *varname)
 //
 //  Programmer: brugger -- generated by xml2avt
 //  Creation:   Wed Nov 14 11:28:35 PDT 2007
+//
+//  Modifications:
+//    Eric Brugger, Thu Mar 20 16:14:36 PDT 2008
+//    I replaced ReadHDFDataItem with ReadDataItem.
 //
 // ****************************************************************************
 
@@ -2369,7 +2488,7 @@ avtXDMFFileFormat::GetVectorVar(int domain, const char *varname)
     // Read the data.
     //
     float *buf = new float[ntuples*ncomps];
-    if (!ReadHDFDataItem(varInfo->varData, buf, ntuples * ncomps))
+    if (!ReadDataItem(varInfo->varData, buf, ntuples * ncomps))
     {
         avtCallback::IssueWarning("GetVectorVar: Error reading the variable.");
         delete [] buf;
