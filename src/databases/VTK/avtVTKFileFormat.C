@@ -195,6 +195,9 @@ avtVTKFileFormat::~avtVTKFileFormat()
 //    Support VTK_IMAGE_DATA (returned from vtkXMLImageDataReader), convert it
 //    to rectilinear, as we do with StructuredPoints data.
 //
+//    Sean Ahern, Mon Mar 24 17:19:56 EDT 2008
+//    Added better error checking to detect badly formatted VTK files.
+//
 // ****************************************************************************
 
 void
@@ -227,6 +230,10 @@ avtVTKFileFormat::ReadInDataset(void)
         reader->ReadAllTensorsOn();
         reader->SetFileName(filename);
         dataset = reader->GetOutput();
+        if (dataset == NULL)
+        {
+            EXCEPTION1(InvalidFilesException, filename);
+        }
         dataset->Register(NULL);
 
         //
@@ -242,6 +249,10 @@ avtVTKFileFormat::ReadInDataset(void)
         vtkVisItXMLImageDataReader *reader = vtkVisItXMLImageDataReader::New();
         reader->SetFileName(filename);
         dataset = reader->GetOutput();
+        if (dataset == NULL)
+        {
+            EXCEPTION1(InvalidFilesException, filename);
+        }
         dataset->Register(NULL);
         dataset->Update();
         //dataset->SetSource(NULL);
@@ -253,6 +264,10 @@ avtVTKFileFormat::ReadInDataset(void)
             vtkVisItXMLRectilinearGridReader::New();
         reader->SetFileName(filename);
         dataset = reader->GetOutput();
+        if (dataset == NULL)
+        {
+            EXCEPTION1(InvalidFilesException, filename);
+        }
         dataset->Register(NULL);
         dataset->Update();
         //dataset->SetSource(NULL);
@@ -264,6 +279,10 @@ avtVTKFileFormat::ReadInDataset(void)
             vtkVisItXMLStructuredGridReader::New();
         reader->SetFileName(filename);
         dataset = reader->GetOutput();
+        if (dataset == NULL)
+        {
+            EXCEPTION1(InvalidFilesException, filename);
+        }
         dataset->Register(NULL);
         dataset->Update();
         //dataset->SetSource(NULL);
@@ -274,6 +293,10 @@ avtVTKFileFormat::ReadInDataset(void)
         vtkVisItXMLPolyDataReader *reader = vtkVisItXMLPolyDataReader::New();
         reader->SetFileName(filename);
         dataset = reader->GetOutput();
+        if (dataset == NULL)
+        {
+            EXCEPTION1(InvalidFilesException, filename);
+        }
         dataset->Register(NULL);
         dataset->Update();
         //dataset->SetSource(NULL);
@@ -285,6 +308,10 @@ avtVTKFileFormat::ReadInDataset(void)
             vtkVisItXMLUnstructuredGridReader::New();
         reader->SetFileName(filename);
         dataset = reader->GetOutput();
+        if (dataset == NULL)
+        {
+            EXCEPTION1(InvalidFilesException, filename);
+        }
         dataset->Register(NULL);
         dataset->Update();
         //dataset->SetSource(NULL);
