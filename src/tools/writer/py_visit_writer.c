@@ -98,7 +98,7 @@ static void setError( char *Msg, ... );
  * ************************************************************************* */
 
 static char writePointMeshDoc[] = 
-    "writePointMesh( fileName, useBinary, points, nameDimensionAndVariables )\n   See modules documentation for more information.";
+    "WritePointMesh( fileName, useBinary, points, nameDimensionAndVariables )\n   See modules documentation for more information.";
 
 static PyObject *writePointMesh( PyObject *self, PyObject *args ) {
 
@@ -144,7 +144,7 @@ static PyObject *writePointMesh( PyObject *self, PyObject *args ) {
  * ************************************************************************* */
 
 static char writeUnstructuredMeshDoc[] = 
-    "writeUnstructuredMesh( fileName, useBinary, points, cellTypeConnections, nameDimensionAndVariables )\n   See modules documentation for more information.";
+    "WriteUnstructuredMesh( fileName, useBinary, points, cellTypeConnections, nameDimensionAndVariables )\n   See modules documentation for more information.";
 
 static PyObject *writeUnstructuredMesh( PyObject *self, PyObject *args ) {
 
@@ -197,7 +197,7 @@ static PyObject *writeUnstructuredMesh( PyObject *self, PyObject *args ) {
  * ************************************************************************* */
 
 static char writeRegularMeshDoc[] = 
-    "writeRegularMesh( fileName, useBinary, dimensions, nameDimensionAndVariables )\n   See modules documentation for more information.";
+    "WriteRegularMesh( fileName, useBinary, dimensions, nameDimensionAndVariables )\n   See modules documentation for more information.";
 
 static PyObject *writeRegularMesh( PyObject *self, PyObject *args ) {
 
@@ -241,7 +241,7 @@ static PyObject *writeRegularMesh( PyObject *self, PyObject *args ) {
  * ************************************************************************* */
 
 static char writeRectilinearMeshDoc[] = 
-    "writeRectilinearMesh( fileName, useBinary, x, y, z, nameDimensionAndVariables )\n   See modules documentation for more information.";
+    "WriteRectilinearMesh( fileName, useBinary, x, y, z, nameDimensionAndVariables )\n   See modules documentation for more information.";
 
 static PyObject *writeRectilinearMesh( PyObject *self, PyObject *args ) {
 
@@ -301,7 +301,7 @@ static PyObject *writeRectilinearMesh( PyObject *self, PyObject *args ) {
  * ************************************************************************* */
 
 static char writeCurvilinearMeshDoc[] = 
-    "writeCurvilinearMesh( fileName, useBinary, Mesh, nameDimensionAndVariables )\n   See modules documentation for more information.";
+    "WriteCurvilinearMesh( fileName, useBinary, Mesh, nameDimensionAndVariables )\n   See modules documentation for more information.";
 
 static PyObject *writeCurvilinearMesh( PyObject *self, PyObject *args ) {
 
