@@ -1101,6 +1101,10 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 //    Gunther H. Weber, Mon Mar 24 20:46:04 PDT 2008
 //    Added support for node centered Chombo data.
 //
+//    Gunther H. Weber, Mon Mar 24 21:14:59 PDT 2008
+//    Fixed bug for files containing only one level when "default to only root
+//    level was selected" (for these files an empty selection was the result).
+//
 // ****************************************************************************
 
 void
@@ -1286,7 +1290,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     if (enableOnlyRootLevel || enableOnlyExplicitMaterials)
     {
-        if (enableOnlyRootLevel)
+        if (enableOnlyRootLevel && num_levels > 1)
         {
             md->AddDefaultSILRestrictionDescription(std::string("!TurnOffAll"));
             md->AddDefaultSILRestrictionDescription(std::string("+level0"));
