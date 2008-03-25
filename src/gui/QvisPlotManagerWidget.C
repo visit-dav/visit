@@ -1680,6 +1680,10 @@ QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState()
 //   Brad Whitlock, Thu Dec 20 12:15:21 PST 2007
 //   Changed how the variable menu gets cleared.
 //
+//   Brad Whitlock, Tue Mar 25 15:54:45 PST 2008
+//   Only recreate the menu if it is not empty to avoid a weird crash in Qt
+//   under certain conditions.
+//
 // ****************************************************************************
 
 void
@@ -1716,8 +1720,11 @@ QvisPlotManagerWidget::UpdateVariableMenu()
                 // Destroy and recreate the variable menu so we actually
                 // delete menu items when we no longer need them.
 #ifdef DELETE_MENU_TO_FREE_POPUPS
-                DestroyVariableMenu();
-                CreateVariableMenu();
+                if(varMenu->count() > 0)
+                {
+                    DestroyVariableMenu();
+                    CreateVariableMenu();
+                }
 #else
                 varMenu->clear();
 #endif
