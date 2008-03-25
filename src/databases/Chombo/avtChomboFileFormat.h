@@ -109,6 +109,9 @@ class DBOptionsAttributes;
 //    Added information about problem domain [low|hi]Prob[I|J|K] needed
 //    to figure out whether a ghost zone is external to the problem.
 //
+//    Gunther H. Weber, Mon Mar 24 20:45:05 PDT 2008
+//    Added support for node centered Chombo files.
+//
 // ****************************************************************************
 
 class avtChomboFileFormat : public avtSTMDFileFormat
@@ -144,6 +147,7 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     int                    cycle;
     //int                    max_level;
     int                    num_levels;
+    bool                   nodeCentered;
     std::vector<int>       numGhosts;
     std::vector<int>       patchesPerLevel;
     std::vector<int>       refinement_ratio;

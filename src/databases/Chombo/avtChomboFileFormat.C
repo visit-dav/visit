@@ -312,6 +312,9 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    Gunther H. Weber, Mon Nov 19 14:02:59 PST 2007
 //    Added missing H5Tclose in expression reading code.
 //
+//    Gunther H. Weber, Mon Mar 24 20:46:04 PDT 2008
+//    Added support for node centered Chombo data.
+//
 // ****************************************************************************
 
 void
@@ -355,6 +358,7 @@ avtChomboFileFormat::InitializeReader(void)
 
     bool hasTime = false;
     bool hasIterations = false;
+    bool hasCentering = false;
 
     int numAttrs = H5Aget_num_attrs(slash);
     char buf[1024];
@@ -366,6 +370,8 @@ avtChomboFileFormat::InitializeReader(void)
             hasTime = true;
         if (strcmp(buf, "iteration") == 0)
             hasIterations = true;
+        if (strcmp(buf,"data_centering") == 0)
+            hasCentering = true;
         H5Aclose(idx);
     }
 
@@ -402,6 +408,33 @@ avtChomboFileFormat::InitializeReader(void)
     }
     else
         cycle = GetCycleFromFilename(filenames[0]);
+
+    //
+    // Get the centering.
+    //
+    nodeCentered = false;
+    if (hasCentering)
+    {
+        debug1 << "Chombo file has centering information." << std::endl;
+        hid_t time_id = H5Aopen_name(slash, "data_centering");
+        if (time_id < 0)
+        {
+            EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, must "
+                                               "have data_centering in \"/\" group.");
+        }
+        int centeringVal;
+        H5Aread(time_id, H5T_NATIVE_INT, &centeringVal);
+        H5Aclose(time_id);
+        if (centeringVal == 7)
+        {
+            debug1 << "Node centered data." << std::endl;
+            nodeCentered = true;
+        }
+        else
+        {
+            debug1 << "Cell centered data." << std::endl;
+        }
+    }
 
     //
     // Note: max_level, per conversation with John Shalf, is for the code
@@ -1065,6 +1098,9 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 //    Set meta-data saying whether or not we have ghosts on the exterior
 //    boundary.
 //
+//    Gunther H. Weber, Mon Mar 24 20:46:04 PDT 2008
+//    Added support for node centered Chombo data.
+//
 // ****************************************************************************
 
 void
@@ -1124,7 +1160,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int nVars = varnames.size();
     for (i = 0; i < nVars; i++)
     {
-        AddScalarVarToMetaData(md, varnames[i], mesh_name, AVT_ZONECENT);
+        AddScalarVarToMetaData(md, varnames[i], mesh_name, nodeCentered ? AVT_NODECENT : AVT_ZONECENT);
     }
 
     //
@@ -1592,7 +1628,10 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 //    Use 64-bit arithmetic for offset calculations.
 //
 //    Gunther H. Weber, Mon Feb  4 14:37:49 PST 2008
-//    Read doubles instead of floats from Chombo files
+//    Read doubles instead of floats from Chombo files.
+//
+//    Gunther H. Weber, Mon Mar 24 20:46:04 PDT 2008
+//    Added support for node centered Chombo data.
 //
 // ****************************************************************************
 
@@ -1643,10 +1682,16 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
     hsize_t nvals = 0;
     for (i = patchStart ; i < patch ; i++)
     {
-        hsize_t numZones = (hsize_t(hiI[i]-lowI[i])+2*numGhostI)
-                         * (hsize_t(hiJ[i]-lowJ[i])+2*numGhostJ);
+        hsize_t numZones = nodeCentered ?
+            (hsize_t(hiI[i]-lowI[i]+1)+2*numGhostI)
+            * (hsize_t(hiJ[i]-lowJ[i]+1)+2*numGhostJ) :
+            (hsize_t(hiI[i]-lowI[i])+2*numGhostI)
+            * (hsize_t(hiJ[i]-lowJ[i])+2*numGhostJ);
         if (dimension == 3)
-            numZones *= hsize_t(hiK[i]-lowK[i])+2*numGhostK;
+            if (nodeCentered)
+                numZones *= hsize_t(hiK[i]-lowK[i]+1)+2*numGhostK;
+            else
+                numZones *= hsize_t(hiK[i]-lowK[i])+2*numGhostK;
         nvals += numZones*nVars;
     }
 
@@ -1655,10 +1700,17 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
 #else
     hssize_t start = nvals;
 #endif
-    hsize_t amt = (hsize_t(hiI[patch]-lowI[patch])+2*numGhostI)
-                * (hsize_t(hiJ[patch]-lowJ[patch])+2*numGhostJ);
+    hsize_t amt = nodeCentered ?
+        (hsize_t(hiI[patch]-lowI[patch]+1)+2*numGhostI)
+        * (hsize_t(hiJ[patch]-lowJ[patch]+1)+2*numGhostJ) :
+        (hsize_t(hiI[patch]-lowI[patch])+2*numGhostI)
+        * (hsize_t(hiJ[patch]-lowJ[patch])+2*numGhostJ);
     if (dimension == 3)
-        amt *= hsize_t(hiK[patch]-lowK[patch])+2*numGhostK;
+        if (nodeCentered)
+            amt *= hsize_t(hiK[patch]-lowK[patch]+1)+2*numGhostK;
+        else
+            amt *= hsize_t(hiK[patch]-lowK[patch])+2*numGhostK;
+
     start += amt*varIdx;
 
     if (amt > std::numeric_limits<vtkIdType>::max())
@@ -1720,14 +1772,20 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
         {
             vtkDoubleArray *new_farr = vtkDoubleArray::New();
-            size_t new_amt = size_t(hiI[patch]-lowI[patch])
-                           * size_t(hiJ[patch]-lowJ[patch]);
+            size_t new_amt = nodeCentered ?
+                size_t(hiI[patch]-lowI[patch]+1)
+                * size_t(hiJ[patch]-lowJ[patch]+1) :
+                size_t(hiI[patch]-lowI[patch])
+                * size_t(hiJ[patch]-lowJ[patch]);
             if (dimension == 3)
-                new_amt *= (hiK[patch]-lowK[patch]);
+                if (nodeCentered)
+                    new_amt *= (hiK[patch]-lowK[patch]+1);
+                else
+                    new_amt *= (hiK[patch]-lowK[patch]);
             new_farr->SetNumberOfTuples(new_amt);
     
-            size_t nJ = hiJ[patch] - lowJ[patch];
-            size_t nI = hiI[patch] - lowI[patch];
+            size_t nJ = nodeCentered ? hiJ[patch] - lowJ[patch] + 1 : hiJ[patch] - lowJ[patch];
+            size_t nI = nodeCentered ? hiI[patch] - lowI[patch] + 1 : hiI[patch] - lowI[patch];
     
             size_t nJ2 = nJ + 2*numGhostJ;
             size_t nI2 = nI + 2*numGhostI;
@@ -1736,7 +1794,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
             double *old_ptr = farr->GetPointer(0);
             if (dimension == 3)
             {
-                size_t nK = hiK[patch] - lowK[patch];
+                size_t nK = nodeCentered ? hiK[patch] - lowK[patch] + 1 : hiK[patch] - lowK[patch];
                 size_t nK2 = nK + 2*numGhostK;
                 for (size_t k = 0 ; k < nK ; k++)
                     for (size_t j = 0 ; j < nJ ; j++)
