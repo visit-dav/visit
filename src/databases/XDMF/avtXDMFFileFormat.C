@@ -44,8 +44,10 @@
 
 #include <string>
 
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
 #include <vtkIntArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -365,10 +367,21 @@ avtXDMFFileFormat::DetermineFileAndDataset(const char *input,
 //  Programmer: Eric Brugger
 //  Creation:   Thu Mar 20 16:14:36 PDT 2008
 //
+//  Arguments:
+//      dataItem    The data item to read.
+//      buf         The buffer to read the data into.
+//      lBuf        The length of the buffer.
+//      bufType     The data type of the buffer.
+//
+//  Modifications:
+//    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
+//    I added the argument bufType.
+//
 // ****************************************************************************
 
 int
-avtXDMFFileFormat::ReadXMLDataItem(DataItem *dataItem, void *buf, int lbuf)
+avtXDMFFileFormat::ReadXMLDataItem(DataItem *dataItem, void *buf, int lBuf,
+    int bufType)
 {
     //
     // Check that the size of the dataset and buffer match.
@@ -376,7 +389,7 @@ avtXDMFFileFormat::ReadXMLDataItem(DataItem *dataItem, void *buf, int lbuf)
     int ldataItem = 1;
     for (int i = 0; i < dataItem->nDims; i++)
         ldataItem *= dataItem->dims[i];
-    if (ldataItem != lbuf)
+    if (ldataItem != lBuf)
     {
         avtCallback::IssueWarning("Dimensions don't match buffer size.");
         return 0;
@@ -389,24 +402,39 @@ avtXDMFFileFormat::ReadXMLDataItem(DataItem *dataItem, void *buf, int lbuf)
     fseek(file, dataItem->cdataOffset, SEEK_SET);
 
     //
-    // Read the data.  We will read lbuf values and not make any type
+    // Read the data.  We will read lBuf values and not make any type
     // of check to see if there is not any additional trailing stuff.
     //
     int i;
-    for (i = 0; i < lbuf; i++)
+    for (i = 0; i < lBuf; i++)
     {
         //
         // Read the value.  Fscanf will skip over any leading
         // white space.
         //
-        double value;
-        if (fscanf(file, "%lf", &value) == 1)
+        if (bufType == VTK_FLOAT)
         {
-            ((float *)buf)[i] = (float) value;
+            double value;
+            if (fscanf(file, "%lf", &value) == 1)
+            {
+                ((float *)buf)[i] = (float) value;
+            }
+            else
+            {
+                break;
+            }
         }
         else
         {
-            break;
+            double value;
+            if (fscanf(file, "%lf", &value) == 1)
+            {
+                ((int *)buf)[i] = (int) value;
+            }
+            else
+            {
+                break;
+            }
         }
     }
 
@@ -415,7 +443,7 @@ avtXDMFFileFormat::ReadXMLDataItem(DataItem *dataItem, void *buf, int lbuf)
     //
     fclose(file);
 
-    if (i != lbuf)
+    if (i != lBuf)
     {
         avtCallback::IssueWarning("Not enough values in the data item.");
         return 0;
@@ -434,6 +462,12 @@ avtXDMFFileFormat::ReadXMLDataItem(DataItem *dataItem, void *buf, int lbuf)
 //  Programmer: Eric Brugger
 //  Creation:   Fri Nov 16 13:08:36 PST 2007
 //
+//  Arguments:
+//      dataItem    The data item to read.
+//      buf         The buffer to read the data into.
+//      lBuf        The length of the buffer.
+//      bufType     The data type of the buffer.
+//
 //  Modifications:
 //    Eric Brugger, Wed Mar 19 12:38:46 PDT 2008
 //    I modified the routine so that it no longer opens and closes an
@@ -447,12 +481,27 @@ avtXDMFFileFormat::ReadXMLDataItem(DataItem *dataItem, void *buf, int lbuf)
 //    Eric Brugger, Thu Mar 20 16:14:36 PDT 2008
 //    I moved the error checking to ReadDataItem.
 //
+//    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
+//    I added the argument bufType.
+//
 // ****************************************************************************
 
 int
-avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lbuf)
+avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
+    int bufType)
 {
     hid_t     file_id, dataset_id, dataspace_id;
+
+    //
+    // Translate the buffer type to an HDF5 data type.
+    //
+    hid_t buf_type;
+    if (bufType == VTK_FLOAT)
+        buf_type = H5T_NATIVE_FLOAT;
+    else if (bufType == VTK_INT)
+        buf_type = H5T_NATIVE_INT;
+    else
+        return 0;
 
     //
     // If cdata is NULL, then read it from the file.
@@ -528,7 +577,7 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lbuf)
     //
     // Check that the size of the dataset and the buffer match.
     //
-    if (ldataset != lbuf)
+    if (ldataset != lBuf)
     {
         avtCallback::IssueWarning("Buffer size doesn't match dataset size.");
         H5Dclose(dataset_id);
@@ -539,7 +588,7 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lbuf)
     //
     // Read the data set.
     //
-    if (H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+    if (H5Dread(dataset_id, buf_type, H5S_ALL, H5S_ALL,
                 H5P_DEFAULT, buf) < 0)
     {
         avtCallback::IssueWarning("Unable to read the dataset.");
@@ -569,15 +618,26 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lbuf)
 //  Programmer: Eric Brugger
 //  Creation:   Thu Mar 20 16:14:36 PDT 2008
 //
+//  Arguments:
+//      dataItem    The data item to read.
+//      buf         The buffer to read the data into.
+//      lBuf        The length of the buffer.
+//      bufType     The data type of the buffer.
+//
+//  Modifications:
+//    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
+//    I added the argument bufType.
+//
 // ****************************************************************************
 
 int
-avtXDMFFileFormat::ReadDataItem(DataItem *dataItem, void *buf, int lbuf)
+avtXDMFFileFormat::ReadDataItem(DataItem *dataItem, void *buf, int lBuf,
+    int bufType)
 {
     //
     // Do some error checking.
     //
-    if (dataItem == NULL || buf == NULL || lbuf <= 0)
+    if (dataItem == NULL || buf == NULL || lBuf <= 0)
         return 0;
 
     //
@@ -586,11 +646,11 @@ avtXDMFFileFormat::ReadDataItem(DataItem *dataItem, void *buf, int lbuf)
     switch (dataItem->format)
     {
       case DataItem::DATA_FORMAT_XML:
-        return ReadXMLDataItem(dataItem, buf, lbuf);
+        return ReadXMLDataItem(dataItem, buf, lBuf, bufType);
 
         break;
       case DataItem::DATA_FORMAT_HDF:
-        return ReadHDFDataItem(dataItem, buf, lbuf);
+        return ReadHDFDataItem(dataItem, buf, lBuf, bufType);
 
         break;
     }
@@ -865,37 +925,68 @@ avtXDMFFileFormat::ParseDataItem()
 //  Programmer: Eric Brugger
 //  Creation:   Fri Nov 16 13:08:36 PST 2007
 //
+//  Arguments:
+//      topologyType      The topology type string.
+//      numberOfElements  The number of elements string
+//      nodesPerElement   The number of nodes per element string.
+//      topologyData      The data item associated with the topology.
+//
+//  Modifications:
+//    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
+//    I added the arguments nodesPerElement and topology data.
+//
 // ****************************************************************************
 
 void
 avtXDMFFileFormat::ParseTopology(string &topologyType,
-    string &numberOfElements)
+    string &numberOfElements, string &nodesPerElement, DataItem **topologyData)
 {
     //
     // Process the attributes in the start tag.
     //
     while (xdmfParser.GetNextAttribute())
     {
-        if (strcmp(xdmfParser.GetAttributeName(), "NumberOfElements") == 0)
+        if (strcmp(xdmfParser.GetAttributeName(), "Type") == 0 ||
+            strcmp(xdmfParser.GetAttributeName(), "TopologyType") == 0)
+        {
+            topologyType = string(xdmfParser.GetAttributeValue());
+        }
+        else if (strcmp(xdmfParser.GetAttributeName(), "NumberOfElements") == 0 ||
+                 strcmp(xdmfParser.GetAttributeName(), "Dimensions") == 0)
         {
             numberOfElements = string(xdmfParser.GetAttributeValue());
         }
-        else if (strcmp(xdmfParser.GetAttributeName(), "Type") == 0 ||
-                 strcmp(xdmfParser.GetAttributeName(), "TopologyType") == 0)
+        else if (strcmp(xdmfParser.GetAttributeName(), "NodesPerElement") == 0)
         {
-            topologyType = string(xdmfParser.GetAttributeValue());
+            nodesPerElement = string(xdmfParser.GetAttributeValue());
         }
     }
 
     //
     // Process the rest of the information.
     //
+    bool haveTopologyData = false;
     XDMFParser::ElementType elementType = xdmfParser.GetNextElement();
     while (elementType != XDMFParser::TYPE_EOF)
     {
         if (elementType == XDMFParser::TYPE_START_TAG)
         {
-            xdmfParser.SkipToEndTag();
+            if (strcmp(xdmfParser.GetElementName(), "DataItem") == 0)
+            {
+                if (!haveTopologyData)
+                {
+                    *topologyData = ParseDataItem();
+                    haveTopologyData = true;
+                }
+                else
+                {
+                    xdmfParser.SkipToEndTag();
+                }
+            }
+            else
+            {
+                xdmfParser.SkipToEndTag();
+            }
         }
         else if (elementType == XDMFParser::TYPE_END_TAG)
         {
@@ -1203,6 +1294,9 @@ avtXDMFFileFormat::ParseGridInformation(string &ghostOffsets)
 //    Eric Brugger, Thu Mar 20 10:10:15 PDT 2008
 //    I changed some of the geometry type strings that were incorrect.
 //
+//    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
+//    I added additional coding to fully handle unstructured grids.
+//
 // ****************************************************************************
 
 void
@@ -1212,6 +1306,8 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
 {
     string    topologyType;
     string    numberOfElements;
+    string    nodesPerElement;
+    DataItem *topologyData = NULL;
     string    geometryType;
     int       nMeshData;
     DataItem *meshData[3];
@@ -1229,7 +1325,8 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
         {
             if (strcmp(xdmfParser.GetElementName(), "Topology") == 0)
             {
-                ParseTopology(topologyType, numberOfElements);
+                ParseTopology(topologyType, numberOfElements, nodesPerElement,
+                    &topologyData);
             }
             else if (strcmp(xdmfParser.GetElementName(), "Geometry") == 0)
             {
@@ -1271,7 +1368,7 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
     if (numberOfElements == "")
     {
         debug1 << gridName << ": Invalid Grid elmement - "
-               << "Topology doesn't contain the number of elements." << endl;
+               << "Topology number of elements missing." << endl;
         for (unsigned int i = 0; i < varList.size(); i++)
             delete varList[i];
         return;
@@ -1334,12 +1431,56 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
     }
     else
     {
+        if (topologyType == "Polyvertex")
+            meshInfo->cellType = MeshInfo::CELL_POLYVERTEX;
+        else if (topologyType == "Polyline")
+            meshInfo->cellType = MeshInfo::CELL_POLYLINE;
+        else if (topologyType == "Polygon")
+            meshInfo->cellType = MeshInfo::CELL_POLYGON;
+        else if (topologyType == "Triangle")
+            meshInfo->cellType = MeshInfo::CELL_TRIANGLE;
+        else if (topologyType == "Quadrilateral")
+            meshInfo->cellType = MeshInfo::CELL_QUADRILATERAL;
+        else if (topologyType == "Tetrahedron")
+            meshInfo->cellType = MeshInfo::CELL_TETRAHEDRON;
+        else if (topologyType == "Pyramid")
+            meshInfo->cellType = MeshInfo::CELL_PYRAMID;
+        else if (topologyType == "Wedge")
+            meshInfo->cellType = MeshInfo::CELL_WEDGE;
+        else if (topologyType == "Hexahedron")
+            meshInfo->cellType = MeshInfo::CELL_HEXAHEDRON;
+        else if (topologyType == "Edge_3")
+            meshInfo->cellType = MeshInfo::CELL_EDGE_3;
+        else if (topologyType == "Triangle_6")
+            meshInfo->cellType = MeshInfo::CELL_TRIANGLE_6;
+        else if (topologyType == "Quadrilateral_8")
+            meshInfo->cellType = MeshInfo::CELL_QUADRILATERAL_8;
+        else if (topologyType == "Tetrahedron_10")
+            meshInfo->cellType = MeshInfo::CELL_TETRAHEDRON_10;
+        else if (topologyType == "Pyramid_13")
+            meshInfo->cellType = MeshInfo::CELL_PYRAMID_13;
+        else if (topologyType == "Wedge_15")
+            meshInfo->cellType = MeshInfo::CELL_WEDGE_15;
+        else if (topologyType == "Hexahedron_20")
+            meshInfo->cellType = MeshInfo::CELL_HEXAHEDRON_20;
+        else if (topologyType == "Mixed")
+            meshInfo->cellType = MeshInfo::CELL_MIXED;
+        else
+        {
+            debug1 << gridName << ": Invalid Grid elmement - "
+                   << "Illegal Topology." << endl;
+            delete meshInfo;
+            for (unsigned int i = 0; i < varList.size(); i++)
+                delete varList[i];
+            return;
+        }
+
         if (meshInfo->geometryType == MeshInfo::TYPE_XY)
         {
             meshInfo->topologicalDimension = 2;
             meshInfo->spatialDimension = 2;
         }
-        else if (meshInfo->geometryType = MeshInfo::TYPE_VXVYVZ)
+        else if (meshInfo->geometryType == MeshInfo::TYPE_VXVYVZ)
         {
             meshInfo->topologicalDimension = nMeshData;
             meshInfo->spatialDimension = nMeshData;
@@ -1355,15 +1496,61 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
     meshInfo->dimensions[0] = 1;
     meshInfo->dimensions[1] = 1;
     meshInfo->dimensions[2] = 1;
-    if (meshInfo->topologicalDimension == 2)
+    if (meshInfo->type == AVT_UNSTRUCTURED_MESH)
     {
-        sscanf(numberOfElements.c_str(), "%d %d",
-               &meshInfo->dimensions[1], &meshInfo->dimensions[0]);
+        if (topologyData == NULL)
+        {
+            debug1 << gridName << ": Invalid Grid elmement - "
+                   << "Topology data item missing." << endl;
+            delete meshInfo;
+            for (unsigned int i = 0; i < varList.size(); i++)
+                delete varList[i];
+            return;
+        }
+
+        meshInfo->topologyData = topologyData;
+
+        //
+        // In both cases below we store the dimensions in dimensions[1]
+        // and the nodes per element in dimensions[0].  This way we know
+        // where they are without any complex logic.
+        //
+        if (meshInfo->cellType == MeshInfo::CELL_POLYVERTEX ||
+            meshInfo->cellType == MeshInfo::CELL_POLYLINE ||
+            meshInfo->cellType == MeshInfo::CELL_POLYGON)
+        {
+            if (nodesPerElement == "")
+            {
+                debug1 << gridName << ": Invalid Grid elmement - "
+                       << "Topology nodes per element missing."
+                       << endl;
+                delete meshInfo;
+                for (unsigned int i = 0; i < varList.size(); i++)
+                    delete varList[i];
+                return;
+            }
+
+            sscanf(numberOfElements.c_str(), "%d", &meshInfo->dimensions[1]);
+            sscanf(nodesPerElement.c_str(), "%d", &meshInfo->dimensions[0]);
+        }
+        else
+        {
+            sscanf(numberOfElements.c_str(), "%d", &meshInfo->dimensions[1]);
+        }
     }
     else
     {
-        sscanf(numberOfElements.c_str(), "%d %d %d", &meshInfo->dimensions[2],
-               &meshInfo->dimensions[1], &meshInfo->dimensions[0]);
+        if (meshInfo->topologicalDimension == 2)
+        {
+            sscanf(numberOfElements.c_str(), "%d %d",
+                   &meshInfo->dimensions[1], &meshInfo->dimensions[0]);
+        }
+        else
+        {
+            sscanf(numberOfElements.c_str(), "%d %d %d",
+                   &meshInfo->dimensions[2], &meshInfo->dimensions[1],
+                   &meshInfo->dimensions[0]);
+        }
     }
 
     if (ghostOffsets != "")
@@ -1973,6 +2160,118 @@ avtXDMFFileFormat::GetStructuredGhostZones(MeshInfo *meshInfo, vtkDataSet *ds)
 
 
 // ****************************************************************************
+//  Method: avtXDMFFileFormat::GetPoints
+//
+//  Purpose:
+//      Gets the points associated with this mesh info.  The points are
+//      returned as a vtkPoints.
+//
+//  Arguments:
+//      meshInfo    The MeshInfo structure describing the mesh.
+//      nnodes      The number of nodes in the mesh.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Fri Mar 21 15:22:11 PDT 2008
+//
+// ****************************************************************************
+
+vtkPoints *
+avtXDMFFileFormat::GetPoints(MeshInfo *meshInfo, int nnodes)
+{
+    vtkPoints            *points  = vtkPoints::New();
+
+    points->SetNumberOfPoints(nnodes);
+    float *pts = (float *) points->GetVoidPointer(0);
+
+    switch (meshInfo->geometryType)
+    {
+      case MeshInfo::TYPE_XYZ:
+        if (!ReadDataItem(meshInfo->meshData[0], pts, 3 * nnodes, VTK_FLOAT))
+        {
+            points->Delete();
+            return NULL;
+        }
+        break;
+
+      case MeshInfo::TYPE_XY:
+        {
+            float *coords = new float[2*nnodes];
+            if (!ReadDataItem(meshInfo->meshData[0], coords, 2 * nnodes,
+                VTK_FLOAT))
+            {
+                delete [] coords;
+                points->Delete();
+                return NULL;
+            }
+            for (int i = 0; i < nnodes; i++)
+            {
+                *pts++ = *coords++;
+                *pts++ = *coords++;
+                *pts++ = 0.;
+            }
+            delete [] coords;
+        }
+        break;
+
+      case MeshInfo::TYPE_VXVYVZ:
+        {
+            float *xcoords = new float[nnodes];
+            float *ycoords = new float[nnodes];
+            float *zcoords = new float[nnodes];
+            if (!ReadDataItem(meshInfo->meshData[0], xcoords, nnodes,
+                VTK_FLOAT))
+            {
+                delete [] xcoords; delete [] ycoords; delete [] zcoords;
+                points->Delete();
+                return NULL;
+            }
+            if (!ReadDataItem(meshInfo->meshData[1], ycoords, nnodes,
+                VTK_FLOAT))
+            {
+                delete [] xcoords; delete [] ycoords; delete [] zcoords;
+                points->Delete();
+                return NULL;
+            }
+            if (meshInfo->meshData[2] == NULL)
+            {
+                for (int i = 0; i < nnodes; i++)
+                {
+                    *pts++ = *xcoords++;
+                    *pts++ = *ycoords++;
+                    *pts++ = 0.;
+                }
+            }
+            else
+            {
+                if (!ReadDataItem(meshInfo->meshData[2], zcoords, nnodes,
+                    VTK_FLOAT))
+                {
+                    delete [] xcoords; delete [] ycoords; delete [] zcoords;
+                    points->Delete();
+                    return NULL;
+                }
+                for (int i = 0; i < nnodes; i++)
+                {
+                    *pts++ = *xcoords++;
+                    *pts++ = *ycoords++;
+                    *pts++ = *zcoords++;
+                }
+            }
+            delete [] xcoords;
+            delete [] ycoords;
+            delete [] zcoords;
+        }
+        break;
+
+      default:
+        avtCallback::IssueWarning("GetMesh: Invalid GeometryType.");
+        break;
+    }
+
+    return points;
+}
+
+// ****************************************************************************
 //  Method: avtXDMFFileFormat::GetRectilinearMesh
 //
 //  Purpose:
@@ -1988,6 +2287,9 @@ avtXDMFFileFormat::GetStructuredGhostZones(MeshInfo *meshInfo, vtkDataSet *ds)
 //  Modifications:
 //    Eric Brugger, Thu Mar 20 16:14:36 PDT 2008
 //    I replaced ReadHDFDataItem with ReadDataItem.
+//
+//    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
+//    I added a buffer data type argument to the calls to ReadDataItem.
 //
 // ****************************************************************************
 
@@ -2030,12 +2332,14 @@ avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
     switch (meshInfo->geometryType)
     {
       case MeshInfo::TYPE_X_Y_Z:
-        if (!ReadDataItem(meshInfo->meshData[0], xpts, meshInfo->dimensions[0]))
+        if (!ReadDataItem(meshInfo->meshData[0], xpts, meshInfo->dimensions[0],
+            VTK_FLOAT))
         {
             rgrid->Delete();
             return NULL;
         }
-        if (!ReadDataItem(meshInfo->meshData[1], ypts, meshInfo->dimensions[1]))
+        if (!ReadDataItem(meshInfo->meshData[1], ypts, meshInfo->dimensions[1],
+            VTK_FLOAT))
         {
             rgrid->Delete();
             return NULL;
@@ -2046,7 +2350,8 @@ avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
         }
         else
         {
-            if (!ReadDataItem(meshInfo->meshData[2], zpts, meshInfo->dimensions[2]))
+            if (!ReadDataItem(meshInfo->meshData[2], zpts,
+                meshInfo->dimensions[2], VTK_FLOAT))
             {
                 rgrid->Delete();
                 return NULL;
@@ -2055,12 +2360,12 @@ avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
         break;
 
       case MeshInfo::TYPE_ORIGIN_DXDYDZ:
-        if (!ReadDataItem(meshInfo->meshData[0], origin, 3))
+        if (!ReadDataItem(meshInfo->meshData[0], origin, 3, VTK_FLOAT))
         {
             rgrid->Delete();
             return NULL;
         }
-        if (!ReadDataItem(meshInfo->meshData[1], dxdydz, 3))
+        if (!ReadDataItem(meshInfo->meshData[1], dxdydz, 3, VTK_FLOAT))
         {
             rgrid->Delete();
             return NULL;
@@ -2104,24 +2409,15 @@ avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
 //    Eric Brugger, Thu Mar 20 16:14:36 PDT 2008
 //    I replaced ReadHDFDataItem with ReadDataItem.
 //
+//  Modifications:
+//    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
+//    I replaced some code with a call to the function GetPoints.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
 {
-    //
-    // Create the VTK objects and connect them up.
-    //
-    vtkStructuredGrid    *sgrid   = vtkStructuredGrid::New();
-    vtkPoints            *points  = vtkPoints::New();
-    sgrid->SetPoints(points);
-    points->Delete();
-
-    //
-    // Tell the grid what its dimensions are and populate the points array.
-    //
-    sgrid->SetDimensions(meshInfo->dimensions);
-
     //
     // Populate the coordinates.  Put in 3D points with z=0 if the
     // mesh is 2D.
@@ -2129,91 +2425,337 @@ avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
     int nnodes = meshInfo->dimensions[0] * meshInfo->dimensions[1] *
                  meshInfo->dimensions[2];
 
-    points->SetNumberOfPoints(nnodes);
-    float *pts = (float *) points->GetVoidPointer(0);
+    vtkPoints *points = GetPoints(meshInfo, nnodes);
+    if (points == NULL)
+        return NULL;
 
-    switch (meshInfo->geometryType)
+    //
+    // Create the grid and connect it to the points.
+    //
+    vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
+    sgrid->SetPoints(points);
+    points->Delete();
+
+    //
+    // Tell the grid what its dimensions are.
+    //
+    sgrid->SetDimensions(meshInfo->dimensions);
+
+    return sgrid;
+}
+
+
+// ****************************************************************************
+//  Method: avtXDMFFileFormat::PopulateCellInformation
+//
+//  Purpose:
+//      Populates the cell information for an unstructured grid.
+//
+//  Arguments:
+//      ugrid          The unstructured grid to add the cell information to.
+//      connectivity   The cell connectivity.
+//      lConnectivity  The length of the cell connectivity.
+//      mixed          Flag indicating if the connectivity contains mixed
+//                     cell types.
+//      nCells         The number of cells.
+//      vtkCellType    The type of the cell if it is not mixed.
+//      nodesPerCell   The number of nodes per cell if it is not mixed.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Fri Mar 21 15:22:11 PDT 2008
+//
+// ****************************************************************************
+
+void
+avtXDMFFileFormat::PopulateCellInformation(vtkUnstructuredGrid *ugrid,
+    int *connectivity, int lConnectivity, bool mixed, int nCells,
+    int vtkCellType, int nodesPerCell)
+{
+    vtkIdTypeArray *nlist = vtkIdTypeArray::New();
+    if (mixed)
+        nlist->SetNumberOfValues(lConnectivity);
+    else
+        nlist->SetNumberOfValues(nCells * (nodesPerCell + 1));
+    vtkIdType *nl = nlist->GetPointer(0);
+
+    vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
+    cellTypes->SetNumberOfValues(nCells);
+    unsigned char *ct = cellTypes->GetPointer(0);
+
+    vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
+    cellLocations->SetNumberOfValues(nCells);
+    int *cl = cellLocations->GetPointer(0);
+
+    int iCell = 0;
+    int index = 0;
+
+    if (mixed)
     {
-      case MeshInfo::TYPE_XYZ:
-        if (!ReadDataItem(meshInfo->meshData[0], pts, 3 * nnodes))
+        for (int j = 0; j < nCells; j++)
         {
-            sgrid->Delete();
-            return NULL;
+            int cellType = connectivity[index++];
+            int vtkCellType;
+            int cellCount;
+            switch (cellType)
+            {
+              case 0x1: // Polyvertex
+                vtkCellType = VTK_POLY_VERTEX;
+                cellCount = connectivity[index++];
+                break;
+              case 0x2: // Polyline
+                vtkCellType = VTK_POLY_LINE;
+                cellCount = connectivity[index++];
+                break;
+              case 0x3: // Polygon
+                vtkCellType = VTK_POLYGON;
+                cellCount = connectivity[index++];
+                break;
+              case 0x4: // Tri
+                vtkCellType = VTK_TRIANGLE;
+                cellCount = 3;
+                break;
+              case 0x5: // Quad
+                vtkCellType = VTK_QUAD;
+                cellCount = 4;
+                break;
+              case 0x6: // Tet
+                vtkCellType = VTK_TETRA;
+                cellCount = 4;
+                break;
+              case 0x7: // Pyramid
+                vtkCellType = VTK_PYRAMID;
+                cellCount = 5;
+                break;
+              case 0x8: // Wedge
+                vtkCellType = VTK_WEDGE;
+                cellCount = 6;
+                break;
+              case 0x9: // Hex
+                vtkCellType = VTK_HEXAHEDRON;
+                cellCount = 8;
+                break;
+              case 0x0022: // Edge 3
+                vtkCellType = VTK_QUADRATIC_EDGE;
+                cellCount = 3;
+                break;
+              case 0x0024: // Triangle 6
+                vtkCellType = VTK_QUADRATIC_TRIANGLE;
+                cellCount = 6;
+                break;
+              case 0x0025: // Quad 8
+                vtkCellType = VTK_QUADRATIC_QUAD;
+                cellCount = 8;
+                break;
+              case 0x0026: // Tet 10
+                vtkCellType = VTK_QUADRATIC_TETRA;
+                cellCount = 10;
+                break;
+              case 0x0027: // Pyramid 13
+                vtkCellType = VTK_QUADRATIC_PYRAMID;
+                cellCount = 13;
+                break;
+              case 0x0028: // Wedge 15
+                vtkCellType = VTK_QUADRATIC_WEDGE;
+                cellCount = 15;
+                break;
+              case 0x0029: // Hex 20
+                vtkCellType = VTK_QUADRATIC_HEXAHEDRON;
+                cellCount = 20;
+                break;
+              default:
+                avtCallback::IssueWarning("GetMesh: Invalid GeometryType.");
+                break;
+            }
+            *ct++ = vtkCellType;
+            *cl++ = iCell;
+            *nl++ = cellCount;
+            for (int i = 0; i < cellCount; i++)
+                *nl++ = connectivity[index++];
+
+            iCell += cellCount + 1;
         }
+        nlist->Resize(iCell);
+    }
+    else
+    {
+        for (int j = 0; j < nCells; j++)
+        {
+            *ct++ = vtkCellType;
+            *cl++ = iCell;
+            *nl++ = nodesPerCell;
+            for (int i = 0; i < nodesPerCell; i++)
+                *nl++ = connectivity[index++];
+
+            iCell += nodesPerCell + 1;
+        }
+    }
+
+    vtkCellArray *cells = vtkCellArray::New();
+    cells->SetCells(nCells, nlist);
+    nlist->Delete();
+
+    ugrid->SetCells(cellTypes, cellLocations, cells);
+    cellTypes->Delete();
+    cellLocations->Delete();
+    cells->Delete();
+}
+
+
+// ****************************************************************************
+//  Method: avtXDMFFileFormat::GetUnstructuredMesh
+//
+//  Purpose:
+//      Gets the unstructured mesh associated with this mesh info.  The mesh
+//      is returned as a vtkUnstructuredGrid.
+//
+//  Arguments:
+//      meshInfo    The MeshInfo structure describing the mesh.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Fri Mar 21 15:22:11 PDT 2008
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtXDMFFileFormat::GetUnstructuredMesh(MeshInfo *meshInfo)
+{
+    //
+    // Populate the coordinates.  Put in 3D points with z=0 if the
+    // mesh is 2D.
+    //
+    int nnodes = 1;
+    if (meshInfo->geometryType == MeshInfo::TYPE_XYZ ||
+        meshInfo->geometryType == MeshInfo::TYPE_XY)
+    {
+        for (int i = 0; i < meshInfo->meshData[0]->nDims-1; i++)
+            nnodes *= meshInfo->meshData[0]->dims[i];
+    }
+    else
+    {
+        for (int i = 0; i < meshInfo->meshData[0]->nDims; i++)
+            nnodes *= meshInfo->meshData[0]->dims[i];
+    }
+
+    vtkPoints *points = GetPoints(meshInfo, nnodes);
+    if (points == NULL)
+        return NULL;
+
+    //
+    // Create the grid and connect it to the points.
+    //
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    ugrid->SetPoints(points);
+    points->Delete();
+
+    //
+    // Read the connectivity.
+    //
+    int lConnect = 1;
+    for (int i = 0; i < meshInfo->topologyData->nDims; i++)
+        lConnect *= meshInfo->topologyData->dims[i];
+    int nCells = meshInfo->dimensions[1];
+    int nodesPerCell = meshInfo->dimensions[0];
+    
+    int *connectivity = new int[lConnect];
+
+    if (!ReadDataItem(meshInfo->topologyData, connectivity, lConnect, VTK_INT))
+    {
+        ugrid->Delete();
+        delete [] connectivity;
+    }
+
+    //
+    // Create the cell structures.
+    //
+    int iCell = 0;
+    int index = 0;
+    switch (meshInfo->cellType)
+    {
+      case MeshInfo::CELL_POLYVERTEX:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+                               VTK_POLY_VERTEX, nodesPerCell);
         break;
 
-      case MeshInfo::TYPE_XY:
-        {
-            float *coords = new float[2*nnodes];
-            if (!ReadDataItem(meshInfo->meshData[0], coords, 2 * nnodes))
-            {
-                delete [] coords;
-                sgrid->Delete();
-                return NULL;
-            }
-            for (int i = 0; i < nnodes; i++)
-            {
-                *pts++ = *coords++;
-                *pts++ = *coords++;
-                *pts++ = 0.;
-            }
-            delete [] coords;
-        }
+      case MeshInfo::CELL_POLYLINE:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+                               VTK_POLY_LINE, nodesPerCell);
         break;
 
-      case MeshInfo::TYPE_VXVYVZ:
-        {
-            float *xcoords = new float[nnodes];
-            float *ycoords = new float[nnodes];
-            float *zcoords = new float[nnodes];
-            if (!ReadDataItem(meshInfo->meshData[0], xcoords, nnodes))
-            {
-                delete [] xcoords; delete [] ycoords; delete [] zcoords;
-                sgrid->Delete();
-                return NULL;
-            }
-            if (!ReadDataItem(meshInfo->meshData[1], ycoords, nnodes))
-            {
-                delete [] xcoords; delete [] ycoords; delete [] zcoords;
-                sgrid->Delete();
-                return NULL;
-            }
-            if (meshInfo->meshData[2] == NULL)
-            {
-                for (int i = 0; i < nnodes; i++)
-                {
-                    *pts++ = *xcoords++;
-                    *pts++ = *ycoords++;
-                    *pts++ = 0.;
-                }
-            }
-            else
-            {
-                if (!ReadDataItem(meshInfo->meshData[2], zcoords, nnodes))
-                {
-                    delete [] xcoords; delete [] ycoords; delete [] zcoords;
-                    sgrid->Delete();
-                    return NULL;
-                }
-                for (int i = 0; i < nnodes; i++)
-                {
-                    *pts++ = *xcoords++;
-                    *pts++ = *ycoords++;
-                    *pts++ = *zcoords++;
-                }
-            }
-            delete [] xcoords;
-            delete [] ycoords;
-            delete [] zcoords;
-        }
+      case MeshInfo::CELL_POLYGON:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+                               VTK_POLYGON, nodesPerCell);
+        break;
+
+      case MeshInfo::CELL_TETRAHEDRON:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+                               VTK_TETRA, 4);
+        break;
+
+      case MeshInfo::CELL_PYRAMID:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+                               VTK_PYRAMID, 5);
+        break;
+
+      case MeshInfo::CELL_WEDGE:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+                               VTK_WEDGE, 6);
+        break;
+
+      case MeshInfo::CELL_HEXAHEDRON:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+                               VTK_HEXAHEDRON, 8);
+        break;
+
+      case MeshInfo::CELL_EDGE_3:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+                               VTK_QUADRATIC_EDGE, 3);
+        break;
+
+      case MeshInfo::CELL_TRIANGLE_6:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+                               VTK_QUADRATIC_TRIANGLE, 6);
+        break;
+
+      case MeshInfo::CELL_QUADRILATERAL_8:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+                               VTK_QUADRATIC_QUAD, 8);
+        break;
+
+      case MeshInfo::CELL_TETRAHEDRON_10:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+                               VTK_QUADRATIC_TETRA, 10);
+        break;
+
+      case MeshInfo::CELL_PYRAMID_13:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+                               VTK_QUADRATIC_PYRAMID, 13);
+        break;
+
+      case MeshInfo::CELL_WEDGE_15:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+                               VTK_QUADRATIC_WEDGE, 15);
+        break;
+
+      case MeshInfo::CELL_HEXAHEDRON_20:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+                               VTK_QUADRATIC_HEXAHEDRON, 20);
+        break;
+
+      case MeshInfo::CELL_MIXED:
+        PopulateCellInformation(ugrid, connectivity, lConnect, true, nCells,
+                               0, 0);
         break;
 
       default:
         avtCallback::IssueWarning("GetMesh: Invalid GeometryType.");
+        ugrid->Delete();
+        delete [] connectivity;
         break;
     }
 
-    return sgrid;
+    delete [] connectivity;
+
+    return ugrid;
 }
 
 
@@ -2241,6 +2783,9 @@ avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
 //
 //    Eric Brugger, Thu Mar 20 08:26:23 PDT 2008
 //    Added code to handle rectilinear meshes.
+//
+//    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
+//    Added code to handle unstructured meshes.
 //
 // ****************************************************************************
 
@@ -2292,6 +2837,9 @@ avtXDMFFileFormat::GetMesh(int domain, const char *meshname)
       case AVT_CURVILINEAR_MESH:
         ds = GetCurvilinearMesh(meshInfo);
         break;
+      case AVT_UNSTRUCTURED_MESH:
+        ds = GetUnstructuredMesh(meshInfo);
+        break;
       default:
         break;
     }
@@ -2327,6 +2875,9 @@ avtXDMFFileFormat::GetMesh(int domain, const char *meshname)
 //  Modifications:
 //    Eric Brugger, Thu Mar 20 16:14:36 PDT 2008
 //    I replaced ReadHDFDataItem with ReadDataItem.
+//
+//    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
+//    I added a buffer data type argument to the call to ReadDataItem.
 //
 // ****************************************************************************
 
@@ -2386,7 +2937,7 @@ avtXDMFFileFormat::GetVar(int domain, const char *varname)
     // Read the data.
     //
     void *buf = rv->GetVoidPointer(0);
-    if (!ReadDataItem(varInfo->varData, buf, ntuples))
+    if (!ReadDataItem(varInfo->varData, buf, ntuples, VTK_FLOAT))
     {
         rv->Delete();
         rv = NULL;
@@ -2416,6 +2967,9 @@ avtXDMFFileFormat::GetVar(int domain, const char *varname)
 //  Modifications:
 //    Eric Brugger, Thu Mar 20 16:14:36 PDT 2008
 //    I replaced ReadHDFDataItem with ReadDataItem.
+//
+//    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
+//    I added a buffer data type argument to the call to ReadDataItem.
 //
 // ****************************************************************************
 
@@ -2488,7 +3042,7 @@ avtXDMFFileFormat::GetVectorVar(int domain, const char *varname)
     // Read the data.
     //
     float *buf = new float[ntuples*ncomps];
-    if (!ReadDataItem(varInfo->varData, buf, ntuples * ncomps))
+    if (!ReadDataItem(varInfo->varData, buf, ntuples * ncomps, VTK_FLOAT))
     {
         avtCallback::IssueWarning("GetVectorVar: Error reading the variable.");
         delete [] buf;
