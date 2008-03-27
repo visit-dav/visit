@@ -312,6 +312,10 @@
 #     Brad Whitlock, Wed Mar 12 11:15:09 PDT 2008
 #     Fixed Mesa build on AIX.
 #
+#     Kathleen Bonnell, Wed Mar 26 17:10:12 PDT 2008 
+#     Moved calls to check_more_options, check_parallel and check_variables
+#     to BEFORE THIRD_PARTY_PATH is used to set VISITDIR.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -6979,6 +6983,34 @@ if [[ -e "tmp$$" ]] ; then
     rm tmp$$
 fi
 
+#
+# See if the used needs to modify some variables
+#
+check_more_options
+if [[ $? != 0 ]] ; then
+   echo "Stopping build because of bad variable option setting error."
+   exit 1
+fi
+
+#
+# See if the user wants to build a parallel version.
+#
+check_parallel
+if [[ $? != 0 ]] ; then
+   echo "Stopping build because necessary parallel options are not set."
+   exit 1
+fi
+
+#
+# See if the user wants to modify variables
+#
+check_variables
+if [[ $? != 0 ]] ; then
+   echo "Stopping build because of bad variable option setting error."
+   exit 1
+fi
+
+
 if [[ $VISITARCH == "" ]] ; then
     export VISITARCH=${ARCH}_${C_COMPILER}
     if [[ "$CXX_COMPILER" == "g++" ]] ; then
@@ -7063,33 +7095,6 @@ if [[ "$DO_QT" == "yes" ]] ; then
          read RESPONSE
       done
    fi
-fi
-
-#
-# See if the used needs to modify some variables
-#
-check_more_options
-if [[ $? != 0 ]] ; then
-   echo "Stopping build because of bad variable option setting error."
-   exit 1
-fi
-
-#
-# See if the user wants to build a parallel version.
-#
-check_parallel
-if [[ $? != 0 ]] ; then
-   echo "Stopping build because necessary parallel options are not set."
-   exit 1
-fi
-
-#
-# See if the user wants to modify variables
-#
-check_variables
-if [[ $? != 0 ]] ; then
-   echo "Stopping build because of bad variable option setting error."
-   exit 1
 fi
 
 #
