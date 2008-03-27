@@ -55,7 +55,8 @@
 using std::string;
 using std::vector;
 
-class vtkDataObject;
+class vtkPoints;
+class vtkUnstructuredGrid;
 
 class DataItem
 {
@@ -87,6 +88,7 @@ class MeshInfo
                        {
                            extents = NULL;
                            ghostOffsets = NULL;
+                           topologyData = NULL;
                            for (int i = 0; i < 3; i++)
                                meshData[i] = NULL;
                        };
@@ -94,6 +96,7 @@ class MeshInfo
                       {
                           if (extents != NULL) delete [] extents;
                           if (ghostOffsets != NULL) delete [] ghostOffsets;
+                          if (topologyData != NULL) delete topologyData;
                           for (int i = 0; i < 3; i++)
                               if (meshData[i] != NULL) delete meshData[i];
                           for (unsigned int i = 0; i < blockList.size(); i++)
@@ -103,10 +106,19 @@ class MeshInfo
     // Enums for the struct.
     enum               GeometryType {TYPE_XYZ, TYPE_XY, TYPE_X_Y_Z,
                                      TYPE_VXVYVZ, TYPE_ORIGIN_DXDYDZ};
+    enum               CellType {CELL_POLYVERTEX, CELL_POLYLINE, CELL_POLYGON,
+                                 CELL_TRIANGLE, CELL_QUADRILATERAL,
+                                 CELL_TETRAHEDRON, CELL_PYRAMID, CELL_WEDGE,
+                                 CELL_HEXAHEDRON, CELL_EDGE_3,
+                                 CELL_TRIANGLE_6, CELL_QUADRILATERAL_8,
+                                 CELL_TETRAHEDRON_10, CELL_PYRAMID_13,
+                                 CELL_WEDGE_15, CELL_HEXAHEDRON_20,
+                                 CELL_MIXED};
 
     // Data elements for the struct.
     string             name;
     avtMeshType        type;
+    CellType           cellType;
     int                iDomain;
 
     // For Multimeshes.
@@ -120,6 +132,7 @@ class MeshInfo
     int                dimensions[3];
     double            *extents;
     int               *ghostOffsets;
+    DataItem          *topologyData;
     DataItem          *meshData[3];
 };
 
@@ -192,6 +205,13 @@ class DomainInfo
 //    Eric Brugger, Thu Mar 20 16:10:37 PDT 2008
 //    Added ReadDataItem and ReadXMLDataItem.
 //
+//    Eric Brugger, Fri Mar 21 15:20:06 PDT 2008
+//    I added support for reading unstructured meshes. This includes
+//    enhancing ReadHDFDataItem, ReadXMLDataItem and ReadDataItem to
+//    take an argument indicating the type of the output array; modifying
+//    ParseTopology to return the nodes per element; and adding GetPoints,
+//    PopulateCellInformation and GetUnstructuredMesh.
+//
 // ****************************************************************************
 
 class avtXDMFFileFormat : public avtSTMDFileFormat
@@ -246,12 +266,13 @@ class avtXDMFFileFormat : public avtSTMDFileFormat
 
     int                    DetermineFileAndDataset(const char *, char *,
                                char *) const;
-    int                    ReadHDFDataItem(DataItem *, void *, int);
-    int                    ReadXMLDataItem(DataItem *, void *, int);
-    int                    ReadDataItem(DataItem *, void *, int);
+    int                    ReadHDFDataItem(DataItem *, void *, int, int);
+    int                    ReadXMLDataItem(DataItem *, void *, int, int);
+    int                    ReadDataItem(DataItem *, void *, int, int);
     void                   AddVarInfo(bool, int, VarInfo *);
     DataItem              *ParseDataItem();
-    void                   ParseTopology(string &, string &);
+    void                   ParseTopology(string &, string &, string &,
+                               DataItem **);
     void                   ParseGeometry(string &, int &, DataItem **);
     VarInfo               *ParseAttribute(int, int, const string &);
     void                   ParseGridInformation(string &);
@@ -264,8 +285,12 @@ class avtXDMFFileFormat : public avtSTMDFileFormat
     void                   ParseXMLFile(void);
 
     void                   GetStructuredGhostZones(MeshInfo *, vtkDataSet *ds);
+    vtkPoints             *GetPoints(MeshInfo *, int);
+    void                   PopulateCellInformation(vtkUnstructuredGrid *,
+                               int *, int, bool, int, int, int);
     vtkDataSet            *GetRectilinearMesh(MeshInfo *);
     vtkDataSet            *GetCurvilinearMesh(MeshInfo *);
+    vtkDataSet            *GetUnstructuredMesh(MeshInfo *);
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 };
