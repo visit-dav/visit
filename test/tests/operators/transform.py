@@ -28,6 +28,9 @@
 #    Hank Childs, Tue Nov 15 15:59:00 PST 2005
 #    Added tests for 2D transformations.  ['6694 '6699]
 #
+#    Kathleen Bonnell,  Fri Mar 28 15:24:18 PDT 2008
+#    Added test for curve transformation.  ['8277]
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -142,5 +145,24 @@ disp.variable = "polar"
 SetOperatorOptions(disp)
 DrawPlots()
 Test("ops_transform06")
+
+# '8277
+DeleteAllPlots()
+OpenDatabase("../data/zonecent.ultra")
+AddPlot("Curve", "curve2")
+DrawPlots()
+Test("ops_transform07")
+
+AddOperator("Transform")
+trans.transformType = trans.Similarity
+trans.doRotate = 0
+trans.doTranslate = 0
+trans.doScale = 1
+trans.scaleX = 1
+trans.scaleZ = 1
+trans.scaleY = -3
+SetOperatorOptions(trans)
+DrawPlots()
+Test("ops_transform08")
 
 Exit()
