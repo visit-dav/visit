@@ -69,6 +69,23 @@
 #include <InvalidVariableException.h>
 #include <TimingsManager.h>
 
+void
+ConvertSlashes(char *str)
+{
+    int len = strlen(str);
+    for (int i = 0; i < len; i++)
+    {
+#ifndef WIN32
+        if (str[i] == '\\')
+            str[i] = '/';
+#else
+        if (str[i] == '/')
+            str[i] = '\\';
+#endif
+    }
+}
+
+
 // size of MD/SIL caches
 int       avtDatabase::mdCacheSize         = 20;
 int       avtDatabase::silCacheSize        = 20;
@@ -2045,6 +2062,11 @@ avtDatabase::NumStagesForFetch(avtDataRequest_p)
 //    Hank Childs, Mon May 14 17:19:30 PDT 2007
 //    Fixed bug with reading binary files.
 //
+//    Kathleen Bonnell, Thu Mar 27 15:24:30 PDT 2008 
+//    Fixed bug with reading DOS/MAC formatted files, where the string returned
+//    from getline ends in '\r'.  Also, convert slashes found in the textfile
+//    to those appropriate for this system.
+//
 // ****************************************************************************
 
 void
@@ -2076,8 +2098,14 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
     {
         str_auto[0] = '\0';
         ifile.getline(str_auto, 1024, '\n');
+
+        if (str_auto[strlen(str_auto)-1] == '\r')
+            str_auto[strlen(str_auto)-1] = '\0';
+
         if (str_auto[0] != '\0' && str_auto[0] != '#')
         {
+            ConvertSlashes(str_auto);
+
             if (str_auto[0] == SLASH_CHAR || str_auto[0] == '!')
             {
                 strcpy(str_with_dir, str_auto);
