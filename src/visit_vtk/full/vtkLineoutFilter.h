@@ -58,8 +58,13 @@
 
 class vtkCellDataToPointData;
 class vtkLineSource;
-class vtkProbeFilter;
+class vtkVisItProbeFilter;
 
+//----------------------------------------------------------------------------
+//  Modifications:
+//    Kathleen Bonnell, Fri Mar 28 12:09:01 PDT 2008
+//    Removed cd2pd, use VisIt version of vtkProbeFilter.
+//----------------------------------------------------------------------------
 class VISIT_VTK_API vtkLineoutFilter : public vtkDataSetToPolyDataFilter
 {
 public:
@@ -83,9 +88,8 @@ protected:
   vtkLineoutFilter();
   ~vtkLineoutFilter() ;
 
-  vtkCellDataToPointData *cd2pd;
   vtkLineSource          *LineSource;
-  vtkProbeFilter         *Probe;
+  vtkVisItProbeFilter    *Probe;
 
   void Execute();
 
