@@ -85,6 +85,9 @@ class     vtkRectilinearGrid;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Kathleen Bonnell, Fri Mar 28 14:33:55 PDT 2008 
+//    Added TransformData method.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtTransform : public virtual avtDataTreeIterator
@@ -108,6 +111,7 @@ class AVTFILTERS_API avtTransform : public virtual avtDataTreeIterator
                                                          vtkRectilinearGrid *);
     vtkDataSet                 *TransformRectilinearToCurvilinear(
                                                          vtkRectilinearGrid *);
+    virtual void                TransformData(vtkRectilinearGrid *) {;};
 };
 
 

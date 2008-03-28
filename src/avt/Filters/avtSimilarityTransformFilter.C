@@ -43,6 +43,9 @@
 #include <avtSimilarityTransformFilter.h>
 
 #include <avtExtents.h>
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
 
 #include <BadVectorException.h>
 
@@ -373,8 +376,7 @@ avtSimilarityTransformFilter::SetupMatrix()
 // ****************************************************************************
 
 avtContract_p
-avtSimilarityTransformFilter::ModifyContract(
-                                               avtContract_p spec)
+avtSimilarityTransformFilter::ModifyContract(avtContract_p spec)
 {
     avtContract_p rv = new avtContract(spec);
     if (rv->GetDataRequest()->MayRequireZones())
@@ -514,4 +516,48 @@ avtSimilarityTransformFilter::PostExecute()
 {
     GetOutput()->GetInfo().GetAttributes().SetInvTransform((*invM)[0]);
     GetOutput()->GetInfo().GetAttributes().SetTransform((*M)[0]);
+}
+
+
+// ****************************************************************************
+//  Method: avtSimilarityTransformFilter::TransformData
+//
+//  Purpose:
+//    Performs Translation and Scaling on the point-data scalars of a 
+//    1D Rectilinear grid representing a curve.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 28, 2008 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtSimilarityTransformFilter::TransformData(vtkRectilinearGrid *rgrid)
+{
+    double yScaleVal = atts.GetScaleY();
+    double yTransVal = atts.GetTranslateY();
+    bool doScale = atts.GetDoScale() && yScaleVal != 1.;
+    bool doTrans = atts.GetDoTranslate() && yTransVal != 0.;
+
+    if (doScale || doTrans)
+    {
+        vtkFloatArray *scalars = vtkFloatArray::SafeDownCast(
+             rgrid->GetPointData()->GetScalars());
+        vtkFloatArray *transScalars = vtkFloatArray::New();
+        transScalars->SetNumberOfTuples(scalars->GetNumberOfTuples());
+        transScalars->SetName(scalars->GetName());
+        transScalars->DeepCopy(scalars);
+        float *transV = transScalars->GetPointer(0); 
+        for (int i = 0; i < scalars->GetNumberOfTuples(); i++)
+        {
+            if (doScale)
+                transV[i] *= yScaleVal;
+            if (doTrans)
+                transV[i] += yTransVal;
+        }
+        rgrid->GetPointData()->SetScalars(transScalars);
+        transScalars->Delete();
+    }
 }

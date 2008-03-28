@@ -301,6 +301,10 @@ avtTransform::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //  Programmer: Hank Childs
 //  Creation:   August 5, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Mar 28 14:33:55 PDT 2008
+//    Added call to TransformData for 1D curve grids.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -311,6 +315,13 @@ avtTransform::TransformRectilinear(vtkRectilinearGrid *rgrid)
     if (OutputIsRectilinear(t))
     {
         rv = TransformRectilinearToRectilinear(rgrid);
+        int dims[3];
+        rgrid->GetDimensions(dims);
+        if (dims[1] <= 1 && dims[2] <= 1 &&
+           GetInput()->GetInfo().GetAttributes().GetVariableType() == AVT_CURVE)
+        {
+            TransformData((vtkRectilinearGrid*)rv);
+        }
     }
     else
     {
@@ -689,5 +700,3 @@ IsIdentity(vtkMatrix4x4 *mat)
 
     return true;
 }
-
-
