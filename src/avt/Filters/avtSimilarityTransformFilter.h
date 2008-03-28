@@ -80,6 +80,9 @@ class vtkDataSet;
 //    Made this filter no longer be a streamer.  Renamed with Similarity.
 //    Also moved to components directory.
 //
+//    Kathleen Bonnell, Fri Mar 28 14:33:55 PDT 2008 
+//    Added TransformData method.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtSimilarityTransformFilter : public avtTransform
@@ -105,6 +108,7 @@ class AVTFILTERS_API avtSimilarityTransformFilter : public avtTransform
                           ModifyContract(avtContract_p);
     virtual void          UpdateDataObjectInfo(void);
     virtual void          PostExecute(void);
+    virtual void          TransformData(vtkRectilinearGrid *);
 };
 
 
