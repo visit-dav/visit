@@ -47,7 +47,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
-#include <vtkProbeFilter.h>
+#include <vtkVisItProbeFilter.h>
 #include <vtkUnsignedCharArray.h>
 
 
@@ -61,6 +61,8 @@ vtkStandardNewMacro(vtkLineoutFilter);
 //   Kathleen Bonnell, Fri Jul 12 17:19:40 PDT 2002
 //   Removed YScale, no longer needed.
 //  
+//   Kathleen Bonnell, Fri Mar 28 12:09:01 PDT 2008
+//   Removed cd2pd, use VisIt version of vtkProbeFilter.
 //======================================================================
 vtkLineoutFilter::vtkLineoutFilter()
 {
@@ -68,12 +70,16 @@ vtkLineoutFilter::vtkLineoutFilter()
   this->Point2[0] = this->Point2[1] = this->Point2[2] = 1.; 
   this->NumberOfSamplePoints = 50;
   this->LineSource = vtkLineSource::New();
-  this->Probe = vtkProbeFilter::New();
-  this->cd2pd = vtkCellDataToPointData::New();
+  this->Probe = vtkVisItProbeFilter::New();
 }
 
 //======================================================================
 // Destructor
+//  
+// Modifications:
+//   Kathleen Bonnell, Fri Mar 28 12:09:01 PDT 2008
+//   Removed cd2pd.
+//======================================================================
 vtkLineoutFilter::~vtkLineoutFilter()
 {
   if (this->LineSource != NULL)
@@ -85,11 +91,6 @@ vtkLineoutFilter::~vtkLineoutFilter()
     {
     this->Probe->Delete();
     this->Probe = NULL;
-    }
-  if (this->cd2pd != NULL)
-    {
-    this->cd2pd->Delete();
-    this->cd2pd = NULL;
     }
 }
 
@@ -113,6 +114,9 @@ vtkLineoutFilter::~vtkLineoutFilter()
 //   Hank Childs, Sun Mar 13 09:19:30 PST 2005
 //   Fix memory leak.
 //
+//   Kathleen Bonnell, Fri Mar 28 12:09:01 PDT 2008
+//   Removed cd2pd.
+//
 //======================================================================
 void
 vtkLineoutFilter::Execute()
@@ -127,18 +131,13 @@ vtkLineoutFilter::Execute()
   if (inDS->GetPointData()->GetScalars() == NULL)
     {
     if (inDS->GetCellData()->GetScalars() == NULL)
-    {
+      {
        vtkErrorMacro(<<"No Scalars to probe!");
        return;
+      }
+    this->Probe->SetCellData(1);
     }
-    vtkDebugMacro(<<"Converting CellData To PointData");
-    this->cd2pd->SetInput(inDS);
-    this->Probe->SetSource(this->cd2pd->GetOutput());
-    }
-  else
-    {
-    this->Probe->SetSource(inDS);
-    }
+  this->Probe->SetSource(inDS);
   this->Probe->SetInput(this->LineSource->GetOutput());
   this->Probe->Update();
   
@@ -237,7 +236,6 @@ vtkLineoutFilter::Execute()
   //
   probeOut->Delete();
   nonGhostValidPoints->Delete();
-
 } 
 
 //======================================================================

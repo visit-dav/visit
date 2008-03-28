@@ -296,6 +296,9 @@
 #    Added vtkTexturedBackgroundActor, vtkOpenGLTexturedBackgroundMapper,
 #    vtkMesaTexturedBackgroundMapper, vtkVisItOpenGLTexture.C
 #
+#    Kathleen Bonnell, Fri Mar 28 12:09:01 PDT 2008
+#    Added vtkVisItProbeFilter.
+#
 ##############################################################################
 
 ##
@@ -368,6 +371,7 @@ SRC=InitVTK.C \
     vtkVisItExtractRectilinearGrid.C \
     vtkVisItFeatureEdges.C \
     vtkVisItGlyph3D.C \
+    vtkVisItProbeFilter.C \
     vtkVisItPolyDataNormals.C \
     vtkVisItRectilinearGrid.C \
     vtkVisItSTLWriter.C \
