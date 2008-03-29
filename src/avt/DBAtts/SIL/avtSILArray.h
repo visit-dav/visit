@@ -49,6 +49,7 @@
 #include <avtSILSet.h>
 #include <avtSILCollection.h>
 #include <avtTypes.h>
+#include <vectortypes.h>
 
 class SILArrayAttributes;
 
@@ -67,6 +68,9 @@ class SILArrayAttributes;
 //  Modifications:
 //    Dave Bremer, Fri Jan 25 13:07:02 PST 2008
 //    Added GetSILSetID method.
+//
+//    Dave Bremer, Fri Mar 28 19:38:29 PDT 2008
+//    Modified to handle an explicit list of names.
 // ****************************************************************************
 
 class DBATTS_API avtSILArray
@@ -75,6 +79,10 @@ class DBATTS_API avtSILArray
                         avtSILArray(const std::string &pfx, int nSets, 
                                     int firstSetName,  bool uniqueIDs,
                                     const std::string &cat,
+                                    SILCategoryRole r, int parent);
+                        avtSILArray(const stringVector &names, 
+                                    int nSets, int firstSetName, 
+                                    bool uniqueIDs, const std::string &cat,
                                     SILCategoryRole r, int parent);
                         avtSILArray(const SILArrayAttributes &atts);
     virtual            ~avtSILArray() {;};
@@ -97,7 +105,9 @@ class DBATTS_API avtSILArray
 
   protected:
     //For making the sets
-    std::string      prefix;
+    std::string      prefix;         //prefix or template for the block name
+    stringVector     names;  //explicit list of block names
+
     int              iNumSets;
     int              iFirstSetName;  //Often 0 or 1, depending for example on a 
                                      //code's block numbering preference

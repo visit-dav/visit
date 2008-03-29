@@ -45,6 +45,7 @@
 #include <SILArrayAttributes.h>
 #include <avtSILRangeNamespace.h>
 #include <avtSILEnumeratedNamespace.h>
+#include <snprintf.h>
 
 using std::vector;
 using std::string;
@@ -83,13 +84,44 @@ avtSILArray::avtSILArray(const string &pfx, int nSets,
 //  Method: avtSILArray constructor
 //
 //  Programmer: Dave Bremer
+//  Creation:   Thu Mar 27 15:57:29 PDT 2008
+//
+// ****************************************************************************
+
+avtSILArray::avtSILArray(const stringVector &domainNames, int nSets, 
+                         int firstSetName, bool uniqueIDs,
+                         const string &cat,
+                         SILCategoryRole r, int parent)
+{
+    names = domainNames;
+    iNumSets = nSets;
+    iFirstSetName = firstSetName;
+    bUseUniqueIDs = uniqueIDs;
+
+    iFirstSet = 0;
+    iColIndex = 0;
+
+    category = cat;
+    role = r;
+    iColParent = parent;
+}
+
+
+// ****************************************************************************
+//  Method: avtSILArray constructor
+//
+//  Programmer: Dave Bremer
 //  Creation:   Thu Dec 20 12:12:30 PST 2007
 //
+//  Modifications:
+//    Dave Bremer, Thu Mar 27 15:57:29 PDT 2008
+//    Modified to handle arrays of domain names.
 // ****************************************************************************
 
 avtSILArray::avtSILArray(const SILArrayAttributes &atts)
 {
     prefix = atts.GetPrefix();
+    names = atts.GetNames();
     iNumSets = atts.GetNumSets();
     iFirstSetName = atts.GetFirstSetName();
     bUseUniqueIDs = atts.GetUseUniqueIDs();
@@ -112,6 +144,9 @@ avtSILArray::avtSILArray(const SILArrayAttributes &atts)
 //  Programmer: Dave Bremer
 //  Creation:   Thu Dec 20 12:12:30 PST 2007
 //
+//  Modifications:
+//    Dave Bremer, Thu Mar 27 15:57:29 PDT 2008
+//    Modified to handle arrays of domain names.
 // ****************************************************************************
 
 SILArrayAttributes *
@@ -119,6 +154,7 @@ avtSILArray::MakeAttributes(void) const
 {
     SILArrayAttributes *rv = new SILArrayAttributes;
     rv->SetPrefix(prefix);
+    rv->SetNames(names);
     rv->SetNumSets(iNumSets);
     rv->SetFirstSetName(iFirstSetName);
     rv->SetUseUniqueIDs(bUseUniqueIDs);
@@ -140,20 +176,33 @@ avtSILArray::MakeAttributes(void) const
 //  Programmer: Dave Bremer
 //  Creation:   Thu Dec 20 12:12:30 PST 2007
 //
+//  Modifications:
+//    Dave Bremer, Thu Mar 27 15:57:29 PDT 2008
+//    Modified to handle arrays of domain names.
 // ****************************************************************************
 
 avtSILSet_p  
 avtSILArray::GetSILSet(int index) const
 {
-    char name[1024];
-    if (strstr(prefix.c_str(), "%") != NULL)
-        sprintf(name, prefix.c_str(), index + iFirstSetName);
-    else
-        sprintf(name, "%s%d", prefix.c_str(), index + iFirstSetName);
-
     int id = bUseUniqueIDs ? index : -1;
 
-    avtSILSet_p rv = new avtSILSet(name, id);
+    char name[1024];
+    avtSILSet_p rv;
+
+    if (names.size() != 0)
+    {
+        rv = new avtSILSet(names[index], id);
+    }
+    else if (strstr(prefix.c_str(), "%") != NULL)
+    {
+        SNPRINTF(name, 1024, prefix.c_str(), index + iFirstSetName);
+        rv = new avtSILSet(name, id);
+    }
+    else
+    {
+        SNPRINTF(name, 1024, "%s%d", prefix.c_str(), index + iFirstSetName);
+        rv = new avtSILSet(name, id);
+    }
     rv->AddMapIn(iColIndex);
     return rv;
 }
@@ -292,6 +341,9 @@ avtSILArray::TurnSet(vector<unsigned char> &useSet,
 //  Programmer: Dave Bremer
 //  Creation:   Thu Dec 20 12:12:30 PST 2007
 //
+//  Modifications:
+//    Dave Bremer, Thu Mar 27 15:57:29 PDT 2008
+//    Modified to handle arrays of domain names.
 // ****************************************************************************
 int
 avtSILArray::GetSetIndex(const std::string &name) const
@@ -299,14 +351,27 @@ avtSILArray::GetSetIndex(const std::string &name) const
     //Use sscanf to determine if this name could match an entry in the array.
     int nMatches = 0;
     int i = -999;
-    if (strstr(prefix.c_str(), "%") != NULL)
+
+    if (names.size() != 0)
+    {
+        int ii = 0;
+        for (ii = 0; ii < names.size(); ii++)
+        {
+            if (names[ii] == name)
+            {
+                return (iFirstSet + ii);
+            }
+        }
+        return -1;
+    }
+    else if (strstr(prefix.c_str(), "%") != NULL)
     {
         nMatches = sscanf(name.c_str(), prefix.c_str(), &i);
     }
     else
     {
         char nameTemplate[1024];
-        sprintf(nameTemplate, "%s%%d", prefix.c_str());
+        SNPRINTF(nameTemplate, 1024, "%s%%d", prefix.c_str());
         nMatches = sscanf(name.c_str(), nameTemplate, &i);
     }
     if (nMatches != 1)
