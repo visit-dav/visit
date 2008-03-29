@@ -25,4 +25,6 @@
     <Field name="colParent" label="colParent" type="int">
       0
     </Field>
+    <Field name="names" label="names" type="stringVector">
+    </Field>
   </Attribute>
