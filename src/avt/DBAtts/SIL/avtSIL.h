@@ -175,6 +175,8 @@ class DBATTS_API avtSIL
                                                           avtSILArray_p  &outArray, 
                                                           avtSILMatrix_p &outMatrix, int &outIndex);
     void                              AddMapsToTemporarySet(avtSILSet_p pSet, int setIndex) const;
+    avtSILSet_p                       GetSILSetInternal(int index, bool &isTemporary, 
+                                                        bool returnNullIfTemporary) const;
 
   private:
                                       avtSIL(const avtSIL &) {;};

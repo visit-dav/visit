@@ -323,7 +323,9 @@ avtSIL::AddCollection(avtSILCollection_p c)
         {
             EXCEPTION2(BadIndexException, subset, setsSize);
         }
-        GetSILSet(subset, isTemp)->AddMapIn(collIndex);
+        avtSILSet_p  pSet = GetSILSetInternal(subset, isTemp, true);
+        if (*pSet != NULL)
+            pSet->AddMapIn(collIndex);
     }
 }
 
@@ -601,16 +603,17 @@ avtSIL::GetNumCollections(void) const
 //
 //    Dave Bremer, Tue Dec 18 16:24:08 PST 2007
 //    Made this a stub method.
+//
+//    Dave Bremer, Fri Mar 28 19:42:51 PDT 2008
+//    Pointed this stub at GetSILSetInternal
 // ****************************************************************************
 
 avtSILSet_p
 avtSIL::GetSILSet(int index) const
 {
     bool dummy;
-    return GetSILSet(index, dummy);
+    return GetSILSetInternal(index, dummy, false);
 }
-
-
 
 
 // ****************************************************************************
@@ -627,10 +630,34 @@ avtSIL::GetSILSet(int index) const
 //    Totally rewrote this because sets, matrices, and arrays can now be added
 //    in any order.  Sets can be made on demand from arrays or matrices, and 
 //    maps in and out may have to be added on demand.
+//
+//    Dave Bremer, Fri Mar 28 19:42:51 PDT 2008
+//    Made this a stub class.
 // ****************************************************************************
 
 avtSILSet_p
 avtSIL::GetSILSet(int index, bool &isTemporary) const
+{
+    return GetSILSetInternal(index, isTemporary, false);
+}
+
+
+
+// ****************************************************************************
+//  Method: avtSIL::GetSILSetInternal
+//
+//  Purpose:
+//      Gets a set from a SIL.  This used to be GetSILSet.  I added a parameter
+//      to return NULL optionally if this is a temporary set, which speeds up
+//      the creation of collections that contain avtSILSets that are created
+//      on demand.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Fri Mar 28 19:42:51 PDT 2008
+// ****************************************************************************
+
+avtSILSet_p
+avtSIL::GetSILSetInternal(int index, bool &isTemporary, bool returnNullIfTemporary) const
 {
     if (index < 0)
         EXCEPTION2(BadIndexException, index, GetNumSets());
@@ -658,6 +685,9 @@ avtSIL::GetSILSet(int index, bool &isTemporary) const
             if (tmpIndex < arrays[iCurrArray]->GetNumSets())
             {
                 isTemporary = true;
+                if (returnNullIfTemporary)
+                    return NULL;
+
                 avtSILSet_p rv = arrays[iCurrArray]->GetSILSet(tmpIndex);
                 AddMapsToTemporarySet(rv, index);
                 return rv;
@@ -673,6 +703,9 @@ avtSIL::GetSILSet(int index, bool &isTemporary) const
             if (tmpIndex < matrices[iCurrMat]->GetNumSets())
             {
                 isTemporary = true;
+                if (returnNullIfTemporary)
+                    return NULL;
+
                 avtSILSet_p rv = matrices[iCurrMat]->GetSILSet(tmpIndex);
                 //AddMapsToTemporarySet(rv, index);
                 return rv;
