@@ -77,6 +77,7 @@ class DBATTS_API avtSILEnumeratedNamespace : public avtSILNamespace
   protected:
     std::vector<int>    elements;
     bool                sequentialElems;
+    bool                sortedElems;
 };
 
 

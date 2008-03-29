@@ -63,11 +63,21 @@ avtSILEnumeratedNamespace::avtSILEnumeratedNamespace(const vector<int> &els)
 {
     elements = els;
     sequentialElems = true;
-    for (int ii = 1; ii < els.size(); ii++)
+    int ii;
+    for (ii = 1; ii < els.size(); ii++)
     {
         if (els[ii-1]+1 != els[ii])
         {
             sequentialElems = false;
+            break;
+        }
+    }
+    sortedElems = true;
+    for (ii = 1; ii < els.size(); ii++)
+    {
+        if (els[ii-1] > els[ii])
+        {
+            sortedElems = false;
             break;
         }
     }
@@ -142,6 +152,29 @@ avtSILEnumeratedNamespace::ContainsElement(int e) const
     if (sequentialElems)
     {
         return (e >= elements[0] && e <= elements[elements.size()-1]);
+    }
+    else if (sortedElems)
+    {
+        int min = 0, max = elements.size()-1;
+        int mid = (max+min)/2;
+        while (min <= max)
+        {
+            if (elements[mid] == e)
+            {
+                return true;
+            }
+            else if (elements[mid] > e)
+            {
+                max = mid-1;
+                mid = (max+min)/2;
+            }
+            else
+            {
+                min = mid+1;
+                mid = (max+min)/2;
+            }
+        }
+        return false;
     }
     else
     {
