@@ -610,6 +610,8 @@ vtkDataSet *
 avtSAMRAIFileFormat::GetMesh(int patch, const char *)
 {
     int ghostCode = GetGhostCodeForVar(active_visit_var_name.c_str());
+    debug5 << "Ghost code for variable \"" << active_visit_var_name.c_str()
+           << "\" is " << ghostCode << endl;
 
     if (cached_patches[patch][ghostCode] != NULL)
     {
@@ -661,6 +663,8 @@ avtSAMRAIFileFormat::GetMesh(int patch, const char *)
 //    Hank Childs, Fri Aug 27 17:16:05 PDT 2004
 //    Rename ghost data array.
 //
+//    Mark C. Miller, Mon Mar 31 14:27:21 PDT 2008
+//    Modified to handle the 'materials' variable ghosting correctly.
 // ****************************************************************************
 vtkDataSet *
 avtSAMRAIFileFormat::ReadMesh(int patch)
@@ -685,7 +689,8 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
         std::map<std::string, var_t>::const_iterator cur_var;
         cur_var = var_names_num_components.find(active_visit_var_name);
 
-        if (active_visit_var_name == "amr_mesh")
+        if (active_visit_var_name == "amr_mesh" ||
+	    active_visit_var_name == "materials")
         {
             num_ghosts[0] = var_max_ghosts[0];
             num_ghosts[1] = var_max_ghosts[1];
@@ -4079,6 +4084,10 @@ avtSAMRAIFileFormat::ReadSpeciesInfo(hid_t &h5_file)
 //  Programmer:  Mark C. Miller 
 //  Creation:    November 1, 2007 
 //
+//  Modifications:
+//    Mark C. Miller, Mon Mar 31 14:27:21 PDT 2008
+//    Remvoed extraneous cerr statement.
+//
 // ****************************************************************************
 void 
 avtSAMRAIFileFormat::ReadExpressions(hid_t &h5_file)
@@ -4089,7 +4098,6 @@ avtSAMRAIFileFormat::ReadExpressions(hid_t &h5_file)
         "string", 1, &num_exprs, (void**) &expr_keys, isOptional)
 	&& num_exprs > 0)
     {
-        cerr << "num_expr = " << num_exprs << endl;
         isOptional = false;
         ReadDataset(h5_file, "/visit_expressions/expression_types",
             "string", 1, &num_exprs, (void**) &expr_types, isOptional);
@@ -4249,6 +4257,10 @@ avtSAMRAIFileFormat::BuildDomainAuxiliaryInfo()
 //  Programmer:  Mark C. Miller 
 //  Creation:    December 9, 2003 
 //
+//  Modifications:
+//    Mark C. Miller, Mon Mar 31 14:27:21 PDT 2008
+//    Modified to handle the 'materials' variable correctly.
+//
 // ****************************************************************************
 int
 avtSAMRAIFileFormat::GetGhostCodeForVar(const char *visit_var_name)
@@ -4259,7 +4271,8 @@ avtSAMRAIFileFormat::GetGhostCodeForVar(const char *visit_var_name)
     string var_name = visit_var_name;
     int num_ghosts[3];
 
-    if (var_name == "amr_mesh")
+    if (var_name == "amr_mesh" ||
+        var_name == "materials")
     {
         num_ghosts[0] = var_max_ghosts[0];
         num_ghosts[1] = var_max_ghosts[1];
