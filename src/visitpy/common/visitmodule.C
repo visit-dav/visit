@@ -3422,6 +3422,9 @@ visit_AddPlot(PyObject *self, PyObject *args)
 //   Brad Whitlock, Fri Jul 26 12:17:54 PDT 2002
 //   I made it return a success value.
 //
+//   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
+//   Removed SetApplySelection() since we do not affect SIL selection 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3467,7 +3470,6 @@ visit_AddOperator(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         // Set the apply to all plots toggle.
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
-        GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Add the operator
@@ -4034,6 +4036,9 @@ visit_DeleteAllPlots(PyObject *self, PyObject *args)
 //   Brad Whitlock, Fri Jul 26 12:23:44 PDT 2002
 //   I made it return a success value.
 //
+//   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
+//   Removed SetApplySelection() since we do not affect SIL selection 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -4048,7 +4053,6 @@ visit_RemoveLastOperator(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         // Set the apply to all plots toggle.
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
-        GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Remove the last operator.
@@ -4077,6 +4081,9 @@ visit_RemoveLastOperator(PyObject *self, PyObject *args)
 //   Brad Whitlock, Fri Jul 26 12:23:44 PDT 2002
 //   I made it return a success value.
 //
+//   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
+//   Removed SetApplySelection() since we do not affect SIL selection 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -4091,7 +4098,6 @@ visit_RemoveAllOperators(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         // Set the apply to all plots toggle.
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
-        GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Remove all operators.
@@ -6832,6 +6838,9 @@ visit_Expressions(PyObject *self, PyObject *args)
 //   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
 //   Made it use the "enabled" plugin index instead the "all" index.
 //
+//   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
+//   Removed SetApplySelection() since we do not affect SIL selection 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6875,7 +6884,6 @@ visit_ResetOperatorOptions(PyObject *self, PyObject *args)
         MUTEX_LOCK();
             // Set the apply to all plots toggle.
             GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
-            GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
             GetViewerState()->GetGlobalAttributes()->Notify();
 
             // Reset the operator options.
@@ -7062,6 +7070,9 @@ visit_SetActivePlots(PyObject *self, PyObject *args)
 //   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
 //   Made it use the "enabled" plugin index instead the "all" index.
 //
+//   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
+//   Removed SetApplySelection() since we do not affect SIL selection 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7133,7 +7144,6 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
     {
         // Set the apply to all plots toggle.
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
-        GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
  
         // If the active operator was set, change the plot selection so we can set
@@ -7198,6 +7208,9 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
 //
 // Modifications:
 //    
+//   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
+//   Removed SetApplySelection() since we do not affect SIL selection 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7229,7 +7242,6 @@ PromoteDemoteRemoveOperatorHelper(PyObject *self, PyObject *args, int option)
     {
         // Set the apply to all plots toggle.
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
-        GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Do the operation.
@@ -7765,6 +7777,9 @@ visit_GetOperatorOptions(PyObject *self, PyObject *args)
 //   Brad Whitlock, Wed Jan 23 10:05:43 PDT 2008
 //   Changed how the applyToAllPlots works a little.
 //
+//   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
+//   Removed SetApplyOperator() since we do not affect operators 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7803,7 +7818,6 @@ visit_SetPlotSILRestriction(PyObject *self, PyObject *args)
     if(viewer)
     {
         // Set the apply to all plots toggle.
-        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
@@ -8209,6 +8223,9 @@ GetCategoryTupleHelper(SILCategoryRole role)
 //   Removed test for number of maps, so that domains can still be turned
 //   on/off even with the presense of groups in the data. 
 //
+//   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
+//   Removed SetApplyOperator() since we do not affect operators 
+//
 // ****************************************************************************
 
 bool
@@ -8270,7 +8287,6 @@ TurnOnOffHelper(SILCategoryRole role, bool val, const stringVector &names)
     }
 
     // Set the apply to all plots toggle.
-    GetViewerState()->GetGlobalAttributes()->SetApplyOperator(false);
     GetViewerState()->GetGlobalAttributes()->SetApplySelection(false);
     GetViewerState()->GetGlobalAttributes()->Notify();
 
@@ -11156,6 +11172,9 @@ visit_PickByGlobalNode(PyObject *self, PyObject *args)
 //    Kathleen Bonnell, Tue May 15 10:36:47 PDT 2007 
 //    Added haveSamples. 
 //
+//   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
+//   Removed SetApplySelection() since we do not affect SIL selection 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -11218,7 +11237,6 @@ visit_Lineout(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         // Lineout should not be applied to more than one plot at a time. 
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(false);
-        GetViewerState()->GetGlobalAttributes()->SetApplySelection(false);
         GetViewerState()->GetGlobalAttributes()->Notify();
         GetViewerMethods()->Lineout(p0, p1, vars, samples, haveSamples);
 
