@@ -464,6 +464,50 @@ avtGradientExpression::DeriveVariable(vtkDataSet *in_ds)
     return results;
 }
 
+// ****************************************************************************
+//  Method: avtGradientExpression::IsPointVariable
+//
+//  Purpose:
+//      Report proper centering. 
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   April 1, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtGradientExpression::IsPointVariable(void)
+{
+    bool is_point  = true;
+    bool found_one = false;
+    // NZQH always returns a cell centered result
+    if (gradientAlgo == NODAL_TO_ZONAL_QUAD_HEX)
+    {
+        is_point = false;    
+    }
+    else
+    {
+        avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+
+        if (activeVariable != NULL)
+        {
+            if (atts.ValidVariable(activeVariable))
+            {
+                is_point  = (atts.GetCentering(activeVariable) != AVT_ZONECENT);
+                found_one = true;
+            }
+        }
+
+        if (!found_one)
+            if (atts.ValidActiveVariable())
+                is_point = (atts.GetCentering() != AVT_ZONECENT);
+    }
+    
+    return is_point;
+}
+
 
 // ****************************************************************************
 //  Method: avtGradientExpression::EvaluateComponent
