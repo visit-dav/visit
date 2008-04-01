@@ -80,6 +80,9 @@ class     vtkStructuredGrid;
 //    Cyrus Harrison, Wed Aug  8 11:17:51 PDT 2007
 //    Add support for multiple gradient algorithms.
 //
+//    Cyrus Harrison, Tue Apr  1 11:06:28 PDT 2008
+//    Added IsPointVariable() to deal with NZQH centering change.
+//
 // ****************************************************************************
 
 typedef enum
@@ -112,7 +115,8 @@ class EXPRESSION_API avtGradientExpression : public avtSingleInputExpressionFilt
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual int               GetVariableDimension() { return 3; }
-
+    virtual bool              IsPointVariable(void);
+    
     float                     EvaluateComponent(float, float, float, float,
                                                 float, float, float,
                                                 vtkDataSet *, vtkDataArray *,
