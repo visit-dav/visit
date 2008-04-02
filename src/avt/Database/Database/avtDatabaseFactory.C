@@ -256,6 +256,9 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    Renamed defaultFormat to fallbackFormat for clarity.
 //    Also, allow an assumed format to fail and fall back on other readers.
 //
+//    Jeremy Meredith, Wed Apr  2 12:46:52 EDT 2008
+//    Adding a little debug info for watching format attempts.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -299,6 +302,8 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     //
     if (format != NULL)
     {
+        debug3 << "avtDatabaseFactory: specifically told to use "
+               << format << endl;
         int formatindex = dbmgr->GetAllIndex(format);
         if (formatindex < 0)
         {
@@ -348,6 +353,8 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     //
     if (rv == NULL && formatToTryFirst != NULL)
     {
+        debug3 << "avtDatabaseFactory: trying assumed format "
+               << formatToTryFirst << endl;
         int formatindex = dbmgr->GetAllIndexFromName(formatToTryFirst);
         if (formatindex >= 0)
         {
@@ -390,6 +397,8 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             defaultFileOpenOptions.GetOpenOptionsForID(ids[i]);
         if (opts && info)
             info->SetReadOptions(new DBOptionsAttributes(*opts));
+        debug3 << "avtDatabaseFactory: trying extension-matched format "
+               << ids[i] << endl;
         TRY
         {
             plugins.push_back(info ? info->GetName() : "");
@@ -410,6 +419,8 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     string fallbackDatabaseType(fallbackFormat);
     if (rv == NULL)
     {
+        debug3 << "avtDatabaseFactory: trying fallback format "
+               << fallbackFormat << endl;
         int fallbackindex = dbmgr->GetAllIndexFromName(fallbackDatabaseType);
         if (fallbackindex != -1)
         {
