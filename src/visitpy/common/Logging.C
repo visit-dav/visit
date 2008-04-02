@@ -445,9 +445,13 @@ static void log_AddPlotRPC(ViewerRPC *rpc, char *str)
     if(info != 0)
         plotName = info->GetName();
  
-    SNPRINTF(str, SLEN, "AddPlot(\"%s\", \"%s\")\n",
+    int  inheritSILRestriction = viewer->GetViewerState()->GetGlobalAttributes()->GetNewPlotsInheritSILRestriction();
+    int  applyOperator = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1: 0;
+    SNPRINTF(str, SLEN, "AddPlot(\"%s\", \"%s\", %d, %d)\n",
              plotName.c_str(),
-             rpc->GetVariable().c_str());
+             rpc->GetVariable().c_str(),
+             inheritSILRestriction,
+             applyOperator);
 }
 
 static void log_SetPlotFrameRangeRPC(ViewerRPC *rpc, char *str)
@@ -540,8 +544,10 @@ static void log_AddOperatorRPC(ViewerRPC *rpc, char *str)
     if(info != 0)
         operatorName = info->GetName();
  
-    SNPRINTF(str, SLEN, "AddOperator(\"%s\")\n",
-             operatorName.c_str());
+    int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
+    SNPRINTF(str, SLEN, "AddOperator(\"%s\", %d)\n",
+             operatorName.c_str(),
+             applyAll);
 }
 
 static void log_PromoteOperatorRPC(ViewerRPC *rpc, char *str)
@@ -651,9 +657,12 @@ static void log_SetDefaultOperatorOptionsRPC(ViewerRPC *rpc, char *str)
 static void log_SetOperatorOptionsRPC(ViewerRPC *rpc, char *str)
 {
     std::string atts(""), operatorName("");
+    bool  applyOperator = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
     log_SetOperatorOptionsHelper(rpc, atts, operatorName);
     atts += "SetOperatorOptions(";
     atts += operatorName;
+    atts += ", ";
+    atts += (applyOperator ? "1" : "0");
     atts += ")\n";
     SNPRINTF(str, SLEN, "%s", atts.c_str());
 }
@@ -834,7 +843,10 @@ static void log_SetPlotSILRestrictionRPC(ViewerRPC *rpc, char *str)
             s += "silr.EnableCorrectnessChecking()\n";
         }
     }
-    s += "SetPlotSILRestriction(silr)\n";
+    bool applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplySelection();
+    s += "SetPlotSILRestriction(silr ,";
+    s += (applyAll ? "1" : "0");
+    s += ")\n";
     SNPRINTF(str, SLEN, "%s", s.c_str());
 }
 
@@ -886,8 +898,9 @@ static void log_ResetOperatorOptionsRPC(ViewerRPC *rpc, char *str)
     if(info != 0)
         operatorName = info->GetName();
  
-    SNPRINTF(str, SLEN, "ResetOperatorOptions(\"%s\")\n",
-             operatorName.c_str());
+    int  applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1: 0;
+    SNPRINTF(str, SLEN, "ResetOperatorOptions(\"%s\", %d)\n",
+             operatorName.c_str(), applyAll);
 }
 
 static void log_SetAppearanceRPC(ViewerRPC *rpc, char *str)
