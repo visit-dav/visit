@@ -59,6 +59,10 @@ class     ConstExpr;
 //  Programmer: Mark C. Miller (copied from Hank's NMats filter) 
 //  Creation:   November 15, 2006 
 //
+//  Modifications:
+//    Mark C. Miller, Wed Apr  2 09:46:47 PDT 2008
+//    Added UpdateDataObjectInfo() to set treat as ascii
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtZoneTypeExpression : public avtSingleInputExpressionFilter
@@ -71,6 +75,7 @@ class EXPRESSION_API avtZoneTypeExpression : public avtSingleInputExpressionFilt
     virtual const char       *GetDescription(void)
                                            {return "Finding ZoneType";};
   protected:
+    virtual void              UpdateDataObjectInfo(void);
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void)  { return false; };
 };
