@@ -76,6 +76,8 @@ class     avtSIL;
 //    Brad Whitlock, Thu Mar 8 09:46:17 PDT 2007
 //    Changed AddSpecies method.
 //
+//    Dave Bremer, Tue Apr  1 16:43:16 PDT 2008
+//    Added a flag to AddSubsets to control the use of SIL Arrays
 // ****************************************************************************
 
 class DATABASE_API avtSILGenerator
@@ -87,6 +89,7 @@ class DATABASE_API avtSILGenerator
     void                AddSubsets(avtSIL *, int, int, int, std::vector<int> &,
                                    const std::string &, const std::string &,
                                    const std::vector<std::string> &,
+                                   bool useSILArrays,
                                    SILCategoryRole cat = SIL_DOMAIN,
                                    bool onlyCreateSets = false);
     void                AddGroups(avtSIL *, int, int, int,
