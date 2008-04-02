@@ -117,6 +117,11 @@ class   SILAttributes;
 //    Dave Bremer, Fri Jan 25 13:07:02 PST 2008
 //    Added the methods GetSILSetID and SILSetHasMapsOut, which can give info
 //    about a set without actually creating it, possibly avoiding some work.
+//
+//    Dave Bremer, Tue Apr  1 15:13:05 PDT 2008
+//    Added tables to index sets and collections, allowing binary rather
+//    than linear searches for sets and collections, and added FindSet
+//    and FindColl to perform the searches.
 // ****************************************************************************
 
 class DBATTS_API avtSIL
@@ -178,6 +183,15 @@ class DBATTS_API avtSIL
     avtSILSet_p                       GetSILSetInternal(int index, bool &isTemporary, 
                                                         bool returnNullIfTemporary) const;
 
+    bool                              FindSet(int iSet, EntryType &outType, 
+                                              int &outLocalIndex,
+                                              int &outLocalSubIndex) const;
+
+    bool                              FindColl(int iColl, EntryType &outType, 
+                                               int &outLocalIndex,
+                                               int &outLocalSubIndex) const;
+
+
   private:
                                       avtSIL(const avtSIL &) {;};
 
@@ -190,8 +204,14 @@ class DBATTS_API avtSIL
                                              //the set and collection indices 
                                              //are inferred from this.
 
-};
+    std::vector<int>  setTable;  // setTable and collTable have 3 ints per table entry: global_index, type, local_index
+    std::vector<int>  collTable; // and one final value giving the total count/index of the next value to add.
+                                 // e.g. setTable  0, 0, 0,   set 0 is a WHOLE_SET in sets[0]
+                                 //                1, 2, 0,   sets starting at 1  are in an ARRAY in arrays[0]
+                                 //               41, 2, 1,   sets starting at 41 are in an ARRAY in arrays[1]
+                                 //              141          the total number of sets is 141
 
+};
 
 #endif
 
