@@ -43,6 +43,7 @@
 #include <avtZoneTypeExpression.h>
 
 #include <vtkCellData.h>
+#include <vtkCellType.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 
@@ -97,6 +98,10 @@ avtZoneTypeExpression::~avtZoneTypeExpression()
 //  Programmer:   Mark C. Miller 
 //  Creation:     November 15, 2006 
 //
+//  Modifications:
+//    Mark C. Miller, Wed Apr  2 09:46:47 PDT 2008
+//    Added case statement to set character for zone type.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -110,8 +115,50 @@ avtZoneTypeExpression::DeriveVariable(vtkDataSet *in_ds)
     rv->SetNumberOfTuples(ncells);
     for (i = 0 ; i < ncells ; i++)
     {
-        rv->SetTuple1(i, (float) in_ds->GetCellType(i));
+        float val = (float) '?';
+        switch (in_ds->GetCellType(i))
+	{
+	    // 2D cell types, lower case letters
+            case VTK_EMPTY_CELL:     val = (float) 'e'; break;
+            case VTK_VERTEX:         val = (float) 'v'; break;
+            case VTK_POLY_VERTEX:    val = (float) 'w'; break;
+            case VTK_LINE:           val = (float) 'l'; break;
+            case VTK_POLY_LINE:      val = (float) 'm'; break;
+            case VTK_TRIANGLE:       val = (float) 't'; break;
+            case VTK_TRIANGLE_STRIP: val = (float) 's'; break;
+            case VTK_POLYGON:        val = (float) 'p'; break;
+            case VTK_PIXEL:          val = (float) 'x'; break;
+            case VTK_QUAD:           val = (float) 'q'; break;
+
+	    // 3D cell types, upper case letters
+            case VTK_TETRA:          val = (float) 'T'; break;
+            case VTK_VOXEL:          val = (float) 'V'; break;
+            case VTK_HEXAHEDRON:     val = (float) 'H'; break;
+            case VTK_WEDGE:          val = (float) 'W'; break;
+            case VTK_PYRAMID:        val = (float) 'P'; break;
+        }            
+
+        rv->SetTuple1(i, val);
     }
 
     return rv;
+}
+
+// ****************************************************************************
+//  Method: avtZoneTypeExpression::UpdateDataObjectInfo
+//
+//  Purpose: Tell the output this is a treat as ascii variable
+//
+//  Programmer:   Mark C. Miller 
+//  Creation:     April 2, 2008 
+//
+// ****************************************************************************
+
+void
+avtZoneTypeExpression::UpdateDataObjectInfo(void)
+{
+    avtSingleInputExpressionFilter::UpdateDataObjectInfo();
+
+    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+    outAtts.SetTreatAsASCII(true);
 }
