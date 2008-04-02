@@ -3335,6 +3335,11 @@ visit_InvertBackgroundColor(PyObject *self, PyObject *args)
 //   default SIL selections unless that flag is set. This change here ensures
 //   script compatibility.
 //
+//   Gunther H. Weber, Tue Apr  1 16:40:25 PDT 2008
+//   Added option to determine whether operators of existing plots will be
+//   applied to the new plot. By default, do not apply operators of existing
+//   plots to the new plot, even if the global option applyOperator is set.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3345,10 +3350,15 @@ visit_AddPlot(PyObject *self, PyObject *args)
     char *plotName = 0;
     char *varName = 0;
     int inherit = 1;
+    int applyExistingOperators = 0;
     if (!PyArg_ParseTuple(args, "ss", &plotName, &varName))
     {
         if(!PyArg_ParseTuple(args, "ssi", &plotName, &varName, &inherit))
-            return NULL;
+        {
+            if(!PyArg_ParseTuple(args, "ssii", &plotName, &varName, &inherit, &applyExistingOperators))
+                return NULL;
+            else PyErr_Clear();
+        }
         else
             PyErr_Clear();    
     }
@@ -3380,13 +3390,16 @@ visit_AddPlot(PyObject *self, PyObject *args)
    
     MUTEX_LOCK();
         // Set the apply to all plots toggle.
+        bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyExistingOperators != 0);
+
         bool inheritSILRestriction = inherit != 0;
         bool value = GetViewerState()->GetGlobalAttributes()->GetNewPlotsInheritSILRestriction();
         if(inheritSILRestriction != value)
         {
             GetViewerState()->GetGlobalAttributes()->SetNewPlotsInheritSILRestriction(inheritSILRestriction);
-            GetViewerState()->GetGlobalAttributes()->Notify();
         }
+        GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Add the plot
         GetViewerMethods()->AddPlot(plotTypeIndex, varName);
@@ -3395,8 +3408,11 @@ visit_AddPlot(PyObject *self, PyObject *args)
         if(inheritSILRestriction != value)
         {
             GetViewerState()->GetGlobalAttributes()->SetNewPlotsInheritSILRestriction(value);
-            GetViewerState()->GetGlobalAttributes()->Notify();
         }
+
+        // Restore toggle
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyOperatorSave);
+        GetViewerState()->GetGlobalAttributes()->Notify();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3424,6 +3440,9 @@ visit_AddPlot(PyObject *self, PyObject *args)
 //
 //   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
 //   Removed SetApplySelection() since we do not affect SIL selection 
+//
+//   Gunther H. Weber, Tue Apr  1 16:42:15 PDT 2008
+//   Save state of "apply operator toggle"
 //
 // ****************************************************************************
 
@@ -3469,12 +3488,16 @@ visit_AddOperator(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         // Set the apply to all plots toggle.
+        bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Add the operator
         GetViewerMethods()->AddOperator(operTypeIndex);
 
+        // Restore toggle
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyOperatorSave);
+        GetViewerState()->GetGlobalAttributes()->Notify();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -4039,6 +4062,9 @@ visit_DeleteAllPlots(PyObject *self, PyObject *args)
 //   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
 //   Removed SetApplySelection() since we do not affect SIL selection 
 //
+//   Gunther H. Weber, Tue Apr  1 16:42:15 PDT 2008
+//   Save state of "apply operator toggle"
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -4052,11 +4078,16 @@ visit_RemoveLastOperator(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         // Set the apply to all plots toggle.
+        bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Remove the last operator.
         GetViewerMethods()->RemoveLastOperator();
+
+        // Restore toggle
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyOperatorSave);
+        GetViewerState()->GetGlobalAttributes()->Notify();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -4084,6 +4115,9 @@ visit_RemoveLastOperator(PyObject *self, PyObject *args)
 //   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
 //   Removed SetApplySelection() since we do not affect SIL selection 
 //
+//   Gunther H. Weber, Tue Apr  1 16:42:15 PDT 2008
+//   Save state of "apply operator toggle"
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -4097,11 +4131,16 @@ visit_RemoveAllOperators(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         // Set the apply to all plots toggle.
+        bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Remove all operators.
         GetViewerMethods()->RemoveAllOperators();
+
+        // Restore toggle
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyOperatorSave);
+        GetViewerState()->GetGlobalAttributes()->Notify();
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -6841,6 +6880,9 @@ visit_Expressions(PyObject *self, PyObject *args)
 //   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
 //   Removed SetApplySelection() since we do not affect SIL selection 
 //
+//   Gunther H. Weber, Tue Apr  1 16:42:15 PDT 2008
+//   Save state of "apply operator toggle"
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6883,11 +6925,16 @@ visit_ResetOperatorOptions(PyObject *self, PyObject *args)
     {
         MUTEX_LOCK();
             // Set the apply to all plots toggle.
+            bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
             GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
             GetViewerState()->GetGlobalAttributes()->Notify();
 
             // Reset the operator options.
             GetViewerMethods()->ResetOperatorOptions(operatorTypeIndex);
+
+            // Restore toggle
+            GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyOperatorSave);
+            GetViewerState()->GetGlobalAttributes()->Notify();
         MUTEX_UNLOCK();
         errorFlag = Synchronize();
     }
@@ -7073,6 +7120,9 @@ visit_SetActivePlots(PyObject *self, PyObject *args)
 //   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
 //   Removed SetApplySelection() since we do not affect SIL selection 
 //
+//   Gunther H. Weber, Tue Apr  1 16:42:15 PDT 2008
+//   Save state of "apply operator toggle"
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7143,6 +7193,7 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
     if(viewer)
     {
         // Set the apply to all plots toggle.
+        bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
  
@@ -7188,6 +7239,10 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
         {
             GetViewerMethods()->SetActivePlots(selectedPlots, oldActiveOperators, oldExpandedPlots);
         }
+
+        // Restore toggle
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyOperatorSave);
+        GetViewerState()->GetGlobalAttributes()->Notify();
     }
     MUTEX_UNLOCK();
 
@@ -7210,6 +7265,9 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
 //    
 //   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
 //   Removed SetApplySelection() since we do not affect SIL selection 
+//
+//   Gunther H. Weber, Tue Apr  1 16:42:15 PDT 2008
+//   Save state of "apply operator toggle"
 //
 // ****************************************************************************
 
@@ -7241,6 +7299,7 @@ PromoteDemoteRemoveOperatorHelper(PyObject *self, PyObject *args, int option)
     if(viewer)
     {
         // Set the apply to all plots toggle.
+        bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
@@ -7251,6 +7310,10 @@ PromoteDemoteRemoveOperatorHelper(PyObject *self, PyObject *args, int option)
             GetViewerMethods()->DemoteOperator(operatorIndex);
         else if(option == 2)
             GetViewerMethods()->RemoveOperator(operatorIndex);
+
+        // Restore toggle
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyOperatorSave);
+        GetViewerState()->GetGlobalAttributes()->Notify();
     }
     MUTEX_UNLOCK();
 
@@ -7780,6 +7843,9 @@ visit_GetOperatorOptions(PyObject *self, PyObject *args)
 //   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
 //   Removed SetApplyOperator() since we do not affect operators 
 //
+//   Gunther H. Weber, Tue Apr  1 16:50:33 PDT 2008
+//   Restore state of setApplySelection toggle
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7818,12 +7884,17 @@ visit_SetPlotSILRestriction(PyObject *self, PyObject *args)
     if(viewer)
     {
         // Set the apply to all plots toggle.
+        bool applySelectionSave = GetViewerState()->GetGlobalAttributes()->GetApplySelection();
         GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Set the sil restriction.
         avtSILRestriction_p silr = PySILRestriction_FromPyObject(obj);
         GetViewerProxy()->SetPlotSILRestriction(silr);
+        
+        // Restore apply selection toggle
+        GetViewerState()->GetGlobalAttributes()->SetApplySelection(applySelectionSave);
+        GetViewerState()->GetGlobalAttributes()->Notify();
     }
     MUTEX_UNLOCK();
 
@@ -8226,6 +8297,9 @@ GetCategoryTupleHelper(SILCategoryRole role)
 //   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
 //   Removed SetApplyOperator() since we do not affect operators 
 //
+//   Gunther H. Weber, Tue Apr  1 16:50:33 PDT 2008
+//   Restore state of setApplySelection toggle
+//
 // ****************************************************************************
 
 bool
@@ -8287,11 +8361,16 @@ TurnOnOffHelper(SILCategoryRole role, bool val, const stringVector &names)
     }
 
     // Set the apply to all plots toggle.
+    bool applySelectionSave = GetViewerState()->GetGlobalAttributes()->GetApplySelection();
     GetViewerState()->GetGlobalAttributes()->SetApplySelection(false);
     GetViewerState()->GetGlobalAttributes()->Notify();
 
     // Send the modified SIL restriction to the viewer.
     GetViewerProxy()->SetPlotSILRestriction(silr);
+        
+    // Restore apply selection toggle
+    GetViewerState()->GetGlobalAttributes()->SetApplySelection(applySelectionSave);
+    GetViewerState()->GetGlobalAttributes()->Notify();
 
     return retval;
 }
@@ -11175,6 +11254,9 @@ visit_PickByGlobalNode(PyObject *self, PyObject *args)
 //   Gunther H. Weber, Tue Apr  1 15:46:53 PDT 2008
 //   Removed SetApplySelection() since we do not affect SIL selection 
 //
+//   Gunther H. Weber, Tue Apr  1 16:42:15 PDT 2008
+//   Save state of "apply operator toggle"
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -11236,6 +11318,7 @@ visit_Lineout(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         // Lineout should not be applied to more than one plot at a time. 
+        bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(false);
         GetViewerState()->GetGlobalAttributes()->Notify();
         GetViewerMethods()->Lineout(p0, p1, vars, samples, haveSamples);
@@ -11247,6 +11330,9 @@ visit_Lineout(PyObject *self, PyObject *args)
                  StringVectorToTupleString(vars).c_str());
         LogFile_Write(tmp);
 
+        // Restore toggle
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyOperatorSave);
+        GetViewerState()->GetGlobalAttributes()->Notify();
     MUTEX_UNLOCK();
 
     // Return the success value.
