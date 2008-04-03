@@ -252,6 +252,11 @@ avtCentroidQuery::Execute(vtkDataSet *ds, const int dom)
 //    Hank Childs, Wed Sep 14 16:01:12 PDT 2005
 //    Use topological dimension for weights, not spatial dimension.
 //
+//    Kathleen Bonnell, Wed Apr  2 12:01:59 PDT 2008 
+//    Retrieve the varname from the queryAtts instead of DataRequest, as
+//    DataRequest may have the wrong value based on other pipelines sharing
+//    the same source. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -268,9 +273,7 @@ avtCentroidQuery::ApplyFilters(avtDataObject_p inData)
     //
     // Set up our base class so it is ready to sum.
     //
-    avtDataRequest_p dataRequest = GetInput()->GetOriginatingSource()
-                                     ->GetFullDataRequest();
-    string varname = dataRequest->GetVariable();
+    string varname = queryAtts.GetVariables()[0];
     bool useVar = false;
     if (GetInput()->GetInfo().GetAttributes().ValidVariable(varname))
     {

@@ -149,6 +149,11 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
 //    Add support for filters to inherit from this class and create new
 //    variables based on the mesh.
 //
+//    Kathleen Bonnell, Wed Apr  2 10:20:27 PDT 2008 
+//    Retrieve the varname from the dataAtts instead of DataRequest, as
+//    DataRequest may have the wrong value based on other pipelines sharing
+//    the same source. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -165,9 +170,7 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     //
     // Set up our base class so it is ready to sum.
     //
-    avtDataRequest_p dataRequest = GetInput()->GetOriginatingSource()
-                                     ->GetFullDataRequest();
-    string varname = dataRequest->GetVariable();
+    string varname = GetInput()->GetInfo().GetAttributes().GetVariableName();
     varname = GetVarname(varname);
     SetSumType(varname);
 
@@ -220,6 +223,8 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
 
     if (timeVarying) 
     { 
+        avtDataRequest_p dataRequest = GetInput()->GetOriginatingSource()
+                                           ->GetFullDataRequest();
         avtDataRequest_p newDS = new 
             avtDataRequest(dataRequest, querySILR);
         newDS->SetTimestep(queryAtts.GetTimeStep());

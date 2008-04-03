@@ -114,6 +114,11 @@ avtVariableSummationQuery::~avtVariableSummationQuery()
 //    Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005 
 //    Remove TRY-CATCH block in favor of testing for ValidVariable.
 //
+//    Kathleen Bonnell, Wed Apr  2 10:20:27 PDT 2008 
+//    Retrieve the varname from the dataAtts instead of DataRequest, as
+//    DataRequest may have the wrong value based on other pipelines sharing
+//    the same source. 
+//
 // ****************************************************************************
 
 void
@@ -130,7 +135,7 @@ avtVariableSummationQuery::VerifyInput(void)
 
     avtDataAttributes &dataAtts = GetInput()->GetInfo().GetAttributes();
 
-    string varname = dataRequest->GetVariable();
+    string varname = dataAtts.GetVariableName();
     SetVariableName(varname);
     SumGhostValues(false);
     SetSumType(varname);

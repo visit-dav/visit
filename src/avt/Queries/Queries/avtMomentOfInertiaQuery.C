@@ -280,6 +280,11 @@ avtMomentOfInertiaQuery::Execute(vtkDataSet *ds, const int dom)
 //    Hank Childs, Fri Aug 12 15:30:59 PDT 2005
 //    Added absval.
 //
+//    Kathleen Bonnell, Wed Apr  2 10:20:27 PDT 2008 
+//    Retrieve the varname from the queryAtts instead of DataRequest, as
+//    DataRequest may have the wrong value based on other pipelines sharing
+//    the same source. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -296,9 +301,7 @@ avtMomentOfInertiaQuery::ApplyFilters(avtDataObject_p inData)
     //
     // Set up our base class so it is ready to sum.
     //
-    avtDataRequest_p dataRequest = GetInput()->GetOriginatingSource()
-                                     ->GetFullDataRequest();
-    string varname = dataRequest->GetVariable();
+    string varname = queryAtts.GetVariables()[0];
     bool useVar = false;
     if (GetInput()->GetInfo().GetAttributes().ValidVariable(varname))
     {
