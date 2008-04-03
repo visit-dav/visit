@@ -1,8 +1,70 @@
 import time
-time.sleep(0.05)
+import os
+
+# Define macros 
+
+mappingExists = False
+
+def loadMappingIfAvailable():
+    import os
+    # Check if there us a mapping
+    filename = GetWindowInformation().activeSource
+    mapname = filename.replace("hdf5","map.hdf5")
+    mapname = mapname.replace("localhost:","")
+    print "Checking for map " + mapname
+    if os.access(mapname, os.F_OK):
+        print "Found Mapping: Setting up expressions!"
+        global mappingExists
+        mappingExists = True
+        m = GetMetaData(filename)
+        meshname = m.GetMeshes(0).name
+        # Add expressions
+        DefineScalarExpression("__x_imported", "conn_cmfe(<"+mapname+":x>,"+meshname+")")
+        DefineScalarExpression("__y_imported", "conn_cmfe(<"+mapname+":y>,"+meshname+")")
+        if m.GetMeshes(0).spatialDimension == 2:
+            DefineVectorExpression("__disp", "{__x_imported-coords("+meshname+")[0],__y_imported-coords("+meshname+")[1]}")
+        else:
+            DefineScalarExpression("__z_imported", "conn_cmfe(<"+mapname+":z>,"+meshname+")")
+            DefineVectorExpression("__disp", "{__x_imported-coords("+meshname+")[0],__y_imported-coords("+meshname+")[1],__z_imported-coords("+meshname+")[2]}")
+    else:
+        print "No mapping found."
+        mappingExists = False
+
+def AddMappingDisplacementOperator():
+    global mappingExists
+    if mappingExists:
+        print "Mapping exists. Adding displace operator."
+        AddOperator("Displace")
+        DisplaceAtts = DisplaceAttributes()
+        DisplaceAtts.factor = 1
+        DisplaceAtts.variable = "__disp"
+        SetOperatorOptions(DisplaceAtts)
+
+def onAddPlot(plotType, plotVar):
+    # Wait for plot to appear in plot list
+    time.sleep(0.5)
+    print "Adding plot for " , plotVar
+    print GetPlotList()
+    lp = GetPlotList().GetPlots(GetPlotList().GetNumPlots()-1)
+    print lp
+    foundDisplacement = False
+    for op in lp.operators:
+        if OperatorPlugins()[op] == "Displace":
+            foundDisplacement = True
+    print foundDisplacement
+    if not foundDisplacement:
+        AddMappingDisplacementOperator()
+    else:
+        print "Plot already has Displacement operator."
+
+RegisterCallback("AddPlotRPC", onAddPlot)
 
 def SetupSlice():
+    # Disable callback
+    RegisterCallback("AddPlotRPC")
+
     # Get the name of the first variable in the file
+    print "Setting up slice."
     filename = GetWindowInformation().activeSource
     m = GetMetaData(filename)
     varname = m.GetScalars(0).name
@@ -10,11 +72,14 @@ def SetupSlice():
 
     if m.GetMeshes(0).spatialDimension == 2:
         AddPlot("Mesh", meshname)
+        AddMappingDisplacementOperator()
         HideActivePlots()
         AddPlot("Pseudocolor", varname)
+        AddMappingDisplacementOperator()
     else:
         # Do a mesh plot. We do need a plot to perform a query
         AddPlot("Mesh", meshname)
+        AddMappingDisplacementOperator()
 
         # Get the centroid
         DrawPlots()
@@ -34,13 +99,30 @@ def SetupSlice():
 
         # Add a Pseudocolor plot and the same ThreeSlice
         AddPlot("Pseudocolor", varname)
+        AddMappingDisplacementOperator()
         AddOperator("ThreeSlice")
         SetOperatorOptions(ThreeSliceAtts)
 
         # Enable the point tool to control the ThreeSlice
         EnableTool(4, 1)
 
-RegisterMacro("Slice", SetupSlice)
+    # Re-enable callback
+    RegisterCallback("AddPlotRPC", onAddPlot)
+
+def onOpenDatabase(database, timestate, addDefaultPlots, forcedFileType):
+    print "New file opened."
+    filename = GetWindowInformation().activeSource
+    # Wait until open complete and database is the active source
+    while filename != database:
+        time.sleep(0.1) 
+        filename = GetWindowInformation().activeSource
+    print "Checking for mapping."
+    loadMappingIfAvailable()
+    print "Setting up initial plot."
+    # Set up initial plot
+    SetupSlice()
+
+RegisterCallback("OpenDatabaseRPC", onOpenDatabase)
 
 def SetupIsosurf():
     # Get the name of the first variable in the file
@@ -65,8 +147,6 @@ def SetupIsosurf():
         IsosurfaceAtts.variable = varname
         SetOperatorOptions(IsosurfaceAtts)
 
-RegisterMacro("Contours", SetupIsosurf)
-
 def SetupBoundingBox():
     AddPlot("Subset", "patches")
     SubsetAtts = SubsetAttributes()
@@ -75,8 +155,6 @@ def SetupBoundingBox():
     SubsetAtts.lineStyle = SubsetAtts.SOLID  # SOLID, DASH, DOT, DOTDASH
     SubsetAtts.wireframe = 1
     SetPlotOptions(SubsetAtts)
-
-RegisterMacro("Bounding Boxes", SetupBoundingBox)
 
 def SetupBoundary():
     # Get the name of the first variable in the file
@@ -93,33 +171,38 @@ def SetupBoundary():
     BoundaryAtts.boundaryType = BoundaryAtts.Material  # Domain, Group, Material, Unknown
     SetPlotOptions(BoundaryAtts)
 
+# Wait for viewer to avoid race condition
+
+time.sleep(0.5)
+
+RegisterMacro("Slice", SetupSlice)
+RegisterMacro("Contours", SetupIsosurf)
+RegisterMacro("Bounding Boxes", SetupBoundingBox)
 RegisterMacro("Boundaries", SetupBoundary)
 
-#def SetupMesh():
+#
+# Graveyard
+#
+#def EnableMapping():
 #    # Get the name of the first variable in the file
 #    filename = GetWindowInformation().activeSource
 #    m = GetMetaData(filename)
 #    meshname = m.GetMeshes(0).name
-#
-#    # Do a pseudocolor plot. We do need a plot to perform a query
-#    AddPlot("Mesh", meshname)
+#    # Add expressions
+#    mapname = filename.replace("hdf5","map.hdf5")
+#    mapname = mapname.replace("localhost:","")
+#    DefineScalarExpression("__x_imported", "conn_cmfe(<"+mapname+":x>,"+meshname+")")
+#    DefineScalarExpression("__y_imported", "conn_cmfe(<"+mapname+":y>,"+meshname+")")
+#    if m.GetMeshes(0).spatialDimension == 2:
+#        DefineVectorExpression("__disp", "{__x_imported-coords("+meshname+")[0],__y_imported-coords("+meshname+")[1]}")
+#    else:
+#        DefineScalarExpression("__z_imported", "conn_cmfe(<"+mapname+":z>,"+meshname+")")
+#        DefineVectorExpression("__disp", "{__x_imported-coords("+meshname+")[0],__y_imported-coords("+meshname+")[1],__z_imported-coords("+meshname+")[2]}")
+#    AddOperator("Displace",1)
+#    DisplaceAtts = DisplaceAttributes()
+#    DisplaceAtts.factor = 1
+#    DisplaceAtts.variable = "__disp"
+#    SetOperatorOptions(DisplaceAtts,0,1)
 #    DrawPlots()
 #
-#    # Get the spatial extents and compute the centrois
-#    Query("SpatialExtents", 0, 0, "default")
-#    exts = GetQueryOutputValue()
-#    cx = (exts[1] + exts[0]) / 2
-#    cy = (exts[3] + exts[2]) / 2
-#    cz = (exts[5] + exts[4]) / 2
-#
-#    AddOperator("Slice")
-#    SliceAtts = SliceAttributes()
-#    SliceAtts.originType = SliceAtts.Point  # Point, Intercept, Percent, Zone, Node
-#    SliceAtts.originPoint = (cx, cy, cz)
-#    SliceAtts.axisType = SliceAtts.ZAxis  # XAxis, YAxis, ZAxis, Arbitrary
-#    SliceAtts.project2d = 0 # Do not project to 2D
-#    SliceAtts.interactive = 1 # This operator will be affected by "plane tool" if it is active
-#    SetOperatorOptions(SliceAtts)
-#    DrawPlots()
-#
-#RegisterMacro("Setup mesh slice", SetupMesh)
+#RegisterMacro("Enable Mapping", EnableMapping)
