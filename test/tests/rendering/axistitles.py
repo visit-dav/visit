@@ -10,6 +10,8 @@
 #  Date:       Thu Jul 28 11:07:57 PDT 2005
 #
 #  Modifications:
+#    Brad Whitlock, Wed Apr 2 16:44:26 PST 2008
+#    Modified the 3D test since setting the 3D font scale now actually works.
 #
 # ----------------------------------------------------------------------------
 
@@ -91,9 +93,9 @@ def Test3D():
 
     a = AnnotationAttributes()
     a.userInfoFlag = 0
-    a.xTitleFontHeight = 0.1
-    a.yTitleFontHeight = 0.1
-    a.zTitleFontHeight = 0.1
+    a.xTitleFontHeight = 0.04 # 2x scale
+    a.yTitleFontHeight = 0.04
+    a.zTitleFontHeight = 0.04
     SetAnnotationAttributes(a)
     SaveTestImage("axistitles_1_00")
 
