@@ -201,8 +201,8 @@ Test("silo_22")
 # Test curves from silo
 #
 DeleteAllPlots()
-a=AnnotationAttributes()
-a.axes2D.visible
+a=GetAnnotationAttributes()
+a.axes2D.visible = 1
 SetAnnotationAttributes(a)
 
 OpenDatabase("../data/multi_ucd3d.silo")
