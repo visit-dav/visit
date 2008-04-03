@@ -95,12 +95,13 @@ bool      avtDatabase::onlyServeUpMetaData = false;
 
 // ****************************************************************************
 // The following methods are convenience methods to help database plugins
-// do dynamic domain decomposion for rectilinear grids...
+// do dynamic domain decomposion for rectilinear grids. There are four 
+// methods...
 //
-//   DetermineRectilinearDecomposition: Used to compute domain a decomposition
-//   ComputeDomainLogicalCoords: Used to compute the logical indices of a domain 
-//   ComputeDomainBounds: Used to compute spatial bounds of a domain
-//   RectilinearDecompCost: Used *internally* to help compute domain decomp.
+// 1 DetermineRectilinearDecomposition: Used to compute a domain decomposition
+// 2 ComputeDomainLogicalCoords: Used to compute the logical indices of a domain 
+// 3 ComputeDomainBounds: Used to compute spatial bounds of a domain
+// 4 RectilinearDecompCost: Used *internally* to help compute domain decomp.
 //
 //   DetermineRectilinearDecomposition determines the number of domains in
 //   each dimension to decompose the mesh into. For example, for a mesh that
@@ -128,7 +129,7 @@ bool      avtDatabase::onlyServeUpMetaData = false;
 //   domain in the Y axis would go from 0 to 49 while slot 1 would go from
 //   50 to 99.
 //
-//   This routines could be improved to support simple ghosting.
+//   These routines could be improved to support simple ghosting.
 //
 // ****************************************************************************
 

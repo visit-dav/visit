@@ -510,14 +510,16 @@ protected:
 //
 // Modifications:
 //   
+//    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
+//    Moved setting of component name to before Initialize
 // ****************************************************************************
 
 int
 main(int argc, char *argv[])
 {
     // Step 1: Initialize error logging.
-    Init::Initialize(argc, argv, 0, 1, false);
     Init::SetComponentName("proxyexample");
+    Init::Initialize(argc, argv, 0, 1, false);
 
     // Step 2: Initialize the plugin managers. (use scripting plugins for now)
     PlotPluginManager::Initialize(PlotPluginManager::Scripting);

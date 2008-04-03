@@ -79,6 +79,8 @@
 //    Hank Childs, Tue Jun  1 14:07:05 PDT 2004
 //    Added call to finalize.
 //
+//    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
+//    Moved setting of component name to before Initialize
 // ****************************************************************************
 
 int
@@ -89,8 +91,8 @@ main(int argc, char **argv)
     TRY
     {
         // Initialize error logging.
-        Init::Initialize(argc, argv, 0, 1, false);
         Init::SetComponentName("gui");
+        Init::Initialize(argc, argv, 0, 1, false);
 
         TRY
         {

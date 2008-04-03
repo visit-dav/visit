@@ -14108,6 +14108,8 @@ NeedToLoadPlugins(Subject *, void *)
 //   Brad Whitlock, Tue May 8 13:31:20 PST 2007
 //   I added code to honor -pid.
 //
+//   Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
+//   Moved setting of component name to before Initialize
 // ****************************************************************************
 
 static int
@@ -14139,8 +14141,8 @@ InitializeModule()
            }
         }
 
-        Init::Initialize(argc, argv, 0, 1, false);
         Init::SetComponentName("cli");
+        Init::Initialize(argc, argv, 0, 1, false);
     }
     CATCH(VisItException)
     {

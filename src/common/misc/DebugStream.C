@@ -41,6 +41,8 @@
 #if defined(_WIN32)
 #include <windows.h>
 #else
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #endif
 #include <signal.h>
@@ -483,12 +485,43 @@ DebugStream::~DebugStream()
 //    Change the DebugStreamBuf member to be a pointered value instead of a
 //    referenced value so that it works with the MIPSpro compiler.
 //
+//    Mark C. Miller, Thu Apr  3 13:39:55 PDT 2008
+//    Change the extension from '.log' to '.vlog'. Made it loop to find
+//    a unique filename.
+//
 // ****************************************************************************
+
+
 void
-DebugStream::open(const char *progname)
+DebugStream::open(const char *progname, bool clobber)
 {
     char filename[256];
-    sprintf(filename, "%s.%d.log", progname, level);
+    sprintf(filename, "%s.%d.vlog", progname, level);
+
+    // only search for a unique name if we don't have pids
+    bool findUnique = !clobber && strspn(filename, ".0123456789") == 0;
+
+    // loop until we create a name for which stat returns 0
+    int n = 1;
+    while (findUnique)
+    {
+        // We don't use VisItStat() here to avoid lib interdependence. Also,
+	// we don't really need to worry about the 32/64 bit file size issue
+	// for log files.
+#if defined(_WIN32)
+	struct _stat stbuf;
+        if (_stat(filename, &stbuf) != 0)
+	    break;
+#else
+        struct stat stbuf;
+        if (stat(filename, &stbuf) != 0)
+	    break;
+#endif
+        sprintf(filename, "%s.%d.%d.vlog", progname, level, n);
+        n++;
+    }
+
+    // ok, open the stream
     buf->open(filename);
     enabled = true;
 }
@@ -564,19 +597,20 @@ DebugStream::close()
 // ****************************************************************************
 
 void
-DebugStream::Initialize(const char *progname, int debuglevel, bool sigs)
+DebugStream::Initialize(const char *progname, int debuglevel, bool sigs,
+    bool clobber)
 {
     switch (debuglevel)
     {
-      case 5:  debug5_real.open(progname);
+      case 5:  debug5_real.open(progname, clobber);
         /* FALLTHRU */
-      case 4:  debug4_real.open(progname);
+      case 4:  debug4_real.open(progname, clobber);
         /* FALLTHRU */
-      case 3:  debug3_real.open(progname);
+      case 3:  debug3_real.open(progname, clobber);
         /* FALLTHRU */
-      case 2:  debug2_real.open(progname);
+      case 2:  debug2_real.open(progname, clobber);
         /* FALLTHRU */
-      case 1:  debug1_real.open(progname);
+      case 1:  debug1_real.open(progname, clobber);
         break;
       default:
         break;

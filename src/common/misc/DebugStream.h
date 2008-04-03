@@ -94,9 +94,9 @@ class MISC_API DebugStream : public ostream
                   ~DebugStream();
 
     operator       bool()   {return enabled;};
-    void           open(const char *progname);
+    void           open(const char *progname, bool);
     void           close();
-    static void    Initialize(const char *, int, bool=true);
+    static void    Initialize(const char *, int, bool=true, bool=false);
   private:
     class DebugStreamBuf : public streambuf
     {

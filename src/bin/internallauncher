@@ -299,6 +299,9 @@ $0 = shift @ARGV;
 #    Unset DYLD_LIBRARY_PATH on Darwin so that we can't be hit by anything the
 #    user might have set.
 #
+#    Mark C. Miller, Thu Apr  3 14:54:42 PDT 2008
+#    Added comments regarding -debug_<compname> and -vtk-debug arguments.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -630,7 +633,17 @@ $fullusage = "$usage
         Note: Debugging options may degrade performance 
     ---------------------------------------------------------------------------
         -debug <level>       Run with <level> levels of output logging.
-                             <level> must be between 1 and 5.
+                             <level> must be between 1 and 5. This will generate
+			     debug logs for ALL components.
+        -debug_<compname> <level> Run specified component with <level> of output
+	                     logging. For example, '-debug_mdserver 4' will run
+			     the mdserver with level 4 debugging. Multiple
+			     '-debug_<compname> <level>' args are allowed.
+	-clobber_vlogs       By default, each invokation or restart of a VisIt
+	                     component will write its debug logs to new files.
+			     This flag causes VisIt to overwrite existing debug
+			     logs rather than creating new ones.
+	-vtk-debug           Turn on debugging of vtk objects used in pipelines.
         -pid                 Append process ids to the names of log files.
         -timing              Save timing data to files.
         -withhold-timing-output

@@ -54,6 +54,8 @@
 //
 // Modifications:
 //
+//    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
+//    Moved setting of component name to before Initialize
 // ****************************************************************************
 
 int
@@ -62,8 +64,8 @@ main(int argc, char *argv[])
     int retval = 0;
 
     // Initialize error logging
-    Init::Initialize(argc, argv);
     Init::SetComponentName("launcher");
+    Init::Initialize(argc, argv);
 
     debug1 << "VisIt component launcher started." << endl;
 

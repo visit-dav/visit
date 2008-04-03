@@ -310,7 +310,7 @@ SortFilenames(vector<string> &fnames, string cycleRegex)
 //    Added support for 'ndims' header info
 //
 // ****************************************************************************
-static bool
+static void 
 ReadTimeStepHeader(string rootDir, string fileName, TimeHeader_t *hdr)
 {
     char buf[2048];
@@ -399,7 +399,7 @@ DataSegmentLengthInChars(const GridHeader_t *ghdr, int ndims)
 //    Mark C. Miller, Tue Sep 18 11:08:52 PDT 2007
 //    Changed naux to ndims 
 // ****************************************************************************
-static bool
+static void 
 ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr, int *nextoff)
 {
     char buf[2048];
@@ -492,7 +492,7 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
 //  Creation:   September 13, 2007 
 //
 // ****************************************************************************
-static int
+static void 
 ReadGridHeaders(string rootDir, string fileName, const TimeHeader_t *thdr,
     vector<GridHeader_t> &gridHeaders, map<int, GridHeader_t> &gridHeaderMap)
 {

@@ -54,6 +54,8 @@
 //
 // Modifications:
 //   
+//    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
+//    Moved setting of component name to before Initialize
 // ****************************************************************************
 
 int
@@ -67,8 +69,8 @@ main(int argc, char *argv[])
     std::string launchHost(argv[1]);
 
     // Initialize error logging.
-    Init::Initialize(argc, argv);
     Init::SetComponentName("launcher");
+    Init::Initialize(argc, argv);
 
     // Create a launcher proxy object.
     LauncherProxy *launcher = new LauncherProxy;

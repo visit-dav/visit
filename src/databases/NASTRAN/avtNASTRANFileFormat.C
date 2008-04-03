@@ -50,6 +50,7 @@
 #include <vtkFloatArray.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 
 #include <InvalidVariableException.h>
@@ -58,6 +59,7 @@
 #include <TimingsManager.h>
 #include <DebugStream.h>
 #include <Utility.h>
+#include <snprintf.h>
 
 //
 // NASTRAN models have a node id associated with each vertex and that nodeid
@@ -172,6 +174,60 @@ avtNASTRANFileFormat::ActivateTimestep()
 }
 
 // ****************************************************************************
+// Function: Getf 
+//
+// Purpose: Robust way of reading string for float value
+// 
+// Programmer: Mark C. Miller, Thu Apr  3 16:27:01 PDT 2008
+// ****************************************************************************
+static float Getf(const char *s)
+{
+    char *ends;
+
+    errno = 0;
+    double val = strtod(s, &ends);
+
+    if (errno != 0)
+    {
+        char msg[512];
+        SNPRINTF(msg, sizeof(msg),
+            "Error \"%s\" at word \"% 32s\"\n", strerror(errno), s);
+        if (!avtCallback::IssueWarning(msg))
+            cerr << msg << endl;
+        return 0.0;
+    }
+
+    return (float) val;
+}
+
+// ****************************************************************************
+// Function: Geti 
+//
+// Purpose: Robust way of reading string for integer value
+// 
+// Programmer: Mark C. Miller, Thu Apr  3 16:27:01 PDT 2008
+// ****************************************************************************
+static int Geti(const char *s)
+{
+    char *ends;
+
+    errno = 0;
+    long val = strtol(s, &ends, 10);
+
+    if (errno != 0)
+    {
+        char msg[512];
+        SNPRINTF(msg, sizeof(msg),
+            "Error \"%s\" at word \"% 32s\"\n", strerror(errno), s);
+        if (!avtCallback::IssueWarning(msg))
+            cerr << msg << endl;
+        return 0;
+    }
+
+    return (int) val;
+}
+
+// ****************************************************************************
 // Method: avtNASTRANFileFormat::ReadFile
 //
 // Purpose: 
@@ -262,24 +318,24 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             ifile.getline(line + 72, 1024-72);
 
 #define LONG_FIELD_WIDTH 16
-            char *valstart = line + 81;
-            pt[2] = atof(valstart);
+            char *valstart = line + 81 - 1;
+            pt[2] = Getf(valstart);
 
-            valstart = line + 72 - LONG_FIELD_WIDTH+1;
+            valstart = line + 72 - LONG_FIELD_WIDTH+1 - 1;
             char *valend = line + 72;
             *valend = '\0';
-            pt[1] = atof(valstart);
+            pt[1] = Getf(valstart);
 
             valstart -= LONG_FIELD_WIDTH;
             valend -= LONG_FIELD_WIDTH;
             *valend = '\0';
-            pt[0] = atof(valstart);
+            pt[0] = Getf(valstart);
 
 #ifdef USE_POINT_INDICES_TO_INSERT
             valstart -= (2 * LONG_FIELD_WIDTH);
             valend -= (2 * LONG_FIELD_WIDTH);
             *valend = '\0';
-            int psi = atoi(valstart)-1;
+            int psi = Geti(valstart)-1;
 
             if(psi < nPoints)
                 pts->SetPoint(psi, pt);
@@ -311,17 +367,17 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             char *valend = line + 48;
 
             *valend = '\0';
-            pt[2] = atof(valstart);
+            pt[2] = Getf(valstart);
 
             valstart -= SHORT_FIELD_WIDTH;
             valend -= SHORT_FIELD_WIDTH;
             *valend = '\0';
-            pt[1] = atof(valstart);
+            pt[1] = Getf(valstart);
 
             valstart -= SHORT_FIELD_WIDTH;
             valend -= SHORT_FIELD_WIDTH;
             *valend = '\0';
-            pt[0] = atof(valstart);
+            pt[0] = Getf(valstart);
 
 #if 0
             debug4 << pt[0] << ", " << pt[1] << ", " << pt[2] << endl;
@@ -330,7 +386,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             valstart -= (2 * SHORT_FIELD_WIDTH);
             valend -= (2 * SHORT_FIELD_WIDTH);
             *valend = '\0';
-            int psi = atoi(valstart)-1;
+            int psi = Geti(valstart)-1;
 
             if(psi < nPoints)
                 pts->SetPoint(psi, pt);
@@ -361,11 +417,11 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
 
             char *valstart = line + 88;
             char *valend = valstart;
-            verts[7] = atoi(valstart)-1;
+            verts[7] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[6] = atoi(valstart)-1;
+            verts[6] = Geti(valstart)-1;
 
             // Skip the blank
             valstart -= INDEX_FIELD_WIDTH;
@@ -374,32 +430,32 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[5] = atoi(valstart)-1;
+            verts[5] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[4] = atoi(valstart)-1;
+            verts[4] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[3] = atoi(valstart)-1;
+            verts[3] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[2] = atoi(valstart)-1;
+            verts[2] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[1] = atoi(valstart)-1;
+            verts[1] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[0] = atoi(valstart)-1;
+            verts[0] = Geti(valstart)-1;
 
             ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
 
@@ -419,21 +475,21 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         {
             char *valstart = line + 48;
             char *valend = valstart;
-            verts[3] = atoi(valstart)-1;
+            verts[3] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[2] = atoi(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[1] = atoi(valstart)-1;
+            verts[2] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[0] = atoi(valstart)-1;
+            verts[1] = Geti(valstart)-1;
+
+            valstart -= INDEX_FIELD_WIDTH;
+            valend -= INDEX_FIELD_WIDTH;
+            *valend = '\0';
+            verts[0] = Geti(valstart)-1;
 
 #if 0
             debug4 << verts[0]
@@ -449,26 +505,26 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         {
             char *valstart = line + 56;
             char *valend = valstart;
-            verts[4] = atoi(valstart)-1;
+            verts[4] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[3] = atoi(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[2] = atoi(valstart)-1;
+            verts[3] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[1] = atoi(valstart)-1;
+            verts[2] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[0] = atoi(valstart)-1;
+            verts[1] = Geti(valstart)-1;
+
+            valstart -= INDEX_FIELD_WIDTH;
+            valend -= INDEX_FIELD_WIDTH;
+            *valend = '\0';
+            verts[0] = Geti(valstart)-1;
 
 #if 0
             debug4 << verts[0]
@@ -485,31 +541,31 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         {
             char *valstart = line + 64;
             char *valend = valstart;
-            verts[5] = atoi(valstart)-1;
+            verts[5] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[4] = atoi(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[3] = atoi(valstart)-1;
+            verts[4] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[2] = atoi(valstart)-1;
+            verts[3] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[1] = atoi(valstart)-1;
+            verts[2] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[0] = atoi(valstart)-1;
+            verts[1] = Geti(valstart)-1;
+
+            valstart -= INDEX_FIELD_WIDTH;
+            valend -= INDEX_FIELD_WIDTH;
+            *valend = '\0';
+            verts[0] = Geti(valstart)-1;
 #if 0
             debug4 << verts[0]
                    << ", " << verts[1]
@@ -525,21 +581,21 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         {
             char *valstart = line + 48;
             char *valend = valstart;
-            verts[3] = atoi(valstart)-1;
+            verts[3] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[2] = atoi(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[1] = atoi(valstart)-1;
+            verts[2] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[0] = atoi(valstart)-1;
+            verts[1] = Geti(valstart)-1;
+
+            valstart -= INDEX_FIELD_WIDTH;
+            valend -= INDEX_FIELD_WIDTH;
+            *valend = '\0';
+            verts[0] = Geti(valstart)-1;
 
 #if 0
             debug4 << verts[0]
@@ -556,16 +612,16 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         {
             char *valstart = line + 40;
             char *valend = valstart;
-            verts[2] = atoi(valstart)-1;
+            verts[2] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[1] = atoi(valstart)-1;
+            verts[1] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[0] = atoi(valstart)-1;
+            verts[0] = Geti(valstart)-1;
 #if 0
             debug4 << verts[0]
                    << ", " << verts[1]
@@ -579,11 +635,11 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         {
             char *valstart = line + 32;
             char *valend = valstart;
-            verts[1] = atoi(valstart)-1;
+            verts[1] = Geti(valstart)-1;
 
             valstart -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[0] = atoi(valstart)-1;
+            verts[0] = Geti(valstart)-1;
 
 #if 0
             debug4 << verts[0]

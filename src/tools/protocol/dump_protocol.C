@@ -555,6 +555,8 @@ PrintHeader(FILE *f, const char *header)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
+//    Moved setting of component name to before Initialize
 // ****************************************************************************
 
 int
@@ -564,8 +566,8 @@ main(int argc, char *argv[])
     FILE *f = stdout;
 
     // Initialize
-    Init::Initialize(argc, argv, 0, 1, true, true);
     Init::SetComponentName("visitprotocol");
+    Init::Initialize(argc, argv, 0, 1, true, true);
 
     // Initialize the plugin managers and load the info plugins.
     PlotPluginManager::Initialize(PlotPluginManager::Engine, false);
