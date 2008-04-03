@@ -73,3 +73,12 @@ The total v is -244.513
 The total v is -0.331587
 The original number of nodes is 17776.
 The original number of zones is 15000.
+
+The total unnamed1 is -0.5
+The total unnamed2 is -1.5
+The total unnamed3 is -2.5
+The total unnamed2 is -1.5
+
+The total p is 3.93868
+The total p2 is 25.2264
+The total p3 is 480.362
