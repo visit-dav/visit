@@ -10,10 +10,9 @@ def loadMappingIfAvailable():
     # Check if there us a mapping
     filename = GetWindowInformation().activeSource
     mapname = filename.replace("hdf5","map.hdf5")
-    mapname = mapname.replace("localhost:","")
-    print "Checking for map " + mapname
+    mapname = mapname.replace("localhost:","") # FIXME: Hack, won't work for remote
     if os.access(mapname, os.F_OK):
-        print "Found Mapping: Setting up expressions!"
+        print "Found mapping file " + mapname + "! Setting up expressions!"
         global mappingExists
         mappingExists = True
         m = GetMetaData(filename)
@@ -27,13 +26,11 @@ def loadMappingIfAvailable():
             DefineScalarExpression("__z_imported", "conn_cmfe(<"+mapname+":z>,"+meshname+")")
             DefineVectorExpression("__disp", "{__x_imported-coords("+meshname+")[0],__y_imported-coords("+meshname+")[1],__z_imported-coords("+meshname+")[2]}")
     else:
-        print "No mapping found."
         mappingExists = False
 
 def AddMappingDisplacementOperator():
     global mappingExists
     if mappingExists:
-        print "Mapping exists. Adding displace operator."
         AddOperator("Displace")
         DisplaceAtts = DisplaceAttributes()
         DisplaceAtts.factor = 1
@@ -41,21 +38,15 @@ def AddMappingDisplacementOperator():
         SetOperatorOptions(DisplaceAtts)
 
 def onAddPlot(plotType, plotVar):
-    # Wait for plot to appear in plot list
+    # FIXME: Hack, wait for plot to appear in plot list
     time.sleep(0.5)
-    print "Adding plot for " , plotVar
-    print GetPlotList()
     lp = GetPlotList().GetPlots(GetPlotList().GetNumPlots()-1)
-    print lp
     foundDisplacement = False
     for op in lp.operators:
         if OperatorPlugins()[op] == "Displace":
             foundDisplacement = True
-    print foundDisplacement
-    if not foundDisplacement:
+    if not foundDisplacement: # FIXME: May want to check options here, too
         AddMappingDisplacementOperator()
-    else:
-        print "Plot already has Displacement operator."
 
 RegisterCallback("AddPlotRPC", onAddPlot)
 
@@ -64,7 +55,6 @@ def SetupSlice():
     RegisterCallback("AddPlotRPC")
 
     # Get the name of the first variable in the file
-    print "Setting up slice."
     filename = GetWindowInformation().activeSource
     m = GetMetaData(filename)
     varname = m.GetScalars(0).name
@@ -110,15 +100,13 @@ def SetupSlice():
     RegisterCallback("AddPlotRPC", onAddPlot)
 
 def onOpenDatabase(database, timestate, addDefaultPlots, forcedFileType):
-    print "New file opened."
     filename = GetWindowInformation().activeSource
     # Wait until open complete and database is the active source
     while filename != database:
         time.sleep(0.1) 
         filename = GetWindowInformation().activeSource
-    print "Checking for mapping."
+    # Add map expressions, if available
     loadMappingIfAvailable()
-    print "Setting up initial plot."
     # Set up initial plot
     SetupSlice()
 
