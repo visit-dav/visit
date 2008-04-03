@@ -67,7 +67,7 @@ public class FontAttributes extends AttributeSubject
         super(6);
 
         font = FONTNAME_ARIAL;
-        height = 0.02;
+        scale = 1;
         useForegroundColor = true;
         color = new ColorAttribute(0, 0, 0);
         bold = false;
@@ -79,7 +79,7 @@ public class FontAttributes extends AttributeSubject
         super(6);
 
         font = obj.font;
-        height = obj.height;
+        scale = obj.scale;
         useForegroundColor = obj.useForegroundColor;
         color = new ColorAttribute(obj.color);
         bold = obj.bold;
@@ -92,7 +92,7 @@ public class FontAttributes extends AttributeSubject
     {
         // Create the return value
         return ((font == obj.font) &&
-                (height == obj.height) &&
+                (scale == obj.scale) &&
                 (useForegroundColor == obj.useForegroundColor) &&
                 (color == obj.color) &&
                 (bold == obj.bold) &&
@@ -106,9 +106,9 @@ public class FontAttributes extends AttributeSubject
         Select(0);
     }
 
-    public void SetHeight(double height_)
+    public void SetScale(double scale_)
     {
-        height = height_;
+        scale = scale_;
         Select(1);
     }
 
@@ -138,7 +138,7 @@ public class FontAttributes extends AttributeSubject
 
     // Property getting methods
     public int            GetFont() { return font; }
-    public double         GetHeight() { return height; }
+    public double         GetScale() { return scale; }
     public boolean        GetUseForegroundColor() { return useForegroundColor; }
     public ColorAttribute GetColor() { return color; }
     public boolean        GetBold() { return bold; }
@@ -150,7 +150,7 @@ public class FontAttributes extends AttributeSubject
         if(WriteSelect(0, buf))
             buf.WriteInt(font);
         if(WriteSelect(1, buf))
-            buf.WriteDouble(height);
+            buf.WriteDouble(scale);
         if(WriteSelect(2, buf))
             buf.WriteBool(useForegroundColor);
         if(WriteSelect(3, buf))
@@ -172,7 +172,7 @@ public class FontAttributes extends AttributeSubject
                 SetFont(buf.ReadInt());
                 break;
             case 1:
-                SetHeight(buf.ReadDouble());
+                SetScale(buf.ReadDouble());
                 break;
             case 2:
                 SetUseForegroundColor(buf.ReadBool());
@@ -202,7 +202,7 @@ public class FontAttributes extends AttributeSubject
         if(font == FONTNAME_TIMES)
             str = str + "FONTNAME_TIMES";
         str = str + "\n";
-        str = str + doubleToString("height", height, indent) + "\n";
+        str = str + doubleToString("scale", scale, indent) + "\n";
         str = str + boolToString("useForegroundColor", useForegroundColor, indent) + "\n";
         str = str + indent + "color = {" + color.Red() + ", " + color.Green() + ", " + color.Blue() + ", " + color.Alpha() + "}\n";
         str = str + boolToString("bold", bold, indent) + "\n";
@@ -213,7 +213,7 @@ public class FontAttributes extends AttributeSubject
 
     // Attributes
     private int            font;
-    private double         height;
+    private double         scale;
     private boolean        useForegroundColor;
     private ColorAttribute color;
     private boolean        bold;

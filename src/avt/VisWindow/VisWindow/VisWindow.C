@@ -3895,6 +3895,9 @@ VisWindow::GetLightList() const
 //   Brad Whitlock, Fri Jan 25 16:10:43 PST 2008
 //   Made it use new AnnotationAttributes.
 //
+//   Brad Whitlock, Thu Mar 27 11:05:06 PDT 2008
+//   Added support for setting text properties.
+//
 // ****************************************************************************
 
 void
@@ -3998,10 +4001,10 @@ VisWindow::UpdateAxes2D()
     //
     // Font size
     //
-    axes->SetXLabelFontHeight(axis2D.GetXAxis().GetLabel().GetFont().GetHeight());
-    axes->SetYLabelFontHeight(axis2D.GetYAxis().GetLabel().GetFont().GetHeight());
-    axes->SetXTitleFontHeight(axis2D.GetXAxis().GetTitle().GetFont().GetHeight());
-    axes->SetYTitleFontHeight(axis2D.GetYAxis().GetTitle().GetFont().GetHeight());
+    axes->SetXLabelFontHeight(axis2D.GetXAxis().GetLabel().GetFont().GetScale()*0.02);
+    axes->SetYLabelFontHeight(axis2D.GetYAxis().GetLabel().GetFont().GetScale()*0.02);
+    axes->SetXTitleFontHeight(axis2D.GetXAxis().GetTitle().GetFont().GetScale()*0.02);
+    axes->SetYTitleFontHeight(axis2D.GetYAxis().GetTitle().GetFont().GetScale()*0.02);
 
     //
     // Line width
@@ -4010,6 +4013,19 @@ VisWindow::UpdateAxes2D()
         axis2D.GetLineWidth())));
     frame->SetLineWidth(LineWidth2Int(Int2LineWidth(
         axis2D.GetLineWidth())));
+
+    // Set the text attributes for the axes.
+    VisWinTextAttributes titleAtts[2], labelAtts[2];
+    titleAtts[0] = FontAttributes_To_VisWinTextAttributes(
+        axis2D.GetXAxis().GetTitle().GetFont());
+    titleAtts[1] = FontAttributes_To_VisWinTextAttributes(
+        axis2D.GetYAxis().GetTitle().GetFont());
+    labelAtts[0] = FontAttributes_To_VisWinTextAttributes(
+        axis2D.GetXAxis().GetLabel().GetFont());
+    labelAtts[1] = FontAttributes_To_VisWinTextAttributes(
+        axis2D.GetYAxis().GetLabel().GetFont());
+    axes->SetTitleTextAttributes(titleAtts[0], titleAtts[1]);
+    axes->SetLabelTextAttributes(labelAtts[0], labelAtts[1]);
 }
 
 
@@ -4064,6 +4080,9 @@ VisWindow::UpdateAxesArray()
 //
 //   Brad Whitlock, Fri Jan 25 16:28:53 PST 2008
 //   Made it use the new AnnotationAttributes.
+//
+//   Brad Whitlock, Wed Mar 26 14:16:57 PDT 2008
+//   Set the axis text properties.
 //
 // ****************************************************************************
 
@@ -4134,6 +4153,27 @@ VisWindow::UpdateAxes3D()
     axes3D->SetXGridVisibility(a && axis3D.GetXAxis().GetGrid());
     axes3D->SetYGridVisibility(a && axis3D.GetYAxis().GetGrid());
     axes3D->SetZGridVisibility(a && axis3D.GetZAxis().GetGrid());
+
+    // Line width
+    axes3D->SetLineWidth(LineWidth2Int(Int2LineWidth(
+        axis3D.GetLineWidth())));
+
+    // Set the text attributes for the axes.
+    VisWinTextAttributes titleAtts[3], labelAtts[3];
+    titleAtts[0] = FontAttributes_To_VisWinTextAttributes(
+        axis3D.GetXAxis().GetTitle().GetFont());
+    titleAtts[1] = FontAttributes_To_VisWinTextAttributes(
+        axis3D.GetYAxis().GetTitle().GetFont());
+    titleAtts[2] = FontAttributes_To_VisWinTextAttributes(
+        axis3D.GetZAxis().GetTitle().GetFont());
+    labelAtts[0] = FontAttributes_To_VisWinTextAttributes(
+        axis3D.GetXAxis().GetLabel().GetFont());
+    labelAtts[1] = FontAttributes_To_VisWinTextAttributes(
+        axis3D.GetYAxis().GetLabel().GetFont());
+    labelAtts[2] = FontAttributes_To_VisWinTextAttributes(
+        axis3D.GetZAxis().GetLabel().GetFont());
+    axes3D->SetTitleTextAttributes(titleAtts[0], titleAtts[1], titleAtts[2]);
+    axes3D->SetLabelTextAttributes(labelAtts[0], labelAtts[1], labelAtts[2]);
 }
 
 
@@ -6369,7 +6409,7 @@ FontAttributes_To_VisWinTextAttributes(const FontAttributes &f)
     else if(f.GetFont() == FontAttributes::Times)
         atts.font = VisWinTextAttributes::Times;
 
-    atts.height = f.GetHeight();
+    atts.scale = f.GetScale();
     atts.useForegroundColor = f.GetUseForegroundColor();
     atts.color[0] = float(f.GetColor().Red())   / 255.f;
     atts.color[1] = float(f.GetColor().Green()) / 255.f;

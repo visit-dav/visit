@@ -76,6 +76,9 @@ vtkCxxSetObjectMacro(vtkVisItCubeAxesActor, Camera,vtkCamera);
 //   Added ActualXLabel et al so we can keep title separate from what's
 //   actually displayed so information is not lost.
 //
+//   Brad Whitlock, Wed Mar 26 13:42:08 PDT 2008
+//   Added TitleTextProperty, LabelTextProperty, TitleScale, LabelScale.
+//
 // *************************************************************************
 
 vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
@@ -114,6 +117,21 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
     this->ZAxes[i]->SetAxisTypeToZ();
     this->ZAxes[i]->SetAxisPosition(i);
     }
+
+  for (i = 0; i < 3; i++)
+    {
+    this->TitleTextProperty[i] = vtkTextProperty::New();
+    this->TitleTextProperty[i]->SetColor(0.,0.,0.);
+    this->TitleTextProperty[i]->SetFontFamilyToArial();
+
+    this->LabelTextProperty[i] = vtkTextProperty::New();
+    this->LabelTextProperty[i]->SetColor(0.,0.,0.);
+    this->LabelTextProperty[i]->SetFontFamilyToArial();
+
+    this->TitleScale[i] = 1.;
+    this->LabelScale[i] = 1.;
+    }
+  this->scalingChanged = false;
 
   this->XLabelFormat = new char[8]; 
   SNPRINTF(this->XLabelFormat, 8, "%s","%-#6.3g");
@@ -268,7 +286,18 @@ vtkVisItCubeAxesActor::~vtkVisItCubeAxesActor()
       this->ZAxes[i] = NULL;
       }
     }
-  
+
+    for (int i = 0; i < 3; i++)
+    {
+       if(this->TitleTextProperty[i] != NULL)
+           this->TitleTextProperty[i]->Delete();
+       this->TitleTextProperty[i] = NULL;
+
+       if(this->LabelTextProperty[i] != NULL)
+           this->LabelTextProperty[i]->Delete();
+       this->LabelTextProperty[i] = NULL;
+    }
+
   if (this->XLabelFormat) 
     {
     delete [] this->XLabelFormat;
@@ -647,6 +676,10 @@ void vtkVisItCubeAxesActor::TransformBounds(vtkViewport *viewport,
 bool
 vtkVisItCubeAxesActor::ComputeTickSize(double bounds[6])
 {
+  bool xPropsChanged = this->LabelTextProperty[0]->GetMTime() > this->BuildTime.GetMTime();
+  bool yPropsChanged = this->LabelTextProperty[1]->GetMTime() > this->BuildTime.GetMTime();
+  bool zPropsChanged = this->LabelTextProperty[2]->GetMTime() > this->BuildTime.GetMTime();
+
   bool xRangeChanged = this->LastXRange[0] != bounds[0] ||
                        this->LastXRange[1] != bounds[1];
 
@@ -656,7 +689,8 @@ vtkVisItCubeAxesActor::ComputeTickSize(double bounds[6])
   bool zRangeChanged = this->LastZRange[0] != bounds[4] ||
                        this->LastZRange[1] != bounds[5];
 
-  if (!(xRangeChanged || yRangeChanged || zRangeChanged))
+  if (!(xRangeChanged || yRangeChanged || zRangeChanged) &&
+      !(xPropsChanged || yPropsChanged || zPropsChanged))
     {
     // no need to re-compute ticksize.
     return false;
@@ -666,18 +700,17 @@ vtkVisItCubeAxesActor::ComputeTickSize(double bounds[6])
   double xExt = bounds[1] - bounds[0];
   double yExt = bounds[3] - bounds[2];
   double zExt = bounds[5] - bounds[4];
-  
-  if (xRangeChanged)
+  if (xRangeChanged || xPropsChanged)
     {
     AdjustTicksComputeRange(this->XAxes);
     BuildLabels(this->XAxes);
     }
-  if (yRangeChanged)
+  if (yRangeChanged || yPropsChanged)
     {
     AdjustTicksComputeRange(this->YAxes);
     BuildLabels(this->YAxes);
     }
-  if (zRangeChanged)
+  if (zRangeChanged || zPropsChanged)
     {
     AdjustTicksComputeRange(this->ZAxes);
     BuildLabels(this->ZAxes);
@@ -1148,6 +1181,10 @@ LabelExponent(double min, double max)
 //    Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003 
 //    Indivdual axes now have their own ForceLabelReset.
 //
+//    Brad Whitlock, Wed Mar 26 14:00:56 PDT 2008
+//    Multiply the calculated label scales by a scale factor that the user
+//    provided.
+//
 // *************************************************************************
 
 void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
@@ -1156,11 +1193,17 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
   double pts[8][3];
   int i; 
 
-  if ((this->GetMTime() < this->BuildTime.GetMTime())) 
+  bool labelPropsChanged = 
+      this->LabelTextProperty[0]->GetMTime() > this->BuildTime.GetMTime() ||
+      this->LabelTextProperty[1]->GetMTime() > this->BuildTime.GetMTime() ||
+      this->LabelTextProperty[2]->GetMTime() > this->BuildTime.GetMTime();
+
+  if ((this->GetMTime() < this->BuildTime.GetMTime()) &&
+      !labelPropsChanged
+     ) 
     {
     return;
     }
-
   this->SetNonDependentAttributes();
   // determine the bounds to use (input, prop, or user-defined)
   this->GetBounds(bounds);
@@ -1262,7 +1305,7 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
     }
 
   if (ticksRecomputed || this->ForceXLabelReset || this->ForceYLabelReset ||
-      this->ForceZLabelReset)
+      this->ForceZLabelReset || this->scalingChanged)
     {
     // labels were re-built, need to recompute the scale. 
     double center[3]; 
@@ -1307,13 +1350,14 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
 
     for (i = 0; i < 4; i++)
       {
-      this->XAxes[i]->SetLabelScale(labelscale);
-      this->YAxes[i]->SetLabelScale(labelscale);
-      this->ZAxes[i]->SetLabelScale(labelscale);
-      this->XAxes[i]->SetTitleScale(titlescale);
-      this->YAxes[i]->SetTitleScale(titlescale);
-      this->ZAxes[i]->SetTitleScale(titlescale);
+      this->XAxes[i]->SetLabelScale(labelscale * this->LabelScale[0]);
+      this->YAxes[i]->SetLabelScale(labelscale * this->LabelScale[1]);
+      this->ZAxes[i]->SetLabelScale(labelscale * this->LabelScale[2]);
+      this->XAxes[i]->SetTitleScale(titlescale * this->TitleScale[0]);
+      this->YAxes[i]->SetTitleScale(titlescale * this->TitleScale[1]);
+      this->ZAxes[i]->SetTitleScale(titlescale * this->TitleScale[2]);
       }
+    this->scalingChanged = false;
     }
   this->RenderSomething = 1;
   this->BuildTime.Modified();
@@ -1333,6 +1377,10 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
 //    Kathleen Bonnell, Thu Oct  3 14:33:15 PDT 2002
 //    Disable lighting for the axes by setting the ambient coefficient to 1
 //    and the diffuse coeeficient to 0.
+//
+//    Brad Whitlock, Wed Mar 26 13:49:16 PDT 2008
+//    Set the title and label properties for each axis actor.
+//
 // *************************************************************************
 
 void vtkVisItCubeAxesActor::SetNonDependentAttributes()
@@ -1344,6 +1392,8 @@ void vtkVisItCubeAxesActor::SetNonDependentAttributes()
     {
     this->XAxes[i]->SetCamera(this->Camera);
     this->XAxes[i]->SetProperty(prop);
+    this->XAxes[i]->SetTitleTextProperty(this->TitleTextProperty[0]);
+    this->XAxes[i]->SetLabelTextProperty(this->LabelTextProperty[0]);
     this->XAxes[i]->SetTickLocation(this->TickLocation);
     this->XAxes[i]->SetDrawGridlines(this->DrawXGridlines);
     this->XAxes[i]->SetBounds(this->Bounds);
@@ -1355,6 +1405,8 @@ void vtkVisItCubeAxesActor::SetNonDependentAttributes()
 
     this->YAxes[i]->SetCamera(this->Camera);
     this->YAxes[i]->SetProperty(prop);
+    this->YAxes[i]->SetTitleTextProperty(this->TitleTextProperty[1]);
+    this->YAxes[i]->SetLabelTextProperty(this->LabelTextProperty[1]);
     this->YAxes[i]->SetTickLocation(this->TickLocation);
     this->YAxes[i]->SetDrawGridlines(this->DrawYGridlines);
     this->YAxes[i]->SetBounds(this->Bounds);
@@ -1366,6 +1418,8 @@ void vtkVisItCubeAxesActor::SetNonDependentAttributes()
 
     this->ZAxes[i]->SetCamera(this->Camera);
     this->ZAxes[i]->SetProperty(prop);
+    this->ZAxes[i]->SetTitleTextProperty(this->TitleTextProperty[2]);
+    this->ZAxes[i]->SetLabelTextProperty(this->LabelTextProperty[2]);
     this->ZAxes[i]->SetTickLocation(this->TickLocation);
     this->ZAxes[i]->SetDrawGridlines(this->DrawZGridlines);
     this->ZAxes[i]->SetBounds(this->Bounds);
@@ -1948,4 +2002,130 @@ vtkVisItCubeAxesActor::SetLabelScaling(bool autoscale, int upowX, int upowY,
     userZPow = upowZ;
     this->Modified();
     } 
-} 
+}
+
+// ****************************************************************************
+// Method: vtkVisItCubeAxesActor::GetTitleTextProperty
+//
+// Purpose: 
+//   Gets the i'th title text property.
+//
+// Arguments:
+//   axis : The axis 0,1,2.
+//
+// Returns:    A text property or NULL.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 26 16:21:54 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkTextProperty *
+vtkVisItCubeAxesActor::GetTitleTextProperty(int axis)
+{
+    return (axis >= 0 && axis < 3) ? this->TitleTextProperty[axis] : NULL;
+}
+
+// ****************************************************************************
+// Method: vtkVisItCubeAxesActor::GetLabelTextProperty
+//
+// Purpose: 
+//   Gets the i'th label text property.
+//
+// Arguments:
+//   axis : The axis 0,1,2.
+//
+// Returns:    A text property or NULL.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 26 16:21:54 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkTextProperty *
+vtkVisItCubeAxesActor::GetLabelTextProperty(int axis)
+{
+    return (axis >= 0 && axis < 3) ? this->LabelTextProperty[axis] : NULL;
+}
+
+// ****************************************************************************
+// Method: vtkVisItCubeAxesActor::SetTitleScale
+//
+// Purpose: 
+//   Sets the scale used for the titles on the different axes.
+//
+// Arguments:
+//   s0 : Scale for the X axis.
+//   s1 : Scale for the Y axis.
+//   s2 : Scale for the Z axis.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 26 16:20:49 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkVisItCubeAxesActor::SetTitleScale(double s0, double s1, double s2)
+{
+    if(this->TitleScale[0] != s0 ||
+       this->TitleScale[1] != s1 ||
+       this->TitleScale[2] != s2)
+    {
+        this->TitleScale[0] = s0;
+        this->TitleScale[1] = s1;
+        this->TitleScale[2] = s2;
+        this->scalingChanged = true;
+        this->Modified();
+    }
+}
+
+// ****************************************************************************
+// Method: vtkVisItCubeAxesActor::SetLabelScale
+//
+// Purpose: 
+//   Sets the scale used for the labels on the different axes.
+//
+// Arguments:
+//   s0 : Scale for the X axis.
+//   s1 : Scale for the Y axis.
+//   s2 : Scale for the Z axis.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 26 16:20:49 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkVisItCubeAxesActor::SetLabelScale(double s0, double s1, double s2)
+{
+    if(this->LabelScale[0] != s0 ||
+       this->LabelScale[1] != s1 ||
+       this->LabelScale[2] != s2)
+    {
+        this->LabelScale[0] = s0;
+        this->LabelScale[1] = s1;
+        this->LabelScale[2] = s2;
+        this->scalingChanged = true;
+        this->Modified();
+    }
+}

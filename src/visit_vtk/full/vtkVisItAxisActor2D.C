@@ -101,6 +101,9 @@ vtkStandardNewMacro(vtkVisItAxisActor2D);
 //    from the label orientation.  This is useful to allow the labels
 //    to be either on the left or right, but have the title at the top.
 //
+//    Brad Whitlock, Thu Mar 27 11:24:23 PDT 2008
+//    added title and label text properties.
+//
 // **********************************************************************
 vtkVisItAxisActor2D::vtkVisItAxisActor2D()
 {
@@ -134,10 +137,20 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->Range[0] = 0.0;
   this->Range[1] = 1.0;
 
-  this->Bold = 1;
-  this->Italic = 1;
-  this->Shadow = 1;
-  this->FontFamily = VTK_ARIAL;
+  this->TitleTextProperty = vtkTextProperty::New();
+  this->TitleTextProperty->SetColor(0.,0.,0.);
+  this->TitleTextProperty->SetFontFamilyToArial();
+  this->TitleTextProperty->BoldOn();
+  this->TitleTextProperty->ItalicOn();
+  this->TitleTextProperty->ShadowOn();
+
+  this->LabelTextProperty = vtkTextProperty::New();
+  this->LabelTextProperty->SetColor(0.,0.,0.);
+  this->LabelTextProperty->SetFontFamilyToArial();
+  this->LabelTextProperty->BoldOn();
+  this->LabelTextProperty->ItalicOn();
+  this->LabelTextProperty->ShadowOn();
+
   this->LabelFormat = new char[8]; 
   SNPRINTF(this->LabelFormat,8, "%s","%-#6.3f");
   this->LogLabelFormat = new char[8]; 
@@ -175,6 +188,8 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->EndStringReverseOrientation = false;
   this->EndStringHOffsetFactor = 0;
   this->EndStringVOffsetFactor = 0;
+
+  this->UseSeparateColors = 0;
   nDecades = 2;  
 }
 
@@ -248,6 +263,16 @@ vtkVisItAxisActor2D::~vtkVisItAxisActor2D()
     {
     this->AxisActor->Delete();
     this->AxisActor = NULL;
+    }
+  if (this->TitleTextProperty)
+    {
+       this->TitleTextProperty->Delete();
+       this->TitleTextProperty = NULL;
+    }
+  if (this->LabelTextProperty)
+    {
+       this->LabelTextProperty->Delete();
+       this->LabelTextProperty = NULL;
     }
 }
 
@@ -345,8 +370,11 @@ void vtkVisItAxisActor2D::ReleaseGraphicsResources(vtkWindow *win)
 //   Kathleen Bonnell, March 22, 2007 
 //   Added LogScale.
 //
-//    Kathleen Bonnell, Thu Apr  5 14:16:47 PDT 2007 
-//    Added LogLabelFormat.
+//   Kathleen Bonnell, Thu Apr  5 14:16:47 PDT 2007 
+//   Added LogLabelFormat.
+//
+//   Brad Whitlock, Thu Mar 27 11:28:24 PDT 2008
+//   Added title and label text properties.
 //
 // ********************************************************************
 void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
@@ -360,23 +388,18 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Range: (" << this->Range[0] 
      << ", " << this->Range[1] << ")\n";
 
-  os << indent << "Font Family: ";
-  if ( this->FontFamily == VTK_ARIAL )
-    {
-    os << "Arial\n";
-    }
-  else if ( this->FontFamily == VTK_COURIER )
-    {
-    os << "Courier\n";
-    }
+  os << indent << "Title Text Property: ";
+  if(this->TitleTextProperty != NULL)
+       this->TitleTextProperty->PrintSelf(os, indent.GetNextIndent());
   else
-    {
-    os << "Times\n";
-    }
+       os << "NULL\n";
 
-  os << indent << "Bold: " << (this->Bold ? "On\n" : "Off\n");
-  os << indent << "Italic: " << (this->Italic ? "On\n" : "Off\n");
-  os << indent << "Shadow: " << (this->Shadow ? "On\n" : "Off\n");
+  os << indent << "Label Text Property: ";
+  if(this->LabelTextProperty != NULL)
+       this->LabelTextProperty->PrintSelf(os, indent.GetNextIndent());
+  else
+       os << "NULL\n";
+
   os << indent << "Label Format: " << this->LabelFormat << "\n";
   os << indent << "Log Label Format: " << this->LogLabelFormat << "\n";
   os << indent << "Label Font Height: " << this->LabelFontHeight << "\n";
@@ -470,6 +493,9 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   from the label orientation.  This is useful to allow the labels
 //   to be either on the left or right, but have the title at the top.
 //
+//   Brad Whitlock, Thu Mar 27 11:32:02 PDT 2008
+//   Changed the properties used for the title actor.
+//
 // ****************************************************************************
 
 void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
@@ -486,15 +512,20 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
   double  ticksize[VTK_MAX_LABELS];
   double  sin_theta, cos_theta;
 
-  if ( this->GetMTime() < this->BuildTime &&
-  viewport->GetMTime() < this->BuildTime )
+  bool propsModified = (this->TitleTextProperty->GetMTime() > this->BuildTime) ||
+                       (this->LabelTextProperty->GetMTime() > this->BuildTime);
+
+  if (this->GetMTime() < this->BuildTime &&
+      viewport->GetMTime() < this->BuildTime &&
+      !propsModified)
     {
     return; //already built
     }
 
   // Check to see whether we have to rebuild everything
-  if ( this->GetMTime() < this->BuildTime &&
-  viewport->GetMTime() > this->BuildTime )
+  if (this->GetMTime() < this->BuildTime &&
+      viewport->GetMTime() > this->BuildTime &&
+      !propsModified)
     { //viewport change may not require rebuild
     int *lastPoint1=this->Point1Coordinate->GetComputedViewportValue(viewport);
     int *lastPoint2=this->Point2Coordinate->GetComputedViewportValue(viewport);
@@ -732,11 +763,14 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       }
 
       vtkTextProperty *tprop = this->LabelMappers[labelCount]->GetTextProperty();
-      tprop->SetBold(this->Bold);
-      tprop->SetItalic(this->Italic);
-      tprop->SetShadow(this->Shadow);
-      tprop->SetFontFamily(this->FontFamily);
-      tprop->SetColor(this->GetProperty()->GetColor());
+      tprop->SetBold(this->LabelTextProperty->GetBold());
+      tprop->SetItalic(this->LabelTextProperty->GetItalic());
+      tprop->SetShadow(this->LabelTextProperty->GetShadow());
+      tprop->SetFontFamily(this->LabelTextProperty->GetFontFamily());
+      if(this->UseSeparateColors)
+          tprop->SetColor(this->LabelTextProperty->GetColor());
+      else
+          tprop->SetColor(this->GetProperty()->GetColor());
       tprop->SetFontSize((int)(this->LabelFontHeight*size[1]));
       labelCount++;
       }
@@ -780,11 +814,14 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
     {
     this->TitleMapper->SetInput(this->Title);
     vtkTextProperty *titleTprop = this->TitleMapper->GetTextProperty();
-    titleTprop->SetBold(this->Bold);
-    titleTprop->SetItalic(this->Italic);
-    titleTprop->SetShadow(this->Shadow);
-    titleTprop->SetFontFamily(this->FontFamily);
-    titleTprop->SetColor(this->GetProperty()->GetColor());
+    titleTprop->SetBold(this->TitleTextProperty->GetBold());
+    titleTprop->SetItalic(this->TitleTextProperty->GetItalic());
+    titleTprop->SetShadow(this->TitleTextProperty->GetShadow());
+    titleTprop->SetFontFamily(this->TitleTextProperty->GetFontFamily());
+    if(this->UseSeparateColors)
+        titleTprop->SetColor(this->TitleTextProperty->GetColor());
+    else
+        titleTprop->SetColor(this->GetProperty()->GetColor());
     titleTprop->SetFontSize((int)(this->TitleFontHeight*size[1]));
 
     if ( this->TitleAtEnd )
@@ -1211,8 +1248,11 @@ double vtkVisItAxisActor2D::ComputeStringOffset(double width, double height,
 //   Eric Brugger, Tue Nov 25 11:44:40 PST 2003
 //   Added the ability to specify the axis orientation angle.
 //
-//    Kathleen Bonnell, Thu Apr  5 14:16:47 PDT 2007 
-//    Added LogLabelFormat.
+//   Kathleen Bonnell, Thu Apr  5 14:16:47 PDT 2007 
+//   Added LogLabelFormat.
+//
+//   Brad Whitlock, Thu Mar 27 11:54:28 PDT 2008
+//   Added SetTitleTextProperty, SetLabelTextProperty, SetUseSeparateColors
 //
 // ********************************************************************
 
@@ -1231,10 +1271,6 @@ void vtkVisItAxisActor2D::ShallowCopy(vtkProp *prop)
     this->SetLogLabelFormat(a->GetLogLabelFormat());
     this->SetAdjustLabels(a->GetAdjustLabels());
     this->SetTitle(a->GetTitle());
-    this->SetBold(a->GetBold());
-    this->SetItalic(a->GetItalic());
-    this->SetShadow(a->GetShadow());
-    this->SetFontFamily(a->GetFontFamily());
     this->SetTickLength(a->GetTickLength());
     this->SetTickOffset(a->GetTickOffset());
     this->SetAxisVisibility(a->GetAxisVisibility());
@@ -1243,6 +1279,9 @@ void vtkVisItAxisActor2D::ShallowCopy(vtkProp *prop)
     this->SetTitleVisibility(a->GetTitleVisibility());
     this->SetLabelFontHeight(a->GetLabelFontHeight());
     this->SetTitleFontHeight(a->GetTitleFontHeight());
+    this->SetTitleTextProperty(a->GetTitleTextProperty());
+    this->SetLabelTextProperty(a->GetLabelTextProperty());
+    this->SetUseSeparateColors(a->GetUseSeparateColors());
     }
 
   // Now do superclass
@@ -1598,3 +1637,140 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
     }
 }
 
+// ****************************************************************************
+// Method: vtkVisItAxisActor2D::SetTitleTextProperty
+//
+// Purpose: 
+//   Sets the title text property that we should use.
+//
+// Arguments:
+//   prop : The new text property.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 27 10:53:04 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkVisItAxisActor2D::SetTitleTextProperty(vtkTextProperty *prop)
+{
+    if(this->TitleTextProperty != NULL)
+        this->TitleTextProperty->Delete();
+    if(prop != NULL)
+        prop->Register(NULL);
+    this->TitleTextProperty = prop;
+    this->Modified();
+}
+
+// ****************************************************************************
+// Method: vtkVisItAxisActor2D::SetLabelTextProperty
+//
+// Purpose: 
+//   Sets the label text property that we should use.
+//
+// Arguments:
+//   prop : The new text property.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 27 10:53:04 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkVisItAxisActor2D::SetLabelTextProperty(vtkTextProperty *prop)
+{
+    if(this->LabelTextProperty != NULL)
+        this->LabelTextProperty->Delete();
+    if(prop != NULL)
+        prop->Register(NULL);
+    this->LabelTextProperty = prop;
+    this->Modified();
+}
+
+//
+// Compatibility methods
+//
+
+void
+vtkVisItAxisActor2D::SetBold(int val)
+{
+    bool modified = false;
+    if(this->TitleTextProperty != NULL)
+    {
+        this->TitleTextProperty->SetBold(val);
+        modified = true;
+    }
+    if(this->LabelTextProperty != NULL)
+    {
+        this->LabelTextProperty->SetBold(val);
+        modified = true;
+    }
+    if(modified)
+        this->Modified();
+}
+
+void
+vtkVisItAxisActor2D::SetItalic(int val)
+{
+    bool modified = false;
+    if(this->TitleTextProperty != NULL)
+    {
+        this->TitleTextProperty->SetItalic(val);
+        modified = true;
+    }
+    if(this->LabelTextProperty != NULL)
+    {
+        this->LabelTextProperty->SetItalic(val);
+        modified = true;
+    }
+    if(modified)
+        this->Modified();
+}
+
+void
+vtkVisItAxisActor2D::SetShadow(int val)
+{
+    bool modified = false;
+    if(this->TitleTextProperty != NULL)
+    {
+        this->TitleTextProperty->SetShadow(val);
+        modified = true;
+    }
+    if(this->LabelTextProperty != NULL)
+    {
+        this->LabelTextProperty->SetShadow(val);
+        modified = true;
+    }
+    if(modified)
+        this->Modified();
+}
+
+void
+vtkVisItAxisActor2D::SetFontFamily(int val)
+{
+    bool modified = false;
+    if(this->TitleTextProperty != NULL)
+    {
+        this->TitleTextProperty->SetFontFamily(val);
+        modified = true;
+    }
+    if(this->LabelTextProperty != NULL)
+    {
+        this->LabelTextProperty->SetFontFamily(val);
+        modified = true;
+    }
+    if(modified)
+        this->Modified();
+}

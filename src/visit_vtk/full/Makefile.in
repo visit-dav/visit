@@ -296,6 +296,10 @@
 #    Added vtkTexturedBackgroundActor, vtkOpenGLTexturedBackgroundMapper,
 #    vtkMesaTexturedBackgroundMapper, vtkVisItOpenGLTexture.C
 #
+#    Brad Whitlock, Thu Mar 13 15:25:32 PDT 2008
+#    Added vtkMultiFontVectorText, vtkVectorFontCharacterData, and visit_*.h
+#    font header files.
+#
 #    Kathleen Bonnell, Fri Mar 28 12:09:01 PDT 2008
 #    Added vtkVisItProbeFilter.
 #
@@ -333,6 +337,7 @@ SRC=InitVTK.C \
     vtkLineLegend.C \
     vtkLineoutFilter.C \
     vtkLinesFromOriginalCells.C \
+    vtkMultiFontVectorText.C \
     vtkOBJWriter.C \
     vtkOnionPeelFilter.C \
     vtkPolyDataOnionPeelFilter.C \
@@ -353,6 +358,7 @@ SRC=InitVTK.C \
     vtkTriad2D.C \
     vtkUniqueFeatureEdges.C \
     vtkUnstructuredGridRelevantPointsFilter.C \
+    vtkVectorFontCharacterData.C \
     vtkVectorGlyph.C \
     vtkVectorReduceFilter.C \
     vtkVertexFilter.C \

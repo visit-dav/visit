@@ -87,18 +87,18 @@ const double   VisWinLegends::dbInfoWidth         = 0.21;
 //    Brad Whitlock, Tue Jan 29 16:44:06 PST 2008
 //    Added dbIntoTextAttributes.
 //
+//    Brad Whitlock, Wed Mar 26 14:32:19 PDT 2008
+//    Changed dbInfoTextAttributes so it uses scale instead of height.
+//
 // ****************************************************************************
 
 VisWinLegends::VisWinLegends(VisWindowColleagueProxy &p) : VisWinColleague(p),
     dbInfoTextAttributes()
 {
-    // Set the default db info text attributes.
-    dbInfoTextAttributes.height = dbInfoHeight;
-
     dbInfoActor  = vtkTextActor::New();
     dbInfoActor->ScaledTextOn();
     dbInfoActor->SetWidth(dbInfoWidth);
-    dbInfoActor->SetHeight(dbInfoTextAttributes.height);
+    dbInfoActor->SetHeight(dbInfoHeight);
     dbInfoActor->GetTextProperty()->SetJustificationToLeft();
     dbInfoActor->GetTextProperty()->SetLineOffset(0);
     dbInfoActor->GetTextProperty()->SetLineSpacing(1);
@@ -340,6 +340,9 @@ VisWinLegends::UpdateLegendInfo(vector<avtActor_p> &lst)
 //    Brad Whitlock, Tue Jan 29 16:44:23 PST 2008
 //    Added code to scale the dbInfo based on dbIntoTextAttributes.
 //
+//    Brad Whitlock, Wed Mar 26 14:36:45 PDT 2008
+//    Changed the height to scale.
+//
 // ****************************************************************************
 
 void
@@ -419,7 +422,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
         //  If we are adding time, we need a larger width
         //
 
-        double scale = dbInfoTextAttributes.height / dbInfoHeight;
+        double scale = dbInfoTextAttributes.scale;
         float info_width = dbInfoWidth; 
         if (hasTime)
             info_width += 0.03;
@@ -433,7 +436,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
                 info_width = .8;
         }
         
-        dbInfoActor->SetHeight(dbInfoTextAttributes.height+0.04);        
+        dbInfoActor->SetHeight(dbInfoHeight+0.04);        
         dbInfoActor->SetWidth(info_width * scale);
         
         double x = leftColumnPosition;

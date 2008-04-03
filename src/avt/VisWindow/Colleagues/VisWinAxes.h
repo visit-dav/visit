@@ -155,6 +155,12 @@ class VISWINDOW_API VisWinAxes : public VisWinColleague
     void                      SetYTitle(const std::string &, bool);
     void                      SetYUnits(const std::string &, bool);
 
+    void                      SetTitleTextAttributes(
+                                  const VisWinTextAttributes &xAxis, 
+                                  const VisWinTextAttributes &yAxis);
+    void                      SetLabelTextAttributes(
+                                  const VisWinTextAttributes &xAxis, 
+                                  const VisWinTextAttributes &yAxis);
   protected:
     vtkVisItAxisActor2D       *xAxis, *yAxis;
  
@@ -174,6 +180,8 @@ class VISWINDOW_API VisWinAxes : public VisWinColleague
     bool                      userXUnits;
     bool                      userYTitle;
     bool                      userYUnits;
+    VisWinTextAttributes      titleTextAttributes[2];
+    VisWinTextAttributes      labelTextAttributes[2];
 
     void                      AdjustValues(double, double, double, double);
     void                      AdjustRange(double, double, double, double);
@@ -183,7 +191,9 @@ class VISWINDOW_API VisWinAxes : public VisWinColleague
     bool                      ShouldAddAxes(void);
     void                      SetTitle(void);
 
-    void  AdjustLabelFormatForLogScale(double, double, double, double, bool[2]);
+    void AdjustLabelFormatForLogScale(double, double, double, double, bool[2]);
+    void UpdateTitleTextAttributes(double fr, double fg, double fb);
+    void UpdateLabelTextAttributes(double fr, double fg, double fb);
 };
 
 

@@ -54,7 +54,7 @@
 #include <windows.h>
 #endif
 
-const float VisWinUserInfo::defaultUserInfoHeight = 0.05;
+const float VisWinUserInfo::defaultUserInfoHeight = 0.1;
 const float VisWinUserInfo::defaultUserInfoWidth = 0.2;
 
 // ****************************************************************************
@@ -86,7 +86,6 @@ VisWinUserInfo::VisWinUserInfo(VisWindowColleagueProxy &p)
     : VisWinColleague(p), textAttributes()
 {
     infoString = NULL;
-    textAttributes.height = defaultUserInfoHeight;
 
     //
     // Create and position the actors.
@@ -329,6 +328,9 @@ VisWinUserInfo::SetVisibility(bool val)
 //   Brad Whitlock, Wed Jan 30 16:00:48 PST 2008
 //   Added code to set the text size.
 //
+//   Brad Whitlock, Wed Mar 26 14:41:55 PDT 2008
+//   Changed height to scale in the text attributes.
+//
 // ****************************************************************************
 
 void
@@ -371,12 +373,12 @@ VisWinUserInfo::UpdateUserText()
         infoActor->SetInput(infoString);
 
         // Place the user info based on its size.
-        float scale = textAttributes.height / defaultUserInfoHeight;
+        float scale = textAttributes.scale;
         vtkCoordinate *pos = infoActor->GetPositionCoordinate();
         pos->SetCoordinateSystemToNormalizedViewport();
         pos->SetValue(1. - ((defaultUserInfoWidth * scale) + 0.05), 0.015, 0.);
         infoActor->SetWidth(defaultUserInfoWidth * scale);
-        infoActor->SetHeight(textAttributes.height * 2.);
+        infoActor->SetHeight(textAttributes.scale * 2.);
     }
 }
 
