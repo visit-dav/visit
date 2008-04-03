@@ -398,6 +398,11 @@ avtEllipticalCompactnessFactorQuery::Execute2(vtkDataSet *ds, const int dom)
 //  Programmer: Hank Childs
 //  Creation:   May 8, 2006
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Apr  2 10:44:18 PDT 2008
+//    Removed unsued section of code that retrieved varname, retrieved dims
+//    and set 'useVar'.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -414,18 +419,6 @@ avtEllipticalCompactnessFactorQuery::ApplyFilters(avtDataObject_p inData)
     //
     // Set up our base class so it is ready to sum.
     //
-    avtDataRequest_p dataRequest = GetInput()->GetOriginatingSource()
-                                     ->GetFullDataRequest();
-    string varname = dataRequest->GetVariable();
-    bool useVar = false;
-    if (GetInput()->GetInfo().GetAttributes().ValidVariable(varname))
-    {
-        int dim = GetInput()->GetInfo().GetAttributes().
-                                         GetVariableDimension(varname.c_str());
-        if (dim == 1)
-            useVar = true;
-    }
-
     avtExpressionFilter *vf = NULL;
     is2D = (dob->GetInfo().GetAttributes().GetSpatialDimension() != 3);
     if (is2D)

@@ -58,7 +58,6 @@
 #include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtOriginatingSource.h>
-#include <avtWeightedVariableSummationQuery.h>
 
 #include <DebugStream.h>
 
@@ -581,6 +580,11 @@ avtLineScanQuery::Execute(vtkDataSet *ds, const int chunk)
 //    Made the construction of the line scan filter virtual, so I could
 //    build it differently in the derived class avtHohlraumFluxQuery.
 //
+//    Kathleen Bonnell, Wed Apr  2 10:20:27 PDT 2008 
+//    Retrieve the varname from the dataAtts instead of DataRequest, as
+//    DataRequest may have the wrong value based on other pipelines sharing
+//    the same source. 
+//
 // ****************************************************************************
 
 void
@@ -594,7 +598,7 @@ avtLineScanQuery::Execute(avtDataTree_p tree)
 
     avtContract_p contract =
         input->GetOriginatingSource()->GetGeneralContract();
-    varname = contract->GetDataRequest()->GetVariable();
+    varname = GetInput()->GetInfo().GetAttributes().GetVariableName();
 
     for (int i = 0 ; i < numPasses ; i++)
     {

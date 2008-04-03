@@ -97,6 +97,8 @@ avtTrajectoryByNode::~avtTrajectoryByNode()
 //  Creation:     November 8, 2005
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Apr  2 10:23:35 PDT 2008
+//    Removed unused dataRequest.
 //
 // ****************************************************************************
 
@@ -104,11 +106,11 @@ void
 avtTrajectoryByNode::Preparation(const avtDataAttributes &inAtts)
 {
     if (inAtts.ValidVariable(queryAtts.GetVariables()[0].c_str()))
-        queryAtts.SetXUnits(inAtts.GetVariableUnits(queryAtts.GetVariables()[0].c_str()));
+        queryAtts.SetXUnits(inAtts.GetVariableUnits(
+                            queryAtts.GetVariables()[0].c_str()));
     if (inAtts.ValidVariable(queryAtts.GetVariables()[1].c_str()))
-        queryAtts.SetYUnits(inAtts.GetVariableUnits(queryAtts.GetVariables()[1].c_str()));
-    avtDataRequest_p dataRequest = 
-        GetInput()->GetOriginatingSource()->GetFullDataRequest();
+        queryAtts.SetYUnits(inAtts.GetVariableUnits(
+                            queryAtts.GetVariables()[1].c_str()));
 
     avtVariableByNodeQuery::Preparation(inAtts);
 }
