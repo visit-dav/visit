@@ -965,6 +965,10 @@ avtFVCOMReader::GetCycles(intVector &cyc)
 //  Programmer: David Stuebe
 //  Creation:   Thu May 18 08:39:01 PDT 2006
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Apr  3 13:13:50 PDT 2008
+//    Fixed use of assignemnt(=) instead of comparison(==).
+// 
 // ****************************************************************************
 
 
@@ -1863,7 +1867,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
   // ALL Variables added to META DATA
 
 
-  if(mesh4=true)
+  if(mesh4==true)
     {
       //Add Material MetaData for: SigmaLayer_Mesh
       avtMaterialMetaData *matmd_lay = new avtMaterialMetaData;
@@ -4231,19 +4235,25 @@ avtFVCOMReader::DENS3(int timestate, avtVariableCache *cache)
   return rv;
 }// end DENS3
 
-//==============================================================================|
+//=============================================================================|
 // Do the business of the Dens3 Jackett and McDougall method...
-//==============================================================================|
+//=============================================================================|
 
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Thu Apr  3 13:13:50 PDT 2008
+//    Fixed indexing problem with TEMP (was using indices 1..10 instead of
+//    0 .. 9).
+// ****************************************************************************
 double
 avtFVCOMReader::Dens3helper(double sval, double tval, double pbar)
 {
   
-  //==============================================================================|
-  //  Polynomial  expansion  coefficients for the computation of in situ          |
-  //  density  via  the  nonlinear  equation of state  for seawater as a          |
-  //  function of potential temperature, salinity, and pressure (Jackett          |
-  //  and McDougall, 1995).                                                       |
+  //===========================================================================|
+  //  Polynomial  expansion  coefficients for the computation of in situ       |
+  //  density  via  the  nonlinear  equation of state  for seawater as a       |
+  //  function of potential temperature, salinity, and pressure (Jackett       |
+  //  and McDougall, 1995).                                                    |
         
   double A00 = +1.965933e+04;
   double A01 = +1.444304e+02;
@@ -4295,24 +4305,24 @@ avtFVCOMReader::Dens3helper(double sval, double tval, double pbar)
 
   // Compute density (kg/m3) at standard one atmosphere pressure
   
-  TEMP[1]=Q00+tval*(Q01+tval*(Q02+tval*(Q03+tval*(Q04+tval*Q05))));
-  TEMP[2]=U00+tval*(U01+tval*(U02+tval*(U03+tval*U04)));
-  TEMP[3]=V00+tval*(V01+tval*V02);
-  double DEN1=TEMP[1]+sval*(TEMP[2]+sqrtsval*TEMP[3]+sval*W00);
+  TEMP[0]=Q00+tval*(Q01+tval*(Q02+tval*(Q03+tval*(Q04+tval*Q05))));
+  TEMP[1]=U00+tval*(U01+tval*(U02+tval*(U03+tval*U04)));
+  TEMP[2]=V00+tval*(V01+tval*V02);
+  double DEN1=TEMP[0]+sval*(TEMP[1]+sqrtsval*TEMP[2]+sval*W00);
   
   // Compute secant bulk modulus (BULK = BULK0 + BULK1*PBAR + BULK2*PBAR*PBAR)
   
-  TEMP[4]=A00+tval*(A01+tval*(A02+tval*(A03+tval*A04)));
-  TEMP[5]=B00+tval*(B01+tval*(B02+tval*B03));
-  TEMP[6]=D00+tval*(D01+tval*D02);
-  TEMP[7]=E00+tval*(E01+tval*(E02+tval*E03));
-  TEMP[8]=F00+tval*(F01+tval*F02);
-  TEMP[9]=G01+tval*(G02+tval*G03);
-  TEMP[10]=H00+tval*(H01+tval*H02);
+  TEMP[3]=A00+tval*(A01+tval*(A02+tval*(A03+tval*A04)));
+  TEMP[4]=B00+tval*(B01+tval*(B02+tval*B03));
+  TEMP[5]=D00+tval*(D01+tval*D02);
+  TEMP[6]=E00+tval*(E01+tval*(E02+tval*E03));
+  TEMP[7]=F00+tval*(F01+tval*F02);
+  TEMP[8]=G01+tval*(G02+tval*G03);
+  TEMP[9]=H00+tval*(H01+tval*H02);
   
-  double BULK0=TEMP[4]+sval*(TEMP[5]+sqrtsval*TEMP[6]);
-  double BULK1=TEMP[7]+sval*(TEMP[8]+sqrtsval*G00);
-  double BULK2=TEMP[9]+sval*TEMP[10];
+  double BULK0=TEMP[3]+sval*(TEMP[4]+sqrtsval*TEMP[5]);
+  double BULK1=TEMP[6]+sval*(TEMP[7]+sqrtsval*G00);
+  double BULK2=TEMP[8]+sval*TEMP[9];
   double BULK = BULK0 + pbar * (BULK1 + pbar * BULK2);
   
   //  Compute "in situ" density anomaly (kg/m3)

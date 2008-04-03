@@ -605,7 +605,7 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if (nblocks > 1)
         sprintf(filename, "%s.%d.silo", fname.c_str(), chunk);
     else
-        sprintf(filename, "%s.silo", fname.c_str(), chunk);
+        sprintf(filename, "%s.silo", fname.c_str());
 
 #ifdef E_CHECKSUM
     int oldEnable = DBSetEnableChecksums(0);

@@ -2842,6 +2842,10 @@ avtSAMRAIFileFormat::ReadTime(hid_t &h5_file)
 //  Programmer:  Mark C. Miller 
 //  Creation:    December 8, 2003 
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Apr  3 13:28:25 PDT 2008
+//    Fixed use of '=' where it should be '=='.
+//
 // ****************************************************************************
 void 
 avtSAMRAIFileFormat::ReadAndCheckVDRVersion(hid_t &h5_file)
@@ -2874,7 +2878,7 @@ avtSAMRAIFileFormat::ReadAndCheckVDRVersion(hid_t &h5_file)
 	}
     }
 
-    if (hasExpectedVersionNumber = false)
+    if (hasExpectedVersionNumber == false)
     {
         char str[2048];
         sprintf(str, "The file \"%s\" appears to be a SAMRAI file "
