@@ -56,7 +56,8 @@ All rights reserved.
 #include <vtkFollower.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
-#include <vtkVectorText.h>
+#include <vtkMultiFontVectorText.h>
+#include <vtkTextProperty.h>
 
 #define VTK_MAX_LABELS    200
 #define VTK_MAX_TICKS     1000
@@ -80,6 +81,9 @@ All rights reserved.
 //    Added TitleTextTime timestamp, so that title can be updated appropriately
 //    when its text changes.  Changed Titles Set macro for a user-defined
 //    set so TitleTextTime can be updated.
+//
+//    Brad Whitlock, Thu Mar 27 10:55:43 PDT 2008
+//    Added support for independent title and label text properties.
 //
 // ****************************************************************************
 
@@ -175,6 +179,16 @@ public:
   vtkSetMacro(TitleVisibility, int);
   vtkGetMacro(TitleVisibility, int);
   vtkBooleanMacro(TitleVisibility, int);
+
+  // Description:
+  // Get axis title text property.
+  void SetTitleTextProperty(vtkTextProperty *);
+  vtkGetMacro(TitleTextProperty, vtkTextProperty *);
+
+  // Description:
+  // Get axis labels text property.
+  void SetLabelTextProperty(vtkTextProperty *);
+  vtkGetMacro(LabelTextProperty, vtkTextProperty *);
 
   // Description:
   // Set/Get whether gridlines should be drawn.
@@ -308,6 +322,8 @@ private:
   bool BuildTickPointsForZType(double p1[3], double p2[3], bool);
 
   bool TickVisibilityChanged(void);
+  vtkProperty *NewTitleProperty();
+  vtkProperty *NewLabelProperty();
 
   vtkCoordinate *Point1Coordinate;
   vtkCoordinate *Point2Coordinate;
@@ -330,13 +346,15 @@ private:
   vtkPoints         *majorTickPts;
   vtkPoints         *gridlinePts;
 
-  vtkVectorText     *TitleVector;
-  vtkPolyDataMapper *TitleMapper;
-  vtkFollower       *TitleActor;
+  vtkMultiFontVectorText *TitleVector;
+  vtkPolyDataMapper      *TitleMapper;
+  vtkFollower            *TitleActor;
+  vtkTextProperty        *TitleTextProperty;
 
-  vtkVectorText     **LabelVectors;
-  vtkPolyDataMapper **LabelMappers;
-  vtkFollower       **LabelActors;
+  vtkMultiFontVectorText **LabelVectors;
+  vtkPolyDataMapper      **LabelMappers;
+  vtkFollower            **LabelActors;
+  vtkTextProperty         *LabelTextProperty;
 
   vtkPolyData        *Axis;
   vtkPolyDataMapper  *AxisMapper;

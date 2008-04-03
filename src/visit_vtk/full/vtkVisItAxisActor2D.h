@@ -76,6 +76,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vtkActor2D.h"
 #include "vtkPolyDataMapper2D.h"
 #include "vtkTextMapper.h"
+#include "vtkTextProperty.h"
 
 #define VTK_MAX_LABELS 1000
 
@@ -181,33 +182,30 @@ public:
   vtkGetStringMacro(Title);
 
   // Description:
-  // Enable/Disable bolding annotation text.
-  vtkSetMacro(Bold, int);
-  vtkGetMacro(Bold, int);
-  vtkBooleanMacro(Bold, int);
+  // Set/Get the title text property
+  void SetTitleTextProperty(vtkTextProperty *);
+  vtkGetMacro(TitleTextProperty, vtkTextProperty *);
 
   // Description:
-  // Enable/Disable italicizing annotation text.
-  vtkSetMacro(Italic, int);
-  vtkGetMacro(Italic, int);
-  vtkBooleanMacro(Italic, int);
+  // Set/Get the label text property
+  void SetLabelTextProperty(vtkTextProperty *);
+  vtkGetMacro(LabelTextProperty, vtkTextProperty *);
+
+  // compatibility methods.
+  void SetBold(int);
+  void SetItalic(int);
+  void SetShadow(int);
+  void SetFontFamily(int);
+  void SetFontFamilyToArial() { this->SetFontFamily(VTK_ARIAL); }
+  void SetFontFamilyToCourier() { this->SetFontFamily(VTK_COURIER); }
+  void SetFontFamilyToTimes() { this->SetFontFamily(VTK_TIMES); }
 
   // Description:
-  // Enable/Disable creating shadows on the annotation text. Shadows make 
-  // the text easier to read.
-  vtkSetMacro(Shadow, int);
-  vtkGetMacro(Shadow, int);
-  vtkBooleanMacro(Shadow, int);
-
-  // Description:
-  // Set/Get the font family for the annotation text. Three font types 
-  // are available: Arial (VTK_ARIAL), Courier (VTK_COURIER), and 
-  // Times (VTK_TIMES).
-  vtkSetMacro(FontFamily, int);
-  vtkGetMacro(FontFamily, int);
-  void SetFontFamilyToArial() {this->SetFontFamily(VTK_ARIAL);};
-  void SetFontFamilyToCourier() {this->SetFontFamily(VTK_COURIER);};
-  void SetFontFamilyToTimes() {this->SetFontFamily(VTK_TIMES);};
+  // Set/Get the use seperate colors flag. When using separate colors, the label
+  // and title colors come from the label and title text properties, respectively.
+  // Otherwise the color comes from the property.
+  vtkSetMacro(UseSeparateColors, int);
+  vtkGetMacro(UseSeparateColors, int);
 
   // Description:
   // Set/Get the length of the tick marks (expressed in pixels or display
@@ -370,10 +368,9 @@ protected:
   int    TickOffset;
   int    TickLocation;
 
-  int    Bold;
-  int    Italic;
-  int    Shadow;
-  int    FontFamily;
+  int    UseSeparateColors;
+  vtkTextProperty *TitleTextProperty;
+  vtkTextProperty *LabelTextProperty;
 
   int    DrawGridlines;
   double  GridlineXLength;
@@ -405,6 +402,7 @@ private:
                                 double endStringVOffsetFactor);
 
   void           SetNumberOfLabelsBuilt(const int);
+
   vtkTextMapper *TitleMapper;
   vtkActor2D    *TitleActor;
 

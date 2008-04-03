@@ -61,15 +61,18 @@
 // Creation:   Fri Feb 8 17:47:24 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 26 14:51:59 PDT 2008
+//   Changed height to scale.
+//
 // ****************************************************************************
 
 QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent, const char *name) :
     QFrame(parent,name), atts()
 {
+    opacityEnabled = true;
+
     QGridLayout *gLayout = new QGridLayout(this, 2, 6);
     gLayout->setSpacing(5);
-//    gLayout->setMargin(10);
     int row = 0;
 
     // Add controls to set the font family.
@@ -84,11 +87,11 @@ QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent, const char *
     gLayout->addWidget(fontFamilyComboBox, row, 1);
 
     // Add control for text font height
-    fontHeight = new QNarrowLineEdit(this, "fontHeight");
-    connect(fontHeight, SIGNAL(returnPressed()),
+    fontScale = new QNarrowLineEdit(this, "fontScale");
+    connect(fontScale, SIGNAL(returnPressed()),
             this, SLOT(Apply()));
-    gLayout->addWidget(fontHeight, row, 3);
-    gLayout->addWidget(new QLabel(fontHeight, "Font height",
+    gLayout->addWidget(fontScale, row, 3);
+    gLayout->addWidget(new QLabel(fontScale, "Font scale",
         this), row, 2);
 
     boldCheckBox = new QCheckBox("Bold", this, "boldCheckBox");
@@ -133,6 +136,25 @@ QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent, const char *
 
 QvisFontAttributesWidget::~QvisFontAttributesWidget()
 {
+}
+
+// ****************************************************************************
+// Method: QvisFontAttributesWidget::disableOpacity
+//
+// Purpose: 
+//   Disables the opacity slider.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 27 09:58:47 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFontAttributesWidget::disableOpacity()
+{
+    opacityEnabled = false;
 }
 
 // ****************************************************************************
@@ -205,7 +227,9 @@ QvisFontAttributesWidget::setFontAttributes(const FontAttributes &fa)
 // Creation:   Fri Feb 8 17:47:38 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 26 14:52:58 PDT 2008
+//   Changed height to scale. Set the opacity enabled state accordingly.
+//
 // ****************************************************************************
 
 void
@@ -220,9 +244,9 @@ QvisFontAttributesWidget::Update(int which_widget)
         fontFamilyComboBox->blockSignals(false);
     }
 
-    if(doAll || which_widget == FontAttributes::ID_height)
+    if(doAll || which_widget == FontAttributes::ID_scale)
     {
-        fontHeight->setText(QString().setNum(atts.GetHeight()));
+        fontScale->setText(QString().setNum(atts.GetScale()));
     }
 
     if(doAll || which_widget == FontAttributes::ID_useForegroundColor)
@@ -231,7 +255,7 @@ QvisFontAttributesWidget::Update(int which_widget)
         useForegroundColorCheckBox->setChecked(atts.GetUseForegroundColor());
         useForegroundColorCheckBox->blockSignals(false);
 
-        textColorOpacity->setEnabled(!atts.GetUseForegroundColor());
+        textColorOpacity->setEnabled(!atts.GetUseForegroundColor() && opacityEnabled);
         textColorButton->setEnabled(!atts.GetUseForegroundColor());
     }
 
@@ -288,12 +312,12 @@ QvisFontAttributesWidget::GetCurrentValues(FontAttributes &fa, int which_widget)
 {
     bool doAll = which_widget == -1;
 
-    if(which_widget == FontAttributes::ID_height || doAll)
+    if(which_widget == FontAttributes::ID_scale || doAll)
     {
         bool okay;
-        double val = fontHeight->displayText().toDouble(&okay);
+        double val = fontScale->displayText().toDouble(&okay);
         if(okay)
-            fa.SetHeight(val);
+            fa.SetScale(val);
     }
 }
 
@@ -444,14 +468,16 @@ QvisFontAttributesWidget::italicToggled(bool val)
 // Creation:   Thu Feb 7 13:55:18 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Mar 27 10:10:48 PDT 2008
+//   Set the opacity enabled state accordingly.
+//
 // ****************************************************************************
 
 void
 QvisFontAttributesWidget::useForegroundColorToggled(bool val)
 {
     atts.SetUseForegroundColor(val);
-    textColorOpacity->setEnabled(!atts.GetUseForegroundColor());
+    textColorOpacity->setEnabled(!atts.GetUseForegroundColor() && opacityEnabled);
     textColorButton->setEnabled(!atts.GetUseForegroundColor());
     Apply();
 }

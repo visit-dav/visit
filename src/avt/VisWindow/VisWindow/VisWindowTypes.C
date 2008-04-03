@@ -116,13 +116,15 @@ INTERACTION_MODE_FromString(const std::string &s, INTERACTION_MODE &m)
 // Creation:   Tue Jan 29 16:35:07 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 26 14:28:02 PDT 2008
+//   Changed height to scale.
+//
 // ****************************************************************************
 
 VisWinTextAttributes::VisWinTextAttributes()
 {
     font = Arial;
-    height = 0.02;
+    scale = 1.;
     useForegroundColor = true;
     color[0] = 0.f;
     color[1] = 0.f;
@@ -135,7 +137,7 @@ VisWinTextAttributes::VisWinTextAttributes()
 VisWinTextAttributes::VisWinTextAttributes(const VisWinTextAttributes &obj)
 {
     font = obj.font;
-    height = obj.height;
+    scale = obj.scale;
     useForegroundColor = obj.useForegroundColor;
     color[0] = obj.color[0];
     color[1] = obj.color[1];
@@ -153,7 +155,7 @@ VisWinTextAttributes
 VisWinTextAttributes::operator = (const VisWinTextAttributes &obj)
 {
     font = obj.font;
-    height = obj.height;
+    scale = obj.scale;
     useForegroundColor = obj.useForegroundColor;
     color[0] = obj.color[0];
     color[1] = obj.color[1];

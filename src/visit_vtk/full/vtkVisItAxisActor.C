@@ -64,6 +64,9 @@ vtkCxxSetObjectMacro(vtkVisItAxisActor, Camera, vtkCamera);
 //   Kathleen Bonnell, Thu Apr 29 17:02:10 PDT 2004
 //   Initialize MinorStart, MajorStart, DeltaMinor, DeltaMajor.
 //
+//   Brad Whitlock, Wed Mar 26 11:26:05 PDT 2008
+//   Added TitleTextProperty, LabelTextProperty.
+//
 // ****************************************************************
 
 vtkVisItAxisActor::vtkVisItAxisActor()
@@ -91,17 +94,25 @@ vtkVisItAxisActor::vtkVisItAxisActor()
   this->LabelFormat = new char[8]; 
   SNPRINTF(this->LabelFormat,8, "%s","%-#6.3g");
 
-  this->TitleVector = vtkVectorText::New();
+  this->TitleVector = vtkMultiFontVectorText::New();
   this->TitleMapper = vtkPolyDataMapper::New();
   this->TitleMapper->SetInput(this->TitleVector->GetOutput());
   this->TitleActor = vtkFollower::New();
   this->TitleActor->SetMapper(this->TitleMapper);
-  
+
+  this->TitleTextProperty = vtkTextProperty::New();
+  this->TitleTextProperty->SetColor(0.,0.,0.);
+  this->TitleTextProperty->SetFontFamilyToArial();
+
   // to avoid deleting/rebuilding create once up front
   this->NumberOfLabelsBuilt = 0;
   this->LabelVectors = NULL; 
   this->LabelMappers = NULL; 
   this->LabelActors = NULL; 
+
+  this->LabelTextProperty = vtkTextProperty::New();
+  this->LabelTextProperty->SetColor(0.,0.,0.);
+  this->LabelTextProperty->SetFontFamilyToArial();
 
   this->Axis = vtkPolyData::New();
   this->AxisMapper = vtkPolyDataMapper::New();
@@ -154,6 +165,10 @@ vtkVisItAxisActor::vtkVisItAxisActor()
 // Modifications:
 //   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002 
 //   Added call to set camera to null.
+//
+//   Brad Whitlock, Wed Mar 26 11:28:34 PDT 2008
+//   Added deletion of title and label text properties.
+//
 // ****************************************************************
 
 vtkVisItAxisActor::~vtkVisItAxisActor()
@@ -200,6 +215,12 @@ vtkVisItAxisActor::~vtkVisItAxisActor()
     this->Title = NULL;
     }
 
+  if (this->TitleTextProperty)
+    {
+       this->TitleTextProperty->Delete();
+       this->TitleTextProperty = NULL;
+    }
+
   if (this->LabelMappers != NULL)
     {
     for (int i=0; i < this->NumberOfLabelsBuilt; i++)
@@ -216,7 +237,11 @@ vtkVisItAxisActor::~vtkVisItAxisActor()
     this->LabelMappers = NULL;
     this->LabelActors = NULL;
     }
-
+  if (this->LabelTextProperty)
+    {
+       this->LabelTextProperty->Delete();
+       this->LabelTextProperty = NULL;
+    }
   if (this->Axis)
     {
     this->Axis->Delete();
@@ -276,6 +301,9 @@ void vtkVisItAxisActor::ReleaseGraphicsResources(vtkWindow *win)
 //   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
 //   Removed mustAdjustValue, valueScaleFator.
 //
+//   Brad Whitlock, Wed Mar 26 11:34:24 PDT 2008
+//   Added TitleTextProperty, LabelTextProperty
+//
 // ****************************************************************
 
 void vtkVisItAxisActor::ShallowCopy(vtkProp *prop)
@@ -293,6 +321,8 @@ void vtkVisItAxisActor::ShallowCopy(vtkProp *prop)
     this->SetTickVisibility(a->GetTickVisibility());
     this->SetLabelVisibility(a->GetLabelVisibility());
     this->SetTitleVisibility(a->GetTitleVisibility());
+//    this->SetTitleTextProperty(a->GetTitleTextProperty());
+//    this->SetLabelTextProperty(a->GetLabelTextProperty());
     }
 
   // Now do superclass
@@ -343,7 +373,6 @@ int vtkVisItAxisActor::RenderOpaqueGeometry(vtkViewport *viewport)
   return renderedSomething;
 }
 
-
 // **************************************************************************
 // Perform some initialization, determine which Axis type we are
 // and call the appropriate build method.
@@ -367,8 +396,12 @@ int vtkVisItAxisActor::RenderOpaqueGeometry(vtkViewport *viewport)
 //   if set to true.  Removed call to AdjustTicksComputeRange (handled by
 //   vtkVisItCubeAxesActor.  Remvoed call to Build?TypeAxis, added calls
 //   to BuildLabels, SetAxisPointsAndLines and BuildTitle, (which used to
-//   be handled in Build?TypeAxis). .
-//    
+//   be handled in Build?TypeAxis).
+//
+//   Brad Whitlock, Wed Mar 26 11:42:11 PDT 2008
+//   Added code to set the title actor property's color from the title
+//   text property.
+//
 // **************************************************************************
 
 void vtkVisItAxisActor::BuildAxis(vtkViewport *viewport, bool force)
@@ -400,10 +433,13 @@ void vtkVisItAxisActor::BuildAxis(vtkViewport *viewport, bool force)
 
   vtkDebugMacro(<<"Rebuilding axis");
 
-  if (force || this->GetProperty()->GetMTime() > this->BuildTime.GetMTime())
+  if (force || 
+      this->GetProperty()->GetMTime() > this->BuildTime.GetMTime() ||
+      this->TitleTextProperty->GetMTime() > this->BuildTime.GetMTime()
+      )
     {
+    this->TitleActor->SetProperty(this->NewTitleProperty());
     this->AxisActor->SetProperty(this->GetProperty());
-    this->TitleActor->SetProperty(this->GetProperty());
     }
 
   //
@@ -463,6 +499,9 @@ void vtkVisItAxisActor::BuildAxis(vtkViewport *viewport, bool force)
 //   Remvoed determination of label text, added call to 
 //   SetLabelPositions.
 //
+//   Brad Whitlock, Wed Mar 26 11:44:03 PDT 2008
+//   Set the label property color from the label text property.
+//
 // ****************************************************************
 
 void
@@ -470,11 +509,12 @@ vtkVisItAxisActor::BuildLabels(vtkViewport *viewport, bool force)
 {
   if (!force && !this->LabelVisibility)
       return;
- 
+
+  vtkProperty *newProp = this->NewLabelProperty();
   for (int i = 0; i < this->NumberOfLabelsBuilt; i++)
     {
     this->LabelActors[i]->SetCamera(this->Camera);
-    this->LabelActors[i]->SetProperty(this->GetProperty());
+    this->LabelActors[i]->SetProperty(newProp);
     }
 
   if (force || this->BuildTime.GetMTime() <  this->BoundsTime.GetMTime() || 
@@ -599,6 +639,10 @@ vtkVisItAxisActor::SetLabelPositions(vtkViewport *viewport, bool force)
 //    Fix bug with positioning of titles (the titles were being placed
 //    far away from the bounding box in some cases).
 //
+//    Brad Whitlock, Wed Mar 26 11:54:04 PDT 2008
+//    Set the font and bold/italic for the TitleVector, which is now a
+//    vtkMultiFontVectorText.
+//
 // **********************************************************************
 
 void
@@ -619,7 +663,8 @@ vtkVisItAxisActor::BuildTitle(bool force)
   if (!force && this->LabelBuildTime.GetMTime() < this->BuildTime.GetMTime() &&
       this->BoundsTime.GetMTime() < this->BuildTime.GetMTime() &&
       this->AxisPosition == this->LastAxisPosition &&
-      this->TitleTextTime.GetMTime() < this->BuildTime.GetMTime())
+      this->TitleTextTime.GetMTime() < this->BuildTime.GetMTime() &&
+      this->TitleTextProperty->GetMTime() < this->BuildTime.GetMTime())
    {
    return;
    }
@@ -652,6 +697,10 @@ vtkVisItAxisActor::BuildTitle(bool force)
     maxHeight = (labHeight > maxHeight ? labHeight : maxHeight); 
     }
   this->TitleVector->SetText(this->Title);
+  this->TitleVector->SetFontFamily(this->TitleTextProperty->GetFontFamily());
+  this->TitleVector->SetBold(this->TitleTextProperty->GetBold());
+  this->TitleVector->SetItalic(this->TitleTextProperty->GetItalic());
+
   this->TitleActor->SetCamera(this->Camera);
   this->TitleActor->SetPosition(p2[0], p2[1], p2[2]);
   this->TitleActor->GetBounds(titleBounds);
@@ -760,6 +809,12 @@ void vtkVisItAxisActor::PrintSelf(ostream& os, vtkIndent indent)
 //
 // Programmer:  Kathleen Bonnell
 // Creation:    July 18, 2003
+//
+// Modifications:
+//   Brad Whitlock, Wed Mar 26 11:56:54 PDT 2008
+//   Changed LabelVectors to vtkMultiFontVectorText and set additional
+//   font properties on that object.
+//
 // **************************************************************************
 void
 vtkVisItAxisActor::SetLabels(const vector<string> &labels)
@@ -784,13 +839,14 @@ vtkVisItAxisActor::SetLabels(const vector<string> &labels)
       delete [] this->LabelActors;
       }
 
-    this->LabelVectors = new vtkVectorText * [numLabels];
+    this->LabelVectors = new vtkMultiFontVectorText * [numLabels];
     this->LabelMappers = new vtkPolyDataMapper * [numLabels];
     this->LabelActors = new vtkFollower * [numLabels];
 
     for (i = 0; i < labels.size(); i++)
       {
-      this->LabelVectors[i] = vtkVectorText::New();
+      this->LabelVectors[i] = vtkMultiFontVectorText::New();
+
       this->LabelMappers[i] = vtkPolyDataMapper::New();
       this->LabelMappers[i]->SetInput(this->LabelVectors[i]->GetOutput());
       this->LabelActors[i] = vtkFollower::New();
@@ -803,6 +859,10 @@ vtkVisItAxisActor::SetLabels(const vector<string> &labels)
   //
   for (i = 0; i < numLabels; i++)
     {
+    this->LabelVectors[i]->SetFontFamily(this->LabelTextProperty->GetFontFamily());
+    this->LabelVectors[i]->SetBold(this->LabelTextProperty->GetBold());
+    this->LabelVectors[i]->SetItalic(this->LabelTextProperty->GetItalic());
+
     this->LabelVectors[i]->SetText(labels[i].c_str());
     }
   this->NumberOfLabelsBuilt = numLabels;
@@ -826,10 +886,14 @@ vtkVisItAxisActor::SetLabels(const vector<string> &labels)
 //   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
 //   Allow a forced build, despite previous build time.
 //
+//   Brad Whitlock, Wed Apr  2 14:06:59 PDT 2008
+//   Build the labels if the label properties have changed.
+//
 // **************************************************************************
 bool vtkVisItAxisActor::BuildTickPointsForXType(double p1[3], double p2[3], bool force)
 {
-  if (!force && (this->AxisPosition == this->LastAxisPosition) &&
+  if (!force && 
+      (this->AxisPosition == this->LastAxisPosition) &&
       (this->TickLocation == this->LastTickLocation ) &&
       (this->BoundsTime.GetMTime() < this->BuildTime.GetMTime()))
     {
@@ -1441,6 +1505,9 @@ void vtkVisItAxisActor::GetBounds(double b[6])
 //   Kathleen Bonnell, Tue Dec 16 11:06:21 PST 2003
 //   Reset the actor's position and scale.
 //
+//   Brad Whitlock, Wed Mar 26 16:28:24 PDT 2008
+//   Changed to a new property created by NewLabelProperty.
+//
 // *********************************************************************
 
 double
@@ -1449,13 +1516,15 @@ vtkVisItAxisActor::ComputeMaxLabelLength(const double center[3])
   double length, maxLength = 0.;
   double pos[3];
   double scale;
+
+  vtkProperty *newProp = this->NewLabelProperty();
   for (int i = 0; i < this->NumberOfLabelsBuilt; i++)
     {
     this->LabelActors[i]->GetPosition(pos);
     scale = this->LabelActors[i]->GetScale()[0];
 
     this->LabelActors[i]->SetCamera(this->Camera);
-    this->LabelActors[i]->SetProperty(this->GetProperty());
+    this->LabelActors[i]->SetProperty(newProp);
     this->LabelActors[i]->SetPosition(center[0], center[1] , center[2]);
     this->LabelActors[i]->SetScale(1.);
     length = this->LabelActors[i]->GetLength();
@@ -1487,6 +1556,9 @@ vtkVisItAxisActor::ComputeMaxLabelLength(const double center[3])
 //   Kathleen Bonnell, Tue Dec 16 11:06:21 PST 2003
 //   Reset the actor's position and scale.
 //
+//   Brad Whitlock, Wed Mar 26 16:28:24 PDT 2008
+//   Changed to a new property created by NewTitleProperty.
+//
 // *********************************************************************
 
 double
@@ -1497,7 +1569,7 @@ vtkVisItAxisActor::ComputeTitleLength(const double center[3])
   scale = this->TitleActor->GetScale()[0];
   this->TitleVector->SetText(this->Title);
   this->TitleActor->SetCamera(this->Camera);
-  this->TitleActor->SetProperty(this->GetProperty());
+  this->TitleActor->SetProperty(this->NewTitleProperty());
   this->TitleActor->SetPosition(center[0], center[1] , center[2]);
   this->TitleActor->SetScale(1.);
   len = this->TitleActor->GetLength();
@@ -1587,4 +1659,128 @@ vtkVisItAxisActor::SetTitle(const char *t)
     }
   this->TitleTextTime.Modified();
   this->Modified();
+}
+
+// ****************************************************************************
+// Method: vtkVisItAxisActor::SetTitleTextProperty
+//
+// Purpose: 
+//   Sets the title text property that we should use.
+//
+// Arguments:
+//   prop : The new text property.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 27 10:53:04 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkVisItAxisActor::SetTitleTextProperty(vtkTextProperty *prop)
+{
+    if(this->TitleTextProperty != NULL)
+        this->TitleTextProperty->Delete();
+    if(prop != NULL)
+        prop->Register(NULL);
+    this->TitleTextProperty = prop;
+    this->Modified();
+}
+
+// ****************************************************************************
+// Method: vtkVisItAxisActor::SetLabelTextProperty
+//
+// Purpose: 
+//   Sets the label text property that we should use.
+//
+// Arguments:
+//   prop : The new text property.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 27 10:53:04 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkVisItAxisActor::SetLabelTextProperty(vtkTextProperty *prop)
+{
+    if(this->LabelTextProperty != NULL)
+        this->LabelTextProperty->Delete();
+    if(prop != NULL)
+        prop->Register(NULL);
+    this->LabelTextProperty = prop;
+    this->Modified();
+}
+
+// ****************************************************************************
+// Method: vtkVisItAxisActor::NewTitleProperty
+//
+// Purpose: 
+//   Creates a new property based on GetProperty but the color and opacity
+//   are overridden by values from the title text property.
+//
+// Arguments:
+//
+// Returns:    The new property.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 27 10:53:46 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkProperty *
+vtkVisItAxisActor::NewTitleProperty()
+{
+    vtkProperty *newProp = vtkProperty::New();
+    newProp->DeepCopy(this->GetProperty());
+    newProp->SetColor(this->TitleTextProperty->GetColor());
+    // We pass the opacity in the line offset.
+    newProp->SetOpacity(this->TitleTextProperty->GetLineOffset());
+    return newProp;
+}
+
+// ****************************************************************************
+// Method: vtkVisItAxisActor::NewLabelProperty
+//
+// Purpose: 
+//   Creates a new property based on GetProperty but the color and opacity
+//   are overridden by values from the title label property.
+//
+// Arguments:
+//
+// Returns:    The new property.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 27 10:53:46 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkProperty *
+vtkVisItAxisActor::NewLabelProperty()
+{
+    vtkProperty *newProp = vtkProperty::New();
+    newProp->DeepCopy(this->GetProperty());
+    newProp->SetColor(this->LabelTextProperty->GetColor());
+    // We pass the opacity in the line offset.
+    newProp->SetOpacity(this->LabelTextProperty->GetLineOffset());
+    return newProp;
 }

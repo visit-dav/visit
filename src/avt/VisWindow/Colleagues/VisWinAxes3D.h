@@ -80,6 +80,9 @@ class vtkOutlineSource;
 //    Brad Whitlock, Thu Jul 28 10:10:40 PDT 2005
 //    Added methods to set the units and title.
 //
+//    Brad Whitlock, Tue Mar 25 16:27:40 PDT 2008
+//    Added methods for line width, font, font size.
+// 
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxes3D : public VisWinColleague
@@ -122,14 +125,26 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
     void                      SetZTitle(const std::string &, bool);
     void                      SetZUnits(const std::string &, bool);
 
+    void                      SetLineWidth(int);
+    void                      SetTitleTextAttributes(
+                                  const VisWinTextAttributes &xAxis, 
+                                  const VisWinTextAttributes &yAxis,
+                                  const VisWinTextAttributes &zAxis);
+    void                      SetLabelTextAttributes(
+                                  const VisWinTextAttributes &xAxis, 
+                                  const VisWinTextAttributes &yAxis,
+                                  const VisWinTextAttributes &zAxis);
   protected:
+    void UpdateTitleTextAttributes(double fr, double fg, double fb);
+    void UpdateLabelTextAttributes(double fr, double fg, double fb);
+
     vtkVisItCubeAxesActor    *axes;
     vtkOutlineSource         *axesBoxSource;
     vtkPolyDataMapper        *axesBoxMapper;
     vtkActor                 *axesBox;
 
     bool                      addedAxes3D;
-    double                     currentBounds[6];
+    double                    currentBounds[6];
     bool                      visibility;
 
     std::string               userXTitle;
@@ -144,6 +159,9 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
     bool                      userXUnitsFlag;
     bool                      userYUnitsFlag;
     bool                      userZUnitsFlag;
+
+    VisWinTextAttributes      titleTextAttributes[3];
+    VisWinTextAttributes      labelTextAttributes[3];
 
     void                      AddAxes3DToWindow(void);
     void                      RemoveAxes3DFromWindow(void);

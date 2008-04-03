@@ -166,12 +166,19 @@ VisWinAxes3D::~VisWinAxes3D()
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 28, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Mar 26 12:51:49 PDT 2008
+//    Added code to update the title and label colors, since they can now
+//    each be set independently.
+//
 // ****************************************************************************
 
 void
 VisWinAxes3D::SetForegroundColor(double fr, double fg, double fb)
 {
     axes->GetProperty()->SetColor(fr, fg, fb);
+    UpdateTitleTextAttributes(fr, fg, fb);
+    UpdateLabelTextAttributes(fr, fg, fb);
     axesBox->GetProperty()->SetColor(fr, fg, fb);
 }
 
@@ -956,3 +963,201 @@ VisWinAxes3D::SetZUnits(const std::string &units, bool userSet)
     userZUnits = units;
     userZUnitsFlag = userSet;    
 }
+
+// ****************************************************************************
+// Method: VisWinAxes3D::SetLineWidth
+//
+// Purpose: 
+//   Sets the line width.
+//
+// Arguments:
+//   width : The new line width.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 25 16:27:03 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetLineWidth(int width)
+{
+    axes->GetProperty()->SetLineWidth(width);
+    axesBox->GetProperty()->SetLineWidth(width);
+}
+
+// ****************************************************************************
+// Method: VisWinAxes3D::SetTitleTextAttributes
+//
+// Purpose: 
+//   Sets the title properties for all axes.
+//
+// Arguments:
+//   xAxis : The text properties for the X axis title.
+//   yAxis : The text properties for the Y axis title.
+//   zAxis : The text properties for the Z axis title.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 26 14:17:25 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetTitleTextAttributes(
+    const VisWinTextAttributes &xAxis, 
+    const VisWinTextAttributes &yAxis,
+    const VisWinTextAttributes &zAxis)
+{
+    titleTextAttributes[0] = xAxis;
+    titleTextAttributes[1] = yAxis;
+    titleTextAttributes[2] = zAxis;
+
+    double rgb[3];
+    mediator.GetForegroundColor(rgb);
+    UpdateTitleTextAttributes(rgb[0], rgb[1], rgb[2]);
+}
+
+// ****************************************************************************
+// Method: VisWinAxes3D::SetLabelTextAttributes
+//
+// Purpose: 
+//   Sets the label properties for all axes.
+//
+// Arguments:
+//   xAxis : The text properties for the X axis labels.
+//   yAxis : The text properties for the Y axis labels.
+//   zAxis : The text properties for the Z axis labels.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 26 14:17:25 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetLabelTextAttributes(
+    const VisWinTextAttributes &xAxis, 
+    const VisWinTextAttributes &yAxis,
+    const VisWinTextAttributes &zAxis)
+{
+    labelTextAttributes[0] = xAxis;
+    labelTextAttributes[1] = yAxis;
+    labelTextAttributes[2] = zAxis;
+
+    double rgb[3];
+    mediator.GetForegroundColor(rgb);
+    UpdateLabelTextAttributes(rgb[0], rgb[1], rgb[2]);
+}
+
+// ****************************************************************************
+// Method: VisWinAxes3D::UpdateTitleTextAttributes
+//
+// Purpose: 
+//   Sets the title text properties into the axes.
+//
+// Arguments:
+//   fr, fg, fb : Red, green, blue color components [0.,1].
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 26 14:18:45 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinAxes3D::UpdateTitleTextAttributes(double fr, double fg, double fb)
+{
+    for(int i = 0; i < 3; ++i)
+    {
+        // Set the colors
+        if(titleTextAttributes[i].useForegroundColor)
+            axes->GetTitleTextProperty(i)->SetColor(fr, fg, fb);
+        else
+        {
+            axes->GetTitleTextProperty(i)->SetColor(
+                titleTextAttributes[i].color[0],
+                titleTextAttributes[i].color[1],
+                titleTextAttributes[i].color[2]);
+        }
+
+        axes->GetTitleTextProperty(i)->SetFontFamily((int)titleTextAttributes[i].font);
+        axes->GetTitleTextProperty(i)->SetBold(titleTextAttributes[i].bold?1:0);
+        axes->GetTitleTextProperty(i)->SetItalic(titleTextAttributes[i].italic?1:0);
+
+        // Pass the opacity in the line offset.
+        axes->GetTitleTextProperty(i)->SetLineOffset(titleTextAttributes[i].color[3]);
+    }
+
+    // Set a scale factor for each axis' titles.
+    axes->SetTitleScale(titleTextAttributes[0].scale,
+                        titleTextAttributes[1].scale,
+                        titleTextAttributes[2].scale);
+}
+
+// ****************************************************************************
+// Method: VisWinAxes3D::UpdateLabelTextAttributes
+//
+// Purpose: 
+//   Sets the label text properties into the axes.
+//
+// Arguments:
+//   fr, fg, fb : Red, green, blue color components [0.,1].
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 26 14:18:45 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinAxes3D::UpdateLabelTextAttributes(double fr, double fg, double fb)
+{
+    for(int i = 0; i < 3; ++i)
+    {
+        // Set the colors
+        if(labelTextAttributes[i].useForegroundColor)
+            axes->GetLabelTextProperty(i)->SetColor(fr, fg, fb);
+        else
+        {
+            axes->GetLabelTextProperty(i)->SetColor(
+                labelTextAttributes[i].color[0],
+                labelTextAttributes[i].color[1],
+                labelTextAttributes[i].color[2]);
+        }
+
+        axes->GetLabelTextProperty(i)->SetFontFamily((int)labelTextAttributes[i].font);
+        axes->GetLabelTextProperty(i)->SetBold(labelTextAttributes[i].bold?1:0);
+        axes->GetLabelTextProperty(i)->SetItalic(labelTextAttributes[i].italic?1:0);
+
+        // Pass the opacity in the line offset.
+        axes->GetLabelTextProperty(i)->SetLineOffset(labelTextAttributes[i].color[3]);
+    }
+
+    // Set a scale factor for each axis' titles.
+    axes->SetLabelScale(labelTextAttributes[0].scale,
+                        labelTextAttributes[1].scale,
+                        labelTextAttributes[2].scale);
+}
+

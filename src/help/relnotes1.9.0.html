@@ -31,6 +31,30 @@ enhancements and bug-fixes that were added to this release.</p>
     plot attributes window provides a "SCI, University of Utah (SLIVR)"
     rendering method.</li>
 
+    <li>VisIt's Annotation Window has been redesigned and enhanced to support
+    setting text font, size, and color for database and user information
+    as well as for independent 2D and 3D axes. The 2D and 3D tabs now have a
+    tab for each axis that allows you to independently set the properties for 
+    the titles and labels that comprise the axis.</li>
+
+    <li><p>VisIt's CLI has been enhanced so it supports registration of user-defined
+    callback functions for many actions. Callback functions can be associated with
+    many state objects, including all plot and operator plugin state objects. This means
+    that whenever a state object changes, your callback function will be called and it
+    will be passed the value of the state object that caused the update.</p>
+    <p>Callback functions can also be installed for many ViewerRPC rpc's, which lets you
+    attach custom behavior at a much finer grain. For example, if you register a 
+    callback function with the OpenDatabaseRPC RPC then your callback function will
+    be called whenever a VisIt client opens a database.</p>
+    <p>Callbacks are registered using the RegisterCallback(cbName, callback) function.
+    The <i>cbName</i> parameter indicates the name of a valid callback function slot
+    name. You can see a list of these by calling the GetCallbackNames() function. The
+    <i>callback</i> argument is the name of the callback function that you want to
+    be called. The RegisterCallback function can take an optional 3rd argument that
+    lets you pass user-defined data to your Python callback function when VisIt
+    calls your callback function.</p>
+    </li>
+
     <li>A new "colorlookup" operator is now available for use in VisIt's
     expressions. This operator maps a scalar variable to a (color) vector
     variable by performing a lookup in one of VisIt's color tables. It can
@@ -70,6 +94,43 @@ enhancements and bug-fixes that were added to this release.</p>
 
     <li>VisIt's Clip operator now has a 'fast' vs. 'accurate' option,
     with 'fast' being the default.</li>
+
+    <li>VisIt's XML tools have been enhanced to support the notion of a code
+    generation target (one of the XML tools: xml2atts, xml2java, xml2python, etc.)
+    Code generation targets are designated by the "Target:" keyword in the .code 
+    file and allow you to embed code destined for generated Java or Python bindings
+    directly in the code file.</li>
+
+    <li>VisIt's XMLEdit tool has been improved to support code generation targets.</li>
+
+    <li>VisIt's xml2python code generation tool now better supports nested state objects.</li>
+
+    <li>VisIt's XMLEdit tool has an improved look and feel, including various user-improvements
+    such as a new menu option for regenerating plugin code. The new menu option
+    opens a dialog that allows you to select which code generators will be run and 
+    then it runs them, regenerating your code to incorporate changes that you've made
+    to the XML file.</li>
+
+    <li><p>VisIt's CLI now has <i>GetPlotOptions</i> and <i>GetOperatorOptions</i> functions
+    that can be used to return the plot attributes for the active plot as well as the
+    operator attributes on the i'th operator on the active plot.</p>  
+    </li>
+
+    <li>VisIt's Java API has been updated so ViewerProxy is now divided into ViewerState
+    and ViewerMethods objects, mirroring the change in the C++ implementation that was
+    made several releases ago. In addition, the ViewerMethods class has been annotated
+    with JavaDoc comments that facilitate automatic generation of documentation from
+    the Java code. The ViewerMethods class is the most important class with respect to
+    controlling VisIt's viewer.</li>
+
+    <li>VisIt's source code now contains an example program, <i>/src/viewer/proxy/proxyexample.C</i>,
+    which shows how to use VisIt's C++ interface to make a new VisIt client that can
+    control VisIt's viewer. More information is online at: 
+    http://visitusers.org/index.php?title=CreatingNewClientWithC%2B%2B</li>
+
+    <li>VisIt's GUI has been enhanced so that a scroll view is automatically added
+    to tall windows when VisIt is run on short displays. This makes it possible to
+    access controls that would otherwise extend beyond the edges of the screen.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.9.0</font></b></p>
 <ul>
@@ -101,6 +162,15 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>VisIt's Clip operator no longer generates bad clips when using
     multiple planes.</li>
 
+    <li>VisIt's GUI crashes when the plot menu is activated immediately after
+    choosing an engine profile from the Engine Chooser dialog. The crash only
+    happened when reading SAMRAI data.</li>
+
+    <li>The CheckForNewStates function no longer works.</li>
+
+    <li>VisIt prints an error message indicating that it cannot open the "notset" 
+    database when the OpenGUI() function is called from the CLI in order to start
+    the GUI.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.8.0.html">VisIt 1.8 Release Notes</a>.</p>

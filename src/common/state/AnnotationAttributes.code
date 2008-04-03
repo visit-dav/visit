@@ -19,24 +19,6 @@ Postfix:
     }
 
 Target: xml2atts
-Initialization: userInfoFont
-    userInfoFont.SetHeight(0.05);
-
-Target: xml2java
-Initialization: userInfoFont
-    userInfoFont = new FontAttributes();
-        userInfoFont.SetHeight(0.05);
-
-Target: xml2atts
-Initialization: databaseInfoFont
-    databaseInfoFont.SetHeight(0.07);
-
-Target: xml2java
-Initialization: databaseInfoFont
-    databaseInfoFont = new FontAttributes();
-        databaseInfoFont.SetHeight(0.07);
-
-Target: xml2atts
 Function: GetDiscernibleBackgroundColor
 Declaration: const ColorAttribute GetDiscernibleBackgroundColor() const;
 Definition:
@@ -85,7 +67,9 @@ Definition:
 // Creation:   Thu Feb 14 15:40:02 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 26 14:49:15 PDT 2008
+//   Added conversion of heights to scales.
+//
 // ****************************************************************************
 
 #include <Utility.h>
@@ -115,10 +99,10 @@ static const axis_attribute_mapping attribute_mappings[] = {
     {"yMajorTickSpacing2D",   "axes2D.Axes2D.yAxis.AxisAttributes.tickMarks.AxisTickMarks.majorSpacing"},
     {"xMinorTickSpacing2D",   "axes2D.Axes2D.xAxis.AxisAttributes.tickMarks.AxisTickMarks.minorSpacing"},
     {"yMinorTickSpacing2D",   "axes2D.Axes2D.yAxis.AxisAttributes.tickMarks.AxisTickMarks.minorSpacing"},
-    {"xLabelFontHeight2D",    "axes2D.Axes2D.xAxis.AxisAttributes.label.AxisLabels.font.FontAttributes.height"},
-    {"yLabelFontHeight2D",    "axes2D.Axes2D.yAxis.AxisAttributes.label.AxisLabels.font.FontAttributes.height"},
-    {"xTitleFontHeight2D",    "axes2D.Axes2D.xAxis.AxisAttributes.title.AxisTitles.font.FontAttributes.height"},
-    {"yTitleFontHeight2D",    "axes2D.Axes2D.yAxis.AxisAttributes.title.AxisTitles.font.FontAttributes.height"},
+    {"xLabelFontHeight2D",    "axes2D.Axes2D.xAxis.AxisAttributes.label.AxisLabels.font.FontAttributes.scale"},
+    {"yLabelFontHeight2D",    "axes2D.Axes2D.yAxis.AxisAttributes.label.AxisLabels.font.FontAttributes.scale"},
+    {"xTitleFontHeight2D",    "axes2D.Axes2D.xAxis.AxisAttributes.title.AxisTitles.font.FontAttributes.scale"},
+    {"yTitleFontHeight2D",    "axes2D.Axes2D.yAxis.AxisAttributes.title.AxisTitles.font.FontAttributes.scale"},
     {"xLabelScaling2D",       "axes2D.Axes2D.xAxis.AxisAttributes.label.AxisLabels.scaling"},
     {"yLabelScaling2D",       "axes2D.Axes2D.yAxis.AxisAttributes.label.AxisLabels.scaling"},
     {"axesLineWidth2D",       "axes2D.Axes2D.lineWidth"},
@@ -159,12 +143,12 @@ static const axis_attribute_mapping attribute_mappings[] = {
     {"xMinorTickSpacing",     "axes3D.Axes3D.xAxis.AxisAttributes.tickMarks.AxisTickMarks.minorSpacing"},
     {"yMinorTickSpacing",     "axes3D.Axes3D.yAxis.AxisAttributes.tickMarks.AxisTickMarks.minorSpacing"},
     {"zMinorTickSpacing",     "axes3D.Axes3D.zAxis.AxisAttributes.tickMarks.AxisTickMarks.minorSpacing"},
-    {"xLabelFontHeight",      "axes3D.Axes3D.xAxis.AxisAttributes.label.AxisLabels.font.FontAttributes.height"},
-    {"yLabelFontHeight",      "axes3D.Axes3D.yAxis.AxisAttributes.label.AxisLabels.font.FontAttributes.height"},
-    {"zLabelFontHeight",      "axes3D.Axes3D.zAxis.AxisAttributes.label.AxisLabels.font.FontAttributes.height"},
-    {"xTitleFontHeight",      "axes3D.Axes3D.xAxis.AxisAttributes.title.AxisTitles.font.FontAttributes.height"},
-    {"yTitleFontHeight",      "axes3D.Axes3D.yAxis.AxisAttributes.title.AxisTitles.font.FontAttributes.height"},
-    {"zTitleFontHeight",      "axes3D.Axes3D.zAxis.AxisAttributes.title.AxisTitles.font.FontAttributes.height"},
+    {"xLabelFontHeight",      "axes3D.Axes3D.xAxis.AxisAttributes.label.AxisLabels.font.FontAttributes.scale"},
+    {"yLabelFontHeight",      "axes3D.Axes3D.yAxis.AxisAttributes.label.AxisLabels.font.FontAttributes.scale"},
+    {"zLabelFontHeight",      "axes3D.Axes3D.zAxis.AxisAttributes.label.AxisLabels.font.FontAttributes.scale"},
+    {"xTitleFontHeight",      "axes3D.Axes3D.xAxis.AxisAttributes.title.AxisTitles.font.FontAttributes.scale"},
+    {"yTitleFontHeight",      "axes3D.Axes3D.yAxis.AxisAttributes.title.AxisTitles.font.FontAttributes.scale"},
+    {"zTitleFontHeight",      "axes3D.Axes3D.zAxis.AxisAttributes.title.AxisTitles.font.FontAttributes.scale"},
     {"xLabelScaling",         "axes3D.Axes3D.xAxis.AxisAttributes.label.AxisLabels.scaling"},
     {"yLabelScaling",         "axes3D.Axes3D.yAxis.AxisAttributes.label.AxisLabels.scaling"},
     {"zLabelScaling",         "axes3D.Axes3D.zAxis.AxisAttributes.label.AxisLabels.scaling"},
@@ -184,6 +168,19 @@ static const axis_attribute_mapping attribute_mappings[] = {
     {"axesType",              "axes3D.Axes3D.axesType"},
     {"triadFlag",             "axes3D.Axes3D.triadFlag"},
     {"bboxFlag",              "axes3D.Axes3D.bboxFlag"}
+};
+
+const char *height_attributes[] = {
+    "xLabelFontHeight2D",
+    "yLabelFontHeight2D",
+    "xTitleFontHeight2D",
+    "yTitleFontHeight2D",
+    "xLabelFontHeight",
+    "yLabelFontHeight",
+    "zLabelFontHeight",
+    "xTitleFontHeight",
+    "yTitleFontHeight",
+    "zTitleFontHeight"
 };
 
 void
@@ -228,7 +225,22 @@ AnnotationAttributes::ProcessOldVersions(DataNode *parentNode,
                         // Add the node that we're moving and rename it too.
                         debug5 << "Moved node " << k->GetKey().c_str() << " to " << keys[i].c_str() << endl;
                         k->SetKey(keys[i]);
-                        pNode->AddNode(k);                        
+                        pNode->AddNode(k);
+
+                        // If the node that we're moving is a height attribute 
+                        // then we need to change it to a scale attribute.
+                        for(int hIndex = 0; hIndex < 10; ++hIndex)
+                        {
+                            if(std::string(attribute_mappings[key].old_key) == std::string(height_attributes[hIndex]) &&
+                               k->GetNodeType() == DOUBLE_NODE)
+                            {
+                                double h = k->AsDouble();
+                                double scale = h / 0.02;
+                                k->SetDouble(scale);
+                                debug5 << "Turned height " << h << " into scale " << scale << endl;
+                                break;
+                            }
+                        }
                     }
                 }
             }               

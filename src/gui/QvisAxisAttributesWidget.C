@@ -48,9 +48,7 @@
 #include <QNarrowLineEdit.h>
 #include <QvisFontAttributesWidget.h>
 
-// Leave this macro defined until we have a chance to go back into the 
-// VisWindow and the axes to support different fonts.
-#define FONTS_ARE_DISABLED
+#define DISABLE_TEXT_OPACITY
 
 // ****************************************************************************
 // Method: QvisAxisAttributesWidget::QvisAxisAttributesWidget
@@ -68,7 +66,9 @@
 // Creation:   Fri Feb 8 17:50:42 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Mar 27 09:59:40 PDT 2008
+//   Temporarily disable text opacity.
+//
 // ****************************************************************************
 
 QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent, 
@@ -126,8 +126,8 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     ++row;
 
     titleFont = new QvisFontAttributesWidget(titleGroup, "titleFont");
-#ifdef FONTS_ARE_DISABLED
-    titleFont->setEnabled(false);
+#ifdef DISABLE_TEXT_OPACITY
+    titleFont->disableOpacity();
 #endif
     connect(titleFont, SIGNAL(fontChanged(const FontAttributes &)),
             this, SLOT(titleFontChanged(const FontAttributes &)));
@@ -165,8 +165,8 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     ++row;
 
     labelFont = new QvisFontAttributesWidget(labelGroup, "labelFont");
-#ifdef FONTS_ARE_DISABLED
-    labelFont->setEnabled(false);
+#ifdef DISABLE_TEXT_OPACITY
+    labelFont->disableOpacity();
 #endif
     connect(labelFont, SIGNAL(fontChanged(const FontAttributes &)),
             this, SLOT(labelFontChanged(const FontAttributes &)));

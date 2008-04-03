@@ -1,5 +1,17 @@
 Initialization: xAxis
     xAxis.GetTitle().SetTitle("X-Axis");
+    xAxis.GetTitle().GetFont().SetFont(FontAttributes::Courier);
+    xAxis.GetTitle().GetFont().SetBold(true);
+    xAxis.GetTitle().GetFont().SetItalic(true);
+    xAxis.GetLabel().GetFont().SetFont(FontAttributes::Courier);
+    xAxis.GetLabel().GetFont().SetBold(true);
+    xAxis.GetLabel().GetFont().SetItalic(true);
 
 Initialization: yAxis
     yAxis.GetTitle().SetTitle("Y-Axis");
+    yAxis.GetTitle().GetFont().SetFont(FontAttributes::Courier);
+    yAxis.GetTitle().GetFont().SetBold(true);
+    yAxis.GetTitle().GetFont().SetItalic(true);
+    yAxis.GetLabel().GetFont().SetFont(FontAttributes::Courier);
+    yAxis.GetLabel().GetFont().SetBold(true);
+    yAxis.GetLabel().GetFont().SetItalic(true);

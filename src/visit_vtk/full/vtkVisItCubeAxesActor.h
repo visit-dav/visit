@@ -50,6 +50,7 @@ All rights reserve
 
 #include "vtkVisItAxisActor.h"
 #include "vtkCamera.h"
+#include <vtkTextProperty.h>
 
 #define VTK_FLY_OUTER_EDGES     0
 #define VTK_FLY_CLOSEST_TRIAD   1
@@ -236,6 +237,21 @@ public:
     { this->SetTickLocation(VTK_TICKS_BOTH); };
 
   void SetLabelScaling(bool, int, int, int);  
+
+  // Description:
+  // Returns the text property for the title on an axis.
+  vtkTextProperty *GetTitleTextProperty(int);
+
+  // Description:
+  // Returns the text property for the labels on an axis.
+  vtkTextProperty *GetLabelTextProperty(int);
+
+  void SetTitleScale(double,double,double);
+  vtkGetVector3Macro(TitleScale, double);
+
+  void SetLabelScale(double,double,double);
+  vtkGetVector3Macro(LabelScale, double);
+
   // Description:
   // Shallow copy of a KatCubeAxesActor.
   void ShallowCopy(vtkVisItCubeAxesActor *actor);
@@ -298,6 +314,10 @@ protected:
   
   int RenderSomething;
   
+  vtkTextProperty *TitleTextProperty[3];
+  vtkTextProperty *LabelTextProperty[3];
+  double           TitleScale[3];
+  double           LabelScale[3];
 private:
   vtkVisItCubeAxesActor(const vtkVisItCubeAxesActor&);
   void operator=(const vtkVisItCubeAxesActor&);
@@ -335,6 +355,8 @@ private:
   bool ForceXLabelReset;
   bool ForceYLabelReset;
   bool ForceZLabelReset;
+
+  bool scalingChanged;
 
   // various helper methods
   void  TransformBounds(vtkViewport *viewport, const double bounds[6], 

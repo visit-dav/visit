@@ -8,8 +8,8 @@
     <Field name="font" label="Font" type="enum" subtype="FontName">
       Arial
     </Field>
-    <Field name="height" label="Height" type="double">
-      0.020000
+    <Field name="scale" label="Scale" type="double">
+      1.000000
     </Field>
     <Field name="useForegroundColor" label="Use foreground color" type="bool">
       true

@@ -58,7 +58,9 @@ class QvisOpacitySlider;
 // Creation:   Fri Feb 8 17:54:19 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 26 14:56:16 PDT 2008
+//   Changed fontHeight to fontScale. Added disableOpacity.
+//
 // ****************************************************************************
 
 class QvisFontAttributesWidget : public QFrame
@@ -71,6 +73,7 @@ public:
     void setFontAttributes(const FontAttributes &);
     const FontAttributes &getFontAttributes();
 
+    void disableOpacity();
 signals:
     void fontChanged(const FontAttributes &);
 private slots:
@@ -85,9 +88,10 @@ private slots:
 private:
     void GetCurrentValues(FontAttributes &, int = -1);
     void Update(int = -1);
+    bool               opacityEnabled;
 
     FontAttributes     atts;
-    QNarrowLineEdit   *fontHeight;
+    QNarrowLineEdit   *fontScale;
     QvisColorButton   *textColorButton;
     QvisOpacitySlider *textColorOpacity;
     QComboBox         *fontFamilyComboBox;

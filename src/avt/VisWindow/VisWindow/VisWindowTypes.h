@@ -122,7 +122,10 @@ struct HotPoint
 // Creation:   Tue Jan 29 16:35:07 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 26 14:26:51 PDT 2008
+//   Changed height to scale so we can think in terms of scaling the preferred
+//   size by some factor.
+//
 // ****************************************************************************
 
 struct VisWinTextAttributes
@@ -140,7 +143,7 @@ struct VisWinTextAttributes
     VisWinTextAttributes operator = (const VisWinTextAttributes &);
 
     FontID font;
-    double height;
+    double scale;
     bool   useForegroundColor;
     double color[4];
     bool   bold;

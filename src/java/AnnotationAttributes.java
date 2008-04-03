@@ -83,10 +83,8 @@ public class AnnotationAttributes extends AttributeSubject
         axes3D = new Axes3D();
         userInfoFlag = true;
         userInfoFont = new FontAttributes();
-        userInfoFont.SetHeight(0.05);
         databaseInfoFlag = true;
         databaseInfoFont = new FontAttributes();
-        databaseInfoFont.SetHeight(0.07);
         databaseInfoExpansionMode = PATHEXPANSIONMODE_FILE;
         legendInfoFlag = true;
         backgroundColor = new ColorAttribute(255, 255, 255);
