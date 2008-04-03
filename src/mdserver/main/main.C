@@ -136,6 +136,8 @@ void foobz2(void)
 //    that we can later query for their initialization errors and have a
 //    meaningful answer.
 //
+//    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
+//    Moved setting of component name to before Initialize
 // ****************************************************************************
 
 int
@@ -144,8 +146,8 @@ main(int argc, char *argv[])
     int retval = 0;
 
     // Initialize error logging
-    Init::Initialize(argc, argv);
     Init::SetComponentName("mdserver");
+    Init::Initialize(argc, argv);
     InitVTKNoGraphics::Initialize();
     avtDatabase::SetOnlyServeUpMetaData(true);
     DatabasePluginManager::Initialize(DatabasePluginManager::MDServer, false);

@@ -134,6 +134,8 @@ void foobz2(void)
 //    Pass the ViewerSubject address to the error and warning callback 
 //    registration functions.
 //
+//    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
+//    Moved setting of component name to before Initialize
 // ****************************************************************************
 
 int
@@ -146,6 +148,7 @@ main(int argc, char *argv[])
         //
         // Do basic initialization.
         //
+        Init::SetComponentName("viewer");
         Init::Initialize(argc, argv, 0, 1, false);
 
         //
@@ -156,7 +159,6 @@ main(int argc, char *argv[])
         //
         // Initialize the error logging.
         //
-        Init::SetComponentName("viewer");
         Init::ComponentRegisterErrorFunction(ErrorCallback, (void*)&viewer);
         InitVTK::Initialize();
         avtCallback::RegisterWarningCallback(ViewerWarningCallback, 

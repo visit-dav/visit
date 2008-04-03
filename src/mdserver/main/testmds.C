@@ -77,6 +77,8 @@ using std::string;
 //   Jeremy Meredith, Thu May 24 10:16:11 EDT 2007
 //   Added ssh tunneling argument.
 //
+//    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
+//    Moved setting of component name to before Initialize
 // ****************************************************************************
 
 int
@@ -91,8 +93,8 @@ main(int argc, char *argv[])
     }
 
     // Initialize error logging.
-    Init::Initialize(argc, argv);
     Init::SetComponentName("mdserver");
+    Init::Initialize(argc, argv);
 
     MDServerProxy *mdserver = new MDServerProxy();
     if(argc > 1)

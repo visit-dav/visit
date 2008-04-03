@@ -75,13 +75,15 @@ using std::vector;
 //    Hank Childs, Wed Sep 19 15:15:33 PDT 2001
 //    Make main return an int.
 //
+//    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
+//    Moved setting of component name to before Initialize
 // ****************************************************************************
 
 int
 main(int argc, char *argv[])
 {
-    Init::Initialize(argc, argv, 0, 1, true);
     Init::SetComponentName("avtprep");
+    Init::Initialize(argc, argv, 0, 1, true);
 
     if (argc < 3)
     {

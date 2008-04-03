@@ -324,6 +324,8 @@ Engine *Engine::Instance()
 //    Removed a lingering cerr message showing the MPI rank of the engine 
 //    process.
 //  
+//    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
+//    Moved setting of component name to before Initialize
 // ****************************************************************************
 void
 Engine::Initialize(int *argc, char **argv[], bool sigs)
@@ -346,12 +348,12 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     //
     // Initialize error logging
     //
+    Init::SetComponentName("engine");
     Init::Initialize(*argc, *argv, PAR_Rank(), PAR_Size(), true, sigs);
 #else
     xfer = new Xfer;
     Init::Initialize(*argc, *argv, 0,1, true, sigs);
 #endif
-    Init::SetComponentName("engine");
 
     //
     // Set a different new handler for the engine

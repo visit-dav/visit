@@ -208,36 +208,45 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
 #else
     bool usePid = false;
 #endif
+    bool clobberVlogs = false;
     bool vtk_debug = false;
     bool enableTimings = false;
     for (i=1; i<argc; i++)
     {
-        if (strcmp("-debug",argv[i]) == 0)
+        if (strncmp("-debug",argv[i],6) == 0)
         {
-            debuglevel = 1;
-            if (i+1 < argc && isdigit(*(argv[i+1])))
-               debuglevel = atoi(argv[i+1]);
-            else
-               cerr << "Warning: debug level not specified, assuming 1\n";
-            if (debuglevel > 5)
-            {
-                cerr << "Warning: clamping debug level to 5\n";
-                debuglevel = 5;
-            }
-            if (debuglevel < 0)
-            {
-                cerr << "Warning: clamping debug level to 0\n";
-                debuglevel = 0;
-            }
-            if(strip)
-            {
-                striparg(i,2, argc,argv);
-                --i;
-            }
-            else
-            {
-                ++i;
-            }
+	    if ((strlen(argv[i]) > 7 && IsComponent(&argv[i][7])) ||
+	         strlen(argv[i]) == 6)
+	    {
+                debuglevel = 1;
+                if (i+1 < argc && isdigit(*(argv[i+1])))
+                   debuglevel = atoi(argv[i+1]);
+                else
+                   cerr << "Warning: debug level not specified, assuming 1\n";
+                if (debuglevel > 5)
+                {
+                    cerr << "Warning: clamping debug level to 5\n";
+                    debuglevel = 5;
+                }
+                if (debuglevel < 0)
+                {
+                    cerr << "Warning: clamping debug level to 0\n";
+                    debuglevel = 0;
+                }
+                if(strip)
+                {
+                    striparg(i,2, argc,argv);
+                    --i;
+                }
+                else
+                {
+                    ++i;
+                }
+	    }
+        }
+        else if (strcmp("-clobber_vlogs", argv[i]) == 0)
+        {
+            clobberVlogs = true;
         }
         else if (strcmp("-pid", argv[i]) == 0)
         {
@@ -308,7 +317,7 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
 
     // Initialize the debug streams and also add the command line arguments
     // to the debug logs.
-    DebugStream::Initialize(progname, debuglevel, sigs);
+    DebugStream::Initialize(progname, debuglevel, sigs, clobberVlogs);
     for(i = 0; i < argc; ++i)
         debug1 << argv[i] << " ";
     debug1 << endl;
