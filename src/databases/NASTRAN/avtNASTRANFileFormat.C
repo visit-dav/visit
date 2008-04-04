@@ -45,6 +45,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string>
+#include <errno.h>
 
 #include <vtkCellType.h>
 #include <vtkFloatArray.h>
