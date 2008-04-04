@@ -103,6 +103,7 @@
 #include <avtSquareRootExpression.h>
 #include <avtSquareExpression.h>
 #include <avtCylindricalCoordinatesExpression.h>
+#include <avtCylindricalRadiusExpression.h>
 #include <avtPolarCoordinatesExpression.h>
 #include <avtVariableSkewExpression.h>
 #include <avtVectorComposeExpression.h>
@@ -481,6 +482,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Jeremy Meredith, Wed Feb 20 10:01:27 EST 2008
 //    Split "constant" into point_constant and cell_constant.
 //
+//    Cyrus Harrison, Wed Apr  2 15:34:20 PDT 2008
+//    Added new cylindrical_radius implementation.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -834,9 +838,7 @@ avtFunctionExpr::CreateFilters(string functionName)
     }
     if (functionName == "cylindrical_radius")
     {
-        avtExpressionComponentMacro *ecm = new avtExpressionComponentMacro;
-        ecm->SetMacro("cylindrical", 0);
-        return ecm;
+        return new avtCylindricalRadiusExpression;
     }
     if (functionName == "cylindrical_theta")
     {

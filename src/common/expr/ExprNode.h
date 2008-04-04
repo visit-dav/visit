@@ -102,6 +102,9 @@ class Pos;
 //    Jeremy Meredith, Wed Feb  6 15:56:05 EST 2008
 //    Added a couple accessor methods for functions.
 //
+//    Cyrus Harrison, Wed Apr  2 16:44:14 PDT 2008
+//    Added accessor method to get the x,y,z nodes from a vector expression.
+//
 // ****************************************************************************
 class EXPR_API ExprNode : public ExprParseTreeNode
 {
@@ -251,6 +254,9 @@ class EXPR_API VectorExpr : public virtual ExprNode
     virtual std::vector<std::string> GetVarLeaves();
     virtual std::set<ExprParseTreeNode *> GetVarLeafNodes();
     virtual const std::string GetTypeName() { return "Vector"; }
+    ExprNode *X() { return x;}
+    ExprNode *Y() { return y;}
+    ExprNode *Z() { return z;}
   protected:
     ExprNode *x, *y, *z;
 };

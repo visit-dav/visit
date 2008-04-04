@@ -205,6 +205,9 @@
 #   Jeremy Meredith, Tue Feb 19 14:18:03 EST 2008
 #   Added constant creation function.
 #
+#   Cyrus Harrison, Wed Apr  2 15:08:59 PDT 2008
+#   Added cylindrical radius expression.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -341,6 +344,7 @@ Math_src= \
   Math/avtCeilingExpression.C \
   Math/avtCosExpression.C \
   Math/avtCylindricalCoordinatesExpression.C \
+  Math/avtCylindricalRadiusExpression.C \
   Math/avtDegreeToRadianExpression.C \
   Math/avtDeterminantExpression.C \
   Math/avtEigenvalueExpression.C \
