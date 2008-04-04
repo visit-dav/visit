@@ -352,6 +352,7 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     Init::Initialize(*argc, *argv, PAR_Rank(), PAR_Size(), true, sigs);
 #else
     xfer = new Xfer;
+    Init::SetComponentName("engine");
     Init::Initialize(*argc, *argv, 0,1, true, sigs);
 #endif
 
