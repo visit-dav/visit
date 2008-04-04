@@ -316,6 +316,9 @@
 #     Moved calls to check_more_options, check_parallel and check_variables
 #     to BEFORE THIRD_PARTY_PATH is used to set VISITDIR.
 #
+#     Brad Whitlock, Fri Apr  4 10:38:58 PDT 2008
+#     Fixed a bug with building Silo on the Mac when HDF5 is not used.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -3405,12 +3408,20 @@ qt -lSM -lICE -L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi"
         else
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
+        # Remove the tmp directory if it is already present
+        if [[ -d tmp ]] ; then
+            rm -rf tmp
+        fi
         mkdir tmp
         cd tmp
-        ar x ../src/.libs/libsiloh5.a
-        $C_COMPILER -dynamiclib -o libsiloh5.${SO_EXT} *.o \
+        SILO_H5=""
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            SILO_H5="h5"
+        fi
+        ar x ../src/.libs/libsilo${SILO_H5}.a
+        $C_COMPILER -dynamiclib -o libsilo${SILO_H5}.${SO_EXT} *.o \
            -Wl,-headerpad_max_install_names \
-           -Wl,-install_name,$INSTALLNAMEPATH/libsiloh5.${SO_EXT} \
+           -Wl,-install_name,$INSTALLNAMEPATH/libsilo${SILO_H5}.${SO_EXT} \
            -Wl,-compatibility_version,${SILO_COMPATIBILITY_VERSION} \
            -Wl,-current_version,${SILO_VERSION} $SILO_LINK_OPT
 
@@ -3418,7 +3429,7 @@ qt -lSM -lICE -L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi"
            echo "Silo dynamic library build failed.  Giving up"
            return 1
         fi
-        cp libsiloh5.${SO_EXT}  "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
+        cp libsilo${SILO_H5}.${SO_EXT}  "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
     else
         $MAKE install
         if [[ $? != 0 ]] ; then
