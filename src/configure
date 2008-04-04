@@ -1404,7 +1404,7 @@ TOPDIR=`$pwd`
 
 
 emptycxxflags="no"
-if test -z $CXXFLAGS; then
+if test -z "${CXXFLAGS}"; then
     emptycxxflags="yes"
 fi
 

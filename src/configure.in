@@ -767,6 +767,9 @@ dnl
 dnl    Hank Childs, Sat Feb  9 15:22:00 PST 2008
 dnl    Rename components directory to avt.
 dnl
+dnl    Mark C. Miller, Thu Apr  3 18:06:01 PDT 2008
+dnl    Added quotes for $CXXFLAGS in test for emptycxxflags,
+dnl    Courtesy of Matthias Langer <mlangc@gmx.at>. Thanks Matthias.
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -793,7 +796,7 @@ dnl Make note if no CXXFLAGS have yet been specified; we won't like the
 dnl defaults that configure chooses and this lets us override them easily
 dnl
 emptycxxflags="no"
-if test -z $CXXFLAGS; then
+if test -z "${CXXFLAGS}"; then
     emptycxxflags="yes"
 fi
 
