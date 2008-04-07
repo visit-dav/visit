@@ -14,6 +14,9 @@
 #   Brad Whitlock, Tue Mar 7 14:10:26 PST 2006
 #   I added -b bdivp to the visit-install invokations.
 #
+#   Eric Brugger, Mon Apr  7 13:52:50 PDT 2008
+#   Removed sc install.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -25,7 +28,6 @@ user=`whoami`
 #
 crier=true
 sunset=true
-sc=true
 purple=true
 lilac=true
 gauss=true
@@ -44,7 +46,6 @@ do
       -none)
          crier=false
          sunset=false
-         sc=false
          purple=false
          lilac=false
          gauss=false
@@ -65,14 +66,6 @@ do
          ;;
       +sunset)
          sunset=true
-         shift
-         ;;
-      -sc)
-         sc=false
-         shift
-         ;;
-      +sc)
-         sc=true
          shift
          ;;
       -purple)
@@ -206,43 +199,6 @@ then
       scp visit-install sunset:
       scp sunset sunset:sunset_install
       ssh sunset "chmod 750 sunset_install;./sunset_install"
-   fi
-fi
-
-#
-# Install on sc.
-#
-rm -f sc
-cat <<EOF > sc
-#!/bin/sh
-./visit-install -private -c closed -g visit -b bdivp -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo ""                                            > resultlog 2>&1
-echo "        install of visit on sc"              >> resultlog 2>&1
-echo "       ------------------------"             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/dec-osf1-alpha/bin    >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/dec-osf1-alpha/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/dec-osf1-alpha/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/dec-osf1-alpha/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/dec-osf1-alpha/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/dec-osf1-alpha\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mv resultlog resultlog.sc
-EOF
-
-if [ $sc = true ]
-then
-   if [ $test = no ]
-   then
-      scp sc8:/nfs/tmp0/$user/sc/visitbuild/visit$ver2.osf1.tar.gz .
-      scp visit$ver2.osf1.tar.gz lilac3:
-      scp visit-install lilac3:
-      scp sc lilac3:sc_install
-      ssh lilac3 "chmod 750 sc_install;./sc_install"
    fi
 fi
 
@@ -415,5 +371,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f crier sunset sc purple lilac gauss hopi
+   rm -f crier sunset purple lilac gauss hopi
 fi
