@@ -70,6 +70,10 @@ class vtkUnstructuredGrid;
 //    Added methods CanCacheVariable, RegisterVariableList, GetCellMapData, and
 //    vars activeVisItVar, varsOnSubmesh, and ccmProblem.
 //
+//    Dave Bremer, Fri Apr  4 16:29:49 PDT 2008
+//    Added a class for mapping IDs to indices.  If the IDs are sequential, 
+//    just do a simple mapping, otherwise sort the values and use a binary 
+//    search.
 // ****************************************************************************
 
 class avtCCMFileFormat : public avtSTMDFileFormat
@@ -113,7 +117,7 @@ protected:
         FaceInfo(const FaceInfo &);
         virtual ~FaceInfo();
         void operator = (const FaceInfo &);
-        int id;
+        //int id;
         int cells[2];
         intVector nodes;
     };
@@ -133,6 +137,25 @@ protected:
         intVector faceTypes; 
         FaceInfoVector faces; 
     };
+
+    class IDMap
+    {
+    public:
+        IDMap();
+
+        void SetIDs(const intVector &v);
+        int  IDtoIndex(int id) const;
+
+        static int compare(const void *, const void *);
+
+        intVector  ids;
+        bool  bSequential;
+        bool  bReverseMap;
+        int   iFirstElem;
+        int   numIDs;
+    };
+
+
     typedef std::vector<CellInfo> CellInfoVector;
     typedef std::map<std::string, CCMIOID> VarFieldMap;
     typedef std::vector<vtkDataArray*> DataArrayVector;
@@ -146,8 +169,9 @@ protected:
                                       CCMIOID &solution,
                                       bool &hasSolution);
     void              GetFaces(CCMIOID faceID, CCMIOEntity faceType,
-                               unsigned int nFaces, int &minSize, 
-                               int &maxSize, CellInfoVector &ci);
+                               unsigned int nFaces, 
+                               const IDMap &cellIDMap, const IDMap &vertexIDMap, 
+                               int &minSize, int &maxSize, CellInfoVector &ci);
     void              ReadScalar(CCMIOID field, intVector &mapData, 
                                  floatVector &data, bool readingVector = false);
     void              BuildHex(const CellInfo &ci, 
