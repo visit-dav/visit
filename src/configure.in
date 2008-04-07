@@ -770,6 +770,10 @@ dnl
 dnl    Mark C. Miller, Thu Apr  3 18:06:01 PDT 2008
 dnl    Added quotes for $CXXFLAGS in test for emptycxxflags,
 dnl    Courtesy of Matthias Langer <mlangc@gmx.at>. Thanks Matthias.
+dnl
+dnl    Mark C. Miller, Mon Apr  7 14:55:58 PDT 2008
+dnl    Added options to build against external bzip2/glew.
+dnl    Courtesy of Matthias Langer <mlangc@gmx.at>.
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1586,35 +1590,59 @@ esac
 AC_SUBST(DB_BUILD_DIRS)
 
 dnl
-dnl Disable building bzip2. Only necessary if bzip2 won't buid somewhere
+dnl bzip2 related stuff
 dnl
 AC_ARG_ENABLE(bzip2,
-   [  --disable-bzip2         do not build or use bzip2 library -- disables compression],
+   AS_HELP_STRING([--disable-bzip2], [do not build or use bzip2 library -- disables compression]),
    Usebzip2="$enable_bzip2", Usebzip2=yes)
+AC_ARG_WITH(bzip2,
+   AS_HELP_STRING([--with-bzip2], [build against external bzip2 in LIB-DIR (can be ommited if "-lbzip2" alone works)]),
+   [WithExternalBzip2=$withval],
+   [WithExternalBzip2="no"])
+            
 BUILD_BZIP2=""
 BZIP2_LIBS=""
 if test "$Usebzip2" = "yes"; then
+    if test $WithExternalBzip2 != "no"; then
+        if test $WithExternalBzip2 -nq "yes"; then
+            BZIP2_LIBS="-L${WithExternalBzip2}"
+        fi
+    else
     BUILD_BZIP2="bzip2"
+    fi
     AC_DEFINE(HAVE_LIBBZ2, [1], [Define if you have the bz2 library.])
-    BZIP2_LIBS="-lbz2"
+    BZIP2_LIBS="${BZIP2_LIBS} -lbz2"
 fi
 AC_SUBST(BUILD_BZIP2)
 AC_SUBST(BZIP2_LIBS)
 
 dnl
-dnl Disable building glew. Only necessary if glew won't build somewhere 
+dnl glew related stuff 
 dnl
 AC_ARG_ENABLE(glew,
-   [  --disable-glew          do not build or use glew library -- disables detection of OpenGL extensions],
+   AS_HELP_STRING([--disable-glew], [do not build or use glew library -- disables detection of OpenGL extensions]),
    Useglew="$enable_glew", Useglew=yes)
+
+AC_ARG_WITH(glew,
+   AS_HELP_STRING([--with-glew], [build against external glew in INC-DIR,LIB-DIR (may be ommitted)]),
+   [WithExternalGlew=$withval],
+   [WithExternalGlew="no"])
+
 BUILD_GLEW=""
 GLEW_LIBS=""
 GLEW_INCLUDE=""
 if test "$Useglew" = "yes"; then
+    if test $WithExternalGlew != "no"; then
+        if test $WithExternalGlew != "yes"; then
+            GLEW_INCLUDE="-I`echo $WithExternalGlew | cut -f1 -d,`"
+            GLEW_LIBS="-L`echo $WithExternalGlew | cut -f2 -d, -s`"
+        fi
+    else
     BUILD_GLEW="glew"
-    AC_DEFINE(HAVE_LIBGLEW, [1], [Define if you have the GLEW library.])
-    GLEW_LIBS="-lGLEW"
     GLEW_INCLUDE="-I$""(TOPDIR)/include/glew"
+    fi
+    AC_DEFINE(HAVE_LIBGLEW, [1], [Define if you have the GLEW library.])
+    GLEW_LIBS="${GLEW_LIBS} -lGLEW"
 fi
 AC_SUBST(BUILD_GLEW)
 AC_SUBST(GLEW_INCLUDE)

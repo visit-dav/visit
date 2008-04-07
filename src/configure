@@ -879,8 +879,10 @@ Optional Features:
   --enable-slivr           build with the SLIVR volume rendering library
   --enable-buildall       build all plugins
   --enable-minimal-plugins   build only a few of the most common plugins
-  --disable-bzip2         do not build or use bzip2 library -- disables compression
-  --disable-glew          do not build or use glew library -- disables detection of OpenGL extensions
+  --disable-bzip2         do not build or use bzip2 library -- disables
+                          compression
+  --disable-glew          do not build or use glew library -- disables
+                          detection of OpenGL extensions
   --disable-bilib         do not use boost interval template library -- disables adaptive CSG discretization
 
 Optional Packages:
@@ -891,6 +893,10 @@ Optional Packages:
   --with-plots=all,base   What plot plugins to build (overrides --enable-buildall)
   --with-operators=all,base What operator plugins to build (overrides --enable-buildall)
   --with-dbs=all,base     What database plugins to build (overrides --enable-buildall)
+  --with-bzip2            build against external bzip2 in LIB-DIR (can be
+                          ommited if "-lbzip2" alone works)
+  --with-glew             build against external glew in INC-DIR,LIB-DIR (may
+                          be ommitted)
   --without-pty           Disable PTY use
   --with-zlib=INC-DIR,LIB-DIR     Use the GNU zlib compression
   --with-szip=INC-DIR,LIB-DIR       Location of szip headers and library
@@ -3857,16 +3863,31 @@ if test "${enable_bzip2+set}" = set; then
 else
   Usebzip2=yes
 fi;
+
+# Check whether --with-bzip2 or --without-bzip2 was given.
+if test "${with_bzip2+set}" = set; then
+  withval="$with_bzip2"
+  WithExternalBzip2=$withval
+else
+  WithExternalBzip2="no"
+fi;
+
 BUILD_BZIP2=""
 BZIP2_LIBS=""
 if test "$Usebzip2" = "yes"; then
+    if test $WithExternalBzip2 != "no"; then
+        if test $WithExternalBzip2 -nq "yes"; then
+            BZIP2_LIBS="-L${WithExternalBzip2}"
+        fi
+    else
     BUILD_BZIP2="bzip2"
+    fi
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_LIBBZ2 1
 _ACEOF
 
-    BZIP2_LIBS="-lbz2"
+    BZIP2_LIBS="${BZIP2_LIBS} -lbz2"
 fi
 
 
@@ -3878,18 +3899,35 @@ if test "${enable_glew+set}" = set; then
 else
   Useglew=yes
 fi;
+
+
+# Check whether --with-glew or --without-glew was given.
+if test "${with_glew+set}" = set; then
+  withval="$with_glew"
+  WithExternalGlew=$withval
+else
+  WithExternalGlew="no"
+fi;
+
 BUILD_GLEW=""
 GLEW_LIBS=""
 GLEW_INCLUDE=""
 if test "$Useglew" = "yes"; then
+    if test $WithExternalGlew != "no"; then
+        if test $WithExternalGlew != "yes"; then
+            GLEW_INCLUDE="-I`echo $WithExternalGlew | cut -f1 -d,`"
+            GLEW_LIBS="-L`echo $WithExternalGlew | cut -f2 -d, -s`"
+        fi
+    else
     BUILD_GLEW="glew"
+    GLEW_INCLUDE="-I$""(TOPDIR)/include/glew"
+    fi
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_LIBGLEW 1
 _ACEOF
 
-    GLEW_LIBS="-lGLEW"
-    GLEW_INCLUDE="-I$""(TOPDIR)/include/glew"
+    GLEW_LIBS="${GLEW_LIBS} -lGLEW"
 fi
 
 
@@ -5560,7 +5598,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5563:" \
+echo "$as_me:5601:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
