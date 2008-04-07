@@ -7695,7 +7695,9 @@ QvisGUIApplication::CancelMovie()
 // Creation:   Fri May 6 10:49:55 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 7 11:42:03 PDT 2008
+//   Call Initialize on empty strings.
+//
 // ****************************************************************************
 
 void
@@ -7708,7 +7710,10 @@ QvisGUIApplication::Interpret(const QString &s)
                 this, SLOT(InterpreterSync()));
     }
 
-    interpreter->Interpret(s);
+    if(s.isEmpty())
+        interpreter->Initialize();
+    else
+        interpreter->Interpret(s);
 }
 
 // ****************************************************************************

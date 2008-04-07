@@ -12184,7 +12184,9 @@ PopulateMethodArgs(ClientMethod *m, PyObject *obj)
 // Creation:   Wed May 4 17:06:44 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 7 11:43:40 PDT 2008
+//   Use a mutex to access ClientMethod so it can't be overwritten by thread 2.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -12197,6 +12199,7 @@ visit_ClientMethod(PyObject *self, PyObject *args)
     const char *CMError = "The tuple passed as the arguments to the"
                           "client method must contain only int, long, "
                           " float, tuples, or lists.";
+    MUTEX_LOCK();
     ClientMethod *m = GetViewerState()->GetClientMethod();
     m->ClearArgs();
 
@@ -12205,12 +12208,14 @@ visit_ClientMethod(PyObject *self, PyObject *args)
         PyObject *obj = 0;
         if(!PyArg_ParseTuple(args, "sO", &name, &obj))
         {
+            MUTEX_UNLOCK();
             VisItErrorFunc(CMError);
             return NULL;
         }
 
         if(!PopulateMethodArgs(m, obj))
         {
+            MUTEX_UNLOCK();
             VisItErrorFunc(CMError);
             return NULL;
         }
@@ -12223,6 +12228,7 @@ visit_ClientMethod(PyObject *self, PyObject *args)
     m->SetMethodName(name);
     clientMethodObserver->SetUpdate(false);
     m->Notify();
+    MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -12238,6 +12244,8 @@ visit_ClientMethod(PyObject *self, PyObject *args)
 // Creation:   Thu Jun 14 16:29:57 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Mon Apr 7 11:43:40 PDT 2008
+//   Use a mutex to access ClientMethod so it can't be overwritten by thread 2.
 //   
 // ****************************************************************************
 
@@ -12258,6 +12266,7 @@ visit_RegisterMacro(PyObject *self, PyObject *args)
         return NULL;
     }
 
+    MUTEX_LOCK();
     std::string sname(name);
     bool found = macroFunctions.find(sname) != macroFunctions.end();
 
@@ -12286,6 +12295,7 @@ visit_RegisterMacro(PyObject *self, PyObject *args)
     // Save the macro name to function mapping so we know how to call
     // the macro when the GUI wants to call it via a client method.
     macroFunctions[sname] = callback;
+    MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -12301,6 +12311,9 @@ visit_RegisterMacro(PyObject *self, PyObject *args)
 // Creation:   Thu Jun 14 16:29:57 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Mon Apr 7 11:43:40 PDT 2008
+//   Use a mutex to access macroFunctions. Guard against the Python callback
+//   returning NULL somehow.
 //   
 // ****************************************************************************
 
@@ -12315,15 +12328,30 @@ visit_ExecuteMacro(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s", &name))
         return NULL;
 
+    MUTEX_LOCK();
+    PyObject *macro = NULL;
     std::string sname(name);
-    if(macroFunctions.find(sname) == macroFunctions.end())
+    if(macroFunctions.find(sname) != macroFunctions.end())
+        macro = macroFunctions[sname];
+    MUTEX_UNLOCK();
+
+    if(macro == NULL)
     {
         VisItErrorFunc("An unrecognized macro name was provided.\n");
         return NULL;
     }
 
     // Call the function that the user named with the RegisterMacro function.
-    return PyObject_CallFunction(macroFunctions[sname], NULL);
+    PyObject *ret = PyObject_CallFunction(macro, NULL);
+
+    if(ret == NULL)
+    {
+        debug1 << "The macro function " << name << " returned NULL" << endl;
+        ret = Py_None;
+        Py_INCREF(Py_None);
+    }
+ 
+    return ret;
 }
 
 // ****************************************************************************
@@ -12336,12 +12364,17 @@ visit_ExecuteMacro(PyObject *self, PyObject *args)
 // Creation:   Thu Jun 14 16:29:57 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 7 11:50:24 PDT 2008
+//   Access macroFunctions and ClientMethod with a mutex to protect against 
+//   thread 2.
+//
 // ****************************************************************************
 
 STATIC PyObject *
 visit_ClearMacros(PyObject *self, PyObject *args)
 {
+    MUTEX_LOCK();
+
     // Decrement the reference counts for objects that we've stored.
     for(std::map<std::string,PyObject*>::iterator pos = macroFunctions.begin();
         pos != macroFunctions.end(); ++pos)
@@ -12357,6 +12390,8 @@ visit_ClearMacros(PyObject *self, PyObject *args)
     m->ClearArgs();
     clientMethodObserver->SetUpdate(false);
     m->Notify();
+
+    MUTEX_UNLOCK();
 
     Py_INCREF(Py_None);
     return Py_None;
