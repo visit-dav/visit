@@ -131,6 +131,14 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>VisIt's GUI has been enhanced so that a scroll view is automatically added
     to tall windows when VisIt is run on short displays. This makes it possible to
     access controls that would otherwise extend beyond the edges of the screen.</li>
+
+    <li>The <i>visit -movie</i> movie generation program will now preferentially
+    use the <i>ffmpeg</i> encoder program to encode MPEG movies if ffmpeg
+    is installed on your computer. The ffmpeg encoder produces higher quality
+    MPEG movies much faster than VisIt's standard MPEG encoder. If you do not
+    want VisIt to use ffmpeg to encode MPEG movies then you can provide the
+    <i>-noffmpeg</i> command line option when generating your movie at the
+    command prompt.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.9.0</font></b></p>
 <ul>
@@ -174,6 +182,7 @@ enhancements and bug-fixes that were added to this release.</p>
 
     <li>VisIt sometimes has problems registering macro buttons inside of a 
        "visitrc" file.</li>
+
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.8.0.html">VisIt 1.8 Release Notes</a>.</p>
