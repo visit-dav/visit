@@ -55,7 +55,9 @@
 // Creation:   Fri May 6 09:41:51 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 7 11:41:21 PDT 2008
+//   Made Initialize be public.
+//
 // ****************************************************************************
 
 class GUI_API QvisInterpreter : public QObject, public GUIBase
@@ -64,13 +66,13 @@ class GUI_API QvisInterpreter : public QObject, public GUIBase
 public:
     QvisInterpreter(QObject *parent = 0, const char *name = 0);
     virtual ~QvisInterpreter();
+    bool Initialize();
 signals:
     void Synchronize();
 public slots:
     void Interpret(const QString &s);
     void ProcessCommands();
 private:
-    bool Initialize();
     bool NoInterpretingClient() const;
 
     std::deque<std::string> pendingCommands;
