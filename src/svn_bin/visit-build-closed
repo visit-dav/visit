@@ -25,6 +25,9 @@
 #   Hank Childs, Sat Feb  9 14:18:54 PST 2008
 #   Change clearcase_bin to svn_bin.
 #
+#   Eric Brugger, Mon Apr  7 13:51:23 PDT 2008
+#   Removed sc build.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -36,7 +39,6 @@ user=`whoami`
 #
 crier=true
 sunset=true
-sc=true
 purple=true
 lilac=true
 gauss=true
@@ -55,7 +57,6 @@ do
       -none)
          crier=false
          sunset=false
-         sc=false
          purple=false
          lilac=false
          gauss=false
@@ -76,14 +77,6 @@ do
          ;;
       +sunset)
          sunset=true
-         shift
-         ;;
-      -sc)
-         sc=false
-         shift
-         ;;
-      +sc)
-         sc=true
          shift
          ;;
       -purple)
@@ -134,7 +127,6 @@ then
    echo "Valid machine names:"
    echo "    crier (B-Div, Linux),"
    echo "    sunset (B-Div, Solaris),"
-   echo "    sc (LC, OSF1),"
    echo "    purple (LC, AIX),"
    echo "    lilac (LC, Linux),"
    echo "    gauss (LC, x86_64),"
@@ -259,58 +251,6 @@ then
       scp -P 22 sunset sunset:sunset_buildit
       scp -P 22 $dist.tar.gz sunset:sunset_$dist.tar.gz
       ssh -p 22 sunset "chmod 750 sunset_buildit;./sunset_buildit" &
-   fi
-fi
-
-#
-# Build on sc.
-#
-rm -f sc
-cat <<EOF > sc
-#!/bin/sh
-if test ! -d /nfs/tmp0/$user ; then
-   mkdir /nfs/tmp0/$user
-fi
-if test ! -d /nfs/tmp0/$user/sc ; then
-   mkdir /nfs/tmp0/$user/sc
-fi
-rm -rf /nfs/tmp0/$user/sc/visitbuild
-mkdir /nfs/tmp0/$user/sc/visitbuild
-mv sc_$dist.tar.gz /nfs/tmp0/$user/sc/visitbuild/$dist.tar.gz
-cd /nfs/tmp0/$user/sc/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 MAKE=gmake ./configure --disable-bilib --enable-parallel >> ../../buildlog 2>&1
-cd databases/Fluent
-sed "s/\\\$(CXXFLAGSORIG)/-Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
-cd ../..
-gmake -j 3 >> ../../buildlog 2>&1
-svn_bin/visit-bin-dist -make gmake >> ../../buildlog 2>&1
-mv visit\$ver2.osf1.tar.gz ../..
-cd ../..
-echo "        build of visit on sc"           > resultlog 2>&1
-echo "       ----------------------"          >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $sc = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on sc"
-      scp sc sc8:sc_buildit
-      scp $dist.tar.gz sc8:sc_$dist.tar.gz
-      ssh sc8 "chmod 750 sc_buildit;./sc_buildit" &
    fi
 fi
 
@@ -545,5 +485,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f crier sunset sc purple lilac gauss hopi
+   rm -f crier sunset purple lilac gauss hopi
 fi
