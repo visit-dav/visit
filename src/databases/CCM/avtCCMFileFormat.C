@@ -323,11 +323,15 @@ avtCCMFileFormat::GetIDsForDomain(int dom,
 //  Purpose: Reads the face info. 
 //
 //  Arguments:
-//    faceID    The ID of the face entity.
-//    faceType  The type of faces (internal or boundary).
-//    nFaces    How many faces are in the entity. 
-//    fi        A place to store the face info, must be allocated by
-//              calling method.
+//    faceID        The ID of the face entity.
+//    faceType      The type of faces (internal or boundary).
+//    nFaces        How many faces are in the entity. 
+//    cellIDMap     Used to map cell IDs to indices
+//    vertexIDMap   Used to map vertex IDs to indices
+//    minSize       Min num verts in a face
+//    maxSize       Max num verts in a face
+//    ci            A place to store the face info, must be allocated by
+//                  calling method.
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   September 5, 2007 
@@ -336,12 +340,16 @@ avtCCMFileFormat::GetIDsForDomain(int dom,
 //    Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008
 //    Removed unused variable.
 //
+//    Dave Bremer, Fri Apr  4 16:29:49 PDT 2008
+//    Fixed a bug in which cell and vertex ids were mistaken for 1-based
+//    indices.
 // ****************************************************************************
 
 void
 avtCCMFileFormat::GetFaces(CCMIOID faceID, CCMIOEntity faceType,
-                           unsigned int nFaces, int &minSize, 
-                           int &maxSize, CellInfoVector &ci)
+                           unsigned int nFaces, const IDMap &cellIDMap,
+                           const IDMap &vertexIDMap, 
+                           int &minSize, int &maxSize, CellInfoVector &ci)
 {
     if (faceType != kCCMIOInternalFaces && faceType != kCCMIOBoundaryFaces)
     {
@@ -352,14 +360,15 @@ avtCCMFileFormat::GetFaces(CCMIOID faceID, CCMIOEntity faceType,
     int getFacesTimer = visitTimer->StartTimer();
     CCMIOID mapID;
     unsigned int nCells = 0, size = 0;
-    intVector faces, faceNodes, faceCells;
+    //intVector faces;
+    intVector faceNodes, faceCells;
 
     // Determine the size of the faceNodes array, which is of the
     // form n1, v1, v2, ...vn1, n2, v1, v2, ... vn2, )
     CCMIOReadFaces(&ccmErr, faceID, faceType, NULL, &size, NULL,
                    kCCMIOStart, kCCMIOEnd);
     faceNodes.resize(size);
-    faces.resize(nFaces);
+    //faces.resize(nFaces);
     if (faceType == kCCMIOInternalFaces)
         faceCells.resize(nFaces*2);
     else 
@@ -368,13 +377,13 @@ avtCCMFileFormat::GetFaces(CCMIOID faceID, CCMIOEntity faceType,
                    &faceNodes[0], kCCMIOStart, kCCMIOEnd);
     CCMIOReadFaceCells(&ccmErr, faceID, faceType, &faceCells[0],
                        kCCMIOStart, kCCMIOEnd);
-    CCMIOReadMap(&ccmErr, mapID, &faces[0], kCCMIOStart, kCCMIOEnd);
+    //CCMIOReadMap(&ccmErr, mapID, &faces[0], kCCMIOStart, kCCMIOEnd);
 
     unsigned int pos = 0;
-    for (unsigned int i = 0; i < faces.size(); ++i)
+    for (unsigned int i = 0; i < nFaces; ++i)
     {
         FaceInfo newFace;
-        newFace.id = faces[i];
+        //newFace.id = faces[i];
         if (faceType == kCCMIOInternalFaces)
         {
             newFace.cells[0] = faceCells[i*2];
@@ -393,21 +402,26 @@ avtCCMFileFormat::GetFaces(CCMIOID faceID, CCMIOEntity faceType,
 
         for (unsigned int j = 0; j < nVerts; ++j)
         {
-            newFace.nodes.push_back(faceNodes[pos+1+j]);
+            newFace.nodes.push_back( vertexIDMap.IDtoIndex(faceNodes[pos+1+j]) );
         }
         // cell ids are 1-origin, so must subract 1 to get the
         // correct index into the CellInfoVector
         if (faceType == kCCMIOInternalFaces)
         {
-            ci[newFace.cells[0]-1].faceTypes.push_back(1);
-            ci[newFace.cells[0]-1].faces.push_back(newFace);
-            ci[newFace.cells[1]-1].faceTypes.push_back(2);
-            ci[newFace.cells[1]-1].faces.push_back(newFace);
+            int  c0 = cellIDMap.IDtoIndex(newFace.cells[0]);
+            int  c1 = cellIDMap.IDtoIndex(newFace.cells[1]);
+
+            ci[c0].faceTypes.push_back(1);
+            ci[c0].faces.push_back(newFace);
+            ci[c1].faceTypes.push_back(2);
+            ci[c1].faces.push_back(newFace);
         }
         else 
         {
-            ci[newFace.cells[0]-1].faceTypes.push_back(0);
-            ci[newFace.cells[0]-1].faces.push_back(newFace);
+            int  c0 = cellIDMap.IDtoIndex(newFace.cells[0]);
+
+            ci[c0].faceTypes.push_back(0);
+            ci[c0].faces.push_back(newFace);
         }
         pos += faceNodes[pos] +1;
     }
@@ -735,6 +749,10 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
 //    If the primary variable (activeVisItVar) is defined only on a portion of
 //    the mesh, only retrieve (and tesselate) those cells it is defined upon.
+//
+//    Dave Bremer, Fri Apr  4 16:29:49 PDT 2008
+//    Fixed a bug in which cell and vertex ids were mistaken for 1-based
+//    indices.
 // 
 // ****************************************************************************
 
@@ -807,6 +825,12 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
                        0, nnodes);
         }
 
+        intVector tmpVertexMap(nnodes);
+        CCMIOReadMap(&ccmErr, mapID, &tmpVertexMap[0], kCCMIOStart, kCCMIOEnd);
+        IDMap  vertexIDMap;
+        vertexIDMap.SetIDs(tmpVertexMap);
+
+
         // Scale the points, according to the scale factor read with the 
         // vertices.
         for(i = 0; i < nnodes; ++i)
@@ -821,7 +845,8 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
         // Get the topology information
         CCMIOID faceID, cellsID;
         unsigned int nIFaces = 0, nCells = 0, size = 0;
-        intVector cells, cellMatType;
+        intVector cells;
+        //intVector cellMatType;
         CellInfoVector cellInfo;
 
         // Read the cells entity
@@ -830,14 +855,17 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
         CCMIOEntitySize(&ccmErr, cellsID, &nCells, NULL);
         cells.resize(nCells);
         cellInfo.resize(nCells);
-        for (i = 0; i < nCells; ++i)
-            cellInfo[i].id = i+1;
-        cellMatType.resize(nCells);
+        //cellMatType.resize(nCells);
         // this gets the cell types and the map that stores the cell ids
-        CCMIOReadCells(&ccmErr, cellsID, &mapID, &cellMatType[0], 
+        CCMIOReadCells(&ccmErr, cellsID, &mapID, NULL,
                        kCCMIOStart, kCCMIOEnd);
         // this reads the cellids from the map.
         CCMIOReadMap(&ccmErr, mapID, &cells[0], kCCMIOStart, kCCMIOEnd);
+        for (i = 0; i < nCells; ++i)
+            cellInfo[i].id = cells[i];
+
+        IDMap cellIDMap;
+        cellIDMap.SetIDs(cells);
 
         int minFaceSize = VTK_LARGE_INTEGER;
         int maxFaceSize = -1;
@@ -859,6 +887,7 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
             CCMIOSize nBFaces;
             CCMIOEntitySize(&ccmErr, faceID, &nBFaces, NULL);
             GetFaces(faceID, kCCMIOBoundaryFaces, nBFaces, 
+                     cellIDMap, vertexIDMap,
                      minFaceSize, maxFaceSize, cellInfo); 
         }
 
@@ -868,7 +897,7 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
         // Get the InternalFaces size (num faces).
         CCMIOEntitySize(&ccmErr, faceID, &nIFaces, NULL);
         
-        GetFaces(faceID, kCCMIOInternalFaces, nIFaces, 
+        GetFaces(faceID, kCCMIOInternalFaces, nIFaces, cellIDMap, vertexIDMap,
                  minFaceSize, maxFaceSize, cellInfo);
 
 
@@ -1056,7 +1085,7 @@ avtCCMFileFormat::GetCellMapData(const int domain, const string &var,
 //
 //  Modifications:
 //    Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
-//    avtOriginalCellNumbers array now contains CCM cellid, so enusre that
+//    avtOriginalCellNumbers array now contains CCM cellid, so ensure that
 //    the data array is indexed-into correctly, by mapping the original cell
 //
 // ****************************************************************************
@@ -1328,6 +1357,10 @@ avtCCMFileFormat::ReadScalar(CCMIOID field, intVector &mapData,
 //    Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008 
 //    Change fbounds to doubleVector to get around compiler problem on Windows. 
 //
+//    Dave Bremer, Fri Apr  4 16:29:49 PDT 2008
+//    Fixed a bug in which cell and vertex ids were mistaken for 1-based
+//    indices.
+//
 // ****************************************************************************
 
 void
@@ -1380,7 +1413,7 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
             for (k = 0; k < nodes.size(); ++k)
             {
                 cnt++;
-                pt = points->GetPoint(nodes[k]-1);
+                pt = points->GetPoint(nodes[k]);
 
                 if (pt[0] < cbounds[0])
                     cbounds[0] = pt[0];
@@ -1428,7 +1461,7 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
             for (k = 0; k < nodes.size(); ++k)
             {
                 cnt++;
-                pt = points->GetPoint(nodes[k]-1);
+                pt = points->GetPoint(nodes[k]);
                 tess.AddVertex(pt);
             } // k nodes
             tess.EndContour();
@@ -1493,6 +1526,10 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
 //   
 //   Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008 
 //   Remove unused variables.
+//
+//   Dave Bremer, Fri Apr  4 16:29:49 PDT 2008
+//   Fixed a bug in which cell and vertex ids were mistaken for 1-based
+//   indices.
 //   
 // ****************************************************************************
 
@@ -1534,7 +1571,7 @@ avtCCMFileFormat::TesselateCells2D(const int dom, const CellInfoVector &civ,
         std::set<edge_pair> freeEdges;
         for (int f = 0; f < ci.faces.size(); ++f)
         {
-             edge_pair e01(ci.faces[f].nodes[0]-1, ci.faces[f].nodes[1]-1);
+             edge_pair e01(ci.faces[f].nodes[0], ci.faces[f].nodes[1]);
              freeEdges.insert(e01);
         }
 
@@ -1643,6 +1680,10 @@ avtCCMFileFormat::TesselateCells2D(const int dom, const CellInfoVector &civ,
 // Modifications:
 //   Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008 
 //   Remove unused variables.
+//
+//   Dave Bremer, Fri Apr  4 16:29:49 PDT 2008
+//   Fixed a bug in which cell and vertex ids were mistaken for 1-based
+//   indices.
 //   
 // ****************************************************************************
 
@@ -1669,7 +1710,7 @@ avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray,
         for (j = 0; useface && j <nnodes; ++j)
         {
             useface = (count(uniqueNodes.begin(), uniqueNodes.end(), 
-                             faces[i].nodes[j]-1) == 0);
+                             faces[i].nodes[j]) == 0);
         }
         if (useface)
         {
@@ -1679,19 +1720,19 @@ avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray,
                 // reorder this face
                 for (j = 0; j < nnodes; ++j)
                 {
-                    uniqueNodes.push_back(faces[i].nodes[j]-1);
+                    uniqueNodes.push_back(faces[i].nodes[j]);
                 }
-                cellNodes->InsertNextId(faces[i].nodes[0]-1);
-                cellNodes->InsertNextId(faces[i].nodes[3]-1);
-                cellNodes->InsertNextId(faces[i].nodes[2]-1);
-                cellNodes->InsertNextId(faces[i].nodes[1]-1);
+                cellNodes->InsertNextId(faces[i].nodes[0]);
+                cellNodes->InsertNextId(faces[i].nodes[3]);
+                cellNodes->InsertNextId(faces[i].nodes[2]);
+                cellNodes->InsertNextId(faces[i].nodes[1]);
             }
             else
             {
                 for (j = 0; j < nnodes; ++j)
                 {
-                    uniqueNodes.push_back(faces[i].nodes[j]-1);
-                    cellNodes->InsertNextId(faces[i].nodes[j]-1);
+                    uniqueNodes.push_back(faces[i].nodes[j]);
+                    cellNodes->InsertNextId(faces[i].nodes[j]);
                 }
             }
         }
@@ -1714,6 +1755,10 @@ avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray,
 // Modifications:
 //   Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008
 //   Fix '==' '=' mix-up.
+//
+//   Dave Bremer, Fri Apr  4 16:29:49 PDT 2008
+//   Fixed a bug in which cell and vertex ids were mistaken for 1-based
+//   indices.
 //   
 // ****************************************************************************
 
@@ -1737,21 +1782,21 @@ avtCCMFileFormat::BuildTet(const CellInfo &ci, vtkCellArray *cellArray,
   
     if (ci.faceTypes[0] != 1)
     { 
-        uniqueNodes.push_back(faces[0].nodes[0]-1);  
-        uniqueNodes.push_back(faces[0].nodes[2]-1);  
-        uniqueNodes.push_back(faces[0].nodes[1]-1);  
-        cellNodes->InsertNextId(faces[0].nodes[0]-1);  
-        cellNodes->InsertNextId(faces[0].nodes[2]-1);  
-        cellNodes->InsertNextId(faces[0].nodes[1]-1);  
+        uniqueNodes.push_back(faces[0].nodes[0]);  
+        uniqueNodes.push_back(faces[0].nodes[2]);  
+        uniqueNodes.push_back(faces[0].nodes[1]);  
+        cellNodes->InsertNextId(faces[0].nodes[0]);  
+        cellNodes->InsertNextId(faces[0].nodes[2]);  
+        cellNodes->InsertNextId(faces[0].nodes[1]);  
     } 
     else
     { 
-        uniqueNodes.push_back(faces[0].nodes[0]-1);  
-        uniqueNodes.push_back(faces[0].nodes[1]-1);  
-        uniqueNodes.push_back(faces[0].nodes[2]-1);  
-        cellNodes->InsertNextId(faces[0].nodes[0]-1);  
-        cellNodes->InsertNextId(faces[0].nodes[1]-1);  
-        cellNodes->InsertNextId(faces[0].nodes[2]-1);  
+        uniqueNodes.push_back(faces[0].nodes[0]);  
+        uniqueNodes.push_back(faces[0].nodes[1]);  
+        uniqueNodes.push_back(faces[0].nodes[2]);  
+        cellNodes->InsertNextId(faces[0].nodes[0]);  
+        cellNodes->InsertNextId(faces[0].nodes[1]);  
+        cellNodes->InsertNextId(faces[0].nodes[2]);  
     } 
       
     for (i = 1; !lastNodeFound && i < faces.size(); ++i)
@@ -1759,11 +1804,11 @@ avtCCMFileFormat::BuildTet(const CellInfo &ci, vtkCellArray *cellArray,
         for (j = 0; !lastNodeFound && j <faces[i].nodes.size(); ++j)
         {
            if ((count(uniqueNodes.begin(), uniqueNodes.end(), 
-                      faces[i].nodes[j]-1) == 0)) 
+                      faces[i].nodes[j]) == 0)) 
            {
                lastNodeFound = true;
-               uniqueNodes.push_back(faces[i].nodes[j]-1);
-               cellNodes->InsertNextId(faces[i].nodes[j]-1);  
+               uniqueNodes.push_back(faces[i].nodes[j]);
+               cellNodes->InsertNextId(faces[i].nodes[j]);  
            }
         }
             
@@ -1783,6 +1828,10 @@ avtCCMFileFormat::BuildTet(const CellInfo &ci, vtkCellArray *cellArray,
 // Creation:   October 1, 2007 
 //
 // Modifications:
+//
+//   Dave Bremer, Fri Apr  4 16:29:49 PDT 2008
+//   Fixed a bug in which cell and vertex ids were mistaken for 1-based
+//   indices.
 //   
 // ****************************************************************************
 
@@ -1803,8 +1852,8 @@ avtCCMFileFormat::BuildPyramid(const CellInfo &ci, vtkCellArray *cellArray,
             baseFace = i;
             for (j = 0; j < 4; ++j)
             {
-                uniqueNodes.push_back(faces[i].nodes[j]-1);
-                cellNodes->InsertNextId(faces[i].nodes[j]-1);
+                uniqueNodes.push_back(faces[i].nodes[j]);
+                cellNodes->InsertNextId(faces[i].nodes[j]);
             }
         }
     }
@@ -1812,9 +1861,9 @@ avtCCMFileFormat::BuildPyramid(const CellInfo &ci, vtkCellArray *cellArray,
     for (i = 0; i < 3; ++i) // only 3 nodes in the triangle-face
     {
         if ((count(uniqueNodes.begin(), uniqueNodes.end(), 
-             faces[triFace].nodes[i]-1)) == 0)
+             faces[triFace].nodes[i])) == 0)
         {
-            cellNodes->InsertNextId(faces[triFace].nodes[i]-1);
+            cellNodes->InsertNextId(faces[triFace].nodes[i]);
             break;
         }
     }
@@ -1836,6 +1885,10 @@ avtCCMFileFormat::BuildPyramid(const CellInfo &ci, vtkCellArray *cellArray,
 // Modifications:
 //   Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008 
 //   Remove unused variables.
+//
+//   Dave Bremer, Fri Apr  4 16:29:49 PDT 2008
+//   Fixed a bug in which cell and vertex ids were mistaken for 1-based
+//   indices.
 //   
 // ****************************************************************************
 
@@ -1850,9 +1903,9 @@ avtCCMFileFormat::BuildWedge(const CellInfo &ci, vtkCellArray *cellArray,
     {
         if (faces[i].nodes.size() == 3)
         {
-            cellNodes->InsertNextId(faces[i].nodes[0]-1);
-            cellNodes->InsertNextId(faces[i].nodes[1]-1);
-            cellNodes->InsertNextId(faces[i].nodes[2]-1);
+            cellNodes->InsertNextId(faces[i].nodes[0]);
+            cellNodes->InsertNextId(faces[i].nodes[1]);
+            cellNodes->InsertNextId(faces[i].nodes[2]);
         }
     }
     cellArray->InsertNextCell(cellNodes);
@@ -1878,12 +1931,15 @@ avtCCMFileFormat::BuildWedge(const CellInfo &ci, vtkCellArray *cellArray,
 // Creation:   September 6, 2007 
 //
 // Modifications:
+//
+//   Dave Bremer, Fri Apr  4 16:29:49 PDT 2008
+//   Removed unused face id.
 //   
 // ****************************************************************************
 
 avtCCMFileFormat::FaceInfo::FaceInfo()
 {
-    id = -1;
+    //id = -1;
     cells[0] = -1;
     cells[1] = -1;
 }
@@ -1898,12 +1954,15 @@ avtCCMFileFormat::FaceInfo::FaceInfo()
 // Creation:   September 6, 2007 
 //
 // Modifications:
+//
+//   Dave Bremer, Fri Apr  4 16:29:49 PDT 2008
+//   Removed unused face id.
 //   
 // ****************************************************************************
 
 avtCCMFileFormat::FaceInfo::FaceInfo(const avtCCMFileFormat::FaceInfo &obj)
 {
-    id = obj.id;
+    //id = obj.id;
     cells[0] = obj.cells[0];
     cells[1] = obj.cells[1]; 
     nodes = obj.nodes;
@@ -1938,13 +1997,16 @@ avtCCMFileFormat::FaceInfo::~FaceInfo()
 // Creation:   September 6, 2007 
 //
 // Modifications:
+//
+//   Dave Bremer, Fri Apr  4 16:29:49 PDT 2008
+//   Removed unused face id.
 //   
 // ****************************************************************************
 
 void
 avtCCMFileFormat::FaceInfo::operator =(const avtCCMFileFormat::FaceInfo &obj)
 {
-    id = obj.id;
+    //id = obj.id;
     cells[0] = obj.cells[0];
     cells[1] = obj.cells[1]; 
     nodes = obj.nodes;
@@ -2171,4 +2233,171 @@ operator << (ostream &os, const CCMIOID &id)
        << ", version=" << id.version << ")";
     return os;
 }
+
+
+
+
+// ****************************************************************************
+// Method: avtCCMFileFormat::IDMap::IDMap
+//
+// Purpose: 
+//   Constructor
+//
+// Programmer: Dave Bremer
+// Creation:   Fri Apr  4 16:29:49 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtCCMFileFormat::IDMap::IDMap()
+{
+    bSequential = false;
+    bReverseMap = false; 
+    iFirstElem = 0;
+    numIDs = 0;
+}
+
+
+// ****************************************************************************
+// Method: avtCCMFileFormat::IDMap::SetIDs
+//
+// Purpose: 
+//   Analyze a set of IDs and build a structure for mapping them back 
+//   to the index corresponding to their position in v.
+//
+// Programmer: Dave Bremer
+// Creation:   Fri Apr  4 16:29:49 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void 
+avtCCMFileFormat::IDMap::SetIDs(const intVector &v)
+{
+    numIDs = v.size();
+
+    bSequential = true;
+    bReverseMap = false;
+    iFirstElem = v[0];
+
+    int min = v[0], max = v[0];
+
+    int ii;
+    for (ii = 1; ii < v.size(); ii++)
+    {
+        if (v[ii-1]+1 != v[ii])
+            bSequential = false;
+        if (v[ii] < min)
+            min = v[ii];
+        if (v[ii] > max)
+            max = v[ii];
+    }
+
+    //Don't bother copying data in, in this case.
+    if (bSequential)
+        return;
+
+    if (max-min+1 <= v.size()*2)
+    {
+        bReverseMap = true;
+        iFirstElem = min;
+
+        ids.resize(max-min+1, -1);
+        for (ii = 0; ii < v.size(); ii++)
+        {
+            ids[v[ii]-iFirstElem] = ii;
+        }
+    }
+    else
+    {
+        bReverseMap = false;
+
+        ids.resize(v.size()*2);
+    
+        for (ii = 0; ii < v.size(); ii++)
+        {
+            ids[ii*2]   = v[ii];
+            ids[ii*2+1] = ii;
+        }
+        qsort( &ids[0], v.size(), sizeof(int)*2, avtCCMFileFormat::IDMap::compare);
+    }
+}
+
+
+// ****************************************************************************
+// Method: avtCCMFileFormat::IDMap::compare
+//
+// Purpose: 
+//   compare function for qsort
+//
+// Programmer: Dave Bremer
+// Creation:   Fri Apr  4 16:29:49 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int 
+avtCCMFileFormat::IDMap::compare(const void *a, const void *b)
+{
+    return ( *((int *)a) - *((int *)b) );
+}
+
+
+// ****************************************************************************
+// Method: avtCCMFileFormat::IDMap::IDtoIndex
+//
+// Purpose: 
+//   Map an id to an array index.  Return -1 if the id is not in the map.
+//
+// Programmer: Dave Bremer
+// Creation:   Fri Apr  4 16:29:49 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int  
+avtCCMFileFormat::IDMap::IDtoIndex(int id) const
+{
+    if (bSequential)
+    {
+        int r = id - iFirstElem;
+        if (r >= 0 && r < numIDs)
+            return r;
+    }
+    else if (bReverseMap)
+    {
+        if (id-iFirstElem >= 0 && id-iFirstElem < ids.size())
+            return ids[id-iFirstElem];
+    }
+    else
+    {
+        int min = 0, max = ids.size()/2 - 1;
+        int mid = (min+max)/2;
+    
+        while (min <= max)
+        {
+            if (id < ids[mid*2])
+            {
+                max = mid-1;
+                mid = (min+max)/2;
+            }
+            else if (id > ids[mid*2])
+            {
+                min = mid+1;
+                mid = (min+max)/2;
+            }
+            else
+            {
+                return ids[mid*2+1];
+            }
+        }
+    }
+    return -1;
+}
+
+
 
