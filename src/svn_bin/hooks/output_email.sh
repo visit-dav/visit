@@ -32,7 +32,6 @@
 SCRIPTFILE="trunk/src/clearcase_bin/nersc_username_to_email"
 # What should we use for the temporary file?
 TMPFILE="/tmp/email.sh"
-
 ###########################################################
 # You should not need to modify anything below this line. #
 ###########################################################

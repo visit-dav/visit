@@ -41,5 +41,6 @@ for f in ${files} ; do
         exit 1
     fi
 done
+
 # all is well!
 exit 0
