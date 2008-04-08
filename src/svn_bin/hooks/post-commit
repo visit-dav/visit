@@ -5,6 +5,7 @@
 
 echo "Executing post-commit script" 1>&2
 echo "Executing post-commit script"
+touch foobar
 
 #
 # Set some env variables used by the scripts
