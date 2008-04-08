@@ -774,6 +774,7 @@ dnl
 dnl    Mark C. Miller, Mon Apr  7 14:55:58 PDT 2008
 dnl    Added options to build against external bzip2/glew.
 dnl    Courtesy of Matthias Langer <mlangc@gmx.at>.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
