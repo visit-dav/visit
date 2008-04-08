@@ -11,17 +11,20 @@
 REPOS="$1"
 REV=$2
 
-function error()
+hadError=0
+function log()
 {
+    hadError=1
     echo $@ 1>&2
-    exit 1
 }
 
 if test -z "${REPOS}"; then
-    error "Repository path not set in $0."
+    log "Repository path not set in $0."
+    exit 1
 fi
 if test -z "${REV}"; then
-    error "Revision number not set in $0."
+    log "Revision number not set in $0."
+    exit 1
 fi
 
 hookVarsFile=""
@@ -56,6 +59,7 @@ set +o noclobber
 # else, so do it first.
 #
 if test -n "$hookVarsFile"; then
+    log "Installing updated hook variables"
     ${SVNLOOK} cat -r $REV $REPOS $hookVarsFile > $REPOS/hooks/hook_vars.sh
     ${CHGRP} $VISIT_GROUP_NAME $REPOS/hooks/hook_vars.sh
     ${CHMOD} 770 $REPOS/hooks/hook_vars.sh
@@ -73,19 +77,19 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     #
     if test ! -e $REPOS/hooks/$bf; then
         if test -z "$preCommitFile" -a -z "$postCommitFile"; then
-	    echo "Committed a hook script without also updating pre- or post-commit meta scripts" 1>&2
+	    log "Committed a hook script without also updating pre- or post-commit meta scripts" 1>&2
 	fi
     fi
 
     ${SVNLOOK} cat -r $REV $REPOS $f > $REPOS/hooks/$bf
     if test -s $REPOS/hooks/$bf; then
+        log "Installing hook script $bf to $REPOS/hooks/$bf"
         ${CHGRP} $VISIT_GROUP_NAME $REPOS/hooks/$bf 1>/dev/null 2>&1
         ${CHMOD} 770 $REPOS/hooks/$bf 1>/dev/null 2>&1
     else
+	log "UN-installing hook script $bf from $REPOS/hooks/$bf"
         ${RM} -f $REPOS/hooks/$bf 1>/dev/null 2>&1
     fi
-
 done
 
-# all is well!
-exit 0
+exit $hadError 
