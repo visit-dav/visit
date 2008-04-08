@@ -30,8 +30,6 @@ if [ -z "${TXN}" ]; then
     exit 1
 fi
 
-log "Executing..."
-
 files=`${SVNLOOK} changed -t $TXN $REPOS | ${AWK} '{print $2}'`
 hookVarsFile=""
 preCommitFile=""
@@ -53,6 +51,10 @@ for f in ${files} ; do
             ;;
     esac
 done
+echo $hookVarsFile >> foobar
+echo $preCommitFile >> foobar
+echo $postCommitFile >> foobar
+echo $hookFiles >> foobar
 
 #
 # Turn off noclobber if it is on
@@ -64,6 +66,7 @@ set +o noclobber
 # else.
 #
 if test -n "$hookVarsFile"; then
+    echo "got here" >> foobar
     ${SVNLOOK} cat -t $TXN $REPOS $hookVarsFile > $REPOS/hooks/hook_vars.sh
     ${CHGRP} $VISIT_GROUP_NAME $REPOS/hooks/hook_vars.sh
     ${CHMOD} 770 $REPOS/hooks/hook_vars.sh
@@ -75,6 +78,8 @@ fi
 for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     bf=`basename $f`
 
+    echo "$f" >> foobar
+    echo $bf >> foobar
     #
     # If we don't already have this hook installed, make sure
     # the user knows to update the pre- and/or post-commit meta scripts
