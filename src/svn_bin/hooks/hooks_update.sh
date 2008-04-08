@@ -45,8 +45,6 @@ for f in ${files} ; do
             ;;
     esac
 done
-echo "got here" >> foobar
-echo "hookFiles=$hookFiles" >> foobar
 
 #
 # Turn off noclobber if it is on
@@ -66,17 +64,9 @@ fi
 #
 # Re-Install any committed hooks 
 #
-for gorfo in ${hookFiles} ; do
-    echo "gorfo= $gorfo" >> foobar
-done
-exit 0
-
-#for f in $preCommitFile $postCommitFile ${hookFiles} ; do
-for f in ${hookFiles} ; do
-    echo "doing it" >> foobar
+for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     bf=`${BASENAME} $f`
     echo $f >> foobar
-
     echo $bf >> foobar
 
     #
