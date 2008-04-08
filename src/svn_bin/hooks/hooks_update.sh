@@ -8,40 +8,28 @@
 #
 ##############################################################################
 
-#SVNLOOK="/usr/bin/svnlook"
-#AWK="/usr/bin/awk"
-
 REPOS="$1"
-TXN="$2"
+REV=$2
 
-function log()
+function error()
 {
-    echo "$@" 1>&2
+    echo $@ 1>&2
+    exit 1
 }
 
-echo "got here" >> foobar
-echo "${SVNLOOK}" >> foobar
-echo "${AWK}" >> foobar
-echo "${REPOS}" >> foobar
-echo "${TXN}" >> foobar
-
-if [ -z "${REPOS}" ]; then
-    log "Repository path not given, bailing out."
-    exit 1
+if test -z "${REPOS}"; then
+    error "Repository path not set in $0."
 fi
-if [ -z "${TXN}" ]; then
-    log "Transaction ID not given, bailing out."
-    exit 1
+if test -z "${REV}"; then
+    error "Revision number not set in $0."
 fi
 
-${SVNLOOK} changed -t $TXN $REPOS | ${AWK} '{print $2}' >> foobar
-files=`${SVNLOOK} changed -t $TXN $REPOS | ${AWK} '{print $2}'`
 hookVarsFile=""
 preCommitFile=""
 postCommitFile=""
 hookFiles=""
+files=`${SVNLOOK} changed -r ${REV} ${REPOS} | ${AWK} '{print $2}'`
 for f in ${files} ; do
-echo $f >> foobar
     case ${f} in
         *src/svn_bin/hooks/hook_vars.sh)
 	    hookVarsFile=$f
@@ -57,10 +45,6 @@ echo $f >> foobar
             ;;
     esac
 done
-echo $hookVarsFile >> foobar
-echo $preCommitFile >> foobar
-echo $postCommitFile >> foobar
-echo $hookFiles >> foobar
 
 #
 # Turn off noclobber if it is on
@@ -72,7 +56,6 @@ set +o noclobber
 # else.
 #
 if test -n "$hookVarsFile"; then
-    echo "got here" >> foobar
     ${SVNLOOK} cat -t $TXN $REPOS $hookVarsFile > $REPOS/hooks/hook_vars.sh
     ${CHGRP} $VISIT_GROUP_NAME $REPOS/hooks/hook_vars.sh
     ${CHMOD} 770 $REPOS/hooks/hook_vars.sh
@@ -84,16 +67,13 @@ fi
 for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     bf=`basename $f`
 
-    echo "$f" >> foobar
-    echo $bf >> foobar
     #
     # If we don't already have this hook installed, make sure
     # the user knows to update the pre- and/or post-commit meta scripts
     #
     if test ! -e $REPOS/hooks/$bf; then
         if test -z "$preCommitFile" -a -z "$postCommitFile"; then
-	    log "Committed a hook script without also updating pre- or post-commit meta scripts"
-	    exit 1
+	    error "Committed a hook script without also updating pre- or post-commit meta scripts"
 	fi
     fi
 
