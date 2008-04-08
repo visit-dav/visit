@@ -66,6 +66,7 @@ fi
 # Re-Install any committed hooks 
 #
 echo ${files} >> foobar
+echo ${hookFiles} >> foobar
 for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     bf=`${BASENAME} $f`
     echo $f >> foobar
