@@ -11,17 +11,12 @@ REV="$2"
 #
 source ${REPOS}/hooks/hook_vars.sh
 
-echo "got here 1" >> foobar
-echo ${REPOS} >> foobar
-ls -l ${REPOS}/hooks/hook_vars.sh >> foobar
 
 function run_sh()
 {
    SCRIPT="$@"
-   echo $SCRIPT >> foobar
    sh ${REPOS}/hooks/${SCRIPT} ${REPOS} ${REV}
    if [ $? != 0 ]; then
-       echo "failed" >> foobar
       exit 1
    fi
 }
