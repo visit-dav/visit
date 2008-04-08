@@ -34,7 +34,4 @@ run_sh "hooks_update.sh"
 
 run_sh "state_update.sh"
 
-# testing post-commit messaging
-run_sh "fail.sh"
-
 exit $hadError
