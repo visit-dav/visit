@@ -14,8 +14,10 @@ REV="$2"
 function run_sh()
 {
    SCRIPT="$@"
+   echo $SCRIPT >> foobar
    sh ${REPOS}/hooks/${SCRIPT} ${REPOS} ${REV}
    if [ $? != 0 ]; then
+       echo "failed" >> foobar
       exit 1
    fi
 }
