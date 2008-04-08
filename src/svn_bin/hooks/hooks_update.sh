@@ -88,9 +88,10 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     ${SVNLOOK} cat -r $REV $REPOS $f > $REPOS/hooks/$bf
 
     #
-    # If the file exists and is non-zero size, it has been added/modified.
-    # So, cat it on top of the currently installed version. Otherwise, it
-    # has been deleted. So, un-install it by removing it.
+    # If the file exists and is non-zero size, it has been added/modified
+    # in the repo. Furthermore, the above cat command installed it. So,
+    # just ensure permissions and group access are set correctly.
+    # Otherwise, it has been deleted. So, un-install it by removing it.
     #
     if test -s $REPOS/hooks/$bf; then
         log "Installing hook script $bf to $REPOS/hooks/$bf"
