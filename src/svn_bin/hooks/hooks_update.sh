@@ -10,7 +10,6 @@
 
 REPOS="$1"
 REV=$2
-echo "got here" >> foobar
 
 function error()
 {
@@ -46,6 +45,8 @@ for f in ${files} ; do
             ;;
     esac
 done
+echo "got here" >> foobar
+echo "hookFiles=$hookFiles" >> foobar
 
 #
 # Turn off noclobber if it is on
