@@ -68,6 +68,7 @@ fi
 for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     bf=`${BASENAME} $f`
     echo $f >> foobar
+
     echo $bf >> foobar
 
     #
