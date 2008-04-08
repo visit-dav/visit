@@ -64,8 +64,8 @@ fi
 #
 # Re-Install any committed hooks 
 #
-for f in ${hookFiles} ; do
-    echo $f >> foobar
+for gorfo in ${hookFiles} ; do
+    echo $gorfo >> foobar
 done
 
 #for f in $preCommitFile $postCommitFile ${hookFiles} ; do
