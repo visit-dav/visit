@@ -36,6 +36,7 @@ preCommitFile=""
 postCommitFile=""
 hookFiles=""
 for f in ${files} ; do
+echo $f >> foobar
     case ${f} in
         *src/svn_bin/hooks/hook_vars.sh)
 	    hookVarsFile=$f
