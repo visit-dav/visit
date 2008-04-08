@@ -81,7 +81,9 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
 	fi
     fi
 
+    #
     # Install the file (or at least try to)
+    #
     ${SVNLOOK} cat -r $REV $REPOS $f > $REPOS/hooks/$bf
 
     #
