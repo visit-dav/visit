@@ -24,7 +24,6 @@ if test -z "${REV}"; then
     error "Revision number not set in $0."
 fi
 
-hooksUpdateFile=""
 hookVarsFile=""
 preCommitFile=""
 postCommitFile=""
@@ -32,9 +31,6 @@ hookFiles=""
 files=`${SVNLOOK} changed -r ${REV} ${REPOS} | ${AWK} '{print $2}'`
 for f in ${files} ; do
     case ${f} in
-        *src/svn_bin/hooks/hooks_update.sh)
-	    hooksUpdateFile=$f
-            ;;
         *src/svn_bin/hooks/hook_vars.sh)
 	    hookVarsFile=$f
             ;;
@@ -54,16 +50,6 @@ done
 # Turn off noclobber if it is on
 #
 set +o noclobber
-
-#
-# Handle the hook variables file speciall. We can't install it
-# automatically as it is the current script that is installing
-# everything else.
-#if test -n "$hooksUpdateFile"; then
-#    echo "You are updating hooks_update.sh." 1>&2
-#    echo "It cannot be installed automatically." 1>&2
-#    echo "Remember to install hooks_update.sh manually." 1>&2
-#fi
 
 #
 # Handle the hook variables file specially. It can effect everything
@@ -87,7 +73,7 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     #
     if test ! -e $REPOS/hooks/$bf; then
         if test -z "$preCommitFile" -a -z "$postCommitFile"; then
-	    error "Committed a hook script without also updating pre- or post-commit meta scripts"
+	    echo "Committed a hook script without also updating pre- or post-commit meta scripts" 1>&2
 	fi
     fi
 
