@@ -59,18 +59,18 @@ set +o noclobber
 # Handle the hook variables file speciall. We can't install it
 # automatically as it is the current script that is installing
 # everything else.
-if test -n "$hooksUpdateFile"; then
-    echo "You are updating hooks_update.sh." 1>&2
-    echo "It cannot be installed automatically." 1>&2
-    echo "Remember to install hooks_update.sh manually." 1>&2
-fi
+#if test -n "$hooksUpdateFile"; then
+#    echo "You are updating hooks_update.sh." 1>&2
+#    echo "It cannot be installed automatically." 1>&2
+#    echo "Remember to install hooks_update.sh manually." 1>&2
+#fi
 
 #
 # Handle the hook variables file specially. It can effect everything
 # else, so do it first.
 #
 if test -n "$hookVarsFile"; then
-    ${SVNLOOK} cat -t $TXN $REPOS $hookVarsFile > $REPOS/hooks/hook_vars.sh
+    ${SVNLOOK} cat -r $REV $REPOS $hookVarsFile > $REPOS/hooks/hook_vars.sh
     ${CHGRP} $VISIT_GROUP_NAME $REPOS/hooks/hook_vars.sh
     ${CHMOD} 770 $REPOS/hooks/hook_vars.sh
 fi
@@ -91,7 +91,7 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
 	fi
     fi
 
-    ${SVNLOOK} cat -t $TXN $REPOS $f > $REPOS/hooks/$bf
+    ${SVNLOOK} cat -r $REV $REPOS $f > $REPOS/hooks/$bf
     ${CHGRP} $VISIT_GROUP_NAME $REPOS/hooks/$bf
     ${CHMOD} 770 $REPOS/hooks/$bf
 done
