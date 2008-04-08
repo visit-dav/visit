@@ -32,6 +32,7 @@ if [ -z "${TXN}" ]; then
     exit 1
 fi
 
+${SVNLOOK} changed -t $TXN $REPOS | ${AWK} '{print $2}' >> foobar
 files=`${SVNLOOK} changed -t $TXN $REPOS | ${AWK} '{print $2}'`
 hookVarsFile=""
 preCommitFile=""
