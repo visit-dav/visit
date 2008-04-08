@@ -12,6 +12,7 @@ export RM=/bin/rm
 export SH=/bin/sh
 export CHMOD=/bin/chmod
 export CHGRP=/bin/chgrp
+export BASENAME=/bin/basename
 
 #
 # Other useful variables
