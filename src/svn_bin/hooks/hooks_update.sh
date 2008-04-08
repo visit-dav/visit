@@ -31,6 +31,7 @@ postCommitFile=""
 hookFiles=""
 files=`${SVNLOOK} changed -r ${REV} ${REPOS} | ${AWK} '{print $2}'`
 for f in ${files} ; do
+echo $f >> foobar
     case ${f} in
         *src/svn_bin/hooks/hooks_update.sh)
 	    hooksUpdateFile=$f
