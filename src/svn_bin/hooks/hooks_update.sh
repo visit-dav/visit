@@ -40,7 +40,7 @@ for f in ${files} ; do
         *src/svn_bin/hooks/post-commit)
 	    postCommitFile=$f
             ;;
-        *src/svn_bin/hooks)
+        *src/svn_bin/hooks/*)
             hookFiles="$hookFiles $f"
             ;;
     esac
