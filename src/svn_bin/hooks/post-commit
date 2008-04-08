@@ -11,6 +11,8 @@ source ${REPOS}/hooks/hook_vars.sh
 REPOS="$1"
 REV="$2"
 
+echo "got here" >> foobar
+
 function run_sh()
 {
    SCRIPT="$@"
