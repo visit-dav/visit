@@ -30,6 +30,7 @@ postCommitFile=""
 hookFiles=""
 files=`${SVNLOOK} changed -r ${REV} ${REPOS} | ${AWK} '{print $2}'`
 for f in ${files} ; do
+echo $f >> foobar
     case ${f} in
         *src/svn_bin/hooks/hook_vars.sh)
 	    hookVarsFile=$f
@@ -66,6 +67,8 @@ fi
 #
 for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     bf=`basename $f`
+    echo $f >> foobar
+    echo $bf >> foobar
 
     #
     # If we don't already have this hook installed, make sure
