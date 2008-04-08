@@ -3,19 +3,17 @@
 # after the commit is accepted/completed/finalized.  This would be a good place
 # to inform a buildbot to start an automated build, for example.
 
-#
-# Set some env variables used by the scripts
-#
-echo "got here 1" >> foobar
-echo ${REPOS} >> foobar
-ls -l ${REPOS}/hooks/hook_vars.sh >> foobar
-
-source ${REPOS}/hooks/hook_vars.sh
-
 REPOS="$1"
 REV="$2"
 
-echo "got here" >> foobar
+#
+# Set some env variables used by the scripts
+#
+source ${REPOS}/hooks/hook_vars.sh
+
+echo "got here 1" >> foobar
+echo ${REPOS} >> foobar
+ls -l ${REPOS}/hooks/hook_vars.sh >> foobar
 
 function run_sh()
 {

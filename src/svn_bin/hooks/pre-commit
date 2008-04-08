@@ -11,13 +11,13 @@
 # All pre-commit scripts take REPOSITORY_PATH and TRANSACTION_ID as arguments,
 # in that order.  See the subversion redbook for more information.
 
+REPOS="$1"
+TXN="$2"
+
 #
 # Set some env variables used by the scripts
 #
 source ${REPOS}/hooks/hook_vars.sh
-
-REPOS="$1"
-TXN="$2"
 
 function runhook_sh()
 {
