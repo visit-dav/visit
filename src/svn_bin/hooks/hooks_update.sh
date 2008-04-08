@@ -8,8 +8,6 @@
 #
 ##############################################################################
 
-touch foobar
-
 SVNLOOK="/usr/bin/svnlook"
 AWK="/usr/bin/awk"
 
@@ -20,6 +18,8 @@ function log()
 {
     echo "$@" 1>&2
 }
+
+echo "got here" >> foobar
 
 if [ -z "${REPOS}" ]; then
     log "Repository path not given, bailing out."
