@@ -28,10 +28,10 @@ sh ${REPOS}/hooks/ciabot_svn.sh "${REPOS}" "${REV}" &
 # Uncomment if you want to grab the committing user's email.
 #email=`sh ${REPOS}/hooks/output_email.sh ${REPOS} ${REV}`
 
+# test failed post-commit and message
+run_sh "fail.sh"
+
 run_sh "state_update.sh"
 
 # handle automatic installation of updated/new hooks
 run_sh "hooks_update.sh"
-
-# test failed post-commit and message
-run_sh "fail.sh"
