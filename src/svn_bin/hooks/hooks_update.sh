@@ -10,6 +10,7 @@
 
 REPOS="$1"
 REV=$2
+echo "got here" >> foobar
 
 function error()
 {
