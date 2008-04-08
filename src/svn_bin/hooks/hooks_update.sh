@@ -1,7 +1,8 @@
 #!/bin/sh
 ##############################################################################
 #
-# Purpose: Automatically 'install' an update to a hook script 
+# Purpose: A post-commit hook to automatically 'install' an update to a hook
+#          script.
 #
 # Programmer: Mark C. Miller
 # Created:    Mon Apr  7 18:16:51 PDT 2008
@@ -88,7 +89,8 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
 
     #
     # If the file exists and is non-zero size, it has been added/modified.
-    # Otherwise, it has been deleted
+    # So, cat it on top of the currently installed version. Otherwise, it
+    # has been deleted. So, un-install it by removing it.
     #
     if test -s $REPOS/hooks/$bf; then
         log "Installing hook script $bf to $REPOS/hooks/$bf"
@@ -98,6 +100,7 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
 	log "UN-installing hook script $bf from $REPOS/hooks/$bf"
         ${RM} -f $REPOS/hooks/$bf 1>/dev/null 2>&1
     fi
+
 done
 
 exit $hadError 
