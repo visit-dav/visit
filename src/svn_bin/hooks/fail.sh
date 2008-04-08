@@ -3,4 +3,5 @@
 echo "post-commit failed" 1>&2
 echo "post-commit failed" 1>&2
 echo "post-commit failed" 1>&2
+echo "here!" 
 exit 1
