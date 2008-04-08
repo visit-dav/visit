@@ -66,8 +66,6 @@ fi
 #
 for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     bf=`${BASENAME} $f`
-    echo $f >> foobar
-    echo $bf >> foobar
 
     #
     # If we don't already have this hook installed, make sure
