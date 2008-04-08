@@ -10,8 +10,7 @@
 # reside in the `hooks' directory of our repository.
 # All pre-commit scripts take REPOSITORY_PATH and TRANSACTION_ID as arguments,
 # in that order.  See the subversion redbook for more information.
-# Mark Miller test
-# Mark Miller test
+#
 
 REPOS="$1"
 TXN="$2"
