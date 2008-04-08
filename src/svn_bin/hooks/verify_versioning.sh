@@ -1,9 +1,6 @@
 #!/bin/sh
 
-SVNLOOK="/usr/bin/svnlook"
-AWK="/usr/bin/awk"
 PROPERTY="VisIt:VersionSpecificLogic"
-
 REPOS="$1"
 TXN="$2"
 
