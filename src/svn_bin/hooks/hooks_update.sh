@@ -8,8 +8,8 @@
 #
 ##############################################################################
 
-SVNLOOK="/usr/bin/svnlook"
-AWK="/usr/bin/awk"
+#SVNLOOK="/usr/bin/svnlook"
+#AWK="/usr/bin/awk"
 
 REPOS="$1"
 TXN="$2"
@@ -20,8 +20,8 @@ function log()
 }
 
 echo "got here" >> foobar
-echo "${SVNLOOK} >> foobar
-echo "${AWK} >> foobar
+echo "${SVNLOOK}" >> foobar
+echo "${AWK}" >> foobar
 
 if [ -z "${REPOS}" ]; then
     log "Repository path not given, bailing out."
