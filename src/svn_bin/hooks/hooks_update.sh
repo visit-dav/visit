@@ -98,7 +98,6 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
 	log "UN-installing hook script $bf from $REPOS/hooks/$bf"
         ${RM} -f $REPOS/hooks/$bf 1>/dev/null 2>&1
     fi
-
 done
 
 exit $hadError 
