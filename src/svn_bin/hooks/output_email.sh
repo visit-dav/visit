@@ -35,7 +35,7 @@ TMPFILE="/tmp/email.sh"
 #### Program locations.
 SVNLOOK=/usr/bin/svnlook
 RM=/bin/rm
-BASH=/bin/bash
+SH=/bin/sh
 
 ###########################################################
 # You should not need to modify anything below this line. #
@@ -61,6 +61,6 @@ ${SVNLOOK} cat ${REPOS} ${SCRIPTFILE} > ${TMPFILE}
 if test "x$?" = "x1"; then
     error "email script does not exist in repository."
 fi
-address=`${BASH} ${TMPFILE} $author`
+address=`${SH} ${TMPFILE} $author`
 ${RM} -f ${TMPFILE}
 /bin/echo "${address}"
