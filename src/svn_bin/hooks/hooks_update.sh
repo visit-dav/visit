@@ -21,6 +21,7 @@ function log()
 
 echo "got here" >> foobar
 
+
 if [ -z "${REPOS}" ]; then
     log "Repository path not given, bailing out."
     exit 1
