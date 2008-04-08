@@ -46,6 +46,11 @@ if test -n "$theConfigureDotInFile"; then
         log "Attempt to update \"configure.in\" without also updating \"configure\""
 	exit 1
     fi
+elif test -n "$theConfigureFile"; then
+    if test -z "$theConfigureDotInFile"; then
+        log "Attempt to update \"configure\" without also updating \"configure.in\""
+	exit 1
+    fi
 fi
 
 # get and check autoconf version number
