@@ -77,9 +77,13 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
 	fi
     fi
 
-    ${SH} ${SVNLOOK} cat -r $REV $REPOS $f > $REPOS/hooks/$bf
-    ${CHGRP} $VISIT_GROUP_NAME $REPOS/hooks/$bf
-    ${CHMOD} 770 $REPOS/hooks/$bf
+    ${SVNLOOK} cat -r $REV $REPOS $f > $REPOS/hooks/$bf
+    if test -s $REPOS/hooks/$bf; then
+        ${CHGRP} $VISIT_GROUP_NAME $REPOS/hooks/$bf
+        ${CHMOD} 770 $REPOS/hooks/$bf
+    else
+        ${RM} $REPOS/hooks/$bf
+    fi
 done
 
 # all is well!
