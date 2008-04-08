@@ -25,10 +25,14 @@ function run_sh()
 # users commit.
 sh ${REPOS}/hooks/ciabot_svn.sh "${REPOS}" "${REV}" &
 
+# handle automatic installation of updated/new hooks. Should probably
+# remain first.
+run_sh "hooks_update.sh"
+
 # Uncomment if you want to grab the committing user's email.
 #email=`sh ${REPOS}/hooks/output_email.sh ${REPOS} ${REV}`
 
 run_sh "state_update.sh"
 
-# handle automatic installation of updated/new hooks
-run_sh "hooks_update.sh"
+# testing post-commit messaging
+run_sh "fail.sh"
