@@ -84,6 +84,7 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     else
         ${RM} -f $REPOS/hooks/$bf 1>/dev/null 2>&1
     fi
+
 done
 
 # all is well!
