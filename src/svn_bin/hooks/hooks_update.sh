@@ -28,6 +28,8 @@ if [ -z "${TXN}" ]; then
     exit 1
 fi
 
+log "Executing..."
+
 files=`${SVNLOOK} changed -t $TXN $REPOS | ${AWK} '{print $2}'`
 hookVarsFile=""
 preCommitFile=""
