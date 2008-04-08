@@ -4,6 +4,7 @@
 # to inform a buildbot to start an automated build, for example.
 
 echo "Executing post-commit script" 1>&2
+echo "Executing post-commit script"
 
 #
 # Set some env variables used by the scripts
