@@ -11,13 +11,13 @@ REV="$2"
 #
 source ${REPOS}/hooks/hook_vars.sh
 
-
+hadError=0
 function run_sh()
 {
    SCRIPT="$@"
    sh ${REPOS}/hooks/${SCRIPT} ${REPOS} ${REV}
    if [ $? != 0 ]; then
-      exit 1
+       hadError=1
    fi
 }
 
@@ -36,3 +36,5 @@ run_sh "state_update.sh"
 
 # testing post-commit messaging
 run_sh "fail.sh"
+
+exit $hadError
