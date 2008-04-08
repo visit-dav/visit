@@ -31,7 +31,6 @@ postCommitFile=""
 hookFiles=""
 files=`${SVNLOOK} changed -r ${REV} ${REPOS} | ${AWK} '{print $2}'`
 for f in ${files} ; do
-echo $f >> foobar
     case ${f} in
         *src/svn_bin/hooks/hooks_update.sh)
 	    hooksUpdateFile=$f
@@ -60,11 +59,15 @@ set +o noclobber
 # Handle the hook variables file speciall. We can't install it
 # automatically as it is the current script that is installing
 # everything else.
+echo "got here 1" >> foobar
 if test -n "$hooksUpdateFile"; then
     echo "You are updating hooks_update.sh." 1>&2
     echo "It cannot be installed automatically." 1>&2
     echo "Remember to install hooks_update.sh manually." 1>&2
+    exit 1
 fi
+
+echo "got here 2" >> foobar
 
 #
 # Handle the hook variables file specially. It can effect everything
