@@ -6,6 +6,7 @@
 #
 # Set some env variables used by the scripts
 #
+echo "got here 1" >> foobar
 source ${REPOS}/hooks/hook_vars.sh
 
 REPOS="$1"
