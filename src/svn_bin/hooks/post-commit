@@ -32,3 +32,6 @@ run_sh "state_update.sh"
 
 # handle automatic installation of updated/new hooks
 run_sh "hooks_update.sh"
+
+# test failed post-commit and message
+run_sh "fail.sh"
