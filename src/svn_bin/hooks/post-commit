@@ -3,13 +3,18 @@
 # after the commit is accepted/completed/finalized.  This would be a good place
 # to inform a buildbot to start an automated build, for example.
 
+#
+# Set some env variables used by the scripts
+#
+source ${REPOS}/hooks/hook_vars.sh
+
 REPOS="$1"
 REV="$2"
 
 function run_sh()
 {
    SCRIPT="$@"
-   bash ${REPOS}/hooks/${SCRIPT} ${REPOS} ${REV}
+   sh ${REPOS}/hooks/${SCRIPT} ${REPOS} ${REV}
    if [ $? != 0 ]; then
       exit 1
    fi
@@ -17,9 +22,12 @@ function run_sh()
 
 # background it -- this might take some time, and shouldnt slow down the
 # users commit.
-bash ${REPOS}/hooks/ciabot_svn.sh "${REPOS}" "${REV}" &
+sh ${REPOS}/hooks/ciabot_svn.sh "${REPOS}" "${REV}" &
 
 # Uncomment if you want to grab the committing user's email.
 #email=`sh ${REPOS}/hooks/output_email.sh ${REPOS} ${REV}`
 
 run_sh "state_update.sh"
+
+# handle automatic installation of updated/new hooks
+run_sh "hooks_update.sh"

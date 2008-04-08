@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 SVNLOOK="/usr/bin/svnlook"
 AWK="/usr/bin/awk"

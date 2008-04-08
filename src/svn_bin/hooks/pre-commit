@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # VisIt pre-commit hook script.
 #
@@ -11,13 +11,18 @@
 # All pre-commit scripts take REPOSITORY_PATH and TRANSACTION_ID as arguments,
 # in that order.  See the subversion redbook for more information.
 
+#
+# Set some env variables used by the scripts
+#
+source ${REPOS}/hooks/hook_vars.sh
+
 REPOS="$1"
 TXN="$2"
 
 function runhook_sh()
 {
    TEST="$@"
-   bash ${REPOS}/hooks/${TEST} ${REPOS} ${TXN}
+   sh ${REPOS}/hooks/${TEST} ${REPOS} ${TXN}
    if [ $? != 0 ]; then
       exit 1
    fi

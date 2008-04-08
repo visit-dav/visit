@@ -11,7 +11,6 @@
 SVNLOOK=/usr/bin/svnlook
 AWK=/usr/bin/awk
 RM=/bin/rm
-BASH=/bin/bash
 
 ###########################################################
 # You should not need to modify anything below this line. #
