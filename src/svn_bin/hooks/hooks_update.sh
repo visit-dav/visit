@@ -66,7 +66,7 @@ if test -n "$hookVarsFile"; then
 fi
 
 #
-# Re-Install any committed hooks 
+# Re-Install any committed (or UN-install any removed) hooks 
 #
 for f in $preCommitFile $postCommitFile ${hookFiles} ; do
     bf=`${BASENAME} $f`
@@ -81,7 +81,13 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
 	fi
     fi
 
+    # Install the file (or at least try to)
     ${SVNLOOK} cat -r $REV $REPOS $f > $REPOS/hooks/$bf
+
+    #
+    # If the file exists and is non-zero size, it has been added/modified.
+    # Otherwise, it has been deleted
+    #
     if test -s $REPOS/hooks/$bf; then
         log "Installing hook script $bf to $REPOS/hooks/$bf"
         ${CHGRP} $VISIT_GROUP_NAME $REPOS/hooks/$bf 1>/dev/null 2>&1
@@ -90,6 +96,7 @@ for f in $preCommitFile $postCommitFile ${hookFiles} ; do
 	log "UN-installing hook script $bf from $REPOS/hooks/$bf"
         ${RM} -f $REPOS/hooks/$bf 1>/dev/null 2>&1
     fi
+
 done
 
 exit $hadError 
