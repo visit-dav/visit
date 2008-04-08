@@ -8,9 +8,6 @@
 # situation, it will print a message to the user's terminal (if appropriate).
 # If you install it as a `pre-commit' hook, it would abort the transaction.
 #####
-SVNLOOK=/usr/bin/svnlook
-AWK=/usr/bin/awk
-RM=/bin/rm
 
 ###########################################################
 # You should not need to modify anything below this line. #
