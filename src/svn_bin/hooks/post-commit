@@ -3,6 +3,8 @@
 # after the commit is accepted/completed/finalized.  This would be a good place
 # to inform a buildbot to start an automated build, for example.
 
+echo "Executing post-commit script" 1>&2
+
 #
 # Set some env variables used by the scripts
 #
