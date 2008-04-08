@@ -22,6 +22,8 @@ function log()
 echo "got here" >> foobar
 echo "${SVNLOOK}" >> foobar
 echo "${AWK}" >> foobar
+echo "${REPOS}" >> foobar
+echo "${TXN}" >> foobar
 
 if [ -z "${REPOS}" ]; then
     log "Repository path not given, bailing out."
