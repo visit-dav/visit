@@ -66,6 +66,7 @@ fi
 #
 for gorfo in ${hookFiles} ; do
     echo "gorfo= $gorfo" >> foobar
+
 done
 
 #for f in $preCommitFile $postCommitFile ${hookFiles} ; do
