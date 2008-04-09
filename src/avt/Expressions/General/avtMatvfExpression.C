@@ -157,6 +157,9 @@ avtMatvfExpression::PreExecute(void)
 //    Make sure to only request post ghost Material object if the
 //    dataset has ghost zones. 
 //
+//    Cyrus Harrison, Wed Apr  9 10:57:19 PDT 2008
+//    Only use post ghost material info if VisIt created the ghost zones.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -179,12 +182,14 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds)
     // if necessary.
     //
 
-    // only ask for post ghost Material info if the dataset actuall
-    // has ghost zones
+    // only ask for post ghost Material info if the dataset actually
+    // has ghost zones and VisIt created them. 
     
-    if(!in_ds->GetCellData()->GetArray("avtGhostZones"))
+    avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
+    bool created_ghosts = datts.GetContainsGhostZones() != AVT_CREATED_GHOSTS;
+    if(!in_ds->GetCellData()->GetArray("avtGhostZones") || created_ghosts)
         doPostGhost = false;
-    
+
     debug5 << "avtMatvfExpression: Using post ghost material object ?  " 
            << doPostGhost <<endl;
     
@@ -603,14 +608,8 @@ avtMatvfExpression::AddMaterial(ConstExpr *c)
 //
 //  Purpose:
 //      This routine allows the filter to change the data specification.
-//      It is only re-defined for matvf to get around a shortcoming in the
-//      generic database.  The problem is that if ghost zones are communicated,
-//      the new avtMaterial object (if it exists at all), is not stored 
-//      anywhere for this filter to get.  Instead, this filter will get the
-//      original avtMaterial object and quickly have an internal error.
-//
-//      This could be solved in the generic database, but require a fairly
-//      large re-organization.  For more information, look at '3939.
+//      It is redefined for matvf to request post ghost material info from
+//      avtGenericDatabase.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 24, 2003
@@ -624,14 +623,16 @@ avtMatvfExpression::AddMaterial(ConstExpr *c)
 //    Request post ghost material info, to allow matvf to be used with  
 //    ghost zones.
 //
+//    Cyrus Harrison, Wed Apr  9 11:04:33 PDT 2008
+//    Request post ghost material info as long as we are not doing mir.
+//
 // ****************************************************************************
 
 avtContract_p
 avtMatvfExpression::ModifyContract(avtContract_p spec)
 {
-    // check for ghost zones and no material selection
-    if(spec->GetDataRequest()->GetDesiredGhostDataType() == GHOST_ZONE_DATA &&
-       !spec->GetDataRequest()->MustDoMaterialInterfaceReconstruction() )
+    // request post ghost material info, as long as we are not doing mir
+    if( !spec->GetDataRequest()->MustDoMaterialInterfaceReconstruction() )
     {
         spec->GetDataRequest()->SetNeedPostGhostMaterialInfo(true);
         doPostGhost = true;

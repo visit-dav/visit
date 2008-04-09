@@ -124,6 +124,9 @@ avtPerMaterialValueExpression::~avtPerMaterialValueExpression()
 //    Make sure to only request post ghost Material & Mixedvar objects 
 //    if the dataset has ghost zones. 
 //
+//    Cyrus Harrison, Wed Apr  9 11:11:40 PDT 2008
+//    Make sure to only do post ghost case if VisIt created the ghost zones.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -154,9 +157,14 @@ avtPerMaterialValueExpression::DeriveVariable(vtkDataSet *in_ds)
     
     }
 
-    if(!in_ds->GetCellData()->GetArray("avtGhostZones"))
-        doPostGhost = false;
+    // only ask for post ghost Material info if the dataset actually
+    // has ghost zones and VisIt created them. 
     
+    avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
+    bool created_ghosts = datts.GetContainsGhostZones() != AVT_CREATED_GHOSTS;
+    if(!in_ds->GetCellData()->GetArray("avtGhostZones") || created_ghosts)
+        doPostGhost = false;
+
     debug5 << "avtPerMaterialValueExpression: Using post ghost material "
               " and mixedvar objects ?  " << doPostGhost <<endl;
     
@@ -335,14 +343,8 @@ avtPerMaterialValueExpression::ProcessArguments(ArgsExpr *args,
 //
 //  Purpose:
 //      This routine allows the filter to change the data specification.
-//      It is only re-defined for matvf to get around a shortcoming in the
-//      generic database.  The problem is that if ghost zones are communicated,
-//      the new avtMaterial object (if it exists at all), is not stored 
-//      anywhere for this filter to get.  Instead, this filter will get the
-//      original avtMaterial object and quickly have an internal error.
-//
-//      This could be solved in the generic database, but require a fairly
-//      large re-organization.  For more information, look at '3939.
+//      It is redefined for val4mat to request post ghost material and
+//      mixed var info from avtGenericDatabase.
 //
 //  Programmer: Cyrus Harrison (copied from Hank Childs' matvf implementation)
 //  Creation:   January 29, 2008
@@ -353,14 +355,16 @@ avtPerMaterialValueExpression::ProcessArguments(ArgsExpr *args,
 //    Request post ghost material info, to allow val4mat to be used with  
 //    ghost zones.
 //
+//    Cyrus Harrison, Wed Apr  9 11:04:33 PDT 2008
+//    Request post ghost material info as long as we are not doing mir.
+//
 // ****************************************************************************
 
 avtContract_p
 avtPerMaterialValueExpression::ModifyContract(avtContract_p spec)
 {
-    // check for ghost zones and no material selection
-    if(spec->GetDataRequest()->GetDesiredGhostDataType() == GHOST_ZONE_DATA &&
-       !spec->GetDataRequest()->MustDoMaterialInterfaceReconstruction() )
+    // request post ghost material info, as long as we are not doing mir
+    if( !spec->GetDataRequest()->MustDoMaterialInterfaceReconstruction() )
     {
         spec->GetDataRequest()->SetNeedPostGhostMaterialInfo(true);
         doPostGhost = true;
