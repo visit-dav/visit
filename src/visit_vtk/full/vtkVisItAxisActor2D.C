@@ -1376,6 +1376,11 @@ vtkVisItAxisActor2D::GetMTime()
 //   Add a little defensive coding for when bad ranges are fed in.  Also cap
 //   the number of ticks at 10,000, which is hopefully a reasonable thing to do
 //
+//   Kathleen Bonnell, Tue Apr  8 17:00:24 PDT 2008 
+//   Removed unnecessary code that filled up an array (dx) of which only the
+//   first component was ever used.  Bad indexing into that array was causing 
+//   a crash. 
+//
 // ----------------------------------------------------------------------------
 
 void 
@@ -1452,7 +1457,8 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
 
   va = pow(10., va);
   vb = pow(10., vb);
-  double *dx = new double[n];
+
+  double dx; 
 
   int ilv1 = (int) log10(v1);
   int ilv2 = (int) log10(v2);
@@ -1463,74 +1469,39 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
     dexp = na/10;
   else 
     dexp = 1;
-  int rmnd = n - na;
-  int step = rmnd / na;
+  int rmnd = n -na;
+  int step = rmnd/na;
   step = step < nDecades ? step : nDecades;
-  double sub[10]; 
-  int i, j, k, jin, jout;
+  na = (na/dexp) + step*(na-1);
 
-  if (step > 0)
-    {
-    for (j = 0; j <= step; j++)
-      sub[j] = log_value[j];
-    if (step < 4)
-      sub[step] = log_value[4];
-    }
-  na = (na/dexp) + step*(na - 1);
-
-  step++;
-  int decade;
-  for (j = 0, decade = ilv1; j < na; decade += dexp)
-    {
-    double *pdx    = dx + j;
-    pdx[0] = (double) decade;
-    j++;
-    if (step > 1)
-      {
-      for (k = 1; (k < step) && (j < na); k++, j++)
-        {
-        pdx[k] = (double) decade + sub[k];
-        }
-      }
-    }
-
+  dx = (double) ilv1;
   // exponentiate the spacings and remove anybody outside the range
   if (na > 2)
     {
     double v1d = 0.9999*v1;
     double v2d = 1.0001*v2;
-    for (jin = 0, jout = 0; jin < na; jin++)
+    double t = pow(10., dx);
+    if ((v1d <= t) && (t <= v2d))
       {
-      double t = pow(10., dx[jin]);
-      if ((v1d <= t) && (t <= v2d))
-        {
-        double s = floor(log10(1.0000000001*t));
-        if (((s != 0.0) || (dx[jin] != 0.0)) && !CLOSETO_REL(s, dx[jin]))
-            continue;
-        dx[jout++] = t;
-        }
+      double s = floor(log10(1.0000000001*t));
+      if (!(((s != 0.0) || (dx != 0.0)) && !CLOSETO_REL(s, dx)))
+        dx = t;
       }
-      na = jout;
     }
   else
     {
-    for (j = 0; j < na; j++)
-      {
-      double t = pow(10., dx[j]);
-      dx[j] = t;
-      }
+      dx = pow(10., dx);
     }
 
   if (va > vb)
-    vb = dx[0];
+    vb = dx;
   else
-    va = dx[0];
+    va = dx;
 
   if (va == 0) // cannot use va for Major Tick comps.
     n = 0;
-
-  delete dx;
-
+ 
+  int i, j;
   n = (int)(n < (2.0 + EPSILON) ? 2 : n);
 
   lv1 = sortedRange[0];
