@@ -302,6 +302,9 @@ $0 = shift @ARGV;
 #    Mark C. Miller, Thu Apr  3 14:54:42 PDT 2008
 #    Added comments regarding -debug_<compname> and -vtk-debug arguments.
 #
+#    Gunther H. Weber, Tue Apr  8 17:32:24 PDT 2008
+#    Added franklin.nersc.gov specific code
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1089,6 +1092,19 @@ if ( ($parallel) and $exe_name eq "engine" and $host =~ /jaguar/ )
 	}
     }
 }
+
+# ----
+# HACK for franklin @ NERSC
+#
+# ----
+$IsRunningOnFranklinNERSC = 0;
+# FIXME: Need to find a better way to check whether we are running on franklin
+if ( -e "$visitdir/franklin.nersc.gov" )
+{
+    $IsRunningOnFranklinNERSC = 1;
+    $ENV{LD_LIBRARY_PATH} = join ':' ,
+         ("$ENV{LD_LIBRARY_PATH}", "/opt/gcc/4.2.3/snos/lib64");
+}     
 
 # ----
 #  HACK to allow other talk-back interfaces
@@ -1931,6 +1947,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             $ppn = ceil($procs / $nodes);
 	    $qsubNumNodeStr = "nodes";
 	    if ( $IsRunningOnJaguarCNL_ORNL ) {$qsubNumNodeStr = "size";}
+	    if ( $IsRunningOnFranklinNERSC ) {$qsubNumNodeStr = "mppwidth";}
 	    if ($use_vis) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes";}
 	    else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes"; }
             push @parcmd, "-l", "walltime=$time" if $time_set;
