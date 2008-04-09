@@ -26,6 +26,9 @@
 #    Cyrus Harrison, Tue Feb 12 15:16:36 PST 2008
 #    Added explicit tests for matvf w/ ghost zones. 
 #
+#    Cyrus Harrison, Wed Apr  9 11:17:22 PDT 2008
+#    Added new test for post ghost info.
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -224,6 +227,17 @@ SetPlotOptions(atts)
 DrawPlots()
 Test("matvf_post_ghost_3")
 
+CloseDatabase("../data/thinplane.silo")
+OpenDatabase("../data/bigsil.silo")
+
+# test for gradient w/ matvf, to check if post ghosts were correctly 
+# requested. 
+
+DeleteAllPlots()
+DefineScalarExpression("gate", "agrad(dist)[0] * matvf(mat,1)")
+AddPlot("Pseudocolor", "gate")
+DrawPlots()
+Test("matvf_post_ghost_4")
 
 
 Exit()
