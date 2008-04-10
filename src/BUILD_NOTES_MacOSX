@@ -7,7 +7,7 @@ on Intel and 10.3.9 on PPC.
 build_visit
   The recomended method for building VisIt on MacOS X is to use the 
   build_visit script available at:
-    http://www.llnl.gov/VisIt/1.8/build_visit 
+    http://www.llnl.gov/VisIt/1.9.0/build_visit 
   Note: you may need to restore the execute permissions after downloading
   with, chmod +x build_visit
   Using build_visit a basic build for the Mac can be initiated with:
@@ -22,7 +22,7 @@ build_visit
   is not include in the distribution of MacOS X. A source distribution of
   dialog is available at: http://invisible-island.net/dialog/dialog.tar.gz,
   and a Universal binary is available at:
-    http://www.llnl.gov/VisIt/1.8/dialog
+    http://www.llnl.gov/VisIt/1.9.0/dialog
   Note: you may need to restore the execute permissions after downloading
   with, chmod +x dialog
 
@@ -58,10 +58,10 @@ Universal binary
   Building of a universal install target requires 2 independent builds of VisIt
   and its supporting libraries. The PowerPC Mac be running at least MacOS
   X10.3.9, and the Intel Mac running MacOS X10.4.x (Tiger). Each build is put
-  into a binary distribution tarball (e.g., visit1_8.darwin-ppc.tar.gz or
-  visit1_8.darwin-i386.tar.gz) by the clearcase_bin/visit-bin-dist step.
+  into a binary distribution tarball (e.g., visit1_9_0.darwin-ppc.tar.gz or
+  visit1_9_0.darwin-i386.tar.gz) by the clearcase_bin/visit-bin-dist step.
   Each of these tarballs can be installed in a executable distributions,
-  see: http://www/visit/1.8/INSTALL_NOTES.
+  see: http://www/visit/1.9.0/INSTALL_NOTES.
 
 Build Notes (if you still want to do it by hand)s
   VisIt relies on several external libraries which must be built and installed

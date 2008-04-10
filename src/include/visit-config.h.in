@@ -27,6 +27,9 @@
 /* Define if you have ios::noreplace. */
 #undef HAVE_IOS_NOREPLACE
 
+/* Define to 1 if you have the `isfinite' function. */
+#undef HAVE_ISFINITE
+
 /* Define if you have the bz2 library. */
 #undef HAVE_LIBBZ2
 
