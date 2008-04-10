@@ -90,6 +90,9 @@
 //   Brad Whitlock, Mon Mar 26 11:41:10 PDT 2007
 //   Added drawTitlesCheckBox.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
@@ -103,7 +106,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
     cLayout->setSpacing(10);
 
     // Add controls for the layout management.
-    manageLayout = new QCheckBox("Let VisIt manage legend position", this, "manageLayout");
+    manageLayout = new QCheckBox(tr("Let VisIt manage legend position"), this, "manageLayout");
     connect(manageLayout, SIGNAL(toggled(bool)),
             this, SLOT(layoutChanged(bool)));
     cLayout->addMultiCellWidget(manageLayout, row, row, 0, 3);
@@ -114,7 +117,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
     connect(positionEdit, SIGNAL(screenPositionChanged(double, double)),
             this, SLOT(positionChanged(double, double)));
     cLayout->addMultiCellWidget(positionEdit, row, row, 1, 3);
-    positionLabel = new QLabel(positionEdit, "Legend position", this);
+    positionLabel = new QLabel(positionEdit, tr("Legend position"), this);
     cLayout->addWidget(positionLabel, row, 0);
     ++row;
 
@@ -125,7 +128,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
     connect(widthSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(widthChanged(int)));
     cLayout->addWidget(widthSpinBox, row, 1);
-    cLayout->addWidget(new QLabel(widthSpinBox, "X-scale",
+    cLayout->addWidget(new QLabel(widthSpinBox, tr("X-scale"),
         this), row, 0);
 
     heightSpinBox = new QSpinBox(1, int(WIDTH_HEIGHT_PRECISION * 5), 1, this, "heightSpinBox");
@@ -134,7 +137,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
     connect(heightSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(heightChanged(int)));
     cLayout->addWidget(heightSpinBox, row, 3);
-    cLayout->addWidget(new QLabel(widthSpinBox, "Y-scale",
+    cLayout->addWidget(new QLabel(widthSpinBox, tr("Y-scale"),
         this), row, 2);
     ++row;
 
@@ -144,7 +147,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
     ++row;
 
     // Add controls for the text color.
-    drawBoundingBoxCheckBox = new QCheckBox("Bounding box", this,
+    drawBoundingBoxCheckBox = new QCheckBox(tr("Bounding box"), this,
         "drawBoundingBoxCheckBox");
     connect(drawBoundingBoxCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(drawBoundingBoxToggled(bool)));
@@ -162,11 +165,11 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
     ++row;
 
     // Turn off pieces of the legend.
-    drawTitleCheckBox = new QCheckBox("Draw title", this, "drawTitleCheckBox");
+    drawTitleCheckBox = new QCheckBox(tr("Draw title"), this, "drawTitleCheckBox");
     connect(drawTitleCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(drawTitleToggled(bool)));
     cLayout->addWidget(drawTitleCheckBox, row, 0);
-    drawLabelsCheckBox = new QCheckBox("Draw labels", this, "drawLabelsCheckBox");
+    drawLabelsCheckBox = new QCheckBox(tr("Draw labels"), this, "drawLabelsCheckBox");
     connect(drawLabelsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(drawLabelsToggled(bool)));
     cLayout->addMultiCellWidget(drawLabelsCheckBox, row, row, 1, 3);
@@ -181,7 +184,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
     textColorButton = new QvisColorButton(this, "textColorButton");
     connect(textColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(textColorChanged(const QColor &)));
-    textColorLabel = new QLabel(textColorButton, "Text color", this);
+    textColorLabel = new QLabel(textColorButton, tr("Text color"), this);
     cLayout->addWidget(textColorLabel, row, 2, Qt::AlignLeft);
     cLayout->addWidget(textColorButton, row, 3);
 #ifdef TEXT_OPACITY_SUPPORTED
@@ -194,7 +197,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
 #endif
 
     // Added a use foreground toggle
-    useForegroundColorCheckBox = new QCheckBox("Use foreground color", this,
+    useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this,
         "useForegroundColorCheckBox");
     connect(useForegroundColorCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(useForegroundColorToggled(bool)));
@@ -206,14 +209,14 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
     connect(formatString, SIGNAL(returnPressed()),
             this, SLOT(textChanged()));
     cLayout->addWidget(formatString, row, 3);
-    cLayout->addWidget(new QLabel(formatString, "Number format",
+    cLayout->addWidget(new QLabel(formatString, tr("Number format"),
         this), row, 2);
     // Add control for text font height
     fontHeight = new QNarrowLineEdit(this, "fontHeight");
     connect(fontHeight, SIGNAL(returnPressed()),
             this, SLOT(fontHeightChanged()));
     cLayout->addWidget(fontHeight, row, 1);
-    cLayout->addWidget(new QLabel(fontHeight, "Font height",
+    cLayout->addWidget(new QLabel(fontHeight, tr("Font height"),
         this), row, 0);
     ++row;
 
@@ -226,21 +229,21 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
     connect(fontFamilyComboBox, SIGNAL(activated(int)),
             this, SLOT(fontFamilyChanged(int)));
     cLayout->addMultiCellWidget(fontFamilyComboBox, row, row, 1, 3);
-    cLayout->addWidget(new QLabel("Font family", this), row, 0);
+    cLayout->addWidget(new QLabel(tr("Font family"), this), row, 0);
     ++row;
 
     // Add controls for font properties.
-    boldCheckBox = new QCheckBox("Bold", this, "boldCheckBox");
+    boldCheckBox = new QCheckBox(tr("Bold"), this, "boldCheckBox");
     connect(boldCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(boldToggled(bool)));
     cLayout->addWidget(boldCheckBox, row, 0);
 
-    italicCheckBox = new QCheckBox("Italic", this, "italicCheckBox");
+    italicCheckBox = new QCheckBox(tr("Italic"), this, "italicCheckBox");
     connect(italicCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(italicToggled(bool)));
     cLayout->addWidget(italicCheckBox, row, 1);
 
-    shadowCheckBox = new QCheckBox("Shadow", this, "shadowCheckBox");
+    shadowCheckBox = new QCheckBox(tr("Shadow"), this, "shadowCheckBox");
     connect(shadowCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(shadowToggled(bool)));
     cLayout->addWidget(shadowCheckBox, row, 2);
@@ -481,6 +484,8 @@ QvisLegendAttributesInterface::UpdateControls()
 // Creation:   Tue Mar 20 16:00:25 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -492,7 +497,7 @@ QvisLegendAttributesInterface::GetCurrentValues(int which_widget)
     if(which_widget == 0 || doAll)
     {
         // Get the new position
-        GetScreenPosition(positionEdit, "Lower left");
+        GetScreenPosition(positionEdit, tr("Lower left"));
     }
 
     if(which_widget == 1 || doAll)
@@ -504,13 +509,13 @@ QvisLegendAttributesInterface::GetCurrentValues(int which_widget)
                 ++count;
         if(count == 0)
         {
-            Error("The format string for the legend was not used because it "
-                  "does not contain a '%' character.");
+            Error(tr("The format string for the legend was not used because it "
+                     "does not contain a '%' character."));
         }
         else if(count > 1)
         {
-            Error("The format string for the legend was not used because it "
-                  "contains multiple '%' characters.");
+            Error(tr("The format string for the legend was not used because it "
+                     "contains multiple '%' characters."));
         }
         else
         {

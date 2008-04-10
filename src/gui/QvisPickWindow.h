@@ -131,6 +131,9 @@ class PickAttributes;
 //   Kathleen Bonnell, Thu Nov 29 15:32:32 PST 2007 
 //   Added defaultAutoShow, defaultSavePicks, defaultNumTabs, clearPicks(). 
 //
+//   Brad Whitlock, Wed Apr  9 11:29:38 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -138,8 +141,8 @@ class GUI_API QvisPickWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisPickWindow( PickAttributes *subj,
-                    const char *caption = 0,
-                    const char *shortName = 0,
+                    const QString &caption = QString::null,
+                    const QString &shortName = QString::null,
                     QvisNotepadArea *notepad = 0);
     virtual ~QvisPickWindow();
 

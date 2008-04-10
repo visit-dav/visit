@@ -58,9 +58,12 @@
 //   Brad Whitlock, Mon Sep 30 07:51:17 PDT 2002
 //   I added window flags.
 //
+//   Brad Whitlock, Wed Apr  9 10:31:45 PDT 2008
+//   Changed ctor args.
+//
 // ****************************************************************************
 
-QvisDelayedWindow::QvisDelayedWindow(const char *captionString, WFlags f) : 
+QvisDelayedWindow::QvisDelayedWindow(const QString &captionString, WFlags f) : 
     QvisWindowBase(captionString, f)
 {
     isCreated = false;

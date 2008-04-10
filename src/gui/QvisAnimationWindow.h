@@ -64,6 +64,9 @@ class QSlider;
 //   Brad Whitlock, Mon Oct 6 16:19:59 PST 2003
 //   Added a controls to let the users set the animation style.
 //
+//   Brad Whitlock, Wed Apr  9 10:59:35 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisAnimationWindow : public QvisPostableWindowObserver
@@ -71,8 +74,8 @@ class GUI_API QvisAnimationWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisAnimationWindow(AnimationAttributes *subj,
-                        const char *caption = 0,
-                        const char *shortName = 0,
+                        const QString &caption = QString::null,
+                        const QString &shortName = QString::null,
                         QvisNotepadArea *notepad = 0);
     virtual ~QvisAnimationWindow();
     virtual void CreateWindowContents();

@@ -81,13 +81,16 @@ class QvisRecentPathRemovalWindow;
 //   Jeremy Meredith, Wed Jan 23 15:32:24 EST 2008
 //   Added button to let the user set the default opening options.
 //
+//   Brad Whitlock, Wed Apr  9 10:44:36 PDT 2008
+//   Use QString for winCaption.
+//
 // ****************************************************************************
 
 class GUI_API QvisFileOpenWindow : public QvisDelayedWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisFileOpenWindow(const char *winCaption = 0);
+    QvisFileOpenWindow(const QString &winCaption = QString::null);
     virtual ~QvisFileOpenWindow();
     virtual void CreateWindowContents();
     virtual void SubjectRemoved(Subject *TheRemovedSubject);

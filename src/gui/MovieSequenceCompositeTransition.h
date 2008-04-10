@@ -51,6 +51,9 @@
 // Creation:   Mon Oct 16 10:40:43 PDT 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:03:10 PDT 2008
+//   Made SequenceMenuName return QString and moved the implementation to the
+//   .C file so we can more easily internationalize.
 //
 // ****************************************************************************
 
@@ -80,7 +83,7 @@ public:
     virtual MovieSequence *NewInstance() const      { return new MovieSequenceCompositeFadeIn; }
     virtual int SequenceId() const                  { return 200; }
     virtual std::string SequenceName() const        { return "CompositeFadeIn"; }
-    virtual std::string SequenceMenuName() const    { return "Fade in viewport"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -93,7 +96,7 @@ public:
     virtual MovieSequence *NewInstance() const      { return new MovieSequenceCompositeFadeOut; }
     virtual int SequenceId() const                  { return 201; }
     virtual std::string SequenceName() const        { return "CompositeFadeOut"; }
-    virtual std::string SequenceMenuName() const    { return "Fade out viewport"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -111,7 +114,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceCompositeLRSlide; }
     virtual int SequenceId() const                    { return 202; }
     virtual std::string SequenceName() const          { return "CompositeLRSlide"; }
-    virtual std::string SequenceMenuName() const      { return "Slide in viewport left to right"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -124,7 +127,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceCompositeRLSlide; }
     virtual int SequenceId() const                    { return 203; }
     virtual std::string SequenceName() const          { return "CompositeRLSlide"; }
-    virtual std::string SequenceMenuName() const      { return "Slide in viewport right to left"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -137,7 +140,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceCompositeTBSlide; }
     virtual int SequenceId() const                    { return 204; }
     virtual std::string SequenceName() const          { return "CompositeTBSlide"; }
-    virtual std::string SequenceMenuName() const      { return "Slide in viewport top to bottom"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -150,7 +153,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceCompositeBTSlide; }
     virtual int SequenceId() const                    { return 205; }
     virtual std::string SequenceName() const          { return "CompositeBTSlide"; }
-    virtual std::string SequenceMenuName() const      { return "Slide in viewport bottom to top"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 

@@ -59,6 +59,8 @@
 // Creation:   Wed Nov 8 10:12:57 PDT 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -85,7 +87,8 @@ QvisRotationTransition::QvisRotationTransition(const QPixmap &pix,
     startAngle->setMinValue(-360 * 100);
     startAngle->setMaxValue(360 * 100);
     startAngle->setValue(0);
-    QString startLabel; startLabel.sprintf("Start angle%c", 176);
+    QString deg; deg.sprintf("%c", 176);
+    QString startLabel(tr("Start angle") + deg);
     gLayout->addWidget(
         new QLabel(startLabel, this, "startAngle"), 0, 0);
     gLayout->addWidget(startAngle, 0, 1);
@@ -94,7 +97,7 @@ QvisRotationTransition::QvisRotationTransition(const QPixmap &pix,
     endAngle->setMinValue(-360 * 100);
     endAngle->setMaxValue(360 * 100);
     endAngle->setValue(360);
-    QString endLabel; endLabel.sprintf("End angle%c", 176);
+    QString endLabel(tr("End angle") +deg);
     gLayout->addWidget(
         new QLabel(endLabel, this, "endAngle"), 1, 0);
     gLayout->addWidget(endAngle, 1, 1);
@@ -104,7 +107,7 @@ QvisRotationTransition::QvisRotationTransition(const QPixmap &pix,
     nSteps->setMinValue(1);
     nSteps->setValue(30);
     gLayout->addWidget(
-        new QLabel("Number of steps", this, "nStepsLabel"), 2, 0);
+        new QLabel(tr("Number of steps"), this, "nStepsLabel"), 2, 0);
     gLayout->addWidget(nSteps, 2, 1);
 
     innerLayout->addStretch(10);

@@ -73,10 +73,13 @@ int  QvisWindowBase::windowAnchor[2] = {0,0};
 //   I made all windows be children of the main window on MacOS X so when
 //   child windows are active, the VisIt menu does not change.
 //
+//   Brad Whitlock, Wed Apr  9 10:32:23 PDT 2008
+//   Changed ctor args.
+//
 // ****************************************************************************
 
-QvisWindowBase::QvisWindowBase(const char *captionString, WFlags f) :
-    QMainWindow(parentOfEveryWindow, captionString,
+QvisWindowBase::QvisWindowBase(const QString &captionString, WFlags f) :
+    QMainWindow(parentOfEveryWindow, captionString.ascii(),
 #if defined(Q_WS_WIN) || defined(Q_WS_MACX)
                 WType_TopLevel | f)
 {
@@ -89,7 +92,7 @@ QvisWindowBase::QvisWindowBase(const char *captionString, WFlags f) :
                 f)
 {
 #endif
-    if(captionString != 0)
+    if(!captionString.isEmpty())
         setCaption(captionString);
     else
         setCaption("VisIt");

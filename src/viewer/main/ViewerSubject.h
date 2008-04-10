@@ -458,6 +458,9 @@ class avtDefaultPlotMetaData;
 //    Cyrus Harrison,Thu Feb 21 15:04:14 PST 2008
 //    Added SetSuppressMessages()
 //
+//    Brad Whitlock, Thu Apr 10 10:09:31 PDT 2008
+//    Added applicationLocale.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -753,6 +756,9 @@ private:
     std::vector<std::string> engineParallelArguments;
     std::vector<std::string> unknownArguments;
     std::vector<std::string> clientArguments;
+
+    // For localization
+    QString                applicationLocale;
 };
 
 #endif

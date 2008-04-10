@@ -46,12 +46,14 @@
 #include <qdir.h>
 #include <qfiledialog.h>
 #include <qlabel.h>
+#include <qlocale.h>
 #include <qmessagebox.h>
 #include <qprintdialog.h>
 #include <qprinter.h>
 #include <qprocess.h>
 #include <qsocketnotifier.h>
 #include <qstatusbar.h>
+#include <qtranslator.h>
 #include <qwidgetlist.h>
 
 #if QT_VERSION < 300
@@ -189,6 +191,8 @@
 #define INITIALIZE_SESSIONDIR_TAG 107
 #define DELAYED_LOAD_FILE_TAG     108
 
+// Note that the order of entries in the windowNames string list must match
+// the ordering here.
 #define WINDOW_FILE_SELECTION    0
 #define WINDOW_FILE_INFORMATION  1
 #define WINDOW_MESSAGE           2
@@ -226,42 +230,6 @@
 #define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
 #define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
 #define HASSPACE(A) (strstr(A, " ") != NULL)
-
-const char *QvisGUIApplication::windowNames[] = {
-"File selection",
-"File information",
-"Information",
-"Output",
-"Host profiles",
-"Set save options",
-"Compute engines",
-"Animation",
-"Annotation",
-"Color tables",
-"Expressions",
-"Subset",
-"Plugin Manager",
-"View",
-"Appearance",
-"Keyframe Editor",
-"Lighting",
-"Lineout options",
-"Material Reconstruction Options",
-"Pick",
-"Help",
-"Query",
-"Preferences",
-"Rendering options",
-"Database correlation list",
-"QueryOverTime",
-"Interactors",
-"Simulations",
-"Export Database",
-"Commands",
-"Mesh Management Options",
-"File open",
-"Macros"
-};
 
 // Some internal prototypes.
 static void QPrinterToPrinterAttributes(QPrinter *, PrinterAttributes *);
@@ -620,12 +588,16 @@ GUI_LogQtMessages(QtMsgType type, const char *msg)
 //   sessionDir is now initialized later in the startup according to user
 //   preferences.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
-    ConfigManager(), GUIBase(), message(), plotWindows(),
+    ConfigManager(), GUIBase(), windowNames(), message(), plotWindows(),
     operatorWindows(), otherWindows(), foregroundColor(), backgroundColor(),
-    applicationStyle(), loadFile(), sessionFile(), sessionDir(), movieArguments()
+    applicationStyle(), applicationLocale("default"), loadFile(), sessionFile(), 
+    sessionDir(), movieArguments()
 {
     completeInit = visitTimer->StartTimer();
     int total = visitTimer->StartTimer();
@@ -749,7 +721,68 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     mainApp = new QvisApplication(qt_argc, qt_argv);
     SetWaitCursor();
     GetViewerState()->GetAppearanceAttributes()->SelectAll();
+
+    // Make VisIt translation aware.
+    QTranslator *translator = new QTranslator(0);
+#if defined(_WIN32)
+    QString transPath(GetVisItArchitectureDirectory().c_str());
+    transPath += "\\translations\\";
+#else
+    QString transPath(GetVisItArchitectureDirectory().c_str());
+    transPath += "/bin/translations/";
+#endif
+    if(applicationLocale == "default")
+        applicationLocale = QLocale::system().name();
+    QString transFile(QString("visit_") + applicationLocale);
+    debug1 << "Trying to load translator file: " << (transPath + transFile).ascii() << endl;
+    if(translator->load(transFile, transPath))
+    {
+        mainApp->installTranslator(translator);
+        debug1 << "Loaded translation " << (transPath + transFile).ascii() << endl;
+    }
+    else
+    {
+        debug1 << "Could not load translation." << endl;
+        delete translator;
+    }
+
+    // Customize the colors and fonts.
     CustomizeAppearance(false);
+
+    // Initialize window names list in a way that lets them be translated.
+    windowNames += tr("File selection");
+    windowNames += tr("File information");
+    windowNames += tr("Information");
+    windowNames += tr("Output");
+    windowNames += tr("Host profiles");
+    windowNames += tr("Set save options");
+    windowNames += tr("Compute engines");
+    windowNames += tr("Animation");
+    windowNames += tr("Annotation");
+    windowNames += tr("Color tables");
+    windowNames += tr("Expressions");
+    windowNames += tr("Subset");
+    windowNames += tr("Plugin Manager");
+    windowNames += tr("View");
+    windowNames += tr("Appearance");
+    windowNames += tr("Keyframe Editor");
+    windowNames += tr("Lighting");
+    windowNames += tr("Lineout options");
+    windowNames += tr("Material Reconstruction Options");
+    windowNames += tr("Pick");
+    windowNames += tr("Help");
+    windowNames += tr("Query");
+    windowNames += tr("Preferences");
+    windowNames += tr("Rendering options");
+    windowNames += tr("Database correlation list");
+    windowNames += tr("QueryOverTime");
+    windowNames += tr("Interactors");
+    windowNames += tr("Simulations");
+    windowNames += tr("Export Database");
+    windowNames += tr("Commands");
+    windowNames += tr("Mesh Management Options");
+    windowNames += tr("File open");
+    windowNames += tr("Macros");
 
     // If the geometry was not passed on the command line then the 
     // savedGUIGeometry flag will still be set to false. If we
@@ -982,6 +1015,9 @@ QvisGUIApplication::~QvisGUIApplication()
 //   Brad Whitlock, Wed Jan 11 17:19:22 PST 2006
 //   I added a bool to the window metrics.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1003,7 +1039,7 @@ QvisGUIApplication::HeavyInitialization()
     switch(heavyInitStage)
     {
     case 0:
-        SplashScreenProgress("Calculating window metrics...", 5);
+        SplashScreenProgress(tr("Calculating window metrics..."), 5);
         // Calculate the window metrics
         wm = WindowMetrics::Instance();
         wm->MeasureScreen(useWindowMetrics);
@@ -1024,7 +1060,7 @@ QvisGUIApplication::HeavyInitialization()
         preshiftY  = wm->GetPreshiftY();
         break;
     case 1:
-        SplashScreenProgress("Creating main window...", 10);
+        SplashScreenProgress(tr("Creating main window..."), 10);
         visitTimer->StopTimer(timeid, "stage 1");
         break;
     case 2:
@@ -1033,7 +1069,7 @@ QvisGUIApplication::HeavyInitialization()
         visitTimer->StopTimer(timeid, "stage 2 - Creating main window");
         break;
     case 3:
-        SplashScreenProgress("Starting viewer...", 12);
+        SplashScreenProgress(tr("Starting viewer..."), 12);
         visitTimer->StopTimer(timeid, "stage 3");
         break;
     case 4:
@@ -1049,7 +1085,7 @@ QvisGUIApplication::HeavyInitialization()
         connect(fromViewer, SIGNAL(activated(int)),
                 this, SLOT(ReadFromViewer(int)));
 
-        SplashScreenProgress("Starting metadata server...", 32);
+        SplashScreenProgress(tr("Starting metadata server..."), 32);
         visitTimer->StopTimer(timeid, "stage 5");
         break;
     case 6:
@@ -1061,7 +1097,7 @@ QvisGUIApplication::HeavyInitialization()
         visitTimer->StopTimer(timeid, "stage 6 - Launching mdserver");
         break;
     case 7:
-        SplashScreenProgress("Launched the metadata server...", 52);
+        SplashScreenProgress(tr("Launched the metadata server..."), 52);
         visitTimer->StopTimer(timeid, "stage 7");
         break;
     case 8:
@@ -1069,13 +1105,13 @@ QvisGUIApplication::HeavyInitialization()
         if(loadFile.host == fileServer->GetHost() &&
            loadFile.path == "")
         {
-            SplashScreenProgress("Getting the path...", 55);
+            SplashScreenProgress(tr("Getting the path..."), 55);
             loadFile.path = fileServer->GetPath();
         }
         visitTimer->StopTimer(timeid, "stage 8");
         break;
     case 9:
-        SplashScreenProgress("Creating crucial windows...", 60);
+        SplashScreenProgress(tr("Creating crucial windows..."), 60);
         visitTimer->StopTimer(timeid, "stage 9");
         break;
     case 10:
@@ -1084,7 +1120,7 @@ QvisGUIApplication::HeavyInitialization()
         visitTimer->StopTimer(timeid, "stage 10 - Creating crucial windows");
         break;
     case 11:
-        SplashScreenProgress("Loading plugin information...", 70);
+        SplashScreenProgress(tr("Loading plugin information..."), 70);
         visitTimer->StopTimer(timeid, "stage 11");
         break;
     case 12:
@@ -1094,7 +1130,7 @@ QvisGUIApplication::HeavyInitialization()
         visitTimer->StopTimer(timeid, "stage 12 - Loading plugin info");
         break;
     case 13:
-        SplashScreenProgress("Processing config file...", 80);
+        SplashScreenProgress(tr("Processing config file..."), 80);
         visitTimer->StopTimer(timeid, "stage 13");
         break;
     case 14:
@@ -1417,6 +1453,9 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //   If no local settings exist, create visible windows based on global
 //   options. Added check for global visitrc file.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1459,7 +1498,7 @@ QvisGUIApplication::FinalInitialization()
         // Create the non-plugin GUI windows that should be visible according
         // to the config file.
         //
-        SplashScreenProgress("Creating visible windows...", 90);
+        SplashScreenProgress(tr("Creating visible windows..."), 90);
         if (localSettings)
             CreateInitiallyVisibleWindows(localSettings);
         else
@@ -1467,7 +1506,7 @@ QvisGUIApplication::FinalInitialization()
         visitTimer->StopTimer(timeid, "stage 1 - Creating visible windows");
         break;
     case 2:
-        SplashScreenProgress("Processing window configs...", 95);
+        SplashScreenProgress(tr("Processing window configs..."), 95);
         // Process the window config file settings.
         ProcessWindowConfigSettings(systemSettings);
         ProcessWindowConfigSettings(localSettings);
@@ -1475,7 +1514,7 @@ QvisGUIApplication::FinalInitialization()
         break;
     case 3:
         // Show that we're ready.
-        SplashScreenProgress("VisIt is ready.", 100);
+        SplashScreenProgress(tr("VisIt is ready."), 100);
         visitTimer->StopTimer(timeid, "stage 3");
         break;
     case 4:
@@ -1497,8 +1536,8 @@ QvisGUIApplication::FinalInitialization()
         // Load the initial data file.
         if(!loadFile.Empty() && !sessionFile.isEmpty())
         {
-            Message("When a session file is specified on the command line, "
-                    "files specified with the -o argument are ignored.");
+            Message(tr("When a session file is specified on the command line, "
+                       "files specified with the -o argument are ignored."));
         }
         else
         {
@@ -1682,6 +1721,9 @@ QvisGUIApplication::Exec()
 //    Brad Whitlock, Thu Jan 31 12:04:57 PST 2008
 //    Remove the gui's crash recovery file.
 //
+//    Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1709,10 +1751,10 @@ QvisGUIApplication::Quit()
             if(!have_visitrc || num_clients > 2)
             {
                 if(QMessageBox::information(mainWin,
-                "VisIt", "There is more than 1 VisIt client connected to the "
+                "VisIt", tr("There is more than 1 VisIt client connected to the "
                 "viewer. Do you want to quit everything? \n\n"
                 "Answering No will just detach the GUI and leave the viewer "
-                "and its remaining clients running.",
+                "and its remaining clients running."),
                 QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
                 {
                     closeAllClients = false;
@@ -1825,7 +1867,10 @@ QvisGUIApplication::Quit()
 //    Moved catenation of arg into its own function, GetNextArg.  Moved code
 //    that removes surrounding quotes to its own function. Use GetNextArg and 
 //    StripSurroundingQuotes for sessionfile option.  
-//   
+//
+//    Brad Whitlock, Wed Apr  9 14:09:21 PDT 2008
+//    Added -locale argument.
+//
 // ****************************************************************************
 
 void
@@ -2088,6 +2133,17 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                 continue;
             }
             applicationFont = argv[i + 1];
+            ++i;
+        }
+        else if(current == std::string("-locale"))
+        {
+            if(i + 1 >= argc)
+            {
+                cerr << "The -locale option must be followed by a "
+                        "locale name." << endl;
+                continue;
+            }
+            applicationLocale = argv[i + 1];
             ++i;
         }
         else if(current == "-dv")
@@ -3031,6 +3087,9 @@ QvisGUIApplication::SetupWindows()
 //   Jeremy Meredith, Mon Feb  4 10:26:06 EST 2008
 //   Added axis array view.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 QvisWindowBase *
@@ -3050,7 +3109,7 @@ QvisGUIApplication::WindowFactory(int i)
     case WINDOW_FILE_INFORMATION:
         // Create the file information window.
         win = new QvisFileInformationWindow(fileServer, windowNames[i],
-            "FileInfo", mainWin->GetNotepad());
+            tr("FileInfo"), mainWin->GetNotepad());
         break;
     case WINDOW_MESSAGE:
         // Create the message window
@@ -3058,23 +3117,23 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_OUTPUT:
         // Create the output window
-        win = new QvisOutputWindow(&message, windowNames[i], "Output",
+        win = new QvisOutputWindow(&message, windowNames[i], tr("Output"),
             mainWin->GetNotepad());
         break;
     case WINDOW_HOSTPROFILES:
         // Create the host profile window
         win = new QvisHostProfileWindow(GetViewerState()->GetHostProfileList(),
-            windowNames[i], "Profiles", mainWin->GetNotepad());
+            windowNames[i], tr("Profiles"), mainWin->GetNotepad());
         break;
     case WINDOW_SAVE:
         // Create the save window.
         win = new QvisSaveWindow(GetViewerState()->GetSaveWindowAttributes(),
-           windowNames[i], "Save options", mainWin->GetNotepad());
+           windowNames[i], tr("Save options"), mainWin->GetNotepad());
         break;
     case WINDOW_ENGINE:
         // Create the engine window.
         { QvisEngineWindow *ewin = new QvisEngineWindow(GetViewerState()->GetEngineList(),
-            windowNames[i], "Engines", mainWin->GetNotepad());
+            windowNames[i], tr("Engines"), mainWin->GetNotepad());
           ewin->ConnectStatusAttributes(GetViewerState()->GetStatusAttributes());
           win = ewin;
         }
@@ -3082,12 +3141,12 @@ QvisGUIApplication::WindowFactory(int i)
     case WINDOW_ANIMATION:
         // Create the animation window.
         win = new QvisAnimationWindow(GetViewerState()->GetAnimationAttributes(),
-            windowNames[i], "Animation", mainWin->GetNotepad());
+            windowNames[i], tr("Animation"), mainWin->GetNotepad());
         break;
     case WINDOW_ANNOTATION:
         // Create the annotation window.
         { QvisAnnotationWindow *aWin = new QvisAnnotationWindow(windowNames[i],
-             "Annotation", mainWin->GetNotepad());
+             tr("Annotation"), mainWin->GetNotepad());
           aWin->ConnectAnnotationAttributes(GetViewerState()->GetAnnotationAttributes());
           aWin->ConnectAnnotationObjectList(GetViewerState()->GetAnnotationObjectList());
           aWin->ConnectPlotList(GetViewerState()->GetPlotList());
@@ -3097,23 +3156,23 @@ QvisGUIApplication::WindowFactory(int i)
     case WINDOW_COLORTABLE:
         // Create the colortable window,
         win = new QvisColorTableWindow(GetViewerState()->GetColorTableAttributes(),
-            windowNames[i], "Color tables", mainWin->GetNotepad());
+            windowNames[i], tr("Color tables"), mainWin->GetNotepad());
         break;
     case WINDOW_EXPRESSIONS:
         // Create the expressions window,
         win = new QvisExpressionsWindow(GetViewerState()->GetExpressionList(),
-            windowNames[i], "Expressions", mainWin->GetNotepad());
+            windowNames[i], tr("Expressions"), mainWin->GetNotepad());
         break;
     case WINDOW_SUBSET:
         // Create the subset window.
         win = new QvisSubsetWindow(GetViewerState()->GetSILRestrictionAttributes(),
-            windowNames[i], "Subset", mainWin->GetNotepad());
+            windowNames[i], tr("Subset"), mainWin->GetNotepad());
         break;
     case WINDOW_PLUGINMANAGER:
         // Create the plugin manager window.
         {
           QvisPluginWindow *pwin = new QvisPluginWindow(windowNames[i],
-                                             "Plugins", mainWin->GetNotepad());
+                                             tr("Plugins"), mainWin->GetNotepad());
           pwin->ConnectSubjects(GetViewerState()->GetPluginManagerAttributes(),
                                 GetViewerState()->GetFileOpenOptions());
           win = pwin;
@@ -3121,7 +3180,7 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_VIEW:
         // Create the view window.
-        { QvisViewWindow *viewWin = new QvisViewWindow(windowNames[i], "View",
+        { QvisViewWindow *viewWin = new QvisViewWindow(windowNames[i], tr("View"),
               mainWin->GetNotepad());
            viewWin->ConnectAxisArrayAttributes(GetViewerState()->GetViewAxisArrayAttributes());
            viewWin->ConnectCurveAttributes(GetViewerState()->GetViewCurveAttributes());
@@ -3134,13 +3193,13 @@ QvisGUIApplication::WindowFactory(int i)
     case WINDOW_APPEARANCE:
         // Create the appearance window.
         win = new QvisAppearanceWindow(GetViewerState()->GetAppearanceAttributes(),
-             windowNames[i], "Appearance", mainWin->GetNotepad());
+             windowNames[i], tr("Appearance"), mainWin->GetNotepad());
         break;
     case WINDOW_KEYFRAME:
         // Create the keyframe window.
         { QvisKeyframeWindow *kfWin = new QvisKeyframeWindow(
             GetViewerState()->GetKeyframeAttributes(), windowNames[i], 
-            "Keyframer", mainWin->GetNotepad());
+            tr("Keyframer"), mainWin->GetNotepad());
           kfWin->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
           kfWin->ConnectPlotList(GetViewerState()->GetPlotList());
           win = kfWin;
@@ -3149,34 +3208,34 @@ QvisGUIApplication::WindowFactory(int i)
     case WINDOW_LIGHTING:
         // Create the lighting window.
         win = new QvisLightingWindow(GetViewerState()->GetLightList(),
-            windowNames[i], "Lighting", mainWin->GetNotepad());
+            windowNames[i], tr("Lighting"), mainWin->GetNotepad());
         break;
     case WINDOW_GLOBALLINEOUT:
         // Create the global lineout window.
         win = new QvisGlobalLineoutWindow(GetViewerState()->GetGlobalLineoutAttributes(),
-            windowNames[i], "Lineout", mainWin->GetNotepad());
+            windowNames[i], tr("Lineout"), mainWin->GetNotepad());
         break;
     case WINDOW_MATERIALOPTIONS:
         // Create the material options window.
         win = new QvisMaterialWindow(GetViewerState()->GetMaterialAttributes(),
-            windowNames[i], "MIR Options", mainWin->GetNotepad());
+            windowNames[i], tr("MIR Options"), mainWin->GetNotepad());
         break;
     case WINDOW_PICK:
         // Create the pick window.
         { QvisPickWindow *pwin = new QvisPickWindow(GetViewerState()->GetPickAttributes(),
-            windowNames[i], "Pick", mainWin->GetNotepad());
+            windowNames[i], tr("Pick"), mainWin->GetNotepad());
             pwin->CreateEntireWindow();
           win = pwin;
         }
         break;
     case WINDOW_HELP:
         // Create the help window
-        win = new QvisHelpWindow("Help");
+        win = new QvisHelpWindow(tr("Help"));
         break;
     case WINDOW_QUERY:
         // Create the query window.
         { QvisQueryWindow *queryWin = new QvisQueryWindow(windowNames[i],
-            "Query", mainWin->GetNotepad());
+            tr("Query"), mainWin->GetNotepad());
           queryWin->ConnectQueryList(GetViewerState()->GetQueryList());
           queryWin->ConnectQueryAttributes(GetViewerState()->GetQueryAttributes());
           queryWin->ConnectPickAttributes(GetViewerState()->GetPickAttributes());
@@ -3187,12 +3246,12 @@ QvisGUIApplication::WindowFactory(int i)
     case WINDOW_PREFERENCES:
         // Create the preferences window.
         win = new QvisPreferencesWindow(GetViewerState()->GetGlobalAttributes(),
-            windowNames[i], "Preferences", mainWin->GetNotepad());
+            windowNames[i], tr("Preferences"), mainWin->GetNotepad());
         break;
     case WINDOW_RENDERING:
         // Create the rendering preferences window.
         { QvisRenderingWindow *renderingWin = new QvisRenderingWindow(
-            windowNames[i], "Rendering", mainWin->GetNotepad());
+            windowNames[i], tr("Rendering"), mainWin->GetNotepad());
           renderingWin->ConnectRenderingAttributes(GetViewerState()->GetRenderingAttributes());
           renderingWin->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
           win = renderingWin;
@@ -3202,23 +3261,23 @@ QvisGUIApplication::WindowFactory(int i)
         // Create the database correlation list window.
         win = new QvisDatabaseCorrelationListWindow(
             GetViewerState()->GetDatabaseCorrelationList(), windowNames[i],
-            "Correlations", mainWin->GetNotepad());
+            tr("Correlations"), mainWin->GetNotepad());
         break;
     case WINDOW_TIMEQUERY:
         // Create the time query window.
         win = new QvisQueryOverTimeWindow(GetViewerState()->GetQueryOverTimeAttributes(),
-            windowNames[i], "QueryOverTime", mainWin->GetNotepad());
+            windowNames[i], tr("QueryOverTime"), mainWin->GetNotepad());
         break;
     case WINDOW_INTERACTOR:
         // Create the time query window.
         win = new QvisInteractorWindow(GetViewerState()->GetInteractorAttributes(),
-            windowNames[i], "Interactor", mainWin->GetNotepad());
+            windowNames[i], tr("Interactor"), mainWin->GetNotepad());
         break;
     case WINDOW_SIMULATION:
         // Create the simulation window.
         { QvisSimulationWindow *swin =
                      new QvisSimulationWindow(GetViewerState()->GetEngineList(),
-                                              windowNames[i], "Simulations",
+                                              windowNames[i], tr("Simulations"),
                                               mainWin->GetNotepad());
           swin->ConnectStatusAttributes(GetViewerState()->GetStatusAttributes());
           const QualifiedFilename &qf = fileServer->GetOpenFile();
@@ -3232,7 +3291,7 @@ QvisGUIApplication::WindowFactory(int i)
         // Create the export DB window.
         {
          QvisExportDBWindow *expWin = new QvisExportDBWindow(windowNames[i],
-                                     "Export Database", mainWin->GetNotepad());
+                                     tr("Export Database"), mainWin->GetNotepad());
          expWin->ConnectSubjects(GetViewerState()->GetExportDBAttributes(),
                                  GetViewerState()->GetDBPluginInfoAttributes());
          win = expWin;
@@ -3240,14 +3299,14 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_COMMAND:
         // Create the command window.
-        win = new QvisCommandWindow(windowNames[i], "Command", mainWin->GetNotepad());
+        win = new QvisCommandWindow(windowNames[i], tr("Command"), mainWin->GetNotepad());
         connect(win, SIGNAL(runCommand(const QString &)),
                 this, SLOT(Interpret(const QString &)));
         break;
     case WINDOW_MESH_MANAGEMENT:
         // Create the mesh management window.
         win = new QvisMeshManagementWindow(GetViewerState()->GetMeshManagementAttributes(),
-            windowNames[i], "MeshManagement", mainWin->GetNotepad());
+            windowNames[i], tr("MeshManagement"), mainWin->GetNotepad());
         break;
     case WINDOW_FILE_OPEN:
         // Create a file open window.
@@ -3259,7 +3318,7 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_MACRO:
         // Create the macro window.
-        win = new QvisMacroWindow(windowNames[i], "Macros", mainWin->GetNotepad());
+        win = new QvisMacroWindow(windowNames[i], tr("Macros"), mainWin->GetNotepad());
         connect(win, SIGNAL(runCommand(const QString &)),
                 this, SLOT(Interpret(const QString &)));
         break;
@@ -3279,7 +3338,9 @@ QvisGUIApplication::WindowFactory(int i)
 // Creation:   Thu May 6 14:55:00 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 10:24:27 PDT 2008
+//   Changed windowNames to a string list.
+//
 // ****************************************************************************
 
 void
@@ -3298,7 +3359,7 @@ QvisGUIApplication::CreateInitiallyVisibleWindows(DataNode *node)
     if(guiNode == 0)
         return;
 
-    for(int i = 0; i < sizeof(windowNames) / sizeof(const char *); ++i)
+    for(int i = 0; i < windowNames.size(); ++i)
     {
         DataNode *wNode = guiNode->GetNode(windowNames[i]);
         if(wNode != 0)
@@ -3327,7 +3388,7 @@ QvisGUIApplication::CreateInitiallyVisibleWindows(DataNode *node)
             if(windowVisible || windowExists)
             {
                 debug1 << (windowExists ? "Initializing" : "Creating")
-                       << " the \"" << windowNames[i]
+                       << " the \"" << windowNames[i].ascii()
                        << "\" window because it was in the config file."
                        << endl;
 
@@ -3344,7 +3405,7 @@ QvisGUIApplication::CreateInitiallyVisibleWindows(DataNode *node)
                     {
                         if(windowExists)
                         {
-                            debug1 << "Hiding \"" << windowNames[i]
+                            debug1 << "Hiding \"" << windowNames[i].ascii()
                                    << "\" window" << endl;
                             win->hide();
                         }
@@ -3423,22 +3484,23 @@ QvisGUIApplication::ReadWindowSettings(QvisWindowBase *win, DataNode *node)
 // Creation:   Thu May 6 14:56:29 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 10:22:14 PDT 2008
+//   Cleaned up string coding.
+//
 // ****************************************************************************
 
 QvisWindowBase *
 QvisGUIApplication::GetWindowPointer(int i)
 {
     QvisWindowBase *win = 0;
-    const char *wName = windowNames[i];
-    WindowBaseMap::iterator pos = otherWindows.find(wName);
+    WindowBaseMap::iterator pos = otherWindows.find(windowNames[i]);
     if(pos == otherWindows.end())
     {
         win = WindowFactory(i);
         if(win != 0)
         {
             // Add the window to the list of windows.
-            otherWindows[wName] = win;
+            otherWindows[windowNames[i]] = win;
         }
     }
     else
@@ -3508,6 +3570,9 @@ QvisGUIApplication::GetInitializedWindowPointer(int i)
 //    Brad Whitlock, Wed Jun 18 16:25:10 PST 2003
 //    Added timing information.
 //
+//    Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -3516,12 +3581,12 @@ QvisGUIApplication::LoadPlugins()
     debug4 << "QvisGUIApplication::LoadPlugins()" << endl;
 
     int timeid = visitTimer->StartTimer();
-    SplashScreenProgress("Loading plugins...", 92);
+    SplashScreenProgress(tr("Loading plugins..."), 92);
     GetViewerProxy()->LoadPlugins();
     visitTimer->StopTimer(timeid, "Loading plugins");
 
     timeid = visitTimer->StartTimer();
-    SplashScreenProgress("Creating plugin windows...", 98);
+    SplashScreenProgress(tr("Creating plugin windows..."), 98);
     CreatePluginWindows();
 
     // Now that plugins are loaded, restore the normal cursor.
@@ -3924,8 +3989,11 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 //   Dave Pugmire, Thu Jan 31 10:47:06 EST 2008
 //   Use sessionDir for the default directory.
 //
-//    Cyrus Harrison, Mon Feb  4 09:45:22 PST 2008
-//    Resolved AIX linking error w/ auto std::string to QString conversion.
+//   Cyrus Harrison, Mon Feb  4 09:45:22 PST 2008
+//   Resolved AIX linking error w/ auto std::string to QString conversion.
+//
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -3945,7 +4013,7 @@ QvisGUIApplication::SaveSession()
     defaultFile += sessionExtension;
 
     // Get the name of the file that the user saved.
-    QString sFilter(QString("VisIt session (*") + sessionExtension + ")");
+    QString sFilter(tr("VisIt session") + QString(" (*") + sessionExtension + ")");
     QString fileName = QFileDialog::getSaveFileName(defaultFile, sFilter);
 
     // If the user chose to save a file, tell the viewer to write its state
@@ -4238,8 +4306,11 @@ QvisGUIApplication::RestoreSession()
 //   Dave Pugmire, Thu Jan 31 10:47:06 EST 2008
 //   Use sessionDir for the default directory.
 //   
-//    Cyrus Harrison, Mon Feb  4 09:45:22 PST 2008
-//    Resolved AIX linking error w/ auto std::string to QString conversion.
+//   Cyrus Harrison, Mon Feb  4 09:45:22 PST 2008
+//   Resolved AIX linking error w/ auto std::string to QString conversion.
+//
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -4284,13 +4355,13 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
             }
             else
             {
-                QString warn;
-                warn.sprintf("VisIt was able to read the session file, %s, "
+                QString warn(tr("VisIt was able to read the session file, %1, "
                     "but the session file might be from before VisIt 1.5.5. "
                     "Consequently, VisIt will open the session file in "
                     "the normal manner. If you want to restore this session "
                     "using different sources then you should first resave your "
-                    "session with a newer version of VisIt.", s.latin1());
+                    "session with a newer version of VisIt."));
+                warn.replace("%1", s);
                 Warning(warn);
                 stringVector noSources;
                 RestoreSessionFile(s, noSources);
@@ -4995,6 +5066,9 @@ QvisGUIApplication::StartMDServer(const std::string &hostName,
 //   Brad Whitlock, Thu Oct 27 16:06:55 PST 2005
 //   Added code to catch CancelledConnectException.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -5024,9 +5098,9 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
                 // with a warning message.
                 if(localOnly && (oldHost != fileServer->GetHost()))
                 {
-                    QString msg;
-                    msg.sprintf("Preventing the metadata server from being "
-                                "launched on %s.", fileServer->GetHost().c_str());
+                    QString msg(tr("Preventing the metadata server from being "
+                                   "launched on %1."));
+                    msg.replace("%1", fileServer->GetHost().c_str());
                     Warning(msg);
                     fileServer->SetHost(oldHost);
                     fileServer->SetPath(oldPath);
@@ -5055,9 +5129,8 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
     }
     CATCH2(BadHostException, bhe)
     {
-        QString msg;
-        msg.sprintf("Hostname \"%s\" is not a recognized host.",
-                    bhe.GetHostName().c_str());
+        QString msg = tr("Hostname \"%1\" is not a recognized host.");
+        msg.replace("%1", bhe.GetHostName().c_str());
         Error(msg);
 
         TRY
@@ -5077,15 +5150,15 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
         }
         CATCH(CouldNotConnectException)
         {
-            msg.sprintf("VisIt could not set the host back to \"%s\" because "
-                        "no metadata server could be launched on that host.",
-                        oldHost.c_str());
+            msg = tr("VisIt could not set the host back to \"%1\" because "
+                     "no metadata server could be launched on that host.");
+            msg.replace("%1", oldHost.c_str());
             Error(msg);
         }
         CATCH(VisItException)
         {
-            msg.sprintf("VisIt could not set the host back to \"%s\".",
-                        oldHost.c_str());
+            msg = tr("VisIt could not set the host back to \"%1\".");
+            msg.replace("%1", oldHost.c_str());
             Error(msg);
         }
         ENDTRY
@@ -5093,10 +5166,10 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
     CATCH2(ChangeDirectoryException, cde)
     {
         // Create a message and tell the user.
-        QString msgStr;
-        msgStr.sprintf("The metadata server running on %s "
-            "could not change the current directory to %s.",
-            fileServer->GetHost().c_str(), cde.GetDirectory().c_str());
+        QString msgStr(tr("The metadata server running on %1 "
+            "could not change the current directory to %2."));
+        msgStr.replace("%1", fileServer->GetHost().c_str());
+        msgStr.replace("%2", cde.GetDirectory().c_str());
         Error(msgStr);
 
         // Now set the path to the user's home directory and get the file
@@ -5112,24 +5185,23 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
     CATCH(GetFileListException)
     {
         // Create a message and tell the user.
-        QString msgStr;
-        msgStr.sprintf("The metadata server running on %s could not "
-             "get the file list for the current directory.",
-             fileServer->GetHost().c_str());
+        QString msgStr(tr("The metadata server running on %1 could not "
+             "get the file list for the current directory."));
+        msgStr.replace("%1", fileServer->GetHost().c_str());
         Error(msgStr);
     }
     CATCH(CouldNotConnectException)
     {
-        QString msgStr;
-        msgStr.sprintf("VisIt could not launch a metadata server on "
-                       "host \"%s\".", fileServer->GetHost().c_str());
+        QString msgStr(tr("VisIt could not launch a metadata server on "
+                          "host \"%1\"."));
+        msgStr.replace("%1", fileServer->GetHost().c_str());
         Error(msgStr);
     }
     CATCH(CancelledConnectException)
     {
-        QString msgStr;
-        msgStr.sprintf("The launch of a metadata server on "
-                       "host \"%s\" was cancelled.", fileServer->GetHost().c_str());
+        QString msgStr(tr("The launch of a metadata server on "
+                          "host \"%1\" was cancelled."));
+        msgStr.replace("%1", fileServer->GetHost().c_str());
         Error(msgStr);
     }
     ENDTRY
@@ -5390,6 +5462,9 @@ QvisGUIApplication::RefreshFileListAndNextFrame()
 //   hosts are different. This is required to ensure that the filename gets
 //   expanded correctly.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -5491,9 +5566,8 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
         }
         CATCH2(BadHostException, bhe)
         {
-            QString msg;
-            msg.sprintf("Hostname \"%s\" is not a recognized host.",
-                         bhe.GetHostName().c_str());
+            QString msg(tr("Hostname \"%1\" is not a recognized host."));
+            msg.replace("%1", bhe.GetHostName().c_str());
             Error(msg);
 
             // Set the file server host, etc. back to the previous values.
@@ -5512,10 +5586,10 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
         CATCH2(ChangeDirectoryException, cde)
         {
             // Create a message and tell the user.
-            QString msgStr;
-            msgStr.sprintf("The metadata server running on %s "
-                "could not change the current directory to %s.",
-                fileServer->GetHost().c_str(), cde.GetDirectory().c_str());
+            QString msgStr(tr("The metadata server running on %1 "
+                "could not change the current directory to %2."));
+            msgStr.replace("%1", fileServer->GetHost().c_str());
+            msgStr.replace("%2", cde.GetDirectory().c_str());
             Error(msgStr);
 
             // Now set the path to the user's home directory and get the file
@@ -5533,19 +5607,17 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
         CATCH(GetFileListException)
         {
             // Create a message and tell the user.
-            QString msgStr;
-            msgStr.sprintf("The metadata server running on %s could not "
-                "get the file list for the current directory.",
-                fileServer->GetHost().c_str());
+            QString msgStr(tr("The metadata server running on %1 could not "
+                "get the file list for the current directory."));
+            msgStr.replace("%1", fileServer->GetHost().c_str());
             Error(msgStr);
         }
         CATCH(CouldNotConnectException)
         {
-            QString msgStr;
-            msgStr.sprintf("VisIt could not open %s because it could not "
-                           "launch a metadata server on host \"%s\".",
-                           f.FullName().c_str(),
-                           fileServer->GetHost().c_str());
+            QString msgStr(tr("VisIt could not open %1 because it could not "
+                              "launch a metadata server on host \"%1\"."));
+            msgStr.replace("%1", f.FullName().c_str());
+            msgStr.replace("%2", fileServer->GetHost().c_str());
             Error(msgStr);
         }
         CATCH(CancelledConnectException)
@@ -5681,13 +5753,16 @@ QvisGUIApplication::SendKeepAlives()
 //   Brad Whitlock, Thu Sep 5 16:31:33 PST 2002
 //   I added status messages for saving settings.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::SaveSettings()
 {
     // Tell the user that we're saving settings.
-    Status("Saving settings");
+    Status(tr("Saving settings"));
 
     // Write out the GUI's portion of the config file.
     char *configFile = GetDefaultConfigFile(VISIT_GUI_CONFIG_FILE);
@@ -5959,10 +6034,13 @@ QvisGUIApplication::AboutVisIt()
 //   Brad Whitlock, Tue Mar 8 16:10:11 PST 2005
 //   I ifdef'd out the setActiveWindow code so it only happens on MacOS X.
 //
+//   Brad Whitlock, Wed Apr  9 10:25:39 PDT 2008
+//   Changed msg type.
+//
 // ****************************************************************************
 
 void
-QvisGUIApplication::SplashScreenProgress(const char *msg, int prog)
+QvisGUIApplication::SplashScreenProgress(const QString &msg, int prog)
 {
     if(splash)
     {
@@ -6022,6 +6100,9 @@ QvisGUIApplication::SaveWindow()
 //
 //   Kathleen Bonnell, Wed Aug 22 17:37:06 PDT 2007 
 //   If on WIN32 and user has set print options, tell viewer to PrintWindow. 
+//
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
     
@@ -6144,7 +6225,7 @@ QvisGUIApplication::SetPrinterOptions()
         }
         CATCH(VisItException)
         {
-            Error("VisIt encountered an error while setting up printer options.");
+            Error(tr("VisIt encountered an error while setting up printer options."));
             okayToPrint = false;
         }
         ENDTRY
@@ -6379,8 +6460,12 @@ QvisGUIApplication::UpdateMetaDataAttributes(Subject *subj, void *data)
 //    Jeremy Meredith, Thu Apr 28 17:49:31 PDT 2005
 //    Changed the exact information sent to the Simulations window.
 //
-//   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
-//   Changed interfaces to GetMetaData and GetSIL
+//    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
+//    Changed interfaces to GetMetaData and GetSIL
+//
+//    Brad Whitlock, Wed Apr  9 10:23:22 PDT 2008
+//    Cleaned up string coding.
+//
 // ****************************************************************************
 
 void
@@ -6407,7 +6492,7 @@ QvisGUIApplication::HandleMetaDataUpdate()
     mainWin->GetPlotManager()->Update(fileServer);
 
     // File Information Window
-    string fileInfoWinName = windowNames[WINDOW_FILE_INFORMATION];
+    QString fileInfoWinName(windowNames[WINDOW_FILE_INFORMATION]);
     if (otherWindows.count(fileInfoWinName))
     {
         QvisFileInformationWindow *fileInfoWin = (QvisFileInformationWindow*)
@@ -6416,7 +6501,7 @@ QvisGUIApplication::HandleMetaDataUpdate()
     }
 
     // Simulation Window
-    string simWinName = windowNames[WINDOW_SIMULATION];
+    QString simWinName(windowNames[WINDOW_SIMULATION]);
     if (otherWindows.count(simWinName))
     {
         const QualifiedFilename &qf = fileServer->GetOpenFile();
@@ -6649,14 +6734,17 @@ QvisGUIApplication::updateVisIt()
 //   Brad Whitlock, Fri May 6 12:14:14 PDT 2005
 //   I made it use the Quit method.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::updateVisItCompleted(const QString &program)
 {
-    QString msg("VisIt has been updated. Would you like VisIt to save \n"
+    QString msg(tr("VisIt has been updated. Would you like VisIt to save \n"
                 "its session, quit, and restart the session using the new \n"
-                "version of VisIt?");
+                "version of VisIt?"));
     if(QMessageBox::information(mainWin, "VisIt", msg,
        QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
     {
@@ -6698,8 +6786,8 @@ QvisGUIApplication::updateVisItCompleted(const QString &program)
         FILE *f = fopen("exec_new_visit", "w");
         if(f == 0)
         {
-            Error("VisIt could not automatically relaunch itself. "
-                  "Please exit and restart VisIt.");
+            Error(tr("VisIt could not automatically relaunch itself. "
+                     "Please exit and restart VisIt."));
         }
         else
         {
@@ -6827,6 +6915,9 @@ QvisGUIApplication::SendInterface()
 //   Brad Whitlock, Fri Jun 15 09:43:02 PDT 2007
 //   Added ClearMacroButtons, AddMacroButton.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -6855,10 +6946,9 @@ QvisGUIApplication::HandleClientMethod()
         }
         else if(okay == 1)
         {
-            QString s;
-            s.sprintf("Client method %s is supported by the GUI but not "
-                      "enough information was passed in the method request.", 
-                      method->GetMethodName().c_str());
+            QString s(tr("Client method %1 is supported by the GUI but not "
+                         "enough information was passed in the method request."));
+            s.replace("%1", method->GetMethodName().c_str());
             Warning(s);
         }
         else
@@ -6963,8 +7053,8 @@ QvisGUIApplication::HandleClientMethod()
                 {
                     movieProgress = new QvisMovieProgressDialog(mainWin,
                         "movieProgress");
-                    movieProgress->setCaption("VisIt movie progress");
-                    movieProgress->setLabelText("Making movie");
+                    movieProgress->setCaption(tr("VisIt movie progress"));
+                    movieProgress->setLabelText(tr("Making movie"));
                     movieProgress->setProgress(0);
                     connect(movieProgress, SIGNAL(cancelled()),
                             this, SLOT(CancelMovie()));
@@ -7425,6 +7515,9 @@ QvisGUIApplication::SaveMovie()
 //   Changed the code so it uses our Message dialog so users can paste the 
 //   command into another window.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -7617,7 +7710,7 @@ QvisGUIApplication::SaveMovieMain()
 
             if (movieAtts->GetGenerationMethod() == MovieAttributes::NowNewInstance)
             {
-                msg = "VisIt executed the following command line to begin making your movie:\n\n";
+                msg = tr("VisIt executed the following command line to begin making your movie:\n\n");
 
                 // Fire off "visit -movie" under the covers. Perhaps have some
                 // stuff to send back progress to this process.
@@ -7629,16 +7722,18 @@ QvisGUIApplication::SaveMovieMain()
                 if(!movieMaker->start())
                 {
                     errFlag = true;
-                    Error(QString("VisIt could not run ") + program + QString("."));
+                    QString noRun(tr("VisIt could not run %1."));
+                    noRun.replace("%1", program);
+                    Error(noRun);
                 }
             }
             else
             {
-                msg = "Execute the following command at the command prompt "
+                msg = tr("Execute the following command at the command prompt "
                       "on your local computer to begin making your movie. "
                       "All settings, including the number of processors, "
                       "will be the same as your current VisIt session when "
-                      "you invoke:\n\n";
+                      "you invoke:\n\n");
             }
 
             if(!errFlag)
@@ -7774,6 +7869,8 @@ QvisGUIApplication::CrashRecoveryFile() const
 // Creation:   Thu Jan 31 11:05:58 PST 2008
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -7784,9 +7881,9 @@ QvisGUIApplication::RestoreCrashRecoveryFile()
     QFile cr(filename);
     if(cr.exists())
     {
-        int btn = QMessageBox::question(0, "Crash recovery",
-            "VisIt found a crash recovery session file. Would you like to "
-            "restore it to return to the last saved state?", QMessageBox::Yes,
+        int btn = QMessageBox::question(0, tr("Crash recovery"),
+            tr("VisIt found a crash recovery session file. Would you like to "
+               "restore it to return to the last saved state?"), QMessageBox::Yes,
             QMessageBox::No);
         if(btn == QMessageBox::Yes)
         {

@@ -305,6 +305,9 @@ $0 = shift @ARGV;
 #    Gunther H. Weber, Tue Apr  8 17:32:24 PDT 2008
 #    Added franklin.nersc.gov specific code
 #
+#    Brad Whitlock, Wed Apr  9 14:17:18 PDT 2008
+#    Added -locale option.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -382,6 +385,10 @@ $usage = "
         -window_anchor <x,y> The x,y position on the screen where VisIt's GUI
                              will show its windows (Main window excluded).
         -style <style>       One of: windows,cde,motif,sgi.
+        -locale <locale>     The locale that you want VisIt to use when displaying
+                             translated menus and controls. VisIt will use the
+                             default locale if the -locale option is not
+                             provided.
         -background <color>  Background color for GUI.
         -foreground <color>  Foreground color for GUI.
         -nowin               Run with viewer windows off-screen (i.e. OSMesa).

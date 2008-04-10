@@ -340,7 +340,7 @@ private:
     void AddViewerArguments(int argc, char **argv);
     void AddViewerSpaceArguments();
     void AddMovieArguments(int argc, char **argv);
-    void SplashScreenProgress(const char *, int);
+    void SplashScreenProgress(const QString &, int);
     void CalculateViewerArea(int orientation, int &x, int &y,
                              int &width, int &height);
     void CreateMainWindow();
@@ -475,7 +475,7 @@ private slots:
     void updateVisIt();
     void updateVisItCompleted(const QString &);
 private:
-    static const char           *windowNames[];
+    QStringList                  windowNames;
     int                          completeInit;
     int                          stagedInit;
     bool                         viewerIsAlive;
@@ -561,6 +561,7 @@ private:
     QString                      backgroundColor;
     QString                      applicationStyle;
     QString                      applicationFont;
+    QString                      applicationLocale;
 
     // File to load on startup.
     QualifiedFilename            loadFile;

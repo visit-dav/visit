@@ -119,10 +119,12 @@ QvisStripChartMgr::~QvisStripChartMgr()
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
-//    Shelly Prevost  Thu Oct 18 14:25:35 PDT 2007
-//    added new widgets for cycle display and removed widgets that
-//    do not fully function yet.
+//   Shelly Prevost  Thu Oct 18 14:25:35 PDT 2007
+//   added new widgets for cycle display and removed widgets that
+//   do not fully function yet.
 //  
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 void QvisStripChartMgr::CreateWindowContents()
@@ -133,7 +135,7 @@ void QvisStripChartMgr::CreateWindowContents()
     
     // Create the group box 
     QGroupBox *stripChartGroup = new QGroupBox(central, "StripChartGroup");
-    stripChartGroup->setTitle("Strip Chart Information and Controls");
+    stripChartGroup->setTitle(tr("Strip Chart Information and Controls"));
     topLayout->addWidget( stripChartGroup);
     
     chartLayout =  new QGridLayout(stripChartGroup);              
@@ -141,21 +143,21 @@ void QvisStripChartMgr::CreateWindowContents()
     chartLayout->setSpacing(10);
     
     QLabel *limitLab = new QLabel(stripChartGroup,"Bounds");
-    limitLab->setText("Limit Bounds");
+    limitLab->setText(tr("Limit Bounds"));
     chartLayout->addWidget(limitLab,0,1); 
  
     QLabel *extremaLab = new QLabel(stripChartGroup,"Extrema"); 
-    extremaLab->setText("Extrema");
+    extremaLab->setText(tr("Extrema"));
     chartLayout->addWidget(extremaLab,0,3); 
     
     QLabel *currentLab = new QLabel(stripChartGroup,"Current");
-    currentLab->setText("Current");
+    currentLab->setText(tr("Current"));
     chartLayout->addWidget(currentLab,0,5); 
 
     minLimitEdit = new QLineEdit(stripChartGroup,STRIP_MIN_LIMIT_WIDGET_NAME);
     minLimitEdit->setEnabled(false);
     minLimitLabel = new QLabel(stripChartGroup,"MinLimitLabel");
-    minLimitLabel->setText("Min");
+    minLimitLabel->setText(tr("Min"));
     chartLayout->addWidget(minLimitLabel,1,0);
     chartLayout->addWidget(minLimitEdit,1,1);
     connect(minLimitEdit,SIGNAL(textChanged(const QString&)),this,SLOT(executeMinLimitStripChart()));
@@ -163,7 +165,7 @@ void QvisStripChartMgr::CreateWindowContents()
     maxLimitEdit = new QLineEdit(stripChartGroup,STRIP_MAX_LIMIT_WIDGET_NAME);
     maxLimitEdit->setEnabled(false); 
     maxLimitLabel = new QLabel(stripChartGroup,"MaxLimitLabel");
-    maxLimitLabel->setText("Max");
+    maxLimitLabel->setText(tr("Max"));
     chartLayout->addWidget(maxLimitLabel,2,0);
     chartLayout->addWidget(maxLimitEdit,2,1);
     connect(maxLimitEdit,SIGNAL(textChanged(const QString&)),this,SLOT(executeMaxLimitStripChart()));
@@ -172,7 +174,7 @@ void QvisStripChartMgr::CreateWindowContents()
     minEdit->setEnabled(false);
     minEdit->setText("0.0");
     minLabel = new QLabel(stripChartGroup,"MinLabel");
-    minLabel->setText("Min");
+    minLabel->setText(tr("Min"));
     chartLayout->addWidget(minLabel,1,2);
     chartLayout->addWidget(minEdit,1,3);    
 
@@ -181,7 +183,7 @@ void QvisStripChartMgr::CreateWindowContents()
     maxEdit->setEnabled(false);
     maxEdit->setText("0.0");
     maxLabel = new QLabel(stripChartGroup,"MaxLabel");
-    maxLabel->setText("Max");
+    maxLabel->setText(tr("Max"));
     chartLayout->addWidget(maxLabel,2,2);
     chartLayout->addWidget(maxEdit,2,3);
         
@@ -189,7 +191,7 @@ void QvisStripChartMgr::CreateWindowContents()
     curEdit->setEnabled(false);
     curEdit->setText("0.0");
     curLabel = new QLabel(stripChartGroup,"CurLabel");
-    curLabel->setText("Data");
+    curLabel->setText(tr("Data"));
     chartLayout->addWidget(curLabel,1,4);
     chartLayout->addWidget(curEdit,1,5);
     
@@ -197,12 +199,12 @@ void QvisStripChartMgr::CreateWindowContents()
     cycleEdit->setEnabled(false);
     cycleEdit->setText("0.0");
     cycleLabel = new QLabel(stripChartGroup,"Cycle");
-    cycleLabel->setText("Cycle");
+    cycleLabel->setText(tr("Cycle"));
     chartLayout->addWidget(cycleLabel,2,4);
     chartLayout->addWidget(cycleEdit,2,5);
     
     enableStripChartLimits = new QCheckBox(stripChartGroup,"EnableStripChartLimits");
-    enableStripChartLimits->setText("Enable Limits");
+    enableStripChartLimits->setText(tr("Enable Limits"));
     connect(enableStripChartLimits,SIGNAL(stateChanged(int)),this,SLOT(executeEnableStripChartLimits()));
     chartLayout->addMultiCellWidget(enableStripChartLimits,3,3,0,2);
       
@@ -214,19 +216,19 @@ void QvisStripChartMgr::CreateWindowContents()
     // zoom and focus buttons
     // Create the group box and generic buttons.
     QGridLayout *zoomLayout = new QGridLayout(stripChartGroup, 1, 4);
-    resetButton = new QPushButton("Reset",stripChartGroup);
+    resetButton = new QPushButton(tr("Reset"),stripChartGroup);
     resetButton->setEnabled(true);
     zoomLayout->addWidget(resetButton,0,0);
     connect(resetButton,SIGNAL(clicked()),this,SLOT(reset()));
-    plusButton = new QPushButton("Zoom In",stripChartGroup);
+    plusButton = new QPushButton(tr("Zoom In"),stripChartGroup);
     plusButton->setEnabled(true);
     connect(plusButton,SIGNAL(clicked()),this,SLOT(zoomIn()));
     zoomLayout->addWidget(plusButton,0,1);
-    minusButton = new QPushButton("Zoom Out",stripChartGroup);
+    minusButton = new QPushButton(tr("Zoom Out"),stripChartGroup);
     minusButton->setEnabled(true);
     connect(minusButton,SIGNAL(clicked()),this,SLOT(zoomOut()));
     zoomLayout->addWidget(minusButton,0,2);
-    focusButton = new QPushButton("Focus",stripChartGroup);
+    focusButton = new QPushButton(tr("Focus"),stripChartGroup);
     focusButton->setEnabled(true);
     connect(focusButton,SIGNAL(clicked()),this,SLOT(focus()));
     zoomLayout->addWidget(focusButton,0,3);
@@ -836,13 +838,13 @@ QvisStripChartMgr::executeMinLimitStripChart()
 int QvisStripChartMgr::sendCMD(QString sig, const QObject *ui, QString value)
 {
     if (!ui)
-         QMessageBox::warning(0, "VisIt", "Invalid ui component",
-                             "Ok", 0, 0, 0, 1 );
+         QMessageBox::warning(0, "VisIt", tr("Invalid ui component"),
+                             tr("Ok"), 0, 0, 0, 1 );
     if (simIndex < 0)
     {
         QMessageBox::warning(0, "VisIt",
-                             "Invalid index encountered for Sim engine access",
-                             "Ok", 0, 0, 0, 1 );
+                             tr("Invalid index encountered for Sim engine access"),
+                             tr("Ok"), 0, 0, 0, 1 );
         return -1;
     }
 
@@ -877,8 +879,8 @@ int QvisStripChartMgr::sendCMD(QString cmd)
     if (simIndex < 0)
     {
         QMessageBox::warning(0, "VisIt",
-                             "Invalid index encountered for Sim engine access",
-                             "Ok", 0, 0, 0, 1 );
+                             tr("Invalid index encountered for Sim engine access"),
+                             tr("Ok"), 0, 0, 0, 1 );
         return -1;
     }
     // check that there is at least one engine

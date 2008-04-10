@@ -69,10 +69,13 @@
 //   Brad Whitlock, Tue Sep 25 08:50:30 PDT 2001
 //   Prevented stretch from being added to the window.
 //
+//   Brad Whitlock, Wed Apr  9 10:53:31 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 QvisOutputWindow::QvisOutputWindow(MessageAttributes *subj,
-    const char *caption, const char *shortName, QvisNotepadArea *notepad) : 
+    const QString &caption, const QString &shortName, QvisNotepadArea *notepad) : 
     QvisPostableWindowObserver(subj, caption, shortName, notepad,
                                QvisPostableWindowObserver::NoExtraButtons,
                                false)
@@ -149,6 +152,9 @@ QvisOutputWindow::CreateWindowContents()
 //   Brad Whitlock, Thu May 11 14:59:11 PST 2006
 //   Added support for ErrorClear.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -163,11 +169,11 @@ QvisOutputWindow::UpdateWindow(bool)
     // Create a string to add to the output text.
     QString temp;
     if(msgAtts->GetSeverity() == MessageAttributes::Error)
-        temp = "ERROR: ";
+        temp = tr("ERROR: ");
     if(msgAtts->GetSeverity() == MessageAttributes::Message)
-        temp = "MESSAGE: ";
+        temp = tr("MESSAGE: ");
     if(msgAtts->GetSeverity() == MessageAttributes::Warning)
-        temp = "WARNING: ";
+        temp = tr("WARNING: ");
     temp += QString(msgAtts->GetText().c_str());
     temp += QString("\n");
 

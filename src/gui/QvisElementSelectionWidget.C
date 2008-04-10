@@ -61,6 +61,9 @@
 // Creation:   February 11, 2008
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 QvisElementSelectionWidget::QvisElementSelectionWidget(QWidget *parent,
@@ -79,7 +82,7 @@ QvisElementSelectionWidget::QvisElementSelectionWidget(QWidget *parent,
             this, SLOT(handleSelectedElement(int)));
 
     // Create the "Match any element" button
-    matchAnyElementButton = new QPushButton("Match any element", this, 
+    matchAnyElementButton = new QPushButton(tr("Match any element"), this, 
         "matchAnyElementButton");
     matchAnyElementButton->move(0, periodicTable->sizeHint().height());
     matchAnyElementButton->resize(periodicTable->sizeHint().width(),

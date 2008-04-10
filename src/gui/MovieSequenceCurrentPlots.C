@@ -109,10 +109,10 @@ MovieSequenceCurrentPlots::SequenceName() const
     return "CurrentPlots";
 }
 
-std::string
+QString
 MovieSequenceCurrentPlots::SequenceMenuName() const
 {
-    return "Current plots";
+    return tr("Current plots");
 }
 
 bool

@@ -66,10 +66,13 @@
 //   Brad Whitlock, Thu Mar 6 11:29:17 PDT 2003
 //   I added stretch.
 //
+//   Brad Whitlock, Wed Apr  9 12:48:10 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 QvisOperatorWindow::QvisOperatorWindow(const int type, Subject *subj,
-    const char *caption, const char *shortName, QvisNotepadArea *notepad,
+    const QString &caption, const QString &shortName, QvisNotepadArea *notepad,
     bool stretch) : QvisPostableWindowObserver(subj, caption, shortName,
     notepad, QvisPostableWindowObserver::AllExtraButtons, stretch)
 {
@@ -182,6 +185,9 @@ QvisOperatorWindow::GetCurrentValues(int)
 //   Changed from setting client atts to using AddInitializedOperator, which
 //   does the same thing but can get logged in the CLI better.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -228,14 +234,14 @@ QvisOperatorWindow::SetOperatorOptions()
                 // Create a prompt for the user.
                 std::string opName(opMgr->GetPluginName(
                                    opMgr->GetEnabledID(operatorType)));
-                QString msg;
-                msg.sprintf("No %s operator was found for the selected plots.\n"
-                            "Do you want to apply the %s operator?\n\n",
-                            opName.c_str(), opName.c_str());
+                QString msg(
+                    tr("No %1 operator was found for the selected plots.") + QString("\n") + 
+                    tr("Do you want to apply the %1 operator?") + QString("\n\n"));
+                msg.replace("%1", opName.c_str());
 
                 // Ask the user if he really wants to close the engine.
                 button = QMessageBox::warning(this, "VisIt",
-                    msg.latin1(), "Yes", "No", "Yes, Do not prompt again",
+                    msg.latin1(), tr("Yes"), tr("No"), tr("Yes, Do not prompt again"),
                     0, 1 );
             }
 

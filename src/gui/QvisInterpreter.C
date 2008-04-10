@@ -118,8 +118,8 @@ QvisInterpreter::Interpret(const QString &s)
     }
     else
     {
-        Message("You told VisIt to execute an empty body of code "
-                "so VisIt did nothing.");
+        Message(tr("You told VisIt to execute an empty body of code "
+                "so VisIt did nothing."));
     }
 
     if(Initialize())

@@ -108,10 +108,13 @@ using std::vector;
 //   Added defaultAutoShow, defaultSavePicks, defaultNumTabs so that their
 //   counterparts can be 'reset' correclty from user-saved values when needed. 
 //
+//   Brad Whitlock, Wed Apr  9 11:30:06 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
-QvisPickWindow::QvisPickWindow(PickAttributes *subj, const char *caption, 
-                           const char *shortName, QvisNotepadArea *notepad) :
+QvisPickWindow::QvisPickWindow(PickAttributes *subj, const QString &caption, 
+                           const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(subj, caption, shortName, notepad, 
                            QvisPostableWindowObserver::AllExtraButtons, false),
     lastLetter(" ")
@@ -214,6 +217,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Kathleen Bonnell, Thu Nov 29 15:32:32 PST 2007 
 //   Added clearPicks push button.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -245,9 +251,9 @@ QvisPickWindow::CreateWindowContents()
                                    "userMaxPickTabs");
     userMaxPickTabs->setButtonSymbols(QSpinBox::PlusMinus);
     gLayout->addWidget(userMaxPickTabs, 0, 1);
-    gLayout->addWidget(new QLabel(userMaxPickTabs, "Max Tabs", central), 0,0);
+    gLayout->addWidget(new QLabel(userMaxPickTabs, tr("Max Tabs"), central), 0,0);
 
-    QPushButton *savePicksButton = new QPushButton("Save Picks as...", central,
+    QPushButton *savePicksButton = new QPushButton(tr("Save Picks as") + QString("..."), central,
             "savePicksButton");
     connect(savePicksButton, SIGNAL(clicked()),
             this, SLOT(savePickText()));
@@ -255,7 +261,7 @@ QvisPickWindow::CreateWindowContents()
     
     varsButton = new QvisVariableButton(true, false, true, -1,
         central, "varsButton");
-    varsButton->setText("Variables");
+    varsButton->setText(tr("Variables"));
     varsButton->setChangeTextOnVariableChange(false);
     connect(varsButton, SIGNAL(activated(const QString &)),
             this, SLOT(addPickVariable(const QString &)));
@@ -268,7 +274,7 @@ QvisPickWindow::CreateWindowContents()
     gLayout->addMultiCellWidget(varsLineEdit, 1, 1, 1, 3);
 
     
-    QLabel *floatFormatLabel = new QLabel("Float Format:",central,
+    QLabel *floatFormatLabel = new QLabel(tr("Float Format:"),central,
                                           "floatFormatLabel");
     gLayout->addWidget(floatFormatLabel, 2, 0);
     
@@ -278,38 +284,38 @@ QvisPickWindow::CreateWindowContents()
     connect(floatFormatLineEdit, SIGNAL(returnPressed()),
             this, SLOT(floatFormatProcessText()));
         
-    conciseOutputCheckBox = new QCheckBox("Concise Output.", central,
+    conciseOutputCheckBox = new QCheckBox(tr("Concise Output."), central,
                                      "conciseOutputCheckBox");
     connect(conciseOutputCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(conciseOutputToggled(bool)));
     gLayout->addMultiCellWidget(conciseOutputCheckBox, 3, 3, 0, 1);
 
 
-    showMeshNameCheckBox = new QCheckBox("Show Mesh Name", central, 
+    showMeshNameCheckBox = new QCheckBox(tr("Show Mesh Name"), central, 
                                   "showMeshNameCheckBox");
     connect(showMeshNameCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showMeshNameToggled(bool)));
     gLayout->addMultiCellWidget(showMeshNameCheckBox, 4, 4, 0, 1);
 
-    showTimestepCheckBox = new QCheckBox("Show Timestep", central, 
+    showTimestepCheckBox = new QCheckBox(tr("Show Timestep"), central, 
                                   "showTimestepCheckBox");
     connect(showTimestepCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showTimestepToggled(bool)));
     gLayout->addMultiCellWidget(showTimestepCheckBox, 4, 4, 2, 3);
 
-    displayIncEls = new QCheckBox("Display incident nodes/zones.", central, 
+    displayIncEls = new QCheckBox(tr("Display incident nodes/zones."), central, 
                                   "displayIncEls");
     connect(displayIncEls, SIGNAL(toggled(bool)),
             this, SLOT(displayIncElsToggled(bool)));
     gLayout->addMultiCellWidget(displayIncEls, 5, 5, 0, 1);
 
-    displayGlobalIds = new QCheckBox("Display global nodes/zones.", central, 
+    displayGlobalIds = new QCheckBox(tr("Display global nodes/zones."), central, 
                                   "displayGlobalIds");
     connect(displayGlobalIds, SIGNAL(toggled(bool)),
             this, SLOT(displayGlobalIdsToggled(bool)));
     gLayout->addMultiCellWidget(displayGlobalIds, 6, 6, 0, 1);
 
-    displayPickLetter = new QCheckBox("Display reference pick letter.", 
+    displayPickLetter = new QCheckBox(tr("Display reference pick letter."), 
                                       central, "displayPickLetter");
     connect(displayPickLetter, SIGNAL(toggled(bool)),
             this, SLOT(displayPickLetterToggled(bool)));
@@ -318,7 +324,7 @@ QvisPickWindow::CreateWindowContents()
 
     // Node settings
     QGroupBox *nodeGroupBox = new QGroupBox(central, "nodeGroupBox");
-    nodeGroupBox->setTitle("Display for Nodes:");
+    nodeGroupBox->setTitle(tr("Display for Nodes:"));
     nodeGroupBox->setMargin(10);
     gLayout->addMultiCellWidget(nodeGroupBox, 8, 8, 0, 3);
     QGridLayout *nLayout = new QGridLayout(nodeGroupBox, 3, 4);
@@ -326,21 +332,21 @@ QvisPickWindow::CreateWindowContents()
     nLayout->setSpacing(10);
     nLayout->addRowSpacing(0, 15);
 
-    nodeId = new QCheckBox("Id", nodeGroupBox, "nodeId");
+    nodeId = new QCheckBox(tr("Id"), nodeGroupBox, "nodeId");
     connect(nodeId, SIGNAL(toggled(bool)),
             this, SLOT(nodeIdToggled(bool)));
     nLayout->addMultiCellWidget(nodeId, 1, 1, 0, 1);
-    nodePhysical = new QCheckBox("Physical Coords", nodeGroupBox, 
+    nodePhysical = new QCheckBox(tr("Physical Coords"), nodeGroupBox, 
                                  "nodePhysical");
     connect(nodePhysical, SIGNAL(toggled(bool)),
             this, SLOT(nodePhysicalToggled(bool)));
     nLayout->addMultiCellWidget(nodePhysical, 2, 2, 0, 1);
-    nodeDomLog = new QCheckBox("Domain-Logical Coords", nodeGroupBox, 
+    nodeDomLog = new QCheckBox(tr("Domain-Logical Coords"), nodeGroupBox, 
                                "nodeDomLog");
     connect(nodeDomLog, SIGNAL(toggled(bool)),
             this, SLOT(nodeDomLogToggled(bool)));
     nLayout->addMultiCellWidget(nodeDomLog, 1, 1, 2, 3);
-    nodeBlockLog = new QCheckBox("Block-Logical Coords", nodeGroupBox, 
+    nodeBlockLog = new QCheckBox(tr("Block-Logical Coords"), nodeGroupBox, 
                                  "nodeBlockLog");
     connect(nodeBlockLog, SIGNAL(toggled(bool)),
             this, SLOT(nodeBlockLogToggled(bool)));
@@ -348,7 +354,7 @@ QvisPickWindow::CreateWindowContents()
 
     // Zone settings
     QGroupBox *zoneGroupBox = new QGroupBox(central, "zoneGroupBox");
-    zoneGroupBox->setTitle("Display for Zones:");
+    zoneGroupBox->setTitle(tr("Display for Zones:"));
     zoneGroupBox->setMargin(10);
     gLayout->addMultiCellWidget(zoneGroupBox, 9, 9, 0, 3);
     QGridLayout *zLayout = new QGridLayout(zoneGroupBox, 3, 4);
@@ -356,29 +362,29 @@ QvisPickWindow::CreateWindowContents()
     zLayout->setSpacing(10);
     zLayout->addRowSpacing(0, 15);
 
-    zoneId = new QCheckBox("Id", zoneGroupBox, "zoneId");
+    zoneId = new QCheckBox(tr("Id"), zoneGroupBox, "zoneId");
     connect(zoneId, SIGNAL(toggled(bool)),
             this, SLOT(zoneIdToggled(bool)));
     zLayout->addMultiCellWidget(zoneId, 1, 1, 0, 1);
-    zoneDomLog = new QCheckBox("Domain-Logical Coords", zoneGroupBox, 
+    zoneDomLog = new QCheckBox(tr("Domain-Logical Coords"), zoneGroupBox, 
                                "zoneDomLog");
     connect(zoneDomLog, SIGNAL(toggled(bool)),
             this, SLOT(zoneDomLogToggled(bool)));
     zLayout->addMultiCellWidget(zoneDomLog, 1, 1, 2, 3);
-    zoneBlockLog = new QCheckBox("Block-Logical Coords", zoneGroupBox,
+    zoneBlockLog = new QCheckBox(tr("Block-Logical Coords"), zoneGroupBox,
                                  "zoneBlockLog");
     connect(zoneBlockLog, SIGNAL(toggled(bool)),
             this, SLOT(zoneBlockLogToggled(bool)));
     zLayout->addMultiCellWidget(zoneBlockLog, 2, 2, 2, 3);
 
    
-    autoShowCheckBox = new QCheckBox("Automatically show window", central,
+    autoShowCheckBox = new QCheckBox(tr("Automatically show window"), central,
                                      "autoShowCheckBox");
     connect(autoShowCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoShowToggled(bool)));
     gLayout->addMultiCellWidget(autoShowCheckBox, 10, 10, 0, 3);
 
-    savePicksCheckBox = new QCheckBox("Don't clear this window", central,
+    savePicksCheckBox = new QCheckBox(tr("Don't clear this window"), central,
                                      "savePicksCheckBox");
     connect(savePicksCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(savePicksToggled(bool)));
@@ -390,21 +396,21 @@ QvisPickWindow::CreateWindowContents()
             this, SLOT(clearPicks()));
     gLayout->addWidget(clearPicksButton, 11, 3);
 
-    timeCurveCheckBox = new QCheckBox("Create time curve with next pick.", 
+    timeCurveCheckBox = new QCheckBox(tr("Create time curve with next pick."), 
                                       central, "timeCurveCheckBox");
     connect(timeCurveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
     gLayout->addMultiCellWidget(timeCurveCheckBox, 12, 12, 0, 3);
 
     preserveCoord= new QComboBox(false, central, "preserveCoord");
-    preserveCoord->insertItem("Time curve use picked element");
-    preserveCoord->insertItem("Time curve use picked coordinates");
+    preserveCoord->insertItem(tr("Time curve use picked element"));
+    preserveCoord->insertItem(tr("Time curve use picked coordinates"));
     preserveCoord->setCurrentItem(0);
     connect(preserveCoord, SIGNAL(activated(int)),
             this, SLOT(preserveCoordActivated(int)));
     gLayout->addMultiCellWidget(preserveCoord, 13, 13, 0, 3);
 
-    spreadsheetCheckBox = new QCheckBox("Create spreadsheet with next pick.", 
+    spreadsheetCheckBox = new QCheckBox(tr("Create spreadsheet with next pick."), 
                                         central, "spreadsheetCheckBox");
     connect(spreadsheetCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(spreadsheetToggled(bool)));
@@ -783,6 +789,9 @@ QvisPickWindow::UpdatePage()
 //   Brad Whitlock, Mon Dec 17 09:34:38 PST 2007
 //   Made it use ids.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -821,7 +830,7 @@ QvisPickWindow::GetCurrentValues(int which_widget)
                                ->displayText().simplifyWhiteSpace().latin1();
         if(!StringHelpers::ValidatePrintfFormatString(format.c_str(),
                                                       "float","EOA"))
-            Error("Invalid pick floating point format string.");
+            Error(tr("Invalid pick floating point format string."));
         else
             pickAtts->SetFloatFormat(format);
     }
@@ -1619,6 +1628,8 @@ QvisPickWindow::ResizeTabs()
 // Creation:   Friday May 18 2007
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -1638,7 +1649,7 @@ QvisPickWindow::savePickText()
     defaultFile = currentDir + "/" + defaultFile;
 
     // Get the name of the file that the user saved.
-    QString sFilter(QString("VisIt save (*") + saveExtension + ")");
+    QString sFilter(QString("VisIt ") + QString("save") + QString(" (*") + saveExtension + ")");
     QString fileName = QFileDialog::getSaveFileName(defaultFile, sFilter);
 
     // If the user chose to save a file, write the pick result text
@@ -1661,8 +1672,8 @@ QvisPickWindow::savePickText()
             file.close();
         }
         else
-            Error( "VisIt could not save the pick results"
-                   "to the selected file" ) ;
+            Error(tr("VisIt could not save the pick results"
+                     "to the selected file")) ;
     }
 }
 

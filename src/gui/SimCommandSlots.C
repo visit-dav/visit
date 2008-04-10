@@ -84,6 +84,8 @@ SimCommandSlots::SimCommandSlots(ViewerProxy *theViewer,
 // Creation:   Jan 6, 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -93,13 +95,13 @@ int SimCommandSlots::SendCMD(QString sig, const QObject *ui, QString value)
         debug5 << "signal sender is type " << ui->className() << " named "
                << ui->name() << " parent " << ui->parent()->name() << endl;
     else
-        QMessageBox::warning(0, "VisIt", "Invalid ui component",
-                             "Ok", 0, 0, 0, 1 );
+        QMessageBox::warning(0, "VisIt", tr("Invalid ui component"),
+                             tr("Ok"), 0, 0, 0, 1 );
     if (simIndex < 0)
     {
         QMessageBox::warning(0, "VisIt",
-                             "Invalid index encountered for Sim engine access",
-                             "Ok", 0, 0, 0, 1 );
+                             tr("Invalid index encountered for Sim engine access"),
+                             tr("Ok"), 0, 0, 0, 1 );
         return -1;
     }
 

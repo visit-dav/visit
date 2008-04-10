@@ -122,14 +122,17 @@ class QvisLineWidthWidget;
 //   Brad Whitlock, Thu Feb 7 16:18:19 PST 2008
 //   I rewrote the support for 2D,3D axes.
 //
+//   Brad Whitlock, Wed Apr  9 10:58:41 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisAnnotationWindow(const char *caption = 0,
-                         const char *shortName = 0,
+    QvisAnnotationWindow(const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisAnnotationWindow();
     virtual void CreateWindowContents();

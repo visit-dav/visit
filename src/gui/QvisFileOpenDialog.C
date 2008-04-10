@@ -64,10 +64,12 @@ const int QvisFileOpenDialog::Rejected = 1;
 // Creation:   Wed Nov 15 16:28:11 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 10:40:27 PDT 2008
+//   Made caption use QString.
+//
 // ****************************************************************************
 
-QvisFileOpenDialog::QvisFileOpenDialog(const char *caption) : 
+QvisFileOpenDialog::QvisFileOpenDialog(const QString &caption) : 
     QvisFileOpenWindow(caption)
 {
     in_loop = false;
@@ -224,12 +226,14 @@ QvisFileOpenDialog::getOpenFileNameEx(const QString &initialFile)
 // Creation:   Wed Nov 15 16:33:30 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 10:40:51 PDT 2008
+//   Made caption use QString.
+//  
 // ****************************************************************************
 
 QString
 QvisFileOpenDialog::getOpenFileName(const QString &initialFile, 
-    const char *caption)
+    const QString &caption)
 {
     QString filename;
 
@@ -262,6 +266,9 @@ QvisFileOpenDialog::getOpenFileName(const QString &initialFile,
 //   Added code to handle bad hosts and paths so the window does not disappear
 //   outright.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -283,15 +290,17 @@ QvisFileOpenDialog::changeThePath()
         }
         CATCH(BadHostException)
         {
-            msg.sprintf("VisIt could not access host %s.", f.host.c_str());
+            msg = tr("VisIt could not access host %1.");
+            msg.replace("%1", f.host.c_str());
             Error(msg);
             f.host = "localhost";
             retry_loop = true;
         }
         CATCH(ChangeDirectoryException)
         {
-            msg.sprintf("VisIt could not access the directory: %s so your "
-                        "home directory will be used..", f.path.c_str());
+            msg = tr("VisIt could not access the directory: %1 so your "
+                     "home directory will be used.");
+            msg.replace("%1", f.path.c_str());
             Error(msg);
             f.path = "~";
             retry_loop = true;

@@ -70,6 +70,9 @@
 //   Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005
 //   Added timeFormatLineEdit.
 //   
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent,
@@ -86,7 +89,7 @@ QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent,
     connect(positionEdit, SIGNAL(screenPositionChanged(double,double)),
             this, SLOT(positionChanged(double,double)));
     cLayout->addMultiCellWidget(positionEdit, 0, 0, 1, 3);
-    cLayout->addWidget(new QLabel(positionEdit, "Lower left",
+    cLayout->addWidget(new QLabel(positionEdit, tr("Lower left"),
         this), 0, 0);
 
     // Add controls for position2
@@ -96,7 +99,7 @@ QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent,
     connect(widthSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(widthChanged(int)));
     cLayout->addWidget(widthSpinBox, 1, 1);
-    cLayout->addWidget(new QLabel(widthSpinBox, "Width",
+    cLayout->addWidget(new QLabel(widthSpinBox, tr("Width"),
         this), 1, 0);
     heightSpinBox = new QSpinBox(1, 100, 1, this, "heightSpinBox");
     heightSpinBox->setSuffix("%");
@@ -104,7 +107,7 @@ QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent,
     connect(heightSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(heightChanged(int)));
     cLayout->addWidget(heightSpinBox, 1, 3);
-    cLayout->addWidget(new QLabel(widthSpinBox, "Height",
+    cLayout->addWidget(new QLabel(widthSpinBox, tr("Height"),
         this), 1, 2);
 
     // Add controls for time label
@@ -112,7 +115,7 @@ QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent,
     connect(labelLineEdit, SIGNAL(returnPressed()),
             this, SLOT(labelChanged()));
     cLayout->addMultiCellWidget(labelLineEdit, 2, 2, 1, 3);
-    cLayout->addWidget(new QLabel(labelLineEdit, "Text label",
+    cLayout->addWidget(new QLabel(labelLineEdit, tr("Text label"),
         this), 2, 0);
 
     // Add controls for timeFormat
@@ -120,14 +123,14 @@ QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent,
     connect(timeFormatLineEdit, SIGNAL(returnPressed()),
             this, SLOT(timeFormatChanged()));
     cLayout->addMultiCellWidget(timeFormatLineEdit, 3, 3, 1, 3);
-    cLayout->addWidget(new QLabel(timeFormatLineEdit, "Time format",
+    cLayout->addWidget(new QLabel(timeFormatLineEdit, tr("Time format"),
         this), 3, 0);
 
     // Add controls for the start color.
     startColorButton = new QvisColorButton(this, "startColorButton");
     connect(startColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(startColorChanged(const QColor &)));
-    cLayout->addWidget(new QLabel(startColorButton, "Start color", this),
+    cLayout->addWidget(new QLabel(startColorButton, tr("Start color"), this),
         4, 0, Qt::AlignLeft);
     cLayout->addWidget(startColorButton, 4, 1);
     startColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this,
@@ -140,7 +143,7 @@ QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent,
     endColorButton = new QvisColorButton(this, "endColorButton");
     connect(endColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(endColorChanged(const QColor &)));
-    cLayout->addWidget(new QLabel(endColorButton, "End color", this),
+    cLayout->addWidget(new QLabel(endColorButton, tr("End color"), this),
         5, 0, Qt::AlignLeft);
     cLayout->addWidget(endColorButton, 5, 1);
     endColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this,
@@ -153,7 +156,7 @@ QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent,
     textColorButton = new QvisColorButton(this, "textColorButton");
     connect(textColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(textColorChanged(const QColor &)));
-    cLayout->addWidget(new QLabel(textColorButton, "Text color", this),
+    cLayout->addWidget(new QLabel(textColorButton, tr("Text color"), this),
         6, 0, Qt::AlignLeft);
     cLayout->addWidget(textColorButton, 6, 1);
     textColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this,
@@ -163,7 +166,7 @@ QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent,
     cLayout->addMultiCellWidget(textColorOpacity, 6, 6, 2, 3);
 
     // Added a use foreground toggle
-    useForegroundColorCheckBox = new QCheckBox("Use foreground color", this,
+    useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this,
         "useForegroundColorCheckBox");
     connect(useForegroundColorCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(useForegroundColorToggled(bool)));
@@ -171,29 +174,29 @@ QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent,
 
     // Add a time display combobox.
     timeDisplayComboBox = new QComboBox(this, "timeDisplayComboBox");
-    timeDisplayComboBox->insertItem("All frames", 0);
-    timeDisplayComboBox->insertItem("Frames for plot", 1);
-    timeDisplayComboBox->insertItem("States for plot", 2);
+    timeDisplayComboBox->insertItem(tr("All frames"), 0);
+    timeDisplayComboBox->insertItem(tr("Frames for plot"), 1);
+    timeDisplayComboBox->insertItem(tr("States for plot"), 2);
     timeDisplayComboBox->setEditable(false);
     connect(timeDisplayComboBox, SIGNAL(activated(int)),
             this, SLOT(timeDisplayChanged(int)));
     cLayout->addMultiCellWidget(timeDisplayComboBox, 8, 8, 1, 3);
-    cLayout->addWidget(new QLabel("Time source", this), 8, 0);
+    cLayout->addWidget(new QLabel(tr("Time source"), this), 8, 0);
 
     // Add a visibility toggle
-    visibleCheckBox = new QCheckBox("Visible", this, "visibleCheckBox");
+    visibleCheckBox = new QCheckBox(tr("Visible"), this, "visibleCheckBox");
     connect(visibleCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(visibilityToggled(bool)));
     cLayout->addWidget(visibleCheckBox, 9, 0);
 
     // Add a rounded toggle
-    roundedCheckBox = new QCheckBox("Rounded", this, "roundedCheckBox");
+    roundedCheckBox = new QCheckBox(tr("Rounded"), this, "roundedCheckBox");
     connect(roundedCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(roundedToggled(bool)));
     cLayout->addWidget(roundedCheckBox, 9, 1);
 
     // Add a shaded toggle
-    shadedCheckBox = new QCheckBox("Shaded", this, "shadedCheckBox");
+    shadedCheckBox = new QCheckBox(tr("Shaded"), this, "shadedCheckBox");
     connect(shadedCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(shadedToggled(bool)));
     cLayout->addMultiCellWidget(shadedCheckBox, 9, 9, 2, 3);
@@ -374,7 +377,7 @@ QvisTimeSliderInterface::GetCurrentValues(int which_widget)
     if(which_widget == 0 || doAll)
     {
         // Get the new position
-        GetScreenPosition(positionEdit, "Lower left");
+        GetScreenPosition(positionEdit, tr("Lower left"));
     }
 
     if(which_widget == 1 || doAll)

@@ -73,10 +73,13 @@ const int QvisPostableWindowSimpleObserver::AllExtraButtons   = 7;
 //   Brad Whitlock, Mon Sep 9 11:00:03 PDT 2002
 //   Added applyButton flag.
 //
+//   Brad Whitlock, Wed Apr  9 10:49:15 PDT 2008
+//   QString for caption and shortName.
+//
 // ****************************************************************************
 
 QvisPostableWindowSimpleObserver::QvisPostableWindowSimpleObserver(
-    const char *caption, const char *shortName, QvisNotepadArea *notepad,
+    const QString &caption, const QString &shortName, QvisNotepadArea *notepad,
     int buttonCombo, bool stretch) :
     QvisPostableWindow(caption, shortName, notepad), SimpleObserver()
 {
@@ -196,6 +199,9 @@ QvisPostableWindowSimpleObserver::SelectedSubject()
 //   Brad Whitlock, Tue Jan 22 16:45:13 PST 2008
 //   If posting is disabled, put the contents of the window into a scrollview.
 //
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -247,7 +253,7 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
     // Create the extra buttons if necessary.
     if(buttonCombination & MakeDefaultButton)
     {
-        QPushButton *makeDefaultButton = new QPushButton("Make default",
+        QPushButton *makeDefaultButton = new QPushButton(tr("Make default"),
             topCentral, "makeDefaultButton");
         connect(makeDefaultButton, SIGNAL(clicked()),
                 this, SLOT(makeDefaultHelper()));
@@ -255,14 +261,14 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
     }
     if(buttonCombination & ResetButton)
     {
-        QPushButton *resetButton = new QPushButton("Reset", topCentral,
+        QPushButton *resetButton = new QPushButton(tr("Reset"), topCentral,
                                                    "resetButton");
         connect(resetButton, SIGNAL(clicked()), this, SLOT(reset()));
         buttonLayout->addWidget(resetButton, 0, 3);
     }
     if(buttonCombination & ApplyButton)
     {
-        QPushButton *applyButton = new QPushButton("Apply", topCentral,
+        QPushButton *applyButton = new QPushButton(tr("Apply"), topCentral,
             "applyButton");
         connect(applyButton, SIGNAL(clicked()), this, SLOT(apply()));
         buttonLayout->addWidget(applyButton, 1, 0);
@@ -274,7 +280,7 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
         buttonLayout->addColSpacing(1, 50);
     }
 
-    postButton = new QPushButton("Post", topCentral, "postButton");
+    postButton = new QPushButton(tr("Post"), topCentral, "postButton");
     // Make the window post itself when the post button is clicked.
     if(notepad)
     {
@@ -284,7 +290,7 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
     else
         postButton->setEnabled(false);
     buttonLayout->addWidget(postButton, 1, 2);
-    QPushButton *dismissButton = new QPushButton("Dismiss", topCentral,
+    QPushButton *dismissButton = new QPushButton(tr("Dismiss"), topCentral,
         "dismissButton");
     connect(dismissButton, SIGNAL(clicked()), this, SLOT(hide()));
     buttonLayout->addWidget(dismissButton, 1, 3);
@@ -331,6 +337,9 @@ QvisPostableWindowSimpleObserver::apply()
 //   Brad Whitlock, Mon Nov 4 14:11:22 PST 2002
 //   I made it so the "make default" behavior can be turned off permanently.
 //
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -338,11 +347,11 @@ QvisPostableWindowSimpleObserver::makeDefaultHelper()
 {
     if(makeDefaultConfirm)
     {
-        QString msg("Do you really want to make these the default attributes?");
+        QString msg(tr("Do you really want to make these the default attributes?"));
 
         // Ask the user if he really wants to set the defaults
-        int button = QMessageBox::warning(0, "VisIt", msg, "Ok", "Cancel",
-                                          "Yes, Do not prompt again", 0, 1);
+        int button = QMessageBox::warning(0, "VisIt", msg, tr("Ok"), tr("Cancel"),
+                                          tr("Yes, Do not prompt again"), 0, 1);
 
         if(button == 0)
         {

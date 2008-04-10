@@ -65,6 +65,9 @@
 //   Brad Whitlock, Thu Aug 21 17:56:02 PST 2003
 //   I set the background pixmap of the viewport if we have a background pixmap.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 QvisColorManagerWidget::QvisColorManagerWidget(QWidget *parent,
@@ -89,11 +92,11 @@ QvisColorManagerWidget::QvisColorManagerWidget(QWidget *parent,
     scrollView->addChild(grid);
 
     // Add some labels.
-    nameLabel = new QLabel("Material", grid, "nameLabel");
+    nameLabel = new QLabel(tr("Material"), grid, "nameLabel");
     nameLabel->setAlignment(AlignHCenter | AlignVCenter);
-    colorLabel = new QLabel("Color", grid, "colorLabel");
+    colorLabel = new QLabel(tr("Color"), grid, "colorLabel");
     colorLabel->setAlignment(AlignHCenter | AlignVCenter);
-    opacityLabel = new QLabel("Opacity", grid, "opacityLabel");
+    opacityLabel = new QLabel(tr("Opacity"), grid, "opacityLabel");
     opacityLabel->setAlignment(AlignHCenter | AlignVCenter);
 
 #if 0
@@ -212,6 +215,9 @@ QvisColorManagerWidget::setEnabled(bool val)
 //   Brad Whitlock, Thu Aug 22 12:22:26 PDT 2002
 //   I made it so that new widgets can be disabled by default.
 //
+//   Brad Whitlock, Wed Apr  9 10:36:22 PDT 2008
+//   Clean up string coding.
+//
 // ****************************************************************************
 
 void
@@ -226,12 +232,12 @@ QvisColorManagerWidget::addEntry(const QString &name, const QColor &color,
     temp.sprintf("entry%d.nameLabel", colorEntries.size());
     QString tempName(" ");
     tempName += name;
-    entry->nameLabel = new QLabel(tempName, grid, temp);
+    entry->nameLabel = new QLabel(tempName, grid, temp.ascii());
     entry->nameLabel->setEnabled(isEnabled());
 
     // Create the color box.
     temp.sprintf("entry%d.colorBox", colorEntries.size());
-    entry->colorBox = new QvisColorButton(grid, temp, userData);
+    entry->colorBox = new QvisColorButton(grid, temp.ascii(), userData);
     entry->colorBox->setButtonColor(color);
     entry->colorBox->setEnabled(isEnabled());
     connect(entry->colorBox,
@@ -242,7 +248,7 @@ QvisColorManagerWidget::addEntry(const QString &name, const QColor &color,
     // Create the opacity slider.
     temp.sprintf("entry%d.opacitySlider", colorEntries.size());
     entry->opacitySlider = new QvisOpacitySlider(0, 255, 25, opacity,
-        grid, temp, userData);
+        grid, temp.ascii(), userData);
     entry->opacitySlider->setTickInterval(64);
     entry->opacitySlider->setGradientColor(color);
     entry->opacitySlider->setEnabled(isEnabled());

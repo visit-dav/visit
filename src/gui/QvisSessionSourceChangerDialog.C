@@ -59,17 +59,19 @@
 // Creation:   Tue Nov 14 15:24:49 PST 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
 QvisSessionSourceChangerDialog::QvisSessionSourceChangerDialog(
     QWidget *parent, const char *name) : QDialog(parent, name)
 {
-    static const char *title = "Update sources";
-    static const char *description = "Make sure that the sources used in "
+    QString title = tr("Update sources");
+    QString description = tr("Make sure that the sources used in "
         "this session are up to date. You can change the sources here to "
         "restore your session using different sources, making your session "
-        "file a helpful visualization template.";
+        "file a helpful visualization template.");
     setCaption(title);
 
     QVBoxLayout *pageLayout = new QVBoxLayout(this);

@@ -58,6 +58,8 @@
 // Creation:   Mon Nov 13 15:41:28 PST 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -79,10 +81,10 @@ QvisSessionSourceChanger::QvisSessionSourceChanger(QWidget *parent,
     sourceList = new QListBox(this, "sourceList");
     connect(sourceList, SIGNAL(selectionChanged()),
             this, SLOT(selectedSourceChanged()));
-    gridLayout->addWidget(new QLabel("Source identifiers", this, "sourceIdLabel"), 0, 0);
+    gridLayout->addWidget(new QLabel(tr("Source identifiers"), this, "sourceIdLabel"), 0, 0);
     gridLayout->addWidget(sourceList, 1, 0);
 
-    QGroupBox *sourceProperties = new QGroupBox("Source", this,
+    QGroupBox *sourceProperties = new QGroupBox(tr("Source"), this,
         "sourceProperties");
     gridLayout->addMultiCellWidget(sourceProperties, 0, 1, 1, 1);
     gridLayout->setColStretch(1, 10);
@@ -101,7 +103,7 @@ QvisSessionSourceChanger::QvisSessionSourceChanger(QWidget *parent,
     srcPropLayout->addWidget(fileLineEdit);
 
     useList = new QListBox(sourceProperties, "useList");
-    srcPropLayout->addWidget(new QLabel("Source used in", sourceProperties, "srcUseLabel"));
+    srcPropLayout->addWidget(new QLabel(tr("Source used in"), sourceProperties, "srcUseLabel"));
     srcPropLayout->addWidget(useList);
 }
 

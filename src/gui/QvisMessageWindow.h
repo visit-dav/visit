@@ -62,6 +62,9 @@ class QMultiLineEdit;
 //   Brad Whitlock, Fri Jan 18 15:32:51 PST 2008
 //   Added preserveInformation flag.
 //
+//   Brad Whitlock, Wed Apr  9 10:54:00 PDT 2008
+//   QString for captionString.
+//
 // *******************************************************************
 
 class GUI_API QvisMessageWindow : public QvisWindowBase, public Observer
@@ -69,7 +72,7 @@ class GUI_API QvisMessageWindow : public QvisWindowBase, public Observer
     Q_OBJECT
 public:
     QvisMessageWindow(MessageAttributes *msgAttr,
-                      const char *captionString = 0);
+                      const QString &captionString = QString::null);
     virtual ~QvisMessageWindow();
     virtual void Update(Subject *);
 private slots:

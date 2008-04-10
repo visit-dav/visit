@@ -122,13 +122,17 @@ class QPushButton;
 //   Added support for axis-array views.  Renamed some curve view
 //   buttons to avoid namespace collisions.
 //
+//   Brad Whitlock, Wed Apr  9 11:02:38 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisViewWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisViewWindow(const char *caption = 0, const char *shortName = 0,
+    QvisViewWindow(const QString &caption = QString::null,
+                   const QString &shortName = QString::null,
                    QvisNotepadArea *notepad = 0);
     virtual ~QvisViewWindow();
     virtual void CreateWindowContents();

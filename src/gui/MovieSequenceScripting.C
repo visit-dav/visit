@@ -141,13 +141,15 @@ MovieSequenceScripting::SequenceName() const
 // Creation:   Tue Nov 14 10:18:48 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 09:15:37 PDT 2008
+//   Use tr() and return QString.
+//
 // ****************************************************************************
 
-std::string
+QString
 MovieSequenceScripting::SequenceMenuName() const
 {
-    return "Scripting";
+    return tr("Scripting");
 }
 
 //

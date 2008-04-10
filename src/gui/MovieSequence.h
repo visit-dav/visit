@@ -37,6 +37,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#include <qobject.h>
 #include <string>
 #include <qpixmap.h>
 
@@ -65,10 +66,12 @@ class QWidget;
 // Creation:   Thu Oct 5 14:52:36 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 08:50:52 PDT 2008
+//   I made SequenceMenuName return a QString so we can tr() it.
+//
 // ****************************************************************************
 
-class MovieSequence
+class MovieSequence : public QObject
 {
 public:
     MovieSequence();
@@ -85,7 +88,7 @@ public:
     virtual std::string SequenceName() const = 0;
 
     // Returns the name of the sequence as it will appear in menus.
-    virtual std::string SequenceMenuName() const = 0;
+    virtual QString SequenceMenuName() const = 0;
     virtual bool ProvidesMenu() const;
     virtual int SubMenuIndex() const;
 

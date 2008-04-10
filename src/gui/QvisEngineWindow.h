@@ -77,6 +77,9 @@ class StatusAttributes;
 //    Jeremy Meredith, Tue Mar 30 09:32:41 PST 2004
 //    I added support for simulations.
 //
+//    Brad Whitlock, Wed Apr  9 11:00:33 PDT 2008
+//    QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisEngineWindow : public QvisPostableWindowObserver
@@ -86,8 +89,8 @@ class GUI_API QvisEngineWindow : public QvisPostableWindowObserver
     typedef QMap<QString, StatusAttributes*> EngineStatusMap;
 public:
     QvisEngineWindow(EngineList *engineList,
-                     const char *caption = 0,
-                     const char *shortName = 0,
+                     const QString &caption = QString::null,
+                     const QString &shortName = QString::null,
                      QvisNotepadArea *notepad = 0);
     virtual ~QvisEngineWindow();
     virtual void CreateWindowContents();

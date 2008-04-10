@@ -87,14 +87,18 @@ class QButtonGroup;
 //   Jeremy Meredith, Thu Apr  5 17:23:37 EDT 2007
 //   Added button to force a merge of parallel geometry.
 //
+//   Brad Whitlock, Wed Apr  9 10:56:15 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisSaveWindow : public QvisPostableWindowObserver
 {
     Q_OBJECT
 public:
-    QvisSaveWindow(SaveWindowAttributes *subj, const char *caption = 0,
-                   const char *shortName = 0,
+    QvisSaveWindow(SaveWindowAttributes *subj, 
+                   const QString &caption = QString::null,
+                   const QString &shortName = QString::null,
                    QvisNotepadArea *notepad = 0);
     virtual ~QvisSaveWindow();
 public slots:

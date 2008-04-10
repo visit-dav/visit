@@ -58,7 +58,9 @@ class QPushButton;
 // Creation:   Sat Jan 31 02:45:19 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 11:48:45 PDT 2008
+//   QString for caption.
+//
 // ****************************************************************************
 
 class GUI_API QvisDatabaseCorrelationWindow : public QvisWindowBase
@@ -66,9 +68,9 @@ class GUI_API QvisDatabaseCorrelationWindow : public QvisWindowBase
     Q_OBJECT
 public:
     QvisDatabaseCorrelationWindow(const QString &correlationName,
-        const char *caption);
+        const QString &caption);
     QvisDatabaseCorrelationWindow(const DatabaseCorrelation &correlation,
-        const char *caption);
+        const QString &caption);
     virtual ~QvisDatabaseCorrelationWindow();
 
 signals:

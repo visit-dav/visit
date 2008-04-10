@@ -65,6 +65,8 @@
 // Creation:   Wed Nov 5 11:46:42 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -82,7 +84,7 @@ QvisText2DInterface::QvisText2DInterface(QWidget *parent,
     connect(positionEdit, SIGNAL(screenPositionChanged(double, double)),
             this, SLOT(positionChanged(double, double)));
     cLayout->addMultiCellWidget(positionEdit, 0, 0, 1, 3);
-    cLayout->addWidget(new QLabel(positionEdit, "Lower left",
+    cLayout->addWidget(new QLabel(positionEdit, tr("Lower left"),
         this), 0, 0);
 
     // Add controls for position2
@@ -92,7 +94,7 @@ QvisText2DInterface::QvisText2DInterface(QWidget *parent,
     connect(widthSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(widthChanged(int)));
     cLayout->addWidget(widthSpinBox, 1, 1);
-    cLayout->addWidget(new QLabel(widthSpinBox, "Width",
+    cLayout->addWidget(new QLabel(widthSpinBox, tr("Width"),
         this), 1, 0);
 #if 0
     heightSpinBox = new QSpinBox(1, 100, 1, this, "heightSpinBox");
@@ -101,7 +103,7 @@ QvisText2DInterface::QvisText2DInterface(QWidget *parent,
     connect(heightSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(heightChanged(int)));
     cLayout->addWidget(heightSpinBox, 1, 3);
-    cLayout->addWidget(new QLabel(widthSpinBox, "Height",
+    cLayout->addWidget(new QLabel(widthSpinBox, tr("Height"),
         this), 1, 2);
 #endif
 
@@ -110,14 +112,14 @@ QvisText2DInterface::QvisText2DInterface(QWidget *parent,
     connect(textLineEdit, SIGNAL(returnPressed()),
             this, SLOT(textChanged()));
     cLayout->addMultiCellWidget(textLineEdit, 2, 2, 1, 3);
-    cLayout->addWidget(new QLabel(textLineEdit, "Text",
+    cLayout->addWidget(new QLabel(textLineEdit, tr("Text"),
         this), 2, 0);
 
     // Add controls for the text color.
     textColorButton = new QvisColorButton(this, "textColorButton");
     connect(textColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(textColorChanged(const QColor &)));
-    cLayout->addWidget(new QLabel(textColorButton, "Text color", this),
+    cLayout->addWidget(new QLabel(textColorButton, tr("Text color"), this),
         3, 0, Qt::AlignLeft);
     cLayout->addWidget(textColorButton, 3, 1);
     textColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this,
@@ -127,7 +129,7 @@ QvisText2DInterface::QvisText2DInterface(QWidget *parent,
     cLayout->addMultiCellWidget(textColorOpacity, 3, 3, 2, 3);
 
     // Added a use foreground toggle
-    useForegroundColorCheckBox = new QCheckBox("Use foreground color", this,
+    useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this,
         "useForegroundColorCheckBox");
     connect(useForegroundColorCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(useForegroundColorToggled(bool)));
@@ -142,26 +144,26 @@ QvisText2DInterface::QvisText2DInterface(QWidget *parent,
     connect(fontFamilyComboBox, SIGNAL(activated(int)),
             this, SLOT(fontFamilyChanged(int)));
     cLayout->addMultiCellWidget(fontFamilyComboBox, 5, 5, 1, 3);
-    cLayout->addWidget(new QLabel("Font family", this), 5, 0);
+    cLayout->addWidget(new QLabel(tr("Font family"), this), 5, 0);
 
     // Add controls for font properties.
-    boldCheckBox = new QCheckBox("Bold", this, "boldCheckBox");
+    boldCheckBox = new QCheckBox(tr("Bold"), this, "boldCheckBox");
     connect(boldCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(boldToggled(bool)));
     cLayout->addWidget(boldCheckBox, 6, 0);
 
-    italicCheckBox = new QCheckBox("Italic", this, "italicCheckBox");
+    italicCheckBox = new QCheckBox(tr("Italic"), this, "italicCheckBox");
     connect(italicCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(italicToggled(bool)));
     cLayout->addWidget(italicCheckBox, 6, 1);
 
-    shadowCheckBox = new QCheckBox("Shadow", this, "shadowCheckBox");
+    shadowCheckBox = new QCheckBox(tr("Shadow"), this, "shadowCheckBox");
     connect(shadowCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(shadowToggled(bool)));
     cLayout->addWidget(shadowCheckBox, 6, 2);
 
     // Added a visibility toggle
-    visibleCheckBox = new QCheckBox("Visible", this, "visibleCheckBox");
+    visibleCheckBox = new QCheckBox(tr("Visible"), this, "visibleCheckBox");
     connect(visibleCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(visibilityToggled(bool)));
     cLayout->addWidget(visibleCheckBox, 7, 0);
@@ -339,7 +341,7 @@ QvisText2DInterface::GetCurrentValues(int which_widget)
     if(which_widget == 0 || doAll)
     {
         // Get the new position
-        GetScreenPosition(positionEdit, "Lower left");
+        GetScreenPosition(positionEdit, tr("Lower left"));
     }
 
     if(which_widget == 1 || doAll)

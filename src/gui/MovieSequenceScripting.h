@@ -51,7 +51,9 @@
 // Creation:   Tue Nov 14 10:21:10 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 09:15:10 PDT 2008
+//   Made SequenceMenuName return QString.
+//
 // ****************************************************************************
 
 class MovieSequenceScripting : public MovieSequence
@@ -71,7 +73,7 @@ public:
     virtual std::string SequenceName() const;
 
     // Returns the name of the sequence as it will appear in menus.
-    virtual std::string SequenceMenuName() const;
+    virtual QString SequenceMenuName() const;
 
     virtual bool ProvidesMenu() const;
 

@@ -260,6 +260,8 @@ QvisAnnotationObjectInterface::GetCoordinate(QLineEdit *le, double c[3],
 // Creation:   Wed Nov 5 12:18:30 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -276,8 +278,9 @@ QvisAnnotationObjectInterface::GetPosition(QLineEdit *le, const QString &name)
         }
         else
         {
-            QString msg; msg.sprintf("The %s value was invalid. "
-                "Resetting to the last good value.", name.latin1());
+            QString msg(tr("The %1 value was invalid. "
+                           "Resetting to the last good value."));
+            msg.replace("%1", name);
             Error(msg);
             annot->SetPosition(annot->GetPosition());
         }
@@ -299,6 +302,8 @@ QvisAnnotationObjectInterface::GetPosition(QLineEdit *le, const QString &name)
 // Creation:   Wed Nov 5 12:18:30 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -315,8 +320,9 @@ QvisAnnotationObjectInterface::GetPosition2(QLineEdit *le, const QString &name)
         }
         else
         {
-            QString msg; msg.sprintf("The %s value was invalid. "
-                "Resetting to the last good value.", name.latin1());
+            QString msg(tr("The %1 value was invalid. "
+                           "Resetting to the last good value."));
+            msg.replace("%1", name);
             Error(msg);
             annot->SetPosition2(annot->GetPosition2());
         }
@@ -338,6 +344,8 @@ QvisAnnotationObjectInterface::GetPosition2(QLineEdit *le, const QString &name)
 // Creation:   Wed Nov 5 12:18:30 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -355,8 +363,9 @@ QvisAnnotationObjectInterface::GetScreenPosition(QvisScreenPositionEdit *spe,
         }
         else
         {
-            QString msg; msg.sprintf("The %s value was invalid. "
-                "Resetting to the last good value.", name.latin1());
+            QString msg(tr("The %1 value was invalid. "
+                           "Resetting to the last good value."));
+            msg.replace("%1", name);
             Error(msg);
             annot->SetPosition(annot->GetPosition());
         }
@@ -378,6 +387,8 @@ QvisAnnotationObjectInterface::GetScreenPosition(QvisScreenPositionEdit *spe,
 // Creation:   Mon Mar 6 11:14:41 PDT 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -395,8 +406,9 @@ QvisAnnotationObjectInterface::GetScreenPosition2(QvisScreenPositionEdit *spe,
         }
         else
         {
-            QString msg; msg.sprintf("The %s value was invalid. "
-                "Resetting to the last good value.", name.latin1());
+            QString msg(tr("The %1 value was invalid. "
+                           "Resetting to the last good value."));
+            msg.replace("%1", name);
             Error(msg);
             annot->SetPosition2(annot->GetPosition2());
         }

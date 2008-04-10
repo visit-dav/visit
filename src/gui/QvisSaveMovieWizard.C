@@ -94,28 +94,12 @@
 //
 struct wizard_page_info
 {
-    const char *title;
-    const char *description;
+    QString title;
+    QString description;
 };
 
-wizard_page_info pageInfo[] = {
-    {"Movie type", "Would you like to create a new simple movie or use your previous settings?"},
-    {"Template uage", "Movie templates allow you to create complex movies. What would you like to do?"},
-    {"Choose template", "Choose a movie template."},
-    {"Update sources", "Make sure that the sources used in this template are up to date. You can change the sources here to make a movie using a template that was created with other data."},
-    {"Viewports", "Change the movie template's viewports. Viewports are regions of the final movie image to which VisIt's visualization windows can be mapped."},
-    {"Sequences", "Create new sequences of frames and map them to movie template viewports."},
-    {"Save new template", "Save this movie as a new template?"},
-    {"Save new template as", "Enter the information that will be saved with your template."},
-    {"Settings check", "Do these movie settings look okay?"},
-    {"Choose format", "Choose movie formats and resolutions."},
-    {"Choose length", "Choose movie start/end time and frames per second."},
-    {"Choose filename", "Choose the output directory and base filename for your movie(s)."},
-    {"E-mail notification", "Do you want to be notified by E-mail when your movie completes?"},
-    {"Choose method", "Choose when and how you would like VisIt to create your movies."}
-};
-
-#define N_WIZARD_PAGES (sizeof(pageInfo) / sizeof(wizard_page_info))
+#define N_WIZARD_PAGES 14
+wizard_page_info pageInfo[N_WIZARD_PAGES];
 
 //
 // Movie format information.
@@ -327,12 +311,46 @@ EnsureDirectoryExists(std::string &name, bool nameIsFile)
 //
 //   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
 //   Added num frames page.
+//
+//   Brad Whitlock, Tue Apr  8 16:06:21 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent, 
     const char *name) : QvisWizard(atts, parent, name), templateTitleToInfo(),
     sequencePages()
 {
+    // Populate the pageInfo with translations.
+    pageInfo[0].title = tr("Movie type");
+    pageInfo[0].description = tr("Would you like to create a new simple movie or use your previous settings?");
+    pageInfo[1].title = tr("Template uage");
+    pageInfo[1].description = tr("Movie templates allow you to create complex movies. What would you like to do?");
+    pageInfo[2].title = tr("Choose template");
+    pageInfo[2].description = tr("Choose a movie template.");
+    pageInfo[3].title = tr("Update sources");
+    pageInfo[3].description = tr("Make sure that the sources used in this template are up to date. You can change the sources here to make a movie using a template that was created with other data.");
+    pageInfo[4].title = tr("Viewports");
+    pageInfo[4].description = tr("Change the movie template's viewports. Viewports are regions of the final movie image to which VisIt's visualization windows can be mapped.");
+    pageInfo[5].title = tr("Sequences");
+    pageInfo[5].description = tr("Create new sequences of frames and map them to movie template viewports.");
+    pageInfo[6].title = tr("Save new template");
+    pageInfo[6].description = tr("Save this movie as a new template?");
+    pageInfo[7].title = tr("Save new template as");
+    pageInfo[7].description = tr("Enter the information that will be saved with your template.");
+    pageInfo[8].title = tr("Settings check");
+    pageInfo[8].description = tr("Do these movie settings look okay?");
+    pageInfo[9].title = tr("Choose format");
+    pageInfo[9].description = tr("Choose movie formats and resolutions.");
+    pageInfo[10].title = tr("Choose length");
+    pageInfo[10].description = tr("Choose movie start/end time and frames per second.");
+    pageInfo[11].title = tr("Choose filename");
+    pageInfo[11].description = tr("Choose the output directory and base filename for your movie(s).");
+    pageInfo[12].title = tr("E-mail notification");
+    pageInfo[12].description = tr("Do you want to be notified by E-mail when your movie completes?");
+    pageInfo[13].title = tr("Choose method");
+    pageInfo[13].description = tr("Choose when and how you would like VisIt to create your movies.");
+
     default_movie_size[0] = 400;
     default_movie_size[1] = 400;
     default_num_frames = 1;
@@ -361,7 +379,7 @@ QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent
             this, SLOT(pageChanged(const QString &)));
 
     // Set the wizard's title.
-    topLevelWidget()->setCaption("Save movie wizard");
+    topLevelWidget()->setCaption(tr("Save movie wizard"));
 
     // Create the wizard pages.
     CreateMovieTypePage();
@@ -550,6 +568,9 @@ QvisSaveMovieWizard::Exec()
 //   Brad Whitlock, Tue Nov 21 14:38:09 PST 2006
 //   Added code to make sure the destination directories exist.
 //
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -673,7 +694,7 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
             }
             else
             {
-                Error("VisIt could not save the new movie template's Python script.");
+                Error(tr("VisIt could not save the new movie template's Python script."));
                 templateFile = GetVisItMovieTemplateBaseClass();
                 debug1 << mName << "Could not write the template Python file. "
                     "Make the template specification file use the generictemplate.py "
@@ -869,13 +890,15 @@ QvisSaveMovieWizard::GetDefaultNumFrames()
 // Creation:   Thu Jun 23 11:21:13 PDT 2005
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::CreateMovieTypePage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[0].title);
+    QFrame *frame = new QFrame(this, pageInfo[0].title.ascii());
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(0);
@@ -893,16 +916,16 @@ QvisSaveMovieWizard::CreateMovieTypePage()
     hCenterLayout->addStretch(5);
     buttonLayout->setSpacing(5);
     page0_buttongroup = new QButtonGroup(0, "page0_buttongroup");
-    page0_r1 = new QRadioButton("Use my previous movie settings",
+    page0_r1 = new QRadioButton(tr("Use my previous movie settings"),
         frame, "r1");
     page0_r1->setEnabled(false);
     page0_buttongroup->insert(page0_r1, 0);
     buttonLayout->addWidget(page0_r1);
 
-    QRadioButton *r2 = new QRadioButton("New simple movie", frame, "r2");
+    QRadioButton *r2 = new QRadioButton(tr("New simple movie"), frame, "r2");
     page0_buttongroup->insert(r2, 1);
     buttonLayout->addWidget(r2);
-    QRadioButton *r3 = new QRadioButton("New template movie",
+    QRadioButton *r3 = new QRadioButton(tr("New template movie"),
         frame, "r3");
     page0_buttongroup->insert(r3, 2);
     buttonLayout->addWidget(r3);
@@ -928,13 +951,15 @@ QvisSaveMovieWizard::CreateMovieTypePage()
 // Creation:   Thu Jun 23 11:21:13 PDT 2005
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::CreateNewTemplatePromptPage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[1].title);
+    QFrame *frame = new QFrame(this, pageInfo[1].title.ascii());
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(0);
@@ -952,15 +977,15 @@ QvisSaveMovieWizard::CreateNewTemplatePromptPage()
     hCenterLayout->addStretch(5);
     buttonLayout->setSpacing(5);
     page1_buttongroup = new QButtonGroup(0, "page1_buttongroup");
-    QRadioButton *r1 = new QRadioButton("Use existing template",
+    QRadioButton *r1 = new QRadioButton(tr("Use existing template"),
         frame, "r1");
     page1_buttongroup->insert(r1, 0);
     buttonLayout->addWidget(r1);
 
-    QRadioButton *r2 = new QRadioButton("Edit existing template", frame, "r2");
+    QRadioButton *r2 = new QRadioButton(tr("Edit existing template"), frame, "r2");
     page1_buttongroup->insert(r2, 1);
     buttonLayout->addWidget(r2);
-    QRadioButton *r3 = new QRadioButton("Create new template",
+    QRadioButton *r3 = new QRadioButton(tr("Create new template"),
         frame, "r3");
     page1_buttongroup->insert(r3, 2);
     buttonLayout->addWidget(r3);
@@ -986,13 +1011,15 @@ QvisSaveMovieWizard::CreateNewTemplatePromptPage()
 // Creation:   Mon Sep 25 09:34:25 PDT 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::CreateChooseTemplatePage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[2].title);
+    QFrame *frame = new QFrame(this, pageInfo[2].title.ascii());
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(0);
@@ -1020,7 +1047,7 @@ QvisSaveMovieWizard::CreateChooseTemplatePage()
     hCenterLayout->setStretchFactor(page2_description_vbox, 10);
 
     // Add a picture of the template
-    page2_template_image = new QLabel("No preview", page2_description_vbox, 
+    page2_template_image = new QLabel(tr("No preview"), page2_description_vbox, 
         "page2_template_image");
     page2_template_image->setMinimumSize(200,200);
     page2_template_image->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
@@ -1053,7 +1080,7 @@ QvisSaveMovieWizard::CreateChooseTemplatePage()
 void
 QvisSaveMovieWizard::CreateChooseNewSourcesPage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[3].title);
+    QFrame *frame = new QFrame(this, pageInfo[3].title.ascii());
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(10);
@@ -1083,13 +1110,15 @@ QvisSaveMovieWizard::CreateChooseNewSourcesPage()
 // Creation:   Wed Oct 4 14:19:55 PST 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::CreateViewportPage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[4].title);
+    QFrame *frame = new QFrame(this, pageInfo[4].title.ascii());
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(10);
@@ -1115,13 +1144,13 @@ QvisSaveMovieWizard::CreateViewportPage()
     leftLayout->addMultiCellWidget(page4_viewportList, 0, 0, 0, 2);
 
     // The buttons to add, remove viewports (also change layouts)
-    QPushButton *page4_addViewportButton = new QPushButton("New", 
+    QPushButton *page4_addViewportButton = new QPushButton(tr("New"), 
         frame, "page4_addViewportButton");
     connect(page4_addViewportButton, SIGNAL(clicked()),
             this, SLOT(page4_addViewport()));
     leftLayout->addWidget(page4_addViewportButton, 1, 0);
 
-    page4_deleteViewportButton = new QPushButton("Delete", 
+    page4_deleteViewportButton = new QPushButton(tr("Delete"), 
         frame, "page4_deleteViewportButton");
     connect(page4_deleteViewportButton, SIGNAL(clicked()),
             this, SLOT(page4_deleteViewport()));
@@ -1135,7 +1164,7 @@ QvisSaveMovieWizard::CreateViewportPage()
 
     // Add the frame stuff at the bottom to show the viewport properties.
     QGroupBox *viewportProps = new QGroupBox(frame, "viewportProps");
-    viewportProps->setTitle("Viewport properties");
+    viewportProps->setTitle(tr("Viewport properties"));
     leftLayout->addMultiCellWidget(viewportProps, 2, 2, 0, 2);
     QVBoxLayout *viewportPropsinnerLayout = new QVBoxLayout(viewportProps);
     viewportPropsinnerLayout->setMargin(10);
@@ -1146,7 +1175,7 @@ QvisSaveMovieWizard::CreateViewportPage()
     page4_lowerLeft = new QvisScreenPositionEdit(viewportProps, "page4_lowerLeft");
     connect(page4_lowerLeft, SIGNAL(screenPositionChanged(double, double)),
             this, SLOT(page4_lowerLeftChanged(double,double)));
-    QLabel *page4_lowerLeftLabel = new QLabel(page4_lowerLeft, "Lower left",
+    QLabel *page4_lowerLeftLabel = new QLabel(page4_lowerLeft, tr("Lower left"),
         viewportProps, "page4_lowerLeftLabel");
     viewportLayout->addWidget(page4_lowerLeftLabel, 0, 0);
     viewportLayout->addWidget(page4_lowerLeft, 0, 1);
@@ -1154,26 +1183,26 @@ QvisSaveMovieWizard::CreateViewportPage()
     page4_upperRight = new QvisScreenPositionEdit(viewportProps, "page4_upperRight");
     connect(page4_upperRight, SIGNAL(screenPositionChanged(double, double)),
             this, SLOT(page4_upperRightChanged(double,double)));
-    QLabel *page4_upperRightLabel = new QLabel(page4_upperRight, "Upper right",
+    QLabel *page4_upperRightLabel = new QLabel(page4_upperRight, tr("Upper right"),
         viewportProps, "page4_upperRightLabel");
     viewportLayout->addWidget(page4_upperRightLabel, 1, 0);
     viewportLayout->addWidget(page4_upperRight, 1, 1);
 
-    viewportLayout->addWidget(new QLabel("Compositing", viewportProps), 2, 0);
+    viewportLayout->addWidget(new QLabel(tr("Compositing"), viewportProps), 2, 0);
 
     page4_compositingMode = new QButtonGroup(0, "page4_compositingMode");
     connect(page4_compositingMode, SIGNAL(clicked(int)),
             this, SLOT(page4_compositingModeChanged(int)));
-    QRadioButton *rb0 = new QRadioButton("Overlay", viewportProps, "Overlay");
+    QRadioButton *rb0 = new QRadioButton(tr("Overlay"), viewportProps, "Overlay");
     page4_compositingMode->insert(rb0, 0);
     viewportLayout->addWidget(rb0, 3, 0);
-    QRadioButton *rb1 = new QRadioButton("Blend", viewportProps, "Blend");
+    QRadioButton *rb1 = new QRadioButton(tr("Blend"), viewportProps, "Blend");
     page4_compositingMode->insert(rb1, 1);
     viewportLayout->addWidget(rb1, 4, 0);
-    QRadioButton *rb2 = new QRadioButton("Replace color", viewportProps, "ReplaceColor");
+    QRadioButton *rb2 = new QRadioButton(tr("Replace color"), viewportProps, "ReplaceColor");
     page4_compositingMode->insert(rb2, 2);
     viewportLayout->addWidget(rb2, 5, 0);
-    QRadioButton *rb3 = new QRadioButton("Replace background color", viewportProps, "ReplaeBGColor");
+    QRadioButton *rb3 = new QRadioButton(tr("Replace background color"), viewportProps, "ReplaeBGColor");
     page4_compositingMode->insert(rb3, 3);
     viewportLayout->addMultiCellWidget(rb3, 6, 6, 0, 1);
 
@@ -1187,7 +1216,7 @@ QvisSaveMovieWizard::CreateViewportPage()
             this, SLOT(page4_viewportColorChanged(const QColor &)));
     viewportLayout->addWidget(page4_viewportColor, 5, 1);
 
-    page4_dropShadow = new QCheckBox("Add drop shadow", viewportProps, "page4_dropShadow");
+    page4_dropShadow = new QCheckBox(tr("Add drop shadow"), viewportProps, "page4_dropShadow");
     connect(page4_dropShadow, SIGNAL(toggled(bool)),
             this, SLOT(page4_dropShadowChanged(bool)));
     viewportLayout->addMultiCellWidget(page4_dropShadow, 7, 7, 0, 1);
@@ -1221,13 +1250,15 @@ QvisSaveMovieWizard::CreateViewportPage()
 // Creation:   Wed Oct 4 14:20:55 PST 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::CreateSequencesPage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[5].title);
+    QFrame *frame = new QFrame(this, pageInfo[5].title.ascii());
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(10);
@@ -1253,12 +1284,12 @@ QvisSaveMovieWizard::CreateSequencesPage()
             this, SLOT(page5_newSequenceClicked(int)));
     gridLayout->addWidget(newSequence, 1, 0);
 
-    page5_deleteSequence = new QPushButton("Delete", frame, "page5_deleteSequence");
+    page5_deleteSequence = new QPushButton(tr("Delete"), frame, "page5_deleteSequence");
     connect(page5_deleteSequence, SIGNAL(clicked()),
             this, SLOT(page5_deleteSequenceClicked()));
     gridLayout->addWidget(page5_deleteSequence, 1, 1);
 
-    page5_sequenceProperties = new QGroupBox("Sequence properties", frame,
+    page5_sequenceProperties = new QGroupBox(tr("Sequence properties"), frame,
         "page5_sequenceProperties");
     gridLayout->addMultiCellWidget(page5_sequenceProperties, 0, 1, 2, 3);
     gridLayout->setRowStretch(0, 5);
@@ -1272,7 +1303,7 @@ QvisSaveMovieWizard::CreateSequencesPage()
     page5_sequenceName = new QLineEdit(page5_sequenceProperties, "page5_sequenceName");
     connect(page5_sequenceName, SIGNAL(textChanged(const QString &)),
             this, SLOT(page5_typedNewSequenceName(const QString &)));
-    page5_sequenceNameLabel = new QLabel(page5_sequenceName, "Name",
+    page5_sequenceNameLabel = new QLabel(page5_sequenceName, tr("Name"),
         page5_sequenceProperties);
     seqPropLayout->addWidget(page5_sequenceNameLabel, 0, 0);
     seqPropLayout->addWidget(page5_sequenceName, 0, 1);
@@ -1284,7 +1315,7 @@ QvisSaveMovieWizard::CreateSequencesPage()
             this, SLOT(page5_destinationViewportChanged(int)));
     seqPropLayout->addWidget(page5_sequenceDestinationViewport, 1, 1);
     seqPropLayout->addWidget(new QLabel(page5_sequenceDestinationViewport, 
-        "Map to viewport", page5_sequenceProperties), 1, 0);
+        tr("Map to viewport"), page5_sequenceProperties), 1, 0);
 
     // Create the uiFile name controls
     page5_sequenceUIFile = new QvisDialogLineEdit(page5_sequenceProperties,
@@ -1292,12 +1323,12 @@ QvisSaveMovieWizard::CreateSequencesPage()
     page5_sequenceUIFile->setDialogMode(QvisDialogLineEdit::ChooseLocalFile);
     connect(page5_sequenceUIFile, SIGNAL(returnPressed()),
             this, SLOT(page5_sequenceUIFileChanged()));
-    page5_sequenceUIFile->setDialogFilter("User interface (*.ui)");
-    page5_sequenceUIFile->setDialogCaption("Get User Interface filename");
+    page5_sequenceUIFile->setDialogFilter(tr("User interface (*.ui)"));
+    page5_sequenceUIFile->setDialogCaption(tr("Get User Interface filename"));
 
     page5_sequenceUILabel = new QLabel(page5_sequenceUIFile,
         "User interface", page5_sequenceProperties, "page5_sequenceUILabel");
-    QToolTip::add(page5_sequenceUILabel, "User interface definition file.");
+    QToolTip::add(page5_sequenceUILabel, tr("User interface definition file."));
 
     seqPropLayout->addWidget(page5_sequenceUILabel, 2, 0);
     seqPropLayout->addWidget(page5_sequenceUIFile, 2, 1);
@@ -1313,7 +1344,7 @@ QvisSaveMovieWizard::CreateSequencesPage()
             this,
             SLOT(page5_updatedMapping(const QString &,const QStringList &,const QString &,const QStringList &)));
 
-    QLabel *seqOrderLabel = new QLabel(page5_sequenceView, "Sequence to viewport mapping",
+    QLabel *seqOrderLabel = new QLabel(page5_sequenceView, tr("Sequence to viewport mapping"),
         frame, "seqOrderLabel");
     gridLayout->addMultiCellWidget(seqOrderLabel, 2, 2, 0, 3);
     gridLayout->addMultiCellWidget(page5_sequenceView, 3,3,0,3);
@@ -1359,13 +1390,15 @@ QvisSaveMovieWizard::CreateSaveTemplatePage()
 // Creation:   Tue Oct 10 15:39:24 PST 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::CreateSaveTemplateAsPage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[7].title);
+    QFrame *frame = new QFrame(this, pageInfo[7].title.ascii());
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(10);
@@ -1384,7 +1417,7 @@ QvisSaveMovieWizard::CreateSaveTemplateAsPage()
     //
     // Create the template title
     //
-    QLabel *titleLabel = new QLabel("Title",
+    QLabel *titleLabel = new QLabel(tr("Title"),
         frame, "titleLabel");
     gLayout->addWidget(titleLabel, 0, 0);
     page7_templateName = new QLineEdit(frame, "page7_templateName");
@@ -1395,7 +1428,7 @@ QvisSaveMovieWizard::CreateSaveTemplateAsPage()
     //
     // Create the template description
     //
-    QLabel *descriptionLabel = new QLabel("Description",
+    QLabel *descriptionLabel = new QLabel(tr("Description"),
         frame, "descriptionLabel");
     gLayout->addWidget(descriptionLabel, 1, 0);
     page7_templateDescription = new QTextEdit(frame, "page7_templateDescription");
@@ -1406,12 +1439,12 @@ QvisSaveMovieWizard::CreateSaveTemplateAsPage()
     //
     // Create the template file controls.
     //
-    QLabel *filenameLabel = new QLabel("Template filename",
+    QLabel *filenameLabel = new QLabel(tr("Template filename"),
         frame, "filenameLabel");
     gLayout->addWidget(filenameLabel, 2, 0);
     page7_templateFile = new QvisDialogLineEdit(frame, "page7_templateDescription");
     page7_templateFile->setDialogMode(QvisDialogLineEdit::ChooseLocalFile);
-    page7_templateFile->setDialogCaption("Choose template filename");
+    page7_templateFile->setDialogCaption(tr("Choose template filename"));
     page7_templateFile->setDialogFilter("*");
     connect(page7_templateFile, SIGNAL(textChanged(const QString &)),
             this, SLOT(page7_templateFileChanged(const QString &)));    
@@ -1425,7 +1458,7 @@ QvisSaveMovieWizard::CreateSaveTemplateAsPage()
     gLayout->addWidget(previewImageLabel, 3, 0);
     page7_previewImageFile = new QvisDialogLineEdit(frame, "page7_previewImageFile");
     page7_previewImageFile->setDialogMode(QvisDialogLineEdit::ChooseLocalFile);
-    page7_previewImageFile->setDialogCaption("Choose preview image filename");
+    page7_previewImageFile->setDialogCaption(tr("Choose preview image filename"));
     page7_previewImageFile->setDialogFilter("XPM image (*.xpm)");
     connect(page7_previewImageFile, SIGNAL(textChanged(const QString &)),
             this, SLOT(page7_previewImageFileChanged(const QString &)));    
@@ -1446,13 +1479,15 @@ QvisSaveMovieWizard::CreateSaveTemplateAsPage()
 // Creation:   Thu Jun 23 11:21:37 PDT 2005
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::CreateSettingsOkayPage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[8].title);
+    QFrame *frame = new QFrame(this, pageInfo[8].title.ascii());
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(0);
@@ -1472,12 +1507,12 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
     connect(page8_buttongroup, SIGNAL(clicked(int)),
             this, SLOT(page8_settingsOkayChanged(int)));
 
-    QRadioButton *r1 = new QRadioButton("Yes",
+    QRadioButton *r1 = new QRadioButton(tr("Yes"),
         frame, "r1");
     page8_buttongroup->insert(r1);
     buttonLayout->addWidget(r1);
 
-    QRadioButton *r2 = new QRadioButton("No",
+    QRadioButton *r2 = new QRadioButton(tr("No"),
         frame, "r2");
     page8_buttongroup->insert(r2);
     buttonLayout->addWidget(r2);
@@ -1489,7 +1524,7 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
     // Create the output formats list.
     //
     QGroupBox *settingsGroup = new QGroupBox(frame, "settingsGroup");
-    settingsGroup->setTitle("Movie settings");
+    settingsGroup->setTitle(tr("Movie settings"));
     pageLayout->addWidget(settingsGroup, 10);
     QVBoxLayout *f3innerLayout = new QVBoxLayout(settingsGroup);
     f3innerLayout->setMargin(10);
@@ -1499,8 +1534,8 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
 
     page8_settingsListView = new QListView(settingsGroup,
         "page8_settingsListView");
-    page8_settingsListView->addColumn("Settings");
-    page8_settingsListView->addColumn("Values");
+    page8_settingsListView->addColumn(tr("Settings"));
+    page8_settingsListView->addColumn(tr("Values"));
     page8_settingsListView->setAllColumnsShowFocus(true);
     page8_settingsListView->setColumnAlignment(0, Qt::AlignLeft);
     page8_settingsListView->setColumnAlignment(1, Qt::AlignLeft);
@@ -1528,12 +1563,15 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
 //   Brad Whitlock, Tue Oct 10 10:52:03 PDT 2006
 //   Made it be page9 and I merged the stereo controls into this page.
 //
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::CreateFormatPage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[9].title);
+    QFrame *frame = new QFrame(this, pageInfo[9].title.ascii());
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(0);
@@ -1551,7 +1589,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     // Create the left frame, which contains the format and resolution options.
     //
     QGroupBox *formatAndResolution = new QGroupBox(frame, "formatAndResolutionFrame");
-    formatAndResolution->setTitle("Format and resolution");
+    formatAndResolution->setTitle(tr("Format and resolution"));
     hCenterLayout->addWidget(formatAndResolution, 10);
     QVBoxLayout *f2innerLayout = new QVBoxLayout(formatAndResolution);
     f2innerLayout->setMargin(10);
@@ -1565,7 +1603,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     for(int i = 0; i < N_MOVIE_FORMATS; ++i)
         page9_formatComboBox->insertItem(movieFormatInfo[i].menu_name, i);
     page9_formatComboBox->setCurrentItem(6);
-    QLabel *formatLabel = new QLabel(page9_formatComboBox, "Format",
+    QLabel *formatLabel = new QLabel(page9_formatComboBox, tr("Format"),
         formatAndResolution, "formatLabel");
     f2layout->addMultiCellWidget(page9_formatComboBox, 0, 0, 1, 2);
     f2layout->addWidget(formatLabel, 0, 0);
@@ -1577,7 +1615,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     page9_sizeTypeButtonGroup = new QButtonGroup(0, "page9_sizeTypeButtonGroup");
     connect(page9_sizeTypeButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(page9_sizeTypeChanged(int)));
-    QRadioButton *rb = new QRadioButton("Use current window size",
+    QRadioButton *rb = new QRadioButton(tr("Use current window size"),
         formatAndResolution, "winSize");
     page9_sizeTypeButtonGroup->insert(rb, 0);
     f2layout->addMultiCellWidget(rb, 2, 2, 0, 2);
@@ -1586,12 +1624,12 @@ QvisSaveMovieWizard::CreateFormatPage()
         "page9_scaleSpinBox");
     connect(page9_scaleSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(page9_scaleChanged(int)));
-    page9_scaleLabel = new QLabel(page9_scaleSpinBox, "Scale",
+    page9_scaleLabel = new QLabel(page9_scaleSpinBox, tr("Scale"),
         formatAndResolution, "scaleLabel");
     f2layout->addWidget(page9_scaleLabel, 3, 0);
     f2layout->addWidget(page9_scaleSpinBox, 3, 1);
     
-    rb = new QRadioButton("Specify movie size", formatAndResolution, "winSize2");
+    rb = new QRadioButton(tr("Specify movie size"), formatAndResolution, "winSize2");
     page9_sizeTypeButtonGroup->insert(rb, 1);
     f2layout->addMultiCellWidget(rb, 4, 4, 0, 2);
 
@@ -1601,7 +1639,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     page9_widthSpinBox->setEnabled(false);
     connect(page9_widthSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(page9_widthChanged(int)));
-    page9_widthLabel = new QLabel(page9_widthSpinBox, "Width",
+    page9_widthLabel = new QLabel(page9_widthSpinBox, tr("Width"),
         formatAndResolution, "widthLabel");
     page9_widthLabel->setEnabled(false);
     f2layout->addWidget(page9_widthLabel, 5, 0);
@@ -1613,13 +1651,13 @@ QvisSaveMovieWizard::CreateFormatPage()
     page9_heightSpinBox->setEnabled(false);
     connect(page9_heightSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(page9_heightChanged(int)));
-    page9_heightLabel = new QLabel(page9_widthSpinBox, "Height",
+    page9_heightLabel = new QLabel(page9_widthSpinBox, tr("Height"),
         formatAndResolution, "heightLabel");
     page9_heightLabel->setEnabled(false);
     f2layout->addWidget(page9_heightLabel, 6, 0);
     f2layout->addWidget(page9_heightSpinBox, 6, 1);
 
-    page9_aspectLock = new QCheckBox("lock aspect",
+    page9_aspectLock = new QCheckBox(tr("lock aspect"),
         formatAndResolution, "page9_aspectLock");
     page9_aspectLock->setChecked(true);
     page9_aspectLock->setEnabled(false);
@@ -1632,7 +1670,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     f2layout->addMultiCellWidget(hline2, 7, 7, 0, 2);
     f2layout->addRowSpacing(7, 10);
 
-    page9_stereoCheckBox = new QCheckBox("Stereo movie", formatAndResolution,
+    page9_stereoCheckBox = new QCheckBox(tr("Stereo movie"), formatAndResolution,
         "page9_stereoCheckBox");
     connect(page9_stereoCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(page9_stereoChanged(bool)));
@@ -1640,10 +1678,10 @@ QvisSaveMovieWizard::CreateFormatPage()
     page9_stereoType = new QComboBox(formatAndResolution, "page9_stereoType");
     connect(page9_stereoType, SIGNAL(activated(int)),
             this, SLOT(page9_stereoTypeChanged(int)));
-    page9_stereoType->insertItem("Left/Right");
-    page9_stereoType->insertItem("Red/Blue");
-    page9_stereoType->insertItem("Red/Green");
-    page9_stereoLabel = new QLabel(page9_stereoType, "Stereo type",
+    page9_stereoType->insertItem(tr("Left/Right"));
+    page9_stereoType->insertItem(tr("Red/Blue"));
+    page9_stereoType->insertItem(tr("Red/Green"));
+    page9_stereoLabel = new QLabel(page9_stereoType, tr("Stereo type"),
         formatAndResolution, "page9_stereoLabel");
     f2layout->addWidget(page9_stereoLabel,9,0);
     f2layout->addMultiCellWidget(page9_stereoType,9,9,1,2);
@@ -1669,7 +1707,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     // Create the output formats list.
     //
     QGroupBox *outputGroup = new QGroupBox(frame, "outputListGroup");
-    outputGroup->setTitle("Output");
+    outputGroup->setTitle(tr("Output"));
     hCenterLayout->addWidget(outputGroup, 10);
     QVBoxLayout *f3innerLayout = new QVBoxLayout(outputGroup);
     f3innerLayout->setMargin(10);
@@ -1680,9 +1718,9 @@ QvisSaveMovieWizard::CreateFormatPage()
     page9_outputFormats = new QListView(outputGroup, "page9_outputFormats");
     page9_outputFormats->setMinimumWidth(fontMetrics().
         boundingRect("Quicktime movie 2000x2000").width());
-    page9_outputFormats->addColumn("Format");
-    page9_outputFormats->addColumn("Resolution");
-    page9_outputFormats->addColumn("Stereo");
+    page9_outputFormats->addColumn(tr("Format"));
+    page9_outputFormats->addColumn(tr("Resolution"));
+    page9_outputFormats->addColumn(tr("Stereo"));
     page9_outputFormats->setAllColumnsShowFocus(true);
     page9_outputFormats->setColumnAlignment(0, Qt::AlignHCenter);
     page9_outputFormats->setColumnAlignment(1, Qt::AlignHCenter);
@@ -1705,12 +1743,16 @@ QvisSaveMovieWizard::CreateFormatPage()
 // Programmer: Dave Bremer
 // Creation:   Mon Oct  8 12:15:33 PDT 2007
 //
+// Modifications:
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::CreateNumFramesPage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[10].title);
+    QFrame *frame = new QFrame(this, pageInfo[10].title.ascii());
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(0);
@@ -1726,7 +1768,7 @@ QvisSaveMovieWizard::CreateNumFramesPage()
     gLayout->setSpacing(5);
     pageLayout->addStretch(20);
 
-    page10_fpsLabel = new QLabel("Frames per second", frame, "fpsLabel");
+    page10_fpsLabel = new QLabel(tr("Frames per second"), frame, "fpsLabel");
     gLayout->addWidget(page10_fpsLabel, 0, 0);
 
     page10_fpsLineEdit = new QLineEdit(frame, "fpsLineEdit");
@@ -1734,7 +1776,7 @@ QvisSaveMovieWizard::CreateNumFramesPage()
     connect(page10_fpsLineEdit, SIGNAL(textChanged(const QString &)),
             this, SLOT(page10_fpsChanged(const QString &)));    
 
-    page10_startIndexLabel = new QLabel("First frame", frame, "startIndexLabel");
+    page10_startIndexLabel = new QLabel(tr("First frame"), frame, "startIndexLabel");
     gLayout->addWidget(page10_startIndexLabel, 1, 0);
 
     page10_startIndexLineEdit = new QLineEdit(frame, "startIndexLineEdit");
@@ -1742,7 +1784,7 @@ QvisSaveMovieWizard::CreateNumFramesPage()
     connect(page10_startIndexLineEdit, SIGNAL(textChanged(const QString &)),
             this, SLOT(page10_startIndexChanged(const QString &)));    
 
-    page10_endIndexLabel = new QLabel("Last frame", frame, "endIndexLabel");
+    page10_endIndexLabel = new QLabel(tr("Last frame"), frame, "endIndexLabel");
     gLayout->addWidget(page10_endIndexLabel, 2, 0);
 
     page10_endIndexLineEdit = new QLineEdit(frame, "endIndexLineEdit");
@@ -1772,12 +1814,16 @@ QvisSaveMovieWizard::CreateNumFramesPage()
 //
 //   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
 //   Moved pages 10-12 to 11-13.
+//
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::CreateFilenamePage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[11].title);
+    QFrame *frame = new QFrame(this, pageInfo[11].title.ascii());
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(0);
@@ -1796,7 +1842,7 @@ QvisSaveMovieWizard::CreateFilenamePage()
     //
     // Create the output directory selection controls.
     //
-    QLabel *outputDirectoryLabel = new QLabel("Output directory",
+    QLabel *outputDirectoryLabel = new QLabel(tr("Output directory"),
         frame, "outputDirectoryLabel");
     gLayout->addWidget(outputDirectoryLabel, 0, 0);
 
@@ -1823,7 +1869,7 @@ QvisSaveMovieWizard::CreateFilenamePage()
     //
     // Create the controls for selecting the file base.
     //
-    QLabel *filebaseLabel = new QLabel("Base filename",
+    QLabel *filebaseLabel = new QLabel(tr("Base filename"),
         frame, "filebaseLabel");
     gLayout->addWidget(filebaseLabel, 1, 0);
     page11_filebaseLineEdit = new QLineEdit(frame, "page11_filebaseLineEdit");
@@ -1848,13 +1894,16 @@ QvisSaveMovieWizard::CreateFilenamePage()
 // Modifications:
 //   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
 //   Moved pages 10-12 to 11-13.
+//
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::CreateEmailPage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[12].title);
+    QFrame *frame = new QFrame(this, pageInfo[12].title.ascii());
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(0);
@@ -1872,11 +1921,11 @@ QvisSaveMovieWizard::CreateEmailPage()
     page12_buttongroup = new QButtonGroup(0, "page12_buttongroup");
     connect(page12_buttongroup, SIGNAL(clicked(int)),
             this, SLOT(page12_emailNotificationChanged(int)));
-    QRadioButton *r1 = new QRadioButton("Yes", frame, "r1");
+    QRadioButton *r1 = new QRadioButton(tr("Yes"), frame, "r1");
     page12_buttongroup->insert(r1);
     buttonLayout->addWidget(r1);
 
-    QRadioButton *r2 = new QRadioButton("No", frame, "r2");
+    QRadioButton *r2 = new QRadioButton(tr("No"), frame, "r2");
     page12_buttongroup->insert(r2);
     buttonLayout->addWidget(r2);
     buttonLayout->addStretch(5);
@@ -1887,7 +1936,7 @@ QvisSaveMovieWizard::CreateEmailPage()
     page12_emailLineEdit = new QLineEdit(frame, "page12_emailLineEdit");
     connect(page12_emailLineEdit, SIGNAL(textChanged(const QString &)),
             this, SLOT(page12_emailAddressChanged(const QString &)));
-    page12_emailLabel = new QLabel(page12_emailLineEdit, "E-mail address",
+    page12_emailLabel = new QLabel(page12_emailLineEdit, tr("E-mail address"),
         frame, "page12_emailLabel");
     emailLayout->addStretch(5);
     emailLayout->addWidget(page12_emailLabel);
@@ -1916,12 +1965,16 @@ QvisSaveMovieWizard::CreateEmailPage()
 //
 //   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
 //   Moved pages 10-12 to 11-13.
+//
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::CreateGenerationMethodPage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[13].title);
+    QFrame *frame = new QFrame(this, pageInfo[13].title.ascii());
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(0);
@@ -1941,17 +1994,17 @@ QvisSaveMovieWizard::CreateGenerationMethodPage()
     page13_buttongroup = new QButtonGroup(0, "page13_buttongroup");
     connect(page13_buttongroup, SIGNAL(clicked(int)),
             this, SLOT(page13_generationMethodChanged(int)));
-    QRadioButton *r1 = new QRadioButton("Now, use currently allocated processors",
+    QRadioButton *r1 = new QRadioButton(tr("Now, use currently allocated processors"),
         frame, "r1");
     page13_buttongroup->insert(r1);
     buttonLayout->addWidget(r1);
 
-    QRadioButton *r2 = new QRadioButton("Now, use a new instance of VisIt",
+    QRadioButton *r2 = new QRadioButton(tr("Now, use a new instance of VisIt"),
         frame, "r2");
     page13_buttongroup->insert(r2);
     buttonLayout->addWidget(r2);
 
-    QRadioButton *r3 = new QRadioButton("Later, tell me the command to run",
+    QRadioButton *r3 = new QRadioButton(tr("Later, tell me the command to run"),
         frame, "r3");
     page13_buttongroup->insert(r3);
     buttonLayout->addWidget(r3);
@@ -1979,6 +2032,8 @@ QvisSaveMovieWizard::CreateGenerationMethodPage()
 // Creation:   Thu Jun 23 11:21:37 PDT 2005
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -1986,7 +2041,7 @@ void
 QvisSaveMovieWizard::CreateYesNoPage(int pageIndex, QWidget **page,
     QButtonGroup **bg, const char *slot)
 {
-    QFrame *frame = new QFrame(this, pageInfo[pageIndex].title);
+    QFrame *frame = new QFrame(this, pageInfo[pageIndex].title.ascii());
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(0);
@@ -2007,12 +2062,12 @@ QvisSaveMovieWizard::CreateYesNoPage(int pageIndex, QWidget **page,
     connect(buttonGroup, SIGNAL(clicked(int)),
             this, slot);
 
-    QRadioButton *r1 = new QRadioButton("Yes",
+    QRadioButton *r1 = new QRadioButton(tr("Yes"),
         frame, "r1");
     buttonGroup->insert(r1);
     buttonLayout->addWidget(r1);
 
-    QRadioButton *r2 = new QRadioButton("No",
+    QRadioButton *r2 = new QRadioButton(tr("No"),
         frame, "r2");
     buttonGroup->insert(r2);
     buttonLayout->addWidget(r2);
@@ -2046,7 +2101,7 @@ QvisSaveMovieWizard::CreateYesNoPage(int pageIndex, QWidget **page,
 QWidget *
 QvisSaveMovieWizard::CreateSimplePage(int i)
 {
-    QLabel *w = new QLabel(SplitPrompt(pageInfo[i].description), this, pageInfo[i].title);
+    QLabel *w = new QLabel(SplitPrompt(pageInfo[i].description), this, pageInfo[i].title.ascii());
     addPage(w, pageInfo[i].title);
     return w;
 }
@@ -2345,6 +2400,8 @@ QvisSaveMovieWizard::UpdatePage()
 // Creation:   Fri Nov 17 17:11:38 PST 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -2383,7 +2440,7 @@ QvisSaveMovieWizard::page2_PopulateTemplates()
                 // Come up with a unique title for the template.
                 std::string title;
                 if(mtdata.userDefined)
-                    title = "[User defined] ";
+                    title = std::string(tr("[User defined] ").latin1());
                 title += mtdata.info.title;
 
                 StringMovieTemplateDataMap::const_iterator it;
@@ -2455,9 +2512,8 @@ QvisSaveMovieWizard::page3_PopulateSources()
     AccessViewerSession sessionAccess;
     if(!sessionAccess.ReadConfigFile(sessionFile.c_str()))
     {
-        QString err;
-        err.sprintf("VisIt could not read the session file: %s.",
-            sessionFile.c_str());
+        QString err(tr("VisIt could not read the session file: %1."));
+        err.replace("%1", sessionFile.c_str());
         Error(err);
         debug1 << mName << "Could not read the session file: "
                << sessionFile.c_str() << endl;
@@ -2467,9 +2523,9 @@ QvisSaveMovieWizard::page3_PopulateSources()
 
     if(!sessionAccess.GetSourceMap(keys, values, uses))
     {
-        Error("VisIt was able to read the session file that is used by "
+        Error(tr("VisIt was able to read the session file that is used by "
               "the current movie template but the session file might be "
-              "from before VisIt 1.5.5");
+              "from before VisIt 1.5.5"));
     }
     else
     {
@@ -2657,7 +2713,7 @@ QvisSaveMovieWizard::page5_Update(int flags)
     {
         page5_sequenceDestinationViewport->blockSignals(true);
         page5_sequenceDestinationViewport->clear();
-        page5_sequenceDestinationViewport->insertItem("(none)", 0);
+        page5_sequenceDestinationViewport->insertItem(tr("(none)"), 0);
         int nvp = templateSpec->GetNumberOfViewports();
         int index = 1;
         for(int i = 0; i < nvp; ++i)
@@ -2902,6 +2958,9 @@ QvisSaveMovieWizard::page7_Update()
 //
 //   Kathleen Bonnell, Fri Jul 20 11:07:11 PDT 2007
 //   Use new method to get the outputdirectory from movie atts.
+//
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -2911,38 +2970,38 @@ QvisSaveMovieWizard::page8_UpdateMovieSettings()
     page8_settingsListView->clear();
 
     QListViewItem *item = new QvisSaveMovieWizardListViewItem(page8_settingsListView);
-    item->setText(0, "Generation method");
+    item->setText(0, tr("Generation method"));
     if(movieAtts->GetGenerationMethod() == MovieAttributes::NowCurrentInstance)
-        item->setText(1, "Now, use currently allocated processors");
+        item->setText(1, tr("Now, use currently allocated processors"));
     else if(movieAtts->GetGenerationMethod() == MovieAttributes::NowNewInstance)
-        item->setText(1, "Now, use a new instance of VisIt");
+        item->setText(1, tr("Now, use a new instance of VisIt"));
     else
-        item->setText(1, "Later, tell me the command to run");
+        item->setText(1, tr("Later, tell me the command to run"));
 
     item = new QvisSaveMovieWizardListViewItem(page8_settingsListView);
-    item->setText(0, "Movie type");
+    item->setText(0, tr("Movie type"));
     if(movieAtts->GetMovieType() == MovieAttributes::Simple)
-        item->setText(1, "New simple movie");
+        item->setText(1, tr("New simple movie"));
     else
-        item->setText(1, "Use movie template");
+        item->setText(1, tr("Use movie template"));
 
     if(movieAtts->GetMovieType() == MovieAttributes::UsingTemplate)
     {
         item = new QvisSaveMovieWizardListViewItem(page8_settingsListView);
-        item->setText(0, "Movie template");
+        item->setText(0, tr("Movie template"));
         item->setText(1, movieAtts->GetTemplateFile().c_str());
     }
 
     item = new QvisSaveMovieWizardListViewItem(page8_settingsListView);
-    item->setText(0, "Output directory");
+    item->setText(0, tr("Output directory"));
     item->setText(1, GetMovieAttsOutputDir().c_str());
 
     item = new QvisSaveMovieWizardListViewItem(page8_settingsListView);
-    item->setText(0, "Base filename");
+    item->setText(0, tr("Base filename"));
     item->setText(1, movieAtts->GetOutputName().c_str());
 
     item = new QvisSaveMovieWizardListViewItem(page8_settingsListView);
-    item->setText(0, "Formats");
+    item->setText(0, tr("Formats"));
     const stringVector &formats = movieAtts->GetFileFormats();
     const intVector &w = movieAtts->GetWidths();
     const intVector &h = movieAtts->GetHeights();
@@ -2954,8 +3013,10 @@ QvisSaveMovieWizard::page8_UpdateMovieSettings()
         QString tmp;
         if(useCurrent[i] > 0)
         {
-            tmp.sprintf("%s Current %dx", 
-                FormatToMenuName(formats[i].c_str()), int(scales[i]));
+            QString scale; scale.sprintf("%dx",  int(scales[i]));
+            tmp = QString(FormatToMenuName(formats[i].c_str())) + 
+                  QString(" ") + tr("Current") + QString(" ") +
+                  scale;
         }
         else
         {
@@ -2965,11 +3026,11 @@ QvisSaveMovieWizard::page8_UpdateMovieSettings()
         s += tmp;
         int stereoType = movieAtts->GetStereoFlags()[i];
         if(stereoType == 1)
-            s += " Left/Right stereo";
+            s += tr(" Left/Right stereo");
         else if(stereoType == 2)
-            s += " Red/Blue stereo";
+            s += tr(" Red/Blue stereo");
         else if(stereoType == 3)
-            s += " Red/Green stereo";
+            s += tr(" Red/Green stereo");
 
         if(i < formats.size() - 1)
             s += ", ";
@@ -2977,11 +3038,11 @@ QvisSaveMovieWizard::page8_UpdateMovieSettings()
     item->setText(1, s);
 
     item = new QvisSaveMovieWizardListViewItem(page8_settingsListView);
-    item->setText(0, "E-mail notification");
+    item->setText(0, tr("E-mail notification"));
     if(movieAtts->GetSendEmailNotification())
         item->setText(1, movieAtts->GetEmailAddress().c_str());
     else
-        item->setText(1, "none");
+        item->setText(1, tr("none"));
 }
 
 // ****************************************************************************
@@ -2996,6 +3057,9 @@ QvisSaveMovieWizard::page8_UpdateMovieSettings()
 // Modifications:
 //   Brad Whitlock, Fri Oct 20 13:39:45 PST 2006
 //   Added stereo.
+//
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -3019,19 +3083,22 @@ QvisSaveMovieWizard::page9_UpdateOutputs()
         {
             QString res;
             if(useCurrent[i] > 0)
-                res.sprintf("Current %dx", int(scales[i]));
+            {
+                res.sprintf(" %dx", int(scales[i]));
+                res = tr("Current") + res;
+            }
             else
                 res.sprintf("%dx%d", w[i], h[i]);
             QListViewItem *item = new QvisSaveMovieWizardListViewItem(page9_outputFormats);
             item->setText(0, FormatToMenuName(formats[i].c_str()));
             item->setText(1, res);
-            QString stereo("off");
+            QString stereo(tr("off"));
             if(s[i] == 1)
-                stereo = "Left/Right";
+                stereo = tr("Left/Right");
             else if(s[i] == 2)
-                stereo = "Red/Blue";
+                stereo = tr("Red/Blue");
             else if(s[i] == 3)
-                stereo = "Red/Green";
+                stereo = tr("Red/Green");
             item->setText(2, stereo);
             bool isLast = (i == formats.size()-1);
             item->setSelected(isLast);
@@ -3154,6 +3221,10 @@ QvisSaveMovieWizard::page9_UpdateResolution(bool useCurrent, double scale, int w
 // Programmer: Dave Bremer
 // Creation:   Wed Oct 10 16:31:09 PDT 2007
 //
+// Modifications:
+//   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -3162,11 +3233,11 @@ QvisSaveMovieWizard::page10_UpdateStartEndIndex()
     if (movieAtts->GetMovieType() == MovieAttributes::UsingTemplate)
     {
         page10_startIndexLineEdit->blockSignals(true);
-        page10_startIndexLineEdit->setText("set in template");
+        page10_startIndexLineEdit->setText(tr("set in template"));
         page10_startIndexLineEdit->blockSignals(false);
 
         page10_endIndexLineEdit->blockSignals(true);
-        page10_endIndexLineEdit->setText("set in template");
+        page10_endIndexLineEdit->setText(tr("set in template"));
         page10_endIndexLineEdit->blockSignals(false);
 
         page10_startIndexLineEdit->setEnabled(false);
@@ -3808,12 +3879,13 @@ QvisSaveMovieWizard::AddSequencePages()
             delete sequencePages[i].ui;
         sequencePages.clear();
 
-        QString msg2("The user interface file");
+        QString msg2;
+        QString msg2_sing(tr("The user interface file %1 could not be loaded."));
+        QString msg2_plur(tr("The user interface files %1 could not be loaded."));
+        msg2 = msg2_sing;
         if(noLoadCount > 1)
-            msg2 += "s";
-        msg2 += ": ";
-        msg2 += badUIFiles;
-        msg2 += " could not be loaded.";
+            msg2 = msg2_plur;
+        msg2.replace("%1", badUIFiles);
         Warning(msg2);
     }
     else
@@ -3821,10 +3893,11 @@ QvisSaveMovieWizard::AddSequencePages()
         // Insert pages
         for(int i = 0; i < sequencePages.size(); ++i)
         {
-            QString pageTitle;
-            pageTitle.sprintf("%s page %d for sequence %s",
-                currentMovieTemplate.c_str(), i+1,
-                sequencePages[i].name.c_str());
+            QString num; num.sprintf("%d", i+1);
+            QString pageTitle(tr("%1 page %2 for sequence %3"));
+            pageTitle.replace("%1", currentMovieTemplate.c_str());
+            pageTitle.replace("%2", num);
+            pageTitle.replace("%3", sequencePages[i].name.c_str());
             debug1 << "Inserting new wizard page at " << (i+6) << endl;
             insertPage(sequencePages[i].ui, pageTitle, i+6);
         }
@@ -3982,7 +4055,9 @@ QvisSaveMovieWizard::page1_newTemplateChanged(int val)
 // Creation:   Fri Nov 17 17:23:21 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 16:28:16 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -4014,7 +4089,7 @@ QvisSaveMovieWizard::page2_selectedTemplateChanged()
             }
             else
             {
-                page2_template_description->setText("No description available");
+                page2_template_description->setText(tr("No description available"));
                 page2_template_description->show();
                 page2_template_image->hide();
             }
@@ -4254,7 +4329,9 @@ QvisSaveMovieWizard::page4_dropShadowChanged(bool val)
 // Creation:   Fri Nov 17 17:26:22 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -4267,7 +4344,11 @@ QvisSaveMovieWizard::page4_usePredefinedViewports(int index)
     page4_viewportDisplay->clear();
     page4_viewportDisplay->blockSignals(false);
 
-    const char *n[] = {"Viewport 1", "Viewport 2", "Viewport 3", "Viewport 4"};
+    QString n[4];
+    n[0] = tr("Viewport 1");
+    n[1] = tr("Viewport 2");
+    n[2] = tr("Viewport 3");
+    n[3] = tr("Viewport 4");
 
     if(index == 0)
     {
@@ -4702,6 +4783,9 @@ QvisSaveMovieWizard::page9_addOutput()
 //   Brad Whitlock, Fri Oct 20 12:00:27 PDT 2006
 //   Added stereo.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -4726,15 +4810,16 @@ QvisSaveMovieWizard::page9_removeOutput()
         {
             QString fmt(FormatToMenuName(formats[i].c_str()));
             QString res;  res.sprintf("%dx%d", widths[i], heights[i]);
-            QString res2; res2.sprintf("Current %dx", int(scales[i]));
-            QString stereo("off");
+            QString res2; 
+            res2.sprintf(" %dx", int(scales[i]));
+            res2 = tr("Current") + res2;
+            QString stereo(tr("off"));
             if(stereoFlags[i] == 1)
-                stereo = "Left/Right";
+                stereo = tr("Left/Right");
             else if(stereoFlags[i] == 2)
-                stereo = "Red/Blue";
+                stereo = tr("Red/Blue");
             else if(stereoFlags[i] == 3)
-                stereo = "Red/Green";
-             res2.sprintf("Current %dx", int(scales[i]));
+                stereo = tr("Red/Green");
             if(fmt == item->text(0) && 
                (res == item->text(1) || res2 == item->text(1)) &&
                stereo == item->text(2))
@@ -4905,6 +4990,10 @@ QvisSaveMovieWizard::page11_processOutputDirectoryText(const QString &s)
 //   
 //   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
 //   Moved pages 10-12 to 11-13.
+//
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -4915,7 +5004,7 @@ QvisSaveMovieWizard::page11_selectOutputDirectory()
     //
     QString initialDir(GetMovieAttsOutputDir().c_str());
     QString dirName = QFileDialog::getExistingDirectory(initialDir, this,
-        "getDirectoryDialog", "Select output directory");
+        "getDirectoryDialog", tr("Select output directory"));
 
     //
     // If a directory was chosen, use it as the output directory.

@@ -108,14 +108,17 @@ class QueryList;
 //   Cyrus Harrison, Tue Sep 18 08:09:53 PDT 2007
 //   Added floatFormatText
 //
+//   Brad Whitlock, Wed Apr  9 11:46:13 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisQueryWindow(const char *caption = 0,
-                    const char *shortName = 0,
+    QvisQueryWindow(const QString &caption = QString::null,
+                    const QString &shortName = QString::null,
                     QvisNotepadArea *n = 0);
     virtual ~QvisQueryWindow();
     virtual void CreateWindowContents();

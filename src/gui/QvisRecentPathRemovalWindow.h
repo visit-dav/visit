@@ -60,14 +60,16 @@ class QPushButton;
 // Creation:   Fri Oct 10 14:57:48 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 10:43:34 PDT 2008
+//   Make captionString use QString.
+//
 // ****************************************************************************
 
 class GUI_API QvisRecentPathRemovalWindow : public QvisDelayedWindowObserver
 {
     Q_OBJECT
 public:
-    QvisRecentPathRemovalWindow(Subject *s, const char *captionString);
+    QvisRecentPathRemovalWindow(Subject *s, const QString &captionString);
     virtual ~QvisRecentPathRemovalWindow();
 public slots:
     virtual void show();

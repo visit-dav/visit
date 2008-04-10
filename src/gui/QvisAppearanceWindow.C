@@ -97,11 +97,13 @@ static const int numStyleNames = 4;
 // Creation:   Thu Sep 6 12:27:16 PDT 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 11:10:51 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 QvisAppearanceWindow::QvisAppearanceWindow(AppearanceAttributes *subj,
-    const char *caption, const char *shortName, QvisNotepadArea *notepad) :
+    const QString &caption, const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(subj, caption, shortName, notepad,
                                QvisPostableWindowObserver::ApplyButton)
 {
@@ -145,6 +147,9 @@ QvisAppearanceWindow::~QvisAppearanceWindow()
 //   Brad Whitlock, Thu Mar 15 15:25:51 PST 2007
 //   Added font support.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -157,7 +162,7 @@ QvisAppearanceWindow::CreateWindowContents()
     connect(backgroundColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(backgroundChanged(const QColor &)));
     mainLayout->addWidget(backgroundColorButton, 0, 1, AlignLeft);
-    mainLayout->addWidget(new QLabel(backgroundColorButton, "GUI background",
+    mainLayout->addWidget(new QLabel(backgroundColorButton, tr("GUI background"),
                                      central, "backgroundLabel"),0,0);
 
     // Create the background color button.
@@ -165,7 +170,7 @@ QvisAppearanceWindow::CreateWindowContents()
     connect(foregroundColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(foregroundChanged(const QColor &)));
     mainLayout->addWidget(foregroundColorButton, 1, 1, AlignLeft);
-    mainLayout->addWidget(new QLabel(foregroundColorButton, "GUI foreground",
+    mainLayout->addWidget(new QLabel(foregroundColorButton, tr("GUI foreground"),
                                      central, "foregroundLabel"),1,0);
 
     // Create the style combo box.
@@ -175,17 +180,17 @@ QvisAppearanceWindow::CreateWindowContents()
     connect(styleComboBox, SIGNAL(activated(int)),
             this, SLOT(styleChanged(int)));
     mainLayout->addWidget(styleComboBox, 2, 1, AlignLeft);
-    mainLayout->addWidget(new QLabel(styleComboBox, "GUI style",
+    mainLayout->addWidget(new QLabel(styleComboBox, tr("GUI style"),
                                      central, "foregroundLabel"),2,0);
 
     // Create the orientation combo box.
     orientationComboBox = new QComboBox(central, "orientationComboBox");
-    orientationComboBox->insertItem("Vertical", 0);
-    orientationComboBox->insertItem("Horizontal", 1);
+    orientationComboBox->insertItem(tr("Vertical"), 0);
+    orientationComboBox->insertItem(tr("Horizontal"), 1);
     connect(orientationComboBox, SIGNAL(activated(int)),
             this, SLOT(orientationChanged(int)));
     mainLayout->addWidget(orientationComboBox, 3, 1, AlignLeft);
-    mainLayout->addWidget(new QLabel(orientationComboBox, "GUI orientation",
+    mainLayout->addWidget(new QLabel(orientationComboBox, tr("GUI orientation"),
                                      central, "orientationLabel"),3,0);
 
     // Create the font edit.
@@ -194,7 +199,7 @@ QvisAppearanceWindow::CreateWindowContents()
     connect(fontName, SIGNAL(textChanged(const QString &)),
             this, SLOT(fontNameChanged(const QString &)));
     mainLayout->addWidget(fontName, 4, 1);
-    mainLayout->addWidget(new QLabel(fontName,"GUI font", central), 4, 0);
+    mainLayout->addWidget(new QLabel(fontName,tr("GUI font"), central), 4, 0);
 }
 
 // ****************************************************************************
@@ -381,7 +386,9 @@ QvisAppearanceWindow::apply()
 // Creation:   Fri Oct 3 10:02:10 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+// 
 // ****************************************************************************
 
 bool
@@ -405,9 +412,9 @@ QvisAppearanceWindow::ColorsNotTooClose(const QColor &c0, const char *c1str)
         UpdateWindow(true);
 
         // Tell the user that it was a bad idea.
-        Warning("The background color and foreground color will not be "
-                "changed because the selected colors are too similar and "
-                "using them would make it too difficult to use VisIt.");
+        Warning(tr("The background color and foreground color will not be "
+                   "changed because the selected colors are too similar and "
+                   "using them would make it too difficult to use VisIt."));
         retval = false;
     }
 

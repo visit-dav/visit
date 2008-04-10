@@ -76,15 +76,18 @@ class DBPluginInfoAttributes;
 //   Converted to a simple observer so we can watch not only the 
 //   export atts but also the DB plugin info atts.
 //
+//   Brad Whitlock, Wed Apr  9 11:57:54 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisExportDBWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisExportDBWindow(const char *caption = 0,
-                   const char *shortName = 0,
-                   QvisNotepadArea *notepad = 0);
+    QvisExportDBWindow(const QString &caption = QString::null,
+                       const QString &shortName = QString::null,
+                       QvisNotepadArea *notepad = 0);
     virtual ~QvisExportDBWindow();
 
     virtual void SubjectRemoved(Subject *TheRemovedSubject);

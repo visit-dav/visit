@@ -71,6 +71,9 @@ class QVBoxLayout;
 //   Brad Whitlock, Tue Jan  8 13:43:02 PST 2008
 //   Added signals for showing copyright and contributors.
 //
+//   Brad Whitlock, Wed Apr  9 10:26:06 PDT 2008
+//   Use QString instead of const char *.
+//
 // ****************************************************************************
 
 class SplashScreen : public QFrame
@@ -80,7 +83,7 @@ public:
     SplashScreen(bool cyclePictures = false, const char *name = 0);
     ~SplashScreen();
 
-    void Progress(const char *msg, int progress);
+    void Progress(const QString &msg, int progress);
     void SetDisplayAsSplashScreen(bool mode);
     void About();
 signals:

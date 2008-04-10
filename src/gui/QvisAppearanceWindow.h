@@ -70,6 +70,9 @@ class QvisDialogLineEdit;
 //   Brad Whitlock, Thu Mar 15 15:24:58 PST 2007
 //   Added font controls.
 //
+//   Brad Whitlock, Wed Apr  9 11:10:05 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisAppearanceWindow : public QvisPostableWindowObserver
@@ -77,8 +80,8 @@ class GUI_API QvisAppearanceWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisAppearanceWindow(AppearanceAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisAppearanceWindow();
     virtual void CreateWindowContents();

@@ -67,6 +67,9 @@
 //   Brad Whitlock, Fri Nov 7 16:12:55 PST 2003
 //   I added much of QvisPostableWindowObserver's extra functionality.
 //
+//   Brad Whitlock, Wed Apr  9 10:49:01 PDT 2008
+//   QString for caption and shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisPostableWindowSimpleObserver : public QvisPostableWindow, public SimpleObserver
@@ -79,8 +82,8 @@ public:
     static const int ResetButton;
     static const int AllExtraButtons;
 
-    QvisPostableWindowSimpleObserver(const char *caption = 0,
-                                     const char *shortName = 0,
+    QvisPostableWindowSimpleObserver(const QString &caption = QString::null,
+                                     const QString &shortName = QString::null,
                                      QvisNotepadArea *n = 0,
                                      int buttonCombo = AllExtraButtons,
                                      bool stretch = true);

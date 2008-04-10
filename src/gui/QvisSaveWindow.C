@@ -82,10 +82,13 @@
 //   Hank Childs, Fri May 24 07:49:28 PDT 2002
 //   Renamed SaveImageAtts to SaveWindowAtts.
 //
+//   Brad Whitlock, Wed Apr  9 10:56:38 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 QvisSaveWindow::QvisSaveWindow(
-    SaveWindowAttributes *subj, const char *caption, const char *shortName,
+    SaveWindowAttributes *subj, const QString &caption, const QString &shortName,
     QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(subj, caption, shortName, notepad,
                                QvisPostableWindowObserver::ApplyButton)
@@ -166,6 +169,10 @@ QvisSaveWindow::~QvisSaveWindow()
 //   Changed the "maintain aspect" checkbox to radio buttons that either
 //   constrain to a 1:1 ratio, constrain to the screen proportions, or
 //   use unconstrained resolution.
+//
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -173,7 +180,7 @@ QvisSaveWindow::CreateWindowContents()
 {
     // Create a group box for the file information.
     QGroupBox *infoBox = new QGroupBox(central, "infoBox");
-    infoBox->setTitle("File information");
+    infoBox->setTitle(tr("File information"));
     topLayout->addWidget(infoBox);
 
     QGridLayout *infoLayout = new QGridLayout(infoBox, 9, 2);
@@ -181,14 +188,14 @@ QvisSaveWindow::CreateWindowContents()
     infoLayout->setSpacing(5);
     infoLayout->addRowSpacing(0, 10);
     
-    outputToCurrentDirectoryCheckBox = new QCheckBox("Output files to current directory",
+    outputToCurrentDirectoryCheckBox = new QCheckBox(tr("Output files to current directory"),
         infoBox, "outputToCurrentDirectoryCheckBox");
     connect(outputToCurrentDirectoryCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(outputToCurrentDirectoryToggled(bool)));
     infoLayout->addMultiCellWidget(outputToCurrentDirectoryCheckBox, 1, 1, 0, 1);
 
     QHBox *outputDirectoryParent = new QHBox(infoBox, "outputDirectoryParent");
-    outputDirectoryLabel = new QLabel("Output directory",
+    outputDirectoryLabel = new QLabel(tr("Output directory"),
         infoBox, "outputDirectoryLabel");
     outputDirectoryLineEdit = new QLineEdit(outputDirectoryParent,
         "outputDirectoryLineEdit");
@@ -212,7 +219,7 @@ QvisSaveWindow::CreateWindowContents()
     
     filenameLineEdit = new QLineEdit(infoBox, "filenameLineEdit");
     connect(filenameLineEdit, SIGNAL(returnPressed()), this, SLOT(processFilenameText()));
-    QLabel *filenameLabel = new QLabel(filenameLineEdit, "Filename", infoBox, "filenameLabel");
+    QLabel *filenameLabel = new QLabel(filenameLineEdit, tr("Filename"), infoBox, "filenameLabel");
     infoLayout->addWidget(filenameLabel, 4, 0);
     infoLayout->addWidget(filenameLineEdit, 4, 1);
 
@@ -232,7 +239,7 @@ QvisSaveWindow::CreateWindowContents()
     fileFormatComboBox->insertItem("vtk");
     connect(fileFormatComboBox, SIGNAL(activated(int)),
            this, SLOT(fileFormatChanged(int)));
-    QLabel *formatLabel = new QLabel(fileFormatComboBox, "File type",
+    QLabel *formatLabel = new QLabel(fileFormatComboBox, tr("File type"),
                                      infoBox, "formatLabel");
     infoLayout->addWidget(formatLabel, 5, 0);
     infoLayout->addWidget(fileFormatComboBox, 5, 1);
@@ -244,24 +251,24 @@ QvisSaveWindow::CreateWindowContents()
     connect(qualitySlider, SIGNAL(valueChanged(int)),
             this, SLOT(qualityChanged(int)));
     infoLayout->addWidget(qualitySlider, 6, 1);
-    qualityLabel = new QLabel(qualitySlider, "Quality",
+    qualityLabel = new QLabel(qualitySlider, tr("Quality"),
                               infoBox, "qualityLabel");
     infoLayout->addWidget(qualityLabel, 6, 0);
 
     // The progressive toggle.
-    progressiveCheckBox = new QCheckBox("Progressive", infoBox, "progressiveCheckBox");
+    progressiveCheckBox = new QCheckBox(tr("Progressive"), infoBox, "progressiveCheckBox");
     connect(progressiveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(progressiveToggled(bool)));
     infoLayout->addWidget(progressiveCheckBox, 7, 1, Qt::AlignRight);
 
     QHBox *compressionParent = new QHBox(infoBox, "compressionParent");
-    compressionTypeLabel = new QLabel("Compression type",
+    compressionTypeLabel = new QLabel(tr("Compression type"),
                                      compressionParent, "compressionLabel");
     compressionTypeComboBox = new QComboBox(false, compressionParent, "compressionTypeComboBox");
-    compressionTypeComboBox->insertItem("None");
-    compressionTypeComboBox->insertItem("PackBits");
-    compressionTypeComboBox->insertItem("JPEG");
-    compressionTypeComboBox->insertItem("Deflate");
+    compressionTypeComboBox->insertItem(tr("None"));
+    compressionTypeComboBox->insertItem(tr("PackBits"));
+    compressionTypeComboBox->insertItem(tr("JPEG"));
+    compressionTypeComboBox->insertItem(tr("Deflate"));
     //compressionTypeComboBox->insertItem("LZW");
     connect(compressionTypeComboBox, SIGNAL(activated(int)),
            this, SLOT(compressionTypeChanged(int)));
@@ -270,7 +277,7 @@ QvisSaveWindow::CreateWindowContents()
 
     // Create a group box for the image resolution.
     resolutionBox = new QGroupBox(central, "resolutionBox");
-    resolutionBox->setTitle("Resolution");
+    resolutionBox->setTitle(tr("Resolution"));
     topLayout->addWidget(resolutionBox);
 
     QGridLayout *resolutionLayout = new QGridLayout(resolutionBox, 5, 4);
@@ -279,13 +286,13 @@ QvisSaveWindow::CreateWindowContents()
     resolutionLayout->addRowSpacing(0, 10);
 
     resConstraintButtonGroup = new QButtonGroup(NULL, "resConstraintButtonGroup");
-    screenResButton   = new QRadioButton("Screen ratio",             
+    screenResButton   = new QRadioButton(tr("Screen ratio"),             
                                          resolutionBox, 
                                          "screenResButton");
-    oneToOneResButton = new QRadioButton("1:1 aspect ratio",         
+    oneToOneResButton = new QRadioButton(tr("1:1 aspect ratio"),         
                                          resolutionBox, 
                                          "oneToOneResButton");
-    noResButton       = new QRadioButton("No resolution constraint", 
+    noResButton       = new QRadioButton(tr("No resolution constraint"), 
                                          resolutionBox, 
                                          "noResButton");
     screenResButton->setChecked(true);
@@ -309,7 +316,7 @@ QvisSaveWindow::CreateWindowContents()
     widthLineEdit = new QLineEdit(resolutionBox, "widthLineEdit");
     connect(widthLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processWidthText()));
-    QLabel *widthLabel = new QLabel(widthLineEdit, "Width", resolutionBox, "widthLabel");
+    QLabel *widthLabel = new QLabel(widthLineEdit, tr("Width"), resolutionBox, "widthLabel");
     resolutionLayout->addWidget(widthLabel, 4, 0);
     resolutionLayout->addWidget(widthLineEdit, 4, 1);
 
@@ -317,44 +324,44 @@ QvisSaveWindow::CreateWindowContents()
     heightLineEdit = new QLineEdit(resolutionBox, "heightLineEdit");
     connect(heightLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processHeightText()));
-    QLabel *heightLabel = new QLabel(heightLineEdit, "Height", resolutionBox, "heightLabel");
+    QLabel *heightLabel = new QLabel(heightLineEdit, tr("Height"), resolutionBox, "heightLabel");
     resolutionLayout->addWidget(heightLabel, 4, 2);
     resolutionLayout->addWidget(heightLineEdit, 4, 3);
 
     // The family toggle.
     QGridLayout *toggleLayout = new QGridLayout(topLayout, 2, 3);
     toggleLayout->setSpacing(5);
-    familyCheckBox = new QCheckBox("Family", central, "familyCheckBox");
+    familyCheckBox = new QCheckBox(tr("Family"), central, "familyCheckBox");
     connect(familyCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(familyToggled(bool)));
     toggleLayout->addWidget(familyCheckBox, 0, 0);
 
     // The screen capture toggle.
-    screenCaptureCheckBox = new QCheckBox("Screen capture", central, "screenCaptureCheckBox");
+    screenCaptureCheckBox = new QCheckBox(tr("Screen capture"), central, "screenCaptureCheckBox");
     connect(screenCaptureCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(screenCaptureToggled(bool)));
     toggleLayout->addWidget(screenCaptureCheckBox, 0, 1);
 
     // The tiled toggle.
-    saveTiledCheckBox = new QCheckBox("Save tiled", central, "saveTiledCheckBox");
+    saveTiledCheckBox = new QCheckBox(tr("Save tiled"), central, "saveTiledCheckBox");
     connect(saveTiledCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(saveTiledToggled(bool)));
     toggleLayout->addWidget(saveTiledCheckBox, 0, 2);
 
     // The binary toggle.
-    binaryCheckBox = new QCheckBox("Binary", central, "binaryCheckBox");
+    binaryCheckBox = new QCheckBox(tr("Binary"), central, "binaryCheckBox");
     connect(binaryCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(binaryToggled(bool)));
     toggleLayout->addWidget(binaryCheckBox, 1, 0);
 
     // The stereo toggle.
-    stereoCheckBox = new QCheckBox("Stereo", central, "stereoCheckBox");
+    stereoCheckBox = new QCheckBox(tr("Stereo"), central, "stereoCheckBox");
     connect(stereoCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(stereoToggled(bool)));
     toggleLayout->addWidget(stereoCheckBox, 1, 1);
 
     // The stereo toggle.
-    forceMergeCheckBox = new QCheckBox("Force parallel merge", central, "forceMergeCheckBox");
+    forceMergeCheckBox = new QCheckBox(tr("Force parallel merge"), central, "forceMergeCheckBox");
     connect(forceMergeCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(forceMergeToggled(bool)));
     toggleLayout->addWidget(forceMergeCheckBox, 1, 2);
@@ -362,7 +369,7 @@ QvisSaveWindow::CreateWindowContents()
     // The save button.
     QHBoxLayout *saveButtonLayout = new QHBoxLayout(topLayout);
     saveButtonLayout->setSpacing(5);
-    QPushButton *saveButton = new QPushButton("Save", central, "saveButton");
+    QPushButton *saveButton = new QPushButton(tr("Save"), central, "saveButton");
     connect(saveButton, SIGNAL(clicked()),
             this, SLOT(saveButtonClicked()));
     saveButtonLayout->addWidget(saveButton);
@@ -638,6 +645,9 @@ QvisSaveWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Mon Dec 17 10:38:47 PST 2007
 //   Made it use ids.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -657,9 +667,9 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
         }
         else
         {
-            msg.sprintf("The output directory was invalid. "
-                "Resetting to the last good value \"%s\".",
-                 saveWindowAtts->GetOutputDirectory().c_str());
+            msg = tr("The output directory was invalid. "
+                     "Resetting to the last good value \"%1\".");
+            msg.replace("%1", saveWindowAtts->GetOutputDirectory().c_str());
             Message(msg);
             saveWindowAtts->SetOutputDirectory(saveWindowAtts->GetOutputDirectory());
         }
@@ -676,9 +686,9 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
         }
         else
         {
-            msg.sprintf("The filename was invalid. "
-                "Resetting to the last good value \"%s\".",
-                saveWindowAtts->GetFileName().c_str());
+            msg = tr("The filename was invalid. "
+                     "Resetting to the last good value \"%1\".");
+            msg.replace("%1", saveWindowAtts->GetFileName().c_str());
             Message(msg);
             saveWindowAtts->SetFileName(saveWindowAtts->GetFileName());
         }
@@ -708,9 +718,10 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The width was invalid. "
-                "Resetting to the last good value %d.",
-                saveWindowAtts->GetWidth());
+            QString num; num.sprintf("%d", saveWindowAtts->GetWidth());
+            msg = tr("The width was invalid. "
+                     "Resetting to the last good value %d.");
+            msg.replace("%1", num);
             Message(msg);
             saveWindowAtts->SetWidth(saveWindowAtts->GetWidth());
         }
@@ -740,9 +751,10 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The height was invalid. "
-                "Resetting to the last good value %d.",
-                saveWindowAtts->GetHeight());
+            QString num; num.sprintf("%d", saveWindowAtts->GetHeight());
+            msg = tr("The height was invalid. "
+                     "Resetting to the last good value %d.");
+            msg.replace("%1", num);
             Message(msg);
             saveWindowAtts->SetHeight(saveWindowAtts->GetHeight());
         }
@@ -1279,6 +1291,9 @@ QvisSaveWindow::saveWindow()
 //   Added code to get current values to ensure that the new directory
 //   gets stored in the window attributes.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1289,7 +1304,7 @@ QvisSaveWindow::selectOutputDirectory()
     //
     QString initialDir(saveWindowAtts->GetOutputDirectory().c_str());
     QString dirName = QFileDialog::getExistingDirectory(initialDir, this,
-        "getDirectoryDialog", "Select output directory");
+        "getDirectoryDialog", tr("Select output directory"));
 
     //
     // If a directory was chosen, use it as the output directory.

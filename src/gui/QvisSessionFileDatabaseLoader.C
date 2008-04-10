@@ -199,6 +199,9 @@ QvisSessionFileDatabaseLoader::Start(const QString &sfn)
 //   I made this method emit a new complete signal that sends the databases
 //   vector in the argument list.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -232,9 +235,9 @@ QvisSessionFileDatabaseLoader::ProcessFile()
         {
             debug1 << mName << "Not opening any more databases or the "
                       "session file because of a cancel" << endl;
-            Warning("The launch of a metadata server for accessing data files "
+            Warning(tr("The launch of a metadata server for accessing data files "
                     "relevant to the requested session file was cancelled so "
-                    "the session file will not be opened.");
+                    "the session file will not be opened."));
         }
     }
 }

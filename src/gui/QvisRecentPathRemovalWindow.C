@@ -56,11 +56,13 @@
 // Creation:   Fri Oct 10 16:03:20 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 10:43:50 PDT 2008
+//   Make captionString use QString.
+//
 // ****************************************************************************
 
 QvisRecentPathRemovalWindow::QvisRecentPathRemovalWindow(Subject *s,
-    const char *captionString) : QvisDelayedWindowObserver(s, captionString),
+    const QString &captionString) : QvisDelayedWindowObserver(s, captionString),
     paths()
 {
 }
@@ -92,6 +94,8 @@ QvisRecentPathRemovalWindow::~QvisRecentPathRemovalWindow()
 // Creation:   Fri Oct 10 16:08:50 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -100,7 +104,7 @@ QvisRecentPathRemovalWindow::CreateWindowContents()
 {
     // Create the widgets needed to remove the paths.
     removalControlsGroup = new QGroupBox(central, "removalControlsGroup");
-    removalControlsGroup->setTitle("Select paths to remove");
+    removalControlsGroup->setTitle(tr("Select paths to remove"));
     topLayout->addWidget(removalControlsGroup, 5);
 
     QVBoxLayout *innerTopLayout = new QVBoxLayout(removalControlsGroup);
@@ -116,17 +120,17 @@ QvisRecentPathRemovalWindow::CreateWindowContents()
     // Create the pushbuttons that actually call the removal routines.
     QHBoxLayout *hLayout = new QHBoxLayout(innerTopLayout);
     hLayout->setSpacing(5);
-    removeButton = new QPushButton("Remove", removalControlsGroup,
+    removeButton = new QPushButton(tr("Remove"), removalControlsGroup,
         "removeButton");
     connect(removeButton, SIGNAL(clicked()),
             this, SLOT(removePaths()));
     hLayout->addWidget(removeButton);
-    removeAllButton = new QPushButton("Remove all", removalControlsGroup,
+    removeAllButton = new QPushButton(tr("Remove all"), removalControlsGroup,
         "removeAllButton");
     connect(removeAllButton, SIGNAL(clicked()),
             this, SLOT(removeAllPaths()));
     hLayout->addWidget(removeAllButton);
-    invertSelectionButton = new QPushButton("Invert selection",
+    invertSelectionButton = new QPushButton(tr("Invert selection"),
         removalControlsGroup, "invertSelectionButton");
     connect(invertSelectionButton, SIGNAL(clicked()),
             this, SLOT(invertSelection()));
@@ -135,11 +139,11 @@ QvisRecentPathRemovalWindow::CreateWindowContents()
     // Create the ok and cancel buttons.
     QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
     buttonLayout->addStretch(10);
-    okButton = new QPushButton("Ok", central, "Ok");
+    okButton = new QPushButton(tr("Ok"), central, "Ok");
     connect(okButton, SIGNAL(clicked()),
             this, SLOT(applyDismiss()));
     buttonLayout->addWidget(okButton);
-    cancelButton = new QPushButton("Cancel", central, "cancelButton");
+    cancelButton = new QPushButton(tr("Cancel"), central, "cancelButton");
     connect(cancelButton, SIGNAL(clicked()),
             this, SLOT(handleCancel()));
     buttonLayout->addWidget(cancelButton);

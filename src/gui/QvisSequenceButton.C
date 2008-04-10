@@ -52,13 +52,15 @@
 // Creation:   Mon Oct 2 18:09:33 PST 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
 QvisSequenceButton::QvisSequenceButton(QWidget *parent, 
     const char *name) : QPushButton(parent, name)
 {
-    setText("New sequence");
+    setText(tr("New sequence"));
 
     // 
     // Create the menu based on the contents of the MovieSequenceFactory
@@ -68,9 +70,9 @@ QvisSequenceButton::QvisSequenceButton(QWidget *parent,
     QPopupMenu *transitions = new QPopupMenu(menu, "transitions");
     QPopupMenu *compositing = new QPopupMenu(menu, "compositing");
     QPopupMenu *rotations = new QPopupMenu(menu, "rotations");
-    menu->insertItem("Compositing", compositing);
-    menu->insertItem("Transitions", transitions);
-    menu->insertItem("Rotations", rotations);
+    menu->insertItem(tr("Compositing"), compositing);
+    menu->insertItem(tr("Transitions"), transitions);
+    menu->insertItem(tr("Rotations"), rotations);
 
     MovieSequenceFactory *f = MovieSequenceFactory::Instance();
     for(int index = 0; index < f->NumSequenceTypes(); ++index)
@@ -89,10 +91,9 @@ QvisSequenceButton::QvisSequenceButton(QWidget *parent,
             else if(mIndex == 2)
                 m = rotations;
 
-            std::string menuName;
+            QString menuName;
             if(f->SequenceMenuName(id, menuName))
             {
-                QString mName(menuName.c_str());
                 QPixmap pix;
                 f->SequencePixmap(id, pix);
 
@@ -100,10 +101,10 @@ QvisSequenceButton::QvisSequenceButton(QWidget *parent,
                 {
                     QIconSet icon;
                     icon.setPixmap(pix, QIconSet::Small);
-                    m->insertItem(icon, mName, id);
+                    m->insertItem(icon, menuName, id);
                 }
                 else
-                    m->insertItem(mName, id);
+                    m->insertItem(menuName, id);
             }
         }
     }

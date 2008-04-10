@@ -51,7 +51,9 @@
 // Creation:   Thu Oct 12 14:25:12 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 09:21:55 PDT 2008
+//   Moved SequenceMenuName methods to the .C file.
+//
 // ****************************************************************************
 
 class MovieSequenceTransition : public MovieSequence
@@ -76,7 +78,7 @@ public:
     virtual MovieSequence *NewInstance() const      { return new MovieSequenceFade; }
     virtual int SequenceId() const                  { return 100; }
     virtual std::string SequenceName() const        { return "Fade"; }
-    virtual std::string SequenceMenuName() const    { return "Fade"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -93,7 +95,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceLRWipe; }
     virtual int SequenceId() const                    { return 101; }
     virtual std::string SequenceName() const          { return "LRWipe"; }
-    virtual std::string SequenceMenuName() const      { return "Wipe left to right"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -106,7 +108,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceRLWipe; }
     virtual int SequenceId() const                    { return 102; }
     virtual std::string SequenceName() const          { return "RLWipe"; }
-    virtual std::string SequenceMenuName() const      { return "Wipe right to left"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -119,7 +121,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceTBWipe; }
     virtual int SequenceId() const                    { return 103; }
     virtual std::string SequenceName() const          { return "TBWipe"; }
-    virtual std::string SequenceMenuName() const      { return "Wipe top to bottom"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -132,7 +134,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceBTWipe; }
     virtual int SequenceId() const                    { return 104; }
     virtual std::string SequenceName() const          { return "BTWipe"; }
-    virtual std::string SequenceMenuName() const      { return "Wipe bottom to top"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -149,7 +151,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceLRSlide; }
     virtual int SequenceId() const                    { return 105; }
     virtual std::string SequenceName() const          { return "LRSlide"; }
-    virtual std::string SequenceMenuName() const      { return "Slide left to right"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -162,7 +164,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceRLSlide; }
     virtual int SequenceId() const                    { return 106; }
     virtual std::string SequenceName() const          { return "RLSlide"; }
-    virtual std::string SequenceMenuName() const      { return "Slide right to left"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -175,7 +177,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceTBSlide; }
     virtual int SequenceId() const                    { return 107; }
     virtual std::string SequenceName() const          { return "TBSlide"; }
-    virtual std::string SequenceMenuName() const      { return "Slide top to bottom"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -188,7 +190,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceBTSlide; }
     virtual int SequenceId() const                    { return 108; }
     virtual std::string SequenceName() const          { return "BTSlide"; }
-    virtual std::string SequenceMenuName() const      { return "Slide bottom to top"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -205,7 +207,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceCircle; }
     virtual int SequenceId() const                    { return 109; }
     virtual std::string SequenceName() const          { return "CircularReveal"; }
-    virtual std::string SequenceMenuName() const      { return "Circular reveal"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -219,7 +221,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceRipple; }
     virtual int SequenceId() const                    { return 110; }
     virtual std::string SequenceName() const          { return "RippleFade"; }
-    virtual std::string SequenceMenuName() const      { return "Ripple fade"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -233,7 +235,7 @@ public:
     virtual MovieSequence *NewInstance() const        { return new MovieSequenceBlock; }
     virtual int SequenceId() const                    { return 111; }
     virtual std::string SequenceName() const          { return "BlockFade"; }
-    virtual std::string SequenceMenuName() const      { return "Block fade"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 

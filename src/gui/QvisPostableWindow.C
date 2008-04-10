@@ -72,15 +72,18 @@ bool QvisPostableWindow::postEnabled = true;
 //   Brad Whitlock, Wed Aug 30 13:52:47 PST 2000
 //   Made it inherit from QvisWindowBase.
 //
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
-QvisPostableWindow::QvisPostableWindow(const char *captionString,
-    const char *shortName, QvisNotepadArea *n) : QvisWindowBase(captionString)
+QvisPostableWindow::QvisPostableWindow(const QString &captionString,
+    const QString &shortName, QvisNotepadArea *n) : QvisWindowBase(captionString)
 {
-    if(shortName)
+    if(!shortName.isEmpty())
         shortCaption = QString(shortName);
     else
-        shortCaption = QString("Untitled");
+        shortCaption = QString(tr("Untitled"));
 
     isCreated = false;
     isPosted = false;
@@ -307,6 +310,9 @@ QvisPostableWindow::SetPostEnabled(bool v)
 //   Brad Whitlock, Fri Sep 5 15:59:42 PST 2003
 //   I made it possible to post windows when they are first shown.
 //
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -334,7 +340,7 @@ QvisPostableWindow::show()
             isPosted = false;
 
             // Reset the post button so it will post the window. 
-            postButton->setText("Post");
+            postButton->setText(tr("Post"));
             disconnect(postButton, SIGNAL(clicked()), this, SLOT(unpost()));
             connect(postButton, SIGNAL(clicked()), this, SLOT(post()));
         }
@@ -404,6 +410,9 @@ QvisPostableWindow::raise()
 //   Gunther H. Weber, Fri Jan 18 10:16:48 PST 2008
 //   Added check to prevent posting when window is already posted.
 //
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -432,7 +441,7 @@ QvisPostableWindow::post()
 
             // Make sure the window knows it is posted.
             isPosted = true;
-            postButton->setText("Unpost");
+            postButton->setText(tr("Unpost"));
             disconnect(postButton, SIGNAL(clicked()), this, SLOT(post()));
             connect(postButton, SIGNAL(clicked()), this, SLOT(unpost()));
         }
@@ -452,6 +461,8 @@ QvisPostableWindow::post()
 // Creation:   Fri Jul 28 15:53:37 PST 2000
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -482,7 +493,7 @@ QvisPostableWindow::unpost()
 
             // Make sure the window knows it is not posted.
             isPosted = false;
-            postButton->setText("Post");
+            postButton->setText(tr("Post"));
             disconnect(postButton, SIGNAL(clicked()), this, SLOT(unpost()));
             connect(postButton, SIGNAL(clicked()), this, SLOT(post()));
         }
@@ -500,6 +511,8 @@ QvisPostableWindow::unpost()
 // Creation:   Fri Jul 28 15:54:48 PST 2000
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -515,7 +528,7 @@ QvisPostableWindow::hide()
         // since the act of posting it reparented it to the notepad area.
         central->reparent(this, 0, QPoint(0,0), true);
         setCentralWidget(central);
-        postButton->setText("Post");
+        postButton->setText(tr("Post"));
 
         // The window has been hidden. Make sure that the next time we
         // bring it up, the post button will post.
@@ -614,6 +627,9 @@ QvisPostableWindow::GetShortCaption()
 //   Brad Whitlock, Tue Jan 22 16:49:54 PST 2008
 //   Embed the contents in a scrollview if there's no notepad.
 //
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -659,10 +675,10 @@ QvisPostableWindow::CreateEntireWindow()
     vLayout->addSpacing(10);
     QHBoxLayout *buttonLayout = new QHBoxLayout(vLayout);
     buttonLayout->addStretch();
-    postButton = new QPushButton("Post", topCentral,
+    postButton = new QPushButton(tr("Post"), topCentral,
         "postButton");
     buttonLayout->addWidget(postButton);
-    QPushButton *dismissButton = new QPushButton("Dismiss", topCentral,
+    QPushButton *dismissButton = new QPushButton(tr("Dismiss"), topCentral,
         "dismissButton");
     buttonLayout->addWidget(dismissButton);
     if(notepad != 0)

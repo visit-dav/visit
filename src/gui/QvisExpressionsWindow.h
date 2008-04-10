@@ -76,6 +76,9 @@ class QvisVariableButton;
 //    Added a newExpression slot function and a variable button that lets
 //    us pick variables from the active source.
 //
+//    Brad Whitlock, Wed Apr  9 10:55:20 PDT 2008
+//    QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
@@ -84,8 +87,8 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
   public:
 
     QvisExpressionsWindow(ExpressionList * exprAtts_,
-                          const char *caption = 0,
-                          const char *shortName = 0,
+                          const QString &caption = QString::null,
+                          const QString &shortName = QString::null,
                           QvisNotepadArea * notepad = 0);
     virtual ~ QvisExpressionsWindow();
     virtual void CreateWindowContents();

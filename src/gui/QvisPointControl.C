@@ -67,6 +67,9 @@
 //    Brad Whitlock, Thu Aug 25 09:31:41 PDT 2005
 //    I replaced the buttongroup with a combobox.
 //
+//    Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 QvisPointControl::QvisPointControl(QWidget *parent, const char *name) :
@@ -89,7 +92,7 @@ QvisPointControl::QvisPointControl(QWidget *parent, const char *name) :
     connect(sizeLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processSizeText()));
     topLayout->addMultiCellWidget(sizeLineEdit, 0, 0, 1, 3);
-    sizeLabel = new QLabel(sizeLineEdit, "Point size", this, 
+    sizeLabel = new QLabel(sizeLineEdit, tr("Point size"), this, 
                                 "sizeLabel");
     topLayout->addWidget(sizeLabel, 0, 0);
 
@@ -100,7 +103,7 @@ QvisPointControl::QvisPointControl(QWidget *parent, const char *name) :
     connect(sizeVarButton, SIGNAL(activated(const QString &)),
             this, SLOT(sizeVarChanged(const QString &)));
     topLayout->addMultiCellWidget(sizeVarButton, 1, 1, 2, 3);
-    sizeVarToggle = new QCheckBox("Scale point size by variable", this, 
+    sizeVarToggle = new QCheckBox(tr("Scale point size by variable"), this, 
                                        "sizeVarToggle");
     connect(sizeVarToggle, SIGNAL(toggled(bool)),
             this, SLOT(sizeVarToggled(bool)));
@@ -108,14 +111,14 @@ QvisPointControl::QvisPointControl(QWidget *parent, const char *name) :
 
     // Create the type combo box
     typeComboBox = new QComboBox(this, "typeComboBox");
-    typeComboBox->insertItem("Box");
-    typeComboBox->insertItem("Axis");
-    typeComboBox->insertItem("Icosahedron");
-    typeComboBox->insertItem("Point");
-    typeComboBox->insertItem("Sphere");
+    typeComboBox->insertItem(tr("Box"));
+    typeComboBox->insertItem(tr("Axis"));
+    typeComboBox->insertItem(tr("Icosahedron"));
+    typeComboBox->insertItem(tr("Point"));
+    typeComboBox->insertItem(tr("Sphere"));
     connect(typeComboBox, SIGNAL(activated(int)),
             this, SLOT(typeComboBoxChanged(int)));
-    topLayout->addWidget(new QLabel("Point Type", this), 2, 0);
+    topLayout->addWidget(new QLabel(tr("Point Type"), this), 2, 0);
     topLayout->addMultiCellWidget(typeComboBox, 2,2 , 1,3);
 
     SetPointSize(lastGoodSize);
@@ -606,6 +609,9 @@ void QvisPointControl::SetPointType(int type)
 //   Brad Whitlock, Thu Aug 25 09:58:49 PDT 2005
 //   Added support for sphere points.
 //
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -615,11 +621,11 @@ QvisPointControl::UpdatePointType()
     if(lastGoodPointType != POINT_TYPE_POINTS &&
        lastGoodPointType != POINT_TYPE_SPHERE)
     {
-        sizeLabel->setText("Point size");
+        sizeLabel->setText(tr("Point size"));
         e = true;
     }
     else
-        sizeLabel->setText("Point size (pixels)");
+        sizeLabel->setText(tr("Point size (pixels)"));
 
     sizeVarToggle->setEnabled(e);
     sizeVarButton->setEnabled(sizeVarToggle->isChecked());

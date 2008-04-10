@@ -130,11 +130,14 @@ lastChild(QListView *r)
 //    Brad Whitlock, Fri Nov 7 17:29:56 PST 2003
 //    Added ApplyButton flag.
 //
+//    Brad Whitlock, Wed Apr  9 11:09:51 PDT 2008
+//    QString for caption, shortName.
+//
 // ****************************************************************************
 
 QvisKeyframeWindow::QvisKeyframeWindow(KeyframeAttributes *subj,
-                                       const char *caption,
-                                       const char *shortName,
+                                       const QString &caption,
+                                       const QString &shortName,
                                        QvisNotepadArea *notepad)
     : QvisPostableWindowSimpleObserver(caption, shortName, notepad,
                                        ApplyButton, false)
@@ -240,7 +243,7 @@ QvisKeyframeWindow::AddPlotToWindow(AttributeSubject *subj, const char *name,
     root->SetStyle(KFListViewItem::Style_Extents_and_Atts);
 
     KFListViewItem *timeItem = new KFListViewItem(root);
-    timeItem->setText(0, "State");
+    timeItem->setText(0, tr("State"));
     timeItem->SetStyle(KFListViewItem::Style_Times);
     if (lv->GetNFrames() <= 1)
         timeItem->AddPoint(0);
@@ -251,7 +254,7 @@ QvisKeyframeWindow::AddPlotToWindow(AttributeSubject *subj, const char *name,
     }
 
     KFListViewItem *attsItem = new KFListViewItem(root, timeItem);
-    attsItem->setText(0, "Atts");
+    attsItem->setText(0, tr("Atts"));
     attsItem->AddPoint(0.0);
 
 #ifdef THIS_IS_FOR_THE_SUB_MEMBERS_OF_THE_ATTRIBUTES
@@ -449,6 +452,9 @@ QvisKeyframeWindow::~QvisKeyframeWindow()
 //    Tell the header to fill the empty space with the second column's width.
 //    This works better than trying to do it manually.
 //
+//    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -457,18 +463,18 @@ QvisKeyframeWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 6,3,  4, "mainLayout");
     int row=0;
 
-    keyframeEnabledCheck = new QCheckBox("Keyframing enabled",
+    keyframeEnabledCheck = new QCheckBox(tr("Keyframing enabled"),
                                          central, "keyframeEnabledCheck");
     mainLayout->addWidget(keyframeEnabledCheck, row,0);
     row++;
 
-    snapToFrameCheck = new QCheckBox("Snap to frame",
+    snapToFrameCheck = new QCheckBox(tr("Snap to frame"),
                                      central, "snapToFrameCheck");
     mainLayout->addWidget(snapToFrameCheck, row, 0);
     snapToFrameCheck->setEnabled(false);
     row++;
 
-    mainLayout->addWidget(new QLabel("Number of frames", central,
+    mainLayout->addWidget(new QLabel(tr("Number of frames"), central,
                           "nFramesLabel"),row,0);
     nFrames = new QLineEdit(central, "nFrames");
     mainLayout->addWidget(nFrames, row,1);
@@ -481,8 +487,8 @@ QvisKeyframeWindow::CreateWindowContents()
     lv->header()->setStretchEnabled(1,true);
     lv->setRootIsDecorated(true);
     lv->setSorting(-1);
-    lv->addColumn("Attributes");
-    lv->addColumn("Keyframes");
+    lv->addColumn(tr("Attributes"));
+    lv->addColumn(tr("Keyframes"));
     mainLayout->addMultiCellWidget(lv, row,row, 0,2);
     row++;
 
@@ -496,7 +502,7 @@ QvisKeyframeWindow::CreateWindowContents()
 
     dbStateLineEdit = new QLineEdit(central, "dbStateLineEdit");
     mainLayout->addWidget(dbStateLineEdit, row, 0);
-    dbStateButton = new QPushButton("Add state keyframe", central,
+    dbStateButton = new QPushButton(tr("Add state keyframe"), central,
                                     "dbStateButton");
     mainLayout->addWidget(dbStateButton, row, 1);
     row++;
@@ -746,7 +752,7 @@ QvisKeyframeWindow::UpdateWindowInformation()
     if (!viewItem)
     {
         viewItem = new KFListViewItem(lv, NULL);
-        viewItem->setText(0, "View");
+        viewItem->setText(0, tr("View"));
         viewItem->SetIsView(true);
     }
     double nframeminus1 = (numFrames - 1);
@@ -877,7 +883,7 @@ QvisKeyframeWindow::UpdatePlotList()
         // update the database-wide times
         const intVector &dbkeys = current.GetDatabaseKeyframes();
         timeitem->Initialize();
-        timeitem->setText(0, "State");
+        timeitem->setText(0, tr("State"));
         timeitem->SetStyle(KFListViewItem::Style_Times);
         if (allsame[i])
         {
@@ -1126,6 +1132,9 @@ QvisKeyframeWindow::UpdateWindow(bool doAll)
 //    Brad Whitlock, Sun Jan 25 00:22:14 PDT 2004
 //    I made it use the keyframing attributes for the number of frames.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1147,9 +1156,10 @@ QvisKeyframeWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value for the number of frames was invalid. "
-                "Resetting to the last good value of %d.",
-                kfAtts->GetNFrames());
+            QString num; num.sprintf("%d", kfAtts->GetNFrames());
+            msg = tr("The value for the number of frames was invalid. "
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", num);
             Message(msg);
             GetViewerMethods()->AnimationSetNFrames(kfAtts->GetNFrames());
         }
@@ -1244,7 +1254,7 @@ QvisKeyframeWindow::stateKFClicked()
     int state = dbStateLineEdit->text().toInt();
     if (state < 0)
     {
-        Error("Cannot set state index to less than zero\n");
+        Error(tr("Cannot set state index to less than zero\n"));
         return;
     }
 

@@ -64,11 +64,13 @@ using std::vector;
 // Creation:   Wed May 2 16:30:53 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 11:00:55 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 QvisEngineWindow::QvisEngineWindow(EngineList *engineList,
-    const char *caption, const char *shortName, QvisNotepadArea *notepad) :
+    const QString &caption, const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(engineList, caption, shortName, notepad,
                                QvisPostableWindowObserver::NoExtraButtons),
     activeEngine(""), statusMap()
@@ -146,12 +148,12 @@ QvisEngineWindow::CreateWindowContents()
     engineCombo = new QComboBox(central, "engineCombo");
     connect(engineCombo, SIGNAL(activated(int)), this, SLOT(selectEngine(int)));
     grid1->addWidget(engineCombo, 0, 1);
-    engineLabel = new QLabel(engineCombo, "Engine:", central, "engineLabel");
+    engineLabel = new QLabel(engineCombo, tr("Engine:"), central, "engineLabel");
     grid1->addWidget(engineLabel, 0, 0);
 
     // Create the widgets needed to show the engine information.
     engineInfo = new QGroupBox(central, "activeGroup");
-    engineInfo->setTitle("Engine Information");
+    engineInfo->setTitle(tr("Engine Information"));
     topLayout->addWidget(engineInfo);
     QVBoxLayout *infoTopLayout = new QVBoxLayout(engineInfo);
     infoTopLayout->setMargin(10);
@@ -161,31 +163,31 @@ QvisEngineWindow::CreateWindowContents()
 
     engineNP = new QLabel(engineInfo, "engineNP");
     infoLayout->addWidget(engineNP, 0, 1);
-    QLabel *engineNPLabel = new QLabel(engineNP, "Number of processors:",
+    QLabel *engineNPLabel = new QLabel(engineNP, tr("Number of processors:"),
         engineInfo, "engineNPLabel");
     infoLayout->addWidget(engineNPLabel, 0, 0);
 
     engineNN = new QLabel(engineInfo, "engineNN");
     infoLayout->addWidget(engineNN, 1, 1);
-    QLabel *engineNNLabel = new QLabel(engineNN, "Number of nodes:",
+    QLabel *engineNNLabel = new QLabel(engineNN, tr("Number of nodes:"),
         engineInfo, "engineNNLabel");
     infoLayout->addWidget(engineNNLabel, 1, 0);
 
     engineLB = new QLabel(engineInfo, "engineLB");
     infoLayout->addWidget(engineLB, 2, 1);
-    QLabel *engineLBLabel = new QLabel(engineLB, "Load balancing:",
+    QLabel *engineLBLabel = new QLabel(engineLB, tr("Load balancing:"),
         engineInfo, "engineNPLabel");
     infoLayout->addWidget(engineLBLabel, 2, 0);
 
     // Create the status bars.
-    totalStatusLabel = new QLabel("Total status:", central, "totalStatusLabel");
+    totalStatusLabel = new QLabel(tr("Total status:"), central, "totalStatusLabel");
     topLayout->addWidget(totalStatusLabel);
 
     totalProgressBar = new QProgressBar(central, "totalProgressBar");
     totalProgressBar->setTotalSteps(100);
     topLayout->addWidget(totalProgressBar);
 
-    stageStatusLabel = new QLabel("Stage status:", central, "stageStatusLabel");
+    stageStatusLabel = new QLabel(tr("Stage status:"), central, "stageStatusLabel");
     topLayout->addWidget(stageStatusLabel);
 
     stageProgressBar = new QProgressBar(central, "stageProgressBar");
@@ -194,17 +196,17 @@ QvisEngineWindow::CreateWindowContents()
 
     QHBoxLayout *buttonLayout1 = new QHBoxLayout(topLayout);
     buttonLayout1->setSpacing(10);
-    interruptEngineButton = new QPushButton("Interrupt", central, "interruptEngineButton");
+    interruptEngineButton = new QPushButton(tr("Interrupt"), central, "interruptEngineButton");
     connect(interruptEngineButton, SIGNAL(clicked()), this, SLOT(interruptEngine()));
     interruptEngineButton->setEnabled(false);
     buttonLayout1->addWidget(interruptEngineButton);
 
-    clearCacheButton = new QPushButton("Clear cache", central, "clearCacheButton");
+    clearCacheButton = new QPushButton(tr("Clear cache"), central, "clearCacheButton");
     connect(clearCacheButton, SIGNAL(clicked()), this, SLOT(clearCache()));
     clearCacheButton->setEnabled(false);
     buttonLayout1->addWidget(clearCacheButton);
 
-    closeEngineButton = new QPushButton("Close engine", central, "closeEngineButton");
+    closeEngineButton = new QPushButton(tr("Close engine"), central, "closeEngineButton");
     connect(closeEngineButton, SIGNAL(clicked()), this, SLOT(closeEngine()));
     closeEngineButton->setEnabled(false);
     buttonLayout1->addWidget(closeEngineButton);
@@ -292,6 +294,9 @@ QvisEngineWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Kathleen Bonnell, Tue Apr 26 16:42:17 PDT 2005 
 //   Don't enable interruptEngineButton until the process has been fixed. 
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -319,8 +324,7 @@ QvisEngineWindow::UpdateWindow(bool doAll)
                 QString name = newsim.mid(firstDotPos+1,
                                           lastDotPos-firstDotPos-1);
 
-                temp = QString().sprintf("%s on %s", 
-                                    name.latin1(), host[i].c_str());
+                temp = name + tr(" on ") + QString(host[i].c_str());
             }
             engineCombo->insertItem(temp);
 
@@ -413,7 +417,7 @@ QvisEngineWindow::UpdateInformation(int index)
     // Set the values of the engine information widgets.
     if(index == -1 || s.size() < 1)
     {
-        engineLabel->setText("Engine:");
+        engineLabel->setText(tr("Engine:"));
         engineNP->setText("");
         engineNN->setText("");
         engineLB->setText("");
@@ -423,13 +427,13 @@ QvisEngineWindow::UpdateInformation(int index)
     {
         if (engines->GetSimulationName()[index] != "")
         {
-            engineLabel->setText("Simulation:");
-            closeEngineButton->setText("Disconnect simulation");
+            engineLabel->setText(tr("Simulation:"));
+            closeEngineButton->setText(tr("Disconnect simulation"));
         }
         else
         {
-            engineLabel->setText("Engine:");
-            closeEngineButton->setText("Close engine");
+            engineLabel->setText(tr("Engine:"));
+            closeEngineButton->setText(tr("Close engine"));
         }
 
         QString tmp;
@@ -437,7 +441,7 @@ QvisEngineWindow::UpdateInformation(int index)
         engineNP->setText(tmp);
 
         if(engines->GetNumNodes()[index] == -1)
-            engineNN->setText("Default");
+            engineNN->setText(tr("Default"));
         else 
         {
             tmp.sprintf("%d", engines->GetNumNodes()[index]);
@@ -445,9 +449,9 @@ QvisEngineWindow::UpdateInformation(int index)
         }
 
         if(engines->GetLoadBalancing()[index] == 0)
-            engineLB->setText("Static");
+            engineLB->setText(tr("Static"));
         else
-            engineLB->setText("Dynamic");
+            engineLB->setText(tr("Dynamic"));
 
         engineInfo->setEnabled(true);
     }
@@ -471,6 +475,9 @@ QvisEngineWindow::UpdateInformation(int index)
 //    Jeremy Meredith, Thu Jul  5 12:40:30 PDT 2001
 //    Added an explicit cast to avoid a warning.
 //
+//    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -484,9 +491,9 @@ QvisEngineWindow::UpdateStatusArea()
     if(s->GetClearStatus())
     {
         s->SetStatusMessage("");
-        totalStatusLabel->setText("Total Status:");
+        totalStatusLabel->setText(tr("Total Status:"));
         totalProgressBar->reset();
-        stageStatusLabel->setText("Stage Status:");
+        stageStatusLabel->setText(tr("Stage Status:"));
         stageProgressBar->reset();
     }
     else
@@ -505,17 +512,15 @@ QvisEngineWindow::UpdateStatusArea()
         if(s->GetMessageType() == 1)
         {
             totalStatusLabel->setText(QString(s->GetStatusMessage().c_str()));
-            stageStatusLabel->setText("Stage Status:");
+            stageStatusLabel->setText(tr("Stage Status:"));
         }
         else if (s->GetMessageType() == 2)
         {
             QString msg;
-            msg.sprintf("Total Status: Stage %d/%d",
-                        s->GetCurrentStage(),
-                        s->GetMaxStage());
+            msg.sprintf("%d/%d", s->GetCurrentStage(), s->GetMaxStage());
+            msg = tr("Total Status: Stage ") + msg;
             totalStatusLabel->setText(msg);
-            msg.sprintf("Stage Status: %s",
-                        s->GetCurrentStageName().c_str());
+            msg = tr("Stage Status: ") + QString(s->GetCurrentStageName().c_str());
             stageStatusLabel->setText(msg);
         }
 
@@ -658,8 +663,11 @@ QvisEngineWindow::UpdateStatusEntry(const QString &key)
 // Creation:   Wed May 2 16:37:35 PST 2001
 //
 // Modifications:
-//    Jeremy Meredith, Tue Mar 30 09:34:33 PST 2004
-//    I added support for simulations.
+//   Jeremy Meredith, Tue Mar 30 09:34:33 PST 2004
+//   I added support for simulations.
+//
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -677,19 +685,21 @@ QvisEngineWindow::closeEngine()
     QString msg;
     if (sim == "")
     {
-        msg.sprintf("Really close the compute engine on host \"%s\"?\n\n",
-                    host.c_str());
+        msg = tr("Really close the compute engine on host \"%1\"?\n\n");
+        msg.replace("%1", host.c_str());
     }
     else
     {
-        msg.sprintf("Really disconnect from the simulation \"%s\" on "
-                    "host \"%s\"?\n\n", sim.c_str(), host.c_str());
+        msg = tr("Really disconnect from the simulation \"%1\" on "
+                 "host \"%2\"?\n\n");
+        msg.replace("%1", sim.c_str());
+        msg.replace("%2", host.c_str());
     }
 
     // Ask the user if he really wants to close the engine.
     if(QMessageBox::warning( this, "VisIt",
                              msg.latin1(),
-                             "Ok", "Cancel", 0,
+                             tr("Ok"), tr("Cancel"), 0,
                              0, 1 ) == 0)
     {
         // The user actually chose to close the engine.

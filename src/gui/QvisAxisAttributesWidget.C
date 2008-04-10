@@ -69,6 +69,9 @@
 //   Brad Whitlock, Thu Mar 27 09:59:40 PDT 2008
 //   Temporarily disable text opacity.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent, 
@@ -84,7 +87,7 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     // Create the title group
     //
     titleGroup = new QGroupBox(this, "titleGroup");
-    titleGroup->setTitle("Title");
+    titleGroup->setTitle(tr("Title"));
     if(titleEnabled)
     {
         titleGroup->setCheckable(true);
@@ -98,7 +101,7 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     int row = 0;
     QGridLayout *tLayout = new QGridLayout(tInnerLayout, 4, 2);
     tLayout->setSpacing(5);
-    customTitleToggle = new QCheckBox("Custom title", titleGroup,
+    customTitleToggle = new QCheckBox(tr("Custom title"), titleGroup,
         "customTitleToggle");
     connect(customTitleToggle, SIGNAL(toggled(bool)),
             this, SLOT(customTitleToggled(bool)));
@@ -109,7 +112,7 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     tLayout->addWidget(customTitle, row, 1);
     ++row;
 
-    customUnitsToggle = new QCheckBox("Custom Units", titleGroup,
+    customUnitsToggle = new QCheckBox(tr("Custom Units"), titleGroup,
         "customUnitsToggle");
     connect(customUnitsToggle, SIGNAL(toggled(bool)),
             this, SLOT(customUnitsToggled(bool)));
@@ -138,7 +141,7 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     //
     row = 0;
     labelGroup = new QGroupBox(this, "labelGroup");
-    labelGroup->setTitle("Labels");
+    labelGroup->setTitle(tr("Labels"));
     labelGroup->setCheckable(true);
     connect(labelGroup, SIGNAL(toggled(bool)),
             this, SLOT(labelToggled(bool)));
@@ -153,7 +156,7 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     labelScaling = new QSpinBox(0, 300, 1, labelGroup, "labelScaling");
     connect(labelScaling, SIGNAL(valueChanged(int)),
             this, SLOT(labelScalingChanged(int)));
-    labelScalingLabel = new QLabel(labelScaling, "Scaling (x10^?)", 
+    labelScalingLabel = new QLabel(labelScaling, tr("Scaling (x10^?)"), 
         labelGroup, "labelScalingLabel");
     lLayout->addWidget(labelScalingLabel, row, 0);
     lLayout->addWidget(labelScaling, row, 1);
@@ -177,7 +180,7 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     //
     row = 0;
     tickGroup = new QGroupBox(this, "tickGroup");
-    tickGroup->setTitle("Tick marks");
+    tickGroup->setTitle(tr("Tick marks"));
     if(tickEnabled)
     {
         tickGroup->setCheckable(true);
@@ -195,7 +198,7 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     connect(majorMinimum, SIGNAL(returnPressed()),
             this, SLOT(Apply()));
     tgLayout->addWidget(majorMinimum, row, 1);
-    majorMinimumLabel = new QLabel(majorMinimum, "Major minimum", 
+    majorMinimumLabel = new QLabel(majorMinimum, tr("Major minimum"), 
         tickGroup, "majorMinimumLabel");
     tgLayout->addWidget(majorMinimumLabel, row, 0);
     ++row;
@@ -204,7 +207,7 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     connect(majorMaximum, SIGNAL(returnPressed()),
             this, SLOT(Apply()));
     tgLayout->addWidget(majorMaximum, row, 1);
-    majorMaximumLabel = new QLabel(majorMaximum, "Major maximum", 
+    majorMaximumLabel = new QLabel(majorMaximum, tr("Major maximum"), 
         tickGroup, "majorMaximumLabel");
     tgLayout->addWidget(majorMaximumLabel, row, 0);
     ++row;
@@ -213,7 +216,7 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     connect(minorSpacing, SIGNAL(returnPressed()),
             this, SLOT(Apply()));
     tgLayout->addWidget(minorSpacing, row, 1);
-    minorSpacingLabel = new QLabel(minorSpacing, "Minor spacing", 
+    minorSpacingLabel = new QLabel(minorSpacing, tr("Minor spacing"), 
         tickGroup, "minorSpacingLabel");
     tgLayout->addWidget(minorSpacingLabel, row, 0);
     ++row;
@@ -222,13 +225,13 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     connect(majorSpacing, SIGNAL(returnPressed()),
             this, SLOT(Apply()));
     tgLayout->addWidget(majorSpacing, row, 1);
-    majorSpacingLabel = new QLabel(majorSpacing, "Major spacing", 
+    majorSpacingLabel = new QLabel(majorSpacing, tr("Major spacing"), 
         tickGroup, "majorSpacingLabel");
     tgLayout->addWidget(majorSpacingLabel, row, 0);
     ++row;
 
     // Add the grid check box.
-    grid = new QCheckBox("Show grid", this, "grid");
+    grid = new QCheckBox(tr("Show grid"), this, "grid");
     connect(grid, SIGNAL(toggled(bool)),
             this, SLOT(gridToggled(bool)));
 }
@@ -556,6 +559,8 @@ QvisAxisAttributesWidget::GetCurrentValues(AxisAttributes &aa,
 // Creation:   Fri Feb 8 17:53:35 PST 2008
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -573,7 +578,7 @@ QvisAxisAttributesWidget::GetDouble(double &val, QLineEdit *le, const QString &n
     if(!okay)
     {
         QString msg;
-        msg.sprintf("An invalid value was provided for %s.", name.latin1());
+        msg = tr("An invalid value was provided for ") + name + QString(".");
         Message(msg);
     }
     return okay;

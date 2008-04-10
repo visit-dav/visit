@@ -70,11 +70,13 @@ const char *QvisFileInformationWindow::titleSeparator =
 // Creation:   Tue Aug 20 13:56:24 PST 2002
 //
 // Modifications:
+//   Brad Whitlock, Wed Apr  9 10:47:21 PDT 2008
+//   QString for caption and shortName.
 //
 // ****************************************************************************
 
 QvisFileInformationWindow::QvisFileInformationWindow(FileServerList *fs,
-    const char *caption, const char *shortName, QvisNotepadArea *notepad) : 
+    const QString &caption, const QString &shortName, QvisNotepadArea *notepad) : 
     QvisPostableWindowObserver(fs, caption, shortName, notepad,
                                QvisPostableWindowObserver::NoExtraButtons,
                                false)
@@ -146,6 +148,10 @@ QvisFileInformationWindow::CreateWindowContents()
 //   Added call to c_str() from ostringstream output to fix std:string
 //   to QString linking error on AIX. 
 //   (Also added modification message for Tom's recent change above)
+//
+//   Brad Whitlock, Tue Apr  8 12:26:44 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 
@@ -173,11 +179,11 @@ QvisFileInformationWindow::UpdateWindow(bool doAll)
         }
         else if(fileServer->GetOpenFile().Empty())
         {
-            outputText->setText("There is no open file. File information is "
-                                "not available until a file has been opened.");
+            outputText->setText(tr("There is no open file. File information is "
+                                "not available until a file has been opened."));
         }
         else
-            outputText->setText("VisIt could not read the file meta-data.");
+            outputText->setText(tr("VisIt could not read the file meta-data."));
         outputText->setCursorPosition(0, 0);
     }
 }

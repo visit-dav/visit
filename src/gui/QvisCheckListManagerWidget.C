@@ -96,7 +96,7 @@ QvisCheckListManagerWidget::QvisCheckListManagerWidget(QWidget *parent,
         QString temp, cbName;
         temp.sprintf("newCheckBox_%d", i);
         cbName.sprintf("%d", i);
-        checkBoxes[i] = new QCheckBox(cbName, grid, temp);
+        checkBoxes[i] = new QCheckBox(cbName, grid, temp.ascii());
         checkBoxes[i]->setChecked(true);
         checkBoxes[i]->hide();
         checkBoxGroup->insert(checkBoxes[i], i);

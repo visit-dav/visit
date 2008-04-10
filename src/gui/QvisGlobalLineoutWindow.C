@@ -60,13 +60,15 @@
 // Creation:   Fri Nov 19 10:46:23 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 11:47:34 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 QvisGlobalLineoutWindow::QvisGlobalLineoutWindow(
                          GlobalLineoutAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisPostableWindowObserver(subj, caption, shortName, notepad,
                          QvisPostableWindowObserver::ApplyButton, false)
@@ -115,6 +117,9 @@ QvisGlobalLineoutWindow::~QvisGlobalLineoutWindow()
 //   Kathleen Bonnell, Thu Nov  2 14:01:01 PST 2006 
 //   Added freezInTime.
 //   
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -125,7 +130,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     //
     // CreateWindow
     //
-    createWindow = new QCheckBox("Use 1st unused window or create\nnew one. All  subsequent lineouts\nwill use this same window.", 
+    createWindow = new QCheckBox(tr("Use 1st unused window or create\nnew one. All  subsequent lineouts\nwill use this same window."), 
                                   central, "createWindow");
     connect(createWindow, SIGNAL(toggled(bool)),
             this, SLOT(createWindowChanged(bool)));
@@ -134,7 +139,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     //
     // WindowId
     //
-    windowIdLabel = new QLabel("Window #", central, "windowIdLabel");
+    windowIdLabel = new QLabel(tr("Window #"), central, "windowIdLabel");
     mainLayout->addWidget(windowIdLabel,1,0);
     windowId = new QNarrowLineEdit(central, "windowId");
     connect(windowId, SIGNAL(returnPressed()),
@@ -143,7 +148,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
 
 
     // Freeze In Time
-    freezeInTime = new QCheckBox("Freeze In Time", central, "freezeInTime");
+    freezeInTime = new QCheckBox(tr("Freeze In Time"), central, "freezeInTime");
     connect(freezeInTime, SIGNAL(toggled(bool)),
             this, SLOT(freezeInTimeChanged(bool)));
     mainLayout->addMultiCellWidget(freezeInTime,2,2,0,1);
@@ -153,7 +158,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     //
     QGroupBox *dbox;
 #if QT_VERSION >= 0x030200
-    dynamic = new QGroupBox("Synchronize with originating plot",
+    dynamic = new QGroupBox(tr("Synchronize with originating plot"),
                              central, "dynamic");
     dynamic->setCheckable(true);
     dbox = dynamic;
@@ -161,13 +166,13 @@ QvisGlobalLineoutWindow::CreateWindowContents()
             this, SLOT(dynamicChanged(bool)));
     topLayout->addWidget(dynamic);
 #else
-    dynamic = new QCheckBox("Synchronize with originating plot",
+    dynamic = new QCheckBox(tr("Synchronize with originating plot"),
                              central, "dynamic");
     connect(dynamic, SIGNAL(toggled(bool)),
             this, SLOT(dynamicChanged(bool)));
     mainLayout->addMultiCellWidget(dynamic,3,3,0,1);
 
-    dynamicGroup = new QGroupBox("Dynamic options", central, "dynamic");
+    dynamicGroup = new QGroupBox(tr("Dynamic options"), central, "dynamic");
     topLayout->addWidget(dynamicGroup);
     dbox = dynamicGroup;
 #endif
@@ -182,11 +187,11 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     // curve options
     //
     curveOptions = new QComboBox(dbox, "curveOptions");
-    curveOptions->insertItem("updates curve", 0);
-    curveOptions->insertItem("creates new curve", 1);
+    curveOptions->insertItem(tr("updates curve"), 0);
+    curveOptions->insertItem(tr("creates new curve"), 1);
     connect(curveOptions, SIGNAL(activated(int)),
             this, SLOT(curveOptionsChanged(int)));
-    curveLabel = new QLabel(curveOptions, "Time change ", dbox, "curveLabel");
+    curveLabel = new QLabel(curveOptions, tr("Time change "), dbox, "curveLabel");
 
     dgrid->addWidget(curveLabel, 1, 0);
     dgrid->addWidget(curveOptions, 1, 1);
@@ -196,11 +201,11 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     // color options
     //
     colorOptions = new QComboBox(dbox, "colorOptions");
-    colorOptions->insertItem("repeats color", 0);
-    colorOptions->insertItem("creates new color", 1);
+    colorOptions->insertItem(tr("repeats color"), 0);
+    colorOptions->insertItem(tr("creates new color"), 1);
     connect(colorOptions, SIGNAL(activated(int)),
             this, SLOT(colorOptionsChanged(int)));
-    colorLabel = new QLabel(colorOptions, "New curve ", dbox, "colorLabel");
+    colorLabel = new QLabel(colorOptions, tr("New curve "), dbox, "colorLabel");
 
     dgrid->addWidget(colorLabel, 3, 0);
     dgrid->addWidget(colorOptions, 3, 1);
@@ -218,7 +223,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     qgrid->setMargin(5);
     
     QLabel *msg = new QLabel(gbox); 
-    msg->setText("These items can be overridden\nby Lineout Operator");
+    msg->setText(tr("These items can be overridden\nby Lineout Operator"));
     msg->setAlignment(Qt::AlignCenter);
     qgrid->addMultiCellWidget(msg, 0,0,0,1);
     qgrid->addRowSpacing(1,10);
@@ -226,7 +231,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     //
     // SamplingOn
     //
-    samplingOn = new QCheckBox("Use Sampling", gbox, "samplingOn");
+    samplingOn = new QCheckBox(tr("Use Sampling"), gbox, "samplingOn");
     connect(samplingOn, SIGNAL(toggled(bool)),
             this, SLOT(samplingOnChanged(bool)));
     qgrid->addWidget(samplingOn, 2,0);
@@ -234,7 +239,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     //
     // NumSamples
     //
-    numSamplesLabel = new QLabel("Sample Points ", 
+    numSamplesLabel = new QLabel(tr("Sample Points "), 
                                   gbox, "numSamplesLabel");
     numSamplesLabel->setAlignment(Qt::AlignCenter);
     qgrid->addWidget(numSamplesLabel,3,0);
@@ -247,7 +252,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     //
     // ReflineLabels
     //
-    createReflineLabels = new QCheckBox("Create refline labels", 
+    createReflineLabels = new QCheckBox(tr("Create refline labels"), 
                                         gbox, "createReflineLabels");
     connect(createReflineLabels, SIGNAL(toggled(bool)),
             this, SLOT(createReflineLabelsChanged(bool)));
@@ -376,6 +381,8 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
 // Creation:   Fri Nov 19 10:46:23 PDT 2004
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -410,9 +417,10 @@ QvisGlobalLineoutWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of windowId was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetWindowId());
+            QString num; num.sprintf("%d", atts->GetWindowId());
+            msg = tr("The value of windowId was invalid. "
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", num);
             Message(msg);
             atts->SetWindowId(atts->GetWindowId());
         }
@@ -437,9 +445,10 @@ QvisGlobalLineoutWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of numSamples was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetNumSamples());
+            QString num; num.sprintf("%d", atts->GetNumSamples());
+            msg = tr("The value of numSamples was invalid. "
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", num);
             Message(msg);
             atts->SetNumSamples(atts->GetNumSamples());
         }

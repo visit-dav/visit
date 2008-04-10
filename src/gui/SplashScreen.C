@@ -126,6 +126,9 @@
 //    the patch level so that it wouldn't overlap the main version number
 //    and look better.
 //
+//    Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
@@ -140,7 +143,8 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
 
     // If the window manager is dumb enough to put decorations on this
     // window, at least put a reasonable title on it.
-    QString caption; caption.sprintf("VisIt %s splash screen", VERSION);
+    QString caption(tr("VisIt %1 splash screen"));
+    caption.replace("%1", VERSION);
     setCaption(caption);
 
     // Set up a box to put the picture in
@@ -188,7 +192,10 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
     }
     else if(patch > 0)
     {
-        ver.sprintf("Patch %d", patch);
+        QString p(tr("Patch %1"));
+        ver.sprintf("%d", patch);
+        p.replace("%1", ver);
+        ver = p;
         drawVersion = true;
     }
 
@@ -219,13 +226,18 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
     rLayout = new QVBoxLayout(lrLayout);
     rLayout->addStretch(1);
 
-    lLayout->addWidget(new QLabel(
-        "(c) 2000-2008 LLNS. All Rights Reserved.", this, "(C)"));
+    QString C("(c) 2000-2008 LLNS. ");
+    C += tr("All Rights Reserved");
+    C += ".";
+    lLayout->addWidget(new QLabel(C, this, "(C)"));
 
     QString versionText;
-    versionText.sprintf("VisIt %s, svn revision %s", VERSION, SVN_REVISION);
+    versionText.sprintf("VisIt %s, ", VERSION);
+    versionText += tr("svn revision");
+    versionText += " ";
+    versionText += SVN_REVISION;
     lLayout->addWidget(new QLabel(versionText, this, "versionText"));
-    lLayout->addWidget(new QLabel("March 2008", this, "dateCompiled"));
+    lLayout->addWidget(new QLabel(tr("March 2008"), this, "dateCompiled"));
 
     copyrightButton = 0;
     contributorButton = 0;
@@ -237,7 +249,7 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
 
     // Put in a label for text
     text = new QLabel(this);
-    text->setText("Starting VisIt...");
+    text->setText(tr("Starting VisIt..."));
     topLayout->addWidget(text, 0, AlignLeft);
     topLayout->addSpacing(5);
 
@@ -276,6 +288,8 @@ SplashScreen::~SplashScreen()
 // Creation:   Tue Jan  8 14:14:03 PST 2008
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -285,7 +299,7 @@ SplashScreen::CreateAboutButtons()
     // Add a copyright button
     if(copyrightButton == 0)
     {
-        copyrightButton = new QPushButton("Copyright...", this, "copyrightButton");
+        copyrightButton = new QPushButton(tr("Copyright..."), this, "copyrightButton");
         connect(copyrightButton, SIGNAL(clicked()),
                 this, SLOT(emitShowCopyright()));
         rLayout->addWidget(copyrightButton, Qt::AlignRight);
@@ -294,7 +308,7 @@ SplashScreen::CreateAboutButtons()
     // Add a contributor button.
     if(contributorButton == 0)
     {
-        contributorButton = new QPushButton("Contributors...", this, "contributorButton");
+        contributorButton = new QPushButton(tr("Contributors..."), this, "contributorButton");
         connect(contributorButton, SIGNAL(clicked()),
                 this, SLOT(emitShowContributors()));
         rLayout->addWidget(contributorButton, Qt::AlignRight);
@@ -304,7 +318,7 @@ SplashScreen::CreateAboutButtons()
     // Add a dismiss button
     if(dismissButton == 0)
     {
-        dismissButton = new QPushButton("Dismiss", this, "dismissButton");
+        dismissButton = new QPushButton(tr("Dismiss"), this, "dismissButton");
         connect(dismissButton, SIGNAL(clicked()),
                 this, SLOT(hide()));
         topLayout->addWidget(dismissButton, 0, AlignCenter);
@@ -376,11 +390,13 @@ SplashScreen::hide()
 // Creation:   Wed Jun 18 17:50:55 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 10:26:34 PDT 2008
+//   Use QString instead of const char *.
+//
 // ****************************************************************************
 
 void
-SplashScreen::Progress(const char *msg, int percent)
+SplashScreen::Progress(const QString &msg, int percent)
 {
     text->setText(msg);
     progress->setProgress(percent);

@@ -62,13 +62,16 @@
 //   Brad Whitlock, Mon Sep 30 07:49:25 PDT 2002
 //   I added window flags.
 //
+//   Brad Whitlock, Wed Apr  9 10:30:42 PDT 2008
+//   Changed ctor args.
+//
 // ****************************************************************************
 
 class GUI_API QvisDelayedWindowSimpleObserver : public QvisDelayedWindow, public SimpleObserver
 {
     Q_OBJECT
 public:
-    QvisDelayedWindowSimpleObserver(const char *caption = 0, WFlags f = 0);
+    QvisDelayedWindowSimpleObserver(const QString &caption, WFlags f = 0);
     virtual ~QvisDelayedWindowSimpleObserver();
     virtual void CreateWindowContents() = 0;
     virtual void Update(Subject *TheChangedSubject);

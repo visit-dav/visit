@@ -68,11 +68,13 @@ int QvisDatabaseCorrelationWindow::instanceCount = 0;
 // Creation:   Mon Mar 29 12:25:11 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 11:49:05 PDT 2008
+//   QString for caption.
+//
 // ****************************************************************************
 
 QvisDatabaseCorrelationWindow::QvisDatabaseCorrelationWindow(
-    const QString &correlationName, const char *caption) :
+    const QString &correlationName, const QString &caption) :
     QvisWindowBase(caption), createMode(true)
 {
     DatabaseCorrelation emptyCorrelation;
@@ -81,7 +83,7 @@ QvisDatabaseCorrelationWindow::QvisDatabaseCorrelationWindow(
 }
 
 QvisDatabaseCorrelationWindow::QvisDatabaseCorrelationWindow(
-    const DatabaseCorrelation &correlation, const char *caption) :
+    const DatabaseCorrelation &correlation, const QString &caption) :
     QvisWindowBase(caption), createMode(false)
 {
     CreateWidgets(correlation);
@@ -117,6 +119,8 @@ QvisDatabaseCorrelationWindow::~QvisDatabaseCorrelationWindow()
 // Creation:   Mon Mar 29 12:25:59 PDT 2004
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -140,7 +144,7 @@ QvisDatabaseCorrelationWindow::CreateWidgets(
     correlationNameLineEdit = new QLineEdit(central, "correlationNameLineEdit");
     correlationNameLineEdit->setText(correlation.GetName().c_str());
     correlationNameLineEdit->setEnabled(createMode);
-    QLabel *nameLabel = new QLabel(correlationNameLineEdit, "Name", central,
+    QLabel *nameLabel = new QLabel(correlationNameLineEdit, tr("Name"), central,
         "nameLabel");
     nameLabel->setEnabled(createMode);
     gLayout->addWidget(nameLabel, 0, 0);
@@ -148,15 +152,15 @@ QvisDatabaseCorrelationWindow::CreateWidgets(
 
     // Create the correlation method combobox.
     correlationMethodComboBox = new QComboBox(central, "correlationMethodComboBox");
-    correlationMethodComboBox->insertItem("Padded index");
-    correlationMethodComboBox->insertItem("Stretched index");
-    correlationMethodComboBox->insertItem("Time");
-    correlationMethodComboBox->insertItem("Cycle");
+    correlationMethodComboBox->insertItem(tr("Padded index"));
+    correlationMethodComboBox->insertItem(tr("Stretched index"));
+    correlationMethodComboBox->insertItem(tr("Time"));
+    correlationMethodComboBox->insertItem(tr("Cycle"));
     int method = (int)correlation.GetMethod();
     correlationMethodComboBox->setCurrentItem(method);
     gLayout->addWidget(correlationMethodComboBox, 1, 1);
     gLayout->addWidget(new QLabel(correlationMethodComboBox,
-        "Correlation method", central), 1, 0);
+        tr("Correlation method"), central), 1, 0);
     topLayout->addSpacing(10);
 
     // Create the widgets that let us add sources to the database correlation.
@@ -166,8 +170,8 @@ QvisDatabaseCorrelationWindow::CreateWidgets(
     int i;
     for(i = 0; i < 5; ++i)
         srcLayout->setRowStretch(i, S[i]);
-    srcLayout->addWidget(new QLabel("Sources", central, "Sources"), 0, 0);
-    srcLayout->addWidget(new QLabel("Correlated sources", central,
+    srcLayout->addWidget(new QLabel(tr("Sources"), central, "Sources"), 0, 0);
+    srcLayout->addWidget(new QLabel(tr("Correlated sources"), central,
         "CorrelatedSources"), 0, 2);
 
     //
@@ -229,13 +233,13 @@ QvisDatabaseCorrelationWindow::CreateWidgets(
     topLayout->addSpacing(10);
     QHBoxLayout *actionButtonLayout = new QHBoxLayout(topLayout);
     QPushButton *actionButton = new QPushButton(
-        createMode?"Create database correlation" : "Alter database correlation", central,
+        createMode?tr("Create database correlation") : tr("Alter database correlation"), central,
         "actionButton");
     connect(actionButton, SIGNAL(clicked()),
             this, SLOT(actionClicked()));
     actionButtonLayout->addWidget(actionButton);
     actionButtonLayout->addStretch(10);
-    QPushButton *cancelButton = new QPushButton("Cancel", central, "cancelButton");
+    QPushButton *cancelButton = new QPushButton(tr("Cancel"), central, "cancelButton");
     connect(cancelButton, SIGNAL(clicked()),
             this, SLOT(cancelClicked()));
     actionButtonLayout->addWidget(cancelButton);
@@ -412,6 +416,8 @@ QvisDatabaseCorrelationWindow::removeSources()
 // Creation:   Mon Mar 29 12:30:20 PDT 2004
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -434,7 +440,7 @@ QvisDatabaseCorrelationWindow::actionClicked()
     {
         if(name.size() < 1)
         {
-            Warning("A new database correlation must have a name.");
+            Warning(tr("A new database correlation must have a name."));
             correlationNameLineEdit->setActiveWindow();
             correlationNameLineEdit->setFocus();
             correlationNameLineEdit->setSelection(0,
@@ -447,9 +453,9 @@ QvisDatabaseCorrelationWindow::actionClicked()
             DatabaseCorrelationList *cL = GetViewerState()->GetDatabaseCorrelationList();
             if(cL->FindCorrelation(name))
             {
-                Warning("The given database correlation name is already "
+                Warning(tr("The given database correlation name is already "
                         "being used. Please change the name of this "
-                        "correlation.");
+                        "correlation."));
                 correlationNameLineEdit->setActiveWindow();
                 correlationNameLineEdit->setFocus();
                 correlationNameLineEdit->setSelection(0,
@@ -482,9 +488,13 @@ QvisDatabaseCorrelationWindow::actionClicked()
     if(dbs.size() < 1)
     {
         QString msg;
-        msg.sprintf("A database correlation must have at least one correlated "
-            "source. You must add a correlated source before you can %s "
-            "this database correlation.", (createMode ? "create" : "alter"));
+        QString s1(tr("A database correlation must have at least one correlated "
+                      "source."));
+        QString s2(tr("You must add a correlated source before you can create "
+                      "this database correlation."));
+        QString s3(tr("You must add a correlated source before you can alter "
+                      "this database correlation."));
+        msg = s1 + (createMode ? s2 : s3);
         Warning(msg);
     }
 

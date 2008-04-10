@@ -58,11 +58,13 @@
 // Creation:   Thu Jun 14 16:54:38 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Wed Apr  9 11:57:36 PDT 2008
+//   QString for captionString, shortName.
 //
 // ****************************************************************************
 
-QvisMacroWindow::QvisMacroWindow(const char *captionString,
-    const char *shortName, QvisNotepadArea *n) : 
+QvisMacroWindow::QvisMacroWindow(const QString &captionString,
+    const QString &shortName, QvisNotepadArea *n) : 
     QvisPostableWindow(captionString, shortName, n)
 {
     macroButtons = 0;
@@ -98,6 +100,8 @@ QvisMacroWindow::~QvisMacroWindow()
 // Creation:   Thu Jun 14 16:54:38 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -105,7 +109,7 @@ void
 QvisMacroWindow::CreateWindowContents()
 { 
     macroGroup = new QGroupBox(central, "macroGroup");
-    macroGroup->setTitle("Macros");
+    macroGroup->setTitle(tr("Macros"));
 //    macroGroup->setMinimumWidth(200);
 //    macroGroup->setMinimumHeight(100);
     topLayout->addWidget(macroGroup);

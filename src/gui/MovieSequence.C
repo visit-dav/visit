@@ -56,10 +56,12 @@
 // Creation:   Tue Nov 14 10:57:35 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 08:53:15 PDT 2008
+//   Added QObject inheritance.
+//
 // ****************************************************************************
 
-MovieSequence::MovieSequence() : uiFile()
+MovieSequence::MovieSequence() : QObject(), uiFile()
 {
 }
 

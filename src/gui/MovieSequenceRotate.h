@@ -51,7 +51,9 @@
 // Creation:   Tue Nov 7 17:24:26 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 09:14:04 PDT 2008
+//   Moved SequenceMenuName methods to the .C file.
+//
 // ****************************************************************************
 
 class MovieSequenceRotate : public MovieSequence
@@ -80,7 +82,7 @@ public:
     virtual MovieSequence *NewInstance() const      { return new MovieSequenceScreenRotationX; }
     virtual int SequenceId() const                  { return 300; }
     virtual std::string SequenceName() const        { return "ScreenRotationX"; }
-    virtual std::string SequenceMenuName() const    { return "Screen rotate X"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -93,7 +95,7 @@ public:
     virtual MovieSequence *NewInstance() const      { return new MovieSequenceScreenRotationY; }
     virtual int SequenceId() const                  { return 301; }
     virtual std::string SequenceName() const        { return "ScreenRotationY"; }
-    virtual std::string SequenceMenuName() const    { return "Screen rotate Y"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -105,8 +107,8 @@ public:
 
     virtual MovieSequence *NewInstance() const      { return new MovieSequenceScreenRotationZ; }
     virtual int SequenceId() const                  { return 302; }
-    virtual std::string SequenceName() const        { return "RotationZ"; }
-    virtual std::string SequenceMenuName() const    { return "Screen rotate Z"; }
+    virtual std::string SequenceName() const        { return "ScreenRotationZ"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -120,7 +122,7 @@ public:
     virtual MovieSequence *NewInstance() const      { return new MovieSequenceRotationX; }
     virtual int SequenceId() const                  { return 303; }
     virtual std::string SequenceName() const        { return "RotationX"; }
-    virtual std::string SequenceMenuName() const    { return "Rotate X"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -133,7 +135,7 @@ public:
     virtual MovieSequence *NewInstance() const      { return new MovieSequenceRotationY; }
     virtual int SequenceId() const                  { return 304; }
     virtual std::string SequenceName() const        { return "RotationY"; }
-    virtual std::string SequenceMenuName() const    { return "Rotate Y"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 
@@ -146,7 +148,7 @@ public:
     virtual MovieSequence *NewInstance() const      { return new MovieSequenceRotationZ; }
     virtual int SequenceId() const                  { return 305; }
     virtual std::string SequenceName() const        { return "RotationZ"; }
-    virtual std::string SequenceMenuName() const    { return "Rotate Z"; }
+    virtual QString SequenceMenuName() const;
     virtual QPixmap Pixmap();
 };
 

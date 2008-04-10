@@ -59,6 +59,8 @@
 // Creation:   Tue Nov 14 13:18:41 PST 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -75,16 +77,16 @@ QvisSequenceTransition::QvisSequenceTransition(const QPixmap &pix,
     QGridLayout *leftLayout = new QGridLayout(hLayout, 3, 4);
     leftLayout->setSpacing(5);
     leftLayout->addMultiCellWidget(
-        new QLabel("Transition from", this, "FromLabel"), 0, 0, 0, 2);
+        new QLabel(tr("Transition from"), this, "FromLabel"), 0, 0, 0, 2);
     leftLayout->addWidget(new QLabel("    ", this, "spacer1"), 1, 0);
 
     bg1 = new QButtonGroup(0, "bg1");
     connect(bg1, SIGNAL(clicked(int)),
             this, SLOT(bg1Clicked(int)));
-    QRadioButton *rb = new QRadioButton("Frames", this, "bg1r0");
+    QRadioButton *rb = new QRadioButton(tr("Frames"), this, "bg1r0");
     bg1->insert(rb, 0);
     leftLayout->addWidget(rb, 1, 1);
-    rb = new QRadioButton("Color", this, "bg1r1");
+    rb = new QRadioButton(tr("Color"), this, "bg1r1");
     bg1->insert(rb, 1);
     leftLayout->addWidget(rb, 2, 1);
     colorButton1 = new QvisColorButton(this, "colorButton1");
@@ -107,16 +109,16 @@ QvisSequenceTransition::QvisSequenceTransition(const QPixmap &pix,
     QGridLayout *rightLayout = new QGridLayout(hLayout, 3, 4);
     rightLayout->setSpacing(5);
     rightLayout->addMultiCellWidget(
-        new QLabel("Transition to", this, "ToLabel"), 0, 0, 0, 2);
+        new QLabel(tr("Transition to"), this, "ToLabel"), 0, 0, 0, 2);
     rightLayout->addWidget(new QLabel("    ", this, "spacer2"), 1, 0);
 
     bg2 = new QButtonGroup(0, "bg2");
     connect(bg2, SIGNAL(clicked(int)),
             this, SLOT(bg2Clicked(int)));
-    rb = new QRadioButton("Frames", this, "bg2r0");
+    rb = new QRadioButton(tr("Frames"), this, "bg2r0");
     bg2->insert(rb, 0);
     rightLayout->addWidget(rb, 1, 1);
-    rb = new QRadioButton("Color", this, "bg2r2");
+    rb = new QRadioButton(tr("Color"), this, "bg2r2");
     bg2->insert(rb, 1);
     rightLayout->addWidget(rb, 2, 1);
     colorButton2 = new QvisColorButton(this, "colorButton2");
@@ -131,7 +133,7 @@ QvisSequenceTransition::QvisSequenceTransition(const QPixmap &pix,
     nFrames->setMinValue(1);
     nFrames->setValue(10);
     frameLayout->addWidget(
-        new QLabel("Number of transition frames", this, "nFramesLabel"));
+        new QLabel(tr("Number of transition frames"), this, "nFramesLabel"));
     frameLayout->addWidget(nFrames);
     frameLayout->addStretch(10);
 

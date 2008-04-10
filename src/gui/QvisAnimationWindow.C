@@ -62,10 +62,13 @@
 //   Brad Whitlock, Tue Oct 7 09:37:42 PDT 2003
 //   Added playbackModeButtonGroup.
 //
+//   Brad Whitlock, Wed Apr  9 10:59:50 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 QvisAnimationWindow::QvisAnimationWindow(AnimationAttributes *subj,
-    const char *caption, const char *shortName, QvisNotepadArea *notepad) :
+    const QString &caption, const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(subj, caption, shortName, notepad,
                                QvisPostableWindowObserver::ApplyButton)
 {
@@ -109,6 +112,9 @@ QvisAnimationWindow::~QvisAnimationWindow()
 //   Brad Whitlock, Mon Oct 6 16:21:12 PST 2003
 //   Added radio buttons that allow the user to set the animation style.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -119,23 +125,23 @@ QvisAnimationWindow::CreateWindowContents()
     animLayout->setSpacing(5);
 
     // Create the check box for pipeline caching.
-    pipelineCachingToggle = new QCheckBox("Cache animation for faster playback",
+    pipelineCachingToggle = new QCheckBox(tr("Cache animation for faster playback"),
         central, "pipelineCachingToggle");
     connect(pipelineCachingToggle, SIGNAL(toggled(bool)),
             this, SLOT(pipelineCachingToggled(bool)));
     animLayout->addMultiCellWidget(pipelineCachingToggle, 0, 0, 0, 3);
 
     // Add the animation style controls.
-    QLabel *styleLabel = new QLabel("Animation playback", central, "styleLabel");
+    QLabel *styleLabel = new QLabel(tr("Animation playback"), central, "styleLabel");
     animLayout->addMultiCellWidget(styleLabel, 1, 1, 0, 3);
     playbackModeButtonGroup = new QButtonGroup(0, "playbackModeButtonGroup");
-    QRadioButton *rb = new QRadioButton("Looping", central);
+    QRadioButton *rb = new QRadioButton(tr("Looping"), central);
     playbackModeButtonGroup->insert(rb);
     animLayout->addWidget(rb, 2, 1);
-    rb = new QRadioButton("Play once", central);
+    rb = new QRadioButton(tr("Play once"), central);
     playbackModeButtonGroup->insert(rb);
     animLayout->addWidget(rb, 2, 2);
-    rb = new QRadioButton("Swing", central);
+    rb = new QRadioButton(tr("Swing"), central);
     playbackModeButtonGroup->insert(rb);
     animLayout->addWidget(rb, 2, 3);
     connect(playbackModeButtonGroup, SIGNAL(clicked(int)),
@@ -150,14 +156,14 @@ QvisAnimationWindow::CreateWindowContents()
     connect(timeoutSlider, SIGNAL(valueChanged(int)),
             this, SLOT(timeoutChanged(int)));
     animLayout->addMultiCellWidget(timeoutSlider, 4, 4, 0, 3);
-    QLabel *speedLabel = new QLabel(timeoutSlider, "Animation speed",
+    QLabel *speedLabel = new QLabel(timeoutSlider, tr("Animation speed"),
         central, "speedLabel");
     animLayout->addMultiCellWidget(speedLabel, 3, 3, 0, 3);
 
     // Create the slower and faster labels.
-    QLabel *slowerLabel = new QLabel("slower", central, "speedLabel");
+    QLabel *slowerLabel = new QLabel(tr("slower"), central, "speedLabel");
     animLayout->addMultiCellWidget(slowerLabel, 5, 5, 0, 1);
-    QLabel *fasterLabel = new QLabel("faster", central, "speedLabel");
+    QLabel *fasterLabel = new QLabel(tr("faster"), central, "speedLabel");
     animLayout->addWidget(fasterLabel, 5, 3, Qt::AlignRight);
 }
 

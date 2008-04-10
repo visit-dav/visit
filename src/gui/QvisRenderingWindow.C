@@ -80,10 +80,14 @@
 //
 //   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //   Added compression controls
+//
+//   Brad Whitlock, Wed Apr  9 11:52:02 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
-QvisRenderingWindow::QvisRenderingWindow(const char *caption,
-    const char *shortName, QvisNotepadArea *n) :
+QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
+    const QString &shortName, QvisNotepadArea *n) :
     QvisPostableWindowSimpleObserver(caption, shortName, n, ApplyButton)
 {
     renderAtts = 0;
@@ -185,6 +189,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Added row counter for grid widget layout.
 //   Added depth cueing.
 //
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 #define TABS
 void
@@ -203,10 +210,10 @@ QvisRenderingWindow::CreateWindowContents()
     row = 0;
     QGroupBox *basicOptions = new QGroupBox(central, "basicOptions");
 #ifdef TABS
-    topTab->addTab(basicOptions, "Basic");
+    topTab->addTab(basicOptions, tr("Basic"));
     basicOptions->setFrameStyle(QFrame::NoFrame);
 #else
-    basicOptions->setTitle("Basic Options");
+    basicOptions->setTitle(tr("Basic Options"));
     topLayout->addWidget(basicOptions);
 #endif
 
@@ -217,7 +224,7 @@ QvisRenderingWindow::CreateWindowContents()
     o1Layout->setMargin(10);
 
     // Create the antialiasing widgets.
-    antialiasingToggle = new QCheckBox("Antialiasing", basicOptions,
+    antialiasingToggle = new QCheckBox(tr("Antialiasing"), basicOptions,
         "antialiasingToggle");
     connect(antialiasingToggle, SIGNAL(toggled(bool)),
             this, SLOT(antialiasingToggled(bool)));
@@ -225,49 +232,49 @@ QvisRenderingWindow::CreateWindowContents()
     row++;
 
     // Create the surface rep widgets.
-    QLabel *drawObjLabel = new QLabel("Draw objects as", basicOptions, "drawObjLabel");
+    QLabel *drawObjLabel = new QLabel(tr("Draw objects as"), basicOptions, "drawObjLabel");
     o1Layout->addMultiCellWidget(drawObjLabel, row, row, 0, 3);
     objectRepresentation = new QButtonGroup(0, "objectRepresentation");
     connect(objectRepresentation, SIGNAL(clicked(int)),
             this, SLOT(objectRepresentationChanged(int)));
     row++;
 
-    QRadioButton *surfaces = new QRadioButton("Surfaces", basicOptions, "surfaces");
+    QRadioButton *surfaces = new QRadioButton(tr("Surfaces"), basicOptions, "surfaces");
     objectRepresentation->insert(surfaces);
     o1Layout->addWidget(surfaces, row, 1);
-    QRadioButton *wires = new QRadioButton("Wireframe", basicOptions,
+    QRadioButton *wires = new QRadioButton(tr("Wireframe"), basicOptions,
         "wires");
     objectRepresentation->insert(wires);
     o1Layout->addWidget(wires, row, 2);
-    QRadioButton *points = new QRadioButton("Points", basicOptions,
+    QRadioButton *points = new QRadioButton(tr("Points"), basicOptions,
         "points");
     objectRepresentation->insert(points);
     o1Layout->addWidget(points, row, 3);
     row++;
 
     // Create the display list widgets.
-    QLabel *displayListLabel = new QLabel("Use display lists", basicOptions, "displayListLabel");
+    QLabel *displayListLabel = new QLabel(tr("Use display lists"), basicOptions, "displayListLabel");
     o1Layout->addMultiCellWidget(displayListLabel, row, row, 0, 3);
     dlMode = new QButtonGroup(0, "displayList");
     connect(dlMode, SIGNAL(clicked(int)),
             this, SLOT(displayListModeChanged(int)));
     row++;
 
-    QRadioButton *dl_auto = new QRadioButton("Auto", basicOptions, "dl_auto");
+    QRadioButton *dl_auto = new QRadioButton(tr("Auto"), basicOptions, "dl_auto");
     dlMode->insert(dl_auto);
     o1Layout->addWidget(dl_auto, row, 1);
-    QRadioButton *dl_always = new QRadioButton("Always", basicOptions,
+    QRadioButton *dl_always = new QRadioButton(tr("Always"), basicOptions,
         "dl_always");
     dlMode->insert(dl_always);
     o1Layout->addWidget(dl_always, row, 2);
-    QRadioButton *dl_never = new QRadioButton("Never", basicOptions,
+    QRadioButton *dl_never = new QRadioButton(tr("Never"), basicOptions,
         "dl_never");
     dlMode->insert(dl_never);
     o1Layout->addWidget(dl_never, row, 3);
     row++;
 
     // Create the stereo widgets.
-    stereoToggle = new QCheckBox("Stereo", basicOptions,
+    stereoToggle = new QCheckBox(tr("Stereo"), basicOptions,
         "stereoToggle");
     connect(stereoToggle, SIGNAL(toggled(bool)),
             this, SLOT(stereoToggled(bool)));
@@ -277,25 +284,25 @@ QvisRenderingWindow::CreateWindowContents()
     stereoType = new QButtonGroup(0, "stereoType");
     connect(stereoType, SIGNAL(clicked(int)),
             this, SLOT(stereoTypeChanged(int)));
-    redblue = new QRadioButton("Red/Blue", basicOptions, "redblue");
+    redblue = new QRadioButton(tr("Red/Blue"), basicOptions, "redblue");
     stereoType->insert(redblue);
     o1Layout->addWidget(redblue, row, 1);
-    interlace = new QRadioButton("Interlace", basicOptions,
+    interlace = new QRadioButton(tr("Interlace"), basicOptions,
         "interlace");
     stereoType->insert(interlace);
     o1Layout->addWidget(interlace, row, 2);
     row++;
-    crystalEyes = new QRadioButton("Crystal Eyes", basicOptions,
+    crystalEyes = new QRadioButton(tr("Crystal Eyes"), basicOptions,
         "crystalEyes");
     stereoType->insert(crystalEyes);
     o1Layout->addWidget(crystalEyes, row, 1);
-    redgreen = new QRadioButton("Red/Green", basicOptions, "redgreen");
+    redgreen = new QRadioButton(tr("Red/Green"), basicOptions, "redgreen");
     stereoType->insert(redgreen);
     o1Layout->addWidget(redgreen, row, 2);
     row++;
 
     // Create the specular lighting options
-    specularToggle = new QCheckBox("Specular lighting", basicOptions,
+    specularToggle = new QCheckBox(tr("Specular lighting"), basicOptions,
                                    "specularToggle");
     connect(specularToggle, SIGNAL(toggled(bool)),
             this, SLOT(specularToggled(bool)));
@@ -307,7 +314,7 @@ QvisRenderingWindow::CreateWindowContents()
     specularStrengthSlider->setTickInterval(25);
     connect(specularStrengthSlider, SIGNAL(valueChanged(int, const void*)),
             this, SLOT(specularStrengthChanged(int, const void*)));
-    specularStrengthLabel = new QLabel(specularStrengthSlider, "Strength",
+    specularStrengthLabel = new QLabel(specularStrengthSlider, tr("Strength"),
                                        basicOptions, "specularStrengthLabel");
     o1Layout->addWidget(specularStrengthLabel, row,1);
     o1Layout->addMultiCellWidget(specularStrengthSlider, row, row, 2,3);
@@ -318,7 +325,7 @@ QvisRenderingWindow::CreateWindowContents()
     specularPowerSlider->setTickInterval(100);
     connect(specularPowerSlider, SIGNAL(valueChanged(int, const void*)),
             this, SLOT(specularPowerChanged(int, const void*)));
-    specularPowerLabel = new QLabel(specularPowerSlider, "Sharpness",
+    specularPowerLabel = new QLabel(specularPowerSlider, tr("Sharpness"),
                                     basicOptions, "specularPowerLabel");
     o1Layout->addWidget(specularPowerLabel, row,1);
     o1Layout->addMultiCellWidget(specularPowerSlider, row, row, 2,3);
@@ -330,10 +337,10 @@ QvisRenderingWindow::CreateWindowContents()
     row = 0;
     QGroupBox *advancedOptions = new QGroupBox(central, "advancedOptions");
 #ifdef TABS
-    topTab->addTab(advancedOptions, "Advanced");
+    topTab->addTab(advancedOptions, tr("Advanced"));
     advancedOptions->setFrameStyle(QFrame::NoFrame);
 #else
-    advancedOptions->setTitle("Advanced Options");
+    advancedOptions->setTitle(tr("Advanced Options"));
     topLayout->addWidget(advancedOptions);
 #endif
 
@@ -345,26 +352,26 @@ QvisRenderingWindow::CreateWindowContents()
 
 
     // Create the scalable rendering widgets.
-    QLabel *scalrenLabel = new QLabel("Use scalable rendering", advancedOptions,"scalrenLabel");
+    QLabel *scalrenLabel = new QLabel(tr("Use scalable rendering"), advancedOptions,"scalrenLabel");
     o2Layout->addMultiCellWidget(scalrenLabel, row, row, 0, 3);
     scalrenActivationMode = new QButtonGroup(0, "scalrenActivationMode");
     connect(scalrenActivationMode, SIGNAL(clicked(int)),
             this, SLOT(scalrenActivationModeChanged(int)));
     row++;
 
-    scalrenAuto = new QRadioButton("Auto", advancedOptions, "auto");
+    scalrenAuto = new QRadioButton(tr("Auto"), advancedOptions, "auto");
     scalrenActivationMode->insert(scalrenAuto);
     o2Layout->addWidget(scalrenAuto, row, 1);
-    scalrenAlways = new QRadioButton("Always", advancedOptions, "always");
+    scalrenAlways = new QRadioButton(tr("Always"), advancedOptions, "always");
     scalrenActivationMode->insert(scalrenAlways);
     o2Layout->addWidget(scalrenAlways, row, 2);
-    scalrenNever = new QRadioButton("Never", advancedOptions, "never");
+    scalrenNever = new QRadioButton(tr("Never"), advancedOptions, "never");
     scalrenActivationMode->insert(scalrenNever);
     o2Layout->addWidget(scalrenNever, row, 3);
     row++;
 
     // Create the polygon count spin box for scalable rendering threshold
-    scalrenGeometryLabel =  new QLabel("When polygon count exceeds", advancedOptions, "scalrenGeometryLabel");
+    scalrenGeometryLabel =  new QLabel(tr("When polygon count exceeds"), advancedOptions, "scalrenGeometryLabel");
     o2Layout->addMultiCellWidget(scalrenGeometryLabel, row, row, 1, 2);
     scalrenAutoThreshold = new QSpinBox(0, 10000, 500, advancedOptions, "scalrenAutoThreshold");
     scalrenAutoThreshold->setValue(RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD);
@@ -375,7 +382,7 @@ QvisRenderingWindow::CreateWindowContents()
     row++;
 
     // Create the compress mode widgets.
-    scalrenCompressLabel = new QLabel("Compress images (geom too) from engine",
+    scalrenCompressLabel = new QLabel(tr("Compress images (geom too) from engine"),
                                                    advancedOptions, "compressModeLabel");
     o2Layout->addMultiCellWidget(scalrenCompressLabel, row, row, 0, 3);
     scalrenCompressMode = new QButtonGroup(0, "compressMode");
@@ -383,22 +390,22 @@ QvisRenderingWindow::CreateWindowContents()
             this, SLOT(scalrenCompressModeChanged(int)));
     row++;
 
-    QRadioButton *cmp_auto = new QRadioButton("Auto", advancedOptions, "cmp_auto");
+    QRadioButton *cmp_auto = new QRadioButton(tr("Auto"), advancedOptions, "cmp_auto");
     cmp_auto->setEnabled(0); // disabled until implemented
     scalrenCompressMode->insert(cmp_auto);
     o2Layout->addWidget(cmp_auto, row, 1);
-    QRadioButton *cmp_always = new QRadioButton("Always", advancedOptions,
+    QRadioButton *cmp_always = new QRadioButton(tr("Always"), advancedOptions,
         "cmp_always");
     scalrenCompressMode->insert(cmp_always);
     o2Layout->addWidget(cmp_always, row, 2);
-    QRadioButton *cmp_never = new QRadioButton("Never", advancedOptions,
+    QRadioButton *cmp_never = new QRadioButton(tr("Never"), advancedOptions,
         "cmp_never");
     scalrenCompressMode->insert(cmp_never);
     o2Layout->addWidget(cmp_never, row, 3);
     row++;
 
     // Create the shadow lighting options
-    shadowToggle = new QCheckBox("Shadows (scalable rendering only)", advancedOptions,
+    shadowToggle = new QCheckBox(tr("Shadows (scalable rendering only)"), advancedOptions,
                                    "shadowToggle");
     connect(shadowToggle, SIGNAL(toggled(bool)),
             this, SLOT(shadowToggled(bool)));
@@ -410,21 +417,21 @@ QvisRenderingWindow::CreateWindowContents()
     shadowStrengthSlider->setTickInterval(25);
     connect(shadowStrengthSlider, SIGNAL(valueChanged(int, const void*)),
             this, SLOT(shadowStrengthChanged(int, const void*)));
-    shadowStrengthLabel = new QLabel(shadowStrengthSlider, "Strength",
+    shadowStrengthLabel = new QLabel(shadowStrengthSlider, tr("Strength"),
                                        advancedOptions, "shadowStrengthLabel");
     o2Layout->addWidget(shadowStrengthLabel, row,1);
     o2Layout->addMultiCellWidget(shadowStrengthSlider, row, row, 2,3);
     row++;
 
     // Create the depth cueing options
-    depthCueingToggle = new QCheckBox("Depth Cueing (scalable rendering only)", advancedOptions,
+    depthCueingToggle = new QCheckBox(tr("Depth Cueing (scalable rendering only)"), advancedOptions,
                                       "depthCueingToggle");
     connect(depthCueingToggle, SIGNAL(toggled(bool)),
             this, SLOT(depthCueingToggled(bool)));
     o2Layout->addMultiCellWidget(depthCueingToggle, row, row, 0,3);
     row++;
 
-    depthCueingStartLabel = new QLabel("Start point", advancedOptions);
+    depthCueingStartLabel = new QLabel(tr("Start point"), advancedOptions);
     o2Layout->addMultiCellWidget(depthCueingStartLabel, row, row, 1,1);
     depthCueingStartEdit = new QLineEdit(advancedOptions, "depthCueingStartEdit");
     o2Layout->addMultiCellWidget(depthCueingStartEdit, row, row, 2,3);
@@ -432,7 +439,7 @@ QvisRenderingWindow::CreateWindowContents()
             this, SLOT(depthCueingStartChanged()));
     row++;
 
-    depthCueingEndLabel = new QLabel("End point", advancedOptions);
+    depthCueingEndLabel = new QLabel(tr("End point"), advancedOptions);
     o2Layout->addMultiCellWidget(depthCueingEndLabel, row, row, 1,1);
     depthCueingEndEdit = new QLineEdit(advancedOptions, "depthCueingEndEdit");
     o2Layout->addMultiCellWidget(depthCueingEndEdit, row, row, 2,3);
@@ -441,7 +448,7 @@ QvisRenderingWindow::CreateWindowContents()
     row++;
     
     // Create color texturing options.
-    colorTexturingToggle = new QCheckBox("Apply color using textures", advancedOptions,
+    colorTexturingToggle = new QCheckBox(tr("Apply color using textures"), advancedOptions,
         "colorTexturingToggle");
     connect(colorTexturingToggle, SIGNAL(toggled(bool)),
             this, SLOT(colorTexturingToggled(bool)));
@@ -453,10 +460,10 @@ QvisRenderingWindow::CreateWindowContents()
     //
     QGroupBox *info = new QGroupBox(central, "info");
 #ifdef TABS
-    topTab->addTab(info, "Information");
+    topTab->addTab(info, tr("Information"));
     info->setFrameStyle(QFrame::NoFrame);
 #else
-    info->setTitle("Information");
+    info->setTitle(tr("Information"));
     topLayout->addWidget(info);
 #endif
 
@@ -464,7 +471,7 @@ QvisRenderingWindow::CreateWindowContents()
     vLayout->addSpacing(10);
     vLayout->setMargin(10);
 
-    renderNotifyToggle = new QCheckBox("Query after each render", info,
+    renderNotifyToggle = new QCheckBox(tr("Query after each render"), info,
         "renderNotifyToggle");
     connect(renderNotifyToggle, SIGNAL(toggled(bool)),
             this, SLOT(renderNotifyToggled(bool)));
@@ -473,15 +480,15 @@ QvisRenderingWindow::CreateWindowContents()
 
     QGridLayout *scalrenLayout = new QGridLayout(vLayout, 2, 4);
     scalrenLayout->setSpacing(5);
-    QLabel *scalrenLabel2 = new QLabel("Using Scalable Rendering: ", info, "scalrenLabel2");
+    QLabel *scalrenLabel2 = new QLabel(tr("Using Scalable Rendering: "), info, "scalrenLabel2");
     scalrenLayout->addWidget(scalrenLabel2, 0, 0);
-    scalrenUsingLabel = new QLabel("N/A", info, "scalrenUsingLabel");
+    scalrenUsingLabel = new QLabel(tr("N/A"), info, "scalrenUsingLabel");
     scalrenLayout->addWidget(scalrenUsingLabel, 0, 1);
     vLayout->addSpacing(5);
 
     QGridLayout *iLayout = new QGridLayout(vLayout, 2, 4);
     iLayout->setSpacing(5);
-    fpsLabel = new QLabel("Frames per second:", info, "fpsLabel");
+    fpsLabel = new QLabel(tr("Frames per second:"), info, "fpsLabel");
     iLayout->addWidget(fpsLabel, 0, 0);
     fpsMinLabel = new QLabel("0.", info, "fpsMinLabel");
     iLayout->addWidget(fpsMinLabel, 0, 1);
@@ -490,7 +497,7 @@ QvisRenderingWindow::CreateWindowContents()
     fpsMaxLabel = new QLabel("0.", info, "fpsMaxLabel");
     iLayout->addWidget(fpsMaxLabel, 0, 3);
 
-    QLabel *ntri = new QLabel("Approximate polygon count:", info, "ntri");
+    QLabel *ntri = new QLabel(tr("Approximate polygon count:"), info, "ntri");
     iLayout->addWidget(ntri, 1, 0);
     approxNumPrimitives = new QLabel("0.", info, "approxNumPrimitives");
     iLayout->addWidget(approxNumPrimitives, 1, 1);
@@ -498,21 +505,21 @@ QvisRenderingWindow::CreateWindowContents()
 
     QGridLayout *eLayout = new QGridLayout(vLayout, 3, 3);
     eLayout->setSpacing(5);
-    QLabel *xExtentsLabel = new QLabel("X Extents:", info, "xExtentsLabel");
+    QLabel *xExtentsLabel = new QLabel(tr("X Extents:"), info, "xExtentsLabel");
     eLayout->addWidget(xExtentsLabel, 3, 0);
     extents[0] = new QLabel("0.", info, "extents_0");
     eLayout->addWidget(extents[0], 3, 1);
     extents[1] = new QLabel("0.", info, "extents_1");
     eLayout->addWidget(extents[1], 3, 2);
 
-    QLabel *yExtentsLabel = new QLabel("Y Extents:", info, "yExtentsLabel");
+    QLabel *yExtentsLabel = new QLabel(tr("Y Extents:"), info, "yExtentsLabel");
     eLayout->addWidget(yExtentsLabel, 4, 0);
     extents[2] = new QLabel("0.", info, "extents_2");
     eLayout->addWidget(extents[2], 4, 1);
     extents[3] = new QLabel("0.", info, "extents_3");
     eLayout->addWidget(extents[3], 4, 2);
 
-    QLabel *zExtentsLabel = new QLabel("Z Extents:", info, "zExtentsLabel");
+    QLabel *zExtentsLabel = new QLabel(tr("Z Extents:"), info, "zExtentsLabel");
     eLayout->addWidget(zExtentsLabel, 5, 0);
     extents[4] = new QLabel("0.", info, "extents_4");
     eLayout->addWidget(extents[4], 5, 1);
@@ -837,6 +844,9 @@ QvisRenderingWindow::UpdateWindowSensitivity()
 //   Brad Whitlock, Mon Dec 17 10:30:33 PST 2007
 //   Made it use ids.
 //
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -878,7 +888,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
         case WindowInformation::ID_cameraViewMode:
             break;
         case WindowInformation::ID_usingScalableRendering:
-            scalrenUsingLabel->setText(windowInfo->GetUsingScalableRendering() ? "yes" : "no");
+            scalrenUsingLabel->setText(windowInfo->GetUsingScalableRendering() ? tr("yes") : tr("no"));
             break;
         case WindowInformation::ID_lastRenderMin:
             // Determine the fps.
@@ -899,11 +909,11 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
             if (fps > 0.0 && fps < 1.0)
             {
                 fps = 1.0 / fps;
-                fpsLabel->setText("Seconds per frame:");
+                fpsLabel->setText(tr("Seconds per frame:"));
             }
             else
             {
-                fpsLabel->setText("Frames per second:");
+                fpsLabel->setText(tr("Frames per second:"));
             }
             tmp.sprintf("%1.3g", fps);
             fpsAvgLabel->setText(tmp);
@@ -926,7 +936,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
             {
                 double d = windowInfo->GetExtents()[j];
                 if(d == DBL_MAX || d == -DBL_MAX)
-                    tmp = "not set";
+                    tmp = tr("not set");
                 else
                     tmp.setNum(windowInfo->GetExtents()[j]);
                 extents[j]->setText(tmp);
@@ -1620,6 +1630,10 @@ QvisRenderingWindow::depthCueingEndChanged()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 29, 2007
 //
+//  Modifications:
+//    Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 void
 QvisRenderingWindow::GetCurrentValues()
@@ -1642,9 +1656,10 @@ QvisRenderingWindow::GetCurrentValues()
         if(!okay)
         {
             const double *d = renderAtts->GetStartCuePoint();
-            msg.sprintf("The start point was invalid. "
-                        "Resetting to the last good value <%g %g %g>.",
-                        d[0], d[1], d[2]);
+            QString pt; pt.sprintf("<%g %g %g>", d[0], d[1], d[2]);
+            msg = tr("The start point was invalid. "
+                     "Resetting to the last good value %1.");
+            msg.replace("%1", pt);
             Message(msg);
             renderAtts->SetStartCuePoint(d);
         }
@@ -1664,9 +1679,10 @@ QvisRenderingWindow::GetCurrentValues()
         if(!okay)
         {
             const double *d = renderAtts->GetEndCuePoint();
-            msg.sprintf("The end point was invalid. "
-                        "Resetting to the last good value <%g %g %g>.",
-                        d[0], d[1], d[2]);
+            QString pt; pt.sprintf("<%g %g %g>", d[0], d[1], d[2]);
+            msg = tr("The end point was invalid. "
+                     "Resetting to the last good value %1.");
+            msg.replace("%1", pt);
             Message(msg);
             renderAtts->SetEndCuePoint(d);
         }

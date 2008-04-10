@@ -79,10 +79,13 @@
 //   Brad Whitlock, Fri Jun 15 13:36:56 PST 2007
 //   Added new buttons.
 //
+//   Brad Whitlock, Wed Apr  9 11:35:58 PDT 2008
+//   QString for captionString, shortName.
+//
 // ****************************************************************************
 
-QvisCommandWindow::QvisCommandWindow(const char *captionString,
-    const char *shortName, QvisNotepadArea *n) : 
+QvisCommandWindow::QvisCommandWindow(const QString &captionString,
+    const QString &shortName, QvisNotepadArea *n) : 
     QvisPostableWindow(captionString, shortName, n)
 {
     executeButtonsGroup = 0;
@@ -157,7 +160,7 @@ void
 QvisCommandWindow::CreateWindowContents()
 {
     QGroupBox *macroBox = new QGroupBox(central, "macroBox");
-    macroBox->setTitle("Commands");
+    macroBox->setTitle(tr("Commands"));
     topLayout->addWidget(macroBox);
 
     QVBoxLayout *innerMacroLayout = new QVBoxLayout(macroBox);
@@ -167,22 +170,22 @@ QvisCommandWindow::CreateWindowContents()
     macroLayout->setSpacing(5);
 
     macroRecord = new QPushButton(QIconSet(QPixmap(macrorecord_xpm)),
-        "Record", macroBox, "macroRecord");
+        tr("Record"), macroBox, "macroRecord");
     connect(macroRecord, SIGNAL(clicked()), this, SLOT(macroRecordClicked()));
-    QToolTip::add(macroRecord, "Start recording commands");
+    QToolTip::add(macroRecord, tr("Start recording commands"));
     macroLayout->addWidget(macroRecord);
 
     macroPause = new QPushButton(QIconSet(QPixmap(macropause_xpm)),
-        "Pause", macroBox, "macroPause");
+        tr("Pause"), macroBox, "macroPause");
     macroPause->setToggleButton(true);
     connect(macroPause, SIGNAL(clicked()), this, SLOT(macroPauseClicked()));
-    QToolTip::add(macroPause, "Pause recording commands");
+    QToolTip::add(macroPause, tr("Pause recording commands"));
     macroLayout->addWidget(macroPause);
 
     macroEnd = new QPushButton(QIconSet(QPixmap(macrostop_xpm)),
-        "Stop", macroBox, "macroEnd");
+        tr("Stop"), macroBox, "macroEnd");
     connect(macroEnd, SIGNAL(clicked()), this, SLOT(macroEndClicked()));
-    QToolTip::add(macroEnd, "Stop recording commands");
+    QToolTip::add(macroEnd, tr("Stop recording commands"));
     macroLayout->addWidget(macroEnd);
     macroRecord->setEnabled(true);
     macroPause->setEnabled(false);
@@ -195,16 +198,16 @@ QvisCommandWindow::CreateWindowContents()
     mLayout->setColStretch(1, 10);
 
     macroStorageComboBox = new QComboBox(macroBox, "macroAppendCheckBox");
-    macroStorageComboBox->insertItem("Active tab");
-    macroStorageComboBox->insertItem("First empty tab");
-    macroStorageComboBox->insertItem("Macros");
+    macroStorageComboBox->insertItem(tr("Active tab"));
+    macroStorageComboBox->insertItem(tr("First empty tab"));
+    macroStorageComboBox->insertItem(tr("Macros"));
     connect(macroStorageComboBox, SIGNAL(activated(int)),
             this, SLOT(macroStorageActivated(int)));
     mLayout->addWidget(macroStorageComboBox, 0, 1);
-    mLayout->addWidget(new QLabel(macroStorageComboBox, "Store commands in",
+    mLayout->addWidget(new QLabel(macroStorageComboBox, tr("Store commands in"),
         macroBox), 0, 0);
 
-    macroAppendCheckBox = new QCheckBox("Append commands to existing text", macroBox,
+    macroAppendCheckBox = new QCheckBox(tr("Append commands to existing text"), macroBox,
         "macroAppendCheckBox");
     connect(macroAppendCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(macroAppendClicked(bool)));
@@ -252,16 +255,16 @@ QvisCommandWindow::CreateWindowContents()
         QHBox *hb = new QHBox(vb, "hb");
         hb->setSpacing(5);
         executeButtons[i] = new QPushButton(QIconSet(QPixmap(macroexec_xpm)),
-            "Execute", hb, "executeButton");
+            tr("Execute"), hb, "executeButton");
         executeButtons[i]->setEnabled(false);
         executeButtonsGroup->insert(executeButtons[i], i);
 
-        clearButtons[i] = new QPushButton("Clear", hb,
+        clearButtons[i] = new QPushButton(tr("Clear"), hb,
             "clearButton");
         clearButtons[i]->setEnabled(false);
         clearButtonsGroup->insert(clearButtons[i], i);
 
-        addMacroButtons[i] = new QPushButton("Make macro", hb,
+        addMacroButtons[i] = new QPushButton(tr("Make macro"), hb,
             "addMacroButton");
         addMacroButtons[i]->setEnabled(false);
         addMacroButtonsGroup->insert(addMacroButtons[i], i);
@@ -283,15 +286,15 @@ QvisCommandWindow::CreateWindowContents()
     macroLineEdit->setWordWrap(QTextEdit::NoWrap);
     QHBox *hb = new QHBox(macroTab, "hb");
     hb->setSpacing(5);
-    macroUpdateButton = new QPushButton("Update macros", hb,
+    macroUpdateButton = new QPushButton(tr("Update macros"), hb,
         "macroUpdateButton");
     connect(macroUpdateButton, SIGNAL(clicked()),
             this, SLOT(macroUpdateClicked()));
-    macroClearButton = new QPushButton("Clear", hb,
+    macroClearButton = new QPushButton(tr("Clear"), hb,
         "macroClearButton");
     connect(macroClearButton, SIGNAL(clicked()),
             this, SLOT(macroClearClicked()));
-    tabWidget->addTab(macroTab, "Macros");
+    tabWidget->addTab(macroTab, tr("Macros"));
 
     // Load the saved Python scripts.
     LoadScripts();
@@ -571,20 +574,20 @@ QvisCommandWindow::CreateMacroFromText(const QString &s)
 
     // Get the name of the function to create from the user.
     funcName = QInputDialog::getText("VisIt",
-        "Please enter the name of the Python function to be defined for the macro.",
+        tr("Please enter the name of the Python function to be defined for the macro."),
         QLineEdit::Normal, QString::null, &ok, this);
     if(!ok || funcName.isEmpty())
         return;
     if(funcName.contains(' '))
     {
-        Error("Function names may not contain spaces. Please try to create "
-              "the macro again using a valid function name.");
+        Error(tr("Function names may not contain spaces. Please try to create "
+              "the macro again using a valid function name."));
         return;
     }
 
     // Get the name of the macro from the user.
     macroName = QInputDialog::getText("VisIt",
-        "Please enter the name of the macro to be defined (as you want it to appear in a button).",
+        tr("Please enter the name of the macro to be defined (as you want it to appear in a button)."),
         QLineEdit::Normal, QString::null, &ok, this);
     if(!ok || macroName.isEmpty())
         return;
@@ -874,7 +877,9 @@ QvisCommandWindow::macroClearClicked()
 // Creation:   Fri Jun 15 14:15:32 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+// 
 // ****************************************************************************
 
 void
@@ -902,7 +907,7 @@ QvisCommandWindow::macroUpdateClicked()
         else
         {
             QString msg;
-            msg.sprintf("VisIt could not update the %s file.", RCFileName().latin1());
+            msg = tr("VisIt could not update the file: ") + RCFileName();
             Message(msg);
         }
     }

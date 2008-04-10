@@ -76,6 +76,9 @@ class QSpinBox;
 //   Brad Whitlock, Wed Feb 23 17:57:53 PST 2005
 //   Added another slot to handle setting the brightness.
 //
+//   Brad Whitlock, Wed Apr  9 11:08:03 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisLightingWindow : public QvisPostableWindowObserver
@@ -83,8 +86,8 @@ class GUI_API QvisLightingWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisLightingWindow(LightList *subj,
-                       const char *caption = 0,
-                       const char *shortName = 0,
+                       const QString &caption = QString::null,
+                       const QString &shortName = QString::null,
                        QvisNotepadArea *notepad = 0);
     virtual ~QvisLightingWindow();
     virtual void CreateWindowContents();

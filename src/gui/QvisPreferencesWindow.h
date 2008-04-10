@@ -95,6 +95,9 @@ class QSpinBox;
 //   Brad Whitlock, Thu Jan 31 10:20:52 PST 2008
 //   Added session related options.
 //
+//   Brad Whitlock, Wed Apr  9 11:52:15 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -102,8 +105,8 @@ class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisPreferencesWindow(GlobalAttributes *subj,
-                          const char *caption = 0,
-                          const char *shortName = 0,
+                          const QString &caption = QString::null,
+                          const QString &shortName = QString::null,
                           QvisNotepadArea *notepad = 0);
     virtual ~QvisPreferencesWindow();
     virtual void CreateWindowContents();

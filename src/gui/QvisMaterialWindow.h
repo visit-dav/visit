@@ -72,6 +72,9 @@ class QComboBox;
 //    Changed algorithm selection to a multiple-choice.
 //    Added VF for isovolume method.
 //
+//    Brad Whitlock, Wed Apr  9 11:36:37 PDT 2008
+//    QString for caption, shortName.
+//
 // ****************************************************************************
 
 class QvisMaterialWindow : public QvisPostableWindowObserver
@@ -79,8 +82,8 @@ class QvisMaterialWindow : public QvisPostableWindowObserver
     Q_OBJECT
   public:
     QvisMaterialWindow(MaterialAttributes *subj,
-                       const char *caption = 0,
-                       const char *shortName = 0,
+                       const QString &caption = QString::null,
+                       const QString &shortName = QString::null,
                        QvisNotepadArea *notepad = 0);
     virtual ~QvisMaterialWindow();
     virtual void CreateWindowContents();
