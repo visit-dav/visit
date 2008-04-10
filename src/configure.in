@@ -775,6 +775,9 @@ dnl    Mark C. Miller, Mon Apr  7 14:55:58 PDT 2008
 dnl    Added options to build against external bzip2/glew.
 dnl    Courtesy of Matthias Langer <mlangc@gmx.at>.
 dnl
+dnl    Eric Brugger, Tue Apr  8 09:58:31 PDT 2008
+dnl    Added a test for the function isfinite.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3575,6 +3578,15 @@ AC_SUBST(CREATE_CCMIO_LINK)
 # Check for library functions that can work around, or that we have
 # replacements for.
 #
+
+AC_MSG_CHECKING(for isfinite)
+AC_LANG_PUSH(C++)
+AC_TRY_COMPILE([#include <math.h>],
+               [float x=1.0;int i = isfinite(x)],
+               AC_MSG_RESULT(yes)
+               AC_DEFINE(HAVE_ISFINITE, [1], [Define if you have isfinite.]),
+               AC_MSG_RESULT(no))
+AC_LANG_POP()
 
 AC_CHECK_FUNCS(memmove)
 AC_CHECK_FUNCS(setenv)

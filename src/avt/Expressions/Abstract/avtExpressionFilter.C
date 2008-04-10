@@ -42,9 +42,11 @@
 
 #include <avtExpressionFilter.h>
 
+#include <float.h>
 #include <math.h>
 #include <cmath>
-#include <float.h>
+
+#include <visit-config.h>
 
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
@@ -287,6 +289,10 @@ avtExpressionFilter::PostExecute(void)
 //    Kathleen Bonnell, Thu Mar  6 09:15:46 PST 2008 
 //    Use _finite for Windows.
 //
+//    Eric Brugger, Tue Apr  8 11:11:41 PDT 2008
+//    Make the use of isfinite conditional, since not all platforms support
+//    it (IRIX64 6.5 with MIPSpro 7.41, solaris with gcc 3.2).
+//
 // ****************************************************************************
 
 void
@@ -363,15 +369,20 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
             // else ... we handle array variables below
 
 #ifndef _WIN32
+#ifdef HAVE_ISFINITE
             if(!isfinite(value))
-#else
-            if(!_finite(value))
-#endif
-
             {
                 // Ignore nan, -inf, and inf
                 continue;
             }
+#endif
+#else
+            if(!_finite(value))
+            {
+                // Ignore nan, -inf, and inf
+                continue;
+            }
+#endif
 
             if (value < exts[0])
                 exts[0] = value;

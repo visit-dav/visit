@@ -85,8 +85,9 @@
 #define MDIM 3
 
 
-using std::vector;
+using std::find;
 using std::string;
+using std::vector;
 
 int avtFLASHFileFormat::objcnt = 0;
 

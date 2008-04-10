@@ -1278,9 +1278,9 @@ More information about building VisIt follows after that.
 #
 # Build and install it in the visit directory.
 #
-gunzip visit1.8.1.tar.gz
-tar xf visit1.8.1.tar
-cd visit1.8.1/src/config-site
+gunzip visit1.9.0.tar.gz
+tar xf visit1.9.0.tar
+cd visit1.9.0/src/config-site
 echo VISITHOME=$VISITDIR > `hostname`.conf
 sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
 cd ..
@@ -1298,15 +1298,15 @@ clearcase_bin/visit-bin-dist
 # Use the appropriate install command based on the operating system on
 # which you built VisIt.
 #
-clearcase_bin/visit-install 1.8.1 aix $VISITDIR
-clearcase_bin/visit-install 1.8.1 aix64 $VISITDIR
-clearcase_bin/visit-install 1.8.1 darwin $VISITDIR
-clearcase_bin/visit-install 1.8.1 irix6 $VISITDIR
-clearcase_bin/visit-install 1.8.1 linux $VISITDIR
-clearcase_bin/visit-install 1.8.1 linux-ia64 $VISITDIR
-clearcase_bin/visit-install 1.8.1 linux-x86_64 $VISITDIR
-clearcase_bin/visit-install 1.8.1 osf1 $VISITDIR
-clearcase_bin/visit-install 1.8.1 sunos5 $VISITDIR
+clearcase_bin/visit-install 1.9.0 aix $VISITDIR
+clearcase_bin/visit-install 1.9.0 aix64 $VISITDIR
+clearcase_bin/visit-install 1.9.0 darwin $VISITDIR
+clearcase_bin/visit-install 1.9.0 irix6 $VISITDIR
+clearcase_bin/visit-install 1.9.0 linux $VISITDIR
+clearcase_bin/visit-install 1.9.0 linux-ia64 $VISITDIR
+clearcase_bin/visit-install 1.9.0 linux-x86_64 $VISITDIR
+clearcase_bin/visit-install 1.9.0 osf1 $VISITDIR
+clearcase_bin/visit-install 1.9.0 sunos5 $VISITDIR
 
 When running the configure script you can enable or disable certain dependent
 packages.  All the configure options are listed at the beginning of the

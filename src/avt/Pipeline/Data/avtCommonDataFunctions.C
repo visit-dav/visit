@@ -1229,6 +1229,10 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname,
 //    Kathleen Bonnell, Thu Mar  6 09:15:46 PST 2008 
 //    Use _finite on Windows. 
 //
+//    Eric Brugger, Tue Apr  8 10:01:07 PDT 2008
+//    Make the use of isfinite conditional, since not all platforms support
+//    it (IRIX64 6.5 with MIPSpro 7.41, solaris with gcc 3.2).
+//
 // ****************************************************************************
 
 template <class T> static bool
@@ -1243,11 +1247,14 @@ GetScalarRange(T *buf, int n, double *exts, unsigned char *ghosts)
             continue;
 
 #ifndef _WIN32
+#ifdef HAVE_ISFINITE
         if (!isfinite(*buf))
+            continue;
+#endif
 #else
         if (!_finite(*buf))
-#endif
             continue;
+#endif
 
         if (!setOne)
         {
@@ -1534,6 +1541,10 @@ GetDataAllComponentsRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Kathleen Bonnell, Thu Mar  6 09:15:46 PST 2008 
 //    Use _finite on Windows. 
 //
+//    Eric Brugger, Tue Apr  8 10:01:07 PDT 2008
+//    Make the use of isfinite conditional, since not all platforms support
+//    it (IRIX64 6.5 with MIPSpro 7.41, solaris with gcc 3.2).
+//
 // ****************************************************************************
 
 template <class T> static void
@@ -1550,11 +1561,14 @@ GetMagnitudeRange(T *buf, int n, int ncomps, double *exts,
             mag += *buf * *buf;
 
 #ifndef _WIN32
+#ifdef HAVE_ISFINITE
         if (!isfinite(mag))
+            continue;
+#endif
 #else
         if (!_finite(mag))
-#endif
             continue;
+#endif
 
         if (mag < exts[0])
         {
@@ -1680,6 +1694,10 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Kathleen Bonnell, Thu Mar  6 09:15:46 PST 2008 
 //    Use _finite on Windows. 
 //
+//    Eric Brugger, Tue Apr  8 10:01:07 PDT 2008
+//    Make the use of isfinite conditional, since not all platforms support
+//    it (IRIX64 6.5 with MIPSpro 7.41, solaris with gcc 3.2).
+//
 // ****************************************************************************
 
 void
@@ -1733,11 +1751,14 @@ GetDataMajorEigenvalueRange(vtkDataSet *ds, double *exts, const char *vname,
         double val = MajorEigenvalue(ptr);
 
 #ifndef _WIN32
+#ifdef HAVE_ISFINITE
         if (!isfinite(val))
+            continue;
+#endif
 #else
         if (!_finite(val))
-#endif
             continue;
+#endif
 
         exts[0] = (exts[0] < val ? exts[0] : val);
         exts[1] = (exts[1] > val ? exts[1] : val);
