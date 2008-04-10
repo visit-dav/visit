@@ -77,6 +77,9 @@ class     avtDatabase;
 //    Change the number of variable arguments when we have a default
 //    argument.
 //
+//    Hank Childs, Thu Apr 10 16:10:33 PDT 2008
+//    Add a data member to manage making consistent ghost zone requests.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
@@ -106,6 +109,7 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     bool                      isDelta;
     int                       firstDBTime;
     avtSILRestriction_p       firstDBSIL;
+    avtGhostDataType          ghostNeeds;
     std::string               argument_expression;
     int                       varDim;
     bool                      isNodal;

@@ -345,6 +345,9 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
 //    Hank Childs, Thu Jan  5 15:36:14 PST 2006
 //    Add better support for variable centering.
 //
+//    Hank Childs, Thu Apr 10 16:10:33 PDT 2008
+//    Make sure that consistent ghost levels are requested.
+//
 // ****************************************************************************
 
 void
@@ -368,13 +371,10 @@ avtCMFEExpression::Execute()
     // argument.  See extended comment below in section #2.
     std::string expr_var = "_avt_cmfe_expression_";
 
-    avtDataRequest_p ds = new avtDataRequest(
-                            dob->GetOriginatingSource()
-                               ->GetGeneralContract()
-                               ->GetDataRequest(),
-                              expr_var.c_str());
-    avtContract_p spec = 
-                new avtContract(ds, 1);
+    avtDataRequest_p ds = new avtDataRequest( dob->GetOriginatingSource()
+                                ->GetGeneralContract()->GetDataRequest(),
+                                expr_var.c_str());
+    avtContract_p spec = new avtContract(ds, 1);
     if (UseIdenticalSIL())
     {
         // This will only work for conn_cmfe.
@@ -382,6 +382,7 @@ avtCMFEExpression::Execute()
         spec = new avtContract(spec, ds);
     }
     spec->GetDataRequest()->SetTimestep(actualTimestep);
+    spec->GetDataRequest()->SetDesiredGhostDataType(ghostNeeds);
 
     avtExpressionEvaluatorFilter *eef = new avtExpressionEvaluatorFilter;
     eef->SetInput(dob);
@@ -602,6 +603,9 @@ avtCMFEExpression::GetTimestate(ref_ptr<avtDatabase> dbp)
 //    Hank Childs, Fri Oct  7 10:33:20 PDT 2005
 //    Cache the SIL restriction as well.
 //
+//    Hank Childs, Thu Apr 10 16:10:33 PDT 2008
+//    Make sure that consistent ghost levels are requested.
+//
 // ****************************************************************************
 
 void
@@ -611,6 +615,7 @@ avtCMFEExpression::ExamineContract(avtContract_p spec)
 
     firstDBTime = spec->GetDataRequest()->GetTimestep();
     firstDBSIL  = spec->GetDataRequest()->GetRestriction();
+    ghostNeeds  = spec->GetDataRequest()->GetDesiredGhostDataType();
 }
 
 
