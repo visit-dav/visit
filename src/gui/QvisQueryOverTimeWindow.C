@@ -63,13 +63,15 @@ using std::string;
 // Creation:   Wed Mar 31 08:46:20 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 11:32:57 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 QvisQueryOverTimeWindow::QvisQueryOverTimeWindow(
                          QueryOverTimeAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisPostableWindowObserver(subj, caption, shortName, notepad)
 {
@@ -107,6 +109,9 @@ QvisQueryOverTimeWindow::~QvisQueryOverTimeWindow()
 // Modifications:
 //   Kathleen Bonnell, Mon Feb 27 12:36:41 PST 2006
 //   Added more text to createWindow label, to clarify intent. 
+//
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -117,7 +122,7 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     // TimeType
     //
     QGroupBox *timeTypeBox = new QGroupBox(central, "timeTypeBox");
-    timeTypeBox->setTitle("X-Axis:");
+    timeTypeBox->setTitle(tr("X-Axis:"));
     topLayout->addWidget(timeTypeBox);
    
     QGridLayout *timeTypeBoxLayout = new QGridLayout(timeTypeBox, 3, 2);
@@ -132,9 +137,9 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     //timeTypeLayout->setSpacing(10);
 
 
-    QRadioButton *cycle    = new QRadioButton("Cycle",    timeTypeBox);
-    QRadioButton *dtime    = new QRadioButton("Time",     timeTypeBox);
-    QRadioButton *timestep = new QRadioButton("Timestep", timeTypeBox);
+    QRadioButton *cycle    = new QRadioButton(tr("Cycle"),    timeTypeBox);
+    QRadioButton *dtime    = new QRadioButton(tr("Time"),     timeTypeBox);
+    QRadioButton *timestep = new QRadioButton(tr("Timestep"), timeTypeBox);
     timeType->insert(cycle);
     timeType->insert(dtime);
     timeType->insert(timestep);
@@ -151,7 +156,7 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     //
     // StartTime 
     //
-    startTimeFlag = new QCheckBox("Starting timestep", central, "startTimeFlag");
+    startTimeFlag = new QCheckBox(tr("Starting timestep"), central, "startTimeFlag");
     connect(startTimeFlag, SIGNAL(toggled(bool)),
             this, SLOT(startTimeFlagChanged(bool)));
     mainLayout->addWidget(startTimeFlag, 1,0);
@@ -164,7 +169,7 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     //
     // EndTime 
     //
-    endTimeFlag = new QCheckBox("Ending timestep", central, "endTimeFlag");
+    endTimeFlag = new QCheckBox(tr("Ending timestep"), central, "endTimeFlag");
     connect(endTimeFlag, SIGNAL(toggled(bool)),
             this, SLOT(endTimeFlagChanged(bool)));
     mainLayout->addWidget(endTimeFlag, 2,0);
@@ -177,7 +182,7 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     //
     // Stride 
     //
-    strideLabel = new QLabel("stride", central, "strideLabel");
+    strideLabel = new QLabel(tr("stride"), central, "strideLabel");
     mainLayout->addWidget(strideLabel,3,0);
     stride = new QNarrowLineEdit(central, "stride");
     connect(stride, SIGNAL(returnPressed()),
@@ -187,7 +192,7 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     //
     // CreateWindow 
     //
-    createWindow = new QCheckBox("Use 1st unused window or\ncreate new one.  All\nsubsequent queries will\nuse this same window.",
+    createWindow = new QCheckBox(tr("Use 1st unused window or\ncreate new one.  All\nsubsequent queries will\nuse this same window."),
                                   central, "createWindow");
     connect(createWindow, SIGNAL(toggled(bool)),
             this, SLOT(createWindowChanged(bool)));
@@ -196,7 +201,7 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     //
     // WindowId 
     //
-    windowIdLabel = new QLabel("Window #", central, "windowIdLabel");
+    windowIdLabel = new QLabel(tr("Window #"), central, "windowIdLabel");
     mainLayout->addWidget(windowIdLabel,5,0);
     windowId = new QNarrowLineEdit(central, "windowId");
     connect(windowId, SIGNAL(returnPressed()),
@@ -307,6 +312,8 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
 // Creation:   Wed Mar 31 08:46:20 PDT 2004
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -341,9 +348,10 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of startTime was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetStartTime());
+            QString num; num.sprintf("%d", atts->GetStartTime());
+            msg = tr("The value of startTime was invalid. "
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", num);
             Message(msg);
             atts->SetStartTime(atts->GetStartTime());
         }
@@ -368,9 +376,10 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of endTime was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetEndTime());
+            QString num; num.sprintf("%d", atts->GetEndTime());
+            msg = tr("The value of endTime was invalid. "
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", num);
             Message(msg);
             atts->SetEndTime(atts->GetEndTime());
         }
@@ -389,9 +398,10 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of stride was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetStride());
+            QString num; num.sprintf("%d", atts->GetStride());
+            msg = tr("The value of stride was invalid. "
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", num);
             Message(msg);
             atts->SetStride(atts->GetStride());
         }
@@ -416,9 +426,10 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of windowId was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetWindowId());
+            QString num; num.sprintf("%d", atts->GetWindowId());
+            msg = tr("The value of windowId was invalid. "
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", num);
             Message(msg);
             atts->SetWindowId(atts->GetWindowId());
         }

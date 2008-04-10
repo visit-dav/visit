@@ -76,6 +76,9 @@ class QvisLineWidthWidget;
 //   Jeremy Meredith, Thu Feb  7 17:51:32 EST 2008
 //   Added snap-to-horizontal grid support for axis array mode navigation.
 //
+//   Brad Whitlock, Wed Apr  9 11:31:21 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class QvisInteractorWindow : public QvisPostableWindowObserver
@@ -84,8 +87,8 @@ class QvisInteractorWindow : public QvisPostableWindowObserver
   public:
     QvisInteractorWindow(
                          InteractorAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisInteractorWindow();
     virtual void CreateWindowContents();

@@ -478,6 +478,8 @@ QvisViewportWidget::getViewport(const QString &id,
 // Creation:   Fri Sep 29 14:23:59 PST 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -490,7 +492,8 @@ QvisViewportWidget::getNextId() const
 
     do
     {
-        id.sprintf("Viewport %d", index);
+        id.sprintf(" %d", index);
+        id = tr("Viewport") + id;
 
         found = false;
         QCanvasItemViewportInfoMap::ConstIterator it = viewportMap.begin();

@@ -77,13 +77,16 @@ class DataNode;
 //   Brad Whitlock, Wed Dec 19 14:49:45 PST 2007
 //   Added custom raise method.
 //
+//   Brad Whitlock, Wed Apr  9 10:32:12 PDT 2008
+//   Changed ctor args.
+//
 // ****************************************************************************
 
 class GUI_API QvisWindowBase : public QMainWindow, public GUIBase
 {
     Q_OBJECT
 public:
-    QvisWindowBase(const char *captionString = 0,
+    QvisWindowBase(const QString &captionString = QString::null,
                    WFlags f = WType_TopLevel);
     virtual ~QvisWindowBase();
 
@@ -114,6 +117,6 @@ private:
 
 // Create a type for a vector of postable windows.
 typedef std::vector<QvisWindowBase *> WindowBaseVector;
-typedef std::map<std::string, QvisWindowBase *> WindowBaseMap;
+typedef std::map<QString, QvisWindowBase *> WindowBaseMap;
 
 #endif

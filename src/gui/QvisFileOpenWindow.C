@@ -99,9 +99,12 @@ using std::string;
 //   Brad Whitlock, Wed Nov 15 15:35:41 PST 2006
 //   Added usageMode.
 //
+//   Brad Whitlock, Wed Apr  9 10:45:02 PDT 2008
+//   Use QString for winCaption.
+//
 // ****************************************************************************
 
-QvisFileOpenWindow::QvisFileOpenWindow(const char *winCaption) :
+QvisFileOpenWindow::QvisFileOpenWindow(const QString &winCaption) :
     QvisDelayedWindowSimpleObserver(winCaption), intermediateFileList(),
     currentVirtualDatabaseDefinitions(), invalidHosts()
 {
@@ -192,6 +195,9 @@ QvisFileOpenWindow::SetUsageMode(QvisFileOpenWindow::UsageMode m)
 //   Jeremy Meredith, Wed Jan 23 15:32:24 EST 2008
 //   Added button to let the user set the default opening options.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -219,7 +225,7 @@ QvisFileOpenWindow::CreateWindowContents()
     QHBoxLayout *hostLayout = new QHBoxLayout;
     hostLayout->setSpacing(5);
     hostLayout->setMargin(0);
-    QLabel *hostLabel = new QLabel(hostComboBox, "Host", central, "hostLabel");
+    QLabel *hostLabel = new QLabel(hostComboBox, tr("Host"), central, "hostLabel");
     QLabel *hostImageLabel = new QLabel(central);
     hostImageLabel->setPixmap(*computerPixmap);
     hostImageLabel->setBuddy(hostComboBox);
@@ -237,7 +243,7 @@ QvisFileOpenWindow::CreateWindowContents()
     QHBoxLayout *pathLayout2 = new QHBoxLayout;
     pathLayout2->setSpacing(5);
     pathLayout2->setMargin(0);
-    QLabel *pathLabel = new QLabel(pathComboBox, "Path", central, "pathLabel");
+    QLabel *pathLabel = new QLabel(pathComboBox, tr("Path"), central, "pathLabel");
     QLabel *pathImageLabel = new QLabel(central);
     pathImageLabel->setPixmap(*folderPixmap);
     pathImageLabel->setBuddy(pathComboBox);
@@ -249,38 +255,37 @@ QvisFileOpenWindow::CreateWindowContents()
     // Create the filter
     filterLineEdit = new QLineEdit(central, "filterLineEdit");
     connect(filterLineEdit, SIGNAL(returnPressed()), this, SLOT(filterChanged()));
-    QLabel *filterLabel = new QLabel(filterLineEdit, " Filter", central, "filterLabel");
+    QLabel *filterLabel = new QLabel(filterLineEdit, tr("Filter"), central, "filterLabel");
     pathLayout->addWidget(filterLabel, 2, 0, Qt::AlignRight);
     pathLayout->addWidget(filterLineEdit, 2, 1);
 
     // Create the current dir toggle.
     QHBoxLayout *toggleLayout = new QHBoxLayout(topLayout);
     toggleLayout->setSpacing(10);
-    currentDirToggle = new QCheckBox("Use \"current working directory\" by "
-       "default", central, "currentDirToggle");
+    currentDirToggle = new QCheckBox(tr("Use \"current working directory\" by "
+       "default"), central, "currentDirToggle");
     connect(currentDirToggle, SIGNAL(toggled(bool)),
             this, SLOT(currentDir(bool)));
     toggleLayout->addWidget(currentDirToggle);
 
     // Create the file grouping checkbox.
-    fileGroupingComboBox = new QComboBox("File grouping",
-        central, "fileGroupingComboBox");
-    fileGroupingComboBox->insertItem("Off", 0);
-    fileGroupingComboBox->insertItem("On", 1);
-    fileGroupingComboBox->insertItem("Smart", 2);
+    fileGroupingComboBox = new QComboBox(central, "fileGroupingComboBox");
+    fileGroupingComboBox->insertItem(tr("Off"), 0);
+    fileGroupingComboBox->insertItem(tr("On"), 1);
+    fileGroupingComboBox->insertItem(tr("Smart"), 2);
     fileGroupingComboBox->setEditable(false);
     connect(fileGroupingComboBox, SIGNAL(activated(int)),
             this, SLOT(fileGroupingChanged(int)));
     toggleLayout->addStretch(5);
     toggleLayout->addWidget(new QLabel(fileGroupingComboBox,
-        "File grouping", central, "fileGroupingLabel"), 0, Qt::AlignRight);
+        tr("File grouping"), central, "fileGroupingLabel"), 0, Qt::AlignRight);
     toggleLayout->addWidget(fileGroupingComboBox, 0, Qt::AlignLeft);
     toggleLayout->addStretch(5);
 
     // Create a window we can activate to remove recent paths.
     recentPathsRemovalWindow = new QvisRecentPathRemovalWindow(fileServer,
-       "Remove recent paths");
-    recentPathRemovalButton = new QPushButton("Remove paths . . .", central,
+       tr("Remove recent paths"));
+    recentPathRemovalButton = new QPushButton(tr("Remove paths . . ."), central,
         "recentPathRemovalButton");
     connect(recentPathRemovalButton, SIGNAL(clicked()),
             recentPathsRemovalWindow, SLOT(show()));
@@ -296,7 +301,7 @@ QvisFileOpenWindow::CreateWindowContents()
     // Create the directory list.
     //
     QVBox *directoryVBox = new QVBox(listSplitter, "directoryVBox");
-    new QLabel("Directories", directoryVBox, "directoryLabel");
+    new QLabel(tr("Directories"), directoryVBox, "directoryLabel");
     directoryList = new QListBox(directoryVBox, "directoryList");
     int minColumnWidth = fontMetrics().width("X");
     directoryList->setMinimumWidth(minColumnWidth * 20);
@@ -309,7 +314,7 @@ QvisFileOpenWindow::CreateWindowContents()
     // Create the file list.
     //
     QVBox *fileVBox = new QVBox(listSplitter, "fileVBox");
-    new QLabel("Files", fileVBox, "fileLabel");
+    new QLabel(tr("Files"), fileVBox, "fileLabel");
     fileList = new QListBox(fileVBox, "fileList");
     if(usageMode == OpenFiles)
         fileList->setSelectionMode(QListBox::Extended);
@@ -325,11 +330,11 @@ QvisFileOpenWindow::CreateWindowContents()
 
     // Create the file format combo box
     QHBoxLayout *fileFormatLayout = new QHBoxLayout(topLayout);
-    fileFormatLayout->addWidget(new QLabel("Open file as type:", central));
+    fileFormatLayout->addWidget(new QLabel(tr("Open file as type:"), central));
     fileFormatComboBox = new QComboBox(false, central, "fileFormatComboBox");
     fileFormatLayout->addWidget(fileFormatComboBox, 10);
     setDefaultOptionsForFormatButton = new QPushButton(
-           "Set default open options...", central);
+           tr("Set default open options..."), central);
     setDefaultOptionsForFormatButton->setEnabled(false);
     fileFormatLayout->addWidget(setDefaultOptionsForFormatButton, 1);
     fileFormatLayout->addStretch(5);
@@ -342,19 +347,19 @@ QvisFileOpenWindow::CreateWindowContents()
     QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
 
     // Create the refresh button
-    refreshButton = new QPushButton("Refresh", central, "refreshButton");
+    refreshButton = new QPushButton(tr("Refresh"), central, "refreshButton");
     connect(refreshButton, SIGNAL(clicked()), this, SLOT(refreshFiles()));
     buttonLayout->addWidget(refreshButton);
     buttonLayout->addStretch(10);
 
     // Create the Ok button
-    okButton = new QPushButton("OK", central, "okButton");
+    okButton = new QPushButton(tr("OK"), central, "okButton");
     okButton->setEnabled(false);
     connect(okButton, SIGNAL(clicked()), this, SLOT(okClicked()));
     buttonLayout->addWidget(okButton);
 
     // Create the Cancel button
-    cancelButton = new QPushButton("Cancel", central, "cancelButton");
+    cancelButton = new QPushButton(tr("Cancel"), central, "cancelButton");
     connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancelClicked()));
     buttonLayout->addWidget(cancelButton);
 
@@ -913,6 +918,8 @@ QvisFileOpenWindow::GetCurrentValues(bool allowPathChange)
 // Note: Taken largely from QvisFileSelectWindow
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -931,8 +938,8 @@ QvisFileOpenWindow::ChangeHosts()
         if(host != fileServer->GetHost())
         {
             // Put a message on the status line.
-            QString temp;
-            temp.sprintf("Opening server on %s", host.c_str());
+            QString temp(tr("Opening server on %1"));
+            temp.replace("%1", host.c_str());
             Status(temp);
 
             // Change the application cursor to the wait cursor.
@@ -959,8 +966,8 @@ QvisFileOpenWindow::ChangeHosts()
                 CATCH(BadHostException)
                 {
                     // Tell the user that the hostname is not valid.
-                    QString msgStr;
-                    msgStr.sprintf("\"%s\" is not a valid host.", host.c_str());
+                    QString msgStr(tr("\"%1\" is not a valid host."));
+                    msgStr.replace("%1", host.c_str());
                     Error(msgStr);
 
                     // Remove the invalid host from the combo box and make the
@@ -1023,6 +1030,8 @@ QvisFileOpenWindow::ChangeHosts()
 // Note: Taken largely from QvisFileSelectWindow
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -1043,8 +1052,7 @@ QvisFileOpenWindow::ChangePath(bool allowPathChange)
         if(path != fileServer->GetPath() || allowPathChange)
         {
             // Put a message on the status line.
-            QString temp("Changing directory.");
-            Status(temp);
+            Status(tr("Changing directory."));
 
             // Set the path in the file server.
             TRY
@@ -1055,10 +1063,10 @@ QvisFileOpenWindow::ChangePath(bool allowPathChange)
             CATCH(ChangeDirectoryException)
             {
                 // Create a message and tell the user.
-                QString msgStr;
-                msgStr.sprintf("The MetaData server running on %s "
-                    "could not change the current directory to %s.",
-                    fileServer->GetHost().c_str(), path.c_str());
+                QString msgStr(tr("The MetaData server running on %1 "
+                    "could not change the current directory to %2."));
+                msgStr.replace("%1", fileServer->GetHost().c_str());
+                msgStr.replace("%2", path.c_str());
                 Error(msgStr);
                 errFlag = true;
 
@@ -1076,10 +1084,9 @@ QvisFileOpenWindow::ChangePath(bool allowPathChange)
                 UpdateFileList();
 
                 // Create a message and tell the user.
-                QString msgStr;
-                msgStr.sprintf("The MetaData server running on %s "
-                "could not get the file list for the current directory",
-                fileServer->GetHost().c_str());
+                QString msgStr(tr("The MetaData server running on %1 "
+                "could not get the file list for the current directory"));
+                msgStr.replace("%1", fileServer->GetHost().c_str());
                 Error(msgStr);
                 errFlag = true;
             }
@@ -1120,6 +1127,8 @@ QvisFileOpenWindow::ChangePath(bool allowPathChange)
 // Note: Taken largely from QvisFileSelectWindow
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -1162,15 +1171,15 @@ QvisFileOpenWindow::ChangeFilter()
             }
             CATCH(GetFileListException)
             {
-                Error("The MetaData server running could not get the file "
+                Error(tr("The MetaData server running could not get the file "
                       "list for the current directory, which is required "
                       "before setting the file filter. Try entering a "
-                      "valid path before changing the file filter.");
+                      "valid path before changing the file filter."));
                 exceptionErr = true;
             }
             CATCH(VisItException)
             {
-                Error("An error occured when trying to set the file filter.");
+                Error(tr("An error occured when trying to set the file filter."));
                 exceptionErr = true;
             }
             ENDTRY
@@ -1183,7 +1192,7 @@ QvisFileOpenWindow::ChangeFilter()
 
     if(errFlag || forcedChange)
     {
-        Error("An invalid filter was entered.");
+        Error(tr("An invalid filter was entered."));
         filterLineEdit->setText(QString(fileServer->GetFilter().c_str()));
     }
 
@@ -1205,14 +1214,16 @@ QvisFileOpenWindow::ChangeFilter()
 // Note: Taken largely from QvisFileSelectWindow
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
 void
 QvisFileOpenWindow::GetDirectoryStrings(QString &curDir, QString &upDir)
 {
-    curDir = ". (current directory)";
-    upDir = ".. (go up 1 directory level)";
+    curDir = QString(". ") + tr("(current directory)");
+    upDir = QString(".. ") + tr("(go up 1 directory level)");
 }
 
 // ****************************************************************************
@@ -1671,8 +1682,7 @@ QvisFileOpenWindow::changeDirectory(QListBoxItem *item)
     TRY
     {
         // Put a message on the status line.
-        QString temp("Changing directory");
-        Status(temp);
+        Status(tr("Changing directory"));
 
         if(item->text() == upDirString)
         {
@@ -1721,10 +1731,10 @@ QvisFileOpenWindow::changeDirectory(QListBoxItem *item)
     CATCH(ChangeDirectoryException)
     {
         // Create a message and tell the user.
-        QString msgStr;
-        msgStr.sprintf("The MetaData server running on %s "
-            "could not change the current directory to %s.",
-            fileServer->GetHost().c_str(), newPath.c_str());
+        QString msgStr(tr("The MetaData server running on %1 "
+            "could not change the current directory to %2."));
+        msgStr.replace("%1", fileServer->GetHost().c_str());
+        msgStr.replace("%2", newPath.c_str());
         Error(msgStr);
     }
     CATCH(GetFileListException)
@@ -1733,10 +1743,9 @@ QvisFileOpenWindow::changeDirectory(QListBoxItem *item)
         UpdateFileList();
 
         // Create a message and tell the user.
-        QString msgStr;
-        msgStr.sprintf("The MetaData server running on %s could not "
-             "get the file list for the current directory.",
-             fileServer->GetHost().c_str());
+        QString msgStr(tr("The MetaData server running on %1 could not "
+             "get the file list for the current directory."));
+        msgStr.replace("%1", fileServer->GetHost().c_str());
         Error(msgStr);
     }
     ENDTRY
@@ -2098,7 +2107,11 @@ QvisFileOpenWindow::closeEvent(QCloseEvent *e)
 //    Dave Pugmire, Wed Feb 13 15:43:24 EST 2008
 //    Only add this DB plugin if the user has enabled it for loading.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
+
 void
 QvisFileOpenWindow::UpdateFileFormatComboBox()
 {
@@ -2114,7 +2127,7 @@ QvisFileOpenWindow::UpdateFileFormatComboBox()
 
     fileFormatComboBox->clear();
     int nTypes = plugins.GetTypes().size();
-    fileFormatComboBox->insertItem("Guess from file name/extension");
+    fileFormatComboBox->insertItem(tr("Guess from file name/extension"));
     FileOpenOptions *opts = GetViewerState()->GetFileOpenOptions();
     
     for (int i = 0 ; i < nTypes ; i++)
@@ -2159,6 +2172,9 @@ QvisFileOpenWindow::UpdateFileFormatComboBox()
 //   Cyrus Harrison, Mon Feb  4 09:45:22 PST 2008
 //   Resolved AIX linking error w/ auto std::string to QString conversion.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 void
 QvisFileOpenWindow::setDefaultOptionsForFormatButtonClicked()
@@ -2172,8 +2188,8 @@ QvisFileOpenWindow::setDefaultOptionsForFormatButtonClicked()
             DBOptionsAttributes &opts = foo->GetOpenOptions(i);
             QvisDBOptionsDialog *optsdlg = new QvisDBOptionsDialog(&opts, NULL,
                                                                   "opts");
-            QString caption = QString("Default file opening options for ") +
-                                          format + " reader";
+            QString caption(tr("Default file opening options for %1 reader"));
+            caption.replace("%1", format);
             optsdlg->setCaption(caption);
             int result = optsdlg->exec();
             delete optsdlg;
@@ -2185,7 +2201,6 @@ QvisFileOpenWindow::setDefaultOptionsForFormatButtonClicked()
             break;
         }
     }
-    
 }
 
 // ****************************************************************************

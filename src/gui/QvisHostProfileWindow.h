@@ -136,6 +136,9 @@ class QRadioButton;
 //    Have the ssh tunneling option override and disable the client host
 //    name determination method.
 //
+//    Brad Whitlock, Wed Apr  9 10:57:10 PDT 2008
+//    QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
@@ -145,8 +148,8 @@ class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
     typedef QMap<QString, QListBox*> HostTabMap;
 public:
     QvisHostProfileWindow(HostProfileList *profiles, 
-                          const char *caption = 0,
-                          const char *shortName = 0,
+                          const QString &caption = QString::null,
+                          const QString &shortName = QString::null,
                           QvisNotepadArea *notepad = 0);
     virtual ~QvisHostProfileWindow();
     virtual void CreateWindowContents();

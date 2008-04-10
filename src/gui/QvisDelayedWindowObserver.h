@@ -46,7 +46,7 @@ class GUI_API QvisDelayedWindowObserver : public QvisDelayedWindow, public Obser
 {
     Q_OBJECT
 public:
-    QvisDelayedWindowObserver(Subject *subj, const char *caption = 0);
+    QvisDelayedWindowObserver(Subject *subj, const QString &caption);
     virtual ~QvisDelayedWindowObserver();
     virtual void CreateWindowContents() = 0;
     virtual void Update(Subject *TheChangedSubject);

@@ -277,7 +277,7 @@ QvisVisItUpdate::getRequiredFiles()
         {
             if(files[j].find(dottedName) != -1)
             {
-                debug1 << "Added " << files[j] << " to the list of downloads" << endl;
+                debug1 << "Added " << files[j].ascii() << " to the list of downloads" << endl;
                 downloads += files[j];
                 break;
             }
@@ -334,6 +334,9 @@ QvisVisItUpdate::getInstallationDir() const
 //   I made it pass the bank to visit-install and I changed how the platform
 //   we use is specified.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -358,7 +361,7 @@ QvisVisItUpdate::installVisIt()
 
         // Set the cursor to busy and tell the user that we're installing.
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-        Status("Installing...", 120000);
+        Status(tr("Installing..."), 120000);
 
 #if defined(_WIN32)
         // Install VisIt the WIN32 way by running the visit installer.
@@ -520,9 +523,9 @@ QvisVisItUpdate::startUpdate()
                     }
                 }
 
-                debug1 << mName << "distName = " << distName << endl;
-                debug1 << mName << "configName = " << configName << endl;
-                debug1 << mName << "bankName = " << bankName << endl;
+                debug1 << mName << "distName = " << distName.ascii() << endl;
+                debug1 << mName << "configName = " << configName.ascii() << endl;
+                debug1 << mName << "bankName = " << bankName.ascii() << endl;
             }
             else
                 debug1 << mName << "Invalid .installinfo version" << endl;
@@ -563,11 +566,11 @@ QvisVisItUpdate::startUpdate()
 
     if(!platformDetermined)
     {
-        Error("VisIt could not determine the platform that "
+        Error(tr("VisIt could not determine the platform that "
               "you are running on so VisIt cannot automatically "
               "update. You should browse to "
               "ftp://ftp.llnl.gov/pub/visit and download "
-              "the latest binary distribution for your platform.");
+              "the latest binary distribution for your platform."));
         emit updateNotAllowed();
         return;
     }
@@ -583,10 +586,11 @@ QvisVisItUpdate::startUpdate()
         if(g.isEmpty())
             g.sprintf("id %d", info.groupId());
 
-        msg.sprintf("VisIt determined that you do not have write permission "
-            "to the %s directory where VisIt is installed. You must have "
-            "group %s write access to update VisIt.", installDir.latin1(),
-            g.latin1());
+        msg = tr("VisIt determined that you do not have write permission "
+                 "to the %1 directory where VisIt is installed. You must have "
+                 "group %2 write access to update VisIt.");
+        msg.replace("%1", installDir);
+        msg.replace("%2", g);
         Error(msg);
         emit updateNotAllowed();
         return;
@@ -705,6 +709,9 @@ QvisVisItUpdate::nextStage()
 //   Brad Whitlock, Wed Mar 2 11:13:55 PDT 2005
 //   I made it use QvisFtp.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -723,9 +730,8 @@ QvisVisItUpdate::initiateDownload()
         QFile *file = new QFile(localName);
         if(!file->open(IO_WriteOnly))
         {
-            QString msg;
-            msg.sprintf("Could not download %s! Can't finish updating VisIt.",
-                        localName.latin1());
+            QString msg(tr("Could not download %1! Can't finish updating VisIt."));
+            msg.replace("%1", localName);
             Error(msg);
 
             delete file;
@@ -771,6 +777,9 @@ QvisVisItUpdate::readInstallerStderr()
 //   Added a check to make sure that the new executable is available before
 //   emitting installationComplete in case the user aborted the installation.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -778,7 +787,7 @@ QvisVisItUpdate::emitInstallationComplete()
 {
     // Restore the cursor since we're done installing.
     QApplication::restoreOverrideCursor();
-    Status("Installation complete.", 1000);
+    Status(tr("Installation complete."), 1000);
 
     // prevent updates again just in case.
     emit updateNotAllowed();
@@ -803,9 +812,8 @@ QvisVisItUpdate::emitInstallationComplete()
     }
     else
     {
-        QString err("The new version of VisIt could not be located in ");
-        err += visitDir;
-        err += filename;
+        QString err(tr("The new version of VisIt could not be located in %1."));
+        err.replace("%1", visitDir + filename);
         Error(err);
     }
 }
@@ -825,14 +833,18 @@ QvisVisItUpdate::emitInstallationComplete()
 // Creation:   Tue Feb 15 12:42:30 PDT 2005
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
 void
 QvisVisItUpdate::ftp_reportDownloadProgress(int done, int total)
 {
-    QString msg;
-    msg.sprintf("Downloaded %d/%d bytes.", done, total);
+    QString msg, b;
+    b.sprintf("%d/%d", done, total);
+    msg = tr("Downloaded %1 bytes.");
+    msg.replace("%1", b);
     Status(msg);
 }
 
@@ -876,6 +888,9 @@ QvisVisItUpdate::ftp_commandStarted()
 //   Brad Whitlock, Wed Mar 2 11:17:24 PDT 2005
 //   I made it use QvisFtp.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -903,16 +918,16 @@ QvisVisItUpdate::ftp_commandFinished()
         {
             // Inform the user.
             QMessageBox::information(p, "VisIt",
-                "Your version of VisIt is up to date.",
+                tr("Your version of VisIt is up to date."),
                 QMessageBox::Ok);
             emit updateNotAllowed();
         }
         else
         {
             // Ask the user whether or not VisIt should be installed.
-            QString msg;
-            msg.sprintf("VisIt %s is available for download. Would you "
-                        "like to install it?", latestVersion.latin1());
+            QString msg(tr("VisIt %1 is available for download. Would you "
+                           "like to install it?"));
+            msg.replace("%1", latestVersion);
             if(QMessageBox::information(p, "VisIt", msg,
                QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
             {
@@ -959,6 +974,9 @@ QvisVisItUpdate::ftp_commandFinished()
 //   Brad Whitlock, Wed Mar 2 11:10:40 PDT 2005
 //   I made it use QvisFtp.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -966,8 +984,7 @@ QvisVisItUpdate::ftp_done(bool error)
 {
     if(error)
     {
-        QString msg("VisIt could not complete the update.\n");
-        msg += "FTP Error: ";
+        QString msg(tr("VisIt could not complete the update.\nFTP Error: "));
         msg += ftp->ErrorString();
         Error(msg);
 

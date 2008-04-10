@@ -67,14 +67,17 @@ class QVBox;
 //   Brad Whitlock, Fri Jun 15 13:31:37 PST 2007
 //   Added a new tab for visitrc macros.
 //
+//   Brad Whitlock, Wed Apr  9 11:35:25 PDT 2008
+//   QString for captionString, shortName.
+//
 // ****************************************************************************
 
 class QvisCommandWindow : public QvisPostableWindow
 {
     Q_OBJECT
 public:
-    QvisCommandWindow(const char *captionString = 0,
-                      const char *shortName = 0,
+    QvisCommandWindow(const QString &captionString = QString::null,
+                      const QString &shortName = QString::null,
                       QvisNotepadArea *n = 0);
     virtual ~QvisCommandWindow();
     virtual void CreateWindowContents();

@@ -103,14 +103,17 @@ class QLineEdit;
 //   Added depth cueing support.  Improved some other thing in the
 //   window (like sensitivities and layout).
 //
+//   Brad Whitlock, Wed Apr  9 11:51:19 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisRenderingWindow(const char *caption = 0,
-                        const char *shortName = 0,
+    QvisRenderingWindow(const QString &caption = QString::null,
+                        const QString &shortName = QString::null,
                         QvisNotepadArea *n = 0);
     virtual ~QvisRenderingWindow();
     virtual void CreateWindowContents();

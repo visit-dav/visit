@@ -69,6 +69,9 @@ class QVBox;
 //    Made Qt objects and visual controls input to mmatts a little more
 //    user-friendly. However, mmatts themselves were not changed.
 //
+//    Brad Whitlock, Wed Apr  9 11:34:22 PDT 2008
+//    QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisMeshManagementWindow : public QvisPostableWindowObserver
@@ -76,8 +79,8 @@ class GUI_API QvisMeshManagementWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisMeshManagementWindow(MeshManagementAttributes *subj,
-                        const char *caption = 0,
-                        const char *shortName = 0,
+                        const QString &caption = QString::null,
+                        const QString &shortName = QString::null,
                         QvisNotepadArea *notepad = 0);
     virtual ~QvisMeshManagementWindow();
     virtual void CreateWindowContents();

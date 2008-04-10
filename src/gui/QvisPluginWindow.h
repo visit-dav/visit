@@ -79,14 +79,17 @@ class QPushButton;
 //    Dave Pugmire, Wed Feb 13 15:43:24 EST 2008
 //    Update the FileOpenOptions for enable/disable DB plugins.
 //
+//    Brad Whitlock, Wed Apr  9 11:03:33 PDT 2008
+//    QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisPluginWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisPluginWindow(const char *caption = 0,
-                     const char *shortName = 0,
+    QvisPluginWindow(const QString &caption = QString::null,
+                     const QString &shortName = QString::null,
                      QvisNotepadArea *notepad = 0);
     virtual ~QvisPluginWindow();
     virtual void CreateWindowContents();

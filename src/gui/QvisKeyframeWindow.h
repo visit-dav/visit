@@ -88,6 +88,9 @@ class PlotList;
 //    Brad Whitlock, Wed Apr 7 00:15:44 PDT 2004
 //    I added an internal slot function.
 //
+//    Brad Whitlock, Wed Apr  9 11:09:07 PDT 2008
+//    QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisKeyframeWindow : public QvisPostableWindowSimpleObserver
@@ -95,8 +98,8 @@ class GUI_API QvisKeyframeWindow : public QvisPostableWindowSimpleObserver
     Q_OBJECT
   public:
     QvisKeyframeWindow(KeyframeAttributes *subj,
-                       const char *caption = 0,
-                       const char *shortName = 0,
+                       const QString &caption = QString::null,
+                       const QString &shortName = QString::null,
                        QvisNotepadArea *notepad = 0);
     virtual ~QvisKeyframeWindow();
     virtual void CreateWindowContents();

@@ -69,12 +69,16 @@ using std::vector;
 //   Brad Whitlock, Tue Oct 7 09:37:42 PDT 2003
 //   Added playbackModeButtonGroup.
 //
-//    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
-//    Added AllExtraButtons
+//   Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+//   Added AllExtraButtons
+//
+//   Brad Whitlock, Wed Apr  9 11:34:45 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 QvisMeshManagementWindow::QvisMeshManagementWindow(MeshManagementAttributes *subj,
-    const char *caption, const char *shortName, QvisNotepadArea *notepad) :
+    const QString &caption, const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(subj, caption, shortName, notepad,
                                QvisPostableWindowObserver::AllExtraButtons)
 {
@@ -123,6 +127,10 @@ QvisMeshManagementWindow::~QvisMeshManagementWindow()
 //   Made Qt objects for tolerances a little more both in code and in the
 //   running GUI. Changed discretizationTolerances to smallestZone and
 //   flatEnough.
+//
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -138,7 +146,7 @@ QvisMeshManagementWindow::CreateWindowContents()
     pageCSG = new QVBox(central, "pageCSG");
     pageCSG->setSpacing(5);
     pageCSG->setMargin(10);
-    tabs->addTab(pageCSG, "CSG Meshing");
+    tabs->addTab(pageCSG, tr("CSG Meshing"));
 
     pageCSGGroup = new QGroupBox(pageCSG, "pageCSGGroup");
     pageCSGGroup->setFrameStyle(QFrame::NoFrame);
@@ -148,36 +156,36 @@ QvisMeshManagementWindow::CreateWindowContents()
     QGridLayout *layoutCSGGroup = new QGridLayout(internalLayoutCSGGroup, 5, 3);
     layoutCSGGroup->setSpacing(5);
 
-    renderCSGDirect = new QCheckBox("Don't discretize. Pass native CSG down pipeline",
+    renderCSGDirect = new QCheckBox(tr("Don't discretize. Pass native CSG down pipeline"),
                                     pageCSGGroup, "renderCSGDirect");
     connect(renderCSGDirect, SIGNAL(toggled(bool)),
             this, SLOT(renderCSGDirectChanged(bool)));
     layoutCSGGroup->addMultiCellWidget(renderCSGDirect, 0, 0, 0, 3);
     renderCSGDirect->setEnabled(false);
 
-    discretizeBoundaryOnly = new QCheckBox("Discretize boundary only",
+    discretizeBoundaryOnly = new QCheckBox(tr("Discretize boundary only"),
                                     pageCSGGroup, "discretizeBoundaryOnly");
     connect(discretizeBoundaryOnly, SIGNAL(toggled(bool)),
             this, SLOT(discretizeBoundaryOnlyChanged(bool)));
     layoutCSGGroup->addMultiCellWidget(discretizeBoundaryOnly, 1, 1, 0, 3);
 
-    discretizeModeLabel = new QLabel("Discretization Mode", pageCSGGroup,
+    discretizeModeLabel = new QLabel(tr("Discretization Mode"), pageCSGGroup,
                                              "discretizeModeLabel");
     layoutCSGGroup->addWidget(discretizeModeLabel, 2, 0);
     discretizationMode = new QButtonGroup(0, "discretizationMode");
     connect(discretizationMode, SIGNAL(clicked(int)),
             this, SLOT(discretizationModeChanged(int)));
-    QRadioButton *discretizeUniform = new QRadioButton("Uniform", pageCSGGroup, "Uniform");
+    QRadioButton *discretizeUniform = new QRadioButton(tr("Uniform"), pageCSGGroup, "Uniform");
     discretizationMode->insert(discretizeUniform);
     layoutCSGGroup->addWidget(discretizeUniform, 2, 1);
-    QRadioButton *discretizeAdaptive = new QRadioButton("Adaptive", pageCSGGroup, "Adaptive");
+    QRadioButton *discretizeAdaptive = new QRadioButton(tr("Adaptive"), pageCSGGroup, "Adaptive");
     discretizationMode->insert(discretizeAdaptive);
 #if !HAVE_BILIB
     discretizeAdaptive->setEnabled(false);
 #endif
     layoutCSGGroup->addWidget(discretizeAdaptive, 2, 2);
 
-    smallestZoneLabel = new QLabel("Smallest Zone (% bbox diag)", pageCSGGroup,
+    smallestZoneLabel = new QLabel(tr("Smallest Zone (% bbox diag)"), pageCSGGroup,
                                        "smallestZone");
     layoutCSGGroup->addWidget(smallestZoneLabel, 3, 0);
     smallestZoneLineEdit = new QLineEdit(pageCSGGroup, "smallestZoneLineEdit");
@@ -187,7 +195,7 @@ QvisMeshManagementWindow::CreateWindowContents()
             this, SLOT(processSmallestZoneText(const QString &)));
     layoutCSGGroup->addMultiCellWidget(smallestZoneLineEdit, 3, 3, 1, 3);
 
-    flatEnoughLabel = new QLabel("Flat Enough (recip. curvature)", pageCSGGroup,
+    flatEnoughLabel = new QLabel(tr("Flat Enough (recip. curvature)"), pageCSGGroup,
                                        "flatEnough");
     layoutCSGGroup->addWidget(flatEnoughLabel, 4, 0);
     flatEnoughLineEdit = new QLineEdit(pageCSGGroup, "flatEnoughLineEdit");
@@ -274,9 +282,9 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
 #if HAVE_BILIB
                     discretizationMode->setButton(1);
 #else
-                    GUIBase::Warning("Adaptive not available. "
+                    GUIBase::Warning(tr("Adaptive not available. "
                                      "Missing boost interval template library. "
-                                     "Overriding to Uniform.");
+                                     "Overriding to Uniform."));
                     discretizationMode->setButton(0);
 #endif
                 }
@@ -379,8 +387,8 @@ QvisMeshManagementWindow::Apply(bool ignore)
         }
 
         GetViewerMethods()->SetMeshManagementAttributes();
-        GUIBase::Warning("Note:  These settings only apply to new plots.  "
-                         "To apply them to current plots, re-open the file.");
+        GUIBase::Warning(tr("Note:  These settings only apply to new plots.  "
+                            "To apply them to current plots, re-open the file."));
 
     }
     else
@@ -469,9 +477,9 @@ QvisMeshManagementWindow::discretizationModeChanged(int val)
 #if HAVE_BILIB
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Adaptive);
 #else
-        GUIBase::Warning("Adaptive not available. "
+        GUIBase::Warning(tr("Adaptive not available. "
                          "Missing boost interval template library. "
-                         "Overriding to Uniform.");
+                         "Overriding to Uniform."));
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Uniform);
 #endif
     }

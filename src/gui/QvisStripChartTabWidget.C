@@ -89,10 +89,10 @@ QvisStripChartTabWidget::QvisStripChartTabWidget( QWidget *parent, const char *n
     // create the strip charts
     for ( int i =0; i< SC_Info.size(); i++) 
     {
-        stripCharts[SC_Info[i].getIndex()] = new VisItSimStripChart(this,SC_Info[i].getName(),winX,winY);
+        stripCharts[SC_Info[i].getIndex()] = new VisItSimStripChart(this,SC_Info[i].getName().ascii(),winX,winY);
         QScrollView *sc = new QScrollView(this,"StripChartScrollWindow");
         sc->addChild(stripCharts[SC_Info[i].getIndex()]);
-        sc->setCaption( "VisIt Strip Chart");
+        sc->setCaption(tr("VisIt Strip Chart"));
         // move the scroll area all the way to the right. That is where the 
         // data will start to be drawn.
         sc->center( winX, winY/2.0);
@@ -265,15 +265,18 @@ int QvisStripChartTabWidget::nameToIndex(QString SC_Name)
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//  
+//   Brad Whitlock, Wed Apr  9 12:18:40 PDT 2008
+//   Use QString == operator.
 //   
 // ****************************************************************************
-int QvisStripChartTabWidget::nameToTabIndex(QString Tab_Name)
+
+int
+QvisStripChartTabWidget::nameToTabIndex(QString Tab_Name)
 {
     
     for ( int i = 0; i < SC_Info.size(); i++ )
     {
-      if( !strcmp ( SC_Info[i].getTabName(),Tab_Name)) return i;
+      if(SC_Info[i].getTabName() == Tab_Name) return i;
     }      
    return -1;
 }

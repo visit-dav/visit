@@ -64,6 +64,9 @@
 //   Brad Whitlock, Wed Mar 26 14:51:59 PDT 2008
 //   Changed height to scale.
 //
+//   Brad Whitlock, Tue Apr  8 14:10:36 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent, const char *name) :
@@ -83,7 +86,7 @@ QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent, const char *
     fontFamilyComboBox->setEditable(false);
     connect(fontFamilyComboBox, SIGNAL(activated(int)),
             this, SLOT(fontFamilyChanged(int)));
-    gLayout->addWidget(new QLabel(fontFamilyComboBox, "Font name", this), row, 0);
+    gLayout->addWidget(new QLabel(fontFamilyComboBox, tr("Font name"), this), row, 0);
     gLayout->addWidget(fontFamilyComboBox, row, 1);
 
     // Add control for text font height
@@ -91,21 +94,21 @@ QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent, const char *
     connect(fontScale, SIGNAL(returnPressed()),
             this, SLOT(Apply()));
     gLayout->addWidget(fontScale, row, 3);
-    gLayout->addWidget(new QLabel(fontScale, "Font scale",
+    gLayout->addWidget(new QLabel(fontScale, tr("Font scale"),
         this), row, 2);
 
-    boldCheckBox = new QCheckBox("Bold", this, "boldCheckBox");
+    boldCheckBox = new QCheckBox(tr("Bold"), this, "boldCheckBox");
     connect(boldCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(boldToggled(bool)));
     gLayout->addWidget(boldCheckBox, row, 4);
 
-    italicCheckBox = new QCheckBox("Italic", this, "italicCheckBox");
+    italicCheckBox = new QCheckBox(tr("Italic"), this, "italicCheckBox");
     connect(italicCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(italicToggled(bool)));
     gLayout->addWidget(italicCheckBox, row, 5);
     ++row;
 
-    useForegroundColorCheckBox = new QCheckBox("Use foreground color", this,
+    useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this,
         "useForegroundColorCheckBox");
     connect(useForegroundColorCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(useForegroundColorToggled(bool)));

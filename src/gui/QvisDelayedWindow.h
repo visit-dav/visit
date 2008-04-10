@@ -66,13 +66,16 @@ class QVBoxLayout;
 //   Brad Whitlock, Mon Sep 30 07:50:55 PDT 2002
 //   I added window flags.
 //
+//   Brad Whitlock, Wed Apr  9 10:31:28 PDT 2008
+//   Changed ctor args.
+//
 // ****************************************************************************
 
 class GUI_API QvisDelayedWindow : public QvisWindowBase
 {
     Q_OBJECT
 public:
-    QvisDelayedWindow(const char *captionString = 0, WFlags f = 0);
+    QvisDelayedWindow(const QString &captionString, WFlags f = 0);
     virtual ~QvisDelayedWindow();
     QWidget *GetCentralWidget();
     virtual void CreateEntireWindow();

@@ -93,9 +93,12 @@
 //   Jeremy Meredith, Mon Feb  4 13:44:33 EST 2008
 //   Added support for axis-array views.
 //
+//   Brad Whitlock, Wed Apr  9 11:02:57 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
-QvisViewWindow::QvisViewWindow(const char *caption, const char *shortName,
+QvisViewWindow::QvisViewWindow(const QString &caption, const QString &shortName,
     QvisNotepadArea *notepad) : QvisPostableWindowSimpleObserver(caption,
     shortName, notepad, ApplyButton)
 {
@@ -207,6 +210,9 @@ QvisViewWindow::~QvisViewWindow()
 //   Added support for axis-array views.  Renamed some curve view
 //   buttons to avoid namespace collisions.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -225,7 +231,7 @@ QvisViewWindow::CreateWindowContents()
     pageCurve = new QVBox(central, "pageCurve");
     pageCurve->setSpacing(5);
     pageCurve->setMargin(10);
-    tabs->addTab(pageCurve, "Curve view");
+    tabs->addTab(pageCurve, tr("Curve view"));
 
     viewCurveGroup = new QGroupBox(pageCurve, "viewCurveGroup");
     viewCurveGroup->setFrameStyle(QFrame::NoFrame);
@@ -239,7 +245,7 @@ QvisViewWindow::CreateWindowContents()
     connect(viewportCurveLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processViewportCurveText()));
     LayoutCurve->addMultiCellWidget(viewportCurveLineEdit, 0,0, 1,3);
-    QLabel *viewportCurveLabel = new QLabel(viewportCurveLineEdit, "Viewport",
+    QLabel *viewportCurveLabel = new QLabel(viewportCurveLineEdit, tr("Viewport"),
                                        viewCurveGroup, "viewportCurveLabel");
     LayoutCurve->addWidget(viewportCurveLabel, 0, 0);
 
@@ -247,7 +253,7 @@ QvisViewWindow::CreateWindowContents()
     connect(domainCurveLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processDomainText()));
     LayoutCurve->addMultiCellWidget(domainCurveLineEdit, 1,1, 1,3);
-    QLabel *domainCurveLabel = new QLabel(domainCurveLineEdit, "Domain",
+    QLabel *domainCurveLabel = new QLabel(domainCurveLineEdit, tr("Domain"),
                                           viewCurveGroup, "domainCurveLabel");
     LayoutCurve->addWidget(domainCurveLabel, 1, 0);
     internalLayoutCurve->addStretch(10);
@@ -256,33 +262,33 @@ QvisViewWindow::CreateWindowContents()
     connect(rangeCurveLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processRangeText()));
     LayoutCurve->addMultiCellWidget(rangeCurveLineEdit, 2,2, 1,3);
-    QLabel *rangeCurveLabel = new QLabel(rangeCurveLineEdit, "Range",
+    QLabel *rangeCurveLabel = new QLabel(rangeCurveLineEdit, tr("Range"),
                                          viewCurveGroup, "rangeCurveLabel");
     LayoutCurve->addWidget(rangeCurveLabel, 2, 0);
 
-    QLabel *domainScaleLabel = new QLabel("Domain Scale", viewCurveGroup, 
+    QLabel *domainScaleLabel = new QLabel(tr("Domain Scale"), viewCurveGroup, 
                                           "domainScaleLabel");
     LayoutCurve->addWidget(domainScaleLabel, 3, 0);
     domainScaleMode = new QButtonGroup(0, "domainScaleMode");
     connect(domainScaleMode, SIGNAL(clicked(int)),
             this, SLOT(domainScaleModeChanged(int)));
-    domainLinear = new QRadioButton("Linear", viewCurveGroup, "domainLinear");
+    domainLinear = new QRadioButton(tr("Linear"), viewCurveGroup, "domainLinear");
     domainScaleMode->insert(domainLinear);
     LayoutCurve->addWidget(domainLinear, 3, 1);
-    domainLog = new QRadioButton("Log", viewCurveGroup, "domainLog");
+    domainLog = new QRadioButton(tr("Log"), viewCurveGroup, "domainLog");
     domainScaleMode->insert(domainLog);
     LayoutCurve->addWidget(domainLog, 3, 2);
 
-    QLabel *rangeScaleLabel = new QLabel("Range Scale", viewCurveGroup, 
+    QLabel *rangeScaleLabel = new QLabel(tr("Range Scale"), viewCurveGroup, 
                                           "rangeScaleLabel");
     LayoutCurve->addWidget(rangeScaleLabel, 4, 0);
     rangeScaleMode = new QButtonGroup(0, "rangeScaleMode");
     connect(rangeScaleMode, SIGNAL(clicked(int)),
             this, SLOT(rangeScaleModeChanged(int)));
-    rangeLinear = new QRadioButton("Linear", viewCurveGroup, "rangeLinear");
+    rangeLinear = new QRadioButton(tr("Linear"), viewCurveGroup, "rangeLinear");
     rangeScaleMode->insert(rangeLinear);
     LayoutCurve->addWidget(rangeLinear, 4, 1);
-    rangeLog = new QRadioButton("Log", viewCurveGroup, "rangeLog");
+    rangeLog = new QRadioButton(tr("Log"), viewCurveGroup, "rangeLog");
     rangeScaleMode->insert(rangeLog);
     LayoutCurve->addWidget(rangeLog, 4, 2);
 
@@ -294,7 +300,7 @@ QvisViewWindow::CreateWindowContents()
     page2D = new QVBox(central, "page2D");
     page2D->setSpacing(5);
     page2D->setMargin(10);
-    tabs->addTab(page2D, "2D view");
+    tabs->addTab(page2D, tr("2D view"));
 
     view2DGroup = new QGroupBox(page2D, "view2DGroup");
     view2DGroup->setFrameStyle(QFrame::NoFrame);
@@ -308,7 +314,7 @@ QvisViewWindow::CreateWindowContents()
     connect(viewportLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processViewportText()));
     Layout2d->addMultiCellWidget(viewportLineEdit, 0, 0, 1, 4);
-    QLabel *viewportLabel = new QLabel(viewportLineEdit, "Viewport",
+    QLabel *viewportLabel = new QLabel(viewportLineEdit, tr("Viewport"),
                                        view2DGroup, "viewportLabel");
     Layout2d->addWidget(viewportLabel, 0, 0);
 
@@ -316,47 +322,47 @@ QvisViewWindow::CreateWindowContents()
     connect(windowLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processWindowText()));
     Layout2d->addMultiCellWidget(windowLineEdit, 1, 1, 1, 4);
-    QLabel *windowLabel = new QLabel(windowLineEdit, "Window",
+    QLabel *windowLabel = new QLabel(windowLineEdit, tr("Window"),
                                      view2DGroup, "windowLabel");
     Layout2d->addWidget(windowLabel, 1, 0);
     internalLayout2d->addStretch(10);
 
-    QLabel *fullFrameLabel = new QLabel("Full Frame", view2DGroup, "fullFrameLabel");
+    QLabel *fullFrameLabel = new QLabel(tr("Full Frame"), view2DGroup, "fullFrameLabel");
     Layout2d->addWidget(fullFrameLabel, 2, 0);
     fullFrameActivationMode = new QButtonGroup(0, "fullFrameActivationMode");
     connect(fullFrameActivationMode, SIGNAL(clicked(int)),
             this, SLOT(fullFrameActivationModeChanged(int)));
-    fullFrameAuto = new QRadioButton("Auto", view2DGroup, "Auto");
+    fullFrameAuto = new QRadioButton(tr("Auto"), view2DGroup, "Auto");
     fullFrameActivationMode->insert(fullFrameAuto);
     Layout2d->addWidget(fullFrameAuto, 2, 1);
-    fullFrameOn = new QRadioButton("On", view2DGroup, "On");
+    fullFrameOn = new QRadioButton(tr("On"), view2DGroup, "On");
     fullFrameActivationMode->insert(fullFrameOn);
     Layout2d->addWidget(fullFrameOn, 2, 2);
-    fullFrameOff = new QRadioButton("Off", view2DGroup, "Off");
+    fullFrameOff = new QRadioButton(tr("Off"), view2DGroup, "Off");
     fullFrameActivationMode->insert(fullFrameOff);
     Layout2d->addWidget(fullFrameOff, 2, 3);
 
-    QLabel *xScaleLabel = new QLabel("X Scale", view2DGroup, "xScaleLabel");
+    QLabel *xScaleLabel = new QLabel(tr("X Scale"), view2DGroup, "xScaleLabel");
     Layout2d->addWidget(xScaleLabel, 3, 0);
     xScaleMode = new QButtonGroup(0, "xScaleMode");
     connect(xScaleMode, SIGNAL(clicked(int)),
             this, SLOT(xScaleModeChanged(int)));
-    xLinear = new QRadioButton("Linear", view2DGroup, "xLinear");
+    xLinear = new QRadioButton(tr("Linear"), view2DGroup, "xLinear");
     xScaleMode->insert(xLinear);
     Layout2d->addWidget(xLinear, 3, 1);
-    xLog = new QRadioButton("Log", view2DGroup, "xLog");
+    xLog = new QRadioButton(tr("Log"), view2DGroup, "xLog");
     xScaleMode->insert(xLog);
     Layout2d->addWidget(xLog, 3, 2);
 
-    QLabel *yScaleLabel = new QLabel("Y Scale", view2DGroup, "yScaleLabel");
+    QLabel *yScaleLabel = new QLabel(tr("Y Scale"), view2DGroup, "yScaleLabel");
     Layout2d->addWidget(yScaleLabel, 4, 0);
     yScaleMode = new QButtonGroup(0, "yScaleMode");
     connect(yScaleMode, SIGNAL(clicked(int)),
             this, SLOT(yScaleModeChanged(int)));
-    yLinear = new QRadioButton("Linear", view2DGroup, "yLinear");
+    yLinear = new QRadioButton(tr("Linear"), view2DGroup, "yLinear");
     yScaleMode->insert(yLinear);
     Layout2d->addWidget(yLinear, 4, 1);
-    yLog = new QRadioButton("Log", view2DGroup, "yLog");
+    yLog = new QRadioButton(tr("Log"), view2DGroup, "yLog");
     yScaleMode->insert(yLog);
     Layout2d->addWidget(yLog, 4, 2);
 
@@ -366,7 +372,7 @@ QvisViewWindow::CreateWindowContents()
     page3D = new QVBox(central, "page3D");
     page3D->setSpacing(5);
     page3D->setMargin(10);
-    tabs->addTab(page3D, "3D view");
+    tabs->addTab(page3D, tr("3D view"));
 
     view3DGroup = new QGroupBox(page3D, "view3DGroup");
     view3DGroup->setFrameStyle(QFrame::NoFrame);
@@ -380,7 +386,7 @@ QvisViewWindow::CreateWindowContents()
     connect(normalLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processNormalText()));
     Layout3d->addMultiCellWidget(normalLineEdit, 0, 0, 1, 2);
-    QLabel *normalLabel = new QLabel(normalLineEdit, "View normal",
+    QLabel *normalLabel = new QLabel(normalLineEdit, tr("View normal"),
                                      view3DGroup, "normalLabel");
     Layout3d->addWidget(normalLabel, 0, 0);
 
@@ -389,7 +395,7 @@ QvisViewWindow::CreateWindowContents()
     connect(focusLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processFocusText()));
     Layout3d->addMultiCellWidget(focusLineEdit, 1, 1, 1, 2);
-    QLabel *focusLabel = new QLabel(focusLineEdit, "Focus",
+    QLabel *focusLabel = new QLabel(focusLineEdit, tr("Focus"),
                                      view3DGroup, "focusLabel");
     Layout3d->addWidget(focusLabel, 1, 0);
 
@@ -398,7 +404,7 @@ QvisViewWindow::CreateWindowContents()
     connect(upvectorLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processUpVectorText()));
     Layout3d->addMultiCellWidget(upvectorLineEdit, 2, 2, 1, 2);
-    QLabel *upvectorLabel = new QLabel(upvectorLineEdit, "Up Vector",
+    QLabel *upvectorLabel = new QLabel(upvectorLineEdit, tr("Up Vector"),
                                        view3DGroup, "upvectorLabel");
     Layout3d->addWidget(upvectorLabel, 2, 0);
 
@@ -407,7 +413,7 @@ QvisViewWindow::CreateWindowContents()
     connect(viewAngleLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processViewAngleText()));
     Layout3d->addMultiCellWidget(viewAngleLineEdit, 3, 3, 1, 2);
-    QLabel *viewAngleLabel = new QLabel(viewAngleLineEdit, "Angle of view",
+    QLabel *viewAngleLabel = new QLabel(viewAngleLineEdit, tr("Angle of view"),
                                   view3DGroup, "viewAngleLabel");
     Layout3d->addWidget(viewAngleLabel, 3, 0);
 
@@ -416,7 +422,7 @@ QvisViewWindow::CreateWindowContents()
     connect(parallelScaleLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processParallelScaleText()));
     Layout3d->addMultiCellWidget(parallelScaleLineEdit, 4, 4, 1, 2);
-    QLabel *parallelScaleLabel = new QLabel(parallelScaleLineEdit, "Parallel scale",
+    QLabel *parallelScaleLabel = new QLabel(parallelScaleLineEdit, tr("Parallel scale"),
                                   view3DGroup, "parallelScaleLabel");
     Layout3d->addWidget(parallelScaleLabel, 4, 0);
 
@@ -425,7 +431,7 @@ QvisViewWindow::CreateWindowContents()
     connect(nearLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processNearText()));
     Layout3d->addMultiCellWidget(nearLineEdit, 5, 5, 1, 2);
-    QLabel *nearLabel = new QLabel(nearLineEdit, "Near clipping",
+    QLabel *nearLabel = new QLabel(nearLineEdit, tr("Near clipping"),
                                    view3DGroup, "nearLineEditLabel");
     Layout3d->addWidget(nearLabel, 5, 0);
 
@@ -434,7 +440,7 @@ QvisViewWindow::CreateWindowContents()
     connect(farLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processFarText()));
     Layout3d->addMultiCellWidget(farLineEdit, 6, 6, 1, 2);
-    QLabel *farLabel = new QLabel(farLineEdit, "Far clipping",
+    QLabel *farLabel = new QLabel(farLineEdit, tr("Far clipping"),
                                   view3DGroup, "farLineEditLabel");
     Layout3d->addWidget(farLabel, 6, 0);
 
@@ -443,7 +449,7 @@ QvisViewWindow::CreateWindowContents()
     connect(imagePanLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processImagePanText()));
     Layout3d->addMultiCellWidget(imagePanLineEdit, 7, 7, 1, 2);
-    QLabel *imagePanLabel = new QLabel(imagePanLineEdit, "Image pan",
+    QLabel *imagePanLabel = new QLabel(imagePanLineEdit, tr("Image pan"),
                                   view3DGroup, "imagePanLineEditLabel");
     Layout3d->addWidget(imagePanLabel, 7, 0);
 
@@ -452,7 +458,7 @@ QvisViewWindow::CreateWindowContents()
     connect(imageZoomLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processImageZoomText()));
     Layout3d->addMultiCellWidget(imageZoomLineEdit, 8, 8, 1, 2);
-    QLabel *imageZoomLabel = new QLabel(imageZoomLineEdit, "Image zoom",
+    QLabel *imageZoomLabel = new QLabel(imageZoomLineEdit, tr("Image zoom"),
                                   view3DGroup, "imageZoomLineEditLabel");
     Layout3d->addWidget(imageZoomLabel, 8, 0);
 
@@ -460,7 +466,7 @@ QvisViewWindow::CreateWindowContents()
     eyeAngleLineEdit = new QNarrowLineEdit(view3DGroup, "eyeAngleLineEdit");
     connect(eyeAngleLineEdit, SIGNAL(returnPressed()), this,
             SLOT(processEyeAngleText()));
-    QLabel *eyeAngleLabel = new QLabel(eyeAngleLineEdit, "Eye Angle (stereo)",
+    QLabel *eyeAngleLabel = new QLabel(eyeAngleLineEdit, tr("Eye Angle (stereo)"),
                                   view3DGroup, "eyeAngleLabel");
     eyeAngleSlider = new QSlider(0, 80, 10, 40, Qt::Horizontal,
                                  view3DGroup, "eyeAngleSlider");
@@ -471,7 +477,7 @@ QvisViewWindow::CreateWindowContents()
     Layout3d->addWidget(eyeAngleSlider, 9, 2);
 
     // Create the check boxes
-    perspectiveToggle = new QCheckBox("Perspective", view3DGroup,
+    perspectiveToggle = new QCheckBox(tr("Perspective"), view3DGroup,
         "perspectiveToggle");
     connect(perspectiveToggle, SIGNAL(toggled(bool)),
             this, SLOT(perspectiveToggled(bool)));
@@ -489,7 +495,7 @@ QvisViewWindow::CreateWindowContents()
     connect(alignComboBox, SIGNAL(activated(int)),
             this, SLOT(viewButtonClicked(int)));
     Layout3d->addWidget(alignComboBox, 11, 1);
-    QLabel *alignLabel = new QLabel(alignComboBox, "Align to axis",
+    QLabel *alignLabel = new QLabel(alignComboBox, tr("Align to axis"),
         view3DGroup, "alignLabel");
     Layout3d->addWidget(alignLabel, 11, 0);
 
@@ -499,7 +505,7 @@ QvisViewWindow::CreateWindowContents()
     pageAxisArray = new QVBox(central, "pageAxisArray");
     pageAxisArray->setSpacing(5);
     pageAxisArray->setMargin(10);
-    tabs->addTab(pageAxisArray, "AxisArray view");
+    tabs->addTab(pageAxisArray, tr("AxisArray view"));
 
     viewAxisArrayGroup = new QGroupBox(pageAxisArray, "viewAxisArrayGroup");
     viewAxisArrayGroup->setFrameStyle(QFrame::NoFrame);
@@ -513,7 +519,7 @@ QvisViewWindow::CreateWindowContents()
     connect(viewportAxisArrayLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processViewportAxisArrayText()));
     LayoutAxisArray->addMultiCellWidget(viewportAxisArrayLineEdit, 0,0, 1,3);
-    QLabel *viewportAxisArrayLabel = new QLabel(viewportAxisArrayLineEdit, "Viewport",
+    QLabel *viewportAxisArrayLabel = new QLabel(viewportAxisArrayLineEdit, tr("Viewport"),
                                        viewAxisArrayGroup, "viewportAxisArrayLabel");
     LayoutAxisArray->addWidget(viewportAxisArrayLabel, 0, 0);
 
@@ -521,7 +527,7 @@ QvisViewWindow::CreateWindowContents()
     connect(domainAxisArrayLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processDomainAxisArrayText()));
     LayoutAxisArray->addMultiCellWidget(domainAxisArrayLineEdit, 1,1, 1,3);
-    QLabel *domainAxisArrayLabel = new QLabel(domainAxisArrayLineEdit, "Domain",
+    QLabel *domainAxisArrayLabel = new QLabel(domainAxisArrayLineEdit, tr("Domain"),
                                      viewAxisArrayGroup, "domainAxisArrayLabel");
     LayoutAxisArray->addWidget(domainAxisArrayLabel, 1, 0);
     internalLayoutAxisArray->addStretch(10);
@@ -530,7 +536,7 @@ QvisViewWindow::CreateWindowContents()
     connect(rangeAxisArrayLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processRangeAxisArrayText()));
     LayoutAxisArray->addMultiCellWidget(rangeAxisArrayLineEdit, 2,2, 1,3);
-    QLabel *rangeAxisArrayLabel = new QLabel(rangeAxisArrayLineEdit, "Range",
+    QLabel *rangeAxisArrayLabel = new QLabel(rangeAxisArrayLineEdit, tr("Range"),
                                     viewAxisArrayGroup, "rangeAxisArrayLabel");
     LayoutAxisArray->addWidget(rangeAxisArrayLabel, 2, 0);
 
@@ -542,7 +548,7 @@ QvisViewWindow::CreateWindowContents()
     pageAdvanced = new QVBox(central, "pageAdvanced");
     pageAdvanced->setSpacing(5);
     pageAdvanced->setMargin(10);
-    tabs->addTab(pageAdvanced, "Advanced");
+    tabs->addTab(pageAdvanced, tr("Advanced"));
 
     QGroupBox *advancedGroup = new QGroupBox(pageAdvanced, "advancedGroup");
     advancedGroup->setFrameStyle(QFrame::NoFrame);
@@ -554,52 +560,52 @@ QvisViewWindow::CreateWindowContents()
     advLayout->setColStretch(1, 10);
 
     extentComboBox = new QComboBox(advancedGroup, "extentCombo");
-    extentComboBox->insertItem("Original spatial extents", 0);
-    extentComboBox->insertItem("Actual spatial extents", 1);
+    extentComboBox->insertItem(tr("Original spatial extents"), 0);
+    extentComboBox->insertItem(tr("Actual spatial extents"), 1);
     connect(extentComboBox, SIGNAL(activated(int)),
             this, SLOT(extentTypeChanged(int)));
     advLayout->addMultiCellWidget(extentComboBox, 0, 0, 1, 2);
-    QLabel *l = new QLabel(extentComboBox, "View based on",
+    QLabel *l = new QLabel(extentComboBox, tr("View based on"),
         advancedGroup, "extentsLabel");
     advLayout->addWidget(l, 0, 0);
 
-    lockedViewToggle = new QCheckBox("Locked view", advancedGroup,
+    lockedViewToggle = new QCheckBox(tr("Locked view"), advancedGroup,
         "lockedViewToggle");
     connect(lockedViewToggle, SIGNAL(toggled(bool)),
             this, SLOT(lockedViewChecked(bool)));
     advLayout->addWidget(lockedViewToggle, 1, 0);
 
-    QPushButton *resetViewButton = new QPushButton("Reset view",
+    QPushButton *resetViewButton = new QPushButton(tr("Reset view"),
         advancedGroup, "resetViewButton");
     connect(resetViewButton, SIGNAL(clicked()),
             this, SLOT(resetView()));
     advLayout->addWidget(resetViewButton, 2, 0);
 
-    QPushButton *recenterButton = new QPushButton("Recenter view",
+    QPushButton *recenterButton = new QPushButton(tr("Recenter view"),
         advancedGroup, "recenterButton");
     connect(recenterButton, SIGNAL(clicked()),
             this, SLOT(recenterView()));
     advLayout->addWidget(recenterButton, 2, 1);
 
-    QPushButton *undoButton = new QPushButton("Undo view",
+    QPushButton *undoButton = new QPushButton(tr("Undo view"),
         advancedGroup, "undoButton");
     connect(undoButton, SIGNAL(clicked()),
             this, SLOT(undoView()));
     advLayout->addWidget(undoButton, 2, 2);
 
-    copyViewFromCameraToggle = new QCheckBox("Copy view from camera",
+    copyViewFromCameraToggle = new QCheckBox(tr("Copy view from camera"),
                                     advancedGroup, "copyViewFromCameraToggle");
     connect(copyViewFromCameraToggle, SIGNAL(toggled(bool)),
             this, SLOT(copyViewFromCameraChecked(bool)));
     advLayout->addMultiCellWidget(copyViewFromCameraToggle, 3,3, 0,2);
 
-    makeViewKeyframeButton = new QPushButton("Make camera keyframe from view",
+    makeViewKeyframeButton = new QPushButton(tr("Make camera keyframe from view"),
                                      advancedGroup, "makeViewKeyframeButton");
     connect(makeViewKeyframeButton, SIGNAL(clicked()),
             this, SLOT(makeViewKeyframe()));
     advLayout->addMultiCellWidget(makeViewKeyframeButton, 4,4, 0,2);
 
-    centerToggle = new QCheckBox("User defined center of rotation",
+    centerToggle = new QCheckBox(tr("User defined center of rotation"),
                                  advancedGroup, "centerToggle");
     connect(centerToggle, SIGNAL(toggled(bool)),
             this, SLOT(centerChecked(bool)));
@@ -610,7 +616,7 @@ QvisViewWindow::CreateWindowContents()
     connect(centerLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processCenterText()));
     advLayout->addMultiCellWidget(centerLineEdit, 6, 6, 1, 2);
-    QLabel *centerLabel = new QLabel(centerLineEdit, "Center",
+    QLabel *centerLabel = new QLabel(centerLineEdit, tr("Center"),
                                   advancedGroup, "centerLineEditLabel");
     advLayout->addWidget(centerLabel, 6, 0);
 
@@ -625,7 +631,7 @@ QvisViewWindow::CreateWindowContents()
     connect(commandLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processCommandText()));
     gLayout->addWidget(commandLineEdit, 0, 1);
-    QLabel *commandLabel = new QLabel(commandLineEdit, "Commands",
+    QLabel *commandLabel = new QLabel(commandLineEdit, tr("Commands"),
                                       central, "commandLabel");
     gLayout->addWidget(commandLabel, 0, 0);
 
@@ -1358,6 +1364,10 @@ QvisViewWindow::SetFromNode(DataNode *parentNode, const int *borders)
 //  Programmer:  Jeremy Meredith
 //  Creation:    February  4, 2008
 //
+//  Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 void
 QvisViewWindow::GetCurrentValuesAxisArray(int which_widget)
@@ -1384,12 +1394,14 @@ QvisViewWindow::GetCurrentValuesAxisArray(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The viewport values were invalid. "
-                "Resetting to the last good values of %g %g %g %g.",
+            QString vpt; vpt.sprintf("%g %g %g %g",
                  viewAxisArray->GetViewportCoords()[0],
                  viewAxisArray->GetViewportCoords()[1],
                  viewAxisArray->GetViewportCoords()[2],
                  viewAxisArray->GetViewportCoords()[3]);
+            msg = tr("The viewport values were invalid. "
+                     "Resetting to the last good values of %1.");
+            msg.replace("%1", vpt);
             Error(msg);
             viewAxisArray->SetViewportCoords(viewAxisArray->GetViewportCoords());
         }
@@ -1414,10 +1426,12 @@ QvisViewWindow::GetCurrentValuesAxisArray(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The domain values were invalid. "
-                "Resetting to the last good values of %g %g.",
+            QString dom; dom.sprintf("%g %g",
                  viewAxisArray->GetDomainCoords()[0],
                  viewAxisArray->GetDomainCoords()[1]);
+            msg = tr("The domain values were invalid. "
+                     "Resetting to the last good values of %1.");
+            msg.replace("%1", dom);
             Error(msg);
             viewAxisArray->SetDomainCoords(viewAxisArray->GetDomainCoords());
         }
@@ -1442,10 +1456,12 @@ QvisViewWindow::GetCurrentValuesAxisArray(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The range values were invalid. "
-                "Resetting to the last good values of %g %g.",
+            QString range; range.sprintf("%g %g",
                  viewAxisArray->GetRangeCoords()[0],
                  viewAxisArray->GetRangeCoords()[1]);
+            msg = tr("The range values were invalid. "
+                     "Resetting to the last good values of %1.");
+            msg.replace("%1", range);
             Error(msg);
             viewAxisArray->SetRangeCoords(viewAxisArray->GetRangeCoords());
         }
@@ -1464,6 +1480,9 @@ QvisViewWindow::GetCurrentValuesAxisArray(int which_widget)
 // Modifications:
 //   Jeremy Meredith, Mon Feb  4 13:47:04 EST 2008
 //   Renamed a couple widgets to avoid namespace collisions.
+//
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -1492,12 +1511,14 @@ QvisViewWindow::GetCurrentValuesCurve(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The viewport values were invalid. "
-                "Resetting to the last good values of %g %g %g %g.",
+            QString vpt; vpt.sprintf("%g %g %g %g",
                  viewCurve->GetViewportCoords()[0],
                  viewCurve->GetViewportCoords()[1],
                  viewCurve->GetViewportCoords()[2],
                  viewCurve->GetViewportCoords()[3]);
+            msg = tr("The viewport values were invalid. "
+                     "Resetting to the last good values of %1.");
+            msg.replace("%1", vpt);
             Error(msg);
             viewCurve->SetViewportCoords(viewCurve->GetViewportCoords());
         }
@@ -1522,10 +1543,12 @@ QvisViewWindow::GetCurrentValuesCurve(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The domain values were invalid. "
-                "Resetting to the last good values of %g %g.",
+            QString dom; dom.sprintf("%g %g",
                  viewCurve->GetDomainCoords()[0],
                  viewCurve->GetDomainCoords()[1]);
+            msg = tr("The domain values were invalid. "
+                     "Resetting to the last good values of %1.");
+            msg.replace("%1", dom);
             Error(msg);
             viewCurve->SetDomainCoords(viewCurve->GetDomainCoords());
         }
@@ -1550,10 +1573,12 @@ QvisViewWindow::GetCurrentValuesCurve(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The range values were invalid. "
-                "Resetting to the last good values of %g %g.",
+            QString range; range.sprintf("%g %g",
                  viewCurve->GetRangeCoords()[0],
                  viewCurve->GetRangeCoords()[1]);
+            msg = tr("The range values were invalid. "
+                     "Resetting to the last good values of %1.");
+            msg.replace("%1", range);
             Error(msg);
             viewCurve->SetRangeCoords(viewCurve->GetRangeCoords());
         }
@@ -1583,6 +1608,9 @@ QvisViewWindow::GetCurrentValuesCurve(int which_widget)
 //   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
 //   I corrected an error message.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1610,12 +1638,14 @@ QvisViewWindow::GetCurrentValues2d(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The viewport values were invalid. "
-                "Resetting to the last good values of %g %g %g %g.",
+            QString vpt; vpt.sprintf("%g %g %g %g",
                  view2d->GetViewportCoords()[0],
                  view2d->GetViewportCoords()[1],
                  view2d->GetViewportCoords()[2],
                  view2d->GetViewportCoords()[3]);
+            msg = tr("The viewport values were invalid. "
+                     "Resetting to the last good values of %1.");
+            msg.replace("%1", vpt);
             Error(msg);
             view2d->SetViewportCoords(view2d->GetViewportCoords());
         }
@@ -1640,12 +1670,14 @@ QvisViewWindow::GetCurrentValues2d(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The window values were invalid. "
-                "Resetting to the last good values of %g %g %g %g.",
+            QString win; win.sprintf("%g %g %g %g",
                  view2d->GetWindowCoords()[0],
                  view2d->GetWindowCoords()[1],
                  view2d->GetWindowCoords()[2],
                  view2d->GetWindowCoords()[3]);
+            msg = tr("The window values were invalid. "
+                     "Resetting to the last good values of %1.");
+            msg.replace("%1", win);
             Error(msg);
             view2d->SetWindowCoords(view2d->GetWindowCoords());
         }
@@ -1678,6 +1710,9 @@ QvisViewWindow::GetCurrentValues2d(int which_widget)
 //   Eric Brugger, Tue Feb 10 10:30:15 PST 2004
 //   I added center of rotation controls to the advanced tab.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1705,11 +1740,13 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The normal location values were invalid. "
-                "Resetting to the last good values of %g %g %g.",
+            QString n; n.sprintf("%g %g %g",
                  view3d->GetViewNormal()[0],
                  view3d->GetViewNormal()[1],
                  view3d->GetViewNormal()[2]);
+            msg = tr("The normal location values were invalid. "
+                     "Resetting to the last good values of %1.");
+            msg.replace("%1", n);
             Error(msg);
             view3d->SetViewNormal(view3d->GetViewNormal());
         }
@@ -1734,11 +1771,13 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The focus location values were invalid. "
-                "Resetting to the last good values of %g %g %g.",
+            QString f; f.sprintf("%g %g %g",
                  view3d->GetFocus()[0],
                  view3d->GetFocus()[1],
                  view3d->GetFocus()[2]);
+            msg = tr("The focus location values were invalid. "
+                     "Resetting to the last good values of %1.");
+            msg.replace("%1", f);
             Error(msg);
             view3d->SetFocus(view3d->GetFocus());
         }
@@ -1763,11 +1802,13 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The up vector values were invalid. "
-                "Resetting to the last good values of %g %g %g.",
+            QString v; v.sprintf("%g %g %g.",
                  view3d->GetViewUp()[0],
                  view3d->GetViewUp()[1],
                  view3d->GetViewUp()[2]);
+            msg = tr("The up vector values were invalid. "
+                     "Resetting to the last good values of %1.");
+            msg.replace("%1", v);
             Error(msg);
             view3d->SetViewUp(view3d->GetViewUp());
         }
@@ -1794,9 +1835,10 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The viewangle was invalid. "
-                "Resetting to the last good value of %g.",
-                 view3d->GetViewAngle());
+            QString v; v.sprintf("%g", view3d->GetViewAngle());
+            msg = tr("The viewangle was invalid. "
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", v);
             Error(msg);
             view3d->SetViewAngle(view3d->GetViewAngle());
         }
@@ -1820,9 +1862,10 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The parallel scale was invalid. "
-                "Resetting to the last good value of %g.",
-                 view3d->GetParallelScale());
+            QString p; p.sprintf("%g", view3d->GetParallelScale());
+            msg = tr("The parallel scale was invalid. "
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", p);
             Error(msg);
             view3d->SetParallelScale(view3d->GetParallelScale());
         }
@@ -1846,9 +1889,10 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The near clipping value was invalid. "
-                "Resetting to the last good value of %g.",
-                 view3d->GetNearPlane());
+            QString p; p.sprintf("%g", view3d->GetNearPlane());
+            msg = tr("The near clipping value was invalid. "
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", p);
             Error(msg);
             view3d->SetNearPlane(view3d->GetNearPlane());
         }
@@ -1872,9 +1916,10 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The far clipping value was invalid. "
-                "Resetting to the last good value of %g.",
-                 view3d->GetFarPlane());
+            QString p; p.sprintf("%g", view3d->GetFarPlane());
+            msg = tr("The far clipping value was invalid. "
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", p);
             Error(msg);
             view3d->SetFarPlane(view3d->GetFarPlane());
         }
@@ -1899,10 +1944,11 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The image pan values were invalid. "
-                "Resetting to the last good values of %g %g.",
-                 view3d->GetImagePan()[0],
-                 view3d->GetImagePan()[1]);
+            QString p; p.sprintf("%g %g", view3d->GetImagePan()[0],
+                view3d->GetImagePan()[1]);
+            msg = tr("The image pan values were invalid. "
+                     "Resetting to the last good values of %1.");
+            msg.replace("%1", p);
             Error(msg);
             view3d->SetImagePan(view3d->GetImagePan());
         }
@@ -1926,9 +1972,10 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The image zoom value was invalid. "
-                "Resetting to the last good value of %g.",
-                 view3d->GetImageZoom());
+            QString z; z.sprintf("%g", view3d->GetImageZoom());
+            msg = tr("The image zoom value was invalid. "
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", z);
             Error(msg);
             view3d->SetImageZoom(view3d->GetImageZoom());
         }
@@ -1953,9 +2000,10 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The eye angle value was invalid. "
-                "Resetting to the last good value of %g.",
-                 view3d->GetEyeAngle());
+            QString e; e.sprintf("%g", view3d->GetEyeAngle());
+            msg = tr("The eye angle value was invalid. "
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", e);
             Error(msg);
             view3d->SetEyeAngle(view3d->GetEyeAngle());
         }
@@ -1980,11 +2028,13 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The center of rotation values were invalid. "
-                "Resetting to the last good values of %g %g %g.",
+            QString c; c.sprintf("%g %g %g",
                  view3d->GetCenterOfRotation()[0],
                  view3d->GetCenterOfRotation()[1],
                  view3d->GetCenterOfRotation()[2]);
+            msg = tr("The center of rotation values were invalid. "
+                     "Resetting to the last good values of %1.");
+            msg.replace("%1", c);
             Error(msg);
             view3d->SetCenterOfRotation(view3d->GetCenterOfRotation());
         }

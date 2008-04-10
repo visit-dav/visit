@@ -133,6 +133,9 @@
 //    Brad Whitlock, Wed Mar 5 11:42:27 PDT 2008
 //    Added generatorName.
 //
+//    Brad Whitlock, Wed Apr  9 12:29:52 PDT 2008
+//    Made it generate code that is easier to internationalize.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -147,7 +150,7 @@ class WindowGeneratorField : public virtual Field
     // helper functions
     void writeSourceCreateLabel(ostream &c)
     {
-        c << "    "<<name<<"Label = new QLabel(\""<<label<<"\", central, \""<<name<<"Label\");" << endl;
+        c << "    "<<name<<"Label = new QLabel(tr(\""<<label<<"\"), central, \""<<name<<"Label\");" << endl;
         c << "    mainLayout->addWidget("<<name<<"Label,"<<index<<",0);" << endl;
     }
     // virtual functions
@@ -240,9 +243,10 @@ class WindowGeneratorInt : public virtual Int , public virtual WindowGeneratorFi
             c << endl;
             c << "        if(!okay)" << endl;
             c << "        {" << endl;
-            c << "            msg.sprintf(\"The value of "<<name<<" was invalid. \"" << endl;
-            c << "                \"Resetting to the last good value of %d.\"," << endl;
-            c << "                atts->Get"<<Name<<"());" << endl;
+            c << "            QString num; num.sprintf(\"%d\", atts->Get"<<Name<<"());" << endl;
+            c << "            msg = tr(\"The value of "<<name<<" was invalid. \"" << endl;
+            c << "                     \"Resetting to the last good value of %1.\");" << endl;
+            c << "            msg.replace(\"%1\", num);" << endl;
             c << "            Message(msg);" << endl;
             c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
             c << "        }" << endl;
@@ -330,7 +334,7 @@ class WindowGeneratorBool : public virtual Bool , public virtual WindowGenerator
     }
     virtual void            writeSourceCreate(ostream &c)
     {
-        c << "    "<<name<<" = new QCheckBox(\""<<label<<"\", central, \""<<name<<"\");" << endl;
+        c << "    "<<name<<" = new QCheckBox(tr(\""<<label<<"\"), central, \""<<name<<"\");" << endl;
         c << "    connect("<<name<<", SIGNAL(toggled(bool))," << endl
           << "            this, SLOT("<<name<<"Changed(bool)));" << endl;
         c << "    mainLayout->addWidget("<<name<<", "<<index<<",0);" << endl;
@@ -399,9 +403,10 @@ class WindowGeneratorFloat : public virtual Float , public virtual WindowGenerat
         c << endl;
         c << "        if(!okay)" << endl;
         c << "        {" << endl;
-        c << "            msg.sprintf(\"The value of "<<name<<" was invalid. \"" << endl;
-        c << "                \"Resetting to the last good value of %g.\"," << endl;
-        c << "                atts->Get"<<Name<<"());" << endl;
+        c << "            QString numl num.sprintf(\"%g\", atts->Get"<<Name<<"());" << endl;
+        c << "            msg = tr(\"The value of "<<name<<" was invalid. \"" << endl;
+        c << "                     \"Resetting to the last good value of %1.\");" << endl;
+        c << "            msg.replace(\"%1\", num);" << endl;
         c << "            Message(msg);" << endl;
         c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
         c << "        }" << endl;
@@ -477,8 +482,7 @@ class WindowGeneratorFloatArray : public virtual FloatArray , public virtual Win
         c << "        if(!okay)" << endl;
         c << "        {" << endl;
         c << "            const float *val = atts->Get"<<Name<<"();" << endl;
-        c << "            msg.sprintf(\"The value of "<<name<<" was invalid. \"" << endl;
-        c << "                \"Resetting to the last good value of <";
+        c << "            QString num; num.sprintf(\"<";
         for (i=0; i<length; i++)
         {
             c << "%g";
@@ -492,6 +496,9 @@ class WindowGeneratorFloatArray : public virtual FloatArray , public virtual Win
             if (i < length-1) c << ", ";
         }
         c << ");" << endl;
+        c << "            msg = tr(\"The value of "<<name<<" was invalid. \"" << endl;
+        c << "                     \"Resetting to the last good value of %1.\");" << endl;
+        c << "            msg.replace(\"%1\", num);" << endl;
         c << "            Message(msg);" << endl;
         c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
         c << "        }" << endl;
@@ -566,9 +573,10 @@ class WindowGeneratorDouble : public virtual Double , public virtual WindowGener
         c << endl;
         c << "        if(!okay)" << endl;
         c << "        {" << endl;
-        c << "            msg.sprintf(\"The value of "<<name<<" was invalid. \"" << endl;
-        c << "                \"Resetting to the last good value of %g.\"," << endl;
-        c << "                atts->Get"<<Name<<"());" << endl;
+        c << "            QString num; num.sprintf(\"%g\", atts->Get"<<Name<<"());" << endl;
+        c << "            msg = tr(\"The value of "<<name<<" was invalid. \"" << endl;
+        c << "                     \"Resetting to the last good value of %1.\");" << endl;
+        c << "            msg.replace(\"%1\", num);" << endl;
         c << "            Message(msg);" << endl;
         c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
         c << "        }" << endl;
@@ -644,8 +652,7 @@ class WindowGeneratorDoubleArray : public virtual DoubleArray , public virtual W
         c << "        if(!okay)" << endl;
         c << "        {" << endl;
         c << "            const double *val = atts->Get"<<Name<<"();" << endl;
-        c << "            msg.sprintf(\"The value of "<<name<<" was invalid. \"" << endl;
-        c << "                \"Resetting to the last good value of <";
+        c << "            QString num; num.sprintf(\"<";
         for (i=0; i<length; i++)
         {
             c << "%g";
@@ -659,6 +666,9 @@ class WindowGeneratorDoubleArray : public virtual DoubleArray , public virtual W
             if (i < length-1) c << ", ";
         }
         c << ");" << endl;
+        c << "            msg = tr(\"The value of "<<name<<" was invalid. \"" << endl;
+        c << "                     \"Resetting to the last good value of %1.\");" << endl;
+        c << "            msg.replace(\"%1\", num);" << endl;
         c << "            Message(msg);" << endl;
         c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
         c << "        }" << endl;
@@ -775,9 +785,9 @@ class WindowGeneratorString : public virtual String , public virtual WindowGener
         c << endl;
         c << "        if(!okay)" << endl;
         c << "        {" << endl;
-        c << "            msg.sprintf(\"The value of "<<name<<" was invalid. \"" << endl;
-        c << "                \"Resetting to the last good value of %s.\"," << endl;
-        c << "                atts->Get"<<Name<<"().c_str());" << endl;
+        c << "            msg = tr(\"The value of "<<name<<" was invalid. \"" << endl;
+        c << "                     \"Resetting to the last good value of %1.\");" << endl;
+        c << "            msg.replace(\"%1\", atts->Get"<<Name<<"().c_str());" << endl;
         c << "            Message(msg);" << endl;
         c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
         c << "        }" << endl;
@@ -1192,7 +1202,7 @@ class WindowGeneratorEnum : public virtual Enum , public virtual WindowGenerator
         for (int i=0; i<enumType->values.size(); i++)
         {
             c << "    QRadioButton *"<<name<<enumType->type<<enumType->values[i]
-              << " = new QRadioButton(\""<<enumType->values[i]<<"\", "<<name<<");" << endl;
+              << " = new QRadioButton(tr(\""<<enumType->values[i]<<"\"), "<<name<<");" << endl;
             c << "    "<<name<<"Layout->addWidget("<<name<<enumType->type<<enumType->values[i]<<");" << endl;
         }
 
@@ -1252,10 +1262,10 @@ class WindowGeneratorScaleMode : public virtual ScaleMode , public virtual Windo
         c << "    "<<name<<"Layout->setSpacing(10);" << endl;
 
         c << "    QRadioButton *"<<name<<"ScaleModeLinear"
-          << " = new QRadioButton(\""<<"Linear"<<"\", "<<name<<");" << endl;
+          << " = new QRadioButton(tr(\""<<"Linear"<<"\"), "<<name<<");" << endl;
         c << "    "<<name<<"Layout->addWidget("<<name<<"ScaleModeLinear"<<");" << endl;
         c << "    QRadioButton *"<<name<<"ScaleModeLog"
-          << " = new QRadioButton(\""<<"Log"<<"\", "<<name<<");" << endl;
+          << " = new QRadioButton(tr(\""<<"Log"<<"\"), "<<name<<");" << endl;
         c << "    "<<name<<"Layout->addWidget("<<name<<"ScaleModeLog"<<");" << endl;
 
         c << "    connect("<<name<<", SIGNAL(clicked(int))," << endl
@@ -1406,6 +1416,9 @@ class WindowGeneratorAttribute : public GeneratorBase
     //   Hank Childs, Fri Jun  9 09:54:46 PDT 2006
     //   Added copyright string.
     //
+    //   Brad Whitlock, Wed Apr  9 12:49:00 PDT 2008
+    //   Use QString for the caption, shortName.
+    //
     // ************************************************************************
 
     void WriteHeader(ostream &h)
@@ -1435,7 +1448,7 @@ class WindowGeneratorAttribute : public GeneratorBase
         h << "class QvisVariableButton;" << endl;
         h << endl;
         
-        WriteClassComment(h, QString("Defines ") + windowname + QString(" class."));
+        WriteClassComment(h, windowname, QString("Defines ") + windowname + QString(" class."));
 
         if(plugintype == "operator")
             h << "class " << windowname << " : public QvisOperatorWindow" << endl;
@@ -1449,8 +1462,8 @@ class WindowGeneratorAttribute : public GeneratorBase
         h << "    " << windowname << "("
           << (plugintype=="" ? "" : "const int type,") << endl
           << "                         "<<name<<" *subj," << endl
-          << "                         const char *caption = 0," << endl
-          << "                         const char *shortName = 0," << endl
+          << "                         const QString &caption = QString::null," << endl
+          << "                         const QString &shortName = QString::null," << endl
           << "                         QvisNotepadArea *notepad = 0);" << endl;
         h << "    virtual ~"<<windowname<<"();" << endl;
         h << "    virtual void CreateWindowContents();" << endl;
@@ -1526,6 +1539,9 @@ class WindowGeneratorAttribute : public GeneratorBase
     //   Hank Childs, Fri Jun  9 09:54:46 PDT 2006
     //   Added copyright string.
     //
+    //   Brad Whitlock, Wed Apr  9 12:49:53 PDT 2008
+    //   Use QString for caption, shortName.
+    //
     // ************************************************************************
 
     void WriteSource(ostream &c)
@@ -1562,8 +1578,8 @@ class WindowGeneratorAttribute : public GeneratorBase
         c << windowname<<"::"<<windowname<<"("
           << (plugintype=="" ? "" : "const int type,") << endl
           << "                         "<<name<<" *subj," << endl
-          << "                         const char *caption," << endl
-          << "                         const char *shortName," << endl
+          << "                         const QString &caption," << endl
+          << "                         const QString &shortName," << endl
           << "                         QvisNotepadArea *notepad)" << endl;
         if(plugintype == "operator")
         {

@@ -467,7 +467,10 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
         int thisTextY = iconY + textHeight + textdY;
         setTextPen(painter, false);
         if(plot.GetHiddenFlag())
-            painter->drawText(textX, thisTextY, plotName + " (hidden)");
+        {
+            QString hidden(QString(" (") + QObject::tr("hidden","") + QString(")"));
+            painter->drawText(textX, thisTextY, plotName + hidden);
+        }
         else
             painter->drawText(textX, thisTextY, plotName);
         // Make the text and icon clickable.
@@ -969,6 +972,9 @@ QvisPlotListBoxItem::GetPlotPixmap(int plotType, QPixmap &pm)
 //    Jeremy Meredith, Fri Sep 28 13:55:53 PDT 2001
 //    Made plugin managers key off of ID instead of index.
 //
+//    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 QString
@@ -1001,9 +1007,10 @@ QvisPlotListBoxItem::GetDisplayString(const Plot &plot, const QString &prefix)
 
     // Create the display string
     QString temp;
-    temp.sprintf("%s%s - %s%s", prefix.latin1(),
-        plotTypeName.latin1(), plotVar.latin1(),
-        plot.GetHiddenFlag() ? " (hidden)" : "");
+    temp.sprintf("%s%s - %s", prefix.latin1(),
+        plotTypeName.latin1(), plotVar.latin1());
+    if(plot.GetHiddenFlag())
+        temp += (QString(" (") + QObject::tr("hidden","") + QString(")"));
 
     return temp;
 }

@@ -90,6 +90,9 @@ class QvisColorGridWidget;
 //   Brad Whitlock, Mon Mar 6 09:09:46 PDT 2006
 //   I added code to save the current color table to the settings.
 //
+//   Brad Whitlock, Wed Apr  9 11:58:57 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -97,8 +100,8 @@ class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisColorTableWindow(ColorTableAttributes *volumeAtts_,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisColorTableWindow();
     virtual void CreateWindowContents();

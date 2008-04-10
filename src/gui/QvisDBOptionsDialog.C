@@ -44,6 +44,27 @@
 #include <qlineedit.h>
 #include <DBOptionsAttributes.h>
 
+// ****************************************************************************
+// Method: QvisDBOptionsDialog::QvisDBOptionsDialog
+//
+// Purpose: 
+//   Constructor
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: 
+// Creation:   Tue Apr  8 11:12:48 PDT 2008
+//
+// Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//   
+// ****************************************************************************
+
 QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
                                          QWidget *parent, const char *name)
     : QDialog(parent,name), atts(dbatts)
@@ -106,12 +127,12 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
    
     QHBoxLayout *btnLayout = new QHBoxLayout(topLayout);
     btnLayout->addStretch(10);
-    okButton = new QPushButton("OK", this, "okButton");
+    okButton = new QPushButton(tr("OK"), this, "okButton");
     connect(okButton, SIGNAL(clicked()),
             this, SLOT(okayClicked()));
     btnLayout->addWidget(okButton);
 
-    cancelButton = new QPushButton("Cancel", this, "cancelButton");
+    cancelButton = new QPushButton(tr("Cancel"), this, "cancelButton");
     connect(cancelButton, SIGNAL(clicked()),
             this, SLOT(reject()));
     btnLayout->addWidget(cancelButton);

@@ -64,6 +64,9 @@ using std::string;
 // Modifications:
 //   Kathleen Bonnell, Thu Jun 14 12:13:03 PDT 2007
 //   Added userCategory and userSubset.
+//
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -88,7 +91,7 @@ QvisSILSetSelector::QvisSILSetSelector(QWidget *parent, const char *name,
     //
     // Category
     //
-    categoryLabel = new QLabel("Category", this, "categoryNameLabel");
+    categoryLabel = new QLabel(tr("Category"), this, "categoryNameLabel");
     mainLayout->addWidget(categoryLabel,0,0);
 
     categoryName = new QComboBox(false, this, "categoryName");
@@ -104,7 +107,7 @@ QvisSILSetSelector::QvisSILSetSelector(QWidget *parent, const char *name,
     //
     // Set
     //
-    subsetLabel = new QLabel("Set", this, "subsetNameLabel");
+    subsetLabel = new QLabel(tr("Set"), this, "subsetNameLabel");
     mainLayout->addWidget(subsetLabel,1,0);
     subsetName = new QComboBox(false, this, "subsetName");
     subsetName->setAutoCompletion(true);

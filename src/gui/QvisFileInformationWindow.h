@@ -57,15 +57,17 @@ class QMultiLineEdit;
 // Creation:   Tue Aug 20 13:51:40 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 10:46:33 PDT 2008
+//   QString for caption and shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisFileInformationWindow : public QvisPostableWindowObserver
 {
     Q_OBJECT
 public:
-    QvisFileInformationWindow(FileServerList *fs, const char *caption = 0,
-        const char *shortName = 0, QvisNotepadArea *notepad = 0);
+    QvisFileInformationWindow(FileServerList *fs, const QString &caption = QString::null,
+        const QString &shortName = QString::null, QvisNotepadArea *notepad = 0);
     virtual ~QvisFileInformationWindow();
     virtual void CreateWindowContents();
 protected:

@@ -89,6 +89,9 @@ const unsigned char QvisColorSelectionWidget::colorComponents[] = {
 //   Brad Whitlock, Wed Feb 26 13:14:55 PST 2003
 //   Made some changes because I changed QvisColorGridWidget.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 QvisColorSelectionWidget::QvisColorSelectionWidget(QWidget *parent,
@@ -131,7 +134,7 @@ QvisColorSelectionWidget::QvisColorSelectionWidget(QWidget *parent,
             this, SLOT(handleSelectedColor(const QColor &)));
 
     // Create the "More colors..." button
-    moreColorsButton = new QPushButton("More colors ...", this, 
+    moreColorsButton = new QPushButton(tr("More colors ..."), this, 
         "moreColorsButton");
     moreColorsButton->move(0, standardColorGrid->sizeHint().height() + 
         customColorGrid->sizeHint().height());

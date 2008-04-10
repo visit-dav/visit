@@ -71,12 +71,14 @@ using std::string;
 // Creation:   October 24, 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 11:45:36 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 QvisMaterialWindow::QvisMaterialWindow(MaterialAttributes *subj,
-                                       const char *caption,
-                                       const char *shortName,
+                                       const QString &caption,
+                                       const QString &shortName,
                                        QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(subj, caption, shortName, notepad,
                                QvisPostableWindowObserver::AllExtraButtons,
@@ -127,6 +129,9 @@ QvisMaterialWindow::~QvisMaterialWindow()
 //    Changed algorithm selection to a multiple-choice.
 //    Added VF for isovolume method.
 //
+//    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -135,45 +140,45 @@ QvisMaterialWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 8,2,  10, "mainLayout");
 
     QHBox *algBox = new QHBox(central);
-    algorithmLabel = new QLabel("Algorithm:", algBox, "algorithmLabel");
+    algorithmLabel = new QLabel(tr("Algorithm:"), algBox, "algorithmLabel");
     algBox->setSpacing(10);
 
     algorithm = new QComboBox(false, algBox, "algorithm");
-    algorithm->insertItem("Tetrahedral (obsolete)");
-    algorithm->insertItem("Zoo-based (default)");
-    algorithm->insertItem("Isovolume (special-purpose)");
+    algorithm->insertItem(tr("Tetrahedral (obsolete)"));
+    algorithm->insertItem(tr("Zoo-based (default)"));
+    algorithm->insertItem(tr("Isovolume (special-purpose)"));
     connect(algorithm, SIGNAL(activated(int)),
             this, SLOT(algorithmChanged(int)));
     mainLayout->addMultiCellWidget(algBox, 0,0, 0,1);
 
-    smoothing = new QCheckBox("Enable interface smoothing", central, "smoothing");
+    smoothing = new QCheckBox(tr("Enable interface smoothing"), central, "smoothing");
     connect(smoothing, SIGNAL(toggled(bool)),
             this, SLOT(smoothingChanged(bool)));
     mainLayout->addWidget(smoothing, 1,0);
 
-    forceFullConnectivity = new QCheckBox("Force full connectivity", central, "forceFullConnectivity");
+    forceFullConnectivity = new QCheckBox(tr("Force full connectivity"), central, "forceFullConnectivity");
     connect(forceFullConnectivity, SIGNAL(toggled(bool)),
             this, SLOT(forceFullConnectivityChanged(bool)));
     mainLayout->addWidget(forceFullConnectivity, 2,0);
 
-    forceMIR = new QCheckBox("Force interface reconstruction", central, "forceMIR");
+    forceMIR = new QCheckBox(tr("Force interface reconstruction"), central, "forceMIR");
     connect(forceMIR, SIGNAL(toggled(bool)),
             this, SLOT(forceMIRChanged(bool)));
     mainLayout->addWidget(forceMIR, 3,0);
 
-    cleanZonesOnly = new QCheckBox("Clean zones only", central, "cleanZonesOnly");
+    cleanZonesOnly = new QCheckBox(tr("Clean zones only"), central, "cleanZonesOnly");
     cleanZonesOnly->setEnabled(false);
     connect(cleanZonesOnly, SIGNAL(toggled(bool)),
             this, SLOT(cleanZonesOnlyChanged(bool)));
     mainLayout->addWidget(cleanZonesOnly, 4,0);
 
-    simplifyHeavilyMixedZones = new QCheckBox("Simplify heavily mixed zones", 
+    simplifyHeavilyMixedZones = new QCheckBox(tr("Simplify heavily mixed zones"), 
                  central, "simplifyHeavilyMixedZones");
     connect(simplifyHeavilyMixedZones, SIGNAL(toggled(bool)),
             this, SLOT(simplifyHeavilyMixedZonesChanged(bool)));
     mainLayout->addWidget(simplifyHeavilyMixedZones, 5,0);
 
-    maxMatsPerZoneLabel = new QLabel("Maximum materials per zone",
+    maxMatsPerZoneLabel = new QLabel(tr("Maximum materials per zone"),
                                      central, "maxMatsPerZoneLabel");
     mainLayout->addWidget(maxMatsPerZoneLabel, 6, 0);
 
@@ -182,7 +187,7 @@ QvisMaterialWindow::CreateWindowContents()
             SLOT(maxMatsPerZoneProcessText()));
     mainLayout->addWidget(maxMatsPerZone, 6, 1);
 
-    isoVolumeFractionLabel = new QLabel("Volume Fraction for Isovolume", central, "isoVolumeFractionLabel");
+    isoVolumeFractionLabel = new QLabel(tr("Volume Fraction for Isovolume"), central, "isoVolumeFractionLabel");
     mainLayout->addWidget(isoVolumeFractionLabel,7,0);
     isoVolumeFraction = new QNarrowLineEdit(central, "isoVolumeFraction");
     connect(isoVolumeFraction, SIGNAL(returnPressed()),
@@ -324,6 +329,9 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
 //    Brad Whitlock, Fri Dec 14 17:40:16 PST 2007
 //    Made it use ids.
 //
+//    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -384,9 +392,10 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("Max mats per zone must be at least 1."
-                "Resetting to the last good value of %d.",
-                atts->GetMaxMaterialsPerZone());
+            QString num; num.sprintf("%d", atts->GetMaxMaterialsPerZone());
+            msg = tr("Max mats per zone must be at least 1."
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", num);
             Message(msg);
             atts->SetMaxMaterialsPerZone(atts->GetMaxMaterialsPerZone());
         }
@@ -408,9 +417,10 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
 
         if (!okay)
         {
-            msg.sprintf("The value of isoVolumeFraction was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetIsoVolumeFraction());
+            QString num; num.sprintf("%g", atts->GetIsoVolumeFraction());
+            msg = tr("The value of isoVolumeFraction was invalid. "
+                     "Resetting to the last good value of %1.");
+            msg.replace("%1", num);
             Message(msg);
             atts->SetIsoVolumeFraction(atts->GetIsoVolumeFraction());
         }
@@ -434,6 +444,9 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
 //    Hank Childs, Mon Jun 11 21:33:42 PDT 2007
 //    Only issue the warning a few times.
 //
+//    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -447,14 +460,14 @@ QvisMaterialWindow::Apply(bool ignore)
         GetViewerMethods()->SetMaterialAttributes();
         static int timesIssued = 0;
         if (timesIssued == 0)
-            GUIBase::Warning("Note:  These settings only apply to new plots.  "
-                         "To apply them to current plots, re-open the file.");
+            GUIBase::Warning(tr("Note:  These settings only apply to new plots.  "
+                         "To apply them to current plots, re-open the file."));
         else if (timesIssued == 1)
-            GUIBase::Warning("Note:  These settings only apply to new plots.  "
+            GUIBase::Warning(tr("Note:  These settings only apply to new plots.  "
                       "To apply them to current plots, re-open the file.  "
                       "VisIt will NOT issue this message any further times "
                       "for this session, but keep in mind that you must "
-                      "re-open each time you change the material attributes.");
+                      "re-open each time you change the material attributes."));
         timesIssued++;
     }
     else

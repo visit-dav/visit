@@ -66,6 +66,22 @@ class QvisStripChartMgr;
 
 class avtSimulationCommandSpecification;
 
+// ****************************************************************************
+// Class: QvisSimulationWindow
+//
+// Purpose:
+//   Simulation window.
+//
+// Notes:      
+//
+// Programmer: Jeremy Meredith
+// Creation:   Wed Apr  9 11:49:35 PDT 2005
+//
+// Modifications:
+//   Brad Whitlock, Wed Apr  9 11:49:49 PDT 2008
+//   QString for caption, shortName.
+//
+// ****************************************************************************
 
 class GUI_API QvisSimulationWindow : public QvisPostableWindowObserver
 {
@@ -75,8 +91,8 @@ class GUI_API QvisSimulationWindow : public QvisPostableWindowObserver
     typedef QMap<QString, avtDatabaseMetaData*> SimulationMetaDataMap;
 public:
     QvisSimulationWindow(EngineList *engineList,    
-                     const char *caption = 0,
-                     const char *shortName = 0,
+                     const QString &caption = QString::null,
+                     const QString &shortName = QString::null,
                      QvisNotepadArea *notepad = 0);
     virtual ~QvisSimulationWindow();
     virtual void CreateWindowContents();

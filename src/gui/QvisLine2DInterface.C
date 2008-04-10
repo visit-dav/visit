@@ -68,6 +68,9 @@
 //   Brad Whitlock, Tue Jun 28 13:36:41 PST 2005
 //   Added code to make tool tips for the start, end coordinates.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 QvisLine2DInterface::QvisLine2DInterface(QWidget *parent,
@@ -84,7 +87,7 @@ QvisLine2DInterface::QvisLine2DInterface(QWidget *parent,
     connect(positionStartEdit, SIGNAL(screenPositionChanged(double, double)),
             this, SLOT(positionStartChanged(double, double)));
     QLabel *startLabel = new QLabel(positionStartEdit, "Start", this);
-    QString startTip("Start of line in screen coordinates [0,1]");
+    QString startTip(tr("Start of line in screen coordinates [0,1]"));
     QToolTip::add(startLabel, startTip);
     cLayout->addMultiCellWidget(positionStartEdit, 0, 0, 1, 3);
     cLayout->addWidget(startLabel, 0, 0);
@@ -94,7 +97,7 @@ QvisLine2DInterface::QvisLine2DInterface(QWidget *parent,
     connect(positionEndEdit, SIGNAL(screenPositionChanged(double, double)),
             this, SLOT(positionEndChanged(double, double)));
     QLabel *endLabel = new QLabel(positionEndEdit, "End", this);
-    QString endTip("End of line in screen coordinates [0,1]");
+    QString endTip(tr("End of line in screen coordinates [0,1]"));
     QToolTip::add(endLabel, endTip);
     cLayout->addMultiCellWidget(positionEndEdit, 1, 1, 1, 3);
     cLayout->addWidget(endLabel, 1, 0);
@@ -105,13 +108,13 @@ QvisLine2DInterface::QvisLine2DInterface(QWidget *parent,
     connect(widthSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(widthChanged(int)));
     cLayout->addWidget(widthSpinBox, 2, 1);
-    cLayout->addWidget(new QLabel(widthSpinBox, "Width", this), 2, 0);
+    cLayout->addWidget(new QLabel(widthSpinBox, tr("Width"), this), 2, 0);
 
     // Add controls for the line color.
     colorButton = new QvisColorButton(this, "colorButton");
     connect(colorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(colorChanged(const QColor &)));
-    cLayout->addWidget(new QLabel(colorButton, "Line color", this),
+    cLayout->addWidget(new QLabel(colorButton, tr("Line color"), this),
                        3, 0, Qt::AlignLeft);
     cLayout->addWidget(colorButton, 3, 1);
 
@@ -124,28 +127,28 @@ QvisLine2DInterface::QvisLine2DInterface(QWidget *parent,
 
     // Beginning arrow control.
     beginArrowComboBox = new QComboBox(this, "beginArrowControl");
-    beginArrowComboBox->insertItem("None", 0);
-    beginArrowComboBox->insertItem("Line", 1);
-    beginArrowComboBox->insertItem("Solid", 2);
+    beginArrowComboBox->insertItem(tr("None"), 0);
+    beginArrowComboBox->insertItem(tr("Line"), 1);
+    beginArrowComboBox->insertItem(tr("Solid"), 2);
     beginArrowComboBox->setEditable(false);
     connect(beginArrowComboBox, SIGNAL(activated(int)),
             this, SLOT(beginArrowChanged(int)));
     cLayout->addMultiCellWidget(beginArrowComboBox, 4, 4, 1, 3);
-    cLayout->addWidget(new QLabel("Begin Arrow", this), 4, 0);
+    cLayout->addWidget(new QLabel(tr("Begin Arrow"), this), 4, 0);
 
     // Beginning arrow control.
     endArrowComboBox = new QComboBox(this, "endArrowControl");
-    endArrowComboBox->insertItem("None", 0);
-    endArrowComboBox->insertItem("Line", 1);
-    endArrowComboBox->insertItem("Solid", 2);
+    endArrowComboBox->insertItem(tr("None"), 0);
+    endArrowComboBox->insertItem(tr("Line"), 1);
+    endArrowComboBox->insertItem(tr("Solid"), 2);
     endArrowComboBox->setEditable(false);
     connect(endArrowComboBox, SIGNAL(activated(int)),
             this, SLOT(endArrowChanged(int)));
     cLayout->addMultiCellWidget(endArrowComboBox, 5, 5, 1, 3);
-    cLayout->addWidget(new QLabel("End Arrow", this), 5, 0);
+    cLayout->addWidget(new QLabel(tr("End Arrow"), this), 5, 0);
 
     // Added a visibility toggle
-    visibleCheckBox = new QCheckBox("Visible", this, "visibleCheckBox");
+    visibleCheckBox = new QCheckBox(tr("Visible"), this, "visibleCheckBox");
     connect(visibleCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(visibilityToggled(bool)));
     cLayout->addWidget(visibleCheckBox, 6, 0);
@@ -279,13 +282,13 @@ QvisLine2DInterface::GetCurrentValues(int which_widget)
     if(which_widget == 0 || doAll)
     {
         // Get the new position
-        GetScreenPosition(positionStartEdit, "Start");
+        GetScreenPosition(positionStartEdit, tr("Start"));
     }
 
     if(which_widget == 1 || doAll)
     {
         // Get the new position
-        GetScreenPosition2(positionEndEdit, "End");
+        GetScreenPosition2(positionEndEdit, tr("End"));
     }
 
     if(which_widget == 2 || doAll)

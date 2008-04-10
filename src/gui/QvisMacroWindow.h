@@ -57,6 +57,8 @@ class QGridLayout;
 // Creation:   Thu Jun 14 16:51:28 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Wed Apr  9 11:56:54 PDT 2008
+//   QString for captionString, shortName.
 //
 // ****************************************************************************
 
@@ -64,9 +66,9 @@ class QvisMacroWindow : public QvisPostableWindow
 {
     Q_OBJECT
 public:
-    QvisMacroWindow(const char *captionString = 0,
-                      const char *shortName = 0,
-                      QvisNotepadArea *n = 0);
+    QvisMacroWindow(const QString &captionString = QString::null,
+                    const QString &shortName = QString::null,
+                    QvisNotepadArea *n = 0);
     virtual ~QvisMacroWindow();
     virtual void CreateWindowContents();
 

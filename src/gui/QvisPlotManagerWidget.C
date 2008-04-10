@@ -198,28 +198,28 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
     sourceComboBox->hide();
     connect(sourceComboBox, SIGNAL(activated(int)),
             this, SLOT(sourceChanged(int)));
-    sourceLabel = new QLabel(sourceComboBox, "Source", this, "sourceLabel");
+    sourceLabel = new QLabel(sourceComboBox, tr("Source"), this, "sourceLabel");
     sourceLabel->hide();
     topLayout->addWidget(sourceLabel, 0, 0);
     topLayout->addMultiCellWidget(sourceComboBox, 0, 0, 1, 3);
 
-    activePlots = new QLabel("Active plots", this, "activePlots");
+    activePlots = new QLabel(tr("Active plots"), this, "activePlots");
     topLayout->addWidget(activePlots, 1, 0);
 
     // Create the hide/show button.
-    hideButton = new QPushButton("Hide/Show", this, "hideButton");
+    hideButton = new QPushButton(tr("Hide/Show"), this, "hideButton");
     hideButton->setEnabled(false);
     connect(hideButton, SIGNAL(clicked()), this, SLOT(hidePlots()));
     topLayout->addWidget(hideButton, 1, 1);
 
     // Create the delete button.
-    deleteButton = new QPushButton("Delete", this, "deleteButton");
+    deleteButton = new QPushButton(tr("Delete"), this, "deleteButton");
     deleteButton->setEnabled(false);
     connect(deleteButton, SIGNAL(clicked()), this, SLOT(deletePlots()));
     topLayout->addWidget(deleteButton, 1, 2);
 
     // Create the draw button.
-    drawButton = new QPushButton("Draw", this, "drawButton");
+    drawButton = new QPushButton(tr("Draw"), this, "drawButton");
     drawButton->setEnabled(false);
     connect(drawButton, SIGNAL(clicked()), this, SLOT(drawPlots()));
     topLayout->addWidget(drawButton, 1, 3);
@@ -267,7 +267,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
     veryTopLayout->addLayout(applyLayout);
 
     // Begin label text
-    QLabel *applyText1 = new QLabel("Apply ", this);
+    QLabel *applyText1 = new QLabel(tr("Apply "), this);
     applyLayout->addWidget(applyText1);
 
     // Create the "Apply operator to all plots" toggle.
@@ -276,7 +276,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
             this, SLOT(applyOperatorToggled(bool)));
     applyLayout->addWidget(applyOperatorToggle);
 
-    QLabel *applyText2 = new QLabel("operators/", this);
+    QLabel *applyText2 = new QLabel(tr("operators") + QString("/"), this);
     applyLayout->addWidget(applyText2);
 
     // Create the "Apply selection to all plots" toggle.
@@ -286,7 +286,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
     applyLayout->addWidget(applySelectionToggle);
 
     // End label text
-    QLabel *applyText3 = new QLabel("selection to all plots", this);
+    QLabel *applyText3 = new QLabel(tr("selection to all plots"), this);
     applyLayout->addWidget(applyText3);
     applyLayout->addStretch(1);
 
@@ -438,6 +438,9 @@ QvisPlotManagerWidget::SetSourceVisible(bool val)
 //   Gunther H. Weber, Fri Feb 29 18:35:18 PST 2008
 //   Fixed disappearing variables menu problem.
 //
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -473,8 +476,8 @@ QvisPlotManagerWidget::CreateMenus(QMenuBar *menuBar)
     QPixmap removeAll(removealloperators_xpm);
     QIconSet removeAllIcon(removeAll);
     operatorMenu->insertSeparator();
-    operatorMenu->insertItem(removeLast, "Remove last", REMOVE_LAST_OPERATOR_ID);
-    operatorMenu->insertItem(removeAll, "Remove all", REMOVE_ALL_OPERATORS_ID);
+    operatorMenu->insertItem(removeLast, tr("Remove last"), REMOVE_LAST_OPERATOR_ID);
+    operatorMenu->insertItem(removeAll, tr("Remove all"), REMOVE_ALL_OPERATORS_ID);
     operatorMenuId = plotMenuBar->insertItem( tr("Operators"), operatorMenu );
     plotMenuBar->setItemEnabled(operatorMenuId, false);
 

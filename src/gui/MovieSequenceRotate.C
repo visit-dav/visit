@@ -98,14 +98,16 @@ MovieSequenceRotate::~MovieSequenceRotate()
 // Creation:   Tue Nov 14 10:40:11 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 10:34:24 PDT 2008
+//   SequenceMenuName now returns QString.
+//
 // ****************************************************************************
 
 QWidget *
 MovieSequenceRotate::CreateUI()
 {
     QvisRotationTransition *ui = new QvisRotationTransition(Pixmap(), 0, GetName().c_str());
-    ui->setTitle(SequenceMenuName().c_str());
+    ui->setTitle(SequenceMenuName());
 
     return ui;
 }
@@ -219,11 +221,27 @@ MovieSequenceScreenRotationX::Pixmap()
     return QPixmap(ms_srotx_xpm);
 }
 
+QString
+MovieSequenceScreenRotationX::SequenceMenuName() const
+{
+    return tr("Screen rotate X");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 QPixmap
 MovieSequenceScreenRotationY::Pixmap()
 {
     return QPixmap(ms_sroty_xpm);
 }
+
+QString
+MovieSequenceScreenRotationY::SequenceMenuName() const
+{
+    return tr("Screen rotate Y");
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 QPixmap
 MovieSequenceScreenRotationZ::Pixmap()
@@ -231,6 +249,13 @@ MovieSequenceScreenRotationZ::Pixmap()
     return QPixmap(ms_srotz_xpm);
 }
 
+QString
+MovieSequenceScreenRotationZ::SequenceMenuName() const
+{
+    return tr("Screen rotate Z");
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 QPixmap
 MovieSequenceRotationX::Pixmap()
@@ -238,16 +263,38 @@ MovieSequenceRotationX::Pixmap()
     return QPixmap(ms_rotx_xpm);
 }
 
+QString
+MovieSequenceRotationX::SequenceMenuName() const
+{
+    return tr("Rotate X");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 QPixmap
 MovieSequenceRotationY::Pixmap()
 {
     return QPixmap(ms_roty_xpm);
 }
 
+QString
+MovieSequenceRotationY::SequenceMenuName() const
+{
+    return tr("Rotate Y");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 QPixmap
 MovieSequenceRotationZ::Pixmap()
 {
     return QPixmap(ms_rotz_xpm);
+}
+
+QString
+MovieSequenceRotationZ::SequenceMenuName() const
+{
+    return tr("Rotate Z");
 }
 
 

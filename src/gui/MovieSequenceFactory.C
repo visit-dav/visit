@@ -296,11 +296,13 @@ MovieSequenceFactory::SequenceName(int id, std::string &name) const
 // Creation:   Tue Nov 14 10:33:38 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 09:08:56 PDT 2008
+//   Changed std::string to QString.
+//
 // ****************************************************************************
 
 bool
-MovieSequenceFactory::SequenceMenuName(int id, std::string &name) const
+MovieSequenceFactory::SequenceMenuName(int id, QString &name) const
 {
     std::map<int, MovieSequence *>::const_iterator it = sequenceTypes.find(id);
     if(it != sequenceTypes.end())

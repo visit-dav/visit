@@ -104,14 +104,16 @@ MovieSequenceTransition::~MovieSequenceTransition()
 // Creation:   Tue Nov 14 10:40:11 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 10:34:53 PDT 2008
+//   SequenceMenuName now returns QString.
+//
 // ****************************************************************************
 
 QWidget *
 MovieSequenceTransition::CreateUI()
 {
     QvisSequenceTransition *ui = new QvisSequenceTransition(Pixmap(), 0, GetName().c_str());
-    ui->setTitle(SequenceMenuName().c_str());
+    ui->setTitle(SequenceMenuName());
 
     return ui;
 }
@@ -265,17 +267,40 @@ MovieSequenceFade::Pixmap()
     return QPixmap(ms_fade_xpm);
 }
 
+QString
+MovieSequenceFade::SequenceMenuName() const
+{
+    return tr("Fade");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 QPixmap
 MovieSequenceLRWipe::Pixmap()
 {
     return QPixmap(ms_lr_wipe_xpm);
 }
 
+QString
+MovieSequenceLRWipe::SequenceMenuName() const
+{
+    return tr("Wipe left to right");
+}
+
+////////////////////////////////////////////////////////////////////////////////
 QPixmap
 MovieSequenceRLWipe::Pixmap()
 {
     return QPixmap(ms_rl_wipe_xpm);
 }
+
+QString
+MovieSequenceRLWipe::SequenceMenuName() const
+{
+    return tr("Wipe left to right");
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 QPixmap
 MovieSequenceTBWipe::Pixmap()
@@ -283,11 +308,27 @@ MovieSequenceTBWipe::Pixmap()
     return QPixmap(ms_tb_wipe_xpm);
 }
 
+QString
+MovieSequenceTBWipe::SequenceMenuName() const
+{
+    return tr("Wipe top to bottom");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 QPixmap
 MovieSequenceBTWipe::Pixmap()
 {
     return QPixmap(ms_bt_wipe_xpm);
 }
+
+QString
+MovieSequenceBTWipe::SequenceMenuName() const
+{
+    return tr("Wipe bottom to top");
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 QPixmap
 MovieSequenceLRSlide::Pixmap()
@@ -295,11 +336,27 @@ MovieSequenceLRSlide::Pixmap()
     return QPixmap(ms_lr_slide_xpm);
 }
 
+QString
+MovieSequenceLRSlide::SequenceMenuName() const
+{
+    return tr("Slide left to right");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 QPixmap
 MovieSequenceRLSlide::Pixmap()
 {
     return QPixmap(ms_rl_slide_xpm);
 }
+
+QString
+MovieSequenceRLSlide::SequenceMenuName() const
+{
+    return tr("Slide right to left");
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 QPixmap
 MovieSequenceTBSlide::Pixmap()
@@ -307,11 +364,27 @@ MovieSequenceTBSlide::Pixmap()
     return QPixmap(ms_tb_slide_xpm);
 }
 
+QString
+MovieSequenceTBSlide::SequenceMenuName() const
+{
+    return tr("Slide top to bottom");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 QPixmap
 MovieSequenceBTSlide::Pixmap()
 {
     return QPixmap(ms_bt_slide_xpm);
 }
+
+QString
+MovieSequenceBTSlide::SequenceMenuName() const
+{
+    return tr("Slide bottom to top");
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 QPixmap
 MovieSequenceCircle::Pixmap()
@@ -319,15 +392,39 @@ MovieSequenceCircle::Pixmap()
     return QPixmap(ms_circle_xpm);
 }
 
+QString
+MovieSequenceCircle::SequenceMenuName() const
+{
+    return tr("Circular reveal");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 QPixmap
 MovieSequenceRipple::Pixmap()
 {
     return QPixmap(ms_ripple_xpm);
 }
 
+QString
+MovieSequenceRipple::SequenceMenuName() const
+{
+    return tr("Ripple fade");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 QPixmap
 MovieSequenceBlock::Pixmap()
 {
     return QPixmap(ms_block_xpm);
 }
+
+QString
+MovieSequenceBlock::SequenceMenuName() const
+{
+    return tr("Block fade");
+}
+
+
 

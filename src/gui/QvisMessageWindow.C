@@ -75,10 +75,13 @@
 //   Brad Whitlock, Fri Jan 18 16:11:07 PST 2008
 //   Added preserveInformation, doHide slot, and made the window wider&taller by default.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // *************************************************************************************
 
 QvisMessageWindow::QvisMessageWindow(MessageAttributes *msgAttr,
-    const char *captionString) : QvisWindowBase(captionString),
+    const QString &captionString) : QvisWindowBase(captionString),
     Observer(msgAttr)
 {
     preserveInformation = false;
@@ -95,7 +98,7 @@ QvisMessageWindow::QvisMessageWindow(MessageAttributes *msgAttr,
     messageText->setMinimumWidth(3 * fontMetrics().width("Closed the compute "
         "engine on host sunburn.llnl.gov.  ") / 2);
     messageText->setMinimumHeight(8 * fontMetrics().lineSpacing());
-    severityLabel = new QLabel(messageText, "Message", central, "Severity Label");
+    severityLabel = new QLabel(messageText, tr("Message"), central, "Severity Label");
     QFont f("helvetica", 18);
     f.setBold(true);
     severityLabel->setFont( f );
@@ -107,7 +110,7 @@ QvisMessageWindow::QvisMessageWindow(MessageAttributes *msgAttr,
     QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
 
     // Create a button to hide the window.
-    QPushButton *dismissButton = new QPushButton("Dismiss", central, "dismiss");
+    QPushButton *dismissButton = new QPushButton(tr("Dismiss"), central, "dismiss");
     buttonLayout->addStretch(10);
     buttonLayout->addWidget(dismissButton);
     connect(dismissButton, SIGNAL(clicked()), this, SLOT(doHide()));
@@ -166,6 +169,9 @@ QvisMessageWindow::~QvisMessageWindow()
 //   warning message comes in. Incoming "Message" messages do not overwrite
 //   an Information message while the window is showing.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // *************************************************************************************
 
 void
@@ -183,13 +189,13 @@ QvisMessageWindow::Update(Subject *)
     {
         MessageAttributes::Severity oldSeverity;
         QString oldSeverityLabel = severityLabel->text();
-        if (oldSeverityLabel == "Error!")
+        if (oldSeverityLabel == tr("Error!"))
             oldSeverity = MessageAttributes::Error;
-        else if (oldSeverityLabel == "Warning")
+        else if (oldSeverityLabel == tr("Warning"))
             oldSeverity = MessageAttributes::Warning;
-        else if (oldSeverityLabel == "Message")
+        else if (oldSeverityLabel == tr("Message"))
             oldSeverity = MessageAttributes::Message;
-        else if (oldSeverityLabel == "Information")
+        else if (oldSeverityLabel == tr("Information"))
             oldSeverity = MessageAttributes::Information;
         else
             oldSeverity = MessageAttributes::Error;
@@ -206,7 +212,9 @@ QvisMessageWindow::Update(Subject *)
             QString newMsgText = QString(ma->GetText().c_str());
             if (msgText.find(newMsgText) == -1)
             {
-                msgText += "\n\nShortly thereafter, the following occured...\n\n";
+                msgText += "\n\n";
+                msgText += tr("Shortly thereafter, the following occured...");
+                msgText += "\n\n";
                 msgText += newMsgText;
             }
         }
@@ -247,21 +255,21 @@ QvisMessageWindow::Update(Subject *)
         {
             show();
             qApp->beep();
-            severityLabel->setText(QString("Error!"));
+            severityLabel->setText(tr("Error!"));
             RestoreCursor();
         }
         else if(severity == MessageAttributes::Warning)
         {
             show();
-            severityLabel->setText(QString("Warning"));
+            severityLabel->setText(tr("Warning"));
             RestoreCursor();
         }
         else if(severity == MessageAttributes::Message)
-            severityLabel->setText(QString("Message"));
+            severityLabel->setText(tr("Message"));
         else if(severity == MessageAttributes::Information)
         {
             show();
-            severityLabel->setText(QString("Information"));
+            severityLabel->setText(tr("Information"));
             RestoreCursor();
             preserveInformation = true;
         }

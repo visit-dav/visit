@@ -69,13 +69,15 @@ using std::string;
 // Creation:   Mon Aug 16 15:29:28 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 11:32:04 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 QvisInteractorWindow::QvisInteractorWindow(
                          InteractorAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisPostableWindowObserver(subj, caption, shortName, notepad)
 {
@@ -123,6 +125,9 @@ QvisInteractorWindow::~QvisInteractorWindow()
 //   Jeremy Meredith, Thu Feb  7 17:51:32 EST 2008
 //   Added snap-to-horizontal grid support for axis array mode navigation.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -130,7 +135,7 @@ QvisInteractorWindow::CreateWindowContents()
 {
 
     QGroupBox *zoomGroup = new QGroupBox(central, "zoomGroup");
-    zoomGroup->setTitle("Zoom interaction:");
+    zoomGroup->setTitle(tr("Zoom interaction:"));
     topLayout->addWidget(zoomGroup);
 
     QVBoxLayout *zoomVBoxLayout = new QVBoxLayout(zoomGroup);
@@ -140,23 +145,23 @@ QvisInteractorWindow::CreateWindowContents()
     zoomVBoxLayout->setSpacing(5);
     zoomGridLayout->setMargin(10);
 
-    showGuidelines = new QCheckBox("Show Guidelines", zoomGroup, "showGuidelines");
+    showGuidelines = new QCheckBox(tr("Show Guidelines"), zoomGroup, "showGuidelines");
     connect(showGuidelines, SIGNAL(toggled(bool)),
             this, SLOT(showGuidelinesChanged(bool)));
     zoomGridLayout->addWidget(showGuidelines, 1,0);
 
-    clampSquare = new QCheckBox("Clamp to Square", zoomGroup, "clampSquare");
+    clampSquare = new QCheckBox(tr("Clamp to Square"), zoomGroup, "clampSquare");
     connect(clampSquare, SIGNAL(toggled(bool)),
             this, SLOT(clampSquareChanged(bool)));
     zoomGridLayout->addWidget(clampSquare, 2,0);
 
-    fillViewportOnZoom = new QCheckBox("Fill viewport on zoom", zoomGroup, "fillViewportOnZoom");
+    fillViewportOnZoom = new QCheckBox(tr("Fill viewport on zoom"), zoomGroup, "fillViewportOnZoom");
     connect(fillViewportOnZoom, SIGNAL(toggled(bool)),
             this, SLOT(fillViewportOnZoomChanged(bool)));
     zoomGridLayout->addWidget(fillViewportOnZoom, 3,0);
 
     QGroupBox *navigationGroup = new QGroupBox(central, "navigationGroup");
-    navigationGroup->setTitle("Navigation mode:");
+    navigationGroup->setTitle(tr("Navigation mode:"));
     topLayout->addWidget(navigationGroup);
 
     QVBoxLayout *navigationVBoxLayout = new QVBoxLayout(navigationGroup);
@@ -170,22 +175,22 @@ QvisInteractorWindow::CreateWindowContents()
     navigationMode = new QButtonGroup(0, "navigationMode");
     connect(navigationMode, SIGNAL(clicked(int)),
             this, SLOT(navigationModeChanged(int)));
-    QRadioButton *trackball = new QRadioButton("Trackball", navigationGroup,
+    QRadioButton *trackball = new QRadioButton(tr("Trackball"), navigationGroup,
                                                "Trackball");
     navigationMode->insert(trackball);
     navigationLayout->addWidget(trackball, 1, 1);
-    QRadioButton *dolly = new QRadioButton("Dolly", navigationGroup,
+    QRadioButton *dolly = new QRadioButton(tr("Dolly"), navigationGroup,
                                            "Dolly");
     navigationMode->insert(dolly);
     navigationLayout->addWidget(dolly, 1, 2);
-    QRadioButton *flythrough = new QRadioButton("Flythrough", navigationGroup,
+    QRadioButton *flythrough = new QRadioButton(tr("Flythrough"), navigationGroup,
                                                 "Flythrough");
     navigationMode->insert(flythrough);
     navigationLayout->addWidget(flythrough, 1, 3);
 
 
     QGroupBox *axisGroup = new QGroupBox(central, "axisGroup");
-    axisGroup->setTitle("Axis Array interaction:");
+    axisGroup->setTitle(tr("Axis Array interaction:"));
     topLayout->addWidget(axisGroup);
 
     QVBoxLayout *axisVBoxLayout = new QVBoxLayout(axisGroup);
@@ -195,7 +200,7 @@ QvisInteractorWindow::CreateWindowContents()
     axisVBoxLayout->setSpacing(5);
     axisGridLayout->setMargin(10);
 
-    axisSnap = new QCheckBox("Snap to horizontal grid",
+    axisSnap = new QCheckBox(tr("Snap to horizontal grid"),
                              axisGroup, "axisSnap");
     connect(axisSnap, SIGNAL(toggled(bool)),
             this, SLOT(axisSnapChanged(bool)));

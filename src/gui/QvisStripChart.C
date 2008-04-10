@@ -287,8 +287,7 @@ void VisItSimStripChart::paintGrid(QPainter *paint)
             paint->drawLine( QPoint(t+timeShift,int(h-(-delta+i*vdelta))), QPoint(t+timeShift,int(h-(delta+i*vdelta )))); // draw line
         }
     }    
-    setCaption( "Strip Chart");
-
+    setCaption(tr("Strip Chart"));
 }
 
 

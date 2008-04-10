@@ -54,10 +54,13 @@
 //   Brad Whitlock, Mon Sep 30 07:50:41 PDT 2002
 //   I added window flags.
 //
+//   Brad Whitlock, Wed Apr  9 10:31:03 PDT 2008
+//   Changed ctor args.
+//
 // **************************************************************************** 
 
 QvisDelayedWindowSimpleObserver::QvisDelayedWindowSimpleObserver(
-    const char *caption, WFlags f) : QvisDelayedWindow(caption, f),
+    const QString &caption, WFlags f) : QvisDelayedWindow(caption, f),
     SimpleObserver()
 {
     selectedSubject = 0;

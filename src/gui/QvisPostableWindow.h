@@ -77,14 +77,17 @@ class QVBoxLayout;
 //   Brad Whitlock, Mon Nov 14 10:42:26 PDT 2005
 //   Added postEnabled static member.
 //
+//   Brad Whitlock, Wed Apr  9 10:50:05 PDT 2008
+//   QString for caption and shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisPostableWindow : public QvisWindowBase
 {
     Q_OBJECT
 public:
-    QvisPostableWindow(const char *captionString = 0,
-                       const char *shortName = 0,
+    QvisPostableWindow(const QString &captionString = QString::null,
+                       const QString &shortName = QString::null,
                        QvisNotepadArea *n = 0);
     virtual ~QvisPostableWindow();
     virtual void CreateWindowContents() = 0;

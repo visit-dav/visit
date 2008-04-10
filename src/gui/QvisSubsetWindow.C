@@ -103,10 +103,13 @@ S2S(SetState s)
 //   Brad Whitlock, Fri Aug 6 13:56:40 PST 2004
 //   Changed to support multiple set highlighting.
 //
+//   Brad Whitlock, Wed Apr  9 11:05:11 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
-QvisSubsetWindow::QvisSubsetWindow(Subject *subj, const char *caption,
-    const char *shortName, QvisNotepadArea *notepad) :
+QvisSubsetWindow::QvisSubsetWindow(Subject *subj, const QString &caption,
+    const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(subj, caption, shortName, notepad,
                                QvisPostableWindowObserver::ApplyButton, false),
     listViews()
@@ -162,6 +165,9 @@ QvisSubsetWindow::~QvisSubsetWindow()
 //   Brad Whitlock, Fri Aug 6 13:58:12 PST 2004
 //   I removed some buttongroups.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -180,7 +186,7 @@ QvisSubsetWindow::CreateWindowContents()
     AddListView();
     AddListView();
     AddListView();
-    listViews[0].lv->setColumnText(0, "Whole");
+    listViews[0].lv->setColumnText(0, tr("Whole"));
     listViews[0].lv->setColumnWidth(0, listViews[0].lv->visibleWidth());
 }
 
@@ -259,7 +265,7 @@ QvisSubsetWindow::UpdateWindow(bool)
             item->setOpen(true);
         }
 
-        listViews[0].lv->setColumnText(0, "Whole");
+        listViews[0].lv->setColumnText(0, tr("Whole"));
         listViews[0].lv->blockSignals(false);
 
         // Clear all but the first listviews.
@@ -359,6 +365,9 @@ QvisSubsetWindow::GetNextListViewIndex(QListView *lv)
 //   Brad Whitlock, Fri Aug 6 14:12:45 PST 2004
 //   I changed the controls to allow selection of multiple sets.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 int
@@ -394,9 +403,9 @@ QvisSubsetWindow::AddListView(bool visible)
     // all sets button.
     tmp.sprintf("popup%d", listViews.size());
     entry.allSetsPopupMenu = new QPopupMenu();
-    entry.allSetsPopupMenu->insertItem("Reverse",  0);
-    entry.allSetsPopupMenu->insertItem("Turn on",  1);
-    entry.allSetsPopupMenu->insertItem("Turn off", 2);
+    entry.allSetsPopupMenu->insertItem(tr("Reverse"),  0);
+    entry.allSetsPopupMenu->insertItem(tr("Turn on"),  1);
+    entry.allSetsPopupMenu->insertItem(tr("Turn off"), 2);
     connect(entry.allSetsPopupMenu, SIGNAL(activated(int)),
             this, SLOT(setAllSetsButtonAction(int)));
 
@@ -404,10 +413,10 @@ QvisSubsetWindow::AddListView(bool visible)
     QHBox *allButtonParent = new QHBox(entry.frame);
     allButtonParent->setSpacing(0);
     tmp.sprintf("allSets%d", listViews.size());
-    entry.allSetsLabel = new QLabel("All sets", entry.frame,
+    entry.allSetsLabel = new QLabel(tr("All sets"), entry.frame,
         tmp.latin1());
     // Create the button that does the action.
-    entry.allSetsButton = new QPushButton("Reverse", allButtonParent,
+    entry.allSetsButton = new QPushButton(tr("Reverse"), allButtonParent,
         tmp.latin1());
     connect(entry.allSetsButton, SIGNAL(clicked()),
             this, SLOT(allSetsClicked()));
@@ -431,9 +440,9 @@ QvisSubsetWindow::AddListView(bool visible)
     // selected sets button.
     tmp.sprintf("popup%d", listViews.size());
     entry.selectedSetsPopupMenu = new QPopupMenu();
-    entry.selectedSetsPopupMenu->insertItem("Reverse",  0);
-    entry.selectedSetsPopupMenu->insertItem("Turn on",  1);
-    entry.selectedSetsPopupMenu->insertItem("Turn off", 2);
+    entry.selectedSetsPopupMenu->insertItem(tr("Reverse"),  0);
+    entry.selectedSetsPopupMenu->insertItem(tr("Turn on"),  1);
+    entry.selectedSetsPopupMenu->insertItem(tr("Turn off"), 2);
     connect(entry.selectedSetsPopupMenu, SIGNAL(activated(int)),
             this, SLOT(setSelectedSetsButtonAction(int)));
 
@@ -441,10 +450,10 @@ QvisSubsetWindow::AddListView(bool visible)
     QHBox *selectedButtonParent = new QHBox(entry.frame);
     selectedButtonParent->setSpacing(0);
     tmp.sprintf("selectedSets%d", listViews.size());
-    entry.selectedSetsLabel = new QLabel("Selected sets", entry.frame,
+    entry.selectedSetsLabel = new QLabel(tr("Selected sets"), entry.frame,
         tmp.latin1());
     // Create the button that does the action.
-    entry.selectedSetsButton = new QPushButton("Reverse", selectedButtonParent,
+    entry.selectedSetsButton = new QPushButton(tr("Reverse"), selectedButtonParent,
         tmp.latin1());
     connect(entry.selectedSetsButton, SIGNAL(clicked()),
             this, SLOT(selectedSetsClicked()));
@@ -835,6 +844,8 @@ QvisSubsetWindow::TurnReverse(int index, bool checkSelection)
 // Creation:   Fri Aug 6 15:52:07 PST 2004
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -847,9 +858,9 @@ QvisSubsetWindow::ChangeSetSelection(int lvIndex, bool checkSelection)
         listViews[lvIndex].selectedSetsButton : 
         listViews[lvIndex].allSetsButton;
 
-    if(button->text() == "Turn on")
+    if(button->text() == tr("Turn on"))
         TurnOnOff(lvIndex, true, checkSelection);
-    else if(button->text() == "Turn off")
+    else if(button->text() == tr("Turn off"))
         TurnOnOff(lvIndex, false, checkSelection);
     else
         TurnReverse(lvIndex, checkSelection);
@@ -1281,6 +1292,8 @@ QvisSubsetWindow::selectedSetsClicked()
 // Creation:   Fri Aug 6 16:01:25 PST 2004
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -1291,7 +1304,10 @@ QvisSubsetWindow::setAllSetsButtonAction(int actionIndex)
 
     if(lvIndex != -1)
     {
-        const char *btnCaptions[] = {"Reverse", "Turn on", "Turn off"};
+        QString btnCaptions[3];
+        btnCaptions[0] = tr("Reverse");
+        btnCaptions[1] = tr("Turn on");
+        btnCaptions[2] = tr("Turn off");
         listViews[lvIndex].allSetsButton->setText(btnCaptions[actionIndex]);
         ChangeSetSelection(lvIndex, false);
     }
@@ -1311,6 +1327,8 @@ QvisSubsetWindow::setAllSetsButtonAction(int actionIndex)
 // Creation:   Fri Aug 6 16:01:25 PST 2004
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -1321,7 +1339,10 @@ QvisSubsetWindow::setSelectedSetsButtonAction(int actionIndex)
 
     if(lvIndex != -1)
     {
-        const char *btnCaptions[] = {"Reverse", "Turn on", "Turn off"};
+        QString btnCaptions[3];
+        btnCaptions[0] = tr("Reverse");
+        btnCaptions[1] = tr("Turn on");
+        btnCaptions[2] = tr("Turn off");
         listViews[lvIndex].selectedSetsButton->setText(btnCaptions[actionIndex]);
         ChangeSetSelection(lvIndex, true);
     }

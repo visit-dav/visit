@@ -64,6 +64,9 @@ class MessageAttributes;
 //   Brad Whitlock, Thu Sep 6 12:09:37 PDT 2001
 //   Made it inherit from QvisPostableWindowObserver.
 //
+//   Brad Whitlock, Wed Apr  9 10:53:09 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisOutputWindow : public QvisPostableWindowObserver
@@ -71,8 +74,8 @@ class GUI_API QvisOutputWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisOutputWindow(MessageAttributes *subj,
-                     const char *caption = 0,
-                     const char *shortName = 0,
+                     const QString &caption = QString::null,
+                     const QString &shortName = QString::null,
                      QvisNotepadArea *notepad = 0);
     virtual ~QvisOutputWindow();
     virtual void CreateWindowContents();

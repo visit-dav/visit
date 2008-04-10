@@ -490,29 +490,29 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     copyPopup[0] = new QPopupMenu(topCopyPopup, "copyView");
     connect(copyPopup[0], SIGNAL(activated(int)),
             this, SLOT(copyView(int)));
-    copyPopupId[0] = topCopyPopup->insertItem("View from", copyPopup[0], 0);
+    copyPopupId[0] = topCopyPopup->insertItem(tr("View from"), copyPopup[0], 0);
     topCopyPopup->setItemEnabled(copyPopupId[0], false);
     copyPopup[1] = new QPopupMenu(topCopyPopup, "copyLighting");
     connect(copyPopup[1], SIGNAL(activated(int)),
             this, SLOT(copyLighting(int)));
-    copyPopupId[1] = topCopyPopup->insertItem("Lighting from", copyPopup[1], 1);
+    copyPopupId[1] = topCopyPopup->insertItem(tr("Lighting from"), copyPopup[1], 1);
     topCopyPopup->setItemEnabled(copyPopupId[1], false);
     copyPopup[2] = new QPopupMenu(topCopyPopup, "copyAnnotations");
     connect(copyPopup[2], SIGNAL(activated(int)),
             this, SLOT(copyAnnotations(int)));
-    copyPopupId[2] = topCopyPopup->insertItem("Annotations from", copyPopup[2], 2);
+    copyPopupId[2] = topCopyPopup->insertItem(tr("Annotations from"), copyPopup[2], 2);
     topCopyPopup->setItemEnabled(copyPopupId[2], false);
     copyPopup[3] = new QPopupMenu(topCopyPopup, "copyPlots");
     connect(copyPopup[3], SIGNAL(activated(int)),
             this, SLOT(copyPlots(int)));
-    copyPopupId[3] = topCopyPopup->insertItem("Plots from", copyPopup[3], 3);
+    copyPopupId[3] = topCopyPopup->insertItem(tr("Plots from"), copyPopup[3], 3);
     topCopyPopup->setItemEnabled(copyPopupId[3], false);
     copyPopup[4] = new QPopupMenu(topCopyPopup, "copyAll");
     connect(copyPopup[4], SIGNAL(activated(int)),
             this, SLOT(copyAll(int)));
-    copyPopupId[4] = topCopyPopup->insertItem("Everything from", copyPopup[4], 4);
+    copyPopupId[4] = topCopyPopup->insertItem(tr("Everything from"), copyPopup[4], 4);
     topCopyPopup->setItemEnabled(copyPopupId[4], false);
-    topCopyPopupId = winPopup->insertItem(copyIcon, "Copy", topCopyPopup);
+    topCopyPopupId = winPopup->insertItem(copyIcon, tr("Copy"), topCopyPopup);
     winPopup->setItemEnabled(id, false);
 
     // Clear sub menu
@@ -532,9 +532,9 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     lockPopupId = winPopup->insertItem(lockIcon, tr("Lock"), lockPopup);
 
     // Other options.
-    fullFrameModeId = winPopup->insertItem("Full frame", this, SLOT(toggleFullFrameMode()));
-    navigateModeId = winPopup->insertItem("Navigate bbox", this, SLOT(toggleNavigateMode()));
-    spinModeId = winPopup->insertItem("Spin", this, SLOT(toggleSpinMode()));
+    fullFrameModeId = winPopup->insertItem(tr("Full frame"), this, SLOT(toggleFullFrameMode()));
+    navigateModeId = winPopup->insertItem(tr("Navigate bbox"), this, SLOT(toggleNavigateMode()));
+    spinModeId = winPopup->insertItem(tr("Spin"), this, SLOT(toggleSpinMode()));
     
     //
     // Add the Help menu
@@ -623,7 +623,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     connect(outputButton, SIGNAL(clicked()), this, SLOT(emitActivateOutputWindow()));
     outputButton->setPixmap(*outputBlue);
     outputButton->setFixedSize(32 , 32);
-    QToolTip::add(outputButton, "Output window" );
+    QToolTip::add(outputButton, tr("Output window"));
     statusBar()->addWidget(outputButton, 0, true);
     statusBar()->setSizeGripEnabled(false);
     unreadOutputFlag = false;
@@ -743,32 +743,32 @@ QvisMainWindow::CreateGlobalArea(QWidget *par)
             this, SLOT(winset(int)));
     activeWindowComboBox->insertItem("1");
     QLabel *activeWindowLabel = new QLabel(activeWindowComboBox, 
-       "Active window", par, "activeWindowLabel");
+       tr("Active window"), par, "activeWindowLabel");
     globalLayout->addMultiCellWidget(activeWindowLabel, 0, 0, 0, 1, Qt::AlignCenter);
     globalLayout->addMultiCellWidget(activeWindowComboBox, 1, 1, 0, 1);
 
-    QLabel *maintainLabel = new QLabel("Maintain limits", par);
+    QLabel *maintainLabel = new QLabel(tr("Maintain limits"), par);
     globalLayout->addMultiCellWidget(maintainLabel, 0, 0, 3, 4, Qt::AlignCenter);
 
-    maintainViewCheckBox = new QCheckBox("view", par,
+    maintainViewCheckBox = new QCheckBox(tr("view"), par,
         "maintainViewCheckBox");
     connect(maintainViewCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(maintainViewToggled(bool)));
     globalLayout->addWidget(maintainViewCheckBox, 1, 3);
 
-    maintainDataCheckBox = new QCheckBox("data", par,
+    maintainDataCheckBox = new QCheckBox(tr("data"), par,
         "maintainDataCheckBox");
     connect(maintainDataCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(maintainDataToggled(bool)));
     globalLayout->addWidget(maintainDataCheckBox, 1, 4);
 
-    replacePlotsCheckBox = new QCheckBox("Replace plots", par,
+    replacePlotsCheckBox = new QCheckBox(tr("Replace plots"), par,
         "replacePlotsCheckBox");
     connect(replacePlotsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(replacePlotsToggled(bool)));
     globalLayout->addWidget(replacePlotsCheckBox, 0, 6);
 
-    autoUpdateCheckBox = new QCheckBox("Auto update", par,
+    autoUpdateCheckBox = new QCheckBox(tr("Auto update"), par,
         "autoUpdateCheckBox");
     connect(autoUpdateCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoUpdateToggled(bool)));
@@ -889,12 +889,14 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
                 else
                     total = 0;
 
-                statusMsg.sprintf("%d%% done: %s (%d%% of stage %d/%d)",
-                    total,
-                    statusAtts->GetCurrentStageName().c_str(),
-                    statusAtts->GetPercent(),
-                    statusAtts->GetCurrentStage(),
+                QString done(tr("done"));
+                QString ofStage(tr("of stage"));
+                QString totalPct; totalPct.sprintf("%d%% ", total);
+                QString progress; progress.sprintf(" (%d%% ", statusAtts->GetPercent());
+                QString progress2; progress2.sprintf(" %d/%d)", statusAtts->GetCurrentStage(),
                     statusAtts->GetMaxStage());
+                statusMsg = totalPct + done + ": " + QString(statusAtts->GetCurrentStageName().c_str())
+                            + progress + ofStage + progress2;
             }
 
             statusBar()->message(statusMsg, statusAtts->GetDuration());
@@ -1201,8 +1203,8 @@ QvisMainWindow::UpdateWindowList(bool doList)
             activeWindowPopup->clear();
             for(i = 0; i < indices.size(); ++i)
             {
-                QString str; str.sprintf("Window %d", indices[i]);
-                activeWindowPopup->insertItem(str, i);
+                QString str; str.sprintf("%d", indices[i]);
+                activeWindowPopup->insertItem(tr("Window ") + str, i);
                 activeWindowPopup->setItemChecked(i, indices[i] == index);
             }
         }
@@ -1270,8 +1272,8 @@ QvisMainWindow::UpdateWindowMenu(bool updateNumbers)
                     continue;
 
                 QString str;
-                str.sprintf("Window %d", indices[j]);
-                copyPopup[i]->insertItem(str, n++);
+                str.sprintf("%d", indices[j]);
+                copyPopup[i]->insertItem(tr("Window ") + str, n++);
             }
 
             topCopyPopup->setItemEnabled(i, n > 0);

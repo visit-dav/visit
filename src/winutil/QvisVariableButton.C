@@ -50,22 +50,12 @@
 //
 // String representation of the types of variables and they are in
 // the order that we want them to appear in the menu; not their
-// real order.
+// real order. See the constructor...
 //
 #define N_VAR_CATEGORIES 11
-static const char *categoryMenuNames[] = {
-    "Scalars",
-    "Vectors",
-    "Meshes",
-    "Materials",
-    "Subsets",
-    "Species",
-    "Curves",
-    "Tensors",
-    "Symmetric Tensors",
-    "Labels",
-    "Arrays"
-};
+static QString categoryMenuNames[N_VAR_CATEGORIES];
+static bool categoryMenuNamesInitialized = false;
+
 //
 // Masks of the types of variables in the order that we want them
 // to appear in the menu; not their real order.
@@ -94,11 +84,30 @@ static int categoryMasks[] = {
 // Creation:   Thu Dec 9 16:41:32 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 12:10:04 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 QvisVariableButton::VariablePopupInfo::VariablePopupInfo()
 {
+    if(!categoryMenuNamesInitialized)
+    {
+        categoryMenuNames[0] = tr("Scalars");
+        categoryMenuNames[1] = tr("Vectors");
+        categoryMenuNames[2] = tr("Meshes");
+        categoryMenuNames[3] = tr("Materials");
+        categoryMenuNames[4] = tr("Subsets");
+        categoryMenuNames[5] = tr("Species");
+        categoryMenuNames[6] = tr("Curves");
+        categoryMenuNames[7] = tr("Tensors");
+        categoryMenuNames[8] = tr("Symmetric Tensors");
+        categoryMenuNames[9] = tr("Labels");
+        categoryMenuNames[10] = tr("Arrays");
+
+        categoryMenuNamesInitialized = true;
+    }
+
     varMenus = 0;
     helper = 0;
 }
@@ -456,7 +465,9 @@ QvisVariableButton::~QvisVariableButton()
 // Creation:   Thu Dec 9 16:48:18 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 12:11:08 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -469,7 +480,7 @@ QvisVariableButton::UpdateMenu()
     if(addDefault)
         menu->insertItem(defaultVariable);
     if(addExpr)
-        menu->insertItem("Create new expression ...");
+        menu->insertItem(tr("Create new expression ..."));
 
     if(addDefault || addExpr)
     {
@@ -792,6 +803,9 @@ QvisVariableButton::ConnectExpressionCreation(QObject *receiver,
 //   Brad Whitlock, Thu Nov 16 16:53:34 PST 2006
 //   Keep track of the variable that the user selected so it can be queried.
 //
+//   Brad Whitlock, Wed Apr  9 12:11:33 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -800,7 +814,7 @@ QvisVariableButton::changeVariable(int, const QString &var)
     // We chose a menu option so it's safe to disconnect the menu.
     disconnectMenu();
 
-    if(var == "Create new expression ...")
+    if(var == tr("Create new expression ..."))
     {
         // Call the expression creator object's slot.
         if(expressionCreator != 0 && expressionSlot)

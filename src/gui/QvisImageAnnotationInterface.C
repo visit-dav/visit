@@ -71,6 +71,9 @@
 //   Brad Whitlock, Tue Jun 28 15:46:08 PST 2005
 //   Changed layout to make things fit better.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 QvisImageAnnotationInterface::QvisImageAnnotationInterface(QWidget *parent,
@@ -97,8 +100,8 @@ QvisImageAnnotationInterface::QvisImageAnnotationInterface(QWidget *parent,
          QSizePolicy::Minimum));
     connect(imageSourceBtn, SIGNAL(clicked()), this, SLOT(imageSourceEdit()));
     cLayout->addMultiCellWidget(imageSourceParent, 0, 0, 1, 3);
-    QLabel *imageLabel = new QLabel(imageSource, "Image source", this);
-    QToolTip::add(imageLabel, "Name of the file containing the image");
+    QLabel *imageLabel = new QLabel(imageSource, tr("Image source"), this);
+    QToolTip::add(imageLabel, tr("Name of the file containing the image"));
     cLayout->addWidget(imageLabel, 0, 0);
 
     // Add controls for the start position
@@ -106,9 +109,9 @@ QvisImageAnnotationInterface::QvisImageAnnotationInterface(QWidget *parent,
     connect(positionStartEdit, SIGNAL(screenPositionChanged(double, double)),
             this, SLOT(positionStartChanged(double, double)));
     cLayout->addMultiCellWidget(positionStartEdit, 1, 1, 1, 3);
-    QLabel *lowerLeftLabel = new QLabel(positionStartEdit, "Lower left", this);
-    QToolTip::add(lowerLeftLabel, "Lower left corner of the image in "
-        "screen coordinates [0,1]");
+    QLabel *lowerLeftLabel = new QLabel(positionStartEdit, tr("Lower left"), this);
+    QToolTip::add(lowerLeftLabel, tr("Lower left corner of the image in "
+        "screen coordinates [0,1]"));
     cLayout->addWidget(lowerLeftLabel, 1, 0);
 
     // Add controls for width.
@@ -118,7 +121,7 @@ QvisImageAnnotationInterface::QvisImageAnnotationInterface(QWidget *parent,
     connect(widthSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(widthChanged(int)));
     cLayout->addWidget(widthSpinBox, 2, 1);
-    cLayout->addWidget(new QLabel(widthSpinBox, "Width", this), 2, 0);
+    cLayout->addWidget(new QLabel(widthSpinBox, tr("Width"), this), 2, 0);
 
     // Add controls for height.
     heightSpinBox = new QSpinBox(1, 1000, 1, this, "heightSpinBox");
@@ -127,17 +130,17 @@ QvisImageAnnotationInterface::QvisImageAnnotationInterface(QWidget *parent,
     connect(heightSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(heightChanged(int)));
     cLayout->addWidget(heightSpinBox, 3, 1);
-    cLayout->addWidget(new QLabel(heightSpinBox, "Height", this), 3, 0);
+    cLayout->addWidget(new QLabel(heightSpinBox, tr("Height"), this), 3, 0);
 
     // Width/Height linked?
-    linkedWH = new QCheckBox("Lock aspect", this, "linkedWH");
+    linkedWH = new QCheckBox(tr("Lock aspect"), this, "linkedWH");
     linkedWH->setChecked(true);
     connect(linkedWH, SIGNAL(toggled(bool)),
             this, SLOT(maintainAspectRatio(bool)));
     cLayout->addMultiCellWidget(linkedWH, 2, 2, 2, 3);
 
     // Add controls for the opacity color.
-    opacityCheck = new QCheckBox("Transparent Color", this, "opacityCheck");
+    opacityCheck = new QCheckBox(tr("Transparent Color"), this, "opacityCheck");
     connect(opacityCheck, SIGNAL(toggled(bool)),
             this, SLOT(toggleOpacityColor(bool)));
     opacityColorButton = new QvisColorButton(this, "opacityColorButton");
@@ -154,13 +157,13 @@ QvisImageAnnotationInterface::QvisImageAnnotationInterface(QWidget *parent,
                                           "opacitySlider");
     connect(opacitySlider, SIGNAL(valueChanged(int)),
             this, SLOT(opacityChanged(int)));
-    cLayout->addWidget(new QLabel("Opacity", this, "opacityLabel"), row, 0);
+    cLayout->addWidget(new QLabel(tr("Opacity"), this, "opacityLabel"), row, 0);
     cLayout->addMultiCellWidget(opacitySlider, row, row, 1, 3);
     ++row;
 #endif
 
     // Added a visibility toggle
-    visibleCheckBox = new QCheckBox("Visible", this, "visibleCheckBox");
+    visibleCheckBox = new QCheckBox(tr("Visible"), this, "visibleCheckBox");
     connect(visibleCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(visibilityToggled(bool)));
     cLayout->addWidget(visibleCheckBox, row, 0);
@@ -198,6 +201,8 @@ QvisImageAnnotationInterface::~QvisImageAnnotationInterface()
 // Creation:   Wed Nov 5 16:06:47 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -205,6 +210,7 @@ QString
 QvisImageAnnotationInterface::GetMenuText(const AnnotationObject &annot) const
 {
     QString retval;
+    QString noImage(tr("no image"));
     if(annot.GetText().size() > 0)
     {
         if(annot.GetText()[0].size() > 0)
@@ -214,10 +220,10 @@ QvisImageAnnotationInterface::GetMenuText(const AnnotationObject &annot) const
                            annot.GetText()[0].c_str());
         }
         else
-            retval.sprintf("%s - [no image]", GetName().latin1());
+            retval = GetName() + QString(" - [") + noImage + QString("]");
     }
     else
-        retval.sprintf("%s - [no image]", GetName().latin1());
+        retval = GetName() + QString(" - [") + noImage + QString("]");
 
     return retval;
 }
@@ -322,7 +328,7 @@ QvisImageAnnotationInterface::GetCurrentValues(int which_widget)
     if(which_widget == 0 || doAll)
     {
         // Get the new position
-        GetScreenPosition(positionStartEdit, "Lower left");
+        GetScreenPosition(positionStartEdit, tr("Lower left"));
     }
 
     if(which_widget == 1 || doAll)
@@ -402,6 +408,9 @@ QvisImageAnnotationInterface::imageSourceChanged(const QString &s)
 //   Brad Whitlock, Tue Jun 28 16:02:29 PST 2005
 //   I made it use the file server's path or the last path that was accessed.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -420,10 +429,10 @@ QvisImageAnnotationInterface::imageSourceEdit()
 
     QString path = QFileDialog::getOpenFileName(
       imageDir,
-      "Images (*.bmp *.jpg *.pbm *.pgm *.png *.ppm *.tif)",
+      tr("Images") + QString(" (*.bmp *.jpg *.pbm *.pgm *.png *.ppm *.tif)"),
       this,
       "select image",
-      "Select Image");
+      tr("Select Image"));
 
     if(path != QString::null)
     {

@@ -59,14 +59,19 @@
 //   Brad Whitlock, Thu Mar 6 11:28:59 PDT 2003
 //   I added stretch.
 //
+//   Brad Whitlock, Wed Apr  9 12:47:17 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisOperatorWindow : public QvisPostableWindowObserver
 {
     Q_OBJECT
 public:
-    QvisOperatorWindow(const int type, Subject *subj, const char *caption,
-        const char *shortName, QvisNotepadArea *notepad, bool stretch=true);
+    QvisOperatorWindow(const int type, Subject *subj,
+                       const QString &caption,
+                       const QString &shortName, 
+                       QvisNotepadArea *notepad, bool stretch=true);
     virtual ~QvisOperatorWindow();
 public slots:
     virtual void apply();

@@ -334,7 +334,9 @@ MakeIconSet(const char **xpm)
 // Creation:   Mon Oct 2 18:09:33 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 QvisPredefinedViewports::QvisPredefinedViewports(QWidget *parent, 
@@ -344,12 +346,12 @@ QvisPredefinedViewports::QvisPredefinedViewports(QWidget *parent,
 
     // Insert items.
     menu = new QPopupMenu(0, "menu");
-    menu->insertItem(MakeIconSet(vicon_00_xpm), "Single", 0);
-    menu->insertItem(MakeIconSet(vicon_01_xpm), "Side by side", 1);
-    menu->insertItem(MakeIconSet(vicon_02_xpm), "Two by Two", 2);
-    menu->insertItem(MakeIconSet(vicon_03_xpm), "Picture in picture 1", 3);
-    menu->insertItem(MakeIconSet(vicon_04_xpm), "Picture in picture 2", 4);
-    menu->insertItem(MakeIconSet(vicon_05_xpm), "2x Picture in picture", 5);
+    menu->insertItem(MakeIconSet(vicon_00_xpm), tr("Single"), 0);
+    menu->insertItem(MakeIconSet(vicon_01_xpm), tr("Side by side"), 1);
+    menu->insertItem(MakeIconSet(vicon_02_xpm), tr("Two by Two"), 2);
+    menu->insertItem(MakeIconSet(vicon_03_xpm), tr("Picture in picture 1"), 3);
+    menu->insertItem(MakeIconSet(vicon_04_xpm), tr("Picture in picture 2"), 4);
+    menu->insertItem(MakeIconSet(vicon_05_xpm), tr("2x Picture in picture"), 5);
     setPopup(menu);
     connect(menu, SIGNAL(activated(int)),
             this, SIGNAL(activated(int)));

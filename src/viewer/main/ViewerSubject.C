@@ -57,7 +57,9 @@
 #endif
 
 #include <qfile.h>
+#include <qlocale.h>
 #include <qtimer.h>
+#include <qtranslator.h>
 #include <qwidgetlist.h>
 
 #include <AnimationAttributes.h>
@@ -259,12 +261,16 @@ Viewer_LogQtMessages(QtMsgType type, const char *msg)
 //    Brad Whitlock, Mon Feb 12 17:36:41 PST 2007
 //    Changed base class to ViewerBase.
 //
+//    Brad Whitlock, Thu Apr 10 09:49:27 PDT 2008
+//    Added applicationLocale.
+//
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject() : ViewerBase(0, "ViewerSubject"), 
     interpretCommands(), xfer(), clients(),
     borders(), shift(), preshift(), geometry(),
-    engineParallelArguments(), unknownArguments(), clientArguments()
+    engineParallelArguments(), unknownArguments(), clientArguments(),
+    applicationLocale("default")
 {
     //
     // Initialize pointers to some Qt objects that don't get created
@@ -473,6 +479,9 @@ ViewerSubject::~ViewerSubject()
 //    Brad Whitlock, Thu Mar 15 18:23:51 PST 2007
 //    Addede a message handler for Qt.
 //
+//    Brad Whitlock, Thu Apr 10 10:06:59 PDT 2008
+//    Added support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -516,6 +525,32 @@ ViewerSubject::Connect(int *argc, char ***argv)
     debug1 << "Viewer using font: " << argv2[*argc+1] << endl;
     qInstallMsgHandler(Viewer_LogQtMessages);
     mainApp = new QApplication(argc2, argv2, !nowin);
+
+    // Make VisIt translation aware.
+    QTranslator *translator = new QTranslator(0);
+#if defined(_WIN32)
+    QString transPath(GetVisItArchitectureDirectory().c_str());
+    transPath += "\\translations\\";
+#else
+    QString transPath(GetVisItArchitectureDirectory().c_str());
+    transPath += "/bin/translations/";
+#endif
+    if(applicationLocale == "default")
+        applicationLocale = QLocale::system().name();
+    QString transFile(QString("visit_") + applicationLocale);
+    debug1 << "Trying to load translator file: " << (transPath + transFile).ascii() << endl;
+    if(translator->load(transFile, transPath))
+    {
+        mainApp->installTranslator(translator);
+        debug1 << "Loaded translation " << (transPath + transFile).ascii() << endl;
+    }
+    else
+    {
+        debug1 << "Could not load translation." << endl;
+        delete translator;
+    }
+
+    // Customize the colors and fonts.
     CustomizeAppearance();
    
     qt_argv = argv2;
@@ -2359,6 +2394,9 @@ ViewerSubject::GetOperatorFactory() const
 //    On Windows, increment using nConfigArgs when removing -config and its
 //    arg.
 //
+//    Brad Whitlock, Thu Apr 10 09:48:44 PDT 2008
+//    Added support for -locale argument.
+//
 // ****************************************************************************
 
 void
@@ -2550,6 +2588,21 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             clientArguments.push_back(argv2[i+1]);
 
             GetViewerState()->GetAppearanceAttributes()->SetFontName(argv2[i + 1]);
+            ++i;
+        }
+        else if (strcmp(argv2[i], "-locale") == 0)
+        {
+            if (i + 1 >= argc2)
+            {
+                cerr << "The -locale option must be followed by a "
+                        "locale name." << endl;
+                continue;
+            }
+
+            clientArguments.push_back(argv2[i]);
+            clientArguments.push_back(argv2[i+1]);
+
+            applicationLocale = QString(argv2[i+1]);
             ++i;
         }
         else if (strcmp(argv2[i], "-timing") == 0 ||

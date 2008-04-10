@@ -83,10 +83,12 @@
 // Creation:   Fri Jul 12 12:57:06 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 11:28:58 PDT 2008
+//   QString for captionString.
+//
 // ****************************************************************************
 
-QvisHelpWindow::QvisHelpWindow(const char *captionString) :
+QvisHelpWindow::QvisHelpWindow(const QString &captionString) :
     QvisDelayedWindow(captionString), helpFile(), index(), bookmarks()
 {
     // Set the help path from an environment variable.
@@ -127,6 +129,8 @@ QvisHelpWindow::~QvisHelpWindow()
 // Creation:   Fri Jul 12 12:57:59 PDT 2002
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -147,7 +151,7 @@ QvisHelpWindow::CreateWindowContents()
 
     // Create a toolbar
     QToolBar *tb = new QToolBar(this);
-    tb->setLabel("Help Navigation");
+    tb->setLabel(tr("Help Navigation"));
 
     // Create a splitter and add it to the layout.
     splitter = new QSplitter(central);
@@ -162,7 +166,7 @@ QvisHelpWindow::CreateWindowContents()
 
     // Create the Contents tab.
     helpContents = new QListView(helpTabs, "helpContents");
-    helpContents->addColumn("Contents");
+    helpContents->addColumn(tr("Contents"));
     helpContents->setSorting(-1);
     connect(helpContents, SIGNAL(clicked(QListViewItem *)),
             this, SLOT(openHelp(QListViewItem *)));
@@ -172,7 +176,7 @@ QvisHelpWindow::CreateWindowContents()
             this, SLOT(topicExpanded(QListViewItem *)));
 
     helpTabs->addTab(helpContents, tr("&Contents"));
-    QAction *a = new QAction(this, tr("Contents"));
+    QAction *a = new QAction(this, "Contents");
     a->setAccel(ALT + Key_C);
     connect(a, SIGNAL(activated()), this, SLOT(activateContentsTab()));
 
@@ -181,7 +185,7 @@ QvisHelpWindow::CreateWindowContents()
     helpIndexTab->setSpacing(5);
     helpIndexTab->setMargin(5);
     helpTabs->addTab(helpIndexTab, tr("&Index"));
-    a = new QAction(this, tr("Index"));
+    a = new QAction(this, "Index");
     a->setAccel(ALT + Key_I);
     connect(a, SIGNAL(activated()), this, SLOT(activateIndexTab()));
 
@@ -199,17 +203,17 @@ QvisHelpWindow::CreateWindowContents()
     helpBookmarksTab->setSpacing(10);
     helpBookmarksTab->setMargin(5);
     helpTabs->addTab(helpBookmarksTab, tr("&Bookmarks"));
-    a = new QAction(this, tr("Bookmarks"));
+    a = new QAction(this, "Bookmarks");
     a->setAccel(ALT + Key_B);
     connect(a, SIGNAL(activated()), this, SLOT(activateBookmarkTab()));
 
     QHBox *bookmarkHBox = new QHBox(helpBookmarksTab, "helpBookmarks");
     bookmarkHBox->setSpacing(20);
-    addBookmarkButton = new QPushButton("Add", bookmarkHBox,
+    addBookmarkButton = new QPushButton(tr("Add"), bookmarkHBox,
         "addBookmarkButton");
     connect(addBookmarkButton, SIGNAL(clicked()),
             this, SLOT(addBookmark()));
-    removeBookmarkButton = new QPushButton("Remove", bookmarkHBox,
+    removeBookmarkButton = new QPushButton(tr("Remove"), bookmarkHBox,
         "removeBookmarkButton");
     connect(removeBookmarkButton, SIGNAL(clicked()),
             this, SLOT(removeBookmark()));
@@ -230,8 +234,8 @@ QvisHelpWindow::CreateWindowContents()
             helpBrowser, SLOT(setSource(const QString &)));
 #endif
 
-    QToolButton *backButton = new QToolButton(QIconSet(backIcon), "Back",
-        "Back", helpBrowser, SLOT(backward()), tb, "backButton");
+    QToolButton *backButton = new QToolButton(QIconSet(backIcon), tr("Back"),
+        tr("Back"), helpBrowser, SLOT(backward()), tb, "backButton");
     backButton->setAccel(CTRL + Key_Prior);
     backButton->setUsesBigPixmap(true);
     backButton->setUsesTextLabel(true);
@@ -240,8 +244,8 @@ QvisHelpWindow::CreateWindowContents()
 
     tb->addSeparator();
 
-    QToolButton *forwardButton = new QToolButton(QIconSet(forwardIcon), "Forward",
-        "Forward", helpBrowser, SLOT(forward()), tb, "forwardButton");
+    QToolButton *forwardButton = new QToolButton(QIconSet(forwardIcon), tr("Forward"),
+        tr("Forward"), helpBrowser, SLOT(forward()), tb, "forwardButton");
     forwardButton->setAccel(CTRL + Key_Next);
     forwardButton->setUsesBigPixmap(true);
     forwardButton->setUsesTextLabel(true);
@@ -250,8 +254,8 @@ QvisHelpWindow::CreateWindowContents()
 
     tb->addSeparator();
 
-    QToolButton *homeButton = new QToolButton(QIconSet(homeIcon), "Home",
-        "Home", this, SLOT(displayHome()), tb, "homeButton");
+    QToolButton *homeButton = new QToolButton(QIconSet(homeIcon), tr("Home"),
+        tr("Home"), this, SLOT(displayHome()), tb, "homeButton");
     homeButton->setAccel(CTRL + Key_Home);
     homeButton->setUsesBigPixmap(true);
     homeButton->setUsesTextLabel(true);
@@ -259,28 +263,28 @@ QvisHelpWindow::CreateWindowContents()
     tb->addSeparator();
 
     // buttons to change the font size.
-    QToolButton *upFont = new QToolButton(QIconSet(fontUpIcon),"Larger font",
-        "Larger font", this, SLOT(increaseFontSize()), tb, "upFont");
+    QToolButton *upFont = new QToolButton(QIconSet(fontUpIcon),tr("Larger font"),
+        tr("Larger font"), this, SLOT(increaseFontSize()), tb, "upFont");
     upFont->setUsesTextLabel(true);
     upFont->setUsesBigPixmap(true);
 
     tb->addSeparator();
 
-    QToolButton *downFont = new QToolButton(QIconSet(fontDownIcon),"Smaller font",
-        "Smaller font", this, SLOT(decreaseFontSize()), tb, "downFont");
+    QToolButton *downFont = new QToolButton(QIconSet(fontDownIcon),tr("Smaller font"),
+        tr("Smaller font"), this, SLOT(decreaseFontSize()), tb, "downFont");
     downFont->setUsesTextLabel(true);
     downFont->setUsesBigPixmap(true);
 
     tb->addSeparator();
 
-    QToolButton *addBookmarkTB = new QToolButton(QIconSet(openBookIcon),"Add Bookmark",
-        "Add Bookmark", this, SLOT(addBookmark()), tb, "addBookmarkTB");
+    QToolButton *addBookmarkTB = new QToolButton(QIconSet(openBookIcon),tr("Add Bookmark"),
+        tr("Add Bookmark"), this, SLOT(addBookmark()), tb, "addBookmarkTB");
     addBookmarkTB->setUsesTextLabel(true);
     addBookmarkTB->setUsesBigPixmap(true);
 
     // Create the Dismiss button
     QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
-    QPushButton *dismissButton = new QPushButton("Dismiss", central, "dismissButton");
+    QPushButton *dismissButton = new QPushButton(tr("Dismiss"), central, "dismissButton");
     connect(dismissButton, SIGNAL(clicked()), this, SLOT(hide()));
     buttonLayout->addStretch(10);
     buttonLayout->addWidget(dismissButton);
@@ -333,6 +337,9 @@ QvisHelpWindow::CreateWindowContents()
 //   Brad Whitlock, Tue Jan  8 14:55:51 PST 2008
 //   Added a contrib page.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -352,7 +359,7 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
             // Create a root node for the User's manual.
             QvisHelpListViewItem *UMrootItem = new QvisHelpListViewItem(
                 helpContents, 0);
-            UMrootItem->setText(0, "VisIt User's Manual");
+            UMrootItem->setText(0, tr("VisIt User's Manual"));
             UMrootItem->setDocument("list0000.html");
             UMrootItem->setPixmap(0, openBookIcon);
 
@@ -382,33 +389,33 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
 
     if(noHelp)
     {
-        Message("VisIt cannot read the help index file! "
-                "No online help will be available.");
+        Message(tr("VisIt cannot read the help index file! "
+                "No online help will be available."));
         debug1 << "VisIt cannot read the help index file! "
                   "No online help will be available.\n";
     }
 
     QvisHelpListViewItem *contribPage = new QvisHelpListViewItem(
         helpContents, 0);
-    contribPage->setText(0, "VisIt Contributors");
+    contribPage->setText(0, tr("VisIt Contributors"));
     contribPage->setDocument("contributors.html");
     contribPage->setPixmap(0, helpIcon);
 
     QvisHelpListViewItem *copyrightPage = new QvisHelpListViewItem(
         helpContents, 0);
-    copyrightPage->setText(0, "Copyright");
+    copyrightPage->setText(0, tr("Copyright"));
     copyrightPage->setDocument("copyright.html");
     copyrightPage->setPixmap(0, helpIcon);
 
     QvisHelpListViewItem *faqPage = new QvisHelpListViewItem(
         helpContents, 0);
-    faqPage->setText(0, "Frequently asked questions");
+    faqPage->setText(0, tr("Frequently asked questions"));
     faqPage->setDocument("faq.html");
     faqPage->setPixmap(0, helpIcon);
 
     QvisHelpListViewItem *argsPage = new QvisHelpListViewItem(
         helpContents, 0);
-    argsPage->setText(0, "Command line arguments");
+    argsPage->setText(0, tr("Command line arguments"));
     argsPage->setDocument("args.html");
     argsPage->setPixmap(0, helpIcon);
 
@@ -416,14 +423,14 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
         helpContents, 0);
     QString relNotes;
     relNotes.sprintf("relnotes%s.html", VERSION);
-    releaseNotes->setText(0, "Release Notes");
+    releaseNotes->setText(0, tr("Release Notes"));
     releaseNotes->setDocument(relNotes);
     releaseNotes->setPixmap(0, helpIcon);
 
     // Create a root node for the VisIt home page.
     QvisHelpListViewItem *homePage = new QvisHelpListViewItem(
         helpContents, 0);
-    homePage->setText(0, "VisIt home page");
+    homePage->setText(0, tr("VisIt home page"));
     homePage->setDocument("home.html");
     homePage->setPixmap(0, helpIcon);
 
@@ -508,19 +515,22 @@ QvisHelpWindow::BuildContents(QListViewItem *parentItem,
 //   Brad Whitlock, Tue Sep 10 15:57:02 PST 2002
 //   I added a release notes and a copyright link.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
 QvisHelpWindow::BuildIndex()
 {
     // Add a few more items to the index.
-    AddToIndex("Copyright", "copyright.html");
-    AddToIndex("Command line arguments", "args.html");
-    AddToIndex("Frequently asked questions", "faq.html");
-    AddToIndex("FAQ", "faq.html");
-    AddToIndex("VisIt", "home.html");
+    AddToIndex(tr("Copyright"), "copyright.html");
+    AddToIndex(tr("Command line arguments"), "args.html");
+    AddToIndex(tr("Frequently asked questions"), "faq.html");
+    AddToIndex(tr("FAQ"), "faq.html");
+    AddToIndex(tr("VisIt"), "home.html");
     QString str; str.sprintf("relnotes%s.html", VERSION);
-    AddToIndex("Release notes", str);
+    AddToIndex(tr("Release notes"), str);
 
     // Populate the index list box.
     helpIndex->blockSignals(true);
@@ -1062,13 +1072,17 @@ QvisHelpWindow::topicCollapsed(QListViewItem *item)
 // Creation:   Fri Jul 12 13:05:23 PST 2002
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
 void
 QvisHelpWindow::displayNoHelp()
 {
-    const char *html = "<html><body background=\"#ffffff\"><center><b><h1>Help topic not found!</h1></b></center></body></html>";
+    QString html = QString("<html><body background=\"#ffffff\"><center><b><h1>") +
+                   tr("Help topic not found!") + 
+                   QString("</h1></b></center></body></html>");
     helpBrowser->setText(html);
     helpFile = "none";
 }
@@ -1086,16 +1100,18 @@ QvisHelpWindow::displayNoHelp()
 // Creation:   Fri Jul 12 13:05:58 PST 2002
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
 void
 QvisHelpWindow::displayTitle(const QString &title)
 {
-    const char *fmt = "<html><body background=\"#ffffff\"><center><b><h1>%s</h1></b></center></body></html>";
-    QString msg;
-    msg.sprintf(fmt, title.latin1());
-    helpBrowser->setText(msg);
+    QString html = QString("<html><body background=\"#ffffff\"><center><b><h1>") +
+                   title + 
+                   QString("</h1></b></center></body></html>");
+    helpBrowser->setText(html);
     helpFile = "none";
 }
 
@@ -1192,7 +1208,7 @@ QvisHelpWindow::displayReleaseNotesHelper(bool showWin)
         showWindow = true;
     }
     else
-        Message("The release notes file cannot be opened.");
+        Message(tr("The release notes file cannot be opened."));
 
     if(showWindow)
         show();
@@ -1535,6 +1551,8 @@ QvisHelpWindow::displayBookmarkTopic()
 // Creation:   Fri Jul 12 13:34:30 PST 2002
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -1565,14 +1583,14 @@ QvisHelpWindow::addBookmark()
             }
             else
             {
-                 Warning("The bookmark was not added because it is already in the list.");
+                 Warning(tr("The bookmark was not added because it is already in the list."));
             }
         }
         else
-            Warning("The bookmark could not be added.");
+            Warning(tr("The bookmark could not be added."));
     }
     else
-        Warning("This page cannot be bookmarked.");
+        Warning(tr("This page cannot be bookmarked."));
 }
 
 // ****************************************************************************

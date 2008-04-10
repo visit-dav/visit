@@ -83,10 +83,13 @@
 //   Brad Whitlock, Mon Aug 26 14:40:28 PST 2002
 //   I initialized the mode member.
 //
+//   Brad Whitlock, Wed Apr  9 11:08:16 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
-QvisLightingWindow::QvisLightingWindow(LightList *subj, const char *caption,
-    const char *shortName, QvisNotepadArea *notepad) :
+QvisLightingWindow::QvisLightingWindow(LightList *subj, const QString &caption,
+    const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(subj, caption, shortName, notepad,
                                QvisPostableWindowObserver::AllExtraButtons,
                                false)
@@ -139,6 +142,9 @@ QvisLightingWindow::~QvisLightingWindow()
 //   Brad Whitlock, Wed Feb 23 18:01:42 PST 2005
 //   I made the brightness spin box use a different slot.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -155,16 +161,16 @@ QvisLightingWindow::CreateWindowContents()
     //
     // Create the mode setting radio buttons.
     //
-    QLabel *modeLabel = new QLabel("Mode", central, "modeLabel");
+    QLabel *modeLabel = new QLabel(tr("Mode"), central, "modeLabel");
     gLayout->addWidget(modeLabel, 0, 0);
 
     modeButtons = new QButtonGroup();
     connect(modeButtons, SIGNAL(clicked(int)),
             this, SLOT(modeClicked(int)));
-    QRadioButton *rb = new QRadioButton("Edit", central, "rb1");
+    QRadioButton *rb = new QRadioButton(tr("Edit"), central, "rb1");
     modeButtons->insert(rb, 0);
     gLayout->addWidget(rb, 0, 1, AlignLeft);
-    rb = new QRadioButton("Preview", central, "rb2");
+    rb = new QRadioButton(tr("Preview"), central, "rb2");
     modeButtons->insert(rb, 1);
     gLayout->addWidget(rb, 0, 2, AlignLeft);
 
@@ -182,7 +188,7 @@ QvisLightingWindow::CreateWindowContents()
     activeLightComboBox->insertItem("8");
     connect(activeLightComboBox, SIGNAL(activated(int)),
             this, SLOT(activeLightComboBoxChanged(int)));
-    activeLightLabel = new QLabel(activeLightComboBox, "Active light",
+    activeLightLabel = new QLabel(activeLightComboBox, tr("Active light"),
                                   central, "activeLightLabel");
     gLayout->addWidget(activeLightLabel, 0, 3, AlignRight);
     gLayout->addWidget(activeLightComboBox, 0, 4, AlignLeft);
@@ -199,7 +205,7 @@ QvisLightingWindow::CreateWindowContents()
     // Create the light properties group box.
     //
     lightGroupBox = new QGroupBox(central, "lightGroupBox");
-    lightGroupBox->setTitle("Properties");
+    lightGroupBox->setTitle(tr("Properties"));
     lightGroupBox->setMargin(10);
     gLayout->addMultiCellWidget(lightGroupBox, 1, 1, 3, 4);
     QGridLayout *sLayout = new QGridLayout(lightGroupBox, 8, 2);
@@ -208,13 +214,13 @@ QvisLightingWindow::CreateWindowContents()
     sLayout->addRowSpacing(0, 15);
 
     lightTypeComboBox = new QComboBox(lightGroupBox, "lightTypeComboBox");
-    lightTypeComboBox->insertItem("Ambient");
-    lightTypeComboBox->insertItem("Object");
-    lightTypeComboBox->insertItem("Camera");
+    lightTypeComboBox->insertItem(tr("Ambient"));
+    lightTypeComboBox->insertItem(tr("Object"));
+    lightTypeComboBox->insertItem(tr("Camera"));
     connect(lightTypeComboBox, SIGNAL(activated(int)),
             this, SLOT(lightTypeComboBoxChanged(int)));
     sLayout->addWidget(lightTypeComboBox, 1, 1);
-    QLabel *typeLabel = new QLabel(lightTypeComboBox, "Light type",
+    QLabel *typeLabel = new QLabel(lightTypeComboBox, tr("Light type"),
                                    lightGroupBox, "typeLabel");
     sLayout->addWidget(typeLabel, 1, 0);
 
@@ -223,14 +229,14 @@ QvisLightingWindow::CreateWindowContents()
             this, SLOT(processLineDirectionText()));
     sLayout->addWidget(lightDirectionLineEdit, 2, 1);
     lightDirectionLabel = new QLabel(lightDirectionLineEdit,
-                                     "Direction", lightGroupBox, "dirLabel");
+                                     tr("Direction"), lightGroupBox, "dirLabel");
     sLayout->addWidget(lightDirectionLabel, 2, 0);
 
     lightColorButton = new QvisColorButton(lightGroupBox, "lightColorButton");
     connect(lightColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(selectedLightColor(const QColor &)));
     sLayout->addWidget(lightColorButton, 3, 1, AlignLeft);
-    QLabel *colorLabel = new QLabel(lightColorButton, "Color",
+    QLabel *colorLabel = new QLabel(lightColorButton, tr("Color"),
                                   lightGroupBox, "colorLabel");
     sLayout->addWidget(colorLabel, 3, 0);
 
@@ -239,7 +245,7 @@ QvisLightingWindow::CreateWindowContents()
     lightBrightness->setMaxValue(100);
     connect(lightBrightness, SIGNAL(valueChanged(int)),
             this, SLOT(brightnessChanged(int)));
-    QLabel *brightnessLabel = new QLabel(lightBrightness, "Brightness",
+    QLabel *brightnessLabel = new QLabel(lightBrightness, tr("Brightness"),
                                   lightGroupBox, "brightnessLabel");
     sLayout->addWidget(brightnessLabel, 4, 0);
     sLayout->addWidget(lightBrightness, 4, 1);
@@ -251,7 +257,7 @@ QvisLightingWindow::CreateWindowContents()
             this, SLOT(brightnessChanged2(int)));
     sLayout->addWidget(lightBrightnessSpinBox, 5, 1);
 
-    lightEnabledCheckBox = new QCheckBox("Enabled", lightGroupBox, "lightEnabledCheckBox");
+    lightEnabledCheckBox = new QCheckBox(tr("Enabled"), lightGroupBox, "lightEnabledCheckBox");
     connect(lightEnabledCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(enableToggled(bool)));
     sLayout->addWidget(lightEnabledCheckBox, 6, 1, AlignLeft);
@@ -433,6 +439,8 @@ QvisLightingWindow::UpdateLightWidget()
 // Creation:   Fri Oct 19 16:13:08 PST 2001
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -463,8 +471,10 @@ QvisLightingWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *d = light.GetDirection();
-            msg.sprintf("The direction vector was invalid. "
-                "Resetting to the last good value <%g %g %g>.", d[0], d[1], d[2]);
+            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
+            msg = tr("The direction vector was invalid. "
+                     "Resetting to the last good value %1.");
+            msg.replace("%1", num);
             Message(msg);
             light.SetDirection(d);
             lights->SelectLight(activeLight);

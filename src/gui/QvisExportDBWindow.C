@@ -80,10 +80,13 @@
 //    Converted to a simple observer so we can watch not only the 
 //    export atts but also the DB plugin info atts.
 //
+//    Brad Whitlock, Wed Apr  9 11:58:41 PDT 2008
+//    QString for caption, shortName.
+//
 // ****************************************************************************
 
 QvisExportDBWindow::QvisExportDBWindow(
-    const char *caption, const char *shortName, QvisNotepadArea *notepad) :
+    const QString &caption, const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowSimpleObserver(caption, shortName, notepad,
                                 QvisPostableWindowSimpleObserver::ApplyButton)
 {
@@ -187,6 +190,9 @@ QvisExportDBWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Just leave the file format combo box empty.  It will update when
 //   necessary on demand now that we observe DB plugin info.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -194,7 +200,7 @@ QvisExportDBWindow::CreateWindowContents()
 {
     // Create a group box for the file information.
     QGroupBox *infoBox = new QGroupBox(central, "infoBox");
-    infoBox->setTitle("Output description");
+    infoBox->setTitle(tr("Output description"));
     topLayout->addWidget(infoBox);
 
     QGridLayout *infoLayout = new QGridLayout(infoBox, 5, 2);
@@ -204,7 +210,7 @@ QvisExportDBWindow::CreateWindowContents()
 
     filenameLineEdit = new QLineEdit(infoBox, "filenameLineEdit");
     connect(filenameLineEdit, SIGNAL(returnPressed()), this, SLOT(processFilenameText()));
-    QLabel *filenameLabel = new QLabel(filenameLineEdit, "File name", infoBox, "filenameLabel");
+    QLabel *filenameLabel = new QLabel(filenameLineEdit, tr("File name"), infoBox, "filenameLabel");
     infoLayout->addWidget(filenameLabel, 1, 0);
     infoLayout->addWidget(filenameLineEdit, 1, 1);
 
@@ -213,7 +219,7 @@ QvisExportDBWindow::CreateWindowContents()
     connect(directoryNameLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processDirectoryNameText()));
     directoryNameLabel = new QLabel(directoryNameLineEdit,
-        "Directory name", infoBox, "directoryNameLabel");
+        tr("Directory name"), infoBox, "directoryNameLabel");
     directorySelectButton = new QPushButton("...",
          directoryParent, "directorySelectButton");
 #ifndef Q_WS_MACX
@@ -234,14 +240,14 @@ QvisExportDBWindow::CreateWindowContents()
   
     connect(fileFormatComboBox, SIGNAL(activated(int)),
            this, SLOT(fileFormatChanged(int)));
-    QLabel *formatLabel = new QLabel(fileFormatComboBox, "Export to",
+    QLabel *formatLabel = new QLabel(fileFormatComboBox, tr("Export to"),
                                      infoBox, "formatLabel");
     infoLayout->addWidget(formatLabel, 4, 0);
     infoLayout->addWidget(fileFormatComboBox, 4, 1);
 
     varsButton = new QvisVariableButton(true, false, true, -1,
         infoBox, "varsButton");
-    varsButton->setText("Variables");
+    varsButton->setText(tr("Variables"));
     varsButton->setChangeTextOnVariableChange(false);
     connect(varsButton, SIGNAL(activated(const QString &)),
             this, SLOT(addVariable(const QString &)));
@@ -256,7 +262,7 @@ QvisExportDBWindow::CreateWindowContents()
     // The export button.
     QHBoxLayout *exportButtonLayout = new QHBoxLayout(topLayout);
     exportButtonLayout->setSpacing(5);
-    QPushButton *exportButton = new QPushButton("Export", central, "exportButton");
+    QPushButton *exportButton = new QPushButton(tr("Export"), central, "exportButton");
     connect(exportButton, SIGNAL(clicked()),
             this, SLOT(exportButtonClicked()));
     exportButtonLayout->addWidget(exportButton);
@@ -405,6 +411,10 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
 // Programmer: Hank Childs
 // Creation:   May 25, 2005
 //
+// Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//   
 // ****************************************************************************
 
 void
@@ -424,9 +434,9 @@ QvisExportDBWindow::GetCurrentValues(int which_widget)
         }
         else
         {
-            msg.sprintf("The filename was invalid. "
-                "Resetting to the last good value \"%s\".",
-                exportDBAtts->GetFilename().c_str());
+            msg = tr("The filename was invalid. "
+                     "Resetting to the last good value \"%1\".");
+            msg.replace("%1", exportDBAtts->GetFilename().c_str());
             Message(msg);
             exportDBAtts->SetFilename(exportDBAtts->GetFilename());
         }
@@ -632,8 +642,11 @@ QvisExportDBWindow::exportDB()
 // Creation:   May 25, 2005
 //
 // Modifications:
-//    Jeremy Meredith, Fri Oct 12 10:38:24 EDT 2007
-//    Added a modal dialog to get the options for exporting.
+//   Jeremy Meredith, Fri Oct 12 10:38:24 EDT 2007
+//   Added a modal dialog to get the options for exporting.
+//
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -647,8 +660,8 @@ QvisExportDBWindow::exportButtonClicked()
     {
         QvisDBOptionsDialog *optsdlg =
             new QvisDBOptionsDialog(&(exportDBAtts->GetOpts()), NULL, "opts");
-        QString caption = std::string("Export options for " +
-            exportDBAtts->GetDb_type() + " writer").c_str();
+        QString caption(tr("Export options for %1 writer"));
+        caption.replace("%1", exportDBAtts->GetDb_type().c_str());
         optsdlg->setCaption(caption);
         result = optsdlg->exec();
         delete optsdlg;
@@ -713,6 +726,8 @@ QvisExportDBWindow::variableProcessText()
 // Creation:   Mon Jun 27 13:52:55 PST 2005
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -724,7 +739,7 @@ QvisExportDBWindow::selectOutputDirectory()
     //
     QString initialDir(exportDBAtts->GetDirname().c_str());
     QString dirName = QFileDialog::getExistingDirectory(initialDir, this,
-        "getDirectoryDialog", "Select output directory");
+        "getDirectoryDialog", tr("Select output directory"));
 
     //
     // If a directory was chosen, use it as the output directory.

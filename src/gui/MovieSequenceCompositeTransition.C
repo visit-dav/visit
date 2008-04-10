@@ -98,14 +98,16 @@ MovieSequenceCompositeTransition::~MovieSequenceCompositeTransition()
 // Creation:   Tue Nov 14 10:45:01 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 10:33:54 PDT 2008
+//   SequenceMenuName now returns QString.
+//
 // ****************************************************************************
 
 QWidget *
 MovieSequenceCompositeTransition::CreateUI()
 {
     QvisCompositeTransition *ui = new QvisCompositeTransition(Pixmap(), 0, GetName().c_str());
-    ui->setTitle(SequenceMenuName().c_str());
+    ui->setTitle(SequenceMenuName());
 
     return ui;
 }
@@ -194,7 +196,7 @@ MovieSequenceCompositeTransition::WriteUIValues(QWidget *ui, DataNode *node)
 }
 
 //
-// Pixmap methods for the derived classes.
+// Pixmap and menu name methods for the derived classes.
 //
 
 QPixmap
@@ -203,11 +205,27 @@ MovieSequenceCompositeFadeIn::Pixmap()
     return QPixmap(ms_comp_fadein_xpm);
 }
 
+QString
+MovieSequenceCompositeFadeIn::SequenceMenuName() const
+{
+    return tr("Fade in viewport");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 QPixmap
 MovieSequenceCompositeFadeOut::Pixmap()
 {
     return QPixmap(ms_comp_fadeout_xpm);
 }
+
+QString
+MovieSequenceCompositeFadeOut::SequenceMenuName() const
+{
+    return tr("Fade out viewport");
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 QPixmap
 MovieSequenceCompositeLRSlide::Pixmap()
@@ -215,11 +233,27 @@ MovieSequenceCompositeLRSlide::Pixmap()
     return QPixmap(ms_comp_lr_slide_xpm);
 }
 
+QString
+MovieSequenceCompositeLRSlide::SequenceMenuName() const
+{
+    return tr("Slide in viewport left to right");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 QPixmap
 MovieSequenceCompositeRLSlide::Pixmap()
 {
     return QPixmap(ms_comp_rl_slide_xpm);
 }
+
+QString
+MovieSequenceCompositeRLSlide::SequenceMenuName() const
+{
+    return tr("Slide in viewport right to left");
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 QPixmap
 MovieSequenceCompositeTBSlide::Pixmap()
@@ -227,9 +261,23 @@ MovieSequenceCompositeTBSlide::Pixmap()
     return QPixmap(ms_comp_tb_slide_xpm);
 }
 
+QString
+MovieSequenceCompositeTBSlide::SequenceMenuName() const
+{
+    return tr("Slide in viewport top to bottom");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 QPixmap
 MovieSequenceCompositeBTSlide::Pixmap()
 {
     return QPixmap(ms_comp_bt_slide_xpm);
+}
+
+QString
+MovieSequenceCompositeBTSlide::SequenceMenuName() const
+{
+    return tr("Slide in viewport bottom to top");
 }
 

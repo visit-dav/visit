@@ -60,6 +60,8 @@
 // Creation:   Mon Jun 20 16:27:19 PST 2005
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -90,7 +92,7 @@ QvisMovieProgressDialog::QvisMovieProgressDialog(QWidget *parent,
 
     QHBoxLayout *btnLayout = new QHBoxLayout(topLayout);
     btnLayout->addStretch(10);
-    cancelButton = new QPushButton("Cancel", this, "cancel");
+    cancelButton = new QPushButton(tr("Cancel"), this, "cancel");
     connect(cancelButton, SIGNAL(clicked()),
             this, SLOT(cancelClicked()));
     btnLayout->addWidget(cancelButton);

@@ -80,13 +80,16 @@ class QvisHelpListViewItem;
 //   Brad Whitlock, Tue Jan  8 14:37:12 PST 2008
 //   Added displayContributors.
 //
+//   Brad Whitlock, Wed Apr  9 11:28:42 PDT 2008
+//   QString for captionString.
+//
 // ****************************************************************************
 
 class GUI_API QvisHelpWindow : public QvisDelayedWindow
 {
     Q_OBJECT
 public:
-    QvisHelpWindow(const char *captionString);
+    QvisHelpWindow(const QString &captionString);
     virtual ~QvisHelpWindow();
 
     virtual void CreateWindowContents();

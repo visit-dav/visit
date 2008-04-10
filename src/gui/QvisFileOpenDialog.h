@@ -51,7 +51,9 @@
 // Creation:   Wed Nov 15 13:28:12 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr  9 10:40:07 PDT 2008
+//   Made captions use QString.
+//
 // ****************************************************************************
 
 class QvisFileOpenDialog : public QvisFileOpenWindow
@@ -61,12 +63,12 @@ public:
     static const int Accepted;
     static const int Rejected;
 
-    QvisFileOpenDialog(const char *caption);
+    QvisFileOpenDialog(const QString &caption);
     virtual ~QvisFileOpenDialog();
 
     // Blocking function to use the dialog to get a filename.
     static QString getOpenFileName(const QString &initialFile, 
-                                   const char *caption);
+                                   const QString &caption);
 
     int exec();
     void setFilename(const QString &);

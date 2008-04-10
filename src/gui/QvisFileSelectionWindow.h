@@ -128,13 +128,16 @@ class QvisRecentPathRemovalWindow;
 //   Brad Whitlock, Tue Mar 7 10:11:46 PDT 2006
 //   Added the selectedFilesChanged signal.
 //
+//   Brad Whitlock, Wed Apr  9 10:29:50 PDT 2008
+//   Changed ctor args.
+//
 // ****************************************************************************
 
 class GUI_API QvisFileSelectionWindow : public QvisDelayedWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisFileSelectionWindow(const char *winCaption = 0);
+    QvisFileSelectionWindow(const QString &winCaption);
     virtual ~QvisFileSelectionWindow();
     virtual void CreateWindowContents();
     virtual void SubjectRemoved(Subject *TheRemovedSubject);

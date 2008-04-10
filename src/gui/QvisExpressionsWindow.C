@@ -133,11 +133,14 @@
 //    Cyrus Harrison, Thu Jan 31 09:45:30 PST 2008
 //    Added value_for_material
 //
+//    Brad Whitlock, Tue Apr  8 12:17:11 PDT 2008
+//    Added support for internalization of the expression category names.
+//
 // ****************************************************************************
 
 struct ExprNameList
 {
-    const char *name;
+    QString      name;
     const char **list;
 };
 
@@ -328,24 +331,8 @@ const char *expr_comparison[] = {
     NULL
 };
 
-ExprNameList exprlist[] =
-{
-    {"Math",             expr_math},
-    {"Vector",           expr_vector},
-    {"Tensor",           expr_tensor},
-    {"Array",            expr_array},
-    {"Material",         expr_materials},
-    {"Mesh",             expr_mesh},
-    {"Mesh Quality",     expr_meshquality},
-    {"Comparison",       expr_comparison},
-    {"Image Processing", expr_imageprocessing},
-    {"Miscellaneous",    expr_misc},
-    {"Trigonometry",     expr_trig},
-    {"Relational",       expr_relational},
-    {"Conditional",      expr_conditional},
-    {"Logical",          expr_logical},
-    {NULL,NULL}
-};
+#define NUM_EXPRESSION_CATEGORIES 14
+ExprNameList exprlist[NUM_EXPRESSION_CATEGORIES];
 
 // ****************************************************************************
 // Method: QvisExpressionsWindow::QvisExpressionsWindow
@@ -360,14 +347,50 @@ ExprNameList exprlist[] =
 // Programmer: Jeremy Meredith
 // Creation:   October 10, 2004
 //
+// Modifications:
+//   Brad Whitlock, Tue Apr  8 12:15:08 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
+
 QvisExpressionsWindow::QvisExpressionsWindow(
-    ExpressionList *exprList_, const char *caption,
-    const char *shortName, QvisNotepadArea *notepad) :
+    ExpressionList *exprList_, const QString &caption,
+    const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(exprList_, caption, shortName, notepad,
                                QvisPostableWindowObserver::ApplyButton,
                                false)
 {
+    // Populate the expression categories. If you add a new one, increment
+    // the NUM_EXPRESSION_CATEGORIES macro.
+    exprlist[0].name = tr("Math");
+    exprlist[0].list = expr_math;
+    exprlist[1].name = tr("Vector");
+    exprlist[1].list = expr_vector;
+    exprlist[2].name = tr("Tensor");
+    exprlist[2].list = expr_tensor;
+    exprlist[3].name = tr("Array");
+    exprlist[3].list = expr_array;
+    exprlist[4].name = tr("Material");
+    exprlist[4].list = expr_materials;
+    exprlist[5].name = tr("Mesh");
+    exprlist[5].list = expr_mesh;
+    exprlist[6].name = tr("Mesh Quality");
+    exprlist[6].list = expr_meshquality;
+    exprlist[7].name = tr("Comparison");
+    exprlist[7].list = expr_comparison;
+    exprlist[8].name = tr("Image Processing");
+    exprlist[8].list = expr_imageprocessing;
+    exprlist[9].name = tr("Miscellaneous");
+    exprlist[9].list = expr_misc;
+    exprlist[10].name = tr("Trigonometry");
+    exprlist[10].list = expr_trig;
+    exprlist[11].name = tr("Relational");
+    exprlist[11].list = expr_relational;
+    exprlist[12].name = tr("Conditional");
+    exprlist[12].list = expr_conditional;
+    exprlist[13].name = tr("Logical");
+    exprlist[13].list = expr_logical;
+
     exprList = exprList_;
 }
 
@@ -418,6 +441,9 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 //    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
 //    Changed numtypes to 7 to support CurveMeshVar.
 //
+//    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -437,7 +463,7 @@ QvisExpressionsWindow::CreateWindowContents()
     mainLayout->setStretchFactor(listLayout, 50);
 #define f1 central
 #else
-    QGroupBox *f1 = new QGroupBox("Expression List",mainSplitter);
+    QGroupBox *f1 = new QGroupBox(tr("Expression List"),mainSplitter);
     QGridLayout *listLayout = new QGridLayout(f1, 4,2, 7, 5, "listLayout");
 #endif
 
@@ -446,13 +472,13 @@ QvisExpressionsWindow::CreateWindowContents()
     exprListBox = new QListBox(f1);
     listLayout->addMultiCellWidget(exprListBox, 1,1, 0,1);
 
-    newButton = new QPushButton("New", f1, "newButton");
+    newButton = new QPushButton(tr("New"), f1, "newButton");
     listLayout->addWidget(newButton, 2,0);
 
-    delButton = new QPushButton("Delete", f1, "delButton");
+    delButton = new QPushButton(tr("Delete"), f1, "delButton");
     listLayout->addWidget(delButton, 2,1);
 
-    displayAllVars = new QCheckBox("Display expressions from database", f1, "displayAllVars");
+    displayAllVars = new QCheckBox(tr("Display expressions from database"), f1, "displayAllVars");
     listLayout->addMultiCellWidget(displayAllVars, 3,3, 0,1);
 
 #ifndef USE_SPLITTER
@@ -461,7 +487,7 @@ QvisExpressionsWindow::CreateWindowContents()
     mainLayout->setStretchFactor(editLayout, 50);
 #define f2 central
 #else
-    QGroupBox *f2 = new QGroupBox("Definition", mainSplitter);
+    QGroupBox *f2 = new QGroupBox(tr("Definition"), mainSplitter);
     QGridLayout *editLayout = new QGridLayout(f2, 6,4, 7, 5, "editLayout");
 #endif
     int row = 0;
@@ -469,24 +495,28 @@ QvisExpressionsWindow::CreateWindowContents()
     editLayout->addRowSpacing(row, 10);
     row++;
 
-    nameEditLabel = new QLabel("Name", f2, "nameEditLabel");
+    nameEditLabel = new QLabel(tr("Name"), f2, "nameEditLabel");
     nameEdit = new QNarrowLineEdit(f2, "nameEdit");
     editLayout->addMultiCellWidget(nameEditLabel, row,row, 0,0);
     editLayout->addMultiCellWidget(nameEdit, row,row, 1,3);
     row++;
 
-    typeLabel = new QLabel("Type", f2, "typeLabel");
+    typeLabel = new QLabel(tr("Type"), f2, "typeLabel");
     typeList = new QComboBox(f2, "typeList");
-    int numtypes = Expression::GetNumTypes();
-    numtypes = 7;  // HACK!!!  Variable types after 6 currently fail.  FIXME!!!
-    int i;
-    for (i=1; i < numtypes ; i++)
-        typeList->insertItem(Expression::GetTypeString((Expression::ExprType)i));
+    // Extracted from Expression::GetTypeString so we can internationalize.
+    typeList->insertItem(tr("Scalar Mesh Variable"));
+    typeList->insertItem(tr("Vector Mesh Variable"));
+    typeList->insertItem(tr("Tensor Mesh Variable"));
+    typeList->insertItem(tr("Symmetric Tensor Mesh Variable"));
+    typeList->insertItem(tr("Array Mesh Variable"));
+    typeList->insertItem(tr("Curve Mesh Variable"));
+    //typeList->insertItem(tr("Mesh"));
+
     editLayout->addMultiCellWidget(typeLabel, row,row, 0,0);
     editLayout->addMultiCellWidget(typeList, row,row, 1,3);
     row++;
 
-    definitionEditLabel = new QLabel("Definition", f2, "definitionEditLabel");
+    definitionEditLabel = new QLabel(tr("Definition"), f2, "definitionEditLabel");
     editLayout->addWidget(definitionEditLabel, row, 0);
     row++;
 
@@ -496,14 +526,14 @@ QvisExpressionsWindow::CreateWindowContents()
     editLayout->addMultiCellWidget(definitionEdit, row,row, 0,3);
     row++;
 
-    notHidden = new QCheckBox("Show variable in plot menus", f2, "notHidden");
+    notHidden = new QCheckBox(tr("Show variable in plot menus"), f2, "notHidden");
     editLayout->addWidget(notHidden, row, 0);
 
-    insertFunctionButton = new QPushButton("Insert Function...", f2);
+    insertFunctionButton = new QPushButton(tr("Insert Function..."), f2);
     insertFunctionMenu = new QPopupMenu(f2, "insertFunctionMenu");
-    for (i=0; exprlist[i].name; i++)
+    for (int i=0; i < NUM_EXPRESSION_CATEGORIES; i++)
     {
-        QPopupMenu *tmpMenu = new QPopupMenu(f2, exprlist[i].name);
+        QPopupMenu *tmpMenu = new QPopupMenu(f2, exprlist[i].name.ascii());
         for (int j=0; exprlist[i].list[j]; j++)
         {
             tmpMenu->insertItem(exprlist[i].list[j]);
@@ -520,7 +550,7 @@ QvisExpressionsWindow::CreateWindowContents()
     insertVariableButton = new QvisVariableButton(false, false, false, -1, f2,
         "insertVariableButton");
     insertVariableButton->setChangeTextOnVariableChange(false);
-    insertVariableButton->setText("Insert Variable...");
+    insertVariableButton->setText(tr("Insert Variable..."));
     connect(insertVariableButton, SIGNAL(activated(const QString &)),
             this, SLOT(insertVariable(const QString &)));
     editLayout->addWidget(insertVariableButton, row, 3);

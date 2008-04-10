@@ -39,6 +39,7 @@
 *****************************************************************************/
 #include <map>
 #include <string>
+#include <qstring.h>
 
 class MovieSequence;
 class QPixmap;
@@ -56,7 +57,9 @@ class QPixmap;
 // Creation:   Thu Oct 5 14:28:40 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr  8 09:09:34 PDT 2008
+//   Changed SequenceMenuName so it returns QString.
+//
 // ****************************************************************************
 
 class MovieSequenceFactory
@@ -69,7 +72,7 @@ public:
     bool SequenceNameToId(const std::string &name, int &id) const;
 
     bool SequenceName(int id, std::string &name) const;
-    bool SequenceMenuName(int id, std::string &name) const;
+    bool SequenceMenuName(int id, QString &name) const;
     bool SequenceSubMenuIndex(int id, int &index) const;
     bool SequenceProvidesMenu(int id) const;
     bool SequencePixmap(int id, QPixmap &pix) const;

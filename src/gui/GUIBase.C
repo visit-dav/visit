@@ -49,6 +49,7 @@
 
 #include <SimpleObserver.h>
 
+#include <qobject.h>
 #include <qapplication.h>
 #include <qcursor.h>
 
@@ -562,6 +563,7 @@ bool
 GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
     SimpleObserver *sob, bool reOpen)
 {
+    const char *mName = "GUIBase::SetOpenDataFile";
     bool retval = true;
 
     //
@@ -588,13 +590,13 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
             QString msg;
             if(reOpen)
             {
-                msg.sprintf("Reopening %s on %s", qf.filename.c_str(),
-                            qf.host.c_str());
+                msg = QObject::tr("Reopening ",mName) + QString(qf.filename.c_str())
+                    + QObject::tr(" on ", mName) + QString(qf.host.c_str());
             }
             else
             {
-                msg.sprintf("Opening %s on %s", qf.filename.c_str(),
-                            qf.host.c_str());
+                msg = QObject::tr("Opening ", mName) + QString(qf.filename.c_str())
+                    + QObject::tr(" on ", mName) + QString(qf.host.c_str());
             }
             Status(msg);
 
@@ -617,11 +619,11 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
             ClearStatus();
 
             // Tell the user about the error.
-            QString msg;
-            msg.sprintf("VisIt could not open the file %s.\n\nThe metadata "
-                        "server returned the following message:\n\n%s",
-                        qf.FullName().c_str(), gmde.Message().c_str());
-            debug1 << msg << endl;
+            QString msg(QObject::tr("VisIt could not open the file %1.\n\n"
+                           "The metadata server returned the following message:\n\n%2", mName));
+            msg.replace("%1", QString(qf.FullName().c_str()));
+            msg.replace("%2",QString(gmde.Message().c_str()));
+            debug1 << msg.ascii() << endl;
             debug1 << "Not issuing an error message because the viewer will "
                    << "cover that." << endl;
             //Error(msg);

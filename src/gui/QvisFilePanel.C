@@ -243,7 +243,7 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
     // Create the selected file list.
     fileListView = new QListView(this, "fileList");
     fileListView->header()->setClickEnabled(false);
-    fileListView->addColumn("Selected files", 1);
+    fileListView->addColumn(tr("Selected files"), 1);
     fileListView->setColumnWidth(0, fileListView->visibleWidth());
     fileListView->setVScrollBarMode(QScrollView::AlwaysOn);
     fileListView->setHScrollBarMode(QScrollView::Auto);
@@ -281,7 +281,7 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
     connect(activeTimeSlider, SIGNAL(activated(int)),
             this, SLOT(changeActiveTimeSlider(int)));
     activeTimeSliderLabel = new QLabel(activeTimeSlider,
-        "Active time slider", this, "activeTimeSliderLabel");
+        tr("Active time slider"), this, "activeTimeSliderLabel");
     tsLayout->addWidget(activeTimeSliderLabel);
     activeTimeSliderLabel->hide();
     tsLayout->addWidget(activeTimeSlider, 10);
@@ -660,7 +660,7 @@ QvisFilePanel::RepopulateFileList()
         // Create the root for the host list.
         QualifiedFilename rootName("Hosts", "(root)", "(root)");
         QListViewItem *root = new QvisListViewFileItem(fileListView, 
-            QString("Hosts"),
+            QString(tr("Hosts")),
             rootName,
             QvisListViewFileItem::ROOT_NODE);
 
@@ -1513,7 +1513,7 @@ QString
 QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts,
     bool useVirtualDBInformation)
 {
-    QString label;
+    QString label, space(" ");
 
     if(timeStateFormat.GetDisplayMode() == TimeFormat::Cycles)
     {
@@ -1522,10 +1522,10 @@ QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts,
         {
             QualifiedFilename name(md->GetTimeStepNames()[ts]);
             label = QString(name.filename.c_str()) +
-                    QString(" cycle ") + FormattedCycleString(cycle);
+                    space + QString(tr("cycle")) + space + FormattedCycleString(cycle);
         }
         else
-            label = QString("cycle ") + FormattedCycleString(cycle);
+            label = QString(tr("cycle")) + space + FormattedCycleString(cycle);
     }
     else if(timeStateFormat.GetDisplayMode() == TimeFormat::Times)
     {
@@ -1537,10 +1537,10 @@ QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts,
             QualifiedFilename name(md->GetTimeStepNames()[ts]);
 
             label = QString(name.filename.c_str()) +
-                    QString(" time ") + FormattedTimeString(t, accurate);
+                    space + QString(tr("time")) + space + FormattedTimeString(t, accurate);
         }
         else
-            label = QString("time ") + FormattedTimeString(t, accurate);
+            label = QString(tr("time")) + space + FormattedTimeString(t, accurate);
     }
     else if(timeStateFormat.GetDisplayMode() == TimeFormat::CyclesAndTimes)
     {
@@ -1553,13 +1553,13 @@ QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts,
             QualifiedFilename name(md->GetTimeStepNames()[ts]);
 
             label = QString(name.filename.c_str()) +
-                    QString(" cycle ") + FormattedCycleString(cycle) +
-                    QString("  time ") + FormattedTimeString(t, accurate);
+                    space + QString(tr("cycle")) + space + FormattedCycleString(cycle) +
+                    space + space + QString(tr("time")) + space + FormattedTimeString(t, accurate);
         }
         else
         {
-            label = QString("cycle ") + FormattedCycleString(cycle) +
-                    QString("  time ") + FormattedTimeString(t, accurate);
+            label = QString(tr("cycle")) + space + FormattedCycleString(cycle) +
+                    space + space + QString(tr("time")) + space + FormattedTimeString(t, accurate);
         }
     }
 
@@ -1704,10 +1704,10 @@ QvisFilePanel::UpdateFileSelection()
 {
     // Set the text for the open file button.
     if(fileServer->GetOpenFile().Empty())
-        openButton->setText("Open");
+        openButton->setText(tr("Open"));
     else
     {
-        openButton->setText("ReOpen");
+        openButton->setText(tr("ReOpen"));
         openButton->setEnabled(true);
     }
 
@@ -2423,8 +2423,8 @@ QvisFilePanel::SetTimeSliderState(int state)
          else
          {  
              QString msg;
-             msg.sprintf("The active time slider is already at state %d.", state);
-             Message(msg);
+             msg.sprintf(" %d.", state);
+             Message(tr("The active time slider is already at state") + msg);
          }
     }
 }
@@ -2929,12 +2929,12 @@ QvisFilePanel::UpdateOpenButtonState(QvisListViewFileItem *fileItem)
     if(fileOpenedBefore)
     {
         if(fileServer->GetOpenFile() != fileItem->file)
-            openButton->setText("Activate");
+            openButton->setText(tr("Activate"));
         else
-            openButton->setText("ReOpen");
+            openButton->setText(tr("ReOpen"));
     }
     else
-        openButton->setText("Open");
+        openButton->setText(tr("Open"));
     openButton->setEnabled(true);
 }
 
@@ -2995,12 +2995,12 @@ QvisFilePanel::openFile()
                fileItem->timeState != timeState)
             {
                 UpdateFileSelection();
-                Error("Reopen cannot be used to change the active time state "
+                Error(tr("Reopen cannot be used to change the active time state "
                       "for an animation because reopen discards all cached "
                       "networks and causes the database to actually be "
                       "reopened. If you want to change the active time state, "
                       "use the animation slider or select a new time state "
-                      "and click the Replace button.");
+                      "and click the Replace button."));
                 return;
             }
         }

@@ -100,11 +100,14 @@ using std::vector;
 // Modifications:
 //   Shelly Prevost, Tue Jan 24 17:06:49 PST 2006
 //   Added a custom simulation control window.
-//   
+//
+//   Brad Whitlock, Wed Apr  9 11:50:52 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 QvisSimulationWindow::QvisSimulationWindow(EngineList *engineList,
-    const char *caption, const char *shortName, QvisNotepadArea *notepad) :
+    const QString &caption, const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(engineList, caption, shortName, notepad,
                                QvisPostableWindowObserver::NoExtraButtons),
     activeEngine(""), statusMap()
@@ -173,6 +176,10 @@ QvisSimulationWindow::~QvisSimulationWindow()
 //   modified splitter to help with widow space issues.
 //   Factored out strip chart window widgets and replaced them
 //   with a strip chart window manager. 
+//
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -194,24 +201,24 @@ QvisSimulationWindow::CreateWindowContents()
     connect(simCombo, SIGNAL(activated(int)), this, SLOT(selectEngine(int)));
     grid1->addWidget(simCombo, 0, 1);
     QLabel *engineLabel = new QLabel(simCombo,
-                                     "Simulation:", central, "engineLabel");
+                                     tr("Simulation:"), central, "engineLabel");
     grid1->addWidget(engineLabel, 0, 0);
 
     // Create the widgets needed to show the engine information.
     simInfo = new QListView(central, "simInfo");
-    simInfo->addColumn("Attribute");
-    simInfo->addColumn("Value");
+    simInfo->addColumn(tr("Attribute"));
+    simInfo->addColumn(tr("Value"));
     simInfo->setAllColumnsShowFocus(true);
     simInfo->setResizeMode(QListView::AllColumns);
     topLayout->addWidget(simInfo, 10);
 
-    simulationMode = new QLabel("Simulation Status: ", central);
+    simulationMode = new QLabel(tr("Simulation Status: "), central);
     topLayout->addWidget(simulationMode);  
 
     QGridLayout *timeLayout = new QGridLayout(topLayout);
     QHBoxLayout *progressLayout2 = new QHBoxLayout(topLayout);
 
-    progressLayout2->addWidget(new QLabel("VisIt Status", central));
+    progressLayout2->addWidget(new QLabel(tr("VisIt Status"), central));
 
     totalProgressBar = new QProgressBar(central, "totalProgressBar");
     totalProgressBar->setTotalSteps(100);
@@ -220,7 +227,7 @@ QvisSimulationWindow::CreateWindowContents()
     startCycle = new QLineEdit(central,"StartLineEdit");
     startCycle->setEnabled(false); 
     startLabel = new QLabel(central,"StartLabel");
-    startLabel->setText("Start");
+    startLabel->setText(tr("Start"));
     timeLayout->addWidget(startLabel,0,0);
     timeLayout->addWidget(startCycle,0,1);
     connect(startCycle,SIGNAL(returnPressed()),this,SLOT(executeSpinBoxStartCommand()));
@@ -228,7 +235,7 @@ QvisSimulationWindow::CreateWindowContents()
     stepCycle = new QLineEdit(central,"StepLineEdit");
     stepCycle->setEnabled(false);    
     stepLabel = new QLabel(central,"StepLabel");
-    stepLabel->setText("Step");
+    stepLabel->setText(tr("Step"));
     timeLayout->addWidget(stepLabel,0,2);
     timeLayout->addWidget(stepCycle,0,3);
     connect(stepCycle,SIGNAL(returnPressed()),this,SLOT(executeSpinBoxStepCommand()));
@@ -236,37 +243,37 @@ QvisSimulationWindow::CreateWindowContents()
     stopCycle = new QLineEdit(central,"StopLineEdit");
     stopCycle->setEnabled(false);    
     stopLabel = new QLabel(central,"StopLabel");
-    stopLabel->setText("Stop");
+    stopLabel->setText(tr("Stop"));
     timeLayout->addWidget(stopLabel,0,4);
     timeLayout->addWidget(stopCycle,0,5);
     connect(stopCycle,SIGNAL(returnPressed()),this,SLOT(executeSpinBoxStopCommand()));
 
     enableTimeRange = new QCheckBox(central);
-    enableTimeRange->setText("Enable Time Ranging");
+    enableTimeRange->setText(tr("Enable Time Ranging"));
     connect(enableTimeRange,SIGNAL(stateChanged(int)),this,SLOT(executeEnableTimeRange()));
     timeLayout->addMultiCellWidget(enableTimeRange,1,1,0,2);
 
     QGridLayout *buttonLayout1 = new QGridLayout(topLayout, 1, 3);
     buttonLayout1->setSpacing(10);
-    interruptEngineButton = new QPushButton("Interrupt", central, "interruptEngineButton");
+    interruptEngineButton = new QPushButton(tr("Interrupt"), central, "interruptEngineButton");
     connect(interruptEngineButton, SIGNAL(clicked()), this, SLOT(interruptEngine()));
     interruptEngineButton->setEnabled(false);
     buttonLayout1->addWidget(interruptEngineButton, 0, 0);
     buttonLayout1->setColStretch(1, 10);
 
-    closeEngineButton = new QPushButton("Disconnect", central, "closeEngineButton");
+    closeEngineButton = new QPushButton(tr("Disconnect"), central, "closeEngineButton");
     connect(closeEngineButton, SIGNAL(clicked()), this, SLOT(closeEngine()));
     closeEngineButton->setEnabled(false);
     buttonLayout1->addWidget(closeEngineButton, 0, 2);
 
-    clearCacheButton = new QPushButton("Clear cache", central, "clearCacheButton");
+    clearCacheButton = new QPushButton(tr("Clear cache"), central, "clearCacheButton");
     connect(clearCacheButton, SIGNAL(clicked()), this, SLOT(clearCache()));
     clearCacheButton->setEnabled(false);
     buttonLayout1->addWidget(clearCacheButton, 0, 1);
 
     // Create the group box and generic buttons.
     QGroupBox *commandGroup = new QGroupBox(central, "commandGroup");
-    commandGroup->setTitle("Commands");
+    commandGroup->setTitle(tr("Commands"));
     topLayout->addWidget(commandGroup);
     QVBoxLayout *cmdTopLayout = new QVBoxLayout(commandGroup);
     cmdTopLayout->setMargin(10);
@@ -300,7 +307,7 @@ QvisSimulationWindow::CreateWindowContents()
 
     // Create the status message widgets.
     QLabel *messageLabel = new QLabel(s2,"MessageViewerLabel");
-    messageLabel->setText("Message Viewer");
+    messageLabel->setText(tr("Message Viewer"));
     topLayout->addWidget(messageLabel);
     
     QTextEdit *messageViewer = new QTextEdit(s2, MESSAGE_WIDGET_NAME);
@@ -316,7 +323,7 @@ QvisSimulationWindow::CreateWindowContents()
     stripCharts = new QvisStripChartMgr(s2,"Strip Chart Container",GetViewerProxy(), engines, index, notepadAux);
     topLayout->addWidget(stripCharts);
     stripCharts->post();
-    QPushButton *postButton = new QPushButton("Unpost Strip Chart Window", central );
+    QPushButton *postButton = new QPushButton(tr("Unpost Strip Chart Window"), central );
     topLayout->addWidget(postButton);
     connect(postButton,SIGNAL(clicked()),this,SLOT(postStripChartWindow()));
  
@@ -442,6 +449,9 @@ QvisSimulationWindow::GetUIFile() const
 //   Shelly Prevost Tue Jun 19 16:10:17 PDT 2007
 //   Added signal connection for row col table widget.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -471,11 +481,10 @@ QvisSimulationWindow::CreateCommandUI()
     if (DynamicCommandsWin == NULL)
     {
         cmdButtons[CUSTOM_BUTTON]->setEnabled(false);
-        QString msg;
-        msg.sprintf("VisIt could not locate the simulation's "
-                    "user interface creation file at: %s. The custom user "
-                    "interface for this simulation will be unavailable.",
-                    fname.latin1());
+        QString msg(tr("VisIt could not locate the simulation's "
+                    "user interface creation file at: %1. The custom user "
+                    "interface for this simulation will be unavailable."));
+        msg.replace("%1", fname);
         Error(msg);
         return;
     }
@@ -872,6 +881,9 @@ QvisSimulationWindow::SetNewMetaData(const QualifiedFilename &qf,
 //   causes a crash when you go to click on it because of its SimCommandSlots
 //   object.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -911,9 +923,7 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
 
                 QString name = newsim.mid(firstDotPos+1,
                                           lastDotPos-firstDotPos-1);
-
-                temp = QString().sprintf("%s on %s", 
-                                    name.latin1(), host[i].c_str());
+                temp = name + QString(" ") + tr("on") + QString(" ") + host[i].c_str();
                 simCombo->insertItem(temp);
 
                 if (temp == activeEngine)
@@ -1191,6 +1201,9 @@ QvisSimulationWindow::UpdateStatusArea()
 //   Brad Whitlock, Fri Mar 9 17:10:40 PST 2007
 //   Made it use new metadata api.
 //
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1237,7 +1250,7 @@ QvisSimulationWindow::UpdateInformation(int index)
         QString tmp1,tmp2;
         QListViewItem *item;
 
-        item = new QListViewItem(simInfo, "Host",
+        item = new QListViewItem(simInfo, tr("Host"),
                                  md->GetSimInfo().GetHost().c_str());
         simInfo->insertItem(item);
 
@@ -1248,19 +1261,19 @@ QvisSimulationWindow::UpdateInformation(int index)
 
         QString name = newsim.mid(firstDotPos+1,
                                   lastDotPos-firstDotPos-1);
-        item = new QListViewItem(simInfo, "Name", name);
+        item = new QListViewItem(simInfo, tr("Name"), name);
         simInfo->insertItem(item);
 
 
         QString timesecstr = newsim.left(firstDotPos);
         time_t timesec = atoi(timesecstr.latin1());
         QString timestr = ctime(&timesec);
-        item = new QListViewItem(simInfo, "Date",
+        item = new QListViewItem(simInfo, tr("Date"),
                                  timestr.left(timestr.length()-1).latin1());
         simInfo->insertItem(item);
 
         tmp1.sprintf("%d", np);
-        item = new QListViewItem(simInfo, "Num Processors", tmp1);
+        item = new QListViewItem(simInfo, tr("Num Processors"), tmp1);
         simInfo->insertItem(item);
 
         const vector<string> &names  = md->GetSimInfo().GetOtherNames();
@@ -1277,13 +1290,13 @@ QvisSimulationWindow::UpdateInformation(int index)
         switch (md->GetSimInfo().GetMode())
         {
           case avtSimulationInformation::Unknown:
-            simulationMode->setText("Simulation Status: ");
+            simulationMode->setText(tr("Simulation Status: "));
             break;
           case avtSimulationInformation::Running:
-            simulationMode->setText("Simulation Status: Running");
+            simulationMode->setText(tr("Simulation Status: Running"));
             break;
           case avtSimulationInformation::Stopped:
-            simulationMode->setText("Simulation Status: Stopped");
+            simulationMode->setText(tr("Simulation Status: Stopped"));
             break;
         }
 
@@ -1566,6 +1579,8 @@ QvisSimulationWindow::UpdateMetaDataEntry(const QString &key)
 // Creation:   March 21, 2005
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -1583,19 +1598,21 @@ QvisSimulationWindow::closeEngine()
     QString msg;
     if (sim == "")
     {
-        msg.sprintf("Really close the compute engine on host \"%s\"?\n\n",
-                    host.c_str());
+        msg = tr("Really close the compute engine on host \"%1\"?\n\n");
+        msg.replace("%1", host.c_str());
     }
     else
     {
-        msg.sprintf("Really disconnect from the simulation \"%s\" on "
-                    "host \"%s\"?\n\n", sim.c_str(), host.c_str());
+        msg = tr("Really disconnect from the simulation \"%1\" on "
+                 "host \"%2\"?\n\n");
+        msg.replace("%1", sim.c_str());
+        msg.replace("%2", host.c_str());
     }
 
     // Ask the user if he really wants to close the engine.
     if (QMessageBox::warning( this, "VisIt",
                              msg.latin1(),
-                             "Ok", "Cancel", 0,
+                             tr("Ok"), tr("Cancel"), 0,
                              0, 1 ) == 0)
     {
         // The user actually chose to close the engine.

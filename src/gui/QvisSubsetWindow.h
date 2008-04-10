@@ -105,6 +105,9 @@ typedef std::vector<SubsetPanel> SubsetPanelVector;
 //   Brad Whitlock, Fri Aug 6 13:56:01 PST 2004
 //   Made changes that allow multiple sets to be selected.
 //
+//   Brad Whitlock, Wed Apr  9 11:04:31 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisSubsetWindow : public QvisPostableWindowObserver
@@ -112,8 +115,8 @@ class GUI_API QvisSubsetWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisSubsetWindow(Subject *subj,
-                     const char *caption = 0,
-                     const char *shortName = 0,
+                     const QString &caption = QString::null,
+                     const QString &shortName = QString::null,
                      QvisNotepadArea *notepad = 0);
     virtual ~QvisSubsetWindow();
     virtual void CreateWindowContents();

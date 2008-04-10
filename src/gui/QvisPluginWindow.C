@@ -77,9 +77,12 @@
 //    Jeremy Meredith, Wed Jan 23 15:35:39 EST 2008
 //    We're observer two subjects now, so inherit from simpleobserver.
 //
+//    Brad Whitlock, Wed Apr  9 11:04:01 PDT 2008
+//    QString for caption, shortName.
+//
 // ****************************************************************************
 
-QvisPluginWindow::QvisPluginWindow(const char *caption, const char *shortName,
+QvisPluginWindow::QvisPluginWindow(const QString &caption, const QString &shortName,
                                    QvisNotepadArea *notepad) :
     QvisPostableWindowSimpleObserver(caption, shortName, notepad,
                                QvisPostableWindowSimpleObserver::ApplyButton)
@@ -202,12 +205,12 @@ QvisPluginWindow::CreateWindowContents()
     pagePlots = new QVBox(central, "pagePlots");
     pagePlots->setSpacing(5);
     pagePlots->setMargin(10);
-    tabs->addTab(pagePlots, "Plots");
+    tabs->addTab(pagePlots, tr("Plots"));
 
     listPlots = new QListView(pagePlots, "listPlots");
     listPlots->addColumn("  ");
-    listPlots->addColumn("Name");
-    listPlots->addColumn("Version");
+    listPlots->addColumn(tr("Name"));
+    listPlots->addColumn(tr("Version"));
     listPlots->setAllColumnsShowFocus(true);
     listPlots->setColumnAlignment(0, Qt::AlignHCenter);
     listPlots->setColumnAlignment(2, Qt::AlignHCenter);
@@ -218,12 +221,12 @@ QvisPluginWindow::CreateWindowContents()
     pageOperators = new QVBox(central, "pageOperators");
     pageOperators->setSpacing(10);
     pageOperators->setMargin(10);
-    tabs->addTab(pageOperators, "Operators");
+    tabs->addTab(pageOperators, tr("Operators"));
 
     listOperators = new QListView(pageOperators, "listOperators");
     listOperators->addColumn("  ");
-    listOperators->addColumn("Name");
-    listOperators->addColumn("Version");
+    listOperators->addColumn(tr("Name"));
+    listOperators->addColumn(tr("Version"));
     listOperators->setAllColumnsShowFocus(true);
     listOperators->setColumnAlignment(0, Qt::AlignHCenter);
     listOperators->setColumnAlignment(2, Qt::AlignHCenter);
@@ -234,12 +237,12 @@ QvisPluginWindow::CreateWindowContents()
     pageDatabases = new QVBox(central, "pageDatabases");
     pageDatabases->setSpacing(10);
     pageDatabases->setMargin(10);
-    tabs->addTab(pageDatabases, "Databases");
+    tabs->addTab(pageDatabases, tr("Databases"));
 
     listDatabases = new QListView(pageDatabases, "listDatabases");
     listDatabases->addColumn("  ");
-    listDatabases->addColumn("Name");
-    listDatabases->addColumn("Open Options");
+    listDatabases->addColumn(tr("Name"));
+    listDatabases->addColumn(tr("Open Options"));
     listDatabases->setAllColumnsShowFocus(true);
     listDatabases->setColumnAlignment(0, Qt::AlignHCenter);
     listDatabases->setColumnAlignment(2, Qt::AlignLeft);
@@ -250,12 +253,12 @@ QvisPluginWindow::CreateWindowContents()
     box->setMargin(10);
 
     // Add select all and unselect all buttons.
-    selectAllReadersButton = new QPushButton("Select all", box );
+    selectAllReadersButton = new QPushButton(tr("Select all"), box );
     connect( selectAllReadersButton, SIGNAL(clicked()), this, SLOT(selectAllReadersButtonClicked()));
-    unSelectAllReadersButton = new QPushButton("Unselect all", box );
+    unSelectAllReadersButton = new QPushButton(tr("Unselect all"), box );
     connect( unSelectAllReadersButton, SIGNAL(clicked()), this, SLOT(unSelectAllReadersButtonClicked()));
     
-    databaseOptionsSetButton = new QPushButton("Set Default Open Options", pageDatabases);
+    databaseOptionsSetButton = new QPushButton(tr("Set Default Open Options"), pageDatabases);
     connect(databaseOptionsSetButton, SIGNAL(clicked()),
             this, SLOT(databaseOptionsSetButtonClicked()));
     connect(listDatabases, SIGNAL(selectionChanged(QListViewItem*)), 
@@ -436,6 +439,9 @@ QvisPluginWindow::UpdateWindow(bool doAll)
 //    Dave Pugmire, Wed Feb 13 15:43:24 EST 2008
 //    Update the FileOpenOptions for enable/disable DB plugins.
 //
+//   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -480,8 +486,8 @@ QvisPluginWindow::Apply(bool dontIgnore)
 
     if (dirty)
     {
-        GUIBase::Warning("Note:  Plugins are loaded at startup.  Please save "
-                     "your settings and restart VisIt to apply your changes.");
+        GUIBase::Warning(tr("Note:  Plugins are loaded at startup.  Please save "
+                     "your settings and restart VisIt to apply your changes."));
     }
 }
 
@@ -597,9 +603,9 @@ QvisPluginWindow::apply()
 void
 QvisPluginWindow::tabSelected(const QString &tabLabel)
 {
-    if(tabLabel == QString("Plots"))
+    if(tabLabel == QString(tr("Plots")))
         activeTab = 0;
-    else if(tabLabel == QString("Operators"))
+    else if(tabLabel == QString(tr("Operators")))
         activeTab = 1;
     else
         activeTab = 2;
@@ -618,6 +624,10 @@ QvisPluginWindow::tabSelected(const QString &tabLabel)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 23, 2008
+//
+//  Modifications:
+//    Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
+//    Support for internationalization.
 //
 // ****************************************************************************
 void
@@ -645,9 +655,8 @@ QvisPluginWindow::databaseOptionsSetButtonClicked()
     {
         QvisDBOptionsDialog *optsdlg = new QvisDBOptionsDialog(&opts, NULL,
                                                                "opts");
-        QString caption = std::string("Default file opening options for " +
-                                      fileOpenOptions->GetTypeNames()[index] +
-                                      " reader").c_str();
+        QString caption(tr("Default file opening options for %1 reader"));
+        caption.replace("%1", fileOpenOptions->GetTypeNames()[index].c_str());
         optsdlg->setCaption(caption);
         int result = optsdlg->exec();
         delete optsdlg;

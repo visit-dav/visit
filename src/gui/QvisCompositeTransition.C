@@ -58,6 +58,8 @@
 // Creation:   Tue Nov 14 13:21:32 PST 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -85,11 +87,11 @@ QvisCompositeTransition::QvisCompositeTransition(const QPixmap &pix,
     nFrames->setMinValue(1);
     nFrames->setValue(10);
     gLayout->addWidget(
-        new QLabel("Number of transition frames", this, "nFramesLabel"), 0, 0);
+        new QLabel(tr("Number of transition frames"), this, "nFramesLabel"), 0, 0);
     gLayout->addWidget(nFrames, 0, 1);
 
     // Reverse
-    reverseCheckbox = new QCheckBox("Reverse", this, "reverse");
+    reverseCheckbox = new QCheckBox(tr("Reverse"), this, "reverse");
     gLayout->addWidget(reverseCheckbox, 1, 0);
 }
 

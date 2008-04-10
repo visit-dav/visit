@@ -106,10 +106,13 @@
 //   Brad Whitlock, Thu Feb 7 16:32:02 PST 2008
 //   Removed some widgets.
 //
+//   Brad Whitlock, Wed Apr  9 10:59:06 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
-QvisAnnotationWindow::QvisAnnotationWindow(const char *caption,
-    const char *shortName, QvisNotepadArea *notepad) :
+QvisAnnotationWindow::QvisAnnotationWindow(const QString &caption,
+    const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowSimpleObserver(caption, shortName, notepad,
     QvisPostableWindowSimpleObserver::AllExtraButtons, false)
 {
@@ -370,6 +373,10 @@ QvisAnnotationWindow::CreateWindowContents()
 // Programmer: Cyrus Harrison
 // Creation:   Tue Oct  2 09:29:53 PDT 2007
 //
+// Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -379,7 +386,7 @@ QvisAnnotationWindow::CreateGeneralTab()
     // Create the group of widgets that control general annotation options
     //
     pageGeneral = new QWidget(central, "pageGeneral");
-    tabs->addTab(pageGeneral, "General");
+    tabs->addTab(pageGeneral, tr("General"));
 
     // use two layouts, so we can have a compact look
     QVBoxLayout *general_layout = new QVBoxLayout(pageGeneral);
@@ -390,13 +397,13 @@ QvisAnnotationWindow::CreateGeneralTab()
 
     // Create a toggle for the legend.
     int row = 0;
-    legendInfo = new QCheckBox("Legend", pageGeneral, "legendInfo");
+    legendInfo = new QCheckBox(tr("Legend"), pageGeneral, "legendInfo");
     connect(legendInfo, SIGNAL(toggled(bool)),
             this, SLOT(legendChecked(bool)));
     glayout->addWidget(legendInfo, row, 0);
 
     // Create a button that can turn off all annotations.
-    turnOffAllButton = new QPushButton("No annotations", pageGeneral,
+    turnOffAllButton = new QPushButton(tr("No annotations"), pageGeneral,
         "turnOffAllButton");
     connect(turnOffAllButton, SIGNAL(clicked()),
             this, SLOT(turnOffAllAnnotations()));
@@ -407,7 +414,7 @@ QvisAnnotationWindow::CreateGeneralTab()
     // Create the database information
     //
     databaseInfo = new QGroupBox(pageGeneral, "dbGroup");
-    databaseInfo->setTitle("Database");
+    databaseInfo->setTitle(tr("Database"));
     databaseInfo->setCheckable(true);
     connect(databaseInfo, SIGNAL(toggled(bool)),
             this, SLOT(databaseInfoChecked(bool)));
@@ -422,15 +429,15 @@ QvisAnnotationWindow::CreateGeneralTab()
     ++row;
     databasePathExpansionMode = new QComboBox(databaseInfo,
         "databasePathExpansionMode");
-    databasePathExpansionMode->insertItem("File", 0);
-    databasePathExpansionMode->insertItem("Directory", 1);
-    databasePathExpansionMode->insertItem("Full", 2);
-    databasePathExpansionMode->insertItem("Smart", 3);
-    databasePathExpansionMode->insertItem("Smart Directory", 4);
+    databasePathExpansionMode->insertItem(tr("File"), 0);
+    databasePathExpansionMode->insertItem(tr("Directory"), 1);
+    databasePathExpansionMode->insertItem(tr("Full"), 2);
+    databasePathExpansionMode->insertItem(tr("Smart"), 3);
+    databasePathExpansionMode->insertItem(tr("Smart Directory"), 4);
     connect(databasePathExpansionMode, SIGNAL(activated(int)),
             this, SLOT(databasePathExpansionModeChanged(int)));
     databasePathExpansionModeLabel = new QLabel(databasePathExpansionMode,
-        "Path Expansion", databaseInfo, "databasePathExpansionModeLabel");
+        tr("Path Expansion"), databaseInfo, "databasePathExpansionModeLabel");
     dLayout->addWidget(databasePathExpansionModeLabel, 0, 0);
     dLayout->addWidget(databasePathExpansionMode, 0, 1);
 
@@ -447,7 +454,7 @@ QvisAnnotationWindow::CreateGeneralTab()
     // Create the user information
     //
     userInfo = new QGroupBox(pageGeneral, "userInfo");
-    userInfo->setTitle("User information");
+    userInfo->setTitle(tr("User information"));
     userInfo->setCheckable(true);
     connect(userInfo, SIGNAL(toggled(bool)),
             this, SLOT(userInfoChecked(bool)));
@@ -488,6 +495,9 @@ QvisAnnotationWindow::CreateGeneralTab()
 //   I changed the method so it creates "General 2D", "X-Axis", and "Y-Axis"
 //   tabs instead of the previous organization.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -499,9 +509,9 @@ QvisAnnotationWindow::Create2DTab()
     page2D = new QVBox(central, "page2D");
     page2D->setSpacing(5);
     page2D->setMargin(10);
-    tabs->addTab(page2D, "2D");
+    tabs->addTab(page2D, tr("2D"));
 
-    axesFlagToggle2D = new QCheckBox("Show axes", page2D,
+    axesFlagToggle2D = new QCheckBox(tr("Show axes"), page2D,
                                      "axesFlagToggle2D");
     connect(axesFlagToggle2D, SIGNAL(toggled(bool)),
             this, SLOT(axesFlagChecked2D(bool)));
@@ -514,19 +524,19 @@ QvisAnnotationWindow::Create2DTab()
     lLayout->addWidget(page2DTabs);
 
     // Create the general options page.
-    page2DTabs->addTab(CreateGeneralTab2D(page2DTabs), "General 2D");
+    page2DTabs->addTab(CreateGeneralTab2D(page2DTabs), tr("General 2D"));
 
     // Add the X-axis page.
     axes2D[0] = new QvisAxisAttributesWidget(page2DTabs, "xAxis2D", false, true);
     connect(axes2D[0], SIGNAL(axisChanged(const AxisAttributes &)),
             this, SLOT(xAxisChanged2D(const AxisAttributes &)));
-    page2DTabs->addTab(axes2D[0], "X-Axis");
+    page2DTabs->addTab(axes2D[0], tr("X-Axis"));
 
     // Add the Y-axis page.
     axes2D[1] = new QvisAxisAttributesWidget(page2DTabs, "yAxis2D", false, true);
     connect(axes2D[1], SIGNAL(axisChanged(const AxisAttributes &)),
             this, SLOT(yAxisChanged2D(const AxisAttributes &)));
-    page2DTabs->addTab(axes2D[1], "Y-Axis");
+    page2DTabs->addTab(axes2D[1], tr("Y-Axis"));
 }
 
 // ****************************************************************************
@@ -546,6 +556,8 @@ QvisAnnotationWindow::Create2DTab()
 // Creation:   Thu Feb 7 16:45:23 PST 2008
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -566,7 +578,7 @@ QvisAnnotationWindow::CreateGeneralTab2D(QWidget *parentWidget)
 
     // Create auto set scaling check box.
     int row = 0;
-    labelAutoSetScalingToggle2D = new QCheckBox("Auto scale label values",
+    labelAutoSetScalingToggle2D = new QCheckBox(tr("Auto scale label values"),
         top, "labelAutoSetScalingToggle2D");
     connect(labelAutoSetScalingToggle2D, SIGNAL(toggled(bool)),
             this, SLOT(labelAutoSetScalingChecked2D(bool)));
@@ -574,7 +586,7 @@ QvisAnnotationWindow::CreateGeneralTab2D(QWidget *parentWidget)
     ++row;
 
     // Create auto set ticks check box.
-    axesAutoSetTicksToggle2D = new QCheckBox("Auto set ticks", top,
+    axesAutoSetTicksToggle2D = new QCheckBox(tr("Auto set ticks"), top,
                                          "axesAutoSetTicksToggle2D");
     connect(axesAutoSetTicksToggle2D, SIGNAL(toggled(bool)),
             this, SLOT(axesAutoSetTicksChecked2D(bool)));
@@ -584,24 +596,24 @@ QvisAnnotationWindow::CreateGeneralTab2D(QWidget *parentWidget)
     // Create the 2D tick mark locations combobox.
     axesTickLocationComboBox2D = new QComboBox(top,
         "axesTickLocationComboBox2D");
-    axesTickLocationComboBox2D->insertItem("Inside",  0);
-    axesTickLocationComboBox2D->insertItem("Outside", 1);
-    axesTickLocationComboBox2D->insertItem("Both",    2);
+    axesTickLocationComboBox2D->insertItem(tr("Inside"),  0);
+    axesTickLocationComboBox2D->insertItem(tr("Outside"), 1);
+    axesTickLocationComboBox2D->insertItem(tr("Both"),    2);
     connect(axesTickLocationComboBox2D, SIGNAL(activated(int)),
             this, SLOT(axesTickLocationChanged2D(int)));
     lLayout->addWidget(axesTickLocationComboBox2D, row, 1);
-    QLabel *l = new QLabel(axesTickLocationComboBox2D, "Tick mark locations",
+    QLabel *l = new QLabel(axesTickLocationComboBox2D, tr("Tick mark locations"),
                    top, "axesTickLocationLabel2D");
     lLayout->addWidget(l, row, 0);
     ++row;
 
     // Create the 2D tick marks combobox.
     axesTicksComboBox2D = new QComboBox(top, "axesTicksComboBox2D");
-    axesTicksComboBox2D->insertItem("Off",         0);
-    axesTicksComboBox2D->insertItem("Bottom",      1);
-    axesTicksComboBox2D->insertItem("Left",        2);
-    axesTicksComboBox2D->insertItem("Bottom-left", 3);
-    axesTicksComboBox2D->insertItem("All axes",    4);
+    axesTicksComboBox2D->insertItem(tr("Off"),         0);
+    axesTicksComboBox2D->insertItem(tr("Bottom"),      1);
+    axesTicksComboBox2D->insertItem(tr("Left"),        2);
+    axesTicksComboBox2D->insertItem(tr("Bottom-left"), 3);
+    axesTicksComboBox2D->insertItem(tr("All axes"),    4);
     connect(axesTicksComboBox2D, SIGNAL(activated(int)),
             this, SLOT(axesTicksChanged2D(int)));
     lLayout->addWidget(axesTicksComboBox2D, row, 1);
@@ -616,7 +628,7 @@ QvisAnnotationWindow::CreateGeneralTab2D(QWidget *parentWidget)
     lLayout->addWidget(axesLineWidth2D, row, 1);
     connect(axesLineWidth2D, SIGNAL(lineWidthChanged(int)),
             this, SLOT(axesLineWidthChanged2D(int)));
-    l = new QLabel("Line width", top, "axesLineWidthLabel2D");
+    l = new QLabel(tr("Line width"), top, "axesLineWidthLabel2D");
     lLayout->addWidget(l, row, 0);
     ++row;
 
@@ -645,6 +657,9 @@ QvisAnnotationWindow::CreateGeneralTab2D(QWidget *parentWidget)
 //   Brad Whitlock, Thu Feb 7 17:03:30 PST 2008
 //   I split the tabs into "General 3D", "X-Axis", "Y-Axis", and "Z-Axis".
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -656,21 +671,21 @@ QvisAnnotationWindow::Create3DTab()
     page3D = new QVBox(central, "page3D");
     page3D->setSpacing(10);
     page3D->setMargin(10);
-    tabs->addTab(page3D, "3D");
+    tabs->addTab(page3D, tr("3D"));
 
     // Create the toggle for drawing the axes.
     QHBox *buttons = new QHBox(page3D, "buttons");
-    axes3DVisible = new QCheckBox("Show axes", buttons, "axes3DVisible");
+    axes3DVisible = new QCheckBox(tr("Show axes"), buttons, "axes3DVisible");
     connect(axes3DVisible, SIGNAL(toggled(bool)),
             this, SLOT(axes3DFlagChecked(bool)));
 
     // Create the toggle for the triad.
-    triadFlagToggle = new QCheckBox("Show triad", buttons, "triadFlagToggle");
+    triadFlagToggle = new QCheckBox(tr("Show triad"), buttons, "triadFlagToggle");
     connect(triadFlagToggle, SIGNAL(toggled(bool)),
             this, SLOT(triadFlagChecked(bool)));
 
     // Create the toggle for the bbox.
-    bboxFlagToggle = new QCheckBox("Show bounding box", buttons, "bboxFlagToggle");
+    bboxFlagToggle = new QCheckBox(tr("Show bounding box"), buttons, "bboxFlagToggle");
     connect(bboxFlagToggle, SIGNAL(toggled(bool)),
             this, SLOT(bboxFlagChecked(bool)));
 
@@ -683,25 +698,25 @@ QvisAnnotationWindow::Create3DTab()
 
     // Create the general 3D options page.
     page3DTabs->addTab(CreateGeneralTab3D(page3DTabs),
-        "General 3D");
+        tr("General 3D"));
 
     // Add the X-axis page.
     axes3D[0] = new QvisAxisAttributesWidget(page3DTabs, "xAxis", true, false);
     connect(axes3D[0], SIGNAL(axisChanged(const AxisAttributes &)),
             this, SLOT(xAxisChanged(const AxisAttributes &)));
-    page3DTabs->addTab(axes3D[0], "X-Axis");
+    page3DTabs->addTab(axes3D[0], tr("X-Axis"));
 
     // Add the Y-axis page.
     axes3D[1] = new QvisAxisAttributesWidget(page3DTabs, "yAxis", true, false);
     connect(axes3D[1], SIGNAL(axisChanged(const AxisAttributes &)),
             this, SLOT(yAxisChanged(const AxisAttributes &)));
-    page3DTabs->addTab(axes3D[1], "Y-Axis");
+    page3DTabs->addTab(axes3D[1], tr("Y-Axis"));
 
     // Add the Z-axis page.
     axes3D[2] = new QvisAxisAttributesWidget(page3DTabs, "zAxis", true, false);
     connect(axes3D[2], SIGNAL(axisChanged(const AxisAttributes &)),
             this, SLOT(zAxisChanged(const AxisAttributes &)));
-    page3DTabs->addTab(axes3D[2], "Z-Axis");
+    page3DTabs->addTab(axes3D[2], tr("Z-Axis"));
 }
 
 // ****************************************************************************
@@ -721,6 +736,8 @@ QvisAnnotationWindow::Create3DTab()
 // Creation:   Thu Feb 7 17:07:22 PST 2008
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -740,7 +757,7 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     rLayout->setColStretch(1, 10);
 
     int row = 0;
-    labelAutoSetScalingToggle = new QCheckBox("Auto scale label values", top,
+    labelAutoSetScalingToggle = new QCheckBox(tr("Auto scale label values"), top,
                                          "labelAutoSetScalingToggle");
     connect(labelAutoSetScalingToggle, SIGNAL(toggled(bool)),
             this, SLOT(labelAutoSetScalingChecked(bool)));
@@ -748,7 +765,7 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     ++row;
 
     // Create auto set ticks check box.
-    axesAutoSetTicksToggle = new QCheckBox("Auto set ticks", top,
+    axesAutoSetTicksToggle = new QCheckBox(tr("Auto set ticks"), top,
                                          "axesAutoSetTicksToggle");
     connect(axesAutoSetTicksToggle, SIGNAL(toggled(bool)),
             this, SLOT(axesAutoSetTicksChecked(bool)));
@@ -757,28 +774,28 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
 
     // Create the 3D tick mark locations combobox.
     axes3DTickLocationComboBox = new QComboBox(top, "axes3DTickLocationComboBox");
-    axes3DTickLocationComboBox->insertItem("Inside",  0);
-    axes3DTickLocationComboBox->insertItem("Outside", 1);
-    axes3DTickLocationComboBox->insertItem("Both",    2);
+    axes3DTickLocationComboBox->insertItem(tr("Inside"),  0);
+    axes3DTickLocationComboBox->insertItem(tr("Outside"), 1);
+    axes3DTickLocationComboBox->insertItem(tr("Both"),    2);
     connect(axes3DTickLocationComboBox, SIGNAL(activated(int)),
             this, SLOT(axes3DTickLocationChanged(int)));
     rLayout->addWidget(axes3DTickLocationComboBox, row, 1);
-    QLabel *l = new QLabel(axes3DTickLocationComboBox, "Tick mark locations",
+    QLabel *l = new QLabel(axes3DTickLocationComboBox, tr("Tick mark locations"),
                    top, "axes3DTickLocationLabel");
     rLayout->addWidget(l, row, 0);
     ++row;
 
     // Create the 3D axes type combobox.
     axes3DTypeComboBox = new QComboBox(top, "axes3DTypeComboBox");
-    axes3DTypeComboBox->insertItem("Closest triad",  0);
-    axes3DTypeComboBox->insertItem("Furthest triad", 1);
-    axes3DTypeComboBox->insertItem("Outside edges",  2);
-    axes3DTypeComboBox->insertItem("Static triad",   3);
-    axes3DTypeComboBox->insertItem("Static edges",   4);
+    axes3DTypeComboBox->insertItem(tr("Closest triad"),  0);
+    axes3DTypeComboBox->insertItem(tr("Furthest triad"), 1);
+    axes3DTypeComboBox->insertItem(tr("Outside edges"),  2);
+    axes3DTypeComboBox->insertItem(tr("Static triad"),   3);
+    axes3DTypeComboBox->insertItem(tr("Static edges"),   4);
     connect(axes3DTypeComboBox, SIGNAL(activated(int)),
             this, SLOT(axes3DTypeChanged(int)));
     rLayout->addWidget(axes3DTypeComboBox, row, 1);
-    l = new QLabel(axes3DTypeComboBox, "Axis type",
+    l = new QLabel(axes3DTypeComboBox, tr("Axis type"),
                    top, "axes3DTypeLabel");
     rLayout->addWidget(l, row, 0);
     ++row;
@@ -789,7 +806,7 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     rLayout->addWidget(axesLineWidth, row, 1);
     connect(axesLineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(axesLineWidthChanged(int)));
-    l = new QLabel("Line width", top, "axesLineWidthLabel");
+    l = new QLabel(tr("Line width"), top, "axesLineWidthLabel");
     rLayout->addWidget(l, row, 0);
     ++row;
 
@@ -811,6 +828,9 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
 //   Brad Whitlock, Wed Nov 14 11:34:45 PDT 2007
 //   Added background image support.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -823,7 +843,7 @@ QvisAnnotationWindow::CreateColorTab()
     //
     pageColor = new QGroupBox(central, "pageColor");
     pageColor->setFrameStyle(QFrame::NoFrame);
-    tabs->addTab(pageColor, "Colors");
+    tabs->addTab(pageColor, tr("Colors"));
 
     QVBoxLayout *vcLayout = new QVBoxLayout(pageColor);
     vcLayout->setMargin(10);
@@ -835,7 +855,7 @@ QvisAnnotationWindow::CreateColorTab()
     connect(backgroundColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(backgroundColorChanged(const QColor &)));
     QLabel *bgColorLabel = new QLabel(backgroundColorButton,
-                                      "Background color", pageColor,
+                                      tr("Background color"), pageColor,
                                       "bgColorLabel");
     cLayout->addWidget(bgColorLabel, row, 0);
     cLayout->addWidget(backgroundColorButton, row, 1, AlignLeft);
@@ -846,14 +866,14 @@ QvisAnnotationWindow::CreateColorTab()
     connect(foregroundColorButton, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(foregroundColorChanged(const QColor &)));
     QLabel *fgColorLabel = new QLabel(foregroundColorButton,
-                                      "Foreground color", pageColor,
+                                      tr("Foreground color"), pageColor,
                                       "fgColorLabel");
     cLayout->addWidget(fgColorLabel, row, 0);
     cLayout->addWidget(foregroundColorButton, row, 1, AlignLeft);
     ++row;
 
     // Create the background style widgets.
-    QLabel *backgroundStyleLabel = new QLabel("Background style", pageColor,
+    QLabel *backgroundStyleLabel = new QLabel(tr("Background style"), pageColor,
                                               "backgroundStyleLabel");
     cLayout->addWidget(backgroundStyleLabel, row, 0);
     backgroundStyleButtons = new QButtonGroup(0, "backgroundStyleButtons");
@@ -861,16 +881,16 @@ QvisAnnotationWindow::CreateColorTab()
             this, SLOT(backgroundStyleChanged(int)));
     QGridLayout *mLayout = new QGridLayout(1, 4, 5, "mLayout");
     cLayout->addMultiCellLayout(mLayout, row, row, 1, 2);
-    QRadioButton *solid = new QRadioButton("Solid", pageColor, "solid");
+    QRadioButton *solid = new QRadioButton(tr("Solid"), pageColor, "solid");
     backgroundStyleButtons->insert(solid);
     mLayout->addWidget(solid, 0, 0);
-    QRadioButton *gradient = new QRadioButton("Gradient", pageColor, "gradient");
+    QRadioButton *gradient = new QRadioButton(tr("Gradient"), pageColor, "gradient");
     backgroundStyleButtons->insert(gradient);
     mLayout->addWidget(gradient, 0, 1);
-    QRadioButton *image = new QRadioButton("Image", pageColor, "image");
+    QRadioButton *image = new QRadioButton(tr("Image"), pageColor, "image");
     backgroundStyleButtons->insert(image);
     mLayout->addWidget(image, 0, 2);
-    QRadioButton *imageSphere = new QRadioButton("Image sphere", pageColor, "imageSphere");
+    QRadioButton *imageSphere = new QRadioButton(tr("Image sphere"), pageColor, "imageSphere");
     backgroundStyleButtons->insert(imageSphere);
     mLayout->addWidget(imageSphere, 0, 3);
     ++row;
@@ -882,16 +902,16 @@ QvisAnnotationWindow::CreateColorTab()
 
     // Create the gradient style combobox.
     gradientStyleComboBox = new QComboBox(pageColor, "gradientStyleComboBox");
-    gradientStyleComboBox->insertItem("Top to bottom", 0);
-    gradientStyleComboBox->insertItem("Bottom to top", 1);
-    gradientStyleComboBox->insertItem("Left to right", 2);
-    gradientStyleComboBox->insertItem("Right to left", 3);
-    gradientStyleComboBox->insertItem("Radial",        4);
+    gradientStyleComboBox->insertItem(tr("Top to bottom"), 0);
+    gradientStyleComboBox->insertItem(tr("Bottom to top"), 1);
+    gradientStyleComboBox->insertItem(tr("Left to right"), 2);
+    gradientStyleComboBox->insertItem(tr("Right to left"), 3);
+    gradientStyleComboBox->insertItem(tr("Radial"),        4);
     connect(gradientStyleComboBox, SIGNAL(activated(int)),
             this, SLOT(gradientStyleChanged(int)));
     cLayout->addMultiCellWidget(gradientStyleComboBox, row, row, 1, 2);
     gradientStyleLabel = new QLabel(gradientStyleComboBox,
-                                    "Gradient style", pageColor,
+                                    tr("Gradient style"), pageColor,
                                     "gradientStyleLabel");
     cLayout->addWidget(gradientStyleLabel, row, 0);
     ++row;
@@ -901,7 +921,7 @@ QvisAnnotationWindow::CreateColorTab()
     connect(gradientColor1Button, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(gradientColor1Changed(const QColor &)));
     gradientColor1Label = new QLabel(gradientColor1Button,
-                                     "Gradient color 1", pageColor,
+                                     tr("Gradient color 1"), pageColor,
                                      "gradColor1Label");
     cLayout->addWidget(gradientColor1Label, row, 0);
     cLayout->addWidget(gradientColor1Button, row, 1, AlignLeft);
@@ -912,7 +932,7 @@ QvisAnnotationWindow::CreateColorTab()
     connect(gradientColor2Button, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(gradientColor2Changed(const QColor &)));
     gradientColor2Label = new QLabel(gradientColor2Button,
-                                     "Gradient color 2", pageColor,
+                                     tr("Gradient color 2"), pageColor,
                                      "gradColor2Label");
     cLayout->addWidget(gradientColor2Label, row, 0);
     cLayout->addWidget(gradientColor2Button, row, 1, AlignLeft);
@@ -929,11 +949,11 @@ QvisAnnotationWindow::CreateColorTab()
     connect(backgroundImage, SIGNAL(returnPressed()),
             this, SLOT(backgroundImageChanged()));
     cLayout->addMultiCellWidget(backgroundImage, row, row, 1, 2);
-    backgroundImageLabel = new QLabel(backgroundImage, "Background image",
+    backgroundImageLabel = new QLabel(backgroundImage, tr("Background image"),
         pageColor, "backgroundImageLabel");
     cLayout->addWidget(backgroundImageLabel, row, 0);
-    QString disclaimer("The local file must be accessible to the "
-        "compute engine in order to be used in scalable rendering mode.");
+    QString disclaimer(tr("The local file must be accessible to the "
+        "compute engine in order to be used in scalable rendering mode."));
     QToolTip::add(backgroundImage, disclaimer);
     QToolTip::add(backgroundImageLabel, disclaimer);
     ++row;
@@ -944,7 +964,7 @@ QvisAnnotationWindow::CreateColorTab()
     connect(imageRepeatX, SIGNAL(valueChanged(int)),
             this, SLOT(imageRepeatXChanged(int)));
     cLayout->addWidget(imageRepeatX, row, 1);
-    imageRepeatXLabel = new QLabel(imageRepeatX, "Repetitions in X", pageColor,
+    imageRepeatXLabel = new QLabel(imageRepeatX, tr("Repetitions in X"), pageColor,
         "imageRepeatXLabel");
     cLayout->addWidget(imageRepeatXLabel, row, 0);
     ++row;
@@ -954,7 +974,7 @@ QvisAnnotationWindow::CreateColorTab()
     connect(imageRepeatY, SIGNAL(valueChanged(int)),
             this, SLOT(imageRepeatYChanged(int)));
     cLayout->addWidget(imageRepeatY, row, 1);
-    imageRepeatYLabel = new QLabel(imageRepeatY, "Repetitions in Y", pageColor,
+    imageRepeatYLabel = new QLabel(imageRepeatY, tr("Repetitions in Y"), pageColor,
         "imageRepeatYLabel");
     cLayout->addWidget(imageRepeatYLabel, row, 0);
     ++row;
@@ -975,6 +995,9 @@ QvisAnnotationWindow::CreateColorTab()
 //   Brad Whitlock, Tue Mar 20 15:19:03 PST 2007
 //   Made it so some interfaces don't have to provide a new instance button.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -985,7 +1008,7 @@ QvisAnnotationWindow::CreateObjectsTab()
     //
     pageObjects = new QGroupBox(central, "pageObjects");
     pageObjects->setFrameStyle(QFrame::NoFrame);
-    tabs->addTab(pageObjects, "Objects");
+    tabs->addTab(pageObjects, tr("Objects"));
 
     QVBoxLayout *objTopLayout = new QVBoxLayout(pageObjects);
     objTopLayout->setMargin(10);
@@ -997,7 +1020,7 @@ QvisAnnotationWindow::CreateObjectsTab()
     // Create the buttons that let us create new annotation objects.
     //
     QGroupBox *newObjectGroup = new QGroupBox(pageObjects, "newObjectGroup");
-    newObjectGroup->setTitle("Create new");
+    newObjectGroup->setTitle(tr("Create new"));
     hLayout->addWidget(newObjectGroup);
 
     QVBoxLayout *objButtonLayout = new QVBoxLayout(newObjectGroup);
@@ -1013,7 +1036,7 @@ QvisAnnotationWindow::CreateObjectsTab()
     //
     QGridLayout *annotListLayout = new QGridLayout(hLayout, 3, 2);
     hLayout->setStretchFactor(annotListLayout, 10);
-    annotListLayout->addMultiCellWidget(new QLabel("Annotation objects",
+    annotListLayout->addMultiCellWidget(new QLabel(tr("Annotation objects"),
         pageObjects), 0, 0, 0, 1);
     annotationListBox = new QListBox(pageObjects, "annotationListBox");
     annotationListBox->setMinimumHeight(100);
@@ -1023,12 +1046,12 @@ QvisAnnotationWindow::CreateObjectsTab()
     annotListLayout->addMultiCellWidget(annotationListBox, 1, 1, 0, 1);
     annotListLayout->setRowStretch(1, 50);
 
-    hideShowAnnotationButton = new QPushButton("Hide/Show", pageObjects);
+    hideShowAnnotationButton = new QPushButton(tr("Hide/Show"), pageObjects);
     connect(hideShowAnnotationButton, SIGNAL(clicked()),
             this, SLOT(hideActiveAnnotations()));
     annotListLayout->addWidget(hideShowAnnotationButton, 2, 0);
 
-    deleteAnnotationButton = new QPushButton("Delete", pageObjects);
+    deleteAnnotationButton = new QPushButton(tr("Delete"), pageObjects);
     connect(deleteAnnotationButton, SIGNAL(clicked()),
             this, SLOT(deleteActiveAnnotations()));
     annotListLayout->addWidget(deleteAnnotationButton, 2, 1);
@@ -1876,19 +1899,24 @@ QvisAnnotationWindow::reset()
 //   Brad Whitlock, Tue Mar 20 14:33:49 PST 2007
 //   Fixed so it uses the new names.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::tabSelected(const QString &tabLabel)
 {
-    if(tabLabel == QString("2D"))
+    if(tabLabel == QString(tr("General")))
         activeTab = 0;
-    else if(tabLabel == QString("3D"))
+    else if(tabLabel == QString(tr("2D")))
         activeTab = 1;
-    else if(tabLabel == QString("Colors"))
+    else if(tabLabel == QString(tr("3D")))
         activeTab = 2;
-    else if(tabLabel == QString("Objects"))
+    else if(tabLabel == QString(tr("Colors")))
         activeTab = 3;
+    else if(tabLabel == QString(tr("Objects")))
+        activeTab = 4;
     else
     {
         debug1 << "QvisAnnotationWindow::tabSelected: Unsupported tab name. FIX ME!" << endl;
@@ -3045,6 +3073,9 @@ QvisAnnotationWindow::applyObjectListChanges()
 //   Brad Whitlock, Tue Mar 20 09:47:08 PDT 2007
 //   Allow the user to name the object.
 //
+//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -3060,7 +3091,7 @@ QvisAnnotationWindow::addNewAnnotationObject(int annotType)
     bool ok = false;
     QString newName(GetViewerState()->GetAnnotationObjectList()->GetNewObjectName().c_str());
     QString annotName = QInputDialog::getText("VisIt", 
-        "Enter a name for the new annotation object.",
+        tr("Enter a name for the new annotation object."),
         QLineEdit::Normal, newName, &ok, this);
 
     //
@@ -3071,7 +3102,7 @@ QvisAnnotationWindow::addNewAnnotationObject(int annotType)
         GetViewerMethods()->AddAnnotationObject(annotType, annotName.latin1());
     }
     else
-        Warning("No annotation object was created.");
+        Warning(tr("No annotation object was created."));
 }
 
 // ****************************************************************************

@@ -72,6 +72,9 @@
 //   I made it inherit from QvisPostableWindowSimpleObserver and I moved
 //   some of the functionality there too.
 //
+//   Brad Whitlock, Wed Apr  9 10:48:01 PDT 2008
+//   QString for caption and shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisPostableWindowObserver : public QvisPostableWindowSimpleObserver
@@ -79,8 +82,8 @@ class GUI_API QvisPostableWindowObserver : public QvisPostableWindowSimpleObserv
     Q_OBJECT
 public:
     QvisPostableWindowObserver(Subject *subj,
-                               const char *caption = 0,
-                               const char *shortName = 0,
+                               const QString &caption = QString::null,
+                               const QString &shortName = QString::null,
                                QvisNotepadArea *notepad = 0,
                                int buttonCombo = AllExtraButtons,
                                bool stretch = true);

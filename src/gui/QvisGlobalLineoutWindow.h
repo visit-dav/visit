@@ -69,6 +69,9 @@ class QLineEdit;
 //   Kathleen Bonnell, Fri Feb  4 07:10:27 PST 2005
 //   Added freezeInTime widget.
 //
+//   Brad Whitlock, Wed Apr  9 11:47:09 PDT 2008
+//   QString for caption, shortName.
+//
 // ****************************************************************************
 
 class GUI_API QvisGlobalLineoutWindow : public QvisPostableWindowObserver
@@ -77,8 +80,8 @@ class GUI_API QvisGlobalLineoutWindow : public QvisPostableWindowObserver
   public:
     QvisGlobalLineoutWindow(
                          GlobalLineoutAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisGlobalLineoutWindow();
     virtual void CreateWindowContents();
