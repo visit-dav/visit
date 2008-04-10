@@ -139,6 +139,31 @@ enhancements and bug-fixes that were added to this release.</p>
     want VisIt to use ffmpeg to encode MPEG movies then you can provide the
     <i>-noffmpeg</i> command line option when generating your movie at the
     command prompt.</li>
+    
+    <li>Enhancements were made to allow filters to obtain ghost corrected material 
+    information for datasets where VisIt generates ghost zones. This removes the 
+    previous restriction preventing ghost zone generation when the <i>matvf</i>
+    expression was used.</li>
+    
+    <li>VisIt now provides a <i>value_for_material</i> expression 
+    that gives direct access to per material values for mixed variables. This expression also 
+    utilizes ghost corrected material info and will not hinder ghost zone generation.<br>
+    Example Usage:
+    <ul><li><i>value_for_material(var,1)</i> -- Provides the value of "var" for material 1</li></ul>
+    </li>
+    
+    <li>The "cylindrical_radius" expression now allows a user to specify a cylinder axis.<br>
+    Example Use Cases:
+    <ul>
+        <li><i>cylindrical_radius(mesh)</i> -- Prior use case </li>
+        <li><i>cylindrical_radius(mesh,"x")</i></li>
+        <li><i>cylindrical_radius(mesh,"y")</i></li>
+        <li><i>cylindrical_radius(mesh,"z")</i> --  Same as default</li>
+        <li><i>cylindrical_radius(mesh,{x,y,z})</i> -- x,y,z should be numeric constants </li>
+    </ul>
+    </li>
+    
+     
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.9.0</font></b></p>
 <ul>
@@ -183,6 +208,8 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>VisIt sometimes has problems registering macro buttons inside of a 
        "visitrc" file.</li>
 
+    <li>The centering of a Pseudocolor Plot no longer wrongly influences query results.</li>
+    
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.8.0.html">VisIt 1.8 Release Notes</a>.</p>
