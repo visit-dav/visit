@@ -110,6 +110,10 @@ LogCommand(const char *cmd, const char *truncate_at_pattern)
 //
 //  Programmer: Mark C. Miller
 //  Created:    April 9, 2008
+//
+//  Modifications:
+//    Mark C. Miller, Thu Apr 10 08:16:51 PDT 2008
+//    Truncated glxinfo output
 // ****************************************************************************
 
 static void
@@ -118,8 +122,8 @@ LogGlxAndXdpyInfo()
 #if !defined(_WIN32)
     if (debug5_real)
     {
-        LogCommand("xdpyinfo", "number of visuals");
-	LogCommand("glxinfo -v -t", 0);
+        LogCommand("xdpyinfo", "number of visuals"); // truncate at list of visuals
+	LogCommand("glxinfo -v -t", "^Vis  Vis");    // truncate at table of visuals
     }
 #endif
 }
@@ -196,6 +200,9 @@ LogGlxAndXdpyInfo()
 //
 //    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
 //    Moved setting of component name to before Initialize
+//
+//    Mark C. Miller, Thu Apr 10 08:16:51 PDT 2008
+//    Added logging of info from X display and glx 
 // ****************************************************************************
 
 int
