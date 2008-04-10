@@ -489,6 +489,11 @@ DebugStream::~DebugStream()
 //    Change the extension from '.log' to '.vlog'. Made it loop to find
 //    a unique filename.
 //
+//    Mark C. Miller, Thu Apr 10 08:07:52 PDT 2008
+//    Changed order of debug level and run number in filename.
+//    Changed strspn to scan progname, not filename (which would already
+//    have a 'level' sprintf'd into it.
+//
 // ****************************************************************************
 
 
@@ -499,7 +504,7 @@ DebugStream::open(const char *progname, bool clobber)
     sprintf(filename, "%s.%d.vlog", progname, level);
 
     // only search for a unique name if we don't have pids
-    bool findUnique = !clobber && strspn(filename, ".0123456789") == 0;
+    bool findUnique = !clobber && (strspn(progname, ".0123456789") == 0);
 
     // loop until we create a name for which stat returns 0
     int n = 1;
@@ -517,7 +522,7 @@ DebugStream::open(const char *progname, bool clobber)
         if (stat(filename, &stbuf) != 0)
 	    break;
 #endif
-        sprintf(filename, "%s.%d.%d.vlog", progname, level, n);
+        sprintf(filename, "%s.%d.%d.vlog", progname, n, level);
         n++;
     }
 
