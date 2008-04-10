@@ -41,8 +41,10 @@
 // ************************************************************************* //
 
 #include <visit-config.h>
+#include <stdio.h>
 
 #include <DebugStream.h>
+#include <StringHelpers.h>
 #include <ViewerSubject.h>
 #include <VisItException.h>
 #include <Init.h>
@@ -50,6 +52,8 @@
 #include <RemoteProcess.h>
 #include <ViewerPasswordWindow.h>
 #include <avtCallback.h>
+
+using namespace StringHelpers;
 
 static void ErrorCallback(void *, const char *);
 static void ViewerWarningCallback(void *, const char *);
@@ -63,6 +67,62 @@ void foobz2(void)
 }
 #endif
 #endif
+
+// ****************************************************************************
+//  Function: Log output from a piped system command to debug logs
+//
+//  Programmer: Mark C. Miller
+//  Created:    April 9, 2008
+// ****************************************************************************
+
+static void
+LogCommand(const char *cmd, const char *truncate_at_pattern)
+{
+#if !defined(_WIN32)
+    char buf[256];
+    buf[sizeof(buf)-1] = '\0';
+    FILE *pfile = popen(cmd,"r");
+
+    if (pfile)
+    {
+        debug5 << endl;
+	debug5 << "Begin output from \"" << cmd << "\"..." << endl;
+	debug5 << "-------------------------------------------------------------" << endl;
+	while (fgets(buf, sizeof(buf)-1, pfile) != 0)
+	{
+	    if (truncate_at_pattern && (FindRE(buf, truncate_at_pattern) != FindNone))
+	    {
+		debug5 << "############### TRUNCATED #################" << endl;
+                break;
+	    }
+	    debug5 << buf;
+	}
+	debug5 << "End output from \"" << cmd << "\"..." << endl;
+	debug5 << "-------------------------------------------------------------" << endl;
+        debug5 << endl;
+        pclose(pfile);
+    }
+#endif
+}
+
+// ****************************************************************************
+//  Function: Log output from xdpyinfo and glxinfo commands w/truncation 
+//
+//  Programmer: Mark C. Miller
+//  Created:    April 9, 2008
+// ****************************************************************************
+
+static void
+LogGlxAndXdpyInfo()
+{
+#if !defined(_WIN32)
+    if (debug5_real)
+    {
+        LogCommand("xdpyinfo", "number of visuals");
+	LogCommand("glxinfo -v -t", 0);
+    }
+#endif
+}
 
 // ****************************************************************************
 //  Method: main
@@ -150,6 +210,7 @@ main(int argc, char *argv[])
         //
         Init::SetComponentName("viewer");
         Init::Initialize(argc, argv, 0, 1, false);
+	LogGlxAndXdpyInfo();
 
         //
         // Create the viewer subject.
