@@ -48,8 +48,10 @@
 #include <avtDatabaseMetaData.h>
 #include <avtGhostData.h>
 #include <avtIOInformation.h>
+#include <avtMixedVariable.h>
 #include <avtSimulationInformation.h>
 #include <avtSimulationCommandSpecification.h>
+#include <avtVariableCache.h>
 
 #include <Expression.h>
 #include <DebugStream.h>
@@ -1191,6 +1193,9 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
 //    Jeremy Meredith, Wed May 11 10:56:21 PDT 2005
 //    Allowed for NULL responses.  Added int/char support.
 //
+//    Brad Whitlock, Thu Apr 10 11:18:11 PDT 2008
+//    Added mixvar support.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1206,40 +1211,79 @@ avtSimV1FileFormat::GetVar(int domain, const char *varname)
     if (!sd || sd->len<=0)
         return NULL;
 
-     vtkFloatArray *array = vtkFloatArray::New();
-     array->SetNumberOfTuples(sd->len);
-     if (sd->data.dataType == VISIT_DATATYPE_FLOAT)
-     {
-         for (int i=0; i<sd->len; i++)
-         {
-             array->SetTuple1(i, sd->data.fArray[i]);
-         }
-     }
-     else if (sd->data.dataType == VISIT_DATATYPE_DOUBLE)
-     {
-         for (int i=0; i<sd->len; i++)
-         {
-             array->SetTuple1(i, sd->data.dArray[i]);
-         }
-     }
-     else if (sd->data.dataType == VISIT_DATATYPE_INT)
-     {
-         for (int i=0; i<sd->len; i++)
-         {
-             array->SetTuple1(i, sd->data.iArray[i]);
-         }
-     }
-     else // (sd->data.dataType == VISIT_DATATYPE_CHAR)
-     {
-         for (int i=0; i<sd->len; i++)
-         {
-             array->SetTuple1(i, sd->data.cArray[i]);
-         }
-     }
+    vtkFloatArray *array = vtkFloatArray::New();
+    array->SetNumberOfTuples(sd->len);
+    if (sd->data.dataType == VISIT_DATATYPE_FLOAT)
+    {
+        for (int i=0; i<sd->len; i++)
+        {
+            array->SetTuple1(i, sd->data.fArray[i]);
+        }
+    }
+    else if (sd->data.dataType == VISIT_DATATYPE_DOUBLE)
+    {
+        for (int i=0; i<sd->len; i++)
+        {
+            array->SetTuple1(i, sd->data.dArray[i]);
+        }
+    }
+    else if (sd->data.dataType == VISIT_DATATYPE_INT)
+    {
+        for (int i=0; i<sd->len; i++)
+        {
+            array->SetTuple1(i, sd->data.iArray[i]);
+        }
+    }
+    else // (sd->data.dataType == VISIT_DATATYPE_CHAR)
+    {
+        for (int i=0; i<sd->len; i++)
+        {
+            array->SetTuple1(i, sd->data.cArray[i]);
+        }
+    }
 
-     FreeDataArray(sd->data);
+    FreeDataArray(sd->data);
 
-     return array;
+    // Try and read mixed scalar data.
+    VisIt_MixedScalarData *mixed_sd = cb.GetMixedScalar(domain,varname);
+    if (mixed_sd  != NULL)
+    {
+        if(mixed_sd->len > 0 &&
+           (mixed_sd->data.dataType == VISIT_DATATYPE_FLOAT ||
+            mixed_sd->data.dataType == VISIT_DATATYPE_DOUBLE)
+           )
+        {
+            int mixlen = mixed_sd->len;
+            float *mixvar = new float[mixlen];
+            debug1 << "SimV1 copying mixvar data: " << mixlen
+                   << " values" << endl;
+            if(mixed_sd->data.dataType == VISIT_DATATYPE_DOUBLE)
+            {
+                // Convert the doubles to floats.
+                const double *src = mixed_sd->data.dArray;
+                mixvar = new float[mixlen];
+                for(int i = 0; i < mixlen; ++i)
+                    mixvar[i] = (float)src[i];
+            }
+            else
+                memcpy(mixvar, mixed_sd->data.fArray, sizeof(float)*mixlen);
+
+            // Cache the mixed data.
+            avtMixedVariable *mv = new avtMixedVariable(mixvar,
+                mixlen, varname);
+            void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
+            cache->CacheVoidRef(varname, AUXILIARY_DATA_MIXED_VARIABLE, 
+                                this->timestep, domain, vr);
+            debug1 << "SimV1 cached mixvar data for " << varname
+                   << " domain " << domain << endl;
+
+            delete [] mixvar;
+        }
+
+        FreeDataArray(mixed_sd->data);
+    }
+
+    return array;
 #endif
 }
 
