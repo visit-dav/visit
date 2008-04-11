@@ -129,6 +129,9 @@
 //    Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //    Support for internationalization.
 //
+//    Eric Brugger, Thu Apr 10 16:26:43 PDT 2008
+//    Changed the date on the splash screen.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
@@ -237,7 +240,7 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
     versionText += " ";
     versionText += SVN_REVISION;
     lLayout->addWidget(new QLabel(versionText, this, "versionText"));
-    lLayout->addWidget(new QLabel(tr("March 2008"), this, "dateCompiled"));
+    lLayout->addWidget(new QLabel(tr("April 2008"), this, "dateCompiled"));
 
     copyrightButton = 0;
     contributorButton = 0;
