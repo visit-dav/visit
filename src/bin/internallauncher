@@ -308,6 +308,10 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Wed Apr  9 14:17:18 PDT 2008
 #    Added -locale option.
 #
+#    Eric Brugger, Fri Apr 11 11:42:26 PDT 2008
+#    Added a hack to use the moab ttc option to specify the number of
+#    processors if running on yana.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1112,6 +1116,17 @@ if ( -e "$visitdir/franklin.nersc.gov" )
     $ENV{LD_LIBRARY_PATH} = join ':' ,
          ("$ENV{LD_LIBRARY_PATH}", "/opt/gcc/4.2.3/snos/lib64");
 }     
+
+# ----
+# HACK for yana @ LLNL
+#
+# ----
+$UseTTC = 0;
+if ($host =~ /^yana\d+$/)
+{
+    $UseTTC = 1;
+}
+
 
 # ----
 #  HACK to allow other talk-back interfaces
@@ -1958,6 +1973,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
 	    if ($use_vis) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes";}
 	    else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes"; }
             push @parcmd, "-l", "walltime=$time" if $time_set;
+            if ($UseTTC) { push @parcmd, "-l", "ttc=$procs"; }
             push @parcmd, "-q",  $part  if $part_set;
             push @parcmd, "-A",  $bank  if $bank_set;
           
