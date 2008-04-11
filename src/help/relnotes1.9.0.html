@@ -13,11 +13,17 @@
 
 <p>Welcome to VisIt's release notes page. This page describes the important
 enhancements and bug-fixes that were added to this release.</p>
-<!-- comment out for now
 <p><b><font size="4">Announcements</font></b></p>
 <ul>
+    <li>The VisIt team released a patch release, <a href="relnotes1.8.1.html">version 1.8.1</a>, to
+    fix some critical defects that surfaced in the VisIt 1.8 release. Descriptions of the defects addressed
+    by the patch release can be found in the <a href="relnotes1.8.1.html">VisIt 1.8.1 release notes</a>. 
+    All version 1.8.1 fixes are included in this release.</li>
+
+    <li>A VisIt wiki site has been set up at www.visitusers.org. The wiki contains contributed user and 
+    developer documentation for VisIt. Add to it today! The site also offers a user forum.</li>
 </ul>
--->
+
 <p><b><font size="4">Features added in version 1.9.0</font></b></p>
 <ul>
     <li>VisIt's Equivalence Class Function (DDF) ability now has a "Count"
@@ -139,6 +145,12 @@ enhancements and bug-fixes that were added to this release.</p>
     want VisIt to use ffmpeg to encode MPEG movies then you can provide the
     <i>-noffmpeg</i> command line option when generating your movie at the
     command prompt.</li>
+
+    <li>VisIt's SimV1 database reader plugin can now accept mixed scalar
+    data from simulations that implement the <i>GetMixedScalar</i> callback
+    function. Note that the <b>Force interface reconstruction</b> option still needs
+    to be enabled in the <b>Material Options</b> window for mixed scalars to be
+    plotted.</li>
     
     <li>Enhancements were made to allow filters to obtain ghost corrected material 
     information for datasets where VisIt generates ghost zones. This removes the 
@@ -170,7 +182,6 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>The Nek reader was improved by adding code to discover domain boundaries, 
     making it scale better, and supporting more options for the parallel format.</li>
     
-     
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.9.0</font></b></p>
 <ul>
@@ -223,6 +234,8 @@ enhancements and bug-fixes that were added to this release.</p>
     files with unusual internal indexing.</li>
     
 </ul>
+<p>Click the following link to view the release notes for the 1.8.1 patch version
+of VisIt: <a href="relnotes1.8.1.html">VisIt 1.8.1 Release Notes</a>.</p>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.8.0.html">VisIt 1.8 Release Notes</a>.</p>
 </body>

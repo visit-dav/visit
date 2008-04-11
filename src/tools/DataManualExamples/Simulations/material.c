@@ -222,6 +222,8 @@ static const int   rmesh_ndims = 2;
  * Date:       Thu Jan 17 15:40:23 PST 2008
  *
  * Modifications:
+ *   Brad Whitlock, Thu Apr 10 11:59:07 PDT 2008
+ *   Added a scalar variable so we can demonstrate mixed scalars.
  *
  *****************************************************************************/
 
@@ -270,6 +272,19 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
     md->materials[0].materialNames[0] = strdup(matNames[0]);
     md->materials[0].materialNames[1] = strdup(matNames[1]);
     md->materials[0].materialNames[2] = strdup(matNames[2]);
+
+#ifndef FANCY_MATERIAL
+    /* Add a scalar. */
+    md->numScalars = 1;
+    sz = sizeof(VisIt_ScalarMetaData) * md->numScalars;
+    md->scalars = (VisIt_ScalarMetaData *)malloc(sz);
+    memset(md->scalars, 0, sz);
+
+    /* Add a zonal variable on mesh2d. */
+    md->scalars[0].name = strdup("scalar");
+    md->scalars[0].meshName = strdup("mesh2d");
+    md->scalars[0].centering = VISIT_VARCENTERING_ZONE;
+#endif
 
     /* Add some custom commands. */
     md->numGenericCommands = 3;
@@ -429,7 +444,7 @@ GetMaterialsForCell(int i, int j, int *allids, int *nmats, int *matnos, float *m
 
 /******************************************************************************
  *
- * Purpose: This callback function returns scalars.
+ * Purpose: This callback function returns material data.
  *
  * Programmer: Brad Whitlock
  * Date:       Fri Jan 12 13:37:17 PST 2007
@@ -521,14 +536,100 @@ VisIt_MaterialData *VisItGetMaterial(int domain, const char *name)
     return handle;
 }
 
+/******************************************************************************
+ *
+ * Purpose: This callback function returns scalars.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Thu Apr 10 11:47:56 PDT 2008
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+/* Make a constant field of 1. on the mesh. We'll break up the 1.0 into
+ * pieces in the mixvar.
+ */
+#define C1 1.f
+#define C2 2.f
+#define C3 3.f
+#define C4 4.f
+float zonal_scalar[NY-1][NX-1] = {
+{C1*1.f, C2*1.f, C3*1.f, C4*1.f},
+{C1*1.f, C2*1.f, C3*1.f, C4*1.f},
+{C1*1.f, C2*1.f, C3*1.f, C4*1.f}
+};
+
+VisIt_ScalarData *VisItGetScalar(int domain, const char *name)
+{
+    VisIt_ScalarData *scalar = NULL;
+#ifndef FANCY_MATERIAL
+    if(strcmp(name, "scalar") == 0)
+    { 
+        size_t sz = sizeof(VisIt_ScalarData);
+        scalar = (VisIt_ScalarData*)malloc(sz);
+        memset(scalar, 0, sz);
+
+        scalar->len = (NX-1) * (NY-1);
+        scalar->data = VisIt_CreateDataArrayFromFloat(
+            VISIT_OWNER_SIM, &zonal_scalar[0][0]);
+    }
+#endif
+    return scalar;
+}
+
+
+/******************************************************************************
+ *
+ * Purpose: This callback function returns mixed scalars.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:37:17 PST 2007
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+/* The mesh has some mixed cells. Mixed scalars are only defined for
+ * those mixed cells. That means that clean cells have no entries
+ * in the mixed scalar array. For this example, we're reproducing the
+ * volume fractions for the mixed cells as the mixvar data. All cells in
+ * mesh have a comment indicating their location, even if they add no data.
+ * Cells that have data provide their data after the comment. See the
+ * mat_vf array in the GetMaterial function to draw comparisons.
+ */
+float mixvar[] = {
+/*cell 0,0*/ /*cell 0,1*/ C2*0.75,C2*0.25,  /*cell 0,2*/ C3*0.8125,C3*0.1875, /*cell 0,3*/
+/*cell 1,0*/ /*cell 1,1*/ C2*0.625,C2*0.375,/*cell 1,2*/ C3*0.5625,C3*0.4375, /*cell 1,3*/
+/*cell 2,0*/ /*cell 2,1*/ C2*0.3,C2*0.7,    /*cell 2,2*/ C3*0.2,C3*0.4,C3*0.4,   /*cell 2,3*/C4*0.55,C4*0.45
+};
+
+VisIt_MixedScalarData *VisItGetMixedScalar(int domain, const char *name)
+{
+    VisIt_MixedScalarData *mscalar = NULL;
+#ifndef FANCY_MATERIAL
+    if(strcmp(name, "scalar") == 0)
+    {
+        size_t sz = sizeof(VisIt_MixedScalarData);
+        mscalar = (VisIt_MixedScalarData*)malloc(sz);
+        memset(mscalar, 0, sz);
+
+        mscalar->len = sizeof(mixvar) / sizeof(float);
+        mscalar->data = VisIt_CreateDataArrayFromFloat(
+            VISIT_OWNER_SIM, mixvar);
+    }
+#endif
+    return mscalar;
+}
+
 VisIt_SimulationCallback visitCallbacks =
 {
     &VisItGetMetaData,
     &VisItGetMesh,
     &VisItGetMaterial,
     NULL, /* GetSpecies */
-    NULL, /* GetScalar */
+    &VisItGetScalar,
     NULL, /* GetCurve */
-    NULL, /* GetMixedScalar */
+    &VisItGetMixedScalar,
     NULL /* GetDomainList */
 };
