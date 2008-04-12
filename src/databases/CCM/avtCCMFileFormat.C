@@ -829,7 +829,7 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
         CCMIOReadMap(&ccmErr, mapID, &tmpVertexMap[0], kCCMIOStart, kCCMIOEnd);
         IDMap  vertexIDMap;
         vertexIDMap.SetIDs(tmpVertexMap);
-
+        tmpVertexMap.clear();
 
         // Scale the points, according to the scale factor read with the 
         // vertices.
@@ -1168,6 +1168,8 @@ avtCCMFileFormat::GetVar(int domain, const char *varname)
 //    the data array is indexed-into correctly, by mapping the original cell
 //    id through an cellIdMap of valid cell ids (obtained from MapData).
 //
+//    Dave Bremer, Fri Apr 11 16:49:45 PDT 2008
+//    Initialize the err variable.
 // ****************************************************************************
 
 vtkDataArray *
@@ -1181,7 +1183,7 @@ avtCCMFileFormat::GetVectorVar(int domain, const char *varname)
     floatVector u, v, w, data;
     CCMIOID scalar;
     CCMIOID field = pos->second;
-    CCMIOError err;
+    CCMIOError err = kCCMIONoErr;
 
     CCMIOReadMultiDimensionalFieldData(&err, field, kCCMIOVectorX, &scalar);
 
