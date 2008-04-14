@@ -86,6 +86,7 @@ class MeshInfo
   public:
                        MeshInfo()
                        {
+                           order = NULL;
                            extents = NULL;
                            ghostOffsets = NULL;
                            topologyData = NULL;
@@ -94,6 +95,7 @@ class MeshInfo
                        };
     virtual           ~MeshInfo()
                       {
+                          if (order != NULL) delete [] order;
                           if (extents != NULL) delete [] extents;
                           if (ghostOffsets != NULL) delete [] ghostOffsets;
                           if (topologyData != NULL) delete topologyData;
@@ -119,6 +121,8 @@ class MeshInfo
     string             name;
     avtMeshType        type;
     CellType           cellType;
+    int                baseOffset;
+    int               *order;
     int                iDomain;
 
     // For Multimeshes.
@@ -212,6 +216,10 @@ class DomainInfo
 //    ParseTopology to return the nodes per element; and adding GetPoints,
 //    PopulateCellInformation and GetUnstructuredMesh.
 //
+//    Eric Brugger, Tue Apr  8 14:23:39 PDT 2008
+//    Added the arguments baseOffset and order to ParseTopology and
+//    PopulateCellInformation.
+//
 // ****************************************************************************
 
 class avtXDMFFileFormat : public avtSTMDFileFormat
@@ -272,7 +280,7 @@ class avtXDMFFileFormat : public avtSTMDFileFormat
     void                   AddVarInfo(bool, int, VarInfo *);
     DataItem              *ParseDataItem();
     void                   ParseTopology(string &, string &, string &,
-                               DataItem **);
+                               string &, string &, DataItem **);
     void                   ParseGeometry(string &, int &, DataItem **);
     VarInfo               *ParseAttribute(int, int, const string &);
     void                   ParseGridInformation(string &);
@@ -287,7 +295,7 @@ class avtXDMFFileFormat : public avtSTMDFileFormat
     void                   GetStructuredGhostZones(MeshInfo *, vtkDataSet *ds);
     vtkPoints             *GetPoints(MeshInfo *, int);
     void                   PopulateCellInformation(vtkUnstructuredGrid *,
-                               int *, int, bool, int, int, int);
+                               int *, int, bool, int, int, int, int, int*);
     vtkDataSet            *GetRectilinearMesh(MeshInfo *);
     vtkDataSet            *GetCurvilinearMesh(MeshInfo *);
     vtkDataSet            *GetUnstructuredMesh(MeshInfo *);

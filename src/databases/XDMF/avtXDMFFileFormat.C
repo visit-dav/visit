@@ -72,6 +72,9 @@
 
 using     std::string;
 
+static int CellTypeToNodeCount[17] =
+     {0, 0, 0, 3, 4, 4, 5, 6, 8, 3, 6, 8, 10, 13, 15, 20, 0};
+
 // ****************************************************************************
 //  Method: avtXDMFFileFormat constructor
 //
@@ -929,17 +932,23 @@ avtXDMFFileFormat::ParseDataItem()
 //      topologyType      The topology type string.
 //      numberOfElements  The number of elements string
 //      nodesPerElement   The number of nodes per element string.
+//      baseOffset        The base offset for the connectivity.
+//      order             The order of the nodes for the element.
 //      topologyData      The data item associated with the topology.
 //
 //  Modifications:
 //    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
 //    I added the arguments nodesPerElement and topology data.
 //
+//    Eric Brugger, Tue Apr  8 14:25:31 PDT 2008
+//    Added the arguments baseOffset and order.
+//
 // ****************************************************************************
 
 void
 avtXDMFFileFormat::ParseTopology(string &topologyType,
-    string &numberOfElements, string &nodesPerElement, DataItem **topologyData)
+    string &numberOfElements, string &nodesPerElement, string &baseOffset,
+    string &order, DataItem **topologyData)
 {
     //
     // Process the attributes in the start tag.
@@ -959,6 +968,14 @@ avtXDMFFileFormat::ParseTopology(string &topologyType,
         else if (strcmp(xdmfParser.GetAttributeName(), "NodesPerElement") == 0)
         {
             nodesPerElement = string(xdmfParser.GetAttributeValue());
+        }
+        else if (strcmp(xdmfParser.GetAttributeName(), "BaseOffset") == 0)
+        {
+            baseOffset = string(xdmfParser.GetAttributeValue());
+        }
+        else if (strcmp(xdmfParser.GetAttributeName(), "Order") == 0)
+        {
+            order = string(xdmfParser.GetAttributeValue());
         }
     }
 
@@ -1297,6 +1314,9 @@ avtXDMFFileFormat::ParseGridInformation(string &ghostOffsets)
 //    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
 //    I added additional coding to fully handle unstructured grids.
 //
+//    Eric Brugger, Tue Apr  8 14:25:31 PDT 2008
+//    I added coding to handle baseOffset and order for unstructured grids.
+//
 // ****************************************************************************
 
 void
@@ -1307,6 +1327,8 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
     string    topologyType;
     string    numberOfElements;
     string    nodesPerElement;
+    string    baseOffset;
+    string    order;
     DataItem *topologyData = NULL;
     string    geometryType;
     int       nMeshData;
@@ -1326,7 +1348,7 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
             if (strcmp(xdmfParser.GetElementName(), "Topology") == 0)
             {
                 ParseTopology(topologyType, numberOfElements, nodesPerElement,
-                    &topologyData);
+                    baseOffset, order, &topologyData);
             }
             else if (strcmp(xdmfParser.GetElementName(), "Geometry") == 0)
             {
@@ -1536,6 +1558,29 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
         else
         {
             sscanf(numberOfElements.c_str(), "%d", &meshInfo->dimensions[1]);
+
+            meshInfo->baseOffset = 0;
+            if (baseOffset != "")
+            {
+                sscanf(baseOffset.c_str(), "%d", &meshInfo->baseOffset);
+            }
+
+            int nNodes = CellTypeToNodeCount[meshInfo->cellType];
+            if (order != "" && nNodes != 0)
+            {
+                meshInfo->order = new int[nNodes];
+                char *str = NULL, *str2 = NULL;
+                int iVal = (int)strtol(order.c_str(), &str, 10);
+                meshInfo->order[0] = (iVal < 0) ? 0 :
+                    ((iVal < nNodes) ? iVal : nNodes - 1);
+                for (int i = 1; i < nNodes; i++)
+                {
+                    iVal = (int)strtol(str, &str2, 10);
+                    meshInfo->order[i] = (iVal < 0) ? 0 :
+                        ((iVal < nNodes) ? iVal : nNodes - 1);
+                    str = str2;
+                }
+            }
         }
     }
     else
@@ -2460,16 +2505,22 @@ avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
 //      nCells         The number of cells.
 //      vtkCellType    The type of the cell if it is not mixed.
 //      nodesPerCell   The number of nodes per cell if it is not mixed.
+//      baseOffset     The base offset for the connectivity.
+//      order          The order of the nodes in the cell.
 //
 //  Programmer: Eric Brugger
 //  Creation:   Fri Mar 21 15:22:11 PDT 2008
+//
+//  Modifications:
+//    Eric Brugger, Tue Apr  8 14:25:31 PDT 2008
+//    Added the arguments baseOffset and order.
 //
 // ****************************************************************************
 
 void
 avtXDMFFileFormat::PopulateCellInformation(vtkUnstructuredGrid *ugrid,
     int *connectivity, int lConnectivity, bool mixed, int nCells,
-    int vtkCellType, int nodesPerCell)
+    int vtkCellType, int nodesPerCell, int baseOffset, int *order)
 {
     vtkIdTypeArray *nlist = vtkIdTypeArray::New();
     if (mixed)
@@ -2570,7 +2621,7 @@ avtXDMFFileFormat::PopulateCellInformation(vtkUnstructuredGrid *ugrid,
             *cl++ = iCell;
             *nl++ = cellCount;
             for (int i = 0; i < cellCount; i++)
-                *nl++ = connectivity[index++];
+                *nl++ = connectivity[index++] - baseOffset;
 
             iCell += cellCount + 1;
         }
@@ -2578,15 +2629,32 @@ avtXDMFFileFormat::PopulateCellInformation(vtkUnstructuredGrid *ugrid,
     }
     else
     {
-        for (int j = 0; j < nCells; j++)
+        if (order == NULL)
         {
-            *ct++ = vtkCellType;
-            *cl++ = iCell;
-            *nl++ = nodesPerCell;
-            for (int i = 0; i < nodesPerCell; i++)
-                *nl++ = connectivity[index++];
+            for (int j = 0; j < nCells; j++)
+            {
+                *ct++ = vtkCellType;
+                *cl++ = iCell;
+                *nl++ = nodesPerCell;
+                for (int i = 0; i < nodesPerCell; i++)
+                    *nl++ = connectivity[index++] - baseOffset;
 
-            iCell += nodesPerCell + 1;
+                iCell += nodesPerCell + 1;
+            }
+        }
+        else
+        {
+            for (int j = 0; j < nCells; j++)
+            {
+                *ct++ = vtkCellType;
+                *cl++ = iCell;
+                *nl++ = nodesPerCell;
+                for (int i = 0; i < nodesPerCell; i++)
+                    nl[order[i]] = connectivity[index++] - baseOffset;
+                nl += nodesPerCell;
+
+                iCell += nodesPerCell + 1;
+            }
         }
     }
 
@@ -2613,6 +2681,10 @@ avtXDMFFileFormat::PopulateCellInformation(vtkUnstructuredGrid *ugrid,
 //
 //  Programmer: Eric Brugger
 //  Creation:   Fri Mar 21 15:22:11 PDT 2008
+//
+//  Modifications:
+//    Eric Brugger, Tue Apr  8 14:25:31 PDT 2008
+//    I added coding to handle baseOffset and order for unstructured grids.
 //
 // ****************************************************************************
 
@@ -2655,6 +2727,8 @@ avtXDMFFileFormat::GetUnstructuredMesh(MeshInfo *meshInfo)
         lConnect *= meshInfo->topologyData->dims[i];
     int nCells = meshInfo->dimensions[1];
     int nodesPerCell = meshInfo->dimensions[0];
+    int baseOffset = meshInfo->baseOffset;
+    int *order = meshInfo->order;
     
     int *connectivity = new int[lConnect];
 
@@ -2673,77 +2747,87 @@ avtXDMFFileFormat::GetUnstructuredMesh(MeshInfo *meshInfo)
     {
       case MeshInfo::CELL_POLYVERTEX:
         PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
-                               VTK_POLY_VERTEX, nodesPerCell);
+            VTK_POLY_VERTEX, nodesPerCell, baseOffset, order);
         break;
 
       case MeshInfo::CELL_POLYLINE:
         PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
-                               VTK_POLY_LINE, nodesPerCell);
+            VTK_POLY_LINE, nodesPerCell, baseOffset, order);
         break;
 
       case MeshInfo::CELL_POLYGON:
         PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
-                               VTK_POLYGON, nodesPerCell);
+            VTK_POLYGON, nodesPerCell, baseOffset, order);
+        break;
+
+      case MeshInfo::CELL_TRIANGLE:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+            VTK_TRIANGLE, 3, baseOffset, order);
+        break;
+
+      case MeshInfo::CELL_QUADRILATERAL:
+        PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
+            VTK_QUAD, 4, baseOffset, order);
         break;
 
       case MeshInfo::CELL_TETRAHEDRON:
         PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
-                               VTK_TETRA, 4);
+            VTK_TETRA, 4, baseOffset, order);
         break;
 
       case MeshInfo::CELL_PYRAMID:
         PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
-                               VTK_PYRAMID, 5);
+            VTK_PYRAMID, 5, baseOffset, order);
         break;
 
       case MeshInfo::CELL_WEDGE:
         PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
-                               VTK_WEDGE, 6);
+            VTK_WEDGE, 6, baseOffset, order);
         break;
 
       case MeshInfo::CELL_HEXAHEDRON:
         PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
-                               VTK_HEXAHEDRON, 8);
+            VTK_HEXAHEDRON, 8, baseOffset, order);
         break;
 
       case MeshInfo::CELL_EDGE_3:
         PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
-                               VTK_QUADRATIC_EDGE, 3);
+            VTK_QUADRATIC_EDGE, 3, baseOffset, order);
         break;
 
       case MeshInfo::CELL_TRIANGLE_6:
         PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
-                               VTK_QUADRATIC_TRIANGLE, 6);
+            VTK_QUADRATIC_TRIANGLE, 6, baseOffset, order);
         break;
 
       case MeshInfo::CELL_QUADRILATERAL_8:
         PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
-                               VTK_QUADRATIC_QUAD, 8);
+            VTK_QUADRATIC_QUAD, 8, baseOffset, order);
         break;
 
       case MeshInfo::CELL_TETRAHEDRON_10:
         PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
-                               VTK_QUADRATIC_TETRA, 10);
+            VTK_QUADRATIC_TETRA, 10, baseOffset, order);
         break;
 
       case MeshInfo::CELL_PYRAMID_13:
         PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
-                               VTK_QUADRATIC_PYRAMID, 13);
+            VTK_QUADRATIC_PYRAMID, 13, baseOffset, order);
         break;
 
       case MeshInfo::CELL_WEDGE_15:
         PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
-                               VTK_QUADRATIC_WEDGE, 15);
+            VTK_QUADRATIC_WEDGE, 15, baseOffset, order);
         break;
 
       case MeshInfo::CELL_HEXAHEDRON_20:
         PopulateCellInformation(ugrid, connectivity, lConnect, false, nCells,
-                               VTK_QUADRATIC_HEXAHEDRON, 20);
+            VTK_QUADRATIC_HEXAHEDRON, 20, baseOffset, order);
         break;
 
       case MeshInfo::CELL_MIXED:
         PopulateCellInformation(ugrid, connectivity, lConnect, true, nCells,
-                               0, 0);
+            0, 0, baseOffset, order);
         break;
 
       default:
