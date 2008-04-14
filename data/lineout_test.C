@@ -145,9 +145,9 @@ main(int argc, char **argv)
     // y=x and y=-x lineouts such that value of nc_var2 is equal to distance
     // from origin (0,0), squared. A resulting lineout *should* look like a
     // perfect quadratic curve.
-    float a = sqrt(1.5*1.5 + 1.5*1.5);
-    float b = sqrt(0.5*0.5 + 1.5*1.5);
-    float c = sqrt(0.5*0.5 + 0.5*0.5);
+    float a = (1.5*1.5 + 1.5*1.5);
+    float b = (0.5*0.5 + 1.5*1.5);
+    float c = (0.5*0.5 + 0.5*0.5);
     float nc_var2[] = {-a, -b, b, a, -b, -c, c, b, b, c, -c, -b, a, b, -b, -a};
     DBPutUcdvar1(dbfile, "nodal_var2", "mesh2", nc_var2, 16, NULL, 0, DB_FLOAT,
         DB_NODECENT, NULL);
