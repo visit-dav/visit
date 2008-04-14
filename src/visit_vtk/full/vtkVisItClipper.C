@@ -1068,6 +1068,9 @@ void vtkVisItClipper::RectilinearGridExecute(void)
 //    Added code to compute both sides of clip in one execute. Added code
 //    to adjust percent to zero crossings if requested.
 //
+//    Kathleen Bonnell, Wed Apr  9 09:01:20 PDT 2008 
+//    Initialize interpIDtmp, so it will not be used before being set.
+//
 // ****************************************************************************
 
 void vtkVisItClipper::UnstructuredGridExecute(void)
@@ -1244,7 +1247,7 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                     int npts;
                     int interpID = -1;
                     int interpIDOut = -1;
-                    int interpIDtmp;
+                    int interpIDtmp = -1;
                     int color    = -1;
                     switch (shapeType)
                     {
