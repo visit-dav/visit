@@ -328,6 +328,9 @@ GetNextArg(int argc, char **argv, int start, int &nargs)
 //   Kathleen Bonnell, Wed Jan  9 11:17:40 PST 2008
 //   Changed arg type from const char * to const std::string.
 //
+//   Kathleen Bonnell, Fri Apr 11 08:28:53 PDT 2008 
+//   Added WINAPI to def of pathFuncType.
+//
 // ****************************************************************************
 
 std::string
@@ -347,7 +350,7 @@ LongFileName(const std::string &shortName)
         // Use the GetLongPathName function.
         if(func)
         {
-            typedef DWORD (pathFuncType)(LPCTSTR, LPTSTR, DWORD);
+            typedef DWORD (WINAPI pathFuncType)(LPCTSTR, LPTSTR, DWORD);
             pathFuncType *lfn = (pathFuncType *)func;
             char *buf = new char[1000];
             if(lfn(shortName.c_str(), buf, 1000) != 0)

@@ -1034,6 +1034,9 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
 //    Hank Childs, Tue Mar  4 13:29:48 PST 2008
 //    Account for domains that do not have mixed variables.
 //
+//    Kathleen Bonnell, Thu Apr 10 17:56:33 PDT 2008 
+//    Removed redefinition of 'i'.
+//
 // ****************************************************************************
 
 vector<avtMixedVariable*>
@@ -1042,7 +1045,6 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
                                           vector<avtMixedVariable*>  mixvars)
 {
     int      i, j;
-
 
     vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
 
@@ -1061,7 +1063,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
     // zones that are mixed.)
     //
     const char *mixvarname = NULL;
-    for (int i = 0 ; i < mixvars.size() ; i++)
+    for (i = 0 ; i < mixvars.size() ; i++)
         if (mixvars[i] != NULL)
             mixvarname = mixvars[i]->GetVarname().c_str();
 
