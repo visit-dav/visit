@@ -26,6 +26,21 @@ enhancements and bug-fixes that were added to this release.</p>
 
 <p><b><font size="4">Features added in version 1.9.0</font></b></p>
 <ul>
+    <li>VisIt now has an <a href="http://www.xdmf.org/index.php/Main_Page">XDMF</a> reader.  The file must end with a ".xmf" extension to be recognized as an XDMF file.<br>
+    Supported features:
+    <ul>
+        <li>It supports all the grid types, except for the <i>Subset</i> grid type.</li>
+        <li>It supports all the topology types, except for the quadratic cell types.</li>
+        <li>It supports all the geometry types.</li>
+        <li>It supports both <i>XML</i> and <i>HDF</i> format data items. It supports all the number formats for the data items. It only supports <i>Uniform</i> data items.</li>
+        <li>It only supports <i>Node</i> and <i>Cell</i> centered variables. It does not support <i>Grid</i>, <i>Face</i> and <i>Edge</i> centered variables.</li>
+        <li>It only supports <i>Scalar</i> and <i>Vector</i> variables. It does not support <i>Tensor</i>, <i>Tensor6</i> and <i>Matrix</i> variables.</li>
+        <li>It does not support <i>Time</i>. This means that all the grids from a single file will be assumed to belong to the same time state.</li>
+        <li>It does not support <i>XPath</i>.</li>
+    </ul>
+    Support for most of the remaining features will be added in later releases.
+    </li>
+    <li>The config site files for yana have been updated to use MOAB in the <b>LLNL open network</b> configuration file. If the new host profiles are not showing up you will need to delete the yana host profiles, save the settings, and restart VisIt.</li>
     <li>VisIt's Equivalence Class Function (DDF) ability now has a "Count"
     statistical operator.  This operator simply counts the number of data
     points that lie within a given bin.  This allows for easy generation of
