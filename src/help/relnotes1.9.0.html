@@ -20,13 +20,84 @@ enhancements and bug-fixes that were added to this release.</p>
     by the patch release can be found in the <a href="relnotes1.8.1.html">VisIt 1.8.1 release notes</a>. 
     All version 1.8.1 fixes are included in this release.</li>
 
-    <li>A VisIt wiki site has been set up at www.visitusers.org. The wiki contains contributed user and 
-    developer documentation for VisIt. Add to it today! The site also offers a user forum.</li>
+    <li>A VisIt wiki site has been set up at <a href="http://www.visitusers.org">www.visitusers.org</a>. The wiki contains contributed 
+      <a href="http://www.visitusers.org/index.php?title=User_Documentation">user documentation</a> and 
+      <a href="http://www.visitusers.org/index.php?title=Developer_Documentation">developer documentation</a> and 
+    for VisIt. Add to it today! The site also offers a <a href="http://visitusers.org/yabb/YaBB.pl">user forum</a>.</li>
+
+    <li>The organization of the release notes has changed so that users can more easily
+        find the changes that interest them.
+    <ul>
+        <li><a href="#General_Features">Features for all users</a></li>
+        <li><a href="#Advanced_Features">Features for advanced users</a></li>
+        <li><a href="#File_format">Changes to file format readers</a></li>
+        <li><a href="#Plot_changes">Changes to plots</a></li>
+        <li><a href="#Operator_changes">Changes to operators</a></li>
+        <li><a href="#Expression_changes">Changes to expressions</a></li>
+        <li><a href="#CLI_changes">Changes to the command line interface</a></li>
+        <li><a href="#Bugs_fixed">Bugs fixed (bug fixes also found in other categories)</a></li>
+        <li><a href="#Libsim_changes">Changes to VisIt's libsim (for connecting to a running simulation)</a></li>
+        <li><a href="#Config_changes">Changes to machine configuration files</a></li>
+        <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+    </ul>
+    </li>
 </ul>
 
+<a name="General_Features"></a>
+<p><b><font size="4">General features added in version 1.9.0</font></b></p>
+<ul>
+    <li>VisIt's Annotation Window has been redesigned and enhanced to support
+    setting text font, size, and color for database and user information
+    as well as for independent 2D and 3D axes. The 2D and 3D tabs now have a
+    tab for each axis that allows you to independently set the properties for 
+    the titles and labels that comprise the axis.</li>
+
+    <li>VisIt's GUI has been enhanced so that a scroll view is automatically added
+    to tall windows when VisIt is run on short displays. This makes it possible to
+    access controls that would otherwise extend beyond the edges of the screen.</li>
+
+    <li>Visit's Plot List Context Menu has the added option to "Disconnect Plot 
+    from the TimeSlider". This functionality allows the user to plot multiple 
+    times from a database of related files, by Right-Clicking on the plot(s) in
+    the plot list.</li>
+
+    <li>VisIt now automatically saves a crash recovery file every 5 minutes. If VisIt crashes, the next time you run VisIt, you will be prompted as to whether you want to restore the crash recovery session file to return to the last saved state. This crash recovery option can be disabled in the <b>Preferences</b> window.</li>
+
+    <li>VisIt's <b>Windows</b> menu now features an <b>Unlock
+    everything</b> option under the <b>Lock</b> submenu.  The <b>Unlock
+    everything</b> option turns off locking for time, tools, and view in
+    all visualization windows.</li>
+</ul>
+
+<a name="Advanced_Features"></a>
 <p><b><font size="4">Features added in version 1.9.0</font></b></p>
 <ul>
-    <li>The POV-Ray export format has been enhanced.  It now includes exporting of
+    <li>VisIt's <b>Preferences</b> window now has an option called <b>New
+    plots inherit SIL restriction</b>.  SIL refers to the subset selection
+    (such as turning off materials or domains of a plot). 
+    This button allows you to turn off VisIt's
+    default behavior of assigning a subset selection from a compatible plot
+    to new plots when they are created.  If you turn off the <i>inherit</i>
+    option, new plots will be created with all of their subsets selected.</li>
+
+    <li>VisIt now looks for session files in the current directory by default. There is a preference in the <b>Preferences</b> window to make VisIt look for session files in your .visit directory by default.</li>
+
+    <li>The <i>visit -movie</i> movie generation program will now preferentially
+    use the <i>ffmpeg</i> encoder program to encode MPEG movies if ffmpeg
+    is installed on your computer. The ffmpeg encoder produces higher quality
+    MPEG movies much faster than VisIt's standard MPEG encoder. If you do not
+    want VisIt to use ffmpeg to encode MPEG movies then you can provide the
+    <i>-noffmpeg</i> command line option when generating your movie at the
+    command prompt.</li>
+
+    <li>VisIt's Equivalence Class Function (DDF) ability now has a "Count"
+    statistical operator.  This operator simply counts the number of data
+    points that lie within a given bin.  This allows for easy generation of
+    multidimensional histograms.</li>
+
+    <li>The POV-Ray export format has been enhanced.  This format is used for
+        exporting surfaces into the POV-Ray tool, which makes high end movies.
+        It now includes exporting of
         atomic properties useful for molecular data, it replaces fixed-function
         glyph scaling with user-defined glyph scaling, and it writes <i>all</i> scalar
         arrays to the output files.  It also writes data in the correct
@@ -45,35 +116,16 @@ enhancements and bug-fixes that were added to this release.</p>
         </ul>
     </li>
 
-    <li>VisIt now has a <i>PlainText</i> file reader which can open whitespace, comma,
-        and tab-separated ASCII text files as either 2D grids or columnar data.</li>
-
-    <li>VisIt now has a new <i>Parallel Coordinates</i> plot for viewing high-dimensional data.
-        It also supports a new Axis Restriction tool which can interact with the Parallel Coordinates
-        plot for viewing focus data overlaid with the context data.  Note: the ParallelAxis plot
-        is deprecated and will be removed in a future release.</li>
-
-    <li>The <i>Create Bonds</i> operator has been enhanced to support wildcards, allowing
-        for much more powerful rules.  The default options in this mode correspond to a
-        heuristic algorithm providing good support for many molecule types.</li>
-
-    <li>The Subset plot can now plot mesh variables.  This is a convenient way to 
-        obtain a single-color lighted plot for surfaces of three dimensional data,
-        including single-domain data sets and those without scalar variables.</li>
-
-    <li>There is a new <i>enumerate</i> expression which maps nonnegative integers to real values.</li>
-
     <li>A <i>-viewerdisplay</i> argument has been added to VisIt's launcher, which allows the
         GUI/CLI to be displayed on a separate X11 display than the viewer.  This can be
         useful for powerwalls and other demonstration modes where the interface and
         visualizations will run on different monitors.</li>
+</ul>
+    
 
-    <li>The <i>cell_constant</i> and <i>point_constant</i> expressions have been added as a convenient
-        method of creating a constant on a mesh without needing to read a variable from the file.</li>
-
-    <li>VisIt's operators now have support for creating new variables through the
-        expression mechanism.</li><!-- Note: this is a developer feature so far since no operators use it yet --> 
-
+<a name="File_format"></a>
+<p><b><font size="4">File format reader changes in version 1.9.0</font></b></p>
+<ul>
     <li>VisIt now has an <a href="http://www.xdmf.org/index.php/Main_Page">XDMF</a> reader.  The file must end with a ".xmf" extension to be recognized as an XDMF file.<br>
     Supported features:
     <ul>
@@ -88,41 +140,89 @@ enhancements and bug-fixes that were added to this release.</p>
     </ul>
     Support for most of the remaining features will be added in later releases.
     </li>
-    <li>The config site files for yana have been updated to use MOAB in the <b>LLNL open network</b> configuration file. If the new host profiles are not showing up you will need to delete the yana host profiles, save the settings, and restart VisIt.</li>
-    <li>VisIt's Equivalence Class Function (DDF) ability now has a "Count"
-    statistical operator.  This operator simply counts the number of data
-    points that lie within a given bin.  This allows for easy generation of
-    multidimensional histograms.</li>
 
+    <li>The Nek reader was improved by adding code to discover domain boundaries, 
+    making it scale better, and supporting more options for the parallel format.</li>
+    
+    <li>The Flash reader was enhanced with support for <br>
+    <ul>
+        <li>Subsets by processor number</li>
+        <li>Subsets of Morton curve</li>
+        <li>Concurrent subsets by Block-Level and Block-Processor Number pairs for both the domain and Morton curve</li>
+        <li>Submenus for the above concurrent subsets</li>
+        <li>Support for file format version 9</li>
+    </ul>
+    </li>
+
+    <li>VisIt now has a <i>PlainText</i> file reader which can open whitespace, comma,
+        and tab-separated ASCII text files as either 2D grids or columnar data.</li>
+
+    <li>Bugs in the CCM reader have been fixed for files that contain only a mesh and 
+    files with unusual internal indexing.</li>
+    
+    <li>A partial reader was added to support the AVSucd files from CEA.</li>
+
+    <li>VisIt's ZeusMP reader now supports cylindrical coordinates.</li>
+
+    <li>The Miranda reader supports a new file version which scales better.</li>
+
+    <li><b>.visit</b> files generated on unix can now successfully be read on windows systems, and vice-versa.</li>
+    
+    <li>VisIt now reads in and plots VTK's <b>.vti</b> format.</li>
+
+    <li>The Silo writer (accessed through an ExportDatabase call) now correctly outputs
+        voxels.</li>
+ 
+    <li>A file format (AugDecomp) was added to allow existing files to be augmented
+        with material information.</li>
+</ul>
+
+<a name="Plot_changes"></a>
+<p><b><font size="4">Changes to VisIt's plots in version 1.9.0</font></b></p>
+<ul>
     <li>VisIt can now be built with support for the SLIVR volume rendering
     library from SCI, University of Utah. SLIVR provides an advanced
     hardware-accelerated volume renderer and when it is available, the Volume
     plot attributes window provides a "SCI, University of Utah (SLIVR)"
     rendering method.</li>
 
-    <li>VisIt's Annotation Window has been redesigned and enhanced to support
-    setting text font, size, and color for database and user information
-    as well as for independent 2D and 3D axes. The 2D and 3D tabs now have a
-    tab for each axis that allows you to independently set the properties for 
-    the titles and labels that comprise the axis.</li>
+    <li>VisIt now has a new <i>Parallel Coordinates</i> plot for viewing high-dimensional data.
+        It also supports a new Axis Restriction tool which can interact with the Parallel Coordinates
+        plot for viewing focus data overlaid with the context data.  Note: the ParallelAxis plot
+        is deprecated and will be removed in a future release.</li>
 
-    <li><p>VisIt's CLI has been enhanced so it supports registration of user-defined
-    callback functions for many actions. Callback functions can be associated with
-    many state objects, including all plot and operator plugin state objects. This means
-    that whenever a state object changes, your callback function will be called and it
-    will be passed the value of the state object that caused the update.</p>
-    <p>Callback functions can also be installed for many ViewerRPC rpc's, which lets you
-    attach custom behavior at a much finer grain. For example, if you register a 
-    callback function with the OpenDatabaseRPC RPC then your callback function will
-    be called whenever a VisIt client opens a database.</p>
-    <p>Callbacks are registered using the RegisterCallback(cbName, callback) function.
-    The <i>cbName</i> parameter indicates the name of a valid callback function slot
-    name. You can see a list of these by calling the GetCallbackNames() function. The
-    <i>callback</i> argument is the name of the callback function that you want to
-    be called. The RegisterCallback function can take an optional 3rd argument that
-    lets you pass user-defined data to your Python callback function when VisIt
-    calls your callback function.</p>
-    </li>
+    <li>The Subset plot can now plot mesh variables.  This is a convenient way to 
+        obtain a single-color lighted plot for surfaces of three dimensional data,
+        including single-domain data sets and those without scalar variables.</li>
+
+    <li>VisIt's Label plot now correctly shows untransformed 3D vector data, even
+    when a Slice operator that projects data to 2D is present in the
+    pipeline.</li>
+
+    <li>VisIt's volume rendering plot now works correctly when the view frustum of the
+        camera is contained entirely within a data set.</li>
+</ul>
+
+<a name="Operator_changes"></a>
+<p><b><font size="4">Changes to VisIt's operators in version 1.9.0</font></b></p>
+<ul>
+    <li>The <i>Create Bonds</i> operator has been enhanced to support wildcards, allowing
+        for much more powerful rules.  The default options in this mode correspond to a
+        heuristic algorithm providing good support for many molecule types.</li>
+    <li>VisIt's Clip operator now has a 'fast' vs. 'accurate' option,
+    with 'fast' being the default.</li>
+    <li>VisIt's Clip operator no longer generates bad clips when using
+    multiple planes.</li>
+    <li>The Resample operator now works on meshes.  This simply will output the mesh that resample
+        operator placed the data onto.</li>
+    <li>The quality of resampling given by the Resample operator has been improved.</li>
+    <li>A memory leak was fixed with the Threshold operator when it used multiple variables.</li>
+</ul>
+
+<a name="Expression_changes"></a>
+<p><b><font size="4">Changes to VisIt's expression language in version 1.9.0</font></b></p>
+<ul>
+    <li>Expressions that utilize constants now store the constants much more efficiently.</li>
 
     <li>A new "colorlookup" operator is now available for use in VisIt's
     expressions. This operator maps a scalar variable to a (color) vector
@@ -134,87 +234,6 @@ enhancements and bug-fixes that were added to this release.</p>
     VisIt will interpolate colors after the lookup instead of values before
     lookup. </li>
 
-    <li>Visit's Plot List Context Menu has the added option to "Disconnect Plot 
-    from the TimeSlider". This functionality allows the user to plot multiple 
-    times from a database of related files, by Right-Clicking on the plot(s) in
-    the plot list.</li>
-
-    <li>VisIt's <b>Save Movie</b> wizard now displays the <i>command to run
-    later</i> in a window that allows you to cut and paste the command to
-    run into a command prompt.</li>
-
-    <li>VisIt's <b>Windows</b> menu now features an <b>Unlock
-    everything</b> option under the <b>Lock</b> submenu.  The <b>Unlock
-    everything</b> option turns off locking for time, tools, and view in
-    all visualization windows.</li>
-
-    <li>VisIt's <b>Preferences</b> window now has an option called <b>New
-    plots inherit SIL restriction</b>, which allows you to turn off VisIt's
-    default behavior of assigning a SIL restriction from a compatible plot
-    to new plots when they are created.  If you turn off the <i>inherit</i>
-    option, new plots will be created with all of their subsets
-    selected.</li>
-
-    <li>VisIt now looks for session files in the current directory by default. There is a preference in the <b>Preferences</b> window to make VisIt look for session files in your .visit directory by default.</li>
-
-    <li>VisIt now automatically saves a crash recovery file every 5 minutes. If VisIt crashes, the next time you run VisIt, you will be prompted as to whether you want to restore the crash recovery session file to return to the last saved state. This crash recovery option can be disabled in the <b>Preferences</b> window.</li>
-
-    <li>VisIt's ZeusMP reader now supports cylindrical coordinates.</li>
-
-    <li>VisIt's Clip operator now has a 'fast' vs. 'accurate' option,
-    with 'fast' being the default.</li>
-
-    <li>VisIt's XML tools have been enhanced to support the notion of a code
-    generation target (one of the XML tools: xml2atts, xml2java, xml2python, etc.)
-    Code generation targets are designated by the "Target:" keyword in the .code 
-    file and allow you to embed code destined for generated Java or Python bindings
-    directly in the code file.</li>
-
-    <li>VisIt's XMLEdit tool has been improved to support code generation targets.</li>
-
-    <li>VisIt's xml2python code generation tool now better supports nested state objects.</li>
-
-    <li>VisIt's XMLEdit tool has an improved look and feel, including various user-improvements
-    such as a new menu option for regenerating plugin code. The new menu option
-    opens a dialog that allows you to select which code generators will be run and 
-    then it runs them, regenerating your code to incorporate changes that you've made
-    to the XML file.</li>
-
-    <li><p>VisIt's CLI now has <i>GetPlotOptions</i> and <i>GetOperatorOptions</i> functions
-    that can be used to return the plot attributes for the active plot as well as the
-    operator attributes on the i'th operator on the active plot.</p>  
-    </li>
-
-    <li>VisIt's Java API has been updated so ViewerProxy is now divided into ViewerState
-    and ViewerMethods objects, mirroring the change in the C++ implementation that was
-    made several releases ago. In addition, the ViewerMethods class has been annotated
-    with JavaDoc comments that facilitate automatic generation of documentation from
-    the Java code. The ViewerMethods class is the most important class with respect to
-    controlling VisIt's viewer.</li>
-
-    <li>VisIt's source code now contains an example program, <i>/src/viewer/proxy/proxyexample.C</i>,
-    which shows how to use VisIt's C++ interface to make a new VisIt client that can
-    control VisIt's viewer. More information is online at: 
-    http://visitusers.org/index.php?title=CreatingNewClientWithC%2B%2B</li>
-
-    <li>VisIt's GUI has been enhanced so that a scroll view is automatically added
-    to tall windows when VisIt is run on short displays. This makes it possible to
-    access controls that would otherwise extend beyond the edges of the screen.</li>
-
-    <li>The <i>visit -movie</i> movie generation program will now preferentially
-    use the <i>ffmpeg</i> encoder program to encode MPEG movies if ffmpeg
-    is installed on your computer. The ffmpeg encoder produces higher quality
-    MPEG movies much faster than VisIt's standard MPEG encoder. If you do not
-    want VisIt to use ffmpeg to encode MPEG movies then you can provide the
-    <i>-noffmpeg</i> command line option when generating your movie at the
-    command prompt.</li>
-
-    <li>VisIt's SimV1 database reader plugin can now accept mixed scalar
-    data from simulations that implement the <i>GetMixedScalar</i> callback
-    function. Note that the <b>Force interface reconstruction</b> option still needs
-    to be enabled in the <b>Material Options</b> window for mixed scalars to be
-    plotted.</li>
-    
     <li>Enhancements were made to allow filters to obtain ghost corrected material 
     information for datasets where VisIt generates ghost zones. This removes the 
     previous restriction preventing ghost zone generation when the <i>matvf</i>
@@ -238,34 +257,50 @@ enhancements and bug-fixes that were added to this release.</p>
     </ul>
     </li>
 
-    <li>A config file was added for installations at Argonne National Lab.</li>
+    <li>There is a new <i>enumerate</i> expression which maps nonnegative integers to real values.</li>
 
-    <li>The Miranda reader supports a new file version which scales better.</li>
+    <li>The <i>cell_constant</i> and <i>point_constant</i> expressions have been added as a convenient
+        method of creating a constant on a mesh without needing to read a variable from the file.</li>
 
-    <li>The Nek reader was improved by adding code to discover domain boundaries, 
-    making it scale better, and supporting more options for the parallel format.</li>
-    
-    <li>The Flash reader was enhanced with support for <br>
-    <ul>
-        <li>Subsets by processor number</li>
-        <li>Subsets of Morton curve</li>
-        <li>Concurrent subsets by Block-Level and Block-Processor Number pairs for both the domain and Morton curve</li>
-        <li>Submenus for the above concurrent subsets</li>
-        <li>Support for file format version 9</li>
-    </ul>
+    <li>Several bugs with using the recenter expression were fixed.</li>
+
+    <li>A bug was fixed where variables from the array_decompose expression could not be plotted.</li>
+</ul>
+
+<a name="CLI_changes"></a>
+<p><b><font size="4">Changes to VisIt's command-line interface in version 1.9.0</font></b></p>
+<ul>
+    <li><p>VisIt's CLI has been enhanced so it supports registration of user-defined
+    callback functions for many actions. Callback functions can be associated with
+    many state objects, including all plot and operator plugin state objects. This means
+    that whenever a state object changes, your callback function will be called and it
+    will be passed the value of the state object that caused the update.</p>
+    <p>Callback functions can also be installed for many ViewerRPC rpc's, which lets you
+    attach custom behavior at a much finer grain. For example, if you register a 
+    callback function with the OpenDatabaseRPC RPC then your callback function will
+    be called whenever a VisIt client opens a database.</p>
+    <p>Callbacks are registered using the RegisterCallback(cbName, callback) function.
+    The <i>cbName</i> parameter indicates the name of a valid callback function slot
+    name. You can see a list of these by calling the GetCallbackNames() function. The
+    <i>callback</i> argument is the name of the callback function that you want to
+    be called. The RegisterCallback function can take an optional 3rd argument that
+    lets you pass user-defined data to your Python callback function when VisIt
+    calls your callback function.</p>
     </li>
 
+    <li><p>VisIt's CLI now has <i>GetPlotOptions</i> and <i>GetOperatorOptions</i> functions
+    that can be used to return the plot attributes for the active plot as well as the
+    operator attributes on the i'th operator on the active plot.</p>  
+    </li>
 </ul>
+
+<a name="Bugs_fixed"></a>
 <p><b><font size="4">Bugs fixed in version 1.9.0</font></b></p>
 <ul>
-
-    <li>VisIt's Simulation database reader now supports materials whose
-    material numbers do not begin at zero.  Ranges of material numbers
-    where not all numbers are used are also supported now.</li>
-
-    <li>VisIt displays an error message about not being able to read a file
-    called "notset" when the GUI is opened from the CLI via the OpenGUI()
-    function.</li>
+    <li>VisIt's <b>Save Movie</b> wizard now displays the <i>command to run
+    later</i> in a window that allows you to cut and paste the command to
+    run into a command prompt. (Cutting and pasting was previously not 
+    possible.)</li>
 
     <li>VisIt's <b>Save Movie</b> wizard does not come to the front when it
     is activated until the GUI's <b>Main window</b> is clicked on MacOS
@@ -275,35 +310,32 @@ enhancements and bug-fixes that were added to this release.</p>
     session file with different sources and the sources do not exist on the
     local computer.</li>
 
-    <li>VisIt's Label plot now shows untransformed 3D vector data, even
-    when a Slice operator that projects data to 2D is present in the
-    pipeline.</li>
-
-    <li>VisIt's viewer can crash when receiving commands from a simulation
-    while already communicating with the simulation for other
-    operations.</li>
-
-    <li>VisIt's Clip operator no longer generates bad clips when using
-    multiple planes.</li>
-
-    <li>VisIt's GUI crashes when the plot menu is activated immediately after
+    <li>VisIt's GUI no longer crashes when the plot menu is activated immediately after
     choosing an engine profile from the Engine Chooser dialog. The crash only
     happened when reading SAMRAI data.</li>
 
-    <li>The CheckForNewStates function no longer works.</li>
+    <li>The CheckForNewStates function now works.</li>
 
-    <li>VisIt prints an error message indicating that it cannot open the "notset" 
+    <li>VisIt no longer prints an error message indicating that it cannot open the "notset" 
     database when the OpenGUI() function is called from the CLI in order to start
     the GUI.</li>
 
-    <li>VisIt sometimes has problems registering macro buttons inside of a 
+    <li>VisIt no longer has problems registering macro buttons inside of a 
        "visitrc" file.</li>
 
-    <li>The centering of a Pseudocolor Plot no longer wrongly influences query results.</li>
+    <li>Performance problems with large AMR data sets, specifically those uncovered
+        by the FLASH team, have been resolved.</li>
 
-    <li>Performance problems with FLASH AMR files have been resolved.</li>
+    <li>A bug was fixed where VisIt's comparison capability ("cross mesh field evaluations")
+        would sometimes fail when comparing files from different file formats.</li>
 
-    <li>Bugs in the CCM reader have been fixed for files that contain only a mesh and files with unusual internal indexing.</li>
+    <li>A bug was fixed where databases correlated in time across different windows
+        could get out of synch when the VCR controls were used.</li>
+
+    <li>The progress indication for queries over time is now more accurate.</li>
+
+    <li>The progress indication no longer gives erroneous values at the beginning of execution.</li>
+
 
     <li>VisIt's viewer will no longer crash when switching to log scaling.</li>
 
@@ -311,13 +343,77 @@ enhancements and bug-fixes that were added to this release.</p>
 
     <li>Applying the transform operator to curve plots works correctly again for transformations on the y-axis.</li>
 
-    <li><b>.visit</b> files generated on unix can now successfully be read on windows systems, and vice-versa.</li>
-    
-    <li>VisIt now reads in and plots VTK's <b>.vti</b> format.</li>
+    <li>The centering of a Pseudocolor Plot no longer wrongly influences query results.</li>
 
     <li>Queries from the same database, but different windows, no longer returns incorrect results.</li>
-    
 </ul>
+
+<a name="Libsim_changes"></a>
+<p><b><font size="4">Changes to VisIt's "libsim" in version 1.9.0</font></b></p>
+<ul>
+    <li>VisIt's SimV1 database reader plugin can now accept mixed scalar
+    data from simulations that implement the <i>GetMixedScalar</i> callback
+    function. Note that the <b>Force interface reconstruction</b> option still needs
+    to be enabled in the <b>Material Options</b> window for mixed scalars to be
+    plotted.</li>
+
+    <li>VisIt's Simulation database reader now supports materials whose
+    material numbers do not begin at zero.  Ranges of material numbers
+    where not all numbers are used are also supported now.</li>
+
+    <li>VisIt's viewer no longer crashes when receiving commands from a simulation
+    while already communicating with the simulation for other
+    operations.</li>
+</ul>
+
+<a name="Config_changes"></a>
+<p><b><font size="4">Changes to configuration files in version 1.9.0</font></b></p>
+<ul>
+    <li>A config file was added for installations at Argonne National Lab.</li>
+
+    <li>The config site files for yana have been updated to use MOAB in the <b>LLNL open network</b> configuration file. If the new host profiles are not showing up you will need to delete the yana host profiles, save the settings, and restart VisIt.</li>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 1.9.0</font></b></p>
+<ul>
+    <li>VisIt's source code now contains an example program, <i>/src/viewer/proxy/proxyexample.C</i>,
+    which shows how to use VisIt's C++ interface to make a new VisIt client that can
+    control VisIt's viewer. More information is online at: 
+    http://visitusers.org/index.php?title=CreatingNewClientWithC%2B%2B</li>
+
+    <li>Many classes and method names in VisIt underwent a renaming for consistency purposes.</li>
+
+    <li>VisIt's operators now have support for creating new variables through the
+        expression mechanism.</li>
+
+    <li>VisIt's XML tools have been enhanced to support the notion of a code
+    generation target (one of the XML tools: xml2atts, xml2java, xml2python, etc.)
+    Code generation targets are designated by the "Target:" keyword in the .code 
+    file and allow you to embed code destined for generated Java or Python bindings
+    directly in the code file.</li>
+
+    <li>VisIt's XMLEdit tool has been improved to support code generation targets.</li>
+
+    <li>VisIt's xml2python code generation tool now better supports nested state objects.</li>
+
+    <li>VisIt's XMLEdit tool has an improved look and feel, including various user-improvements
+    such as a new menu option for regenerating plugin code. The new menu option
+    opens a dialog that allows you to select which code generators will be run and 
+    then it runs them, regenerating your code to incorporate changes that you've made
+    to the XML file.</li>
+
+    <li>VisIt's Java API has been updated so ViewerProxy is now divided into ViewerState
+    and ViewerMethods objects, mirroring the change in the C++ implementation that was
+    made several releases ago. In addition, the ViewerMethods class has been annotated
+    with JavaDoc comments that facilitate automatic generation of documentation from
+    the Java code. The ViewerMethods class is the most important class with respect to
+    controlling VisIt's viewer.</li>
+
+    <li>The method "GetFilenames" for file format readers is now fully supported with the XML
+        generation tools.</li>
+</ul>
+
 <p>Click the following link to view the release notes for the 1.8.1 patch version
 of VisIt: <a href="relnotes1.8.1.html">VisIt 1.8.1 Release Notes</a>.</p>
 <p>Click the following link to view the release notes for the previous version
