@@ -22,11 +22,10 @@ enhancements and bug-fixes that were added to this release.</p>
 
     <li>A VisIt wiki site has been set up at <a href="http://www.visitusers.org">www.visitusers.org</a>. The wiki contains contributed 
       <a href="http://www.visitusers.org/index.php?title=User_Documentation">user documentation</a> and 
-      <a href="http://www.visitusers.org/index.php?title=Developer_Documentation">developer documentation</a> and 
+      <a href="http://www.visitusers.org/index.php?title=Developer_Documentation">developer documentation</a>
     for VisIt. Add to it today! The site also offers a <a href="http://visitusers.org/yabb/YaBB.pl">user forum</a>.</li>
 
-    <li>The organization of the release notes has changed so that users can more easily
-        find the changes that interest them.
+    <li>The release notes have been reorganized so that users can more easily find the changes that interest them.
     <ul>
         <li><a href="#General_Features">Features for all users</a></li>
         <li><a href="#Advanced_Features">Features for advanced users</a></li>
@@ -70,7 +69,7 @@ enhancements and bug-fixes that were added to this release.</p>
 </ul>
 
 <a name="Advanced_Features"></a>
-<p><b><font size="4">Features added in version 1.9.0</font></b></p>
+<p><b><font size="4">Advanced features added in version 1.9.0</font></b></p>
 <ul>
     <li>VisIt's <b>Preferences</b> window now has an option called <b>New
     plots inherit SIL restriction</b>.  SIL refers to the subset selection
@@ -120,6 +119,14 @@ enhancements and bug-fixes that were added to this release.</p>
         GUI/CLI to be displayed on a separate X11 display than the viewer.  This can be
         useful for powerwalls and other demonstration modes where the interface and
         visualizations will run on different monitors.</li>
+
+    <li>VisIt supports more general forms of subsetting with subsets defined via enumerated
+        scalar variables. When a database defines a scalar variable as an <i>enumerated</i>
+	scalar, the enumerationed pieces will appear in VisIt's subset controls window. Previously,
+	these subsets would be defined by variable value only. Now, they may be defined by
+	variable ranges, by bit-masks or by <i>bi-nomial combinations</i>. In addition,
+	the enumerated pieces can be arranged hierarchically as in a part assembly. A common
+	use of this feature is to define nodesets.
 </ul>
     
 
@@ -175,6 +182,8 @@ enhancements and bug-fixes that were added to this release.</p>
  
     <li>A file format (AugDecomp) was added to allow existing files to be augmented
         with material information.</li>
+
+    <li>SAMRAI file format now correctly ghosts material data.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -265,6 +274,12 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>Several bugs with using the recenter expression were fixed.</li>
 
     <li>A bug was fixed where variables from the array_decompose expression could not be plotted.</li>
+
+    <li>There is a new, bitwise, binary and operator '&'</li>
+
+    <li>The <i>zonetype(mesh)</i> expression now creates a scalar variable that will plot
+    single characters for the zone type (e.g. 'H'=Hex, 'Q'=Quad, 'T'=Tet, etc.)</li>
+
 </ul>
 
 <a name="CLI_changes"></a>
@@ -412,6 +427,27 @@ enhancements and bug-fixes that were added to this release.</p>
 
     <li>The method "GetFilenames" for file format readers is now fully supported with the XML
         generation tools.</li>
+ 
+    <li>Debug log file extension was changed from '.log' to '.vlog'. Also, default behavior
+    of VisIt to over-write existing logs was eliminated. Use new command line argument,
+    '-clobber_vlogs' to overwrite logs. Otherwise, logs from successive runs will be
+    numbered sequentially.</li>
+
+    <li>Added a -numdiff argument to runtest testing tool to specify a <i>relative</i>
+    error threshold for numerical diffs. Fixed numerous issues with previous numerical
+    difference filtering.</i>
+
+    <li>New hook for checking autoconf version was added. Post-commit hook behavior was
+    changed to exercise all hook scripts before existing the meta script. All variables
+    associated with hook scripts were moved to a new hooks_var.sh script.</li>
+
+    <li>A shell script tool, <i>regen-ajp</i>, was added to the bin directory to
+    help in regenerating attribute and, where appropriate, java and python code
+    upon regular changes to the source .xml file.</li>
+
+    <li>The xml2<i>whatever</i> tools no longer overwrite header files when they have
+    not changed. This helps prevent lengthening compiles when changing only .code
+    portions of attributes.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the 1.8.1 patch version
