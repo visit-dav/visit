@@ -42,8 +42,10 @@
 
 #include <avtTransformFilter.h>
 
+#include <LinearTransformAttributes.h>
 #include <SimilarityTransformAttributes.h>
 
+#include <avtLinearTransformFilter.h>
 #include <avtSimilarityTransformFilter.h>
 #include <avtCoordSystemConvert.h>
 
@@ -63,10 +65,14 @@
 //    Hank Childs, Tue Feb  1 16:37:56 PST 2005
 //    Added coord system convert.
 //
+//    Jeremy Meredith, Tue Apr 15 13:17:33 EDT 2008
+//    Added linear transform.
+//
 // ****************************************************************************
 
 avtTransformFilter::avtTransformFilter()
 {
+    ltf = new avtLinearTransformFilter();
     stf = new avtSimilarityTransformFilter();
     csc = new avtCoordSystemConvert();
 }
@@ -88,10 +94,15 @@ avtTransformFilter::avtTransformFilter()
 //    Hank Childs, Tue Feb  1 16:37:56 PST 2005
 //    Added coord system convert.
 //
+//    Jeremy Meredith, Tue Apr 15 13:17:33 EDT 2008
+//    Added linear transform.
+//
 // ****************************************************************************
 
 avtTransformFilter::~avtTransformFilter()
 {
+    if (ltf != NULL)
+        delete ltf;
     if (stf != NULL)
         delete stf;
     if (csc != NULL)
@@ -140,6 +151,9 @@ avtTransformFilter::Create()
 //    Hank Childs, Tue Feb  1 16:37:56 PST 2005
 //    Also add support for coordinate transformations.
 //
+//    Jeremy Meredith, Tue Apr 15 13:17:33 EDT 2008
+//    Added linear transform.
+//
 // ****************************************************************************
 
 void
@@ -175,7 +189,7 @@ avtTransformFilter::SetAtts(const AttributeGroup *a)
     
         stf->SetAtts(&st_atts);
     }
-    else
+    else if (atts.GetTransformType() == TransformAttributes::Coordinate)
     {
         switch (atts.GetInputCoordSys())
         {
@@ -201,6 +215,24 @@ avtTransformFilter::SetAtts(const AttributeGroup *a)
              csc->SetOutputCoordSys(SPHERICAL);
              break;
         }
+    }
+    else
+    {
+        LinearTransformAttributes lt_atts;
+        lt_atts.SetM00(atts.GetM00());
+        lt_atts.SetM01(atts.GetM01());
+        lt_atts.SetM02(atts.GetM02());
+
+        lt_atts.SetM10(atts.GetM10());
+        lt_atts.SetM11(atts.GetM11());
+        lt_atts.SetM12(atts.GetM12());
+
+        lt_atts.SetM20(atts.GetM20());
+        lt_atts.SetM21(atts.GetM21());
+        lt_atts.SetM22(atts.GetM22());
+
+        lt_atts.SetInvertLinearTransform(atts.GetInvertLinearTransform());
+        ltf->SetAtts(&lt_atts);
     }
 }
 
@@ -238,6 +270,9 @@ avtTransformFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Tue Feb  1 16:37:56 PST 2005
 //    Add support for coordinate systems.
 //
+//    Jeremy Meredith, Tue Apr 15 13:44:21 EDT 2008
+//    Added support for linear transforms.
+//
 // ****************************************************************************
 
 avtFilter *
@@ -245,8 +280,10 @@ avtTransformFilter::GetFacadedFilter(void)
 {
     if (atts.GetTransformType() == TransformAttributes::Similarity)
         return stf;
-    else
+    else if (atts.GetTransformType() == TransformAttributes::Coordinate)
         return csc;
+    else
+        return ltf;
 }
 
 

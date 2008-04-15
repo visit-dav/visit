@@ -109,6 +109,9 @@ class QNarrowLineEdit : public QLineEdit
 //    Jeremy Meredith, Fri Feb  4 17:48:04 PST 2005
 //    Added support for coordinate transforms.
 //
+//    Jeremy Meredith, Tue Apr 15 13:26:09 EDT 2008
+//    Added support for linear transforms.
+//
 // ****************************************************************************
 
 class QvisTransformWindow : public QvisOperatorWindow
@@ -143,6 +146,8 @@ class QvisTransformWindow : public QvisOperatorWindow
     void pageTurned(QWidget*);
     void inputCoordChanged(int);
     void outputCoordChanged(int);
+    void ltElementtChanged();
+    void linearInvertChanged(bool val);
   private:
     QTabWidget      *transformTypeTabs;
 
@@ -173,12 +178,24 @@ class QvisTransformWindow : public QvisOperatorWindow
     QNarrowLineEdit *translateZ;
     QLabel          *translateZLabel;
 
+    QNarrowLineEdit *m00;
+    QNarrowLineEdit *m01;
+    QNarrowLineEdit *m02;
+    QNarrowLineEdit *m10;
+    QNarrowLineEdit *m11;
+    QNarrowLineEdit *m12;
+    QNarrowLineEdit *m20;
+    QNarrowLineEdit *m21;
+    QNarrowLineEdit *m22;
+    QCheckBox       *linearInvert;
+
     QButtonGroup    *inputCoord;
     QButtonGroup    *outputCoord;
 
     TransformAttributes *atts;
     QFrame *firstPage;
     QFrame *secondPage;
+    QFrame *thirdPage;
 };
 
 

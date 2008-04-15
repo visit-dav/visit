@@ -280,6 +280,9 @@
 #    Jeremy Meredith, Fri Feb  1 17:58:56 EST 2008
 #    Added AxisRestrictionAttributes.
 #
+#    Jeremy Meredith, Tue Apr 15 13:42:18 EDT 2008
+#    Added LinearTransformAttributes.
+#
 ##############################################################################
 
 ##
@@ -347,6 +350,7 @@ SRC=    AnimationAttributes.C \
         KeyframeAttributes.C \
         LightAttributes.C \
         LightList.C \
+        LinearTransformAttributes.C \
         Line.C \
         MapNode.C \
         MaterialAttributes.C \

@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+  <Attribute name="LinearTransformAttributes" purpose="This class contains attributes for the linear transform." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="m00" label="m00" type="double">
+      1.000000
+    </Field>
+    <Field name="m01" label="m01" type="double">
+      0.000000
+    </Field>
+    <Field name="m02" label="m02" type="double">
+      0.000000
+    </Field>
+    <Field name="m10" label="m10" type="double">
+      0.000000
+    </Field>
+    <Field name="m11" label="m11" type="double">
+      1.000000
+    </Field>
+    <Field name="m12" label="m12" type="double">
+      0.000000
+    </Field>
+    <Field name="m20" label="m20" type="double">
+      0.000000
+    </Field>
+    <Field name="m21" label="m21" type="double">
+      0.000000
+    </Field>
+    <Field name="m22" label="m22" type="double">
+      1.000000
+    </Field>
+    <Field name="invertLinearTransform" label="invertLinearTransform" type="bool">
+      false
+    </Field>
+  </Attribute>
