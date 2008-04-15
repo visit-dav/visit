@@ -115,6 +115,9 @@ QvisTransformWindow::~QvisTransformWindow()
 //    Jeremy Meredith, Fri Feb  4 17:48:04 PST 2005
 //    Added support for coordinate transforms.
 //
+//    Jeremy Meredith, Tue Apr 15 13:42:44 EDT 2008
+//    Added support for linear transforms.
+//
 // ****************************************************************************
 void
 QvisTransformWindow::CreateWindowContents()
@@ -276,6 +279,49 @@ QvisTransformWindow::CreateWindowContents()
     connect(outputCoord, SIGNAL(clicked(int)),
             this, SLOT(outputCoordChanged(int)));
 
+    // ----------------------------------------------------------------------
+    // Third page
+    // ----------------------------------------------------------------------
+    thirdPage = new QFrame(central, "thirdPage");
+    transformTypeTabs->addTab(thirdPage, "Linear");
+
+    QGridLayout *thirdPageLayout = new QGridLayout(thirdPage, 6,3, 10, 10, "thirdPageLayout");
+    thirdPageLayout->addMultiCellWidget(new QLabel("Matrix elements",thirdPage),
+                                        0,0, 0,2);
+    m00 = new QNarrowLineEdit(thirdPage, "m00");
+    m01 = new QNarrowLineEdit(thirdPage, "m01");
+    m02 = new QNarrowLineEdit(thirdPage, "m02");
+    m10 = new QNarrowLineEdit(thirdPage, "m10");
+    m11 = new QNarrowLineEdit(thirdPage, "m11");
+    m12 = new QNarrowLineEdit(thirdPage, "m12");
+    m20 = new QNarrowLineEdit(thirdPage, "m20");
+    m21 = new QNarrowLineEdit(thirdPage, "m21");
+    m22 = new QNarrowLineEdit(thirdPage, "m22");
+    thirdPageLayout->addWidget(m00, 1, 0);
+    thirdPageLayout->addWidget(m01, 1, 1);
+    thirdPageLayout->addWidget(m02, 1, 2);
+    thirdPageLayout->addWidget(m10, 2, 0);
+    thirdPageLayout->addWidget(m11, 2, 1);
+    thirdPageLayout->addWidget(m12, 2, 2);
+    thirdPageLayout->addWidget(m20, 3, 0);
+    thirdPageLayout->addWidget(m21, 3, 1);
+    thirdPageLayout->addWidget(m22, 3, 2);
+    connect(m00, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m01, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m02, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m10, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m11, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m12, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m20, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m21, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    connect(m22, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
+    linearInvert = new QCheckBox("Invert linear transform",
+                                 thirdPage, "linearInvert");
+    thirdPageLayout->addMultiCellWidget(linearInvert, 4,4, 0,2);
+    connect(linearInvert, SIGNAL(toggled(bool)),
+            this, SLOT(linearInvertChanged(bool)));
+
+
     connect(transformTypeTabs, SIGNAL(currentChanged(QWidget*)),
             this, SLOT(pageTurned(QWidget*)));
 }
@@ -296,6 +342,9 @@ QvisTransformWindow::CreateWindowContents()
 //
 //    Jeremy Meredith, Fri Feb  4 17:48:04 PST 2005
 //    Added support for coordinate transforms.
+//
+//    Jeremy Meredith, Tue Apr 15 13:20:52 EDT 2008
+//    Added support for linear transforms.
 //
 // ****************************************************************************
 void
@@ -436,9 +485,13 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             {
                 transformTypeTabs->showPage(firstPage);
             }
-            else
+            else if (atts->GetTransformType() == TransformAttributes::Coordinate)
             {
                 transformTypeTabs->showPage(secondPage);
+            }
+            else
+            {
+                transformTypeTabs->showPage(thirdPage);
             }
             break;
           case 15: // inputCoordSys
@@ -446,6 +499,49 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             break;
           case 16: // outputCoordSys
             outputCoord->setButton(atts->GetOutputCoordSys());
+            break;
+
+          case TransformAttributes::ID_m00:
+            temp.setNum(atts->GetM00());
+            m00->setText(temp);
+            break;
+          case TransformAttributes::ID_m01:
+            temp.setNum(atts->GetM01());
+            m01->setText(temp);
+            break;
+          case TransformAttributes::ID_m02:
+            temp.setNum(atts->GetM02());
+            m02->setText(temp);
+            break;
+
+          case TransformAttributes::ID_m10:
+            temp.setNum(atts->GetM10());
+            m10->setText(temp);
+            break;
+          case TransformAttributes::ID_m11:
+            temp.setNum(atts->GetM11());
+            m11->setText(temp);
+            break;
+          case TransformAttributes::ID_m12:
+            temp.setNum(atts->GetM12());
+            m12->setText(temp);
+            break;
+
+          case TransformAttributes::ID_m20:
+            temp.setNum(atts->GetM20());
+            m20->setText(temp);
+            break;
+          case TransformAttributes::ID_m21:
+            temp.setNum(atts->GetM21());
+            m21->setText(temp);
+            break;
+          case TransformAttributes::ID_m22:
+            temp.setNum(atts->GetM22());
+            m22->setText(temp);
+            break;
+
+          case TransformAttributes::ID_invertLinearTransform:
+            linearInvert->setChecked(atts->GetInvertLinearTransform());
             break;
         }
     }
@@ -463,8 +559,11 @@ QvisTransformWindow::UpdateWindow(bool doAll)
 //                  the routine gets the current values for all widgets.
 //
 // Modifications:
-//   Kathleen Bonnell, Wed May 21 11:06:13 PDT 2003 
-//   Disallow (0, 0, 0) as the rotation axis.
+//    Kathleen Bonnell, Wed May 21 11:06:13 PDT 2003 
+//    Disallow (0, 0, 0) as the rotation axis.
+//
+//    Jeremy Meredith, Tue Apr 15 13:42:44 EDT 2008
+//    Added support for linear transforms.
 //
 // ****************************************************************************
 
@@ -723,6 +822,22 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
             atts->SetTranslateZ(atts->GetTranslateZ());
         }
     }
+
+    // Do linear transform matrix elements
+    if (which_widget = 100 || doAll)
+    {
+        atts->SetM00(m00->displayText().simplifyWhiteSpace().toFloat());
+        atts->SetM01(m01->displayText().simplifyWhiteSpace().toFloat());
+        atts->SetM02(m02->displayText().simplifyWhiteSpace().toFloat());
+
+        atts->SetM10(m10->displayText().simplifyWhiteSpace().toFloat());
+        atts->SetM11(m11->displayText().simplifyWhiteSpace().toFloat());
+        atts->SetM12(m12->displayText().simplifyWhiteSpace().toFloat());
+
+        atts->SetM20(m20->displayText().simplifyWhiteSpace().toFloat());
+        atts->SetM21(m21->displayText().simplifyWhiteSpace().toFloat());
+        atts->SetM22(m22->displayText().simplifyWhiteSpace().toFloat());
+    }
 }
 
 //
@@ -858,6 +973,11 @@ QvisTransformWindow::pageTurned(QWidget *page)
         atts->SetTransformType(TransformAttributes::Coordinate);
         Apply();
     }
+    else if (page == thirdPage)
+    {
+        atts->SetTransformType(TransformAttributes::Linear);
+        Apply();
+    }
 }
 
 void QvisTransformWindow::inputCoordChanged(int v)
@@ -868,5 +988,19 @@ void QvisTransformWindow::inputCoordChanged(int v)
 void QvisTransformWindow::outputCoordChanged(int v)
 {
     atts->SetOutputCoordSys(TransformAttributes::CoordinateSystem(v));
+}
+
+void
+QvisTransformWindow::ltElementtChanged()
+{
+    GetCurrentValues(100);
+    Apply();
+}
+
+void
+QvisTransformWindow::linearInvertChanged(bool val)
+{
+    atts->SetInvertLinearTransform(val);
+    Apply();
 }
 

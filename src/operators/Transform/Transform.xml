@@ -8,6 +8,7 @@
       <Enum name="TransformType">
         Similarity
         Coordinate
+        Linear
       </Enum>
       <Enum name="CoordinateSystem">
         Cartesian
@@ -70,6 +71,36 @@
       </Field>
       <Field name="outputCoordSys" label="Desired Coordinate System" type="enum" subtype="CoordinateSystem">
         Spherical
+      </Field>
+      <Field name="m00" label="m00" type="double">
+        1.000000
+      </Field>
+      <Field name="m01" label="m01" type="double">
+        0.000000
+      </Field>
+      <Field name="m02" label="m02" type="double">
+        0.000000
+      </Field>
+      <Field name="m10" label="m10" type="double">
+        0.000000
+      </Field>
+      <Field name="m11" label="m11" type="double">
+        1.000000
+      </Field>
+      <Field name="m12" label="m12" type="double">
+        0.000000
+      </Field>
+      <Field name="m20" label="m20" type="double">
+        0.000000
+      </Field>
+      <Field name="m21" label="m21" type="double">
+        0.000000
+      </Field>
+      <Field name="m22" label="m22" type="double">
+        1.000000
+      </Field>
+      <Field name="invertLinearTransform" label="invertLinearTransform" type="bool">
+        false
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
