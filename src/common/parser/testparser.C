@@ -63,6 +63,7 @@ enum TokenType {
 };
 Symbol T_Plus(D, '+');
 Symbol T_Mult(D, '*');
+Symbol T_And(D,  '&');
 Symbol T_Var(D, TT_Var, "Var");
 
 // ----------------------------------------------------------------------------
@@ -109,7 +110,10 @@ class TestScanner : public Scanner
         if (pos >= input.length())
             return new EndOfInput(pos);
 
-        if (input[pos] == '*' || input[pos] == '+')
+        if (input[pos] == '+' || input[pos] == '-' ||
+            input[pos] == '*' || input[pos] == '/' ||
+            input[pos] == '^' || input[pos] == '%' ||
+            input[pos] == '&')
         {
             Token *t = new Operator(pos, input[pos]);
             pos++;
@@ -182,11 +186,14 @@ class TestGrammar : public Grammar
         AddRule(Rule(0, Expr) >> Expr + T_Plus + Expr );
         AddRule(Rule(1, Expr) >> Expr + T_Mult + Expr );
         AddRule(Rule(2, Expr) >> T_Var );
+        AddRule(Rule(3, Expr) >> Expr + T_And + Expr );
 
         SetAssoc(T_Plus,  Grammar::Left);
         SetAssoc(T_Mult,  Grammar::Left);
+        SetAssoc(T_And,   Grammar::NonAssoc);
         SetPrec(T_Plus,   1);
         SetPrec(T_Mult,   2);
+        SetPrec(T_And,    2);
     }
     bool Initialize() { return false; } // only for pre-configuration 
     
@@ -215,6 +222,7 @@ class TestParser : public Parser
             {
               case 0:
               case 1:
+              case 3:
                 node = new BinaryExpression(p,((Operator*)T[1])->op,E[0],E[2]);
                 break;
               case 2:

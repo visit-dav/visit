@@ -133,6 +133,8 @@ avtPOSCARFileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Tue Feb 12 14:09:24 EST 2008
 //    Support element types as an enumerated scalar.
 //
+//    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+//    Changed interface to enum scalars
 // ****************************************************************************
 
 void
@@ -164,12 +166,9 @@ avtPOSCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         avtScalarMetaData *el_smd =
             new avtScalarMetaData("element", "mesh", AVT_NODECENT);
-        el_smd->isEnumeration = true;
+        el_smd->SetEnumerationType(avtScalarMetaData::ByValue);
         for (int i=0; i<element_map.size(); i++)
-        {
-            el_smd->enumNames.push_back(element_names[element_map[i]-1]);
-            el_smd->enumValues.push_back(element_map[i]);
-        }
+            el_smd->AddEnumNameValue(element_names[element_map[i]-1],element_map[i]);
         md->Add(el_smd);
     }
     if (cx.size() > 0)

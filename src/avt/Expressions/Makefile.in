@@ -208,6 +208,9 @@
 #   Cyrus Harrison, Wed Apr  2 15:08:59 PDT 2008
 #   Added cylindrical radius expression.
 #
+#   Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+#   Added binary and expression ('&')
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -337,6 +340,7 @@ Math_src= \
   Math/avtArctan2Expression.C \
   Math/avtBase10LogExpression.C \
   Math/avtBinaryAddExpression.C \
+  Math/avtBinaryAndExpression.C \
   Math/avtBinaryDivideExpression.C \
   Math/avtBinaryMultiplyExpression.C \
   Math/avtBinaryPowerExpression.C \

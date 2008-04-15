@@ -76,7 +76,6 @@
 #include <visit_vtk_exports.h>
 
 #include <vtkDataSetToUnstructuredGridFilter.h>
-#include <vtkSetGet.h>
 
 #define VTK_NODE_ADJACENCY 0
 #define VTK_FACE_ADJACENCY 1

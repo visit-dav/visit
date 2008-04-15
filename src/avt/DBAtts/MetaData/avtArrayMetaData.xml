@@ -24,6 +24,9 @@
     </Field>
     <Field name="compNames" label="Component names" type="stringVector" access="public">
     </Field>
+    <Field name="hideFromGUI" label="hideFromGUI" type="bool" access="public">
+      false
+    </Field>
     <Function name="avtArrayMetaData2" user="true" member="true">
     </Function>
     <Function name="avtArrayMetaData3" user="true" member="true">

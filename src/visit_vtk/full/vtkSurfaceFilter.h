@@ -66,7 +66,6 @@
 
 #include <vtkDataSetToUnstructuredGridFilter.h>
 #include <vtkFloatArray.h>
-#include <vtkSetGet.h>
 
 class vtkPointSet;
 class vtkRectilinearGrid;

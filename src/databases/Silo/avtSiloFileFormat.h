@@ -55,6 +55,10 @@
 
 #include <void_ref_ptr.h>
 
+using std::string;
+using std::vector;
+using std::map;
+
 class     vtkUnstructuredGrid;
 
 class     avtFacelist;
@@ -68,7 +72,7 @@ typedef struct
     bool                haveGroups;
     int                 ndomains;
     int                 numgroups;
-    std::vector<int>    ids;
+    vector<int>    ids;
 } GroupInfo;
 
 
@@ -186,6 +190,10 @@ typedef struct
 //    Mark C. Miller, Wed Feb  6 12:27:09 PST 2008
 //    Added topDir data member for case where entire time series is in 
 //    a single silo file.
+//    
+//    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+//    Added 'using' statements (above) and removed all 'std::' where
+//    appropriate. Added GetNodelistVars, AddNodelistEnumerations
 //
 // ****************************************************************************
 
@@ -226,39 +234,44 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     bool                  readGlobalInfo;
     bool                  connectivityIsTimeVarying;
     bool                  hasDisjointElements;
-    std::string           codeNameGuess;
+    string                codeNameGuess;
 
     static bool           madeGlobalSiloCalls;
 
-    std::set<std::string>    domainDirs;
+    std::set<string>      domainDirs;
 
     // The following fields are for determining multimeshes for multivars
-    std::vector<std::string>                  firstSubMesh;
-    std::vector<std::string>                  firstSubMeshVarName;
-    std::vector<std::vector<std::string> >    allSubMeshDirs;
-    std::vector<std::string>                  actualMeshName;
-    std::vector<int>                          blocksForMesh;
-    std::map<std::string,std::vector<int> >   blocksForMultivar;
+    vector<string>                  firstSubMesh;
+    vector<string>                  firstSubMeshVarName;
+    vector<vector<string> >         allSubMeshDirs;
+    vector<string>                  actualMeshName;
+    vector<int>                     blocksForMesh;
+    map<string,vector<int> >        blocksForMultivar;
 
-    std::vector<DBmultimesh *>                multimeshes;
-    std::vector<std::string>                  multimesh_name;
-    std::vector<DBmultivar *>                 multivars;
-    std::vector<std::string>                  multivar_name;
-    std::vector<DBmultimat *>                 multimats;
-    std::vector<std::string>                  multimat_name;
-    std::vector<DBmultimatspecies *>          multimatspecies;
-    std::vector<std::string>                  multimatspec_name;
+    vector<DBmultimesh *>           multimeshes;
+    vector<string>                  multimesh_name;
+    vector<DBmultivar *>            multivars;
+    vector<string>                  multivar_name;
+    vector<DBmultimat *>            multimats;
+    vector<string>                  multimat_name;
+    vector<DBmultimatspecies *>     multimatspecies;
+    vector<string>                  multimatspec_name;
 
-    std::map<std::string, std::string>        multivarToMultimeshMap;
+    map<string, string>             multivarToMultimeshMap;
 
-    GroupInfo                                 groupInfo;
+    GroupInfo                       groupInfo;
 
-    std::map<std::string, std::vector<int> >  arbMeshZoneRangesToSkip;
+    map<string, vector<int> >       arbMeshZoneRangesToSkip;
 
-    std::vector<avtDataSelection_p>           selList;
-    std::vector<bool>                        *selsApplied;
+    vector<avtDataSelection_p>      selList;
+    vector<bool>                   *selsApplied;
 
-    std::string                               topDir;
+    string                          topDir;
+
+    // to support block structured nodelist convention
+    map<int, vector<int> >          nlBlockToWindowsMap;
+    vector<vector<int> >            pascalsTriangleMap;
+    int                             numNodeLists;
 
     DBfile               *GetFile(int);
     DBfile               *OpenFile(int, bool skipGlobalInfo = false);
@@ -275,6 +288,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                                           avtDatabaseMetaData *md,
                                           const DBmultimesh *const mm, DBfile *dbfile);
 
+    vtkDataArray         *GetNodelistsVar(int);
     vtkDataArray         *GetQuadVar(DBfile *, const char *, const char *,int);
     vtkDataArray         *GetUcdVar(DBfile *, const char *, const char *, int);
     vtkDataArray         *GetPointVar(DBfile *, const char *);
@@ -298,7 +312,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                                               int, const char *);
     void                  ReadInConnectivity(vtkUnstructuredGrid *,
                                              DBzonelist *, int,
-                                             std::vector<int>&);
+                                             vector<int>&);
     void                  GetConnectivityAndGroupInformation(DBfile *, bool = false);
     void                  GetConnectivityAndGroupInformationFromFile(DBfile *,
                                int &, int *&,int *&,int &,int *&,int &,int *&);
@@ -330,7 +344,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     void                  GetRelativeVarName(const char *,const char *,char *);
     char                 *AllocAndDetermineMeshnameForUcdmesh(int, const char *);
 
-    std::string           DetermineMultiMeshForSubVariable(DBfile*,const char*,
+    string                DetermineMultiMeshForSubVariable(DBfile*,const char*,
                                                       char**,int, const char*);
     int                   GetMeshtype(DBfile *, char *);
     void                  GetMeshname(DBfile *, char *, char *);
@@ -343,6 +357,9 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                                              const char*);
     bool                  ShouldGoToDir(const char *);
     void                  ReadGlobalInformation(DBfile *);
+
+    void                  AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
+                              string meshname);
 
     DBmultimesh          *GetMultimesh(const char *path, const char *name);
     DBmultimesh          *QueryMultimesh(const char *path, const char *name);

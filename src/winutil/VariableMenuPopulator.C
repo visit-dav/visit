@@ -321,6 +321,9 @@ VariableMenuPopulator::ClearGroupingInfo()
 //    Small tweak to guard against a case in which the MapsOut are 
 //    requested from an avtSILSet, but the set goes out of scope and its maps
 //    out are deleted before this method is done using them.
+//
+//    Mark C. Miller, Tue Mar 18 21:25:07 PDT 2008
+//    Added code to hide variables from GUI if variable's md so indicates
 // ****************************************************************************
 
 bool
@@ -407,19 +410,22 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     for (i = 0; i < md->GetNumMeshes(); ++i)
     {
         const avtMeshMetaData &mmd = md->GetMeshes(i);
-        meshVars.AddVariable(mmd.name, mmd.validVariable);
+	if (!mmd.hideFromGUI)
+            meshVars.AddVariable(mmd.name, mmd.validVariable);
     }
     if (md->GetUseCatchAllMesh())
         meshVars.AddVariable(Init::CatchAllMeshName, true);
     for (i = 0; i < md->GetNumScalars(); ++i)
     {
         const avtScalarMetaData &smd = md->GetScalars(i);
-        scalarVars.AddVariable(smd.name, smd.validVariable);
+	if (!smd.hideFromGUI)
+            scalarVars.AddVariable(smd.name, smd.validVariable);
     }
     for (i = 0; i < md->GetNumVectors(); ++i)
     {
         const avtVectorMetaData &vmd = md->GetVectors(i);
-        vectorVars.AddVariable(vmd.name, vmd.validVariable);
+	if (!vmd.hideFromGUI)
+            vectorVars.AddVariable(vmd.name, vmd.validVariable);
     }
     for (i = 0; i < md->GetNumSpecies(); ++i)
     {
@@ -429,27 +435,32 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     for (i = 0; i < md->GetNumCurves(); ++i)
     {
         const avtCurveMetaData &cmd = md->GetCurves(i);
-        curveVars.AddVariable(cmd.name, cmd.validVariable);
+	if (!cmd.hideFromGUI)
+            curveVars.AddVariable(cmd.name, cmd.validVariable);
     }
     for (i = 0; i < md->GetNumTensors(); ++i)
     {
         const avtTensorMetaData &tmd = md->GetTensors(i);
-        tensorVars.AddVariable(tmd.name, tmd.validVariable);
+	if (!tmd.hideFromGUI)
+            tensorVars.AddVariable(tmd.name, tmd.validVariable);
     }
     for (i = 0; i < md->GetNumSymmTensors(); ++i)
     {
         const avtSymmetricTensorMetaData &tmd = md->GetSymmTensors(i);
-        symmTensorVars.AddVariable(tmd.name, tmd.validVariable);
+	if (!tmd.hideFromGUI)
+            symmTensorVars.AddVariable(tmd.name, tmd.validVariable);
     }
     for (i = 0; i < md->GetNumLabels(); ++i)
     {
-        const avtLabelMetaData &tmd = md->GetLabels(i);
-        labelVars.AddVariable(tmd.name, tmd.validVariable);
+        const avtLabelMetaData &lmd = md->GetLabels(i);
+	if (!lmd.hideFromGUI)
+            labelVars.AddVariable(lmd.name, lmd.validVariable);
     }
     for (i = 0; i < md->GetNumArrays(); ++i)
     {
-        const avtArrayMetaData &tmd = md->GetArrays(i);
-        arrayVars.AddVariable(tmd.name, tmd.validVariable);
+        const avtArrayMetaData &amd = md->GetArrays(i);
+	if (!amd.hideFromGUI)
+            arrayVars.AddVariable(amd.name, amd.validVariable);
     }
     visitTimer->StopTimer(id, "Adding variables from metadata");
 

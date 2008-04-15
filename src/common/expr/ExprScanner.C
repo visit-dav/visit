@@ -116,6 +116,9 @@ static const bool StateAcceptance[13] = {
 //    inside the "<>" angle brackets.  This is important as it is our
 //    only means of quoting these.
 //
+//    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+//    Added support for '&' binary, bitwise, and expression
+//
 // ****************************************************************************
 int
 ExprScanner::GetCharType(const char c)
@@ -129,7 +132,7 @@ ExprScanner::GetCharType(const char c)
             type = Quo;
         else if (c == '+' || c == '-')
             type = Sgn;
-        else if (strchr("*/+-[]{}()<>=,^%@:#", c))
+        else if (strchr("*/+-[]{}()<>=,^%@:#&", c))
             type = Sym;
         else if (c == 'e' || c == 'E')
             type = Eee;

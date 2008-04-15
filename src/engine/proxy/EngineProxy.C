@@ -901,6 +901,9 @@ EngineProxy::DefineVirtualDatabase(const std::string &fileFormat,
 //
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added leftEye to support stereo SR
+//
+//    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+//    Removed conditionally removed code block conditioned on 'MCM_FIX'
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -933,12 +936,6 @@ EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
             debug4 << "Warning: " << renderRPC.Message().c_str() << endl;
             Warning(renderRPC.Message().c_str());
         }
-
-        // If we passed a callback function, execute it.
-#if MCM_FIX 
-        if(waitCB)
-            waitCB(cbData);
-#endif
     }
 
     // Check for abort

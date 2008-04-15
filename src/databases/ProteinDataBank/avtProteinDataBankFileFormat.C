@@ -166,6 +166,8 @@ avtProteinDataBankFileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Mon Oct 22 12:58:00 EDT 2007
 //    Added compound name support.
 //
+//    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+//    Changed interface to enum scalars
 // ****************************************************************************
 
 void
@@ -213,24 +215,18 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         avtScalarMetaData *el_smd =
             new avtScalarMetaData(name_el, name_mesh, AVT_NODECENT);
-        el_smd->isEnumeration = true;
+        el_smd->SetEnumerationType(avtScalarMetaData::ByValue);
         for (int a=0; a<MAX_ELEMENT_NUMBER; a++)
-        {
-            el_smd->enumNames.push_back(element_names[a]);
-            el_smd->enumValues.push_back(a+1);
-        }
+	    el_smd->AddEnumNameValue(element_names[a], a+1);
         md->Add(el_smd);
 
         if (compoundNames.size() > 1)
         {
             avtScalarMetaData *cmp_smd =
                 new avtScalarMetaData(name_cmp, name_mesh, AVT_NODECENT);
-            cmp_smd->isEnumeration = true;
+            cmp_smd->SetEnumerationType(avtScalarMetaData::ByValue);
             for (int a=0; a<compoundNames.size(); a++)
-            {
-                cmp_smd->enumNames.push_back(compoundNames[a]);
-                cmp_smd->enumValues.push_back(a);
-            }
+	        cmp_smd->AddEnumNameValue(compoundNames[a], a);
             md->Add(cmp_smd);
             md->Add(new avtLabelMetaData(name_cmpnm, name_mesh, AVT_NODECENT));
         }

@@ -51,6 +51,10 @@
 #include "Enum.h"
 #include "Plugin.h"
 
+#include <BJHash.h>
+#include <stdio.h>
+#include <unistd.h>
+
 vector<EnumType*> EnumType::enums;
 
 bool print   = true;
@@ -59,6 +63,7 @@ bool installpublic  = false;
 bool installprivate = false;
 bool outputtoinputdir = false;
 QString currentInputDir = "";
+QString preHeaderLeader = "pre_";
 
 std::string copyright_str = 
 "/*****************************************************************************\n"
@@ -263,6 +268,99 @@ Open(ofstream &file, const QString &name_withoutpath)
     return bool(file);
 }
 
+// ****************************************************************************
+//  Function:  FileContentsChecksum 
+//
+//  Purpose:   Return a checksum of a file's contents given its pathname
+//
+//  Arguments:
+//    name           the pathname
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    April 9, 2008 
+//
+// ****************************************************************************
+
+bool
+FileContentsChecksum(const QString &name, unsigned int *sum)
+{
+    ifstream file(name.latin1(), ios::in);
+
+    if (file.fail())
+        return false;
+
+    // compute the checksum
+    char buf[80];
+    *sum = 0;
+    while (!file.eof())
+    {
+        file.read(buf, sizeof(buf));
+	*sum = BJHash::Hash((unsigned char *) buf, file.gcount(), *sum);
+    }
+
+    file.close();
+    return true;
+}
+
+// ****************************************************************************
+//  Function: CloseHeader
+//
+//  Purpose:  Close an open header file ensuring it is overwritten ONLY when
+//            it has in fact actually changed.
+//
+//  Arguments:
+//    file           the header file stream to close
+//    pre_name_withoutpath the (pre) of the file without pathname
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    April 9, 2008 
+//
+// ****************************************************************************
+
+void
+CloseHeader(ofstream &file, const QString &pre_name_withoutpath)
+{
+    // close the file
+    file.close();
+
+    QString pre_name;
+    if (outputtoinputdir)
+        pre_name = currentInputDir + pre_name_withoutpath;
+    else
+        pre_name = pre_name_withoutpath;
+
+    // create the real target file name
+    QString post_name = pre_name.right(pre_name.length() - preHeaderLeader.length());
+
+    unsigned int pre_cksum;
+    FileContentsChecksum(pre_name, &pre_cksum);
+    unsigned int post_cksum;
+    bool havePostFile = FileContentsChecksum(post_name, &post_cksum);
+
+    if (havePostFile)
+    {
+        if (post_cksum == pre_cksum)
+        {
+	    // Since the new header file is the same as the old, don't
+	    // touch the old and remove the new (pre) one.
+            unlink(pre_name.latin1());
+	    cout << "Note: Header file \"" << post_name << "\" did NOT change." << endl;
+        }
+        else
+        {
+	    // Since the new headeer file is different from the old,
+	    // remove the old one and rename the new one.
+            unlink(post_name.latin1());
+	    rename(pre_name.latin1(), post_name.latin1());
+	    cout << "Note: Header file \"" << post_name << "\" changed." << endl;
+        }
+    }
+    else
+    {
+	rename(pre_name.latin1(), post_name.latin1());
+    }
+}
+
 void ProcessFile(QString file);
 
 // ****************************************************************************
@@ -459,6 +557,8 @@ int main(int argc, char *argv[])
 //    for plugins.  The plugin->WriteHeader will turn off the flag then call
 //    the WriteHeader for the atts.
 //    
+//    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+//    Made it re-write header file only when header file has changed
 //
 // ****************************************************************************
 void
@@ -560,10 +660,10 @@ ProcessFile(QString file)
         {
             // atts writer mode
             ofstream h;
-            if (Open(h, attribute->name+".h"))
+            if (Open(h, "pre_"+attribute->name+".h"))
             {
                 attribute->WriteHeader(h);
-                h.close();
+		CloseHeader(h, "pre_"+attribute->name+".h");
             }
 
             ofstream c;
@@ -589,10 +689,10 @@ ProcessFile(QString file)
             }
 
             ofstream h;
-            if (Open(h, attribute->windowname+".h"))
+            if (Open(h, "pre_"+attribute->windowname+".h"))
             {
                 attribute->WriteHeader(h);
-                h.close();
+		CloseHeader(h, "pre_"+attribute->windowname+".h");
             }
 
             ofstream c;
@@ -801,7 +901,7 @@ ProcessFile(QString file)
             // scripting writer mode
             QString prefix("Py");
             ofstream h;
-            if (Open(h, prefix+attribute->name+".h"))
+            if (Open(h, "pre_"+prefix+attribute->name+".h"))
             {
                 if (docType == "Plugin")
                 {
@@ -811,7 +911,7 @@ ProcessFile(QString file)
                 {
                     attribute->WriteHeader(h);
                 }
-                h.close();
+		CloseHeader(h, "pre_"+prefix+attribute->name+".h");
             }
 
             ofstream s;

@@ -53,7 +53,6 @@
 #define __vtkLineoutFilter_h
 
 #include <vtkDataSetToPolyDataFilter.h>
-#include <vtkSetGet.h>
 #include <visit_vtk_exports.h>
 
 class vtkCellDataToPointData;

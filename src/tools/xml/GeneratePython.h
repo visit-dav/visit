@@ -1775,6 +1775,10 @@ class AttsGeneratorVariableName : public virtual VariableName , public virtual P
 //   Hank Childs, Wed Dec 14 10:42:09 PST 2005
 //   Added print statement so that users will be redirected to get/set methods.
 //
+//   Mark C. Miller, Mon Mar 31 13:59:27 PDT 2008
+//   Fixed typo where 'AttType' was used for some code generation in which
+//   'attType' should have been used.
+//
 // ----------------------------------------------------------------------------
 
 class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorField
@@ -1963,13 +1967,13 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "    PyObject *newValue = NULL;" << endl;
             c << "    if(!PyArg_ParseTuple(args, \"O\", &newValue))" << endl;
             c << "        return NULL;" << endl;
-            c << "    if(!Py" << AttType << "_Check(newValue))" << endl;
+            c << "    if(!Py" << attType << "_Check(newValue))" << endl;
             c << "    {" << endl;
-            c << "        fprintf(stderr, \"The " << name << " field can only be set with " << AttType << " objects.\\n\");" << endl;
+            c << "        fprintf(stderr, \"The " << name << " field can only be set with " << attType << " objects.\\n\");" << endl;
             c << "        return NULL;" << endl;
             c << "    }" << endl;
             c << endl;
-            c << "    obj->data->Set" << Name << "(*Py" << AttType << "_FromPyObject(newValue));" << endl;
+            c << "    obj->data->Set" << Name << "(*Py" << attType << "_FromPyObject(newValue));" << endl;
         }
     }
 

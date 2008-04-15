@@ -94,6 +94,7 @@ class EXPR_API ExprGrammar : public Grammar
     static Symbol T_Float;
     static Symbol T_String;
     static Symbol T_Bool;
+    static Symbol T_And;
 
     // ------------------------------------------------------------------------
     // NON-TERMINALS

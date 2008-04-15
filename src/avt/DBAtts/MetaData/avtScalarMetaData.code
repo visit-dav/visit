@@ -1,3 +1,11 @@
+Initialization: enumAlwaysExclude
+    enumAlwaysExclude[0] = +DBL_MAX;
+    enumAlwaysExclude[1] = -DBL_MAX;
+
+Initialization: enumAlwaysInclude
+    enumAlwaysInclude[0] = +DBL_MAX;
+    enumAlwaysInclude[1] = -DBL_MAX;
+
 Function: avtScalarMetaData2
 Declaration: avtScalarMetaData(std::string, std::string, avtCentering);
 Definition:
@@ -28,6 +36,10 @@ Definition:
 //    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
 //    Added enumerated scalars.
 //
+//    Mark C. Miller, Wed Mar 26 10:11:46 PDT 2008
+//    Added initialization for other enumerated scalar options
+//    and hideFromGUI.
+//
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn, 
@@ -46,7 +58,15 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
     validVariable  = true;
     treatAsASCII   = false;
     hasUnits       = false;
-    isEnumeration  = false;
+    enumerationType = None;
+    enumAlwaysInclude[0] = +DBL_MAX;
+    enumAlwaysInclude[1] = -DBL_MAX;
+    enumAlwaysExclude[0] = +DBL_MAX;
+    enumAlwaysExclude[1] = -DBL_MAX;
+    enumPartialCellMode = Exclude;
+    hideFromGUI = false;
+    enumNChooseRN = 0;
+    enumNChooseRMaxR = 0;
 }
 
 Function: avtScalarMetaData3
@@ -81,6 +101,10 @@ Definition:
 //    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
 //    Added enumerated scalars.
 //
+//    Mark C. Miller, Wed Mar 26 10:11:46 PDT 2008
+//    Added initialization for other enumerated scalar options
+//    and hideFromGUI.
+//
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
@@ -98,7 +122,15 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
     validVariable  = true;
     treatAsASCII   = false;
     hasUnits       = false;
-    isEnumeration  = false;
+    enumerationType = None;
+    enumAlwaysInclude[0] = +DBL_MAX;
+    enumAlwaysInclude[1] = -DBL_MAX;
+    enumAlwaysExclude[0] = +DBL_MAX;
+    enumAlwaysExclude[1] = -DBL_MAX;
+    enumPartialCellMode = Exclude;
+    hideFromGUI = false;
+    enumNChooseRN = 0;
+    enumNChooseRMaxR = 0;
 
     double  extents[2] = { min, max };
     SetExtents(extents);
@@ -254,7 +286,7 @@ avtScalarMetaData::Print(ostream &out, int indent) const
         out << "This variable should be treated as ASCII." << endl;
     }
 
-    if (isEnumeration)
+    if (enumerationType != None)
     {
         Indent(out, indent);
         out << "This variable contains enumerated values." << endl;
@@ -265,3 +297,310 @@ avtScalarMetaData::Print(ostream &out, int indent) const
         out << "This variable does not contain enumerated values." << endl;
     }
 }
+
+Function: AddEnumGraphEdge
+Declaration: void AddEnumGraphEdge(int head, int tail);
+Definition:
+void
+avtScalarMetaData::AddEnumGraphEdge(int head, int tail)
+{
+    enumGraphEdges.push_back(head);
+    enumGraphEdges.push_back(tail);
+}
+
+Function: AddEnumNameValue
+Declaration: int AddEnumNameValue(std::string name, double val);
+Definition:
+// ****************************************************************************
+//  Method: AddEnumNameValue
+//
+//  Purpose: Add name/value pair to an enumeration
+//
+//  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008
+// ****************************************************************************
+
+int
+avtScalarMetaData::AddEnumNameValue(std::string name, double val)
+{
+    enumNames.push_back(name);
+    enumRanges.push_back(val);
+    enumRanges.push_back(val);
+
+    return enumNames.size() - 1;
+}
+
+Function: AddEnumNameRange
+Declaration: int AddEnumNameRange(std::string name, double min, double max);
+Definition:
+// ****************************************************************************
+//  Method: AddEnumNameRange
+//
+//  Purpose: Add name/range pair to an enumeration
+//
+//  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008
+// ****************************************************************************
+
+int
+avtScalarMetaData::AddEnumNameRange(std::string name, double min, double max)
+{
+    if (min > max)
+    {
+        EXCEPTION1(ImproperUseException, name);
+    }
+
+    enumNames.push_back(name);
+    enumRanges.push_back(min);
+    enumRanges.push_back(max);
+
+    return enumNames.size() - 1;
+}
+
+Function: SetEnumAlwaysExcludeValue
+Declaration: void SetEnumAlwaysExcludeValue(double val);
+Definition:
+// ****************************************************************************
+//  Method: SetEnumAlwaysExcludeValue
+//
+//  Purpose: sets value to be used for always excluded in the selection
+//
+//  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008
+// ****************************************************************************
+
+void
+avtScalarMetaData::SetEnumAlwaysExcludeValue(double val)
+{
+    enumAlwaysExclude[0] = val;
+    enumAlwaysExclude[1] = val;
+}
+
+Function: SetEnumAlwaysExcludeRange
+Declaration: void SetEnumAlwaysExcludeRange(double min, double max);
+Definition:
+// ****************************************************************************
+//  Method: SetEnumAlwaysExcludeRange
+//
+//  Purpose: sets range to be used for always excluded in the selection
+//
+//  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008
+// ****************************************************************************
+
+void
+avtScalarMetaData::SetEnumAlwaysExcludeRange(double min, double max)
+{
+    enumAlwaysExclude[0] = min;
+    enumAlwaysExclude[1] = max;
+}
+
+Function: SetEnumAlwaysIncludeValue
+Declaration: void SetEnumAlwaysIncludeValue(double val);
+Definition:
+// ****************************************************************************
+//  Method: SetEnumAlwaysIncludeValue
+//
+//  Purpose: sets value to be used for always included in the selection
+//
+//  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008
+// ****************************************************************************
+
+void
+avtScalarMetaData::SetEnumAlwaysIncludeValue(double val)
+{
+    enumAlwaysInclude[0] = val;
+    enumAlwaysInclude[1] = val;
+}
+
+Function: SetEnumAlwaysIncludeRange
+Declaration: void SetEnumAlwaysIncludeRange(double min, double max);
+Definition:
+// ****************************************************************************
+//  Method: SetEnumAlwaysIncludeRange
+//
+//  Purpose: sets range to be used for always included in the selection
+//
+//  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008
+// ****************************************************************************
+
+void
+avtScalarMetaData::SetEnumAlwaysIncludeRange(double min, double max)
+{
+    enumAlwaysInclude[0] = min;
+    enumAlwaysInclude[1] = max;
+}
+
+Function: BuildEnumNChooseRMap
+Declaration: static void BuildEnumNChooseRMap(int n, int maxr, std::vector<std::vector<int> > &ptMap);
+Definition:
+// ****************************************************************************
+//  Method: BuildEnumNChooseRMap
+//
+//  Purpose: convenience method for caller to build a pascal's triangle map
+//  for given N/MaxR
+//
+//  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008
+// ****************************************************************************
+void
+avtScalarMetaData::BuildEnumNChooseRMap(int n, int maxr, std::vector<std::vector<int> > &ptMap)
+{
+    int row, col;
+
+    for (row = 0; row < ptMap.size(); row++)
+        ptMap[row].clear();
+    ptMap.clear();
+
+    for (row = 0; row < n; row++)
+    {
+        std::vector<int> tmpRow;
+        for (col = 0; col <= maxr; col++)
+            tmpRow.push_back(0);
+        ptMap.push_back(tmpRow);
+    }
+
+    for (row = 0; row < n; row++)
+        for (col = 0; col <= maxr; col++)
+            ptMap[row][col] = int(NChooseR(n-row-1,col));
+}
+
+Function: NChooseR
+Declaration: static double NChooseR(int n, int r);
+Definition:
+// ****************************************************************************
+//  Function: Bi-nomial coefficient (n-choose-r)
+//
+//  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008
+// ****************************************************************************
+double NChooseR(int n, int r)
+{
+    if (n == 0)
+    {
+        if (r == 0)
+            return 1;
+        else
+            return 0;
+    }
+    double result = 1;
+    int k = 1;
+    for (int i = r+1; i <=n; i++)
+    {
+        result *= (double) i;
+        if (k <= n-r)
+        {
+            result /= (double) k;
+            k++;
+        }
+    }
+    return result;
+}
+
+Function: ComboValFromDigits
+Declaration: static void ComboValFromDigits(const std::vector<std::vector<int> > &ptMap, const std::list<int> &digits, double *id);
+Definition:
+// ****************************************************************************
+//  Function: ComboValFromDigits
+//
+//  Purpose: Internal function to compute NChooseR value from list of 
+//  ids (digits representing enum set membership)
+//
+//  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008
+// ****************************************************************************
+
+void
+ComboValFromDigits(const std::vector<std::vector<int> > &ptMap,
+    const std::list<int> &digits, double *id)
+{
+    int row, col;
+    *id = 0.0;
+    std::list<int>::const_reverse_iterator it;
+    for (col = digits.size()-1, it = digits.rbegin(); col >= 0; col--, it++)
+    {
+        for (row = 0; row <= *it; row++)
+            *id += ptMap[row][col];
+    }
+    *id -= 1;
+}
+
+Function: ComboDigitsFromVal
+Declaration: static void ComboDigitsFromVal(double id, int n, int maxr, const std::vector<std::vector<int> > &ptMap, std::list<int> &digits);
+Definition:
+// ****************************************************************************
+//  Function: ComboDigitsFromVal
+//
+//  Purpose: Internal function to compute list of ids (digits representing enum
+//  set membership) to single numerical value.
+//
+//  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008
+// ****************************************************************************
+
+void
+ComboDigitsFromVal(double id, int n, int maxr,
+    const std::vector<std::vector<int> > &ptMap, std::list<int> &digits)
+{
+    int row, col, grp;
+
+    for (grp = 1; grp <= maxr; grp++)
+    {
+        double grpc = NChooseR(n,grp);
+        if (id < grpc)
+            break;
+        else
+            id -= grpc;
+    }
+    if (grp == maxr+1)
+        return;
+
+    int rowmin = 0;
+    for (col = grp-1; col >= 0; col--)
+    {
+        for (row = rowmin; row < n; row++)
+        {
+            int seglen = ptMap[row][col];
+            if (id < seglen)
+            {
+                rowmin = row+1;
+                digits.push_front(row);
+                break;
+            }
+            id -= seglen;
+        }
+    }
+}
+
+Function: UpdateValByInsertingDigit
+Declaration: static void UpdateValByInsertingDigit(double *id, int n, int maxr, const std::vector<std::vector<int> > &ptMap, int newDigit);
+Definition:
+// ****************************************************************************
+//  Method: UpdateValByInsertingDigit
+//
+//  Purpose: convenience method for callers to, given a current numerical value
+//  reprsenting a list of set ids, compute a new numerical value by adding the
+//  new set id.
+//
+//  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008
+// ****************************************************************************
+
+void avtScalarMetaData::UpdateValByInsertingDigit(double *id, int n, int maxr,
+const std::vector<std::vector<int> > &ptMap, int newDigit)
+{
+    std::list<int> currentDigits;
+    ComboDigitsFromVal(*id, n, maxr, ptMap, currentDigits);
+
+    std::list<int>::iterator it = currentDigits.begin();
+    while (it != currentDigits.end() && *it < newDigit)
+        it++;
+
+    if (it == currentDigits.end())
+    {
+        currentDigits.push_front(newDigit);
+        ComboValFromDigits(ptMap, currentDigits, id);
+    }
+    else
+    {
+	// only update if we actually adding a new digit
+	if (newDigit < *it)
+	{
+	    it++;
+            currentDigits.insert(it, newDigit);
+            ComboValFromDigits(ptMap, currentDigits, id);
+        }
+    }
+}
+

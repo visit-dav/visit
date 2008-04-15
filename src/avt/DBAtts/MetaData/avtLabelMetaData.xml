@@ -14,6 +14,9 @@
     <Field name="centering" label="Variable centering" type="avtCentering" access="public">
       AVT_UNKNOWN_CENT
     </Field>
+    <Field name="hideFromGUI" label="hideFromGUI" type="bool" access="public">
+      false
+    </Field>
     <Function name="avtLabelMetaData2" user="true" member="true">
     </Function>
     <Function name="Print" user="true" member="true">

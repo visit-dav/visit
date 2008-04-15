@@ -43,7 +43,6 @@ avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
     varDim         = vd;
 }
 
-
 Function: avtVectorMetaData3
 Declaration: avtVectorMetaData(std::string, std::string, avtCentering, int, const double *);
 Definition:
@@ -88,7 +87,6 @@ avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
     varDim         = vd;
     SetExtents(extents);
 }
-
 
 Function: SetExtents
 Declaration: void SetExtents(const double *);

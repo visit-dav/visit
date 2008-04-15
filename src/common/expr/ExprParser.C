@@ -145,6 +145,10 @@ ExprParser::ExprParser(ExprNodeFactory *f) : Parser(), factory(f)
 //    I made the symbols be static in the ExprGrammar class so there are no
 //    conflicts with Python 2.5.
 //
+//    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+//    Changed C-stype commented-out code block for case 14 to conditionally
+//    compiled code block.
+//
 // ****************************************************************************
 ParseTreeNode*
 ExprParser::ApplyRule(const Symbol           &sym,
@@ -230,15 +234,22 @@ ExprParser::ApplyRule(const Symbol           &sym,
         case 13:
             node = E[0];
             break;
-        /* The next rule (for Expr => List) is commented out
-           because we cannot implement it right now.  If we
-           uncomment this expansion, we should remove Arg => List
-           because we could simply Arg => Expr => List.  This
-           will probably fail with a RR conflict anyway....
+#if 0
+           // The next rule (for Expr => List) is compiled out
+           // because we cannot implement it right now.  If we
+           // compile-in this expansion, we should remove Arg => List
+           // because we could simply Arg => Expr => List.  This
+           // will probably fail with a RR conflict anyway....
         case 14:
             node = E[0];
             break;
-            */
+#endif
+        case 15:
+            node = factory->CreateBinaryExpr(p,
+                                             ((Character*)T[1])->GetVal(),
+                                             (ExprNode*)(E[0]),
+                                             (ExprNode*)(E[2]));
+            break;
         }
     } else if (sym == ExprGrammar::Constant)
     {

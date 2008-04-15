@@ -134,6 +134,8 @@ avtOUTCARFileFormat::OpenFileAtBeginning()
 //    Jeremy Meredith, Tue Feb 12 14:09:24 EST 2008
 //    Support element types as an enumerated scalar.
 //
+//    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+//    Changed interface to enum scalars
 // ****************************************************************************
 
 void
@@ -162,12 +164,9 @@ avtOUTCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
 
     avtScalarMetaData *el_smd =
         new avtScalarMetaData("element", "mesh", AVT_NODECENT);
-    el_smd->isEnumeration = true;
+    el_smd->SetEnumerationType(avtScalarMetaData::ByValue);
     for (int i=0; i<element_types.size(); i++)
-    {
-        el_smd->enumNames.push_back(element_names[i]);
-        el_smd->enumValues.push_back(element_types[i]);
-    }
+        el_smd->AddEnumNameValue(element_names[i], element_types[i]);
     md->Add(el_smd);
 
     if (ntimesteps != 0)
