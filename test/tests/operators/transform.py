@@ -31,6 +31,9 @@
 #    Kathleen Bonnell,  Fri Mar 28 15:24:18 PDT 2008
 #    Added test for curve transformation.  ['8277]
 #
+#    Jeremy Meredith
+#    Added test for linear transforms.
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -164,5 +167,36 @@ trans.scaleY = -3
 SetOperatorOptions(trans)
 DrawPlots()
 Test("ops_transform08")
+
+# Test linear transform
+DeleteAllPlots()
+OpenDatabase("../data/globe.silo")
+AddPlot("Pseudocolor", "u")
+AddOperator("Transform")
+
+trans.transformType = trans.Linear
+trans.m00 = .8
+trans.m01 = .3
+trans.m02 = 0
+
+trans.m10 = 0
+trans.m11 = 1
+trans.m12 = 0
+
+trans.m20 = .5
+trans.m21 = .5
+trans.m22 = 1
+
+trans.invertLinearTransform = 0
+
+SetOperatorOptions(trans)
+DrawPlots()
+ResetView()
+
+Test("ops_transform09")
+
+trans.invertLinearTransform = 1
+SetOperatorOptions(trans)
+Test("ops_transform10")
 
 Exit()
