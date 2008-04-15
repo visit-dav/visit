@@ -2998,6 +2998,9 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 //    Make sure that SelectAll is called on the metadata so the atts and 
 //    attVectors that it contains will figure into the message size.
 //
+//    Mark C. Miller, Tue Apr 15 10:24:59 PDT 2008
+//    Added missing call to broadcast the code name guess
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
@@ -3043,6 +3046,7 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
     BroadcastStringVectorVector(allSubMeshDirs, rank);
     BroadcastStringVector(actualMeshName, rank);
     BroadcastIntVector(blocksForMesh, rank);
+    BroadcastString(codeNameGuess, rank);
     
     //
     // Broadcast Group Info
