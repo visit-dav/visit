@@ -1256,6 +1256,8 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
 //    Added code to limit the number of meshes that receive mesh quality
 //    expressions to 10.
 //
+//    Mark C. Miller, Tue Apr 15 15:12:26 PDT 2008
+//    Eliminated database objects for which hideFromGUI is true
 // ****************************************************************************
 
 void
@@ -1285,6 +1287,9 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
         int topoDim = mmd->topologicalDimension;
         if (topoDim == 0 || topoDim == 1)
             continue;
+
+	if (mmd->hideFromGUI)
+	    continue;
 
         const int nPairs = 24;
         MQExprTopoPair exprs[nPairs];
@@ -1358,6 +1363,8 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
 //    Mark C. Miller, Tue Jul 17 11:06:37 PDT 2007
 //    Made expressions divided by time difference (instead of assuming unity).
 //
+//    Mark C. Miller, Tue Apr 15 15:12:26 PDT 2008
+//    Eliminated database objects for which hideFromGUI is true
 // ****************************************************************************
 
 void
@@ -1472,7 +1479,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
          for (j = 0 ; j < numScalars ; j++)
          {
              const avtScalarMetaData *smd = md->GetScalar(j);
-             if (smd->meshName == mmd->name)
+             if (smd->meshName == mmd->name && !smd->hideFromGUI)
              {
                  if (doConn)
                  {
@@ -1506,7 +1513,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                      char buff[1024];
                      SNPRINTF(buff, 1024, "%s - pos_cmfe(<[-1]id:%s>, %s, 0.) / (<%s> - <%s>)",
                                 smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
-                time_expr_name.c_str(), last_time_expr_name.c_str());
+                          time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
                      new_expr.SetType(Expression::ScalarMeshVar);
                      new_expr.SetAutoExpression(true);
@@ -1519,7 +1526,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
          for (j = 0 ; j < numVectors ; j++)
          {
              const avtVectorMetaData *smd = md->GetVector(j);
-             if (smd->meshName == mmd->name)
+             if (smd->meshName == mmd->name && !smd->hideFromGUI)
              {
                  if (doConn)
                  {
@@ -1534,7 +1541,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                      char buff[1024];
                      SNPRINTF(buff, 1024, "%s - conn_cmfe(<[-1]id:%s>, %s) / (<%s> - <%s>)",
                                 smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
-                time_expr_name.c_str(), last_time_expr_name.c_str());
+                         time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
                      new_expr.SetType(Expression::VectorMeshVar);
                      new_expr.SetAutoExpression(true);
@@ -1553,7 +1560,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                      char buff[1024];
                      SNPRINTF(buff, 1024, "%s - pos_cmfe(<[-1]id:%s>, %s, 0.) / (<%s> - <%s>)",
                                 smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
-                time_expr_name.c_str(), last_time_expr_name.c_str());
+                         time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
                      new_expr.SetType(Expression::VectorMeshVar);
                      new_expr.SetAutoExpression(true);
@@ -1579,6 +1586,8 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
 //    Enclosed variable name with < & > in the expression defintion to fix 
 //    problems with strange variable names.
 // 
+//    Mark C. Miller, Tue Apr 15 15:12:26 PDT 2008
+//    Eliminated database objects for which hideFromGUI is true
 // ****************************************************************************
 
 void
@@ -1589,6 +1598,9 @@ avtDatabase::AddVectorMagnitudeExpressions(avtDatabaseMetaData *md)
     int nvectors = md->GetNumVectors();
     for( int i=0; i < nvectors; i++)
     {
+	if (md->GetVectors(i).hideFromGUI)
+	    continue;
+
         const char *vec_name = md->GetVectors(i).name.c_str();
         Expression new_expr;
         SNPRINTF(buff,1024, "%s_magnitude", vec_name);
