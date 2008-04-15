@@ -65,6 +65,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
 
     public final static int TRANSFORMTYPE_SIMILARITY = 0;
     public final static int TRANSFORMTYPE_COORDINATE = 1;
+    public final static int TRANSFORMTYPE_LINEAR = 2;
 
     public final static int COORDINATESYSTEM_CARTESIAN = 0;
     public final static int COORDINATESYSTEM_CYLINDRICAL = 1;
@@ -73,7 +74,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
 
     public TransformAttributes()
     {
-        super(17);
+        super(27);
 
         doRotate = false;
         rotateOrigin = new float[3];
@@ -101,11 +102,21 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         transformType = TRANSFORMTYPE_SIMILARITY;
         inputCoordSys = COORDINATESYSTEM_CARTESIAN;
         outputCoordSys = COORDINATESYSTEM_SPHERICAL;
+        m00 = 1;
+        m01 = 0;
+        m02 = 0;
+        m10 = 0;
+        m11 = 1;
+        m12 = 0;
+        m20 = 0;
+        m21 = 0;
+        m22 = 1;
+        invertLinearTransform = false;
     }
 
     public TransformAttributes(TransformAttributes obj)
     {
-        super(17);
+        super(27);
 
         int i;
 
@@ -138,6 +149,16 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         transformType = obj.transformType;
         inputCoordSys = obj.inputCoordSys;
         outputCoordSys = obj.outputCoordSys;
+        m00 = obj.m00;
+        m01 = obj.m01;
+        m02 = obj.m02;
+        m10 = obj.m10;
+        m11 = obj.m11;
+        m12 = obj.m12;
+        m20 = obj.m20;
+        m21 = obj.m21;
+        m22 = obj.m22;
+        invertLinearTransform = obj.invertLinearTransform;
 
         SelectAll();
     }
@@ -178,7 +199,17 @@ public class TransformAttributes extends AttributeSubject implements Plugin
                 (translateZ == obj.translateZ) &&
                 (transformType == obj.transformType) &&
                 (inputCoordSys == obj.inputCoordSys) &&
-                (outputCoordSys == obj.outputCoordSys));
+                (outputCoordSys == obj.outputCoordSys) &&
+                (m00 == obj.m00) &&
+                (m01 == obj.m01) &&
+                (m02 == obj.m02) &&
+                (m10 == obj.m10) &&
+                (m11 == obj.m11) &&
+                (m12 == obj.m12) &&
+                (m20 == obj.m20) &&
+                (m21 == obj.m21) &&
+                (m22 == obj.m22) &&
+                (invertLinearTransform == obj.invertLinearTransform));
     }
 
     public String GetName() { return "Transform"; }
@@ -317,6 +348,66 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         Select(16);
     }
 
+    public void SetM00(double m00_)
+    {
+        m00 = m00_;
+        Select(17);
+    }
+
+    public void SetM01(double m01_)
+    {
+        m01 = m01_;
+        Select(18);
+    }
+
+    public void SetM02(double m02_)
+    {
+        m02 = m02_;
+        Select(19);
+    }
+
+    public void SetM10(double m10_)
+    {
+        m10 = m10_;
+        Select(20);
+    }
+
+    public void SetM11(double m11_)
+    {
+        m11 = m11_;
+        Select(21);
+    }
+
+    public void SetM12(double m12_)
+    {
+        m12 = m12_;
+        Select(22);
+    }
+
+    public void SetM20(double m20_)
+    {
+        m20 = m20_;
+        Select(23);
+    }
+
+    public void SetM21(double m21_)
+    {
+        m21 = m21_;
+        Select(24);
+    }
+
+    public void SetM22(double m22_)
+    {
+        m22 = m22_;
+        Select(25);
+    }
+
+    public void SetInvertLinearTransform(boolean invertLinearTransform_)
+    {
+        invertLinearTransform = invertLinearTransform_;
+        Select(26);
+    }
+
     // Property getting methods
     public boolean GetDoRotate() { return doRotate; }
     public float[] GetRotateOrigin() { return rotateOrigin; }
@@ -335,6 +426,16 @@ public class TransformAttributes extends AttributeSubject implements Plugin
     public int     GetTransformType() { return transformType; }
     public int     GetInputCoordSys() { return inputCoordSys; }
     public int     GetOutputCoordSys() { return outputCoordSys; }
+    public double  GetM00() { return m00; }
+    public double  GetM01() { return m01; }
+    public double  GetM02() { return m02; }
+    public double  GetM10() { return m10; }
+    public double  GetM11() { return m11; }
+    public double  GetM12() { return m12; }
+    public double  GetM20() { return m20; }
+    public double  GetM21() { return m21; }
+    public double  GetM22() { return m22; }
+    public boolean GetInvertLinearTransform() { return invertLinearTransform; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -373,6 +474,26 @@ public class TransformAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(inputCoordSys);
         if(WriteSelect(16, buf))
             buf.WriteInt(outputCoordSys);
+        if(WriteSelect(17, buf))
+            buf.WriteDouble(m00);
+        if(WriteSelect(18, buf))
+            buf.WriteDouble(m01);
+        if(WriteSelect(19, buf))
+            buf.WriteDouble(m02);
+        if(WriteSelect(20, buf))
+            buf.WriteDouble(m10);
+        if(WriteSelect(21, buf))
+            buf.WriteDouble(m11);
+        if(WriteSelect(22, buf))
+            buf.WriteDouble(m12);
+        if(WriteSelect(23, buf))
+            buf.WriteDouble(m20);
+        if(WriteSelect(24, buf))
+            buf.WriteDouble(m21);
+        if(WriteSelect(25, buf))
+            buf.WriteDouble(m22);
+        if(WriteSelect(26, buf))
+            buf.WriteBool(invertLinearTransform);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -433,6 +554,36 @@ public class TransformAttributes extends AttributeSubject implements Plugin
             case 16:
                 SetOutputCoordSys(buf.ReadInt());
                 break;
+            case 17:
+                SetM00(buf.ReadDouble());
+                break;
+            case 18:
+                SetM01(buf.ReadDouble());
+                break;
+            case 19:
+                SetM02(buf.ReadDouble());
+                break;
+            case 20:
+                SetM10(buf.ReadDouble());
+                break;
+            case 21:
+                SetM11(buf.ReadDouble());
+                break;
+            case 22:
+                SetM12(buf.ReadDouble());
+                break;
+            case 23:
+                SetM20(buf.ReadDouble());
+                break;
+            case 24:
+                SetM21(buf.ReadDouble());
+                break;
+            case 25:
+                SetM22(buf.ReadDouble());
+                break;
+            case 26:
+                SetInvertLinearTransform(buf.ReadBool());
+                break;
             }
         }
     }
@@ -464,6 +615,8 @@ public class TransformAttributes extends AttributeSubject implements Plugin
             str = str + "TRANSFORMTYPE_SIMILARITY";
         if(transformType == TRANSFORMTYPE_COORDINATE)
             str = str + "TRANSFORMTYPE_COORDINATE";
+        if(transformType == TRANSFORMTYPE_LINEAR)
+            str = str + "TRANSFORMTYPE_LINEAR";
         str = str + "\n";
         str = str + indent + "inputCoordSys = ";
         if(inputCoordSys == COORDINATESYSTEM_CARTESIAN)
@@ -481,6 +634,16 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         if(outputCoordSys == COORDINATESYSTEM_SPHERICAL)
             str = str + "COORDINATESYSTEM_SPHERICAL";
         str = str + "\n";
+        str = str + doubleToString("m00", m00, indent) + "\n";
+        str = str + doubleToString("m01", m01, indent) + "\n";
+        str = str + doubleToString("m02", m02, indent) + "\n";
+        str = str + doubleToString("m10", m10, indent) + "\n";
+        str = str + doubleToString("m11", m11, indent) + "\n";
+        str = str + doubleToString("m12", m12, indent) + "\n";
+        str = str + doubleToString("m20", m20, indent) + "\n";
+        str = str + doubleToString("m21", m21, indent) + "\n";
+        str = str + doubleToString("m22", m22, indent) + "\n";
+        str = str + boolToString("invertLinearTransform", invertLinearTransform, indent) + "\n";
         return str;
     }
 
@@ -503,5 +666,15 @@ public class TransformAttributes extends AttributeSubject implements Plugin
     private int     transformType;
     private int     inputCoordSys;
     private int     outputCoordSys;
+    private double  m00;
+    private double  m01;
+    private double  m02;
+    private double  m10;
+    private double  m11;
+    private double  m12;
+    private double  m20;
+    private double  m21;
+    private double  m22;
+    private boolean invertLinearTransform;
 }
 
