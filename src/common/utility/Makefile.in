@@ -74,6 +74,9 @@
 #    Jeremy Meredith, Tue Oct  9 14:08:56 EDT 2007
 #    Added dependency on the library for the test programs.
 #
+#    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+#    Made BJHash fully inlined
+#
 ##############################################################################
 
 ##
@@ -88,7 +91,7 @@ LIBS=
 ##
 ## Files...
 ##
-SRC=AtomicProperties.C BJHash.C NamingConvention.C StringHelpers.C Utility.C\
+SRC=AtomicProperties.C NamingConvention.C StringHelpers.C Utility.C\
     void_ref_ptr.C
 HDR=AtomicProperties.h BJHash.h NamingConvention.h StringHelpers.h Utility.h\
     ref_ptr.h array_ref_ptr.h void_ref_ptr.h

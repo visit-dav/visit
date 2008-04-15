@@ -42,6 +42,7 @@
 
 #include <avtUnaryMinusExpression.h>
 #include <avtBinaryAddExpression.h>
+#include <avtBinaryAndExpression.h>
 #include <avtBinarySubtractExpression.h>
 #include <avtBinaryMultiplyExpression.h>
 #include <avtBinaryDivideExpression.h>
@@ -320,6 +321,8 @@ avtBinaryExpr::CreateFilters(ExprPipelineState *state)
         f = new avtBinaryDivideExpression();
     else if (op == '^')
         f = new avtBinaryPowerExpression();
+    else if (op == '&')
+        f = new avtBinaryAndExpression();
     else
     {
         string error =

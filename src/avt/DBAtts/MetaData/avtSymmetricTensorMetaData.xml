@@ -22,6 +22,9 @@
     <Field name="dim" label="Dimensions" type="int" access="public">
       0
     </Field>
+    <Field name="hideFromGUI" label="hideFromGUI" type="bool" access="public">
+      false
+    </Field>
     <Function name="avtSymmetricTensorMetaData2" user="true" member="true">
     </Function>
     <Function name="Print" user="true" member="true">

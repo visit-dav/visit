@@ -190,6 +190,7 @@ const char *expr_math[] = {
     "*",
     "/",
     "^",
+    "&",
     NULL
 };
 
@@ -444,6 +445,8 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 //    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //    Support for internationalization.
 //
+//    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+//    Added '&' bitwise binary and operation
 // ****************************************************************************
 
 void
@@ -536,7 +539,10 @@ QvisExpressionsWindow::CreateWindowContents()
         QPopupMenu *tmpMenu = new QPopupMenu(f2, exprlist[i].name.ascii());
         for (int j=0; exprlist[i].list[j]; j++)
         {
-            tmpMenu->insertItem(exprlist[i].list[j]);
+	    if (exprlist[i].list[j]=="&")
+                tmpMenu->insertItem("&&");
+	    else
+                tmpMenu->insertItem(exprlist[i].list[j]);
         }
         insertFunctionMenu->insertItem(exprlist[i].name, tmpMenu);
         connect(tmpMenu, SIGNAL(activated(int)),
@@ -1097,6 +1103,8 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Jeremy Meredith, Wed Feb 20 10:01:59 EST 2008
 //    Added cell_constant and point_constant.
 //
+//    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+//    Added support for '&' bitwise binary and operation
 // ****************************************************************************
 
 void
@@ -1105,9 +1113,18 @@ QvisExpressionsWindow::insertFunction(int id)
     if (!definitionEdit->isEnabled())
         return;
 
-    definitionEdit->insert(insertFunctionMenu->text(id));
-
     bool doParens = (insertFunctionMenu->text(id).length() >= 2);
+
+    if (insertFunctionMenu->text(id) == "&&")
+    {
+        definitionEdit->insert("&");
+	doParens = false;
+    }
+    else
+    {
+        definitionEdit->insert(insertFunctionMenu->text(id));
+    }
+
     std::string str = insertFunctionMenu->text(id).latin1();
     if (str == "conn_cmfe")
     {

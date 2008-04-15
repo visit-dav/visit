@@ -47,7 +47,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <visit_vtk_exports.h>
 
 #include "vtkDataSetToDataSetFilter.h"
-#include <vtkSetGet.h>
 
 
 //  Modifications: 

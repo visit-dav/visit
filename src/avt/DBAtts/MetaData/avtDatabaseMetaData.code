@@ -2300,6 +2300,9 @@ Definition:
 //    Jeremy Meredith, Wed Aug 23 18:23:16 EDT 2006
 //    Find enumerated scalar type subsets.
 //
+//    Mark C. Miller, Mon Apr 14 15:17:17 PDT 2008
+//    Changed interface to enum scalar
+//
 // ****************************************************************************
 
 avtSubsetType
@@ -2359,7 +2362,7 @@ avtDatabaseMetaData::DetermineSubsetType(const std::string &inVar) const
     // Check enumerated scalars next
     //
     const avtScalarMetaData *smd = GetScalar(category);
-    if (smd != NULL && smd->isEnumeration)
+    if (smd != NULL && smd->GetEnumerationType() != avtScalarMetaData::None)
         return AVT_ENUMSCALAR_SUBSET;
 
     //

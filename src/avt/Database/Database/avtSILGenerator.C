@@ -91,14 +91,17 @@ static SILCategoryRole CategoryFromCollectionClassName(string classStr);
 //    Hank Childs, Wed Dec 19 08:39:46 PST 2007
 //    Add timing information.
 //
-//     Dave Bremer, Tue Apr  1 16:43:16 PDT 2008
-//     Passed in a flag to AddSubsets to control the use of SIL Arrays.
-//     They don't perform well when used with a SIL that has many
-//     collections, because when the avtSILSet is created on demand,
-//     the SIL's collections need to be examined to see if they contain
-//     the set, so maps out can be added to the set.  I disabled their 
-//     use if the mesh has any groups, although it might be optimal to
-//     allow them for small numbers of groups.
+//    Dave Bremer, Tue Apr  1 16:43:16 PDT 2008
+//    Passed in a flag to AddSubsets to control the use of SIL Arrays.
+//    They don't perform well when used with a SIL that has many
+//    collections, because when the avtSILSet is created on demand,
+//    the SIL's collections need to be examined to see if they contain
+//    the set, so maps out can be added to the set.  I disabled their 
+//    use if the mesh has any groups, although it might be optimal to
+//    allow them for small numbers of groups.
+//
+//    Mark C. Miller, Mon Apr 14 15:28:11 PDT 2008
+//    Changed interface to enumerated scalar
 // ****************************************************************************
 
 void
@@ -152,7 +155,7 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
             }
         }
         domainListList.push_back(domainList);
- 
+
         //
         // Add material related sets if they exist
         //
@@ -190,7 +193,7 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
         for (int j=0; j<md->GetNumScalars(); j++)
         {
             const avtScalarMetaData *smd = md->GetScalar(j);
-            if (smd->isEnumeration &&
+            if (smd->GetEnumerationType() != avtScalarMetaData::None &&
                 smd->meshName == mesh->name)
             {
                 AddEnumScalars(sil, topIndex, smd);
@@ -699,6 +702,82 @@ avtSILGenerator::AddMaterialSubsets(avtSIL *sil, const vector<int> &domList,
 
 
 // ****************************************************************************
+//  Method:  avtSILGenerator::AddEnumScalarSubgraph
+//
+//  Purpose: Add SIL collection structure representing the graph of an
+//  enumerated scalar.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    March 26, 2008
+//
+// ****************************************************************************
+
+static void
+AddEnumScalarSubgraph(avtSIL *sil,
+    int silTop, int enumTop, const string enumTopName,
+    const vector<int> &graphEdges, const vector<int> &setIDs)
+{
+    int i;
+    vector<int> childSetIDs;
+    vector<int> childEnumIDs;
+
+    //
+    // Find all the child sets of the given subgraphTop set.
+    //
+    if (enumTop == -1)
+    {
+        //
+        // First, find all the top-level enum sets (those that do NOT appear as the
+        // 'tail' of an edge). All tails are at the 'odd' indices in the edge list.
+        //
+        vector<bool> isTopEnum(setIDs.size(), true);
+        for (i = 1; i < graphEdges.size(); i+=2)
+            isTopEnum[graphEdges[i]] = false;
+
+        for (i = 0; i < setIDs.size(); i++)
+        {
+            if (isTopEnum[i])
+	    {
+	        childSetIDs.push_back(setIDs[i]);
+		childEnumIDs.push_back(i);
+	    }
+        }
+    }
+    else
+    {
+        for (i = 0; i < graphEdges.size(); i+=2)
+	{
+	    if (graphEdges[i] == enumTop)
+	    {
+                childSetIDs.push_back(setIDs[graphEdges[i+1]]);
+                childEnumIDs.push_back(graphEdges[i+1]);
+	    }
+        }
+    }
+
+    //
+    // Add this collection of children to the SIL 
+    //
+    if (childSetIDs.size() > 0)
+    {
+        avtSILEnumeratedNamespace *ns = new avtSILEnumeratedNamespace(childSetIDs);
+        avtSILCollection_p coll = new avtSILCollection(enumTopName, SIL_ENUMERATION,
+                                                       silTop, ns);
+        sil->AddCollection(coll);
+
+        //
+        // Recruse on the children
+	//
+        for (i = 0; i < childSetIDs.size(); i++)
+	{
+	    const string name = sil->GetSILSet(childSetIDs[i])->GetName();
+            AddEnumScalarSubgraph(sil, childSetIDs[i], childEnumIDs[i], name, graphEdges, setIDs);
+        }
+    }
+}
+
+
+// ****************************************************************************
 //  Method:  avtSILGenerator::AddEnumScalars
 //
 //  Purpose:
@@ -712,12 +791,17 @@ avtSILGenerator::AddMaterialSubsets(avtSIL *sil, const vector<int> &domList,
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 28, 2006
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Mar 26 16:23:27 PDT 2008
+//    Added support for enumerated scalars w/graphs
+//
 // ****************************************************************************
 void
 avtSILGenerator::AddEnumScalars(avtSIL *sil, int top,
                                 const avtScalarMetaData *smd)
 {
-    int nEnums = smd->enumValues.size();
+    int nEnums = smd->enumNames.size();
     vector<int> enumList;
     for (int k=0; k<nEnums; k++)
     {
@@ -727,10 +811,18 @@ avtSILGenerator::AddEnumScalars(avtSIL *sil, int top,
         int dIndex = sil->AddSubset(set);
         enumList.push_back(dIndex);
     }
-    avtSILEnumeratedNamespace *ns = new avtSILEnumeratedNamespace(enumList);
-    avtSILCollection_p coll = new avtSILCollection(smd->name, SIL_ENUMERATION,
-                                                   top, ns);
-    sil->AddCollection(coll);
+
+    if (smd->enumGraphEdges.size() > 0)
+    {
+        AddEnumScalarSubgraph(sil, top, -1, smd->name, smd->enumGraphEdges, enumList);
+    }
+    else
+    {
+        avtSILEnumeratedNamespace *ns = new avtSILEnumeratedNamespace(enumList);
+        avtSILCollection_p coll = new avtSILCollection(smd->name, SIL_ENUMERATION,
+                                                       top, ns);
+        sil->AddCollection(coll);
+    }
 }
 
 

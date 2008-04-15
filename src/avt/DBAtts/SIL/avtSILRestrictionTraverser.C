@@ -178,12 +178,103 @@ avtSILRestrictionTraverser::GetEnumerationCount()
     return count;
 }
 
+// ****************************************************************************
+//  Method:  avtSILRestrictionTraverser::GetEnumerationMinMaxSetIds
+//
+//  Purpose: Get the range of set ids of an enumeration w/graph (recursive)
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    March 26, 2008 
+//
+// ****************************************************************************
+
+void
+avtSILRestrictionTraverser::GetEnumerationMinMaxSetIds(int parentId, int *minId, int *maxId)
+{
+    if (parentId < *minId)
+        *minId = parentId;
+    if (parentId > *maxId)
+        *maxId = parentId;
+
+    avtSILSet_p set = silr->GetSILSet(parentId);
+    const vector<int> &mapsOut = set->GetMapsOut();
+
+    if (mapsOut.size() == 0)
+	return;
+
+    for (int i = 0 ; i < mapsOut.size() ; i++)
+    {
+        avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
+        if (coll->GetRole() == SIL_ENUMERATION)
+        {
+            const vector<int> &setList = coll->GetSubsetList();
+            for (int j = 0 ; j < setList.size() ; j++)
+	        GetEnumerationMinMaxSetIds(setList[j], minId, maxId);
+        }
+    }
+}
 
 // ****************************************************************************
-//  Method:  avtSILRestrictionTraverser::GetEnumerationCount
+//  Method:  avtSILRestrictionTraverser::GetEnumerationFromGraph
 //
-//  Purpose:
-//    Count the number of collections that are enumerated scalars.
+//  Purpose: Returns a bool-vector for which sets in an enumeration w/graph
+//  are off.
+//
+//  Arguments:
+//    matchedMapIndex    The index of the matching out-map from top set
+//                       (found in GetEnumeration)
+//    enumList   output: boolean vector for each set's enabled state
+//    name       output: name of the collection (should match scalar var)
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    March 26, 2008 
+//
+// ****************************************************************************
+
+bool
+avtSILRestrictionTraverser::GetEnumerationFromGraph(int matchedMapIndex,
+                                           vector<bool> &enumList,
+                                           string &name)
+{
+    int  j;
+    enumList.clear();
+    avtSILSet_p set = silr->GetSILSet(silr->topSet);
+    const vector<int> &mapsOut = set->GetMapsOut();
+
+    //
+    // This algorithm assumes all the sets for an enumeration were added
+    // to the SIL in sequence, one after the other. The SILGenerator class
+    // guarentees this.
+    //
+    int minSetId =  INT_MAX;
+    int maxSetId = -INT_MAX;
+    avtSILCollection_p coll = silr->GetSILCollection(mapsOut[matchedMapIndex]);
+    const vector<int> &setList = coll->GetSubsetList();
+    for (j = 0 ; j < setList.size() ; j++)
+        GetEnumerationMinMaxSetIds(setList[j], &minSetId, &maxSetId);
+    int numSets = maxSetId - minSetId + 1;
+
+    name = coll->GetCategory();
+    enumList.clear();
+    enumList.resize(numSets);
+
+    const vector<unsigned char> &useSet = silr->useSet;
+    bool  foundOneOff = false;
+    for (j = 0; j < numSets; j++)
+    {
+        bool val = (useSet[minSetId+j] != NoneUsed ? true : false);
+        enumList[j] = val;
+        if (!val)
+            foundOneOff = true;
+    }
+
+    return foundOneOff;
+}
+
+// ****************************************************************************
+//  Method:  avtSILRestrictionTraverser::GetEnumeration
+//
+//  Purpose: Returns bool-vector for which sets in an enumeration are off.
 //
 //  Arguments:
 //    index      0 <= index < GetEnumerationCount()
@@ -192,6 +283,10 @@ avtSILRestrictionTraverser::GetEnumerationCount()
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 28, 2006
+//
+//  Modifications:
+//    Mark C. Miller, Mon Apr 14 15:28:11 PDT 2008
+//    Added code to deal with enumeration graphs
 //
 // ****************************************************************************
 
@@ -212,9 +307,11 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
     //
     const vector<unsigned char> &useSet = silr->useSet;
     bool  foundOneOff = false;
-    for (i = 0 ; i < mapsOut.size() ; i++)
+    int enumGraphIndex = -1;
+    avtSILCollection_p coll;
+    for (i = 0 ; (enumGraphIndex == -1) && (i < mapsOut.size()) ; i++)
     {
-        avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
+        coll = silr->GetSILCollection(mapsOut[i]);
         if (coll->GetRole() == SIL_ENUMERATION)
         {
             if (index == count)
@@ -228,6 +325,15 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
                 enumList.resize(setList.size());
                 for (j = 0 ; j < setList.size() ; j++)
                 {
+		    // do a tiny bit of work to see if this enum has a graph
+                    avtSILSet_p tmpSet = silr->GetSILSet(setList[j]);
+                    const vector<int> &tmpMapsOut = tmpSet->GetMapsOut();
+		    if (tmpMapsOut.size() > 0)
+		    {
+		        enumGraphIndex = i;
+			break;
+		    }
+
                     bool val = (useSet[setList[j]] != NoneUsed ? true : false);
                     enumList[j] = val;
                     if (!val)
@@ -239,8 +345,11 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
             count++;
         }
     }
- 
-    return foundOneOff;
+    
+    if (enumGraphIndex != -1)
+        return GetEnumerationFromGraph(enumGraphIndex, enumList, name);
+    else
+        return foundOneOff;
 }
 
 

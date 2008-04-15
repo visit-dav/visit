@@ -40,6 +40,10 @@
 //    Mark C. Miller and Jeremy Meredith, Tue Jul 10 08:45:44 PDT 2007
 //    Added minEnumerationValue data member so this class can handle negative
 //    enumeration values.
+//    
+//    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+//    Added support for many new features; always include/exclude values,
+//    partial cell modes and various enumeration modes.
 
 
 #ifndef __vtkEnumThreshold_h
@@ -49,7 +53,8 @@
 #include "vtkUnstructuredGridAlgorithm.h"
 
 #include <vector>
-#include <string>
+
+using std::vector;
 
 class vtkDataArray;
 
@@ -60,8 +65,35 @@ class VISIT_VTK_LIGHT_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
     vtkTypeRevisionMacro(vtkEnumThreshold,vtkUnstructuredGridAlgorithm);
     void PrintSelf(ostream& os, vtkIndent indent);
 
-    void SetEnumerationValues(const std::vector<int>&);
-    void SetEnumerationSelection(const std::vector<bool>&);
+    void SetEnumerationRanges(const vector<double>&);
+    void SetEnumerationValues(const vector<int> &vals);
+
+    void SetEnumerationSelection(const vector<bool>&);
+
+    void SetAlwaysExcludeRange(double min, double max);
+    void SetAlwaysIncludeRange(double min, double max);
+    void SetNAndMaxRForNChooseRMode(int n, int maxr);
+
+    bool SetReturnEmptyIfAllCellsKept(bool ret);
+    bool GetReturnEmptyIfAllCellsKept() const;
+    bool GetAllCellsKeptInLastRequestData() const;
+
+    typedef enum {
+        Include,
+        Exclude,
+        Dissect
+    } PartialCellMode;
+
+    typedef enum {
+        None,
+        ByValue,
+	ByRange,
+	ByBitMask,
+	ByNChooseR
+    } EnumerationMode;
+
+    PartialCellMode SetPartialCellMode(PartialCellMode m); // returns previous setting 
+    EnumerationMode SetEnumerationMode(EnumerationMode em); // returns previous setting
 
   protected:
     vtkEnumThreshold();
@@ -73,12 +105,33 @@ class VISIT_VTK_LIGHT_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
     virtual int FillInputPortInformation(int port, vtkInformation *info);
   
     int EvaluateComponents( vtkDataArray *scalars, vtkIdType id );
+    bool IsInEnumerationRanges(double val);
+    bool HasBitsSetInEnumerationMap(double val);
+    bool HasValuesInEnumerationMap(double val);
   
-    std::vector<int> enumerationValues;
-    std::vector<bool> enumerationSelection;
-    int            maxEnumerationValue;
-    int            minEnumerationValue;
-    unsigned char *enumerationMap;
+    PartialCellMode   partialCellMode;
+    EnumerationMode   enumMode;
+    double            maxEnumerationValue;
+    double            minEnumerationValue;
+    double            alwaysExcludeMin;
+    double            alwaysExcludeMax;
+    double            alwaysIncludeMin;
+    double            alwaysIncludeMax;
+
+    vector<double>    enumerationRanges;
+    int               lastRangeBin;
+
+    vector<int>       enumerationValues;
+    unsigned char    *enumerationMap;
+
+    unsigned long long selectedEnumMask;
+
+    int                  pascalsTriangleN;
+    int                  pascalsTriangleR;
+    vector<vector<int> > pascalsTriangleMap;
+
+    bool              returnEmptyIfAllCellsKept;
+    bool              allCellsKeptInLastRequestData;
 
   private:
     vtkEnumThreshold(const vtkEnumThreshold&);  // Not implemented.

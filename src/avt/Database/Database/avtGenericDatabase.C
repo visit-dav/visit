@@ -3928,6 +3928,10 @@ avtGenericDatabase::GetGlobalZoneIds(int dom, const char *var, int ts)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 28, 2006
 //
+//  Modifications:
+//    Mark C. Miller, Mon Apr 14 15:28:11 PDT 2008
+//    Added support for enhanced enumerated scalar functionality
+//
 // ****************************************************************************
 void
 avtGenericDatabase::EnumScalarSelect(avtDatasetCollection &dsc,
@@ -3966,15 +3970,34 @@ avtGenericDatabase::EnumScalarSelect(avtDatasetCollection &dsc,
             EXCEPTION1(VisItException, errMsg);
         }
 
-        enumThreshold->SetEnumerationValues(smd->enumValues);
+	// setup operator behavior
+	enumThreshold->SetReturnEmptyIfAllCellsKept(true);
+	enumThreshold->SetEnumerationMode((vtkEnumThreshold::EnumerationMode) smd->GetEnumerationType());
+        enumThreshold->SetEnumerationRanges(smd->enumRanges);
+	enumThreshold->SetAlwaysExcludeRange(smd->enumAlwaysExclude[0], smd->enumAlwaysExclude[1]);
+	enumThreshold->SetAlwaysIncludeRange(smd->enumAlwaysInclude[0], smd->enumAlwaysInclude[1]);
+	enumThreshold->SetPartialCellMode((vtkEnumThreshold::PartialCellMode)
+	    smd->GetEnumPartialCellMode());
+	if (smd->GetEnumerationType() == avtScalarMetaData::ByNChooseR)
+	{
+	    enumThreshold->SetNAndMaxRForNChooseRMode(
+	        smd->GetEnumNChooseRN(),smd->GetEnumNChooseRMaxR());
+	}
         enumThreshold->SetEnumerationSelection(selection);
+
+	// do the operation
         enumThreshold->SetInput(ds);
         vtkDataSet *outds = enumThreshold->GetOutput();
         enumThreshold->Update();
 
-        dsc.SetDataset(i, m, outds);
+	// Only change the dataset if the enum filter actually removed something
+	if (!(enumThreshold->GetReturnEmptyIfAllCellsKept() && 
+	     enumThreshold->GetAllCellsKeptInLastRequestData()))
+        {
+            dsc.SetDataset(i, m, outds);
+            outds->Register(NULL);
+	}
 
-        outds->Register(NULL);
         enumThreshold->Delete();
     }
 }

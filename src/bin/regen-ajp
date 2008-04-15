@@ -1,0 +1,62 @@
+#!/bin/sh
+
+#
+# Purpose: Helper script to re-generate C, Python and Java attribute files
+#          after changing the source .xml file. It should be executed in
+#          the dir where the source .xml file exists. It will automatically
+#          look for Python and Java instances and re-generate them if any
+#          already exist.
+# 
+# Programmer: Mark C. Miller
+# Created:    Mon Apr  7 12:05:44 PDT 2008
+#
+#
+
+# find the dir for this tool and related code gen tools
+binDir=`dirname $0`
+pushd $binDir 1>/dev/null 2>&1
+binDir=`pwd -P`
+popd 1>/dev/null 2>&1
+
+#
+# Find the top dir of this VisIt source code tree by
+# walking upwards from here looking for VisIt's
+# java and visitpy dirs.
+#
+thisDir=`pwd`
+while ! test -d java -a -d visitpy -a `pwd` != "/"; do
+    cd ..
+done
+topDir=`pwd`
+
+# exit if we couldn't walk to the top of the visit source code tree
+doPythonAndJava=1
+if test $topDir = "/"; then
+    "Unable to find top dir of visit source code tree"
+    doPythonAndJava=0
+fi
+
+# re-gen the atts and move the files around
+cd $thisDir
+for xf in $*; do
+
+    # do the attributes
+    xb=`basename $xf .xml`
+    xa=${thisDir}/${xb}.xml
+    $binDir/xml2atts -clobber $xf
+
+    # do python and java, too
+    if test $doPythonAndJava -eq 1; then
+        if test -e $topDir/visitpy/visitpy/Py${xb}.h -a -e $topDir/visitpy/visitpy/Py${xb}.C; then
+	    pushd $topDir/visitpy/visitpy 1>/dev/null 2>&1
+            $binDir/xml2python -clobber $xa
+	    popd 1>/dev/null 2>&1
+        fi
+        if test -e $topDir/java/$xb.java; then
+	    pushd $topDir/java 1>/dev/null 2>&1
+            $binDir/xml2java -clobber $xa
+	    popd 1>/dev/null 2>&1
+        fi
+    fi
+
+done

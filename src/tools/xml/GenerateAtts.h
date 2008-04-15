@@ -1587,6 +1587,8 @@ class AttsFieldFactory
 //   Brad Whitlock, Thu Feb 28 12:03:30 PDT 2008
 //   Made it use a base class so it can inherit some methods.
 //
+//   Mark C. Miller, Tue Mar 18 20:56:47 PDT 2008
+//   Made it write field id enum regardless of only public fields
 // ----------------------------------------------------------------------------
 #include <GeneratorBase.h>
 
@@ -1709,18 +1711,15 @@ class AttsGeneratorAttribute : public GeneratorBase
         bool hasPrivateFields = false;
         bool hasProtectedFields = false;
         bool hasPublicFields = false;
-        bool onlyHasPublicFields = true;
         for (i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType == Field::AccessPrivate)
             {
                 hasPrivateFields = true;
-                onlyHasPublicFields = false;
             }
             if(fields[i]->accessType == Field::AccessProtected)
             {
                 hasProtectedFields = true;
-                onlyHasPublicFields = false;
             }
             if(fields[i]->accessType == Field::AccessPublic)
                 hasPublicFields = true;
@@ -1819,8 +1818,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         h << endl;
 
         // Write field IDs
-        if(!onlyHasPublicFields)
-            WriteHeaderFieldIDs(h);
+        WriteHeaderFieldIDs(h);
 
         // If there are any AttributeGroupVectors, we'll need this method.
         if (HaveAGVectors())

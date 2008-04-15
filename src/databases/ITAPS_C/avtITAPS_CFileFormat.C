@@ -218,6 +218,9 @@ static int ITAPSEntityTopologyToVTKZoneType(int ttype)
 //  Purpose: Very verbose description of the set hierarchy. Only used for
 //  debugging.
 //
+//  Modifications:
+//    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+//    Added code to output entity type and topology
 // ****************************************************************************
 static void
 GetSetHierarchy(iMesh_Instance aMesh, int level, int memberId, bool isEntitySet,
@@ -231,6 +234,7 @@ GetSetHierarchy(iMesh_Instance aMesh, int level, int memberId, bool isEntitySet,
     int sets_size = 0;
     iBase_EntityHandle *ents = 0; int ents_allocated = 0;
     int ents_size = 0;
+    iBase_TagHandle *tags = 0; int tags_allocated = 0; int tags_size = 0;
 
     // compute an indentation
     std::string ident;
@@ -243,7 +247,17 @@ GetSetHierarchy(iMesh_Instance aMesh, int level, int memberId, bool isEntitySet,
         debug5 << ident << "For Entity     at level " << level << ", index " << memberId << ":" << endl;
     debug5 << ident << "{" << endl;
 
-    iBase_TagHandle *tags = 0; int tags_allocated = 0; int tags_size = 0;
+    if (!isEntitySet)
+    {
+        int topo, type;
+        iMesh_getEntType(aMesh, esh, &type, &itapsError);
+        CheckITAPSError(aMesh, NoL);
+        debug5 << ident << "    type = \"" << entTypes[type] << "\"" << endl;
+        iMesh_getEntTopo(aMesh, esh, &topo, &itapsError);
+        CheckITAPSError(aMesh, NoL);
+        debug5 << ident << "    topology = \"" << entTopologies[topo] << "\"" << endl;
+    }
+
     if (isEntitySet)
         iMesh_getAllEntSetTags(aMesh, esh, &tags, &tags_allocated, &tags_size, &itapsError);
     else

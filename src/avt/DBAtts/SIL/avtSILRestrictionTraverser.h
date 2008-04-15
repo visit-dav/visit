@@ -68,6 +68,9 @@
 //    Jeremy Meredith, Mon Aug 28 16:19:48 EDT 2006
 //    Added support for scalar enumerations.
 //
+//    Mark C. Miller, Wed Mar 26 16:23:27 PDT 2008
+//    Added support for scalar enumerations w/graphs
+//
 // ****************************************************************************
 
 class DBATTS_API avtSILRestrictionTraverser
@@ -91,8 +94,13 @@ class DBATTS_API avtSILRestrictionTraverser
     bool                       UsesAllMaterials(void);
 
     int                        GetEnumerationCount();
+    bool                       GetEnumerationFromGraph(int, std::vector<bool> &,
+                                              std::string&);
     bool                       GetEnumeration(int, std::vector<bool> &,
                                               std::string&);
+    void                       GetEnumerationMinMaxSetIds(int parentId,
+                                   int *minId, int *maxId);
+
 
   protected:
     avtSILRestriction_p        silr;

@@ -25,10 +25,13 @@
       false
     </Field>
     <Field name="minDataExtents" label="Minimum data extents" type="double" access="public">
-      0.
+      0.000000
     </Field>
     <Field name="maxDataExtents" label="Maximum data extents" type="double" access="public">
-      0.
+      0.000000
+    </Field>
+    <Field name="hideFromGUI" label="hideFromGUI" type="bool" access="public">
+      false
     </Field>
     <Function name="avtCurveMetaData2" user="true" member="true">
     </Function>

@@ -94,6 +94,7 @@ Symbol ExprGrammar::T_Integer       (D, TT_IntegerConst, "Integer");
 Symbol ExprGrammar::T_Float         (D, TT_FloatConst,   "Float");
 Symbol ExprGrammar::T_String        (D, TT_StringConst,  "String");
 Symbol ExprGrammar::T_Bool          (D, TT_BoolConst,    "Bool");
+Symbol ExprGrammar::T_And           (D, '&');
 
 
 // ------------------------------------------------------------------------
@@ -141,6 +142,7 @@ ExprGrammar::ExprGrammar() : Grammar(D)
   AddRule(Rule(3,  Expr)  >>  Expr + T_Slash + Expr );    // division
   AddRule(Rule(4,  Expr)  >>  Expr + T_Exp   + Expr );    // exponentiation
   AddRule(Rule(5,  Expr)  >>  Expr + T_Mod   + Expr );    // modulo
+  AddRule(Rule(15, Expr)  >>  Expr + T_And   + Expr );    // bitwise and 
   AddRule(Rule(6,  Expr)  >>  Expr + T_LBracket + T_Integer + T_RBracket );    // index
   AddRule(Rule(7,  Expr)  >>  T_Minus + Expr,  5);        // u-negative, prec=5
   AddRule(Rule(8,  Expr)  >>  T_LParen + Expr + T_RParen );
@@ -227,6 +229,7 @@ ExprGrammar::ExprGrammar() : Grammar(D)
   SetAssoc(T_Mult,  Grammar::Left);
   SetAssoc(T_Slash, Grammar::Left);
   SetAssoc(T_Exp,   Grammar::Right);
+  SetAssoc(T_And,   Grammar::NonAssoc);
 
   // -- precedence --
   SetPrec(T_Mod,    1);
@@ -235,6 +238,7 @@ ExprGrammar::ExprGrammar() : Grammar(D)
   SetPrec(T_Mult,   3);
   SetPrec(T_Slash,  3);
   SetPrec(T_Exp,    4);
+  SetPrec(T_And,    4);
   // Unary minus is 5  -- see rule above
   SetPrec(T_LBracket, 6);
 }
