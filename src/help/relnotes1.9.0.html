@@ -26,6 +26,54 @@ enhancements and bug-fixes that were added to this release.</p>
 
 <p><b><font size="4">Features added in version 1.9.0</font></b></p>
 <ul>
+    <li>The POV-Ray export format has been enhanced.  It now includes exporting of
+        atomic properties useful for molecular data, it replaces fixed-function
+        glyph scaling with user-defined glyph scaling, and it writes <i>all</i> scalar
+        arrays to the output files.  It also writes data in the correct
+        coordinate handedness without modifying data values.</li>
+
+    <li>It is now possible to set options when opening files (for database plugins that
+        provide options in their file reader).  These can be accessed through the File Open
+        dialog, or through the Plugin Manager window.  Default values will be saved
+        with the user configuration settings.</li>
+
+    <li>The default file format which could be specified on the command line through the
+        <i>-default_format</i> argument has been replaced by two new, more specific options:
+        <ul>
+          <li><i>-assume_format</i> which specifies a file format reader to try before guessing, and</li>
+          <li><i>-fallback_format</i> which specifis the file format reader to try after guessing fails</li>
+        </ul>
+    </li>
+
+    <li>VisIt now has a <i>PlainText</i> file reader which can open whitespace, comma,
+        and tab-separated ASCII text files as either 2D grids or columnar data.</li>
+
+    <li>VisIt now has a new <i>Parallel Coordinates</i> plot for viewing high-dimensional data.
+        It also supports a new Axis Restriction tool which can interact with the Parallel Coordinates
+        plot for viewing focus data overlaid with the context data.  Note: the ParallelAxis plot
+        is deprecated and will be removed in a future release.</li>
+
+    <li>The <i>Create Bonds</i> operator has been enhanced to support wildcards, allowing
+        for much more powerful rules.  The default options in this mode correspond to a
+        heuristic algorithm providing good support for many molecule types.</li>
+
+    <li>The Subset plot can now plot mesh variables.  This is a convenient way to 
+        obtain a single-color lighted plot for surfaces of three dimensional data,
+        including single-domain data sets and those without scalar variables.</li>
+
+    <li>There is a new <i>enumerate</i> expression which maps nonnegative integers to real values.</li>
+
+    <li>A <i>-viewerdisplay</i> argument has been added to VisIt's launcher, which allows the
+        GUI/CLI to be displayed on a separate X11 display than the viewer.  This can be
+        useful for powerwalls and other demonstration modes where the interface and
+        visualizations will run on different monitors.</li>
+
+    <li>The <i>cell_constant</i> and <i>point_constant</i> expressions have been added as a convenient
+        method of creating a constant on a mesh without needing to read a variable from the file.</li>
+
+    <li>VisIt's operators now have support for creating new variables through the
+        expression mechanism.</li><!-- Note: this is a developer feature so far since no operators use it yet --> 
+
     <li>VisIt now has an <a href="http://www.xdmf.org/index.php/Main_Page">XDMF</a> reader.  The file must end with a ".xmf" extension to be recognized as an XDMF file.<br>
     Supported features:
     <ul>
