@@ -66,6 +66,20 @@ enhancements and bug-fixes that were added to this release.</p>
     everything</b> option under the <b>Lock</b> submenu.  The <b>Unlock
     everything</b> option turns off locking for time, tools, and view in
     all visualization windows.</li>
+
+    <li>There is a new <i>Spreadsheet Pick</i> mode (same icon as node/zone pick, but with
+    an "S" next to it. In this pick mode, VisIt will behave the same as in zone pick mode, but
+    also bring up a Spreadsheet plot with the current pick.</li>
+
+    <li>The Spreadsheet plot can now highlight the currently picked cell in the viewer
+    window</li>
+
+    <li>The <i>apply operators and selections to all plots checkbox is now
+        split into to two separate checkboxes to control individually whether operators
+        and/or selections will be applied to all plots.</li>
+
+    <li>If a data set contains any +/- infs or nans, those are now ignored when
+        VisIt calculates the min/max extents for variables.
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -127,8 +141,21 @@ enhancements and bug-fixes that were added to this release.</p>
 	variable ranges, by bit-masks or by <i>bi-nomial combinations</i>. In addition,
 	the enumerated pieces can be arranged hierarchically as in a part assembly. A common
 	use of this feature is to define nodesets.
+
+    <li>VisIt now has custom settings files for the LBNL Applied Numerical Algorithms group
+        and its collaborators. These files are located in &lt;VISITINSTALLDIR&gt;/1.9.0/.visit and
+        are named visit-config-anag, visit-guiconfig-anag, and visit-visitrc-anag. To enable these
+        settings, create symbolic links config, guiconfig and visitrc to these files in
+        &lt;VISITINSTALLDIR&gt;/1.9.0/.visit (site-wide) or copy them to config, guiconfig and visitrc
+        in the .visit directory in your home directory (user-specific). visitrc defines a couple
+        of macros aimed at easing the transition of ChomboVis users to VisIt. guiconfig posts
+        the macro window by default within the main gui. config ensures that the Chombo reader
+        will cause plots to default only to the root level of an AMR hierarchy and display only
+        explicitly defined Chombo materials and contains additional settings that are aimed
+        at helping ChomboVis users making the transition to VisIt. Furthermore, visitrc allows to
+        turn of the mapping of grids if a .map.hdf5 file exists. (See Chombo reader release notes
+        for more details.)
 </ul>
-    
 
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 1.9.0</font></b></p>
@@ -184,6 +211,19 @@ enhancements and bug-fixes that were added to this release.</p>
         with material information.</li>
 
     <li>SAMRAI file format now correctly ghosts material data.</li>
+
+    <li>The Chombo reader was enhanced with<br>
+    <ul>
+        <li>Support for node centered Chombo files.</li>
+        <li>Reading Chombo files in double precision format. (Data is still converted automatically to float for all plots/operators except for the Spreadsheet plot.)
+        <li>The Chombo reader has now two file format option that control whether new plots default to only displaying the root level of an AMR hierarchy and whether only material explicitly specified in a Chombo file are displayed by default. (These options are disabled by default.)</li>
+        <li>The Chombo reader has now an option "Check for mapping file and import coordinates if available."
+            If this option is enabled, the Chombo reader will check for a file file.map.hdf5 (file.map.h5) when
+            opening a file file.hdf5 (file.h5). If the .map.hdf5 file exists, it will create an expression
+            that imports the variables x, y and z from that file using a conn_cmfe expression and create
+            a file_hdf5_disp expression, which can be used with the "Displacement" operator to transform
+            the grid to the coordinates specified in the .map.hdf5 file.</li>
+    </ul>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -307,6 +347,18 @@ enhancements and bug-fixes that were added to this release.</p>
     that can be used to return the plot attributes for the active plot as well as the
     operator attributes on the i'th operator on the active plot.</p>  
     </li>
+
+    <li><p>Calling functions such as SetOperatorOptions() now preserves the "apply
+    operators/apply selection to all plots" checkboxes in the GUI.</p></li>
+
+    <li><p>Recording macros now appends state information of the "apply operators/apply
+    selection to all plots" checkboxes to functions such as SetOperatorOptions(). When
+    recording a macro it is possible to change the state of these checkboxes and the
+    macro will recreate option changes as they were performed in the gui.</p></li>
+
+    <li>VisIt will now check for a global site visitrc file in the same directory as
+        VisIt's global configuration files. A user's visitrc file still has
+        precedence over the global visitrc file.
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -361,6 +413,11 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>The centering of a Pseudocolor Plot no longer wrongly influences query results.</li>
 
     <li>Queries from the same database, but different windows, no longer returns incorrect results.</li>
+
+    <li>The <i>Variables</i> menu does no longer disappear for certain font sizes.</li>
+
+    <li>Added a check to QPostableWindow that prevents a window from being
+        posted if it is already posted. 
 </ul>
 
 <a name="Libsim_changes"></a>
@@ -448,6 +505,28 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>The xml2<i>whatever</i> tools no longer overwrite header files when they have
     not changed. This helps prevent lengthening compiles when changing only .code
     portions of attributes.</li>
+
+    <li>avtDataBaseMetaData has a new field suggestedDefaultSILRestriction
+        that allows a database plugin to suggest a default SIL restriction for
+        plots. This field is a stringVector, where each string is considered as
+        a "command". Supported commands are "!TurnOnAll", "!TurnOffAll" (doing
+        the obvious thing), "+<SIL set name>" to add a SIL set to the selection
+        and "-<SIL set name>" to remove a SIL set from the selection. This
+        stringList is parsed (in order) whenever a default SIL restriction is
+        generated for a plot.
+
+    <li>visit-bin-dist has now a "-configuration" option that allows
+        overriding the behavior that LLNL open is the default configuration in a
+        VisIt tarball. If the "-configuration" option is omitted, visit-bin-dist
+        will still default to the LLNL open configuration. Furthermore, visit-bin-dist
+        now also creates default symlinks for guiconfig and visitrc, if the
+        specified configuration has these files (currently only the ANAG
+        configuration has).
+
+    <li>If a system guiconfig file but no user guiconfig file exists, then
+        the initially visible windows are created from the system guiconfig
+        file. (This is to enable posting windows such as the "Macros" windows in
+        a default system guiconfig file.)
 </ul>
 
 <p>Click the following link to view the release notes for the 1.8.1 patch version
