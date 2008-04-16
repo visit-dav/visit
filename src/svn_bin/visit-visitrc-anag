@@ -1,51 +1,46 @@
 import time
 import os
+import string
+
+# Global state variable
+automaticMappingEnabled = False
 
 # Define macros 
-
-mappingExists = False
-
-def loadMappingIfAvailable():
-    import os
-    # Check if there us a mapping
-    filename = GetWindowInformation().activeSource
-    mapname = filename.replace("hdf5","map.hdf5")
-    mapname = mapname.replace("localhost:","") # FIXME: Hack, won't work for remote
-    if os.access(mapname, os.F_OK):
-        print "Found mapping file " + mapname + "! Setting up expressions!"
-        global mappingExists
-        mappingExists = True
-        m = GetMetaData(filename)
-        meshname = m.GetMeshes(0).name
-        # Add expressions
-        DefineScalarExpression("__x_imported", "conn_cmfe(<"+mapname+":x>,"+meshname+")")
-        DefineScalarExpression("__y_imported", "conn_cmfe(<"+mapname+":y>,"+meshname+")")
-        if m.GetMeshes(0).spatialDimension == 2:
-            DefineVectorExpression("__disp", "{__x_imported-coords("+meshname+")[0],__y_imported-coords("+meshname+")[1]}")
-        else:
-            DefineScalarExpression("__z_imported", "conn_cmfe(<"+mapname+":z>,"+meshname+")")
-            DefineVectorExpression("__disp", "{__x_imported-coords("+meshname+")[0],__y_imported-coords("+meshname+")[1],__z_imported-coords("+meshname+")[2]}")
-    else:
-        mappingExists = False
-
 def AddMappingDisplacementOperator():
-    global mappingExists
-    if mappingExists:
-        AddOperator("Displace")
-        DisplaceAtts = DisplaceAttributes()
-        DisplaceAtts.factor = 1
-        DisplaceAtts.variable = "__disp"
-        SetOperatorOptions(DisplaceAtts)
+    global automaticMappingEnabled
+    if automaticMappingEnabled:
+        # Get active source (database name for current plot)
+        databasename = GetWindowInformation().activeSource
+
+        # Strip computer name
+        filename = databasename[databasename.index(":")+1:len(databasename)]
+
+        # Replace non-alphanumric chars with '_' to obtain prefix for
+        # prefix of displacement expression
+        expressionprefix = string.join([c.isalnum() and c or '_' for c in filename],'')
+
+        # Construct displacement expression name
+        expressionname = "_"+expressionprefix+"_disp"
+
+        # Check if  displacement expression exists
+        if expressionname in [exp[0] for exp in Expressions()]:
+            # If yes, add operator ...
+            AddOperator("Displace")
+            # ... and set attributes
+            DisplaceAtts = DisplaceAttributes()
+            DisplaceAtts.factor = 1
+            DisplaceAtts.variable = expressionname
+            SetOperatorOptions(DisplaceAtts)
 
 def onAddPlot(plotType, plotVar):
     # FIXME: Hack, wait for plot to appear in plot list
-    time.sleep(0.5)
-    lp = GetPlotList().GetPlots(GetPlotList().GetNumPlots()-1)
-    foundDisplacement = False
-    for op in lp.operators:
-        if OperatorPlugins()[op] == "Displace":
-            foundDisplacement = True
-    if not foundDisplacement: # FIXME: May want to check options here, too
+    time.sleep(0.1)
+    # Get list of operators in active plot
+    plotOperators = GetPlotList().GetPlots(GetPlotList().GetNumPlots()-1).operators
+    # Add displacement operator if one does not alread exists
+    # FIXME: It may be better to check whether the Displacement operator
+    # is actually performing the mapping instead of just checking type
+    if not "Displace" in [OperatorPlugins()[op] for op in plotOperators]:
         AddMappingDisplacementOperator()
 
 RegisterCallback("AddPlotRPC", onAddPlot)
@@ -79,7 +74,7 @@ def SetupSlice():
         # Hide the mesh plot
         HideActivePlots()
 
-        # Add a ThreeSlice
+        # Add a ThreeSlice through the centroid
         AddOperator("ThreeSlice")
         ThreeSliceAtts = ThreeSliceAttributes()
         ThreeSliceAtts.x = centroid[0]
@@ -96,17 +91,18 @@ def SetupSlice():
         # Enable the point tool to control the ThreeSlice
         EnableTool(4, 1)
 
-    # Re-enable callback
-    RegisterCallback("AddPlotRPC", onAddPlot)
+    # Re-enable callback if necessary
+    global automaticMappingEnabled
+    if automaticMappingEnabled:
+        RegisterCallback("AddPlotRPC", onAddPlot)
 
 def onOpenDatabase(database, timestate, addDefaultPlots, forcedFileType):
-    filename = GetWindowInformation().activeSource
     # Wait until open complete and database is the active source
+    filename = GetWindowInformation().activeSource
     while filename != database:
         time.sleep(0.1) 
         filename = GetWindowInformation().activeSource
-    # Add map expressions, if available
-    loadMappingIfAvailable()
+
     # Set up initial plot
     SetupSlice()
 
@@ -118,22 +114,34 @@ def SetupIsosurf():
     m = GetMetaData(filename)
     varname = m.GetScalars(0).name
     
-    IsosurfaceAtts = IsosurfaceAttributes()
     if m.GetMeshes(0).spatialDimension == 2:
+        # In two dimensions add a simple contour plot ...
         AddPlot("Contour", varname)
+        # ... with 10 black contour lines evenly spaced within the fuctnion range
         ContourAtts = ContourAttributes()
-        ContourAtts.colorType = ContourAtts.ColorBySingleColor  # ColorBySingleColor, ColorByMultipleColors, ColorByColorTabl
+        ContourAtts.colorType = ContourAtts.ColorBySingleColor
         ContourAtts.singleColor = (0, 0, 0, 255)
         ContourAtts.contourNLevels = 10
         SetPlotOptions(ContourAtts)
     else:
+        # Disable callback
+        RegisterCallback("AddPlotRPC")
+        # In three diemensions add a pseudocolor plot ...
         AddPlot("Pseudocolor", varname)
+        AddMappingDisplacementOperator()
+        # ... and an isosurface operator ...
         AddOperator("Isosurface")
+        # ... with one level at the center of the function range
+        IsosurfaceAtts = IsosurfaceAttributes()
         IsosurfaceAtts.contourNLevels = 1
-        IsosurfaceAtts.contourMethod = IsosurfaceAtts.Level  # Level, Value, Percent
-        IsosurfaceAtts.scaling = IsosurfaceAtts.Linear  # Linear, Log
+        IsosurfaceAtts.contourMethod = IsosurfaceAtts.Level
+        IsosurfaceAtts.scaling = IsosurfaceAtts.Linear
         IsosurfaceAtts.variable = varname
         SetOperatorOptions(IsosurfaceAtts)
+        # Re-enable callback if necessary
+        global automaticMappingEnabled
+        if automaticMappingEnabled:
+            RegisterCallback("AddPlotRPC", onAddPlot)
 
 def SetupBoundingBox():
     AddPlot("Subset", "patches")
@@ -159,38 +167,97 @@ def SetupBoundary():
     BoundaryAtts.boundaryType = BoundaryAtts.Material  # Domain, Group, Material, Unknown
     SetPlotOptions(BoundaryAtts)
 
-# Wait for viewer to avoid race condition
+def GetActivePlots():
+    apl = []
+    for plotNo in range(0, GetNumPlots()):
+        if GetPlotList().GetPlots(plotNo).activeFlag:
+            apl.append(plotNo)
+    return tuple(apl)
 
+def AddMappingToAllPlots():
+    # Remeber plots that were active
+    apl_save = GetActivePlots()
+    for plotNo in range(0, GetNumPlots()):
+        SetActivePlots(plotNo)
+        plotHidden = GetPlotList().GetPlots(plotNo).hiddenFlag
+        # Get active source (database name for current plot)
+        databasename = GetPlotList().GetPlots(plotNo).databaseName
+        # Strip computer name
+        filename = databasename[databasename.index(":")+1:len(databasename)]
+        # Replace non-alphanumric chars with '_' to obtain prefix for
+        # prefix of displacement expression
+        expressionprefix = string.join([c.isalnum() and c or '_' for c in filename],'')
+        # Construct displacement expression name
+        expressionname = "_"+expressionprefix+"_disp"
+        # Check if  displacement expression exists
+        plotOperators = GetPlotList().GetPlots(plotNo).operators
+        if expressionname in [exp[0] for exp in Expressions()] and not "Displace" in [OperatorPlugins()[op] for op in plotOperators]:
+            if not plotHidden:
+                HideActivePlots() # Hide plot so that adding operator does not cause error
+            # If yes, add operator ...
+            dispIndex = len(plotOperators)
+            AddOperator("Displace")
+            while dispIndex > 0:
+                DemoteOperator(dispIndex)
+                dispIndex = dispIndex - 1
+            # ... and set attributes
+            DisplaceAtts = DisplaceAttributes()
+            DisplaceAtts.factor = 1
+            DisplaceAtts.variable = expressionname
+            SetOperatorOptions(DisplaceAtts)
+            if not plotHidden:
+                HideActivePlots() # If plot was not hidden, show it again
+    # Restore active plots
+    SetActivePlots(apl_save)
+
+def RemoveMappingFromAllPlots():
+    # Remeber plots that were active
+    apl_save = GetActivePlots()
+    for plotNo in range(0, GetNumPlots()):
+        # Get active database name for current plot
+        databasename = GetPlotList().GetPlots(plotNo).databaseName
+        # Strip computer name
+        filename = databasename[databasename.index(":")+1:len(databasename)]
+        # Replace non-alphanumric chars with '_' to obtain prefix for
+        # prefix of displacement expression
+        expressionprefix = string.join([c.isalnum() and c or '_' for c in filename],'')
+        # Construct displacement expression name
+        expressionname = "_"+expressionprefix+"_disp"
+        plotOperators = GetPlotList().GetPlots(plotNo).operators
+        print "Plot ", plotNo
+        print "Operators ", plotOperators
+        SetActivePlots(plotNo)
+        for opNo in range(0, len(plotOperators)):
+            print "Checking operator", opNo, "for plot", plotNo
+            print OperatorPlugins()[plotOperators[opNo]]
+            if OperatorPlugins()[plotOperators[opNo]] == 'Displace' and GetOperatorOptions(opNo).variable == expressionname:
+                print "Removing operator", opNo, "for plot", plotNo
+                RemoveOperator(opNo)
+            else:
+                print "Operator", opNo, "for plot", plotNo, "is not Displace"
+    DrawPlots()
+    # Restore active plots
+    SetActivePlots(apl_save)
+
+  
+def EnableAutomaticMapping():
+    global automaticMappingEnabled
+    automaticMappingEnabled = True
+    AddMappingToAllPlots()
+    RegisterCallback("AddPlotRPC", onAddPlot)
+
+def DisableAutomaticMapping():
+    global automaticMappingEnabled
+    automaticMappingEnabled = False
+    RemoveMappingFromAllPlots()
+    RegisterCallback("AddPlotRPC")
+
+# Wait for viewer to avoid race condition
 time.sleep(0.5)
 
 RegisterMacro("Slice", SetupSlice)
 RegisterMacro("Contours", SetupIsosurf)
 RegisterMacro("Bounding Boxes", SetupBoundingBox)
 RegisterMacro("Boundaries", SetupBoundary)
-
-#
-# Graveyard
-#
-#def EnableMapping():
-#    # Get the name of the first variable in the file
-#    filename = GetWindowInformation().activeSource
-#    m = GetMetaData(filename)
-#    meshname = m.GetMeshes(0).name
-#    # Add expressions
-#    mapname = filename.replace("hdf5","map.hdf5")
-#    mapname = mapname.replace("localhost:","")
-#    DefineScalarExpression("__x_imported", "conn_cmfe(<"+mapname+":x>,"+meshname+")")
-#    DefineScalarExpression("__y_imported", "conn_cmfe(<"+mapname+":y>,"+meshname+")")
-#    if m.GetMeshes(0).spatialDimension == 2:
-#        DefineVectorExpression("__disp", "{__x_imported-coords("+meshname+")[0],__y_imported-coords("+meshname+")[1]}")
-#    else:
-#        DefineScalarExpression("__z_imported", "conn_cmfe(<"+mapname+":z>,"+meshname+")")
-#        DefineVectorExpression("__disp", "{__x_imported-coords("+meshname+")[0],__y_imported-coords("+meshname+")[1],__z_imported-coords("+meshname+")[2]}")
-#    AddOperator("Displace",1)
-#    DisplaceAtts = DisplaceAttributes()
-#    DisplaceAtts.factor = 1
-#    DisplaceAtts.variable = "__disp"
-#    SetOperatorOptions(DisplaceAtts,0,1)
-#    DrawPlots()
-#
-#RegisterMacro("Enable Mapping", EnableMapping)
+RegisterMacro("Mapping on", EnableAutomaticMapping)
+RegisterMacro("Mapping off", DisableAutomaticMapping)

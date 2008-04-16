@@ -69,6 +69,8 @@
 
 #include <Expression.h>
 
+#include <Utility.h>
+
 #include <BadDomainException.h>
 #include <DebugStream.h>
 #include <InvalidDBTypeException.h>
@@ -93,6 +95,9 @@ using     std::string;
 //    Hank Childs, Mon Oct  8 17:17:24 PDT 2007
 //    Initialized atts.
 //
+//    Gunther H. Weber, Tue Apr 15 17:43:30 PDT 2008
+//    Add support to automatically import a coordinate mapping file via conn_cmfe
+//
 // ****************************************************************************
 
 avtChomboFileFormat::avtChomboFileFormat(const char *filename, 
@@ -108,6 +113,7 @@ avtChomboFileFormat::avtChomboFileFormat(const char *filename,
         useGhosts = atts->GetBool("Use ghost data (if present)");
         enableOnlyRootLevel = atts->GetBool("Enable only root level by default");
         enableOnlyExplicitMaterials = atts->GetBool("Enable only explicitly defined materials by default");
+        checkForMappingFile = atts->GetBool("Check for mapping file and import coordinates if available");
     }
 
     file_handle = -1;
@@ -1105,6 +1111,9 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 //    Fixed bug for files containing only one level when "default to only root
 //    level was selected" (for these files an empty selection was the result).
 //
+//    Gunther H. Weber, Tue Apr 15 17:43:30 PDT 2008
+//    Add support to automatically import a coordinate mapping file via conn_cmfe
+//
 // ****************************************************************************
 
 void
@@ -1284,6 +1293,66 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         md->AddExpression(*it);
     }
+
+    //
+    // Check for existence of mapping file
+    //
+    if (checkForMappingFile)
+    {
+        std::string mappingFilename(filenames[0]);
+        size_t extPos = mappingFilename.find(".hdf5");
+        if  (extPos == std::string::npos)
+        {
+            extPos = mappingFilename.find(".h5");
+        }
+
+        if (extPos != std::string::npos)
+        {
+            mappingFilename.insert(extPos, ".map");
+
+            VisItStat_t fs;
+            if (VisItStat(mappingFilename.c_str(), &fs) == 0)
+            {
+                debug5 << "Found mapping file " << mappingFilename << ". ";
+                debug5 << "Adding cmfe expressions." << std::endl;
+
+                std::string mappingVarPrefix(filenames[0]);
+                for (std::string::iterator it = mappingVarPrefix.begin();
+                        it != mappingVarPrefix.end(); ++it)
+                    if (!isalnum(*it))
+                        *it = '_';
+                
+                Expression *mappingExpression = new Expression;
+                mappingExpression->SetName("_"+mappingVarPrefix+"_disp");
+                mappingExpression->SetType(Expression::VectorMeshVar);
+                mappingExpression->SetHidden(false);
+
+                if (dimension == 2)
+                    mappingExpression->SetDefinition(
+                            "{conn_cmfe(<"+mappingFilename+":x>,Mesh)-coords(Mesh)[0]," +
+                            "conn_cmfe(<"+mappingFilename+":y>,Mesh)-coords(Mesh)[1]}");
+                else
+                    mappingExpression->SetDefinition(
+                            "{conn_cmfe(<"+mappingFilename+":x>,Mesh)-coords(Mesh)[0]," +
+                            "conn_cmfe(<"+mappingFilename+":y>,Mesh)-coords(Mesh)[1]," +
+                            "conn_cmfe(<"+mappingFilename+":z>,Mesh)-coords(Mesh)[2]}");
+
+                md->AddExpression(mappingExpression);
+            }
+            else
+            {
+                debug5 << "No mapping file " << mappingFilename << " exists. ";
+                debug5 << "No need to add cmfe expressions." << std::endl;
+            }
+        }
+        else
+        {
+            debug1 << "Warning: Chombo file does not have .h5 or .hdf5 extension. ";
+            debug1 << "Cannot figure out possible filename for coordinate mapping file. ";
+            debug1 << "Ignoring any mapping files." << endl;
+        }
+    }
+
 
     //
     // Add information about SIL restrictions

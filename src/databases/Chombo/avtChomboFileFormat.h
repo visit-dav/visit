@@ -112,6 +112,9 @@ class DBOptionsAttributes;
 //    Gunther H. Weber, Mon Mar 24 20:45:05 PDT 2008
 //    Added support for node centered Chombo files.
 //
+//    Gunther H. Weber, Tue Apr 15 17:43:30 PDT 2008
+//    Add support to automatically import a coordinate mapping file via conn_cmfe
+//
 // ****************************************************************************
 
 class avtChomboFileFormat : public avtSTMDFileFormat
@@ -156,6 +159,7 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     bool                   useGhosts;
     bool                   enableOnlyRootLevel;
     bool                   enableOnlyExplicitMaterials;
+    bool                   checkForMappingFile;
 
     std::vector<int>       lowProbI;
     std::vector<int>       hiProbI;
