@@ -1944,7 +1944,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     //
     // Multi-vars
     //
-    bool haveAddedNodelistEnumerations = false;
+    map<string, bool> haveAddedNodelistEnumerations;
     for (i = 0 ; i < nmultivar ; i++)
     {
         string meshname;
@@ -2010,6 +2010,9 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         string  varUnits;
 	bool    guiHide = false;
 
+	if (haveAddedNodelistEnumerations.find(meshname) ==
+	    haveAddedNodelistEnumerations.end())
+            haveAddedNodelistEnumerations[meshname] = false;;
         int nvals = 1;
         if (valid_var)
         {
@@ -2114,13 +2117,21 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 smd->hasUnits = true;
                 smd->units = varUnits;
             }
-	    if (codeNameGuess == "Ale3d" && string(multivar_names[i]) == "rlxstat")
-	        AddAle3drlxstatEnumerationInfo(smd);
-            else if (codeNameGuess == "BlockStructured" && !haveAddedNodelistEnumerations)
+
+	    //
+	    // Handle special cases for enumerated variables
+	    //
+	    if (valid_var)
 	    {
-		haveAddedNodelistEnumerations = true;
-	        AddNodelistEnumerations(dbfile, md, meshname);
-            }
+	        if (codeNameGuess == "Ale3d" && string(multivar_names[i]) == "rlxstat")
+	            AddAle3drlxstatEnumerationInfo(smd);
+                else if (codeNameGuess == "BlockStructured" && !haveAddedNodelistEnumerations[meshname])
+	        {
+                    haveAddedNodelistEnumerations[meshname] = true;;
+	            AddNodelistEnumerations(dbfile, md, meshname);
+                }
+	    }
+
             md->Add(smd);
         }
         else
@@ -3296,6 +3307,8 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile,
         cache->CacheVoidRef("any_mesh",
                        AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, ts, -1, vr);
 
+	cerr << "Caching it now" << endl;
+
         //
         // Hard to characterize when we would or would not be
         // able to do dynamic load balancing, so just turn it off.
@@ -4228,6 +4241,12 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname, int which_mm,
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   March 18, 2008 
+//
+//  Modifications:
+//    Mark C. Miller, Tue Apr 15 19:53:08 PDT 2008
+//    Made it deal with case where domain boundary info object is NOT
+//    available by falling back to attempting to get the actual mesh dataset.
+//    Also, deal with case where groupIds is NOT set.
 // ****************************************************************************
 #if !defined(min)
 #define silo_min_was_defined
@@ -4242,6 +4261,8 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
 {
     int i;
     vtkDataArray *nlvar = 0;
+    int domExtents[6];
+    string meshName = metadata->MeshForVar("Nodelists");
 
     //
     // Lookup the domain boundary info object. If we don't have it,
@@ -4253,28 +4274,55 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     void_ref_ptr vr = cache->GetVoidRef("any_mesh",
                       AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1);
 
-    if (*vr == 0)
-        return 0;
-
     //
     // Get the expecte size of this variable from the structured boundary info
     //
-    avtStructuredDomainBoundaries *dbi = (avtStructuredDomainBoundaries*)*vr;
-    int domExtents[6];
-    dbi->GetExtents(domain, domExtents);
-    for (i = 0; i < 6; i++)
-        domExtents[i]--;
+    if (*vr == 0)
+    {
+	// didn't find the doumain boundary object in the cache. This is
+	// probably a single dom/block mesh. So, try getting the actual
+	// mesh dataset from the cache.
+        vtkDataSet *ds = (vtkDataSet *) cache->GetVTKObject(meshName.c_str(),
+	                                    avtVariableCache::DATASET_NAME,
+                                            timestep, domain, "_all");
+        if (ds == 0)
+	    return 0;
+
+	// we expect really only two kinds of meshes here.
+	int dims[3];
+        if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+	{
+	    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(ds);
+	    rgrid->GetDimensions(dims);
+	}
+	else if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+	{
+	    vtkStructuredGrid *sgrid = vtkStructuredGrid::SafeDownCast(ds);
+	    sgrid->GetDimensions(dims);
+	}
+	else
+	{
+	    return 0;
+	}
+
+	// The dims returned here are in terms of numbers of nodes. But the
+	// logic below assumes things are in terms of numbers of zones.
+	// So, we adjust for that by subtracting 1.
+	domExtents[0] = domExtents[2] = domExtents[4] = 0;
+	domExtents[1] = dims[0]-1;
+	domExtents[3] = dims[1]-1;
+	domExtents[5] = dims[2]-1;
+    }
+    else
+    {
+        avtStructuredDomainBoundaries *dbi = (avtStructuredDomainBoundaries*)*vr;
+        dbi->GetExtents(domain, domExtents);
+        for (i = 0; i < 6; i++)
+            domExtents[i]--;
+    }
     int domNx = domExtents[1] - domExtents[0] + 1;
     int domNy = domExtents[3] - domExtents[2] + 1;
     int domNz = domExtents[5] - domExtents[4] + 1;
-    debug5 << "For domain " << domain << endl;
-    debug5 << "    domNx = " << domNx << endl;
-    debug5 << "    domNy = " << domNy << endl;
-    debug5 << "    domNz = " << domNz << endl;
-    debug5 << "    Extents = ";
-    for (int rr = 0; rr < 6; rr++)
-        debug5 << domExtents[rr] << ", ";
-    debug5 << endl;
 
     //
     // Initialize the return variable array with exlude value
@@ -4288,9 +4336,8 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     //
     // Map this domain id to a block number for the block structured mesh
     //
-    string meshName = metadata->MeshForVar("Nodelists");
     const avtMeshMetaData *mmd = metadata->GetMesh(meshName);
-    int blockNum = mmd->groupIds[domain];
+    int blockNum = mmd->groupIds.size() ? mmd->groupIds[domain] : 0;
 
     //
     // Iterate over all nodesets, finding those that have 'windows' on
