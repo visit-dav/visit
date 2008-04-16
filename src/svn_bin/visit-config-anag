@@ -23,9 +23,9 @@
                 <Field name="typeNames" type="stringVector">"Chombo"</Field>
                 <Field name="typeIDs" type="stringVector">"Chombo_1.0"</Field>
                 <Object name="DBOptionsAttributes">
-                    <Field name="types" type="intVector">0 0 0 </Field>
-                    <Field name="names" type="stringVector">"Use ghost data (if present)" "Enable only root level by default" "Enable only explicitly defined materials by default" </Field>
-                    <Field name="optBools" type="intVector">1 1 1 </Field>
+                    <Field name="types" type="intVector">0 0 0 0 </Field>
+                    <Field name="names" type="stringVector">"Use ghost data (if present)" "Enable only root level by default" "Enable only explicitly defined materials by default" "Check for mapping file and import coordinates if available" </Field>
+                    <Field name="optBools" type="intVector">1 1 1 1 </Field>
                 </Object>
             </Object>
         </Object>
