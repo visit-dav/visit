@@ -133,7 +133,6 @@ static void RemoveValuesForSkippedZones(vector<int>& zoneRangesSkipped,
 
 static string GuessCodeNameFromTopLevelVars(DBfile *dbfile);
 static void AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd);
-static void AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md, string mn);
 
 bool avtSiloFileFormat::madeGlobalSiloCalls = false;
 
@@ -1368,6 +1367,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     //
     // Multi-meshes
     //
+    map<string, bool> haveAddedNodelistEnumerations;
     for (i = 0 ; i < nmultimesh ; i++)
     {
         bool valid_var = true;
@@ -1619,6 +1619,16 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         // Store off the important info about this multimesh
         // so we can match other multi-objects to it later
         StoreMultimeshInfo(dirname, i, name_w_dir, meshnum, mm);
+
+	//
+	// Handle special case for enumerated scalar rep for nodelists
+	//
+        if (codeNameGuess == "BlockStructured" &&
+	    !haveAddedNodelistEnumerations[name_w_dir])
+	{
+            haveAddedNodelistEnumerations[name_w_dir] = true;
+	    AddNodelistEnumerations(dbfile, md, name_w_dir);
+        }
 
         delete [] name_w_dir;
     }
@@ -1944,7 +1954,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     //
     // Multi-vars
     //
-    map<string, bool> haveAddedNodelistEnumerations;
     for (i = 0 ; i < nmultivar ; i++)
     {
         string meshname;
@@ -2121,16 +2130,9 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 	    //
 	    // Handle special cases for enumerated variables
 	    //
-	    if (valid_var)
-	    {
-	        if (codeNameGuess == "Ale3d" && string(multivar_names[i]) == "rlxstat")
-	            AddAle3drlxstatEnumerationInfo(smd);
-                else if (codeNameGuess == "BlockStructured" && !haveAddedNodelistEnumerations[meshname])
-	        {
-                    haveAddedNodelistEnumerations[meshname] = true;;
-	            AddNodelistEnumerations(dbfile, md, meshname);
-                }
-	    }
+	    if (valid_var && codeNameGuess == "Ale3d" &&
+	        strstr(multivar_names[i], "rlxstat") != 0)
+	        AddAle3drlxstatEnumerationInfo(smd);
 
             md->Add(smd);
         }
@@ -3307,8 +3309,6 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile,
         cache->CacheVoidRef("any_mesh",
                        AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, ts, -1, vr);
 
-	cerr << "Caching it now" << endl;
-
         //
         // Hard to characterize when we would or would not be
         // able to do dynamic load balancing, so just turn it off.
@@ -4247,15 +4247,12 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname, int which_mm,
 //    Made it deal with case where domain boundary info object is NOT
 //    available by falling back to attempting to get the actual mesh dataset.
 //    Also, deal with case where groupIds is NOT set.
+//
+//    Mark C. Miller, Thu Apr 17 10:30:54 PDT 2008
+//    With help from Cyrus, fixed some indexing errors between domain-local
+//    and group-global indexing.
 // ****************************************************************************
-#if !defined(min)
-#define silo_min_was_defined
-#define min(A,B)	((A)<(B)?(A):(B))
-#endif
-#if !defined(max)
-#define silo_max_was_defined
-#define max(A,B)	((A)>(B)?(A):(B))
-#endif
+
 vtkDataArray *
 avtSiloFileFormat::GetNodelistsVar(int domain)
 {
@@ -4263,81 +4260,86 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     vtkDataArray *nlvar = 0;
     int domExtents[6];
     string meshName = metadata->MeshForVar("Nodelists");
+    const avtMeshMetaData *mmd = metadata->GetMesh(meshName);
+
+    debug5 << "Reading in domain " << domain << ", variable Nodelists" << endl;
 
     //
-    // Lookup the domain boundary info object. If we don't have it,
-    // we can't do this operation. We pretty much assume the only
-    // case where we'll be trying to construct a nodelist 'variable'
-    // is one where we've got a quad mesh decomposed into blocks that
-    // have boundary information already defined.
+    // Look up the mesh in the cache.
     //
-    void_ref_ptr vr = cache->GetVoidRef("any_mesh",
-                      AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1);
-
-    //
-    // Get the expecte size of this variable from the structured boundary info
-    //
-    if (*vr == 0)
-    {
-	// didn't find the doumain boundary object in the cache. This is
-	// probably a single dom/block mesh. So, try getting the actual
-	// mesh dataset from the cache.
-        vtkDataSet *ds = (vtkDataSet *) cache->GetVTKObject(meshName.c_str(),
-	                                    avtVariableCache::DATASET_NAME,
+    vtkDataSet *ds = (vtkDataSet *) cache->GetVTKObject(meshName.c_str(),
+                                            avtVariableCache::DATASET_NAME,
                                             timestep, domain, "_all");
-        if (ds == 0)
-	    return 0;
+    if (ds == 0)
+    {
+        char msg[256];
+	SNPRINTF(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
+	    "paint Nodelists variable", meshName.c_str(), domain);
+        EXCEPTION1(ImproperUseException, msg);
+    }
 
-	// we expect really only two kinds of meshes here.
-	int dims[3];
-        if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
-	{
-	    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(ds);
-	    rgrid->GetDimensions(dims);
-	}
-	else if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
-	{
-	    vtkStructuredGrid *sgrid = vtkStructuredGrid::SafeDownCast(ds);
-	    sgrid->GetDimensions(dims);
-	}
-	else
-	{
-	    return 0;
-	}
-
-	// The dims returned here are in terms of numbers of nodes. But the
-	// logic below assumes things are in terms of numbers of zones.
-	// So, we adjust for that by subtracting 1.
-	domExtents[0] = domExtents[2] = domExtents[4] = 0;
-	domExtents[1] = dims[0]-1;
-	domExtents[3] = dims[1]-1;
-	domExtents[5] = dims[2]-1;
+    // we expect really only two kinds of meshes here.
+    int dims[3];
+    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(ds);
+        rgrid->GetDimensions(dims);
+    }
+    else if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+    {
+        vtkStructuredGrid *sgrid = vtkStructuredGrid::SafeDownCast(ds);
+        sgrid->GetDimensions(dims);
     }
     else
     {
-        avtStructuredDomainBoundaries *dbi = (avtStructuredDomainBoundaries*)*vr;
-        dbi->GetExtents(domain, domExtents);
-        for (i = 0; i < 6; i++)
-            domExtents[i]--;
+        char msg[256];
+	SNPRINTF(msg, sizeof(msg), "Do not recognize dataset type for mesh \"%s\" "
+	    "for domain %d to paint Nodelists variable", meshName.c_str(), domain);
+        EXCEPTION1(ImproperUseException, msg);
     }
-    int domNx = domExtents[1] - domExtents[0] + 1;
-    int domNy = domExtents[3] - domExtents[2] + 1;
-    int domNz = domExtents[5] - domExtents[4] + 1;
+
+    vtkIntArray *arr = vtkIntArray::SafeDownCast(ds->GetFieldData()->GetArray("base_index"));
+    if (arr == 0)
+    {
+        char msg[256];
+	SNPRINTF(msg, sizeof(msg), "Cannot find field data array \"base_index\""
+	    "on mesh \"%s\" for domain %d to paint Nodelists variable", meshName.c_str(), domain);
+        EXCEPTION1(ImproperUseException, msg);
+    }
+    int base_index[3];
+    base_index[0] = arr->GetValue(0) ? arr->GetValue(0)-1 : 0;
+    base_index[1] = arr->GetValue(1) ? arr->GetValue(1)-1 : 0;
+    base_index[2] = arr->GetValue(2) ? arr->GetValue(2)-1 : 0;
+
+    vtkIntArray *arr1 = vtkIntArray::SafeDownCast(ds->GetFieldData()->GetArray("group_id"));
+    if (arr1 == 0)
+    {
+        char msg[256];
+	SNPRINTF(msg, sizeof(msg), "Cannot find field data array \"group_id\""
+	    "on mesh \"%s\" for domain %d to paint Nodelists variable", meshName.c_str(), domain);
+        EXCEPTION1(ImproperUseException, msg);
+    }
+    int blockNum = arr1->GetValue(0);
+
+    int group_min_idx[3] = {0,0,0};
+    int group_max_idx[3] = {0,0,0};
+
+    group_min_idx[0] = base_index[0];
+    group_min_idx[1] = base_index[1];
+    group_min_idx[2] = base_index[2];
+
+    group_max_idx[0] = base_index[0] + dims[0] - 1;
+    group_max_idx[1] = base_index[1] + dims[1] - 1;
+    group_max_idx[2] = base_index[2] + dims[2] - 1;
 
     //
     // Initialize the return variable array with exlude value
     //
     nlvar = vtkFloatArray::New();
-    nlvar->SetNumberOfTuples(domNx*domNy*domNz);
+    nlvar->SetNumberOfTuples(dims[0]*dims[1]*(dims[2]?dims[2]:1));
     float *ptr = (float *) nlvar->GetVoidPointer(0);
-    for (i = 0; i < domNx*domNy*domNz; i++)
+    for (i = 0; i < dims[0]*dims[1]*(dims[2]?dims[2]:1); i++)
         ptr[i] = -1.0; // always exclude value 
-
-    //
-    // Map this domain id to a block number for the block structured mesh
-    //
-    const avtMeshMetaData *mmd = metadata->GetMesh(meshName);
-    int blockNum = mmd->groupIds.size() ? mmd->groupIds[domain] : 0;
 
     //
     // Iterate over all nodesets, finding those that have 'windows' on
@@ -4346,62 +4348,63 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     const vector<int> &windowsOnThisBlock = nlBlockToWindowsMap[blockNum];
     for (i = 0; i < windowsOnThisBlock.size(); i += 7)
     {
-	debug5 << "Checking window " << i/7 << endl;
-
 	//
         // Entries in windowsOnThisBlock vector come in groups of 7.
 	// First one is the nodelist id (value), next 6 are its window
 	//
 	int val = windowsOnThisBlock[i];
-	debug5 << "   var value = " << val << endl;
 	int winExtents[6];
-	debug5 << "   extents = ";
 	for (int q = 0; q < 6; q++)
-	{
 	    winExtents[q] = windowsOnThisBlock[i+1+q];
-	    debug5 << winExtents[q] << ", ";
-        }
-	debug5 << endl;
 
-        if (domExtents[0] > winExtents[1] || // dom's xmin > win's xmax
-	    domExtents[1] < winExtents[0] || // dom's xmax < win's xmin
-            domExtents[2] > winExtents[3] || // dom's ymin > win's ymax
-	    domExtents[3] < winExtents[2] || // dom's ymax < win's ymin
-            domExtents[4] > winExtents[5] || // dom's zmin > win's zmax
-	    domExtents[5] < winExtents[4])   // dom's zmax < win's zmin
-            continue;
+        // find intersection between extents and group_min_idx & group_max_idx
+        int isec[6];
+        isec[0] = winExtents[0] > group_min_idx[0] ? winExtents[0] : group_min_idx[0];
+        isec[1] = winExtents[1] < group_max_idx[0] ? winExtents[1] : group_max_idx[0];
+        isec[2] = winExtents[2] > group_min_idx[1] ? winExtents[2] : group_min_idx[1];
+        isec[3] = winExtents[3] < group_max_idx[1] ? winExtents[3] : group_max_idx[1];
+        isec[4] = winExtents[4] > group_min_idx[2] ? winExtents[4] : group_min_idx[2];
+        isec[5] = winExtents[5] < group_max_idx[2] ? winExtents[5] : group_max_idx[2];
+                    
+        // shift back to domain logical coords
+        isec[0] -= base_index[0];
+        isec[1] -= base_index[0];
+        isec[2] -= base_index[1];
+        isec[3] -= base_index[1];
+        isec[4] -= base_index[2];
+        isec[5] -= base_index[2];
 
+	// For 2D, ensure we enter outermost loop, below, for one iteration 
+	if (dims[2] == 0) isec[5] = isec[4] = 0;
+                    
         //
 	// We've got a block window that overlaps with the current domain's
 	// extents. This mean's the domain contains nodes that are part of
 	// this window. So, now we need to 'paint' values for this nodelist
 	// into the variable array we are returning.
 	//
-	int nxy = domNx * domNy;
-	for (int zi = max(domExtents[4],winExtents[4]);
-	         zi < min(domExtents[5],winExtents[5])+1; zi++)
+	int nxy = dims[0] * dims[1];
+	for (int zi = isec[4]; zi <= isec[5]; zi++)
         {
-	    for (int yi = max(domExtents[2],winExtents[2]);
-	             yi < min(domExtents[3],winExtents[3])+1; yi++)
+	    for (int yi = isec[2]; yi <= isec[3]; yi++)
 	    {
-	        for (int xi = max(domExtents[0],winExtents[0]);
-	                 xi < min(domExtents[1],winExtents[1])+1; xi++)
+	        for (int xi = isec[0]; xi <= isec[1]; xi++)
 	        {
 #ifdef USE_BIT_MASK_FOR_NODELIST_ENUMS
-		    if (ptr[zi*nxy + yi*domNx + xi] == -1.0)
-                        ptr[zi*nxy + yi*domNx + xi] = 1<<val;
+		    if (ptr[zi*nxy + yi*dims[0] + xi] == -1.0)
+                        ptr[zi*nxy + yi*dims[0] + xi] = 1<<val;
                     else
 		    {
-                        int curval = int(ptr[zi*nxy + yi*domNx + xi]);
+                        int curval = int(ptr[zi*nxy + yi*dims[0] + xi]);
 			curval |= (1<<val);
-                        ptr[zi*nxy + yi*domNx + xi] = curval;
+                        ptr[zi*nxy + yi*dims[0] + xi] = curval;
                     }
 #else
-		    if (ptr[zi*nxy + yi*domNx + xi] == -1.0)
+		    if (ptr[zi*nxy + yi*dims[0] + xi] == -1.0)
 		    {
 		        // If the value at this node is uninitialized, set it to
 		        // this nodeset's id
-                        ptr[zi*nxy + yi*domNx + xi] = (float) val;
+                        ptr[zi*nxy + yi*dims[0] + xi] = (float) val;
 		    }
 		    else
 		    {
@@ -4410,10 +4413,10 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
 			// the sets this node is already in plus the new one
 			// we're adding. Use avtScalarMetaData helper method
 			// to do it.
-			double curval = ptr[zi*nxy + yi*domNx + xi];
+			double curval = ptr[zi*nxy + yi*dims[0] + xi];
 		        avtScalarMetaData::UpdateValByInsertingDigit(&curval,
 			    numNodeLists, maxCoincidentNodelists, pascalsTriangleMap, val);
-                        ptr[zi*nxy + yi*domNx + xi] = float(curval);
+                        ptr[zi*nxy + yi*dims[0] + xi] = float(curval);
 		    }
 #endif
 	        }
@@ -4423,12 +4426,6 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
 
     return nlvar;
 }
-#if defined(silo_min_was_defined)
-#undef min 
-#endif
-#if defined(silo_max_was_defined)
-#undef max
-#endif
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetVar
