@@ -67,8 +67,10 @@
     <Field name="enumGraphEdges" label="Enumeration values graph" type="intVector" access="public">
     </Field>
     <Field name="enumNChooseRN" label="N value for NChooseR mode" type="int">
+      0
     </Field>
     <Field name="enumNChooseRMaxR" label="MaxR value for NChooseR mode" type="int">
+      0
     </Field>
     <Function name="avtScalarMetaData2" user="true" member="true">
     </Function>

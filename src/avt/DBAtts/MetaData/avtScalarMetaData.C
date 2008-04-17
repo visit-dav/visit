@@ -153,6 +153,8 @@ avtScalarMetaData::avtScalarMetaData() :
     enumAlwaysInclude[0] = +DBL_MAX;
     enumAlwaysInclude[1] = -DBL_MAX;
     enumPartialCellMode = Exclude;
+    enumNChooseRN = 0;
+    enumNChooseRMaxR = 0;
 }
 
 // ****************************************************************************
@@ -609,6 +611,8 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
     enumAlwaysExclude[1] = -DBL_MAX;
     enumPartialCellMode = Exclude;
     hideFromGUI = false;
+    enumNChooseRN = 0;
+    enumNChooseRMaxR = 0;
 }
 
 // ****************************************************************************
@@ -668,6 +672,8 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
     enumAlwaysExclude[1] = -DBL_MAX;
     enumPartialCellMode = Exclude;
     hideFromGUI = false;
+    enumNChooseRN = 0;
+    enumNChooseRMaxR = 0;
 
     double  extents[2] = { min, max };
     SetExtents(extents);
