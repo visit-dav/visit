@@ -319,6 +319,10 @@
 #     Brad Whitlock, Fri Apr  4 10:38:58 PDT 2008
 #     Fixed a bug with building Silo on the Mac when HDF5 is not used.
 #
+#     Gunther H. Weber, Wed Apr 16 16:26:21 PDT 2008
+#     Check whether Qt configure enables OpenGL support and fail if it
+#     does not.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -2436,12 +2440,21 @@ EOF
     #
     info_box "Configuring Qt: ./configure -platform ${QT_PLATFORM} \
 -shared -qt-libpng $THREAD" 1>&3
-    echo "yes" | ./configure -platform ${QT_PLATFORM} -shared -qt-libpng $THREAD
+    echo "yes" | ./configure -platform ${QT_PLATFORM} -shared -qt-libpng $THREAD | tee qt.config.out
     if [[ $? != 0 ]] ; then
-       echo "Qt configure failed.  Giving up"
+       echo "Qt configure failed. Giving up."
        return 1
     fi
     
+    #
+    # Figure out if configure found the OpenGL libraries
+    #
+    HAS_OPENGL_SUPPORT=`grep "OpenGL support" qt.config.out | sed -e 's/.*\. //'`
+    if [[ "$HAS_OPENGL_SUPPORT" != "yes" ]]; then
+       echo "Qt configure did not find OpenGL. VisIt needs Qt with enabled OpenGL support. Giving up."
+       return 1
+    fi
+
     #
     # If we had to thread, then the libraries will have a "-mt" appended, which
     # screws up other makefiles.  So modify the Makefile to remove the "-mt".
