@@ -200,6 +200,7 @@ PrintUsage(const char *prog)
          << endl;
     cerr << "        -outputtoinputdir  store results in same location as "
          << ".xml file" << endl;
+#ifdef GENERATE_PROJECTFILE
     cerr << "        -version7      (xml2projectfile only) make MSVC .Net "
          << "2003 projects (default)" << endl;
     cerr << "        -version8      (xml2projectfile only) COMING SOON "
