@@ -550,6 +550,7 @@ public class avtScalarMetaData extends AttributeSubject
         return str;
     }
 
+
     // Attributes
     private String   name;
     private String   originalName;
