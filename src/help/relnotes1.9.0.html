@@ -73,7 +73,7 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>The Spreadsheet plot can now highlight the currently picked cell in the viewer
     window</li>
 
-    <li>The <i>apply operators and selections to all plots checkbox is now
+    <li>The <i>apply operators and selections to all plots</i> checkbox is now
         split into to two separate checkboxes to control individually whether operators
         and/or selections will be applied to all plots.</li>
 
@@ -410,7 +410,9 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>The <i>Variables</i> menu does no longer disappear for certain font sizes.</li>
 
     <li>Added a check to QPostableWindow that prevents a window from being
-        posted if it is already posted. 
+        posted if it is already posted. </li>
+
+    <li>For the Windows version, updated the method by which VisIt determines the path to a user's <i>My Documents</i> folder to better support roaming profiles. </li>
 </ul>
 
 <a name="Libsim_changes"></a>
@@ -514,6 +516,23 @@ enhancements and bug-fixes that were added to this release.</p>
         a default system guiconfig file.)
 
     <li>The viewer debug logs now include truncated output from xdpyinfo and glxinfo.</li>
+
+    <li>VisIt's <i>xml2projectfile</i> tool has been improved to generate project files with correct paths when run from the public (installed from binary) version of VisIt or a development version.  
+      <ul><li> <i> Public Version </i> 
+      <ul><li> Project files are stored in the same directory as the '.xml' file from which they were generated.</li>
+           <li> Dll's created from building the solution are stored in the user's <i>"Application Data"</i> folder (with 'LLNL\VisIt' appended), and VisIt searches there on launch. </li>
+      </ul> </li></ul>
+      <ul><li> <i> Development Version -- when plugin is part of the VisIt source tree:</i>
+      <ul><li> Project files will be stored in the appropriate place within the source tree (projects-MSVC7.Net/<i>plugintype</i>) </li>
+          <li> The plugin can be built by using the generated plugin-specific stand-alone solution, or by adding its projects to the general solution file for the plugin's type.</li>
+           <li> Dll's are stored in the appropriate bin directory within the source tree. </li>
+       </ul></li></ul>
+      <ul><li> <i> Development Version -- when plugin is outside the VisIt source tree:</i>
+      <ul><li> Project files will be stored in the same directory as the '.xml' file from which they were generated. </li>
+           <li> Dll's are stored in that same directory.  They can then be moved to the user's <i>"Application Data\LLNL\VisIt"</i> folder.</li>
+           <li> When run on Linux, the generated project files are created according to this paradigm.
+       </ul></li></ul>
+    </li>
 </ul>
 
 <p>Click the following link to view the release notes for the 1.8.1 patch version
