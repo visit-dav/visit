@@ -98,6 +98,9 @@ using     std::string;
 //    Gunther H. Weber, Tue Apr 15 17:43:30 PDT 2008
 //    Add support to automatically import a coordinate mapping file via conn_cmfe
 //
+//    Gunther H. Weber, Thu Apr 17 14:29:25 PDT 2008
+//    Check if an option exists before querying its value
+//
 // ****************************************************************************
 
 avtChomboFileFormat::avtChomboFileFormat(const char *filename, 
@@ -106,14 +109,24 @@ avtChomboFileFormat::avtChomboFileFormat(const char *filename,
 {
     initializedReader = false;
     useGhosts = true;
-    enableOnlyRootLevel = true;
-    enableOnlyExplicitMaterials = true;
+    enableOnlyRootLevel = false;
+    enableOnlyExplicitMaterials = false;
+    checkForMappingFile = true;
     if (atts != NULL)
     {
-        useGhosts = atts->GetBool("Use ghost data (if present)");
-        enableOnlyRootLevel = atts->GetBool("Enable only root level by default");
-        enableOnlyExplicitMaterials = atts->GetBool("Enable only explicitly defined materials by default");
-        checkForMappingFile = atts->GetBool("Check for mapping file and import coordinates if available");
+        for (int i = 0; i < atts->GetNumberOfOptions(); ++i)
+        {
+            if (atts->GetName(i) == "Use ghost data (if present)")
+                useGhosts = atts->GetBool("Use ghost data (if present)");
+            else if (atts->GetName(i) == "Enable only root level by default")
+                enableOnlyRootLevel = atts->GetBool("Enable only root level by default");
+            else if (atts->GetName(i) == "Enable only explicitly defined materials by default")
+                enableOnlyExplicitMaterials = atts->GetBool("Enable only explicitly defined materials by default");
+            else if (atts->GetName(i) == "Check for mapping file and import coordinates if available")
+                checkForMappingFile = atts->GetBool("Check for mapping file and import coordinates if available");
+            else
+                debug1 << "Ignoring unknown option " << atts->GetName(i) << endl;
+        }
     }
 
     file_handle = -1;
@@ -1112,7 +1125,12 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 //    level was selected" (for these files an empty selection was the result).
 //
 //    Gunther H. Weber, Tue Apr 15 17:43:30 PDT 2008
-//    Add support to automatically import a coordinate mapping file via conn_cmfe
+//    Add support to automatically import a coordinate mapping file via
+//    conn_cmfe.
+//
+//    Gunther H. Weber, Thu Apr 17 14:47:44 PDT 2008
+//    Do not use a unique but unreadable name for displacement expression
+//    since database-defined expressions are local to database.
 //
 // ****************************************************************************
 
@@ -1314,16 +1332,19 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             if (VisItStat(mappingFilename.c_str(), &fs) == 0)
             {
                 debug5 << "Found mapping file " << mappingFilename << ". ";
-                debug5 << "Adding cmfe expressions." << std::endl;
+                debug5 << "Adding cmfe expression!" << std::endl;
 
+/*
                 std::string mappingVarPrefix(filenames[0]);
                 for (std::string::iterator it = mappingVarPrefix.begin();
                         it != mappingVarPrefix.end(); ++it)
                     if (!isalnum(*it))
                         *it = '_';
+*/
                 
                 Expression *mappingExpression = new Expression;
-                mappingExpression->SetName("_"+mappingVarPrefix+"_disp");
+                //mappingExpression->SetName("_"+mappingVarPrefix+"_disp");
+                mappingExpression->SetName("_mapping_displacement");
                 mappingExpression->SetType(Expression::VectorMeshVar);
                 mappingExpression->SetHidden(false);
 

@@ -9,27 +9,14 @@ automaticMappingEnabled = False
 def AddMappingDisplacementOperator():
     global automaticMappingEnabled
     if automaticMappingEnabled:
-        # Get active source (database name for current plot)
-        databasename = GetWindowInformation().activeSource
-
-        # Strip computer name
-        filename = databasename[databasename.index(":")+1:len(databasename)]
-
-        # Replace non-alphanumric chars with '_' to obtain prefix for
-        # prefix of displacement expression
-        expressionprefix = string.join([c.isalnum() and c or '_' for c in filename],'')
-
-        # Construct displacement expression name
-        expressionname = "_"+expressionprefix+"_disp"
-
         # Check if  displacement expression exists
-        if expressionname in [exp[0] for exp in Expressions()]:
+        if "_mapping_displacement" in [exp[0] for exp in Expressions()]:
             # If yes, add operator ...
             AddOperator("Displace")
             # ... and set attributes
             DisplaceAtts = DisplaceAttributes()
             DisplaceAtts.factor = 1
-            DisplaceAtts.variable = expressionname
+            DisplaceAtts.variable = "_mapping_displacement"
             SetOperatorOptions(DisplaceAtts)
 
 def onAddPlot(plotType, plotVar):
@@ -180,18 +167,9 @@ def AddMappingToAllPlots():
     for plotNo in range(0, GetNumPlots()):
         SetActivePlots(plotNo)
         plotHidden = GetPlotList().GetPlots(plotNo).hiddenFlag
-        # Get active source (database name for current plot)
-        databasename = GetPlotList().GetPlots(plotNo).databaseName
-        # Strip computer name
-        filename = databasename[databasename.index(":")+1:len(databasename)]
-        # Replace non-alphanumric chars with '_' to obtain prefix for
-        # prefix of displacement expression
-        expressionprefix = string.join([c.isalnum() and c or '_' for c in filename],'')
-        # Construct displacement expression name
-        expressionname = "_"+expressionprefix+"_disp"
         # Check if  displacement expression exists
         plotOperators = GetPlotList().GetPlots(plotNo).operators
-        if expressionname in [exp[0] for exp in Expressions()] and not "Displace" in [OperatorPlugins()[op] for op in plotOperators]:
+        if "_mapping_displacement" in [exp[0] for exp in Expressions()] and not "Displace" in [OperatorPlugins()[op] for op in plotOperators]:
             if not plotHidden:
                 HideActivePlots() # Hide plot so that adding operator does not cause error
             # If yes, add operator ...
@@ -203,10 +181,11 @@ def AddMappingToAllPlots():
             # ... and set attributes
             DisplaceAtts = DisplaceAttributes()
             DisplaceAtts.factor = 1
-            DisplaceAtts.variable = expressionname
+            DisplaceAtts.variable = "_mapping_displacement"
             SetOperatorOptions(DisplaceAtts)
             if not plotHidden:
                 HideActivePlots() # If plot was not hidden, show it again
+    DrawPlots()
     # Restore active plots
     SetActivePlots(apl_save)
 
@@ -214,32 +193,15 @@ def RemoveMappingFromAllPlots():
     # Remeber plots that were active
     apl_save = GetActivePlots()
     for plotNo in range(0, GetNumPlots()):
-        # Get active database name for current plot
-        databasename = GetPlotList().GetPlots(plotNo).databaseName
-        # Strip computer name
-        filename = databasename[databasename.index(":")+1:len(databasename)]
-        # Replace non-alphanumric chars with '_' to obtain prefix for
-        # prefix of displacement expression
-        expressionprefix = string.join([c.isalnum() and c or '_' for c in filename],'')
-        # Construct displacement expression name
-        expressionname = "_"+expressionprefix+"_disp"
         plotOperators = GetPlotList().GetPlots(plotNo).operators
-        print "Plot ", plotNo
-        print "Operators ", plotOperators
         SetActivePlots(plotNo)
         for opNo in range(0, len(plotOperators)):
-            print "Checking operator", opNo, "for plot", plotNo
-            print OperatorPlugins()[plotOperators[opNo]]
-            if OperatorPlugins()[plotOperators[opNo]] == 'Displace' and GetOperatorOptions(opNo).variable == expressionname:
-                print "Removing operator", opNo, "for plot", plotNo
+            if OperatorPlugins()[plotOperators[opNo]] == 'Displace' and GetOperatorOptions(opNo).variable == "_mapping_displacement":
                 RemoveOperator(opNo)
-            else:
-                print "Operator", opNo, "for plot", plotNo, "is not Displace"
     DrawPlots()
     # Restore active plots
     SetActivePlots(apl_save)
 
-  
 def EnableAutomaticMapping():
     global automaticMappingEnabled
     automaticMappingEnabled = True
