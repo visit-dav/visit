@@ -59,6 +59,8 @@
 #if defined(_WIN32)
 #include <windows.h>
 #include <direct.h>
+#include <shlobj.h>
+#include <shlwapi.h>
 #elif defined(__APPLE__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_2 )
 #include <mach-o/dyld.h>
 #include <dirent.h>
@@ -627,9 +629,9 @@ PluginManager::ReadPluginInfo()
           case Viewer:    str = string("libV") + filename.substr(4); break;
           case MDServer:  str = string("libM") + filename.substr(4); break;
           case Engine:    str = string("libE") +
-                              filename.substr(4, filename.length() - 4 - ext.size())
-                              + (parallel ? string("_par") : string("_ser"))
-                              + ext;
+                          filename.substr(4, filename.length() - 4 - ext.size())
+                          + (parallel ? string("_par") : string("_ser"))
+                          + ext;
                           break;
         }
         bool match = false;
@@ -651,8 +653,8 @@ PluginManager::ReadPluginInfo()
             if (filename == alreadyLoaded[j])
             {
                 debug1 << "Skipping plugin " << filename << " in " << dirname 
-                       << ", since a plugin by that name was already loaded from "
-                       << alreadyLoadedDir[j] << endl;
+                       << ", since a plugin by that name was already loaded "
+                       << "from " << alreadyLoadedDir[j] << endl;
                 continue;
             }
         }
@@ -709,7 +711,7 @@ PluginManager::ReadPluginInfo()
                 managerName.size() - ext.size();
             string pluginPrefix(pluginFile.substr(slashPos + 5, len));
             string pluginlib(pluginFile.substr(slashPos + 1, 
-                                               pluginFile.size() - (slashPos+1)));
+                                             pluginFile.size() - (slashPos+1)));
 
             pluginInitErrors += string("   the ")+pluginPrefix+
                                 " plugin in the directory "+dirname+"\n";
@@ -1430,10 +1432,26 @@ PluginManager::SetPluginDir(const char *PluginDir)
             // list already, this isn't a problem.
             if (pluginDirs.empty())
             {
-                debug5 << "No environment variable!" << endl;
+                debug4 << "No environment variable!" << endl;
 #if defined(_WIN32)
-                plugindir = "C:\\VisItWindows\\bin";
-#else
+                char *tmp = new char[MAX_PATH];
+                if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL,
+                                  SHGFP_TYPE_CURRENT, tmp)))
+                {
+                    PathAppend(tmp, "LLNL");
+                    PathAppend(tmp, "VisIt");
+                    pluginDirs.push_back(string(tmp) + SLASH_STRING + 
+                                         managerName + "s");
+                    delete [] tmp;
+                    return;
+                }
+                else
+                {
+                    delete [] tmp;
+                    EXCEPTION1(VisItException,
+                        "The path to AppData variable could not be found.");
+                }
+ #else
                 EXCEPTION1(VisItException,
                     "The environment variable VISITPLUGINDIR must be defined.");
 #endif
@@ -1453,9 +1471,6 @@ PluginManager::SetPluginDir(const char *PluginDir)
         plugindir = PluginDir;
     }
 
-#if defined(_WIN32)
-    pluginDirs.push_back(string(plugindir) + SLASH_STRING + managerName + "s");
-#else
     const char *c = plugindir;
     while (*c)
     {
@@ -1467,13 +1482,12 @@ PluginManager::SetPluginDir(const char *PluginDir)
         }
         if (!dir.empty())
         {
-            pluginDirs.push_back(string(dir) + SLASH_STRING + managerName + "s");
+           pluginDirs.push_back(string(dir) + SLASH_STRING + managerName + "s");
         }
         dir = "";
         if (*c)
             c++;
     }
-#endif
 }
 
 // ****************************************************************************
@@ -1656,12 +1670,12 @@ PluginManager::PluginSymbol(const string &symbol, bool noError)
         int len = openPlugin.size() - slashPos - suffixLen - 5 -
                   managerName.size() - ext.size();
         string pluginPrefix(openPlugin.substr(slashPos + 5, len));
-        debug4 << "PluginSymbol: prefix: " << pluginPrefix << endl;
+//        debug4 << "PluginSymbol: prefix: " << pluginPrefix << endl;
         if(pluginVersion)
             symbolName = string(pluginPrefix + symbol);
         else
             symbolName = string(pluginPrefix + "_" + symbol);
-        debug4 << "PluginSymbol: sym: " << symbolName << endl;
+//        debug4 << "PluginSymbol: sym: " << symbolName << endl;
     }
     
     retval = dlsym(handle, symbolName.c_str());

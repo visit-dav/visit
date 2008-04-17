@@ -10,15 +10,21 @@
 # Creation:   Thu Nov 16 11:46:31 PDT 2006
 #
 # Modifications:
+#   Brad Whitlock, Wed Apr 16 16:44:26 PDT 2008
+#   Add the current time to the movie template so we eventually know all of
+#   the times.
 #
 ###############################################################################
 
 def Sequence1Frames_set_timeslider(i, cbdata):
-    ts = cbdata
+    ts = cbdata[0]
     ret = SetTimeSliderState(i)
     Query("Time")
     time = GetQueryOutputValue()
     ts.text = "Time = %1.5f" % time
+    # Add the time to the movie template
+    cmt = cbdata[1]
+    cmt.databaseTimes = cmt.databaseTimes + [time]
     return ret
 
 ###############################################################################
@@ -33,6 +39,8 @@ def Sequence1Frames_set_timeslider(i, cbdata):
 # Creation:   Thu Nov 16 11:46:31 PDT 2006
 #
 # Modifications:
+#   Brad Whitlock, Wed Apr 16 16:45:24 PDT 2008
+#   Changed calculation of t so that it can be non-uniform.
 #
 ###############################################################################
 
@@ -42,7 +50,9 @@ def Sequence2Frames_clip_cb(i, cbdata):
     xmin = cbdata[2]
     xmax = cbdata[3]
     vc = cbdata[4]
-    t = float(i) / float(nts-1)
+    allTimes = cbdata[5]
+    dT = allTimes[-1] - allTimes[0]
+    t = (allTimes[i] - allTimes[0]) / dT
     newX = t * (xmax - xmin) + xmin
     clip.plane1Origin = (newX, 0, 0)
     ret = SetOperatorOptions(clip)
@@ -60,12 +70,15 @@ def Sequence2Frames_clip_cb(i, cbdata):
 # Creation:   Thu Nov 16 11:46:31 PDT 2006
 #
 # Modifications:
+#   Brad Whitlock, Wed Apr 16 16:45:49 PDT 2008
+#   Added databaseTimes member.
 #
 ###############################################################################
 
 class OverlayCurveMovieTemplate(VisItMovieTemplate):
     def __init__(self, mm, tr):
         VisItMovieTemplate.__init__(self, mm, tr)
+        self.databaseTimes = []
 
     def __del__(self):
         VisItMovieTemplate.__del__(self)
@@ -80,6 +93,8 @@ class OverlayCurveMovieTemplate(VisItMovieTemplate):
     # Creation:   Thu Nov 16 11:46:31 PDT 2006
     #
     # Modifications:
+    #   Brad Whitlock, Wed Apr 16 16:46:27 PDT 2008
+    #   Pass self to the sequence1 callback.
     #
     ###########################################################################
 
@@ -141,7 +156,7 @@ class OverlayCurveMovieTemplate(VisItMovieTemplate):
         title.fontBold = 1
 
         # Save the frames.
-        cb_data = (TimeSliderGetNStates(), Sequence1Frames_set_timeslider, ts)
+        cb_data = (TimeSliderGetNStates(), Sequence1Frames_set_timeslider, (ts, self))
         ret = self.IterateCallbackAndSaveFrames(cb_data, "seq1", formats, percents, "Generating sequence 1 frames")
 
         DeleteAllPlots()
@@ -162,6 +177,8 @@ class OverlayCurveMovieTemplate(VisItMovieTemplate):
     # Creation:   Thu Nov 16 11:46:31 PDT 2006
     #
     # Modifications:
+    #   Brad Whitlock, Wed Apr 16 16:47:11 PDT 2008
+    #   Pass the databaseTimes to the sequence 2 callback.
     #
     ###########################################################################
 
@@ -221,11 +238,14 @@ class OverlayCurveMovieTemplate(VisItMovieTemplate):
 
         # Save the frames. This will be done by some other thing so the 
         # will have the viewport names worked in.
-        cb_data = (nts, Sequence2Frames_clip_cb, (nts, clip, extents[0], extents[1], vc))
+        cb_data = (nts, Sequence2Frames_clip_cb, (nts, clip, extents[0], extents[1], vc, self.databaseTimes))
         ret = self.IterateCallbackAndSaveFrames(cb_data, "seq2", formats, percents, "Generating sequence 2 frames")
 
         title.Delete()
         DeleteAllPlots()
+
+        # Reset the database times
+        self.databaseTimes = []
 
         self.Debug(1, "OverlayCurveMovieTemplate.Sequence2Frames: end")
         return (ret, "seq2", GetAnnotationAttributes().backgroundColor)

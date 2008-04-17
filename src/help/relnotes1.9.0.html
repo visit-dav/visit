@@ -20,10 +20,9 @@ enhancements and bug-fixes that were added to this release.</p>
     by the patch release can be found in the <a href="relnotes1.8.1.html">VisIt 1.8.1 release notes</a>. 
     All version 1.8.1 fixes are included in this release.</li>
 
-    <li>A VisIt wiki site has been set up at <a href="http://www.visitusers.org">www.visitusers.org</a>. The wiki contains contributed 
-      <a href="http://www.visitusers.org/index.php?title=User_Documentation">user documentation</a> and 
-      <a href="http://www.visitusers.org/index.php?title=Developer_Documentation">developer documentation</a>
-    for VisIt. Add to it today! The site also offers a <a href="http://visitusers.org/yabb/YaBB.pl">user forum</a>.</li>
+    <li>A VisIt wiki site has been set up at http://www.visitusers.org. The wiki contains contributed 
+      user documentation and developer documentation for VisIt. Add to it today! The site also offers a
+      user forum.</li>
 
     <li>The release notes have been reorganized so that users can more easily find the changes that interest them.
     <ul>
@@ -134,14 +133,6 @@ enhancements and bug-fixes that were added to this release.</p>
         useful for powerwalls and other demonstration modes where the interface and
         visualizations will run on different monitors.</li>
 
-    <li>VisIt supports more general forms of subsetting with subsets defined via enumerated
-        scalar variables. When a database defines a scalar variable as an <i>enumerated</i>
-	scalar, the enumerationed pieces will appear in VisIt's subset controls window. Previously,
-	these subsets would be defined by variable value only. Now, they may be defined by
-	variable ranges, by bit-masks or by <i>bi-nomial combinations</i>. In addition,
-	the enumerated pieces can be arranged hierarchically as in a part assembly. A common
-	use of this feature is to define nodesets.
-
     <li>VisIt now has custom settings files for the LBNL Applied Numerical Algorithms group
         and its collaborators. These files are located in &lt;VISITINSTALLDIR&gt;/1.9.0/.visit and
         are named visit-config-anag, visit-guiconfig-anag, and visit-visitrc-anag. To enable these
@@ -160,7 +151,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 1.9.0</font></b></p>
 <ul>
-    <li>VisIt now has an <a href="http://www.xdmf.org/index.php/Main_Page">XDMF</a> reader.  The file must end with a ".xmf" extension to be recognized as an XDMF file.<br>
+    <li>VisIt now has an XDMF reader (see http://www.xdmf.org/index.php/Main_Page).  The file must end with a ".xmf" extension to be recognized as an XDMF file.<br>
     Supported features:
     <ul>
         <li>It supports all the grid types, except for the <i>Subset</i> grid type.</li>
@@ -211,6 +202,10 @@ enhancements and bug-fixes that were added to this release.</p>
         with material information.</li>
 
     <li>SAMRAI file format now correctly ghosts material data.</li>
+
+    <li>The CGNS reader was enhanced so it can read data from multiple bases.</li>
+
+    <li>The CGNS reader now correctly handles reading time varying data, including getting time and iteration values from the BaseIterative node.</li>
 
     <li>The Chombo reader was enhanced with<br>
     <ul>
@@ -314,8 +309,6 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>Several bugs with using the recenter expression were fixed.</li>
 
     <li>A bug was fixed where variables from the array_decompose expression could not be plotted.</li>
-
-    <li>There is a new, bitwise, binary and operator '&'</li>
 
     <li>The <i>zonetype(mesh)</i> expression now creates a scalar variable that will plot
     single characters for the zone type (e.g. 'H'=Hex, 'Q'=Quad, 'T'=Tet, etc.)</li>
@@ -498,14 +491,6 @@ enhancements and bug-fixes that were added to this release.</p>
     changed to exercise all hook scripts before existing the meta script. All variables
     associated with hook scripts were moved to a new hooks_var.sh script.</li>
 
-    <li>A shell script tool, <i>regen-ajp</i>, was added to the bin directory to
-    help in regenerating attribute and, where appropriate, java and python code
-    upon regular changes to the source .xml file.</li>
-
-    <li>The xml2<i>whatever</i> tools no longer overwrite header files when they have
-    not changed. This helps prevent lengthening compiles when changing only .code
-    portions of attributes.</li>
-
     <li>avtDataBaseMetaData has a new field suggestedDefaultSILRestriction
         that allows a database plugin to suggest a default SIL restriction for
         plots. This field is a stringVector, where each string is considered as
@@ -527,6 +512,8 @@ enhancements and bug-fixes that were added to this release.</p>
         the initially visible windows are created from the system guiconfig
         file. (This is to enable posting windows such as the "Macros" windows in
         a default system guiconfig file.)
+
+    <li>The viewer debug logs now include truncated output from xdpyinfo and glxinfo.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the 1.8.1 patch version
