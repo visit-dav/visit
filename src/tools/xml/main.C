@@ -167,12 +167,26 @@ std::string java_copyright_str =
 #include "GenerateJava.h"
 #endif
 #ifdef GENERATE_PROJECTFILE
-#include "GenerateProjectFile.h"
 bool generateVersion7Projects = true;
+  #ifdef _WIN32
+    bool buildforvisitsource = false;
+    QString fullVisItDir = "";
+    QString fullCurrentDir = "";
+    QString privatePluginDir = "";
+  #endif
+#include "GenerateProjectFile.h"
 #endif
 
 #include "XMLParser.h"
 
+// ***************************************************************************
+//  Function: PrintUsage
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Apr 17 09:55:07 PDT 2008
+//    Remove -version6 (no longer supported), add -version8.
+//
+// ***************************************************************************
 void
 PrintUsage(const char *prog)
 {
@@ -180,10 +194,17 @@ PrintUsage(const char *prog)
     cerr << "    options:" << endl;
     cerr << "        -clobber       overwrite old files if possible" << endl;
     cerr << "        -noprint       no debug output" << endl;
-    cerr << "        -public        (xml2makefile only) install publicly" << endl;
-    cerr << "        -private       (xml2makefile only) install privately" << endl;
-    cerr << "        -version6      (xml2projectfile only) make MSVC 6.0 projects" << endl;
-    cerr << "        -version7      (xml2projectfile only) make MSVC .Net 2003 projects (default)" << endl;
+    cerr << "        -public        (xml2makefile only) install publicly" 
+         << endl;
+    cerr << "        -private       (xml2makefile only) install privately" 
+         << endl;
+    cerr << "        -outputtoinputdir  store results in same location as "
+         << ".xml file" << endl;
+    cerr << "        -version7      (xml2projectfile only) make MSVC .Net "
+         << "2003 projects (default)" << endl;
+    cerr << "        -version8      (xml2projectfile only) COMING SOON "
+          << "make MSVC 2005 projects " << endl;
+#endif
 }
 
 class ErrorHandler : public QXmlErrorHandler
@@ -258,7 +279,8 @@ Open(ofstream &file, const QString &name_withoutpath)
     }
     if (alreadyexists || !file)
     {
-        cerr << "Warning: Could not create file '"<<name<<"' for writing." << endl;
+        cerr << "Warning: Could not create file '" << name
+             << "' for writing." << endl;
         if (!clobber)
         {
             cerr << "Info: If you wish to overwrite file '"<<name<<"'," << endl;
@@ -451,6 +473,9 @@ void ProcessFile(QString file);
 //    Added -outputtoinputdir.
 //    Check for any nonexistent files before starting the processing.
 //
+//    Kathleen Bonnell, Thu Apr 17 09:55:07 PDT 2008
+//    Remove -version6 (no longer supported), add -version8 (coming soon).
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -496,14 +521,6 @@ int main(int argc, char *argv[])
             i--;
         }
 #ifdef GENERATE_PROJECTFILE
-        else if (strcmp(argv[i], "-version6") == 0)
-        {
-            generateVersion7Projects = false;
-            argc--;
-            for (int j=i; j<argc; j++)
-                argv[j] = argv[j+1];
-            i--;
-        }
         else if (strcmp(argv[i], "-version7") == 0)
         {
             generateVersion7Projects = true;
@@ -512,6 +529,16 @@ int main(int argc, char *argv[])
                 argv[j] = argv[j+1];
             i--;
         }
+#if 0
+        else if (strcmp(argv[i], "-version8") == 0)
+        {
+            generateVersion7Projects = false;
+            argc--;
+            for (int j=i; j<argc; j++)
+                argv[j] = argv[j+1];
+            i--;
+        }
+#endif
 #endif
         else if (strcmp(argv[i], "-outputtoinputdir") == 0)
         {
@@ -560,6 +587,10 @@ int main(int argc, char *argv[])
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Made it re-write header file only when header file has changed
 //
+//    Kathleen Bonnell, Thu Apr 17 09:55:07 PDT 2008
+//    Added code to retrieve the full path for this executable when
+//    generating project files on windows. 
+//
 // ****************************************************************************
 void
 ProcessFile(QString file)
@@ -586,7 +617,9 @@ ProcessFile(QString file)
         QXmlSimpleReader  reader;
         ErrorHandler      errorhandler;
         
-        reader.setFeature("http://trolltech.com/xml/features/report-whitespace-only-CharData", false);
+        reader.setFeature(
+           "http://trolltech.com/xml/features/report-whitespace-only-CharData",
+           false);
         reader.setContentHandler(&parser);
         reader.setErrorHandler(&errorhandler);
         reader.parse(source);
@@ -623,9 +656,11 @@ ProcessFile(QString file)
 
     if (print)
     {
-        cout << "-----------------------------------------------------------------" << endl;
+        cout << "--------------------------------------------------------------"
+             << "---" << endl;
         cout << "               Parsed document of type " << docType << endl;
-        cout << "-----------------------------------------------------------------" << endl;
+        cout << "--------------------------------------------------------------"
+             << "---" << endl;
         cout << endl;
     }
 
@@ -948,6 +983,23 @@ ProcessFile(QString file)
 #ifdef GENERATE_PROJECTFILE
         if (docType == "Plugin")
         {
+  #ifdef _WIN32
+            // find full path to this executable
+            fullVisItDir = "";
+            char *tmp = new char[MAX_PATH];
+            if (GetModuleFileName(NULL, tmp, 100) != 0)
+            {
+                fullVisItDir = tmp;
+                int lastslash = fullVisItDir.findRev("\\");
+                if (lastslash >= 0)
+                    fullVisItDir = fullVisItDir.left(lastslash+1);
+            }
+            // find full path to file
+            if (GetFullPathName(file, 100, tmp, NULL) > 0)
+            {
+                fullCurrentDir = tmp;
+            }
+  #endif
             // project file writer mode
             plugin->WriteProjectFiles(Open, generateVersion7Projects);
         }

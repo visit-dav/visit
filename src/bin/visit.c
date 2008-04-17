@@ -44,6 +44,9 @@
 #include <windows.h>
 #include <Winbase.h>
 #include <sys/stat.h>
+#include <shlobj.h>
+#include <shlwapi.h>
+#include <snprintf.h>
 
 #if _MSC_VER <= 1310
 #define _VISIT_MSVC "MSVC7.Net"
@@ -490,8 +493,9 @@ ReadKeyFromRoot(HKEY which_root, const char *key, char **keyval)
 
     /* Try and read the key from the system registry. */
     sprintf(regkey, "VISIT%s", VERSION);
-    if (keyval == 0)
+    if (*keyval == 0)
         *keyval = (char *)malloc(500);
+    
     if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
     {
         DWORD keyType, strSize = 500;
@@ -592,31 +596,44 @@ ReadKey(const char *key, char **keyval)
  *   Kathleen Bonnell, Fri Feb 29 16:43:46 PST 2008 
  *   Added call to free visituserpath and visitdevdir.
  *
+ *   Kathleen Bonnell, Thu Apr 17 10:20:25 PDT 2008
+ *   Use SHGetFolderPath to retrieve "My Documents" folder path (no longer
+ *   stored in registry at install) to better support roaming profiles.
+ *   Use "Application Data" path for private plugins, as users have write-
+ *   privileges there (and it better supports roaming profiles).
+ *
  *****************************************************************************/
 
 char *
 AddEnvironment(int useShortFileName)
 {
     char *tmp, *visitpath = 0, *ssh = 0, *sshargs = 0, *visitsystemconfig = 0;
-    char *visituserpath=0, expvisituserpath[512], tmpdir[512];
-    int haveVISITHOME = 0, haveSSH = 0, haveSSHARGS = 0,
-        haveVISITSYSTEMCONFIG = 0, haveVISITUSERHOME=0;
+    char visituserpath[512], expvisituserpath[512], tmpdir[512];
+    int haveVISITHOME = 0, haveSSH = 0, haveSSHARGS = 0;
+    int haveVISITSYSTEMCONFIG = 0, haveVISITUSERHOME=0, haveVISITDEVDIR=0;
     struct _stat fs;
+    TCHAR szPath[MAX_PATH];
 
     /* Try and read values from the registry. */
     haveVISITHOME         = ReadKey("VISITHOME", &visitpath);
     haveSSH               = ReadKey("SSH", &ssh);
     haveSSHARGS           = ReadKey("SSHARGS", &sshargs);
     haveVISITSYSTEMCONFIG = ReadKey("VISITSYSTEMCONFIG", &visitsystemconfig);
-    haveVISITUSERHOME     = ReadKey("VISITUSERHOME", &visituserpath);
+ 
+    if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
+                             SHGFP_TYPE_CURRENT, szPath))) 
+    {
+        SNPRINTF(visituserpath, 512, "%s\\LLNL\\VisIt\\%s", szPath, VERSION);
+        haveVISITUSERHOME = 1;
+    }
 
     /* We could not get the value associated with the key. It may mean
      * that VisIt was not installed properly. Use a default value.
      */
     if(!haveVISITHOME)
     {
-        int haveVISITDEVDIR = 0;
         char *visitdevdir = 0;
+        haveVISITDEVDIR = 0;
         haveVISITDEVDIR = ReadKey("VISITDEVDIR", &visitdevdir);
 
         if(haveVISITDEVDIR)
@@ -645,7 +662,6 @@ AddEnvironment(int useShortFileName)
         }
         free(visitdevdir);
     }
-
 
     if (haveVISITUSERHOME)
     {
@@ -687,7 +703,21 @@ AddEnvironment(int useShortFileName)
     putenv(tmp);
 
     /* Set the plugin dir. */
-    sprintf(tmp, "VISITPLUGINDIR=%s", visitpath);
+    { /* new scope */
+        char appData[MAX_PATH];
+        if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL,
+                                          SHGFP_TYPE_CURRENT, appData)))
+        {
+            PathAppend(appData, "LLNL");
+            PathAppend(appData, "VisIt");
+            sprintf(tmp, "VISITPLUGINDIR=%s:%s", appData, visitpath);
+        }
+        else
+        {
+            sprintf(tmp, "VISITPLUGINDIR=%s", visitpath);
+        }
+    }
+
     putenv(tmp);
 
     /* Set the help dir. */
@@ -724,7 +754,6 @@ AddEnvironment(int useShortFileName)
     free(ssh);
     free(sshargs);
     free(visitsystemconfig);
-    free(visituserpath);
 
     return visitpath;
 }

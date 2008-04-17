@@ -58,11 +58,15 @@
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Aug 30 16:08:44 PST 2005
 //
+//  Modifications:
+//    Brad Whitlock, Tue Apr 15 10:20:10 PDT 2008
+//    Added methods that help us inspect the file contents.
+//
 // ****************************************************************************
 
 class avtCGNSFileFormat : public avtMTMDFileFormat
 {
-  public:
+public:
                        avtCGNSFileFormat(const char *);
     virtual           ~avtCGNSFileFormat();
 
@@ -79,7 +83,7 @@ class avtCGNSFileFormat : public avtMTMDFileFormat
     // If you know the times and cycle numbers, overload this function.
     // Otherwise, VisIt will make up some reasonable ones for you.
     //
-    // virtual void        GetCycles(std::vector<int> &);
+    virtual void           GetCycles(std::vector<int> &);
     virtual void           GetTimes(std::vector<double> &);
     
     virtual int            GetNTimesteps(void);
@@ -91,25 +95,76 @@ class avtCGNSFileFormat : public avtMTMDFileFormat
     virtual vtkDataArray  *GetVar(int, int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
 
-  protected:
+protected:
+    struct VarInfo
+    {
+        intVector   zoneList; // The zones that contain the variable
+        int         cellCentering;
+        int         nodeCentering;
+        int         badCentering;
+        bool        hasUnits;
+        std::string units;
+    };
+    typedef std::map<std::string, VarInfo> StringVarInfoMap;
+
+    struct BaseInformation
+    {
+        std::string      name;
+        int              cellDim;
+        int              physicalDim;
+        int              meshType;
+        stringVector     zoneNames;
+        StringVarInfoMap vars;
+    };
+    typedef std::vector<BaseInformation> BaseInformationVector;
+
+    struct BaseAndZoneList
+    {
+        int       base;
+        intVector zones;
+    };
+
     int                    GetFileHandle();
     void                   ReadTimes();
     bool                   GetCoords(int base, int zone, const int *zsize,
                                      bool structured, float **coords,
                                      int *ncoords);
+    void                   AddReferenceStateExpressions(avtDatabaseMetaData *md,
+                                     int base, int nBases, const std::string &baseName,
+                                     const std::string &meshName);
+    void                   AddVectorExpressions(avtDatabaseMetaData *md, 
+                               bool *haveVelocity, bool *haveMomentum, int nBases,
+                               const std::string &baseName);
+    void                   AddVectorExpression(avtDatabaseMetaData *md, 
+                               bool *haveComponent, int nBases, 
+                               const std::string &baseName, 
+                               const std::string &vecName);
+    bool                   GetVariablesForBase(int base, BaseInformation &baseInfo);
+    bool                   BaseContainsUnits(int base);
 
     vtkDataSet *           GetCurvilinearMesh(int, int, const char *,
                                               const int *);
     vtkDataSet *           GetUnstructuredMesh(int, int, const char *,
                                                const int *);
 
-    int                              fn;
-    bool                             timesRead;
-    doubleVector                     times;
-    std::map<std::string, intVector> MeshDomainMapping;
+    void PrintVarInfo(ostream &out, const VarInfo &var, const char *indent);
+    void PrintStringVarInfoMap(ostream &out, const StringVarInfoMap &vars, const char *indent);
+    void PrintBaseInformation(ostream &out, const BaseInformation &baseInfo);
+
+    char                                  *cgnsFileName;
+    int                                    fn;
+    bool                                   timesRead;
+    bool                                   cgnsCyclesAccurate;
+    bool                                   cgnsTimesAccurate;
+    doubleVector                           times;
+    intVector                              cycles;
+    std::map<std::string, BaseAndZoneList> MeshDomainMapping;
+    std::map<std::string, int>             BaseNameToIndices;
+    std::map<std::string, std::string>     VisItNameToCGNSName;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 };
 
 
 #endif
+

@@ -2110,6 +2110,9 @@ class MakeMovie:
     #   Brad Whitlock, Wed Dec 12 16:15:49 PST 2007
     #   Turn off animation caching if it is on so saving movies will work.
     #
+    #   Brad Whitlock, Wed Apr 16 16:43:03 PDT 2008
+    #   Fixed a problem with finding user-defined movie template work files.
+    #
     ###########################################################################
 
     def GenerateFrames(self):
@@ -2242,7 +2245,11 @@ class MakeMovie:
                     print tFile
                     fileFound = 0
                     for name in (tFile, prefix + "movietemplates" + self.slash + tFile):
-                        tmpPY = os.path.abspath(name)
+                        if (sys.platform != "win32") and string.find(name, "~") != -1:
+                            name2 = string.replace(name, "~", os.getenv("HOME"))
+                        else
+                            name2 = name
+                        tmpPY = os.path.abspath(name2)
                         # Try and stat the tmpPY file.
                         try:
                             s = os.stat(tmpPY)
