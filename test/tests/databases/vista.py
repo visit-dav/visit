@@ -10,6 +10,9 @@
 #  Programmer: Mark C. Miller 
 #  Date:       October 28, 2004 
 #
+#  Modifications:
+#    Mark C. Miller, Thu Apr 17 12:05:19 PDT 2008
+#    Changed '-default_format' to '-assume_format'
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -29,7 +32,7 @@ SetAnnotationAttributes(a)
 #
 # We need to force VisIt to use Vista
 #
-OpenMDServer("localhost",("-default_format","Vista"))
+OpenMDServer("localhost",("-assume_format","Vista"))
 
 # open a Vista/Diablo multi-part file
 OpenDatabase("../data/Vista_test_data/AAAA_00004_00000.SILO")
