@@ -205,6 +205,7 @@ PrintUsage(const char *prog)
          << "2003 projects (default)" << endl;
     cerr << "        -version8      (xml2projectfile only) COMING SOON "
           << "make MSVC 2005 projects " << endl;
+#endif
 }
 
 class ErrorHandler : public QXmlErrorHandler
