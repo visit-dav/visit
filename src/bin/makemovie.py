@@ -2247,7 +2247,7 @@ class MakeMovie:
                     for name in (tFile, prefix + "movietemplates" + self.slash + tFile):
                         if (sys.platform != "win32") and string.find(name, "~") != -1:
                             name2 = string.replace(name, "~", os.getenv("HOME"))
-                        else
+                        else:
                             name2 = name
                         tmpPY = os.path.abspath(name2)
                         # Try and stat the tmpPY file.
