@@ -343,6 +343,11 @@
 #     Check whether Qt configure enables OpenGL support and fail if it
 #     does not.
 #
+#     Thomas R. Treadway, Fri Apr 18 14:03:06 PDT 2008
+#     Correct a printout problem with the -E, display user settable 
+#     environment variables option. Added PAR_INCLUDE and PAR_LIBS 
+#     to the virable list.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -2480,7 +2485,7 @@ EOF
     echo "yes" | ./configure -platform ${QT_PLATFORM} \
 -shared -qt-libpng $THREAD | tee qt.config.out
     if [[ $? != 0 ]] ; then
-       echo "Qt configure failed. Giving up"
+       echo "Qt configure failed. Giving up."
        return 1
     fi
     #
@@ -6717,122 +6722,124 @@ function build_visit
 printvariables () {
   printf "The following is a list of user settable environment variables\n"
   printf "\n"
-  printf "%s%s\n" "OPSYS=" ${OPSYS}
-  printf "%s%s\n" "PROC=" ${PROC}
-  printf "%s%s\n" "REL=" ${REL}
-  printf "%s%s\n" "ARCH=" ${ARCH}
-  printf "%s%s\n" "VISITARCH=" ${VISITARCH}
+  printf "%s%s\n" "OPSYS=" "${OPSYS}"
+  printf "%s%s\n" "PROC=" "${PROC}"
+  printf "%s%s\n" "REL=" "${REL}"
+  printf "%s%s\n" "ARCH=" "${ARCH}"
+  printf "%s%s\n" "VISITARCH=" "${VISITARCH}"
 
-  printf "%s%s\n" "C_COMPILER=" ${C_COMPILER}
-  printf "%s%s\n" "CXX_COMPILER=" ${CXX_COMPILER}
-  printf "%s%s\n" "C_OPT_FLAGS=" ${C_OPT_FLAGS}
-  printf "%s%s\n" "CXX_OPT_FLAGS=" ${CXX_OPT_FLAGS}
+  printf "%s%s\n" "C_COMPILER=" "${C_COMPILER}"
+  printf "%s%s\n" "CXX_COMPILER=" "${CXX_COMPILER}"
+  printf "%s%s\n" "C_OPT_FLAGS=" "${C_OPT_FLAGS}"
+  printf "%s%s\n" "CXX_OPT_FLAGS=" "${CXX_OPT_FLAGS}"
+  printf "%s%s\n" "PAR_INCLUDE=" "${PAR_INCLUDE}"
+  printf "%s%s\n" "PAR_LIBS=" "${PAR_LIBS}"
 
-  printf "%s%s\n" "MAKE=" ${MAKE}
-  printf "%s%s\n" "THIRD_PARTY_PATH=" ${THIRD_PARTY_PATH}
-  printf "%s%s\n" "GROUP=" ${GROUP}
-  printf "%s%s\n" "LOG_FILE=" ${LOG_FILE}
-  printf "%s%s\n" "WGET_OPTS=" ${WGET_OPTS}
-  printf "%s%s\n" "VISIT_VERSION=" ${VISIT_VERSION}
-  printf "%s%s\n" "VISIT_FILE=" ${VISIT_FILE}
+  printf "%s%s\n" "MAKE=" "${MAKE}"
+  printf "%s%s\n" "THIRD_PARTY_PATH=" "${THIRD_PARTY_PATH}"
+  printf "%s%s\n" "GROUP=" "${GROUP}"
+  printf "%s%s\n" "LOG_FILE=" "${LOG_FILE}"
+  printf "%s%s\n" "WGET_OPTS=" "${WGET_OPTS}"
+  printf "%s%s\n" "VISIT_VERSION=" "${VISIT_VERSION}"
+  printf "%s%s\n" "VISIT_FILE=" "${VISIT_FILE}"
 
-  printf "%s%s\n" "VTK_FILE=" ${VTK_FILE}
-  printf "%s%s\n" "VTK_VERSION=" ${VTK_VERSION}
-  printf "%s%s\n" "VTK_DIR=" ${VTK_DIR}
+  printf "%s%s\n" "VTK_FILE=" "${VTK_FILE}"
+  printf "%s%s\n" "VTK_VERSION=" "${VTK_VERSION}"
+  printf "%s%s\n" "VTK_DIR=" "${VTK_DIR}"
 
-  printf "%s%s\n" "CMAKE_FILE=" ${CMAKE_FILE}
-  printf "%s%s\n" "CMAKE_VERSION=" ${CMAKE_VERSION}
-  printf "%s%s\n" "CMAKE_DIR=" ${CMAKE_DIR}
+  printf "%s%s\n" "CMAKE_FILE=" "${CMAKE_FILE}"
+  printf "%s%s\n" "CMAKE_VERSION=" "${CMAKE_VERSION}"
+  printf "%s%s\n" "CMAKE_DIR=" "${CMAKE_DIR}"
 
-  printf "%s%s\n" "MESA_FILE=" ${MESA_FILE}
-  printf "%s%s\n" "MESA_VERSION=" ${MESA_VERSION}
-  printf "%s%s\n" "MESA_TARGET=" ${MESA_TARGET}
-  printf "%s%s\n" "MESA_DIR=" ${MESA_DIR}
+  printf "%s%s\n" "MESA_FILE=" "${MESA_FILE}"
+  printf "%s%s\n" "MESA_VERSION=" "${MESA_VERSION}"
+  printf "%s%s\n" "MESA_TARGET=" "${MESA_TARGET}"
+  printf "%s%s\n" "MESA_DIR=" "${MESA_DIR}"
 
-  printf "%s%s\n" "PYTHON_FILE=" ${PYTHON_FILE}
-  printf "%s%s\n" "PYTHON_VERSION=" ${PYTHON_VERSION}
-  printf "%s%s\n" "PYTHON_COMPATIBILITY_VERSION=" ${PYTHON_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "PYTHON_DIR=" ${PYTHON_DIR}
+  printf "%s%s\n" "PYTHON_FILE=" "${PYTHON_FILE}"
+  printf "%s%s\n" "PYTHON_VERSION=" "${PYTHON_VERSION}"
+  printf "%s%s\n" "PYTHON_COMPATIBILITY_VERSION=" "${PYTHON_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "PYTHON_DIR=" "${PYTHON_DIR}"
 
-  printf "%s%s\n" "QT_FILE=" ${QT_FILE}
-  printf "%s%s\n" "QT_VERSION=" ${QT_VERSION}
-  printf "%s%s\n" "QT_PLATFORM=" ${QT_PLATFORM}
-  printf "%s%s\n" "BV_QT_DIR=" ${BV_QT_DIR}
+  printf "%s%s\n" "QT_FILE=" "${QT_FILE}"
+  printf "%s%s\n" "QT_VERSION=" "${QT_VERSION}"
+  printf "%s%s\n" "QT_PLATFORM=" "${QT_PLATFORM}"
+  printf "%s%s\n" "BV_QT_DIR=" "${BV_QT_DIR}"
 
-  printf "%s%s\n" "SILO_FILE=" ${SILO_FILE}
-  printf "%s%s\n" "SILO_VERSION=" ${SILO_VERSION}
-  printf "%s%s\n" "SILO_COMPATIBILITY_VERSION=" ${SILO_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "SILO_DIR=" ${SILO_DIR}
+  printf "%s%s\n" "SILO_FILE=" "${SILO_FILE}"
+  printf "%s%s\n" "SILO_VERSION=" "${SILO_VERSION}"
+  printf "%s%s\n" "SILO_COMPATIBILITY_VERSION=" "${SILO_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "SILO_DIR=" "${SILO_DIR}"
 
-  printf "%s%s\n" "SZIP_FILE=" ${SZIP_FILE}
-  printf "%s%s\n" "SZIP_VERSION=" ${SZIP_VERSION}
-  printf "%s%s\n" "SZIP_COMPATIBILITY_VERSION=" ${SZIP_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "SZIP_DIR=" ${SZIP_DIR}
+  printf "%s%s\n" "SZIP_FILE=" "${SZIP_FILE}"
+  printf "%s%s\n" "SZIP_VERSION=" "${SZIP_VERSION}"
+  printf "%s%s\n" "SZIP_COMPATIBILITY_VERSION=" "${SZIP_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "SZIP_DIR=" "${SZIP_DIR}"
 
-  printf "%s%s\n" "HDF5_FILE=" ${HDF5_FILE}
-  printf "%s%s\n" "HDF5_VERSION=" ${HDF5_VERSION}
-  printf "%s%s\n" "HDF5_COMPATIBILITY_VERSION=" ${HDF5_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "HDF5_DIR=" ${HDF5_DIR}
+  printf "%s%s\n" "HDF5_FILE=" "${HDF5_FILE}"
+  printf "%s%s\n" "HDF5_VERSION=" "${HDF5_VERSION}"
+  printf "%s%s\n" "HDF5_COMPATIBILITY_VERSION=" "${HDF5_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "HDF5_DIR=" "${HDF5_DIR}"
 
-  printf "%s%s\n" "HDF4_FILE=" ${HDF4_FILE}
-  printf "%s%s\n" "HDF4_VERSION=" ${HDF4_VERSION}
-  printf "%s%s\n" "HDF4_COMPATIBILITY_VERSION=" ${HDF4_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "HDF4_DIR=" ${HDF4_DIR}
+  printf "%s%s\n" "HDF4_FILE=" "${HDF4_FILE}"
+  printf "%s%s\n" "HDF4_VERSION=" "${HDF4_VERSION}"
+  printf "%s%s\n" "HDF4_COMPATIBILITY_VERSION=" "${HDF4_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "HDF4_DIR=" "${HDF4_DIR}"
 
-  printf "%s%s\n" "MILI_FILE=" ${MILI_FILE}
-  printf "%s%s\n" "MILI_VERSION=" ${MILI_VERSION}
-  printf "%s%s\n" "MILI_COMPATIBILITY_VERSION=" ${MILI_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "BV_MILI_DIR=" ${BV_MILI_DIR}
+  printf "%s%s\n" "MILI_FILE=" "${MILI_FILE}"
+  printf "%s%s\n" "MILI_VERSION=" "${MILI_VERSION}"
+  printf "%s%s\n" "MILI_COMPATIBILITY_VERSION=" "${MILI_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "BV_MILI_DIR=" "${BV_MILI_DIR}"
 
-  printf "%s%s\n" "NETCDF_FILE=" ${NETCDF_FILE}
-  printf "%s%s\n" "NETCDF_VERSION=" ${NETCDF_VERSION}
-  printf "%s%s\n" "NETCDF_COMPATIBILITY_VERSION=" ${NETCDF_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "NETCDF_DIR=" ${NETCDF_DIR}
+  printf "%s%s\n" "NETCDF_FILE=" "${NETCDF_FILE}"
+  printf "%s%s\n" "NETCDF_VERSION=" "${NETCDF_VERSION}"
+  printf "%s%s\n" "NETCDF_COMPATIBILITY_VERSION=" "${NETCDF_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "NETCDF_DIR=" "${NETCDF_DIR}"
 
-  printf "%s%s\n" "CGNS_FILE=" ${CGNS_FILE}
-  printf "%s%s\n" "CGNS_VERSION=" ${CGNS_VERSION}
-  printf "%s%s\n" "CGNS_COMPATIBILITY_VERSION=" ${CGNS_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "CGNS_DIR=" ${CGNS_DIR}
+  printf "%s%s\n" "CGNS_FILE=" "${CGNS_FILE}"
+  printf "%s%s\n" "CGNS_VERSION=" "${CGNS_VERSION}"
+  printf "%s%s\n" "CGNS_COMPATIBILITY_VERSION=" "${CGNS_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "CGNS_DIR=" "${CGNS_DIR}"
 
-  printf "%s%s\n" "GDAL_FILE=" ${GDAL_FILE}
-  printf "%s%s\n" "GDAL_VERSION=" ${GDAL_VERSION}
-  printf "%s%s\n" "GDAL_COMPATIBILITY_VERSION=" ${GDAL_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "GDAL_DIR=" ${GDAL_DIR}
+  printf "%s%s\n" "GDAL_FILE=" "${GDAL_FILE}"
+  printf "%s%s\n" "GDAL_VERSION=" "${GDAL_VERSION}"
+  printf "%s%s\n" "GDAL_COMPATIBILITY_VERSION=" "${GDAL_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "GDAL_DIR=" "${GDAL_DIR}"
 
-  printf "%s%s\n" "EXODUS_FILE=" ${EXODUS_FILE}
-  printf "%s%s\n" "EXODUS_VERSION=" ${EXODUS_VERSION}
-  printf "%s%s\n" "EXODUS_COMPATIBILITY_VERSION=" ${EXODUS_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "EXODUS_DIR=" ${EXODUS_DIR}
+  printf "%s%s\n" "EXODUS_FILE=" "${EXODUS_FILE}"
+  printf "%s%s\n" "EXODUS_VERSION=" "${EXODUS_VERSION}"
+  printf "%s%s\n" "EXODUS_COMPATIBILITY_VERSION=" "${EXODUS_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "EXODUS_DIR=" "${EXODUS_DIR}"
 
-  printf "%s%s\n" "BOXLIB_FILE=" ${BOXLIB_FILE}
-  printf "%s%s\n" "BOXLIB_VERSION=" ${BOXLIB_VERSION}
-  printf "%s%s\n" "BOXLIB_COMPATIBILITY_VERSION=" ${BOXLIB_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "BOXLIB_DIR=" ${BOXLIB_DIR}
+  printf "%s%s\n" "BOXLIB_FILE=" "${BOXLIB_FILE}"
+  printf "%s%s\n" "BOXLIB_VERSION=" "${BOXLIB_VERSION}"
+  printf "%s%s\n" "BOXLIB_COMPATIBILITY_VERSION=" "${BOXLIB_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "BOXLIB_DIR=" "${BOXLIB_DIR}"
 
-  printf "%s%s\n" "CFITSIO_FILE=" ${CFITSIO_FILE}
-  printf "%s%s\n" "CFITSIO_VERSION=" ${CFITSIO_VERSION}
-  printf "%s%s\n" "CFITSIO_COMPATIBILITY_VERSION=" ${CFITSIO_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "CFITSIO_DIR=" ${CFITSIO_DIR}
+  printf "%s%s\n" "CFITSIO_FILE=" "${CFITSIO_FILE}"
+  printf "%s%s\n" "CFITSIO_VERSION=" "${CFITSIO_VERSION}"
+  printf "%s%s\n" "CFITSIO_COMPATIBILITY_VERSION=" "${CFITSIO_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "CFITSIO_DIR=" "${CFITSIO_DIR}"
 
-  printf "%s%s\n" "H5PART_FILE=" ${H5PART_FILE}
-  printf "%s%s\n" "H5PART_VERSION=" ${H5PART_VERSION}
-  printf "%s%s\n" "H5PART_COMPATIBILITY_VERSION=" ${H5PART_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "H5PART_DIR=" ${H5PART_DIR}
+  printf "%s%s\n" "H5PART_FILE=" "${H5PART_FILE}"
+  printf "%s%s\n" "H5PART_VERSION=" "${H5PART_VERSION}"
+  printf "%s%s\n" "H5PART_COMPATIBILITY_VERSION=" "${H5PART_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "H5PART_DIR=" "${H5PART_DIR}"
 
-  printf "%s%s\n" "CCMIO_FILE=" ${CCMIO_FILE}
-  printf "%s%s\n" "CCMIO_VERSION=" ${CCMIO_VERSION}
-  printf "%s%s\n" "CCMIO_COMPATIBILITY_VERSION=" ${CCMIO_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "CCMIO_DIR=" ${CCMIO_DIR}
+  printf "%s%s\n" "CCMIO_FILE=" "${CCMIO_FILE}"
+  printf "%s%s\n" "CCMIO_VERSION=" "${CCMIO_VERSION}"
+  printf "%s%s\n" "CCMIO_COMPATIBILITY_VERSION=" "${CCMIO_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "CCMIO_DIR=" "${CCMIO_DIR}"
 
-  printf "%s%s\n" "ITAPS_FILE=" ${ITAPS_FILE}
-  printf "%s%s\n" "ITAPS_VERSION=" ${ITAPS_VERSION}
-  printf "%s%s\n" "ITAPS_COMPATIBILITY_VERSION=" ${ITAPS_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "ITAPS_DIR=" ${ITAPS_DIR}
+  printf "%s%s\n" "ITAPS_FILE=" "${ITAPS_FILE}"
+  printf "%s%s\n" "ITAPS_VERSION=" "${ITAPS_VERSION}"
+  printf "%s%s\n" "ITAPS_COMPATIBILITY_VERSION=" "${ITAPS_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "ITAPS_DIR=" "${ITAPS_DIR}"
 
-  printf "%s%s\n" "VISUS_FILE=" ${VISUS_FILE}
-  printf "%s%s\n" "VISUS_VERSION=" ${VISUS_VERSION}
-  printf "%s%s\n" "VISUS_COMPATIBILITY_VERSION=" ${VISUS_COMPATIBILITY_VERSION}
-  printf "%s%s\n" "VISUS_DIR=" ${VISUS_DIR}
+  printf "%s%s\n" "VISUS_FILE=" "${VISUS_FILE}"
+  printf "%s%s\n" "VISUS_VERSION=" "${VISUS_VERSION}"
+  printf "%s%s\n" "VISUS_COMPATIBILITY_VERSION=" "${VISUS_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "VISUS_DIR=" "${VISUS_DIR}"
 }
 usage () {
   printf "Usage: %s [-45bCcdEefghIijkmnopSsVwxyz] [-a opt] [-l opt]\n" $0
