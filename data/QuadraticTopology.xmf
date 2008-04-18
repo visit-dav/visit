@@ -1,0 +1,422 @@
+<?xml version="1.0" ?>
+<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd" []>
+<Xdmf xmlns:xi="http://www.w3.org/2001/XInclude" Version="2.0">
+	<Domain>
+    <!-- Example of Quadratic Topologies -->
+        <Information Name="Description">
+            Example of a Edge_3 Topology
+        </Information>
+        <Grid Name="Edge_3" GridType="Uniform">
+            <Topology TopologyType="Edge_3" Dimensions="1">
+                <DataItem Format="XML"
+                    Dimensions="1 3"
+                    NumberType="Float">
+                    2 18 10
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="27 3">
+                0.0    0.0    0.0
+                0.5    0.0    0.0
+                1.0    0.0    0.0
+                1.0    0.5    0.0
+                1.0    1.0    0.0
+                0.5    1.0    0.0
+                0.0    1.0    0.0
+                0.0    0.5    0.0
+
+                0.0    0.0    0.5
+                0.5    0.0    0.5
+                1.0    0.0    0.5
+                1.0    0.5    0.5
+                1.0    1.0    0.5
+                0.5    1.0    0.5
+                0.0    1.0    0.5
+                0.0    0.5    0.5
+
+                0.0    0.0    1.0
+                0.5    0.0    1.0
+                1.0    0.0    1.0
+                1.0    0.5    1.0
+                1.0    1.0    1.0
+                0.5    1.0    1.0
+                0.0    1.0    1.0
+                0.0    0.5    1.0
+
+                0.5    0.5    0.0
+                0.5    0.5    0.5
+                0.5    0.5    1.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="27">
+                100 110 120 130 140 150 160 170
+                180 190 200 210 220 230 240 250
+                260 270 280 290 300 310 320 330
+                135 215 295
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="1">
+                100
+                </DataItem>
+            </Attribute>
+        </Grid>
+        <Information Name="Description">
+            Example of a Triangle_6 Topology
+        </Information>
+        <Grid Name="Triangle_6" GridType="Uniform">
+            <Topology TopologyType="Triangle_6" Dimensions="1">
+                <DataItem Format="XML"
+                    Dimensions="1 6"
+                    NumberType="Float">
+                    0 2 18 1 10 9
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="27 3">
+                0.0    0.0    0.0
+                0.5    0.0    0.0
+                1.0    0.0    0.0
+                1.0    0.5    0.0
+                1.0    1.0    0.0
+                0.5    1.0    0.0
+                0.0    1.0    0.0
+                0.0    0.5    0.0
+
+                0.0    0.0    0.5
+                0.5    0.0    0.5
+                1.0    0.0    0.5
+                1.0    0.5    0.5
+                1.0    1.0    0.5
+                0.5    1.0    0.5
+                0.0    1.0    0.5
+                0.0    0.5    0.5
+
+                0.0    0.0    1.0
+                0.5    0.0    1.0
+                1.0    0.0    1.0
+                1.0    0.5    1.0
+                1.0    1.0    1.0
+                0.5    1.0    1.0
+                0.0    1.0    1.0
+                0.0    0.5    1.0
+
+                0.5    0.5    0.0
+                0.5    0.5    0.5
+                0.5    0.5    1.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="27">
+                100 110 120 130 140 150 160 170
+                180 190 200 210 220 230 240 250
+                260 270 280 290 300 310 320 330
+                135 215 295
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="1">
+                100
+                </DataItem>
+            </Attribute>
+        </Grid>
+        <Information Name="Description">
+            Example of a Quadrilateral_8 Topology
+        </Information>
+        <Grid Name="Quadrilateral_8" GridType="Uniform">
+            <Topology TopologyType="Quadrilateral_8" Dimensions="1">
+                <DataItem Format="XML"
+                    Dimensions="1 8"
+                    NumberType="Float">
+                    0 2 18 16 1 10 17 8
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="27 3">
+                0.0    0.0    0.0
+                0.5    0.0    0.0
+                1.0    0.0    0.0
+                1.0    0.5    0.0
+                1.0    1.0    0.0
+                0.5    1.0    0.0
+                0.0    1.0    0.0
+                0.0    0.5    0.0
+
+                0.0    0.0    0.5
+                0.5    0.0    0.5
+                1.0    0.0    0.5
+                1.0    0.5    0.5
+                1.0    1.0    0.5
+                0.5    1.0    0.5
+                0.0    1.0    0.5
+                0.0    0.5    0.5
+
+                0.0    0.0    1.0
+                0.5    0.0    1.0
+                1.0    0.0    1.0
+                1.0    0.5    1.0
+                1.0    1.0    1.0
+                0.5    1.0    1.0
+                0.0    1.0    1.0
+                0.0    0.5    1.0
+
+                0.5    0.5    0.0
+                0.5    0.5    0.5
+                0.5    0.5    1.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="27">
+                100 110 120 130 140 150 160 170
+                180 190 200 210 220 230 240 250
+                260 270 280 290 300 310 320 330
+                135 215 295
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="1">
+                100
+                </DataItem>
+            </Attribute>
+        </Grid>
+        <Information Name="Description">
+            Example of a Tetrahedron_10 Topology
+        </Information>
+        <Grid Name="Tetrahedron_10" GridType="Uniform">
+            <Topology TopologyType="Tetrahedron_10" Dimensions="1">
+                <DataItem Format="XML"
+                    Dimensions="1 10"
+                    NumberType="Float">
+                    0 2 18 4 1 10 9 24 3 11
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="27 3">
+                0.0    0.0    0.0
+                0.5    0.0    0.0
+                1.0    0.0    0.0
+                1.0    0.5    0.0
+                1.0    1.0    0.0
+                0.5    1.0    0.0
+                0.0    1.0    0.0
+                0.0    0.5    0.0
+
+                0.0    0.0    0.5
+                0.5    0.0    0.5
+                1.0    0.0    0.5
+                1.0    0.5    0.5
+                1.0    1.0    0.5
+                0.5    1.0    0.5
+                0.0    1.0    0.5
+                0.0    0.5    0.5
+
+                0.0    0.0    1.0
+                0.5    0.0    1.0
+                1.0    0.0    1.0
+                1.0    0.5    1.0
+                1.0    1.0    1.0
+                0.5    1.0    1.0
+                0.0    1.0    1.0
+                0.0    0.5    1.0
+
+                0.5    0.5    0.0
+                0.5    0.5    0.5
+                0.5    0.5    1.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="27">
+                100 110 120 130 140 150 160 170
+                180 190 200 210 220 230 240 250
+                260 270 280 290 300 310 320 330
+                135 215 295
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="1">
+                100
+                </DataItem>
+            </Attribute>
+        </Grid>
+        <Information Name="Description">
+            Example of a Pyramid_13 Topology
+        </Information>
+        <Grid Name="Pyramid_13" GridType="Uniform">
+            <Topology TopologyType="Pyramid_13" Dimensions="1">
+                <DataItem Format="XML"
+                    Dimensions="1 13"
+                    NumberType="Float">
+                    0 2 18 16 6 1 10 17 8 7 24 25 15
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="27 3">
+                0.0    0.0    0.0
+                0.5    0.0    0.0
+                1.0    0.0    0.0
+                1.0    0.5    0.0
+                1.0    1.0    0.0
+                0.5    1.0    0.0
+                0.0    1.0    0.0
+                0.0    0.5    0.0
+
+                0.0    0.0    0.5
+                0.5    0.0    0.5
+                1.0    0.0    0.5
+                1.0    0.5    0.5
+                1.0    1.0    0.5
+                0.5    1.0    0.5
+                0.0    1.0    0.5
+                0.0    0.5    0.5
+
+                0.0    0.0    1.0
+                0.5    0.0    1.0
+                1.0    0.0    1.0
+                1.0    0.5    1.0
+                1.0    1.0    1.0
+                0.5    1.0    1.0
+                0.0    1.0    1.0
+                0.0    0.5    1.0
+
+                0.5    0.5    0.0
+                0.5    0.5    0.5
+                0.5    0.5    1.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="27">
+                100 110 120 130 140 150 160 170
+                180 190 200 210 220 230 240 250
+                260 270 280 290 300 310 320 330
+                135 215 295
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="1">
+                100
+                </DataItem>
+            </Attribute>
+        </Grid>
+        <Information Name="Description">
+            Example of a Wedge_15 Topology
+        </Information>
+        <Grid Name="Wedge_15" GridType="Uniform">
+            <Topology TopologyType="Wedge_15" Dimensions="1">
+                <DataItem Format="XML"
+                    Dimensions="1 15"
+                    NumberType="Float">
+                    0 16 6 2 18 4 8 15 7 10 11 3 1 17 5
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="27 3">
+                0.0    0.0    0.0
+                0.5    0.0    0.0
+                1.0    0.0    0.0
+                1.0    0.5    0.0
+                1.0    1.0    0.0
+                0.5    1.0    0.0
+                0.0    1.0    0.0
+                0.0    0.5    0.0
+
+                0.0    0.0    0.5
+                0.5    0.0    0.5
+                1.0    0.0    0.5
+                1.0    0.5    0.5
+                1.0    1.0    0.5
+                0.5    1.0    0.5
+                0.0    1.0    0.5
+                0.0    0.5    0.5
+
+                0.0    0.0    1.0
+                0.5    0.0    1.0
+                1.0    0.0    1.0
+                1.0    0.5    1.0
+                1.0    1.0    1.0
+                0.5    1.0    1.0
+                0.0    1.0    1.0
+                0.0    0.5    1.0
+
+                0.5    0.5    0.0
+                0.5    0.5    0.5
+                0.5    0.5    1.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="27">
+                100 110 120 130 140 150 160 170
+                180 190 200 210 220 230 240 250
+                260 270 280 290 300 310 320 330
+                135 215 295
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="1">
+                100
+                </DataItem>
+            </Attribute>
+        </Grid>
+        <Information Name="Description">
+            Example of a Hexahedron_20 Topology
+        </Information>
+        <Grid Name="Hexahedron_20" GridType="Uniform">
+            <Topology TopologyType="Hexahedron_20" Dimensions="1">
+                <DataItem Format="XML"
+                    Dimensions="1 20"
+                    NumberType="Float">
+                    0 2 4 6 16 18 20 22
+                    1 3 5 7 17 19 21 23
+                    8 10 12 14
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="27 3">
+                0.0    0.0    0.0
+                0.5    0.0    0.0
+                1.0    0.0    0.0
+                1.0    0.5    0.0
+                1.0    1.0    0.0
+                0.5    1.0    0.0
+                0.0    1.0    0.0
+                0.0    0.5    0.0
+
+                0.0    0.0    0.5
+                0.5    0.0    0.5
+                1.0    0.0    0.5
+                1.0    0.5    0.5
+                1.0    1.0    0.5
+                0.5    1.0    0.5
+                0.0    1.0    0.5
+                0.0    0.5    0.5
+
+                0.0    0.0    1.0
+                0.5    0.0    1.0
+                1.0    0.0    1.0
+                1.0    0.5    1.0
+                1.0    1.0    1.0
+                0.5    1.0    1.0
+                0.0    1.0    1.0
+                0.0    0.5    1.0
+
+                0.5    0.5    0.0
+                0.5    0.5    0.5
+                0.5    0.5    1.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="27">
+                100 110 120 130 140 150 160 170
+                180 190 200 210 220 230 240 250
+                260 270 280 290 300 310 320 330
+                135 215 295
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="1">
+                100
+                </DataItem>
+            </Attribute>
+        </Grid>
+	</Domain>
+</Xdmf>

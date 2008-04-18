@@ -271,6 +271,11 @@
 #   Brad Whitlock, Thu Dec 13 16:45:04 PST 2007
 #   Added meshorigin.C
 #
+#   Eric Brugger, Fri Apr 18 11:32:53 PDT 2008
+#   I added XDMF test data, both in the form of data files and source code
+#   that generates XDMF files.  I added an infrastructure to optionally build
+#   source code that depends on HDF5 (which the XDMF source code does).
+#
 ##############################################################################
 
 ##
@@ -289,6 +294,12 @@ PDBSRC=pdbdatabase.C correlationtest.C pdbdatabase_link.C
 PDBOBJ=$(PDBSRC:.C=.o)
 PDB=./pdbdatabase ./correlationtest
 PDBEXEC=./pdbdatabase; ./correlationtest
+
+HDF5SRC=xdmf.C
+HDF5OBJ=$(HDF5SRC:.C=.o)
+HDF5=./xdmf
+HDF5EXEC=./xdmf
+
 
 ##
 ## Optional compressed binary data files (w/o extensions)
@@ -313,7 +324,7 @@ BINSRC=samrai_test_data ANALYZE_test_data Vista_test_data Image_test_data \
 LIBS=$(SILO_LIB) @LIBS@
 MATH_LIBS_ONLY=@LIBS@
 LDFLAGS=@LDFLAGS@
-CXXFLAGS=@CXXFLAGS@
+CXXFLAGS=$(HDF5_INCLUDE) @CXXFLAGS@
 CPPFLAGS=@CPPFLAGS@ -I. -I@DATA_REL_VISIT_PATH@/include -I@DATA_REL_VISIT_PATH@/include/visit @SILO_INCLUDE@ @PDB_FLAGS@ @VTK_INCLUDES@
 
 ##
@@ -330,9 +341,9 @@ OBJ=$(SRC:.C=.o)
 ##
 ## Standard targets...
 ##
-all: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./distribution_curves ./csg ./lowfrac ./bov ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test @PDB@ $(BINSRC)
+all: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./distribution_curves ./csg ./lowfrac ./bov ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test @HDF5@ @PDB@ $(BINSRC)
 
-test: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./distribution_curves ./csg ./lowfrac ./bov ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test @PDB@ $(BINSRC)
+test: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./distribution_curves ./csg ./lowfrac ./bov ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test @HDF5@ @PDB@ $(BINSRC)
 	./bigsil
 	./curve_builder
 	./global_node
@@ -378,6 +389,7 @@ test: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./mu
 	    echo "" > LARGEFILE_NOT_FOUND ;\
 	    ln -sf LARGEFILE_NOT_FOUND largefile.silo ;\
 	fi
+	@HDF5_EXEC@
 	@PDB_EXEC@
 
 testh5: ./bigsil ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./specmix ./sid97 ./testall ./tire ./wave ./emptydomains ./galaxy ./csg ./lowfrac ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test
@@ -421,9 +433,11 @@ testh5: ./bigsil ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./
 install: install_bin
 
 clean:
-	$(RM) $(OBJ) ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./csg ./lowfrac ./distribution_curves ./bov ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test @PDB@
+	$(RM) $(OBJ) $(PDBOBJ) $(HDF5OBJ) ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./csg ./lowfrac ./distribution_curves ./bov ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test @HDF5@ @PDB@
 	$(RM) c0*.curve family*.pdb multi*.pdb db*.pdb allinone*.pdb sesame.pdb *.silo hist* distribution.ultra multi_ucd3d*
 	$(RM) curve.visit wave*.visit *.bov multi00*.values *_indices*.values
+	$(RM) wave_1file* wave_tv_1file*
+	$(RM) [a-z]*.xmf mesh.h5
 	$(RM) -r $(BINSRC)
 
 ##
@@ -515,6 +529,9 @@ clean:
 
 ./lineout_test: lineout_test.o
 	$(CXX) -o $@ lineout_test.o $(LDFLAGS) $(LIBS)
+
+./xdmf: xdmf.o
+	$(CXX) -o $@ xdmf.o $(LDFLAGS) $(HDF5_LIB) $(ZLIB_LIB) @LIBS@
 
 install_bin: ./bigsil ./distribution_curves ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./galaxy ./csg ./lowfrac ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test
 	$(INSTALL) ./bigsil $(bindir)

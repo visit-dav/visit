@@ -1,0 +1,465 @@
+<?xml version="1.0" ?>
+<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd" []>
+<Xdmf xmlns:xi="http://www.w3.org/2001/XInclude" Version="2.0">
+	<Domain>
+    <!-- Example of Basic Topologies -->
+        <Information Name="Description">
+            Example of a Polyvertex Topology
+        </Information>
+        <Grid Name="Polyvertex" GridType="Uniform">
+            <Topology TopologyType="Polyvertex"
+                Dimensions="3"
+                NodesPerElement="3">
+                <DataItem Format="XML"
+                    Dimensions="3 3"
+                    NumberType="Float">
+                    0 1 2
+                    4 5 6
+                    8 9 10
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="4 4 3">
+                0.0    0.0    0.0
+                1.0    0.0    0.0
+                1.0    1.0    0.0
+                0.0    1.0    0.0
+
+                0.0    0.0    2.0
+                1.0    0.0    2.0
+                1.0    1.0    2.0
+                0.0    1.0    2.0
+
+                0.0    0.0    3.0
+                1.0    0.0    3.0
+                1.0    1.0    3.0
+                0.0    1.0    3.0
+
+                0.0    0.0    4.0
+                1.0    0.0    4.0
+                1.0    1.0    4.0
+                0.0    1.0    4.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="4 4">
+                100 200 300 400
+                500 600 600 700
+                800 900 1000 1100
+                1200 1300 1400 1500
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="3">
+                100 200 400
+                </DataItem>
+            </Attribute>
+        </Grid>
+        <Information Name="Description">
+            Example of a Polyline Topology
+        </Information>
+        <Grid Name="Polyline" GridType="Uniform">
+            <Topology TopologyType="Polyline"
+                Dimensions="3"
+                NodesPerElement="3">
+                <DataItem Format="XML"
+                    Dimensions="3 3"
+                    NumberType="Float">
+                    0 1 2
+                    4 5 6
+                    8 9 10
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="4 4 3">
+                0.0    0.0    0.0
+                1.0    0.0    0.0
+                1.0    1.0    0.0
+                0.0    1.0    0.0
+
+                0.0    0.0    2.0
+                1.0    0.0    2.0
+                1.0    1.0    2.0
+                0.0    1.0    2.0
+
+                0.0    0.0    3.0
+                1.0    0.0    3.0
+                1.0    1.0    3.0
+                0.0    1.0    3.0
+
+                0.0    0.0    4.0
+                1.0    0.0    4.0
+                1.0    1.0    4.0
+                0.0    1.0    4.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="4 4">
+                100 200 300 400
+                500 600 600 700
+                800 900 1000 1100
+                1200 1300 1400 1500
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="3">
+                100 200 400
+                </DataItem>
+            </Attribute>
+        </Grid>
+        <Information Name="Description">
+            Example of a Polygon Topology
+        </Information>
+        <Grid Name="Polygon" GridType="Uniform">
+            <Topology TopologyType="Polygon"
+                Dimensions="3"
+                NodesPerElement="4">
+                <DataItem Format="XML"
+                    Dimensions="3 4"
+                    NumberType="Float">
+                    0 1 2 3
+                    4 5 6 7
+                    8 9 10 11
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="4 4 3">
+                0.0    0.0    0.0
+                1.0    0.0    0.0
+                1.0    1.0    0.0
+                0.0    1.0    0.0
+
+                0.0    0.0    2.0
+                1.0    0.0    2.0
+                1.0    1.0    2.0
+                0.0    1.0    2.0
+
+                0.0    0.0    3.0
+                1.0    0.0    3.0
+                1.0    1.0    3.0
+                0.0    1.0    3.0
+
+                0.0    0.0    4.0
+                1.0    0.0    4.0
+                1.0    1.0    4.0
+                0.0    1.0    4.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="4 4">
+                100 200 300 400
+                500 600 600 700
+                800 900 1000 1100
+                1200 1300 1400 1500
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="3">
+                100 200 400
+                </DataItem>
+            </Attribute>
+        </Grid>
+        <Information Name="Description">
+            Example of a Triangle Topology
+        </Information>
+        <Grid Name="Triangle" GridType="Uniform">
+            <Topology TopologyType="Triangle"
+                Dimensions="3">
+                <DataItem Format="XML"
+                    Dimensions="3 3"
+                    NumberType="Float">
+                    0 1 2
+                    4 5 6
+                    8 9 10
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="4 4 3">
+                0.0    0.0    0.0
+                1.0    0.0    0.0
+                1.0    1.0    0.0
+                0.0    1.0    0.0
+
+                0.0    0.0    2.0
+                1.0    0.0    2.0
+                1.0    1.0    2.0
+                0.0    1.0    2.0
+
+                0.0    0.0    3.0
+                1.0    0.0    3.0
+                1.0    1.0    3.0
+                0.0    1.0    3.0
+
+                0.0    0.0    4.0
+                1.0    0.0    4.0
+                1.0    1.0    4.0
+                0.0    1.0    4.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="4 4">
+                100 200 300 400
+                500 600 600 700
+                800 900 1000 1100
+                1200 1300 1400 1500
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="3">
+                100 200 400
+                </DataItem>
+            </Attribute>
+        </Grid>
+        <Information Name="Description">
+            Example of a Quadrilateral Topology
+        </Information>
+        <Grid Name="Quadrilateral" GridType="Uniform">
+            <Topology TopologyType="Quadrilateral"
+                Dimensions="3">
+                <DataItem Format="XML"
+                    Dimensions="3 4"
+                    NumberType="Float">
+                    0 1 2 3
+                    4 5 6 7
+                    8 9 10 11
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="4 4 3">
+                0.0    0.0    0.0
+                1.0    0.0    0.0
+                1.0    1.0    0.0
+                0.0    1.0    0.0
+
+                0.0    0.0    2.0
+                1.0    0.0    2.0
+                1.0    1.0    2.0
+                0.0    1.0    2.0
+
+                0.0    0.0    3.0
+                1.0    0.0    3.0
+                1.0    1.0    3.0
+                0.0    1.0    3.0
+
+                0.0    0.0    4.0
+                1.0    0.0    4.0
+                1.0    1.0    4.0
+                0.0    1.0    4.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="4 4">
+                100 200 300 400
+                500 600 600 700
+                800 900 1000 1100
+                1200 1300 1400 1500
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="3">
+                100 200 400
+                </DataItem>
+            </Attribute>
+        </Grid>
+        <Information Name="Description">
+            Example of a Tetrahedron Topology
+        </Information>
+        <Grid Name="Tetrahedron" GridType="Uniform">
+            <Topology TopologyType="Tetrahedron"
+                Dimensions="2">
+                <DataItem Format="XML"
+                    Dimensions="2 4"
+                    NumberType="Float">
+                    0 1 2 4
+                    4 5 6 11
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="4 4 3">
+                0.0    0.0    0.0
+                1.0    0.0    0.0
+                1.0    1.0    0.0
+                0.0    1.0    0.0
+
+                0.0    0.0    2.0
+                1.0    0.0    2.0
+                1.0    1.0    2.0
+                0.0    1.0    2.0
+
+                0.0    0.0    3.0
+                1.0    0.0    3.0
+                1.0    1.0    3.0
+                0.0    1.0    3.0
+
+                0.0    0.0    4.0
+                1.0    0.0    4.0
+                1.0    1.0    4.0
+                0.0    1.0    4.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="4 4">
+                100 200 300 400
+                500 600 600 700
+                800 900 1000 1100
+                1200 1300 1400 1500
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="2">
+                100 400
+                </DataItem>
+            </Attribute>
+        </Grid>
+        <Information Name="Description">
+            Example of a Pyramid Topology
+        </Information>
+        <Grid Name="Pyramid" GridType="Uniform">
+            <Topology TopologyType="Pyramid"
+                Dimensions="2">
+                <DataItem Format="XML"
+                    Dimensions="2 5"
+                    NumberType="Float">
+                    0 1 2 3 4
+                    4 5 6 7 11
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="4 4 3">
+                0.0    0.0    0.0
+                1.0    0.0    0.0
+                1.0    1.0    0.0
+                0.0    1.0    0.0
+
+                0.0    0.0    2.0
+                1.0    0.0    2.0
+                1.0    1.0    2.0
+                0.0    1.0    2.0
+
+                0.0    0.0    3.0
+                1.0    0.0    3.0
+                1.0    1.0    3.0
+                0.0    1.0    3.0
+
+                0.0    0.0    4.0
+                1.0    0.0    4.0
+                1.0    1.0    4.0
+                0.0    1.0    4.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="4 4">
+                100 200 300 400
+                500 600 600 700
+                800 900 1000 1100
+                1200 1300 1400 1500
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="2">
+                100 400
+                </DataItem>
+            </Attribute>
+        </Grid>
+        <Information Name="Description">
+            Example of a Wedge Topology
+        </Information>
+        <Grid Name="Wedge" GridType="Uniform">
+            <Topology TopologyType="Wedge"
+                Dimensions="2">
+                <DataItem Format="XML"
+                    Dimensions="2 6"
+                    NumberType="Float">
+                    0 1 2 4 5 6
+                    5 6 7 9 10 11
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="4 4 3">
+                0.0    0.0    0.0
+                1.0    0.0    0.0
+                1.0    1.0    0.0
+                0.0    1.0    0.0
+
+                0.0    0.0    2.0
+                1.0    0.0    2.0
+                1.0    1.0    2.0
+                0.0    1.0    2.0
+
+                0.0    0.0    3.0
+                1.0    0.0    3.0
+                1.0    1.0    3.0
+                0.0    1.0    3.0
+
+                0.0    0.0    4.0
+                1.0    0.0    4.0
+                1.0    1.0    4.0
+                0.0    1.0    4.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="4 4">
+                100 200 300 400
+                500 600 600 700
+                800 900 1000 1100
+                1200 1300 1400 1500
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="2">
+                100 400
+                </DataItem>
+            </Attribute>
+        </Grid>
+        <Information Name="Description">
+            Example of a Hexahedron Topology
+        </Information>
+        <Grid Name="Hexahedron" GridType="Uniform">
+            <Topology TopologyType="Hexahedron"
+                Dimensions="2">
+                <DataItem Format="XML"
+                    Dimensions="2 8"
+                    NumberType="Float">
+                    0 1 2 3 4 5 6 7 
+                    4 5 6 7 8 9 10 11
+                </DataItem>
+            </Topology>
+            <Geometry Type="XYZ">
+                <DataItem Format="XML" Dimensions="4 4 3">
+                0.0    0.0    0.0
+                1.0    0.0    0.0
+                1.0    1.0    0.0
+                0.0    1.0    0.0
+
+                0.0    0.0    2.0
+                1.0    0.0    2.0
+                1.0    1.0    2.0
+                0.0    1.0    2.0
+
+                0.0    0.0    3.0
+                1.0    0.0    3.0
+                1.0    1.0    3.0
+                0.0    1.0    3.0
+
+                0.0    0.0    4.0
+                1.0    0.0    4.0
+                1.0    1.0    4.0
+                0.0    1.0    4.0
+                </DataItem>
+            </Geometry>
+            <Attribute Name="Node Centered Values" Center="Node">
+                <DataItem Format="XML" Dimensions="4 4">
+                100 200 300 400
+                500 600 600 700
+                800 900 1000 1100
+                1200 1300 1400 1500
+                </DataItem>
+            </Attribute>
+            <Attribute Name="Cell Centered Values" Center="Cell">
+                <DataItem Format="XML" Dimensions="2">
+                100 400
+                </DataItem>
+            </Attribute>
+        </Grid>
+	</Domain>
+</Xdmf>
