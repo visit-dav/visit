@@ -778,6 +778,10 @@ dnl
 dnl    Eric Brugger, Tue Apr  8 09:58:31 PDT 2008
 dnl    Added a test for the function isfinite.
 dnl
+dnl    Eric Brugger, Fri Apr 18 13:13:11 PDT 2008
+dnl    Added HDF5_EXEC to allow the data directory to conditionally run
+dnl    HDF5 based programs that create HDF5 data files.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2011,6 +2015,7 @@ HDF5=""
 HDF5_INCLUDE=""
 HDF5_LIB=""
 HDF5_LIBDIR=""
+HDF5_EXEC=""
 AC_ARG_WITH(hdf5,
 	    [  --with-hdf5=INC-DIR,LIB-DIR     Location of HDF5 header and library],
            hdf5_specified="yes",
@@ -2047,6 +2052,7 @@ fi
 if test "$HDF5_LIB" != "" ; then
    if test "$HDF5_INCLUDE" != "" ; then
       HDF5="$""(HDF5)"
+      HDF5_EXEC="$""(HDF5EXEC)"
       AC_MSG_RESULT(yes)
       AC_DEFINE(HAVE_HDF5_H, [1], [Define if you have the <hdf5.h> header file.])
       AC_DEFINE(HAVE_LIBHDF5, [1], [Define if you have the hdf5 library.])
@@ -2060,6 +2066,7 @@ AC_SUBST(HDF5)
 AC_SUBST(HDF5_INCLUDE)
 AC_SUBST(HDF5_LIB)
 AC_SUBST(HDF5_LIBDIR)
+AC_SUBST(HDF5_EXEC)
 
 dnl
 #
