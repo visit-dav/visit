@@ -12,6 +12,8 @@
 #  Date:       Fri Sep 2 11:19:33 PDT 2005
 #
 #  Modifications:
+#    Brad Whitlock, Mon Apr 21 10:55:14 PDT 2008
+#    Updated variable names to compensate for changes to CGNS reader.
 #
 # ----------------------------------------------------------------------------
 
@@ -19,7 +21,7 @@ def test0(datapath):
     TestSection("Structured files")
 
     OpenDatabase(datapath + "delta.cgns")
-    AddPlot("Mesh", "grid")
+    AddPlot("Mesh", "Zone___1")
     DrawPlots()
     v0 = View3DAttributes()
     v0.viewNormal = (-0.673597, -0.70478, 0.222605)
@@ -73,8 +75,8 @@ def test0(datapath):
     DeleteAllPlots()
 
     OpenDatabase(datapath + "5blocks.cgns")
-    AddPlot("Subset", "domains")
-    AddPlot("Mesh", "grid")
+    AddPlot("Subset", "zones")
+    AddPlot("Mesh", "BASE_1")
     DrawPlots()
     v2 = View3DAttributes()
     v2.viewNormal = (-0.56714, 0.62864, 0.532131)
@@ -95,7 +97,7 @@ def test0(datapath):
     DeleteAllPlots()
 
     OpenDatabase(datapath + "multi.cgns")
-    AddPlot("Subset", "domains")
+    AddPlot("Subset", "zones")
     AddOperator("Slice")
     DrawPlots()
     v3 = View2DAttributes()
@@ -133,7 +135,7 @@ def test1(datapath):
     TestSection("Unstructured files")
 
     OpenDatabase(datapath + "StaticMixer.cgns")
-    AddPlot("Mesh", "grid")
+    AddPlot("Mesh", "StaticMixer")
     AddPlot("Pseudocolor", "Pressure")
     DrawPlots()
     v0 = View3DAttributes()
@@ -195,7 +197,7 @@ def test1(datapath):
     DeleteAllPlots()
 
     OpenDatabase(datapath + "yf17.cgns")
-    AddPlot("Mesh", "grid")
+    AddPlot("Mesh", "Zone1")
     AddPlot("Pseudocolor", "Density")
     DrawPlots()
     v2 = View3DAttributes()
@@ -253,7 +255,7 @@ def test2(datapath):
     TestSection("Variables on only some of the domains")
 
     OpenDatabase(datapath + "HeatingCoil.cgns")
-    AddPlot("Subset", "domains(grid)")
+    AddPlot("Subset", "zones")
     DrawPlots()
     v0 = View3DAttributes()
     v0.viewNormal = (0.27344, 0.876709, 0.395743)
@@ -286,7 +288,7 @@ def test2(datapath):
     DrawPlots()
     Test("CGNS_2_03")
     ChangeActivePlotsVar("VelocityZ")
-    AddPlot("Mesh", "subgrid/grid001")
+    AddPlot("Mesh", "subgrid/Base001")
     DrawPlots()
     Test("CGNS_2_04")
     DeleteAllPlots()
