@@ -420,7 +420,7 @@ avtCGNSFileFormat::ReadTimes()
             debug4 << mName << "Creating fake cycles." << endl;
             // Fake the cycles for now.
             for(int i = 0; i < nstates; ++i)
-                cycles.push_back(double(i));
+                cycles.push_back(i);
         }
         else
            cgnsCyclesAccurate = true;
