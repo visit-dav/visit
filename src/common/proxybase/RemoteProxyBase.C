@@ -381,6 +381,10 @@ RemoteProxyBase::AddArgument(const std::string &arg)
 //    Eric Brugger, Thu Feb 15 12:04:45 PST 2007
 //    Added an argument for passing additional sublauncher arguments.
 //
+//    Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
+//    Added arguments for passing in commands to run pre and post the 
+//    sublauncher command.
+//
 // ****************************************************************************
 
 void
@@ -470,6 +474,20 @@ RemoteProxyBase::AddProfileArguments(const HostProfile &profile,
             {
                 AddArgument("-sla");
                 AddArgument(profile.GetSublaunchArgs());
+            }
+
+            if (profile.GetSublaunchPreCmdSet() &&
+                profile.GetSublaunchPreCmd().length() > 0)
+            {
+                AddArgument("-slpre");
+                AddArgument(profile.GetSublaunchPreCmd());
+            }
+
+            if (profile.GetSublaunchPostCmdSet() &&
+                profile.GetSublaunchPostCmd().length() > 0)
+            {
+                AddArgument("-slpost");
+                AddArgument(profile.GetSublaunchPostCmd());
             }
 
             if (profile.GetMachinefileSet() &&

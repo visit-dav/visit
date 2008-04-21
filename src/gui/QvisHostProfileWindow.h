@@ -139,6 +139,9 @@ class QRadioButton;
 //    Brad Whitlock, Wed Apr  9 10:57:10 PDT 2008
 //    QString for caption, shortName.
 //
+//    Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
+//    Added fields for commands to run pre and post the mpi command.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
@@ -176,6 +179,8 @@ private slots:
     void processMachinefileText(const QString &);
     void processLaunchArgsText(const QString &);
     void processSublaunchArgsText(const QString &);
+    void processSublaunchPreCmdText(const QString &);
+    void processSublaunchPostCmdText(const QString &);
     void numProcessorsChanged(int value);
     void timeoutChanged(int value);
     void launchMethodChanged(const QString &method);
@@ -189,6 +194,8 @@ private slots:
     void toggleMachinefile(bool);
     void toggleLaunchArgs(bool);
     void toggleSublaunchArgs(bool);
+    void toggleSublaunchPreCmd(bool);
+    void toggleSublaunchPostCmd(bool);
     void toggleParallel(bool);
     void toggleShareMDServer(bool);
     void toggleUseVisItScriptForEnv(bool);
@@ -256,6 +263,10 @@ private:
     QLineEdit    *launchArgs;
     QCheckBox    *sublaunchArgsCheckBox;
     QLineEdit    *sublaunchArgs;
+    QCheckBox    *sublaunchPreCmdCheckBox;
+    QLineEdit    *sublaunchPreCmd;
+    QCheckBox    *sublaunchPostCmdCheckBox;
+    QLineEdit    *sublaunchPostCmd;
     QWidget      *advancedGroup;
     QCheckBox    *shareMDServerCheckBox;
     QCheckBox    *useVisItScriptForEnvCheckBox;

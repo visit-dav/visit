@@ -440,6 +440,9 @@ QvisHostProfileWindow::CreateSelectedTab(QWidget *parent)
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
+//   Added fields for commands to run pre and post the mpi command.
+//
 // ****************************************************************************
 
 QWidget *
@@ -504,6 +507,28 @@ QvisHostProfileWindow::CreateParallelTab(QWidget *parent)
             this, SLOT(toggleSublaunchArgs(bool)));
     parLayout->addWidget(sublaunchArgsCheckBox, prow, 0);
     parLayout->addWidget(sublaunchArgs, prow, 1);
+    prow++;
+
+    sublaunchPreCmd = new QLineEdit(parGroup, "sublaunchPreCmd");
+    connect(sublaunchPreCmd, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processSublaunchPreCmdText(const QString &)));
+    sublaunchPreCmdCheckBox = new QCheckBox(tr("Sublauncher pre-mpi command"),
+                                      parGroup, "sublaunchPreCmdLabel");
+    connect(sublaunchPreCmdCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleSublaunchPreCmd(bool)));
+    parLayout->addWidget(sublaunchPreCmdCheckBox, prow, 0);
+    parLayout->addWidget(sublaunchPreCmd, prow, 1);
+    prow++;
+
+    sublaunchPostCmd = new QLineEdit(parGroup, "sublaunchPostCmd");
+    connect(sublaunchPostCmd, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processSublaunchPostCmdText(const QString &)));
+    sublaunchPostCmdCheckBox = new QCheckBox(tr("Sublauncher post-mpi command"),
+                                      parGroup, "sublaunchPostCmdLabel");
+    connect(sublaunchPostCmdCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleSublaunchPostCmd(bool)));
+    parLayout->addWidget(sublaunchPostCmdCheckBox, prow, 0);
+    parLayout->addWidget(sublaunchPostCmd, prow, 1);
     prow++;
 
     partitionName = new QLineEdit(parGroup, "partitionName");
@@ -1132,6 +1157,9 @@ QvisHostProfileWindow::UpdateProfileList()
 //   Brad Whitlock, Wed Jun 6 09:37:06 PDT 2007
 //   Changed a widget to be a QComboBox.
 //
+//   Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
+//   Added fields for commands to run pre and post the mpi command.
+//
 // ****************************************************************************
 
 void
@@ -1158,6 +1186,10 @@ QvisHostProfileWindow::UpdateActiveProfile()
     launchArgs->blockSignals(true);
     sublaunchArgsCheckBox->blockSignals(true);
     sublaunchArgs->blockSignals(true);
+    sublaunchPreCmdCheckBox->blockSignals(true);
+    sublaunchPreCmd->blockSignals(true);
+    sublaunchPostCmdCheckBox->blockSignals(true);
+    sublaunchPostCmd->blockSignals(true);
     launchCheckBox->blockSignals(true);
     launchMethod->blockSignals(true);
     activeProfileCheckBox->blockSignals(true);
@@ -1204,6 +1236,10 @@ QvisHostProfileWindow::UpdateActiveProfile()
         launchArgs->setText("");
         sublaunchArgsCheckBox->setChecked(false);
         sublaunchArgs->setText("");
+        sublaunchPreCmdCheckBox->setChecked(false);
+        sublaunchPreCmd->setText("");
+        sublaunchPostCmdCheckBox->setChecked(false);
+        sublaunchPostCmd->setText("");
         loadBalancing->setCurrentItem(0);
         engineArguments->setText("");
         activeProfileCheckBox->setChecked(false);
@@ -1267,6 +1303,16 @@ QvisHostProfileWindow::UpdateActiveProfile()
             sublaunchArgs->setText(current.GetSublaunchArgs().c_str());
         else
             sublaunchArgs->setText("");
+        sublaunchPreCmdCheckBox->setChecked(parEnabled && current.GetSublaunchPreCmdSet());
+        if (parEnabled && current.GetSublaunchPreCmdSet())
+            sublaunchPreCmd->setText(current.GetSublaunchPreCmd().c_str());
+        else
+            sublaunchPreCmd->setText("");
+        sublaunchPostCmdCheckBox->setChecked(parEnabled && current.GetSublaunchPostCmdSet());
+        if (parEnabled && current.GetSublaunchPostCmdSet())
+            sublaunchPostCmd->setText(current.GetSublaunchPostCmd().c_str());
+        else
+            sublaunchPostCmd->setText("");
         if (parEnabled)
             numProcessors->setValue(current.GetNumProcessors());
         else
@@ -1362,6 +1408,10 @@ QvisHostProfileWindow::UpdateActiveProfile()
     launchArgs->blockSignals(false);
     sublaunchArgsCheckBox->blockSignals(false);
     sublaunchArgs->blockSignals(false);
+    sublaunchPreCmdCheckBox->blockSignals(false);
+    sublaunchPreCmd->blockSignals(false);
+    sublaunchPostCmdCheckBox->blockSignals(false);
+    sublaunchPostCmd->blockSignals(false);
     launchCheckBox->blockSignals(false);
     launchMethod->blockSignals(false);
     activeProfileCheckBox->blockSignals(false);
@@ -1494,6 +1544,10 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     launchArgs->setEnabled(parEnabled && current->GetLaunchArgsSet());
     sublaunchArgsCheckBox->setEnabled(parEnabled);
     sublaunchArgs->setEnabled(parEnabled && current->GetSublaunchArgsSet());
+    sublaunchPreCmdCheckBox->setEnabled(parEnabled);
+    sublaunchPreCmd->setEnabled(parEnabled && current->GetSublaunchPreCmdSet());
+    sublaunchPostCmdCheckBox->setEnabled(parEnabled);
+    sublaunchPostCmd->setEnabled(parEnabled && current->GetSublaunchPostCmdSet());
     numProcLabel->setEnabled(parEnabled);
     numProcessors->setEnabled(parEnabled);
     numNodesCheckBox->setEnabled(parEnabled);
@@ -1601,6 +1655,9 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
+//
+//   Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
+//   Added fields for commands to run pre and post the mpi command.
 //
 // ****************************************************************************
 bool
@@ -1919,6 +1976,24 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
         temp = sublaunchArgs->displayText();
         temp = temp.stripWhiteSpace();
         current.SetSublaunchArgs(std::string(temp.latin1()));
+    }
+    widget++;
+
+    // Do the sublauncher pre cmd
+    if(current.GetParallel() && (which_widget == widget || doAll))
+    {
+        temp = sublaunchPreCmd->displayText();
+        temp = temp.stripWhiteSpace();
+        current.SetSublaunchPreCmd(std::string(temp.latin1()));
+    }
+    widget++;
+
+    // Do the sublauncher post cmd
+    if(current.GetParallel() && (which_widget == widget || doAll))
+    {
+        temp = sublaunchPostCmd->displayText();
+        temp = temp.stripWhiteSpace();
+        current.SetSublaunchPostCmd(std::string(temp.latin1()));
     }
     widget++;
 
@@ -2644,6 +2719,108 @@ QvisHostProfileWindow::processSublaunchArgsText(const QString &)
 {
     // Update the sublaunch args text.
     if(!GetCurrentValues(16))
+        SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::toggleSublaunchPreCmd
+//
+// Purpose: 
+//   This is a Qt slot function that enables the sublaunchPreCmd widget.
+//
+// Programmer: Dave Bremer
+// Creation:   April 16, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::toggleSublaunchPreCmd(bool state)
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if(profiles->GetActiveProfile() >= 0)
+    {
+        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+        current.SetSublaunchPreCmdSet(state);
+        profiles->MarkActiveProfile();
+        UpdateWindowSensitivity();
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::processSublaunchPreCmdText
+//
+// Purpose: 
+//   This is a Qt slot function that sets the sublaunch pre-mpi command for 
+//   the active host profile.
+//
+// Programmer: Dave Bremer
+// Creation:   April 16, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::processSublaunchPreCmdText(const QString &)
+{
+    // Update the sublaunch args text.
+    if(!GetCurrentValues(17))
+        SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::toggleSublaunchPostCmd
+//
+// Purpose: 
+//   This is a Qt slot function that enables the sublaunchPostCmd widget.
+//
+// Programmer: Dave Bremer
+// Creation:   April 16, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::toggleSublaunchPostCmd(bool state)
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if(profiles->GetActiveProfile() >= 0)
+    {
+        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+        current.SetSublaunchPostCmdSet(state);
+        profiles->MarkActiveProfile();
+        UpdateWindowSensitivity();
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::processSublaunchPostCmdText
+//
+// Purpose: 
+//   This is a Qt slot function that sets the sublaunch post-mpi command for 
+//   the active host profile.
+//
+// Programmer: Dave Bremer
+// Creation:   April 16, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::processSublaunchPostCmdText(const QString &)
+{
+    // Update the sublaunch args text.
+    if(!GetCurrentValues(18))
         SetUpdate(false);
     Apply();
 }
