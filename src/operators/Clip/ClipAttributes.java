@@ -68,11 +68,15 @@ public class ClipAttributes extends AttributeSubject implements Plugin
     public final static int WHICHCLIPPLANE_PLANE2 = 2;
     public final static int WHICHCLIPPLANE_PLANE3 = 3;
 
+    public final static int QUALITY_FAST = 0;
+    public final static int QUALITY_ACCURATE = 1;
+
 
     public ClipAttributes()
     {
-        super(15);
+        super(16);
 
+        quality = QUALITY_FAST;
         funcType = CLIPSTYLE_PLANE;
         plane1Status = true;
         plane2Status = false;
@@ -113,10 +117,11 @@ public class ClipAttributes extends AttributeSubject implements Plugin
 
     public ClipAttributes(ClipAttributes obj)
     {
-        super(15);
+        super(16);
 
         int i;
 
+        quality = obj.quality;
         funcType = obj.funcType;
         plane1Status = obj.plane1Status;
         plane2Status = obj.plane2Status;
@@ -204,7 +209,8 @@ public class ClipAttributes extends AttributeSubject implements Plugin
             center_equal = (center[i] == obj.center[i]);
 
         // Create the return value
-        return ((funcType == obj.funcType) &&
+        return ((quality == obj.quality) &&
+                (funcType == obj.funcType) &&
                 (plane1Status == obj.plane1Status) &&
                 (plane2Status == obj.plane2Status) &&
                 (plane3Status == obj.plane3Status) &&
@@ -225,28 +231,34 @@ public class ClipAttributes extends AttributeSubject implements Plugin
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
+    public void SetQuality(int quality_)
+    {
+        quality = quality_;
+        Select(0);
+    }
+
     public void SetFuncType(int funcType_)
     {
         funcType = funcType_;
-        Select(0);
+        Select(1);
     }
 
     public void SetPlane1Status(boolean plane1Status_)
     {
         plane1Status = plane1Status_;
-        Select(1);
+        Select(2);
     }
 
     public void SetPlane2Status(boolean plane2Status_)
     {
         plane2Status = plane2Status_;
-        Select(2);
+        Select(3);
     }
 
     public void SetPlane3Status(boolean plane3Status_)
     {
         plane3Status = plane3Status_;
-        Select(3);
+        Select(4);
     }
 
     public void SetPlane1Origin(double[] plane1Origin_)
@@ -254,7 +266,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         plane1Origin[0] = plane1Origin_[0];
         plane1Origin[1] = plane1Origin_[1];
         plane1Origin[2] = plane1Origin_[2];
-        Select(4);
+        Select(5);
     }
 
     public void SetPlane1Origin(double e0, double e1, double e2)
@@ -262,7 +274,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         plane1Origin[0] = e0;
         plane1Origin[1] = e1;
         plane1Origin[2] = e2;
-        Select(4);
+        Select(5);
     }
 
     public void SetPlane2Origin(double[] plane2Origin_)
@@ -270,7 +282,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         plane2Origin[0] = plane2Origin_[0];
         plane2Origin[1] = plane2Origin_[1];
         plane2Origin[2] = plane2Origin_[2];
-        Select(5);
+        Select(6);
     }
 
     public void SetPlane2Origin(double e0, double e1, double e2)
@@ -278,7 +290,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         plane2Origin[0] = e0;
         plane2Origin[1] = e1;
         plane2Origin[2] = e2;
-        Select(5);
+        Select(6);
     }
 
     public void SetPlane3Origin(double[] plane3Origin_)
@@ -286,7 +298,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         plane3Origin[0] = plane3Origin_[0];
         plane3Origin[1] = plane3Origin_[1];
         plane3Origin[2] = plane3Origin_[2];
-        Select(6);
+        Select(7);
     }
 
     public void SetPlane3Origin(double e0, double e1, double e2)
@@ -294,7 +306,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         plane3Origin[0] = e0;
         plane3Origin[1] = e1;
         plane3Origin[2] = e2;
-        Select(6);
+        Select(7);
     }
 
     public void SetPlane1Normal(double[] plane1Normal_)
@@ -302,7 +314,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         plane1Normal[0] = plane1Normal_[0];
         plane1Normal[1] = plane1Normal_[1];
         plane1Normal[2] = plane1Normal_[2];
-        Select(7);
+        Select(8);
     }
 
     public void SetPlane1Normal(double e0, double e1, double e2)
@@ -310,7 +322,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         plane1Normal[0] = e0;
         plane1Normal[1] = e1;
         plane1Normal[2] = e2;
-        Select(7);
+        Select(8);
     }
 
     public void SetPlane2Normal(double[] plane2Normal_)
@@ -318,7 +330,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         plane2Normal[0] = plane2Normal_[0];
         plane2Normal[1] = plane2Normal_[1];
         plane2Normal[2] = plane2Normal_[2];
-        Select(8);
+        Select(9);
     }
 
     public void SetPlane2Normal(double e0, double e1, double e2)
@@ -326,7 +338,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         plane2Normal[0] = e0;
         plane2Normal[1] = e1;
         plane2Normal[2] = e2;
-        Select(8);
+        Select(9);
     }
 
     public void SetPlane3Normal(double[] plane3Normal_)
@@ -334,7 +346,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         plane3Normal[0] = plane3Normal_[0];
         plane3Normal[1] = plane3Normal_[1];
         plane3Normal[2] = plane3Normal_[2];
-        Select(9);
+        Select(10);
     }
 
     public void SetPlane3Normal(double e0, double e1, double e2)
@@ -342,19 +354,19 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         plane3Normal[0] = e0;
         plane3Normal[1] = e1;
         plane3Normal[2] = e2;
-        Select(9);
+        Select(10);
     }
 
     public void SetPlaneInverse(boolean planeInverse_)
     {
         planeInverse = planeInverse_;
-        Select(10);
+        Select(11);
     }
 
     public void SetPlaneToolControlledClipPlane(int planeToolControlledClipPlane_)
     {
         planeToolControlledClipPlane = planeToolControlledClipPlane_;
-        Select(11);
+        Select(12);
     }
 
     public void SetCenter(double[] center_)
@@ -362,7 +374,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         center[0] = center_[0];
         center[1] = center_[1];
         center[2] = center_[2];
-        Select(12);
+        Select(13);
     }
 
     public void SetCenter(double e0, double e1, double e2)
@@ -370,22 +382,23 @@ public class ClipAttributes extends AttributeSubject implements Plugin
         center[0] = e0;
         center[1] = e1;
         center[2] = e2;
-        Select(12);
+        Select(13);
     }
 
     public void SetRadius(double radius_)
     {
         radius = radius_;
-        Select(13);
+        Select(14);
     }
 
     public void SetSphereInverse(boolean sphereInverse_)
     {
         sphereInverse = sphereInverse_;
-        Select(14);
+        Select(15);
     }
 
     // Property getting methods
+    public int      GetQuality() { return quality; }
     public int      GetFuncType() { return funcType; }
     public boolean  GetPlane1Status() { return plane1Status; }
     public boolean  GetPlane2Status() { return plane2Status; }
@@ -406,34 +419,36 @@ public class ClipAttributes extends AttributeSubject implements Plugin
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteInt(funcType);
+            buf.WriteInt(quality);
         if(WriteSelect(1, buf))
-            buf.WriteBool(plane1Status);
+            buf.WriteInt(funcType);
         if(WriteSelect(2, buf))
-            buf.WriteBool(plane2Status);
+            buf.WriteBool(plane1Status);
         if(WriteSelect(3, buf))
-            buf.WriteBool(plane3Status);
+            buf.WriteBool(plane2Status);
         if(WriteSelect(4, buf))
-            buf.WriteDoubleArray(plane1Origin);
+            buf.WriteBool(plane3Status);
         if(WriteSelect(5, buf))
-            buf.WriteDoubleArray(plane2Origin);
+            buf.WriteDoubleArray(plane1Origin);
         if(WriteSelect(6, buf))
-            buf.WriteDoubleArray(plane3Origin);
+            buf.WriteDoubleArray(plane2Origin);
         if(WriteSelect(7, buf))
-            buf.WriteDoubleArray(plane1Normal);
+            buf.WriteDoubleArray(plane3Origin);
         if(WriteSelect(8, buf))
-            buf.WriteDoubleArray(plane2Normal);
+            buf.WriteDoubleArray(plane1Normal);
         if(WriteSelect(9, buf))
-            buf.WriteDoubleArray(plane3Normal);
+            buf.WriteDoubleArray(plane2Normal);
         if(WriteSelect(10, buf))
-            buf.WriteBool(planeInverse);
+            buf.WriteDoubleArray(plane3Normal);
         if(WriteSelect(11, buf))
-            buf.WriteInt(planeToolControlledClipPlane);
+            buf.WriteBool(planeInverse);
         if(WriteSelect(12, buf))
-            buf.WriteDoubleArray(center);
+            buf.WriteInt(planeToolControlledClipPlane);
         if(WriteSelect(13, buf))
-            buf.WriteDouble(radius);
+            buf.WriteDoubleArray(center);
         if(WriteSelect(14, buf))
+            buf.WriteDouble(radius);
+        if(WriteSelect(15, buf))
             buf.WriteBool(sphereInverse);
     }
 
@@ -445,48 +460,51 @@ public class ClipAttributes extends AttributeSubject implements Plugin
             switch(index)
             {
             case 0:
-                SetFuncType(buf.ReadInt());
+                SetQuality(buf.ReadInt());
                 break;
             case 1:
-                SetPlane1Status(buf.ReadBool());
+                SetFuncType(buf.ReadInt());
                 break;
             case 2:
-                SetPlane2Status(buf.ReadBool());
+                SetPlane1Status(buf.ReadBool());
                 break;
             case 3:
-                SetPlane3Status(buf.ReadBool());
+                SetPlane2Status(buf.ReadBool());
                 break;
             case 4:
-                SetPlane1Origin(buf.ReadDoubleArray());
+                SetPlane3Status(buf.ReadBool());
                 break;
             case 5:
-                SetPlane2Origin(buf.ReadDoubleArray());
+                SetPlane1Origin(buf.ReadDoubleArray());
                 break;
             case 6:
-                SetPlane3Origin(buf.ReadDoubleArray());
+                SetPlane2Origin(buf.ReadDoubleArray());
                 break;
             case 7:
-                SetPlane1Normal(buf.ReadDoubleArray());
+                SetPlane3Origin(buf.ReadDoubleArray());
                 break;
             case 8:
-                SetPlane2Normal(buf.ReadDoubleArray());
+                SetPlane1Normal(buf.ReadDoubleArray());
                 break;
             case 9:
-                SetPlane3Normal(buf.ReadDoubleArray());
+                SetPlane2Normal(buf.ReadDoubleArray());
                 break;
             case 10:
-                SetPlaneInverse(buf.ReadBool());
+                SetPlane3Normal(buf.ReadDoubleArray());
                 break;
             case 11:
-                SetPlaneToolControlledClipPlane(buf.ReadInt());
+                SetPlaneInverse(buf.ReadBool());
                 break;
             case 12:
-                SetCenter(buf.ReadDoubleArray());
+                SetPlaneToolControlledClipPlane(buf.ReadInt());
                 break;
             case 13:
-                SetRadius(buf.ReadDouble());
+                SetCenter(buf.ReadDoubleArray());
                 break;
             case 14:
+                SetRadius(buf.ReadDouble());
+                break;
+            case 15:
                 SetSphereInverse(buf.ReadBool());
                 break;
             }
@@ -496,6 +514,12 @@ public class ClipAttributes extends AttributeSubject implements Plugin
     public String toString(String indent)
     {
         String str = new String();
+        str = str + indent + "quality = ";
+        if(quality == QUALITY_FAST)
+            str = str + "QUALITY_FAST";
+        if(quality == QUALITY_ACCURATE)
+            str = str + "QUALITY_ACCURATE";
+        str = str + "\n";
         str = str + indent + "funcType = ";
         if(funcType == CLIPSTYLE_PLANE)
             str = str + "CLIPSTYLE_PLANE";
@@ -530,6 +554,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
 
 
     // Attributes
+    private int      quality;
     private int      funcType;
     private boolean  plane1Status;
     private boolean  plane2Status;
