@@ -354,11 +354,8 @@ skipList_dueTo_temporaryBugs="\
 	  davinci,serial:tests/databases/defer_expr.py \
 	  davinci,scalable,parallel:tests/databases/netcdf.py:netcdf_1_00,netcdf_1_02 \
 	  davinci,scalable,parallel:tests/operators/transform.py:ops_transform05 \
-	  davinci,serial:tests/databases/silo.py:silo_03,silo_04 \
 	  davinci,serial:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
-	  davinci,parallel:tests/databases/silo.py:silo_03,silo_04 \
 	  davinci,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
-	  davinci,scalable,parallel:tests/databases/silo.py:silo_03,silo_04 \
 	  davinci,scalable,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05"
 
 skipList_for_Davinci="\
