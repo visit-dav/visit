@@ -361,11 +361,8 @@ skipList_dueTo_temporaryBugs="\
 	  nersc,serial:tests/databases/defer_expr.py \
 	  nersc,scalable,parallel:tests/databases/netcdf.py:netcdf_1_00,netcdf_1_02 \
 	  nersc,scalable,parallel:tests/operators/transform.py:ops_transform05 \
-	  nersc,serial:tests/databases/silo.py:silo_03,silo_04 \
 	  nersc,serial:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
-	  nersc,parallel:tests/databases/silo.py:silo_03,silo_04 \
 	  nersc,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
-	  nersc,scalable,parallel:tests/databases/silo.py:silo_03,silo_04 \
 	  nersc,scalable,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05"
 
 skipList="$skipList_dueTo_clientServer $skipList_dueTo_parallelRendering $skipList_dueTo_temporaryBugs"
