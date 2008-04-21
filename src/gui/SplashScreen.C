@@ -191,6 +191,8 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
     if(ret < 0)
     {
         ver = QString(VERSION);
+        if(ver.right(1) == "b")
+            ver = tr("Beta");
         drawVersion = true;
     }
     else if(patch > 0)
@@ -240,7 +242,7 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
     versionText += " ";
     versionText += SVN_REVISION;
     lLayout->addWidget(new QLabel(versionText, this, "versionText"));
-    lLayout->addWidget(new QLabel(tr("April 2008"), this, "dateCompiled"));
+    lLayout->addWidget(new QLabel(tr("July 2008"), this, "dateCompiled"));
 
     copyrightButton = 0;
     contributorButton = 0;

@@ -1247,34 +1247,47 @@ cp $VisItDir/include/qt/private/*.h             $incdir/qt/private
 # Copy the help files to the distribution.
 #
 if (-e $VisItDir/help) then
-   echo "Copying help files to the distribution..."
-   cp $VisItDir/help/[a-gi-z]*.html    $helpdir
-   ls $VisItDir/help/h[a-df-z]*.html >& /dev/null
-   if ($status == 0) then
-     cp $VisItDir/help/h[a-df-z]*.html $helpdir
-   endif
-   ls $VisItDir/help/he[a-km-z]*.html >& /dev/null
-   if ($status == 0) then
-     cp $VisItDir/help/he[a-km-z]*.html $helpdir
-   endif
-   ls $VisItDir/help/hel[a-oq-z]*.html >& /dev/null
-   if ($status == 0) then
-     cp $VisItDir/help/hel[a-oq-z]*.html $helpdir
-   endif
-   ls $VisItDir/help/help[a-z]*.html >& /dev/null
-   if ($status == 0) then
-     cp $VisItDir/help/help[a-z]*.html $helpdir
-   endif
-   cp $VisItDir/help/help0[01]*.html   $helpdir
-   cp $VisItDir/help/help0[23]*.html   $helpdir
-   cp $VisItDir/help/help0[45]*.html   $helpdir
-   ls "$VisItDir/help/help0[67]*.html" >& /dev/null
-   if ($status == 0) then
-     cp $VisItDir/help/help0[67]*.html $helpdir
-   endif
-   if (-e $VisItDir/help/visit.helpml) then
-      cp $VisItDir/help/visit.helpml $helpdir
-   endif
+   set tmpDir = `pwd`
+   cd $VisItDir/help
+   set translations=`find . -maxdepth 1 -type d`
+   cd $tmpDir
+   foreach t1 ($translations)
+       set translation=`echo $t1 | sed "s/.\///g"`
+       if ("$translation" != "." && "$translation" != ".svn") then
+           echo "Copying $translation help files to the distribution..." 
+           mkdir $helpdir/$translation
+
+           cp $VisItDir/help/$translation/[a-gi-z]*.html    $helpdir/$translation
+           ls $VisItDir/help/$translation/h[a-df-z]*.html >& /dev/null
+           if ($status == 0) then
+             cp $VisItDir/help/$translation/h[a-df-z]*.html $helpdir/$translation
+           endif
+           ls $VisItDir/help/$translation/he[a-km-z]*.html >& /dev/null
+           if ($status == 0) then
+             cp $VisItDir/help/$translation/he[a-km-z]*.html $helpdir/$translation
+           endif
+           ls $VisItDir/help/$translation/hel[a-oq-z]*.html >& /dev/null
+           if ($status == 0) then
+             cp $VisItDir/help/$translation/hel[a-oq-z]*.html $helpdir/$translation
+           endif
+           ls $VisItDir/help/$translation/help[a-z]*.html >& /dev/null
+           if ($status == 0) then
+             cp $VisItDir/help/$translation/help[a-z]*.html $helpdir/$translation
+           endif
+           cp $VisItDir/help/$translation/help0[01]*.html   $helpdir/$translation
+           cp $VisItDir/help/$translation/help0[23]*.html   $helpdir/$translation
+           cp $VisItDir/help/$translation/help0[45]*.html   $helpdir/$translation
+           ls "$VisItDir/help/$translation/help0[67]*.html" >& /dev/null
+           if ($status == 0) then
+             cp $VisItDir/help/$translation/help0[67]*.html $helpdir/$translation
+           endif
+           if (-e $VisItDir/help/$translation/visit.helpml) then
+              cp $VisItDir/help/$translation/visit.helpml $helpdir/$translation
+           endif
+       else
+           echo "FAILED TEST: $translation"
+       endif
+   end
 endif
 
 #

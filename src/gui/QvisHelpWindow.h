@@ -83,6 +83,9 @@ class QvisHelpListViewItem;
 //   Brad Whitlock, Wed Apr  9 11:28:42 PDT 2008
 //   QString for captionString.
 //
+//   Brad Whitlock, Mon Apr 21 15:26:37 PDT 2008
+//   Added helper methods and the SetLocale method.
+//
 // ****************************************************************************
 
 class GUI_API QvisHelpWindow : public QvisDelayedWindow
@@ -91,6 +94,8 @@ class GUI_API QvisHelpWindow : public QvisDelayedWindow
 public:
     QvisHelpWindow(const QString &captionString);
     virtual ~QvisHelpWindow();
+
+    void SetLocale(const QString &);
 
     virtual void CreateWindowContents();
     virtual void CreateNode(DataNode *);
@@ -123,6 +128,7 @@ private slots:
 private:
     typedef QMap<QString, QString> IndexMap;
 
+    QString ReleaseNotesFile() const;
     void LoadHelp(const QString &helpFile);
     void BuildIndex();
     void AddToIndex(const QString &topic, const QString &doc);
@@ -136,6 +142,7 @@ private:
     void synchronizeContents(const QString &page);
     void displayReleaseNotesHelper(bool);
 
+    QString       locale;
     QTabWidget   *helpTabs;
     QListView    *helpContents;
     QTextBrowser *helpBrowser;

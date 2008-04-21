@@ -81,6 +81,9 @@
 #   Kathleen Bonnell, Mon Feb 11 14:19:54 PST 2008 
 #   Removed references to defunct 'clearcase_bin' directory.
 #
+#   Brad Whitlock, Mon Apr 21 15:48:10 PDT 2008
+#   Change code so it copies multiple help translation directories.
+#
 #------------------------------------------------------------------------------
 
 # Need another way to determine we are starting in the right directory.
@@ -287,7 +290,18 @@ foreach configdir (MSVC7.Net/Debug MSVC7.Net/Release MSVC8.Net/Debug MSVC8.Net/R
     echo "copying help files ..."
     echo "copying help files ..."
     mkdir bin/$configdir/help
-    cp $VISITSRC/help/*.{html,helpml} bin/$configdir/help
+
+    set tmpDir = `pwd`
+    cd $VISITSRC/help
+    set translations=`find . -maxdepth 1 -type d`
+    cd $tmpDir
+    foreach t1 ($translations)
+        set translation=`echo $t1 | sed "s/.\///g"`
+        if ("$translation" != "." && "$translation" != ".svn") then
+            mkdir bin/$configdir/help/$translation
+            cp $VISITSRC/help/$translation/*.{html,helpml} bin/$configdir/help/$translation
+        endif
+    end
     echo "copying movie templates ..."
     mkdir bin/$configdir/movietemplates
     cp $VISITSRC/bin/movietemplates/*.{py,mt,bmp,ui} bin/$configdir/movietemplates

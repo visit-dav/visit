@@ -86,10 +86,13 @@
 //   Brad Whitlock, Wed Apr  9 11:28:58 PDT 2008
 //   QString for captionString.
 //
+//   Brad Whitlock, Mon Apr 21 15:24:47 PDT 2008
+//   Added locale.
+//
 // ****************************************************************************
 
 QvisHelpWindow::QvisHelpWindow(const QString &captionString) :
-    QvisDelayedWindow(captionString), helpFile(), index(), bookmarks()
+    QvisDelayedWindow(captionString), helpFile(), index(), bookmarks(), locale()
 {
     // Set the help path from an environment variable.
     char *helpHome = getenv("VISITHELPHOME");
@@ -117,6 +120,32 @@ QvisHelpWindow::QvisHelpWindow(const QString &captionString) :
 
 QvisHelpWindow::~QvisHelpWindow()
 {
+}
+
+// ****************************************************************************
+// Method: QvisHelpWindow::SetLocale
+//
+// Purpose: 
+//   Set the locale to be used when searching for help files.
+//
+// Arguments:
+//   s : The locale to use.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 21 15:25:26 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisHelpWindow::SetLocale(const QString &s)
+{
+    locale = s;
 }
 
 // ****************************************************************************
@@ -290,8 +319,7 @@ QvisHelpWindow::CreateWindowContents()
     buttonLayout->addWidget(dismissButton);
 
     // Try and load the help index file.
-    QString indexFile;
-    indexFile = helpPath + QString("/visit.helpml");
+    QString indexFile(CompleteFileName("visit.helpml"));
     LoadHelp(indexFile);
 
     // Show the appropriate page based on the activeTab setting.
@@ -303,6 +331,33 @@ QvisHelpWindow::CreateWindowContents()
     else
         helpTabs->showPage(helpBookmarksTab);
     helpTabs->blockSignals(false);
+}
+
+// ****************************************************************************
+// Method: QvisHelpWindow::ReleaseNotesFile
+//
+// Purpose: 
+//   Returns the name of the release notes file.
+//
+// Returns:    The name of the release notes file.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 21 15:05:10 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+QvisHelpWindow::ReleaseNotesFile() const
+{
+    QString relNotes, ver(VERSION);
+    if(ver.right(1) == "b")
+        ver = ver.left(ver.length()-1);
+    relNotes = QString("relnotes") + ver + QString(".html");
+    return relNotes;
 }
 
 // ****************************************************************************
@@ -339,6 +394,9 @@ QvisHelpWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
+//
+//   Brad Whitlock, Mon Apr 21 15:06:00 PDT 2008
+//   Changed how we find the release notes file.
 //
 // ****************************************************************************
 
@@ -421,10 +479,8 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
 
     QvisHelpListViewItem *releaseNotes = new QvisHelpListViewItem(
         helpContents, 0);
-    QString relNotes;
-    relNotes.sprintf("relnotes%s.html", VERSION);
     releaseNotes->setText(0, tr("Release Notes"));
-    releaseNotes->setDocument(relNotes);
+    releaseNotes->setDocument(ReleaseNotesFile());
     releaseNotes->setPixmap(0, helpIcon);
 
     // Create a root node for the VisIt home page.
@@ -529,8 +585,7 @@ QvisHelpWindow::BuildIndex()
     AddToIndex(tr("Frequently asked questions"), "faq.html");
     AddToIndex(tr("FAQ"), "faq.html");
     AddToIndex(tr("VisIt"), "home.html");
-    QString str; str.sprintf("relnotes%s.html", VERSION);
-    AddToIndex(tr("Release notes"), str);
+    AddToIndex(tr("Release notes"), ReleaseNotesFile());
 
     // Populate the index list box.
     helpIndex->blockSignals(true);
@@ -845,14 +900,26 @@ QvisHelpWindow::TopicFromDocHelper(QString &str, const QString &doc,
 // Creation:   Tue Sep 10 16:24:46 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 21 15:32:04 PDT 2008
+//   Added support for multiple locales.
+//
 // ****************************************************************************
 
 QString
 QvisHelpWindow::CompleteFileName(const QString &page) const
 {
-    QString file;
-    file.sprintf("%s%s%s", helpPath.latin1(), SLASH_STRING, page.latin1());
+    QString file(helpPath + QString(SLASH_STRING) + 
+                 locale + QString(SLASH_STRING) + 
+                 page);
+    if(!QFile(file).exists())
+    {
+        // The page did not exist for the desired locale, revert to the
+        // en_US page.
+        file = QString(helpPath + QString(SLASH_STRING) + 
+                       QString("en_US") + QString(SLASH_STRING) + 
+                       page);
+    }
+
     return file;
 }
 
@@ -1180,14 +1247,16 @@ QvisHelpWindow::displayContributors()
 //   so that the window gets created first if it has not been created so we
 //   can try to update the page without actually having to show the window
 //   unless the release notes are present.
-//   
+//
+//   Brad Whitlock, Mon Apr 21 15:08:45 PDT 2008
+//   Changed how we find the release notes file.
+//
 // ****************************************************************************
 
 void
 QvisHelpWindow::displayReleaseNotesHelper(bool showWin)
 {
-    QString relnotes;
-    relnotes.sprintf("relnotes%s.html", VERSION);
+    QString relnotes(ReleaseNotesFile());
 
     // Since we want to try and display the page before ever showing the
     // window, we have to create the window first so we won't try to display

@@ -3093,6 +3093,10 @@ QvisGUIApplication::SetupWindows()
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Mon Apr 21 15:29:03 PDT 2008
+//   Set the application locale into the Help window so we can look for other
+//   language help documents.
+//
 // ****************************************************************************
 
 QvisWindowBase *
@@ -3233,7 +3237,10 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_HELP:
         // Create the help window
-        win = new QvisHelpWindow(tr("Help"));
+        { QvisHelpWindow *helpwin = new QvisHelpWindow(tr("Help"));
+          helpwin->SetLocale(applicationLocale);
+          win = helpwin;
+        }
         break;
     case WINDOW_QUERY:
         // Create the query window.
