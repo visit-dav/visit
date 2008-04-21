@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="HostProfile" purpose="This class contains information needed to launch a remote,VisIt engine." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="HostProfile.code">
+  <Attribute name="HostProfile" purpose="This class contains information needed to launch a remote,VisIt engine." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="HostProfile.code">
     <Enum name="ClientHostDetermination">
       MachineName
       ManuallySpecified
@@ -69,6 +69,16 @@
       false
     </Field>
     <Field name="sublaunchArgs" label="sublaunchArgs" type="string">
+    </Field>
+    <Field name="sublaunchPreCmdSet" label="sublaunchPreCmdSet" type="bool">
+      false
+    </Field>
+    <Field name="sublaunchPreCmd" label="sublaunchPreCmd" type="string">
+    </Field>
+    <Field name="sublaunchPostCmdSet" label="sublaunchPostCmdSet" type="bool">
+      false
+    </Field>
+    <Field name="sublaunchPostCmd" label="sublaunchPostCmd" type="string">
     </Field>
     <Field name="hostAliases" label="hostAliases" type="string">
     </Field>

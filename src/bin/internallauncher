@@ -312,6 +312,10 @@ $0 = shift @ARGV;
 #    Added a hack to use the moab ttc option to specify the number of
 #    processors if running on yana.
 #
+#    Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
+#    Added hooks for commands to run pre and post the mpi command,
+#    and added a flag to qsub to indicate num procs per node.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -810,6 +814,8 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-pl")        { $parlaunch=shift; $parlaunch_set=1; }
     elsif ($arg eq "-la")        { $_=shift; @launchargs=split; $launchargs_set=1; }
     elsif ($arg eq "-sla")       { $_=shift; @sublaunchargs=split; $sublaunchargs_set=1; }
+    elsif ($arg eq "-slpre")     { $_=shift; @sublaunchprecmd=split; $sublaunchprecmd_set=1; }
+    elsif ($arg eq "-slpost")    { $_=shift; @sublaunchpostcmd=split; $sublaunchpostcmd_set=1; }
     elsif ($arg eq "-n" )        { $name = shift; $name_set = 1; }
     elsif ($arg eq "-p" )        { $part = shift; $part_set = 1; }
     elsif ($arg eq "-b" )        { $bank = shift; $bank_set = 1; }
@@ -1841,13 +1847,16 @@ if ($procs_set or ($parallel and $parlaunch_set))
         {
             push @parcmd, "-ln",  $procs;
         }
+        push @sublaunchprecmd,  " ; "  if $sublaunchprecmd_set;
+        push @sublaunchpostcmd, " ; "  if $sublaunchpostcmd_set;
+
         push @parcmd, "-r",  $name  if $name_set;
         push @parcmd, "-c",  $part  if $part_set;
         push @parcmd, "-b",  $bank  if $bank_set;
         push @parcmd, "-tM", $time  if $time_set;
         push @parcmd, "-expedite"   if $expedite_engine;
         push @parcmd, "-i", "cd $cwd ; $limitcmd ; $libpathcmd ; ".
-                            " $sublauncher $sublauncherargs @visitcmd";
+                            " @sublaunchprecmd $sublauncher $sublauncherargs @visitcmd ; @sublaunchpostcmd";
         @printcmd = @parcmd;
         push @printcmd, ("\"".(pop @printcmd)."\"");
     }
@@ -1935,7 +1944,9 @@ if ($procs_set or ($parallel and $parlaunch_set))
             print TFILE "#!/bin/tcsh\n";
             print TFILE $cdcmd;
             print TFILE $limitcmd;
+            print TFILE "@sublaunchprecmd", "\n", if $sublaunchprecmd_set;
             print TFILE "@mpicmd";
+            print TFILE "@sublaunchpostcmd", "\n", if $sublaunchpostcmd_set;
             close(TFILE);
            
             @parcmd = ($plauncher);
@@ -1970,8 +1981,8 @@ if ($procs_set or ($parallel and $parlaunch_set))
 	    $qsubNumNodeStr = "nodes";
 	    if ( $IsRunningOnJaguarCNL_ORNL ) {$qsubNumNodeStr = "size";}
 	    if ( $IsRunningOnFranklinNERSC ) {$qsubNumNodeStr = "mppwidth";}
-	    if ($use_vis) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes";}
-	    else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes"; }
+	    if ($use_vis) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes:ncpus=$ppn";}
+	    else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes:ncpus=$ppn"; }
             push @parcmd, "-l", "walltime=$time" if $time_set;
             if ($UseTTC) { push @parcmd, "-l", "ttc=$procs"; }
             push @parcmd, "-q",  $part  if $part_set;
@@ -1984,7 +1995,9 @@ if ($procs_set or ($parallel and $parlaunch_set))
             push @printcmd, $libcmd; 
             push @printcmd, $ldlibcmd; 
             push @printcmd, $plugincmd; 
+            push @printcmd, @sublaunchprecmd, "\n", if $sublaunchprecmd_set;
             push @printcmd, @mpicmd; 
+            push @printcmd, @sublaunchpostcmd, "\n", if $sublaunchpostcmd_set;
             push @printcmd, ("\"".(pop @printcmd)."\"");
         }
     }
