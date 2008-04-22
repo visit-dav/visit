@@ -66,9 +66,15 @@ v=GetView3D()
 v.viewNormal = (-0.761903, 0.456228, -0.45974)
 v.viewUp = (0.198721, 0.840238, 0.50449)
 SetView3D(v)
-Test("itaps_01")
-
 InitSetIds()
+silr.TurnOffSet(edgeSetId)
+silr.TurnOffSet(faceSetId)
+SetPlotSILRestriction(silr)
+Test("itaps_01")
+silr.TurnOnSet(edgeSetId)
+silr.TurnOnSet(faceSetId)
+SetPlotSILRestriction(silr)
+
 SetActivePlots((0,1))
 
 # turn on/off various combinations of EDGEs, FACEs, and REGIONs
