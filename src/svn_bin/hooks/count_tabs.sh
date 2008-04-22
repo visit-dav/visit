@@ -11,6 +11,9 @@
 #   Mark C. Miller, Mon Apr 21 20:01:43 PDT 2008
 #   Added src/configure to files to be skipped by this hook
 #
+#   Kathleen Bonnell, Tue Apr 22 08:35:39 PDT 2008 
+#   Added windows project and solution files to be skipped by this hook.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -36,7 +39,7 @@ for f in ${files} ; do
     # Filter out cases of files we permit tabs in.
     #
     case $f in
-        *.in|*.html|*/third_party_builtin/*|*/common/icons/*)
+        *.in|*.html|*/third_party_builtin/*|*/common/icons/*|*.vcproj|*.sln)
             continue
             ;;
         src/configure) 
