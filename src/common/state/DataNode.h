@@ -40,6 +40,7 @@
 #define DATANODE_H
 #include <state_exports.h>
 #include <AttributeGroup.h>
+#include <visitstream.h>
 
 typedef enum
 {
@@ -83,6 +84,9 @@ typedef enum
 //
 //   Brad Whitlock, Thu Feb 14 14:49:19 PST 2008
 //   Added SearchForNode and make GetNode not recurse.
+//
+//   Brad Whitlock, Tue Apr 22 12:14:38 PDT 2008
+//   Added a Print method for debugging.
 //
 // ****************************************************************************
 
@@ -180,6 +184,7 @@ public:
     void AddNode(DataNode *node);
     void RemoveNode(DataNode *node, bool deleteNode = true);
     void RemoveNode(const std::string &key, bool deleteNode = true);
+    void Print(ostream &os, int indent = 0);
 
     // Functions to return private members.
     const std::string &GetKey() const;
