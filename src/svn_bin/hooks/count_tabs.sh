@@ -17,6 +17,11 @@
 #   Mark C. Miller, Tue Apr 22 09:07:58 PDT 2008
 #   Added property filtering to only check text files
 #
+#   Mark C. Miller, Tue Apr 22 11:07:00 PDT 2008
+#   Fixed property filtering method to first check for existence of mime-type
+#   property. Also fixed check for file in repo to first check to see if the
+#   file has zero size.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -71,23 +76,26 @@ for f in ${files} ; do
     # on the trunk.
     if test $commitFileHasTabs -eq 0; then
 
-        ${SVNLOOK} cat $REPOS $f | grep -q '	'
-        repoFileHasTabs=$?
-        if test $repoFileHasTabs -eq 0; then
-            commitFileWordCount1=`${SVNLOOK} cat -t $TXN $REPOS $f | wc -l`
-            commitFileWordCount2=`${SVNLOOK} cat -t $TXN $REPOS $f | tr '\t' '\n' | wc -l`
-            commitFileTabCount=`expr $commitFileWordCount2 - $commitFileWordCount1`
-            repoFileWordCount1=`${SVNLOOK} cat $REPOS $f | wc -l`
-            repoFileWordCount2=`${SVNLOOK} cat $REPOS $f | tr '\t' '\n' | wc -l`
-            repoFileTabCount=`expr $repoFileWordCount2 - $repoFileWordCount1`
-            if test $commitFileTabCount -gt $repoFileTabCount; then
-                log "In a file you are commiting, \"$f\", you have increased "
-                log "the number of tabs from $repoFileTabCount to $commitFileTabCount."
+        fileLineCount=`${SVNLOOK} cat $REPOS $f | wc -l`
+        if test $fileLineCount -gt 0; then
+            ${SVNLOOK} cat $REPOS $f | grep -q '	'
+            repoFileHasTabs=$?
+            if test $repoFileHasTabs -eq 0; then
+                commitFileWordCount1=`${SVNLOOK} cat -t $TXN $REPOS $f | wc -l`
+                commitFileWordCount2=`${SVNLOOK} cat -t $TXN $REPOS $f | tr '\t' '\n' | wc -l`
+                commitFileTabCount=`expr $commitFileWordCount2 - $commitFileWordCount1`
+                repoFileWordCount1=`${SVNLOOK} cat $REPOS $f | wc -l`
+                repoFileWordCount2=`${SVNLOOK} cat $REPOS $f | tr '\t' '\n' | wc -l`
+                repoFileTabCount=`expr $repoFileWordCount2 - $repoFileWordCount1`
+                if test $commitFileTabCount -gt $repoFileTabCount; then
+                    log "In a file you are commiting, \"$f\", you have increased "
+                    log "the number of tabs from $repoFileTabCount to $commitFileTabCount."
+                    exit 1
+                fi
+            else
+                log "A file you are commiting, \"$f\", has tabs"
                 exit 1
             fi
-        else
-            log "A file you are commiting, \"$f\", has tabs"
-            exit 1
         fi
     fi
 done
