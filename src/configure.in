@@ -782,6 +782,7 @@ dnl    Eric Brugger, Fri Apr 18 13:13:11 PDT 2008
 dnl    Added HDF5_EXEC to allow the data directory to conditionally run
 dnl    HDF5 based programs that create HDF5 data files.
 dnl
+dnl	test
 dnl --------------------------------------------------------------------------
 
 dnl
