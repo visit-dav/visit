@@ -14,6 +14,9 @@
 #   Kathleen Bonnell, Tue Apr 22 08:35:39 PDT 2008 
 #   Added windows project and solution files to be skipped by this hook.
 #
+#   Mark C. Miller, Tue Apr 22 09:07:58 PDT 2008
+#   Added property filtering to only check text files
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -34,6 +37,16 @@ fi
 
 files=`${SVNLOOK} changed -t $TXN $REPOS | ${AWK} '{print $2}'`
 for f in ${files} ; do
+
+    #
+    # Only do this check for files svn thinks are 'text' files
+    #
+    mimeTypeProp=`${SVNLOOK} propget -t $TXN $REPOS svn:mime-type $f`
+    if test -n "$mimeTypeProp"; then
+        if test -z "`echo $mimeTypeProp | grep ^text/`"; then
+            continue
+        fi
+    fi
 
     #
     # Filter out cases of files we permit tabs in.
