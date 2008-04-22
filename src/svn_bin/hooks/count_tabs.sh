@@ -7,6 +7,10 @@
 # Programmer: Mark C. Miller
 # Created:    Mon Apr 21 18:09:43 PDT 2008
 #
+# Modifications:
+#   Mark C. Miller, Mon Apr 21 20:01:43 PDT 2008
+#   Added src/configure to files to be skipped by this hook
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -33,8 +37,11 @@ for f in ${files} ; do
     #
     case $f in
         *.in|*.html|*/third_party_builtin/*|*/common/icons/*)
-        continue
-        ;;
+            continue
+            ;;
+        src/configure) 
+            continue
+            ;;
     esac
 
     # check if the file we're trying to commit has tabs
