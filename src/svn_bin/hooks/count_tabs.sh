@@ -41,10 +41,13 @@ for f in ${files} ; do
     #
     # Only do this check for files svn thinks are 'text' files
     #
-    mimeTypeProp=`${SVNLOOK} propget -t $TXN $REPOS svn:mime-type $f`
-    if test -n "$mimeTypeProp"; then
-        if test -z "`echo $mimeTypeProp | grep ^text/`"; then
-            continue
+    hasMimeTypeProp=`${SVNLOOK} proplist -t $TXN $REPOS $f | grep mime-type`
+    if test -n "$hasMimeTypeProp"; then
+        mimeTypeProp=`${SVNLOOK} propget -t $TXN $REPOS svn:mime-type $f`
+        if test -n "$mimeTypeProp"; then
+            if test -z "`echo $mimeTypeProp | grep ^text/`"; then
+                continue
+            fi
         fi
     fi
 
@@ -55,7 +58,7 @@ for f in ${files} ; do
         *.in|*.html|*/third_party_builtin/*|*/common/icons/*|*.vcproj|*.sln)
             continue
             ;;
-        src/configure) 
+        */src/configure)
             continue
             ;;
     esac
