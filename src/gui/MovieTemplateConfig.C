@@ -246,7 +246,10 @@ MovieTemplateConfig::CreateSequenceObjects(DataNode *sNode,
 // Creation:   Tue Nov 14 11:12:12 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 22 10:52:22 PDT 2008
+//   Added debugging statements and code to skip the XML tag. Make the
+//   TemplateOptions node be the root node.
+//
 // ****************************************************************************
 
 DataNode *
@@ -258,13 +261,40 @@ MovieTemplateConfig::ReadConfigFile(const char *filename)
     // Try and open the file for reading.
     if((fp = fopen(filename, "rt")) == 0)
     {
-        debug1 << mName << "Could not read " << filename << endl;
+        debug1 << mName << "Could not open " << filename << endl;
         return node;
     }
+    else
+        debug1 << mName << "Opened " << filename << endl;
 
+    // Skip the XMl tag
+    FinishTag();
+
+    // Read the real data.
     root = new DataNode("root");
     ReadObject(root);
     fclose(fp); fp = 0;
+    debug1 << mName << "The objects were read " << endl;
+
+    // Reparent the TemplateOptions node from the "root" node and 
+    // make it the new root node.
+    DataNode **children = root->GetChildren();
+    for(int i = 0; i < root->GetNumChildren(); ++i)
+    {
+        DataNode *thisChild = children[i];
+        if(thisChild->GetKey() == "TemplateOptions")
+        { 
+            root->RemoveNode(thisChild, false);
+            delete root;
+            root = thisChild;
+            debug1 << mName << "Setting TemplateOptions as the new root" << endl;
+            break;
+        }
+    }
+
+    // Print the data node tree to the logs so we can see its structure.
+    if(debug5_real)
+        root->Print(debug5_real);
 
     // Remove all of the sequences.
     SequenceRemoveAll();
@@ -279,6 +309,7 @@ MovieTemplateConfig::ReadConfigFile(const char *filename)
         if(sNode != 0 && sNode->GetNodeType() == INTERNAL_NODE)
         {
             // Add the default "Window %d" sequences.
+            debug1 << mName << "Adding the default Window sequences" << endl;
             CreateSequenceObjects(sNode, filename, 16);
         }
         else
@@ -288,6 +319,8 @@ MovieTemplateConfig::ReadConfigFile(const char *filename)
                 "data could be obtained." << endl;
         }
     }
+    else
+        debug1 << mName << "Root node is NULL!" << endl;
 
     return GetRootNode();
 }
@@ -354,7 +387,7 @@ MovieTemplateConfig::GetRootNode() const
 {
     DataNode *ret = 0;
     if(root != 0)
-        ret = root->GetNode("TemplateOptions");
+        ret = root->SearchForNode("TemplateOptions");
     return ret;
 }
 
@@ -693,7 +726,7 @@ MovieTemplateConfig::GetViewport(const std::string &name) const
 {
     const char *mName = "MovieTemplateConfig::GetViewport: ";
     DataNode *node = 0;
-    DataNode *vpData = root->GetNode("VIEWPORTS");
+    DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
     if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
     {
         node = vpData->GetNode(name);
@@ -729,7 +762,7 @@ MovieTemplateConfig::GetActiveViewport()
     const char *mName = "MovieTemplateConfig::GetActiveViewport: ";
     if(activeViewport == 0)
     {
-        DataNode *vpData = root->GetNode("VIEWPORTS");
+        DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
         if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
         {
             DataNode **children = vpData->GetChildren();
@@ -768,7 +801,7 @@ MovieTemplateConfig::GetNumberOfViewports() const
 {
     const char *mName = "MovieTemplateConfig::GetNumberOfViewports: ";
     int nvpt = 0;
-    DataNode *vpData = root->GetNode("VIEWPORTS");
+    DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
     if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
     {
         DataNode **children = vpData->GetChildren();
@@ -840,7 +873,7 @@ MovieTemplateConfig::ViewportGetIndexForName(const std::string &name,
 {
     const char *mName = "MovieTemplateConfig::ViewportGetIndexForName: ";
     int _index = 0;
-    DataNode *vpData = root->GetNode("VIEWPORTS");
+    DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
     if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
     {
         DataNode **children = vpData->GetChildren();
@@ -889,7 +922,7 @@ MovieTemplateConfig::ViewportGetNameForIndex(int index, std::string &name) const
 {
     const char *mName = "MovieTemplateConfig::ViewportGetNameForIndex";
     int _index = 0;
-    DataNode *vpData = root->GetNode("VIEWPORTS");
+    DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
     if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
     {
         DataNode **children = vpData->GetChildren();
@@ -971,7 +1004,7 @@ MovieTemplateConfig::ViewportAdd(const std::string &name,
 {
     const char *mName = "MovieTemplateConfig::ViewportAdd: ";
     bool retval = false;
-    DataNode *vpData = root->GetNode("VIEWPORTS");
+    DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
     if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
     {
         // If the viewport already exists, delete it.
@@ -1037,7 +1070,7 @@ MovieTemplateConfig::ViewportRemove(const std::string &name)
     bool retval = false;
 
     // Delete the viewport.
-    DataNode *vpData = root->GetNode("VIEWPORTS");
+    DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
     if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
     {
         bool setActive = GetViewport(name) == GetActiveViewport();
@@ -1083,7 +1116,7 @@ MovieTemplateConfig::ViewportRemoveAll()
     bool retval = false;
 
     // Delete the viewport.
-    DataNode *vpData = root->GetNode("VIEWPORTS");
+    DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
     if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
     {
         DataNode **children = vpData->GetChildren();

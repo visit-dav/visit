@@ -3795,15 +3795,24 @@ QvisSaveMovieWizard::RemoveSequencePages()
 bool
 QvisSaveMovieWizard::AddSequencePages()
 {
+    const char *mName = "QvisSaveMovieWizard::AddSequencePages: ";
+
     if(sequencePagesAdded)
+    {
+        debug3 << mName << "Sequence pages already added." << endl;
         return false;
+    }
 
     // Remove any custom pages that might be installed.
+    debug3 << mName << "Removing sequence pages" << endl;
     RemoveSequencePages();
 
     // Return if we don't have a template spec.
     if(templateSpec == 0)
+    {
+        debug3 << "There is no template spec" << endl;
         return false;
+    }
 
     // Iterate over all of the viewports in order and then on all
     // of the sequences within each viewport. We do it like this
@@ -3811,9 +3820,9 @@ QvisSaveMovieWizard::AddSequencePages()
     // keep the UI's for sequences within a viewport grouped.
     int noLoadCount = 0;
     QString badUIFiles;
-    for(int vpt = 0; 
-        vpt < templateSpec->GetNumberOfViewports();
-        ++vpt)
+    int nvpt = templateSpec->GetNumberOfViewports();
+    debug1 << mName << "Number of viewports: " << nvpt << endl;
+    for(int vpt = 0; vpt < nvpt; ++vpt)
     {
         std::string vpName;
         stringVector seqList;

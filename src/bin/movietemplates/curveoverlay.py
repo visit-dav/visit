@@ -96,6 +96,9 @@ class OverlayCurveMovieTemplate(VisItMovieTemplate):
     #   Brad Whitlock, Wed Apr 16 16:46:27 PDT 2008
     #   Pass self to the sequence1 callback.
     #
+    #   Brad Whitlock, Tue Apr 22 15:52:52 PDT 2008
+    #   Turn off the query output.
+    #
     ###########################################################################
 
     def Sequence1Frames(self, formats, percents):
@@ -156,8 +159,10 @@ class OverlayCurveMovieTemplate(VisItMovieTemplate):
         title.fontBold = 1
 
         # Save the frames.
+        SuppressQueryOutputOn()
         cb_data = (TimeSliderGetNStates(), Sequence1Frames_set_timeslider, (ts, self))
         ret = self.IterateCallbackAndSaveFrames(cb_data, "seq1", formats, percents, "Generating sequence 1 frames")
+        SuppressQueryOutputOff()
 
         DeleteAllPlots()
         ts.Delete()

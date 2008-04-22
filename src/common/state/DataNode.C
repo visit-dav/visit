@@ -1381,3 +1381,42 @@ GetNodeType(const char *str)
 
     return (NodeTypeEnum)retval;
 }
+
+// ****************************************************************************
+// Method: DataNode::Print
+//
+// Purpose: 
+//   Print method so we can see the structure of the tree in debug logs.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 22 12:16:19 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+DataNode::Print(ostream &os, int indent)
+{
+    std::string space;
+    for(int i = 0; i < indent; ++i)
+        space += " ";
+
+    os << space.c_str() << this->GetKey().c_str() << endl;
+    if(this->GetNodeType() == INTERNAL_NODE)
+    {
+        os << space.c_str() << "{" << endl;
+        for(int j = 0; j < this->GetNumChildren(); ++j)
+            if(this->GetChildren()[j] == NULL)
+                os << space.c_str() << "   NULL";
+            else
+                this->GetChildren()[j]->Print(os, indent + 4);
+        os << space.c_str() << "}" << endl;
+    }
+}

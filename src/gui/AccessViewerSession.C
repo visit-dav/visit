@@ -91,7 +91,9 @@ AccessViewerSession::~AccessViewerSession()
 // Creation:   Mon Nov 13 15:44:26 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 22 12:19:30 PDT 2008
+//   Skip the XML tag.
+//
 // ****************************************************************************
 
 DataNode *
@@ -106,6 +108,9 @@ AccessViewerSession::ReadConfigFile(const char *filename)
         debug1 << mName << "Could not read " << filename << endl;
         return node;
     }
+
+    // Skip the XML tag
+    FinishTag();
 
     root = new DataNode("root");
     ReadObject(root);
