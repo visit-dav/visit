@@ -129,6 +129,10 @@
 //   Gunther H. Weber, Wed Nov 28 15:20:58 PST 2007
 //   Added toggle for showing current cell outline
 //
+//   Brad Whitlock, Tue Apr 22 10:25:39 PDT 2008
+//   Make the menu options be buttons on the Mac since the viewer is not
+//   allowed to make a menu.
+//
 // ****************************************************************************
 
 SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent, 
@@ -155,6 +159,10 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     QVBoxLayout *topLayout = new QVBoxLayout(top);
     topLayout->setSpacing(5);
     topLayout->setMargin(10);
+#ifdef Q_WS_MAC
+    QHBox *menuContainer = new QHBox(top, "menuContainer");
+    topLayout->addWidget(menuContainer);
+#endif
     QHBoxLayout *layout = new QHBoxLayout(topLayout);
     layout->setSpacing(5);
 
@@ -297,18 +305,33 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     // Do the main menu.
     //
     filePopup = new QPopupMenu(this);
+#ifdef Q_WS_MAC
+    QPushButton *fileButton = new QPushButton(tr("&File"), menuContainer, "fileButton");
+    fileButton->setPopup(filePopup);
+#else
     saveMenuId = menuBar()->insertItem(tr("&File"), filePopup);
+#endif
     saveMenu_SaveTextId = filePopup->insertItem(tr("Save as text . . ."), this, SLOT(saveAsText()), CTRL+Key_S);
 
     editPopup = new QPopupMenu(this);
+#ifdef Q_WS_MAC
+    QPushButton *editButton = new QPushButton(tr("&Edit"), menuContainer, "editButton");
+    editButton->setPopup(editPopup);
+#else
     editMenuId = menuBar()->insertItem(tr("&Edit"), editPopup);
+#endif
     editMenu_CopyId = editPopup->insertItem(tr("&Copy"), this, SLOT(copySelectionToClipboard()), CTRL+Key_C);
     editPopup->insertSeparator();
     editPopup->insertItem(tr("Select &All"), this, SLOT(selectAll()), CTRL+Key_A);
     editPopup->insertItem(tr("Select &None"), this, SLOT(selectNone()), CTRL+Key_N);
 
     operationsPopup = new QPopupMenu(this);
+#ifdef Q_WS_MAC
+    QPushButton *opButton = new QPushButton(tr("&Operations"), menuContainer, "opButton");
+    opButton->setPopup(operationsPopup);
+#else
     operationMenuId = menuBar()->insertItem(tr("&Operations"), operationsPopup);
+#endif
     operationsPopup->insertItem(tr("Sum"), this, SLOT(operationSum()));
     operationsPopup->insertItem(tr("Average"), this, SLOT(operationAverage()));
     updateMenuEnabledState(tables[0]);
@@ -1545,7 +1568,9 @@ SpreadsheetViewer::clear()
 // Creation:   Thu Feb 22 12:24:56 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 22 10:26:54 PDT 2008
+//   Don't set the enabled state for the operation menu on the Mac.
+//
 // ****************************************************************************
 
 void
@@ -1561,7 +1586,9 @@ SpreadsheetViewer::updateMenuEnabledState(QTable *table)
 
         filePopup->setItemEnabled(saveMenu_SaveTextId, enabled);
         editPopup->setItemEnabled(editMenu_CopyId, enabled);
+#ifndef Q_WS_MAC
         menuBar()->setItemEnabled(operationMenuId, enabled);
+#endif
     }
 }
 
