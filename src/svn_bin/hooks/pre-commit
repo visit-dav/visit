@@ -48,5 +48,8 @@ function runhook_py()
 # Check that we're using correct versin of autoconf
 runhook_sh "check_autoconf_version.sh"
 
+# Check that we're not adding tabs to files
+runhook_sh "count_tabs.sh"
+
 # All checks passed, so allow the commit.
 exit 0
