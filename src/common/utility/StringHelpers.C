@@ -464,7 +464,7 @@ StringHelpers::ExtractRESubstr(const char *strToSearch, const char *re)
     else if (*(last+1) == ' ' && *(last+2) == '\\')
     {
         reToUse = string(re, 1, (last-re+1)-2); // -2 for '<' and '>' chars
-	errno = 0;
+        errno = 0;
         matchToExtract = strtol(last+3, 0, 10);
 	if (errno != 0)
 	    return retval;
