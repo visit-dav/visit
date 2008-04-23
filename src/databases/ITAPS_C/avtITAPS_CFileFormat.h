@@ -80,6 +80,9 @@ typedef struct _VisItEntitySetInfo {
 //    Added stuff to start processing the entity set hierarchy. It is not
 //    yet in use though.
 //
+//    Mark C. Miller, Tue Apr 22 23:20:43 PDT 2008
+//    Added stuff to handle more interesting subsetting.
+//
 // ****************************************************************************
 
 class avtITAPS_CFileFormat : public avtSTMDFileFormat
@@ -98,6 +101,8 @@ class avtITAPS_CFileFormat : public avtSTMDFileFormat
   protected:
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    virtual vtkDataArray  *GetNodalSubsetVar(int, const char *,
+                               const vector<iBase_EntitySetHandle> &theSets);
 
   private:
       string               vmeshFileName;
@@ -121,6 +126,12 @@ class avtITAPS_CFileFormat : public avtSTMDFileFormat
       bool                 haveMixedElementMesh;
       vector<iBase_TagHandle>    primitiveTagHandles[4];
       map<iBase_EntitySetHandle,VisItEntitySetInfo_t> esMap;
+
+      map<string, vector<iBase_EntitySetHandle> > topLevelSets;
+      vector<iBase_EntitySetHandle> domainSets;
+      int                           domainEntType;
+
+      map<string, vector<vector<int> > > pascalsTriangleMaps;
 
 };
 
