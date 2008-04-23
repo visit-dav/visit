@@ -348,6 +348,12 @@
 #     environment variables option. Added PAR_INCLUDE and PAR_LIBS 
 #     to the virable list.
 #
+#     Thomas R. Treadway, Wed Apr 23 15:14:43 PDT 2008
+#     Fixed dialog text input box processing in parallel build dialog
+#     Modified Variable setting menu
+#     Changed implemented in More options and moved into a function
+#     Added a GUI, and -R option to specify an VisIt SVN revision argument
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -458,6 +464,7 @@ export MAKE=${MAKE-"make"}
 export THIRD_PARTY_PATH=${THIRD_PARTY_PATH-"./visit"}
 export GROUP=${GROUP-"visit"}
 export LOG_FILE=${LOG_FILE-"build_visit_log"}
+export SVNREVISION=${SVNREVISION-""}
 
 #
 # OPTIONS
@@ -498,6 +505,8 @@ export DO_H5PART="no"
 export ON_H5PART="off"
 export DO_SVN="no"
 export ON_SVN="off"
+export DO_REVISION="no"
+export ON_REVISION="off"
 USE_VISIT_FILE="no"
 ON_USE_VISIT_FILE="off"
 export DO_PATH="no"
@@ -1032,7 +1041,12 @@ function check_visit_source_code
            else
                echo "SVN check-out of VisIt . . ." 
            fi
-           svn co --quiet --non-interactive $SVN_ROOT_PATH/trunk/src
+           if [[ "$DO_REVISION" == "yes" && "$SVNREVISION" != "" ]] ; then
+               svn co --quiet --non-interactive --revision "$SVNREVISION" \
+                  $SVN_ROOT_PATH/trunk/src
+           else
+               svn co --quiet --non-interactive $SVN_ROOT_PATH/trunk/src
+           fi
            if [[ $? != 0 ]] ; then
                echo "Unable to build VisIt.  SVN download failed."
                return 1
@@ -1407,64 +1421,93 @@ function check_more_options
 
     # Override variable settings dialog
     #
-    if [[ "$DO_VERSION" == "yes" || "$USE_VISIT_FILE" == "yes" || \
-          "$DO_GROUP" == "yes" ]] ; then
-        if [[ "$GRAPHICAL" == "yes" ]] ; then
-            $DLG --backtitle "$DLG_BACKTITLE" \
-            --title "More Variable settings" \
-            --checklist \
-"These variables use these system dependent defaults, but can be overridden"\
-"through this interface or using environment variables.\n\n"\
-"Version: the VisIt version number to build\n"\
-"Tarball: the name of the distribution tarball\n"\
-"Group: the group ID for installed libraries\n"\
-"Select the variables you wish to modify" 20 $DLG_WIDTH 5 \
-           "Version"  "$VISIT_VERSION"     "off" \
-           "Tarball"  "$VISIT_FILE"        "off" \
-           "Group"  "$GROUP"             "off" 2> tmp$$
-           retval=$?
+    if [[ "$DO_MORE" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
+        $DLG --backtitle "$DLG_BACKTITLE" \
+        --title "More build options" \
+        --checklist \
+"Version: specify version of VisIt to download and build\n"\
+"Build: build VisIt, disable to build 3rd party only\n"\
+"Required: build required 3rd party libraries\n"\
+"Logging: display build log to stdout\n"\
+"Symbol: turn on -g, debugging flag\n"\
+"Group: specify the group name for install\n"\
+"Path: specify the root directory for libraries\n"\
+"Absolute: Change the default install name path for Darwin dynamic libraries "\
+"to use the given Path rather than the default [@executable_path/../lib]\n"\
+"Trace: print a trace of commands and arguments during build\n\n"\
+"Select build and installed options:" 0 0 0 \
+           "Version"   "specify VisIt version [$VISIT_VERSION]" $ON_VERSION \
+           "Build"     "enable building VisIt"                  $ON_VISIT \
+           "Required"  "enable required 3rd party libraries"    $ON_THIRD_PARTY\
+           "Logging"   "disable logging to file"                $ON_LOG \
+           "Symbol"    "enable debug compiling"                 $ON_DEBUG \
+           "Group"     "specify group name for install"         $ON_GROUP \
+           "Path"      "specify library path [$THIRD_PARTY_PATH]" $ON_PATH \
+           "Absolute"  "change the behavior of install name"    $ON_ABS_PATH \
+           "Trace"     "enable SHELL debugging"      $ON_VERBOSE 2> tmp$$
+        retval=$?
 
-           # Remove the extra quoting, new dialog has --single-quoted
-           choice="$(cat tmp$$ | sed 's/"//g' )"
-           case $retval in
-             0)
-               for OPTION in $choice
-               do
-                   case $OPTION in
-                     Version)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
+    # Remove the extra quoting, new dialog has --single-quoted
+        choice="$(cat tmp$$ | sed 's/"//g' )"
+        case $retval in
+          0)
+            DO_VERSION="no"
+            DO_VISIT="no"
+            DO_REQUIRED_THIRD_PARTY="no"
+            DO_LOG="no"
+            DO_DEBUG="no"
+            DO_GROUP="no"
+            DO_PATH="no"
+            ABS_PATH="no"
+            DO_VERBOSE="no"
+            for OPTION in $choice
+            do
+                case $OPTION in
+                  Version)
+                     $DLG --backtitle "$DLG_BACKTITLE" \
+                        --no-cancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISIT_VERSION" 2> tmp$$
-                        VISIT_VERSION="$(cat tmp$$)"
-                        VISIT_FILE="visit${VISIT_VERSION}.tar.gz"
-                        ;;
-                     Tarball)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISIT_FILE" 2> tmp$$
-                        VISIT_FILE="$(cat tmp$$)"
-                        ;;
-                     Group)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
+                     VISIT_VERSION="$(cat tmp$$)"
+                     VISIT_FILE="visit${VISIT_VERSION}.tar.gz"
+                     DO_VERSION="yes";;
+                  Build)
+                     DO_VISIT="yes";;
+                  Required)
+                     DO_REQUIRED_THIRD_PARTY="yes";;
+                  Logging)
+                     DO_LOG="yes";;
+                  Symbol)
+                     DO_DEBUG="yes";;
+                  Group)
+                     $DLG --backtitle "$DLG_BACKTITLE" \
+                        --no-cancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$GROUP" 2> tmp$$
-                        GROUP="$(cat tmp$$)"
-                        ;;
-                   esac
-               done
-               ;;
-             1)
-               echo "Cancel pressed."
-               ;;
-             255)
-               echo "ESC pressed.";;
-             *)
-               echo "Unexpected return code: $retval";;
-           esac
-       fi
-       if [[ -e "tmp$$" ]] ; then
-           rm tmp$$
-       fi
+                     GROUP="$(cat tmp$$)"
+                     DO_GROUP="yes";;
+                  Path)
+                     $DLG --backtitle "$DLG_BACKTITLE" \
+                        --no-cancel --inputbox \
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$THIRD_PARTY_PATH" 2> tmp$$
+                     THIRD_PARTY_PATH="$(cat tmp$$)"
+                     DO_PATH="yes";;
+                  Absolute)
+                     ABS_PATH="yes";;
+                  Trace)
+                     DO_VERBOSE="yes";;
+                esac
+            done
+            ;;
+          1)
+            echo "Cancel pressed."
+            exit 1;;
+          255)
+            echo "ESC pressed.";;
+          *)
+            echo "Unexpected return code: $retval";;
+        esac
+    fi
+    if [[ -e "tmp$$" ]] ; then
+        rm tmp$$
     fi
 
     return 0
@@ -1565,9 +1608,10 @@ function check_parallel
                 15 $DLG_WIDTH
                 if [[ $? == 1 ]] ; then
                     tryagain=1
-                    PAR_CPPFLAGS=`$DLG --backtitle "$DLG_BACKTITLE" \
+                    $DLG --backtitle "$DLG_BACKTITLE" \
                     --no-cancel --inputbox \
-"Enter CPPFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_CPPFLAGS" 2>&1`
+"Enter CPPFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_CPPFLAGS" 2> tmp$$
+                    PAR_CPPFLAGS="$(cat tmp$$)"
                 else
                     tryagain=0
                 fi
@@ -1583,9 +1627,10 @@ function check_parallel
 "The LDFLAGS for MPI are:\n\n$PAR_LDFLAGS\n\nDo these look right?" 15 $DLG_WIDTH
                 if [[ $? == 1 ]] ; then
                     tryagain=1
-                    PAR_LDFLAGS=`$DLG --backtitle "$DLG_BACKTITLE" \
+                    $DLG --backtitle "$DLG_BACKTITLE" \
                     --no-cancel --inputbox \
-"Enter LDFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_LDFLAGS" 2>&1`
+"Enter LDFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_LDFLAGS" 2> tmp$$
+                    PAR_LDFLAGS="$(cat tmp$$)"
                 else
                     tryagain=0
                 fi
@@ -1640,8 +1685,8 @@ function check_variables
 "ARCH: architecure info (Darwin, linux, aix, irix64, ...)\n"\
 "C_COMPILER and CXX_COMPILER: the C and C++ compiler, respectively\n"\
 "C_OPT_FLAGS and CXX_OPT_FLAGS: the CFLAGS and CXXFLAGS to use\n"\
-"THIRD_PARTY_PATH: location for 3rd party libraries\n"\
-"VISITARCH: unique architecture info, appended to library path installation\n\n"\
+"VISITARCH: unique architecture info, appended to library path installation\n"\
+"REVISION: checkout a cwspecific SVN revision using supplied argument\n\n"\
 "Select the variables you wish to modify:" 28 $DLG_WIDTH 8 \
            "OPSYS"            "$OPSYS"             "off" \
            "ARCH"             "$ARCH"              "off" \
@@ -1649,8 +1694,8 @@ function check_variables
            "CXX_COMPILER"     "$CXX_COMPILER"      "off" \
            "C_OPT_FLAGS"      "$C_OPT_FLAGS"       "off" \
            "CXX_OPT_FLAGS"    "$CXX_OPT_FLAGS"     "off" \
-           "THIRD_PARTY_PATH" "$THIRD_PARTY_PATH"  "off" \
-           "VISITARCH"        "$VISITARCH"         "off" 2> tmp$$
+           "VISITARCH"        "$VISITARCH"         "off" \
+           "REVISION"         "$SVNREVISION"       "off" 2> tmp$$
            retval=$?
 
            # Remove the extra quoting, new dialog has --single-quoted
@@ -1696,18 +1741,19 @@ function check_variables
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$CXX_OPT_FLAGS" 2> tmp$$
                         CXX_OPT_FLAGS="$(cat tmp$$)"
                         ;;
-                     THIRD_PARTY_PATH)
-                        $DLG --backtitle "$DLG_BACKTITLE" \
-                           --no-cancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$THIRD_PARTY_PATH" 2> tmp$$
-                        THIRD_PARTY_PATH="$(cat tmp$$)"
-                        ABS_PATH="yes"
-                        ;;
                      VISITARCH)
                         $DLG --backtitle "$DLG_BACKTITLE" \
                            --no-cancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISITARCH" 2> tmp$$
                         VISITARCH="$(cat tmp$$)"
+                        ;;
+                     REVISION)
+                        $DLG --backtitle "$DLG_BACKTITLE" \
+                           --no-cancel --inputbox \
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISITARCH" 2> tmp$$
+                        SVNREVISION="$(cat tmp$$)"
+                        DO_SVN="yes"
+                        DO_REVISION="yes"
                         ;;
                    esac
                done
@@ -6739,8 +6785,9 @@ printvariables () {
   printf "%s%s\n" "THIRD_PARTY_PATH=" "${THIRD_PARTY_PATH}"
   printf "%s%s\n" "GROUP=" "${GROUP}"
   printf "%s%s\n" "LOG_FILE=" "${LOG_FILE}"
+  printf "%s%s\n" "LOG_FILE=" "${LOG_FILE}"
   printf "%s%s\n" "WGET_OPTS=" "${WGET_OPTS}"
-  printf "%s%s\n" "VISIT_VERSION=" "${VISIT_VERSION}"
+  printf "%s%s\n" "SVNREVISION=" "${SVNREVISION}"
   printf "%s%s\n" "VISIT_FILE=" "${VISIT_FILE}"
 
   printf "%s%s\n" "VTK_FILE=" "${VTK_FILE}"
@@ -6842,8 +6889,8 @@ printvariables () {
   printf "%s%s\n" "VISUS_DIR=" "${VISUS_DIR}"
 }
 usage () {
-  printf "Usage: %s [-45bCcdEefghIijkmnopSsVwxyz] [-a opt] [-l opt]\n" $0
-  printf "       [-t opt] [-u opt] [-v opt] [-D opt] [-J opt]\n"
+  printf "Usage: %s [-45bCcdEefghIijkmnoprSsVwxyz] [-a opt] [-l opt]\n" $0
+  printf "       [-t opt] [-u opt] [-v opt] [-D opt] [-J opt] [-R opt]\n"
   printf "\n"
   printf "%s %s %s\n" "-4     Build HDF4 from [" $HDF4_FILE "]"
   printf "%s %s %s\n" "-5     Build HDF5 from [" $HDF5_FILE "]"
@@ -6878,6 +6925,7 @@ usage () {
   printf "%s %s %s\n" "-n     Build NetCDF from [" $NETCDF_FILE "]"
   printf "%s\n" "-o     Display build log to stdout not to build_visit_log file"
   printf "%s\n" "-p     Enable parallel build, display MPI prompt"
+  printf "%s\n" "-R opt Checkout specific revision argument of VisIt from SVN"
   printf "%s %s %s\n" "-r     Build H5Part from [" $H5PART_FILE "]"
   printf "%s\n" "-S     Build with SLIVR shader support"
   printf "%s\n" "-s     Use the SVN server for the VisIt distribution"
@@ -6907,7 +6955,7 @@ usage () {
 # This section does some set up for building VisIt, and then calls the        #
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
-while getopts :45a:bcdefghijkl:mnoprst:u:v:wxyzA:BCD:EFGHIJ:KL:MNOPRST:U:V:WXYZ ARG
+while getopts :45a:bcdefghijkl:mnoprst:u:v:wxyzA:BCD:EFGHIJ:KL:MNOPR:ST:U:V:WXYZ ARG
 
 do
     argcur=$ARG
@@ -6960,7 +7008,10 @@ do
       o|O) LOG_FILE="/dev/tty";;
       p|P) parallel="yes"
            ON_parallel="on";;
-      r|R) DO_H5PART="yes"
+        R) SVNREVISION="$OPTARG"
+           DO_SVN="yes"
+           DO_REVISION="yes";;
+        r) DO_H5PART="yes"
            ON_H5PART="on"
            DO_HDF5="yes"
            ON_HDF5="on"
@@ -7062,6 +7113,10 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
               SVN)
                  DO_SVN="yes";;
               Tarball)
+                 $DLG --backtitle "$DLG_BACKTITLE" \
+                    --no-cancel --inputbox \
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISIT_FILE" 2> tmp$$
+                 VISIT_FILE="$(cat tmp$$)"
                  USE_VISIT_FILE="yes";;
               Parallel)
                  parallel="yes";;
@@ -7156,82 +7211,6 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
                  DO_MILI="yes";;
               NetCDF)
                  DO_NETCDF="yes";;
-            esac
-        done
-        ;;
-      1)
-        echo "Cancel pressed."
-        exit 1;;
-      255)
-        echo "ESC pressed.";;
-      *)
-        echo "Unexpected return code: $retval";;
-    esac
-fi
-if [[ -e "tmp$$" ]] ; then
-    rm tmp$$
-fi
-
-if [[ "$DO_MORE" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
-    $DLG --backtitle "$DLG_BACKTITLE" \
-    --title "More build options" \
-    --checklist \
-"Version: specify version of VisIt to download and build\n"\
-"Build: build VisIt, disable to build 3rd party only\n"\
-"Required: build required 3rd party libraries\n"\
-"Logging: display build log to stdout\n"\
-"Symbol: turn on -g, debugging flag\n"\
-"Group: specify the group name for install\n"\
-"Path: specify the root directory for libraries\n"\
-"Absolute: Change the default install name path for Darwin dynamic libraries "\
-"to use the given Path rather than the default [@executable_path/../lib]\n"\
-"Trace: print a trace of commands and arguments during build\n\n"\
-"Select build and installed options:" 0 0 0 \
-           "Version"   "specify VisIt version [$VISIT_VERSION]" $ON_VERSION \
-           "Build"     "enable building VisIt"                  $ON_VISIT \
-           "Required"  "enable required 3rd party libraries"    $ON_THIRD_PARTY\
-           "Logging"   "disable logging to file"                $ON_LOG \
-           "Symbol"    "enable debug compiling"                 $ON_DEBUG \
-           "Group"     "specify group name for install"         $ON_GROUP \
-           "Path"      "specify library path [$THIRD_PARTY_PATH]" $ON_PATH \
-           "Absolute"  "change the behavior of install name"    $ON_ABS_PATH \
-           "Trace"     "enable SHELL debugging"      $ON_VERBOSE 2> tmp$$
-    retval=$?
-
-    # Remove the extra quoting, new dialog has --single-quoted
-    choice="$(cat tmp$$ | sed 's/"//g' )"
-    case $retval in
-      0)
-        DO_VERSION="no"
-        DO_VISIT="no"
-        DO_REQUIRED_THIRD_PARTY="no"
-        DO_LOG="no"
-        DO_DEBUG="no"
-        DO_GROUP="no"
-        DO_PATH="no"
-        ABS_PATH="no"
-        DO_VERBOSE="no"
-        for OPTION in $choice
-        do
-            case $OPTION in
-              Version)
-                 DO_VERSION="yes";;
-              Build)
-                 DO_VISIT="yes";;
-              Required)
-                 DO_REQUIRED_THIRD_PARTY="yes";;
-              Logging)
-                 DO_LOG="yes";;
-              Symbol)
-                 DO_DEBUG="yes";;
-              Group)
-                 DO_GROUP="yes";;
-              Path)
-                 DO_PATH="yes";;
-              Absolute)
-                 ABS_PATH="yes";;
-              Trace)
-                 DO_VERBOSE="yes";;
             esac
         done
         ;;
