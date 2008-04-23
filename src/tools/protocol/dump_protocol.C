@@ -29,7 +29,6 @@
 #include <ExportDBAttributes.h>
 #include <Expression.h>
 #include <ExpressionList.h>
-#include <ExtentsAttributes.h>
 #include <GaussianControlPoint.h>
 #include <GaussianControlPointList.h>
 #include <GlobalAttributes.h>
@@ -173,7 +172,6 @@ CreateCommonStateObjects(StateObjectMap &attributes)
     MAKE_OBJECT(ExportDBAttributes);
     MAKE_OBJECT(Expression);
     MAKE_OBJECT(ExpressionList);
-    MAKE_OBJECT(ExtentsAttributes);
     MAKE_OBJECT(GaussianControlPoint);
     MAKE_OBJECT(GaussianControlPointList);
     MAKE_OBJECT(GlobalAttributes);

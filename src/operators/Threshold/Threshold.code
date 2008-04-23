@@ -27,6 +27,9 @@ Definition:
 //    Jeremy Meredith, Fri Feb 15 13:14:22 EST 2008
 //    Added support for AxisRestrictionAttributes.
 //
+//   Jeremy Meredith, Tue Apr 22 14:31:20 EDT 2008
+//   Removed Extents tool.  (Functionality subsumed by axis restriction tool.)
+//
 // ****************************************************************************
 
 bool
@@ -39,52 +42,6 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
         // Call assignment operator.
         const ThresholdAttributes *tmp = (const ThresholdAttributes *)atts;
         *this = *tmp;
-        retval = true;
-    }
-    else if (atts->TypeName() == "ExtentsAttributes")
-    {
-        const ExtentsAttributes *extAtts = (const ExtentsAttributes *)atts;
-
-        stringVector toolVarNames     = extAtts->GetScalarNames();
-        doubleVector toolAxisMinima   = extAtts->GetScalarMinima();
-        doubleVector toolAxisMaxima   = extAtts->GetScalarMaxima();
-        doubleVector toolSliderMinima = extAtts->GetMinima();
-        doubleVector toolSliderMaxima = extAtts->GetMaxima();
-        
-        int toolVarCount = toolVarNames.size();
-        int listVarCount = listedVarNames.size();
-        int listVarNum, toolVarNum;
-        double toolAxisMin, toolAxisRange;
-        std::string listedVarName, toolVarName;
-
-        for (listVarNum = 0; listVarNum < listVarCount; listVarNum++)
-        {
-            listedVarName = listedVarNames[listVarNum];
-
-            for (toolVarNum = 0; toolVarNum < toolVarCount; toolVarNum++)
-            {
-                if ((toolVarName = toolVarNames[toolVarNum]) == listedVarName)
-                    break;
-                    
-                if (listedVarName == std::string("default"))
-                {
-                    if ((toolVarName == defaultVarName) && defaultVarIsScalar)
-                        break;
-                }
-            }
-
-            if (toolVarNum < toolVarCount)
-            {
-                toolAxisMin = toolAxisMinima[toolVarNum];
-                toolAxisRange = toolAxisMaxima[toolVarNum] - toolAxisMin;
-                    
-                lowerBounds[listVarNum] =
-                    toolAxisMin + toolSliderMinima[toolVarNum]*toolAxisRange;
-                upperBounds[listVarNum] =
-                    toolAxisMin + toolSliderMaxima[toolVarNum]*toolAxisRange;
-            }
-        }
-
         retval = true;
     }
     else if (atts->TypeName() == "AxisRestrictionAttributes")

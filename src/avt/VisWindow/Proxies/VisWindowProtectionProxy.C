@@ -536,24 +536,6 @@ VisWindowProtectionProxy::ProxiedGetPlotInfoAtts(const char *plotName)
 
 
 // ****************************************************************************
-//  Method: VisWindowProtectionProxy::ProxiedAxisAnnotationsEnabled
-//
-//  Purpose: Uses friend access to determine whether 2-D axis annotations are
-//           enabled in the vis window.
-//
-//  Programmer: Mark Blair
-//  Creation:   Tue Sep 26 11:32:36 PDT 2006
-//
-// ****************************************************************************
-
-bool
-VisWindowProtectionProxy::ProxiedAxisAnnotationsEnabled()
-{
-    return viswin->AxisAnnotationsEnabled();
-}
-
-
-// ****************************************************************************
 //  Method: VisWindowProtectionProxy::ProxiedGetBounds
 //
 //  Purpose:

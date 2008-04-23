@@ -141,6 +141,9 @@
 #    Jeremy Meredith, Thu Jan 31 15:09:59 EST 2008
 #    Added ParallelCoordinates plot.
 #
+#    Jeremy Meredith, Tue Apr 22 14:41:14 EDT 2008
+#    Removed ParallelAxis plot.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -152,7 +155,7 @@ all: message
 OPTIONAL=Topology
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Label Mesh Molecule \
-         ParallelAxis ParallelCoordinates Pseudocolor Scatter Spreadsheet \
+         ParallelCoordinates Pseudocolor Scatter Spreadsheet \
          Streamline Subset Surface Tensor Truecolor Vector Volume
 
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins

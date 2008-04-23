@@ -47,7 +47,6 @@
 #include <VisitPlaneTool.h>
 #include <VisitPointTool.h>
 #include <VisitSphereTool.h>
-#include <VisitExtentsTool.h>
 
 #include <vtkActor2D.h>
 #include <vtkCellArray.h>
@@ -143,6 +142,9 @@ protected:
 //   Jeremy Meredith, Fri Feb  1 18:01:15 EST 2008
 //   Added new axis restriction tool.
 //
+//   Jeremy Meredith, Tue Apr 22 14:31:20 EDT 2008
+//   Removed Extents tool.  (Subsumed by axis restriction tool.)
+//
 // ****************************************************************************
 
 VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
@@ -162,7 +164,6 @@ VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
     planeTool = new VisitPlaneTool(toolProxy);
     pointTool = new VisitPointTool(toolProxy);
     sphereTool = new VisitSphereTool(toolProxy);
-    extentsTool = new VisitExtentsTool(toolProxy);
     axisRestrictionTool = new VisitAxisRestrictionTool(toolProxy);
 
     // Add the tools to the tools array.
@@ -171,7 +172,6 @@ VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
     tools[numTools++] = planeTool;
     tools[numTools++] = sphereTool;
     tools[numTools++] = pointTool;
-    tools[numTools++] = extentsTool;
     tools[numTools++] = axisRestrictionTool;
 }
 

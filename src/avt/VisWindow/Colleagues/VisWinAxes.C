@@ -441,13 +441,16 @@ VisWinAxes::RemoveAxesFromWindow(void)
 //    Mark Blair, Mon Sep 25 11:41:09 PDT 2006
 //    No axes if axis annotations have already been disabled in the vis window.
 //
+//    Jeremy Meredith, Tue Apr 22 14:31:47 EDT 2008
+//    Removed axis annotation disabling -- it was only added for a single
+//    plot, and the functionality has been accomodated in a new window
+//    modality supporting the correct style annotations.
+//
 // ****************************************************************************
 
 bool
 VisWinAxes::ShouldAddAxes(void)
 {
-    if (!mediator.AxisAnnotationsEnabled()) return false;
-    
     return ((mediator.GetMode() == WINMODE_2D || 
              mediator.GetMode() == WINMODE_CURVE) && 
              mediator.HasPlots());

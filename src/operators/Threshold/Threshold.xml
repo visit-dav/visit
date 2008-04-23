@@ -38,9 +38,6 @@
       <Function name="SwitchDefaultVariableNameToTrueName" user="true" member="true">
       </Function>
       <Include file="header" quoted="false">
-        ExtentsAttributes.h
-      </Include>
-      <Include file="header" quoted="false">
         AxisRestrictionAttributes.h
       </Include>
       <Include file="header" quoted="false">
