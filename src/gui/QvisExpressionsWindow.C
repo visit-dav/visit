@@ -185,6 +185,7 @@ const char *expr_math[] = {
     "round",
     "sqr",
     "sqrt",
+    "random",
     "+",
     "-",
     "*",
