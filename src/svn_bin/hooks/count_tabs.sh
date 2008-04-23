@@ -22,6 +22,9 @@
 #   property. Also fixed check for file in repo to first check to see if the
 #   file has zero size.
 #
+#   Mark C. Miller, Wed Apr 23 11:01:07 PDT 2008
+#   Added build_visit to list of files we permit tabs in.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -64,6 +67,9 @@ for f in ${files} ; do
             continue
             ;;
         */src/configure)
+            continue
+            ;;
+        */svn_bin/build_visit)
             continue
             ;;
     esac
