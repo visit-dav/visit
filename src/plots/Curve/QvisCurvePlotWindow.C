@@ -138,6 +138,9 @@ QvisCurvePlotWindow::~QvisCurvePlotWindow()
 //   Brad Whitlock, Mon Nov 20 13:34:15 PST 2006
 //   Added symbol rendering and changed the layout of the window.
 //
+//   Brad Whitlock, Tue Apr 22 16:43:24 PDT 2008
+//   Added tr()'s.
+//
 // ****************************************************************************
 
 void
@@ -148,10 +151,10 @@ QvisCurvePlotWindow::CreateWindowContents()
     renderMode = new QButtonGroup(0, "renderMode");
     connect(renderMode, SIGNAL(clicked(int)),
             this, SLOT(renderModeChanged(int)));
-    QRadioButton *rb0 = new QRadioButton("Draw curve using lines", central, "rb0");
+    QRadioButton *rb0 = new QRadioButton(tr("Draw curve using lines"), central, "rb0");
     renderMode->insert(rb0, 0);
     mainLayout->addMultiCellWidget(rb0, 0, 0, 0, 4);
-    QRadioButton *rb1 = new QRadioButton("Draw curve using symbols", central, "rb1");
+    QRadioButton *rb1 = new QRadioButton(tr("Draw curve using symbols"), central, "rb1");
     renderMode->insert(rb1, 1);
     mainLayout->addMultiCellWidget(rb1, 5, 5, 0, 4);
     mainLayout->addWidget(new QLabel("     ", central, "spacer"), 1, 0);
@@ -160,20 +163,20 @@ QvisCurvePlotWindow::CreateWindowContents()
     // Create line related controls.
     //
     lineStyle = new QvisLineStyleWidget(0, central, "lineStyle");
-    lineStyleLabel = new QLabel(lineStyle, "Line style", central, "lineStyleLabel");
+    lineStyleLabel = new QLabel(lineStyle, tr("Line style"), central, "lineStyleLabel");
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
     mainLayout->addWidget(lineStyleLabel, 1, 1);
     mainLayout->addWidget(lineStyle, 1, 2);
 
     lineWidth = new QvisLineWidthWidget(0, central, "lineWidth");
-    lineWidthLabel = new QLabel(lineWidth, "Line Width", central, "lineWidthLabel");
+    lineWidthLabel = new QLabel(lineWidth, tr("Line Width"), central, "lineWidthLabel");
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
     mainLayout->addWidget(lineWidthLabel,2, 1);
     mainLayout->addWidget(lineWidth, 2, 2);
 
-    showPoints = new QCheckBox("Show points", central, "showPoints");
+    showPoints = new QCheckBox(tr("Show points"), central, "showPoints");
     connect(showPoints, SIGNAL(toggled(bool)),
             this, SLOT(showPointsChanged(bool)));
     mainLayout->addMultiCellWidget(showPoints, 3,3,1,2);
@@ -183,7 +186,7 @@ QvisCurvePlotWindow::CreateWindowContents()
     connect(pointSize, SIGNAL(returnPressed()),
             this, SLOT(processPointSizeText())); 
     mainLayout->addWidget(pointSize, 4, 2);
-    pointSizeLabel = new QLabel(pointSize, "Point size",
+    pointSizeLabel = new QLabel(pointSize, tr("Point size"),
         central, "pointSizeLabel");
     mainLayout->addWidget(pointSizeLabel, 4, 1);
 
@@ -222,7 +225,7 @@ QvisCurvePlotWindow::CreateWindowContents()
     symbolType->insertItem(pix6);
     connect(symbolType, SIGNAL(activated(int)),
             this, SLOT(symbolTypeChanged(int)));
-    symbolTypeLabel = new QLabel(symbolType, "Symbol", central, "symbolTypeLabel");
+    symbolTypeLabel = new QLabel(symbolType, tr("Symbol"), central, "symbolTypeLabel");
     mainLayout->addWidget(symbolTypeLabel, 6, 1);
     mainLayout->addWidget(symbolType, 6, 2);
 
@@ -231,20 +234,20 @@ QvisCurvePlotWindow::CreateWindowContents()
     symbolDensity->setMaxValue(1000);
     connect(symbolDensity, SIGNAL(valueChanged(int)),
             this, SLOT(symbolDensityChanged(int)));
-    symbolDensityLabel = new QLabel(symbolDensity, "Density", central, "symbolDensityLabel");
+    symbolDensityLabel = new QLabel(symbolDensity, tr("Density"), central, "symbolDensityLabel");
     mainLayout->addWidget(symbolDensityLabel, 7, 1);
     mainLayout->addWidget(symbolDensity, 7, 2);
 
     //
     // Add color controls
     // 
-    cycleColors = new QCheckBox("Cycle colors", central, "cycleColors");
+    cycleColors = new QCheckBox(tr("Cycle colors"), central, "cycleColors");
     connect(cycleColors, SIGNAL(toggled(bool)),
             this, SLOT(cycleColorsChanged(bool)));
     mainLayout->addMultiCellWidget(cycleColors, 8, 8, 0, 1);
 
     QHBox *hbox = new QHBox(central, "hbox");
-    colorLabel = new QLabel("Color", hbox, "colorLabel");
+    colorLabel = new QLabel(tr("Color"), hbox, "colorLabel");
     color = new QvisColorButton(hbox, "colorButton");
     color->setButtonColor(QColor(255, 0, 0));
     connect(color, SIGNAL(selectedColor(const QColor &)),
@@ -254,12 +257,12 @@ QvisCurvePlotWindow::CreateWindowContents()
     //
     // Global controls
     //
-    showLegend = new QCheckBox("Legend", central, "showLegend");
+    showLegend = new QCheckBox(tr("Legend"), central, "showLegend");
     connect(showLegend, SIGNAL(toggled(bool)),
             this, SLOT(showLegendChanged(bool)));
     mainLayout->addMultiCellWidget(showLegend, 9, 9, 0, 1);
 
-    showLabels = new QCheckBox("Labels", central, "showLabels");
+    showLabels = new QCheckBox(tr("Labels"), central, "showLabels");
     connect(showLabels, SIGNAL(toggled(bool)),
             this, SLOT(showLabelsChanged(bool)));
     mainLayout->addWidget(showLabels, 9, 2);
@@ -411,6 +414,9 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
 //   Do explicit checking for symbolDensity, since spin boxes don't call
 //   the "valueChanged" signal unless you press "Enter".
 //
+//   Brad Whitlock, Tue Apr 22 16:44:03 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -432,9 +438,9 @@ QvisCurvePlotWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The point size was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetPointSize());
+            msg = tr("The point size was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetPointSize());
             Message(msg);
             atts->SetPointSize(atts->GetPointSize());
         }

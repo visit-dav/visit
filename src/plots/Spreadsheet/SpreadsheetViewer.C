@@ -133,6 +133,9 @@
 //   Make the menu options be buttons on the Mac since the viewer is not
 //   allowed to make a menu.
 //
+//   Brad Whitlock, Wed Apr 23 11:12:31 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent, 
@@ -152,7 +155,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     sliding = false;
 
     // Create widgets.
-    setCaption("Spreadsheet");
+    setCaption(tr("Spreadsheet"));
 
     QFrame *top = new QFrame(this, "vbox");
     setCentralWidget(top);
@@ -169,7 +172,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     //
     // 3D controls
     //
-    controls3D = new QGroupBox("3D", top, "controls3D");
+    controls3D = new QGroupBox(tr("3D"), top, "controls3D");
     layout->addWidget(controls3D, 10);
     QVBoxLayout *inner3D = new QVBoxLayout(controls3D);
     inner3D->addSpacing(10);
@@ -193,7 +196,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
 
     layout3D->addMultiCellWidget(kSlider, 0, 0, 1, 2);
 
-    normalLabel = new QLabel("Normal", controls3D, "normalLabel");
+    normalLabel = new QLabel(tr("Normal"), controls3D, "normalLabel");
     layout3D->addWidget(normalLabel, 1, 0);
 
     normalButtonGroup = new QButtonGroup (0, "normalButtonGroup");
@@ -201,16 +204,16 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
             this, SLOT(normalChanged(int)));
     normalRadioButtons = new QHBox(controls3D, "normalRadioButtons");
     layout3D->addWidget(normalRadioButtons, 1, 1);
-    normalButtonGroup->insert(new QRadioButton("X", normalRadioButtons, "rb0"), 0);
-    normalButtonGroup->insert(new QRadioButton("Y", normalRadioButtons, "rb1"), 1);
-    QRadioButton *rb = new QRadioButton("Z", normalRadioButtons, "rb2");
+    normalButtonGroup->insert(new QRadioButton(tr("X"), normalRadioButtons, "rb0"), 0);
+    normalButtonGroup->insert(new QRadioButton(tr("Y"), normalRadioButtons, "rb1"), 1);
+    QRadioButton *rb = new QRadioButton(tr("Z"), normalRadioButtons, "rb2");
     normalButtonGroup->insert(rb, 2);
     normalRadioButtons->setStretchFactor(rb, 5);
 
     //
     // Display controls
     //
-    QGroupBox *display = new QGroupBox("Display", top, "display");
+    QGroupBox *display = new QGroupBox(tr("Display"), top, "display");
     layout->addWidget(display);
     QVBoxLayout *innerDisplay = new QVBoxLayout(display);
     innerDisplay->addSpacing(10);
@@ -218,14 +221,14 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     QGridLayout *layoutDisplay = new QGridLayout(innerDisplay, 3, 2);
     layoutDisplay->setSpacing(5);
 
-    formatLabel = new QLabel("Format", display, "formatLabel");
+    formatLabel = new QLabel(tr("Format"), display, "formatLabel");
     layoutDisplay->addWidget(formatLabel, 0, 0);
     formatLineEdit = new QLineEdit(display, "formatLineEdit");
     connect(formatLineEdit, SIGNAL(returnPressed()),
             this, SLOT(formatChanged()));
     layoutDisplay->addWidget(formatLineEdit, 0, 1);
 
-    colorTableCheckBox = new QCheckBox("Color", display, "colorTableCheckBox");
+    colorTableCheckBox = new QCheckBox(tr("Color"), display, "colorTableCheckBox");
     connect(colorTableCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(colorTableCheckBoxToggled(bool)));
     layoutDisplay->addWidget(colorTableCheckBox, 1, 0);
@@ -239,15 +242,15 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     //
     // Show in viswindow controls
     //
-    QGroupBox *show = new QGroupBox(1, Qt::Vertical, "Show in visualizaion window", top, "show");
+    QGroupBox *show = new QGroupBox(1, Qt::Vertical, tr("Show in visualizaion window"), top, "show");
     topLayout->addWidget(show);
-    tracerCheckBox = new QCheckBox("Tracer plane", show, "tracerCheckBox");
+    tracerCheckBox = new QCheckBox(tr("Tracer plane"), show, "tracerCheckBox");
     connect(tracerCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(tracerCheckBoxToggled(bool)));
-    patchOutlineCheckBox = new QCheckBox("Patch outline", show, "patchOutline");
+    patchOutlineCheckBox = new QCheckBox(tr("Patch outline"), show, "patchOutline");
     connect(patchOutlineCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(outlineCheckBoxToggled(bool)));
-    currentCellOutlineCheckBox = new QCheckBox("Current cell outline", show, "currentCellOutline");
+    currentCellOutlineCheckBox = new QCheckBox(tr("Current cell outline"), show, "currentCellOutline");
     connect(currentCellOutlineCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showCurrentCellOutlineCheckBoxToggled(bool)));
 
@@ -257,6 +260,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     zTabs = new SpreadsheetTabWidget(top, "zTabs");
     topLayout->addWidget(zTabs, 10);
     nTables = 1;
+    nTablesForSlider = 1;
     tables = new SpreadsheetTable*[1];
     tables[0] = new SpreadsheetTable(0, "table");
     tables[0]->setNumRows(20);
@@ -280,7 +284,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     varLayout->setSpacing(5);
     varLayout->setColStretch(1, 5);
     varLayout->setColStretch(2, 5);
-    varLabel = new QLabel("Variable", top, "varLabel");
+    varLabel = new QLabel(tr("Variable"), top, "varLabel");
     varLayout->addWidget(varLabel, 0, 0);
     // Have to display metadata -- the list of variables.
     varButton = new QvisVariableButton(false, false, true, 
@@ -290,12 +294,12 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     varLayout->addMultiCellWidget(varButton, 0, 0, 1, 2);    
 
     // min, max buttons
-    minButton = new QPushButton("Min = ", top, "minButton");
+    minButton = new QPushButton(tr("Min = "), top, "minButton");
     connect(minButton, SIGNAL(clicked()),
             this, SLOT(minClicked()));
     varLayout->addMultiCellWidget(minButton, 1,1,1,1);
 
-    maxButton = new QPushButton("Max = ", top, "maxButton");
+    maxButton = new QPushButton(tr("Max = "), top, "maxButton");
     connect(maxButton, SIGNAL(clicked()),
             this, SLOT(maxClicked()));
     varLayout->addMultiCellWidget(maxButton, 1,1,2,2);
@@ -415,6 +419,9 @@ SpreadsheetViewer::setAllowRender(bool val)
 //   Select appropriate picks the first time a data set is rendered (i.e.,
 //   input is NULL).
 // 
+//   Brad Whitlock, Wed Apr 23 11:13:35 PDT 2008
+//   Added tr().
+//
 // ****************************************************************************
 
 void
@@ -470,9 +477,9 @@ SpreadsheetViewer::render(vtkDataSet *ds)
         cachedAtts = *plotAtts;
 
         // Update the caption.
-        QString caption; caption.sprintf("Spreadsheet - %s: %s",
-            plot->GetVariableName().c_str(),
-            plotAtts->GetSubsetName().c_str());
+        QString caption = tr("Spreadsheet - %1: %2").
+            arg(plot->GetVariableName().c_str()).
+            arg(plotAtts->GetSubsetName().c_str());
         setCaption(caption);
 
         // Set the variable in the variable button based on the plot's
@@ -1363,6 +1370,9 @@ SpreadsheetViewer::updateMinMaxButtons()
 //   Gunther H. Weber, Thu Sep 27 13:33:36 PDT 2007
 //   Add support for setting spreadsheet font
 //
+//   Brad Whitlock, Wed Apr 23 11:26:17 PDT 2008
+//   Set nTablesForSlider.
+//
 // ****************************************************************************
 
 void
@@ -1403,6 +1413,7 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
             }
         }
         nTables = ntabs;
+        nTablesForSlider = ntabs;
         delete [] tables;
         tables = t;
     }
@@ -1423,9 +1434,12 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
             }
         }
         nTables = ntabs;
+        nTablesForSlider = ntabs;
         delete [] tables;
         tables = t;
     }
+#else
+    nTablesForSlider = ntabs;
 #endif
 
 #ifndef SINGLE_TAB_WINDOW
@@ -1438,7 +1452,7 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
     {
         QString name;
         if(!structured)
-            name.sprintf("Unstructured");
+            name.sprintf(tr("Unstructured"));
         else if(plotAtts->GetNormal() == SpreadsheetAttributes::X)
             name.sprintf("i=%d", i+base+offset);
         else if(plotAtts->GetNormal() == SpreadsheetAttributes::Y)
@@ -1472,7 +1486,10 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
 // Creation:   Tue Feb 20 15:55:56 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 23 11:17:21 PDT 2008
+//   Made the labels work better on the Mac where we have only a single
+//   tab in the window.
+//
 // ****************************************************************************
 
 void
@@ -1507,17 +1524,17 @@ SpreadsheetViewer::updateSliderLabel()
     if(plotAtts->GetNormal() == SpreadsheetAttributes::X)
     {
         kl.sprintf("i=%d [%d,%d]", base_index[0] + plotAtts->GetSliceIndex(), 
-            base_index[0], base_index[0] + nTables - 1);
+            base_index[0], base_index[0] + nTablesForSlider - 1);
     }
     else if(plotAtts->GetNormal() == SpreadsheetAttributes::Y)
     {
         kl.sprintf("j=%d [%d,%d]", base_index[1] + plotAtts->GetSliceIndex(), 
-            base_index[1], base_index[1] + nTables - 1);
+            base_index[1], base_index[1] + nTablesForSlider - 1);
     }
     else
     {
         kl.sprintf("k=%d [%d,%d]", base_index[2] + plotAtts->GetSliceIndex(), 
-            base_index[2], base_index[2] + nTables - 1);
+            base_index[2], base_index[2] + nTablesForSlider - 1);
     } 
     kLabel->setText(kl);
 }
@@ -2386,7 +2403,9 @@ SpreadsheetViewer::changedVariable(const QString &newVar)
 // Creation:   Thu Feb 22 13:24:17 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 23 11:28:00 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -2395,8 +2414,8 @@ SpreadsheetViewer::saveAsText()
     if(nTables > 0)
     {
         // Get the name of the file that the user wants to save
-        QString fileName = QFileDialog::getSaveFileName("selection.txt",
-            "Text (*.txt)");
+        QString fileName = QFileDialog::getSaveFileName(tr("selection.txt"),
+            tr("Text (*.txt)"));
 
         // If the user chose to save a file, write it out.
         if(!fileName.isNull())
@@ -2414,7 +2433,7 @@ SpreadsheetViewer::saveAsText()
             }
             else
             {
-                QString err(QString("Could not write ") + fileName);
+                QString err(tr("Could not write %1.").arg(fileName));
                 plot->Error(err.latin1());
             }
         }
@@ -2505,7 +2524,9 @@ SpreadsheetViewer::selectNone()
 // Creation:   Thu Feb 22 13:26:05 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 23 11:35:09 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -2515,11 +2536,10 @@ SpreadsheetViewer::operationSum()
     {
         SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentPage();
         double sum = t->selectedCellsSum();
-        QString fmt, msg;
-        fmt.sprintf("The sum of the selected cells is: %s.", 
-            plotAtts->GetFormatString().c_str());
-        msg.sprintf(fmt.latin1(), sum);
-        QMessageBox::information(this, "Sum results", msg, QMessageBox::Ok);
+        QString sumStr;
+        sumStr.sprintf(plotAtts->GetFormatString().c_str(), sum);
+        QString msg(tr("The sum of the selected cells is: %1.").arg(sumStr));
+        QMessageBox::information(this, tr("Sum results"), msg, QMessageBox::Ok);
     }
 }
 
@@ -2534,6 +2554,8 @@ SpreadsheetViewer::operationSum()
 // Creation:   Thu Feb 22 13:26:05 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Wed Apr 23 11:35:09 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -2544,10 +2566,9 @@ SpreadsheetViewer::operationAverage()
     {
         SpreadsheetTable *t = (SpreadsheetTable *)zTabs->currentPage();
         double avg = t->selectedCellsAverage();
-        QString fmt, msg;
-        fmt.sprintf("The average value of the selected cells is: %s.", 
-            plotAtts->GetFormatString().c_str());
-        msg.sprintf(fmt.latin1(), avg);
+        QString avgStr;
+        avgStr.sprintf(plotAtts->GetFormatString().c_str(), avg);
+        QString msg(tr("The average value of the selected cells is: %1.").arg(avgStr));
         QMessageBox::information(this, "Average results", msg, QMessageBox::Ok);
     }
 }

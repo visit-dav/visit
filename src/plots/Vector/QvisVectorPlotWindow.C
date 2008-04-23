@@ -154,6 +154,9 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 //   by simply removing the TABS #define below -- this puts it back
 //   to the tall version of the window with groupboxes for sections.
 //
+//   Brad Whitlock, Wed Apr 23 12:09:56 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 #define TABS
 void
@@ -173,11 +176,11 @@ QvisVectorPlotWindow::CreateWindowContents()
     //
     reduceGroupBox = new QGroupBox(central, "reduceGroupBox");
 #ifdef TABS
-    topTab->addTab(reduceGroupBox, "Reduce by");
+    topTab->addTab(reduceGroupBox, tr("Reduce by"));
     reduceGroupBox->setFrameStyle(QFrame::NoFrame);
 #else
     gLayout->addMultiCellWidget(reduceGroupBox, 0,0, 0,1);
-    reduceGroupBox->setTitle("Reduce by");
+    reduceGroupBox->setTitle(tr("Reduce by"));
 #endif
     QVBoxLayout *rgTopLayout = new QVBoxLayout(reduceGroupBox);
     rgTopLayout->setMargin(10);
@@ -190,11 +193,11 @@ QvisVectorPlotWindow::CreateWindowContents()
     reduceButtonGroup = new QButtonGroup(0, "reduceButtonGroup");
     connect(reduceButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(reduceMethodChanged(int)));
-    rb= new QRadioButton("N vectors", reduceGroupBox);
+    rb= new QRadioButton(tr("N vectors"), reduceGroupBox);
     rb->setChecked(true);
     reduceButtonGroup->insert(rb, 0);
     rgLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton("Stride", reduceGroupBox);
+    rb = new QRadioButton(tr("Stride"), reduceGroupBox);
     reduceButtonGroup->insert(rb, 1);
     rgLayout->addWidget(rb, 1, 0);
 
@@ -216,11 +219,11 @@ QvisVectorPlotWindow::CreateWindowContents()
     //
     styleGroupBox = new QGroupBox(central, "styleGroupBox");
 #ifdef TABS
-    topTab->addTab(styleGroupBox, "Style");
+    topTab->addTab(styleGroupBox, tr("Style"));
     styleGroupBox->setFrameStyle(QFrame::NoFrame);
 #else
     gLayout->addMultiCellWidget(styleGroupBox, 1,1, 0,1);
-    styleGroupBox->setTitle("Vector style");
+    styleGroupBox->setTitle(tr("Vector style"));
 #endif
     QVBoxLayout *styleTopLayout = new QVBoxLayout(styleGroupBox);
     styleTopLayout->setMargin(10);
@@ -234,10 +237,10 @@ QvisVectorPlotWindow::CreateWindowContents()
     lineStemButtonGroup = new QButtonGroup(0, "lineStemButtonGroup");
     connect(lineStemButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(lineStemMethodChanged(int)));
-    rb = new QRadioButton("Line:", styleGroupBox);
+    rb = new QRadioButton(tr("Line:"), styleGroupBox);
     lineStemButtonGroup->insert(rb, 0);
     styleLayout->addMultiCellWidget(rb, 0,0, 0,0);
-    rb = new QRadioButton("Cylinder:", styleGroupBox);
+    rb = new QRadioButton(tr("Cylinder:"), styleGroupBox);
     lineStemButtonGroup->insert(rb, 1);
     styleLayout->addMultiCellWidget(rb, 2,2, 0,0);
 
@@ -246,7 +249,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     styleLayout->addWidget(lineStyle, 0, 2);
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(lineStyle, "Style",
+    lineStyleLabel = new QLabel(lineStyle, tr("Style"),
                                         styleGroupBox, "lineStyleLabel");
     styleLayout->addWidget(lineStyleLabel, 0, 1);
 
@@ -255,7 +258,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     styleLayout->addWidget(lineWidth, 1, 2);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(lineWidth, "Width",
+    lineWidthLabel = new QLabel(lineWidth, tr("Width"),
                                         styleGroupBox, "lineWidthLabel");
     styleLayout->addWidget(lineWidthLabel, 1, 1);
 
@@ -264,12 +267,12 @@ QvisVectorPlotWindow::CreateWindowContents()
     connect(stemWidthEdit, SIGNAL(returnPressed()),
             this, SLOT(processStemWidthText()));
     styleLayout->addMultiCellWidget(stemWidthEdit, 2,2, 2,2);
-    stemWidthLabel = new QLabel(stemWidthEdit, "Width",
+    stemWidthLabel = new QLabel(stemWidthEdit, tr("Width"),
                                 styleGroupBox, "stemWidthLabel");
     styleLayout->addWidget(stemWidthLabel, 2, 1);
 
     // Add the "draw head" toggle button.
-    drawHeadToggle = new QCheckBox("Draw head:", styleGroupBox,
+    drawHeadToggle = new QCheckBox(tr("Draw head:"), styleGroupBox,
                                    "drawHeadToggle");
     connect(drawHeadToggle, SIGNAL(clicked()),
             this, SLOT(drawHeadToggled()));
@@ -280,12 +283,12 @@ QvisVectorPlotWindow::CreateWindowContents()
     connect(headSizeLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processHeadSizeText()));
     styleLayout->addMultiCellWidget(headSizeLineEdit, 4,4, 2,2);
-    QLabel *headSizeLabel = new QLabel(headSizeLineEdit, "Size",
+    QLabel *headSizeLabel = new QLabel(headSizeLineEdit, tr("Size"),
                                        styleGroupBox, "headSizeLabel");
     styleLayout->addMultiCellWidget(headSizeLabel, 4,4, 1,1);
 
     // Create the high quality toggle
-    highQualityToggle = new QCheckBox("High quality geometry", styleGroupBox,
+    highQualityToggle = new QCheckBox(tr("High quality geometry"), styleGroupBox,
                                    "highQualityToggle");
     styleLayout->addMultiCellWidget(highQualityToggle, 6,6, 0,2);
     connect(highQualityToggle, SIGNAL(toggled(bool)),
@@ -297,14 +300,14 @@ QvisVectorPlotWindow::CreateWindowContents()
     originButtonGroup = new QButtonGroup(0, "originButtonGroup");
     QHBox *originBox = new QHBox(styleGroupBox, "originBox");
     originBox->setSpacing(10);
-    new QLabel("Vector origin", originBox, "originLabel");
+    new QLabel(tr("Vector origin"), originBox, "originLabel");
     connect(originButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(originTypeChanged(int)));
-    rb = new QRadioButton("Head", originBox);
+    rb = new QRadioButton(tr("Head"), originBox);
     originButtonGroup->insert(rb,0);
-    rb = new QRadioButton("Middle", originBox);
+    rb = new QRadioButton(tr("Middle"), originBox);
     originButtonGroup->insert(rb,1);
-    rb = new QRadioButton("Tail", originBox);
+    rb = new QRadioButton(tr("Tail"), originBox);
     originButtonGroup->insert(rb,2);
     styleLayout->addMultiCellWidget(originBox, 7, 7, 0, 2);
 
@@ -314,11 +317,11 @@ QvisVectorPlotWindow::CreateWindowContents()
     //
     colorGroupBox = new QGroupBox(central, "colorGroupBox");
 #ifdef TABS
-    topTab->addTab(colorGroupBox, "Color");
+    topTab->addTab(colorGroupBox, tr("Color"));
     colorGroupBox->setFrameStyle(QFrame::NoFrame);
 #else
     gLayout->addMultiCellWidget(colorGroupBox, 2, 2, 0, 1);
-    colorGroupBox->setTitle("Vector color");
+    colorGroupBox->setTitle(tr("Vector color"));
 #endif
     QVBoxLayout *cgTopLayout = new QVBoxLayout(colorGroupBox);
     cgTopLayout->setMargin(10);
@@ -331,10 +334,10 @@ QvisVectorPlotWindow::CreateWindowContents()
     colorButtonGroup = new QButtonGroup(0, "colorModeButtons");
     connect(colorButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(colorModeChanged(int)));
-    rb = new QRadioButton("Magnitude", colorGroupBox, "Magnitude");
+    rb = new QRadioButton(tr("Magnitude"), colorGroupBox, "Magnitude");
     colorButtonGroup->insert(rb, 0);
     cgLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton("Constant", colorGroupBox, "constant");
+    rb = new QRadioButton(tr("Constant"), colorGroupBox, "constant");
     rb->setChecked(true);
     colorButtonGroup->insert(rb, 1);
     cgLayout->addWidget(rb, 2, 0);
@@ -363,17 +366,17 @@ QvisVectorPlotWindow::CreateWindowContents()
     cgLayout->setColStretch(1, 10);
 
     limitsSelect = new QComboBox(false, limitsGroupBox, "limitsSelect");
-    limitsSelect->insertItem("Use Original Data");
-    limitsSelect->insertItem("Use Current Plot");
+    limitsSelect->insertItem(tr("Use Original Data"));
+    limitsSelect->insertItem(tr("Use Current Plot"));
     connect(limitsSelect, SIGNAL(activated(int)),
             this, SLOT(limitsSelectChanged(int))); 
-    QLabel *limitsLabel = new QLabel(limitsSelect, "Limits", 
+    QLabel *limitsLabel = new QLabel(limitsSelect, tr("Limits"), 
                                      limitsGroupBox, "limitsLabel");
     limitsLayout->addWidget(limitsLabel, 0, 0);
     limitsLayout->addMultiCellWidget(limitsSelect, 0, 0, 1, 2, AlignLeft);
 
     // Create the min toggle and line edit
-    minToggle = new QCheckBox("Min", limitsGroupBox, "minToggle");
+    minToggle = new QCheckBox(tr("Min"), limitsGroupBox, "minToggle");
     limitsLayout->addWidget(minToggle, 1, 1);
     connect(minToggle, SIGNAL(toggled(bool)),
             this, SLOT(minToggled(bool)));
@@ -383,7 +386,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     limitsLayout->addWidget(minLineEdit, 1, 2);
 
     // Create the max toggle and line edit
-    maxToggle = new QCheckBox("Max", limitsGroupBox, "maxToggle");
+    maxToggle = new QCheckBox(tr("Max"), limitsGroupBox, "maxToggle");
     limitsLayout->addWidget(maxToggle, 2, 1);
     connect(maxToggle, SIGNAL(toggled(bool)),
             this, SLOT(maxToggled(bool)));
@@ -397,11 +400,11 @@ QvisVectorPlotWindow::CreateWindowContents()
     //
     scaleGroupBox = new QGroupBox(central, "scaleGroupBox");
 #ifdef TABS
-    topTab->addTab(scaleGroupBox, "Scale");
+    topTab->addTab(scaleGroupBox, tr("Scale"));
     scaleGroupBox->setFrameStyle(QFrame::NoFrame);
 #else
     gLayout->addMultiCellWidget(scaleGroupBox, 3, 3, 0, 1);
-    scaleGroupBox->setTitle("Vector scale");
+    scaleGroupBox->setTitle(tr("Vector scale"));
 #endif
     QVBoxLayout *sgTopLayout = new QVBoxLayout(scaleGroupBox);
     sgTopLayout->setMargin(10);
@@ -415,16 +418,16 @@ QvisVectorPlotWindow::CreateWindowContents()
     connect(scaleLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processScaleText()));
     sgLayout->addWidget(scaleLineEdit, 0, 1);
-    QLabel *scaleLabel = new QLabel(scaleLineEdit, "Scale", scaleGroupBox, "scaleLabel");
+    QLabel *scaleLabel = new QLabel(scaleLineEdit, tr("Scale"), scaleGroupBox, "scaleLabel");
     sgLayout->addWidget(scaleLabel, 0, 0, AlignRight | AlignVCenter);
 
     // Add the scale by magnitude toggle button.
-    scaleByMagnitudeToggle = new QCheckBox("Scale by magnitude", scaleGroupBox, "scaleByMagnitudeToggle");
+    scaleByMagnitudeToggle = new QCheckBox(tr("Scale by magnitude"), scaleGroupBox, "scaleByMagnitudeToggle");
     connect(scaleByMagnitudeToggle, SIGNAL(clicked()), this, SLOT(scaleByMagnitudeToggled()));
     sgLayout->addMultiCellWidget(scaleByMagnitudeToggle, 1, 1, 0, 1);
 
     // Add the auto scale toggle button.
-    autoScaleToggle = new QCheckBox("Auto scale", scaleGroupBox, "autoScaleToggle");
+    autoScaleToggle = new QCheckBox(tr("Auto scale"), scaleGroupBox, "autoScaleToggle");
     connect(autoScaleToggle, SIGNAL(clicked()), this, SLOT(autoScaleToggled()));
     sgLayout->addMultiCellWidget(autoScaleToggle, 2, 2, 0, 1);
 
@@ -434,7 +437,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     //
 
     // Add the legend toggle button.
-    legendToggle = new QCheckBox("Legend", central, "legendToggle");
+    legendToggle = new QCheckBox(tr("Legend"), central, "legendToggle");
     connect(legendToggle, SIGNAL(clicked()), this, SLOT(legendToggled()));
     gLayout->addMultiCellWidget(legendToggle, 4, 4, 0, 1);
 }
@@ -676,6 +679,9 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
 //   Jeremy Meredith, Mon Mar 19 16:24:08 EDT 2007
 //   Added stemWidth.
 //
+//   Brad Whitlock, Wed Apr 23 12:11:47 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -692,14 +698,15 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            vectorAtts->SetScale(val);
+            if(okay)
+                vectorAtts->SetScale(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The scale value was invalid. "
-                "Resetting to the last good value of %g.",
-                vectorAtts->GetScale());
+            msg = tr("The scale value was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(vectorAtts->GetScale());
             Message(msg);
             vectorAtts->SetScale(vectorAtts->GetScale());
         }
@@ -713,14 +720,15 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            vectorAtts->SetHeadSize(val);
+            if(okay)
+                vectorAtts->SetHeadSize(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The head size was invalid. "
-                "Resetting to the last good value of %g.",
-                vectorAtts->GetHeadSize());
+            msg = tr("The head size was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(vectorAtts->GetHeadSize());
             Message(msg);
             vectorAtts->SetHeadSize(vectorAtts->GetHeadSize());
         }
@@ -734,14 +742,15 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            vectorAtts->SetNVectors(val);
+            if(okay)
+                vectorAtts->SetNVectors(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The head size was invalid. "
-                "Resetting to the last good value of %d.",
-                vectorAtts->GetNVectors());
+            msg = tr("The head size was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(vectorAtts->GetNVectors());
             Message(msg);
             vectorAtts->SetNVectors(vectorAtts->GetNVectors());
         }
@@ -755,14 +764,15 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            vectorAtts->SetStride(val);
+            if(okay)
+                vectorAtts->SetStride(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The stride was invalid. "
-                "Resetting to the last good value of %d.",
-                vectorAtts->GetStride());
+            msg = tr("The stride was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(vectorAtts->GetStride());
             Message(msg);
             vectorAtts->SetStride(vectorAtts->GetStride());
         }
@@ -775,13 +785,15 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            vectorAtts->SetMin(val);
+            if(okay)
+                vectorAtts->SetMin(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The minimum value was invalid. "
-                "Resetting to the last good value of %g.", vectorAtts->GetMin());
+            msg = tr("The minimum value was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(vectorAtts->GetMin());
             Message(msg);
             vectorAtts->SetMin(vectorAtts->GetMin());
         }
@@ -795,13 +807,15 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            vectorAtts->SetMax(val);
+            if(okay)
+                vectorAtts->SetMax(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The maximum value was invalid. "
-                "Resetting to the last good value of %g.", vectorAtts->GetMax());
+            msg = tr("The maximum value was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(vectorAtts->GetMax());
             Message(msg);
             vectorAtts->SetMax(vectorAtts->GetMax());
         }
@@ -823,9 +837,9 @@ QvisVectorPlotWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The stem width was invalid. "
-                "Resetting to the last good value of %g.",
-                vectorAtts->GetStemWidth());
+            msg = tr("The stem width was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(vectorAtts->GetStemWidth());
             Message(msg);
             vectorAtts->SetStemWidth(vectorAtts->GetStemWidth());
         }

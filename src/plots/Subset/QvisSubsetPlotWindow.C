@@ -221,6 +221,9 @@ QvisSubsetPlotWindow::~QvisSubsetPlotWindow()
 //   Brad Whitlock, Wed Jul 20 14:27:00 PST 2005
 //   Added pointSizePixelsChanged slot.
 //
+//   Brad Whitlock, Wed Apr 23 11:58:58 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -233,7 +236,7 @@ QvisSubsetPlotWindow::CreateWindowContents()
     checkBoxLayout->addWidget(lineStyle, 1, 1);
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(lineStyle, "Line style",
+    lineStyleLabel = new QLabel(lineStyle, tr("Line style"),
                                 central, "lineStyleLabel");
     checkBoxLayout->addWidget(lineStyleLabel, 1, 0);
 
@@ -242,13 +245,13 @@ QvisSubsetPlotWindow::CreateWindowContents()
     checkBoxLayout->addWidget(lineWidth, 1, 3);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(lineWidth, "Line width",
+    lineWidthLabel = new QLabel(lineWidth, tr("Line width"),
                                 central, "lineWidthLabel");
     checkBoxLayout->addWidget(lineWidthLabel, 1, 2);
 
     // Create the subset color group box.
     subsetColorGroup = new QGroupBox(central, "subsetColorGroup");
-    subsetColorGroup->setTitle("Subset colors");
+    subsetColorGroup->setTitle(tr("Subset colors"));
     topLayout->addWidget(subsetColorGroup);
     QVBoxLayout *innerLayout = new QVBoxLayout(subsetColorGroup);
     innerLayout->setMargin(10);
@@ -262,14 +265,14 @@ QvisSubsetPlotWindow::CreateWindowContents()
     QGridLayout *colorLayout = new QGridLayout(innerLayout, 5, 3);
     colorLayout->setSpacing(10);
     colorLayout->setColStretch(2, 1000);
-    QRadioButton *rb = new QRadioButton("Color table", subsetColorGroup,
+    QRadioButton *rb = new QRadioButton(tr("Color table"), subsetColorGroup,
         "colorTable");
     colorModeButtons->insert(rb);
     colorLayout->addWidget(rb, 1, 0);
-    rb = new QRadioButton("Single", subsetColorGroup, "singleColor");
+    rb = new QRadioButton(tr("Single"), subsetColorGroup, "singleColor");
     colorModeButtons->insert(rb);
     colorLayout->addWidget(rb, 2, 0);
-    rb = new QRadioButton("Multiple", subsetColorGroup, "multipleColor");
+    rb = new QRadioButton(tr("Multiple"), subsetColorGroup, "multipleColor");
     colorModeButtons->insert(rb);
     colorLayout->addWidget(rb, 3, 0);
 
@@ -313,7 +316,7 @@ QvisSubsetPlotWindow::CreateWindowContents()
     connect(multipleColorList, SIGNAL(selectionChanged()),
             this, SLOT(subsetSelectionChanged()));
     colorLayout->addMultiCellWidget(multipleColorList, 4, 4, 1, 2);
-    multipleColorLabel = new QLabel(multipleColorList, "Subsets",
+    multipleColorLabel = new QLabel(multipleColorList, tr("Subsets"),
         subsetColorGroup, "multipleColorLabel");
     colorLayout->addWidget(multipleColorLabel, 4, 0, Qt::AlignRight);
 
@@ -334,7 +337,7 @@ QvisSubsetPlotWindow::CreateWindowContents()
             this, SLOT(overallOpacityChanged(int)));
     opLayout->addWidget(overallOpacity, 0, 1);
 
-    QLabel *overallOpacityLabel = new QLabel(overallOpacity, "Opacity", 
+    QLabel *overallOpacityLabel = new QLabel(overallOpacity, tr("Opacity"), 
                                       central, "overallOpacityLabel"); 
     overallOpacityLabel->setAlignment(AlignLeft | AlignVCenter);
     opLayout->addWidget(overallOpacityLabel, 0, 0);
@@ -354,19 +357,19 @@ QvisSubsetPlotWindow::CreateWindowContents()
     opLayout->addMultiCellWidget(pointControl, 1, 1, 0, 1);
  
     // Create the legend toggle
-    legendCheckBox = new QCheckBox("Legend", central, "legendToggle");
+    legendCheckBox = new QCheckBox(tr("Legend"), central, "legendToggle");
     connect(legendCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
     opLayout->addWidget(legendCheckBox, 2, 0);
 
     // Create the wireframe toggle
-    wireframeCheckBox = new QCheckBox("Wireframe", central, "wireframeCheckBox");
+    wireframeCheckBox = new QCheckBox(tr("Wireframe"), central, "wireframeCheckBox");
     connect(wireframeCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(wireframeToggled(bool)));
     opLayout->addWidget(wireframeCheckBox, 3, 0);
 
     // Create the internal surfaces toggle
-    drawInternalCheckBox = new QCheckBox("Draw internal surfaces", central, "drawInternalCheckBox");
+    drawInternalCheckBox = new QCheckBox(tr("Draw internal surfaces"), central, "drawInternalCheckBox");
     connect(drawInternalCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(drawInternalToggled(bool)));
     opLayout->addMultiCellWidget(drawInternalCheckBox, 4,4, 0,1);
@@ -378,14 +381,14 @@ QvisSubsetPlotWindow::CreateWindowContents()
     QGridLayout *smoothingLayout = new QGridLayout(1, 5);
     smoothingLayout->setSpacing(10);
     smoothingLayout->setColStretch(4, 1000);
-    smoothingLayout->addWidget(new QLabel("Geometry smoothing", central), 0,0);
-    rb = new QRadioButton("None", central, "NoSmoothing");
+    smoothingLayout->addWidget(new QLabel(tr("Geometry smoothing"), central), 0,0);
+    rb = new QRadioButton(tr("None"), central, "NoSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton("Fast", central, "LowSmoothing");
+    rb = new QRadioButton(tr("Fast"), central, "LowSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 2);
-    rb = new QRadioButton("High", central, "HighSmoothing");
+    rb = new QRadioButton(tr("High"), central, "HighSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 3);
     opLayout->addMultiCellLayout(smoothingLayout, 5,5 , 0,1);

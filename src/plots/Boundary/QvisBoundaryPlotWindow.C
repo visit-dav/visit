@@ -203,6 +203,9 @@ QvisBoundaryPlotWindow::~QvisBoundaryPlotWindow()
 //   Brad Whitlock, Wed Jul 20 17:58:11 PST 2005
 //   Added a new slot
 //
+//   Brad Whitlock, Tue Apr 22 16:24:27 PDT 2008
+//   Added tr()'s.
+//
 // ****************************************************************************
 
 void
@@ -215,7 +218,7 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     checkBoxLayout->addWidget(lineStyle, 1, 1);
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(lineStyle, "Line style",
+    lineStyleLabel = new QLabel(lineStyle, tr("Line style"),
                                 central, "lineStyleLabel");
     checkBoxLayout->addWidget(lineStyleLabel, 1, 0);
 
@@ -224,13 +227,13 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     checkBoxLayout->addWidget(lineWidth, 1, 3);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(lineWidth, "Line width",
+    lineWidthLabel = new QLabel(lineWidth, tr("Line width"),
                                 central, "lineWidthLabel");
     checkBoxLayout->addWidget(lineWidthLabel, 1, 2);
 
     // Create the boundary color group box.
     boundaryColorGroup = new QGroupBox(central, "boundaryColorGroup");
-    boundaryColorGroup->setTitle("Boundary colors");
+    boundaryColorGroup->setTitle(tr("Boundary colors"));
     topLayout->addWidget(boundaryColorGroup);
     QVBoxLayout *innerLayout = new QVBoxLayout(boundaryColorGroup);
     innerLayout->setMargin(10);
@@ -244,14 +247,14 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     QGridLayout *colorLayout = new QGridLayout(innerLayout, 5, 3);
     colorLayout->setSpacing(10);
     colorLayout->setColStretch(2, 1000);
-    QRadioButton *rb = new QRadioButton("Color table", boundaryColorGroup,
+    QRadioButton *rb = new QRadioButton(tr("Color table"), boundaryColorGroup,
         "colorTable");
     colorModeButtons->insert(rb);
     colorLayout->addWidget(rb, 1, 0);
-    rb = new QRadioButton("Single", boundaryColorGroup, "singleColor");
+    rb = new QRadioButton(tr("Single"), boundaryColorGroup, "singleColor");
     colorModeButtons->insert(rb);
     colorLayout->addWidget(rb, 2, 0);
-    rb = new QRadioButton("Multiple", boundaryColorGroup, "multipleColor");
+    rb = new QRadioButton(tr("Multiple"), boundaryColorGroup, "multipleColor");
     colorModeButtons->insert(rb);
     colorLayout->addWidget(rb, 3, 0);
 
@@ -295,7 +298,7 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     connect(multipleColorList, SIGNAL(selectionChanged()),
             this, SLOT(boundarySelectionChanged()));
     colorLayout->addMultiCellWidget(multipleColorList, 4, 4, 1, 2);
-    multipleColorLabel = new QLabel(multipleColorList, "Boundaries",
+    multipleColorLabel = new QLabel(multipleColorList, tr("Boundaries"),
         boundaryColorGroup, "multipleColorLabel");
     colorLayout->addWidget(multipleColorLabel, 4, 0, Qt::AlignRight);
 
@@ -316,7 +319,7 @@ QvisBoundaryPlotWindow::CreateWindowContents()
             this, SLOT(overallOpacityChanged(int)));
     opLayout->addWidget(overallOpacity, 0, 1);
 
-    QLabel *overallOpacityLabel = new QLabel(overallOpacity, "Opacity", 
+    QLabel *overallOpacityLabel = new QLabel(overallOpacity, tr("Opacity"), 
                                       central, "overallOpacityLabel"); 
     overallOpacityLabel->setAlignment(AlignLeft | AlignVCenter);
     opLayout->addWidget(overallOpacityLabel, 0, 0);
@@ -336,13 +339,13 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     opLayout->addMultiCellWidget(pointControl, 1, 1, 0, 1);
  
     // Create the legend toggle
-    legendCheckBox = new QCheckBox("Legend", central, "legendToggle");
+    legendCheckBox = new QCheckBox(tr("Legend"), central, "legendToggle");
     connect(legendCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
     opLayout->addWidget(legendCheckBox, 2, 0);
 
     // Create the wireframe toggle
-    wireframeCheckBox = new QCheckBox("Wireframe", central, "wireframeCheckBox");
+    wireframeCheckBox = new QCheckBox(tr("Wireframe"), central, "wireframeCheckBox");
     connect(wireframeCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(wireframeToggled(bool)));
     opLayout->addWidget(wireframeCheckBox, 3, 0);
@@ -354,14 +357,14 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     QGridLayout *smoothingLayout = new QGridLayout(1, 5);
     smoothingLayout->setSpacing(10);
     smoothingLayout->setColStretch(4, 1000);
-    smoothingLayout->addWidget(new QLabel("Geometry smoothing", central), 0,0);
-    rb = new QRadioButton("None", central, "NoSmoothing");
+    smoothingLayout->addWidget(new QLabel(tr("Geometry smoothing"), central), 0,0);
+    rb = new QRadioButton(tr("None"), central, "NoSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton("Fast", central, "LowSmoothing");
+    rb = new QRadioButton(tr("Fast"), central, "LowSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 2);
-    rb = new QRadioButton("High", central, "HighSmoothing");
+    rb = new QRadioButton(tr("High"), central, "HighSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 3);
     opLayout->addMultiCellLayout(smoothingLayout, 4,4 , 0,1);

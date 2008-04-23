@@ -103,7 +103,10 @@ QvisTruecolorPlotWindow::~QvisTruecolorPlotWindow()
 // Modifications:
 //   Kathleen Bonnell, Mon Jul 25 15:27:06 PDT 2005
 //   Added lighting checkbox.
-//   
+//
+//   Brad Whitlock, Wed Apr 23 12:09:16 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -111,7 +114,7 @@ QvisTruecolorPlotWindow::CreateWindowContents()
 {
     QGridLayout *mainLayout = new QGridLayout(topLayout, 1,2,  10, "mainLayout");
 
-    opacityLabel = new QLabel("opacity", central, "opacityLabel");
+    opacityLabel = new QLabel(tr("Opacity"), central, "opacityLabel");
     mainLayout->addWidget(opacityLabel,0,0);
     opacity = new QvisOpacitySlider(0,255,25,255, central, "opacity", NULL);
     opacity->setTickInterval(64);
@@ -120,7 +123,7 @@ QvisTruecolorPlotWindow::CreateWindowContents()
             this, SLOT(opacityChanged(int, const void*)));
     mainLayout->addWidget(opacity, 0,1);
 
-    lighting = new QCheckBox("Lighting", central, "lighting");
+    lighting = new QCheckBox(tr("Lighting"), central, "lighting");
     connect(lighting, SIGNAL(toggled(bool)), this, SLOT(lightingToggled(bool)));
     mainLayout->addWidget(lighting, 1, 0);
 }

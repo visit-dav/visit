@@ -64,7 +64,9 @@
 // Creation:   Tue Dec 14 09:54:32 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 23 11:09:42 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 QvisScatterPlotWizard::QvisScatterPlotWizard(AttributeSubject *s,
@@ -83,51 +85,51 @@ QvisScatterPlotWizard::QvisScatterPlotWizard(AttributeSubject *s,
     scatterAtts->SetVar4Role(ScatterAttributes::Color);
 
     // Set the wizard's title.
-    topLevelWidget()->setCaption("Scatter plot wizard");
+    topLevelWidget()->setCaption(tr("Scatter plot wizard"));
 
     //
     // Create the wizard's first page.
     //
     CreateVariablePage(&page1, &scatter1,
-        "Choose a variable to use for the Scatter\n"
-        "plot's Y coordinate.",
+        tr("Choose a variable to use for the Scatter\n"
+        "plot's Y coordinate."),
         SLOT(choseYVariable(const QString &)),
         true, false, false);
-    addPage(page1, "Choose Y coordinate");
+    addPage(page1, tr("Choose Y coordinate"));
     setHelpEnabled(page1, false);
 
     CreateYesNoPage(&page2, &scatter2, &bg2,
-        "Would you like to choose a variable to use\n"
-        "as the Scatter plot's Z coordinate?",
+        tr("Would you like to choose a variable to use\n"
+           "as the Scatter plot's Z coordinate?"),
         SLOT(decideZ(int)), true, true, false);
-    addPage(page2, "Choose Z coordinate");
+    addPage(page2, tr("Choose Z coordinate"));
     setHelpEnabled(page2, false);
 
     CreateVariablePage(&page3, &scatter3,
-        "Choose a variable to use for the Scatter\n"
-        "plot's Z coordinate.", SLOT(choseZVariable(const QString &)),
+        tr("Choose a variable to use for the Scatter\n"
+           "plot's Z coordinate."), SLOT(choseZVariable(const QString &)),
         true, true, false);
-    addPage(page3, "Choose Z coordinate");
+    addPage(page3, tr("Choose Z coordinate"));
     setHelpEnabled(page3, false);
 
     CreateYesNoPage(&page4, &scatter4, &bg4,
-        "Would you like to choose a variable to use\n"
-        "as the Scatter plot's color?",
+        tr("Would you like to choose a variable to use\n"
+           "as the Scatter plot's color?"),
         SLOT(decideColor(int)), false, true /* depends on selectZCoord */, true);
-    addPage(page4, "Choose color variable");
+    addPage(page4, tr("Choose color variable"));
     setHelpEnabled(page4, false);
 
     CreateVariablePage(&page5, &scatter5,
-        "Choose a variable to use for the Scatter\n"
-        "plot's color.", SLOT(choseColorVariable(const QString &)),
+        tr("Choose a variable to use for the Scatter\n"
+        "plot's color."), SLOT(choseColorVariable(const QString &)),
         false, true /* could be false*/, true);
-    addPage(page5, "Choose color variable");
+    addPage(page5, tr("Choose color variable"));
     setHelpEnabled(page5, false);
 
     CreateFinishPage(&page6, &scatter6,
-        "Click the Finish button to create a new Scatter plot",
+        tr("Click the Finish button to create a new Scatter plot"),
         false, true /* could be false*/, true);
-    addPage(page6, "Click Finish");
+    addPage(page6, tr("Click Finish"));
     setHelpEnabled(page6, false);
     setFinishEnabled(page6, true);
 }
@@ -178,7 +180,9 @@ QvisScatterPlotWizard::~QvisScatterPlotWizard()
 // Creation:   Tue Dec 14 09:56:01 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 23 11:09:58 PDT 2008
+//   Added tr()
+//
 // ****************************************************************************
 
 void
@@ -213,7 +217,7 @@ QvisScatterPlotWizard::CreateVariablePage(QFrame **f, QvisScatterWidget **s,
     QHBoxLayout *pageVLayout = new QHBoxLayout(pageRLayout);
     pageVLayout->setSpacing(10);
     pageVLayout->addStretch(5);
-    QLabel *varlabel = new QLabel("Variable", frame);
+    QLabel *varlabel = new QLabel(tr("Variable"), frame);
     QvisVariableButton *var = new QvisVariableButton(true, false, true,
         QvisVariableButton::Scalars, frame);
     var->setMinimumWidth(fontMetrics().boundingRect("really_really_long_var_name").width());
@@ -246,7 +250,9 @@ QvisScatterPlotWizard::CreateVariablePage(QFrame **f, QvisScatterWidget **s,
 // Creation:   Tue Dec 14 09:56:01 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 23 11:10:11 PDT 2008
+//   Added t()
+//
 // ****************************************************************************
 
 void
@@ -286,11 +292,11 @@ QvisScatterPlotWizard::CreateYesNoPage(QFrame **f, QvisScatterWidget **s,
     *b = btn;
     connect(btn, SIGNAL(clicked(int)),
             this, slot);
-    QRadioButton *r1 = new QRadioButton("Yes", frame, "r1");
+    QRadioButton *r1 = new QRadioButton(tr("Yes"), frame, "r1");
     r1->setChecked(true);
     btn->insert(r1);
     pageVLayout->addWidget(r1);
-    QRadioButton *r2 = new QRadioButton("No", frame, "r2");
+    QRadioButton *r2 = new QRadioButton(tr("No"), frame, "r2");
     btn->insert(r2);
     pageVLayout->addWidget(r2);
     pageVLayout->addStretch(5);

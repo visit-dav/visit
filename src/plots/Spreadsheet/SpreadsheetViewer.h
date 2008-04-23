@@ -201,6 +201,7 @@ private:
     SpreadsheetTabWidget *zTabs;
     SpreadsheetTable    **tables;
     int                   nTables;
+    int                   nTablesForSlider;
 
     QLabel               *formatLabel;
     QLineEdit            *formatLineEdit;

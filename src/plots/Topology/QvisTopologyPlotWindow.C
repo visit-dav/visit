@@ -121,26 +121,26 @@ QvisTopologyPlotWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 11,2,  10, "mainLayout");
 
 
-    mainLayout->addWidget(new QLabel("Line width", central, "lineWidthLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("Line width"), central, "lineWidthLabel"),0,0);
     lineWidth = new QvisLineWidthWidget(0, central, "lineWidth");
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
     mainLayout->addWidget(lineWidth, 0,1);
 
-    mainLayout->addWidget(new QLabel("Line style", central, "lineStyleLabel"),1,0);
+    mainLayout->addWidget(new QLabel(tr("Line style"), central, "lineStyleLabel"),1,0);
     lineStyle = new QvisLineStyleWidget(0, central, "lineStyle");
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
     mainLayout->addWidget(lineStyle, 1,1);
 
 
-    mainLayout->addWidget(new QLabel("Min Color", central, "minColor"), 2, 0);
+    mainLayout->addWidget(new QLabel(tr("Min Color"), central, "minColor"), 2, 0);
     minColorButton = new QvisColorButton(central, "minColorButton");
     connect(minColorButton, SIGNAL(selectedColor(const QColor &)),
                                 this, SLOT(ColorChanged(const QColor &)));
     mainLayout->addWidget(minColorButton, 2, 1); 
     
-    mainLayout->addWidget(new QLabel("Opacity", central, "minOpacityLabel"),3,0);
+    mainLayout->addWidget(new QLabel(tr("Opacity"), central, "minOpacityLabel"),3,0);
     minOpacity = new QvisOpacitySlider(0,255,25,255, central, "minOpacity", NULL);
     minOpacity->setTickInterval(64);
     minOpacity->setGradientColor(QColor(0, 0, 0));
@@ -148,13 +148,13 @@ QvisTopologyPlotWindow::CreateWindowContents()
             this, SLOT(minOpacityChanged(int, const void*)));
     mainLayout->addWidget(minOpacity, 3,1);
 
-    mainLayout->addWidget(new QLabel("Min Plateau Color", central, "minPlateauColor"), 4, 0);
+    mainLayout->addWidget(new QLabel(tr("Min Plateau Color"), central, "minPlateauColor"), 4, 0);
     minPlateauColorButton = new QvisColorButton(central, "minPlateauColorButton");
     connect(minPlateauColorButton, SIGNAL(selectedColor(const QColor &)),
                                 this, SLOT(ColorChanged(const QColor &)));
     mainLayout->addWidget(minPlateauColorButton, 4, 1); 
 
-    mainLayout->addWidget(new QLabel("Opacity", central, "minPlateauOpacityLabel"),5,0);
+    mainLayout->addWidget(new QLabel(tr("Opacity"), central, "minPlateauOpacityLabel"),5,0);
     minPlateauOpacity = new QvisOpacitySlider(0,255,25,255, central, "minPlateauOpacity", NULL);
     minPlateauOpacity->setTickInterval(64);
     minPlateauOpacity->setGradientColor(QColor(0, 0, 0));
@@ -163,13 +163,13 @@ QvisTopologyPlotWindow::CreateWindowContents()
     mainLayout->addWidget(minPlateauOpacity, 5,1);
 
 
-    mainLayout->addWidget(new QLabel("Max Plateau Color", central, "maxPlateauColor"), 6, 0);
+    mainLayout->addWidget(new QLabel(tr("Max Plateau Color"), central, "maxPlateauColor"), 6, 0);
     maxPlateauColorButton = new QvisColorButton(central, "maxPlateauColorButton");
     connect(maxPlateauColorButton, SIGNAL(selectedColor(const QColor &)),
                                 this, SLOT(ColorChanged(const QColor &)));
     mainLayout->addWidget(maxPlateauColorButton, 6, 1); 
 
-    mainLayout->addWidget(new QLabel("Opacity", central, "maxPlateauOpacityLabel"),7,0);
+    mainLayout->addWidget(new QLabel(tr("Opacity"), central, "maxPlateauOpacityLabel"),7,0);
     maxPlateauOpacity = new QvisOpacitySlider(0,255,25,255, central, "maxPlateauOpacity", NULL);
     maxPlateauOpacity->setTickInterval(64);
     maxPlateauOpacity->setGradientColor(QColor(0, 0, 0));
@@ -177,13 +177,13 @@ QvisTopologyPlotWindow::CreateWindowContents()
             this, SLOT(maxPlateauOpacityChanged(int, const void*)));
     mainLayout->addWidget(maxPlateauOpacity, 7,1);
 
-    mainLayout->addWidget(new QLabel("Max Color", central, "maxColor"), 8, 0);
+    mainLayout->addWidget(new QLabel(tr("Max Color"), central, "maxColor"), 8, 0);
     maxColorButton = new QvisColorButton(central, "maxColorButton");
     connect(maxColorButton, SIGNAL(selectedColor(const QColor &)),
                                 this, SLOT(ColorChanged(const QColor &)));
     mainLayout->addWidget(maxColorButton, 8, 1); 
 
-    mainLayout->addWidget(new QLabel("Opacity", central, "maxOpacityLabel"),9,0);
+    mainLayout->addWidget(new QLabel(tr("Opacity"), central, "maxOpacityLabel"),9,0);
     maxOpacity = new QvisOpacitySlider(0,255,25,255, central, "maxOpacity", NULL);
     maxOpacity->setTickInterval(64);
     maxOpacity->setGradientColor(QColor(0, 0, 0));
@@ -191,13 +191,13 @@ QvisTopologyPlotWindow::CreateWindowContents()
             this, SLOT(maxOpacityChanged(int, const void*)));
     mainLayout->addWidget(maxOpacity, 9,1);
 
-    mainLayout->addWidget(new QLabel("tolerance", central, "toleranceLabel"),10,0);
+    mainLayout->addWidget(new QLabel(tr("tolerance"), central, "toleranceLabel"),10,0);
     tolerance = new QLineEdit(central, "tolerance");
     connect(tolerance, SIGNAL(returnPressed()),
             this, SLOT(toleranceProcessText()));
     mainLayout->addWidget(tolerance, 10,1);
 
-    mainLayout->addWidget(new QLabel("hitpercent", central, "hitpercentLabel"),11,0);
+    mainLayout->addWidget(new QLabel(tr("hitpercent"), central, "hitpercentLabel"),11,0);
     hitpercent = new QLineEdit(central, "hitpercent");
     connect(hitpercent, SIGNAL(returnPressed()),
             this, SLOT(hitpercentProcessText()));
@@ -383,9 +383,9 @@ QvisTopologyPlotWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of tolerance was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetTolerance());
+            msg = tr("The value of tolerance was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetTolerance());
             Message(msg);
             atts->SetTolerance(atts->GetTolerance());
         }
@@ -404,9 +404,9 @@ QvisTopologyPlotWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of hitpercent was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetHitpercent());
+            msg = tr("The value of hitpercent was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetHitpercent());
             Message(msg);
             atts->SetHitpercent(atts->GetHitpercent());
         }
