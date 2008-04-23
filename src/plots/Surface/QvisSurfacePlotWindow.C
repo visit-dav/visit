@@ -136,7 +136,10 @@ QvisSurfacePlotWindow::~QvisSurfacePlotWindow()
 //
 //   Kathleen Bonnell, Wed May 29 13:40:22 PDT 2002  
 //   Remove 'Specify' from limitSelect. 
-//   
+//
+//   Brad Whitlock, Wed Apr 23 12:01:18 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -151,7 +154,7 @@ QvisSurfacePlotWindow::CreateWindowContents()
     //
     // Create the surface toggle
     //
-    surfaceToggle = new QCheckBox("Surface", central, "surfaceToggle");
+    surfaceToggle = new QCheckBox(tr("Surface"), central, "surfaceToggle");
     connect(surfaceToggle, SIGNAL(toggled(bool)),
             this, SLOT(surfaceToggled(bool)));
     renderLayout->addMultiCellWidget(surfaceToggle, 0, 0, 0, 1);
@@ -160,7 +163,7 @@ QvisSurfacePlotWindow::CreateWindowContents()
     //
     // Create the wireframe toggle
     //
-    wireframeToggle = new QCheckBox("Wireframe", central,"wireframeToggle");
+    wireframeToggle = new QCheckBox(tr("Wireframe"), central,"wireframeToggle");
     connect(wireframeToggle, SIGNAL(toggled(bool)),
             this, SLOT(wireframeToggled(bool)));
     renderLayout->addMultiCellWidget(wireframeToggle, 2, 2, 0, 1); 
@@ -183,13 +186,13 @@ QvisSurfacePlotWindow::CreateWindowContents()
             new QGridLayout(colorModeButtons, 3, 2);
     colorModeButtonLayout->setSpacing(5);
     QLabel *colorModeLabel = 
-           new QLabel("Surface color", colorModeButtons, "colorModeLabel");
+           new QLabel(tr("Surface color"), colorModeButtons, "colorModeLabel");
     colorModeButtonLayout->addWidget(colorModeLabel, 0, 0);
 
 
-    QRadioButton *rb = new QRadioButton("Z Value",colorModeButtons,"colorByZ");
+    QRadioButton *rb = new QRadioButton(tr("Z Value"),colorModeButtons,"colorByZ");
     colorModeButtonLayout->addWidget(rb, 2, 0);
-    rb = new QRadioButton("Constant", colorModeButtons, "colorBySurface");
+    rb = new QRadioButton(tr("Constant"), colorModeButtons, "colorBySurface");
     colorModeButtonLayout->addWidget(rb, 1, 0);
 
     // Create the surface color button.
@@ -233,7 +236,7 @@ QvisSurfacePlotWindow::CreateWindowContents()
             this, SLOT(wireframeColorChanged(const QColor &)));
     wireModeButtonLayout->addWidget(wireframeColor, 1, 1);
 
-    wireframeLabel = new QLabel(wireframeColor, "Wire Color",
+    wireframeLabel = new QLabel(wireframeColor, tr("Wire Color"),
                                 wireModeButtons, "wireframeLabel");
     wireModeButtonLayout->addWidget(wireframeLabel, 1, 0);
 
@@ -244,7 +247,7 @@ QvisSurfacePlotWindow::CreateWindowContents()
     wireModeButtonLayout->addWidget(lineWidth, 0, 3);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(lineWidth, "Line width",
+    lineWidthLabel = new QLabel(lineWidth, tr("Line width"),
                                 wireModeButtons, "lineWidthLabel");
     wireModeButtonLayout->addWidget(lineWidthLabel, 0, 2);
 
@@ -255,7 +258,7 @@ QvisSurfacePlotWindow::CreateWindowContents()
     wireModeButtonLayout->addWidget(lineStyle, 0, 1);
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(lineStyle, "Line style",
+    lineStyleLabel = new QLabel(lineStyle, tr("Line style"),
                                 wireModeButtons, "lineStyleLabel");
     wireModeButtonLayout->addWidget(lineStyleLabel, 0, 0);
 
@@ -271,20 +274,20 @@ QvisSurfacePlotWindow::CreateWindowContents()
     // Create a group of radio buttons
     scalingButtons = new QButtonGroup( central, "scaleRadioGroup" );
     scalingButtons->setFrameStyle(QFrame::NoFrame);
-    QLabel *scaleLabel = new QLabel(scalingButtons, "Scale  ", central,
+    QLabel *scaleLabel = new QLabel(scalingButtons, tr("Scale  "), central,
         "scaleLabel");
     scaleLayout->addWidget(scaleLabel);
 
     QHBoxLayout *scaleButtonsLayout = new QHBoxLayout(scalingButtons);
     scaleButtonsLayout->setSpacing(10);
-    rb = new QRadioButton("Linear", scalingButtons );
+    rb = new QRadioButton(tr("Linear"), scalingButtons );
     rb->setChecked( TRUE );
     scaleButtonsLayout->addWidget(rb);
     rb = new QRadioButton( scalingButtons );
-    rb->setText( "Log" );
+    rb->setText( tr("Log") );
     scaleButtonsLayout->addWidget(rb);
     rb = new QRadioButton( scalingButtons );
-    rb->setText( "Skew" );
+    rb->setText( tr("Skew") );
     scaleButtonsLayout->addWidget(rb);
     scaleLayout->addWidget( scalingButtons );
     scaleLayout->addStretch(0);
@@ -303,7 +306,7 @@ QvisSurfacePlotWindow::CreateWindowContents()
             this, SLOT(processSkewText()));
     skewLayout->addColSpacing(0, 50);
     skewLayout->addWidget(skewLineEdit, 0, 2);
-    skewLabel = new QLabel(skewLineEdit, "Skew factor", central, "skewFactor");
+    skewLabel = new QLabel(skewLineEdit, tr("Skew factor"), central, "skewFactor");
     skewLabel->setAlignment(AlignRight | AlignVCenter);
     skewLayout->addWidget(skewLabel, 0, 1);
 
@@ -320,8 +323,8 @@ QvisSurfacePlotWindow::CreateWindowContents()
     limitsLayout->setSpacing(5);
                                                      
     limitsSelect = new QComboBox(false, central, "limitsSelect");
-    limitsSelect->insertItem("Use Original Data");
-    limitsSelect->insertItem("Use Current Plot");
+    limitsSelect->insertItem(tr("Use Original Data"));
+    limitsSelect->insertItem(tr("Use Current Plot"));
     connect(limitsSelect, SIGNAL(activated(int)),
             this, SLOT(limitsSelectChanged(int)));
     QLabel *limitsLabel = new QLabel(limitsSelect, "Limits",
@@ -331,7 +334,7 @@ QvisSurfacePlotWindow::CreateWindowContents()
     limitsLayout->addMultiCellWidget(limitsSelect, 0, 0, 2, 3, AlignLeft);
 
     // Create the min toggle and line edit
-    minToggle = new QCheckBox("Min", central, "minToggle");
+    minToggle = new QCheckBox(tr("Min"), central, "minToggle");
     limitsLayout->addWidget(minToggle, 1, 2);
     connect(minToggle, SIGNAL(toggled(bool)),
             this, SLOT(minToggled(bool)));
@@ -341,7 +344,7 @@ QvisSurfacePlotWindow::CreateWindowContents()
     limitsLayout->addWidget(minLineEdit, 1, 3);
 
     // Create the max toggle and line edit
-    maxToggle = new QCheckBox("Max", central, "maxToggle");
+    maxToggle = new QCheckBox(tr("Max"), central, "maxToggle");
     limitsLayout->addWidget(maxToggle, 2, 2);
     connect(maxToggle, SIGNAL(toggled(bool)),
             this, SLOT(maxToggled(bool)));
@@ -360,13 +363,13 @@ QvisSurfacePlotWindow::CreateWindowContents()
     toggleLayout->setSpacing(10);
 
     // Create the legend toggle
-    legendToggle = new QCheckBox("Legend", central, "legendToggle");
+    legendToggle = new QCheckBox(tr("Legend"), central, "legendToggle");
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
     toggleLayout->addWidget(legendToggle, 0, 0, Qt::AlignHCenter);
 
     // Create the lighting toggle
-    lightingToggle = new QCheckBox("Lighting", central, "lightingToggle");
+    lightingToggle = new QCheckBox(tr("Lighting"), central, "lightingToggle");
     connect(lightingToggle, SIGNAL(toggled(bool)),
             this, SLOT(lightingToggled(bool)));
     toggleLayout->addWidget(lightingToggle, 0, 1, Qt::AlignHCenter);
@@ -598,6 +601,9 @@ QvisSurfacePlotWindow::UpdateWindow(bool doAll)
 //   Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002 
 //   Changed back to min/max, removed scalingMin/Max and coloringMin/Max.
 //
+//   Brad Whitlock, Wed Apr 23 12:03:20 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -614,14 +620,15 @@ QvisSurfacePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            surfaceAtts->SetSkewFactor(val);
+            if(okay)
+                surfaceAtts->SetSkewFactor(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The skew factor was invalid. "
-                "Resetting to the last good value of %g.",
-                surfaceAtts->GetSkewFactor());
+            msg = tr("The skew factor was invalid. "
+                    "Resetting to the last good value of %1.").
+                  arg(surfaceAtts->GetSkewFactor());
             Message(msg);
             surfaceAtts->SetSkewFactor(surfaceAtts->GetSkewFactor());
         }
@@ -640,9 +647,9 @@ QvisSurfacePlotWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The minimum value was invalid. "
-                "Resetting to the last good value of %g.",
-                surfaceAtts->GetMin());
+            msg = tr("The minimum value was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(surfaceAtts->GetMin());
             Message(msg);
             surfaceAtts->SetMin(surfaceAtts->GetMin());
         }
@@ -661,9 +668,9 @@ QvisSurfacePlotWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The maximum value was invalid. "
-                "Resetting to the last good value of %g.",
-                surfaceAtts->GetMax());
+            msg = tr("The maximum value was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(surfaceAtts->GetMax());
             Message(msg);
             surfaceAtts->SetMax(surfaceAtts->GetMax());
         }

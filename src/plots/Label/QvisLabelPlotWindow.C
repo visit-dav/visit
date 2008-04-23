@@ -127,6 +127,10 @@ QvisLabelPlotWindow::~QvisLabelPlotWindow()
 //
 //   Dave Bremer, Wed Sep 19 19:39:40 PDT 2007
 //   I added a line for specifying a printf-style template.
+//
+//   Brad Whitlock, Tue Apr 22 16:54:16 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -136,7 +140,7 @@ QvisLabelPlotWindow::CreateWindowContents()
     // Create label selection-related widgets.
     //
     selectionGroupBox = new QGroupBox(central, "selectionGroupBox");
-    selectionGroupBox->setTitle("Selection");
+    selectionGroupBox->setTitle(tr("Selection"));
     topLayout->addWidget(selectionGroupBox);
     QVBoxLayout *selTopLayout = new QVBoxLayout(selectionGroupBox);
     selTopLayout->setMargin(10);
@@ -144,19 +148,19 @@ QvisLabelPlotWindow::CreateWindowContents()
     QGridLayout *selLayout = new QGridLayout(selTopLayout, 4, 3);
     selLayout->setSpacing(5);
 
-    showNodesToggle = new QCheckBox("Show nodes", selectionGroupBox,
+    showNodesToggle = new QCheckBox(tr("Show nodes"), selectionGroupBox,
         "showNodesToggle");
     connect(showNodesToggle, SIGNAL(toggled(bool)),
             this, SLOT(showNodesToggled(bool)));
     selLayout->addWidget(showNodesToggle, 0,0);
 
-    showCellsToggle = new QCheckBox("Show cells", selectionGroupBox,
+    showCellsToggle = new QCheckBox(tr("Show cells"), selectionGroupBox,
         "showCellsToggle");
     connect(showCellsToggle, SIGNAL(toggled(bool)),
             this, SLOT(showCellsToggled(bool)));
     selLayout->addWidget(showCellsToggle, 0,1);
 
-    restrictNumberOfLabelsToggle = new QCheckBox("Restrict number of labels to",
+    restrictNumberOfLabelsToggle = new QCheckBox(tr("Restrict number of labels to"),
         selectionGroupBox, "restrictNumberOfLabelsToggle");
     connect(restrictNumberOfLabelsToggle, SIGNAL(toggled(bool)),
             this, SLOT(restrictNumberOfLabelsToggled(bool)));
@@ -171,28 +175,28 @@ QvisLabelPlotWindow::CreateWindowContents()
 
     drawLabelsFacingComboBox = new QComboBox(selectionGroupBox,
         "drawLabelsFacingComboBox");
-    drawLabelsFacingComboBox->insertItem("Front");
-    drawLabelsFacingComboBox->insertItem("Back");
-    drawLabelsFacingComboBox->insertItem("Front or Back");
+    drawLabelsFacingComboBox->insertItem(tr("Front"));
+    drawLabelsFacingComboBox->insertItem(tr("Back"));
+    drawLabelsFacingComboBox->insertItem(tr("Front or Back"));
     connect(drawLabelsFacingComboBox, SIGNAL(activated(int)),
             this, SLOT(drawLabelsFacingChanged(int)));
     selLayout->addWidget(drawLabelsFacingComboBox, 2, 2);
-    selLayout->addMultiCellWidget(new QLabel("Draw labels that face",
+    selLayout->addMultiCellWidget(new QLabel(tr("Draw labels that face"),
         selectionGroupBox, "drawLabelsLabel"), 2, 2, 0, 1);
 
     depthTestButtonGroup = new QButtonGroup(0, "depthTestButtonGroup");
     QHBox *dtHBox = new QHBox(selectionGroupBox, "dtHBox");
     dtHBox->setSpacing(5);
     dtHBox->setMargin(0);
-    QRadioButton *rb = new QRadioButton("Auto", dtHBox);
+    QRadioButton *rb = new QRadioButton(tr("Auto"), dtHBox);
     depthTestButtonGroup->insert(rb, 0);
-    rb = new QRadioButton("Always", dtHBox);
+    rb = new QRadioButton(tr("Always"), dtHBox);
     depthTestButtonGroup->insert(rb, 1);
-    rb = new QRadioButton("Never", dtHBox);
+    rb = new QRadioButton(tr("Never"), dtHBox);
     depthTestButtonGroup->insert(rb, 2);
     connect(depthTestButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(depthTestButtonGroupChanged(int)));
-    selLayout->addWidget(new QLabel("Depth test mode", selectionGroupBox,
+    selLayout->addWidget(new QLabel(tr("Depth test mode"), selectionGroupBox,
         "dtLabel"), 3, 0);
     selLayout->addMultiCellWidget(dtHBox, 3, 3, 1, 2);
 
@@ -200,7 +204,7 @@ QvisLabelPlotWindow::CreateWindowContents()
     // Create formatting widgets
     //
     formattingGroupBox = new QGroupBox(central, "formattingGroupBox");
-    formattingGroupBox->setTitle("Formatting");
+    formattingGroupBox->setTitle(tr("Formatting"));
     topLayout->addWidget(formattingGroupBox);
     QVBoxLayout *fmtTopLayout = new QVBoxLayout(formattingGroupBox);
     fmtTopLayout->setMargin(10);
@@ -210,17 +214,17 @@ QvisLabelPlotWindow::CreateWindowContents()
 
     labelDisplayFormatComboBox = new QComboBox(formattingGroupBox,
         "labelDisplayFormatComboBox");
-    labelDisplayFormatComboBox->insertItem("Natural");
-    labelDisplayFormatComboBox->insertItem("Logical index");
-    labelDisplayFormatComboBox->insertItem("Index");
+    labelDisplayFormatComboBox->insertItem(tr("Natural"));
+    labelDisplayFormatComboBox->insertItem(tr("Logical index"));
+    labelDisplayFormatComboBox->insertItem(tr("Index"));
     connect(labelDisplayFormatComboBox, SIGNAL(activated(int)),
             this, SLOT(labelDisplayFormatChanged(int)));
     fmtLayout->addWidget(labelDisplayFormatComboBox, 0, 1);
     fmtLayout->addWidget(new QLabel(labelDisplayFormatComboBox,
-        "Label display format", formattingGroupBox, "labelDisplayLabel"), 0, 0);
+        tr("Label display format"), formattingGroupBox, "labelDisplayLabel"), 0, 0);
 
 
-    specifyTextColor1Toggle = new QCheckBox("Specify label color",
+    specifyTextColor1Toggle = new QCheckBox(tr("Specify label color"),
         formattingGroupBox, "specifyTextColor1Toggle");
     connect(specifyTextColor1Toggle, SIGNAL(toggled(bool)),
             this, SLOT(specifyTextColor1Toggled(bool)));
@@ -231,7 +235,7 @@ QvisLabelPlotWindow::CreateWindowContents()
             this, SLOT(textColor1Changed(const QColor&)));
     fmtLayout->addWidget(textColor1Button, 1, 1, Qt::AlignLeft);
 
-    specifyTextColor2Toggle = new QCheckBox("Specify node label color",
+    specifyTextColor2Toggle = new QCheckBox(tr("Specify node label color"),
         formattingGroupBox, "specifyTextColor2Toggle");
     connect(specifyTextColor2Toggle, SIGNAL(toggled(bool)),
             this, SLOT(specifyTextColor2Toggled(bool)));
@@ -247,7 +251,7 @@ QvisLabelPlotWindow::CreateWindowContents()
     textHeight1SpinBox->setSuffix("%");
     connect(textHeight1SpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(textHeight1Changed(int)));
-    textHeight1Label = new QLabel("Label height",
+    textHeight1Label = new QLabel(tr("Label height"),
         formattingGroupBox, "labelDisplayLabel");
     fmtLayout->addWidget(textHeight1Label, 3, 0);
     fmtLayout->addWidget(textHeight1SpinBox, 3, 1);
@@ -257,32 +261,32 @@ QvisLabelPlotWindow::CreateWindowContents()
     textHeight2SpinBox->setSuffix("%");
     connect(textHeight2SpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(textHeight2Changed(int)));
-    textHeight2Label = new QLabel("Node label height",
+    textHeight2Label = new QLabel(tr("Node label height"),
         formattingGroupBox, "labelDisplayLabel");
     fmtLayout->addWidget(textHeight2Label, 4, 0);
     fmtLayout->addWidget(textHeight2SpinBox, 4, 1);
 
     horizontalJustificationComboBox = new QComboBox(formattingGroupBox,
         "horizontalJustificationComboBox");
-    horizontalJustificationComboBox->insertItem("Center");
-    horizontalJustificationComboBox->insertItem("Left");
-    horizontalJustificationComboBox->insertItem("Right");
+    horizontalJustificationComboBox->insertItem(tr("Center"));
+    horizontalJustificationComboBox->insertItem(tr("Left"));
+    horizontalJustificationComboBox->insertItem(tr("Right"));
     connect(horizontalJustificationComboBox, SIGNAL(activated(int)),
             this, SLOT(horizontalJustificationChanged(int)));
     fmtLayout->addWidget(horizontalJustificationComboBox, 5, 1);
     fmtLayout->addWidget(new QLabel(horizontalJustificationComboBox,
-        "Horizontal justification", formattingGroupBox, "hjustLabel"), 5, 0);
+        tr("Horizontal justification"), formattingGroupBox, "hjustLabel"), 5, 0);
 
     verticalJustificationComboBox = new QComboBox(formattingGroupBox,
         "verticalJustificationComboBox");
-    verticalJustificationComboBox->insertItem("Center");
-    verticalJustificationComboBox->insertItem("Top");
-    verticalJustificationComboBox->insertItem("Bottom");
+    verticalJustificationComboBox->insertItem(tr("Center"));
+    verticalJustificationComboBox->insertItem(tr("Top"));
+    verticalJustificationComboBox->insertItem(tr("Bottom"));
     connect(verticalJustificationComboBox, SIGNAL(activated(int)),
             this, SLOT(verticalJustificationChanged(int)));
     fmtLayout->addWidget(verticalJustificationComboBox, 6, 1);
     fmtLayout->addWidget(new QLabel(verticalJustificationComboBox,
-        "Vertical justification", formattingGroupBox, "vjustLabel"), 6, 0);
+        tr("Vertical justification"), formattingGroupBox, "vjustLabel"), 6, 0);
 
     
     formatTemplate = new QLineEdit(
@@ -293,12 +297,10 @@ QvisLabelPlotWindow::CreateWindowContents()
 
     fmtLayout->addWidget(formatTemplate, 7, 1);
     fmtLayout->addWidget(new QLabel(formatTemplate,
-        "Format template", formattingGroupBox, "formatTemplateLabel"), 7, 0);
-
-
+        tr("Format template"), formattingGroupBox, "formatTemplateLabel"), 7, 0);
 
     // Legend toggle
-    legendToggle = new QCheckBox("Legend", central, "legendFlag");
+    legendToggle = new QCheckBox(tr("Legend"), central, "legendFlag");
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
     topLayout->addWidget(legendToggle, 0,0);
@@ -321,6 +323,10 @@ QvisLabelPlotWindow::CreateWindowContents()
 //
 //   Dave Bremer, Wed Sep 19 19:39:40 PDT 2007
 //   I added a code for updating a printf-style template.
+//
+//   Brad Whitlock, Tue Apr 22 16:56:14 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -346,8 +352,8 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
             bool varIsMesh = labelAtts->GetVarType() == LabelAttributes::LABEL_VT_MESH;
             showNodesToggle->setEnabled(varIsMesh);
             showCellsToggle->setEnabled(varIsMesh);
-            specifyTextColor1Toggle->setText(varIsMesh?"Specify cell label color":"Specify label color");  
-            textHeight1Label->setText(varIsMesh?"Cell label height" : "Label height");
+            specifyTextColor1Toggle->setText(varIsMesh?tr("Specify cell label color"):tr("Specify label color"));  
+            textHeight1Label->setText(varIsMesh?tr("Cell label height") : tr("Label height"));
             if(varIsMesh)
             {
                 textColor2Button->show();
@@ -483,6 +489,9 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Tue Aug 2 14:54:10 PST 2005
 //   I removed some fields and added code for textHeight2SpinBox.
 //
+//   Brad Whitlock, Tue Apr 22 16:58:45 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -499,14 +508,15 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            labelAtts->SetNumberOfLabels(val);
+            if(okay)
+                labelAtts->SetNumberOfLabels(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value entered for the number of labels was invalid. "
-                "Resetting to the last good value of %d.",
-                labelAtts->GetNumberOfLabels());
+            msg = tr("The value entered for the number of labels was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(labelAtts->GetNumberOfLabels());
             Message(msg);
             labelAtts->SetNumberOfLabels(labelAtts->GetNumberOfLabels());
         }
@@ -527,14 +537,15 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
         {
             int ival = temp.toInt(&okay);
             float val = float(ival) * 0.01f;
-            labelAtts->SetTextHeight1(val);
+            if(okay)
+                labelAtts->SetTextHeight1(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value entered for the number of labels was invalid. "
-                "Resetting to the last good value of %d.",
-                int(labelAtts->GetTextHeight1() * 100.));
+            msg = tr("The value entered for the text height was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(int(labelAtts->GetTextHeight1() * 100.));
             Message(msg);
             labelAtts->SetTextHeight1(labelAtts->GetTextHeight1());
         }
@@ -555,14 +566,15 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
         {
             int ival = temp.toInt(&okay);
             float val = float(ival) * 0.01f;
-            labelAtts->SetTextHeight2(val);
+            if(okay)
+                labelAtts->SetTextHeight2(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value entered for the number of labels was invalid. "
-                "Resetting to the last good value of %d.",
-                int(labelAtts->GetTextHeight2() * 100.));
+            msg = tr("The value entered for the text height was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(int(labelAtts->GetTextHeight2() * 100.));
             Message(msg);
             labelAtts->SetTextHeight2(labelAtts->GetTextHeight2());
         }
@@ -818,7 +830,7 @@ QvisLabelPlotWindow::formatTemplateChanged()
     //of %f slots.
     if (!StringHelpers::ValidatePrintfFormatString(newval.c_str(), "float"))
     {
-        Message( "Must enter a printf-style template that would be valid for a single floating point number." );
+        Message(tr("Must enter a printf-style template that would be valid for a single floating point number."));
         return;
     }
     
@@ -826,7 +838,7 @@ QvisLabelPlotWindow::formatTemplateChanged()
     int len = SNPRINTF(test, 36, newval.c_str(), 0.0f);
     if (len >= 35)
     {
-        Message( "The template produces values that are too long.  36 character limit." );
+        Message(tr("The template produces values that are too long.  36 character limit."));
         return;
     }
 

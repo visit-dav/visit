@@ -136,6 +136,9 @@
 //    Brad Whitlock, Wed Apr  9 12:29:52 PDT 2008
 //    Made it generate code that is easier to internationalize.
 //
+//    Brad Whitlock, Wed Apr 23 13:34:15 PDT 2008
+//    Made it use QString::arg for internationalization.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -238,15 +241,15 @@ class WindowGeneratorInt : public virtual Int , public virtual WindowGeneratorFi
             c << "        if(okay)" << endl;
             c << "        {" << endl;
             c << "            int val = temp.toInt(&okay);" << endl;
-            c << "            atts->Set"<<Name<<"(val);" << endl;
+            c << "            if(okay)" << endl;
+            c << "                atts->Set"<<Name<<"(val);" << endl;
             c << "        }" << endl;
             c << endl;
             c << "        if(!okay)" << endl;
             c << "        {" << endl;
-            c << "            QString num; num.sprintf(\"%d\", atts->Get"<<Name<<"());" << endl;
             c << "            msg = tr(\"The value of "<<name<<" was invalid. \"" << endl;
-            c << "                     \"Resetting to the last good value of %1.\");" << endl;
-            c << "            msg.replace(\"%1\", num);" << endl;
+            c << "                     \"Resetting to the last good value of %1.\")." << endl;
+            c << "                  arg(atts->Get"<<Name<<"());" << endl;
             c << "            Message(msg);" << endl;
             c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
             c << "        }" << endl;
@@ -398,15 +401,15 @@ class WindowGeneratorFloat : public virtual Float , public virtual WindowGenerat
         c << "        if(okay)" << endl;
         c << "        {" << endl;
         c << "            float val = temp.toFloat(&okay);" << endl;
-        c << "            atts->Set"<<Name<<"(val);" << endl;
+        c << "            if(okay)" << endl;
+        c << "                atts->Set"<<Name<<"(val);" << endl;
         c << "        }" << endl;
         c << endl;
         c << "        if(!okay)" << endl;
         c << "        {" << endl;
-        c << "            QString numl num.sprintf(\"%g\", atts->Get"<<Name<<"());" << endl;
         c << "            msg = tr(\"The value of "<<name<<" was invalid. \"" << endl;
-        c << "                     \"Resetting to the last good value of %1.\");" << endl;
-        c << "            msg.replace(\"%1\", num);" << endl;
+        c << "                     \"Resetting to the last good value of %1.\")." << endl;
+        c << "                  arg(atts->Get"<<Name<<"());" << endl;
         c << "            Message(msg);" << endl;
         c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
         c << "        }" << endl;
@@ -462,7 +465,7 @@ class WindowGeneratorFloatArray : public virtual FloatArray , public virtual Win
         c << "        if(okay)" << endl;
         c << "        {" << endl;
         c << "            float val["<<length<<"];" << endl;
-        c << "            sscanf(temp.latin1(), \"";
+        c << "            if((okay = (sscanf(temp.latin1(), \"";
         int i;
         for (i=0; i<length; i++)
         {
@@ -475,8 +478,8 @@ class WindowGeneratorFloatArray : public virtual FloatArray , public virtual Win
             c << "&val["<<i<<"]";
             if (i < length-1) c << ", ";
         }
-        c << ");" << endl;
-        c << "            atts->Set"<<Name<<"(val);" << endl;
+        c << ") == " << length << ")) == true)" << endl;
+        c << "                atts->Set"<<Name<<"(val);" << endl;
         c << "        }" << endl;
         c << endl;
         c << "        if(!okay)" << endl;
@@ -497,8 +500,8 @@ class WindowGeneratorFloatArray : public virtual FloatArray , public virtual Win
         }
         c << ");" << endl;
         c << "            msg = tr(\"The value of "<<name<<" was invalid. \"" << endl;
-        c << "                     \"Resetting to the last good value of %1.\");" << endl;
-        c << "            msg.replace(\"%1\", num);" << endl;
+        c << "                     \"Resetting to the last good value of %1.\")." << endl;
+        c << "                  arg(num);" << endl;
         c << "            Message(msg);" << endl;
         c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
         c << "        }" << endl;
@@ -568,15 +571,15 @@ class WindowGeneratorDouble : public virtual Double , public virtual WindowGener
         c << "        if(okay)" << endl;
         c << "        {" << endl;
         c << "            double val = temp.toDouble(&okay);" << endl;
-        c << "            atts->Set"<<Name<<"(val);" << endl;
+        c << "            if(okay)" << endl;
+        c << "                atts->Set"<<Name<<"(val);" << endl;
         c << "        }" << endl;
         c << endl;
         c << "        if(!okay)" << endl;
         c << "        {" << endl;
-        c << "            QString num; num.sprintf(\"%g\", atts->Get"<<Name<<"());" << endl;
         c << "            msg = tr(\"The value of "<<name<<" was invalid. \"" << endl;
-        c << "                     \"Resetting to the last good value of %1.\");" << endl;
-        c << "            msg.replace(\"%1\", num);" << endl;
+        c << "                     \"Resetting to the last good value of %1.\")." << endl;
+        c << "                  arg(atts->Get"<<Name<<"());" << endl;
         c << "            Message(msg);" << endl;
         c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
         c << "        }" << endl;
@@ -632,7 +635,7 @@ class WindowGeneratorDoubleArray : public virtual DoubleArray , public virtual W
         c << "        if(okay)" << endl;
         c << "        {" << endl;
         c << "            double val["<<length<<"];" << endl;
-        c << "            sscanf(temp.latin1(), \"";
+        c << "            if((okay = (sscanf(temp.latin1(), \"";
         int i;
         for (i=0; i<length; i++)
         {
@@ -645,8 +648,8 @@ class WindowGeneratorDoubleArray : public virtual DoubleArray , public virtual W
             c << "&val["<<i<<"]";
             if (i < length-1) c << ", ";
         }
-        c << ");" << endl;
-        c << "            atts->Set"<<Name<<"(val);" << endl;
+        c << ") == " << length << ")) == true)" << endl;
+        c << "                atts->Set"<<Name<<"(val);" << endl;
         c << "        }" << endl;
         c << endl;
         c << "        if(!okay)" << endl;
@@ -667,8 +670,8 @@ class WindowGeneratorDoubleArray : public virtual DoubleArray , public virtual W
         }
         c << ");" << endl;
         c << "            msg = tr(\"The value of "<<name<<" was invalid. \"" << endl;
-        c << "                     \"Resetting to the last good value of %1.\");" << endl;
-        c << "            msg.replace(\"%1\", num);" << endl;
+        c << "                     \"Resetting to the last good value of %1.\")." << endl;
+        c << "                  arg(num);" << endl;
         c << "            Message(msg);" << endl;
         c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
         c << "        }" << endl;
@@ -786,8 +789,8 @@ class WindowGeneratorString : public virtual String , public virtual WindowGener
         c << "        if(!okay)" << endl;
         c << "        {" << endl;
         c << "            msg = tr(\"The value of "<<name<<" was invalid. \"" << endl;
-        c << "                     \"Resetting to the last good value of %1.\");" << endl;
-        c << "            msg.replace(\"%1\", atts->Get"<<Name<<"().c_str());" << endl;
+        c << "                     \"Resetting to the last good value of %1.\")." << endl;
+        c << "                  arg(atts->Get"<<Name<<"().c_str());" << endl;
         c << "            Message(msg);" << endl;
         c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
         c << "        }" << endl;

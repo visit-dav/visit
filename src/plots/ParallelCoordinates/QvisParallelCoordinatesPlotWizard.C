@@ -73,7 +73,10 @@
 //    without a wizard's accept action having been called.  If you don't, then
 //    you'll have the wrong number of axes defined in the plot attributes.
 //    As such, I extended the wizard to support a "no-op" mode.
-//   
+//
+//    Brad Whitlock, Wed Apr 23 10:12:44 PDT 2008
+//    Added tr()
+//  
 // ****************************************************************************
 
 QvisParallelCoordinatesPlotWizard::QvisParallelCoordinatesPlotWizard(
@@ -89,9 +92,9 @@ QvisParallelCoordinatesPlotWizard::QvisParallelCoordinatesPlotWizard(
     if (doNothing)
     {
         parAxisAtts->ResetAxes();
-        CreateFinishPage(&pages[0], NULL, "The plot has successfully been "
-                         "defined by use of an array variable.");
-        addPage(pages[0], "Click Finish");
+        CreateFinishPage(&pages[0], NULL, tr("The plot has successfully been "
+                         "defined by use of an array variable."));
+        addPage(pages[0], tr("Click Finish"));
         setHelpEnabled(pages[0], false);
         setFinishEnabled(pages[0], true);
         return;    
@@ -105,67 +108,67 @@ QvisParallelCoordinatesPlotWizard::QvisParallelCoordinatesPlotWizard(
     curAxisCount = 1;
     
     // Set the wizard's title.
-    topLevelWidget()->setCaption("ParallelCoordinates Plot Wizard");
+    topLevelWidget()->setCaption(tr("ParallelCoordinates Plot Wizard"));
     
     //
     // Create the wizard's pages.
     //
     CreateAxisVariablePage(&pages[0], &thumbnails[0], 1,
-        "A ParallelCoordinates plot needs at least 2 axes.\n"
-        "Choose a scalar variable for the second axis.");
-    addPage(pages[0], "Choose second axis variable");
+        tr("A ParallelCoordinates plot needs at least 2 axes.\n"
+        "Choose a scalar variable for the second axis."));
+    addPage(pages[0], tr("Choose second axis variable"));
 
     CreateAxisYesNoPage(&pages[1], &thumbnails[1], &yesNoButtonGroups[0], 2,
-        "Would you like to add a third axis to the plot?");
-    addPage(pages[1], "Add third axis?");
+        tr("Would you like to add a third axis to the plot?"));
+    addPage(pages[1], tr("Add third axis?"));
 
     CreateAxisVariablePage(&pages[2], &thumbnails[2], 2,
-        "Choose a scalar variable for the third axis.");
-    addPage(pages[2], "Choose third axis variable");
+        tr("Choose a scalar variable for the third axis."));
+    addPage(pages[2], tr("Choose third axis variable"));
 
     CreateAxisYesNoPage(&pages[3], &thumbnails[3], &yesNoButtonGroups[1], 3,
-        "Would you like to add a fourth axis to the plot?");
-    addPage(pages[3], "Add fourth axis?");
+        tr("Would you like to add a fourth axis to the plot?"));
+    addPage(pages[3], tr("Add fourth axis?"));
 
     CreateAxisVariablePage(&pages[4], &thumbnails[4], 3,
-        "Choose a scalar variable for the fourth axis.");
-    addPage(pages[4], "Choose fourth axis variable");
+        tr("Choose a scalar variable for the fourth axis."));
+    addPage(pages[4], tr("Choose fourth axis variable"));
 
     CreateAxisYesNoPage(&pages[5], &thumbnails[5], &yesNoButtonGroups[2], 4,
-        "Would you like to add a fifth axis to the plot?");
-    addPage(pages[5], "Add fifth axis?");
+        tr("Would you like to add a fifth axis to the plot?"));
+    addPage(pages[5], tr("Add fifth axis?"));
 
     CreateAxisVariablePage(&pages[6], &thumbnails[6], 4,
-        "Choose a scalar variable for the fifth axis.");
-    addPage(pages[6], "Choose fifth axis variable");
+        tr("Choose a scalar variable for the fifth axis."));
+    addPage(pages[6], tr("Choose fifth axis variable"));
 
     CreateAxisYesNoPage(&pages[7], &thumbnails[7], &yesNoButtonGroups[3], 5,
-        "Would you like to add a sixth axis to the plot?");
-    addPage(pages[7], "Add sixth axis?");
+        tr("Would you like to add a sixth axis to the plot?"));
+    addPage(pages[7], tr("Add sixth axis?"));
 
     CreateAxisVariablePage(&pages[8], &thumbnails[8], 5,
-        "Choose a scalar variable for the sixth axis.");
-    addPage(pages[8], "Choose sixth axis variable");
+        tr("Choose a scalar variable for the sixth axis."));
+    addPage(pages[8], tr("Choose sixth axis variable"));
 
     CreateAxisYesNoPage(&pages[9], &thumbnails[9], &yesNoButtonGroups[4], 6,
-        "Would you like to add a seventh axis to the plot?");
-    addPage(pages[9], "Add seventh axis?");
+        tr("Would you like to add a seventh axis to the plot?"));
+    addPage(pages[9], tr("Add seventh axis?"));
 
     CreateAxisVariablePage(&pages[10], &thumbnails[10], 6,
-        "Choose a scalar variable for the seventh axis.");
-    addPage(pages[10], "Choose seventh axis variable");
+        tr("Choose a scalar variable for the seventh axis."));
+    addPage(pages[10], tr("Choose seventh axis variable"));
 
     CreateAxisYesNoPage(&pages[11], &thumbnails[11], &yesNoButtonGroups[5], 7,
-        "Would you like to add an eighth axis to the plot?");
-    addPage(pages[11], "Add eighth axis?");
+        tr("Would you like to add an eighth axis to the plot?"));
+    addPage(pages[11], tr("Add eighth axis?"));
 
     CreateAxisVariablePage(&pages[12], &thumbnails[12], 7,
-        "Choose a scalar variable for the eighth axis.");
-    addPage(pages[12], "Choose eighth axis variable");
+        tr("Choose a scalar variable for the eighth axis."));
+    addPage(pages[12], tr("Choose eighth axis variable"));
 
     CreateFinishPage(&pages[13], &thumbnails[13],
-        "Click the Finish button to create a new ParallelCoordinates plot.");
-    addPage(pages[13], "Click Finish");
+        tr("Click the Finish button to create a new ParallelCoordinates plot."));
+    addPage(pages[13], tr("Click Finish"));
     
     for (int pageNum = 0; pageNum < 14; pageNum++)
         setHelpEnabled(pages[pageNum], false);
@@ -226,7 +229,10 @@ QvisParallelCoordinatesPlotWizard::~QvisParallelCoordinatesPlotWizard()
 //    Renamed orderedAxisNames to scalarAxisNames to distinguish these
 //    as names of actual scalars instead of just display names.  Added
 //    visualAxisNames.
-//   
+//
+//    Brad Whitlock, Wed Apr 23 10:15:26 PDT 2008
+//    Added tr()
+//
 // ****************************************************************************
 
 void
@@ -263,7 +269,7 @@ QvisParallelCoordinatesPlotWizard::CreateAxisVariablePage(QFrame **f,
     QHBoxLayout *pageVLayout = new QHBoxLayout(pageRLayout);
     pageVLayout->setSpacing(10);
     pageVLayout->addStretch(5);
-    QLabel *varlabel = new QLabel("Variable", frame);
+    QLabel *varlabel = new QLabel(tr("Variable"), frame);
     QvisVariableButton *var = new QvisVariableButton(false, false, true,
         QvisVariableButton::Scalars, frame);
     var->setMinimumWidth(fontMetrics().boundingRect("really_really_long_var_name").width());
@@ -276,8 +282,8 @@ QvisParallelCoordinatesPlotWizard::CreateAxisVariablePage(QFrame **f,
 
     pageRLayout->addSpacing(25);
     dupVarMessages[axisOrdinal] = new QLabel(
-        "Selected variable duplicates variable of another axis.\n"
-        "Choose a unique scalar variable for the new axis.", frame, "errMsg");
+        tr("Selected variable duplicates variable of another axis.\n"
+           "Choose a unique scalar variable for the new axis."), frame, "errMsg");
     dupVarMessages[axisOrdinal]->setPaletteForegroundColor(QColor(255,0,0));
     pageRLayout->addWidget(dupVarMessages[axisOrdinal]);
     dupVarMessages[axisOrdinal]->hide();
@@ -309,7 +315,9 @@ QvisParallelCoordinatesPlotWizard::CreateAxisVariablePage(QFrame **f,
 // Creation:   Mon Jun 19 15:16:00 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 23 10:15:14 PDT 2008
+//   Added tr()
+//
 // ****************************************************************************
 
 void
@@ -347,11 +355,11 @@ QvisParallelCoordinatesPlotWizard::CreateAxisYesNoPage(QFrame **f, QvisParallelC
     QButtonGroup *btn = new QButtonGroup(NULL, "btn");
     *bg = btn;
     connect(btn, SIGNAL(clicked(int)), this, SLOT(decideIfAnotherAxis(int)));
-    QRadioButton *r1 = new QRadioButton("Yes", frame, "r1");
+    QRadioButton *r1 = new QRadioButton(tr("Yes"), frame, "r1");
     r1->setChecked(false);
     btn->insert(r1);
     pageVLayout->addWidget(r1);
-    QRadioButton *r2 = new QRadioButton("No", frame, "r2");
+    QRadioButton *r2 = new QRadioButton(tr("No"), frame, "r2");
     r2->setChecked(true);
     btn->insert(r2);
     pageVLayout->addWidget(r2);

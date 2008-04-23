@@ -118,6 +118,9 @@ QvisTensorPlotWindow::~QvisTensorPlotWindow()
 //   Eric Brugger, Wed Nov 24 11:43:13 PST 2004
 //   Added scaleByMagnitude and autoScale.
 //
+//   Brad Whitlock, Wed Apr 23 12:04:43 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -130,7 +133,7 @@ QvisTensorPlotWindow::CreateWindowContents()
     // Create the color-related widgets.
     //
     colorGroupBox = new QGroupBox(central, "colorGroupBox");
-    colorGroupBox->setTitle("Tensor color");
+    colorGroupBox->setTitle(tr("Tensor color"));
     gLayout->addMultiCellWidget(colorGroupBox, 0, 0, 0, 3);
     QVBoxLayout *cgTopLayout = new QVBoxLayout(colorGroupBox);
     cgTopLayout->setMargin(10);
@@ -143,10 +146,10 @@ QvisTensorPlotWindow::CreateWindowContents()
     colorButtonGroup = new QButtonGroup(0, "colorModeButtons");
     connect(colorButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(colorModeChanged(int)));
-    QRadioButton *rb = new QRadioButton("Eigenvalues", colorGroupBox, "Eigenvalues");
+    QRadioButton *rb = new QRadioButton(tr("Eigenvalues"), colorGroupBox, "Eigenvalues");
     colorButtonGroup->insert(rb, 0);
     cgLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton("Constant", colorGroupBox, "constant");
+    rb = new QRadioButton(tr("Constant"), colorGroupBox, "constant");
     rb->setChecked(true);
     colorButtonGroup->insert(rb, 1);
     cgLayout->addWidget(rb, 1, 0);
@@ -168,7 +171,7 @@ QvisTensorPlotWindow::CreateWindowContents()
     // Create the scale-related widgets.
     //
     scaleGroupBox = new QGroupBox(central, "scaleGroupBox");
-    scaleGroupBox->setTitle("Tensor scale");
+    scaleGroupBox->setTitle(tr("Tensor scale"));
     gLayout->addMultiCellWidget(scaleGroupBox, 1, 1, 0, 3);
     QVBoxLayout *sgTopLayout = new QVBoxLayout(scaleGroupBox);
     sgTopLayout->setMargin(10);
@@ -182,16 +185,16 @@ QvisTensorPlotWindow::CreateWindowContents()
     connect(scaleLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processScaleText()));
     sgLayout->addWidget(scaleLineEdit, 0, 1);
-    QLabel *scaleLabel = new QLabel(scaleLineEdit, "Scale", scaleGroupBox, "scaleLabel");
+    QLabel *scaleLabel = new QLabel(scaleLineEdit, tr("Scale"), scaleGroupBox, "scaleLabel");
     sgLayout->addWidget(scaleLabel, 0, 0, AlignRight | AlignVCenter);
 
     // Add the scale by magnitude toggle button.
-    scaleByMagnitudeToggle = new QCheckBox("Scale by magnitude", scaleGroupBox, "scaleByMagnitudeToggle");
+    scaleByMagnitudeToggle = new QCheckBox(tr("Scale by magnitude"), scaleGroupBox, "scaleByMagnitudeToggle");
     connect(scaleByMagnitudeToggle, SIGNAL(clicked()), this, SLOT(scaleByMagnitudeToggled()));
     sgLayout->addMultiCellWidget(scaleByMagnitudeToggle, 1, 1, 0, 1);
 
     // Add the auto scale toggle button.
-    autoScaleToggle = new QCheckBox("Auto scale", scaleGroupBox, "autoScaleToggle");
+    autoScaleToggle = new QCheckBox(tr("Auto scale"), scaleGroupBox, "autoScaleToggle");
     connect(autoScaleToggle, SIGNAL(clicked()), this, SLOT(autoScaleToggled()));
     sgLayout->addMultiCellWidget(autoScaleToggle, 2, 2, 0, 1);
 
@@ -199,7 +202,7 @@ QvisTensorPlotWindow::CreateWindowContents()
     // Create the reduce-related widgets.
     //
     reduceGroupBox = new QGroupBox(central, "reduceGroupBox");
-    reduceGroupBox->setTitle("Reduce by");
+    reduceGroupBox->setTitle(tr("Reduce by"));
     gLayout->addMultiCellWidget(reduceGroupBox, 2, 2, 0, 3);
     QVBoxLayout *rgTopLayout = new QVBoxLayout(reduceGroupBox);
     rgTopLayout->setMargin(10);
@@ -212,11 +215,11 @@ QvisTensorPlotWindow::CreateWindowContents()
     reduceButtonGroup = new QButtonGroup(0, "reduceButtonGroup");
     connect(reduceButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(reduceMethodChanged(int)));
-    rb= new QRadioButton("N tensors", reduceGroupBox);
+    rb= new QRadioButton(tr("N tensors"), reduceGroupBox);
     rb->setChecked(true);
     reduceButtonGroup->insert(rb, 0);
     rgLayout->addWidget(rb, 0, 0);
-    rb = new QRadioButton("Stride", reduceGroupBox);
+    rb = new QRadioButton(tr("Stride"), reduceGroupBox);
     reduceButtonGroup->insert(rb, 1);
     rgLayout->addWidget(rb, 1, 0);
 
@@ -237,7 +240,7 @@ QvisTensorPlotWindow::CreateWindowContents()
     //
 
     // Add the legend toggle button.
-    legendToggle = new QCheckBox("Legend", central, "legendToggle");
+    legendToggle = new QCheckBox(tr("Legend"), central, "legendToggle");
     connect(legendToggle, SIGNAL(clicked()), this, SLOT(legendToggled()));
     gLayout->addMultiCellWidget(legendToggle, 3, 3, 0, 1);
 }
@@ -358,6 +361,10 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
 // Programmer: Hank Childs
 // Creation:   September 23, 2003
 //
+// Modifications:
+//   Brad Whitlock, Wed Apr 23 12:05:54 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -374,14 +381,15 @@ QvisTensorPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            tensorAtts->SetScale(val);
+            if(okay)
+                tensorAtts->SetScale(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The scale value was invalid. "
-                "Resetting to the last good value of %g.",
-                tensorAtts->GetScale());
+            msg = tr("The scale value was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(tensorAtts->GetScale());
             Message(msg);
             tensorAtts->SetScale(tensorAtts->GetScale());
         }
@@ -395,14 +403,15 @@ QvisTensorPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            tensorAtts->SetNTensors(val);
+            if(okay)
+                tensorAtts->SetNTensors(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The head size was invalid. "
-                "Resetting to the last good value of %d.",
-                tensorAtts->GetNTensors());
+            msg = tr("The head size was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(tensorAtts->GetNTensors());
             Message(msg);
             tensorAtts->SetNTensors(tensorAtts->GetNTensors());
         }
@@ -416,14 +425,15 @@ QvisTensorPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            tensorAtts->SetStride(val);
+            if(okay)
+                tensorAtts->SetStride(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The stride was invalid. "
-                "Resetting to the last good value of %d.",
-                tensorAtts->GetStride());
+            msg = tr("The stride was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(tensorAtts->GetStride());
             Message(msg);
             tensorAtts->SetStride(tensorAtts->GetStride());
         }

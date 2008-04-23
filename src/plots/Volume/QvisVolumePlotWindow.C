@@ -305,6 +305,9 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //   Brad Whitlock, Thu Jan 10 14:34:20 PST 2008
 //   Added support for SLIVR.
 //
+//   Brad Whitlock, Wed Apr 23 12:14:45 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -316,7 +319,7 @@ QvisVolumePlotWindow::CreateWindowContents()
 
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central, "colorWidgetGroup");
-    colorWidgetGroup->setTitle("Color");
+    colorWidgetGroup->setTitle(tr("Color"));
     topLayout->addWidget(colorWidgetGroup);
     QVBoxLayout *innerColorLayout = new QVBoxLayout(colorWidgetGroup);
     innerColorLayout->setMargin(5);
@@ -331,16 +334,16 @@ QvisVolumePlotWindow::CreateWindowContents()
     QHBoxLayout *seLayout = new QHBoxLayout(innerColorLayout);
     seLayout->setSpacing(5);
     seLayout->addSpacing(5);
-    addPointButton = new QPushButton("+", colorWidgetGroup, "addPointButton");
+    addPointButton = new QPushButton(tr("+"), colorWidgetGroup, "addPointButton");
     connect(addPointButton, SIGNAL(clicked()), this, SLOT(addControlPoint()));
     seLayout->addWidget(addPointButton);
 
-    rmPointButton = new QPushButton("-", colorWidgetGroup, "rmPointButton");
+    rmPointButton = new QPushButton(tr("-"), colorWidgetGroup, "rmPointButton");
     connect(rmPointButton, SIGNAL(clicked()),
             this, SLOT(removeControlPoint()));
     seLayout->addWidget(rmPointButton);
 
-    alignPointButton = new QPushButton("Align", colorWidgetGroup, "alignPointButton");
+    alignPointButton = new QPushButton(tr("Align"), colorWidgetGroup, "alignPointButton");
     connect(alignPointButton, SIGNAL(clicked()),
             this, SLOT(alignControlPoints()));
     seLayout->addWidget(alignPointButton);
@@ -353,13 +356,13 @@ QvisVolumePlotWindow::CreateWindowContents()
     seLayout->addSpacing(5);
     seLayout->addStretch(20);
 
-    smoothCheckBox = new QCheckBox("Smooth", colorWidgetGroup, "smoothCheckbox");
+    smoothCheckBox = new QCheckBox(tr("Smooth"), colorWidgetGroup, "smoothCheckbox");
     smoothCheckBox->setChecked(true);
     connect(smoothCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(smoothToggled(bool)));
     seLayout->addWidget(smoothCheckBox);
 
-    equalCheckBox = new QCheckBox("Equal", colorWidgetGroup, "equalCheckbox");
+    equalCheckBox = new QCheckBox(tr("Equal"), colorWidgetGroup, "equalCheckbox");
     connect(equalCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(equalSpacingToggled(bool)));
     seLayout->addWidget(equalCheckBox);
@@ -376,7 +379,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     QGridLayout *colorScaleLayout = new QGridLayout(innerColorLayout, 3, 4);
     innerColorLayout->addSpacing(5);
     colorScaleLayout->setSpacing(5);
-    colorMinToggle = new QCheckBox("Min", colorWidgetGroup,
+    colorMinToggle = new QCheckBox(tr("Min"), colorWidgetGroup,
                                    "colorMinToggle");
     connect(colorMinToggle, SIGNAL(toggled(bool)),
             this, SLOT(colorMinToggled(bool)));
@@ -389,7 +392,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     colorScaleLayout->addWidget(colorMin, 0, 1);
 
     // Create the color max widgets.
-    colorMaxToggle = new QCheckBox("Max", colorWidgetGroup,
+    colorMaxToggle = new QCheckBox(tr("Max"), colorWidgetGroup,
                                    "colorMaxToggle");
     connect(colorMaxToggle, SIGNAL(toggled(bool)),
             this, SLOT(colorMaxToggled(bool)));
@@ -405,21 +408,21 @@ QvisVolumePlotWindow::CreateWindowContents()
     //
     // Create the scale radio buttons
     //
-    QLabel *scaleLabel = new QLabel("Scale", colorWidgetGroup, "scaleLabel");
+    QLabel *scaleLabel = new QLabel(tr("Scale"), colorWidgetGroup, "scaleLabel");
     colorScaleLayout->addWidget(scaleLabel, 1, 0);
 
     // Create the scaling button group 
     scalingButtons = new QButtonGroup(0, "scaleRadioGroup" );
     connect(scalingButtons, SIGNAL(clicked(int)),
             this, SLOT(scaleClicked(int)));
-    QRadioButton *rb = new QRadioButton("Linear", colorWidgetGroup);
+    QRadioButton *rb = new QRadioButton(tr("Linear"), colorWidgetGroup);
     rb->setChecked( TRUE );
     scalingButtons->insert(rb, 0);
     colorScaleLayout->addWidget(rb, 1, 1);
-    rb = new QRadioButton("Log10", colorWidgetGroup);
+    rb = new QRadioButton(tr("Log10"), colorWidgetGroup);
     scalingButtons->insert(rb, 1);
     colorScaleLayout->addWidget(rb, 1, 2);
-    rb = new QRadioButton("Skew", colorWidgetGroup);
+    rb = new QRadioButton(tr("Skew"), colorWidgetGroup);
     scalingButtons->insert(rb, 2);
     colorScaleLayout->addWidget(rb, 1, 3);
 
@@ -428,7 +431,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     skewLineEdit->setMaximumWidth(maxWidth);
     connect(skewLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processSkewText())); 
-    skewLabel = new QLabel(skewLineEdit, "Skew factor ", 
+    skewLabel = new QLabel(skewLineEdit, tr("Skew factor "), 
                            colorWidgetGroup, "skewFactor");
     skewLabel->setAlignment(AlignLeft | AlignVCenter);
     colorScaleLayout->addWidget(skewLabel, 2, 2);
@@ -436,7 +439,7 @@ QvisVolumePlotWindow::CreateWindowContents()
  
     // Add the group box that will contain the opacity-related widgets.
     opacityWidgetGroup = new QGroupBox(central, "opacityWidgetGroup");
-    opacityWidgetGroup->setTitle("Opacity");
+    opacityWidgetGroup->setTitle(tr("Opacity"));
     topLayout->addWidget(opacityWidgetGroup, 100);
     QVBoxLayout *innerOpacityLayout = new QVBoxLayout(opacityWidgetGroup);
     innerOpacityLayout->setMargin(10);
@@ -444,7 +447,7 @@ QvisVolumePlotWindow::CreateWindowContents()
 
     // Create the buttons that control what mode the opacity widget it in.
     QHBoxLayout *opLayout = new QHBoxLayout(innerOpacityLayout);
-    showColorsInAlphaWidgetToggle = new QCheckBox("Show Colors", opacityWidgetGroup, "showColorsToggle");
+    showColorsInAlphaWidgetToggle = new QCheckBox(tr("Show Colors"), opacityWidgetGroup, "showColorsToggle");
     showColorsInAlphaWidgetToggle->setChecked(showColorsInAlphaWidget);
     connect(showColorsInAlphaWidgetToggle, SIGNAL(toggled(bool)),
             this, SLOT(showColorsInAlphaWidgetToggled(bool)));
@@ -452,7 +455,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     opLayout->addSpacing(10);
     opLayout->addStretch(100);
     opLayout->setSpacing(5);
-    QLabel *interactionModeLabel = new QLabel("Interaction mode",
+    QLabel *interactionModeLabel = new QLabel(tr("Interaction mode"),
         opacityWidgetGroup, "interactionModeLabel");
     opLayout->addWidget(interactionModeLabel);
     
@@ -460,10 +463,10 @@ QvisVolumePlotWindow::CreateWindowContents()
     modeButtonGroup = new QButtonGroup(0, "modeButtonGroup");
     connect(modeButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(interactionModeChanged(int)));
-    rb= new QRadioButton("Freeform", opacityWidgetGroup);
+    rb= new QRadioButton(tr("Freeform"), opacityWidgetGroup);
     modeButtonGroup->insert(rb, 0);
     opLayout->addWidget(rb, 5, 0);
-    rb = new QRadioButton("Gaussian", opacityWidgetGroup);
+    rb = new QRadioButton(tr("Gaussian"), opacityWidgetGroup);
     rb->setChecked(true);
     modeButtonGroup->insert(rb, 1);
     opLayout->addWidget(rb, 6, 0);
@@ -514,7 +517,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     connect(oneButton, SIGNAL(clicked()), scribbleAlphaWidget, SLOT(makeTotallyOne()));
     abLayout->addWidget(oneButton);
 
-    smoothButton = new QPushButton("Smooth", opacityWidgetGroup, "smoothButton");
+    smoothButton = new QPushButton(tr("Smooth"), opacityWidgetGroup, "smoothButton");
     connect(smoothButton, SIGNAL(clicked()), scribbleAlphaWidget, SLOT(smoothCurve()));
     abLayout->addWidget(smoothButton);
     abLayout->addStretch(10);
@@ -525,7 +528,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     attLayout->setSpacing(5);
     attenuationSlider = new QvisOpacitySlider(0, 255, 10, 255, opacityWidgetGroup, "attenuationSlider");
     attenuationSlider->setGradientColor(QColor(0,0,0));
-    QLabel *attenuationLabel = new QLabel(attenuationSlider, "Attenuation", 
+    QLabel *attenuationLabel = new QLabel(attenuationSlider, tr("Attenuation"), 
                                           opacityWidgetGroup, "attenuationSliderLabel");
     connect(attenuationSlider, SIGNAL(valueChanged(int)),
             this, SLOT(attenuationChanged(int)));
@@ -537,7 +540,7 @@ QvisVolumePlotWindow::CreateWindowContents()
         QvisVariableButton::Scalars, opacityWidgetGroup, "opacityVariable");
     connect(opacityVariable, SIGNAL(activated(const QString &)),
             this, SLOT(opacityVariableChanged(const QString &)));
-    QLabel *opacityVarLabel = new QLabel(opacityVariable, "Opacity variable",
+    QLabel *opacityVarLabel = new QLabel(opacityVariable, tr("Opacity variable"),
         opacityWidgetGroup, "opacityVarLabel");
     attLayout->addWidget(opacityVarLabel, 1, 0);
     attLayout->addWidget(opacityVariable, 1, 1);
@@ -546,7 +549,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     // Create the opacity min widgets.
     QHBoxLayout *opacityMinMaxLayout = new QHBoxLayout(innerOpacityLayout);
     opacityMinMaxLayout->setSpacing(5);
-    opacityMinToggle = new QCheckBox("Min", opacityWidgetGroup,
+    opacityMinToggle = new QCheckBox(tr("Min"), opacityWidgetGroup,
                                    "opacityMinToggle");
     connect(opacityMinToggle, SIGNAL(toggled(bool)),
             this, SLOT(opacityMinToggled(bool)));
@@ -561,7 +564,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     opacityMinMaxLayout->addStretch(10);
 
     // Create the opacity max widgets.
-    opacityMaxToggle = new QCheckBox("Max", opacityWidgetGroup,
+    opacityMaxToggle = new QCheckBox(tr("Max"), opacityWidgetGroup,
                                      "opacityMaxToggle");
     connect(opacityMaxToggle, SIGNAL(toggled(bool)),
             this, SLOT(opacityMaxToggled(bool)));
@@ -578,17 +581,17 @@ QvisVolumePlotWindow::CreateWindowContents()
     int row = 0;
     QGridLayout *rendererOptionsLayout = new QGridLayout(topLayout, 8,3, 5, "rendererOptionsLayout");
     rendererTypesComboBox = new QComboBox(central, "rendererTypesComboBox");
-    rendererTypesComboBox->insertItem("Splatting",0);
-    rendererTypesComboBox->insertItem("3D Texturing",1);
-    rendererTypesComboBox->insertItem("Ray casting: compositing",2);
-    rendererTypesComboBox->insertItem("Ray casting: integration (grey scale)",3);
+    rendererTypesComboBox->insertItem(tr("Splatting"),0);
+    rendererTypesComboBox->insertItem(tr("3D Texturing"),1);
+    rendererTypesComboBox->insertItem(tr("Ray casting: compositing"),2);
+    rendererTypesComboBox->insertItem(tr("Ray casting: integration (grey scale)"),3);
 #ifdef HAVE_LIBSLIVR
-    rendererTypesComboBox->insertItem("SCI, University of Utah (SLIVR)",4);
+    rendererTypesComboBox->insertItem(tr("SCI, University of Utah (SLIVR)"),4);
 #endif
     connect(rendererTypesComboBox, SIGNAL(activated(int)),
             this, SLOT(rendererTypeChanged(int)));
     rendererOptionsLayout->addWidget(new QLabel(rendererTypesComboBox,
-        "Rendering method", central), row, 0);
+        tr("Rendering method"), central), row, 0);
     rendererOptionsLayout->addMultiCellWidget(rendererTypesComboBox, row,row,1,2);
     ++row;
 
@@ -596,7 +599,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     resampleTarget = new QLineEdit(central, "resampleTarget");
     connect(resampleTarget, SIGNAL(returnPressed()),
             this, SLOT(resampleTargetProcessText()));
-    resampleTargetLabel = new QLabel(resampleTarget, "Number of samples",
+    resampleTargetLabel = new QLabel(resampleTarget, tr("Number of samples"),
                                      central, "resampleLabel");
     resampleTargetSlider = new QSlider(0,80,10,34, Qt::Horizontal,central,"resampleTargetSlider");
     connect(resampleTargetSlider, SIGNAL(valueChanged(int)),
@@ -612,7 +615,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     num3DSlices = new QLineEdit(central, "num3DSlices");
     connect(num3DSlices, SIGNAL(returnPressed()), this,
             SLOT(num3DSlicesProcessText()));
-    num3DSlicesLabel = new QLabel(num3DSlices, "Number of slices",
+    num3DSlicesLabel = new QLabel(num3DSlices, tr("Number of slices"),
                                   central, "num3DSlicesLabel");
     rendererOptionsLayout->addWidget(num3DSlicesLabel, row, 0);
     rendererOptionsLayout->addWidget(num3DSlices, row, 1);
@@ -622,7 +625,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     samplesPerRay = new QLineEdit(central, "samplesPerRay");
     connect(samplesPerRay, SIGNAL(returnPressed()), this,
             SLOT(samplesPerRayProcessText()));
-    samplesPerRayLabel = new QLabel(samplesPerRay, "Samples per ray",
+    samplesPerRayLabel = new QLabel(samplesPerRay, tr("Samples per ray"),
                                     central, "samplesPerRayLabel");
     rendererOptionsLayout->addWidget(samplesPerRayLabel, row, 0);
     rendererOptionsLayout->addWidget(samplesPerRay, row, 1);
@@ -632,7 +635,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     rendererSamples = new QLineEdit(central, "rendererSamples");
     connect(rendererSamples, SIGNAL(returnPressed()),
             this, SLOT(rendererSamplesProcessText()));
-    rendererSamplesLabel = new QLabel(rendererSamples, "Sampling rate",
+    rendererSamplesLabel = new QLabel(rendererSamples, tr("Sampling rate"),
                                      central, "sampleLabel");
     rendererSamplesSlider = new QSlider(0, 1000, 25, 150, Qt::Horizontal,central,"rendererSamplesSlider");
     connect(rendererSamplesSlider, SIGNAL(valueChanged(int)),
@@ -650,45 +653,45 @@ QvisVolumePlotWindow::CreateWindowContents()
 #endif
 
     // Create the gradient method radio buttons.
-    rendererOptionsLayout->addWidget(new QLabel("Gradient method", central),row,0);
+    rendererOptionsLayout->addWidget(new QLabel(tr("Gradient method"), central),row,0);
     gradientButtonGroup = new QButtonGroup(0, "gradientButtonGroup");
     connect(gradientButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(gradientTypeChanged(int)));
-    centeredDiffButton = new QRadioButton("Centered diff", central);
+    centeredDiffButton = new QRadioButton(tr("Centered diff"), central);
     gradientButtonGroup->insert(centeredDiffButton, 0);
     rendererOptionsLayout->addWidget(centeredDiffButton,row,1);
-    sobelButton = new QRadioButton("Sobel", central);
+    sobelButton = new QRadioButton(tr("Sobel"), central);
     gradientButtonGroup->insert(sobelButton, 1);
     rendererOptionsLayout->addWidget(sobelButton,row,2);
     ++row;
 
     // Create the sampling method buttons.
-    rendererOptionsLayout->addWidget(new QLabel("Sampling method", central),row,0);
+    rendererOptionsLayout->addWidget(new QLabel(tr("Sampling method"), central),row,0);
     samplingButtonGroup = new QButtonGroup(0, "samplingButtonGroup");
     connect(samplingButtonGroup, SIGNAL(clicked(int)),
             this, SLOT(samplingTypeChanged(int)));
-    rasterizationButton = new QRadioButton("Rasterization", central);
+    rasterizationButton = new QRadioButton(tr("Rasterization"), central);
     samplingButtonGroup->insert(rasterizationButton, 0);
     rendererOptionsLayout->addWidget(rasterizationButton,row,1);
-    kernelButton = new QRadioButton("Kernel Based", central);
+    kernelButton = new QRadioButton(tr("Kernel Based"), central);
     samplingButtonGroup->insert(kernelButton, 1);
     rendererOptionsLayout->addWidget(kernelButton,row,2);
     ++row;
 
     // Create the legend toggle.
-    legendToggle = new QCheckBox("Legend", central, "legendToggle");
+    legendToggle = new QCheckBox(tr("Legend"), central, "legendToggle");
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
     rendererOptionsLayout->addWidget(legendToggle,row,0);
 
     // Create the lighting toggle.
-    lightingToggle = new QCheckBox("Lighting", central, "lightingToggle");
+    lightingToggle = new QCheckBox(tr("Lighting"), central, "lightingToggle");
     connect(lightingToggle, SIGNAL(toggled(bool)),
             this, SLOT(lightingToggled(bool)));
     rendererOptionsLayout->addWidget(lightingToggle,row,1);
 
     // Create the smooth data toggle.
-    smoothDataToggle = new QCheckBox("Smooth Data", central, "smoothToggle");
+    smoothDataToggle = new QCheckBox(tr("Smooth Data"), central, "smoothToggle");
     connect(smoothDataToggle, SIGNAL(toggled(bool)),
             this, SLOT(smoothDataToggled(bool)));
     rendererOptionsLayout->addWidget(smoothDataToggle,row,2);
@@ -1390,14 +1393,15 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            volumeAtts->SetResampleTarget(val);
+            if(okay)
+                volumeAtts->SetResampleTarget(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of resampleTarget was invalid. "
-                "Resetting to the last good value of %d.",
-                volumeAtts->GetResampleTarget());
+            msg = tr("The value of resampleTarget was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(volumeAtts->GetResampleTarget());
             Message(msg);
             volumeAtts->SetResampleTarget(volumeAtts->GetResampleTarget());
         }
@@ -1411,14 +1415,15 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            volumeAtts->SetColorVarMin(val);
+            if(okay)
+                volumeAtts->SetColorVarMin(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The minimum value for the color variable was invalid."
-                "Resetting to the last good value of %g.",
-                volumeAtts->GetColorVarMin());
+            msg = tr("The minimum value for the color variable was invalid."
+                     "Resetting to the last good value of %1.").
+                  arg(volumeAtts->GetColorVarMin());
             Message(msg);
         }
     }
@@ -1431,14 +1436,15 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            volumeAtts->SetColorVarMax(val);
+            if(okay)
+                volumeAtts->SetColorVarMax(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The maximum value for the color variable was invalid."
-                "Resetting to the last good value of %g.",
-                volumeAtts->GetColorVarMax());
+            msg = tr("The maximum value for the color variable was invalid."
+                     "Resetting to the last good value of %1.").
+                  arg(volumeAtts->GetColorVarMax());
             Message(msg);
         }
     }
@@ -1451,14 +1457,15 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            volumeAtts->SetOpacityVarMin(val);
+            if(okay)
+                volumeAtts->SetOpacityVarMin(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The minimum value for the opacity var was invalid."
-                "Resetting to the last good value of %g.",
-                volumeAtts->GetOpacityVarMin());
+            msg = tr("The minimum value for the opacity var was invalid."
+                     "Resetting to the last good value of %1.").
+                  arg(volumeAtts->GetOpacityVarMin());
             Message(msg);
         }
     }
@@ -1471,14 +1478,15 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            volumeAtts->SetOpacityVarMax(val);
+            if(okay)
+                volumeAtts->SetOpacityVarMax(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The maximum value for the opacity var was invalid."
-                "Resetting to the last good value of %g.",
-                volumeAtts->GetOpacityVarMax());
+            msg = tr("The maximum value for the opacity var was invalid."
+                     "Resetting to the last good value of %1.").
+                  arg(volumeAtts->GetOpacityVarMax());
             Message(msg);
         }
     }
@@ -1491,14 +1499,15 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            volumeAtts->SetSamplesPerRay(int(val));
+            if(okay)
+                volumeAtts->SetSamplesPerRay(int(val));
         }
 
         if(!okay)
         {
-            msg.sprintf("The number of samples per ray was invalid."
-                "Resetting to the last good value of %i.",
-                volumeAtts->GetSamplesPerRay());
+            msg = tr("The number of samples per ray was invalid."
+                     "Resetting to the last good value of %1.").
+                  arg(volumeAtts->GetSamplesPerRay());
             Message(msg);
         }
     }
@@ -1511,14 +1520,15 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            volumeAtts->SetNum3DSlices(int(val));
+            if(okay)
+                volumeAtts->SetNum3DSlices(int(val));
         }
 
         if(!okay)
         {
-            msg.sprintf("The number of 3d slices was invalid."
-                "Resetting to the last good value of %i.",
-                volumeAtts->GetNum3DSlices());
+            msg = tr("The number of 3d slices was invalid."
+                     "Resetting to the last good value of %1.").
+                  arg(volumeAtts->GetNum3DSlices());
             Message(msg);
         }
     }
@@ -1536,9 +1546,9 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The skew factor was invalid. "
-                "Resetting to the last good value of %g.",
-                volumeAtts->GetSkewFactor());
+            msg = tr("The skew factor was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(volumeAtts->GetSkewFactor());
             Message(msg);
             volumeAtts->SetSkewFactor(volumeAtts->GetSkewFactor());
         }
@@ -1561,9 +1571,10 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of renderer samples was invalid. Valid values are in the range [1.,%1.23f]. "
-                "Resetting to the last good value of %1.23f.",
-                MAX_RENDERER_SAMPLE_VALUE, volumeAtts->GetRendererSamples());
+            QString value; value.sprintf("%1.23f",MAX_RENDERER_SAMPLE_VALUE);
+            msg = tr("The value of renderer samples was invalid. Valid values are in the range [1.,%1]. "
+                     "Resetting to the last good value of %2.").
+                  arg(value).arg(volumeAtts->GetRendererSamples());
             Message(msg);
             volumeAtts->SetRendererSamples(volumeAtts->GetRendererSamples());
         }
@@ -1584,6 +1595,9 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
 //   Brad Whitlock, Thu Dec 9 17:38:26 PST 2004
 //   Changed to work with a variable button.
 //
+//   Brad Whitlock, Wed Apr 23 12:22:03 PDT 2008
+//   Added tr().
+//
 // ****************************************************************************
 
 void
@@ -1597,8 +1611,8 @@ QvisVolumePlotWindow::Apply(bool ignore)
             if (!volumeAtts->GetUseOpacityVarMin() &&
                 !volumeAtts->GetUseOpacityVarMax())
             {
-                Message("The range set for indexing colors will also be "
-                        "used when indexing opacities");
+                Message(tr("The range set for indexing colors will also be "
+                           "used when indexing opacities"));
             }
         }
     }

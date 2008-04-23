@@ -139,6 +139,9 @@ QvisSpreadsheetPlotWindow::~QvisSpreadsheetPlotWindow()
 //   Gunther H. Weber, Wed Nov 28 15:37:17 PST 2007
 //   Support toggeling the current cell outline
 //
+//   Brad Whitlock, Wed Apr 23 11:36:41 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -146,7 +149,7 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
 {
     QGridLayout *mainLayout = new QGridLayout(topLayout, 8, 2, 10, "mainLayout");
 
-    subsetNameLabel = new QLabel("Subset name", central, "subsetNameLabel");
+    subsetNameLabel = new QLabel(tr("Subset name"), central, "subsetNameLabel");
     mainLayout->addWidget(subsetNameLabel,0,0);
     subsetName = new QComboBox(true, central, "subsetName");
     subsetName->setEditable(false);
@@ -159,23 +162,23 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
     splitter->setFrameStyle(QFrame::HLine + QFrame::Raised);
     mainLayout->addMultiCellWidget(splitter, 1, 1, 0, 1);   
 
-    normalLabel = new QLabel("Normal", central, "normalLabel");
+    normalLabel = new QLabel(tr("Normal"), central, "normalLabel");
     mainLayout->addWidget(normalLabel,2,0);
     normal = new QButtonGroup(central, "normal");
     normal->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *normalLayout = new QHBoxLayout(normal);
     normalLayout->setSpacing(10);
-    QRadioButton *normalNormalAxisX = new QRadioButton("X", normal);
+    QRadioButton *normalNormalAxisX = new QRadioButton(tr("X"), normal);
     normalLayout->addWidget(normalNormalAxisX);
-    QRadioButton *normalNormalAxisY = new QRadioButton("Y", normal);
+    QRadioButton *normalNormalAxisY = new QRadioButton(tr("Y"), normal);
     normalLayout->addWidget(normalNormalAxisY);
-    QRadioButton *normalNormalAxisZ = new QRadioButton("Z", normal);
+    QRadioButton *normalNormalAxisZ = new QRadioButton(tr("Z"), normal);
     normalLayout->addWidget(normalNormalAxisZ);
     connect(normal, SIGNAL(clicked(int)),
             this, SLOT(normalChanged(int)));
     mainLayout->addWidget(normal, 2,1);
 
-    formatStringLabel = new QLabel("Format string", central, "formatStringLabel");
+    formatStringLabel = new QLabel(tr("Format string"), central, "formatStringLabel");
     mainLayout->addWidget(formatStringLabel,3,0);
     formatString = new QLineEdit(central, "formatString");
     connect(formatString, SIGNAL(returnPressed()),
@@ -187,9 +190,9 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
     connect(fontName, SIGNAL(textChanged(const QString &)),
             this, SLOT(fontNameChanged(const QString &)));
     mainLayout->addWidget(fontName, 4, 1);
-    mainLayout->addWidget(new QLabel(fontName,"Spreadsheet font", central), 4, 0);
+    mainLayout->addWidget(new QLabel(fontName,tr("Spreadsheet font"), central), 4, 0);
 
-    useColorTable = new QCheckBox("Use color table", central, "useColorTable");
+    useColorTable = new QCheckBox(tr("Use color table"), central, "useColorTable");
     connect(useColorTable, SIGNAL(toggled(bool)),
             this, SLOT(useColorTableChanged(bool)));
     mainLayout->addWidget(useColorTable, 5,0);
@@ -199,22 +202,22 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
             this, SLOT(colorTableNameChanged(bool, const QString&)));
     mainLayout->addWidget(colorTableName, 5,1);
 
-    showPatchOutline = new QCheckBox("Show patch outline", central, "showPatchOutline");
+    showPatchOutline = new QCheckBox(tr("Show patch outline"), central, "showPatchOutline");
     connect(showPatchOutline, SIGNAL(toggled(bool)),
             this, SLOT(showPatchOutlineChanged(bool)));
     mainLayout->addWidget(showPatchOutline, 6,0);
 
-    showCurrentCellOutline = new QCheckBox("Show current cell outline", central, "showCurrentCellOutline");
+    showCurrentCellOutline = new QCheckBox(tr("Show current cell outline"), central, "showCurrentCellOutline");
     connect(showCurrentCellOutline, SIGNAL(toggled(bool)),
             this, SLOT(showCurrentCellOutlineChanged(bool)));
     mainLayout->addWidget(showCurrentCellOutline, 7,0);
  
-    showTracerPlane = new QCheckBox("Show tracer plane", central, "showTracerPlane");
+    showTracerPlane = new QCheckBox(tr("Show tracer plane"), central, "showTracerPlane");
     connect(showTracerPlane, SIGNAL(toggled(bool)),
             this, SLOT(showTracerPlaneChanged(bool)));
     mainLayout->addWidget(showTracerPlane, 8,0);
 
-    tracerColorLabel = new QLabel("Tracer color", central, "tracerColorLabel");
+    tracerColorLabel = new QLabel(tr("Tracer color"), central, "tracerColorLabel");
     mainLayout->addWidget(tracerColorLabel,9,0);
     tracerColor = new QvisColorButton(central, "tracerColor");
     connect(tracerColor, SIGNAL(selectedColor(const QColor&)),
@@ -460,7 +463,9 @@ QvisSpreadsheetPlotWindow::UpdateSubsetNames()
 // Creation:   Thu Feb 15 11:37:49 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 23 11:38:00 PDT 2008
+//   Added tr().
+//
 // ****************************************************************************
 
 void
@@ -487,9 +492,9 @@ QvisSpreadsheetPlotWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of formatString was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetFormatString().c_str());
+            msg = tr("The value of formatString was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetFormatString().c_str());
             Message(msg);
             atts->SetFormatString(atts->GetFormatString());
         }

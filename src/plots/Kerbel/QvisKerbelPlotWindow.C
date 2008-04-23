@@ -121,19 +121,19 @@ QvisKerbelPlotWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 6,2,  10, "mainLayout");
 
 
-    mainLayout->addWidget(new QLabel("Center", central, "CenterLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("Center"), central, "CenterLabel"),0,0);
     Center = new QLineEdit(central, "Center");
     connect(Center, SIGNAL(returnPressed()),
             this, SLOT(CenterProcessText()));
     mainLayout->addWidget(Center, 0,1);
 
-    mainLayout->addWidget(new QLabel("Radius", central, "RadiusLabel"),1,0);
+    mainLayout->addWidget(new QLabel(tr("Radius"), central, "RadiusLabel"),1,0);
     Radius = new QLineEdit(central, "Radius");
     connect(Radius, SIGNAL(returnPressed()),
             this, SLOT(RadiusProcessText()));
     mainLayout->addWidget(Radius, 1,1);
 
-    mainLayout->addWidget(new QLabel("Opacity", central, "opacityLabel"),2,0);
+    mainLayout->addWidget(new QLabel(tr("Opacity"), central, "opacityLabel"),2,0);
     opacity = new QvisOpacitySlider(0,255,25,255, central, "opacity", NULL);
     opacity->setTickInterval(64);
     opacity->setGradientColor(QColor(0, 0, 0));
@@ -141,18 +141,18 @@ QvisKerbelPlotWindow::CreateWindowContents()
             this, SLOT(opacityChanged(int, const void*)));
     mainLayout->addWidget(opacity, 2,1);
 
-    mainLayout->addWidget(new QLabel("Color table", central, "colorTableNameLabel"),3,0);
+    mainLayout->addWidget(new QLabel(tr("Color table"), central, "colorTableNameLabel"),3,0);
     colorTableName = new QvisColorTableButton(central, "colorTableName");
     connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
             this, SLOT(colorTableNameChanged(bool, const QString&)));
     mainLayout->addWidget(colorTableName, 3,1);
 
-    legendFlag = new QCheckBox("Legend", central, "legendFlag");
+    legendFlag = new QCheckBox(tr("Legend"), central, "legendFlag");
     connect(legendFlag, SIGNAL(toggled(bool)),
             this, SLOT(legendFlagChanged(bool)));
     mainLayout->addWidget(legendFlag, 4,0);
 
-    mainLayout->addWidget(new QLabel("Filename", central, "filenameLabel"),5,0);
+    mainLayout->addWidget(new QLabel(tr("Filename"), central, "filenameLabel"),5,0);
     filename = new QLineEdit(central, "filename");
     connect(filename, SIGNAL(returnPressed()),
             this, SLOT(filenameProcessText()));

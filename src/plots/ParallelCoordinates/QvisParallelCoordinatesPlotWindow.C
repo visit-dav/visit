@@ -132,6 +132,9 @@ QvisParallelCoordinatesPlotWindow::~QvisParallelCoordinatesPlotWindow()
 //    Jeremy Meredith, Mon Feb 18 16:18:06 EST 2008
 //    Changed some wording slightly.
 //
+//    Brad Whitlock, Wed Apr 23 10:07:16 PDT 2008
+//    Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -140,7 +143,7 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     //
     // Axes to plot
     //
-    axisGroup = new QGroupBox("Axes",
+    axisGroup = new QGroupBox(tr("Axes"),
                               central, "axisGroup");
     topLayout->addWidget(axisGroup);
     QVBoxLayout *axisSpacingLayout = new QVBoxLayout(axisGroup);
@@ -154,9 +157,9 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     axisList->setAllColumnsShowFocus(true);
     axisList->setResizeMode(QListView::AllColumns);
     axisList->setSorting(-1);
-    axisList->addColumn("Axis");
-    axisList->addColumn("Min");
-    axisList->addColumn("Max");
+    axisList->addColumn(tr("Axis"));
+    axisList->addColumn(tr("Min"));
+    axisList->addColumn(tr("Max"));
     axisLayout->addMultiCellWidget(axisList, 0,3, 0,0);
     connect(axisList, SIGNAL(currentChanged(QListViewItem*)),
             this, SLOT(axisSelected(QListViewItem*)));
@@ -165,28 +168,28 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     axisNewButton = new QvisVariableButton(false, true, true,
                                            QvisVariableButton::Scalars,
                                            axisGroup, "axisNewButton");
-    axisNewButton->setText("Add axis");
+    axisNewButton->setText(tr("Add axis"));
     axisNewButton->setChangeTextOnVariableChange(false);
     axisLayout->addWidget(axisNewButton, 0, 1);
     connect(axisNewButton, SIGNAL(activated(const QString &)),
             this, SLOT(addAxis(const QString &)));
 
-    axisDelButton = new QPushButton("Delete", axisGroup, "axisDelButton");
+    axisDelButton = new QPushButton(tr("Delete"), axisGroup, "axisDelButton");
     axisLayout->addWidget(axisDelButton, 1, 1);
     connect(axisDelButton, SIGNAL(clicked()),
             this, SLOT(delAxis()));
 
-    axisUpButton = new QPushButton("Move up", axisGroup, "axisUpButton");
+    axisUpButton = new QPushButton(tr("Move up"), axisGroup, "axisUpButton");
     axisLayout->addWidget(axisUpButton, 2, 1);
     connect(axisUpButton, SIGNAL(clicked()),
             this, SLOT(moveAxisUp()));
 
-    axisDownButton = new QPushButton("Move down", axisGroup, "axisDownButton");
+    axisDownButton = new QPushButton(tr("Move down"), axisGroup, "axisDownButton");
     axisLayout->addWidget(axisDownButton, 3, 1);
     connect(axisDownButton, SIGNAL(clicked()),
             this, SLOT(moveAxisDown()));
 
-    axisResetExtentsButton = new QPushButton("Reset all axis restrictions",
+    axisResetExtentsButton = new QPushButton(tr("Reset all axis restrictions"),
                                            axisGroup,"axisResetExtentsButton");
     axisLayout->addWidget(axisResetExtentsButton, 4, 0);
     connect(axisResetExtentsButton, SIGNAL(clicked()),
@@ -195,7 +198,7 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     //
     // Draw lines, and the needed settings
     //
-    drawLines = new QGroupBox("Draw individual lines",
+    drawLines = new QGroupBox(tr("Draw individual lines"),
                               central, "drawLines");
     drawLines->setCheckable(true);
     connect(drawLines, SIGNAL(toggled(bool)),
@@ -210,14 +213,14 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 
     // Lines color
     linesOnlyIfExtents = new QCheckBox(
-                         "... but only when axis extents have been restricted",
+                         tr("... but only when axis extents have been restricted"),
                                        drawLines, "linesOnlyIfExtents");
     connect(linesOnlyIfExtents, SIGNAL(toggled(bool)),
             this, SLOT(linesOnlyIfExtentsToggled(bool)));
     linesLayout->addMultiCellWidget(linesOnlyIfExtents, 0,0, 0,1);
 
     // Lines color
-    linesColorLabel = new QLabel("Line color", drawLines, "linesColorLabel");
+    linesColorLabel = new QLabel(tr("Line color"), drawLines, "linesColorLabel");
     linesLayout->addWidget(linesColorLabel,1,0);
     linesColor = new QvisColorButton(drawLines, "linesColor");
     connect(linesColor, SIGNAL(selectedColor(const QColor&)),
@@ -227,7 +230,7 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     //
     // Draw context, and the needed settings
     //
-    drawContext = new QGroupBox("Draw context",
+    drawContext = new QGroupBox(tr("Draw context"),
                               central, "drawContext");
     drawContext->setCheckable(true);
     connect(drawContext, SIGNAL(toggled(bool)),
@@ -241,7 +244,7 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     QGridLayout *contextLayout = new QGridLayout(contextSpacingLayout, 3, 3, 5);
 
     // Contex gamma correction
-    contextGammaLabel = new QLabel("Brightness (gamma)",
+    contextGammaLabel = new QLabel(tr("Brightness (gamma)"),
                                    drawContext, "contextGammaLabel");
     contextLayout->addWidget(contextGammaLabel,0,0);
     contextGamma = new QNarrowLineEdit(drawContext, "contextGamma");
@@ -257,7 +260,7 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     contextLayout->addWidget(contextGammaSlider, 0,2);
 
     // Number of partitions
-    contextNumPartitionsLabel = new QLabel("Number of partitions", drawContext,
+    contextNumPartitionsLabel = new QLabel(tr("Number of partitions"), drawContext,
                                            "contextNumPartitionsLabel");
     contextLayout->addWidget(contextNumPartitionsLabel,1,0);
     contextNumPartitions = new QNarrowLineEdit(drawContext,
@@ -274,7 +277,7 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     contextLayout->addWidget(contextNumPartitionsSlider, 1,2);
 
     // Context color
-    contextColorLabel = new QLabel("Context color",
+    contextColorLabel = new QLabel(tr("Context color"),
                                    drawContext, "contextColorLabel");
     contextLayout->addWidget(contextColorLabel,2,0);
     contextColor = new QvisColorButton(drawContext, "contextColor");
@@ -283,7 +286,7 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     contextLayout->addWidget(contextColor, 2,1);
 
     // Unify axis extents
-    unifyAxisExtents = new QCheckBox("Unify the data extents across all axes",
+    unifyAxisExtents = new QCheckBox(tr("Unify the data extents across all axes"),
                                      central, "unifyAxisExtents");
     connect(unifyAxisExtents, SIGNAL(toggled(bool)),
             this, SLOT(unifyAxisExtentsToggled(bool)));
@@ -329,6 +332,9 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //
 //    Kathleen Bonnell, Thu Mar  6 09:47:34 PST 2008
 //    Cannot convert a std::string to a QString on windows, must use .c_str().
+//
+//    Brad Whitlock, Wed Apr 23 10:09:42 PDT 2008
+//    Added tr()
 //
 // ****************************************************************************
 
@@ -376,7 +382,10 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
                 if (atts->GetVisualAxisNames().size() > ax)
                     name = (atts->GetVisualAxisNames()[ax]).c_str();
                 else
-                    name.sprintf("Axis %02d",ax);
+                {
+                    name.sprintf(" %02d",ax);
+                    name = tr("Axis") + name;
+                }
                 QListViewItem *item =
                     new QListViewItem(axisList,
                                       axisList->lastItem(),
@@ -475,7 +484,9 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
 // Creation:   March 16, 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 23 10:10:28 PDT 2008
+//   Added tr()
+//
 // ****************************************************************************
 
 void
@@ -500,9 +511,9 @@ QvisParallelCoordinatesPlotWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of contextGamma was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetContextGamma());
+            msg = tr("The value of contextGamma was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetContextGamma());
             Message(msg);
             atts->SetContextGamma(atts->GetContextGamma());
         }
@@ -524,9 +535,9 @@ QvisParallelCoordinatesPlotWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of contextNumPartitions was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetContextNumPartitions());
+            msg = tr("The value of contextNumPartitions was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetContextNumPartitions());
             Message(msg);
             atts->SetContextNumPartitions(atts->GetContextNumPartitions());
         }

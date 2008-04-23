@@ -65,7 +65,12 @@
 using std::string;
 
 const char *QvisScatterPlotWindow::roleNames[5] = {
-    "X coordinate", "Y coordinate", "Z coordinate", "Color", "None"};
+    QT_TRANSLATE_NOOP( "ScatterPlotRoleNames", "X coordinate" ),
+    QT_TRANSLATE_NOOP( "ScatterPlotRoleNames", "Y coordinate" ),
+    QT_TRANSLATE_NOOP( "ScatterPlotRoleNames", "Z coordinate" ),
+    QT_TRANSLATE_NOOP( "ScatterPlotRoleNames", "Coloe" ),
+    QT_TRANSLATE_NOOP( "ScatterPlotRoleNames", "None" )
+};
 
 // ****************************************************************************
 // Method: QvisScatterPlotWindow::QvisScatterPlotWindow
@@ -123,6 +128,9 @@ QvisScatterPlotWindow::~QvisScatterPlotWindow()
 //   Brad Whitlock, Thu Aug 25 10:06:06 PDT 2005
 //   Added a Sphere option for the point type.
 //
+//   Brad Whitlock, Wed Apr 23 10:32:06 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -141,7 +149,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     //
     QGroupBox *inputGroup = new QGroupBox(central, "inputGroup");
     inputGroup->setFrameStyle(QFrame::NoFrame);
-    topTab->addTab(inputGroup, "Inputs");
+    topTab->addTab(inputGroup, tr("Inputs"));
     QVBoxLayout *inputVeryTopLayout = new QVBoxLayout(inputGroup);
     inputVeryTopLayout->setMargin(10);
     inputVeryTopLayout->setSpacing(5);
@@ -153,14 +161,14 @@ QvisScatterPlotWindow::CreateWindowContents()
     //
     QGroupBox *var1Top = new QGroupBox(inputGroup, "var1Top");
     var1Top->setFrameStyle(QFrame::NoFrame);
-    tabs->addTab(var1Top, "Input 1");
+    tabs->addTab(var1Top, tr("Input 1"));
     QVBoxLayout *var1VeryTopLayout = new QVBoxLayout(var1Top);
     var1VeryTopLayout->setMargin(10);
     var1VeryTopLayout->setSpacing(5);
     QGridLayout *var1TopLayout = new QGridLayout(var1VeryTopLayout,
         6, 2, 10, "var1TopLayout");
 
-    QLabel *var1Label = new QLabel("Variable", var1Top, "var1Label");
+    QLabel *var1Label = new QLabel(tr("Variable"), var1Top, "var1Label");
     var1Label->setEnabled(false);
     var1TopLayout->addWidget(var1Label,0,0);
     QLineEdit *var1 = new QLineEdit(var1Top, "var1");
@@ -176,11 +184,11 @@ QvisScatterPlotWindow::CreateWindowContents()
     connect(var1Role, SIGNAL(activated(int)),
             this, SLOT(var1RoleChanged(int)));
     var1TopLayout->addWidget(var1Role, 1,1);
-    QLabel *var1RoleLabel = new QLabel(var1Role, "Role", var1Top, "var1RoleLabel");
+    QLabel *var1RoleLabel = new QLabel(var1Role, tr("Role"), var1Top, "var1RoleLabel");
     var1TopLayout->addWidget(var1RoleLabel,1,0);
 
     // var1 Min
-    var1MinFlag = new QCheckBox("Min", var1Top, "var1MinFlag");
+    var1MinFlag = new QCheckBox(tr("Min"), var1Top, "var1MinFlag");
     connect(var1MinFlag, SIGNAL(toggled(bool)),
             this, SLOT(var1MinFlagChanged(bool)));
     var1TopLayout->addWidget(var1MinFlag, 2,0);
@@ -190,7 +198,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     var1TopLayout->addWidget(var1Min, 2,1);
 
     // var1 Max
-    var1MaxFlag = new QCheckBox("Max", var1Top, "var1MaxFlag");
+    var1MaxFlag = new QCheckBox(tr("Max"), var1Top, "var1MaxFlag");
     connect(var1MaxFlag, SIGNAL(toggled(bool)),
             this, SLOT(var1MaxFlagChanged(bool)));
     var1TopLayout->addWidget(var1MaxFlag, 3,0);
@@ -199,23 +207,23 @@ QvisScatterPlotWindow::CreateWindowContents()
             this, SLOT(var1MaxProcessText()));
     var1TopLayout->addWidget(var1Max, 3,1);
 
-    var1ScalingLabel = new QLabel("Scale", var1Top, "var1ScalingLabel");
+    var1ScalingLabel = new QLabel(tr("Scale"), var1Top, "var1ScalingLabel");
     var1TopLayout->addWidget(var1ScalingLabel,4,0);
     var1Scaling = new QButtonGroup(var1Top, "var1Scaling");
     var1Scaling->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *var1ScalingLayout = new QHBoxLayout(var1Scaling);
     var1ScalingLayout->setSpacing(10);
-    QRadioButton *var1ScalingScalingLinear = new QRadioButton("Linear", var1Scaling);
+    QRadioButton *var1ScalingScalingLinear = new QRadioButton(tr("Linear"), var1Scaling);
     var1ScalingLayout->addWidget(var1ScalingScalingLinear);
-    QRadioButton *var1ScalingScalingLog = new QRadioButton("Log", var1Scaling);
+    QRadioButton *var1ScalingScalingLog = new QRadioButton(tr("Log"), var1Scaling);
     var1ScalingLayout->addWidget(var1ScalingScalingLog);
-    QRadioButton *var1ScalingScalingSkew = new QRadioButton("Skew", var1Scaling);
+    QRadioButton *var1ScalingScalingSkew = new QRadioButton(tr("Skew"), var1Scaling);
     var1ScalingLayout->addWidget(var1ScalingScalingSkew);
     connect(var1Scaling, SIGNAL(clicked(int)),
             this, SLOT(var1ScalingChanged(int)));
     var1TopLayout->addWidget(var1Scaling, 4,1);
 
-    var1SkewFactorLabel = new QLabel("Skew factor", var1Top, "var1SkewFactorLabel");
+    var1SkewFactorLabel = new QLabel(tr("Skew factor"), var1Top, "var1SkewFactorLabel");
     var1TopLayout->addWidget(var1SkewFactorLabel,5,0);
     var1SkewFactor = new QLineEdit(var1Top, "var1SkewFactor");
     connect(var1SkewFactor, SIGNAL(returnPressed()),
@@ -228,14 +236,14 @@ QvisScatterPlotWindow::CreateWindowContents()
     //
     QGroupBox *var2Top = new QGroupBox(inputGroup, "var2Top");
     var2Top->setFrameStyle(QFrame::NoFrame);
-    tabs->addTab(var2Top, "Input 2");
+    tabs->addTab(var2Top, tr("Input 2"));
     QVBoxLayout *var2VeryTopLayout = new QVBoxLayout(var2Top);
     var2VeryTopLayout->setMargin(10);
     var2VeryTopLayout->setSpacing(5);
     QGridLayout *var2TopLayout = new QGridLayout(var2VeryTopLayout,
         6, 2, 10, "var2TopLayout");
 
-    var2Label = new QLabel("Variable", var2Top, "var2Label");
+    var2Label = new QLabel(tr("Variable"), var2Top, "var2Label");
     var2TopLayout->addWidget(var2Label,0,0);
 
     // Create a variable button
@@ -251,11 +259,11 @@ QvisScatterPlotWindow::CreateWindowContents()
     connect(var2Role, SIGNAL(activated(int)),
             this, SLOT(var2RoleChanged(int)));
     var2TopLayout->addWidget(var2Role, 1,1);
-    QLabel *var2RoleLabel = new QLabel(var2Role, "Role", var2Top, "var2RoleLabel");
+    QLabel *var2RoleLabel = new QLabel(var2Role, tr("Role"), var2Top, "var2RoleLabel");
     var2TopLayout->addWidget(var2RoleLabel,1,0);
 
     // var2 Min
-    var2MinFlag = new QCheckBox("Min", var2Top, "var2MinFlag");
+    var2MinFlag = new QCheckBox(tr("Min"), var2Top, "var2MinFlag");
     connect(var2MinFlag, SIGNAL(toggled(bool)),
             this, SLOT(var2MinFlagChanged(bool)));
     var2TopLayout->addWidget(var2MinFlag, 2,0);
@@ -265,7 +273,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     var2TopLayout->addWidget(var2Min, 2,1);
 
     // var2 Max
-    var2MaxFlag = new QCheckBox("Max", var2Top, "var2MaxFlag");
+    var2MaxFlag = new QCheckBox(tr("Max"), var2Top, "var2MaxFlag");
     connect(var2MaxFlag, SIGNAL(toggled(bool)),
             this, SLOT(var2MaxFlagChanged(bool)));
     var2TopLayout->addWidget(var2MaxFlag, 3,0);
@@ -274,23 +282,23 @@ QvisScatterPlotWindow::CreateWindowContents()
             this, SLOT(var2MaxProcessText()));
     var2TopLayout->addWidget(var2Max, 3,1);
 
-    var2ScalingLabel = new QLabel("Scale", var2Top, "var2ScalingLabel");
+    var2ScalingLabel = new QLabel(tr("Scale"), var2Top, "var2ScalingLabel");
     var2TopLayout->addWidget(var2ScalingLabel,4,0);
     var2Scaling = new QButtonGroup(var2Top, "var2Scaling");
     var2Scaling->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *var2ScalingLayout = new QHBoxLayout(var2Scaling);
     var2ScalingLayout->setSpacing(10);
-    QRadioButton *var2ScalingScalingLinear = new QRadioButton("Linear", var2Scaling);
+    QRadioButton *var2ScalingScalingLinear = new QRadioButton(tr("Linear"), var2Scaling);
     var2ScalingLayout->addWidget(var2ScalingScalingLinear);
-    QRadioButton *var2ScalingScalingLog = new QRadioButton("Log", var2Scaling);
+    QRadioButton *var2ScalingScalingLog = new QRadioButton(tr("Log"), var2Scaling);
     var2ScalingLayout->addWidget(var2ScalingScalingLog);
-    QRadioButton *var2ScalingScalingSkew = new QRadioButton("Skew", var2Scaling);
+    QRadioButton *var2ScalingScalingSkew = new QRadioButton(tr("Skew"), var2Scaling);
     var2ScalingLayout->addWidget(var2ScalingScalingSkew);
     connect(var2Scaling, SIGNAL(clicked(int)),
             this, SLOT(var2ScalingChanged(int)));
     var2TopLayout->addWidget(var2Scaling, 4,1);
 
-    var2SkewFactorLabel = new QLabel("Skew factor", var2Top, "var2SkewFactorLabel");
+    var2SkewFactorLabel = new QLabel(tr("Skew factor"), var2Top, "var2SkewFactorLabel");
     var2TopLayout->addWidget(var2SkewFactorLabel,5,0);
     var2SkewFactor = new QLineEdit(var2Top, "var2SkewFactor");
     connect(var2SkewFactor, SIGNAL(returnPressed()),
@@ -302,14 +310,14 @@ QvisScatterPlotWindow::CreateWindowContents()
     //
     QGroupBox *var3Top = new QGroupBox(inputGroup, "var3Top");
     var3Top->setFrameStyle(QFrame::NoFrame);
-    tabs->addTab(var3Top, "Input 3");
+    tabs->addTab(var3Top, tr("Input 3"));
     QVBoxLayout *var3VeryTopLayout = new QVBoxLayout(var3Top);
     var3VeryTopLayout->setMargin(10);
     var3VeryTopLayout->setSpacing(5);
     QGridLayout *var3TopLayout = new QGridLayout(var3VeryTopLayout,
         6, 2, 10, "var3TopLayout");
 
-    var3Label = new QLabel("Variable", var3Top, "var3Label");
+    var3Label = new QLabel(tr("Variable"), var3Top, "var3Label");
     var3TopLayout->addWidget(var3Label,0,0);
 
     // Create a variable button.
@@ -325,11 +333,11 @@ QvisScatterPlotWindow::CreateWindowContents()
     connect(var3Role, SIGNAL(activated(int)),
             this, SLOT(var3RoleChanged(int)));
     var3TopLayout->addWidget(var3Role, 1,1);
-    QLabel *var3RoleLabel = new QLabel(var3Role, "Role", var3Top, "var3RoleLabel");
+    QLabel *var3RoleLabel = new QLabel(var3Role, tr("Role"), var3Top, "var3RoleLabel");
     var3TopLayout->addWidget(var3RoleLabel,1,0);
 
     // var3 Min
-    var3MinFlag = new QCheckBox("Min", var3Top, "var3MinFlag");
+    var3MinFlag = new QCheckBox(tr("Min"), var3Top, "var3MinFlag");
     connect(var3MinFlag, SIGNAL(toggled(bool)),
             this, SLOT(var3MinFlagChanged(bool)));
     var3TopLayout->addWidget(var3MinFlag, 2,0);
@@ -339,7 +347,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     var3TopLayout->addWidget(var3Min, 2,1);
 
     // var3 Max
-    var3MaxFlag = new QCheckBox("Max", var3Top, "var3MaxFlag");
+    var3MaxFlag = new QCheckBox(tr("Max"), var3Top, "var3MaxFlag");
     connect(var3MaxFlag, SIGNAL(toggled(bool)),
             this, SLOT(var3MaxFlagChanged(bool)));
     var3TopLayout->addWidget(var3MaxFlag, 3,0);
@@ -348,23 +356,23 @@ QvisScatterPlotWindow::CreateWindowContents()
             this, SLOT(var3MaxProcessText()));
     var3TopLayout->addWidget(var3Max, 3,1);
 
-    var3ScalingLabel = new QLabel("Scale", var3Top, "var3ScalingLabel");
+    var3ScalingLabel = new QLabel(tr("Scale"), var3Top, "var3ScalingLabel");
     var3TopLayout->addWidget(var3ScalingLabel,4,0);
     var3Scaling = new QButtonGroup(var3Top, "var3Scaling");
     var3Scaling->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *var3ScalingLayout = new QHBoxLayout(var3Scaling);
     var3ScalingLayout->setSpacing(10);
-    QRadioButton *var3ScalingScalingLinear = new QRadioButton("Linear", var3Scaling);
+    QRadioButton *var3ScalingScalingLinear = new QRadioButton(tr("Linear"), var3Scaling);
     var3ScalingLayout->addWidget(var3ScalingScalingLinear);
-    QRadioButton *var3ScalingScalingLog = new QRadioButton("Log", var3Scaling);
+    QRadioButton *var3ScalingScalingLog = new QRadioButton(tr("Log"), var3Scaling);
     var3ScalingLayout->addWidget(var3ScalingScalingLog);
-    QRadioButton *var3ScalingScalingSkew = new QRadioButton("Skew", var3Scaling);
+    QRadioButton *var3ScalingScalingSkew = new QRadioButton(tr("Skew"), var3Scaling);
     var3ScalingLayout->addWidget(var3ScalingScalingSkew);
     connect(var3Scaling, SIGNAL(clicked(int)),
             this, SLOT(var3ScalingChanged(int)));
     var3TopLayout->addWidget(var3Scaling, 4,1);
 
-    var3SkewFactorLabel = new QLabel("Skew factor", var3Top, "var3SkewFactorLabel");
+    var3SkewFactorLabel = new QLabel(tr("Skew factor"), var3Top, "var3SkewFactorLabel");
     var3TopLayout->addWidget(var3SkewFactorLabel,5,0);
     var3SkewFactor = new QLineEdit(var3Top, "var3SkewFactor");
     connect(var3SkewFactor, SIGNAL(returnPressed()),
@@ -377,14 +385,14 @@ QvisScatterPlotWindow::CreateWindowContents()
     //
     QGroupBox *var4Top = new QGroupBox(inputGroup, "var4Top");
     var4Top->setFrameStyle(QFrame::NoFrame);
-    tabs->addTab(var4Top, "Input 4");
+    tabs->addTab(var4Top, tr("Input 4"));
     QVBoxLayout *var4VeryTopLayout = new QVBoxLayout(var4Top);
     var4VeryTopLayout->setMargin(10);
     var4VeryTopLayout->setSpacing(5);
     QGridLayout *var4TopLayout = new QGridLayout(var4VeryTopLayout,
         6, 2, 10, "var4TopLayout");
 
-    var4Label = new QLabel("Variable", var4Top, "var4Label");
+    var4Label = new QLabel(tr("Variable"), var4Top, "var4Label");
     var4TopLayout->addWidget(var4Label,0,0);
 
     // Create a variable button.
@@ -400,11 +408,11 @@ QvisScatterPlotWindow::CreateWindowContents()
     connect(var4Role, SIGNAL(activated(int)),
             this, SLOT(var4RoleChanged(int)));
     var4TopLayout->addWidget(var4Role, 1,1);
-    QLabel *var4RoleLabel = new QLabel(var4Role, "Role", var4Top, "var4RoleLabel");
+    QLabel *var4RoleLabel = new QLabel(var4Role, tr("Role"), var4Top, "var4RoleLabel");
     var4TopLayout->addWidget(var4RoleLabel,1,0);
 
     // var4 Min
-    var4MinFlag = new QCheckBox("Min", var4Top, "var4MinFlag");
+    var4MinFlag = new QCheckBox(tr("Min"), var4Top, "var4MinFlag");
     connect(var4MinFlag, SIGNAL(toggled(bool)),
             this, SLOT(var4MinFlagChanged(bool)));
     var4TopLayout->addWidget(var4MinFlag, 2,0);
@@ -414,7 +422,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     var4TopLayout->addWidget(var4Min, 2,1);
 
     // var4 Max
-    var4MaxFlag = new QCheckBox("Max", var4Top, "var4MaxFlag");
+    var4MaxFlag = new QCheckBox(tr("Max"), var4Top, "var4MaxFlag");
     connect(var4MaxFlag, SIGNAL(toggled(bool)),
             this, SLOT(var4MaxFlagChanged(bool)));
     var4TopLayout->addWidget(var4MaxFlag, 3,0);
@@ -423,23 +431,23 @@ QvisScatterPlotWindow::CreateWindowContents()
             this, SLOT(var4MaxProcessText()));
     var4TopLayout->addWidget(var4Max, 3,1);
 
-    var4ScalingLabel = new QLabel("Scale", var4Top, "var4ScalingLabel");
+    var4ScalingLabel = new QLabel(tr("Scale"), var4Top, "var4ScalingLabel");
     var4TopLayout->addWidget(var4ScalingLabel,4,0);
     var4Scaling = new QButtonGroup(var4Top, "var4Scaling");
     var4Scaling->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *var4ScalingLayout = new QHBoxLayout(var4Scaling);
     var4ScalingLayout->setSpacing(10);
-    QRadioButton *var4ScalingScalingLinear = new QRadioButton("Linear", var4Scaling);
+    QRadioButton *var4ScalingScalingLinear = new QRadioButton(tr("Linear"), var4Scaling);
     var4ScalingLayout->addWidget(var4ScalingScalingLinear);
-    QRadioButton *var4ScalingScalingLog = new QRadioButton("Log", var4Scaling);
+    QRadioButton *var4ScalingScalingLog = new QRadioButton(tr("Log"), var4Scaling);
     var4ScalingLayout->addWidget(var4ScalingScalingLog);
-    QRadioButton *var4ScalingScalingSkew = new QRadioButton("Skew", var4Scaling);
+    QRadioButton *var4ScalingScalingSkew = new QRadioButton(tr("Skew"), var4Scaling);
     var4ScalingLayout->addWidget(var4ScalingScalingSkew);
     connect(var4Scaling, SIGNAL(clicked(int)),
             this, SLOT(var4ScalingChanged(int)));
     var4TopLayout->addWidget(var4Scaling, 4,1);
 
-    var4SkewFactorLabel = new QLabel("Skew factor", var4Top, "var4SkewFactorLabel");
+    var4SkewFactorLabel = new QLabel(tr("Skew factor"), var4Top, "var4SkewFactorLabel");
     var4TopLayout->addWidget(var4SkewFactorLabel,5,0);
     var4SkewFactor = new QLineEdit(var4Top, "var4SkewFactor");
     connect(var4SkewFactor, SIGNAL(returnPressed()),
@@ -451,7 +459,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     //
     QGroupBox *appearanceGroup = new QGroupBox(central, "appearanceGroup");
     appearanceGroup->setFrameStyle(QFrame::NoFrame);
-    topTab->addTab(appearanceGroup, "Appearance");
+    topTab->addTab(appearanceGroup, tr("Appearance"));
     QVBoxLayout *aTopLayout = new QVBoxLayout(appearanceGroup, 10, 2);
     aTopLayout->addSpacing(10);
     QGridLayout *aLayout = new QGridLayout(aTopLayout, 5, 2);
@@ -462,20 +470,20 @@ QvisScatterPlotWindow::CreateWindowContents()
     connect(pointSize, SIGNAL(returnPressed()),
             this, SLOT(pointSizeProcessText()));
     aLayout->addWidget(pointSize, 0, 1);
-    pointSizeLabel = new QLabel(pointSize, "Point size",
+    pointSizeLabel = new QLabel(pointSize, tr("Point size"),
         appearanceGroup, "pointSizeLabel");
     aLayout->addWidget(pointSizeLabel, 0, 0);
 
     pointType = new QComboBox(appearanceGroup, "pointType");
-    pointType->insertItem("Box");
-    pointType->insertItem("Axis");
-    pointType->insertItem("Icosahedron");
-    pointType->insertItem("Point");
-    pointType->insertItem("Sphere");
+    pointType->insertItem(tr("Box"));
+    pointType->insertItem(tr("Axis"));
+    pointType->insertItem(tr("Icosahedron"));
+    pointType->insertItem(tr("Point"));
+    pointType->insertItem(tr("Sphere"));
     connect(pointType, SIGNAL(activated(int)),
             this, SLOT(pointTypeChanged(int)));
     aLayout->addWidget(pointType, 1, 1);
-    QLabel *pointTypeLabel = new QLabel(pointType, "Point Type",
+    QLabel *pointTypeLabel = new QLabel(pointType, tr("Point Type"),
         appearanceGroup, "pointTypeLabel");
     aLayout->addWidget(pointTypeLabel, 1, 0);
 
@@ -483,7 +491,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
             this, SLOT(colorTableNameChanged(bool, const QString&)));
     aLayout->addWidget(colorTableName, 2, 1);
-    QLabel *colorTableNameLabel = new QLabel(colorTableName, "Color table",
+    QLabel *colorTableNameLabel = new QLabel(colorTableName, tr("Color table"),
         appearanceGroup, "colorTableNameLabel");
     aLayout->addWidget(colorTableNameLabel, 2, 0);
 
@@ -492,18 +500,18 @@ QvisScatterPlotWindow::CreateWindowContents()
     connect(singleColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(singleColorChanged(const QColor&)));
 
-    singleColorLabel = new QLabel(singleColor, "Single color",
+    singleColorLabel = new QLabel(singleColor, tr("Single color"),
         appearanceGroup, "singleColorLabel");
 
     scBox->setSpacing(10);
-    foregroundFlag = new QCheckBox("Use foreground ", scBox, "foregroundFlag");
+    foregroundFlag = new QCheckBox(tr("Use foreground "), scBox, "foregroundFlag");
     connect(foregroundFlag, SIGNAL(toggled(bool)),
             this, SLOT(foregroundFlagChanged(bool)));
     aLayout->addWidget(scBox, 3, 1);
     aLayout->addWidget(singleColorLabel, 3, 0);
 //    aLayout->addWidget(foregroundFlag);
 
-    scaleCube = new QCheckBox("Scale to cube", appearanceGroup, "scaleCube");
+    scaleCube = new QCheckBox(tr("Scale to cube"), appearanceGroup, "scaleCube");
     connect(scaleCube, SIGNAL(toggled(bool)),
             this, SLOT(scaleCubeChanged(bool)));
     aLayout->addMultiCellWidget(scaleCube, 4, 4, 0, 1);
@@ -512,24 +520,24 @@ QvisScatterPlotWindow::CreateWindowContents()
     // Role labels.
     //
     QGroupBox *roleGroup = new QGroupBox(central, "roleGroup");
-    roleGroup->setTitle("Roles");
+    roleGroup->setTitle(tr("Roles"));
     topLayout->addWidget(roleGroup);
     QVBoxLayout *roleTopLayout = new QVBoxLayout(roleGroup, 10, 2);
     roleTopLayout->addSpacing(10);
     QGridLayout *roleLayout = new QGridLayout(roleTopLayout, 2, 2);
     roleLayout->setSpacing(5);
-    xCoordRoleLabel = new QLabel("X coordinate:    ", roleGroup, "xCoordRoleLabel");
+    xCoordRoleLabel = new QLabel(tr("X coordinate:    "), roleGroup, "xCoordRoleLabel");
     roleLayout->addWidget(xCoordRoleLabel, 0, 0);
-    yCoordRoleLabel = new QLabel("Y coordinate:    ", roleGroup, "yCoordRoleLabel");
+    yCoordRoleLabel = new QLabel(tr("Y coordinate:    "), roleGroup, "yCoordRoleLabel");
     roleLayout->addWidget(yCoordRoleLabel, 1, 0);
-    zCoordRoleLabel = new QLabel("Z coordinate:    ", roleGroup, "zCoordRoleLabel");
+    zCoordRoleLabel = new QLabel(tr("Z coordinate:    "), roleGroup, "zCoordRoleLabel");
     roleLayout->addWidget(zCoordRoleLabel, 0, 1);
-    colorRoleLabel = new QLabel("Color:    ", roleGroup, "colorRoleLabel");
+    colorRoleLabel = new QLabel(tr("Color:    "), roleGroup, "colorRoleLabel");
     roleLayout->addWidget(colorRoleLabel, 1, 1);
 
 
 
-    legendFlag = new QCheckBox("Legend", central, "legendFlag");
+    legendFlag = new QCheckBox(tr("Legend"), central, "legendFlag");
     connect(legendFlag, SIGNAL(toggled(bool)),
             this, SLOT(legendFlagChanged(bool)));
     topLayout->addWidget(legendFlag);
@@ -825,13 +833,13 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
         {
             temp.sprintf("%g", atts->GetPointSize());
             pointSize->setText(temp);
-            pointSizeLabel->setText("Point size");
+            pointSizeLabel->setText(tr("Point size"));
         }
         else
         {
             temp.sprintf("%d", atts->GetPointSizePixels());
             pointSize->setText(temp);
-            pointSizeLabel->setText("Point size (pixels)");
+            pointSizeLabel->setText(tr("Point size (pixels)"));
         }
     }
 
@@ -912,6 +920,9 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Thu Aug 25 10:08:02 PDT 2005
 //   Added the Sphere point type.
 //
+//   Brad Whitlock, Wed Apr 23 10:52:14 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -928,14 +939,15 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar1Min(val);
+            if(okay)
+                atts->SetVar1Min(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var1Min was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar1Min());
+            msg = tr("The value of var1Min was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar1Min());
             Message(msg);
             atts->SetVar1Min(atts->GetVar1Min());
         }
@@ -949,14 +961,15 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar1Max(val);
+            if(okay)
+                atts->SetVar1Max(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var1Max was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar1Max());
+            msg = tr("The value of var1Max was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar1Max());
             Message(msg);
             atts->SetVar1Max(atts->GetVar1Max());
         }
@@ -970,14 +983,15 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar1SkewFactor(val);
+            if(okay)
+                atts->SetVar1SkewFactor(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var1SkewFactor was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar1SkewFactor());
+            msg = tr("The value of var1SkewFactor was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar1SkewFactor());
             Message(msg);
             atts->SetVar1SkewFactor(atts->GetVar1SkewFactor());
         }
@@ -991,14 +1005,15 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar2Min(val);
+            if(okay)
+                atts->SetVar2Min(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var2Min was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar2Min());
+            msg = tr("The value of var2Min was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar2Min());
             Message(msg);
             atts->SetVar2Min(atts->GetVar2Min());
         }
@@ -1012,14 +1027,15 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar2Max(val);
+            if(okay)
+                atts->SetVar2Max(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var2Max was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar2Max());
+            msg = tr("The value of var2Max was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar2Max());
             Message(msg);
             atts->SetVar2Max(atts->GetVar2Max());
         }
@@ -1033,14 +1049,15 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar2SkewFactor(val);
+            if(okay)
+                atts->SetVar2SkewFactor(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var2SkewFactor was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar2SkewFactor());
+            msg = tr("The value of var2SkewFactor was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar2SkewFactor());
             Message(msg);
             atts->SetVar2SkewFactor(atts->GetVar2SkewFactor());
         }
@@ -1054,14 +1071,15 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar3Min(val);
+            if(okay)
+                atts->SetVar3Min(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var3Min was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar3Min());
+            msg = tr("The value of var3Min was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar3Min());
             Message(msg);
             atts->SetVar3Min(atts->GetVar3Min());
         }
@@ -1075,14 +1093,15 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar3Max(val);
+            if(okay)
+                atts->SetVar3Max(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var3Max was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar3Max());
+            msg = tr("The value of var3Max was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar3Max());
             Message(msg);
             atts->SetVar3Max(atts->GetVar3Max());
         }
@@ -1096,14 +1115,15 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar3SkewFactor(val);
+            if(okay)
+                atts->SetVar3SkewFactor(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var3SkewFactor was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar3SkewFactor());
+            msg = tr("The value of var3SkewFactor was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar3SkewFactor());
             Message(msg);
             atts->SetVar3SkewFactor(atts->GetVar3SkewFactor());
         }
@@ -1117,14 +1137,15 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar4Min(val);
+            if(okay)
+                atts->SetVar4Min(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var4Min was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar4Min());
+            msg = tr("The value of var4Min was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar4Min());
             Message(msg);
             atts->SetVar4Min(atts->GetVar4Min());
         }
@@ -1138,14 +1159,15 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar4Max(val);
+            if(okay)
+                atts->SetVar4Max(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var4Max was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar4Max());
+            msg = tr("The value of var4Max was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar4Max());
             Message(msg);
             atts->SetVar4Max(atts->GetVar4Max());
         }
@@ -1159,14 +1181,15 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar4SkewFactor(val);
+            if(okay)
+                atts->SetVar4SkewFactor(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var4SkewFactor was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar4SkewFactor());
+            msg = tr("The value of var4SkewFactor was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar4SkewFactor());
             Message(msg);
             atts->SetVar4SkewFactor(atts->GetVar4SkewFactor());
         }
@@ -1188,9 +1211,9 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
 
             if(!okay)
             {
-                msg.sprintf("The value of pointSizePixels was invalid. "
-                    "Resetting to the last good value of %d.",
-                    atts->GetPointSizePixels());
+                msg = tr("The value of pointSizePixels was invalid. "
+                         "Resetting to the last good value of %1.").
+                      arg(atts->GetPointSizePixels());
                 Message(msg);
                 atts->SetPointSizePixels(atts->GetPointSizePixels());
             }
@@ -1205,9 +1228,9 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
 
             if(!okay)
             {
-                msg.sprintf("The value of pointSize was invalid. "
-                    "Resetting to the last good value of %g.",
-                    atts->GetPointSize());
+                msg = tr("The value of pointSize was invalid. "
+                         "Resetting to the last good value of %1.").
+                      arg(atts->GetPointSize());
                 Message(msg);
                 atts->SetPointSize(atts->GetPointSize());
             }
@@ -1253,7 +1276,9 @@ QvisScatterPlotWindow::Apply(bool ignore)
 // Creation:   Tue Dec 14 10:05:25 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 23 10:58:01 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1290,11 +1315,11 @@ QvisScatterPlotWindow::EnsureUniqueRole(int mask, int val, const char *var)
     if(changed)
     {
         QString msg;
-        msg.sprintf("The %s role was being fulfilled by another input "
-                    "variable. To ensure that the %s role is fulfilled by "
-                    "the %s variable, the other variable's role has been "
-                    "set to None.", roleNames[val], roleNames[val],
-                    var);
+        msg = tr("The %1 role was being fulfilled by another input "
+                 "variable. To ensure that the %2 role is fulfilled by "
+                 "the %3 variable, the other variable's role has been "
+                 "set to None.").arg(roleNames[val]).arg(roleNames[val]).arg(var);
+
         Warning(msg);
     }
 }

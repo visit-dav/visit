@@ -119,6 +119,9 @@ QvisMoleculePlotWindow::~QvisMoleculePlotWindow()
 //   Brad Whitlock, Mon Mar 27 17:35:07 PST 2006
 //   Added sphere imposters.
 //
+//   Brad Whitlock, Wed Apr 23 10:01:15 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -135,44 +138,44 @@ QvisMoleculePlotWindow::CreateWindowContents()
     // ------------------------------------------------------------------------
     QGroupBox *atomsGroup = new QGroupBox(central, "atomsGroup");
     atomsGroup->setFrameStyle(QFrame::NoFrame);
-    topTab->addTab(atomsGroup, "Atoms");
+    topTab->addTab(atomsGroup, tr("Atoms"));
 
     QGridLayout *atomsLayout = new QGridLayout(atomsGroup, 5,3,  5,10, "atomsLayout");
 
-    drawAtomsAsLabel = new QLabel("Draw atoms as", atomsGroup, "drawAtomsAsLabel");
+    drawAtomsAsLabel = new QLabel(tr("Draw atoms as"), atomsGroup, "drawAtomsAsLabel");
     atomsLayout->addMultiCellWidget(drawAtomsAsLabel, 0,0, 0,1);
     drawAtomsAs = new QComboBox(atomsGroup, "drawAtomsAs");
-    drawAtomsAs->insertItem("None");
-    drawAtomsAs->insertItem("Spheres");
-    drawAtomsAs->insertItem("Sphere imposters");
+    drawAtomsAs->insertItem(tr("None"));
+    drawAtomsAs->insertItem(tr("Spheres"));
+    drawAtomsAs->insertItem(tr("Sphere imposters"));
     connect(drawAtomsAs, SIGNAL(activated(int)),
             this, SLOT(drawAtomsAsChanged(int)));
     atomsLayout->addWidget(drawAtomsAs, 0,2);
     
 
-    atomSphereQualityLabel = new QLabel("Atom sphere quality", atomsGroup, "atomSphereQualityLabel");
+    atomSphereQualityLabel = new QLabel(tr("Atom sphere quality"), atomsGroup, "atomSphereQualityLabel");
     atomsLayout->addMultiCellWidget(atomSphereQualityLabel,1,1, 0,1);
     atomSphereQuality = new QComboBox(atomsGroup, "atomSphereQuality");
-    atomSphereQuality->insertItem("Low");
-    atomSphereQuality->insertItem("Medium");
-    atomSphereQuality->insertItem("High");
-    atomSphereQuality->insertItem("Super");
+    atomSphereQuality->insertItem(tr("Low"));
+    atomSphereQuality->insertItem(tr("Medium"));
+    atomSphereQuality->insertItem(tr("High"));
+    atomSphereQuality->insertItem(tr("Super"));
     connect(atomSphereQuality, SIGNAL(activated(int)),
             this, SLOT(atomSphereQualityChanged(int)));
     atomsLayout->addWidget(atomSphereQuality, 1,2);
 
-    scaleRadiusByLabel = new QLabel("Radius based on", atomsGroup, "scaleRadiusByLabel");
+    scaleRadiusByLabel = new QLabel(tr("Radius based on"), atomsGroup, "scaleRadiusByLabel");
     atomsLayout->addMultiCellWidget(scaleRadiusByLabel, 2,2, 0,1);
     scaleRadiusBy = new QComboBox(atomsGroup, "scaleRadiusBy");
-    scaleRadiusBy->insertItem("Fixed value");
-    scaleRadiusBy->insertItem("Covalent radius");
-    scaleRadiusBy->insertItem("Atomic radius");
-    scaleRadiusBy->insertItem("Scalar variable");
+    scaleRadiusBy->insertItem(tr("Fixed value"));
+    scaleRadiusBy->insertItem(tr("Covalent radius"));
+    scaleRadiusBy->insertItem(tr("Atomic radius"));
+    scaleRadiusBy->insertItem(tr("Scalar variable"));
     connect(scaleRadiusBy, SIGNAL(activated(int)),
             this, SLOT(scaleRadiusByChanged(int)));
     atomsLayout->addWidget(scaleRadiusBy, 2,2);
 
-    radiusVariableLabel = new QLabel("Variable for atom radius", atomsGroup, "radiusVariableLabel");
+    radiusVariableLabel = new QLabel(tr("Variable for atom radius"), atomsGroup, "radiusVariableLabel");
     atomsLayout->addWidget(radiusVariableLabel,3,1);
     int radiusVariableMask = QvisVariableButton::Scalars;
     radiusVariable = new QvisVariableButton(true, true, true, radiusVariableMask, atomsGroup, "radiusVariable");
@@ -180,14 +183,14 @@ QvisMoleculePlotWindow::CreateWindowContents()
             this, SLOT(radiusVariableChanged(const QString&)));
     atomsLayout->addWidget(radiusVariable, 3,2);
 
-    radiusScaleFactorLabel = new QLabel("Atom radius scale factor", atomsGroup, "radiusScaleFactorLabel");
+    radiusScaleFactorLabel = new QLabel(tr("Atom radius scale factor"), atomsGroup, "radiusScaleFactorLabel");
     atomsLayout->addWidget(radiusScaleFactorLabel,4,1);
     radiusScaleFactor = new QLineEdit(atomsGroup, "radiusScaleFactor");
     connect(radiusScaleFactor, SIGNAL(returnPressed()),
             this, SLOT(radiusScaleFactorProcessText()));
     atomsLayout->addWidget(radiusScaleFactor, 4,2);
 
-    radiusFixedLabel = new QLabel("Fixed atom radius", atomsGroup, "radiusFixedLabel");
+    radiusFixedLabel = new QLabel(tr("Fixed atom radius"), atomsGroup, "radiusFixedLabel");
     atomsLayout->addWidget(radiusFixedLabel,5,1);
     radiusFixed = new QLineEdit(atomsGroup, "radiusFixed");
     connect(radiusFixed, SIGNAL(returnPressed()),
@@ -201,35 +204,35 @@ QvisMoleculePlotWindow::CreateWindowContents()
     // ------------------------------------------------------------------------
     QGroupBox *bondsGroup = new QGroupBox(central, "bondsGroup");
     bondsGroup->setFrameStyle(QFrame::NoFrame);
-    topTab->addTab(bondsGroup, "Bonds");
+    topTab->addTab(bondsGroup, tr("Bonds"));
 
     QGridLayout *bondsLayout = new QGridLayout(bondsGroup, 6,3,  5,10, "bondsLayout");
 
     int row = 0;
-    drawBondsAsLabel = new QLabel("Draw bonds as", bondsGroup, "drawBondsAsLabel");
+    drawBondsAsLabel = new QLabel(tr("Draw bonds as"), bondsGroup, "drawBondsAsLabel");
     bondsLayout->addMultiCellWidget(drawBondsAsLabel, row,row, 0,1);
     drawBondsAs = new QComboBox(bondsGroup, "drawBondsAs");
-    drawBondsAs->insertItem("None");
-    drawBondsAs->insertItem("Lines");
-    drawBondsAs->insertItem("Cylinders");
+    drawBondsAs->insertItem(tr("None"));
+    drawBondsAs->insertItem(tr("Lines"));
+    drawBondsAs->insertItem(tr("Cylinders"));
     connect(drawBondsAs, SIGNAL(activated(int)),
             this, SLOT(drawBondsAsChanged(int)));
     bondsLayout->addWidget(drawBondsAs, row,2);
     row++;
 
-    bondCylinderQualityLabel = new QLabel("Bond cylinder quality", bondsGroup, "bondCylinderQualityLabel");
+    bondCylinderQualityLabel = new QLabel(tr("Bond cylinder quality"), bondsGroup, "bondCylinderQualityLabel");
     bondsLayout->addWidget(bondCylinderQualityLabel, row,1);
     bondCylinderQuality = new QComboBox(bondsGroup, "bondCylinderQuality");
-    bondCylinderQuality->insertItem("Low");
-    bondCylinderQuality->insertItem("Medium");
-    bondCylinderQuality->insertItem("High");
-    bondCylinderQuality->insertItem("Super");
+    bondCylinderQuality->insertItem(tr("Low"));
+    bondCylinderQuality->insertItem(tr("Medium"));
+    bondCylinderQuality->insertItem(tr("High"));
+    bondCylinderQuality->insertItem(tr("Super"));
     connect(bondCylinderQuality, SIGNAL(activated(int)),
             this, SLOT(bondCylinderQualityChanged(int)));
     bondsLayout->addWidget(bondCylinderQuality, row,2);
     row++;
 
-    bondRadiusLabel = new QLabel("Bond radius", bondsGroup, "bondRadiusLabel");
+    bondRadiusLabel = new QLabel(tr("Bond radius"), bondsGroup, "bondRadiusLabel");
     bondsLayout->addWidget(bondRadiusLabel, row,1);
     bondRadius = new QLineEdit(bondsGroup, "bondRadius");
     connect(bondRadius, SIGNAL(returnPressed()),
@@ -237,7 +240,7 @@ QvisMoleculePlotWindow::CreateWindowContents()
     bondsLayout->addWidget(bondRadius, row,2);
     row++;
 
-    bondLineWidthLabel = new QLabel("Bond line width", bondsGroup, "bondLineWidthLabel");
+    bondLineWidthLabel = new QLabel(tr("Bond line width"), bondsGroup, "bondLineWidthLabel");
     bondsLayout->addWidget(bondLineWidthLabel, row,1);
     bondLineWidth = new QvisLineWidthWidget(0, bondsGroup, "bondLineWidth");
     connect(bondLineWidth, SIGNAL(lineWidthChanged(int)),
@@ -245,7 +248,7 @@ QvisMoleculePlotWindow::CreateWindowContents()
     bondsLayout->addWidget(bondLineWidth, row,2);
     row++;
 
-    bondLineStyleLabel = new QLabel("Bond line style", bondsGroup, "bondLineStyleLabel");
+    bondLineStyleLabel = new QLabel(tr("Bond line style"), bondsGroup, "bondLineStyleLabel");
     bondsLayout->addWidget(bondLineStyleLabel, row,1);
     bondLineStyle = new QvisLineStyleWidget(0, bondsGroup, "bondLineStyle");
     connect(bondLineStyle, SIGNAL(lineStyleChanged(int)),
@@ -253,16 +256,16 @@ QvisMoleculePlotWindow::CreateWindowContents()
     bondsLayout->addWidget(bondLineStyle, row,2);
     row++;
 
-    colorBondsLabel = new QLabel("Color bonds by", bondsGroup, "colorBondsLabel");
+    colorBondsLabel = new QLabel(tr("Color bonds by"), bondsGroup, "colorBondsLabel");
     bondsLayout->addMultiCellWidget(colorBondsLabel, row,row, 0,1);
  
     colorBonds = new QButtonGroup(NULL, "colorBonds");
     colorBonds->setFrameStyle(QFrame::NoFrame);
     QGridLayout *colorBondsLayout = new QGridLayout(2,2);
     colorBondsLayout->setSpacing(10);
-    QRadioButton *colorBondsBondColoringModeColorByAtom = new QRadioButton("Adjacent atom color", bondsGroup);
+    QRadioButton *colorBondsBondColoringModeColorByAtom = new QRadioButton(tr("Adjacent atom color"), bondsGroup);
     colorBondsLayout->addMultiCellWidget(colorBondsBondColoringModeColorByAtom, 0,0, 0,1);
-    QRadioButton *colorBondsBondColoringModeSingleColor = new QRadioButton("Single color", bondsGroup);
+    QRadioButton *colorBondsBondColoringModeSingleColor = new QRadioButton(tr("Single color"), bondsGroup);
     colorBondsLayout->addWidget(colorBondsBondColoringModeSingleColor, 1,0);
     colorBonds->insert(colorBondsBondColoringModeColorByAtom, 0);
     colorBonds->insert(colorBondsBondColoringModeSingleColor, 1);
@@ -284,18 +287,18 @@ QvisMoleculePlotWindow::CreateWindowContents()
     // ------------------------------------------------------------------------
     QGroupBox *colorsGroup = new QGroupBox(central, "colorsGroup");
     colorsGroup->setFrameStyle(QFrame::NoFrame);
-    topTab->addTab(colorsGroup, "Colors");
+    topTab->addTab(colorsGroup, tr("Colors"));
 
     QVBoxLayout *colorsLayout = new QVBoxLayout(colorsGroup, 10, 2);
     
 
     QGroupBox *discreteGroup = new QGroupBox(colorsGroup, "discreteGroup");
-    discreteGroup->setTitle("Discrete colors");
+    discreteGroup->setTitle(tr("Discrete colors"));
     colorsLayout->addWidget(discreteGroup);
     QVBoxLayout *discreteTopLayout = new QVBoxLayout(discreteGroup, 10, 2);
     discreteTopLayout->addSpacing(15);
 
-    QLabel *discreteColorTableLabel = new QLabel("Color table for:", discreteGroup, "discreteColorTableLabel");
+    QLabel *discreteColorTableLabel = new QLabel(tr("Color table for:"), discreteGroup, "discreteColorTableLabel");
     discreteTopLayout->addWidget(discreteColorTableLabel);
 
     QHBoxLayout *discreteColorTablesLayout = new QHBoxLayout(discreteTopLayout, 10);
@@ -304,21 +307,21 @@ QvisMoleculePlotWindow::CreateWindowContents()
     QGridLayout *discreteLayout = new QGridLayout(discreteColorTablesLayout, 3,2,  10, "colorsLayout");
     discreteLayout->setSpacing(5);
 
-    elementColorTableLabel = new QLabel("Element types", discreteGroup, "elementColorTableLabel");
+    elementColorTableLabel = new QLabel(tr("Element types"), discreteGroup, "elementColorTableLabel");
     discreteLayout->addWidget(elementColorTableLabel, 0,0);
     elementColorTable = new QvisColorTableButton(discreteGroup, "elementColorTable");
     connect(elementColorTable, SIGNAL(selectedColorTable(bool, const QString&)),
             this, SLOT(elementColorTableChanged(bool, const QString&)));
     discreteLayout->addWidget(elementColorTable, 0,1);
 
-    residueTypeColorTableLabel = new QLabel("Residue types", discreteGroup, "residueTypeColorTableLabel");
+    residueTypeColorTableLabel = new QLabel(tr("Residue types"), discreteGroup, "residueTypeColorTableLabel");
     discreteLayout->addWidget(residueTypeColorTableLabel, 1,0);
     residueTypeColorTable = new QvisColorTableButton(discreteGroup, "residueTypeColorTable");
     connect(residueTypeColorTable, SIGNAL(selectedColorTable(bool, const QString&)),
             this, SLOT(residueTypeColorTableChanged(bool, const QString&)));
     discreteLayout->addWidget(residueTypeColorTable, 1,1);
 
-    residueSequenceColorTableLabel = new QLabel("Other discrete fields", discreteGroup, "residueSequenceColorTableLabel");
+    residueSequenceColorTableLabel = new QLabel(tr("Other discrete fields"), discreteGroup, "residueSequenceColorTableLabel");
     discreteLayout->addWidget(residueSequenceColorTableLabel, 2,0);
     residueSequenceColorTable = new QvisColorTableButton(discreteGroup, "residueSequenceColorTable");
     connect(residueSequenceColorTable, SIGNAL(selectedColorTable(bool, const QString&)),
@@ -326,7 +329,7 @@ QvisMoleculePlotWindow::CreateWindowContents()
     discreteLayout->addWidget(residueSequenceColorTable, 2,1);
 
     QGroupBox *continuousGroup = new QGroupBox(colorsGroup, "continuousGroup");
-    continuousGroup->setTitle("Continuous colors");
+    continuousGroup->setTitle(tr("Continuous colors"));
     colorsLayout->addWidget(continuousGroup);
     QVBoxLayout *continuousTopLayout = new QVBoxLayout(continuousGroup, 10, 2);
     continuousTopLayout->addSpacing(15);
@@ -334,14 +337,14 @@ QvisMoleculePlotWindow::CreateWindowContents()
     continuousLayout->setSpacing(5);
 
 
-    continuousColorTableLabel = new QLabel("Color table for scalars", continuousGroup, "continuousColorTableLabel");
+    continuousColorTableLabel = new QLabel(tr("Color table for scalars"), continuousGroup, "continuousColorTableLabel");
     continuousLayout->addMultiCellWidget(continuousColorTableLabel, 0,0, 0,0);
     continuousColorTable = new QvisColorTableButton(continuousGroup, "continuousColorTable");
     connect(continuousColorTable, SIGNAL(selectedColorTable(bool, const QString&)),
             this, SLOT(continuousColorTableChanged(bool, const QString&)));
     continuousLayout->addWidget(continuousColorTable, 0,1);
 
-    minFlag = new QCheckBox("Clamp minimum", continuousGroup, "minFlag");
+    minFlag = new QCheckBox(tr("Clamp minimum"), continuousGroup, "minFlag");
     connect(minFlag, SIGNAL(toggled(bool)),
             this, SLOT(minFlagChanged(bool)));
     continuousLayout->addWidget(minFlag, 1,0);
@@ -351,7 +354,7 @@ QvisMoleculePlotWindow::CreateWindowContents()
             this, SLOT(scalarMinProcessText()));
     continuousLayout->addWidget(scalarMin, 1,1);
 
-    maxFlag = new QCheckBox("Clamp maximum", continuousGroup, "maxFlag");
+    maxFlag = new QCheckBox(tr("Clamp maximum"), continuousGroup, "maxFlag");
     connect(maxFlag, SIGNAL(toggled(bool)),
             this, SLOT(maxFlagChanged(bool)));
     continuousLayout->addWidget(maxFlag, 2,0);
@@ -363,7 +366,7 @@ QvisMoleculePlotWindow::CreateWindowContents()
 
     // ------------------------------------------------------------------
 
-    legendFlag = new QCheckBox("Legend", central, "legendFlag");
+    legendFlag = new QCheckBox(tr("Legend"), central, "legendFlag");
     connect(legendFlag, SIGNAL(toggled(bool)),
             this, SLOT(legendFlagChanged(bool)));
     topLayout->addWidget(legendFlag);
@@ -711,14 +714,15 @@ QvisMoleculePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            atts->SetRadiusScaleFactor(val);
+            if(okay)
+                atts->SetRadiusScaleFactor(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of radiusScaleFactor was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetRadiusScaleFactor());
+            msg = tr("The value of radiusScaleFactor was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetRadiusScaleFactor());
             Message(msg);
             atts->SetRadiusScaleFactor(atts->GetRadiusScaleFactor());
         }
@@ -732,14 +736,15 @@ QvisMoleculePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            atts->SetRadiusFixed(val);
+            if(okay)
+                atts->SetRadiusFixed(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of radiusFixed was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetRadiusFixed());
+            msg = tr("The value of radiusFixed was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetRadiusFixed());
             Message(msg);
             atts->SetRadiusFixed(atts->GetRadiusFixed());
         }
@@ -765,14 +770,15 @@ QvisMoleculePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            atts->SetBondRadius(val);
+            if(okay)
+                atts->SetBondRadius(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of bondRadius was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetBondRadius());
+            msg = tr("The value of bondRadius was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetBondRadius());
             Message(msg);
             atts->SetBondRadius(atts->GetBondRadius());
         }
@@ -834,14 +840,15 @@ QvisMoleculePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            atts->SetScalarMin(val);
+            if(okay)
+                atts->SetScalarMin(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of scalarMin was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetScalarMin());
+            msg = tr("The value of scalarMin was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetScalarMin());
             Message(msg);
             atts->SetScalarMin(atts->GetScalarMin());
         }
@@ -861,14 +868,15 @@ QvisMoleculePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            atts->SetScalarMax(val);
+            if(okay)
+                atts->SetScalarMax(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of scalarMax was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetScalarMax());
+            msg = tr("The value of scalarMax was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetScalarMax());
             Message(msg);
             atts->SetScalarMax(atts->GetScalarMax());
         }

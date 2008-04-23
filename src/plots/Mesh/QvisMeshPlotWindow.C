@@ -147,6 +147,9 @@ QvisMeshPlotWindow::~QvisMeshPlotWindow()
 //   Brad Whitlock, Wed Jul 20 14:27:00 PST 2005
 //   Added pointSizePixelsChanged slot.
 //
+//   Brad Whitlock, Wed Apr 23 09:58:27 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -163,7 +166,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     theLayout->addWidget(lineStyle, 0, 1);
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
-    lineStyleLabel = new QLabel(lineStyle, "Line style",
+    lineStyleLabel = new QLabel(lineStyle, tr("Line style"),
                                 central, "lineStyleLabel");
     theLayout->addWidget(lineStyleLabel, 0, 0);
 
@@ -172,7 +175,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     theLayout->addWidget(lineWidth, 0, 3);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    lineWidthLabel = new QLabel(lineWidth, "Line width",
+    lineWidthLabel = new QLabel(lineWidth, tr("Line width"),
                                 central, "lineWidthLabel");
     theLayout->addWidget(lineWidthLabel, 0, 2);
 
@@ -181,12 +184,12 @@ QvisMeshPlotWindow::CreateWindowContents()
     connect(meshColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(meshColorChanged(const QColor &)));
     theLayout->addWidget(meshColor, 1, 1);
-    meshColorLabel = new QLabel(meshColor, "Mesh color",
+    meshColorLabel = new QLabel(meshColor, tr("Mesh color"),
                                 central, "meshColorLabel");
     theLayout->addWidget(meshColorLabel, 1, 0);
 
     // Create the foreground toggle
-    foregroundToggle = new QCheckBox("Use foreground", 
+    foregroundToggle = new QCheckBox(tr("Use foreground"), 
                                      central, "foregroundToggle");
     connect(foregroundToggle, SIGNAL(toggled(bool)),
             this, SLOT(foregroundToggled(bool)));
@@ -198,12 +201,12 @@ QvisMeshPlotWindow::CreateWindowContents()
     connect(opaqueColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(opaqueColorChanged(const QColor &)));
     theLayout->addWidget(opaqueColor, 2, 1);
-    opaqueColorLabel = new QLabel(opaqueColor, "Opaque color",
+    opaqueColorLabel = new QLabel(opaqueColor, tr("Opaque color"),
                                   central, "opaqueColorLabel");
     theLayout->addWidget(opaqueColorLabel, 2, 0);
 
     // Create the background toggle
-    backgroundToggle = new QCheckBox("Use background", 
+    backgroundToggle = new QCheckBox(tr("Use background"), 
                                      central, "backgroundToggle");
     connect(backgroundToggle, SIGNAL(toggled(bool)),
             this, SLOT(backgroundToggled(bool)));
@@ -216,27 +219,27 @@ QvisMeshPlotWindow::CreateWindowContents()
     QGridLayout *opaqueModeLayout = new QGridLayout(1, 5);
     opaqueModeLayout->setSpacing(10);
     opaqueModeLayout->setColStretch(4, 1000);
-    opaqueModeLayout->addWidget(new QLabel("Opaque mode", central), 0,0);
-    QRadioButton *rb = new QRadioButton("Auto", central, "auto");
+    opaqueModeLayout->addWidget(new QLabel(tr("Opaque mode"), central), 0,0);
+    QRadioButton *rb = new QRadioButton(tr("Auto"), central, "auto");
     opaqueMode->insert(rb);
     opaqueModeLayout->addWidget(rb, 0, 2);
-    rb = new QRadioButton("On", central, "on");
+    rb = new QRadioButton(tr("On"), central, "on");
     opaqueMode->insert(rb);
     opaqueModeLayout->addWidget(rb, 0, 3);
-    rb = new QRadioButton("Off", central, "off");
+    rb = new QRadioButton(tr("Off"), central, "off");
     opaqueMode->insert(rb);
     opaqueModeLayout->addWidget(rb, 0, 4);
     theLayout->addMultiCellLayout(opaqueModeLayout, 3, 3, 0, 3);
 
     // Create the showInternal toggle
-    showInternalToggle = new QCheckBox("Show Internal Zones", central, 
+    showInternalToggle = new QCheckBox(tr("Show Internal Zones"), central, 
                                        "showInternalToggle");
     connect(showInternalToggle, SIGNAL(toggled(bool)),
             this, SLOT(showInternalToggled(bool)));
     theLayout->addMultiCellWidget(showInternalToggle, 4,4, 0,1);
 
     // Create the outline only toggle
-    outlineOnlyToggle = new QCheckBox("Outline only", central,
+    outlineOnlyToggle = new QCheckBox(tr("Outline only"), central,
                                       "OutlineOnlyToggle");
     connect(outlineOnlyToggle, SIGNAL(toggled(bool)),
             this, SLOT(outlineOnlyToggled(bool)));
@@ -247,7 +250,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     connect(errorToleranceLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processErrorToleranceText()));
     theLayout->addMultiCellWidget(errorToleranceLineEdit, 5, 5, 2, 3);
-    errorToleranceLabel = new QLabel(errorToleranceLineEdit, "Tolerance",
+    errorToleranceLabel = new QLabel(errorToleranceLineEdit, tr("Tolerance"),
                                         central, "errorToleranceLabel");
     theLayout->addWidget(errorToleranceLabel, 5, 1);
     //errorToleranceLineEdit->setEnabled(false); 
@@ -268,7 +271,7 @@ QvisMeshPlotWindow::CreateWindowContents()
  
 
     // Create the legend toggle
-    legendToggle = new QCheckBox("Legend", central, "legendToggle");
+    legendToggle = new QCheckBox(tr("Legend"), central, "legendToggle");
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
     theLayout->addWidget(legendToggle, 7, 0);
@@ -280,14 +283,14 @@ QvisMeshPlotWindow::CreateWindowContents()
     QGridLayout *smoothingLayout = new QGridLayout(1, 5);
     smoothingLayout->setSpacing(10);
     smoothingLayout->setColStretch(4, 1000);
-    smoothingLayout->addWidget(new QLabel("Geometry smoothing", central), 0,0);
-    rb = new QRadioButton("None", central, "NoSmoothing");
+    smoothingLayout->addWidget(new QLabel(tr("Geometry smoothing"), central), 0,0);
+    rb = new QRadioButton(tr("None"), central, "NoSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton("Fast", central, "LowSmoothing");
+    rb = new QRadioButton(tr("Fast"), central, "LowSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 2);
-    rb = new QRadioButton("High", central, "HighSmoothing");
+    rb = new QRadioButton(tr("High"), central, "HighSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 3);
     theLayout->addMultiCellLayout(smoothingLayout, 8,8 , 0,3);
@@ -567,6 +570,9 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
 //   Replace separate pointSize and pointSizeVar widgets with single
 //   pointControl. 
 //
+//   Brad Whitlock, Wed Apr 23 10:00:10 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -583,14 +589,15 @@ QvisMeshPlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            meshAtts->SetErrorTolerance(val);
+            if(okay)
+                meshAtts->SetErrorTolerance(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The error tolerance was invalid. "
-                "Resetting to the last good value of %g.",
-                meshAtts->GetErrorTolerance());
+            msg = tr("The error tolerance was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(meshAtts->GetErrorTolerance());
             Message(msg);
             meshAtts->SetErrorTolerance(meshAtts->GetErrorTolerance());
         }
