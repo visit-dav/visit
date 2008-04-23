@@ -76,7 +76,7 @@
 #include <planetool.xpm>
 #include <pointtool.xpm>
 #include <spheretool.xpm>
-#include <extentstool.xpm>
+#include <axisrestrictiontool.xpm>
 #include <invertbackground.xpm>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1216,6 +1216,9 @@ SetWindowModeAction::ChoiceToggled(int i) const
 //    Jeremy Meredith, Fri Feb  1 17:59:23 EST 2008
 //    Added Axis restriction tool.
 //
+//   Jeremy Meredith, Tue Apr 22 14:31:20 EDT 2008
+//   Removed Extents tool.  (Subsumed by axis restriction tool.)
+//
 // ****************************************************************************
 
 EnableToolAction::EnableToolAction(ViewerWindow *win) :
@@ -1239,10 +1242,8 @@ EnableToolAction::EnableToolAction(ViewerWindow *win) :
                 AddChoice(tool.c_str(), "Sphere tool", QPixmap(spheretool_xpm));
             else if(tool == "Point")
                 AddChoice(tool.c_str(), "Point tool", QPixmap(pointtool_xpm));
-            else if(tool == "Extents")
-                AddChoice(tool.c_str(), "Extents tool", QPixmap(extentstool_xpm));
             else if(tool == "AxisRestriction")
-                AddChoice(tool.c_str(), "Axis Restriction tool", QPixmap(extentstool_xpm));
+                AddChoice(tool.c_str(), "Axis Restriction tool", QPixmap(axisrestrictiontool_xpm));
             else
                 AddChoice(tool.c_str());
         }

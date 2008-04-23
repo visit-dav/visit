@@ -283,6 +283,10 @@
 #    Jeremy Meredith, Tue Apr 15 13:42:18 EDT 2008
 #    Added LinearTransformAttributes.
 #
+#    Jeremy Meredith, Tue Apr 22 14:40:28 EDT 2008
+#    Removed ExtentsAttributes.  The Extents tool functionality has been
+#    subsumed by the Axis Restriction tool (and Parallel Coordinates plot).
+#
 ##############################################################################
 
 ##
@@ -336,7 +340,6 @@ SRC=    AnimationAttributes.C \
         ExportDBAttributes.C \
         Expression.C \
         ExpressionList.C \
-        ExtentsAttributes.C \
         FileOpenOptions.C \
         FontAttributes.C \
         GaussianControlPoint.C \

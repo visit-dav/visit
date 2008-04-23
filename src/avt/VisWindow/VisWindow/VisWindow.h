@@ -381,6 +381,11 @@ class VisitInteractor;
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added new AxisArray window mode.
 //
+//    Jeremy Meredith, Tue Apr 22 14:33:16 EDT 2008
+//    Removed axis annotation disabling -- it was only added for a single
+//    plot, and the functionality has been accomodated in a new window
+//    modality supporting the correct style annotations.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -645,7 +650,6 @@ protected:
 
     WINDOW_MODE                        mode;
     bool                               updatesEnabled;
-    bool                               axisAnnotationsEnabled;
     bool                               hasPlots;
     bool                               pickForIntersectionOnly;
 
@@ -683,11 +687,6 @@ protected:
     void                 HasPlots(bool);
     void                 HasPlots();
     void                 NoPlots();
-
-    void                 EnableAxisAnnotations();
-    void                 DisableAxisAnnotations();
-    bool                 AxisAnnotationsEnabled() const;
-    void                 DisableAxisAnnotationsIfInappropriate(avtActor_p &plotActor);
 
     void                 SetInteractor(VisitInteractor *);
     void                 GetViewport(double *);

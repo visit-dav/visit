@@ -155,6 +155,11 @@ class     PlotInfoAttributes;
 //    Brad Whitlock, Mon Nov 19 17:44:10 PST 2007
 //    Added code to query the background mode.
 //
+//    Jeremy Meredith, Tue Apr 22 14:33:16 EDT 2008
+//    Removed axis annotation disabling -- it was only added for a single
+//    plot, and the functionality has been accomodated in a new window
+//    modality supporting the correct style annotations.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -189,7 +194,6 @@ class VISWINDOW_API VisWindowProtectionProxy
     bool                ProxiedHasPlots();
     int                 ProxiedGetPlotListIndex(const char *plotName);
     const PlotInfoAttributes *ProxiedGetPlotInfoAtts(const char *plotName);
-    bool                ProxiedAxisAnnotationsEnabled();
     bool                ProxiedUpdatesEnabled();
     void                ProxiedDisableUpdates();
     void                ProxiedEnableUpdates();

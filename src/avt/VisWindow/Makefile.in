@@ -151,6 +151,9 @@
 #    Jeremy Meredith, Mon Feb  4 13:28:05 EST 2008
 #    Added ZoomAxisArray.
 #
+#    Jeremy Meredith, Tue Apr 22 14:30:44 EDT 2008
+#    Removed Extents tool.  (Supplanted by axis restriction tool.)
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -213,14 +216,12 @@ Tools_src= \
   Tools/VisitPlaneTool.C \
   Tools/VisitPointTool.C \
   Tools/VisitSphereTool.C \
-  Tools/VisitExtentsTool.C \
   Tools/avtAxisRestrictionToolInterface.C \
   Tools/avtBoxToolInterface.C \
   Tools/avtLineToolInterface.C \
   Tools/avtPlaneToolInterface.C \
   Tools/avtPointToolInterface.C \
   Tools/avtSphereToolInterface.C \
-  Tools/avtExtentsToolInterface.C \
   Tools/avtToolInterface.C
 VisWindow_src= \
   VisWindow/VisWindow.C \

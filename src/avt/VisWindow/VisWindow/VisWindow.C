@@ -67,7 +67,6 @@
 #include <ColorAttribute.h>
 #include <FontAttributes.h>
 #include <LineAttributes.h>
-#include <ExtentsAttributes.h>
 
 #include <avtCallback.h>
 #include <avtPlot.h>
@@ -234,6 +233,11 @@ VisWindow::VisWindow(bool callInit)
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added new AxisArray window mode.
 //
+//    Jeremy Meredith, Tue Apr 22 14:33:16 EDT 2008
+//    Removed axis annotation disabling -- it was only added for a single
+//    plot, and the functionality has been accomodated in a new window
+//    modality supporting the correct style annotations.
+//
 // ****************************************************************************
 
 void
@@ -267,7 +271,6 @@ VisWindow::Initialize(VisWinRendering *ren)
     backgroundNX = 1;
     backgroundNY = 1;
     SetViewport(0., 0., 1., 1.);
-    EnableAxisAnnotations();
     EnableUpdates();
     NoPlots();
 
@@ -1997,97 +2000,6 @@ VisWindow::NoPlots(void)
 }
 
 // ****************************************************************************
-//  Method: VisWindow::EnableAxisAnnotations
-//
-//  Purpose: Enable conventional axis annotations in the vis window.
-//
-//  Note: The ParallelAxis plot is an example of a plot in which the axes are
-//        a major component and in which the plot is meaningless without them.
-//        Thus the axes in such a plot are best treated as part of the plot
-//        itself and not as an associated Annotation object.
-//
-//  Programmer: Mark Blair
-//  Creation:   Mon Sep 25 11:41:09 PDT 2006
-//
-// ****************************************************************************
-
-void VisWindow::EnableAxisAnnotations()
-{
-    axisAnnotationsEnabled = true;
-}
-
-
-// ****************************************************************************
-//  Method: VisWindow::DisableAxisAnnotations
-//
-//  Purpose: Disable conventional axis annotations in the vis window.
-//
-//  Note: The ParallelAxis plot is an example of a plot in which the axes are
-//        a major component and in which the plot is meaningless without them.
-//        Thus the axes in such a plot are best treated as part of the plot
-//        itself and not as an associated Annotation object.
-//
-//  Programmer: Mark Blair
-//  Creation:   Mon Sep 25 11:41:09 PDT 2006
-//
-// ****************************************************************************
-
-void VisWindow::DisableAxisAnnotations()
-{
-    axisAnnotationsEnabled = false;
-}
-
-
-// ****************************************************************************
-//  Method: VisWindow::AxisAnnotationsEnabled
-//
-//  Purpose: Returns true if conventional axis annotations are enabled in the
-//           vis window.
-//
-//  Note: The ParallelAxis plot is an example of a plot in which the axes are
-//        a major component and in which the plot is meaningless without them.
-//        Thus the axes in such a plot are best treated as part of the plot
-//        itself and not as an associated Annotation object.
-//
-//  Programmer: Mark Blair
-//  Creation:   Mon Sep 25 11:41:09 PDT 2006
-//
-// ****************************************************************************
-
-bool VisWindow::AxisAnnotationsEnabled() const
-{
-    return axisAnnotationsEnabled;
-}
-
-
-// ****************************************************************************
-//  Method: VisWindow::DisableAxisAnnotationsIfInappropriate
-//
-// Purpose: Disable conventional axis annotations in the vis window if the type
-//          of plot to be added to the window should never use them.
-//
-// Programmer: Mark Blair
-// Creation:   Mon Sep 25 11:41:09 PDT 2006
-//
-// Modifications:
-//
-//    Mark Blair, Tue Dec  5 12:58:17 PST 2006
-//    Uses larger viewport if no 2D axis annotations, since space is available.
-//
-// ****************************************************************************
-
-void VisWindow::DisableAxisAnnotationsIfInappropriate(avtActor_p &plotActor)
-{
-    // Maybe other cases too.
-    if (strcmp(plotActor->GetTypeName(), "ParallelAxis") == 0)
-    {
-        DisableAxisAnnotations();
-        SetViewport(EA_PREFERRED_VIEWPORT_LEFT_X, EA_PREFERRED_VIEWPORT_BOTTOM_Y,
-                    EA_PREFERRED_VIEWPORT_RIGHT_X, EA_PREFERRED_VIEWPORT_TOP_Y);
-    }
-}
-
-// ****************************************************************************
 //  Method: VisWindow::AddPlot
 //
 //  Purpose:
@@ -2108,13 +2020,16 @@ void VisWindow::DisableAxisAnnotationsIfInappropriate(avtActor_p &plotActor)
 //    Disable axis annotations if adding a type of plot to the vis window in
 //    which axis annotations are inappropriate.
 // 
+//    Jeremy Meredith, Tue Apr 22 14:33:16 EDT 2008
+//    Removed axis annotation disabling -- it was only added for a single
+//    plot, and the functionality has been accomodated in a new window
+//    modality supporting the correct style annotations.
+//
 // ****************************************************************************
 
 void
 VisWindow::AddPlot(avtActor_p &p)
 {
-    DisableAxisAnnotationsIfInappropriate(p);
-
     plots->AddPlot(p);
     double bnds[6];
     plots->GetBounds(bnds);
@@ -2879,6 +2794,11 @@ VisWindow::Render(void)
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added new AxisArray window mode.
 //
+//    Jeremy Meredith, Tue Apr 22 14:33:16 EDT 2008
+//    Removed special-case coding for ParallelAxis plot and Extents tool.
+//    These have been supplanted by the ParallelCoordinates plot, which
+//    handles viewports and axes with a new high-dimensional window modality.
+//
 // *****************************************************************************
 
 void
@@ -2895,13 +2815,7 @@ VisWindow::UpdateView()
         if (viewport[0] != viewportLeft || viewport[1] != viewportRight ||
             viewport[2] != viewportBottom || viewport[3] != viewportTop)
         {
-            if ((viewportLeft   != EA_PREFERRED_VIEWPORT_LEFT_X  ) ||
-                (viewportRight  != EA_PREFERRED_VIEWPORT_RIGHT_X ) ||
-                (viewportBottom != EA_PREFERRED_VIEWPORT_BOTTOM_Y) ||
-                (viewportTop    != EA_PREFERRED_VIEWPORT_TOP_Y   ))
-            {   // Currently, only ParallelAxis plot uses the larger viewport.
-                SetViewport(viewport[0], viewport[2], viewport[1], viewport[3]);
-            }
+            SetViewport(viewport[0], viewport[2], viewport[1], viewport[3]);
         }
 
         view2D.SetViewInfoFromView(viewInfo, size);
@@ -2932,26 +2846,8 @@ VisWindow::UpdateView()
             viewCurve.viewport[2] != viewportBottom ||
             viewCurve.viewport[3] != viewportTop)
         {
-            if ((viewportLeft   != EA_PREFERRED_VIEWPORT_LEFT_X  ) ||
-                (viewportRight  != EA_PREFERRED_VIEWPORT_RIGHT_X ) ||
-                (viewportBottom != EA_PREFERRED_VIEWPORT_BOTTOM_Y) ||
-                (viewportTop    != EA_PREFERRED_VIEWPORT_TOP_Y   ))
-            {   // Currently, only ParallelAxis plot uses the larger viewport.
-                SetViewport(viewCurve.viewport[0], viewCurve.viewport[2],
-                            viewCurve.viewport[1], viewCurve.viewport[3]);
-            }
-
-            if ((viewportLeft   == EA_PREFERRED_VIEWPORT_LEFT_X  ) &&
-                (viewportRight  == EA_PREFERRED_VIEWPORT_RIGHT_X ) &&
-                (viewportBottom == EA_PREFERRED_VIEWPORT_BOTTOM_Y) &&
-                (viewportTop    == EA_PREFERRED_VIEWPORT_TOP_Y   ))
-            {   // Currently, only ParallelAxis plot uses the larger viewport.
-                double prefViewport[4] = { EA_PREFERRED_VIEWPORT_LEFT_X,
-                                           EA_PREFERRED_VIEWPORT_RIGHT_X,
-                                           EA_PREFERRED_VIEWPORT_BOTTOM_Y,
-                                           EA_PREFERRED_VIEWPORT_TOP_Y };
-                viewCurve.SetViewport(prefViewport);
-            }
+            SetViewport(viewCurve.viewport[0], viewCurve.viewport[2],
+                        viewCurve.viewport[1], viewCurve.viewport[3]);
         }
 
         viewCurve.SetViewInfoFromView(viewInfo, size);

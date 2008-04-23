@@ -54,7 +54,6 @@ class VisitLineTool;
 class VisitPlaneTool;
 class VisitPointTool;
 class VisitSphereTool;
-class VisitExtentsTool;
 class vtkHighlightActor2D;
 
 // ****************************************************************************
@@ -102,6 +101,9 @@ class vtkHighlightActor2D;
 //   Jeremy Meredith, Fri Feb  1 12:17:28 EST 2008
 //   Added the axis restriction tool.
 //   Added UpdatePlotList.
+//
+//   Jeremy Meredith, Tue Apr 22 14:33:01 EDT 2008
+//   Removed Extents tool.  (Subsumed by axis restriction tool.)
 //
 // ****************************************************************************
 
@@ -157,7 +159,6 @@ class VISWINDOW_API VisWinTools : public VisWinColleague
     VisitPlaneTool           *planeTool;
     VisitPointTool           *pointTool;
     VisitSphereTool          *sphereTool;
-    VisitExtentsTool         *extentsTool;
     VisitAxisRestrictionTool *axisRestrictionTool;
 };
 

@@ -137,6 +137,11 @@
 //    Brad Whitlock, Mon Nov 19 17:46:11 PST 2007
 //    Added GetBackgroundMode.
 //
+//    Jeremy Meredith, Tue Apr 22 14:33:16 EDT 2008
+//    Removed axis annotation disabling -- it was only added for a single
+//    plot, and the functionality has been accomodated in a new window
+//    modality supporting the correct style annotations.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -179,9 +184,6 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 
     bool                HasPlots(void)
                                   { return ProxiedHasPlots(); };
-
-    bool                AxisAnnotationsEnabled()
-                                  { return ProxiedAxisAnnotationsEnabled(); };
 
     bool                UpdatesEnabled(void)
                                   { return ProxiedUpdatesEnabled(); };
