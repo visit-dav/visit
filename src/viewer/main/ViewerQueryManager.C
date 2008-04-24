@@ -2153,10 +2153,14 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             TRY
             {
                 PickAttributes pa = *pickAtts;
+                bool createSpreadsheetSave = pa.GetCreateSpreadsheet();
+                if (win->GetInteractionMode() == SPREADSHEET_PICK)
+                    pa.SetCreateSpreadsheet(true);
                 ViewerEngineManager::Instance()->UpdateExpressionsFromPlot(plot);
                 ViewerEngineManager::Instance()->Pick(engineKey,
                                                       networkId, windowId,
                                                       &pa, pa);
+                pa.SetCreateSpreadsheet(createSpreadsheetSave);
                 if (pa.GetFulfilled())
                 {
                    *pickAtts = pa;
