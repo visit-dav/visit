@@ -114,12 +114,15 @@ LogCommand(const char *cmd, const char *truncate_at_pattern)
 //  Modifications:
 //    Mark C. Miller, Thu Apr 10 08:16:51 PDT 2008
 //    Truncated glxinfo output
+//
+//    Sean Ahern, Thu Apr 24 18:17:33 EDT 2008
+//    Avoided this if we're on the Mac.
 // ****************************************************************************
 
 static void
 LogGlxAndXdpyInfo()
 {
-#if !defined(_WIN32)
+#if !defined(_WIN32) and !defined(Q_WS_MACX)
     if (debug5_real)
     {
         LogCommand("xdpyinfo", "number of visuals"); // truncate at list of visuals
@@ -217,7 +220,7 @@ main(int argc, char *argv[])
         //
         Init::SetComponentName("viewer");
         Init::Initialize(argc, argv, 0, 1, false);
-	LogGlxAndXdpyInfo();
+        LogGlxAndXdpyInfo();
 
         //
         // Create the viewer subject.
