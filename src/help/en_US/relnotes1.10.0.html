@@ -64,7 +64,10 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>&nbsp;</li>
     <li>&nbsp;</li>
     <li>&nbsp;</li>
-    <li>&nbsp;</li>
+    <li>The BOV reader has been optimized to perform better when using a large number
+        of processors.  Previously, all of VisIt's processors read the same header
+        file simultaneously, which severely affects parallel performance on some
+        machines.</li>
 </ul>
 
 <a name="Plot_changes"></a>
