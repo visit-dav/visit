@@ -67,6 +67,9 @@
 //    Brad Whitlock, Thu May 4 09:36:53 PDT 2006
 //    Added support for double and int.
 //
+//    Hank Childs, Thu Apr 24 13:29:41 PDT 2008
+//    Change char *'s to strings and float *'s to vector<double>.
+//
 // ****************************************************************************
 
 class avtBOVFileFormat : public avtSTMDFileFormat
@@ -105,12 +108,12 @@ class avtBOVFileFormat : public avtSTMDFileFormat
 
     bool                       haveReadTOC;
     char                      *path;
-    char                      *file_pattern;
+    std::string                file_pattern;
     int                        cycle;
     int                        full_size[3];
     int                        bricklet_size[3];
     int                        byteOffset;
-    char                      *varname;
+    std::string                varname;
     bool                       hasBoundaries;
     bool                       declaredEndianess;
     bool                       littleEndian;
@@ -119,11 +122,11 @@ class avtBOVFileFormat : public avtSTMDFileFormat
     bool                       byteToFloatTransform;
     DataFormatEnum             dataFormat;
     int                        dataNumComponents;
-    float                      min, max;
-    float                      origin[3];
-    float                      dimensions[3];
-    float                     *var_brick_min;
-    float                     *var_brick_max;
+    double                     min, max;
+    double                     origin[3];
+    double                     dimensions[3];
+    std::vector<double>        var_brick_min;
+    std::vector<double>        var_brick_max;
 };
 
 

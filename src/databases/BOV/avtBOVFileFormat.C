@@ -57,7 +57,9 @@
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
+#include <avtParallel.h>
 #include <avtStructuredDomainBoundaries.h>
+#include <avtIsenburgSGG.h>
 #include <avtTypes.h>
 #include <avtVariableCache.h>
 
@@ -70,6 +72,11 @@
 
 
 static int FormatLine(char *line);
+
+
+//  This Boolean should only be set to false when we are using the
+//  Isenburg streaming module that fills these gaps itself.
+static bool fillSpace = true;
 
 
 // ****************************************************************************
@@ -99,6 +106,9 @@ static int FormatLine(char *line);
 //
 //    Hank Childs, Wed Feb 21 11:07:25 PST 2007
 //    byteToFloatTransform was initialized twice ... removed one.
+//
+//    Hank Childs, Thu Apr 24 13:24:51 PDT 2008
+//    Change initializations of char *'s that have been converted to strings.
 //
 // ****************************************************************************
 
@@ -134,7 +144,7 @@ avtBOVFileFormat::avtBOVFileFormat(const char *fname)
     // them are fine as is (for example, we *must* know the file pattern.  The
     // cycle is not necessary.)
     //
-    file_pattern = NULL;
+    file_pattern = "";
     cycle = 0;
     full_size[0] = 0;
     full_size[1] = 0;
@@ -142,8 +152,7 @@ avtBOVFileFormat::avtBOVFileFormat(const char *fname)
     bricklet_size[0] = 0;
     bricklet_size[1] = 0;
     bricklet_size[2] = 0;
-    varname = new char[strlen("var") + 1];
-    strcpy(varname, "var");
+    varname = "var";
     byteToFloatTransform = false;
     min = 0.;
     max = 1.;
@@ -153,8 +162,6 @@ avtBOVFileFormat::avtBOVFileFormat(const char *fname)
     dimensions[0] = 1.;
     dimensions[1] = 1.;
     dimensions[2] = 1.;
-    var_brick_min = NULL;
-    var_brick_max = NULL;
     declaredEndianess = false;
     littleEndian = false;
     hasBoundaries = false;
@@ -174,6 +181,11 @@ avtBOVFileFormat::avtBOVFileFormat(const char *fname)
 //  Programmer: Hank Childs
 //  Creation:   May 12, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Apr 24 13:25:15 PDT 2008
+//    Remove destruction of members that are now handled through STL.
+//
 // ****************************************************************************
 
 avtBOVFileFormat::~avtBOVFileFormat()
@@ -182,26 +194,6 @@ avtBOVFileFormat::~avtBOVFileFormat()
     {
         delete [] path;
         path = NULL;
-    }
-    if (file_pattern != NULL)
-    {
-        delete [] file_pattern;
-        file_pattern = NULL;
-    }
-    if (varname != NULL)
-    {
-        delete [] varname;
-        varname = NULL;
-    }
-    if (var_brick_min != NULL)
-    {
-        delete [] var_brick_min;
-        var_brick_min = NULL;
-    }
-    if (var_brick_max != NULL)
-    {
-        delete [] var_brick_max;
-        var_brick_max = NULL;
     }
 }
 
@@ -278,9 +270,9 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
     //
     // Establish what the range is of this dataset.
     //
-    float x_step = dimensions[0] / nx;
-    float y_step = dimensions[1] / ny;
-    float z_step = dimensions[2] / nz;
+    float x_step = dimensions[0] / (nx);
+    float y_step = dimensions[1] / (ny);
+    float z_step = dimensions[2] / (nz);
     float x_start = origin[0] + x_step*x_off;
     float x_stop  = origin[0] + x_step*(x_off+1);
     float y_start = origin[1] + y_step*y_off;
@@ -311,6 +303,11 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
     if (! nodalCentering) 
         dx += 1;
     x->SetNumberOfTuples(dx);
+
+    // Don't fill in gaps
+    if (!fillSpace)
+        x_stop -= (x_step / dx);
+
     for (i = 0 ; i < dx ; i++)
         x->SetTuple1(i, x_start + i * (x_stop-x_start) / (dx-1));
 
@@ -326,6 +323,11 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
     }
     if (! nodalCentering) 
         dy += 1;
+
+    // Don't fill in gaps
+    if (!fillSpace)
+        y_stop -= (y_step / dy);
+
     y->SetNumberOfTuples(dy);
     for (i = 0 ; i < dy ; i++)
         y->SetTuple1(i, y_start + i * (y_stop-y_start) / (dy-1));
@@ -349,6 +351,11 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
         }
         if (! nodalCentering) 
             dz += 1;
+ 
+        // Don't fill in gaps
+        if (!fillSpace)
+            z_stop -= (z_step / dz);
+
         z->SetNumberOfTuples(dz);
         for (i = 0 ; i < dz ; i++)
             z->SetTuple1(i, z_start + i * (z_stop-z_start) / (dz-1));
@@ -754,13 +761,16 @@ avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
 //    Only do a byte-to-float transform if the data we get from the file is 
 //    really byte data.
 //
+//    Hank Childs, Thu Apr 24 13:26:21 PDT 2008
+//    Change references from char *'s to strings.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtBOVFileFormat::GetVar(int dom, const char *var)
 {
     const char *mName = "avtBOVFileFormat::GetVar: ";
-    if (strcmp(var, varname) != 0)
+    if (varname != var)
     {
         EXCEPTION1(InvalidVariableException, var);
     }
@@ -781,7 +791,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     }
 
     char filename[1024];
-    sprintf(filename, file_pattern, dom);
+    sprintf(filename, file_pattern.c_str(), dom);
     char qual_filename[1024];
     if (filename[0] != '/')
         sprintf(qual_filename, "%s%s", path, filename);
@@ -1159,6 +1169,9 @@ avtBOVFileFormat::GetVectorVar(int dom, const char *var)
 //    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
 //    API change for avtIntervalTree.
 //
+//    Hank Childs, Thu Apr 24 13:26:44 PDT 2008
+//    Change references from pointers to STL objects.
+//
 // ****************************************************************************
 
 void *
@@ -1175,11 +1188,11 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
 
     if (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0)
     {
-        if (strcmp(var, varname) != 0)
+        if (strcmp(var, varname.c_str()) != 0)
         {
             return NULL;
         }
-        if (var_brick_min != NULL && var_brick_max != NULL)
+        if (var_brick_min.size() > 0 && var_brick_max.size() > 0)
         {
             avtIntervalTree *itree = new avtIntervalTree(nbricks, 1);
             for (int i = 0 ; i < nbricks ; i++)
@@ -1264,6 +1277,11 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Fixed leaks of Expression objects 
+//
+//    Hank Childs, Thu Apr 24 13:27:39 PDT 2008
+//    Change references from char *'s to STL.  Also add support for
+//    the Isenburg streaming ghost module, although it is commented out.
+//
 // ****************************************************************************
 
 void
@@ -1308,12 +1326,12 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // Add expressions to get the real and imaginary components
         Expression mag;
         mag.SetName("real");
-        mag.SetDefinition(std::string(varname) + "[0]");
+        mag.SetDefinition(varname + "[0]");
         mag.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&mag);
         Expression phase;
         phase.SetName("imaginary");
-        phase.SetDefinition(std::string(varname) + "[1]");
+        phase.SetDefinition(varname + "[1]");
         phase.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&phase);
     }
@@ -1339,7 +1357,7 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             SNPRINTF(n, sizeof(n), "comp%02d", i);
             amd->compNames.push_back(n);
 
-            SNPRINTF(def, sizeof(def), "array_decompose(%s, %d)", varname, i);
+            SNPRINTF(def, sizeof(def), "array_decompose(%s, %d)", varname.c_str(), i);
             Expression e;
             e.SetName(n);
             e.SetDefinition(def);
@@ -1383,6 +1401,39 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                                    avtStructuredDomainBoundaries::Destruct);
         cache->CacheVoidRef("any_mesh",
                        AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
+/*
+        avtIsenburgSGG *rdb = new avtIsenburgSGG;
+        rdb->SetNumberOfDomains(nbricks);
+        for (int i = 0 ; i < nbricks ; i++)
+        {
+            int sz[3] = { bricklet_size[0], bricklet_size[1], bricklet_size[2] };
+            int ori[3];
+            int nei[6];
+            int nx = full_size[0] / bricklet_size[0];
+            int ny = full_size[1] / bricklet_size[1];
+            int nz = full_size[2] / bricklet_size[2];
+            int z_off = i / (nx*ny);
+            int y_off = (i % (nx*ny)) / nx;
+            int x_off = i % nx;
+
+            ori[0] = x_off * (bricklet_size[0]);
+            ori[1] = y_off * (bricklet_size[1]);
+            ori[2] = z_off * (bricklet_size[2]);
+            nei[0] = (x_off == 0 ? -1 : i-1);
+            nei[1] = (x_off == (nx-1) ? -1 : i+1);
+            nei[2] = (y_off == 0 ? -1 : i-nx);
+            nei[3] = (y_off == (ny-1) ? -1 : i+nx);
+            nei[4] = (z_off == 0 ? -1 : i-nx*ny);
+            nei[5] = (z_off == (nz-1) ? -1 : i+nx*ny);
+            rdb->SetInfoForDomain(i, ori, sz, nei);
+        }
+        rdb->FinalizeDomainInformation();
+
+        void_ref_ptr vr = void_ref_ptr(rdb,
+                                   avtStreamingGhostGenerator::Destruct);
+        cache->CacheVoidRef("any_mesh",
+                       AUXILIARY_DATA_STREAMING_GHOST_GENERATION, -1, -1, vr);
+ */
     }
     md->SetCycle(timestep, cycle);
 }
@@ -1417,6 +1468,9 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Brad Whitlock, Thu May 4 11:59:29 PDT 2006
 //    I added support for ints, doubles and multi-component data.
 //
+//    Hank Childs, Thu Apr 24 11:40:13 PDT 2008
+//    Only have processor 0 read the .bov file.
+//
 // ****************************************************************************
 
 void
@@ -1425,198 +1479,276 @@ avtBOVFileFormat::ReadTOC(void)
     if (haveReadTOC)
         return;
     haveReadTOC = true;
+
     const char *fname = filenames[0];
 
-    ifstream ifile(fname);
-    if (ifile.fail())
+    if (PAR_Rank() == 0)
     {
-        EXCEPTION1(InvalidFilesException, fname);
-    }
+        ifstream ifile(fname);
+        if (ifile.fail())
+        {
+            EXCEPTION1(InvalidFilesException, fname);
+        }
 
-    char buff[32768]; // Is this big enough?
-    while (!ifile.eof())
-    {
-        buff[0] = '\0';
-        char *line = buff;
-        ifile.getline(line, 32768);
-        int nparts = FormatLine(line);
-        if (nparts <= 0)
-            continue;
-        if (line[0] == '#')
-            continue;
-        else if (strcmp(line, "TIME:") == 0)
+        char buff[32768]; // Is this big enough?
+        while (!ifile.eof())
         {
-            line += strlen("TIME:") + 1;
-            cycle = atoi(line);
-        }
-        else if (strcmp(line, "DATA_FILE:") == 0)
-        {
-            line += strlen("DATA_FILE:") + 1;
-            int len = strlen(line);
-            if (file_pattern != NULL)
-                delete [] file_pattern;
-            file_pattern = new char[len+1];
-            strcpy(file_pattern, line);
-        }
-        else if (strcmp(line, "DATA_SIZE:") == 0)
-        {
-            line += strlen("DATA_SIZE:") + 1;
-            full_size[0] = atoi(line);
-            line += strlen(line)+1;
-            full_size[1] = atoi(line);
-            line += strlen(line)+1;
-            full_size[2] = atoi(line);
-        }
-        else if (strcmp(line, "DATA_FORMAT:") == 0)
-        {
-            line += strlen("DATA_FORMAT:") + 1;
-            if (strncmp(line, "FLOAT", strlen("FLOAT")) == 0 ||
-                strncmp(line, "REAL", strlen("REAL")) == 0)
-                dataFormat = FloatData;
-            else if (strncmp(line, "BYTE", strlen("BYTE")) == 0 ||
-                     strncmp(line, "CHAR", strlen("CHAR")) == 0)
-                dataFormat = ByteData;
-            else if (strncmp(line, "DOUBLE", strlen("DOUBLE")) == 0)
-                dataFormat = DoubleData;
-            else if (strncmp(line, "INT", strlen("INT")) == 0)
-                dataFormat = IntegerData;
-            else
-                debug1 << "Unknown keyword for BOV byte data: " 
-                       << line << endl;
-        }
-        else if (strcmp(line, "DATA_COMPONENTS:") == 0)
-        {
-            line += strlen("DATA_COMPONENTS:") + 1;
-            if (strncmp(line, "COMPLEX", strlen("COMPLEX")) == 0)
-                dataNumComponents = 2;
-            else
-                dataNumComponents = atoi(line);
-        }
-        else if (strcmp(line, "DATA_BRICKLETS:") == 0)
-        {
-            line += strlen("DATA_BRICKLETS:") + 1;
-            bricklet_size[0] = atoi(line);
-            line += strlen(line)+1;
-            bricklet_size[1] = atoi(line);
-            line += strlen(line)+1;
-            bricklet_size[2] = atoi(line);
-        }
-        else if (strcmp(line, "VARIABLE:") == 0)
-        {
-            line += strlen("VARIABLE:") + 1;
-            int len = strlen(line);
-            if (varname != NULL)
-                delete [] varname;
-            varname = new char[len+1];
-            strcpy(varname, line);
-        }
-        else if (strcmp(line, "HAS_BOUNDARY:") == 0)
-        {
-            line += strlen("HAS_BOUNDARY:") + 1;
-            if (strcmp(line, "true") == 0)
+            buff[0] = '\0';
+            char *line = buff;
+            ifile.getline(line, 32768);
+            int nparts = FormatLine(line);
+            if (nparts <= 0)
+                continue;
+            if (line[0] == '#')
+                continue;
+            else if (strcmp(line, "TIME:") == 0)
             {
-                hasBoundaries = true;
+                line += strlen("TIME:") + 1;
+                cycle = atoi(line);
             }
-        }
-        else if (strcmp(line, "DATA_ENDIAN:") == 0)
-        {
-            line += strlen("DATA_ENDIAN:") + 1;
-            if (strcmp(line, "LITTLE") == 0)
-                littleEndian = true;
-            else
-                littleEndian = false;
-            declaredEndianess = true;
-        }
-        else if (strcmp(line, "VARIABLE_PALETTE_MIN:") == 0)
-        {
-            line += strlen("VARIABLE_PALETTE_MIN:") + 1;
-            min = atof(line);
-            byteToFloatTransform = true;
-        }
-        else if (strcmp(line, "VARIABLE_PALETTE_MAX:") == 0)
-        {
-            line += strlen("VARIABLE_PALETTE_MAX:") + 1;
-            max = atof(line);
-            byteToFloatTransform = true;
-        }
-        else if (strcmp(line, "VARIABLE_MIN:") == 0)
-        {
-            line += strlen("VARIABLE_MIN:") + 1;
-            min = atof(line);
-            byteToFloatTransform = true;
-        }
-        else if (strcmp(line, "VARIABLE_MAX:") == 0)
-        {
-            line += strlen("VARIABLE_MAX:") + 1;
-            max = atof(line);
-            byteToFloatTransform = true;
-        }
-        else if (strcmp(line, "BRICK_ORIGIN:") == 0)
-        {
-            line += strlen("BRICK_ORIGIN:") + 1;
-            origin[0] = atof(line);
-            line += strlen(line)+1;
-            origin[1] = atof(line);
-            line += strlen(line)+1;
-            origin[2] = atof(line);
-        }
-        else if (strcmp(line, "BRICK_SIZE:") == 0)
-        {
-            line += strlen("BRICK_SIZE:") + 1;
-            dimensions[0] = atof(line);
-            line += strlen(line)+1;
-            dimensions[1] = atof(line);
-            line += strlen(line)+1;
-            dimensions[2] = atof(line);
-        }
-        else if (strcmp(line, "VARIABLE_BRICK_MIN:") == 0)
-        {
-            line += strlen("VARIABLE_BRICK_MIN:") + 1;
-            int nbricks = nparts-1;
-            if (var_brick_min != NULL)
-                delete [] var_brick_min;
-            var_brick_min = new float[nbricks];
-            for (int i = 0 ; i < nbricks ; i++)
+            else if (strcmp(line, "DATA_FILE:") == 0)
             {
-                var_brick_min[i] = atof(line);
-                if (i != nbricks-1)
-                    line += strlen(line) + 1;
+                line += strlen("DATA_FILE:") + 1;
+                int len = strlen(line);
+                file_pattern = line;
             }
-        }
-        else if (strcmp(line, "VARIABLE_BRICK_MAX:") == 0)
-        {
-            line += strlen("VARIABLE_BRICK_MAX:") + 1;
-            int nbricks = nparts-1;
-            if (var_brick_max != NULL)
-                delete [] var_brick_max;
-            var_brick_max = new float[nbricks];
-            for (int i = 0 ; i < nbricks ; i++)
+            else if (strcmp(line, "DATA_SIZE:") == 0)
             {
-                var_brick_max[i] = atof(line);
-                if (i != nbricks-1)
-                    line += strlen(line) + 1;
+                line += strlen("DATA_SIZE:") + 1;
+                full_size[0] = atoi(line);
+                line += strlen(line)+1;
+                full_size[1] = atoi(line);
+                line += strlen(line)+1;
+                full_size[2] = atoi(line);
             }
-        }
-        else if (strcmp(line, "CENTERING:") == 0)
-        {
-            line += strlen("CENTERING:") + 1;
-            if (strstr(line, "zon") != NULL)
-                nodalCentering = false;
-        }
-        else if (strcmp(line, "BYTE_OFFSET:") == 0)
-        {
-            line += strlen("BYTE_OFFSET:") + 1;
-            byteOffset = atoi(line);
-            byteOffset = byteOffset < 0 ? 0 : byteOffset;
-        }
-        else if (strcmp(line, "DIVIDE_BRICK:") == 0)
-        {
-            line += strlen("DIVIDE_BRICK:") + 1;
-            divideBrick = (strcmp(line, "true") == 0);
+            else if (strcmp(line, "DATA_FORMAT:") == 0)
+            {
+                line += strlen("DATA_FORMAT:") + 1;
+                if (strncmp(line, "FLOAT", strlen("FLOAT")) == 0 ||
+                    strncmp(line, "REAL", strlen("REAL")) == 0)
+                    dataFormat = FloatData;
+                else if (strncmp(line, "BYTE", strlen("BYTE")) == 0 ||
+                         strncmp(line, "CHAR", strlen("CHAR")) == 0)
+                    dataFormat = ByteData;
+                else if (strncmp(line, "DOUBLE", strlen("DOUBLE")) == 0)
+                    dataFormat = DoubleData;
+                else if (strncmp(line, "INT", strlen("INT")) == 0)
+                    dataFormat = IntegerData;
+                else
+                    debug1 << "Unknown keyword for BOV byte data: " 
+                           << line << endl;
+            }
+            else if (strcmp(line, "DATA_COMPONENTS:") == 0)
+            {
+                line += strlen("DATA_COMPONENTS:") + 1;
+                if (strncmp(line, "COMPLEX", strlen("COMPLEX")) == 0)
+                    dataNumComponents = 2;
+                else
+                    dataNumComponents = atoi(line);
+            }
+            else if (strcmp(line, "DATA_BRICKLETS:") == 0)
+            {
+                line += strlen("DATA_BRICKLETS:") + 1;
+                bricklet_size[0] = atoi(line);
+                line += strlen(line)+1;
+                bricklet_size[1] = atoi(line);
+                line += strlen(line)+1;
+                bricklet_size[2] = atoi(line);
+            }
+            else if (strcmp(line, "VARIABLE:") == 0)
+            {
+                line += strlen("VARIABLE:") + 1;
+                int len = strlen(line);
+                varname = line;
+            }
+            else if (strcmp(line, "HAS_BOUNDARY:") == 0)
+            {
+                line += strlen("HAS_BOUNDARY:") + 1;
+                if (strcmp(line, "true") == 0)
+                {
+                    hasBoundaries = true;
+                }
+            }
+            else if (strcmp(line, "DATA_ENDIAN:") == 0)
+            {
+                line += strlen("DATA_ENDIAN:") + 1;
+                if (strcmp(line, "LITTLE") == 0)
+                    littleEndian = true;
+                else
+                    littleEndian = false;
+                declaredEndianess = true;
+            }
+            else if (strcmp(line, "VARIABLE_PALETTE_MIN:") == 0)
+            {
+                line += strlen("VARIABLE_PALETTE_MIN:") + 1;
+                min = atof(line);
+                byteToFloatTransform = true;
+            }
+            else if (strcmp(line, "VARIABLE_PALETTE_MAX:") == 0)
+            {
+                line += strlen("VARIABLE_PALETTE_MAX:") + 1;
+                max = atof(line);
+                byteToFloatTransform = true;
+            }
+            else if (strcmp(line, "VARIABLE_MIN:") == 0)
+            {
+                line += strlen("VARIABLE_MIN:") + 1;
+                min = atof(line);
+                byteToFloatTransform = true;
+            }
+            else if (strcmp(line, "VARIABLE_MAX:") == 0)
+            {
+                line += strlen("VARIABLE_MAX:") + 1;
+                max = atof(line);
+                byteToFloatTransform = true;
+            }
+            else if (strcmp(line, "BRICK_ORIGIN:") == 0)
+            {
+                line += strlen("BRICK_ORIGIN:") + 1;
+                origin[0] = atof(line);
+                line += strlen(line)+1;
+                origin[1] = atof(line);
+                line += strlen(line)+1;
+                origin[2] = atof(line);
+            }
+            else if (strcmp(line, "BRICK_SIZE:") == 0)
+            {
+                line += strlen("BRICK_SIZE:") + 1;
+                dimensions[0] = atof(line);
+                line += strlen(line)+1;
+                dimensions[1] = atof(line);
+                line += strlen(line)+1;
+                dimensions[2] = atof(line);
+            }
+            else if (strcmp(line, "VARIABLE_BRICK_MIN:") == 0)
+            {
+                line += strlen("VARIABLE_BRICK_MIN:") + 1;
+                int nbricks = nparts-1;
+                var_brick_min.clear();
+                var_brick_min.resize(nbricks);
+                for (int i = 0 ; i < nbricks ; i++)
+                {
+                    var_brick_min[i] = atof(line);
+                    if (i != nbricks-1)
+                        line += strlen(line) + 1;
+                }
+            }
+            else if (strcmp(line, "VARIABLE_BRICK_MAX:") == 0)
+            {
+                line += strlen("VARIABLE_BRICK_MAX:") + 1;
+                int nbricks = nparts-1;
+                var_brick_max.clear();
+                var_brick_max.resize(nbricks);
+                for (int i = 0 ; i < nbricks ; i++)
+                {
+                    var_brick_max[i] = atof(line);
+                    if (i != nbricks-1)
+                        line += strlen(line) + 1;
+                }
+            }
+            else if (strcmp(line, "CENTERING:") == 0)
+            {
+                line += strlen("CENTERING:") + 1;
+                if (strstr(line, "zon") != NULL)
+                    nodalCentering = false;
+            }
+            else if (strcmp(line, "BYTE_OFFSET:") == 0)
+            {
+                line += strlen("BYTE_OFFSET:") + 1;
+                byteOffset = atoi(line);
+                byteOffset = byteOffset < 0 ? 0 : byteOffset;
+            }
+            else if (strcmp(line, "DIVIDE_BRICK:") == 0)
+            {
+                line += strlen("DIVIDE_BRICK:") + 1;
+                divideBrick = (strcmp(line, "true") == 0);
+            }
         }
     }
 
-    if (file_pattern == NULL)
+    if (PAR_Size() > 1)
+    {
+        // Note that the "Broadcast<Type>" calls serve to both
+        // send from processor 0 and receive on other processors
+        // simultaneously.
+        vector<int> vals(16);
+        vals[0]  = cycle;
+        vals[1]  = full_size[0];
+        vals[2]  = full_size[1];
+        vals[3]  = full_size[2];
+        vals[4]  = (int) dataFormat;
+        vals[5]  = dataNumComponents;
+        vals[6]  = bricklet_size[0];
+        vals[7]  = bricklet_size[1];
+        vals[8]  = bricklet_size[2];
+        vals[9]  = (int) hasBoundaries;
+        vals[10] = (int) littleEndian;
+        vals[11] = (int) declaredEndianess;
+        vals[12] = (int) byteToFloatTransform;
+        vals[13] = (int) nodalCentering;
+        vals[14] = byteOffset;
+        vals[15] = (int) divideBrick;
+        BroadcastIntVector(vals, PAR_Rank());
+        cycle             = vals[0];
+        full_size[0]      = vals[1];
+        full_size[1]      = vals[2];
+        full_size[2]      = vals[3];
+        dataFormat        = (DataFormatEnum) vals[4];
+        dataNumComponents = vals[5];
+        bricklet_size[0]  = vals[6];
+        bricklet_size[1]  = vals[7];
+        bricklet_size[2]  = vals[8];
+        hasBoundaries     = (bool) vals[9];
+        littleEndian      = (bool) vals[10];
+        declaredEndianess = (bool) vals[11];
+        byteToFloatTransform = (bool) vals[12];
+        nodalCentering    = (bool) vals[13];
+        byteOffset        = vals[14];
+        divideBrick       = (bool) vals[15];
+
+        bool hasExtents = false;
+        if (var_brick_min.size() > 0)
+            hasExtents = true;
+        BroadcastBool(hasExtents);
+        if (hasExtents)
+        {
+            BroadcastDoubleVector(var_brick_min, PAR_Rank());
+        }
+
+        hasExtents = false;
+        if (var_brick_max.size() > 0)
+            hasExtents = true;
+        BroadcastBool(hasExtents);
+        if (hasExtents)
+        {
+            BroadcastDoubleVector(var_brick_max, PAR_Rank());
+        }
+
+        vector<double> valsd(8);
+        valsd[0] = min;
+        valsd[1] = max;
+        valsd[2] = origin[0];
+        valsd[3] = origin[1];
+        valsd[4] = origin[2];
+        valsd[5] = dimensions[0];
+        valsd[6] = dimensions[1];
+        valsd[7] = dimensions[2];
+        BroadcastDoubleVector(valsd, PAR_Rank());
+        min           = valsd[0];
+        max           = valsd[1];
+        origin[0]     = valsd[2];
+        origin[1]     = valsd[3];
+        origin[2]     = valsd[4];
+        dimensions[0] = valsd[5];
+        dimensions[1] = valsd[6];
+        dimensions[2] = valsd[7];
+
+        BroadcastString(file_pattern, PAR_Rank());
+debug1 << "Pattern is " << file_pattern << endl;
+        BroadcastString(varname, PAR_Rank());
+    }
+
+    if (file_pattern == "")
     {
         debug1 << "Did not parse file pattern (\"DATA_FILE\")." << endl;
         EXCEPTION1(InvalidFilesException, fname);
