@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+  <Plugin name="PFLOWTRAN" type="database" label="PFLOWTRAN" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" specifiedFilenames="false">
+      <CXXFLAGS>
+          $(HDF5_INCLUDE)
+      </CXXFLAGS>
+    <LIBS>
+        $(HDF5_LIB) $(ZLIB_LIB)
+    </LIBS>
+    <Extensions>
+      h5
+    </Extensions>
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
