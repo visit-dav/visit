@@ -68,7 +68,7 @@ const char *QvisScatterPlotWindow::roleNames[5] = {
     QT_TRANSLATE_NOOP( "ScatterPlotRoleNames", "X coordinate" ),
     QT_TRANSLATE_NOOP( "ScatterPlotRoleNames", "Y coordinate" ),
     QT_TRANSLATE_NOOP( "ScatterPlotRoleNames", "Z coordinate" ),
-    QT_TRANSLATE_NOOP( "ScatterPlotRoleNames", "Coloe" ),
+    QT_TRANSLATE_NOOP( "ScatterPlotRoleNames", "Color" ),
     QT_TRANSLATE_NOOP( "ScatterPlotRoleNames", "None" )
 };
 
