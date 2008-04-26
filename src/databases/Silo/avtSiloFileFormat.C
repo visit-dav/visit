@@ -183,12 +183,17 @@ static const int maxCoincidentNodelists = 12;
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Mark C. Miller, Fri Apr 25 21:06:27 PDT 2008
+//    Initialize numNodeLists and broadcast info about nodelists if we
+//    have any.
+//
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
     : avtSTMDFileFormat(&toc_name, 1)
 {
     dontForceSingle = 0;
+    numNodeLists = 0;
 
     if (!madeGlobalSiloCalls)
     {
@@ -413,12 +418,12 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
     if (pColon != NULL)
     {
         pColon++; // move one passed the ':' character
-	int triedDir = DBSetDir(dbfiles[f], pColon);
-	if (triedDir == 0)
-	{
-	    debug1 << "Handling this silo file as though it is a file-dir combo" << endl;
-	    debug1 << "for the case where an entire time series is in one silo file." << endl;
-	    topDir = pColon;
+        int triedDir = DBSetDir(dbfiles[f], pColon);
+        if (triedDir == 0)
+        {
+            debug1 << "Handling this silo file as though it is a file-dir combo" << endl;
+            debug1 << "for the case where an entire time series is in one silo file." << endl;
+            topDir = pColon;
         }
     }
 
@@ -1124,6 +1129,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Added setting of guiHide feature on many md objects.
 //    Added nodelist enumeration variables, when present42`
+//
+//    Mark C. Miller, Wed Apr 23 12:08:56 PDT 2008
+//    Made material name parsing handle material names that point to NULL.
 // ****************************************************************************
 
 void
@@ -1284,7 +1292,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     char  *searchpath_str = NULL;
     if (strcmp(dirname, topDir.c_str()) == 0)
     {
-	codeNameGuess = GuessCodeNameFromTopLevelVars(dbfile);
+        codeNameGuess = GuessCodeNameFromTopLevelVars(dbfile);
 
         if (DBInqVarExists(dbfile, "ConnectivityIsTimeVarying"))
         {
@@ -1601,7 +1609,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir,
                                    mm?mm->nblocks:0, mm?mm->blockorigin:0, cellOrigin,
                                    groupOrigin, ndims, tdims, mt);
-	mmd->hideFromGUI = mm->guihide;
+        mmd->hideFromGUI = mm->guihide;
         mmd->validVariable = valid_var;
         mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";
@@ -1620,14 +1628,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         // so we can match other multi-objects to it later
         StoreMultimeshInfo(dirname, i, name_w_dir, meshnum, mm);
 
-	//
-	// Handle special case for enumerated scalar rep for nodelists
-	//
+        //
+        // Handle special case for enumerated scalar rep for nodelists
+        //
         if (codeNameGuess == "BlockStructured" &&
-	    !haveAddedNodelistEnumerations[name_w_dir])
-	{
+            !haveAddedNodelistEnumerations[name_w_dir])
+        {
             haveAddedNodelistEnumerations[name_w_dir] = true;
-	    AddNodelistEnumerations(dbfile, md, name_w_dir);
+            AddNodelistEnumerations(dbfile, md, name_w_dir);
         }
 
         delete [] name_w_dir;
@@ -1865,7 +1873,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         if (cur->yunits != NULL)
             cmd->yUnits = cur->yunits;
         cmd->validVariable = valid_var;
-	cmd->hideFromGUI = cur->guihide;
+        cmd->hideFromGUI = cur->guihide;
         md->Add(cmd);
 
         delete [] name_w_dir;
@@ -2017,10 +2025,10 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
         string  varUnits;
-	bool    guiHide = false;
+        bool    guiHide = false;
 
-	if (haveAddedNodelistEnumerations.find(meshname) ==
-	    haveAddedNodelistEnumerations.end())
+        if (haveAddedNodelistEnumerations.find(meshname) ==
+            haveAddedNodelistEnumerations.end())
             haveAddedNodelistEnumerations[meshname] = false;;
         int nvals = 1;
         if (valid_var)
@@ -2042,7 +2050,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                                               : AVT_NODECENT);
                     nvals = uv->nvals;
                     treatAsASCII = (uv->ascii_labels);
-		    guiHide = uv->guihide;
+                    guiHide = uv->guihide;
                     if(uv->units != 0)
                         varUnits = string(uv->units);
                     DBFreeUcdvar(uv);
@@ -2061,7 +2069,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                                     : AVT_ZONECENT);
                     nvals = qv->nvals;
                     treatAsASCII = (qv->ascii_labels);
-		    guiHide = qv->guihide;
+                    guiHide = qv->guihide;
                     if(qv->units != 0)
                         varUnits = string(qv->units);
                     DBFreeQuadvar(qv);
@@ -2079,7 +2087,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     }
                     nvals = pv->nvals;
                     treatAsASCII = (pv->ascii_labels);
-		    guiHide = pv->guihide;
+                    guiHide = pv->guihide;
                     if(pv->units != 0)
                         varUnits = string(pv->units);
                     DBFreeMeshvar(pv);
@@ -2100,7 +2108,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     }
                     nvals = csgv->nvals;
                     treatAsASCII = (csgv->ascii_labels);
-		    guiHide = csgv->guihide;
+                    guiHide = csgv->guihide;
                     if(csgv->units != 0)
                         varUnits = string(csgv->units);
                     DBFreeCsgvar(csgv);
@@ -2120,19 +2128,19 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                                        meshname, centering);
             smd->validVariable = valid_var;
             smd->treatAsASCII = treatAsASCII;
-	    smd->hideFromGUI = guiHide;
+            smd->hideFromGUI = guiHide;
             if(varUnits != "")
             {
                 smd->hasUnits = true;
                 smd->units = varUnits;
             }
 
-	    //
-	    // Handle special cases for enumerated variables
-	    //
-	    if (valid_var && codeNameGuess == "Ale3d" &&
-	        strstr(multivar_names[i], "rlxstat") != 0)
-	        AddAle3drlxstatEnumerationInfo(smd);
+            //
+            // Handle special cases for enumerated variables
+            //
+            if (valid_var && codeNameGuess == "Ale3d" &&
+                strstr(multivar_names[i], "rlxstat") != 0)
+                AddAle3drlxstatEnumerationInfo(smd);
 
             md->Add(smd);
         }
@@ -2141,7 +2149,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                              meshname, centering, nvals);
             vmd->validVariable = valid_var;
-	    vmd->hideFromGUI = guiHide;
+            vmd->hideFromGUI = guiHide;
             if(varUnits != "")
             {
                 vmd->hasUnits = true;
@@ -2189,7 +2197,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                                     meshname_w_dir, centering);
             smd->treatAsASCII = (qv->ascii_labels);
             smd->validVariable = valid_var;
-	    smd->hideFromGUI = guiHide;
+            smd->hideFromGUI = guiHide;
             if(qv->units != 0)
             {
                 smd->hasUnits = true;
@@ -2202,7 +2210,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                          meshname_w_dir, centering, qv->nvals);
             vmd->validVariable = valid_var;
-	    vmd->hideFromGUI = guiHide;
+            vmd->hideFromGUI = guiHide;
             if(qv->units != 0)
             {
                 vmd->hasUnits = true;
@@ -2252,7 +2260,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                                     meshname_w_dir, centering);
             smd->validVariable = valid_var;
             smd->treatAsASCII = (uv->ascii_labels);
-	    smd->hideFromGUI = guiHide;
+            smd->hideFromGUI = guiHide;
             if(uv->units != 0)
             {
                 smd->hasUnits = true;
@@ -2265,7 +2273,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                          meshname_w_dir, centering, uv->nvals);
             vmd->validVariable = valid_var;
-	    vmd->hideFromGUI = guiHide;
+            vmd->hideFromGUI = guiHide;
             if(uv->units != 0)
             {
                 vmd->hasUnits = true;
@@ -2300,7 +2308,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         //
         // Get the dimension of the variable.
         //
-	bool guiHide = pv->guihide;
+        bool guiHide = pv->guihide;
         char *name_w_dir = GenerateName(dirname, ptvar_names[i], topDir.c_str());
         char *meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
         if (pv->nvals == 1)
@@ -2309,7 +2317,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                                 meshname_w_dir, AVT_NODECENT);
             smd->treatAsASCII = (pv->ascii_labels);
             smd->validVariable = valid_var;
-	    smd->hideFromGUI = guiHide;
+            smd->hideFromGUI = guiHide;
             if(pv->units != 0)
             {
                 smd->hasUnits = true;
@@ -2322,7 +2330,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                       meshname_w_dir, AVT_NODECENT, pv->nvals);
             vmd->validVariable = valid_var;
-	    vmd->hideFromGUI = guiHide;
+            vmd->hideFromGUI = guiHide;
             if(pv->units != 0)
             {
                 vmd->hasUnits = true;
@@ -2374,7 +2382,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                                     meshname_w_dir, centering);
             smd->treatAsASCII = (csgv->ascii_labels);
             smd->validVariable = valid_var;
-	    smd->hideFromGUI = guiHide;
+            smd->hideFromGUI = guiHide;
             if(csgv->units != 0)
             {
                 smd->hasUnits = true;
@@ -2387,7 +2395,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
                                          meshname_w_dir, centering, csgv->nvals);
             vmd->validVariable = valid_var;
-	    vmd->hideFromGUI = guiHide;
+            vmd->hideFromGUI = guiHide;
             if(csgv->units != 0)
             {
                 vmd->hasUnits = true;
@@ -2433,7 +2441,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             //
             char *num = NULL;
             int dlen = int(log10(float(mat->matnos[j]+1))) + 1;
-            if (mat->matnames == NULL)
+            if (mat->matnames == NULL || mat->matnames[j] == NULL)
             {
                 num = new char[dlen + 2];
                 sprintf(num, "%d", mat->matnos[j]);
@@ -3060,6 +3068,40 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
     BroadcastStringVector(actualMeshName, rank);
     BroadcastIntVector(blocksForMesh, rank);
     BroadcastString(codeNameGuess, rank);
+
+    //
+    // Broadcast info about nodelists
+    //
+    BroadcastInt(numNodeLists);
+    if (numNodeLists > 0)
+    {
+        //
+        // Build the NChooseR map
+        //
+        avtScalarMetaData::BuildEnumNChooseRMap(numNodeLists, maxCoincidentNodelists, pascalsTriangleMap);
+
+        int nlMapSize = nlBlockToWindowsMap.size();
+        BroadcastInt(nlMapSize);
+        if (rank == 0)
+        {
+            map<int, vector<int> >::iterator nlit;
+            for (nlit = nlBlockToWindowsMap.begin(); nlit != nlBlockToWindowsMap.end(); nlit++)
+            {
+                int nlMapKey = nlit->first;
+                BroadcastInt(nlMapKey);
+                BroadcastIntVector(nlit->second, rank);
+            }
+        }
+        else
+        {
+            for (int k = 0; k < nlMapSize; k++)
+            {
+                int nlMapKey;
+                BroadcastInt(nlMapKey);
+                BroadcastIntVector(nlBlockToWindowsMap[nlMapKey], rank);
+            }
+        }
+    }
     
     //
     // Broadcast Group Info
@@ -4273,8 +4315,8 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     if (ds == 0)
     {
         char msg[256];
-	SNPRINTF(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
-	    "paint Nodelists variable", meshName.c_str(), domain);
+        SNPRINTF(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
+            "paint Nodelists variable", meshName.c_str(), domain);
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -4293,8 +4335,8 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     else
     {
         char msg[256];
-	SNPRINTF(msg, sizeof(msg), "Do not recognize dataset type for mesh \"%s\" "
-	    "for domain %d to paint Nodelists variable", meshName.c_str(), domain);
+        SNPRINTF(msg, sizeof(msg), "Do not recognize dataset type for mesh \"%s\" "
+            "for domain %d to paint Nodelists variable", meshName.c_str(), domain);
         EXCEPTION1(ImproperUseException, msg);
     }
 
@@ -4302,8 +4344,8 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     if (arr == 0)
     {
         char msg[256];
-	SNPRINTF(msg, sizeof(msg), "Cannot find field data array \"base_index\""
-	    "on mesh \"%s\" for domain %d to paint Nodelists variable", meshName.c_str(), domain);
+        SNPRINTF(msg, sizeof(msg), "Cannot find field data array \"base_index\""
+            "on mesh \"%s\" for domain %d to paint Nodelists variable", meshName.c_str(), domain);
         EXCEPTION1(ImproperUseException, msg);
     }
     int base_index[3];
@@ -4315,8 +4357,8 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     if (arr1 == 0)
     {
         char msg[256];
-	SNPRINTF(msg, sizeof(msg), "Cannot find field data array \"group_id\""
-	    "on mesh \"%s\" for domain %d to paint Nodelists variable", meshName.c_str(), domain);
+        SNPRINTF(msg, sizeof(msg), "Cannot find field data array \"group_id\""
+            "on mesh \"%s\" for domain %d to paint Nodelists variable", meshName.c_str(), domain);
         EXCEPTION1(ImproperUseException, msg);
     }
     int blockNum = arr1->GetValue(0);
@@ -4348,14 +4390,14 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     const vector<int> &windowsOnThisBlock = nlBlockToWindowsMap[blockNum];
     for (i = 0; i < windowsOnThisBlock.size(); i += 7)
     {
-	//
+        //
         // Entries in windowsOnThisBlock vector come in groups of 7.
-	// First one is the nodelist id (value), next 6 are its window
-	//
-	int val = windowsOnThisBlock[i];
-	int winExtents[6];
-	for (int q = 0; q < 6; q++)
-	    winExtents[q] = windowsOnThisBlock[i+1+q];
+        // First one is the nodelist id (value), next 6 are its window
+        //
+        int val = windowsOnThisBlock[i];
+        int winExtents[6];
+        for (int q = 0; q < 6; q++)
+            winExtents[q] = windowsOnThisBlock[i+1+q];
 
         // find intersection between extents and group_min_idx & group_max_idx
         int isec[6];
@@ -4374,54 +4416,54 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
         isec[4] -= base_index[2];
         isec[5] -= base_index[2];
 
-	// For 2D, ensure we enter outermost loop, below, for one iteration 
-	if (dims[2] == 0) isec[5] = isec[4] = 0;
+        // For 2D, ensure we enter outermost loop, below, for one iteration 
+        if (dims[2] == 0) isec[5] = isec[4] = 0;
                     
         //
-	// We've got a block window that overlaps with the current domain's
-	// extents. This mean's the domain contains nodes that are part of
-	// this window. So, now we need to 'paint' values for this nodelist
-	// into the variable array we are returning.
-	//
-	int nxy = dims[0] * dims[1];
-	for (int zi = isec[4]; zi <= isec[5]; zi++)
+        // We've got a block window that overlaps with the current domain's
+        // extents. This mean's the domain contains nodes that are part of
+        // this window. So, now we need to 'paint' values for this nodelist
+        // into the variable array we are returning.
+        //
+        int nxy = dims[0] * dims[1];
+        for (int zi = isec[4]; zi <= isec[5]; zi++)
         {
-	    for (int yi = isec[2]; yi <= isec[3]; yi++)
-	    {
-	        for (int xi = isec[0]; xi <= isec[1]; xi++)
-	        {
+            for (int yi = isec[2]; yi <= isec[3]; yi++)
+            {
+                for (int xi = isec[0]; xi <= isec[1]; xi++)
+                {
 #ifdef USE_BIT_MASK_FOR_NODELIST_ENUMS
-		    if (ptr[zi*nxy + yi*dims[0] + xi] == -1.0)
+                    if (ptr[zi*nxy + yi*dims[0] + xi] == -1.0)
                         ptr[zi*nxy + yi*dims[0] + xi] = 1<<val;
                     else
-		    {
+                    {
                         int curval = int(ptr[zi*nxy + yi*dims[0] + xi]);
-			curval |= (1<<val);
+                        curval |= (1<<val);
                         ptr[zi*nxy + yi*dims[0] + xi] = curval;
                     }
 #else
-		    if (ptr[zi*nxy + yi*dims[0] + xi] == -1.0)
-		    {
-		        // If the value at this node is uninitialized, set it to
-		        // this nodeset's id
+                    if (ptr[zi*nxy + yi*dims[0] + xi] == -1.0)
+                    {
+                        // If the value at this node is uninitialized, set it to
+                        // this nodeset's id
                         ptr[zi*nxy + yi*dims[0] + xi] = (float) val;
-		    }
-		    else
-		    {
-			// Otherwise, we've already got a value at this node.
-			// We need to obtain a new value that represents all
-			// the sets this node is already in plus the new one
-			// we're adding. Use avtScalarMetaData helper method
-			// to do it.
-			double curval = ptr[zi*nxy + yi*dims[0] + xi];
-		        avtScalarMetaData::UpdateValByInsertingDigit(&curval,
-			    numNodeLists, maxCoincidentNodelists, pascalsTriangleMap, val);
+                    }
+                    else
+                    {
+                        // Otherwise, we've already got a value at this node.
+                        // We need to obtain a new value that represents all
+                        // the sets this node is already in plus the new one
+                        // we're adding. Use avtScalarMetaData helper method
+                        // to do it.
+                        double curval = ptr[zi*nxy + yi*dims[0] + xi];
+                        avtScalarMetaData::UpdateValByInsertingDigit(&curval,
+                            numNodeLists, maxCoincidentNodelists, pascalsTriangleMap, val);
                         ptr[zi*nxy + yi*dims[0] + xi] = float(curval);
-		    }
+                    }
 #endif
-	        }
-	    }
-	}
+                }
+            }
+        }
     }
 
     return nlvar;
@@ -4491,8 +4533,8 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     if (codeNameGuess == "BlockStructured" && string(v) == "Nodelists")
     {
         vtkDataArray *nlvar = GetNodelistsVar(domain);
-	if (nlvar != 0)
-	    return nlvar;
+        if (nlvar != 0)
+            return nlvar;
     }
 
     int localdomain = domain;
@@ -7189,26 +7231,26 @@ avtSiloFileFormat::DetermineFilenameAndDirectory(char *input,
         // Leave the file handle alone.
         //
         strcpy(filename, ".");
-	if (mdirname == 0 || strcmp(input, "EMPTY") == 0 || input[0] == '/' ||
-	   (input[0] == '.' && input[1] == '/'))
+        if (mdirname == 0 || strcmp(input, "EMPTY") == 0 || input[0] == '/' ||
+           (input[0] == '.' && input[1] == '/'))
         {
            location = input;
-	}
+        }
         else
-	{
-	    if (!strncmp(mdirname, input, strlen(mdirname)) == 0)
-	    {
-	        char tmp[1024];
-	        sprintf(tmp, "%s/%s", mdirname, input);
-	        location = CXX_strdup(tmp);
-	        if (allocated_location)
-	            *allocated_location = true;
-	    }
-	    else
-	    {
-	        location = input;
-	    }
-	}
+        {
+            if (!strncmp(mdirname, input, strlen(mdirname)) == 0)
+            {
+                char tmp[1024];
+                sprintf(tmp, "%s/%s", mdirname, input);
+                location = CXX_strdup(tmp);
+                if (allocated_location)
+                    *allocated_location = true;
+            }
+            else
+            {
+                location = input;
+            }
+        }
     }
     else
     {
@@ -9309,7 +9351,7 @@ GenerateName(const char *dirname, const char *varname, const char *topdirname)
     {
         while (dirname[partOfPathThatIsReallyTopDirName2] == 
                topdirname[partOfPathThatIsReallyTopDirName2] &&
-	       dirname[partOfPathThatIsReallyTopDirName2] != '\0')
+               dirname[partOfPathThatIsReallyTopDirName2] != '\0')
                 partOfPathThatIsReallyTopDirName2++;
     }
     int tdOffset2 = partOfPathThatIsReallyTopDirName2; // shorter name
@@ -9943,38 +9985,38 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
     for (i = 0; i < numNodeLists; i++)
     {
         char *tmpName = 0; char tmpVarName[256];
-	SNPRINTF(tmpVarName, sizeof(tmpVarName), "/Global/Nodelists/Nodelist%d/Name", i);
-	tmpName = (char*) DBGetVar(dbfile, tmpVarName);
+        SNPRINTF(tmpVarName, sizeof(tmpVarName), "/Global/Nodelists/Nodelist%d/Name", i);
+        tmpName = (char*) DBGetVar(dbfile, tmpVarName);
 
-	debug5 << "For nodelist \"" << tmpName << "\", value = " << i << endl;
-	smd->AddEnumNameValue(tmpName, i);
-	free(tmpName);
+        debug5 << "For nodelist \"" << tmpName << "\", value = " << i << endl;
+        smd->AddEnumNameValue(tmpName, i);
+        free(tmpName);
 
-	SNPRINTF(tmpVarName, sizeof(tmpVarName), "/Global/Nodelists/Nodelist%d/NumberWindows", i);
-	int numWindows;
+        SNPRINTF(tmpVarName, sizeof(tmpVarName), "/Global/Nodelists/Nodelist%d/NumberWindows", i);
+        int numWindows;
         DBReadVar(dbfile, tmpVarName, &numWindows);
 
-	debug5 << "    NumberWindows = " << numWindows << endl;
-	for (int j = 0; j < numWindows; j++)
-	{
-	    debug5 << "        For Window " << j << endl;
-	    SNPRINTF(tmpVarName, sizeof(tmpVarName), "/Global/Nodelists/Nodelist%d/Block%d", i, j);
-	    int blockNum;
+        debug5 << "    NumberWindows = " << numWindows << endl;
+        for (int j = 0; j < numWindows; j++)
+        {
+            debug5 << "        For Window " << j << endl;
+            SNPRINTF(tmpVarName, sizeof(tmpVarName), "/Global/Nodelists/Nodelist%d/Block%d", i, j);
+            int blockNum;
             DBReadVar(dbfile, tmpVarName, &blockNum);
             nlBlockToWindowsMap[blockNum].push_back(i);
-	    debug5 << "            Block = " << blockNum << endl;
+            debug5 << "            Block = " << blockNum << endl;
 
-	    debug5 << "            Extents = ";
-	    SNPRINTF(tmpVarName, sizeof(tmpVarName), "/Global/Nodelists/Nodelist%d/Extents%d", i, j);
-	    int extents[6];
+            debug5 << "            Extents = ";
+            SNPRINTF(tmpVarName, sizeof(tmpVarName), "/Global/Nodelists/Nodelist%d/Extents%d", i, j);
+            int extents[6];
             DBReadVar(dbfile, tmpVarName, extents);
-	    for (int k = 0; k < 6; k++)
-	    {
+            for (int k = 0; k < 6; k++)
+            {
                 nlBlockToWindowsMap[blockNum].push_back(extents[k]);
-	        debug5 << extents[k] << ", ";
-	    }
-	    debug5 << endl;
-	}
+                debug5 << extents[k] << ", ";
+            }
+            debug5 << endl;
+        }
     }
 
     // record the always exclude value as blocknum=-1
@@ -9983,7 +10025,7 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
     md->Add(smd);
 
     //
-    // Build the NChooseR map
+    // Build the pascal triangle map for updating nodelist variable values
     //
     avtScalarMetaData::BuildEnumNChooseRMap(numNodeLists, maxCoincidentNodelists, pascalsTriangleMap);
 }
