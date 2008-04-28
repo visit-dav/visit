@@ -247,7 +247,7 @@
         out << "\t\t\t\tAdditionalIncludeDirectories=\""
             << "$(QTDIR)\\include"
             << ";" << pluginBase;
-        if (usingDevDir)
+        if (withinDevDir)
             out << "\\" << pluginType << "\\" << name;
         out << ";" << includeBase << "\\VisIt"
             << ";" << includeBase << "\\VTK"
@@ -284,8 +284,6 @@
         out << "\t\t\t\tName=\"VCLinkerTool\"" << endl;
         out << "\t\t\t\tAdditionalDependencies=\"" << libs << "\"" << endl;
         out << "\t\t\t\tOutputFile=\"" << binBase << "\\";
-        if (usingDevDir)
-            out << "Release\\";
         out << pluginType << "\\lib" << pluginComponent << name << pType 
             << suffix << ".dll\"" << endl;
         out << "\t\t\t\tLinkIncremental=\"1\"" << endl;
@@ -293,8 +291,6 @@
         out << "\t\t\t\tAdditionalLibraryDirectories=\""
             << "$(QTDIR)\\lib;"
             << libBase;
-        if (usingDevDir)
-            out << "\\Release";
         out << "\"" << endl;
         out << "\t\t\t\tProgramDatabaseFile=\".\\Release\\" 
             << name << pluginComponent << "\\" 
@@ -327,12 +323,12 @@
             out << "\t\t\t\tCommandLine=\""
                 << "$(QTDIR)\\bin\\moc.exe "
                 << pluginBase;
-            if (usingDevDir)
+            if (withinDevDir)
                 out << "\\" << pluginType << "\\" << name;
             out << "\\Qvis" << name << winType << ".h "
                 << "-o "
                 << pluginBase;
-            if (usingDevDir)
+            if (withinDevDir)
                out << "\\" << pluginType << "\\" << name;
             out << "\\Qvis" << name << winType << "_moc.C\"/>" << endl;
         }
@@ -378,7 +374,7 @@
         out << "\t\t\t\tAdditionalIncludeDirectories=\""
             << "$(QTDIR)\\include"
             << ";" << pluginBase;
-        if (usingDevDir)
+        if (withinDevDir)
             out << "\\" << pluginType << "\\" << name;
         out << ";" << includeBase << "\\VisIt"
             << ";" << includeBase << "\\VTK"
@@ -415,8 +411,6 @@
         out << "\t\t\t\tName=\"VCLinkerTool\"" << endl;
         out << "\t\t\t\tAdditionalDependencies=\"" << libs << "\"" << endl;
         out << "\t\t\t\tOutputFile=\"" << binBase << "\\";
-        if (usingDevDir)
-            out << "Debug\\";
         out << pluginType << "\\lib" << pluginComponent << name << pType 
             << suffix << ".dll\"" << endl;
         out << "\t\t\t\tLinkIncremental=\"2\"" << endl;
@@ -424,8 +418,6 @@
         out << "\t\t\t\tAdditionalLibraryDirectories=\""
             << "$(QTDIR)\\lib;"
             << libBase;
-        if (usingDevDir)
-            out << "\\Debug";
         out << "\"" << endl;
         out << "\t\t\t\tGenerateDebugInformation=\"TRUE\"" << endl;
         out << "\t\t\t\tProgramDatabaseFile=\".\\Debug\\" 
@@ -458,12 +450,12 @@
             out << "\t\t\t\tCommandLine=\""
                 << "$(QTDIR)\\bin\\moc.exe "
                 << pluginBase;
-           if (usingDevDir)
+           if (withinDevDir)
               out << "\\" << pluginType << "\\" << name;
            out << "\\Qvis" << name << winType << ".h "
                 << "-o "
                 << pluginBase;
-           if (usingDevDir)
+           if (withinDevDir)
               out << "\\" << pluginType << "\\" << name;
            out << "\\Qvis" << name << winType << "_moc.C\"/>" << endl;
         }
@@ -508,7 +500,7 @@
         out << "\t\t\t\tAdditionalIncludeDirectories=\""
             << "$(QTDIR)\\include"
             << ";" << pluginBase;
-        if (usingDevDir)
+        if (withinDevDir)
             out << "\\" << pluginType << "\\" << name;
         out << ";" << includeBase << "\\VisIt"
             << ";" << includeBase << "\\VTK"
@@ -546,8 +538,6 @@
         out << "\t\t\t\tAdditionalOptions=\"/FIXED:NO\""<< endl;
         out << "\t\t\t\tAdditionalDependencies=\"" << libs << "\"" << endl;
         out << "\t\t\t\tOutputFile=\"" << binBase << "\\";
-        if (usingDevDir)
-            out << "Debug\\";
         out << pluginType << "\\lib" << pluginComponent << name << pType 
             << suffix << ".dll\"" << endl;
         out << "\t\t\t\tLinkIncremental=\"0\"" << endl;
@@ -555,8 +545,6 @@
         out << "\t\t\t\tAdditionalLibraryDirectories=\""
             << "$(QTDIR)\\lib;"
             << libBase;
-        if (usingDevDir)
-            out << "\\Debug";
         out << "\"" << endl;
         out << "\t\t\t\tGenerateDebugInformation=\"TRUE\"" << endl;
         out << "\t\t\t\tProgramDatabaseFile=\".\\Debug\\" 
@@ -589,12 +577,12 @@
             out << "\t\t\t\tCommandLine=\""
                 << "$(QTDIR)\\bin\\moc.exe "
                 << pluginBase;
-           if (usingDevDir)
+           if (withinDevDir)
               out << "\\" << pluginType << "\\" << name;
             out << "\\Qvis" << name << winType << ".h "
                 << "-o "
                 << pluginBase;
-           if (usingDevDir)
+           if (withinDevDir)
               out << "\\" << pluginType << "\\" << name;
            out << "\\Qvis" << name << winType << "_moc.C\"/>" << endl;
         }
@@ -634,7 +622,7 @@
             out << "\t\t\t<File" << endl;
             out << "\t\t\t\tRelativePath=\"";
 #ifdef _WIN32
-            if (usingDevDir)
+            if (withinDevDir)
             {
                 out << "..\\..\\visit\\" << pluginType 
                     << "\\" << name << "\\" << srcFiles[i];
@@ -736,7 +724,7 @@
         out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
         out << "\t\t\t\tAdditionalIncludeDirectories=\""
             << pluginBase;
-        if (usingDevDir)
+        if (withinDevDir)
             out << "\\databases\\" << name;
         out << ";" << includeBase << "\\VisIt"
             << ";" << includeBase << "\\VTK"
@@ -770,16 +758,12 @@
             << libs 
             << " utility.lib vtkCommon.lib vtkFiltering.lib\"" << endl;
         out << "\t\t\t\tOutputFile=\"" << binBase << "\\";
-        if (usingDevDir)
-            out << "Release\\";
         out << "databases\\lib" << pluginType << name << pluginSuffix 
             << ".dll\"" << endl;
         out << "\t\t\t\tLinkIncremental=\"1\"" << endl;
         out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
         out << "\t\t\t\tAdditionalLibraryDirectories=\""
             << libBase;
-        if (usingDevDir)
-           out << "\\Release";
         out << "\"" << endl;
         out << "\t\t\t\tProgramDatabaseFile=\".\\Release\\" 
             << name << pluginType << "\\" 
@@ -837,7 +821,7 @@
         out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
         out << "\t\t\t\tAdditionalIncludeDirectories=\""
             << pluginBase;
-        if (usingDevDir)
+        if (withinDevDir)
             out << "\\databases\\" << name;
         out << ";" << includeBase << "\\VisIt"
             << ";" << includeBase << "\\VTK"
@@ -871,16 +855,12 @@
             << libs
             << " utility.lib vtkCommon.lib vtkFiltering.lib\"" << endl;
         out << "\t\t\t\tOutputFile=\"" << binBase << "\\";
-        if (usingDevDir)
-            out << "Debug\\";
         out << "databases\\lib" << pluginType << name << pluginSuffix 
             << ".dll\"" << endl;
         out << "\t\t\t\tLinkIncremental=\"2\"" << endl;
         out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
         out << "\t\t\t\tAdditionalLibraryDirectories=\""
             << libBase;
-        if (usingDevDir)
-            out << "\\Debug";
         out << "\"" << endl;
         out << "\t\t\t\tGenerateDebugInformation=\"TRUE\"" << endl;
         out << "\t\t\t\tProgramDatabaseFile=\".\\Debug\\" 
@@ -939,7 +919,7 @@
         out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
         out << "\t\t\t\tAdditionalIncludeDirectories=\""
             << pluginBase;
-        if (usingDevDir)
+        if (withinDevDir)
             out << "\\databases\\" << name;
         out << ";" << includeBase << "\\VisIt"
             << ";" << includeBase << "\\VTK"
@@ -974,16 +954,12 @@
             << libs
             << " utility.lib vtkCommon.lib vtkFiltering.lib\"" << endl;
         out << "\t\t\t\tOutputFile=\"" << binBase << "\\";
-        if (usingDevDir)
-            out << "Debug\\";
         out << "databases\\lib" << pluginType << name << pluginSuffix 
             << ".dll\"" << endl;
         out << "\t\t\t\tLinkIncremental=\"0\"" << endl;
         out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
         out << "\t\t\t\tAdditionalLibraryDirectories=\""
             << libBase;
-        if (usingDevDir)
-            out << "\\Debug";
         out << "\"" << endl;
         out << "\t\t\t\tGenerateDebugInformation=\"TRUE\"" << endl;
         out << "\t\t\t\tProgramDatabaseFile=\".\\Debug\\" 
@@ -1038,7 +1014,7 @@
             out << "\t\t\t<File" << endl;
             out << "\t\t\t\tRelativePath=\"";
 #ifdef _WIN32
-            if (usingDevDir)
+            if (withinDevDir)
             {
                 out << "..\\..\\visit\\databases\\" << name << "\\" 
                     << srcFiles[i];
@@ -1125,7 +1101,7 @@
         out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
         out << "\t\t\t\tAdditionalIncludeDirectories=\""
             << pluginBase;
-        if (usingDevDir)
+        if (withinDevDir)
             out << "\\databases\\" << name;
         out << ";" << includeBase << "\\VisIt"
             << ";" << includeBase << "\\VTK"
@@ -1159,16 +1135,12 @@
             << libs 
             << " vtkCommon.lib\"" << endl;
         out << "\t\t\t\tOutputFile=\"" << binBase << "\\";
-        if (usingDevDir)
-            out << "Release\\";
         out << "databases\\lib" << pluginType << name 
             << "Database.dll\"" << endl;
         out << "\t\t\t\tLinkIncremental=\"1\"" << endl;
         out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
         out << "\t\t\t\tAdditionalLibraryDirectories=\""
             << libBase;
-        if (usingDevDir)
-            out << "\\Release";
         out << "\"" << endl;
         out << "\t\t\t\tProgramDatabaseFile=\".\\Release\\" 
             << name << pluginType << "\\" 
@@ -1226,7 +1198,7 @@
         out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
         out << "\t\t\t\tAdditionalIncludeDirectories=\""
             << pluginBase;
-        if (usingDevDir)
+        if (withinDevDir)
             out << "\\databases\\" << name;
         out << ";" << includeBase << "\\VisIt"
             << ";" << includeBase << "\\VTK"
@@ -1260,16 +1232,12 @@
             << libs
             << " vtkCommon.lib\"" << endl;
         out << "\t\t\t\tOutputFile=\"" << binBase << "\\";
-        if (usingDevDir)
-            out << "Debug\\";
         out << "databases\\lib" << pluginType << name 
             << "Database.dll\"" << endl;
         out << "\t\t\t\tLinkIncremental=\"2\"" << endl;
         out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
         out << "\t\t\t\tAdditionalLibraryDirectories=\""
             << libBase;
-        if (usingDevDir)
-            out << "\\Debug";
         out << "\"" << endl;
         out << "\t\t\t\tGenerateDebugInformation=\"TRUE\"" << endl;
         out << "\t\t\t\tProgramDatabaseFile=\".\\Debug\\" 
@@ -1328,7 +1296,7 @@
         out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
         out << "\t\t\t\tAdditionalIncludeDirectories=\""
             << pluginBase;
-        if (usingDevDir)
+        if (withinDevDir)
             out << "\\databases\\" << name;
         out << ";" << includeBase << "\\VisIt"
             << ";" << includeBase << "\\vtk"
@@ -1363,16 +1331,12 @@
             << libs
             << " vtkCommon.lib\"" << endl;
         out << "\t\t\t\tOutputFile=\"" << binBase << "\\";
-        if (usingDevDir)
-            out << "Debug\\";
         out << "databases\\lib" << pluginType << name 
             << "Database.dll\"" << endl;
         out << "\t\t\t\tLinkIncremental=\"0\"" << endl;
         out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
         out << "\t\t\t\tAdditionalLibraryDirectories=\""
             << libBase;
-        if (usingDevDir)
-            out << "\\Debug";
         out << "\"" << endl;
         out << "\t\t\t\tGenerateDebugInformation=\"TRUE\"" << endl;
         out << "\t\t\t\tProgramDatabaseFile=\".\\Debug\\" 
@@ -1430,7 +1394,7 @@
             out << "\t\t\t<File" << endl;
             out << "\t\t\t\tRelativePath=\"";
 #ifdef _WIN32
-            if (usingDevDir)
+            if (withinDevDir)
             {
                 out << "..\\..\\visit\\databases\\" << name << "\\" 
                     << srcFiles[i];

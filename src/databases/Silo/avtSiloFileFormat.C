@@ -414,7 +414,7 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
     // name.
     //
     const char *baseFilename = StringHelpers::Basename(filenames[f]);
-    char *pColon = strrchr(baseFilename, ':');
+    const char *pColon = strrchr(baseFilename, ':');
     if (pColon != NULL)
     {
         pColon++; // move one passed the ':' character
