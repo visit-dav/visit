@@ -144,7 +144,8 @@ protected:
     QString pluginBase;
     QString binBase;
     QString libBase;
-    bool usingDevDir;
+    bool withinDevDir;
+    bool publicVisIt;
 
 #if defined(_WIN32)
     bool ReadKey(const char *key, unsigned char **keyval) const
@@ -194,17 +195,16 @@ protected:
     void BaseDirs(const QString &projectDir, bool version7)
     {
 #if defined(_WIN32)
-        usingDevDir = false;
-        if (projectDir != "")
+        withinDevDir = false;
+        if (!publicVisIt)
         {
-            if (fullVisItDir.contains(projectDir, false) > 0 &&
-                fullCurrentDir.contains(projectDir, false) > 0)
+            if (fullCurrentDir.contains(projectDir, false) > 0)
             {
-                usingDevDir = true;
+                withinDevDir = true;
             }
         } 
 
-        if (usingDevDir)
+        if (withinDevDir)
         {
             includeBase = "..\\..\\include";
             pluginBase  = "..\\..\\visit";
@@ -212,8 +212,8 @@ protected:
             libBase     = "..\\..\\lib";
             if (version7)
             {
-                binBase += "\\MSVC7.Net";
-                libBase += "\\MSVC7.Net";
+                binBase += "\\MSVC7.Net\\$(ConfigurationName)";
+                libBase += "\\MSVC7.Net\\$(ConfigurationName)";
             }
         }
         else
@@ -229,27 +229,38 @@ protected:
             }
             else
             {
+                cerr << "GenerateProjectfile, get Appdata path failed " 
+                       << endl;
                 privatePluginDir = "";
             }
             delete [] tmp;
 
-            includeBase = fullVisItDir + "\\include";
+            if (!publicVisIt)
+            {
+                includeBase = projectDir + "\\include";
+                libBase     = projectDir + "\\lib";
+                if (version7)
+                    libBase     += "\\MSVC7.Net\\$(ConfigurationName)";
+            }
+            else
+            {
+                includeBase = fullVisItDir + "\\include";
+                libBase     = fullVisItDir + "\\lib";
+            }
             pluginBase  = ".\\";
             binBase     = privatePluginDir;
-            libBase     = fullVisItDir + "\\lib";
         }
-
 #else
         includeBase = "..\\..\\include";
         pluginBase  = "..\\..\\visit";
         binBase     = "..\\..\\bin";
         libBase     = "..\\..\\lib";
         
-        usingDevDir = true;
+        withinDevDir = true;
         if (version7)
         {
-            binBase += "\\MSVC7.Net";
-            libBase += "\\MSVC7.Net";
+            binBase += "\\MSVC7.Net\\$(ConfigurationName)";
+            libBase += "\\MSVC7.Net\\$(ConfigurationName)";
         }
 #endif
     }
@@ -258,7 +269,7 @@ protected:
     {
 #if defined(_WIN32)
         unsigned char *VISITDEVDIR = 0;
-        usingDevDir = false;
+        withinDevDir = false;
         QString retval;
 
         if(ReadKey("VISITDEVDIR", &VISITDEVDIR))
@@ -270,9 +281,23 @@ protected:
         {
             const char *visitDevDirEnv = getenv("VISITDEVDIR");
             if (visitDevDirEnv)
-              retval = visitDevDirEnv;
+            {
+                retval = visitDevDirEnv;
+            }
         }
-        
+         
+        if (retval.length() > 0)
+        {
+            if (fullVisItDir.contains(retval, false) > 0)
+                publicVisIt = false;
+            else
+                publicVisIt = true;
+        } 
+        else
+        {
+            publicVisIt = true;
+        }
+       
         // Make sure that it ends with a separator.
         if(retval.length() > 0 && retval.right(1) != SLASH_STRING)
         {
@@ -285,7 +310,7 @@ protected:
         } 
 
         BaseDirs(retval, version7);
-        if (!usingDevDir)
+        if (!withinDevDir)
             retval = "";
 
         return retval;
@@ -490,7 +515,7 @@ protected:
 #if defined(_WIN32)
         if(version7)
         {
-            if (usingDevDir)
+            if (withinDevDir)
                 projectDir += QString("projects-MSVC7.Net\\plots\\");
         }
         else
@@ -714,7 +739,7 @@ protected:
 #if defined(_WIN32)
         if(version7)
         {
-            if (usingDevDir)
+            if (withinDevDir)
                 projectDir += QString("projects-MSVC7.Net\\operators\\");
         }
         else
@@ -886,7 +911,7 @@ protected:
 #if defined(_WIN32)
         if(version7)
         {
-            if (usingDevDir)
+            if (withinDevDir)
                 projectDir += QString("projects-MSVC7.Net\\databases\\");
         }
         else

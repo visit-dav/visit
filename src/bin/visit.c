@@ -623,7 +623,7 @@ AddEnvironment(int useShortFileName)
     if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
                              SHGFP_TYPE_CURRENT, szPath))) 
     {
-        SNPRINTF(visituserpath, 512, "%s\\LLNL\\VisIt\\%s", szPath, VERSION);
+        SNPRINTF(visituserpath, 512, "%s\\VisIt %s", szPath, VERSION);
         haveVISITUSERHOME = 1;
     }
 
