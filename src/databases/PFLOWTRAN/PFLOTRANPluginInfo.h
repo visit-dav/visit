@@ -37,11 +37,11 @@
 *****************************************************************************/
 
 // ****************************************************************************
-//                               PFLOWTRANPluginInfo.h
+//                               PFLOTRANPluginInfo.h
 // ****************************************************************************
 
-#ifndef PFLOWTRAN_PLUGIN_INFO_H
-#define PFLOWTRAN_PLUGIN_INFO_H
+#ifndef PFLOTRAN_PLUGIN_INFO_H
+#define PFLOTRAN_PLUGIN_INFO_H
 #include <DatabasePluginInfo.h>
 #include <database_plugin_exports.h>
 
@@ -49,10 +49,10 @@ class avtDatabase;
 class avtDatabaseWriter;
 
 // ****************************************************************************
-//  Class: PFLOWTRANDatabasePluginInfo
+//  Class: PFLOTRANDatabasePluginInfo
 //
 //  Purpose:
-//    Classes that provide all the information about the PFLOWTRAN plugin.
+//    Classes that provide all the information about the PFLOTRAN plugin.
 //    Portions are separated into pieces relevant to the appropriate
 //    components of VisIt.
 //
@@ -63,7 +63,7 @@ class avtDatabaseWriter;
 //
 // ****************************************************************************
 
-class PFLOWTRANGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
+class PFLOTRANGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
 {
   public:
     virtual char *GetName() const;
@@ -74,7 +74,7 @@ class PFLOWTRANGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
     virtual std::vector<std::string>  GetDfltExtsFromGen() const;
 };
 
-class PFLOWTRANCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual PFLOWTRANGeneralPluginInfo
+class PFLOTRANCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual PFLOTRANGeneralPluginInfo
 {
   public:
     virtual DatabaseType              GetDatabaseType();
@@ -82,14 +82,14 @@ class PFLOWTRANCommonPluginInfo : public virtual CommonDatabasePluginInfo, publi
                                                     int nList, int nBlock);
 };
 
-class PFLOWTRANMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual PFLOWTRANCommonPluginInfo
+class PFLOTRANMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual PFLOTRANCommonPluginInfo
 {
   public:
     // this makes compilers happy... remove if we ever have functions here
     virtual void dummy();
 };
 
-class PFLOWTRANEnginePluginInfo : public virtual EngineDatabasePluginInfo, public virtual PFLOWTRANCommonPluginInfo
+class PFLOTRANEnginePluginInfo : public virtual EngineDatabasePluginInfo, public virtual PFLOTRANCommonPluginInfo
 {
   public:
     virtual avtDatabaseWriter        *GetWriter(void);
