@@ -5516,6 +5516,9 @@ visit_GetSaveWindowAttributes(PyObject *self, PyObject *args)
 //   Also, enhancements to attribute groups allowed separate vectors for the
 //   read and write options, so I switched to this simpler organization.
 //
+//   Jeremy Meredith, Tue Apr 29 15:24:51 EDT 2008
+//   Added better error message for when plugin wasn't found.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -5574,7 +5577,8 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
     if (!foundMatch)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is not a valid plugin type.", db_type.c_str());
+        sprintf(msg, "\"%s\" is not a valid plugin type.  Make sure the "
+                "Metadata Server is running.", plugin);
         VisItErrorFunc(msg);
         return NULL;
     }
@@ -5608,6 +5612,10 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
 //
 // Programmer: Jeremy Meredith
 // Creation:   October 11, 2007
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Apr 29 15:24:51 EDT 2008
+//    Added better error message for when plugin wasn't found.
 //
 // ****************************************************************************
 STATIC PyObject *
@@ -5650,7 +5658,8 @@ visit_GetExportOptions(PyObject *self, PyObject *args)
     if (!foundMatch)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is not a valid plugin type.", plugin);
+        sprintf(msg, "\"%s\" is not a valid plugin type.  Make sure the "
+                "Metadata Server is running.", plugin);
         VisItErrorFunc(msg);
         return NULL;
     }
@@ -5683,6 +5692,10 @@ visit_GetExportOptions(PyObject *self, PyObject *args)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 23, 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Apr 29 15:24:51 EDT 2008
+//    Added better error message for when plugin wasn't found.
 //
 // ****************************************************************************
 STATIC PyObject *
@@ -5720,7 +5733,8 @@ visit_GetDefaultFileOpenOptions(PyObject *self, PyObject *args)
     if (!foundMatch)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is not a valid plugin type.", plugin);
+        sprintf(msg, "\"%s\" is not a valid plugin type.  Make sure the "
+                "Metadata Server is running.", plugin);
         VisItErrorFunc(msg);
         return NULL;
     }
@@ -5745,6 +5759,10 @@ visit_GetDefaultFileOpenOptions(PyObject *self, PyObject *args)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 23, 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Apr 29 15:24:51 EDT 2008
+//    Added better error message for when plugin wasn't found.
 //
 // ****************************************************************************
 STATIC PyObject *
@@ -5790,7 +5808,8 @@ visit_SetDefaultFileOpenOptions(PyObject *self, PyObject *args)
     if (!foundMatch)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is not a valid plugin type.", plugin);
+        sprintf(msg, "\"%s\" is not a valid plugin type.  Make sure the "
+                "Metadata Server is running.", plugin);
         VisItErrorFunc(msg);
         return NULL;
     }
