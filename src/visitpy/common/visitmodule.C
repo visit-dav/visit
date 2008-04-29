@@ -1038,6 +1038,9 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
 //    Jeremy Meredith, Thu Oct 25 10:05:37 EDT 2007
 //    Added support for pre-2.5 versions of Python.
 //
+//    Jeremy Meredith, Tue Apr 29 15:18:13 EDT 2008
+//    Fixing ABW bug.
+//
 // ****************************************************************************
 PyObject *
 CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
@@ -1047,7 +1050,7 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
     {
         // Older pythons don't support const char* in the PyDict routines,
         // so we have to copy this into a non-const string.
-        char *name = new char[opts.GetName(j).length()];
+        char *name = new char[opts.GetName(j).length()+1];
         strcpy(name, opts.GetName(j).c_str());
         switch (opts.GetType(j))
         {
