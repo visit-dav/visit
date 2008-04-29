@@ -5578,7 +5578,7 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
     {
         char msg[1024];
         sprintf(msg, "\"%s\" is not a valid plugin type.  Make sure the "
-                "Metadata Server is running.", plugin);
+                "Metadata Server is running.", db_type.c_str());
         VisItErrorFunc(msg);
         return NULL;
     }
