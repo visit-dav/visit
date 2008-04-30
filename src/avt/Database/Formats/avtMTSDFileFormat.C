@@ -49,6 +49,7 @@
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 
+#include <cstring>
 
 using     std::vector;
 

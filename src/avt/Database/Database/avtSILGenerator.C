@@ -51,6 +51,9 @@
 #include <ImproperUseException.h>
 #include <TimingsManager.h>
 
+#include <cstring>
+#include <cstdlib>
+
 using std::string;
 using std::vector;
 

@@ -44,6 +44,8 @@
 #include <Init.h>
 #include <avtSIL.h>
 
+#include <cstdlib>
+
 using std::string;
 
 // ****************************************************************************

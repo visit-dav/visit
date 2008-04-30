@@ -47,6 +47,7 @@
 #include <avtDatasetExaminer.h>
 #include <avtTypes.h>
 
+#include <cstdlib>
 
 // ****************************************************************************
 //  Method: avtMultipleInputExpressionFilter destructor

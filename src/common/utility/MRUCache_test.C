@@ -41,6 +41,9 @@
 #include <string>
 #include <stdio.h>
 
+#include <cstring>
+#include <cstdlib>
+
 #define CACHE_SIZE 20
 
 using std::string;

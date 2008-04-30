@@ -49,6 +49,7 @@
 #include <stdlib.h>
 #include <map>
 #include <string>
+#include <cstring>
 #include <vector>
 
 #include <visit-config.h>

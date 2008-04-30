@@ -44,6 +44,7 @@
 
 #include <ImproperUseException.h>
 
+#include <cstring>
 
 // ****************************************************************************
 //  Method: avtSTSDFileFormat constructor

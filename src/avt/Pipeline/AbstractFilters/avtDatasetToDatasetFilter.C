@@ -46,6 +46,7 @@
 
 #include <DebugStream.h>
 
+#include <cstring>
 
 // ****************************************************************************
 //  Method: avtDatasetToDatasetFilter constructor

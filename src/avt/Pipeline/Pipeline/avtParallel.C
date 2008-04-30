@@ -53,6 +53,8 @@
 #include <ImproperUseException.h>
 #include <AttributeGroup.h>
 
+#include <cstring>
+
 using std::string;
 using std::vector;
 

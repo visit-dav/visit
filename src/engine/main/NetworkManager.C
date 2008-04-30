@@ -121,6 +121,9 @@
 
 #include <set>
 #include <map>
+
+#include <climits>
+
 using std::set;
 
 //

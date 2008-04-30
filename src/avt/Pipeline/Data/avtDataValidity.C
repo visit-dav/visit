@@ -46,6 +46,7 @@
 #include <avtDataObjectWriter.h>
 #include <avtWebpage.h>
 
+#include <cstring>
 
 // ****************************************************************************
 //  Method: avtDataValidity constructor

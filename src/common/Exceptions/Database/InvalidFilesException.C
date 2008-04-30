@@ -42,7 +42,7 @@
 
 #include <stdio.h>                  // for sprintf
 #include <InvalidFilesException.h>
-
+#include <cstring>
 // ****************************************************************************
 //  Method: InvalidFilesException constructor
 //

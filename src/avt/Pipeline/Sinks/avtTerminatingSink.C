@@ -69,6 +69,7 @@ GuideFunction    avtTerminatingSink::guideFunction     = NULL;
 void            *avtTerminatingSink::guideFunctionArgs = NULL;
 avtWebpage      *avtTerminatingSink::webpage           = NULL;
 
+#include <cstring>
 
 // ****************************************************************************
 //  Method: avtTerminatingSink constructor

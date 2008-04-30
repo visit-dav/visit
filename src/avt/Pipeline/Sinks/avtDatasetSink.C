@@ -46,6 +46,7 @@
 #include <ImproperUseException.h>
 #include <NoInputException.h>
 
+#include <cstring>
 
 // ****************************************************************************
 //  Method: avtDatasetSink constructor

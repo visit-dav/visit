@@ -64,6 +64,7 @@
 #include <InvalidDimensionsException.h>
 #include <snprintf.h>
 
+#include <climits>
 
 
 // ****************************************************************************

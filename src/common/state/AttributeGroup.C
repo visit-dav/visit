@@ -41,6 +41,9 @@
 #include <Interpolator.h>
 #include <Connection.h>
 
+#include <cstdlib>
+#include <cstring>
+
 // Do a using statement.
 using std::string;
 

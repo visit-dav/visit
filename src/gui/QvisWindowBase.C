@@ -41,6 +41,8 @@
 #include <vectortypes.h>
 #include <qapplication.h>
 
+#include <cstdlib>
+
 // Global vars.
 static QWidget *parentOfEveryWindow = 0;
 

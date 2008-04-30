@@ -91,6 +91,7 @@
 #include <avtDataObjectToDatasetFilter.h>
 #include <avtVariableCache.h>
 
+#include <climits>
 #include <string>
 using std::string;
 

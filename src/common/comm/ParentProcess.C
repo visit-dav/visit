@@ -57,6 +57,7 @@
 #include <CouldNotConnectException.h>
 #include <IncompatibleVersionException.h>
 
+#include <cstring>
 
 // ****************************************************************************
 // Method: ParentProcess::ParentProcess

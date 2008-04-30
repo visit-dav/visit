@@ -53,6 +53,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <DebugStream.h>
 #include <vectortypes.h>
 
+#include <climits>
+
 #define TOLERANCE 1e-10
 #define EPSILON 1e-4
 #define VSMALL 1e-100

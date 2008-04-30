@@ -45,6 +45,8 @@
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 
+#include <cstring>
+
 // Initialize the static data
 const int avtSTMDFileFormat::MAX_FILES = 20;
 

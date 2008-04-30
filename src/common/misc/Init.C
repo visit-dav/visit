@@ -53,6 +53,7 @@
 #include <sys/types.h>
 #endif
 #include <new>
+#include <cstring>
 
 #include <DebugStream.h>
 #include <TimingsManager.h>

@@ -55,6 +55,8 @@
 #include <snprintf.h>
 #include <time.h>
 
+#include <cstring>
+
 #if defined(_WIN32)
 #include <process.h>
 #include <winsock2.h>

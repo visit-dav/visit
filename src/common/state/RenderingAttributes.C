@@ -39,6 +39,8 @@
 #include <RenderingAttributes.h>
 #include <DataNode.h>
 
+#include <climits>
+
 const int RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD = 2000000;
 
 const int RenderingAttributes::DEFAULT_SCALABLE_ACTIVATION_MODE = Auto;

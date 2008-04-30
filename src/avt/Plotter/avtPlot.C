@@ -68,6 +68,8 @@
 #include <ImproperUseException.h>
 #include <NoInputException.h>
 
+#include <climits>
+
 #define SIZECUTOFF 1000000
 
 

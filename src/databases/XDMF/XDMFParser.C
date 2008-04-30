@@ -47,6 +47,8 @@
 #include <ctype.h>
 #include <stdio.h>
 
+#include <cstring>
+
 #if 0
 #define READ_SIZE 65536
 #else
