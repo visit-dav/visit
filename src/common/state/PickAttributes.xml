@@ -230,4 +230,7 @@
     <Include file="source" quoted="false">
       avtTypes.h
     </Include>
+    <Include file="source" quoted="false">
+      cstring
+    </Include>
   </Attribute>

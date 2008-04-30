@@ -4341,6 +4341,10 @@ QvisSaveMovieWizard::page4_dropShadowChanged(bool val)
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Kathleen Bonnell, Wed Apr 30 11:05:45 PDT 2008 
+//   Use char* for 'n' instead of QString, to prevent conversion between
+//   QString and std::string, which cannot be done with Windows compiler.  
+//
 // ****************************************************************************
 
 void
@@ -4353,12 +4357,10 @@ QvisSaveMovieWizard::page4_usePredefinedViewports(int index)
     page4_viewportDisplay->clear();
     page4_viewportDisplay->blockSignals(false);
 
-    QString n[4];
-    n[0] = tr("Viewport 1");
-    n[1] = tr("Viewport 2");
-    n[2] = tr("Viewport 3");
-    n[3] = tr("Viewport 4");
-
+    const char *n[4] = {"Viewport 1", 
+                        "Viewport 2", 
+                        "Viewport 3", 
+                        "Viewport 4"};
     if(index == 0)
     {
         page4_viewportAdded(n[0], 0., 0., 1., 1.);

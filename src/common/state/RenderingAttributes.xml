@@ -86,6 +86,9 @@
     </Constant>
     <Constant name="DEFAULT_SCALABLE_ACTIVATION_MODE" member="true">
     </Constant>
+    <Include file="source" quoted="false">
+      climits 
+    </Include>
     <Include file="header" quoted="false">
       float.h
     </Include>
