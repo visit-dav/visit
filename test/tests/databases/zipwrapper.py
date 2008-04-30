@@ -1,8 +1,6 @@
 # ----------------------------------------------------------------------------
 #  CLASSES: nightly
 #
-#  ENV: VISIT_ZIPWRAPPER_MAXFILES=10
-#
 #  Test Case:  zipwrapper.py 
 #
 #  Tests:      STSD operation (VTK) 
@@ -49,6 +47,15 @@ for i in range(5,10):
     os.system("cp hist_ucd3d_%04d histz_%04d.silo ; gzip -f histz_%04d.silo"%(i,i,i))
 
 os.chdir(cwd)
+
+#
+# Ok, before we start processing any compressed files, set
+# ZipWrapper default read options 
+#
+readOptions=GetDefaultFileOpenOptions("ZipWrapper")
+readOptions["Max. # decompressed files"] = 10
+SetDefaultFileOpenOptions("ZipWrapper", readOptions)
+
 
 # Test 36 block VTK (only 10 files decompressed at any one time)
 OpenDatabase("../data/multi_ucd.visit")
