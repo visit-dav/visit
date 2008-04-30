@@ -65,6 +65,8 @@
 
 #include <snprintf.h>
 
+#include <cstring>
+
 // ****************************************************************************
 //  Method: ViewerProxy constructor
 //

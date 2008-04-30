@@ -40,6 +40,8 @@
 #include <DataNode.h>
 #include <stdio.h>
 
+#include <cstring>
+
 //
 // Enum conversion methods for Point::ValueType
 //

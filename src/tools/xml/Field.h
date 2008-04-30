@@ -51,6 +51,8 @@
 #pragma warning(disable:4250)
 #endif
 
+#include <cstdlib>
+using namespace std;
 // ****************************************************************************
 //  Class:  Field
 //

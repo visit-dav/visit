@@ -40,6 +40,8 @@
 
 #include "Symbol.h"
 
+#include <cstdlib>
+
 // ****************************************************************************
 //  Constructor:  Dictionary::Dictionary
 //

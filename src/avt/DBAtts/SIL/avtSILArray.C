@@ -47,6 +47,8 @@
 #include <avtSILEnumeratedNamespace.h>
 #include <snprintf.h>
 
+#include <cstring>
+
 using std::vector;
 using std::string;
 

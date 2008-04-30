@@ -49,6 +49,8 @@
 #include <DebugStream.h>
 #include <AtomicProperties.h>
 
+#include <climits>
+
 // ****************************************************************************
 //  Method: avtMoleculeFilter constructor
 //

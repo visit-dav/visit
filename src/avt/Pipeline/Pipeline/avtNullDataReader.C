@@ -42,6 +42,7 @@
 
 #include <avtNullDataReader.h>
 
+#include <cstring>
 
 // ****************************************************************************
 //  Method: avtNullDataReader constructor

@@ -43,6 +43,8 @@
 #include <avtTypes.h>
 #include <PickVarInfo.h>
 
+#include <cstring>
+
 //
 // Enum conversion methods for PickAttributes::PickType
 //

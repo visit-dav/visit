@@ -52,6 +52,7 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
+#include <climits>
 
 using std::string;
 using std::vector;

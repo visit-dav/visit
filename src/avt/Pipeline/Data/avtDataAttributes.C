@@ -56,6 +56,8 @@
 #include <ImproperUseException.h>
 #include <InvalidMergeException.h>
 
+#include <cstring>
+
 using     std::string;
 using     std::vector;
 using     std::sort;

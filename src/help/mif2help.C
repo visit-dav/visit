@@ -43,6 +43,8 @@
 #include <vector>
 #include <time.h>
 
+#include <cstdlib>
+
 using std::string;
 using std::vector;
 

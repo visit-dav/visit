@@ -42,6 +42,7 @@
 
 #include <avtImageReader.h>
 
+#include <cstring>
 
 // ****************************************************************************
 //  Method: avtImageReader constructor

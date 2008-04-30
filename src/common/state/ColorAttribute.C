@@ -39,6 +39,8 @@
 #include <ColorAttribute.h>
 #include <DataNode.h>
 
+#include <cstring>
+
 // **************************************************************************
 // Constant: namedColors
 //

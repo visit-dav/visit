@@ -45,6 +45,7 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
+#include <cstring>
 
 // ****************************************************************************
 //  Method: avtSamplePointsSink constructor

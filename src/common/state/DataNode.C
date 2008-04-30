@@ -38,6 +38,8 @@
 
 #include <DataNode.h>
 
+#include <cstring>
+
 // Static members. These are returned from the As functions when there
 // is no data. It ensures that the references that are returned are safe.
 std::string         DataNode::bogusString;

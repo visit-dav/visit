@@ -53,6 +53,7 @@
 
 #include <DebugStream.h>
 
+#include <cstring>
 
 // ****************************************************************************
 //  Method: avtScatterPlot constructor

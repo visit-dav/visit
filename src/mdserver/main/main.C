@@ -48,6 +48,8 @@
 #include <avtDatabaseFactory.h>
 #include <DatabasePluginManager.h>
 
+#include <cstring>
+
 // Prototypes.
 bool ProcessCommandLine(int argc, char *argv[]);
 

@@ -51,6 +51,7 @@
 
 #include <NoInputException.h>
 
+#include <cstring>
 
 // ****************************************************************************
 //  Method: avtDataObjectWriter constructor

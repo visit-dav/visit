@@ -41,6 +41,8 @@
 #include <ImproperUseException.h>
 #include <TimingsManager.h>
 
+#include <cstring>
+
 // ****************************************************************************
 //  Constructor:  ResampledMat::ResampledMat
 //

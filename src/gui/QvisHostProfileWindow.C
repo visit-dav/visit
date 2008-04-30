@@ -59,6 +59,8 @@
 #include <HostProfileList.h>
 #include <ViewerProxy.h>
 
+#include <cstdlib>
+
 #define HOST_PROFILE_SPACING 8
 
 // ****************************************************************************

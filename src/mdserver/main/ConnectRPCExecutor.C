@@ -42,6 +42,8 @@
 #include <MDServerApplication.h>
 #include <VisItException.h>
 
+#include <cstring>
+
 // ****************************************************************************
 // Method: ConnectRPCExecutor::ConnectRPCExecutor
 //

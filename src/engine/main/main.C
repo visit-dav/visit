@@ -48,6 +48,8 @@
 #include <parallel.h>
 #endif
 
+#include <cstring>
+
 // ****************************************************************************
 //  BEGIN HACK, because AIX won't link the engine against GL unless it
 //  needs to resolve symbols directly from this source.

@@ -41,6 +41,8 @@
 #include <math.h>
 #include <DebugStream.h>
 
+#include <cstring>
+
 //
 // If we're creating the OpenGL version of this class then check to see if
 // the GLEW library is available so we can use shaders.

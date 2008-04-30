@@ -46,6 +46,7 @@
 #include <map>
 #include <string>
 #include <snprintf.h>
+#include <cstring>
 
 std::map<std::string, int> elementname_to_atomicnumber;
 std::map<std::string, int> residuename_to_number;

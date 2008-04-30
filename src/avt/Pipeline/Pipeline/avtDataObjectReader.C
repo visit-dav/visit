@@ -52,6 +52,7 @@
 #include <ImproperUseException.h>
 #include <NoInputException.h>
 
+#include <cstring>
 
 // ****************************************************************************
 //  Method: avtDataObjectReader constructor

@@ -47,6 +47,7 @@
 
 #include <DebugStream.h>
 
+#include <cstring>
 
 // ****************************************************************************
 //  Method: avtDatasetToSamplePointsFilter constructor
