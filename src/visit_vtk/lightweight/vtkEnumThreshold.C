@@ -196,21 +196,21 @@ static bool AlreadyAddedCell(vtkCell *theCell,
     else
     {
         // We could have collisions. So, confirm the input cell's
-	// point ids match the point ids of one of the cells we've
-	// got stored at this key.
+        // point ids match the point ids of one of the cells we've
+        // got stored at this key.
         const vector<vtkIdType> fpids = cellPtIdsAtKey->second;
-	for (int i = 0; i < fpids.size(); i += fpids[i]+1)
-	{
-	    bool haveMatch = true;
-	    for (int j = 0; haveMatch && (j < fpids[i]); j++)
-	    {
-	        if (fpids[i+1+j] != pids[j])
-		    haveMatch = false;
-	    }
+        for (int i = 0; i < fpids.size(); i += fpids[i]+1)
+        {
+            bool haveMatch = true;
+            for (int j = 0; haveMatch && (j < fpids[i]); j++)
+            {
+                if (fpids[i+1+j] != pids[j])
+                    haveMatch = false;
+            }
 
-	    if (haveMatch)
-	        return true;
-	}
+            if (haveMatch)
+                return true;
+        }
     }
     return false;
 }
@@ -284,7 +284,7 @@ static void AddFaceToMaps(vtkCell *faceCell,
     for (i = 0; i < faceCell->GetNumberOfEdges(); i++)
     {
         vtkCell *edgeCell = faceCell->GetEdge(i);
-	AddEdgeToMaps(edgeCell, edgeMap, nodeMap);
+        AddEdgeToMaps(edgeCell, edgeMap, nodeMap);
     }
 
     // put this face's nodes in the node map
@@ -297,21 +297,21 @@ static void AddFaceToMaps(vtkCell *faceCell,
 // There were too many internal variables in the main loop of the
 // algorithm to make a nice function.
 //
-#define ADD_CELL_POINTS_AND_CELL(theCell)					\
-    for (int kk=0; kk < theCell->GetNumberOfPoints(); kk++)			\
-    {										\
-        ptId = theCell->GetPointIds()->GetId(kk);				\
-        if ( (newId = pointMap->GetId(ptId)) < 0 )				\
-        {									\
-            input->GetPoint(ptId, x);						\
-            newId = newPoints->InsertNextPoint(x);				\
-            pointMap->SetId(ptId,newId);					\
-            outPD->CopyData(pd,ptId,newId);					\
-        }									\
-        newCellPts->InsertId(kk,newId);						\
-    }										\
-    newCellId = output->InsertNextCell(theCell->GetCellType(),newCellPts);	\
-    outCD->CopyData(cd,cellId,newCellId);					\
+#define ADD_CELL_POINTS_AND_CELL(theCell)                                       \
+    for (int kk=0; kk < theCell->GetNumberOfPoints(); kk++)                     \
+    {                                                                           \
+        ptId = theCell->GetPointIds()->GetId(kk);                               \
+        if ( (newId = pointMap->GetId(ptId)) < 0 )                              \
+        {                                                                       \
+            input->GetPoint(ptId, x);                                           \
+            newId = newPoints->InsertNextPoint(x);                              \
+            pointMap->SetId(ptId,newId);                                        \
+            outPD->CopyData(pd,ptId,newId);                                     \
+        }                                                                       \
+        newCellPts->InsertId(kk,newId);                                         \
+    }                                                                           \
+    newCellId = output->InsertNextCell(theCell->GetCellType(),newCellPts);      \
+    outCD->CopyData(cd,cellId,newCellId);                                       \
     newCellPts->Reset();
 
 //  Modifications:  
@@ -404,89 +404,89 @@ int vtkEnumThreshold::RequestData(
             if (true) // was "this->allScalars in vtkEnumThreshold
             {
                 ptId = cellPts->GetId(0);
-		int keepFirst = this->EvaluateComponents( inScalars, ptId );
-		keepCell = keepFirst;
+                int keepFirst = this->EvaluateComponents( inScalars, ptId );
+                keepCell = keepFirst;
                 for ( i=1; (keepCell == keepFirst) && (i < numCellPts); i++)
                 {
                     ptId = cellPts->GetId(i);
                     keepCell = this->EvaluateComponents( inScalars, ptId );
                 }
 
-		//
-		// If we have a partial cell, handle that by iterating over
-		// faces, then edges and then nodes, keeping as much of the
-		// connectivity intact as possible.
-		//
-		if      (keepCell != keepFirst && partialCellMode == Exclude)
-		    keepCell = 0; // turn off whole cell logic below
-		else if (keepCell != keepFirst && partialCellMode == Include)
-		    keepCell = 1; // turn ON whole cell logic below
-		else if (keepCell != keepFirst && partialCellMode == Dissect)
-		{
-		    keepCell = 0; // turn off whole-cell logic below
+                //
+                // If we have a partial cell, handle that by iterating over
+                // faces, then edges and then nodes, keeping as much of the
+                // connectivity intact as possible.
+                //
+                if      (keepCell != keepFirst && partialCellMode == Exclude)
+                    keepCell = 0; // turn off whole cell logic below
+                else if (keepCell != keepFirst && partialCellMode == Include)
+                    keepCell = 1; // turn ON whole cell logic below
+                else if (keepCell != keepFirst && partialCellMode == Dissect)
+                {
+                    keepCell = 0; // turn off whole-cell logic below
 
-		    // iterate over faces
-		    for (i = 0; i < cell->GetNumberOfFaces(); i++)
-		    {
-		        vtkCell *faceCell = cell->GetFace(i);
-			if (AlreadyAddedCell(faceCell, faceMap))
-			    continue;
+                    // iterate over faces
+                    for (i = 0; i < cell->GetNumberOfFaces(); i++)
+                    {
+                        vtkCell *faceCell = cell->GetFace(i);
+                        if (AlreadyAddedCell(faceCell, faceMap))
+                            continue;
 
-			int keepFace = 1;
-		        for (int j = 0; keepFace && j < faceCell->GetNumberOfPoints(); j++)
+                        int keepFace = 1;
+                        for (int j = 0; keepFace && j < faceCell->GetNumberOfPoints(); j++)
                             keepFace = this->EvaluateComponents( inScalars, faceCell->GetPointId(j));
 
-			if (keepFace) // keep this face
-			{
-			    ADD_CELL_POINTS_AND_CELL(faceCell);
-			    AddFaceToMaps(faceCell, faceMap, edgeMap, nodeMap);
-			}
-		    }
-
-		    // iterate over edges
-		    for (i = 0; i < cell->GetNumberOfEdges(); i++)
-		    {
-		        vtkCell *edgeCell = cell->GetEdge(i);
-			if (AlreadyAddedCell(edgeCell, edgeMap))
-			    continue;
-
-			int keepEdge = 1;
-		        for (int j = 0; keepEdge && j < edgeCell->GetNumberOfPoints(); j++)
-                            keepEdge = this->EvaluateComponents( inScalars, edgeCell->GetPointId(j));
-
-			if (keepEdge) // keep this edge 
-			{
-			    ADD_CELL_POINTS_AND_CELL(edgeCell);
-			    AddEdgeToMaps(edgeCell, edgeMap, nodeMap);
-			}
+                        if (keepFace) // keep this face
+                        {
+                            ADD_CELL_POINTS_AND_CELL(faceCell);
+                            AddFaceToMaps(faceCell, faceMap, edgeMap, nodeMap);
+                        }
                     }
 
-		    // iterate over nodes
-		    for (i = 0; i < cell->GetNumberOfPoints(); i++)
-		    {
+                    // iterate over edges
+                    for (i = 0; i < cell->GetNumberOfEdges(); i++)
+                    {
+                        vtkCell *edgeCell = cell->GetEdge(i);
+                        if (AlreadyAddedCell(edgeCell, edgeMap))
+                            continue;
+
+                        int keepEdge = 1;
+                        for (int j = 0; keepEdge && j < edgeCell->GetNumberOfPoints(); j++)
+                            keepEdge = this->EvaluateComponents( inScalars, edgeCell->GetPointId(j));
+
+                        if (keepEdge) // keep this edge 
+                        {
+                            ADD_CELL_POINTS_AND_CELL(edgeCell);
+                            AddEdgeToMaps(edgeCell, edgeMap, nodeMap);
+                        }
+                    }
+
+                    // iterate over nodes
+                    for (i = 0; i < cell->GetNumberOfPoints(); i++)
+                    {
                         ptId = cellPts->GetId(i);
-			if (AlreadyAddedNode(ptId, nodeMap))
-			    continue;
+                        if (AlreadyAddedNode(ptId, nodeMap))
+                            continue;
 
                         int keepNode = this->EvaluateComponents( inScalars, ptId);
 
-			if (keepNode) // keep this node 
-			{
-			    // Build a temporary vertex cell so it
-			    // can be added by the macro.
+                        if (keepNode) // keep this node 
+                        {
+                            // Build a temporary vertex cell so it
+                            // can be added by the macro.
                             vtkVertex *tmpVert = vtkVertex::New();
-			    vtkPoints *dummyPoints = vtkPoints::New();
-			    dummyPoints->InsertNextPoint(0.0, 0.0, 0.0);
-			    tmpVert->Initialize(1, &ptId, dummyPoints);
+                            vtkPoints *dummyPoints = vtkPoints::New();
+                            dummyPoints->InsertNextPoint(0.0, 0.0, 0.0);
+                            tmpVert->Initialize(1, &ptId, dummyPoints);
 
-			    ADD_CELL_POINTS_AND_CELL(tmpVert);
-			    AddNodeToMaps(ptId, nodeMap);
+                            ADD_CELL_POINTS_AND_CELL(tmpVert);
+                            AddNodeToMaps(ptId, nodeMap);
 
-			    dummyPoints->Delete();
-			    tmpVert->Delete();
-			} // keepNode
+                            dummyPoints->Delete();
+                            tmpVert->Delete();
+                        } // keepNode
                     } // iterate over nodes
-		} // dissect partial cell
+                } // dissect partial cell
             } // true
         } // usePointScalars
         else //use cell scalars
@@ -494,8 +494,8 @@ int vtkEnumThreshold::RequestData(
             keepCell = this->EvaluateComponents( inScalars, cellId );
         }
 
-	if (keepCell == 0)
-	    allCellsKeptInLastRequestData = false;
+        if (keepCell == 0)
+            allCellsKeptInLastRequestData = false;
     
         if (  numCellPts > 0 && keepCell )
         {
@@ -507,17 +507,17 @@ int vtkEnumThreshold::RequestData(
 
     if (faceMap.size() || edgeMap.size() || nodeMap.size())
     {
-	int idCount = 0;
+        int idCount = 0;
         map<unsigned int, vector<vtkIdType> >::iterator it;
 
-	for (it = faceMap.begin(); it != faceMap.end(); it++)
-	    idCount += it->second.size();
-	for (it = edgeMap.begin(); it != edgeMap.end(); it++)
-	    idCount += it->second.size();
-	idCount += nodeMap.size();
+        for (it = faceMap.begin(); it != faceMap.end(); it++)
+            idCount += it->second.size();
+        for (it = edgeMap.begin(); it != edgeMap.end(); it++)
+            idCount += it->second.size();
+        idCount += nodeMap.size();
 
         vtkDebugMacro(<< "Stored " << idCount << " node ids (%" 
-	              << (100.0 * idCount / numPts) << " of input nodes)"
+                      << (100.0 * idCount / numPts) << " of input nodes)"
                       << " in maps for partial cell dissection.");
     }
 
@@ -534,11 +534,11 @@ int vtkEnumThreshold::RequestData(
     if (returnEmptyIfAllCellsKept && allCellsKeptInLastRequestData)
     {
         vtkDebugMacro(<< "Kept all cells. At caller's request, returning empty ugrid.");
-	
-	//
-	// clear out the output
-	//
-	output->Reset();
+        
+        //
+        // clear out the output
+        //
+        output->Reset();
     }
 
     output->GetFieldData()->PassData(input->GetFieldData());
@@ -571,25 +571,24 @@ bool vtkEnumThreshold::IsInEnumerationRanges(double val)
     {
         mid = (bot + top) >> 1;
 
-	if (val > enumerationRanges[2*mid+1])
-	    bot = mid + 1;
+        if (val > enumerationRanges[2*mid+1])
+            bot = mid + 1;
         else if (val < enumerationRanges[2*mid])
-	    top = mid - 1;
-	else
-	{
-	    lastRangeBin = mid;
-	    return true;
-	}
+            top = mid - 1;
+        else
+        {
+            lastRangeBin = mid;
+            return true;
+        }
     }
 
     lastRangeBin = -1;
     return false;
 }
 
-bool vtkEnumThreshold::HasBitsSetInEnumerationMap(double val)
+bool vtkEnumThreshold::HasBitsSetInEnumerationMask(double val)
 {
     unsigned long long lval = (unsigned long long) val;
-    const unsigned long long lsbMask = 0x0000000000000001;
 
     if (double(lval) != val)
     {
@@ -612,7 +611,7 @@ bool vtkEnumThreshold::HasValuesInEnumerationMap(double val)
     for (it = values.begin(); it != values.end(); it++)
     {
         if (enumerationMap[*it])
-	    return true;
+            return true;
     }
 
     return false;
@@ -649,9 +648,9 @@ int vtkEnumThreshold::EvaluateComponents( vtkDataArray *scalars, vtkIdType id )
             keepCell = true;
         else if (enumMode == ByRange && IsInEnumerationRanges(val))
             keepCell = true;
-        else if (enumMode == ByBitMask && HasBitsSetInEnumerationMap(val))
+        else if (enumMode == ByBitMask && HasBitsSetInEnumerationMask(val))
             keepCell = true;
-	else if (enumMode == ByNChooseR && HasValuesInEnumerationMap(val))
+        else if (enumMode == ByNChooseR && HasValuesInEnumerationMap(val))
             keepCell = true;
     }
     return keepCell;
@@ -709,16 +708,10 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
 
     switch (enumMode)
     {
-	case ByValue:
-	case ByBitMask:
+        case ByValue:
+        case ByBitMask:
         case ByNChooseR:
-	{
-            if (enumerationMap)
-            {
-                delete[] enumerationMap;
-                enumerationMap = NULL;
-            }
-
+        {
             int i;
             minEnumerationValue = +DBL_MAX;
             maxEnumerationValue = -DBL_MAX;
@@ -729,34 +722,40 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
                 if (enumerationRanges[i+1] < minEnumerationValue)
                     minEnumerationValue = enumerationRanges[i+1];
             }
-            if (maxEnumerationValue - minEnumerationValue > 1e7)
+
+            if (enumMode != ByBitMask)
             {
-                vtkErrorMacro(<<"Extraordinarily large value in enumeration range (>1e7).");
-                return;
+                if (maxEnumerationValue - minEnumerationValue > 1e7)
+                {
+                    vtkErrorMacro(<<"Extraordinarily large value in enumeration range (>1e7).");
+                    return;
+                }
+
+                if (enumerationMap)
+                    delete[] enumerationMap;
+                enumerationMap = new unsigned char[int(maxEnumerationValue-minEnumerationValue)+1];
+                for (i=0; i<=maxEnumerationValue-minEnumerationValue; i++)
+                    enumerationMap[i] = 0;
             }
 
-            enumerationMap = new unsigned char[int(maxEnumerationValue-minEnumerationValue)+1];
-            for (i=0; i<=maxEnumerationValue-minEnumerationValue; i++)
-                enumerationMap[i] = 0;
-
-	    //
-	    // Build the enumeration map (and enum mask for ByBitMask mode)
-	    //
-	    selectedEnumMask = 0;
+            //
+            // Build the enumeration map (and enum mask for ByBitMask mode)
+            //
+            selectedEnumMask = 0;
             for (i=0; i<enumerationRanges.size(); i += 2)
             {
                 if (sel[i/2])
-		{
-                    enumerationMap[int(enumerationRanges[i]-minEnumerationValue)] = 1;
-
-	            if (enumMode == ByBitMask)
-		        selectedEnumMask |= (((unsigned long long)1)<<(i/2));
+                {
+                    if (enumMode == ByBitMask)
+                        selectedEnumMask |= (((unsigned long long)1)<<(i/2));
+                    else
+                        enumerationMap[int(enumerationRanges[i]-minEnumerationValue)] = 1;
                 }
             }
 
-	    break;
-	}
-	case ByRange:
+            break;
+        }
+        case ByRange:
         default:
         {
             double selectedMin = +DBL_MAX;
@@ -765,15 +764,15 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
             for (i=0; i<sel.size(); i++)
             {
                 double rMin = enumerationRanges[2*i  ];
-	        double rMax = enumerationRanges[2*i+1];
+                double rMax = enumerationRanges[2*i+1];
 
-	        if (sel[i])
-	        {
+                if (sel[i])
+                {
                     if (rMin < selectedMin) selectedMin = rMin;
                     if (rMax > selectedMax) selectedMax = rMax;
-	            selectedRanges.push_back(rMin);
-	            selectedRanges.push_back(rMax);
-	        }
+                    selectedRanges.push_back(rMin);
+                    selectedRanges.push_back(rMax);
+                }
             }
 
             minEnumerationValue = selectedMin;
@@ -790,7 +789,7 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
             //
             lastRangeBin = -1;
 
-	    break;
+            break;
         }
     }
 }

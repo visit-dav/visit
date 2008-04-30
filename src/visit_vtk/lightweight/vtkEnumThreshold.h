@@ -87,9 +87,9 @@ class VISIT_VTK_LIGHT_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
     typedef enum {
         None,
         ByValue,
-	ByRange,
-	ByBitMask,
-	ByNChooseR
+        ByRange,
+        ByBitMask,
+        ByNChooseR
     } EnumerationMode;
 
     PartialCellMode SetPartialCellMode(PartialCellMode m); // returns previous setting 
@@ -106,7 +106,7 @@ class VISIT_VTK_LIGHT_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
   
     int EvaluateComponents( vtkDataArray *scalars, vtkIdType id );
     bool IsInEnumerationRanges(double val);
-    bool HasBitsSetInEnumerationMap(double val);
+    bool HasBitsSetInEnumerationMask(double val);
     bool HasValuesInEnumerationMap(double val);
   
     PartialCellMode   partialCellMode;

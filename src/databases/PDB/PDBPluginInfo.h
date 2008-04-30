@@ -47,6 +47,7 @@
 
 class avtDatabase;
 class avtDatabaseWriter;
+class DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: PDBDatabasePluginInfo
@@ -80,6 +81,8 @@ class PDBCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virt
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class PDBMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual PDBCommonPluginInfo

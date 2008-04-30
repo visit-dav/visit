@@ -58,6 +58,8 @@ extern "C" {
 //
 // Modifications:
 //   
+//   Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//   Made logging an arg. to Initialize call.
 // ****************************************************************************
 
 typedef enum {
@@ -138,7 +140,7 @@ void esriFreeShapeEx(const char *f, const int line, const char *src,
                      esriShapeType_t, void *ptr);
 
 
-void esriInitialize(int commonStorage, void (*errFunc)(const char *));
+void esriInitialize(int commonStorage, void (*errFunc)(const char *), bool logging);
 void esriFinalize(void);
 esriShapefile_t *esriShapefileOpen(const char *filename, esriFileError_t *code);
 void esriShapefileClose(esriShapefile_t *);

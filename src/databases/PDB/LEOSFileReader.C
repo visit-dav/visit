@@ -51,6 +51,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 
+#include <DBOptionsAttributes.h>
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 
@@ -182,6 +183,11 @@ FixMatName(char *matName, int maxLen)
 //   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
 //   Made this so it would issue errors only from MD server
 //   Also, made it so that it would truncate output after several messages
+//
+//   Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//   Replaced reference to env. variable in error message to default open
+//   option.
+//   
 // ****************************************************************************
 void
 IssueUnknownLEOSVariableWarning(const char *matDirName, const char *matName,
@@ -198,8 +204,9 @@ IssueUnknownLEOSVariableWarning(const char *matDirName, const char *matName,
 
     const char *longMsgFmtStr = "The variable \"%s\" for material \"%s\" "
         "in directory \"%s\" \nof this file was ignored. If you want to see "
-        "this variable, exit visit and restart it with \nthe environment "
-        "variable VISIT_LEOS_TRY_HARDER set to a value of 1 (or greater).";
+        "this variable,\nclose this file and use File->Open File... to re-open "
+        "it and set default open options for\nLEOS try harder variable to a "
+        "value of 1 (or 2).";
 
     const char *shortMsgFmtStr = "Also ignored \"%s\" for mat \"%s\" "
         "in dir \"%s\"";
@@ -230,6 +237,18 @@ IssueUnknownLEOSVariableWarning(const char *matDirName, const char *matName,
     numTimes++;
 }
 
+void
+LEOSFileReader::ProcessReadOptions(const DBOptionsAttributes *rdopts)
+{
+    for (int i = 0; rdopts && i < rdopts->GetNumberOfOptions(); i++)
+    {
+        if (rdopts->GetName(i) == "LEOS try harder level [set to 0, 1 or 2]")
+            tryHardLevel = rdopts->GetInt("LEOS try harder level [set to 0, 1 or 2]");
+        else
+            debug1 << "Ignoring unknown option \"" << rdopts->GetName(i) << "\"" << endl;
+    }
+}
+
 // ****************************************************************************
 // Method: LEOSFileReader::LEOSFileReader
 //
@@ -242,22 +261,30 @@ IssueUnknownLEOSVariableWarning(const char *matDirName, const char *matName,
 // Programmer: Mark C. Miller
 // Creation:   February 10, 2004 
 //
+// Modifications:
+//   Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//   Added read options and call to process them.
+//   
 // ****************************************************************************
 
-LEOSFileReader::LEOSFileReader(const char *filename) : PDBReader(filename)
+LEOSFileReader::LEOSFileReader(const char *filename,
+    const DBOptionsAttributes *rdopts) : PDBReader(filename)
 {
     tryHardLevel = 0;
     topDirs = 0;
     numTopDirs = 0;
     BuildVarInfoMap();
+    ProcessReadOptions(rdopts);
 }
 
-LEOSFileReader::LEOSFileReader(PDBFileObject *pdb) : PDBReader(pdb)
+LEOSFileReader::LEOSFileReader(PDBFileObject *pdb,
+    const DBOptionsAttributes *rdopts) : PDBReader(pdb)
 {
     tryHardLevel = 0;
     topDirs = 0;
     numTopDirs = 0;
     BuildVarInfoMap();
+    ProcessReadOptions(rdopts);
 }
 
 // ****************************************************************************
@@ -289,6 +316,9 @@ LEOSFileReader::~LEOSFileReader()
 // Modifications:
 //   Added code to not display error message if we're already in try hard mode
 //
+//   Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//   Replaced reference to env. variable in error messages to default open
+//   option.
 // ****************************************************************************
 
 void
@@ -303,16 +333,16 @@ LEOSFileReader::ThrowInvalidVariableException(bool ignorable, const char *varCla
         "In this case, the value for \"%s\" was assumed to be \"%s\" but in reality "
         "is \"%s\". You can ignore this error by hitting the draw button a second "
         "time. However, the values displayed for \"%s\" will be wrong.\n\nAlternatively, "
-        "you can exit VisIt and set an environment variable, VISIT_LEOS_TRY_HARDER, "
-        "to a value of 2 and restart VisIt. It will take VisIt longer to load the "
-        "LEOS database but this error will not appear.";
+        "you can close this file and re-open it using File->Open File... and set "
+        "default open options for LEOS try harder variable to a value of 2. "
+        "It will take VisIt longer to load the LEOS database but this error will not occur.";
 
     char *errMsgRestart = "For expediency, the LEOS reader plugin makes certain "
         "assumptions about eos variables. When these assumptions turn out "
         "to be incorrect, this error condition is generated.\n\n"
-        "To work-around this problem, you can exit VisIt and set an "
-        "environment variable, VISIT_LEOS_TRY_HARDER, "
-        "to a value of 2 and restart VisIt. It will take VisIt longer to load the "
+        "To work-around this problem, you can close the file and re-open it using "
+        "File->Open File... and set default open options for LEOS try harder variable "
+        "to a value of 2. It will take VisIt longer to load the "
         "LEOS database but this error will not appear.";
 
     // if we're already at try hard level of 2, just throw an exception
@@ -1176,6 +1206,8 @@ LEOSFileReader::ReadFileAndPopulateMetaData(avtDatabaseMetaData *md)
 //   A added code to activate the catch-all mesh feature when there are more
 //   than 5 materials
 //
+//   Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//   Elminated getenv call. It is now handled as a database open option.
 // ****************************************************************************
 
 void
@@ -1184,18 +1216,6 @@ LEOSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // do an initial ls at the top-level to get a list of all the
     // directories in the file
     GetTopDirs();
-
-    // 
-    // Check if user has explicitly told VisIt to try harder.
-    // Note: reading from the enviornment is unlikely to work well if the
-    // engine is running remotely. This is so because while the user
-    // may have thought to set the enviornment where s/he started visit,
-    // s/he surely may have not thought to set it in his/her .cshrc file
-    // (or whatever) where the remote engine will execute. Fortunately,
-    // LEOS data isn't so large that remote engine scenarious are likely.
-    //
-    char *s = getenv("VISIT_LEOS_TRY_HARDER");
-    tryHardLevel = s ? atoi(s) : 0;
 
     //
     // LEOS databases can have a very large number of meshes and

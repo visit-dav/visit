@@ -333,6 +333,9 @@ avtViSUSFileFormat::GetNTimesteps(void)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//    Eliminated getenv call.
 // ****************************************************************************
 
 void
@@ -347,7 +350,7 @@ avtViSUSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     MPI_Comm_size(VISIT_MPI_COMM, &procCount);
 #endif
 
-    ignoreDataSelections = getenv("VISIT_VISUS_IGNORE_SELECTIONS") != 0;
+    ignoreDataSelections = false; 
 
     GetFile();
 

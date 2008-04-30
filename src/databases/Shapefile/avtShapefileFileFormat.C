@@ -51,6 +51,7 @@
 
 #include <avtDatabaseMetaData.h>
 
+#include <DBOptionsAttributes.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <Expression.h>
@@ -74,21 +75,34 @@
 //
 // ****************************************************************************
 
-avtShapefileFileFormat::avtShapefileFileFormat(const char *filename)
+avtShapefileFileFormat::avtShapefileFileFormat(const char *filename,
+    const DBOptionsAttributes *rdopts)
     : avtSTSDFileFormat(filename), shapes()
 {
     initialized = false;
     numShapeTypes = 0;
     dbfFile = 0;
-
-    // Record whether we'll use polygons as lines. Let's not do it by
-    // default.
-    polygonsAsLines = (getenv("VISIT_SHAPEFILE_POLYGONS_AS_LINES") != 0);
-
-    // Disable tessellation.
+    polygonsAsLines = false;
     tessellatePolygons = true;
-    if(getenv("VISIT_SHAPEFILE_NO_TESSELLATION") != 0)
-        tessellatePolygons = false;
+    esriLogging = false;
+    dbfLogging = false;
+
+    //
+    // Process any read options
+    //
+    for (int i = 0; rdopts && i < rdopts->GetNumberOfOptions(); i++)
+    {
+        if (rdopts->GetName(i) == "Polygons as lines")
+            polygonsAsLines = rdopts->GetBool("Polygons as lines");
+        else if (rdopts->GetName(i) == "No tesselation")
+            tessellatePolygons = rdopts->GetBool("No tesselation");
+        else if (rdopts->GetName(i) == "ESRI Logging")
+            esriLogging = rdopts->GetBool("ESRI Logging");
+        else if (rdopts->GetName(i) == "DBF Logging")
+            dbfLogging = rdopts->GetBool("DBF Logging");
+        else
+            debug1 << "Ignoring unknown option \"" << rdopts->GetName(i) << "\"" << endl;
+    }
 }
 
 // ****************************************************************************
@@ -228,7 +242,7 @@ avtShapefileFileFormat::Initialize()
 
         // Initialize the ESRI library.
         debug4 << mName << "Reading SHP file using esri API." << endl;
-        esriInitialize(1, add_esri_errors_to_log);
+        esriInitialize(1, add_esri_errors_to_log, esriLogging);
 
         // Try and open the file.
         f = esriShapefileOpen(SHPfile.c_str(), &code);
@@ -351,7 +365,7 @@ avtShapefileFileFormat::Initialize()
         {
             dbfFileError_t code2;
 
-            dbfInitialize(0, 0);
+            dbfInitialize(0, 0, dbfLogging);
 
             // Try and open the file.
             dbfFile = dbfFileOpen(DBFfile.c_str(), &code2);

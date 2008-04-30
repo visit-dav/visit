@@ -49,6 +49,8 @@
 #include <dbfFile.h>
 #include <vector>
 
+class DBOptionsAttributes;
+
 // ****************************************************************************
 //  Class: avtShapefileFileFormat
 //
@@ -73,7 +75,8 @@
 class avtShapefileFileFormat : public avtSTSDFileFormat
 {
 public:
-                       avtShapefileFileFormat(const char *filename);
+                       avtShapefileFileFormat(const char *filename,
+                           const DBOptionsAttributes *rdopts);
     virtual           ~avtShapefileFileFormat();
 
     //
@@ -131,6 +134,8 @@ protected:
     // Options.
     bool                   polygonsAsLines;
     bool                   tessellatePolygons;
+    bool                   esriLogging;
+    bool                   dbfLogging;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 };

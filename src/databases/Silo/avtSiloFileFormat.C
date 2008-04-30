@@ -86,6 +86,7 @@
 #include <BadDomainException.h>
 #include <BadIndexException.h>
 #include <BufferConnection.h>
+#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
@@ -133,8 +134,6 @@ static void RemoveValuesForSkippedZones(vector<int>& zoneRangesSkipped,
 
 static string GuessCodeNameFromTopLevelVars(DBfile *dbfile);
 static void AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd);
-
-bool avtSiloFileFormat::madeGlobalSiloCalls = false;
 
 // the maximum number of nodelists any given single node can be in
 static const int maxCoincidentNodelists = 12;
@@ -187,48 +186,26 @@ static const int maxCoincidentNodelists = 12;
 //    Initialize numNodeLists and broadcast info about nodelists if we
 //    have any.
 //
+//    Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//    Added read options, re-organized the routine a bit. Fixed some
+//    seriously bogus code I had added for controlling force single behavior.
 // ****************************************************************************
 
-avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
+avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
+                                     DBOptionsAttributes *rdatts)
     : avtSTMDFileFormat(&toc_name, 1)
 {
+    //
+    // Initialize class variables BEFORE processing read options 
+    //
     dontForceSingle = 0;
     numNodeLists = 0;
-
-    if (!madeGlobalSiloCalls)
-    {
-#ifdef PARALLEL
-        if (PAR_Rank() == 0)
-#endif
-            dontForceSingle = getenv("VISIT_SILO_DONT_FORCE_SINGLE") != 0;
-#ifdef PARALLEL
-        BroadcastInt(dontForceSingle);
-#endif
-
-        //
-        // Take no chances with precision errors.
-        //
-        if (dontForceSingle == 0)
-            DBForceSingle(1);
-    
-        //
-        // If there is ever a problem with Silo, we want it to throw an
-        // exception.
-        //
-        DBShowErrors(DB_ALL, ExceptionGenerator);
-        madeGlobalSiloCalls = true;
-
-        //
-        // Turn on silo's checksumming feature. This is harmless if the
-        // underlying file DOES NOT contain checksums and will cause only
-        // a small performance hit if it does.
-        //
-#ifdef E_CHECKSUM
-        DBSetEnableChecksums(1);
-#endif
-
-    }
-
+    tocIndex = 0; 
+    readGlobalInfo = false;
+    connectivityIsTimeVarying = false;
+    groupInfo.haveGroups = false;
+    hasDisjointElements = false;
+    topDir = "/";
     dbfiles = new DBfile*[MAX_FILES];
     for (int i = 0 ; i < MAX_FILES ; i++)
     {
@@ -236,20 +213,36 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
     }
 
     //
-    // We sent the toc name in as the only file, so it will end up as index 0.
+    // Process any read options, potentially overriding default behaviors
     //
-    tocIndex = 0;
+    for (int i = 0; rdatts != 0 && i < rdatts->GetNumberOfOptions(); ++i)
+    {
+        if (rdatts->GetName(i) == "Force Single")
+            dontForceSingle = rdatts->GetBool("Force Single") ? 0 : 1;
+        else
+            debug1 << "Ignoring unknown option \"" << rdatts->GetName(i) << "\"" << endl;
+    }
 
-    readGlobalInfo = false;
-    connectivityIsTimeVarying = false;
-    groupInfo.haveGroups = false;
-    hasDisjointElements = false;
+    //
+    // Set any necessary Silo library behavior 
+    //
+    if (dontForceSingle == 0)
+        DBForceSingle(1);
+    
+    //
+    // If there is ever a problem with Silo, we want it to throw an
+    // exception.
+    //
+    DBShowErrors(DB_ALL, ExceptionGenerator);
 
-#ifdef PARALLEL
-    canDoStreaming = false;
+    //
+    // Turn on silo's checksumming feature. This is harmless if the
+    // underlying file DOES NOT contain checksums and will cause only
+    // a small performance hit if it does.
+    //
+#ifdef E_CHECKSUM
+    DBSetEnableChecksums(1);
 #endif
-
-    topDir = "/";
 }
 
 
@@ -406,31 +399,11 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
         EXCEPTION1(InvalidFilesException, filenames[f]);
     }
 
-    bool hasSiloLibInfo = DBInqVarExists(dbfiles[f], "_silolibinfo");
-
-    //
-    // Attempt to handle case where specified file is actual a silo
-    // filename followed by ':' followed by an internal silo directory
-    // name.
-    //
-    const char *baseFilename = StringHelpers::Basename(filenames[f]);
-    const char *pColon = strrchr(baseFilename, ':');
-    if (pColon != NULL)
-    {
-        pColon++; // move one passed the ':' character
-        int triedDir = DBSetDir(dbfiles[f], pColon);
-        if (triedDir == 0)
-        {
-            debug1 << "Handling this silo file as though it is a file-dir combo" << endl;
-            debug1 << "for the case where an entire time series is in one silo file." << endl;
-            topDir = pColon;
-        }
-    }
-
     //
     // Lets try to make absolutely sure this is really a Silo file and
     // not just a PDB file that PD_Open succeeded on.
     //
+    bool hasSiloLibInfo = DBInqVarExists(dbfiles[f], "_silolibinfo");
     if (!hasSiloLibInfo) // newer silo files have this
     {
         //
@@ -452,6 +425,25 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
             SNPRINTF(str, sizeof(str), "Although the Silo library succesfully opened \"%s,\"\n" 
                  "the file contains no silo objects. It may be a PDB file.");
             EXCEPTION1(InvalidFilesException, str);
+        }
+    }
+
+    //
+    // Attempt to handle case where specified file is actually a silo
+    // filename followed by ':' followed by an internal silo directory
+    // name.
+    //
+    const char *baseFilename = StringHelpers::Basename(filenames[f]);
+    const char *pColon = strrchr(baseFilename, ':');
+    if (pColon != NULL)
+    {
+        pColon++; // move one passed the ':' character
+        int triedDir = DBSetDir(dbfiles[f], pColon);
+        if (triedDir == 0)
+        {
+            debug1 << "Handling this silo file as though it is a file-dir combo" << endl;
+            debug1 << "for the case where an entire time series is in one silo file." << endl;
+            topDir = pColon;
         }
     }
 
@@ -781,6 +773,8 @@ avtSiloFileFormat::CloseFile(int f)
 //    Hank Childs, Wed Jan 14 11:58:41 PST 2004
 //    Clean up all the cached multi- Silo objects.
 //
+//    Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//    Clean up resources related to block structured code nodelists.
 // ****************************************************************************
 
 void
@@ -813,6 +807,9 @@ avtSiloFileFormat::FreeUpResources(void)
         DBFreeMultimatspecies(multimatspecies[i]);
     multimatspecies.clear();
     multimatspec_name.clear();
+
+    nlBlockToWindowsMap.clear();
+    pascalsTriangleMap.clear();
 }
 
 // ****************************************************************************
@@ -4304,7 +4301,7 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
     string meshName = metadata->MeshForVar("Nodelists");
     const avtMeshMetaData *mmd = metadata->GetMesh(meshName);
 
-    debug5 << "Reading in domain " << domain << ", variable Nodelists" << endl;
+    debug5 << "Generating Nodelists variable for domain " << domain << endl;
 
     //
     // Look up the mesh in the cache.
@@ -4384,8 +4381,8 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
         ptr[i] = -1.0; // always exclude value 
 
     //
-    // Iterate over all nodesets, finding those that have 'windows' on
-    // the specified block. 
+    // Iterate over all nodesets for this block, finding those that have
+    // 'windows' on this block. 
     //
     const vector<int> &windowsOnThisBlock = nlBlockToWindowsMap[blockNum];
     for (i = 0; i < windowsOnThisBlock.size(); i += 7)
@@ -9959,6 +9956,10 @@ AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd)
 //  Programmer: Mark C. Miller 
 //  Creation:   March 18, 2008 
 //
+//  Modifications:
+//    Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//    Added call to clear nlBlockToWindowsMap before build-it, or possibly
+//    re-building from a second or more call to this method.
 // ****************************************************************************
 void
 avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
@@ -9982,6 +9983,7 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
     smd->hideFromGUI = true;
 
     int i;
+    nlBlockToWindowsMap.clear();
     for (i = 0; i < numNodeLists; i++)
     {
         char *tmpName = 0; char tmpVarName[256];

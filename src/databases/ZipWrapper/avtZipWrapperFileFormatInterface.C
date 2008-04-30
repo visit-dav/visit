@@ -44,6 +44,7 @@
 #include <snprintf.h>
 #include <DatabasePluginInfo.h>
 #include <DatabasePluginManager.h>
+#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <InvalidDBTypeException.h>
@@ -75,7 +76,7 @@
 using std::string;
 using std::vector;
 
-string avtZipWrapperFileFormatInterface::tmpDir;
+string avtZipWrapperFileFormatInterface::tmpDir = "$TMPDIR";
 string avtZipWrapperFileFormatInterface::decompCmd;
 vector<avtZipWrapperFileFormatInterface*> avtZipWrapperFileFormatInterface::objList;
 int avtZipWrapperFileFormatInterface::maxDecompressedFiles = 50;
@@ -96,11 +97,11 @@ class avtZWGenericDatabase : public avtGenericDatabase
 {
   public:
                                 avtZWGenericDatabase(avtFileFormatInterface *ffi)
-				    : avtGenericDatabase(ffi) {;};
+                                    : avtGenericDatabase(ffi) {;};
     avtFileFormatInterface     *GetFileFormatInterface()
                                     { avtFileFormatInterface *tmp = Interface;
-				      Interface = 0;
-				      return tmp; };
+                                      Interface = 0;
+                                      return tmp; };
 };
 
 // ****************************************************************************
@@ -141,8 +142,8 @@ class avtZipWrapperFileFormat : public avtMTMDFileFormat
 {
   public:
                            avtZipWrapperFileFormat(avtFileFormat *ff) :
-		               avtMTMDFileFormat("ZipWrapperDummy"),
-			       realFileFormat(ff) {;};
+                               avtMTMDFileFormat("ZipWrapperDummy"),
+                               realFileFormat(ff) {;};
     virtual               ~avtZipWrapperFileFormat() {;};
 
     virtual void           FreeUpResources(void) {;};
@@ -175,11 +176,11 @@ class avtZipWrapperFileFormat : public avtMTMDFileFormat
     void                   RegisterVariableList(const char *var,
                                                 const vector<CharStrRef> &vars2nd)
                                { dummiedRegisterVariableList_var = string(var);
-			         dummiedRegisterVariableList_2nd = vars2nd; };
+                                 dummiedRegisterVariableList_2nd = vars2nd; };
     void                   RegisterDataSelections(const vector<avtDataSelection_p>& sels,
-			       vector<bool> *apps)
+                               vector<bool> *apps)
                                { dummiedRegisterDataSelections_sels = sels;
-			         dummiedRegisterDataSelections_apps = apps; };
+                                 dummiedRegisterDataSelections_apps = apps; };
 
      // Methods to query out of this dummied up format object the information
      // we need to apply to real format objects.
@@ -227,13 +228,13 @@ static void FreeUpCacheSlot(void *item)
     if (unlink(filename.c_str()) != 0 && errno != ENOENT)
     {
         static int issuedWarning = 0;
-	if (issuedWarning < 5)
-	{
-	    debug5 << "Unable to unlink() decompressed file \"" << filename << "\"" << endl;
-	    debug5 << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
-	    cerr << "Unable to remove decompressed file \"" << filename << "\"" << endl;
-	    cerr << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
-	    issuedWarning++;
+        if (issuedWarning < 5)
+        {
+            debug5 << "Unable to unlink() decompressed file \"" << filename << "\"" << endl;
+            debug5 << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+            cerr << "Unable to remove decompressed file \"" << filename << "\"" << endl;
+            cerr << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+            issuedWarning++;
         }
     }
 }
@@ -247,20 +248,29 @@ static void FreeUpCacheSlot(void *item)
 //  on the engine. Instead, we utilize atexit() functionality. This is the
 //  function we register with atexit to cleanup decompressed files.
 //
+//  Note: By the time we are executing this function, we don't have any
+//  guarentee that rest of VisIt is available. In particular, we can't
+//  issue messages to debug logs.
+//
 //  Programmer: Mark C. Miller 
 //  Creation:   July 31, 2007 
+//
+//  Modifications:
+//    Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//    Removed debug5 lines that were commented out. Fixed algorithm for
+//    deleting objects so that after deleting the ffi object, it also deletes
+//    the pointer to the object in the list.
+// 
 // ****************************************************************************
 void
 avtZipWrapperFileFormatInterface::CleanUpAtExit()
 {
     // delete all the zip wrapper objects that still exist
-    //debug5 << "At-Exiting, deleting " << objList.size() << " objects." << endl;
     atExiting = true;
-    for (int i = 0; i < objList.size(); i++)
-        delete objList.at(i);
-    if (objList.size() != 0)
+    while (!objList.empty())
     {
-	//debug5 << "ZipWrapper may have left decompressed files" << endl;
+        delete objList.back();
+        objList.pop_back();
     }
     avtZipWrapperFileFormatInterface::Finalize();
 }
@@ -272,78 +282,119 @@ avtZipWrapperFileFormatInterface::CleanUpAtExit()
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   July 31, 2007 
+//
+//  Modifications:
+//    Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//    Added read options. Replaced most getenv calls with read options.
+//    Added broadcasting of env. results when necessary. Re-organized the
+//    routine a bit too.
 // ****************************************************************************
 void
-avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount)
+avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
+    const DBOptionsAttributes *rdopts)
 {
+    //
+    // Process any read options
+    //
+    bool dontAtExit = false;
+    string userName = "$USER"; 
+    for (int i = 0; rdopts != 0 && i < rdopts->GetNumberOfOptions(); ++i)
+    {
+        if (rdopts->GetName(i) == "TMPDIR for decompressed files")
+            tmpDir = rdopts->GetString("TMPDIR for decompressed files");
+        else if (rdopts->GetName(i) == "Don't atexit()")
+            dontAtExit = rdopts->GetBool("Don't atexit()");
+        else if (rdopts->GetName(i) == "Max. # decompressed files")
+            maxDecompressedFiles = rdopts->GetInt("Max. # decompressed files");
+        else if (rdopts->GetName(i) == "Unique moniker for dirs made in $TMPDIR")
+            userName = rdopts->GetString("Unique moniker for dirs made in $TMPDIR");
+        else if (rdopts->GetName(i) == "Decompression command")
+            decompCmd = rdopts->GetString("Decompression command");
+        else
+            debug1 << "Ignoring unknown option \"" << rdopts->GetName(i) << "\"" << endl;
+    }
 
-#ifndef MDSERVER
-    // See note in CleanUpAtExit 
-    atexit(avtZipWrapperFileFormatInterface::CleanUpAtExit);
-#endif
+    bool shouldBroadcastEnv = false;
 
     // Decide on root temporary directory
-    char *usrtmp = "/usr/tmp";
-    char *tmpdir = getenv("VISIT_ZIPWRAPPER_TMPDIR");
-    if (tmpdir == 0)
-        tmpdir = getenv("TMPDIR");
-    if (tmpdir == 0)
-        tmpdir = getenv("HOME");
-    if (tmpdir == 0)
-        tmpdir = usrtmp;
+    if (tmpDir == "$TMPDIR" && procNum == 0)
+    {
+        if (getenv("TMPDIR"))
+        {
+            tmpDir = getenv("TMPDIR");
+            shouldBroadcastEnv = true;
+        }
+        else
+        {
+            tmpDir = "/usr/tmp";
+        }
+    }
 
-    // Decide on user's name
-    char *username = getenv("VISIT_ZIPWRAPPER_USER");
-    if (username == 0)
-        username = getenv("USER");
-    if (username == 0)
-        username = getenv("USERNAME");
-    string userName = username ? string(username) : "user";
+    // Decide on user name moniker
+    if (userName == "$USER" && procNum == 0)
+    {
+        if (getenv("USER"))
+        {
+            userName = getenv("USER");
+            shouldBroadcastEnv = true;
+        }
+        else if (getenv("USERNAME"))
+        {
+            userName = getenv("USERNAME");
+            shouldBroadcastEnv = true;
+        }
+        else
+        {
+            userName = "user";
+        }
+    }
+
+    //
+    // We need to broadcast some stuff ONLY if we obtained it
+    // by querying env. variables. This is because MPI doesn't
+    // do a good job of ensuring that all procs get same env.
+    //
+#ifdef PARALLEL
+    if (shouldBroadcastEnv)
+    {
+        BroadcastString(tmpDir, procNum);
+        BroadcastString(userName, procNum);
+    }
+#endif
+
+    // Set maximum file count
+    if (maxDecompressedFiles < 0)
+        maxDecompressedFiles = -maxDecompressedFiles;
+    else
+        maxDecompressedFiles /= procCount;
+
+    debug5 << "ZipWrapper will maintain a maximum of " << maxDecompressedFiles
+           << " decompressed files " << (procCount > 1 ? "per-processor" : "")
+           << " at any one time." << endl;
 
     char procNumStr[32];
     SNPRINTF(procNumStr, sizeof(procNumStr), "_%04d", procNum);
-    tmpDir = string(tmpdir) + "/visitzw_" + userName + "_" +
+    tmpDir = tmpDir + "/visitzw_" + userName + "_" +
              string(Init::GetComponentName()) +
-	     (procCount > 1 ? string(procNumStr) : "");
-
-    // Get maximum file count
-    maxDecompressedFiles /= procCount;
-    char *maxfiles = getenv("VISIT_ZIPWRAPPER_MAXFILES");
-    if (maxfiles)
-    {
-	errno = 0;
-        int tmpInt = (int) strtol(maxfiles, 0, 10);
-	if (errno == 0)
-	{
-	    if (tmpInt < 0)
-                maxDecompressedFiles = -tmpInt;
-	    else
-                maxDecompressedFiles = tmpInt / procCount;
-        }
-	else
-	{
-	    cerr << "Unable to set maximum file count to \"" << maxfiles << "\"" << endl;
-	}
-    }
-    debug5 << "ZipWrapper will maintain a maximum of " << maxDecompressedFiles
-           << " decompressed files " << (procCount > 1 ? "per-processor" : "")
-	   << " at any one time." << endl;
-
-    char *decomp_cmd = getenv("VISIT_ZIPWRAPPER_DCMD");
-    if (decomp_cmd)
-        decompCmd = string(decomp_cmd);
+             (procCount > 1 ? string(procNumStr) : "");
+    debug5 << "ZipWrapper is using \"" << tmpDir << "\" as the temporary directory" << endl;
 
     // Make the temporary directory
     // (will have different name on mdserver and engine)
-    debug5 << "ZipWrapper is using \"" << tmpDir << "\" as the temporary directory" << endl;
     errno = 0;
     if (mkdir(tmpDir.c_str(), 0777) != 0 && errno != EEXIST)
     {
         static char errMsg[1024];
-	SNPRINTF(errMsg, sizeof(errMsg), "mkdir failed with errno=%d (\"%s\")",
-	    errno, strerror(errno));
+        SNPRINTF(errMsg, sizeof(errMsg), "mkdir failed with errno=%d (\"%s\")",
+            errno, strerror(errno));
         EXCEPTION1(InvalidFilesException, errMsg);
     }
+
+#ifndef MDSERVER
+    // See note in CleanUpAtExit 
+    if (dontAtExit == false)
+        atexit(avtZipWrapperFileFormatInterface::CleanUpAtExit);
+#endif
 }
 
 // ****************************************************************************
@@ -361,9 +412,9 @@ avtZipWrapperFileFormatInterface::Finalize()
     if (rmdir(tmpDir.c_str()) != 0 && errno != ENOENT)
     {
         debug5 << "Unable to remove temporary directory \"" << tmpDir << "\"" << endl;
-	debug5 << "rmdir() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+        debug5 << "rmdir() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
         cerr << "Unable to remove temporary directory \"" << tmpDir << "\"" << endl;
-	cerr << "rmdir() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+        cerr << "rmdir() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
     }
 }
 
@@ -384,7 +435,7 @@ avtZipWrapperFileFormatInterface::Finalize()
 //    Initialized dummyFileFormat to 0 before calling GetRealInterface
 // ****************************************************************************
 avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
-    const char *const *list, int nl, int nb) : 
+    const char *const *list, int nl, int nb, const DBOptionsAttributes *rdopts) : 
     inputFileListSize(nl), inputFileBlockCount(nb),
     decompressedFilesCache(FreeUpCacheSlot)
 {
@@ -397,17 +448,17 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
 
     // keep track of objects to cleanup in CleanUpAtExit
     if (objList.size() == 0)
-        avtZipWrapperFileFormatInterface::Initialize(procNum, procCount);
+        avtZipWrapperFileFormatInterface::Initialize(procNum, procCount, rdopts);
     objList.push_back(this);
 
     // store list of files
     nTimesteps = nl / nb;
     for (int t = 0; t < nTimesteps; t++)
     {
-	vector<string> blockList;
+        vector<string> blockList;
         for (int b = 0; b < nb; b++)
-	    blockList.push_back(list[t*nb+b]);
-	inputFileList.push_back(blockList);
+            blockList.push_back(list[t*nb+b]);
+        inputFileList.push_back(blockList);
     }
 
     //
@@ -434,7 +485,7 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
         realPluginWasLoadedByMe = dbmgr->LoadSinglePluginNow(ids[i]);
         TRY
         {
-	    pluginId = ids[i];
+            pluginId = ids[i];
             // when creating the file format interface object for the dummy format
             // don't cache it in the MRU cache.
             const bool dontCache = true;
@@ -453,9 +504,9 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     if (info == 0)
     {
         char errMsg[1024];
-	SNPRINTF(errMsg, sizeof(errMsg),
-	    "Unable to load info about plugin \"%s\" for file \"%s\"",
-	    pluginId.c_str(), inputFileList[0][0].c_str());
+        SNPRINTF(errMsg, sizeof(errMsg),
+            "Unable to load info about plugin \"%s\" for file \"%s\"",
+            pluginId.c_str(), inputFileList[0][0].c_str());
         EXCEPTION1(InvalidFilesException, errMsg);
     }
     dbType = info->GetDatabaseType();
@@ -484,8 +535,8 @@ avtZipWrapperFileFormatInterface::~avtZipWrapperFileFormatInterface()
 
 #if 0 // disabled until we can unload a single plugin
 #ifndef MDSERVER
-	if (realPluginWasLoadedByMe)
-	    UnloadSinglePlugin(pluginId);
+        if (realPluginWasLoadedByMe)
+            UnloadSinglePlugin(pluginId);
 #endif
 #endif
 
@@ -509,7 +560,7 @@ avtZipWrapperFileFormatInterface::~avtZipWrapperFileFormatInterface()
     // if this is the last instance we have, finalize the class too
     if (objList.size() == 0)
     {
-	debug5 << "Calling finalize on \"" << Init::GetComponentName() << "\"" << endl;
+        debug5 << "Calling finalize on \"" << Init::GetComponentName() << "\"" << endl;
         avtZipWrapperFileFormatInterface::Finalize();
     }
 }
@@ -613,9 +664,9 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     {
         debug5 << "Found interface object for file \"" << compressedName << "\" in cache" << endl;
         avtFileFormatInterface *retval = decompressedFilesCache[compressedName];
-	// Always update the interface object to whatever the dummy format thinks
-	// is right before returning the object for use.
-	UpdateRealFileFormatInterface(retval);
+        // Always update the interface object to whatever the dummy format thinks
+        // is right before returning the object for use.
+        UpdateRealFileFormatInterface(retval);
         return retval; 
     }
     debug5 << "Interface object for file \"" << compressedName << "\" not in cache" << endl;
@@ -644,12 +695,12 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     if (WIFEXITED(ret))
     {
         if (WEXITSTATUS(ret) != 0)
-	{
+        {
             char errMsg[1024];
-	    SNPRINTF(errMsg, sizeof(errMsg), "Decompression command apparently "
-	        "exited normally but returned non-zero exit status %d", WEXITSTATUS(ret));
+            SNPRINTF(errMsg, sizeof(errMsg), "Decompression command apparently "
+                "exited normally but returned non-zero exit status %d", WEXITSTATUS(ret));
             EXCEPTION1(InvalidFilesException, errMsg);
-	}
+        }
     }
     else
     {
@@ -801,7 +852,7 @@ avtZipWrapperFileFormatInterface::SetDatabaseMetaData(
         for (j = 0 ; j < nm ; j++)
             md->SetBlocksForMesh(j, inputFileBlockCount);
         if (inputFileBlockCount > 1)
-	    md->UnsetExtents();
+            md->UnsetExtents();
     }
     else if (dbType == DB_TYPE_STSD)
     {
@@ -811,7 +862,7 @@ avtZipWrapperFileFormatInterface::SetDatabaseMetaData(
         for (j = 0 ; j < nm ; j++)
             md->SetBlocksForMesh(j, inputFileBlockCount);
         if (inputFileBlockCount > 1)
-	    md->UnsetExtents();
+            md->UnsetExtents();
     }
 
     mdCopy = *md;

@@ -80,6 +80,8 @@ class ZipWrapperCommonPluginInfo : public virtual CommonDatabasePluginInfo, publ
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
+    virtual DBOptionsAttributes *GetReadOptions() const;
+    virtual DBOptionsAttributes *GetWriteOptions() const;
 };
 
 class ZipWrapperMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual ZipWrapperCommonPluginInfo

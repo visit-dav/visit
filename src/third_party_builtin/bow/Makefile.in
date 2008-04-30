@@ -32,15 +32,6 @@
 # (INCLUDING  NEGLIGENCE OR  OTHERWISE) ARISING IN ANY  WAY OUT OF  THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#  Modifications:
-#
-#    Eric Brugger, Fri Jun 29 09:20:53 PDT 2007
-#    Removed the setting of the DISTRIB and NOT_DISTRIB variables.
-#
-#    Mark C. Miller, Tue Apr 29 22:02:51 PDT 2008
-#    Eliminated unnecessary dependency of CPPFLAGS on VTK_INCLUDE and
-#    SILO_INCLUDE
-#
 ##############################################################################
 ##
 ## Programs and options...
@@ -48,16 +39,16 @@
 @SET_MAKE@
 @VARIABLES@
 
-CPPFLAGS=-I. -I../../include @CPPFLAGS@
+CPPFLAGS=-I. -I../../include -I../../include/visit @CPPFLAGS@ @VTK_INCLUDES@
 LIBS=
 
 ##
 ## Files...
 ##
-SRC=blocksort.c huffman.c crctable.c randtable.c compress.c decompress.c bzlib.c
-HDR=bzlib.h  bzlib_private.h
-OBJ=$(SRC:.c=.o)
-LIB=libbz2
+SRC=bow.C fwav.C gzlib.C
+HDR=$(SRC:.C=.h)
+OBJ=$(SRC:.C=.o)
+LIB=libbow
 
 ##
 ## Standard targets...
@@ -65,20 +56,25 @@ LIB=libbz2
 all: message $(LIBSHARED)
 
 clean:
-	$(RM) $(OBJ) $(SRC) $(HDR) $(LIBSHARED) LICENSE words* ../../include/visit/bzlib.h
+	$(RM) $(OBJ) $(LIBSHARED) ../../include/visit/{bow.h,fwav.h,gzlib.h}
 
-LICENSE:
-	gunzip < bzip2-1.0.3.v.tar.gz | tar xvf -
-	touch LICENSE
-	cp bzlib.h ../../include/visit/.
+../../include/visit/gzlib.h: gzlib.h
+	cd ../../include/visit; \
+	ln -s ../../third_party_builtin/bow/gzlib.h .
 
-blocksort.c: LICENSE 	 
-huffman.c: LICENSE
-crctable.c: LICENSE
-randtable.c: LICENSE
-compress.c: LICENSE
-decompress.c: LICENSE
-bzlib.c: LICENSE
+../../include/visit/fwav.h: fwav.h
+	cd ../../include/visit; \
+	ln -s ../../third_party_builtin/bow/fwav.h .
+
+../../include/visit/bow.h: bow.h
+	cd ../../include/visit; \
+	ln -s ../../third_party_builtin/bow/bow.h .
+
+gzlib.C: ../../include/visit/gzlib.h
+
+fwav.C: ../../include/visit/fwav.h
+
+bow.C: ../../include/visit/bow.h
 
 ##
 ## Other targets
@@ -86,7 +82,7 @@ bzlib.c: LICENSE
 message:
 	@echo
 	@echo "****************************************************************************"
-	@echo "*** Building Bzip2 Library ($(LIB))"
+	@echo "*** Building BOW Library ($(LIB))"
 	@echo "****************************************************************************"
 
 ##

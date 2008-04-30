@@ -66,6 +66,7 @@ class     avtIntervalTree;
 class     avtMaterial;
 class     avtSpecies;
 
+class     DBOptionsAttributes;
 
 typedef struct
 {
@@ -200,7 +201,7 @@ typedef struct
 class avtSiloFileFormat : public avtSTMDFileFormat
 {
   public:
-                          avtSiloFileFormat(const char *);
+                          avtSiloFileFormat(const char *, DBOptionsAttributes*);
     virtual              ~avtSiloFileFormat();
     
     virtual void          FreeUpResources(void);
@@ -235,8 +236,6 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     bool                  connectivityIsTimeVarying;
     bool                  hasDisjointElements;
     string                codeNameGuess;
-
-    static bool           madeGlobalSiloCalls;
 
     std::set<string>      domainDirs;
 

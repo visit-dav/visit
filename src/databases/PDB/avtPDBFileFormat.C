@@ -37,6 +37,7 @@
 *****************************************************************************/
 
 #include <avtFileFormatInterface.h>
+#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <VisItException.h>
 #include <InvalidDBTypeException.h>
@@ -69,10 +70,13 @@
 //   Brad Whitlock, Fri Dec 9 17:38:23 PST 2005
 //   Renamed to avoid namespace conflicts on Tru64.
 //
+//   Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//   Added read options as formal arg. and passed to LEOS interface creator.
 // ****************************************************************************
 
 avtFileFormatInterface *
-PDB_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
+PDB_CreateFileFormatInterface(const char * const *list, int nList, int nBlock,
+    const DBOptionsAttributes *rdopts)
 {
     avtFileFormatInterface *ffi = 0;
 
@@ -110,7 +114,7 @@ PDB_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
 
             // Check to see if it is an LEOS file.
             if(ffi == 0)
-                ffi = LEOSFileFormat::CreateInterface(pdb, list[0]);
+                ffi = LEOSFileFormat::CreateInterface(pdb, list[0], rdopts);
 
             // Add more file formats here.
 
