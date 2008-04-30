@@ -92,12 +92,16 @@
 //    Brad Whitlock, Wed Jan 11 17:01:24 PST 2006
 //    Added localUserName.
 //
+//    Jeremy Meredith, Wed Apr 30 13:14:53 EDT 2008
+//    Added apparentHostName.
+//
 // ****************************************************************************
 
 ParentProcess::ParentProcess() : version(VERSION), localUserName()
 {
     // Set some default values.
     hostName = std::string("localhost");
+    apparentHostName = "";
 
     // Zero out the SocketConnection pointers.
     readConnections = 0;
@@ -518,6 +522,50 @@ const std::string &
 ParentProcess::GetHostName() const
 {
     return hostName;
+}
+
+// ****************************************************************************
+//  Method:  ParentProcess::GetApparentHostName
+//
+//  Purpose:
+//    Returns the externally visible hostname for the host on which
+//    the parent process is running.  (I.e. it will try not to return
+//    "localhost" if possible, though it will do that instead of
+//    returning an error.)
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April 30, 2008
+//
+// ****************************************************************************
+
+const std::string &
+ParentProcess::GetApparentHostName()
+{
+    if (apparentHostName == "")
+    {
+        // Determine as best we can the actual host name
+        apparentHostName = hostName;
+        if (hostName == "localhost" ||
+            hostName == "127.0.0.1")
+        {
+            // We're using the loopback device; try harder
+            char localHostStr[256];
+            if (gethostname(localHostStr, 256) != -1)
+            {
+                struct hostent *localHostEnt = gethostbyname(localHostStr);
+                if (localHostEnt)
+                {
+                    apparentHostName = std::string(localHostEnt->h_name);
+                }
+                else
+                {
+                    apparentHostName = std::string(localHostStr);
+                }
+            }
+        }
+    }
+
+    return apparentHostName;
 }
 
 // ****************************************************************************

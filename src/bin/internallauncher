@@ -316,6 +316,10 @@ $0 = shift @ARGV;
 #    Added hooks for commands to run pre and post the mpi command,
 #    and added a flag to qsub to indicate num procs per node.
 #
+#    Jeremy Meredith, Wed Apr 30 13:12:13 EDT 2008
+#    Added loopback support: it replaces the remote host name with 127.0.0.1
+#    unless the "-noloopback" flag is given by visit or by the user.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -562,6 +566,7 @@ $fullusage = "$usage
         -guesshost           Try to guess the client host name from one of
                              the SSH_CLIENT, SSH2_CLIENT, or SSH_CONNECTION
                              environment variables.
+        -noloopback          Disable use of the 127.0.0.1 loopback device.
         -noint               Disable interruption capability.
         -nopty               Run without PTYs.
         -verbose             Prints status information during pipeline
@@ -802,6 +807,7 @@ $print_arch     = 0;
 $ssh_tunneling  = 0;
 $leftdb = "";
 $rightdb = "";
+$noloopback = 0;
 
 # Parse the arguments 
 @visitargs = ();
@@ -989,8 +995,96 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-hw-post" )         { $post_command = shift; }
     elsif ($arg eq "-sshtunneling" )    { $ssh_tunneling = 1; push @visitargs, $arg; }
     elsif ($arg eq "-viewerdisplay" )   { $viewerdisplay = shift; push @visitargs, $arg, $viewerdisplay; }
+    elsif ($arg eq "-noloopback")       { push @visitargs, $arg if (!$noloopback); $noloopback = 1; }
     else                         { push @visitargs, $arg; }
 }
+
+# -----------------------------------------------------------------------------
+#                               Check for errors
+# -----------------------------------------------------------------------------
+
+if ((!$procs_set) and ($name_set or $part_set or $bank_set or
+                       $time_set or $part_set or $nodes_set or
+                       $machinefile_set))
+{
+    print STDERR "You specified a parallel argument without using -np to specify\n".
+                 "the number of processors.  Please add an -np argument.\n";
+    print STDERR $usage;
+    exit 1;
+}
+
+if (($procs_set) and ($procs < 1))
+{
+    print STDERR "You must specify more at least one processor to execute a parallel Visit engine.\n".
+                 "You specified \"$procs\" processor(s).\n";
+    exit 1;
+}
+
+@engine_parallel_args = ();
+$had_to_strip_parallel_args = 0;
+if ((($parallel) or ($launchengine)) and
+    ($exe_name ne "engine") and
+    (($exe_name ne "vcl") or (!$parlaunch_set)))
+{
+    $had_to_strip_parallel_args = 1;
+    # If we're trying to run in parallel, or we've been explicitly
+    # told to launch an engine, add any parallel arguments back on
+    push @engine_parallel_args, "-par"                   if ($parallel && !$procs_set);
+    push @engine_parallel_args, "-l",  $launch           if ($launch_set);
+    push @engine_parallel_args, "-la", "@launchargs"     if ($launchargs_set);
+    push @engine_parallel_args, "-np", $procs            if ($procs_set);
+    push @engine_parallel_args, "-nn", $nodes            if ($nodes_set);
+    push @engine_parallel_args, "-n",  $name             if ($name_set);
+    push @engine_parallel_args, "-p",  $part             if ($part_set);
+    push @engine_parallel_args, "-b",  $bank             if ($bank_set);
+    push @engine_parallel_args, "-t",  $time             if ($time_set);
+    push @engine_parallel_args, "-machinefile",  $machinefile if ($machinefile_set);
+
+    # ... but don't confuse the script
+    $parallel=0;
+    $launchargs_set=0;
+    $procs_set=0;
+    $name_set=0;
+    $part_set=0;
+    $bank_set=0;
+    $time_set=0;
+    $nodes_set=0;
+    $machinefile_set=0;
+
+    #
+    # The makemili and convert tool needs these parallel arguments, but to not
+    # confuse the script, we turn off the parallel flag. So we
+    # translate the executable name here.
+    #
+    if (($exe_name eq "makemili") or ($exe_name eq "visitconvert"))
+    {
+        $exe_name .= "_par";
+    }
+    else
+    {
+        # If we didn't specify a location for the engine, assume localhost.
+        push @visitargs, "-launchengine", "localhost"   if (!$launchengine);
+        push @visitargs, "-launchengine", $launchengine if ($launchengine);
+    }
+}
+
+# -----------------------------------------------------------------------------
+#                  Hostname Overrides and Host-specific Hacks
+# -----------------------------------------------------------------------------
+
+
+# Localhost override to loopback.  The default behavior is that we
+# will always override the given host with the loopback device unless
+# otherwise specified.  This means that the viewer needs to add the
+# -noloopback flag when initiating a remote process (e.g. the vcl
+# with -ssh, or another remote process launched through vcl).  A
+# parallel engine also needs to add the flag since even "local"
+# parallel jobs may run on compute nodes.
+if (!$noloopback)
+{
+    $remotehost = "127.0.0.1";
+}
+
 
 # Only add -compiler to the visitargs too if the component name was passed.
 # Other applications won't need to propagate that flag because only the
@@ -999,7 +1093,7 @@ while (scalar(@ARGV) > 0) {
 # in subprocesses.
 if ($req_compiler ne "" && $exe_name_passed)
 {
-    push @visitargs, "-compiler", $req_compiler; 
+    push @visitargs, "-compiler", $req_compiler;
 }
 
 if ($guesshost && !$ssh_tunneling)
@@ -1134,88 +1228,14 @@ if ($host =~ /^yana\d+$/)
 }
 
 
-# ----
-#  HACK to allow other talk-back interfaces
-#
 #  We stripped off the "host" argument above, so put it back here.
-#  (This allowed us to change it if needed, e.g. for Q)
+#  This allowed us to change it if needed, e.g. for the Q machine.
 #  VisIt seems to need the -host argument before the -nread and -nwrite
 #  values, so when we put it back, put it at the beginning.
-# ----
 if ($remotehost_set)
 {
     unshift @visitargs, $remotehost;
     unshift @visitargs, "-host";
-}
-
-
-# -----------------------------------------------------------------------------
-#                               Check for errors
-# -----------------------------------------------------------------------------
-
-if ((!$procs_set) and ($name_set or $part_set or $bank_set or
-                       $time_set or $part_set or $nodes_set or
-                       $machinefile_set))
-{
-    print STDERR "You specified a parallel argument without using -np to specify\n".
-                 "the number of processors.  Please add an -np argument.\n";
-    print STDERR $usage;
-    exit 1;
-}
-
-if (($procs_set) and ($procs < 1))
-{
-    print STDERR "You must specify more at least one processor to execute a parallel Visit engine.\n".
-                 "You specified \"$procs\" processor(s).\n";
-    exit 1;
-}
-
-@engine_parallel_args = ();
-$had_to_strip_parallel_args = 0;
-if ((($parallel) or ($launchengine)) and
-    ($exe_name ne "engine") and
-    (($exe_name ne "vcl") or (!$parlaunch_set)))
-{
-    $had_to_strip_parallel_args = 1;
-    # If we're trying to run in parallel, or we've been explicitly
-    # told to launch an engine, add any parallel arguments back on
-    push @engine_parallel_args, "-par"                   if ($parallel && !$procs_set);
-    push @engine_parallel_args, "-l",  $launch           if ($launch_set);
-    push @engine_parallel_args, "-la", "@launchargs"     if ($launchargs_set);
-    push @engine_parallel_args, "-np", $procs            if ($procs_set);
-    push @engine_parallel_args, "-nn", $nodes            if ($nodes_set);
-    push @engine_parallel_args, "-n",  $name             if ($name_set);
-    push @engine_parallel_args, "-p",  $part             if ($part_set);
-    push @engine_parallel_args, "-b",  $bank             if ($bank_set);
-    push @engine_parallel_args, "-t",  $time             if ($time_set);
-    push @engine_parallel_args, "-machinefile",  $machinefile if ($machinefile_set);
-
-    # ... but don't confuse the script
-    $parallel=0;
-    $launchargs_set=0;
-    $procs_set=0;
-    $name_set=0;
-    $part_set=0;
-    $bank_set=0;
-    $time_set=0;
-    $nodes_set=0;
-    $machinefile_set=0;
-
-    #
-    # The makemili and convert tool needs these parallel arguments, but to not
-    # confuse the script, we turn off the parallel flag. So we
-    # translate the executable name here.
-    #
-    if (($exe_name eq "makemili") or ($exe_name eq "visitconvert"))
-    {
-        $exe_name .= "_par";
-    }
-    else
-    {
-        # If we didn't specify a location for the engine, assume localhost.
-        push @visitargs, "-launchengine", "localhost"   if (!$launchengine);
-        push @visitargs, "-launchengine", $launchengine if ($launchengine);
-    }
 }
 
 # -----------------------------------------------------------------------------
