@@ -1,8 +1,6 @@
 # ----------------------------------------------------------------------------
 #  CLASSES: nightly
 #
-#  ENV: VISIT_SILO_DONT_FORCE_SINGLE=1
-#
 #  Test Case:  xform_precision.py 
 #
 #  Tests:      Transform manager's conversion to float 
@@ -27,6 +25,13 @@ a.backgroundColor = (255, 255, 255, 255)
 SetAnnotationAttributes(a)
 
 OpenDatabase("../data/quad_disk.silo")
+
+#
+# Turn off force single precision for this test
+#
+readOptions=GetDefaultFileOpenOptions("Silo")
+readOptions["Force Single"] = 0
+SetDefaultFileOpenOptions("Silo", readOptions)
 
 #
 # Test ordinary float data (no conversion) first
