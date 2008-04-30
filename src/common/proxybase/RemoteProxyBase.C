@@ -385,6 +385,10 @@ RemoteProxyBase::AddArgument(const std::string &arg)
 //    Added arguments for passing in commands to run pre and post the 
 //    sublauncher command.
 //
+//    Jeremy Meredith, Wed Apr 30 12:22:01 EDT 2008
+//    Always add -noloopback for parallel launches, since they may
+//    occur on compute nodes.
+//
 // ****************************************************************************
 
 void
@@ -406,6 +410,8 @@ RemoteProxyBase::AddProfileArguments(const HostProfile &profile,
     //
     if (profile.GetParallel())
     {
+        AddArgument("-noloopback");
+
         char temp[10];
         if (!addParallelArgs)
         {

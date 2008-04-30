@@ -84,6 +84,9 @@ class Connection;
 //   Brad Whitlock, Wed Jan 11 17:00:35 PST 2006
 //   Added localUserName.
 //
+//   Jeremy Meredith, Wed Apr 30 12:26:25 EDT 2008
+//   Added apparent host name (tries to resolve localhost into a real name).
+//
 // ****************************************************************************
 
 class COMM_API ParentProcess
@@ -94,6 +97,7 @@ public:
     void Connect(int numRead, int numWrite, int *argc, char **argv[],
                  bool createSockets, int failCode=0);
     const std::string &GetHostName() const;
+    const std::string &GetApparentHostName();
     std::string        GetTheUserName() const;
     Connection  *GetReadConnection(int i=0) const;
     Connection  *GetWriteConnection(int i=0) const;
@@ -105,6 +109,7 @@ private:
     void GetHostInfo();
 private:
     std::string      hostName;
+    std::string      apparentHostName;
     void             *hostInfo;
     Connection     **readConnections, **writeConnections;
     int              nReadConnections,  nWriteConnections;

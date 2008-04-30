@@ -1705,6 +1705,12 @@ RemoteProcess::SecureShellArgs() const
 //    levels of the same Major.Minor version will be compatible with
 //    each other, so we always want the latest in the X.Y series.
 //
+//    Jeremy Meredith, Wed Apr 30 11:46:20 EDT 2008
+//    If it's not a local launch, add the "-noloopback" flag.  The new
+//    behavior is to always use the loopback device (127.0.0.1) unless this
+//    flag is given, and this is the most direct place to correctly add
+//    that flag.
+//
 // ****************************************************************************
 
 void
@@ -1845,6 +1851,17 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
     //
     for(int i = 0; i < argList.size(); ++i)
         args.push_back(argList[i]);
+
+
+    //
+    // If it's not going to be a local launch, set an argument
+    // disabling automatic usage of the loopback network device.
+    //
+    if (!HostIsLocal(rHost))
+    {
+        args.push_back("-noloopback");
+    }
+
 
     //
     // Add the local hostname and the ports we'll be talking on.

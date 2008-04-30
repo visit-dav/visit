@@ -868,6 +868,11 @@ ViewerSubject::ConnectXfer()
 //   Made it use ViewerState and renamed a class for translating 
 //   Subject/Observer into Qt signals. Added color table observer.
 //
+//   Jeremy Meredith, Wed Apr 30 12:23:04 EDT 2008
+//   Added the apparent-host setting to parent process.  Since we
+//   try to use 127.0.0.1 whenever possible, this is the way to
+//   get the externally visible hostname.
+//
 // ****************************************************************************
 
 void
@@ -960,10 +965,10 @@ ViewerSubject::ConnectObjectsAndHandlers()
 
     //
     // Get the localhost name from the parent and give it to the
-    // ViewerEngineManager and EngineKey so it can use it when needed.
+    // ViewerServerManager and EngineKey so it can use it when needed.
     //
-    ViewerServerManager::SetLocalHost(parent->GetHostName());
-    EngineKey::SetLocalHost(parent->GetHostName());
+    ViewerServerManager::SetLocalHost(parent->GetApparentHostName());
+    EngineKey::SetLocalHost(parent->GetApparentHostName());
 
     //
     // Set the default user name.
