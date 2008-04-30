@@ -3371,7 +3371,7 @@ QvisGUIApplication::CreateInitiallyVisibleWindows(DataNode *node)
 
     for(int i = 0; i < windowNames.size(); ++i)
     {
-        DataNode *wNode = guiNode->GetNode(windowNames[i]);
+        DataNode *wNode = guiNode->GetNode(windowNames[i].latin1());
         if(wNode != 0)
         {
             bool windowVisible = false;

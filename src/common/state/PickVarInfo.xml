@@ -52,6 +52,9 @@
     <Include file="source" quoted="false">
       stdio.h
     </Include>
+    <Include file="source" quoted="false">
+      cstring 
+    </Include>
     <Include file="header" quoted="true">
       snprintf.h
     </Include>

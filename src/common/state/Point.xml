@@ -33,4 +33,7 @@
     <Include file="source" quoted="false">
       stdio.h
     </Include>
+    <Include file="source" quoted="false">
+      cstring
+    </Include>
   </Attribute>

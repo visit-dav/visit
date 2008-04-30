@@ -117,12 +117,16 @@ LogCommand(const char *cmd, const char *truncate_at_pattern)
 //
 //    Sean Ahern, Thu Apr 24 18:17:33 EDT 2008
 //    Avoided this if we're on the Mac.
+//
+//    Kathleen Bonnell, Wed Apr 30 10:59:18 PDT 2008 
+//    Windows compiler doesn't like 'and', use '&&' instead. 
+//
 // ****************************************************************************
 
 static void
 LogGlxAndXdpyInfo()
 {
-#if !defined(_WIN32) and !defined(Q_WS_MACX)
+#if !defined(_WIN32) && !defined(Q_WS_MACX)
     if (debug5_real)
     {
         LogCommand("xdpyinfo", "number of visuals"); // truncate at list of visuals
