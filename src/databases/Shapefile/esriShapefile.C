@@ -427,16 +427,16 @@ esriCommonStorageFree(void *ptr)
 //
 // Modifications:
 //   
+//   Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//   Made logging a formal arg and eliminated getenv call
 // ****************************************************************************
 
 void
-esriInitialize(int commonStorage, void (*errFunc)(const char *))
+esriInitialize(int commonStorage, void (*errFunc)(const char *), bool logging)
 {
     const int one = 1;
-    const char *logging;
       
-    if((logging = getenv("ESRI_LOGGING")) != 0)
-        esriLog = (strcmp(logging, "1") == 0) ? 1 : 0;
+    esriLog = logging; 
     esriInitialized = 1;
     esriIndentAmount = 0;
     esriLocalEndian = (*((unsigned char *)&one) == 1) ?

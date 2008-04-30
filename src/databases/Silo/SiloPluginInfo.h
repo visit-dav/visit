@@ -47,6 +47,7 @@
 
 class avtDatabase;
 class avtDatabaseWriter;
+class DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: SiloDatabasePluginInfo

@@ -80,6 +80,9 @@ class ShapefileCommonPluginInfo : public virtual CommonDatabasePluginInfo, publi
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
+
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class ShapefileMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual ShapefileCommonPluginInfo

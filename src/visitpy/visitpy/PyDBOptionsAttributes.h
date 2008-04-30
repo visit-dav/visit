@@ -45,17 +45,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void VISITPY_API           PyDBOptionsAttributes_StartUp(DBOptionsAttributes *subj, void *data);
-void VISITPY_API           PyDBOptionsAttributes_CloseDown();
+void VISITPY_API          PyDBOptionsAttributes_StartUp(DBOptionsAttributes *subj, void *data);
+void VISITPY_API          PyDBOptionsAttributes_CloseDown();
 VISITPY_API PyMethodDef *   PyDBOptionsAttributes_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyDBOptionsAttributes_Check(PyObject *obj);
+bool VISITPY_API          PyDBOptionsAttributes_Check(PyObject *obj);
 VISITPY_API DBOptionsAttributes *  PyDBOptionsAttributes_FromPyObject(PyObject *obj);
 VISITPY_API PyObject *      PyDBOptionsAttributes_New();
 VISITPY_API PyObject *      PyDBOptionsAttributes_Wrap(const DBOptionsAttributes *attr);
-void VISITPY_API           PyDBOptionsAttributes_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyDBOptionsAttributes_SetDefaults(const DBOptionsAttributes *atts);
-std::string VISITPY_API    PyDBOptionsAttributes_GetLogString();
-std::string VISITPY_API    PyDBOptionsAttributes_ToString(const DBOptionsAttributes *, const char *);
+void VISITPY_API          PyDBOptionsAttributes_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API          PyDBOptionsAttributes_SetDefaults(const DBOptionsAttributes *atts);
+std::string VISITPY_API   PyDBOptionsAttributes_GetLogString();
+std::string VISITPY_API   PyDBOptionsAttributes_ToString(const DBOptionsAttributes *, const char *);
 
 #endif
 

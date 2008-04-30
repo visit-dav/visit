@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="DBOptionsAttributes" purpose="Attributes of database options" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="DBOptionsAttributes.code">
+  <Attribute name="DBOptionsAttributes" purpose="Attributes of database options" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="DBOptionsAttributes.code">
     <Enum name="OptionType">
       Bool
       Int

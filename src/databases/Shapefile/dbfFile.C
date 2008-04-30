@@ -346,16 +346,16 @@ dbfFreeEx(const char *f, const int line, const char *src, void *ptr)
 //   I removed common storage from this library since everything that we read
 //   is small and we don't do many allocations.
 //
+//   Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//   Made logging a formal arg. and eliminated getenv call.
 // ****************************************************************************
 
 void
-dbfInitialize(void* (*user_malloc)(size_t), void (*user_free)(void *))
+dbfInitialize(void* (*user_malloc)(size_t), void (*user_free)(void *), bool logging)
 {
     const int one = 1;
-    const char *logging;
       
-    if((logging = getenv("DBF_LOGGING")) != 0)
-        dbfLog = (strcmp(logging, "1") == 0) ? 1 : 0;
+    dbfLog = logging; 
     dbfInitialized = 1;
     dbfIndentAmount = 0;
     dbfLocalEndian = (*((unsigned char *)&one) == 1) ?

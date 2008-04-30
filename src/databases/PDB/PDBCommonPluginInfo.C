@@ -41,6 +41,7 @@
 #include <avtGenericDatabase.h>
 #include <avtPDBFileFormat.h>
 #include <VisItException.h>
+#include <avtPDBOptions.h>
 
 // ****************************************************************************
 //  Method:  PDBCommonPluginInfo::GetDatabaseType
@@ -99,7 +100,8 @@ PDBCommonPluginInfo::SetupDatabase(const char *const *list,
     //
     // Create a file format interface based on information in the files.
     //
-    avtFileFormatInterface *inter = PDB_CreateFileFormatInterface(list, nList, nBlock);
+    avtFileFormatInterface *inter = PDB_CreateFileFormatInterface(list, nList, nBlock,
+                                                                  readOptions);
 
     // If we created a file format interface, try creating a database.
     if(inter)
@@ -119,4 +121,16 @@ PDBCommonPluginInfo::SetupDatabase(const char *const *list,
     }
 
     return db;
+}
+
+DBOptionsAttributes *
+PDBCommonPluginInfo::GetReadOptions() const
+{
+    return GetPDBReadOptions();
+}
+
+DBOptionsAttributes *
+PDBCommonPluginInfo::GetWriteOptions() const
+{
+    return GetPDBWriteOptions();
 }

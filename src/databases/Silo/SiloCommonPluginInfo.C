@@ -82,7 +82,7 @@ SiloCommonPluginInfo::SetupDatabase(const char *const *list,
     avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
     for (int i = 0 ; i < nList ; i++)
     {
-        ffl[i] = new avtSiloFileFormat(list[i]);
+        ffl[i] = new avtSiloFileFormat(list[i], readOptions);
     }
     avtSTMDFileFormatInterface *inter 
            = new avtSTMDFileFormatInterface(ffl, nList);

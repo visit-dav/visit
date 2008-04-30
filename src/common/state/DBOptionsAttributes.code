@@ -1,5 +1,5 @@
 Function: FindIndex
-Declaration: int FindIndex(const std::string &name);
+Declaration: int FindIndex(const std::string &name) const;
 Definition:
 // ****************************************************************************
 //  Method: DBOptionsAttributes::FindIndex
@@ -10,10 +10,13 @@ Definition:
 //  Programmer: Hank Childs
 //  Creation:   May 23, 2005
 //
+//  Modifications:
+//    Mark C. Miller, Tue Apr 29 17:39:39 PDT 2008
+//    Made it a const method
 // ****************************************************************************
 
 int
-DBOptionsAttributes::FindIndex(const std::string &name)
+DBOptionsAttributes::FindIndex(const std::string &name) const
 {
     for (int i = 0 ; i < names.size() ; i++)
         if (names[i] == name)
@@ -58,7 +61,7 @@ DBOptionsAttributes::SetBool(const std::string &name, bool defaultValue)
 }
 
 Function: GetBool
-Declaration: bool GetBool(const std::string &name);
+Declaration: bool GetBool(const std::string &name) const;
 Definition:
 // ****************************************************************************
 //  Method: DBOptionsAttributes::GetBool
@@ -69,10 +72,14 @@ Definition:
 //  Programmer: Hank Childs
 //  Creation:   May 23, 2005
 //
+//  Modifications:
+//    Mark C. Miller, Tue Apr 29 17:39:39 PDT 2008
+//    Made it a const method
+//
 // ****************************************************************************
 
 bool
-DBOptionsAttributes::GetBool(const std::string &name)
+DBOptionsAttributes::GetBool(const std::string &name) const
 {
     int bIndex = FindIndex(name);
     if (bIndex < 0)
@@ -109,7 +116,7 @@ DBOptionsAttributes::SetFloat(const std::string &name, float defaultValue)
 }
 
 Function: GetFloat
-Declaration: float GetFloat(const std::string &name);
+Declaration: float GetFloat(const std::string &name) const;
 Definition:
 // ****************************************************************************
 //  Method: DBOptionsAttributes::GetFloat
@@ -120,10 +127,14 @@ Definition:
 //  Programmer: Hank Childs
 //  Creation:   May 23, 2005
 //
+//  Modifications:
+//    Mark C. Miller, Tue Apr 29 17:39:39 PDT 2008
+//    Made it a const method
+//
 // ****************************************************************************
 
 float
-DBOptionsAttributes::GetFloat(const std::string &name)
+DBOptionsAttributes::GetFloat(const std::string &name) const
 {
     int bIndex = FindIndex(name);
     if (bIndex < 0)
@@ -160,7 +171,7 @@ DBOptionsAttributes::SetDouble(const std::string &name, double defaultValue)
 }
 
 Function: GetDouble
-Declaration: double GetDouble(const std::string &name);
+Declaration: double GetDouble(const std::string &name) const;
 Definition:
 // ****************************************************************************
 //  Method: DBOptionsAttributes::GetDouble
@@ -171,10 +182,14 @@ Definition:
 //  Programmer: Hank Childs
 //  Creation:   May 23, 2005
 //
+//  Modifications:
+//    Mark C. Miller, Tue Apr 29 17:39:39 PDT 2008
+//    Made it a const method
+//
 // ****************************************************************************
 
 double
-DBOptionsAttributes::GetDouble(const std::string &name)
+DBOptionsAttributes::GetDouble(const std::string &name) const
 {
     int bIndex = FindIndex(name);
     if (bIndex < 0)
@@ -211,7 +226,7 @@ DBOptionsAttributes::SetInt(const std::string &name, int defaultValue)
 }
 
 Function: GetInt
-Declaration: int GetInt(const std::string &name);
+Declaration: int GetInt(const std::string &name) const;
 Definition:
 // ****************************************************************************
 //  Method: DBOptionsAttributes::GetInt
@@ -222,10 +237,14 @@ Definition:
 //  Programmer: Hank Childs
 //  Creation:   May 23, 2005
 //
+//  Modifications:
+//    Mark C. Miller, Tue Apr 29 17:39:39 PDT 2008
+//    Made it a const method
+//
 // ****************************************************************************
 
 int
-DBOptionsAttributes::GetInt(const std::string &name)
+DBOptionsAttributes::GetInt(const std::string &name) const
 {
     int bIndex = FindIndex(name);
     if (bIndex < 0)
@@ -262,7 +281,7 @@ DBOptionsAttributes::SetString(const std::string &name, const std::string &defau
 }
 
 Function: GetString
-Declaration: const std::string &GetString(const std::string &name);
+Declaration: const std::string &GetString(const std::string &name) const;
 Definition:
 // ****************************************************************************
 //  Method: DBOptionsAttributes::GetString
@@ -273,10 +292,14 @@ Definition:
 //  Programmer: Hank Childs
 //  Creation:   May 23, 2005
 //
+//  Modifications:
+//    Mark C. Miller, Tue Apr 29 17:39:39 PDT 2008
+//    Made it a const method
+//
 // ****************************************************************************
 
 const std::string &
-DBOptionsAttributes::GetString(const std::string &name)
+DBOptionsAttributes::GetString(const std::string &name) const
 {
     int bIndex = FindIndex(name);
     if (bIndex < 0)
@@ -319,7 +342,7 @@ DBOptionsAttributes::SetEnum(const std::string &name, int defaultValue)
 }
 
 Function: GetEnum
-Declaration: int GetEnum(const std::string &name);
+Declaration: int GetEnum(const std::string &name) const;
 Definition:
 // ****************************************************************************
 //  Method: DBOptionsAttributes::GetEnum
@@ -330,10 +353,14 @@ Definition:
 //  Programmer: Hank Childs
 //  Creation:   May 23, 2005
 //
+//  Modifications:
+//    Mark C. Miller, Tue Apr 29 17:39:39 PDT 2008
+//    Made it a const method
+//
 // ****************************************************************************
 
 int
-DBOptionsAttributes::GetEnum(const std::string &name)
+DBOptionsAttributes::GetEnum(const std::string &name) const
 {
     int bIndex = FindIndex(name);
     if (bIndex < 0)
@@ -406,10 +433,23 @@ DBOptionsAttributes::GetType(int index) const
 }
 
 Function: GetEnumStrings
-Declaration: std::vector<std::string> GetEnumStrings(const std::string &name);
+Declaration: std::vector<std::string> GetEnumStrings(const std::string &name) const;
 Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::GetEnumStrings
+//
+//  Purpose:
+//     Finds the index of a member.
+//
+//  Programmer: Hank Childs (assumed)
+//  Creation:   Unknown
+//
+//  Modifications:
+//    Mark C. Miller, Tue Apr 29 17:39:39 PDT 2008
+//    Made it a const method
+// ****************************************************************************
 std::vector<std::string>
-DBOptionsAttributes::GetEnumStrings(const std::string &name)
+DBOptionsAttributes::GetEnumStrings(const std::string &name) const
 {
     int  i;
 

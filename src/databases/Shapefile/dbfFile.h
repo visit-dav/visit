@@ -58,6 +58,9 @@ extern "C" {
 //   Brad Whitlock, Wed Apr 6 10:30:23 PDT 2005
 //   I removed common storage support.
 //
+//   Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//   Made logging an option to Initialize.
+//
 // ****************************************************************************
 
 typedef struct
@@ -141,7 +144,8 @@ void *dbfMallocEx(const char *f, const int line, const char *src, size_t s);
 void dbfFreeEx(const char *f, const int line, const char *src, void *ptr);
 
 void dbfInitialize(void*(*user_malloc)(size_t),
-                   void (*user_free)(void *));
+                   void (*user_free)(void *),
+                   bool logging);
 void dbfFinalize();
 
 dbfFile_t *dbfFileOpen(const char *filename, dbfFileError_t *);

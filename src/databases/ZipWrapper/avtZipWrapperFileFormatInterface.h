@@ -55,6 +55,7 @@ using std::string;
 using std::vector;
 
 class avtZipWrapperFileFormat;
+class DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: avtZipWrapperFileFormatInterface
@@ -123,12 +124,15 @@ class avtZipWrapperFileFormat;
 //    Templates with default arguments confuse xlC, so add the default
 //    arguments explicitly.
 //
+//    Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
+//    Added read options to constructor and Initialize
 // ****************************************************************************
 
 class avtZipWrapperFileFormatInterface : public avtFileFormatInterface 
 {
   public:
-                       avtZipWrapperFileFormatInterface(const char *const *list, int nList, int nBlock);
+                       avtZipWrapperFileFormatInterface(const char *const *list, int nList, int nBlock,
+                           const DBOptionsAttributes *readOpts);
     virtual           ~avtZipWrapperFileFormatInterface();
 
     virtual vtkDataSet     *GetMesh(int, int, const char *);
@@ -154,7 +158,8 @@ class avtZipWrapperFileFormatInterface : public avtFileFormatInterface
     virtual avtFileFormat  *GetFormat(int) const;
 
   private:
-      static void                  Initialize(int procNum, int procCount);
+      static void                  Initialize(int procNum, int procCount,
+                                       const DBOptionsAttributes *readOpts);
       static void                  Finalize();
       static void                  CleanUpAtExit();
       static vector<avtZipWrapperFileFormatInterface*>

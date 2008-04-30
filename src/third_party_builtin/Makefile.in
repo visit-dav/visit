@@ -48,6 +48,9 @@
 #   Brad Whitlock, Thu Jan 10 11:16:55 PST 2008
 #   Added slivr.
 #
+#   Mark C. Miller, Tue Apr 29 23:32:25 PDT 2008
+#   Added bow (moved from PDB/BOW database plugins)
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -55,7 +58,7 @@
 @DIRTARGETS@
 
 SUBDIRS=@BUILD_MESA_STUB@ @BUILD_BZIP2@ @BUILD_GLEW@ @BUILD_BILIB@ @BUILD_SLIVR@
-ALLSUBDIRS=mesa_stub bzip2 glew bilib slivr
+ALLSUBDIRS=mesa_stub bzip2 glew bilib slivr bow
 
 message:
 	@echo

@@ -40,6 +40,8 @@
 #include <avtSTSDFileFormatInterface.h>
 #include <VisItException.h>
 
+class DBOptionsAttributes;
+
 // ****************************************************************************
 // Method: LEOSFileFormat::CreateInterface
 //
@@ -61,19 +63,19 @@
 
 avtFileFormatInterface *
 LEOSFileFormat::CreateInterface(PDBFileObject *pdb,
-    const char *filename)
+    const char *filename, const DBOptionsAttributes *rdopts)
 {
     avtFileFormatInterface *inter = 0;
 
     // Create a PF3D file that uses the pdb file but does not own it.
-    LEOSFileFormat *ff = new LEOSFileFormat(pdb);
+    LEOSFileFormat *ff = new LEOSFileFormat(pdb, rdopts);
 
     // If the file format is an LEOS file then
     if(ff->Identify())
     {
         avtSTSDFileFormat ***ffl = new avtSTSDFileFormat**[1];
         ffl[0] = new avtSTSDFileFormat*[1];
-        ffl[0][0] = new LEOSFileFormat(filename);
+        ffl[0][0] = new LEOSFileFormat(filename, rdopts);
 
         //
         // Try to create a file format interface compatible with the LEOS 
@@ -109,8 +111,9 @@ LEOSFileFormat::CreateInterface(PDBFileObject *pdb,
 //   
 // ****************************************************************************
 
-LEOSFileFormat::LEOSFileFormat(const char *filename) : 
-    avtSTSDFileFormat(filename), reader(filename)
+LEOSFileFormat::LEOSFileFormat(const char *filename,
+    const DBOptionsAttributes *rdopts) : 
+    avtSTSDFileFormat(filename), reader(filename, rdopts)
 {
 }
 
@@ -130,8 +133,9 @@ LEOSFileFormat::LEOSFileFormat(const char *filename) :
 //   
 // ****************************************************************************
 
-LEOSFileFormat::LEOSFileFormat(PDBFileObject *p) :
-    avtSTSDFileFormat(p->GetName().c_str()), reader(p)
+LEOSFileFormat::LEOSFileFormat(PDBFileObject *p,
+    const DBOptionsAttributes *rdopts) :
+    avtSTSDFileFormat(p->GetName().c_str()), reader(p, rdopts)
 {
 }
 

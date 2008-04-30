@@ -46,6 +46,7 @@
 class vtkDataArray;
 class vtkDataSet;
 class avtDatabaseMetaData;
+class DBOptionsAttributes;
 
 using std::string;
 using std::map;
@@ -72,8 +73,8 @@ using std::map;
 class LEOSFileReader : public PDBReader
 {
 public:
-    LEOSFileReader(const char *filename);
-    LEOSFileReader(PDBFileObject *p);
+    LEOSFileReader(const char *filename, const DBOptionsAttributes *rdopts);
+    LEOSFileReader(PDBFileObject *p, const DBOptionsAttributes *rdopts);
     virtual ~LEOSFileReader();
 
     // Methods that help implement the file format methods.
@@ -109,6 +110,7 @@ protected:
 
     virtual bool  IdentifyFormat();
 
+    void          ProcessReadOptions(const DBOptionsAttributes *rdopts);
     void          BuildVarInfoMap(void);
     void          GetTopDirs(void);
 

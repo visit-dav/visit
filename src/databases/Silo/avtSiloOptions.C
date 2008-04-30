@@ -71,6 +71,7 @@ DBOptionsAttributes *
 GetSiloReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
+    rv->SetBool("Force Single", true);
     return rv;
 }
 
