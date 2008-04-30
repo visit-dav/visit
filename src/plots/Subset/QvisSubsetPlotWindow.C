@@ -149,8 +149,8 @@ protected:
 // ****************************************************************************
 
 QvisSubsetPlotWindow::QvisSubsetPlotWindow(const int type,
-    SubsetAttributes *subsetAtts_, const char *caption,
-    const char *shortName, QvisNotepadArea *notepad) :
+    SubsetAttributes *subsetAtts_, const QString &caption,
+    const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(subsetAtts_, caption, shortName, notepad,
                                QvisPostableWindowObserver::AllExtraButtons,
                                false)

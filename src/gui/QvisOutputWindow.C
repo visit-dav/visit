@@ -45,6 +45,7 @@
 #include <QvisOutputWindow.h>
 #include <QvisMainWindow.h>
 #include <MessageAttributes.h>
+#include <UnicodeHelper.h>
 
 // ****************************************************************************
 // Method: QvisOutputWindow::QvisOutputWindow
@@ -152,7 +153,7 @@ QvisOutputWindow::CreateWindowContents()
 //   Brad Whitlock, Thu May 11 14:59:11 PST 2006
 //   Added support for ErrorClear.
 //
-//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Brad Whitlock, Tue Apr 29 10:21:44 PDT 2008
 //   Support for internationalization.
 //
 // ****************************************************************************
@@ -174,7 +175,7 @@ QvisOutputWindow::UpdateWindow(bool)
         temp = tr("MESSAGE: ");
     if(msgAtts->GetSeverity() == MessageAttributes::Warning)
         temp = tr("WARNING: ");
-    temp += QString(msgAtts->GetText().c_str());
+    temp += MessageAttributes_GetText(*msgAtts);
     temp += QString("\n");
 
     // Add the line of text.

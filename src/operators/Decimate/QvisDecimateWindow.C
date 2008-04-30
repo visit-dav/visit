@@ -74,8 +74,8 @@ using std::string;
 
 QvisDecimateWindow::QvisDecimateWindow(const int type,
                          DecimateAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -111,7 +111,9 @@ QvisDecimateWindow::~QvisDecimateWindow()
 // Creation:   Sun Aug 11 08:39:31 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 09:17:45 PDT 2008
+//   Added tr()
+//
 // ****************************************************************************
 
 void
@@ -120,7 +122,7 @@ QvisDecimateWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 1,2,  10, "mainLayout");
 
 
-    mainLayout->addWidget(new QLabel("Target Reduction ", central, "targetLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("Target Reduction "), central, "targetLabel"),0,0);
     target = new QLineEdit(central, "target");
     connect(target, SIGNAL(returnPressed()),
             this, SLOT(targetProcessText()));
@@ -203,12 +205,12 @@ QvisDecimateWindow::GetCurrentValues(int which_widget)
             double val = temp.toDouble(&okay);
             if (val < 0. || val > 1.)
             {
-                msg.sprintf("The reduction target field is only valid between 0"
+                msg = tr("The reduction target field is only valid between 0"
                     " 1.  The number specified is the proportion of number of "
                     "polygonal cells in the outputted dataset \"over\" the "
                     "number of polygonal cells in the original dataset.  "
-                    "Resetting to the last good value of %g.",
-                    atts->GetTarget());
+                    "Resetting to the last good value of %1.").
+                    arg(atts->GetTarget());
                 Message(msg);
                 atts->SetTarget(atts->GetTarget());
             }
@@ -220,9 +222,9 @@ QvisDecimateWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of target was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetTarget());
+            msg = tr("The value of target was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetTarget());
             Message(msg);
             atts->SetTarget(atts->GetTarget());
         }

@@ -75,6 +75,9 @@ extern ViewerSubject *viewerSubject;
 //   Jeremy Meredith, Thu Sep 15 16:37:24 PDT 2005
 //   Added machinefile for some mpich implementations.
 //
+//   Brad Whitlock, Tue Apr 29 15:07:23 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *parent, const char *name)
@@ -103,27 +106,27 @@ ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *pare
     connect(profiles, SIGNAL(selectionChanged()),
             this,     SLOT(newProfileSelected()));
 
-    numProcsLabel = new QLabel("Num procs", this, "numProcsLabel");
+    numProcsLabel = new QLabel(tr("Num procs"), this, "numProcsLabel");
     numProcs = new QSpinBox(1, 99999, 1, this, "numProcs");
     layout->addMultiCellWidget(numProcsLabel, 1,1, 0,0);
     layout->addMultiCellWidget(numProcs,      1,1, 1,1);
 
-    numNodesLabel = new QLabel("Num nodes", this, "numNodesLabel");
+    numNodesLabel = new QLabel(tr("Num nodes"), this, "numNodesLabel");
     numNodes = new QSpinBox(1, 99999, 1, this, "numNodes");
     layout->addMultiCellWidget(numNodesLabel, 1,1, 2,2);
     layout->addMultiCellWidget(numNodes,      1,1, 3,3);
 
-    bankNameLabel = new QLabel("Bank", this, "bankNameLabel");
+    bankNameLabel = new QLabel(tr("Bank"), this, "bankNameLabel");
     bankName = new QLineEdit(this, "bankName");
     layout->addMultiCellWidget(bankNameLabel, 2,2, 0,0);
     layout->addMultiCellWidget(bankName,      2,2, 1,1);
 
-    timeLimitLabel = new QLabel("Time limit", this, "timeLimitLabel");
+    timeLimitLabel = new QLabel(tr("Time limit"), this, "timeLimitLabel");
     timeLimit = new QLineEdit(this, "timeLimit");
     layout->addMultiCellWidget(timeLimitLabel, 2,2, 2,2);
     layout->addMultiCellWidget(timeLimit,      2,2, 3,3);
 
-    machinefileLabel = new QLabel("Machine file", this, "machinefileLabel");
+    machinefileLabel = new QLabel(tr("Machine file"), this, "machinefileLabel");
     machinefile = new QLineEdit(this, "machinefile");
     layout->addMultiCellWidget(machinefileLabel, 3,3, 0,0);
     layout->addMultiCellWidget(machinefile,      3,3, 1,3);
@@ -131,13 +134,13 @@ ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *pare
     QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
     buttonLayout->setMargin(10);
 
-    okayButton = new QPushButton("OK", this, "okayButton");
+    okayButton = new QPushButton(tr("OK"), this, "okayButton");
     buttonLayout->addWidget(okayButton, 0);
     connect(okayButton, SIGNAL(clicked()), this, SLOT(accept()));
 
     buttonLayout->addStretch(100);
 
-    cancelButton = new QPushButton("Cancel", this, "cancelButton");
+    cancelButton = new QPushButton(tr("Cancel"), this, "cancelButton");
     buttonLayout->addWidget(cancelButton, 0);
     connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 }
@@ -203,6 +206,9 @@ ViewerHostProfileSelectorWithWin::~ViewerHostProfileSelectorWithWin()
 //    Jeremy Meredith, Thu Sep 15 16:37:24 PDT 2005
 //    Added machinefile for some mpich implementations.
 //
+//    Brad Whitlock, Tue Apr 29 15:08:19 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 bool 
@@ -210,8 +216,7 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
     HostProfileList *hostProfileList, const string &hostName, bool skipChooser)
 {
     int  i;
-    char title[256];
-    sprintf(title, "Select options for '%s'", hostName.c_str());
+    QString title = tr("Select options for '%1'").arg(hostName.c_str());
     setCaption(title);
 
     profile = HostProfile();

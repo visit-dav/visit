@@ -409,6 +409,9 @@ ViewerQueryManager::SetOperatorFactory(ViewerOperatorFactory *factory)
 //    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007 
 //    Added optional bool arg forceSampling. 
 //
+//    Brad Whitlock, Tue Apr 29 16:29:13 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -422,9 +425,9 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
     //
     if (plotIDs.size() == 0)
     {
-        string msg("Lineout requires an active non-hidden plot.\n");
-        msg += "Please select a plot and try again.\n";
-        Error(msg.c_str());
+        QString msg = tr("Lineout requires an active non-hidden plot. "
+                         "Please select a plot and try again.");
+        Error(msg);
         return;
     }
     // Use the first plot.
@@ -441,9 +444,8 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
     if (varType != AVT_SCALAR_VAR &&
         varType != AVT_MATSPECIES)
     {
-        char message[100];
-        SNPRINTF(message, 100, "Lineout requires scalar variable.  "
-                 "%s is not scalar.", vname.c_str());
+        QString message = tr("Lineout requires scalar variable.  "
+                             "%1 is not scalar.").arg(vname.c_str());
         Error(message);
         return;
     }
@@ -470,7 +472,7 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
         fromDefault, forceSampling);
     if(*newQuery == NULL)
     {
-        Error("VisIt could not create the desired plot.");
+        Error(tr("VisIt could not create the desired plot."));
         return;
     }
 
@@ -1051,6 +1053,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Brad Whitlock, Tue Apr 29 16:31:58 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void         
@@ -1066,15 +1071,15 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
     {
         // we've reset some values, notify clients
         queryClientAtts->Notify();
-        string msg(qName);
-        msg += " is not a valid query name.\n";
-        Error(msg.c_str());
+        QString msg = tr("%1 is not a valid query name.\n").arg(qName.c_str());
+        Error(msg);
         return;
     }
     if (!doTimeQuery && !queryTypes->RegularQueryAvailable(qName))
     {
-        string msg = "Regular (non-time) query is not available for " + qName;
-        Error(msg.c_str());
+        QString msg = tr("Regular (non-time) query is not available for %1.").
+                      arg(qName.c_str());
+        Error(msg);
         return;
     }
 
@@ -1092,10 +1097,10 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
     else
     {
         queryClientAtts->Notify();
-        string msg(qName);
-        msg += " requires an active non-hidden Plot.\n";
-        msg += "Please select a plot and try again.\n";
-        Error(msg.c_str());
+        QString msg = tr("%1 requires an active non-hidden Plot.\n"
+                         "Please select a plot and try again.\n").
+                      arg(qName.c_str());
+        Error(msg);
         return ;
     }
 
@@ -1105,9 +1110,9 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
     {
         // we've reset some values, notify clients
         queryClientAtts->Notify();
-        string msg(qName);
-        msg += " has had an internal error when processing.\n";
-        Error(msg.c_str());
+        QString msg = tr("%1 has had an internal error when processing.\n").
+                      arg(qName.c_str());
+        Error(msg);
         return;
     }
 
@@ -1260,10 +1265,9 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             else
             {
                 queryClientAtts->Notify();
-                char message[500];
-                SNPRINTF(message, 500, "VisIt could not satisfy the query %s",
-                        qName.c_str());
-                Error(message);
+                QString msg = tr("VisIt could not satisfy the query %1").
+                              arg(qName.c_str());
+                Error(msg);
             }
             success = true;
         }
@@ -1312,7 +1316,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             if (!retry)
             {
                 queryClientAtts->Notify();
-                Error(message);
+                Error(message, false);
                 CATCH_RETURN(1);
             }
         }
@@ -1321,9 +1325,8 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 
     if (!success)
     {
-        const char *msg = "VisIt was not able to execute the query.  Please "
-                          "contact a VisIt developer.";
-        Error(msg);
+        Error(tr("VisIt was not able to execute the query.  Please "
+                 "contact a VisIt developer."));
         return;
     }
     
@@ -1400,6 +1403,9 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //
+//    Brad Whitlock, Tue Apr 29 16:36:19 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void         
@@ -1426,20 +1432,19 @@ ViewerQueryManager::StartLineQuery(const char *qName, const double *pt1,
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
         if (win->GetWindowMode() == WINMODE_CURVE)
         {
-            Error("Lineout cannot be performed on curve windows.");
+            Error(tr("Lineout cannot be performed on curve windows."));
             return;
         }
         else if (win->GetWindowMode() == WINMODE_AXISARRAY)
         {
-            Error("Lineout cannot be performed on axis array windows.");
+            Error(tr("Lineout cannot be performed on axis array windows."));
             return;
         }
         else if ((win->GetWindowMode() == WINMODE_2D) &&
                  (pt1[2] != 0 || pt2[2] != 0))
         {
-            string msg = "Only 2D points allowed for 2D lineouts. ";
-            msg += "Please set z-coord to 0.";
-            Error(msg.c_str());
+            Error(tr("Only 2D points allowed for 2D lineouts. "
+                     "Please set z-coord to 0."));
             return;
         }
 
@@ -1878,6 +1883,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Gunther H. Weber, Wed Mar 19 18:50:34 PDT 2008
 //    Added logic for spreadsheet pick mode
 //
+//    Brad Whitlock, Tue Apr 29 16:37:08 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 bool
@@ -1933,7 +1941,6 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         //
         pickAtts->PrepareForNewPick();
 
-        string msg;
         ViewerWindow *win = (ViewerWindow *)pd.callbackData;
 
         ViewerPlotList *plist = win->GetPlotList();
@@ -1944,9 +1951,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         //
         if (plotIDs.size() == 0)
         {
-            msg = "PICK requires an active non-hidden Plot.\n";
-            msg += "Please select a plot and try again.\n";
-            Error(msg.c_str());
+            Error(tr("PICK requires an active non-hidden Plot.\n"
+                     "Please select a plot and try again.\n"));
             return retval ;
         }
         // Use the first plot.
@@ -2120,7 +2126,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             }
             else
             {
-                Warning("Glyph pick could not find a valid intersection.");
+                Warning(tr("Glyph pick could not find a valid intersection."));
                 return false;
             }
         }
@@ -2192,10 +2198,10 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                
                    //SEND ERROR MESSAGE TO GUI WINDOW FOR DISPLAY
                    if (!pa.GetError())
-                       Warning("Pick failed with an internal error"
-                               " please contact a VisIt developer." );
+                       Warning(tr("Pick failed with an internal error. "
+                                  "Please contact a VisIt developer."));
                    else 
-                       Warning(pa.GetErrorMessage().c_str());
+                       Warning(pa.GetErrorMessage().c_str(), false);
                 }
             }
             CATCH2(VisItException, e)
@@ -2229,7 +2235,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                              e.GetExceptionType().c_str(),
                              e.Message().c_str());
 
-                    Error(message);
+                    Error(message, false);
                 }
             }
             ENDTRY
@@ -2262,8 +2268,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                                                             "Spreadsheet_1.0"))
                 {
                     static bool issuedWarning = false;
-                    Error("Could not create a spreadsheet with the pick, "
-                          "because the spreadsheet plugin is not available.");
+                    Error(tr("Could not create a spreadsheet with the pick, "
+                             "because the spreadsheet plugin is not available."));
                     issuedWarning = true;
                     return retval;
                 }
@@ -2435,8 +2441,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                        ViewerWindowManager::Instance()->GetTimeQueryWindow(-1);
                 if (resWin == NULL)
                 {
-                    Error("Please choose a different window to place the "
-                          "histogram of the array variable into.");
+                    Error(tr("Please choose a different window to place the "
+                             "histogram of the array variable into."));
                     return retval;
                 }
         
@@ -2444,8 +2450,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                                                               "Histogram_1.0"))
                 {
                     static bool issuedWarning = false;
-                    Error("Could not create a histogram of the array variable,"
-                          " because the Histogram plugin is not available.");
+                    Error(tr("Could not create a histogram of the array variable,"
+                              " because the Histogram plugin is not available."));
                     issuedWarning = true;
                     return retval;
                 }
@@ -2504,7 +2510,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
     }
     else
     {
-        Warning("The picked point is not contained in a surface");
+        Warning(tr("The picked point is not contained in a surface"));
     }
 
     return retval;
@@ -2551,6 +2557,9 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 //   Kathleen Bonnell, Fri Dec  7 10:43:07 PST 2007 
 //   Don't send message if QueryOutput is suppressed. 
 //
+//   Brad Whitlock, Tue Apr 29 16:40:45 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -2570,9 +2579,8 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
     }
     else
     {
-        string msg("Pick requires an active non-hidden Plot.\n");
-        msg += "Please select a plot and try again.\n";
-        Error(msg.c_str());
+        Error(tr("Pick requires an active non-hidden Plot.\n"
+                 "Please select a plot and try again.\n"));
         return ;
     }
  
@@ -2619,7 +2627,7 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
             msg += append;
         }
         if (!suppressQueryOutput)
-            Message(msg.c_str()); 
+            Message(msg.c_str(), false); 
         UpdatePickAtts();
 
         //
@@ -2749,6 +2757,9 @@ ViewerQueryManager::GetColor()
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //
+//    Brad Whitlock, Tue Apr 29 16:42:21 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -2760,12 +2771,12 @@ ViewerQueryManager::StartLineout(ViewerWindow *win, bool fromDefault)
 
     if (win->GetWindowMode() == WINMODE_CURVE)
     {
-        Error("Lineout cannot be performed on curve windows.");
+        Error(tr("Lineout cannot be performed on curve windows."));
         return;
     }
     if (win->GetWindowMode() == WINMODE_AXISARRAY)
     {
-        Error("Lineout cannot be performed on axis array windows.");
+        Error(tr("Lineout cannot be performed on axis array windows."));
         return;
     }
 
@@ -2795,9 +2806,8 @@ ViewerQueryManager::StartLineout(ViewerWindow *win, bool fromDefault)
         (pt1[2] != 0 || pt2[2] != 0))
     {
         delete line;
-        string msg = "Only 2D points allowed for 2D lineouts. ";
-        msg += "Please set z-coord to 0.";
-        Error(msg.c_str());
+        Error(tr("Only 2D points allowed for 2D lineouts. "
+                 "Please set z-coord to 0."));
         return;
     }
 
@@ -3160,7 +3170,10 @@ ViewerQueryManager::HandlePickCache()
 //    values of pickAtts DoTimeCurve and TimePreserveCoord as they both should
 //    be true in this instance.  For PickByNode/Zone, TimePreserveCoord should
 //    be false.
-//   
+// 
+//    Brad Whitlock, Tue Apr 29 16:43:32 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void         
@@ -3183,9 +3196,8 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
     }
     else
     {
-        string msg("Pick requires an active non-hidden Plot.\n");
-        msg += "Please select a plot and try again.\n";
-        Error(msg.c_str());
+        Error(tr("Pick requires an active non-hidden Plot.\n"
+                 "Please select a plot and try again.\n"));
         return ;
     }
     pickAtts->SetElementIsGlobal(elementIsGlobal);
@@ -4154,6 +4166,9 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
 //    Add "Locate and Pick Zone/Node" options. 
 //
+//    Brad Whitlock, Tue Apr 29 16:47:37 PDT 2008
+//    Support for internationalization.
+//
 // ***********************************************************************
 
 void
@@ -4167,8 +4182,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
             qName != "Locate and Pick Zone" &&
             qName != "Locate and Pick Node") 
         {
-            string msg = "Time history query is not available for " + qName;
-            Error(msg.c_str());
+            Error(tr("Time history query is not available for %1.").arg(qName.c_str()));
             return;
         }
     }
@@ -4185,7 +4199,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     int nStates = md->GetNumStates();
     if (nStates <= 1)
     {
-        Error("Cannot create a time query curve with 1 time state."); 
+        Error(tr("Cannot create a time query curve with 1 time state.")); 
         return;
     }
     string vName  = origPlot->GetVariableName();
@@ -4237,17 +4251,17 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
         {        
             if (zoneQuery)
             {
-                Warning("The centering of the query (zone) does not match "
+                Warning(tr("The centering of the query (zone) does not match "
                         "the centering of the plot's current variable "
                         "(node).  Please try again with the appropriately "
-                        "centered query: 'Variable By Node'");
+                        "centered query: 'Variable By Node'"));
             }
             else 
             {
-                Warning("The centering of the query (node) does not match "
+                Warning(tr("The centering of the query (node) does not match "
                         "the centering of the plot's current variable "
                         "(zone).  Please try again with the appropriately "
-                        "centered query: 'Variable By Zone'");
+                        "centered query: 'Variable By Zone'"));
             }
             return;
         }
@@ -4264,26 +4278,26 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
 
     if (startT >= endT)
     {
-        Error("Query over time: start time must be smaller than end time"
-              " please correct and try again."); 
+        Error(tr("Query over time: start time must be smaller than end time"
+              " please correct and try again.")); 
         return;
     }
     int nUserFrames = (int) ceil(double((endT - startT)/
                                         timeQueryAtts->GetStride()))+1;
     if (nUserFrames <= 1)
     {
-        Error("Query over time requires more than 1 frame, "
-              "please correct start and end times try again."); 
+        Error(tr("Query over time requires more than 1 frame, "
+              "please correct start and end times try again.")); 
         return;
     }
     if (startT < 0)
     {
-        Warning("Clamping start time to 0.");
+        Warning(tr("Clamping start time to 0."));
         startT = 0;
     }
     if (endT > nStates-1)
     {
-        Warning("Clamping end time to number of available timesteps.");
+        Warning(tr("Clamping end time to number of available timesteps."));
         endT = nStates-1;
     }
     timeQueryAtts->SetStartTime(startT); 
@@ -4301,7 +4315,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
 
     if (resWin == NULL)
     {
-        Error("Please choose a different window method for the time query");
+        Error(tr("Please choose a different window method for the time query"));
         return;
     }
 
@@ -4518,19 +4532,19 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
     {
         if (type == PickAttributes::Zone || type == PickAttributes::DomainZone) 
         {
-            Warning("The centering of the pick-through-time (zone) does "
+            Warning(tr("The centering of the pick-through-time (zone) does "
                     "not match the centering of the plot's current "
                     "variable (node).  Please try again with the "
-                    "appropriately centered Pick");
+                    "appropriately centered Pick"));
             return;
         }
         else 
         if (type == PickAttributes::Node || type == PickAttributes::DomainNode)
         {
-            Warning("The centering of the pick-through-time (node) does "
+            Warning(tr("The centering of the pick-through-time (node) does "
                     "not match the centering of the plot's current "
                     "variable (zone).  Please try again with the "
-                    "appropriately centered Pick");
+                    "appropriately centered Pick"));
             return;
         }
     }
@@ -4706,9 +4720,10 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
             if (badVarType != -1)
             {
                 queryClientAtts->Notify();
-                string msg = "Cannot perform a " + qName  + " query on variable  ";
-                msg += uniqueVars[badVarType] + ".\n";
-                Error(msg.c_str());
+                QString msg = tr("Cannot perform a %1 query on variable %2.\n").
+                              arg(qName.c_str()).
+                              arg(uniqueVars[badVarType].c_str());
+                Error(msg);
                 CATCH_RETURN2(1, false);
             }
         }
@@ -4716,11 +4731,11 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
         if (nv > 1 && nv != uniqueVars.size())
         {
             queryClientAtts->Notify();
-            char msg[256];
-            SNPRINTF(msg, 256, "%s%s%s%d%s%d%s",
-                "Cannot perform a ", qName.c_str(), " query with only ",
-                 uniqueVars.size(), " variables, it requires " ,
-                 nv, " variables.\n");
+            QString msg = tr("Cannot perform a %1 query with only %2 "
+                             "variables, it requires %3 variables.\n").
+                          arg(qName.c_str()).
+                          arg(uniqueVars.size()).
+                          arg(nv);
             Error(msg);
             CATCH_RETURN2(1, false);
         }
@@ -4740,7 +4755,7 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
             e.Message() + "\nThis is probably an internal Query error," +
             " please contact a VisIt developer.\n";
         queryClientAtts->Notify();
-        Error(msg.c_str());
+        Error(msg.c_str(), false);
         CATCH_RETURN2(1, false);
     }
     ENDTRY
@@ -4777,6 +4792,9 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
 //    Hank Childs, Fri Jan 28 11:55:12 PST 2005
 //    Make sure returns inside 'try' are wrapped.
 //
+//    Brad Whitlock, Tue Apr 29 16:55:30 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 
@@ -4800,14 +4818,12 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
         if (plotIds.size() != numInputs)
         {
             queryClientAtts->Notify();
-            string msg(qName);
-            char num[32];
-            SNPRINTF(num, 32, "%d", numInputs);
-            msg += " requires exactly ";
-            msg += num;
-            msg += " plots to be selected, realized, and drawn.";
-            msg += "   Please select them and try again.\n";
-            Error(msg.c_str());
+            QString msg = tr("%1 requires exactly %2 plots to be selected, "
+                             "realized, and drawn. Please select them and "
+                             "try again.\n").
+                          arg(qName.c_str()).
+                          arg(numInputs);
+            Error(msg);
             CATCH_RETURN2(1, false);
         }
 
@@ -4821,8 +4837,8 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
             if (i != 0 && engineKey != oplot->GetEngineKey())
             {
                 queryClientAtts->Notify();
-                Error("Multiple input queries require all their inputs "
-                      "to be on the same host.\n");
+                Error(tr("Multiple input queries require all their inputs "
+                         "to be on the same host.\n"));
                 CATCH_RETURN2(1, false);
             }
             engineKey = oplot->GetEngineKey();
@@ -4845,7 +4861,7 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
             e.Message() + "\nThis is probably an internal Query error," +
             " please contact a VisIt developer.\n";
         queryClientAtts->Notify();
-        Error(msg.c_str());
+        Error(msg.c_str(), false);
         CATCH_RETURN2(1, false);
     }
     ENDTRY
@@ -4923,7 +4939,7 @@ ViewerQueryManager::DoSpatialExtentsQuery(ViewerPlot *oplot, bool actualData)
             e.Message() + "\nThis is probably an internal Query error," +
             " please contact a VisIt developer.\n";
         queryClientAtts->Notify();
-        Error(msg.c_str());
+        Error(msg.c_str(), false);
         CATCH_RETURN(1);
     }
     ENDTRY
@@ -5125,8 +5141,8 @@ ViewerQueryManager::EngineExistsForQuery(ViewerPlot *plot)
     engineExists = ViewerEngineManager::Instance()->EngineExists(key);
     if (!engineExists)
     {
-        Warning("There is no running engine with which to perform the query."
-              "  Please ensure the plot has finished drawing and try again.");
+        Warning(tr("There is no running engine with which to perform the query.  "
+                   "Please ensure the plot has finished drawing and try again."));
     }
     return engineExists;
 }

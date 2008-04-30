@@ -84,8 +84,8 @@ const char *QvisSpreadsheetPlotWindow::defaultItem = "Whole";
 
 QvisSpreadsheetPlotWindow::QvisSpreadsheetPlotWindow(const int type,
                          SpreadsheetAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisPostableWindowObserver(subj, caption, shortName, notepad)
 {

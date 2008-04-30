@@ -77,8 +77,8 @@ class QvisBoundaryOpWindow : public QvisOperatorWindow
   public:
     QvisBoundaryOpWindow(const int type,
                          BoundaryOpAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisBoundaryOpWindow();
     virtual void CreateWindowContents();

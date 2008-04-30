@@ -272,15 +272,15 @@ QvisLineSurfaceWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            atts->SetStartTime(val);
+            if(okay)
+                atts->SetStartTime(val);
         }
 
         if(!okay)
         {
-            QString num; num.sprintf("%d", atts->GetStartTime());
             msg = tr("The value of startTime was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetStartTime());
             Message(msg);
             atts->SetStartTime(atts->GetStartTime());
         }
@@ -294,15 +294,15 @@ QvisLineSurfaceWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            atts->SetEndTime(val);
+            if(okay)
+                atts->SetEndTime(val);
         }
 
         if(!okay)
         {
-            QString num; num.sprintf("%d", atts->GetEndTime());
             msg = tr("The value of endTime was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetEndTime());
             Message(msg);
             atts->SetEndTime(atts->GetEndTime());
         }
@@ -316,15 +316,15 @@ QvisLineSurfaceWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            atts->SetStride(val);
+            if(okay)
+                atts->SetStride(val);
         }
 
         if(!okay)
         {
-            QString num; num.sprintf("%d", atts->GetStride());
             msg = tr("The value of stride was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetStride());
             Message(msg);
             atts->SetStride(atts->GetStride());
         }
@@ -338,8 +338,8 @@ QvisLineSurfaceWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val[3];
-            sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2]);
-            atts->SetPoint1(val);
+            if((okay = (sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2]) == 3)) == true)
+                atts->SetPoint1(val);
         }
 
         if(!okay)
@@ -348,8 +348,8 @@ QvisLineSurfaceWindow::GetCurrentValues(int which_widget)
             QString num; num.sprintf("<%g %g %g>", 
                 val[0], val[1], val[2]);
             msg = tr("The value of point1 was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value of %1.").
+                  arg(num);
             Message(msg);
             atts->SetPoint1(atts->GetPoint1());
         }
@@ -363,8 +363,8 @@ QvisLineSurfaceWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val[3];
-            sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2]);
-            atts->SetPoint2(val);
+            if((okay = (sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2]) == 3)) == true)
+                atts->SetPoint2(val);
         }
 
         if(!okay)
@@ -373,8 +373,8 @@ QvisLineSurfaceWindow::GetCurrentValues(int which_widget)
             QString num; num.sprintf("<%g %g %g>", 
                 val[0], val[1], val[2]);
             msg = tr("The value of point2 was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value of %1.").
+                  arg(num);
             Message(msg);
             atts->SetPoint2(atts->GetPoint2());
         }

@@ -82,8 +82,8 @@ class QvisSpreadsheetPlotWindow : public QvisPostableWindowObserver
 public:
     QvisSpreadsheetPlotWindow(const int type,
                          SpreadsheetAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisSpreadsheetPlotWindow();
     virtual void CreateWindowContents();

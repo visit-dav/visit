@@ -417,10 +417,9 @@ QvisGlobalLineoutWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            QString num; num.sprintf("%d", atts->GetWindowId());
             msg = tr("The value of windowId was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetWindowId());
             Message(msg);
             atts->SetWindowId(atts->GetWindowId());
         }
@@ -445,10 +444,9 @@ QvisGlobalLineoutWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            QString num; num.sprintf("%d", atts->GetNumSamples());
             msg = tr("The value of numSamples was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetNumSamples());
             Message(msg);
             atts->SetNumSamples(atts->GetNumSamples());
         }

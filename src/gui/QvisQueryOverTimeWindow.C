@@ -348,10 +348,9 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            QString num; num.sprintf("%d", atts->GetStartTime());
             msg = tr("The value of startTime was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetStartTime());
             Message(msg);
             atts->SetStartTime(atts->GetStartTime());
         }
@@ -376,10 +375,9 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            QString num; num.sprintf("%d", atts->GetEndTime());
             msg = tr("The value of endTime was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetEndTime());
             Message(msg);
             atts->SetEndTime(atts->GetEndTime());
         }
@@ -398,10 +396,9 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            QString num; num.sprintf("%d", atts->GetStride());
             msg = tr("The value of stride was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetStride());
             Message(msg);
             atts->SetStride(atts->GetStride());
         }
@@ -426,10 +423,9 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            QString num; num.sprintf("%d", atts->GetWindowId());
             msg = tr("The value of windowId was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetWindowId());
             Message(msg);
             atts->SetWindowId(atts->GetWindowId());
         }

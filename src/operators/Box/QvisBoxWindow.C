@@ -74,8 +74,8 @@ using std::string;
 
 QvisBoxWindow::QvisBoxWindow(const int type,
                          BoxAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -111,7 +111,9 @@ QvisBoxWindow::~QvisBoxWindow()
 // Creation:   Fri Apr 12 14:20:13 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 09:39:31 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -120,50 +122,50 @@ QvisBoxWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 7,2,  10, "mainLayout");
 
 
-    mainLayout->addWidget(new QLabel("Amount of cell in the range", central, "amountLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("Amount of cell in the range"), central, "amountLabel"),0,0);
     amount = new QButtonGroup(central, "amount");
     amount->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *amountLayout = new QHBoxLayout(amount);
     amountLayout->setSpacing(10);
-    QRadioButton *amountAmountSome = new QRadioButton("Some", amount);
+    QRadioButton *amountAmountSome = new QRadioButton(tr("Some"), amount);
     amountLayout->addWidget(amountAmountSome);
-    QRadioButton *amountAmountAll = new QRadioButton("All", amount);
+    QRadioButton *amountAmountAll = new QRadioButton(tr("All"), amount);
     amountLayout->addWidget(amountAmountAll);
     connect(amount, SIGNAL(clicked(int)),
             this, SLOT(amountChanged(int)));
     mainLayout->addWidget(amount, 0,1);
 
-    mainLayout->addWidget(new QLabel("X-Minimum", central, "minxLabel"),1,0);
+    mainLayout->addWidget(new QLabel(tr("X-Minimum"), central, "minxLabel"),1,0);
     minx = new QLineEdit(central, "minx");
     connect(minx, SIGNAL(returnPressed()),
             this, SLOT(minxProcessText()));
     mainLayout->addWidget(minx, 1,1);
 
-    mainLayout->addWidget(new QLabel("X-Maximum", central, "maxxLabel"),2,0);
+    mainLayout->addWidget(new QLabel(tr("X-Maximum"), central, "maxxLabel"),2,0);
     maxx = new QLineEdit(central, "maxx");
     connect(maxx, SIGNAL(returnPressed()),
             this, SLOT(maxxProcessText()));
     mainLayout->addWidget(maxx, 2,1);
 
-    mainLayout->addWidget(new QLabel("Y-Minimum", central, "minyLabel"),3,0);
+    mainLayout->addWidget(new QLabel(tr("Y-Minimum"), central, "minyLabel"),3,0);
     miny = new QLineEdit(central, "miny");
     connect(miny, SIGNAL(returnPressed()),
             this, SLOT(minyProcessText()));
     mainLayout->addWidget(miny, 3,1);
 
-    mainLayout->addWidget(new QLabel("Y-Maximum", central, "maxyLabel"),4,0);
+    mainLayout->addWidget(new QLabel(tr("Y-Maximum"), central, "maxyLabel"),4,0);
     maxy = new QLineEdit(central, "maxy");
     connect(maxy, SIGNAL(returnPressed()),
             this, SLOT(maxyProcessText()));
     mainLayout->addWidget(maxy, 4,1);
 
-    mainLayout->addWidget(new QLabel("Z-Minimum", central, "minzLabel"),5,0);
+    mainLayout->addWidget(new QLabel(tr("Z-Minimum"), central, "minzLabel"),5,0);
     minz = new QLineEdit(central, "minz");
     connect(minz, SIGNAL(returnPressed()),
             this, SLOT(minzProcessText()));
     mainLayout->addWidget(minz, 5,1);
 
-    mainLayout->addWidget(new QLabel("Z-Maximum", central, "maxzLabel"),6,0);
+    mainLayout->addWidget(new QLabel(tr("Z-Maximum"), central, "maxzLabel"),6,0);
     maxz = new QLineEdit(central, "maxz");
     connect(maxz, SIGNAL(returnPressed()),
             this, SLOT(maxzProcessText()));
@@ -264,14 +266,15 @@ QvisBoxWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetMinx(val);
+            if(okay)
+                atts->SetMinx(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of minx was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetMinx());
+            msg = tr("The value of minx was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetMinx());
             Message(msg);
             atts->SetMinx(atts->GetMinx());
         }
@@ -285,14 +288,15 @@ QvisBoxWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetMaxx(val);
+            if(okay)
+                atts->SetMaxx(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of maxx was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetMaxx());
+            msg = tr("The value of maxx was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetMaxx());
             Message(msg);
             atts->SetMaxx(atts->GetMaxx());
         }
@@ -306,14 +310,15 @@ QvisBoxWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetMiny(val);
+            if(okay)
+                atts->SetMiny(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of miny was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetMiny());
+            msg = tr("The value of miny was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetMiny());
             Message(msg);
             atts->SetMiny(atts->GetMiny());
         }
@@ -327,14 +332,15 @@ QvisBoxWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetMaxy(val);
+            if(okay)
+                atts->SetMaxy(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of maxy was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetMaxy());
+            msg = tr("The value of maxy was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetMaxy());
             Message(msg);
             atts->SetMaxy(atts->GetMaxy());
         }
@@ -348,14 +354,15 @@ QvisBoxWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetMinz(val);
+            if(okay)
+                atts->SetMinz(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of minz was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetMinz());
+            msg = tr("The value of minz was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetMinz());
             Message(msg);
             atts->SetMinz(atts->GetMinz());
         }
@@ -369,14 +376,15 @@ QvisBoxWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetMaxz(val);
+            if(okay)
+                atts->SetMaxz(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of maxz was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetMaxz());
+            msg = tr("The value of maxz was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetMaxz());
             Message(msg);
             atts->SetMaxz(atts->GetMaxz());
         }

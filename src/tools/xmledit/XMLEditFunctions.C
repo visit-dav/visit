@@ -42,6 +42,7 @@
 #include <Function.h>
 #include <Attribute.h>
 
+#include <qcombobox.h>
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qlistbox.h>
@@ -62,6 +63,9 @@
 //    Brad Whitlock, Thu Mar 6 15:42:34 PST 2008
 //    Added target.
 //
+//    Brad Whitlock, Mon Apr 28 15:59:56 PDT 2008
+//    Added access, tr()'s.
+//
 // ****************************************************************************
 XMLEditFunctions::XMLEditFunctions(QWidget *p, const QString &n)
     : QFrame(p, n)
@@ -73,10 +77,10 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p, const QString &n)
     functionlist = new QListBox(this);
     listLayout->addMultiCellWidget(functionlist, 0,0, 0,1);
 
-    newButton = new QPushButton("New", this);
+    newButton = new QPushButton(tr("New"), this);
     listLayout->addWidget(newButton, 1,0);
 
-    delButton = new QPushButton("Del", this);
+    delButton = new QPushButton(tr("Del"), this);
     listLayout->addWidget(delButton, 1,1);
 
     hLayout->addSpacing(10);
@@ -84,30 +88,39 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p, const QString &n)
     QGridLayout *topLayout = new QGridLayout(hLayout, 7,2, 5);
     int row = 0;
 
-    topLayout->addWidget(new QLabel("Target", this), row, 0);
+    topLayout->addWidget(new QLabel(tr("Target"), this), row, 0);
     target = new QLineEdit(this);
     topLayout->addWidget(target, row, 1);
     row++;
 
-    topLayout->addWidget(new QLabel("Name", this), row, 0);
+    topLayout->addWidget(new QLabel(tr("Name"), this), row, 0);
     name = new QLineEdit(this);
     topLayout->addWidget(name, row, 1);
     row++;
 
     typeGroup = new QButtonGroup();
-    newFunctionButton    = new QRadioButton("New function", this);
-    replaceBuiltinButton = new QRadioButton("Replaces builtin", this);
+    newFunctionButton    = new QRadioButton(tr("New function"), this);
+    replaceBuiltinButton = new QRadioButton(tr("Replaces builtin"), this);
     typeGroup->insert(newFunctionButton);
     typeGroup->insert(replaceBuiltinButton);
     topLayout->addWidget(newFunctionButton,    row, 0);
     topLayout->addWidget(replaceBuiltinButton, row, 1);
     row++;
 
-    member = new QCheckBox("Class member", this);
+    member = new QCheckBox(tr("Class member"), this);
     topLayout->addMultiCellWidget(member, row,row, 0,1);
     row++;
 
-    topLayout->addWidget(new QLabel("Declaration", this), row, 0);
+    accessLabel = new QLabel(tr("Access"), this);
+    access = new QComboBox(this);
+    access->insertItem(tr("private"));
+    access->insertItem(tr("protected"));
+    access->insertItem(tr("public"));
+    topLayout->addWidget(accessLabel, row, 0);
+    topLayout->addWidget(access,      row, 1);
+    row++;
+
+    topLayout->addWidget(new QLabel(tr("Declaration"), this), row, 0);
     declaration = new QLineEdit(this);
     topLayout->addWidget(declaration, row, 1);
     row++;
@@ -146,6 +159,8 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p, const QString &n)
             this, SLOT(functionlistNew()));
     connect(delButton, SIGNAL(clicked()),
             this, SLOT(functionlistDel()));
+    connect(access, SIGNAL(activated(int)),
+            this, SLOT(accessChanged(int)));
 }
 
 // ****************************************************************************
@@ -229,6 +244,9 @@ XMLEditFunctions::UpdateWindowContents()
 //  Brad Whitlock, Thu Mar 6 15:50:09 PST 2008
 //  Added target.
 //
+//  Brad Whitlock, Mon Apr 28 16:07:57 PDT 2008
+//  Added access.
+//
 // ****************************************************************************
 void
 XMLEditFunctions::UpdateWindowSensitivity()
@@ -243,6 +261,17 @@ XMLEditFunctions::UpdateWindowSensitivity()
     newFunctionButton->setEnabled(active);
     replaceBuiltinButton->setEnabled(active);
     member->setEnabled(active);
+
+    bool accessActive = active;
+    int index = functionlist->currentItem();
+    if (index != -1)
+    {
+        Attribute *a = xmldoc->attribute;
+        Function *f = a->functions[index];
+        accessActive &= f->user;
+    }
+    access->setEnabled(accessActive);
+    accessLabel->setEnabled(accessActive);
 }
 
 // ****************************************************************************
@@ -257,6 +286,9 @@ XMLEditFunctions::UpdateWindowSensitivity()
 //  Modifications:
 //    Brad Whitlock, Thu Mar 6 15:50:51 PST 2008
 //    Added target.
+//
+//    Brad Whitlock, Mon Apr 28 16:08:06 PDT 2008
+//    Added access.
 //
 // ****************************************************************************
 void
@@ -275,6 +307,7 @@ XMLEditFunctions::UpdateWindowSingleItem()
         target->setText("");
         declaration->setText("");
         definition->setText("");
+        access->setCurrentItem(0);
     }
     else
     {
@@ -285,6 +318,7 @@ XMLEditFunctions::UpdateWindowSingleItem()
         declaration->setText(f->decl);
         definition->setText(f->def);
         member->setChecked(f->member);
+        access->setCurrentItem((int)f->accessType);
     }
 
     UpdateWindowSensitivity();
@@ -309,6 +343,9 @@ XMLEditFunctions::UpdateWindowSingleItem()
 //    Brad Whitlock, Thu Mar 6 15:50:51 PST 2008
 //    Added target.
 //
+//    Brad Whitlock, Mon Apr 28 16:09:11 PDT 2008
+//    Added access.
+//
 // ****************************************************************************
 void
 XMLEditFunctions::BlockAllSignals(bool block)
@@ -319,6 +356,7 @@ XMLEditFunctions::BlockAllSignals(bool block)
     target->blockSignals(block);
     declaration->blockSignals(block);
     definition->blockSignals(block);
+    access->blockSignals(block);
 }
 
 // ----------------------------------------------------------------------------
@@ -465,6 +503,9 @@ XMLEditFunctions::definitionChanged()
 //    Brad Whitlock, Thu Mar 6 15:57:07 PST 2008
 //    Added default target of xml2atts.
 //
+//    Brad Whitlock, Mon Apr 28 16:11:51 PDT 2008
+//    Added tr().
+//
 // ****************************************************************************
 void
 XMLEditFunctions::functionlistNew()
@@ -476,7 +517,7 @@ XMLEditFunctions::functionlistNew()
     while (!okay)
     {
         okay = true;
-        newname.sprintf("unnamed%d", newid);
+        newname = tr("unnamed%1").arg(newid);
         for (int i=0; i<functionlist->count() && okay; i++)
         {
             if (functionlist->text(i) == newname)
@@ -532,4 +573,21 @@ XMLEditFunctions::functionlistDel()
     if (index >= functionlist->count())
         index = functionlist->count()-1;
     functionlist->setCurrentItem(index);
+}
+
+void
+XMLEditFunctions::accessChanged(int val)
+{
+    Attribute *a = xmldoc->attribute;
+    int index = functionlist->currentItem();
+    if (index == -1)
+        return;
+    Function *f = a->functions[index];
+
+    if(val == 0)
+        f->accessType = Function::AccessPublic;
+    else if(val == 1)
+        f->accessType = Function::AccessProtected;
+    else
+        f->accessType = Function::AccessPrivate;
 }

@@ -75,7 +75,7 @@
 // ****************************************************************************
 
 QvisPseudocolorPlotWindow::QvisPseudocolorPlotWindow(const int type,
-    PseudocolorAttributes *_pcAtts, const char *caption, const char *shortName,
+    PseudocolorAttributes *_pcAtts, const QString &caption, const QString &shortName,
     QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(_pcAtts, caption, shortName, notepad)
 {

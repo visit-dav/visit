@@ -79,8 +79,8 @@ static const char * formatString = "%d (%d)";
 
 QvisRemoveCellsWindow::QvisRemoveCellsWindow(const int type,
                          RemoveCellsAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -117,7 +117,9 @@ QvisRemoveCellsWindow::~QvisRemoveCellsWindow()
 // Creation:   Thu Jul 17 15:33:35 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Apr 24 16:52:40 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -133,31 +135,31 @@ QvisRemoveCellsWindow::CreateWindowContents()
     midLayout->addWidget(cellList, 0,0);
     mainLayout->addMultiCell(midLayout, 0, 2, 0, 0);
     
-    changeButton = new QPushButton("Change", central, "Change");
+    changeButton = new QPushButton(tr("Change"), central, "Change");
     connect(changeButton, SIGNAL(clicked()),
             this, SLOT(changeButtonClicked()));
     mainLayout->addWidget(changeButton, 0, 1);
     
-    removeButton = new QPushButton("Remove", central, "Remove");
+    removeButton = new QPushButton(tr("Remove"), central, "Remove");
     connect(removeButton, SIGNAL(clicked()),
             this, SLOT(removeButtonClicked()));
     mainLayout->addWidget(removeButton, 1, 1);
 
-    addButton = new QPushButton("Add", central, "Add");
+    addButton = new QPushButton(tr("Add"), central, "Add");
     connect(addButton, SIGNAL(clicked()),
             this, SLOT(addButtonClicked()));
     mainLayout->addWidget(addButton, 2,1);
     
     const int fieldWidth = 90;
     
-    mainLayout->addWidget(new QLabel("cell", central, "cell"),3,0);
+    mainLayout->addWidget(new QLabel(tr("Cell"), central, "cell"),3,0);
     cell = new QLineEdit("0.0", central, "cell");
     cell->setMaximumWidth(fieldWidth);
     connect(cell, SIGNAL(returnPressed()),
             this, SLOT(cellProcessText()));
     mainLayout->addWidget(cell, 3,1);
 
-    mainLayout->addWidget(new QLabel("domain", central, "domain"),4,0);
+    mainLayout->addWidget(new QLabel(tr("Domain"), central, "domain"),4,0);
     domain = new QLineEdit("0.0", central, "domain");
     domain->setMaximumWidth(fieldWidth);
     connect(domain, SIGNAL(returnPressed()),
@@ -273,14 +275,15 @@ QvisRemoveCellsWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            atts->SetCell(val);
+            if(okay)
+                atts->SetCell(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of cell was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetCell());
+            msg = tr("The value of cell was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetCell());
             Message(msg);
             atts->SetCell(atts->GetCell());
         }
@@ -294,14 +297,15 @@ QvisRemoveCellsWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            atts->SetDomain(val);
+            if(okay)
+                atts->SetDomain(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of domain was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetDomain());
+            msg = tr("The value of domain was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetDomain());
             Message(msg);
             atts->SetDomain(atts->GetDomain());
         }

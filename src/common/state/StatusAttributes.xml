@@ -9,6 +9,11 @@
     <Field name="statusMessage" label="statusMessage" type="string">
       
     </Field>
+    <Field name="unicode" label="statusMessageUnicode" type="ucharVector">
+    </Field>
+    <Field name="hasUnicode" label="Has unicode" type="bool">
+      false
+    </Field>
     <Field name="percent" label="percent" type="int">
       0
     </Field>

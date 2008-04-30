@@ -77,8 +77,8 @@ class QvisMergeWindow : public QvisOperatorWindow
   public:
     QvisMergeWindow(const int type,
                          MergeOperatorAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisMergeWindow();
     virtual void CreateWindowContents();

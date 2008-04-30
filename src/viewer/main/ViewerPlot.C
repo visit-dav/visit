@@ -1215,7 +1215,33 @@ ViewerPlot::GetSource() const
 const char *
 ViewerPlot::GetPlotTypeName() const
 {
+    debug5 << "*** USING GetPlotTypeName() OFTEN MEANS YOU'RE DOING SOMETHING "
+              "BAD! FOR EXAMPLE, DON'T USE IT TO COMPARE THE PLOT NAME AGAINST "
+              "THE NAME OF A PLUGIN SUCH AS \"Lineout\". INSTEAD, CONSIDER"
+              "EXTENDING THE VIEWER PLUGIN INTERFACE." << endl;
     return viewerPluginInfo->GetName();
+}
+
+// ****************************************************************************
+//  Method:  ViewerPlot::GetMenuName
+//
+//  Purpose:
+//    Return the menu name of the plot. This is the only version of the
+//    operator name that may appear in another language.
+//
+//  Programmer:  Brad Whitlock, Tue Apr 29 15:13:57 PDT 2008
+//  Creation:    Tue Apr 29 15:13:57 PDT 2008
+//
+// ****************************************************************************
+
+QString
+ViewerPlot::GetMenuName() const
+{
+    QString retval, *s;
+    s = viewerPluginInfo->GetMenuName();
+    retval = *s;
+    delete s;
+    return retval;
 }
 
 // ****************************************************************************
@@ -1979,6 +2005,9 @@ ViewerPlot::SetErrorFlag(bool val)
 //    Mark C. Miller, Wed Aug 11 17:07:46 PDT 2004
 //    Added warning for multiple operators of same type
 //
+//    Brad Whitlock, Tue Apr 29 15:12:04 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 int
@@ -1988,9 +2017,9 @@ ViewerPlot::AddOperator(const int type, const bool fromDefault)
     {
         if (!operators[nOperators-1]->AllowsSubsequentOperators())    
         {
-            char msg[200];
-            SNPRINTF(msg, sizeof(msg), "VisIt cannot apply other operators after a "
-                     "%s operator.", operators[nOperators-1]->GetName());
+            QString msg = tr("VisIt cannot apply other operators after a "
+                             "%1 operator.").
+                          arg(operators[nOperators-1]->GetMenuName());
             Error(msg);
             return -1;
         }
@@ -1999,11 +2028,10 @@ ViewerPlot::AddOperator(const int type, const bool fromDefault)
         {
             if (type == operators[i]->GetType())
             {
-                char msg[500];
-                SNPRINTF(msg, sizeof(msg), "You have added the \"%s\" operator "
+                QString msg = tr("You have added the \"%1\" operator "
                     "multiple times. For some operators, like \"Slice\", this "
-                    "can lead to an empty plot but is otherwise harmless.",
-                    operators[i]->GetName());
+                    "can lead to an empty plot but is otherwise harmless.").
+                    arg(operators[i]->GetMenuName());
                 Warning(msg);
                 break;
             }
@@ -2069,7 +2097,9 @@ ViewerPlot::AddOperator(const int type, const bool fromDefault)
 // Creation:   Thu Apr 10 12:15:46 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 29 15:17:49 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 bool
@@ -2083,17 +2113,23 @@ ViewerPlot::MoveOperator(const int operatorIndex, bool promote)
     //
     if(nOperators > 0 && operatorIndex >= 0 && operatorIndex < nOperators)
     {
-        char msg[100];
+        QString msg;
 
         bool isFirst = (!promote && operatorIndex == 0);
         bool isLast = (promote && operatorIndex == nOperators - 1);
 
-        if(isFirst || isLast)
+        if(isFirst)
         {
-            SNPRINTF(msg, 100, "VisIt cannot move the %s operator because "
-                "it is already the %s operator.",
-                operators[operatorIndex]->GetName(),
-                isFirst ? "firat":"last");
+            msg = tr("VisIt cannot move the %1 operator because "
+                     "it is already the first operator."). 
+                  arg(operators[operatorIndex]->GetMenuName());
+            Error(msg);
+        }
+        else if(isLast)
+        {
+            msg = tr("VisIt cannot move the %1 operator because "
+                     "it is already the last operator."). 
+                  arg(operators[operatorIndex]->GetMenuName());
             Error(msg);
         }
         else if(operators[operatorIndex]->Moveable())
@@ -2126,8 +2162,8 @@ ViewerPlot::MoveOperator(const int operatorIndex, bool promote)
         }
         else
         {
-            SNPRINTF(msg, 100, "VisIt cannot move a %s operator.",
-                     operators[operatorIndex]->GetName());
+            msg = tr("VisIt cannot move a %1 operator.").
+                  arg(operators[operatorIndex]->GetMenuName());
             Error(msg);
         }
     }
@@ -2198,7 +2234,9 @@ ViewerPlot::DemoteOperator(const int operatorIndex)
 // Creation:   Thu Apr 10 10:59:19 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 29 15:19:04 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 bool
@@ -2250,9 +2288,8 @@ ViewerPlot::RemoveOperator(const int operatorIndex)
         }
         else
         {
-            char msg[100];
-            SNPRINTF(msg, 100, "VisIt cannot remove a %s operator.",
-                     operators[operatorIndex]->GetName());
+            QString msg = tr("VisIt cannot remove a %1 operator.").
+                          arg(operators[operatorIndex]->GetMenuName());
             Error(msg);
         }
     }
@@ -2280,6 +2317,9 @@ ViewerPlot::RemoveOperator(const int operatorIndex)
 //    Recoded how operators tell the client if they can be removed to get rid
 //    of a bad comparison that used an actual operator name. I added code
 //    to set the active operator index.
+//
+//    Brad Whitlock, Tue Apr 29 15:20:04 PDT 2008
+//    Support for internationalization.
 //
 // ****************************************************************************
 
@@ -2322,9 +2362,8 @@ ViewerPlot::RemoveLastOperator()
     }
     else
     {
-        char msg[100];
-        SNPRINTF(msg, 100, "VisIt cannot remove a %s operator.",
-                 operators[nOperators-1]->GetName());
+        QString msg = tr("VisIt cannot remove a %1 operator.").
+                      arg(operators[nOperators-1]->GetMenuName());
         Error(msg);
     }
 }
@@ -2348,6 +2387,9 @@ ViewerPlot::RemoveLastOperator()
 //    Brad Whitlock, Thu Apr 10 11:36:45 PDT 2003
 //    Recoded how operators tell the client if they can be removed to get rid
 //    of a bad comparison that used an actual operator name.
+//
+//    Brad Whitlock, Tue Apr 29 15:20:48 PDT 2008
+//    Support for internationalization.
 //
 // ****************************************************************************
 
@@ -2387,9 +2429,8 @@ ViewerPlot::RemoveAllOperators()
     }
     else
     {
-        char msg[100];
-        SNPRINTF(msg, 100, "VisIt cannot remove a %s operator.",
-                 operators[nOperators-1]->GetName());
+        QString msg = tr("VisIt cannot remove a %1 operator.").
+                      arg(operators[nOperators-1]->GetMenuName());
         Error(msg);
     }
 }
@@ -2431,6 +2472,9 @@ ViewerPlot::RemoveAllOperators()
 //    that we're setting. If there is more than one operator of the type
 //    that we're setting and it is not the active operator a warning message
 //    is now issued.
+//
+//    Brad Whitlock, Tue Apr 29 15:22:03 PDT 2008
+//    Support for internationalization.
 //
 // ****************************************************************************
 
@@ -2479,14 +2523,13 @@ ViewerPlot::SetOperatorAttsFromClient(const int type)
         // to set AND there is more than one operator of that type.
         // Warn the user to select one of the operators and don't set
         // anything rather than clobber the operator settings.
-        char msg[400];
-        const char *oName = operators[firstIndex]->GetName();
-        SNPRINTF(msg, 400, "You have more than one %s operator applied to a "
-            "plot but none of the %s operators is the active operator. "
-            "Please make one of the %s operators be the active operator by "
-            "expanding the plot and clicking one of its %s operators so "
-            "VisIt will apply the operator settings to the correct %s "
-            "operator.", oName, oName, oName, oName, oName);
+        QString msg = tr("You have more than one %1 operator applied to a "
+            "plot but none of the %1 operators is the active operator. "
+            "Please make one of the %1 operators be the active operator by "
+            "expanding the plot and clicking one of its %1 operators so "
+            "VisIt will apply the operator settings to the correct %1 "
+            "operator.");
+        msg.replace("%1", operators[firstIndex]->GetMenuName());
         Warning(msg);
     }
     else if(firstIndex != -1)
@@ -2926,7 +2969,7 @@ ViewerPlot::CreateActor(bool createNew,
                      e.Message().c_str());
         }
      
-        Error(message);
+        Error(message, false);
 
         // Indicate that this plot has an error.
         this->errorFlag = true;
@@ -2948,12 +2991,13 @@ ViewerPlot::CreateActor(bool createNew,
     if(*reader == NULL)
     {
         // Create a message to send to the GUI.
-        char message[500];
-        SNPRINTF(message, 500, "The %s plot of \"%s\" for the file \"%s\" could "
-                 "not be generated by the compute engine on host \"%s\".",
-                 viewerPluginInfo->GetName(),
-                 variableName.c_str(), databaseName.c_str(), hostName.c_str());
-        Error(message);
+        QString msg = tr("The %1 plot of \"%2\" for the file \"%3\" could "
+                         "not be generated by the compute engine on host \"%4\".").
+                      arg(GetMenuName()).
+                      arg(variableName.c_str()).
+                      arg(databaseName.c_str()).
+                      arg(hostName.c_str());
+        Error(msg);
 
         // Indicate that this plot has an error.
         this->errorFlag = true;
@@ -3073,7 +3117,7 @@ ViewerPlot::CreateActor(bool createNew,
         SNPRINTF(message, sizeof(message), "%s:  %s", 
                  viewerPluginInfo->GetName(),
                  e.Message().c_str());
-        Error(message);
+        Error(message, false);
 
         // Indicate that this plot has an error.
         this->errorFlag = true;
@@ -3092,7 +3136,7 @@ ViewerPlot::CreateActor(bool createNew,
                  e.GetExceptionType().c_str(),
                  e.Message().c_str());
 
-        Error(message);
+        Error(message, false);
 
         // Indicate that this plot has an error.
         this->errorFlag = true;
@@ -4435,7 +4479,7 @@ ViewerPlot::CheckCache(const int i0, const int i1, const bool force)
                 SNPRINTF(message, sizeof(message), "%s:  %s",
                          viewerPluginInfo->GetName(),
                          e.Message().c_str());
-                Error(message);
+                Error(message, false);
 
                 // Indicate that this plot has an error.
                 errorOnFrame = true;
@@ -4770,7 +4814,9 @@ ViewerPlot::SetFromNode(DataNode *parentNode, const std::string &configVersion)
 // Creation:   Wed Jan 11 14:48:52 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 29 15:37:10 PDT 2008
+//   Support for internationalzation.
+//
 // ****************************************************************************
 
 bool
@@ -4778,7 +4824,7 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
 {
     bool fatalError = true;
     DataNode *node = 0;
-    char tmp[1024];
+    QString msg;
 
     if(parentNode == 0)
         return fatalError;
@@ -4786,7 +4832,7 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
     DataNode *plotNode = parentNode->GetNode("ViewerPlot");
     if(plotNode == 0)
     {
-        Error("The ViewerPlot node was not found in the session file.");
+        Error(tr("The ViewerPlot node was not found in the session file."));
         return fatalError;
     }
 
@@ -4801,11 +4847,11 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
         int type = PlotPluginManager::Instance()->GetEnabledIndex(pluginID);
         if(type == -1)
         {
-            SNPRINTF(tmp, 1024, "The session file wanted VisIt to "
-                     "create a plot using the \"%s\" plugin, which is either "
+            msg = tr("The session file wanted VisIt to "
+                     "create a plot using the \"%1\" plugin, which is either "
                      "invalid or refers to a plugin that is not present "
-                     "in this VisIt installation.", pluginID.c_str());
-            Error(tmp);
+                     "in this VisIt installation.").arg(pluginID.c_str());
+            Error(msg);
         }
         else
         {
@@ -4835,24 +4881,26 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
                             if(type == -1)
                             {
                                 fatalError = true;
-                                SNPRINTF(tmp, 1024, "The session file contains "
-                                    "a plot that uses the %s plugin and that plot "
-                                    "references the %s operator plugin, which is "
+                                msg = tr("The session file contains "
+                                    "a plot that uses the %1 plugin and that plot "
+                                    "references the %2 operator plugin, which is "
                                     "either invalid or it is not present in this "
-                                    "VisIt installation.",
-                                    pluginID.c_str(), operatorID.c_str());
-                                Error(tmp);
+                                    "VisIt installation.").
+                                    arg(pluginID.c_str()).
+                                    arg(operatorID.c_str());
+                                Error(msg);
                             }
                         }
                         else
                         {
                             fatalError = true;
-                            SNPRINTF(tmp, 1024, "The session file contains a "
-                                     "plot that uses the %s plugin and that plot "
+                            msg = tr("The session file contains a "
+                                     "plot that uses the %1 plugin and that plot "
                                      "references an operator of an undetermined "
                                      "type. The session file is probably "
-                                     "corrupted.", pluginID.c_str());
-                            Error(tmp);
+                                     "corrupted.").
+                                  arg(pluginID.c_str());
+                            Error(msg);
                         }
                     }
                     else
@@ -4863,7 +4911,7 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
     }
     else
     {
-        Error("The session file was missing the pluginID for a plot.");
+        Error(tr("The session file was missing the pluginID for a plot."));
     }
 
     return fatalError;

@@ -77,48 +77,48 @@ XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent, const ch
     // Attributes
     //
     QGroupBox *attGroup = new QGroupBox(top, "attGroup");
-    attGroup->setTitle("Attributes");
+    attGroup->setTitle(tr("Attributes"));
     hLayout->addWidget(attGroup);
     QVBoxLayout *attLayout = new QVBoxLayout(attGroup);
     attLayout->setMargin(10);
     attLayout->addSpacing(15);
     attLayout->setSpacing(5);
-    buttons[ID_XML2ATTS] = new QCheckBox("C++", attGroup);
+    buttons[ID_XML2ATTS] = new QCheckBox(tr("C++"), attGroup);
     attLayout->addWidget(buttons[ID_XML2ATTS]);
-    buttons[ID_XML2JAVA] = new QCheckBox("Java", attGroup);
+    buttons[ID_XML2JAVA] = new QCheckBox(tr("Java"), attGroup);
     attLayout->addWidget(buttons[ID_XML2JAVA]);
-    buttons[ID_XML2PYTHON] = new QCheckBox("Python", attGroup);
+    buttons[ID_XML2PYTHON] = new QCheckBox(tr("Python"), attGroup);
     attLayout->addWidget(buttons[ID_XML2PYTHON]);
 
     //
     // Plugin
     //
     QGroupBox *pluginGroup = new QGroupBox(top, "pluginGroup");
-    pluginGroup->setTitle("Plugin");
+    pluginGroup->setTitle(tr("Plugin"));
     hLayout->addWidget(pluginGroup);
     QVBoxLayout *pluginLayout = new QVBoxLayout(pluginGroup);
     pluginLayout->setMargin(10);
     pluginLayout->addSpacing(15);
     pluginLayout->setSpacing(5);
-    buttons[ID_XML2WINDOW] = new QCheckBox("Window", pluginGroup);
+    buttons[ID_XML2WINDOW] = new QCheckBox(tr("Window"), pluginGroup);
     pluginLayout->addWidget(buttons[ID_XML2WINDOW]);
 #if defined(_WIN32)
-    buttons[ID_XML2MAKEFILE] = new QCheckBox("Project file", pluginGroup);
+    buttons[ID_XML2MAKEFILE] = new QCheckBox(tr("Project file"), pluginGroup);
 #else
-    buttons[ID_XML2MAKEFILE] = new QCheckBox("Makefile", pluginGroup);
+    buttons[ID_XML2MAKEFILE] = new QCheckBox(tr("Makefile"), pluginGroup);
 #endif
     pluginLayout->addWidget(buttons[ID_XML2MAKEFILE]);
-    buttons[ID_XML2INFO] = new QCheckBox("Plugin information", pluginGroup);
+    buttons[ID_XML2INFO] = new QCheckBox(tr("Plugin information"), pluginGroup);
     pluginLayout->addWidget(buttons[ID_XML2INFO]);
-    buttons[ID_XML2AVT] = new QCheckBox("AVT code skeleton", pluginGroup);
+    buttons[ID_XML2AVT] = new QCheckBox(tr("AVT code skeleton"), pluginGroup);
     pluginLayout->addWidget(buttons[ID_XML2AVT]);
 
     // Add some buttons
     QHBoxLayout *bLayout = new QHBoxLayout(pageLayout);
     bLayout->setSpacing(5);
     bLayout->addStretch(10);
-    QPushButton *okay = new QPushButton("Ok", top, "okay");
-    QPushButton *cancel = new QPushButton("Cancel", top, "cancel");
+    QPushButton *okay = new QPushButton(tr("Ok"), top, "okay");
+    QPushButton *cancel = new QPushButton(tr("Cancel"), top, "cancel");
     bLayout->addWidget(cancel);
     bLayout->addWidget(okay);
     connect(okay, SIGNAL(clicked()), this, SLOT(accept()));

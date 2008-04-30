@@ -297,7 +297,7 @@ ViewerMultipleAction::Update()
 }
 
 void
-ViewerMultipleAction::SetAllText(const char *text)
+ViewerMultipleAction::SetAllText(const QString &text)
 {
     SetText(text);
     SetMenuText(text);
@@ -305,19 +305,19 @@ ViewerMultipleAction::SetAllText(const char *text)
 }
 
 void
-ViewerMultipleAction::SetText(const char *text)
+ViewerMultipleAction::SetText(const QString &text)
 {
     action->setText(text);
 }
 
 void
-ViewerMultipleAction::SetMenuText(const char *text)
+ViewerMultipleAction::SetMenuText(const QString &text)
 {
     action->setMenuText(text);
 }
 
 void
-ViewerMultipleAction::SetToolTip(const char *text)
+ViewerMultipleAction::SetToolTip(const QString &text)
 {
     action->setToolTip(text);
 }
@@ -411,6 +411,7 @@ ViewerMultipleAction::ConnectChildAction(QAction *newAction)
 //   Adds a choice to the action.
 //
 // Arguments:
+//   menuText : The text that will appear in the menu.
 //
 // Returns:    
 //
@@ -423,13 +424,16 @@ ViewerMultipleAction::ConnectChildAction(QAction *newAction)
 //   Brad Whitlock, Tue Aug 26 17:34:15 PST 2003
 //   Made the new action be a child of the action group.
 //
+//   Brad Whitlock, Tue Apr 29 11:18:06 PDT 2008
+//   Use QString.
+//
 // ****************************************************************************
 
 void
-ViewerMultipleAction::AddChoice(const char *menuText)
+ViewerMultipleAction::AddChoice(const QString &menuText)
 {
     // Create an action that is a child to this action group.
-    QAction *newAction = new QAction(action, menuText);
+    QAction *newAction = new QAction(action, menuText.ascii());
     newAction->setText(menuText);
     newAction->setMenuText(menuText);
     newAction->setToolTip(menuText);
@@ -458,11 +462,14 @@ ViewerMultipleAction::AddChoice(const char *menuText)
 // Modifications:
 //   Brad Whitlock, Tue Aug 26 17:34:15 PST 2003
 //   Made the new action be a child of the action group.
-//   
+//
+//   Brad Whitlock, Tue Apr 29 11:18:58 PDT 2008
+//   Use QString.
+//
 // ****************************************************************************
 
 void
-ViewerMultipleAction::AddChoice(const char *menuText, const char *toolTip,
+ViewerMultipleAction::AddChoice(const QString &menuText, const QString &toolTip,
                                 const QPixmap &small_icon,
                                 const QPixmap &large_icon)
 {
@@ -497,11 +504,14 @@ ViewerMultipleAction::AddChoice(const char *menuText, const char *toolTip,
 // Modifications:
 //   Brad Whitlock, Tue Aug 26 17:34:15 PST 2003
 //   Made the new action be a child of the action group.
-//   
+//
+//   Brad Whitlock, Tue Apr 29 11:19:24 PDT 2008
+//   Use QString.
+//
 // ****************************************************************************
 
 void
-ViewerMultipleAction::AddChoice(const char *menuText, const char *toolTip,
+ViewerMultipleAction::AddChoice(const QString &menuText, const QString &toolTip,
                                 const QPixmap &icon)
 {
     // Create an action that is a child to this action group.

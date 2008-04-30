@@ -78,8 +78,8 @@
 // ****************************************************************************
 
 QvisSurfacePlotWindow::QvisSurfacePlotWindow(const int type,
-    SurfaceAttributes *surfaceAtts_, const char *caption,
-    const char *shortName, QvisNotepadArea *notepad) :
+    SurfaceAttributes *surfaceAtts_, const QString &caption,
+    const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(surfaceAtts_, caption, shortName, notepad)
 {
     plotType    = type;

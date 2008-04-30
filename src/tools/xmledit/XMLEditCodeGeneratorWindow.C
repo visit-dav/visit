@@ -86,7 +86,7 @@ XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow(QWidget *parent,
     QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
     buttonLayout->addStretch(10);
 
-    QPushButton *dismiss = new QPushButton("Dismiss", central, "dismiss");
+    QPushButton *dismiss = new QPushButton(tr("Dismiss"), central, "dismiss");
     buttonLayout->addWidget(dismiss);
     connect(dismiss, SIGNAL(clicked()), this, SLOT(hide()));
 }

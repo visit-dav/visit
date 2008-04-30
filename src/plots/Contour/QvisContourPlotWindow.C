@@ -78,8 +78,8 @@
 // ****************************************************************************
 
 QvisContourPlotWindow::QvisContourPlotWindow(const int type,
-    ContourAttributes *contourAtts_, const char *caption,
-    const char *shortName, QvisNotepadArea *notepad) :
+    ContourAttributes *contourAtts_, const QString &caption,
+    const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(contourAtts_, caption, shortName, notepad)
 {
     plotType    = type;

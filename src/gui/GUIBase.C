@@ -45,6 +45,7 @@
 #include <ViewerProxy.h>
 #include <FileServerList.h>
 #include <GetMetaDataException.h>
+#include <UnicodeHelper.h>
 #include <WindowInformation.h>
 
 #include <SimpleObserver.h>
@@ -218,6 +219,9 @@ GUIBase::GetViewerMethods() const
 //   Brad Whitlock, Tue May 20 15:12:44 PST 2003
 //   Made it work with the regenerated MessageAttributes.
 //
+//   Brad Whitlock, Tue Apr 29 10:17:36 PDT 2008
+//   Added support for sending the unicode string.
+//
 // ****************************************************************************
 
 void
@@ -232,7 +236,7 @@ GUIBase::Error(const QString &msg)
     }
     else
     {
-        msgAttr->SetText(std::string(msg.latin1()));
+        MessageAttributes_SetText(*msgAttr, msg);
         msgAttr->SetSeverity(MessageAttributes::Error);
         msgAttr->Notify();
     }
@@ -261,6 +265,9 @@ GUIBase::Error(const QString &msg)
 //   Brad Whitlock, Tue May 20 15:12:44 PST 2003
 //   Made it work with the regenerated MessageAttributes.
 //
+//   Brad Whitlock, Tue Apr 29 10:17:36 PDT 2008
+//   Added support for sending the unicode string.
+//
 // ****************************************************************************
 
 void
@@ -275,7 +282,7 @@ GUIBase::Warning(const QString &msg)
     }
     else
     {
-        msgAttr->SetText(std::string(msg.latin1()));
+        MessageAttributes_SetText(*msgAttr, msg);
         msgAttr->SetSeverity(MessageAttributes::Warning);
         msgAttr->Notify();
     }
@@ -304,6 +311,9 @@ GUIBase::Warning(const QString &msg)
 //   Brad Whitlock, Tue May 20 15:12:44 PST 2003
 //   Made it work with the regenerated MessageAttributes.
 //
+//   Brad Whitlock, Tue Apr 29 10:17:36 PDT 2008
+//   Added support for sending the unicode string.
+//
 // ****************************************************************************
 
 void
@@ -318,7 +328,7 @@ GUIBase::Message(const QString &msg)
     }
     else
     {
-        msgAttr->SetText(std::string(msg.latin1()));
+        MessageAttributes_SetText(*msgAttr, msg);
         msgAttr->SetSeverity(MessageAttributes::Message);
         msgAttr->Notify();
     }
@@ -326,6 +336,7 @@ GUIBase::Message(const QString &msg)
     // Write to the log as well.
     debug3 << "Message: " << msg.latin1() << endl;
 }
+
 // ****************************************************************************
 // Method: GUIBase::Information
 //
@@ -340,6 +351,8 @@ GUIBase::Message(const QString &msg)
 // Creation:   Fri Jan 18 14:40:00 PST 2008
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr 29 10:17:36 PDT 2008
+//   Added support for sending the unicode string.
 //
 // ****************************************************************************
 
@@ -355,7 +368,7 @@ GUIBase::Information(const QString &msg)
     }
     else
     {
-        msgAttr->SetText(std::string(msg.latin1()));
+        MessageAttributes_SetText(*msgAttr, msg);
         msgAttr->SetSeverity(MessageAttributes::Information);
         msgAttr->Notify();
     }
@@ -619,10 +632,11 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
             ClearStatus();
 
             // Tell the user about the error.
-            QString msg(QObject::tr("VisIt could not open the file %1.\n\n"
-                           "The metadata server returned the following message:\n\n%2", mName));
-            msg.replace("%1", QString(qf.FullName().c_str()));
-            msg.replace("%2",QString(gmde.Message().c_str()));
+            QString msg = QObject::tr("VisIt could not open the file %1.\n\n"
+                                      "The metadata server returned the "
+                                      "following message:\n\n%2", mName).
+                          arg(QString(qf.FullName().c_str())).
+                          arg(QString(gmde.Message().c_str()));
             debug1 << msg.ascii() << endl;
             debug1 << "Not issuing an error message because the viewer will "
                    << "cover that." << endl;

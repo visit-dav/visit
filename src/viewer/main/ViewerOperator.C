@@ -364,6 +364,28 @@ ViewerOperator::GetName() const
 }
 
 // ****************************************************************************
+//  Method:  ViewerOperator::GetMenuName
+//
+//  Purpose:
+//    Return the menu name of the operator. This is the only version of the
+//    operator name that may appear in another language.
+//
+//  Programmer:  Brad Whitlock, Tue Apr 29 15:13:57 PDT 2008
+//  Creation:    Tue Apr 29 15:13:57 PDT 2008
+//
+// ****************************************************************************
+
+QString
+ViewerOperator::GetMenuName() const
+{
+    QString retval, *s;
+    s = viewerPluginInfo->GetMenuName();
+    retval = *s;
+    delete s;
+    return retval;
+}
+
+// ****************************************************************************
 // Method: ViewerOperator::GetPluginID
 //
 // Purpose: Returns the operator's plugin id.

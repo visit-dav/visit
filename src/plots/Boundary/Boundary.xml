@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-  <Plugin name="Boundary" type="plot" label="Boundary" version="1.0" vartype="material" iconFile="Boundary.xpm">
-    <Attribute name="BoundaryAttributes" purpose="This class contains the plot attributes for the boundary plot." persistent="true" codefile="BoundaryAttributes.code">
+  <Plugin name="Boundary" type="plot" label="Boundary" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="material" iconFile="Boundary.xpm">
+    <Attribute name="BoundaryAttributes" purpose="This class contains the plot attributes for the boundary plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="BoundaryAttributes.code">
       <Enum name="Boundary_Type">
         Domain
         Group
@@ -37,7 +37,7 @@
       <Field name="lineWidth" label="lineWidth" type="linewidth">
         0
       </Field>
-      <Field name="singleColor" label="singleColor" type="color">
+      <Field name="singleColor" label="singleColor" type="color" length="4">
       </Field>
       <Field name="multiColor" label="multiColor" type="att" subtype="ColorAttributeList">
       </Field>
@@ -61,7 +61,7 @@
       <Field name="pointType" label="Point Type" type="enum" subtype="PointType">
         Point
       </Field>
-       <Field name="pointSizeVarEnabled" label="Point size by var enabled" type="bool">
+      <Field name="pointSizeVarEnabled" label="Point size by var enabled" type="bool">
         false
       </Field>
       <Field name="pointSizeVar" label="Point size by var" type="variablename" vartypes="01000000000">
@@ -77,6 +77,14 @@
       <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
       <Function name="PyBoundaryAttributes_SetDefaults" user="false" member="true">
+      </Function>
+      <Function name="BoundaryViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="BoundaryViewerPluginInfo::ReInitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="BoundaryViewerPluginInfo::ResetPlotAtts" user="false" member="true">
+      </Function>
+      <Function name="BoundaryViewerPluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
       </Function>
     </Attribute>
   </Plugin>

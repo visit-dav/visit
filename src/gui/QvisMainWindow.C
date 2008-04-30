@@ -65,6 +65,7 @@
 #include <PlotList.h>
 #include <StatusAttributes.h>
 #include <TimeFormat.h>
+#include <UnicodeHelper.h>
 #include <WindowInformation.h>
 #include <ViewerProxy.h>
 #include <DebugStream.h>
@@ -834,6 +835,10 @@ QvisMainWindow::CreateGlobalArea(QWidget *par)
 //   Brad Whitlock, Thu Jan 31 13:06:19 PST 2008
 //   Added code to handle the crash recovery timer.
 //
+//   Brad Whitlock, Tue Apr 29 10:23:52 PDT 2008
+//   Access the message text via MessageAttributes_GetText to try and 
+//   preserve unicode from the viewer, if possible.
+//
 // ****************************************************************************
 
 void
@@ -875,7 +880,7 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
             // If the message field is selected, use it. Otherwise, make up
             // a message based on the other fields.
             if(statusAtts->GetMessageType() == 1)
-                statusMsg = QString(statusAtts->GetStatusMessage().c_str());
+                statusMsg = StatusAttributes_GetStatusMessage(*statusAtts);
             else if (statusAtts->GetMessageType() == 2)
             {
                 int total;
@@ -895,8 +900,9 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
                 QString progress; progress.sprintf(" (%d%% ", statusAtts->GetPercent());
                 QString progress2; progress2.sprintf(" %d/%d)", statusAtts->GetCurrentStage(),
                     statusAtts->GetMaxStage());
-                statusMsg = totalPct + done + ": " + QString(statusAtts->GetCurrentStageName().c_str())
-                            + progress + ofStage + progress2;
+                statusMsg = totalPct + done + ": " +
+                            StatusAttributes_GetStatusMessage(*statusAtts) +
+                            progress + ofStage + progress2;
             }
 
             statusBar()->message(statusMsg, statusAtts->GetDuration());
@@ -918,11 +924,11 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
         // Get the message from the viewer's message attributes and send it
         // through the GUI's error message methods.
         if(viewerMessageAtts->GetSeverity() == MessageAttributes::Error)
-            Error(QString(viewerMessageAtts->GetText().c_str()));
+            Error(MessageAttributes_GetText(*viewerMessageAtts));
         else if(viewerMessageAtts->GetSeverity() == MessageAttributes::Warning)
-            Warning(QString(viewerMessageAtts->GetText().c_str()));
+            Warning(MessageAttributes_GetText(*viewerMessageAtts));
         else if(viewerMessageAtts->GetSeverity() == MessageAttributes::Message)
-            Message(QString(viewerMessageAtts->GetText().c_str()));
+            Message(MessageAttributes_GetText(*viewerMessageAtts));
     }
     else if(TheChangedSubject == fileserverMessageAtts)
     {

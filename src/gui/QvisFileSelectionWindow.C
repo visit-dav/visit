@@ -1157,8 +1157,7 @@ QvisFileSelectionWindow::ChangeHosts()
         if(host != fileServer->GetHost())
         {
             // Put a message on the status line.
-            QString temp(tr("Opening server on %1"));
-            temp.replace("%1", host.c_str());
+            QString temp = tr("Opening server on %1").arg(host.c_str());
             Status(temp);
 
             // Change the application cursor to the wait cursor.
@@ -1185,8 +1184,8 @@ QvisFileSelectionWindow::ChangeHosts()
                 CATCH(BadHostException)
                 {
                     // Tell the user that the hostname is not valid.
-                    QString msgStr(tr("\"%1\" is not a valid host."));
-                    msgStr.replace("%1", host.c_str());
+                    QString msgStr = tr("\"%1\" is not a valid host.").
+                                     arg(host.c_str());
                     Error(msgStr);
 
                     // Remove the invalid host from the combo box and make the
@@ -1296,10 +1295,10 @@ QvisFileSelectionWindow::ChangePath(bool allowPathChange)
             CATCH(ChangeDirectoryException)
             {
                 // Create a message and tell the user.
-                QString msgStr(tr("The MetaData server running on %1 "
-                    "could not change the current directory to %2."));
-                msgStr.replace("%1", fileServer->GetHost().c_str());
-                msgStr.replace("%2", path.c_str());
+                QString msgStr = tr("The MetaData server running on %1 "
+                                    "could not change the current directory to %2.").
+                                 arg(fileServer->GetHost().c_str()).
+                                 arg(path.c_str());
                 Error(msgStr);
                 errFlag = true;
 
@@ -1317,9 +1316,10 @@ QvisFileSelectionWindow::ChangePath(bool allowPathChange)
                 UpdateFileList();
 
                 // Create a message and tell the user.
-                QString msgStr(tr("The MetaData server running on %1 "
-                "could not get the file list for the current directory"));
-                msgStr.replace("%1", fileServer->GetHost().c_str());
+                QString msgStr = tr("The MetaData server running on %1 "
+                                    "could not get the file list for the "
+                                    "current directory").
+                                 arg(fileServer->GetHost().c_str());
                 Error(msgStr);
                 errFlag = true;
             }
@@ -1998,10 +1998,10 @@ QvisFileSelectionWindow::changeDirectory(QListBoxItem *item)
     CATCH(ChangeDirectoryException)
     {
         // Create a message and tell the user.
-        QString msgStr(tr("The MetaData server running on %1 "
-            "could not change the current directory to %2."));
-        msgStr.replace("%1", fileServer->GetHost().c_str());
-        msgStr.replace("%2", newPath.c_str());
+        QString msgStr = tr("The MetaData server running on %1 "
+                            "could not change the current directory to %2.").
+                         arg(fileServer->GetHost().c_str()).
+                         arg(newPath.c_str());
         Error(msgStr);
     }
     CATCH(GetFileListException)
@@ -2010,9 +2010,9 @@ QvisFileSelectionWindow::changeDirectory(QListBoxItem *item)
         UpdateFileList();
 
         // Create a message and tell the user.
-        QString msgStr(tr("The MetaData server running on %1 could not "
-             "get the file list for the current directory."));
-        msgStr.replace("%1", fileServer->GetHost().c_str());
+        QString msgStr = tr("The MetaData server running on %1 could not "
+                            "get the file list for the current directory.").
+                         arg(fileServer->GetHost().c_str());
         Error(msgStr);
     }
     ENDTRY
@@ -2400,8 +2400,8 @@ QvisFileSelectionWindow::groupFiles()
     group_filename += ".visit";
 
     // Send the groupList and the group filename to the MDserver.
-    QString tmp(tr("Creating group list on %1"));
-    tmp.replace("%1", fileServer->GetHost().c_str());
+    QString tmp = tr("Creating group list on %1").
+                  arg(fileServer->GetHost().c_str());
     Status(tmp);
     fileServer->CreateGroupList(group_filename, groupList);
 

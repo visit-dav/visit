@@ -74,8 +74,8 @@ using std::string;
 
 QvisSphereSliceWindow::QvisSphereSliceWindow(const int type,
                          SphereSliceAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -120,13 +120,13 @@ QvisSphereSliceWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 2,2,  10, "mainLayout");
 
 
-    mainLayout->addWidget(new QLabel("origin", central, "originLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("Origin"), central, "originLabel"),0,0);
     origin = new QLineEdit(central, "origin");
     connect(origin, SIGNAL(returnPressed()),
             this, SLOT(originProcessText()));
     mainLayout->addWidget(origin, 0,1);
 
-    mainLayout->addWidget(new QLabel("radius", central, "radiusLabel"),1,0);
+    mainLayout->addWidget(new QLabel(tr("Radius"), central, "radiusLabel"),1,0);
     radius = new QLineEdit(central, "radius");
     connect(radius, SIGNAL(returnPressed()),
             this, SLOT(radiusProcessText()));
@@ -210,16 +210,17 @@ QvisSphereSliceWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val[3];
-            sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2]);
-            atts->SetOrigin(val);
+            okay = sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2])==3;
+            if(okay)
+                atts->SetOrigin(val);
         }
 
         if(!okay)
         {
             const double *val = atts->GetOrigin();
-            msg.sprintf("The value of origin was invalid. "
-                "Resetting to the last good value of <%g %g %g>", 
-                val[0], val[1], val[2]);
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of origin was invalid. "
+                     "Resetting to the last good value of %1.").arg(num); 
             Message(msg);
             atts->SetOrigin(atts->GetOrigin());
         }
@@ -233,14 +234,15 @@ QvisSphereSliceWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetRadius(val);
+            if(okay)
+                atts->SetRadius(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of radius was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetRadius());
+            msg = tr("The value of radius was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetRadius());
             Message(msg);
             atts->SetRadius(atts->GetRadius());
         }

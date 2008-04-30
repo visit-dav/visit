@@ -74,8 +74,8 @@ using std::string;
 
 QvisProjectWindow::QvisProjectWindow(const int type,
                          ProjectAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -111,7 +111,9 @@ QvisProjectWindow::~QvisProjectWindow()
 // Creation:   Tue May 18 14:35:37 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 08:47:35 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -120,15 +122,15 @@ QvisProjectWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 1,2,  10, "mainLayout");
 
 
-    projectionTypeLabel = new QLabel("projectionType", central, "projectionTypeLabel");
+    projectionTypeLabel = new QLabel(tr("Projection type"), central, "projectionTypeLabel");
     mainLayout->addWidget(projectionTypeLabel,0,0);
     projectionType = new QButtonGroup(central, "projectionType");
     projectionType->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *projectionTypeLayout = new QHBoxLayout(projectionType);
     projectionTypeLayout->setSpacing(10);
-    QRadioButton *projectionTypeProjectionTypeXYCartesian = new QRadioButton("XYCartesian", projectionType);
+    QRadioButton *projectionTypeProjectionTypeXYCartesian = new QRadioButton(tr("XYCartesian"), projectionType);
     projectionTypeLayout->addWidget(projectionTypeProjectionTypeXYCartesian);
-    QRadioButton *projectionTypeProjectionTypeZRCylindrical = new QRadioButton("ZRCylindrical", projectionType);
+    QRadioButton *projectionTypeProjectionTypeZRCylindrical = new QRadioButton(tr("ZRCylindrical"), projectionType);
     projectionTypeLayout->addWidget(projectionTypeProjectionTypeZRCylindrical);
     connect(projectionType, SIGNAL(clicked(int)),
             this, SLOT(projectionTypeChanged(int)));

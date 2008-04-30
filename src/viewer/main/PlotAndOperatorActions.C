@@ -90,12 +90,17 @@
 //   Brad Whitlock, Tue Jul 27 18:11:58 PST 2004
 //   Added code to prevent pixmaps from being created when in -nowin mode.
 //
+//   Brad Whitlock, Tue Apr 29 11:22:40 PDT 2008
+//   Use the menu name from the plugin info since it's translatable. Use
+//   GetUserSelectable from the plugin interface instead of checking for
+//   a plugin name.
+//
 // ****************************************************************************
 
 AddOperatorAction::AddOperatorAction(ViewerWindow *win) :
     ViewerMultipleAction(win, "AddOperator"), graphicalPlugins()
 {
-    SetAllText("Add operator");
+    SetAllText(tr("Add operator"));
     SetExclusive(false);
 
     //
@@ -105,15 +110,17 @@ AddOperatorAction::AddOperatorAction(ViewerWindow *win) :
     ViewerOperatorPluginInfo *info = 0;
     OperatorPluginManager *pluginMgr = OperatorPluginManager::Instance();
     int nTypes = pluginMgr->GetNEnabledPlugins();
-    std::string Lineout("Lineout");
     for (int i = 0; i < nTypes; ++i)
     {
         info = pluginMgr->GetViewerPluginInfo(pluginMgr->GetEnabledID(i));
         if(info)
         {
-            if(!window->GetNoWinMode() && info->XPMIconData() != 0 &&
-               std::string(info->GetName()) != Lineout)
+            if(!window->GetNoWinMode() && 
+               info->XPMIconData() != 0 &&
+               info->GetUserSelectable())
             {
+                QString *menuName = info->GetMenuName();
+
                 if(!window->GetNoWinMode())
                 {
                     // Create a pixmap for the operator or get its pixmap from
@@ -128,12 +135,13 @@ AddOperatorAction::AddOperatorAction(ViewerWindow *win) :
                     }
 
                     // Add a choice for operator so that it has an icon.
-                    char tip[200];
-                    SNPRINTF(tip, 200, "Add %s operator", info->GetName());
-                    AddChoice(info->GetName(), tip, pix);
+                    QString tip(tr("Add %1 operator").arg(*menuName));
+                    AddChoice(*menuName, tip, pix);
                 }
                 else
-                    AddChoice(info->GetName());
+                    AddChoice(*menuName);
+
+                delete menuName;
 
                 // Record that this plugin has an icon.
                 graphicalPlugins.push_back(i);
@@ -215,7 +223,7 @@ AddOperatorAction::Execute(int)
 
     OperatorPluginManager *opMgr = OperatorPluginManager::Instance();
     std::string name(opMgr->GetPluginName(opMgr->GetEnabledID(type)));
-    if (name == "Lineout")
+    if (name == "Lineout") // PLUGIN SIN!!!
     {
         window->Lineout(fromDefault);
     }
@@ -526,7 +534,7 @@ RemoveOperatorAction::Execute()
 RemoveLastOperatorAction::RemoveLastOperatorAction(ViewerWindow *win) :
     ViewerAction(win, "RemoveLastOperatorAction")
 {
-    SetAllText("Remove last operator");
+    SetAllText(tr("Remove last operator"));
     if(!window->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(removelastoperator_xpm)));
 }
@@ -614,7 +622,7 @@ RemoveLastOperatorAction::Enabled() const
 RemoveAllOperatorsAction::RemoveAllOperatorsAction(ViewerWindow *win) : 
     ViewerAction(win, "RemoveAllOperatorsAction")
 {
-    SetAllText("Remove all operators");
+    SetAllText(tr("Remove all operators"));
     if(!window->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(removealloperators_xpm)));
 }
@@ -772,12 +780,16 @@ SetOperatorOptionsAction::Execute()
 //   Brad Whitlock, Tue Jul 27 18:09:16 PST 2004
 //   Changed so pixmaps are not created when we're in -nowin mode.
 //
+//   Brad Whitlock, Tue Apr 29 11:41:42 PDT 2008
+//   Added tr(), remove code to disable Curve plot. Made the code use the
+//   plot's menu name.
+//
 // ****************************************************************************
 
 AddPlotAction::AddPlotAction(ViewerWindow *win) : ViewerMultipleAction(win,
     "AddPlotAction"), pluginEntries(), menuPopulator()
 {
-    SetAllText("Add plot");
+    SetAllText(tr("Add plot"));
     SetExclusive(false);
 
     maxPixmapWidth = maxPixmapHeight = 0;
@@ -794,9 +806,10 @@ AddPlotAction::AddPlotAction(ViewerWindow *win) : ViewerMultipleAction(win,
         info = pluginMgr->GetViewerPluginInfo(pluginMgr->GetEnabledID(i));
         if(info)
         {
-            if(!window->GetNoWinMode() && info->XPMIconData() != 0 &&
-               std::string(info->GetName()) != "Curve")
+            if(!window->GetNoWinMode() && info->XPMIconData() != 0)
             {
+                QString *menuName = info->GetMenuName();
+
                 // Create a pixmap for the plot or get its pixmap from
                 // the pixmap cache.
                 if(!window->GetNoWinMode())
@@ -815,12 +828,13 @@ AddPlotAction::AddPlotAction(ViewerWindow *win) : ViewerMultipleAction(win,
                     maxPixmapHeight = QMAX(maxPixmapHeight, pix.height());
 
                     // Add a choice for plot so that it has an icon.
-                    char tip[200];
-                    SNPRINTF(tip, 200, "Add %s plot", info->GetName());
-                    AddChoice(info->GetName(), tip, pix);
+                    QString tip(tr("Add %1 plot").arg(*menuName));
+                    AddChoice(*menuName, tip, pix);
                 }
                 else
-                    AddChoice(info->GetName());
+                    AddChoice(*menuName);
+
+                delete menuName;
 
                 // Record the plugin entry.
                 PluginEntry p;
@@ -1124,6 +1138,9 @@ AddPlotAction::RemoveFromMenu(QPopupMenu *menu)
 //   code also connects a signal from the vis window that tells this object
 //   to update its icons when the icon size in the vis window changes.
 //
+//   Brad Whitlock, Tue Apr 29 11:45:08 PDT 2008
+//   Added tr()
+//
 // ****************************************************************************
 
 void
@@ -1180,7 +1197,7 @@ AddPlotAction::ConstructToolbar(QToolBar *toolbar)
         menu->setItemEnabled(id, false);
 
         // Create the plot's tool tip string.
-        QString tip; tip.sprintf("Add %s plot", children[i]->menuText().latin1());
+        QString tip(tr("Add %1 plot").arg(children[i]->menuText()));
 
         // Add a tooltip in the horizontal direction.
         tipRectH.setWidth(pix.width());
@@ -1353,7 +1370,7 @@ AddPlotAction::changeMenuIconSize(bool large)
 DrawPlotsAction::DrawPlotsAction(ViewerWindow *win) : ViewerAction(win,
     "DrawPlotsAction")
 {
-    SetAllText("Draw plots");
+    SetAllText(tr("Draw plots"));
 }
 
 // ****************************************************************************
@@ -1436,7 +1453,7 @@ DrawPlotsAction::Enabled() const
 HideActivePlotsAction::HideActivePlotsAction(ViewerWindow *win) : ViewerAction(win,
     "HideActivePlotsAction")
 {
-    SetAllText("Hide active plots");
+    SetAllText(tr("Hide active plots"));
     // Think of an icon...
 }
 
@@ -1518,7 +1535,7 @@ HideActivePlotsAction::Enabled() const
 DeleteActivePlotsAction::DeleteActivePlotsAction(ViewerWindow *win) :
     ViewerAction(win, "DeleteActivePlotsAction")
 {
-    SetAllText("Delete active plots");
+    SetAllText(tr("Delete active plots"));
     // Think of an icon...
 }
 
@@ -2320,7 +2337,7 @@ MovePlotDatabaseKeyframeAction::Execute()
 CopyPlotAction::CopyPlotAction(ViewerWindow *win) : ViewerAction(win,
     "CopyPlotAction")
 {
-    SetAllText("Copy active plots");
+    SetAllText(tr("Copy active plots"));
     // Think of an icon...
 }
 
@@ -2402,7 +2419,7 @@ CopyPlotAction::Enabled() const
 SetPlotFollowsTimeAction::SetPlotFollowsTimeAction(ViewerWindow *win) : ViewerAction(win,
     "SetPlotFollowsTimeAction")
 {
-    SetAllText("Disconnect from time slider");
+    SetAllText(tr("Disconnect from time slider"));
     // Think of an icon...
 }
 

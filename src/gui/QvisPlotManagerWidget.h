@@ -194,6 +194,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Split "Apply operators and selections ..." checkbox into an apply
 //   operators and an apply selection checkbox.
 //
+//   Brad Whitlock, Fri Apr 25 10:22:11 PDT 2008
+//   Use QString for plot and operator names to support internationalization.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -214,9 +217,9 @@ public:
     void ConnectWindowInformation(WindowInformation *);
     void ConnectDatabaseMetaData(avtDatabaseMetaData *);
 
-    void AddPlotType(const char *plotName, const int varTypes,
+    void AddPlotType(const QString &plotName, const int varTypes,
                      const char **iconData = 0);
-    void AddOperatorType(const char *operatorName, const int varTypes,
+    void AddOperatorType(const QString &operatorName, const int varTypes,
                          const int varMask, bool userSelectable,
                          const char **iconData = 0);
     void EnablePluginMenus();

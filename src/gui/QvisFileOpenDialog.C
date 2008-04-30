@@ -290,8 +290,7 @@ QvisFileOpenDialog::changeThePath()
         }
         CATCH(BadHostException)
         {
-            msg = tr("VisIt could not access host %1.");
-            msg.replace("%1", f.host.c_str());
+            msg = tr("VisIt could not access host %1.").arg(f.host.c_str());
             Error(msg);
             f.host = "localhost";
             retry_loop = true;
@@ -299,8 +298,8 @@ QvisFileOpenDialog::changeThePath()
         CATCH(ChangeDirectoryException)
         {
             msg = tr("VisIt could not access the directory: %1 so your "
-                     "home directory will be used.");
-            msg.replace("%1", f.path.c_str());
+                     "home directory will be used.").
+                  arg(f.path.c_str());
             Error(msg);
             f.path = "~";
             retry_loop = true;

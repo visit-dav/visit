@@ -71,8 +71,8 @@ class QvisCracksClipperWindow : public QvisOperatorWindow
   public:
     QvisCracksClipperWindow(const int type,
                          CracksClipperAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisCracksClipperWindow();
     virtual void CreateWindowContents();

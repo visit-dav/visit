@@ -80,7 +80,7 @@
 // ****************************************************************************
 
 QvisLabelPlotWindow::QvisLabelPlotWindow(const int type,
-    LabelAttributes *subj, const char *caption, const char *shortName,
+    LabelAttributes *subj, const QString &caption, const QString &shortName,
     QvisNotepadArea *notepad) : QvisPostableWindowObserver(subj, caption,
         shortName, notepad)
 {
@@ -823,7 +823,7 @@ QvisLabelPlotWindow::depthTestButtonGroupChanged(int val)
 void 
 QvisLabelPlotWindow::formatTemplateChanged()
 {
-    std::string newval = formatTemplate->displayText().stripWhiteSpace();
+    std::string newval = formatTemplate->displayText().stripWhiteSpace().latin1();
 
     //Test the new value and don't apply it if it's an invalid printf string.
     //In practice snprintf never throws an error for wrong type or number

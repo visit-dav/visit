@@ -74,8 +74,8 @@ using std::string;
 
 QvisInverseGhostZoneWindow::QvisInverseGhostZoneWindow(const int type,
                          InverseGhostZoneAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -111,7 +111,9 @@ QvisInverseGhostZoneWindow::~QvisInverseGhostZoneWindow()
 // Creation:   Thu Jan 8 09:57:12 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 09:07:36 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -120,15 +122,15 @@ QvisInverseGhostZoneWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 1,2,  10, "mainLayout");
 
 
-    showTypeLabel = new QLabel("Zones to Display:", central, "showTypeLabel");
+    showTypeLabel = new QLabel(tr("Zones to Display:"), central, "showTypeLabel");
     mainLayout->addWidget(showTypeLabel,0,0);
     showType = new QButtonGroup(central, "showType");
     showType->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *showTypeLayout = new QHBoxLayout(showType);
     showTypeLayout->setSpacing(10);
-    QRadioButton *showTypeShowTypeGhostZonesOnly = new QRadioButton("Ghost zones only", showType);
+    QRadioButton *showTypeShowTypeGhostZonesOnly = new QRadioButton(tr("Ghost zones only"), showType);
     showTypeLayout->addWidget(showTypeShowTypeGhostZonesOnly);
-    QRadioButton *showTypeShowTypeGhostZonesAndRealZones = new QRadioButton("Both ghost zones and real zones", showType);
+    QRadioButton *showTypeShowTypeGhostZonesAndRealZones = new QRadioButton(tr("Both ghost zones and real zones"), showType);
     showTypeLayout->addWidget(showTypeShowTypeGhostZonesAndRealZones);
     connect(showType, SIGNAL(clicked(int)),
             this, SLOT(showTypeChanged(int)));

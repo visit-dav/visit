@@ -128,7 +128,7 @@ ViewerConnectionProgressDialog::ViewerConnectionProgressDialog(const QString &co
     iconLayout->addStretch(5);
 
     // Add the cancel button.
-    cancelButton = new QPushButton("Cancel", this, "cancelButton");
+    cancelButton = new QPushButton(tr("Cancel"), this, "cancelButton");
     connect(cancelButton, SIGNAL(clicked()),
             this, SLOT(cancel()));
     iconLayout->addWidget(cancelButton);
@@ -171,7 +171,9 @@ ViewerConnectionProgressDialog::~ViewerConnectionProgressDialog()
 // Creation:   Wed May 7 10:20:41 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 29 13:18:38 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -184,10 +186,13 @@ ViewerConnectionProgressDialog::setComponentName(const QString &cn)
     setCaption(str);
 
     // Set the message string.
-    QString msg("VisIt is waiting for a ");
+    QString msg;
     if(parallel)
-        msg += "parallel ";
-    msg += componentName + " to launch on " + hostName + ".";
+        msg = tr("VisIt is waiting for a parallel %1 to launch on %2.").
+            arg(componentName).arg(hostName);
+    else
+        msg = tr("VisIt is waiting for a %1 to launch on %2.").
+            arg(componentName).arg(hostName);
     msgLabel->setText(msg);
 }
 

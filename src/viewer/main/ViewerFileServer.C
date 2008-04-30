@@ -491,6 +491,9 @@ ViewerFileServer::GetMetaData(const std::string &host,
 //   Brad Whitlock, Wed Mar 14 20:33:03 PST 2007
 //   Added forceReadAllCyclesAndTimes argument.
 //
+//   Brad Whitlock, Tue Apr 29 14:49:24 PDT 2008
+//   Added tr().
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -513,8 +516,8 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
     //
     if(timeState < 0)
     {
-        Error("GetMetaDataForState called with ANY_STATE. That is "
-              "not allowed so VisIt will instead use time state 0.");
+        Error(tr("GetMetaDataForState called with ANY_STATE. That is "
+                 "not allowed so VisIt will instead use time state 0."));
         timeState = 0;
     }
 
@@ -600,6 +603,9 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
 //   Hank Childs, Tue Dec 11 16:35:25 PST 2007
 //   Added timings of getting meta-data.
 //
+//   Brad Whitlock, Tue Apr 29 14:52:33 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -671,20 +677,22 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
             }
             CATCH2(GetMetaDataException, gmde)
             {
-                char msg[1000];
+                QString msg;
                 if (host == "localhost")
                 {
-                    SNPRINTF(msg, 1000, "VisIt could not read from the file "
-                             "\"%s\".\n\nThe generated error message"
-                             " was:\n\n%s", db.c_str(),
-                            gmde.Message().c_str());
+                    msg = tr("VisIt could not read from the file "
+                             "\"%1\".\n\nThe generated error message"
+                             " was:\n\n%2").
+                          arg(db.c_str()).
+                          arg(gmde.Message().c_str());
                 }
                 else
                 {
-                    SNPRINTF(msg, 1000, "VisIt could not read from the file "
-                             "\"%s\" on host %s.\n\nThe generated error message"
-                             " was:\n\n%s", db.c_str(),
-                            host.c_str(), gmde.Message().c_str());
+                    msg = tr("VisIt could not read from the file "
+                             "\"%`\" on host %2.\n\nThe generated error message"
+                             " was:\n\n%3").
+                          arg(db.c_str()).arg(host.c_str()).
+                          arg(gmde.Message().c_str());
                 }
                 Error(msg);
             }
@@ -693,11 +701,11 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                 // Tell the GUI that the mdserver is dead.
                 if(numAttempts == 0)
                 {
-                    char message[200];
-                    SNPRINTF(message, 200, "The metadata server running on host "
-                             "%s has exited abnormally. VisIt is trying to "
-                             "restart it.", host.c_str());
-                    Warning(message);
+                    QString msg = tr("The metadata server running on host "
+                                     "%1 has exited abnormally. VisIt is trying "
+                                     "to restart it.").
+                                  arg(host.c_str());
+                    Warning(msg);
                 }
 
                 ++numAttempts;
@@ -705,8 +713,7 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                 tryAgain = (numAttempts < numTries);
                 if (numAttempts == numTries)
                 {
-                    char message[512];
-                    SNPRINTF(message, 512, "VisIt was unable to open \"%s\"."
+                    QString msg = tr("VisIt was unable to open \"%1\"."
                               "  Each attempt to open it caused VisIt's "
                               "metadata server to crash.  This can occur when "
                               "the file is corrupted, or when the underlying "
@@ -715,8 +722,8 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                               "VisIt is using"
                               " for your file format is not robust.  Please "
                               "check whether the file is corrupted and, if "
-                              "not, contact a VisIt developer.", db.c_str());
-                    Error(message);
+                              "not, contact a VisIt developer.").arg(db.c_str());
+                    Error(msg);
                 }
 
                 TRY
@@ -832,10 +839,13 @@ ViewerFileServer::GetSIL(const std::string &host,
 // Creation:   Fri Mar 26 12:27:31 PDT 2004
 //
 // Modifications:
-//   
 //   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //   Changed reference to treatAllDBsAsTimeVarying to a call to a static
 //   function.
+//
+//   Brad Whitlock, Tue Apr 29 14:53:03 PDT 2008
+//   Added tr().
+//
 // ****************************************************************************
 
 const avtSIL *
@@ -847,8 +857,8 @@ ViewerFileServer::GetSILForState(const std::string &host,
     //
     if(timeState < 0)
     {
-        Error("GetSILForState called with ANY_STATE. That is "
-              "not allowed so VisIt will instead use time state 0.");
+        Error(tr("GetSILForState called with ANY_STATE. That is "
+                 "not allowed so VisIt will instead use time state 0."));
         timeState = 0;
     }
 
@@ -910,10 +920,13 @@ ViewerFileServer::GetSILForState(const std::string &host,
 // Creation:   Fri Mar 26 12:27:31 PDT 2004
 //
 // Modifications:
-//   
 //   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //   Changed reference to treatAllDBsAsTimeVarying to a call to a static
 //   function.
+//
+//   Brad Whitlock, Tue Apr 29 14:54:17 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 const avtSIL *
@@ -971,11 +984,11 @@ ViewerFileServer::GetSILHelper(const std::string &host, const std::string &db,
             // exception (so this isn't a cut-n-paste error from GetMetaData)
             CATCH2(GetMetaDataException, gmde)
             {
-                char msg[1000];
-                SNPRINTF(msg, 1000, "VisIt cannot read the SIL for the file "
-                         "\"%s\" on host %s.\n\nThe metadata server returned "
-                         "the following message:\n\n%s", db.c_str(),
-                         host.c_str(), gmde.Message().c_str());
+                QString msg = tr("VisIt cannot read the SIL for the file "
+                         "\"%1\" on host %2.\n\nThe metadata server returned "
+                         "the following message:\n\n%3").
+                         arg(db.c_str()).arg(host.c_str()).
+                         arg(gmde.Message().c_str());
                 Error(msg);
             }
             CATCH(LostConnectionException)
@@ -983,11 +996,10 @@ ViewerFileServer::GetSILHelper(const std::string &host, const std::string &db,
                 // Tell the GUI that the mdserver is dead.
                 if(numAttempts == 0)
                 {
-                    char message[200];
-                    SNPRINTF(message, 200, "The metadata server running on host "
-                             "%s has exited abnormally. VisIt is trying to "
-                             "restart it.", host.c_str());
-                    Warning(message);
+                    QString msg = tr("The metadata server running on host "
+                             "%1 has exited abnormally. VisIt is trying to "
+                             "restart it.").arg(host.c_str());
+                    Warning(msg);
                 }
 
                 ++numAttempts;
@@ -1078,6 +1090,9 @@ ViewerFileServer::ExpandDatabaseName(std::string &hostDBName,
 //   Added a call to ExpansionRequired so we can prevent calls to the
 //   mdserver if they are not really needed.
 //
+//   Brad Whitlock, Tue Apr 29 14:55:30 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 std::string
@@ -1111,11 +1126,10 @@ ViewerFileServer::ExpandedFileName(const std::string &host,
                     // Tell the GUI that the mdserver is dead.
                     if(numAttempts == 0)
                     {
-                        char message[200];
-                        SNPRINTF(message, 200, "The metadata server running on host "
-                                 "%s has exited abnormally. VisIt is trying to "
-                                 "restart it.", host.c_str());
-                        Warning(message);
+                        QString msg = tr("The metadata server running on host "
+                                 "%1 has exited abnormally. VisIt is trying to "
+                                 "restart it.").arg(host.c_str());
+                        Warning(msg);
                     }
 
                     ++numAttempts;
@@ -1293,6 +1307,9 @@ ViewerFileServer::StartServer(const std::string &host)
 //    Jeremy Meredith, Wed Jan 23 16:25:45 EST 2008
 //    Tell new mdservers what the current default file opening options are.
 //
+//    Brad Whitlock, Tue Apr 29 14:59:18 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1362,19 +1379,18 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
     }
     CATCH(BadHostException)
     {
-        char msg[200];
-        SNPRINTF(msg, 200, "VisIt cannot launch a metadata server on host %s.", 
-                 host.c_str());
+        QString msg = tr("VisIt cannot launch a metadata server on host %1.").
+                      arg(host.c_str());
         Error(msg);
 
         delete newServer;
     }
     CATCH(IncompatibleVersionException)
     {
-        char message[200];
-        SNPRINTF(message, 200, "The metadata server on host %s is an "
-                 "incompatible version. It cannot be used.", host.c_str());
-        Error(message);
+        QString msg = tr("The metadata server on host %1 is an "
+                         "incompatible version. It cannot be used.").
+                      arg(host.c_str());
+        Error(msg);
         delete newServer;
         delete dialog;
 
@@ -1383,10 +1399,10 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
     }
     CATCH(IncompatibleSecurityTokenException)
     {
-        char message[200];
-        SNPRINTF(message, 200, "The metadata server on host %s did not return "
-                "the proper credentials. It cannot be used.", host.c_str());
-        Error(message);
+        QString msg = tr("The metadata server on host %1 did not return "
+                         "the proper credentials. It cannot be used.").
+                      arg(host.c_str());
+        Error(msg);
 
         delete newServer;
         delete dialog;
@@ -1396,26 +1412,24 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
     }
     CATCH(CouldNotConnectException)
     {
-        char *message = new char[10000];
-        const char *h = host.c_str();
-        SNPRINTF(message, 10000,
-            "The metadata server on host %s could not be launched or it "
+        QString msg = tr(
+            "The metadata server on host %1 could not be launched or it "
             "could not connect back to your local computer. This can "
             "happen for a variety of reasons.\n\n"
 
-            "It is possible that SSH was unable to launch VisIt on %s. "
+            "It is possible that SSH was unable to launch VisIt on %1. "
             "If you want to verify this, run "
             "\"visit -debug 5\" and then check to see if any vcl, "
-            "mdserver, or engine log files are present on %s in your "
+            "mdserver, or engine log files are present on %1 in your "
             "home directory. If no log files were created then SSH was "
-            "probably not able to launch VisIt components on %s. In that "
-            "case, check that you can SSH to %s and check your local "
+            "probably not able to launch VisIt components on %1. In that "
+            "case, check that you can SSH to %1 and check your local "
             "VisIt installation's Host profiles to make sure the path "
-            "to VisIt on %s is specified. Alternatively, you set the "
-            "PATH environment variable on %s so it contains the "
+            "to VisIt on %1 is specified. Alternatively, you set the "
+            "PATH environment variable on %1 so it contains the "
             "path to the program \"visit\".\n\n"
 
-            "If there were no debug logs to be found on %s and your local "
+            "If there were no debug logs to be found on %1 and your local "
             "computer runs a newer version of Linux then quit VisIt and "
             "try running \"visit -nopty -debug 5\". The \"-nopty\" option "
             "tells VisIt not to allocate a pseudoterminal in which to "
@@ -1423,18 +1437,18 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
             "password window will not be used. Instead, look for an SSH "
             "prompt in the terminal window where you ran VisIt. You should "
             "be able to enter your password at that prompt. If successful, "
-            "SSH should continue trying to launch VisIt on %s. If VisIt "
+            "SSH should continue trying to launch VisIt on %1. If VisIt "
             "still cannot connect after SSH launches VisIt's remote "
-            "components, check for debug logs on %s to see if VisIt "
+            "components, check for debug logs on %1 to see if VisIt "
             "was at least able to launch there.\n\n"
 
-            "If you found debug log files on %s but VisIt still can't "
-            "connect then it's possible that %s cannot connect to your "
+            "If you found debug log files on %1 but VisIt still can't "
+            "connect then it's possible that %1 cannot connect to your "
             "local computer. Some desktop computers do not provide a "
             "valid network name when VisIt asks for one. If you suspect "
             "that this could be the cause of the launch failure, try "
             "using \"Parse from SSH_CLIENT\" in your host profile for "
-            "host %s. If that does not work and if you are using VPN "
+            "host %1. If that does not work and if you are using VPN "
             "then you should try manually setting the local host name "
             "VisIt will use when telling its remote components to connect "
             "back to your local computer. Open the Host profiles window "
@@ -1455,12 +1469,12 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
             "contact your system administrator.\n\n"
 
             "If none of these suggestions allow you to successfully "
-            "connect to %s then contact visit-help@llnl.gov and provide "
+            "connect to %1 then contact visit-help@llnl.gov and provide "
             "information about how you are trying to connect. Be sure to "
             "include the VisIt version and platform on which you are "
-            "running.", h,h,h,h,h,h,h,h,h,h,h,h,h,h);
-        Error(message);
-        delete [] message;
+            "running.");
+        msg.replace("%1", host.c_str());
+        Error(msg);
 
         delete newServer;
         delete dialog;
@@ -1470,10 +1484,10 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
     }
     CATCH(CancelledConnectException)
     {
-        char message[200];
-        SNPRINTF(message, 200, "The launch of the metadata server on "
-                 "host \"%s\" has been cancelled.", host.c_str());
-        Error(message);
+        QString msg = tr("The launch of the metadata server on "
+                         "host \"%1\" has been cancelled.").
+                      arg(host.c_str());
+        Error(msg);
 
         delete newServer;
         delete dialog;
@@ -2070,6 +2084,9 @@ ViewerFileServer::GetDatabaseCorrelationList()
 //   Added logic to decide if we need to force reading of all cycles
 //   and times when getting meta data
 //
+//   Brad Whitlock, Tue Apr 29 15:00:26 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 DatabaseCorrelation *
@@ -2078,8 +2095,8 @@ ViewerFileServer::CreateDatabaseCorrelation(const std::string &name,
 {
     if(dbs.size() < 1)
     {
-        Error("VisIt cannot create a database correlation that does "
-              "not use any databases.");
+        Error(tr("VisIt cannot create a database correlation that does "
+                 "not use any databases."));
         return 0;
     }
 
@@ -2099,7 +2116,7 @@ ViewerFileServer::CreateDatabaseCorrelation(const std::string &name,
     }
 
     // Add the different databases to the correlation.
-    char msg[200];
+    QString msg;
     for(int i = 0; i < dbs.size(); ++i)
     {
         //
@@ -2145,10 +2162,11 @@ ViewerFileServer::CreateDatabaseCorrelation(const std::string &name,
 
                 if(!accurate)
                 {
-                    SNPRINTF(msg, 200, "The times for %s may not be "
-                             "accurate so the new correlation %s might "
-                             "not work as expected.", correlationDB.c_str(),
-                             name.c_str());
+                    msg = tr("The times for %1 may not be "
+                             "accurate so the new correlation %2 might "
+                             "not work as expected.").
+                          arg(correlationDB.c_str()).
+                          arg(name.c_str());
                     Warning(msg);
                 }
             }
@@ -2160,10 +2178,11 @@ ViewerFileServer::CreateDatabaseCorrelation(const std::string &name,
 
                 if(!accurate)
                 {
-                    SNPRINTF(msg, 200, "The cycles for %s may not be "
-                             "accurate so the new correlation %s might "
-                             "not work as expected.", correlationDB.c_str(),
-                             name.c_str());
+                    msg = tr("The cycles for %1 may not be "
+                             "accurate so the new correlation %2 might "
+                             "not work as expected.").
+                          arg(correlationDB.c_str()).
+                          arg(name.c_str());
                     Warning(msg);
                 }
             }
@@ -2177,10 +2196,10 @@ ViewerFileServer::CreateDatabaseCorrelation(const std::string &name,
         else
         {
             delete correlation; correlation = 0;
-            SNPRINTF(msg, 200, "VisIt could not retrieve metadata "
-                     "for %s so the correlation %s could not be "
-                     "created.", correlationDB.c_str(),
-                     name.c_str());
+            msg = tr("VisIt could not retrieve metadata "
+                     "for %1 so the correlation %2 could not be "
+                     "created.").
+                  arg(correlationDB.c_str()).arg(name.c_str());
             Error(msg);
             break;
         }
@@ -2828,6 +2847,9 @@ ViewerFileServer::SetFromNode(DataNode *parentNode,
 //   the list of expressions from all open sources then it will be okay to
 //   use ParsingExprList again.
 //
+//   Brad Whitlock, Tue Apr 29 15:04:13 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 avtVarType
@@ -2860,15 +2882,11 @@ ViewerFileServer::DetermineVarType(const std::string &host,
             }
             CATCH(VisItException)
             {
-                std::string message("VisIt was unable to determine "
-                    "the variable type for ");
-                message += host; 
-                message += ":";
-                message += db;
-                message += "'s ";
-                message += var;
-                message += " variable.";
-                Error(message.c_str());
+                QString msg = tr("VisIt was unable to determine "
+                                 "the variable type for %1's %2 variable.").
+                              arg((host + ":" + db).c_str()).
+                              arg(var.c_str());
+                Error(msg);
                 debug1 << "ViewerFileServer::DetermineVarType: Caught an "
                           "exception!" << endl;
                 retval = AVT_UNKNOWN_TYPE;
@@ -2900,6 +2918,8 @@ ViewerFileServer::DetermineVarType(const std::string &host,
 // Creation:   July 5, 2005 
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr 29 15:05:55 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -2939,15 +2959,11 @@ ViewerFileServer::DetermineRealVarType(const std::string &host,
             }
             CATCH(VisItException)
             {
-                std::string message("VisIt was unable to determine "
-                    "the real variable type for ");
-                message += host; 
-                message += ":";
-                message += db;
-                message += "'s ";
-                message += var;
-                message += " variable.";
-                Error(message.c_str());
+                QString msg = tr("VisIt was unable to determine "
+                                 "the real variable type for %1's %2 variable.").
+                              arg((host + ":" + db).c_str()).
+                              arg(var.c_str());
+                Error(msg);
                 debug1 << "ViewerFileServer::DetermineVarType: Caught an "
                           "exception!" << endl;
                 retval = AVT_UNKNOWN_TYPE;

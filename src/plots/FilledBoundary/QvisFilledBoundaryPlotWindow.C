@@ -150,8 +150,8 @@ protected:
 // ****************************************************************************
 
 QvisFilledBoundaryPlotWindow::QvisFilledBoundaryPlotWindow(const int type,
-    FilledBoundaryAttributes *boundaryAtts_, const char *caption,
-    const char *shortName, QvisNotepadArea *notepad) :
+    FilledBoundaryAttributes *boundaryAtts_, const QString &caption,
+    const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(boundaryAtts_, caption, shortName, notepad,
                                QvisPostableWindowObserver::AllExtraButtons,
                                false)

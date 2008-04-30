@@ -84,8 +84,8 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
   public:
     QvisHistogramPlotWindow(const int type,
                          HistogramAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisHistogramPlotWindow();
     virtual void CreateWindowContents();

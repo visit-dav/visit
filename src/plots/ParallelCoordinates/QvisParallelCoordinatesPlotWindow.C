@@ -80,8 +80,8 @@ using std::string;
 
 QvisParallelCoordinatesPlotWindow::QvisParallelCoordinatesPlotWindow(const int type,
                          ParallelCoordinatesAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisPostableWindowObserver(subj, caption, shortName, notepad)
 {

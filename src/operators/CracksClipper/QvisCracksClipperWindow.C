@@ -68,8 +68,8 @@ using std::string;
 
 QvisCracksClipperWindow::QvisCracksClipperWindow(const int type,
                          CracksClipperAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -116,13 +116,13 @@ QvisCracksClipperWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 7,4,10, "mainLayout");
 
     // Show Crack 1
-    showCrack1 = new QCheckBox("Show Crack 1", central, "showCrack1");
+    showCrack1 = new QCheckBox(tr("Show Crack 1"), central, "showCrack1");
     connect(showCrack1, SIGNAL(toggled(bool)),
         this, SLOT(showCrack1Changed(bool)));
     mainLayout->addWidget(showCrack1, 0, 0);
 
     // Crack 1 Variable
-    mainLayout->addWidget(new QLabel("Crack 1 Variable", central, 
+    mainLayout->addWidget(new QLabel(tr("Crack 1 Variable"), central, 
         "crack1VarLabel"), 1, 0);
     crack1Var = new QvisVariableButton(true, true, true,
         QvisVariableButton::Vectors, central, "crack1Var");
@@ -131,13 +131,13 @@ QvisCracksClipperWindow::CreateWindowContents()
     mainLayout->addMultiCellWidget(crack1Var, 1, 1, 1, 3);
 
     // Show Crack 2
-    showCrack2 = new QCheckBox("Show Crack 2", central, "showCrack2");
+    showCrack2 = new QCheckBox(tr("Show Crack 2"), central, "showCrack2");
     connect(showCrack2, SIGNAL(toggled(bool)),
         this, SLOT(showCrack2Changed(bool)));
     mainLayout->addWidget(showCrack2, 2, 0);
 
     // Crack 2 Variable
-    mainLayout->addWidget(new QLabel("Crack 2 Variable", central, 
+    mainLayout->addWidget(new QLabel(tr("Crack 2 Variable"), central, 
         "crack2VarLabel"), 3, 0);
     crack2Var = new QvisVariableButton(true, true, true,
         QvisVariableButton::Vectors, central, "crack2Var");
@@ -146,13 +146,13 @@ QvisCracksClipperWindow::CreateWindowContents()
     mainLayout->addMultiCellWidget(crack2Var, 3, 3, 1, 3);
 
     // Show Crack 3
-    showCrack3 = new QCheckBox("Show Crack 3", central, "showCrack3");
+    showCrack3 = new QCheckBox(tr("Show Crack 3"), central, "showCrack3");
     connect(showCrack3, SIGNAL(toggled(bool)),
         this, SLOT(showCrack3Changed(bool)));
     mainLayout->addWidget(showCrack3, 4, 0);
 
     // Crack 3 Variable
-    mainLayout->addWidget(new QLabel("Crack 3 Variable", central, 
+    mainLayout->addWidget(new QLabel(tr("Crack 3 Variable"), central, 
         "crack3VarLabel"), 5, 0);
     crack3Var = new QvisVariableButton(true, true, true,
         QvisVariableButton::Vectors, central, "crack3Var");
@@ -161,7 +161,7 @@ QvisCracksClipperWindow::CreateWindowContents()
     mainLayout->addMultiCellWidget(crack3Var, 5, 5, 1, 3);
 
     // Strain Variable
-    mainLayout->addWidget(new QLabel("Strain Variable", central, 
+    mainLayout->addWidget(new QLabel(tr("Strain Variable"), central, 
         "strainVarLabel"), 6, 0);
     strainVar = new QvisVariableButton(true, true, true,
         QvisVariableButton::SymmetricTensors, central, "strainVar");
@@ -170,14 +170,14 @@ QvisCracksClipperWindow::CreateWindowContents()
     mainLayout->addMultiCellWidget(strainVar, 6, 6, 1, 3);
 
     // Calculate Density 
-    calculateDensity = new QCheckBox("Calculate Density", 
+    calculateDensity = new QCheckBox(tr("Calculate Density"), 
                                      central, "calculateDensity");
     connect(calculateDensity, SIGNAL(toggled(bool)),
         this, SLOT(calculateDensityChanged(bool)));
     mainLayout->addWidget(calculateDensity, 7, 0);
 
     // Input Mass Variable 
-    inMassVarLabel = new QLabel("Input Mass Variable", central, "inMassVar");
+    inMassVarLabel = new QLabel(tr("Input Mass Variable"), central, "inMassVar");
     mainLayout->addWidget(inMassVarLabel, 8, 0);
     inMassVar = new QvisVariableButton(true, true, true,
         QvisVariableButton::Scalars, central, "inMassVar");
@@ -186,7 +186,7 @@ QvisCracksClipperWindow::CreateWindowContents()
     mainLayout->addMultiCellWidget(inMassVar, 8, 8, 1, 3);
 
     // Output Density Variable 
-    outDenVarLabel = new QLabel("Output Density Variable", central, "outDenVar");
+    outDenVarLabel = new QLabel(tr("Output Density Variable"), central, "outDenVar");
     mainLayout->addWidget(outDenVarLabel, 9, 0);
     outDenVar = new QvisVariableButton(true, true, true,
         QvisVariableButton::Scalars, central, "outDenVar");

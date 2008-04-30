@@ -77,8 +77,8 @@ using std::string;
 
 QvisDeferExpressionWindow::QvisDeferExpressionWindow(const int type,
                          DeferExpressionAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -118,6 +118,9 @@ QvisDeferExpressionWindow::~QvisDeferExpressionWindow()
 //   Hank Childs, Wed Sep 21 11:34:19 PDT 2005
 //   Use QvisVariableButton to create variable list.
 //
+//   Brad Whitlock, Fri Apr 25 09:17:09 PDT 2008
+//   Added tr().
+//
 // ****************************************************************************
 
 void
@@ -127,7 +130,7 @@ QvisDeferExpressionWindow::CreateWindowContents()
 
     varsButton = new QvisVariableButton(true, false, true, -1,
         central, "varsButton");
-    varsButton->setText("Variables");
+    varsButton->setText(tr("Variables"));
     varsButton->setChangeTextOnVariableChange(false);
     connect(varsButton, SIGNAL(activated(const QString &)),
             this, SLOT(addVariable(const QString &)));

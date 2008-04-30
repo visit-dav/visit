@@ -435,8 +435,8 @@ QvisExportDBWindow::GetCurrentValues(int which_widget)
         else
         {
             msg = tr("The filename was invalid. "
-                     "Resetting to the last good value \"%1\".");
-            msg.replace("%1", exportDBAtts->GetFilename().c_str());
+                     "Resetting to the last good value \"%1\".").
+                  arg(exportDBAtts->GetFilename().c_str());
             Message(msg);
             exportDBAtts->SetFilename(exportDBAtts->GetFilename());
         }
@@ -660,8 +660,8 @@ QvisExportDBWindow::exportButtonClicked()
     {
         QvisDBOptionsDialog *optsdlg =
             new QvisDBOptionsDialog(&(exportDBAtts->GetOpts()), NULL, "opts");
-        QString caption(tr("Export options for %1 writer"));
-        caption.replace("%1", exportDBAtts->GetDb_type().c_str());
+        QString caption = tr("Export options for %1 writer").
+                          arg(exportDBAtts->GetDb_type().c_str());
         optsdlg->setCaption(caption);
         result = optsdlg->exec();
         delete optsdlg;

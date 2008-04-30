@@ -88,8 +88,8 @@ using std::string;
 
 QvisThresholdWindow::QvisThresholdWindow(const int type,
                          ThresholdAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -147,6 +147,9 @@ QvisThresholdWindow::~QvisThresholdWindow()
 //   Mark Blair, Tue Apr 17 16:24:42 PDT 2007
 //   Rewritten to support new Threshold GUI.
 //
+//   Brad Whitlock, Thu Apr 24 15:58:32 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -158,7 +161,7 @@ QvisThresholdWindow::CreateWindowContents()
         { 0x00, 0x80, 0xe0, 0xf8, 0xfe, 0xf8, 0xe0, 0x80 };
 
     QGroupBox *threshVarsBox = new QGroupBox(central, "threshVarsBox");
-    threshVarsBox->setTitle("For individual threshold variables");
+    threshVarsBox->setTitle(tr("For individual threshold variables"));
     topLayout->addWidget(threshVarsBox);
 
     QGridLayout *threshVarsLayout = new QGridLayout(threshVarsBox, 2, 4, 15, 5);
@@ -177,41 +180,41 @@ QvisThresholdWindow::CreateWindowContents()
     threshVarsList->setColumnWidth(3, 110);
 
     QStringList columnLabels;
-    columnLabels << "Variable" << "Lower bound" << "Upper bound" << "Show zone if";
+    columnLabels << tr("Variable") << tr("Lower bound") << tr("Upper bound") << tr("Show zone if");
     threshVarsList->setColumnLabels(columnLabels);
     
     threshVarsLayout->addRowSpacing(2, 10);
 
     QvisVariableButton *addVarToList = new QvisVariableButton(false, true, true,
         QvisVariableButton::Scalars, threshVarsBox, "addVarToList");
-    addVarToList->setText("Add variable");
+    addVarToList->setText(tr("Add variable"));
     addVarToList->setChangeTextOnVariableChange(false);
     connect(addVarToList, SIGNAL(activated(const QString &)),
             this, SLOT(variableAddedToList(const QString &)));
     threshVarsLayout->addWidget(addVarToList, 3, 0);
     QPushButton *deleteSelectedVar = new QPushButton(
-        QString("Delete selected variable"), threshVarsBox, "deleteSelectedVar");
+        QString(tr("Delete selected variable")), threshVarsBox, "deleteSelectedVar");
     connect(deleteSelectedVar, SIGNAL(clicked()),
         this, SLOT(selectedVariableDeleted()));
     threshVarsLayout->addWidget(deleteSelectedVar, 3, 1);
 
     QGroupBox *forAllVarsBox = new QGroupBox(central, "forAllVarsBox");
-    forAllVarsBox->setTitle("For all threshold variables");
+    forAllVarsBox->setTitle(tr("For all threshold variables"));
     topLayout->addWidget(forAllVarsBox);
 
     QGridLayout *forAllVarsLayout = new QGridLayout(forAllVarsBox, 6, 2, 15, 5);
 
     forAllVarsLayout->addRowSpacing(0, 15);
 
-    forAllVarsLayout->addMultiCellWidget(new QLabel("Output mesh is",
+    forAllVarsLayout->addMultiCellWidget(new QLabel(tr("Output mesh is"),
         forAllVarsBox, "outputMeshLabel"), 1, 1, 0, 1);
     outputMeshType = new QButtonGroup(forAllVarsBox, "outputMeshType");
     outputMeshType->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *outputMeshTypeLayout = new QHBoxLayout(outputMeshType, 0, 10);
     QRadioButton *zonesFromInput =
-        new QRadioButton("Zones from input", outputMeshType);
+        new QRadioButton(tr("Zones from input"), outputMeshType);
     outputMeshTypeLayout->addWidget(zonesFromInput);
-    QRadioButton *pointMesh = new QRadioButton("Point mesh", outputMeshType);
+    QRadioButton *pointMesh = new QRadioButton(tr("Point mesh"), outputMeshType);
     outputMeshTypeLayout->addWidget(pointMesh);
     connect(outputMeshType, SIGNAL(clicked(int)),
             this, SLOT(outputMeshTypeChanged(int)));
@@ -393,6 +396,9 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
 //   Mark Blair, Tue Apr 17 16:24:42 PDT 2007
 //   Rewritten to support new Threshold GUI.
 //
+//   Brad Whitlock, Thu Apr 24 16:00:33 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -450,8 +456,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
             
             if (!valueIsValid)
             {
-                errMsg.sprintf ("Invalid lower bound; will reset to min.");
-                Message(errMsg);
+                Message(tr("Invalid lower bound; will reset to min."));
 
                 lowerBound = -1e+37;
             }
@@ -465,8 +470,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
             
             if (!valueIsValid)
             {
-                errMsg.sprintf("Invalid upper bound; will reset to max.");
-                Message(errMsg);
+                Message(tr("Invalid upper bound; will reset to max."));
 
                 upperBound = +1e+37;
             }
@@ -474,8 +478,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
         
         if (lowerBound > upperBound)
         {
-            errMsg.sprintf("Lower bound exceeds upper bound; will reverse them.");
-            Message(errMsg);
+            Message(tr("Lower bound exceeds upper bound; will reverse them."));
             
             bound = lowerBound; lowerBound = upperBound; upperBound = bound;
         }
@@ -657,7 +660,9 @@ QvisThresholdWindow::PopulateThresholdVariablesList()
 // Creation:   Tue Apr 10 17:59:47 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Apr 24 16:01:11 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -673,7 +678,7 @@ QvisThresholdWindow::AddNewRowToVariablesList(const QString &listVarName)
 
     QComboTableItem *zoneShowSelector;
     QStringList zoneShowLabels;
-    zoneShowLabels << "All in range" << "Part in range";
+    zoneShowLabels << tr("All in range") << tr("Part in range");
     
     zoneShowSelector = new QComboTableItem(threshVarsList, zoneShowLabels);
     zoneShowSelector->setCurrentItem(1);

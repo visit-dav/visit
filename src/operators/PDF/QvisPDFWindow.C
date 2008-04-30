@@ -76,8 +76,8 @@ using std::string;
 
 QvisPDFWindow::QvisPDFWindow(const int type,
                          PDFAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -113,7 +113,9 @@ QvisPDFWindow::~QvisPDFWindow()
 // Creation:   Mon Nov 21 08:16:58 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 08:48:33 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -122,85 +124,85 @@ QvisPDFWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 27,2,  10, "mainLayout");
 
 
-    var1Label = new QLabel("var1", central, "var1Label");
+    var1Label = new QLabel(tr("Variable 1"), central, "var1Label");
     mainLayout->addWidget(var1Label,0,0);
     var1 = new QLineEdit(central, "var1");
     connect(var1, SIGNAL(returnPressed()),
             this, SLOT(var1ProcessText()));
     mainLayout->addWidget(var1, 0,1);
 
-    var1MinFlag = new QCheckBox("Use variable 1 min", central, "var1MinFlag");
+    var1MinFlag = new QCheckBox(tr("Use variable 1 min"), central, "var1MinFlag");
     connect(var1MinFlag, SIGNAL(toggled(bool)),
             this, SLOT(var1MinFlagChanged(bool)));
     mainLayout->addWidget(var1MinFlag, 1,0);
 
-    var1MaxFlag = new QCheckBox("Use variable 1 max", central, "var1MaxFlag");
+    var1MaxFlag = new QCheckBox(tr("Use variable 1 max"), central, "var1MaxFlag");
     connect(var1MaxFlag, SIGNAL(toggled(bool)),
             this, SLOT(var1MaxFlagChanged(bool)));
     mainLayout->addWidget(var1MaxFlag, 2,0);
 
-    var1MinLabel = new QLabel("Variable 1 Min", central, "var1MinLabel");
+    var1MinLabel = new QLabel(tr("Variable 1 Min"), central, "var1MinLabel");
     mainLayout->addWidget(var1MinLabel,3,0);
     var1Min = new QLineEdit(central, "var1Min");
     connect(var1Min, SIGNAL(returnPressed()),
             this, SLOT(var1MinProcessText()));
     mainLayout->addWidget(var1Min, 3,1);
 
-    var1MaxLabel = new QLabel("Variable 1 Max", central, "var1MaxLabel");
+    var1MaxLabel = new QLabel(tr("Variable 1 Max"), central, "var1MaxLabel");
     mainLayout->addWidget(var1MaxLabel,4,0);
     var1Max = new QLineEdit(central, "var1Max");
     connect(var1Max, SIGNAL(returnPressed()),
             this, SLOT(var1MaxProcessText()));
     mainLayout->addWidget(var1Max, 4,1);
 
-    var1ScalingLabel = new QLabel("Variable 1 scale", central, "var1ScalingLabel");
+    var1ScalingLabel = new QLabel(tr("Variable 1 scale"), central, "var1ScalingLabel");
     mainLayout->addWidget(var1ScalingLabel,5,0);
     var1Scaling = new QButtonGroup(central, "var1Scaling");
     var1Scaling->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *var1ScalingLayout = new QHBoxLayout(var1Scaling);
     var1ScalingLayout->setSpacing(10);
-    QRadioButton *var1ScalingScalingLinear = new QRadioButton("Linear", var1Scaling);
+    QRadioButton *var1ScalingScalingLinear = new QRadioButton(tr("Linear"), var1Scaling);
     var1ScalingLayout->addWidget(var1ScalingScalingLinear);
-    QRadioButton *var1ScalingScalingLog = new QRadioButton("Log", var1Scaling);
+    QRadioButton *var1ScalingScalingLog = new QRadioButton(tr("Log"), var1Scaling);
     var1ScalingLayout->addWidget(var1ScalingScalingLog);
-    QRadioButton *var1ScalingScalingSkew = new QRadioButton("Skew", var1Scaling);
+    QRadioButton *var1ScalingScalingSkew = new QRadioButton(tr("Skew"), var1Scaling);
     var1ScalingLayout->addWidget(var1ScalingScalingSkew);
     connect(var1Scaling, SIGNAL(clicked(int)),
             this, SLOT(var1ScalingChanged(int)));
     mainLayout->addWidget(var1Scaling, 5,1);
 
-    var1SkewFactorLabel = new QLabel("Variable 1 skew factor", central, "var1SkewFactorLabel");
+    var1SkewFactorLabel = new QLabel(tr("Variable 1 skew factor"), central, "var1SkewFactorLabel");
     mainLayout->addWidget(var1SkewFactorLabel,6,0);
     var1SkewFactor = new QLineEdit(central, "var1SkewFactor");
     connect(var1SkewFactor, SIGNAL(returnPressed()),
             this, SLOT(var1SkewFactorProcessText()));
     mainLayout->addWidget(var1SkewFactor, 6,1);
 
-    var1NumSamplesLabel = new QLabel("Number of samples for variable 1?", central, "var1NumSamplesLabel");
+    var1NumSamplesLabel = new QLabel(tr("Number of samples for variable 1?"), central, "var1NumSamplesLabel");
     mainLayout->addWidget(var1NumSamplesLabel,7,0);
     var1NumSamples = new QLineEdit(central, "var1NumSamples");
     connect(var1NumSamples, SIGNAL(returnPressed()),
             this, SLOT(var1NumSamplesProcessText()));
     mainLayout->addWidget(var1NumSamples, 7,1);
 
-    var2Label = new QLabel("Variable 2", central, "var2Label");
+    var2Label = new QLabel(tr("Variable 2"), central, "var2Label");
     mainLayout->addWidget(var2Label,8,0);
     var2 = new QLineEdit(central, "var2");
     connect(var2, SIGNAL(returnPressed()),
             this, SLOT(var2ProcessText()));
     mainLayout->addWidget(var2, 8,1);
 
-    var2MinFlag = new QCheckBox("Use variable 2 min", central, "var2MinFlag");
+    var2MinFlag = new QCheckBox(tr("Use variable 2 min"), central, "var2MinFlag");
     connect(var2MinFlag, SIGNAL(toggled(bool)),
             this, SLOT(var2MinFlagChanged(bool)));
     mainLayout->addWidget(var2MinFlag, 9,0);
 
-    var2MaxFlag = new QCheckBox("Use variable 2 max", central, "var2MaxFlag");
+    var2MaxFlag = new QCheckBox(tr("Use variable 2 max"), central, "var2MaxFlag");
     connect(var2MaxFlag, SIGNAL(toggled(bool)),
             this, SLOT(var2MaxFlagChanged(bool)));
     mainLayout->addWidget(var2MaxFlag, 10,0);
 
-    var2MinLabel = new QLabel("Variable 2 Min", central, "var2MinLabel");
+    var2MinLabel = new QLabel(tr("Variable 2 Min"), central, "var2MinLabel");
     mainLayout->addWidget(var2MinLabel,11,0);
     var2Min = new QLineEdit(central, "var2Min");
     connect(var2Min, SIGNAL(returnPressed()),
@@ -214,125 +216,125 @@ QvisPDFWindow::CreateWindowContents()
             this, SLOT(var2MaxProcessText()));
     mainLayout->addWidget(var2Max, 12,1);
 
-    var2ScalingLabel = new QLabel("Variable 2 scale", central, "var2ScalingLabel");
+    var2ScalingLabel = new QLabel(tr("Variable 2 scale"), central, "var2ScalingLabel");
     mainLayout->addWidget(var2ScalingLabel,13,0);
     var2Scaling = new QButtonGroup(central, "var2Scaling");
     var2Scaling->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *var2ScalingLayout = new QHBoxLayout(var2Scaling);
     var2ScalingLayout->setSpacing(10);
-    QRadioButton *var2ScalingScalingLinear = new QRadioButton("Linear", var2Scaling);
+    QRadioButton *var2ScalingScalingLinear = new QRadioButton(tr("Linear"), var2Scaling);
     var2ScalingLayout->addWidget(var2ScalingScalingLinear);
-    QRadioButton *var2ScalingScalingLog = new QRadioButton("Log", var2Scaling);
+    QRadioButton *var2ScalingScalingLog = new QRadioButton(tr("Log"), var2Scaling);
     var2ScalingLayout->addWidget(var2ScalingScalingLog);
-    QRadioButton *var2ScalingScalingSkew = new QRadioButton("Skew", var2Scaling);
+    QRadioButton *var2ScalingScalingSkew = new QRadioButton(tr("Skew"), var2Scaling);
     var2ScalingLayout->addWidget(var2ScalingScalingSkew);
     connect(var2Scaling, SIGNAL(clicked(int)),
             this, SLOT(var2ScalingChanged(int)));
     mainLayout->addWidget(var2Scaling, 13,1);
 
-    var2SkewFactorLabel = new QLabel("Variable 2 skew factor", central, "var2SkewFactorLabel");
+    var2SkewFactorLabel = new QLabel(tr("Variable 2 skew factor"), central, "var2SkewFactorLabel");
     mainLayout->addWidget(var2SkewFactorLabel,14,0);
     var2SkewFactor = new QLineEdit(central, "var2SkewFactor");
     connect(var2SkewFactor, SIGNAL(returnPressed()),
             this, SLOT(var2SkewFactorProcessText()));
     mainLayout->addWidget(var2SkewFactor, 14,1);
 
-    var2NumSamplesLabel = new QLabel("Number of samples for variable 2?", central, "var2NumSamplesLabel");
+    var2NumSamplesLabel = new QLabel(tr("Number of samples for variable 2?"), central, "var2NumSamplesLabel");
     mainLayout->addWidget(var2NumSamplesLabel,15,0);
     var2NumSamples = new QLineEdit(central, "var2NumSamples");
     connect(var2NumSamples, SIGNAL(returnPressed()),
             this, SLOT(var2NumSamplesProcessText()));
     mainLayout->addWidget(var2NumSamples, 15,1);
 
-    numAxesLabel = new QLabel("Number of variables", central, "numAxesLabel");
+    numAxesLabel = new QLabel(tr("Number of variables"), central, "numAxesLabel");
     mainLayout->addWidget(numAxesLabel,16,0);
     numAxes = new QButtonGroup(central, "numAxes");
     numAxes->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *numAxesLayout = new QHBoxLayout(numAxes);
     numAxesLayout->setSpacing(10);
-    QRadioButton *numAxesNumAxesTwo = new QRadioButton("Two", numAxes);
+    QRadioButton *numAxesNumAxesTwo = new QRadioButton(tr("Two"), numAxes);
     numAxesLayout->addWidget(numAxesNumAxesTwo);
-    QRadioButton *numAxesNumAxesThree = new QRadioButton("Three", numAxes);
+    QRadioButton *numAxesNumAxesThree = new QRadioButton(tr("Three"), numAxes);
     numAxesLayout->addWidget(numAxesNumAxesThree);
     connect(numAxes, SIGNAL(clicked(int)),
             this, SLOT(numAxesChanged(int)));
     mainLayout->addWidget(numAxes, 16,1);
 
-    var3Label = new QLabel("Variable 3", central, "var3Label");
+    var3Label = new QLabel(tr("Variable 3"), central, "var3Label");
     mainLayout->addWidget(var3Label,17,0);
     var3 = new QLineEdit(central, "var3");
     connect(var3, SIGNAL(returnPressed()),
             this, SLOT(var3ProcessText()));
     mainLayout->addWidget(var3, 17,1);
 
-    var3MinFlag = new QCheckBox("Use variable 3 min", central, "var3MinFlag");
+    var3MinFlag = new QCheckBox(tr("Use variable 3 min"), central, "var3MinFlag");
     connect(var3MinFlag, SIGNAL(toggled(bool)),
             this, SLOT(var3MinFlagChanged(bool)));
     mainLayout->addWidget(var3MinFlag, 18,0);
 
-    var3MaxFlag = new QCheckBox("Use variable 3 max", central, "var3MaxFlag");
+    var3MaxFlag = new QCheckBox(tr("Use variable 3 max"), central, "var3MaxFlag");
     connect(var3MaxFlag, SIGNAL(toggled(bool)),
             this, SLOT(var3MaxFlagChanged(bool)));
     mainLayout->addWidget(var3MaxFlag, 19,0);
 
-    var3MinLabel = new QLabel("Variable 3 Min", central, "var3MinLabel");
+    var3MinLabel = new QLabel(tr("Variable 3 Min"), central, "var3MinLabel");
     mainLayout->addWidget(var3MinLabel,20,0);
     var3Min = new QLineEdit(central, "var3Min");
     connect(var3Min, SIGNAL(returnPressed()),
             this, SLOT(var3MinProcessText()));
     mainLayout->addWidget(var3Min, 20,1);
 
-    var3MaxLabel = new QLabel("Variable 3 Max", central, "var3MaxLabel");
+    var3MaxLabel = new QLabel(tr("Variable 3 Max"), central, "var3MaxLabel");
     mainLayout->addWidget(var3MaxLabel,21,0);
     var3Max = new QLineEdit(central, "var3Max");
     connect(var3Max, SIGNAL(returnPressed()),
             this, SLOT(var3MaxProcessText()));
     mainLayout->addWidget(var3Max, 21,1);
 
-    var3ScalingLabel = new QLabel("Variable 3 scale", central, "var3ScalingLabel");
+    var3ScalingLabel = new QLabel(tr("Variable 3 scale"), central, "var3ScalingLabel");
     mainLayout->addWidget(var3ScalingLabel,22,0);
     var3Scaling = new QButtonGroup(central, "var3Scaling");
     var3Scaling->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *var3ScalingLayout = new QHBoxLayout(var3Scaling);
     var3ScalingLayout->setSpacing(10);
-    QRadioButton *var3ScalingScalingLinear = new QRadioButton("Linear", var3Scaling);
+    QRadioButton *var3ScalingScalingLinear = new QRadioButton(tr("Linear"), var3Scaling);
     var3ScalingLayout->addWidget(var3ScalingScalingLinear);
-    QRadioButton *var3ScalingScalingLog = new QRadioButton("Log", var3Scaling);
+    QRadioButton *var3ScalingScalingLog = new QRadioButton(tr("Log"), var3Scaling);
     var3ScalingLayout->addWidget(var3ScalingScalingLog);
-    QRadioButton *var3ScalingScalingSkew = new QRadioButton("Skew", var3Scaling);
+    QRadioButton *var3ScalingScalingSkew = new QRadioButton(tr("Skew"), var3Scaling);
     var3ScalingLayout->addWidget(var3ScalingScalingSkew);
     connect(var3Scaling, SIGNAL(clicked(int)),
             this, SLOT(var3ScalingChanged(int)));
     mainLayout->addWidget(var3Scaling, 22,1);
 
-    var3SkewFactorLabel = new QLabel("Variable 3 skew factor", central, "var3SkewFactorLabel");
+    var3SkewFactorLabel = new QLabel(tr("Variable 3 skew factor"), central, "var3SkewFactorLabel");
     mainLayout->addWidget(var3SkewFactorLabel,23,0);
     var3SkewFactor = new QLineEdit(central, "var3SkewFactor");
     connect(var3SkewFactor, SIGNAL(returnPressed()),
             this, SLOT(var3SkewFactorProcessText()));
     mainLayout->addWidget(var3SkewFactor, 23,1);
 
-    var3NumSamplesLabel = new QLabel("Number of samples for variable 3?", central, "var3NumSamplesLabel");
+    var3NumSamplesLabel = new QLabel(tr("Number of samples for variable 3?"), central, "var3NumSamplesLabel");
     mainLayout->addWidget(var3NumSamplesLabel,24,0);
     var3NumSamples = new QLineEdit(central, "var3NumSamples");
     connect(var3NumSamples, SIGNAL(returnPressed()),
             this, SLOT(var3NumSamplesProcessText()));
     mainLayout->addWidget(var3NumSamples, 24,1);
 
-    scaleCube = new QCheckBox("Scale to cube", central, "scaleCube");
+    scaleCube = new QCheckBox(tr("Scale to cube"), central, "scaleCube");
     connect(scaleCube, SIGNAL(toggled(bool)),
             this, SLOT(scaleCubeChanged(bool)));
     mainLayout->addWidget(scaleCube, 25,0);
 
-    densityTypeLabel = new QLabel("Density Type", central, "densityTypeLabel");
+    densityTypeLabel = new QLabel(tr("Density Type"), central, "densityTypeLabel");
     mainLayout->addWidget(densityTypeLabel,26,0);
     densityType = new QButtonGroup(central, "densityType");
     densityType->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *densityTypeLayout = new QHBoxLayout(densityType);
     densityTypeLayout->setSpacing(10);
-    QRadioButton *densityTypeDensityTypeProbability = new QRadioButton("Probability", densityType);
+    QRadioButton *densityTypeDensityTypeProbability = new QRadioButton(tr("Probability"), densityType);
     densityTypeLayout->addWidget(densityTypeDensityTypeProbability);
-    QRadioButton *densityTypeDensityTypeZoneCount = new QRadioButton("Number of zones", densityType);
+    QRadioButton *densityTypeDensityTypeZoneCount = new QRadioButton(tr("Number of zones"), densityType);
     densityTypeLayout->addWidget(densityTypeDensityTypeZoneCount);
     connect(densityType, SIGNAL(clicked(int)),
             this, SLOT(densityTypeChanged(int)));
@@ -601,9 +603,9 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of var1 was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetVar1().c_str());
+            msg = tr("The value of var1 was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar1().c_str());
             Message(msg);
             atts->SetVar1(atts->GetVar1());
         }
@@ -629,14 +631,15 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar1Min(val);
+            if(okay)
+                atts->SetVar1Min(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var1Min was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar1Min());
+            msg = tr("The value of var1Min was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar1Min());
             Message(msg);
             atts->SetVar1Min(atts->GetVar1Min());
         }
@@ -650,14 +653,15 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar1Max(val);
+            if(okay)
+                atts->SetVar1Max(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var1Max was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar1Max());
+            msg = tr("The value of var1Max was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar1Max());
             Message(msg);
             atts->SetVar1Max(atts->GetVar1Max());
         }
@@ -677,14 +681,15 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar1SkewFactor(val);
+            if(okay)
+                atts->SetVar1SkewFactor(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var1SkewFactor was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar1SkewFactor());
+            msg = tr("The value of var1SkewFactor was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar1SkewFactor());
             Message(msg);
             atts->SetVar1SkewFactor(atts->GetVar1SkewFactor());
         }
@@ -698,14 +703,15 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            atts->SetVar1NumSamples(val);
+            if(okay)
+                atts->SetVar1NumSamples(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var1NumSamples was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetVar1NumSamples());
+            msg = tr("The value of var1NumSamples was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar1NumSamples());
             Message(msg);
             atts->SetVar1NumSamples(atts->GetVar1NumSamples());
         }
@@ -723,9 +729,9 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of var2 was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetVar2().c_str());
+            msg = tr("The value of var2 was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar2().c_str());
             Message(msg);
             atts->SetVar2(atts->GetVar2());
         }
@@ -751,14 +757,15 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar2Min(val);
+            if(okay)
+                atts->SetVar2Min(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var2Min was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar2Min());
+            msg = tr("The value of var2Min was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar2Min());
             Message(msg);
             atts->SetVar2Min(atts->GetVar2Min());
         }
@@ -772,14 +779,15 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar2Max(val);
+            if(okay)
+                atts->SetVar2Max(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var2Max was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar2Max());
+            msg = tr("The value of var2Max was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar2Max());
             Message(msg);
             atts->SetVar2Max(atts->GetVar2Max());
         }
@@ -799,14 +807,15 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetVar2SkewFactor(val);
+            if(okay)
+                atts->SetVar2SkewFactor(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var2SkewFactor was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar2SkewFactor());
+            msg = tr("The value of var2SkewFactor was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar2SkewFactor());
             Message(msg);
             atts->SetVar2SkewFactor(atts->GetVar2SkewFactor());
         }
@@ -820,14 +829,15 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            atts->SetVar2NumSamples(val);
+            if(okay)
+                atts->SetVar2NumSamples(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of var2NumSamples was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetVar2NumSamples());
+            msg = tr("The value of var2NumSamples was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar2NumSamples());
             Message(msg);
             atts->SetVar2NumSamples(atts->GetVar2NumSamples());
         }
@@ -851,9 +861,9 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of var3 was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetVar3().c_str());
+            msg = tr("The value of var3 was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar3().c_str());
             Message(msg);
             atts->SetVar3(atts->GetVar3());
         }
@@ -884,9 +894,9 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of var3Min was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar3Min());
+            msg = tr("The value of var3Min was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar3Min());
             Message(msg);
             atts->SetVar3Min(atts->GetVar3Min());
         }
@@ -905,9 +915,9 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of var3Max was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar3Max());
+            msg = tr("The value of var3Max was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar3Max());
             Message(msg);
             atts->SetVar3Max(atts->GetVar3Max());
         }
@@ -932,9 +942,9 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of var3SkewFactor was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetVar3SkewFactor());
+            msg = tr("The value of var3SkewFactor was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar3SkewFactor());
             Message(msg);
             atts->SetVar3SkewFactor(atts->GetVar3SkewFactor());
         }
@@ -953,9 +963,9 @@ QvisPDFWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of var3NumSamples was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetVar3NumSamples());
+            msg = tr("The value of var3NumSamples was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVar3NumSamples());
             Message(msg);
             atts->SetVar3NumSamples(atts->GetVar3NumSamples());
         }

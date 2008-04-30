@@ -76,8 +76,8 @@ using std::string;
 
 QvisTraceHistoryWindow::QvisTraceHistoryWindow(const int type,
                          TraceHistoryAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -113,7 +113,9 @@ QvisTraceHistoryWindow::~QvisTraceHistoryWindow()
 // Creation:   Sun Apr 8 17:04:23 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Apr 24 15:56:45 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -123,7 +125,7 @@ QvisTraceHistoryWindow::CreateWindowContents()
 
     varsButton = new QvisVariableButton(true, false, true, -1,
         central, "varsButton");
-    varsButton->setText("Variables");
+    varsButton->setText(tr("Variables"));
     varsButton->setChangeTextOnVariableChange(false);
     connect(varsButton, SIGNAL(activated(const QString &)),
             this, SLOT(addVariable(const QString &)));
@@ -135,7 +137,7 @@ QvisTraceHistoryWindow::CreateWindowContents()
             this, SLOT(variableProcessText()));
     mainLayout->addWidget(varsLineEdit, 0, 1);
 
-    displacementLabel = new QLabel("Displacement variable", central, "displacementLabel");
+    displacementLabel = new QLabel(tr("Displacement variable"), central, "displacementLabel");
     mainLayout->addWidget(displacementLabel,1,0);
     int displacementMask = QvisVariableButton::Vectors;
     displacement = new QvisVariableButton(true, true, true, displacementMask, central, "displacement");
@@ -143,14 +145,14 @@ QvisTraceHistoryWindow::CreateWindowContents()
             this, SLOT(displacementChanged(const QString&)));
     mainLayout->addWidget(displacement, 1,1);
 
-    numiterLabel = new QLabel("Number of iterations", central, "numiterLabel");
+    numiterLabel = new QLabel(tr("Number of iterations"), central, "numiterLabel");
     mainLayout->addWidget(numiterLabel,2,0);
     numiter = new QLineEdit(central, "numiter");
     connect(numiter, SIGNAL(returnPressed()),
             this, SLOT(numiterProcessText()));
     mainLayout->addWidget(numiter, 2,1);
 
-    outputLabel = new QLabel("Output file", central, "outputLabel");
+    outputLabel = new QLabel(tr("Output file"), central, "outputLabel");
     mainLayout->addWidget(outputLabel,3,0);
     output = new QLineEdit(central, "output");
     connect(output, SIGNAL(returnPressed()),
@@ -282,14 +284,15 @@ QvisTraceHistoryWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            atts->SetNumiter(val);
+            if(okay)
+                atts->SetNumiter(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of numiter was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetNumiter());
+            msg = tr("The value of numiter was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetNumiter());
             Message(msg);
             atts->SetNumiter(atts->GetNumiter());
         }
@@ -307,9 +310,9 @@ QvisTraceHistoryWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of output was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetOutput().c_str());
+            msg = tr("The value of output was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetOutput().c_str());
             Message(msg);
             atts->SetOutput(atts->GetOutput());
         }

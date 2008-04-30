@@ -76,8 +76,8 @@ using std::string;
 
 QvisExternalSurfaceWindow::QvisExternalSurfaceWindow(const int type,
                          ExternalSurfaceAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -113,7 +113,9 @@ QvisExternalSurfaceWindow::~QvisExternalSurfaceWindow()
 // Creation:   Mon Sep 26 09:31:48 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 09:10:25 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -122,12 +124,12 @@ QvisExternalSurfaceWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 2,2,  10, "mainLayout");
 
 
-    removeGhosts = new QCheckBox("Remove ghost faces?", central, "removeGhosts");
+    removeGhosts = new QCheckBox(tr("Remove ghost faces?"), central, "removeGhosts");
     connect(removeGhosts, SIGNAL(toggled(bool)),
             this, SLOT(removeGhostsChanged(bool)));
     mainLayout->addWidget(removeGhosts, 0,0);
 
-    edgesIn2D = new QCheckBox("Find external edges for 2D datasets", central, "edgesIn2D");
+    edgesIn2D = new QCheckBox(tr("Find external edges for 2D datasets"), central, "edgesIn2D");
     connect(edgesIn2D, SIGNAL(toggled(bool)),
             this, SLOT(edgesIn2DChanged(bool)));
     mainLayout->addWidget(edgesIn2D, 1,0);

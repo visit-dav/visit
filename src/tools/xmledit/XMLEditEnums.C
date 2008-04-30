@@ -67,10 +67,10 @@ XMLEditEnums::XMLEditEnums(QWidget *p, const QString &n)
     enumlist = new QListBox(this);
     listLayout->addMultiCellWidget(enumlist, 0,0, 0,1);
 
-    newButton = new QPushButton("New", this);
+    newButton = new QPushButton(tr("New"), this);
     listLayout->addWidget(newButton, 1,0);
 
-    delButton = new QPushButton("Del", this);
+    delButton = new QPushButton(tr("Del"), this);
     listLayout->addWidget(delButton, 1,1);
 
     hLayout->addSpacing(10);
@@ -80,11 +80,11 @@ XMLEditEnums::XMLEditEnums(QWidget *p, const QString &n)
     int row = 0;
 
     name = new QLineEdit(this);
-    topLayout->addWidget(new QLabel("Name", this), row, 0);
+    topLayout->addWidget(new QLabel(tr("Name"), this), row, 0);
     topLayout->addWidget(name, row, 1);
     row++;
 
-    topLayout->addWidget(new QLabel("Values", this), row, 0);
+    topLayout->addWidget(new QLabel(tr("Values"), this), row, 0);
     row++;
 
     valuelist = new QMultiLineEdit(this);
@@ -337,7 +337,7 @@ XMLEditEnums::enumlistNew()
     while (!okay)
     {
         okay = true;
-        newtype.sprintf("unnamed%d", newid);
+        newtype = tr("unnamed%1").arg(newid);
         for (int i=0; i<enumlist->count() && okay; i++)
         {
             if (enumlist->text(i) == newtype)

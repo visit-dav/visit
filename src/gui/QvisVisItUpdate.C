@@ -588,9 +588,9 @@ QvisVisItUpdate::startUpdate()
 
         msg = tr("VisIt determined that you do not have write permission "
                  "to the %1 directory where VisIt is installed. You must have "
-                 "group %2 write access to update VisIt.");
-        msg.replace("%1", installDir);
-        msg.replace("%2", g);
+                 "group %2 write access to update VisIt.").
+              arg(installDir).
+              arg(g);
         Error(msg);
         emit updateNotAllowed();
         return;
@@ -730,8 +730,8 @@ QvisVisItUpdate::initiateDownload()
         QFile *file = new QFile(localName);
         if(!file->open(IO_WriteOnly))
         {
-            QString msg(tr("Could not download %1! Can't finish updating VisIt."));
-            msg.replace("%1", localName);
+            QString msg = tr("Could not download %1! Can't finish updating VisIt.").
+                          arg(localName);
             Error(msg);
 
             delete file;
@@ -812,8 +812,8 @@ QvisVisItUpdate::emitInstallationComplete()
     }
     else
     {
-        QString err(tr("The new version of VisIt could not be located in %1."));
-        err.replace("%1", visitDir + filename);
+        QString err = tr("The new version of VisIt could not be located in %1.").
+                      arg(visitDir + filename);
         Error(err);
     }
 }
@@ -843,8 +843,7 @@ QvisVisItUpdate::ftp_reportDownloadProgress(int done, int total)
 {
     QString msg, b;
     b.sprintf("%d/%d", done, total);
-    msg = tr("Downloaded %1 bytes.");
-    msg.replace("%1", b);
+    msg = tr("Downloaded %1 bytes.").arg(b);
     Status(msg);
 }
 
@@ -926,8 +925,7 @@ QvisVisItUpdate::ftp_commandFinished()
         {
             // Ask the user whether or not VisIt should be installed.
             QString msg(tr("VisIt %1 is available for download. Would you "
-                           "like to install it?"));
-            msg.replace("%1", latestVersion);
+                           "like to install it?").arg(latestVersion));
             if(QMessageBox::information(p, "VisIt", msg,
                QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
             {

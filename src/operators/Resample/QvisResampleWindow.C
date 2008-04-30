@@ -76,8 +76,8 @@ using std::string;
 
 QvisResampleWindow::QvisResampleWindow(const int type,
                          ResamplePluginAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -113,7 +113,9 @@ QvisResampleWindow::~QvisResampleWindow()
 // Creation:   Wed Jan 2 13:43:29 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Apr 24 16:43:27 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -122,96 +124,96 @@ QvisResampleWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 15,2,  10, "mainLayout");
 
 
-    useExtents = new QCheckBox("Resample Entire Extents", central, "useExtents");
+    useExtents = new QCheckBox(tr("Resample Entire Extents"), central, "useExtents");
     connect(useExtents, SIGNAL(toggled(bool)),
             this, SLOT(useExtentsChanged(bool)));
     mainLayout->addWidget(useExtents, 0,0);
 
-    startXLabel = new QLabel("Start X", central, "startXLabel");
+    startXLabel = new QLabel(tr("Start X"), central, "startXLabel");
     mainLayout->addWidget(startXLabel,1,0);
     startX = new QLineEdit(central, "startX");
     connect(startX, SIGNAL(returnPressed()),
             this, SLOT(startXProcessText()));
     mainLayout->addWidget(startX, 1,1);
 
-    endXLabel = new QLabel("End X", central, "endXLabel");
+    endXLabel = new QLabel(tr("End X"), central, "endXLabel");
     mainLayout->addWidget(endXLabel,2,0);
     endX = new QLineEdit(central, "endX");
     connect(endX, SIGNAL(returnPressed()),
             this, SLOT(endXProcessText()));
     mainLayout->addWidget(endX, 2,1);
 
-    samplesXLabel = new QLabel("Samples in X", central, "samplesXLabel");
+    samplesXLabel = new QLabel(tr("Samples in X"), central, "samplesXLabel");
     mainLayout->addWidget(samplesXLabel,3,0);
     samplesX = new QLineEdit(central, "samplesX");
     connect(samplesX, SIGNAL(returnPressed()),
             this, SLOT(samplesXProcessText()));
     mainLayout->addWidget(samplesX, 3,1);
 
-    startYLabel = new QLabel("Start Y", central, "startYLabel");
+    startYLabel = new QLabel(tr("Start Y"), central, "startYLabel");
     mainLayout->addWidget(startYLabel,4,0);
     startY = new QLineEdit(central, "startY");
     connect(startY, SIGNAL(returnPressed()),
             this, SLOT(startYProcessText()));
     mainLayout->addWidget(startY, 4,1);
 
-    endYLabel = new QLabel("End Y", central, "endYLabel");
+    endYLabel = new QLabel(tr("End Y"), central, "endYLabel");
     mainLayout->addWidget(endYLabel,5,0);
     endY = new QLineEdit(central, "endY");
     connect(endY, SIGNAL(returnPressed()),
             this, SLOT(endYProcessText()));
     mainLayout->addWidget(endY, 5,1);
 
-    samplesYLabel = new QLabel("Samples in Y", central, "samplesYLabel");
+    samplesYLabel = new QLabel(tr("Samples in Y"), central, "samplesYLabel");
     mainLayout->addWidget(samplesYLabel,6,0);
     samplesY = new QLineEdit(central, "samplesY");
     connect(samplesY, SIGNAL(returnPressed()),
             this, SLOT(samplesYProcessText()));
     mainLayout->addWidget(samplesY, 6,1);
 
-    is3D = new QCheckBox("3D resampling", central, "is3D");
+    is3D = new QCheckBox(tr("3D resampling"), central, "is3D");
     connect(is3D, SIGNAL(toggled(bool)),
             this, SLOT(is3DChanged(bool)));
     mainLayout->addWidget(is3D, 7,0);
 
-    startZLabel = new QLabel("Start Z", central, "startZLabel");
+    startZLabel = new QLabel(tr("Start Z"), central, "startZLabel");
     mainLayout->addWidget(startZLabel,8,0);
     startZ = new QLineEdit(central, "startZ");
     connect(startZ, SIGNAL(returnPressed()),
             this, SLOT(startZProcessText()));
     mainLayout->addWidget(startZ, 8,1);
 
-    endZLabel = new QLabel("End Z", central, "endZLabel");
+    endZLabel = new QLabel(tr("End Z"), central, "endZLabel");
     mainLayout->addWidget(endZLabel,9,0);
     endZ = new QLineEdit(central, "endZ");
     connect(endZ, SIGNAL(returnPressed()),
             this, SLOT(endZProcessText()));
     mainLayout->addWidget(endZ, 9,1);
 
-    samplesZLabel = new QLabel("Samples in Z", central, "samplesZLabel");
+    samplesZLabel = new QLabel(tr("Samples in Z"), central, "samplesZLabel");
     mainLayout->addWidget(samplesZLabel,10,0);
     samplesZ = new QLineEdit(central, "samplesZ");
     connect(samplesZ, SIGNAL(returnPressed()),
             this, SLOT(samplesZProcessText()));
     mainLayout->addWidget(samplesZ, 10,1);
 
-    tieResolverLabel = new QLabel("Resolve ties", central, "tieResolverLabel");
+    tieResolverLabel = new QLabel(tr("Resolve ties"), central, "tieResolverLabel");
     mainLayout->addWidget(tieResolverLabel,11,0);
     tieResolver = new QButtonGroup(central, "tieResolver");
     tieResolver->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *tieResolverLayout = new QHBoxLayout(tieResolver);
     tieResolverLayout->setSpacing(10);
-    QRadioButton *tieResolverTieResolverrandom = new QRadioButton("random", tieResolver);
+    QRadioButton *tieResolverTieResolverrandom = new QRadioButton(tr("random"), tieResolver);
     tieResolverLayout->addWidget(tieResolverTieResolverrandom);
-    QRadioButton *tieResolverTieResolverlargest = new QRadioButton("largest", tieResolver);
+    QRadioButton *tieResolverTieResolverlargest = new QRadioButton(tr("largest"), tieResolver);
     tieResolverLayout->addWidget(tieResolverTieResolverlargest);
-    QRadioButton *tieResolverTieResolversmallest = new QRadioButton("smallest", tieResolver);
+    QRadioButton *tieResolverTieResolversmallest = new QRadioButton(tr("smallest"), tieResolver);
     tieResolverLayout->addWidget(tieResolverTieResolversmallest);
     connect(tieResolver, SIGNAL(clicked(int)),
             this, SLOT(tieResolverChanged(int)));
     mainLayout->addWidget(tieResolver, 11,1);
 
-    tieResolverVariableLabel = new QLabel("Variable to resolve ties", central, "tieResolverVariableLabel");
+    tieResolverVariableLabel = new QLabel(tr("Variable to resolve ties"), central, "tieResolverVariableLabel");
     mainLayout->addWidget(tieResolverVariableLabel,12,0);
     int tieResolverVariableMask = QvisVariableButton::Scalars;
     tieResolverVariable = new QvisVariableButton(true, true, true, tieResolverVariableMask, central, "tieResolverVariable");
@@ -220,14 +222,14 @@ QvisResampleWindow::CreateWindowContents()
             this, SLOT(tieResolverVariableChanged(const QString&)));
     mainLayout->addWidget(tieResolverVariable, 12,1);
 
-    defaultValueLabel = new QLabel("Value for uncovered regions", central, "defaultValueLabel");
+    defaultValueLabel = new QLabel(tr("Value for uncovered regions"), central, "defaultValueLabel");
     mainLayout->addWidget(defaultValueLabel,13,0);
     defaultValue = new QLineEdit(central, "defaultValue");
     connect(defaultValue, SIGNAL(returnPressed()),
             this, SLOT(defaultValueProcessText()));
     mainLayout->addWidget(defaultValue, 13,1);
 
-    distributedResample = new QCheckBox("Distribute resampled data\nset across all processors\n(parallel only)?", central, "distributedResample");
+    distributedResample = new QCheckBox(tr("Distribute resampled data\nset across all processors\n(parallel only)?"), central, "distributedResample");
     connect(distributedResample, SIGNAL(toggled(bool)),
             this, SLOT(distributedResampleChanged(bool)));
     mainLayout->addWidget(distributedResample, 14,0);
@@ -448,10 +450,13 @@ QvisResampleWindow::UpdateWindow(bool doAll)
 // Creation:   Wed Jan 2 13:43:29 PST 2008
 //
 // Modifications:
-//      Sean Ahern, Fri Jan  4 16:38:06 EST 2008
-//      Prevented the text widgets from setting themselves (thus turning off
-//      useExtents) if useExtents is set.
-//   
+//   Sean Ahern, Fri Jan  4 16:38:06 EST 2008
+//   Prevented the text widgets from setting themselves (thus turning off
+//   useExtents) if useExtents is set.
+//
+//   Brad Whitlock, Thu Apr 24 16:44:40 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -470,14 +475,15 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
             if(okay)
             {
                 double val = temp.toDouble(&okay);
-                atts->SetStartX(val);
+                if(okay)
+                    atts->SetStartX(val);
             }
 
             if(!okay)
             {
-                msg.sprintf("The value of startX was invalid. "
-                    "Resetting to the last good value of %g.",
-                    atts->GetStartX());
+                msg = tr("The value of startX was invalid. "
+                         "Resetting to the last good value of %1.").
+                      arg(atts->GetStartX());
                 Message(msg);
                 atts->SetStartX(atts->GetStartX());
             }
@@ -491,14 +497,15 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
             if(okay)
             {
                 double val = temp.toDouble(&okay);
-                atts->SetEndX(val);
+                if(okay)
+                    atts->SetEndX(val);
             }
 
             if(!okay)
             {
-                msg.sprintf("The value of endX was invalid. "
-                    "Resetting to the last good value of %g.",
-                    atts->GetEndX());
+                msg = tr("The value of endX was invalid. "
+                         "Resetting to the last good value of %1.").
+                      arg(atts->GetEndX());
                 Message(msg);
                 atts->SetEndX(atts->GetEndX());
             }
@@ -513,14 +520,15 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            atts->SetSamplesX(val);
+            if(okay)
+                atts->SetSamplesX(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of samplesX was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetSamplesX());
+            msg = tr("The value of samplesX was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetSamplesX());
             Message(msg);
             atts->SetSamplesX(atts->GetSamplesX());
         }
@@ -536,14 +544,15 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
             if(okay)
             {
                 double val = temp.toDouble(&okay);
-                atts->SetStartY(val);
+                if(okay)
+                    atts->SetStartY(val);
             }
 
             if(!okay)
             {
-                msg.sprintf("The value of startY was invalid. "
-                    "Resetting to the last good value of %g.",
-                    atts->GetStartY());
+                msg = tr("The value of startY was invalid. "
+                         "Resetting to the last good value of %1.").
+                      arg(atts->GetStartY());
                 Message(msg);
                 atts->SetStartY(atts->GetStartY());
             }
@@ -557,14 +566,15 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
             if(okay)
             {
                 double val = temp.toDouble(&okay);
-                atts->SetEndY(val);
+                if(okay)
+                    atts->SetEndY(val);
             }
 
             if(!okay)
             {
-                msg.sprintf("The value of endY was invalid. "
-                    "Resetting to the last good value of %g.",
-                    atts->GetEndY());
+                msg = tr("The value of endY was invalid. "
+                         "Resetting to the last good value of %1.").
+                      arg(atts->GetEndY());
                 Message(msg);
                 atts->SetEndY(atts->GetEndY());
             }
@@ -579,14 +589,15 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            atts->SetSamplesY(val);
+            if(okay)
+                atts->SetSamplesY(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of samplesY was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetSamplesY());
+            msg = tr("The value of samplesY was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetSamplesY());
             Message(msg);
             atts->SetSamplesY(atts->GetSamplesY());
         }
@@ -607,9 +618,9 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
 
             if(!okay)
             {
-                msg.sprintf("The value of startZ was invalid. "
-                    "Resetting to the last good value of %g.",
-                    atts->GetStartZ());
+                msg = tr("The value of startZ was invalid. "
+                         "Resetting to the last good value of %1.").
+                      arg(atts->GetStartZ());
                 Message(msg);
                 atts->SetStartZ(atts->GetStartZ());
             }
@@ -623,14 +634,15 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
             if(okay)
             {
                 double val = temp.toDouble(&okay);
-                atts->SetEndZ(val);
+                if(okay)
+                    atts->SetEndZ(val);
             }
 
             if(!okay)
             {
-                msg.sprintf("The value of endZ was invalid. "
-                    "Resetting to the last good value of %g.",
-                    atts->GetEndZ());
+                msg = tr("The value of endZ was invalid. "
+                         "Resetting to the last good value of %1.").
+                      arg(atts->GetEndZ());
                 Message(msg);
                 atts->SetEndZ(atts->GetEndZ());
             }
@@ -645,14 +657,15 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            atts->SetSamplesZ(val);
+            if(okay)
+                atts->SetSamplesZ(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of samplesZ was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetSamplesZ());
+            msg = tr("The value of samplesZ was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetSamplesZ());
             Message(msg);
             atts->SetSamplesZ(atts->GetSamplesZ());
         }
@@ -666,14 +679,15 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetDefaultValue(val);
+            if(okay)
+                atts->SetDefaultValue(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of defaultValue was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetDefaultValue());
+            msg = tr("The value of defaultValue was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetDefaultValue());
             Message(msg);
             atts->SetDefaultValue(atts->GetDefaultValue());
         }

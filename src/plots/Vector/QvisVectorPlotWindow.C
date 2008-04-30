@@ -79,7 +79,7 @@
 // ****************************************************************************
 
 QvisVectorPlotWindow::QvisVectorPlotWindow(const int type,
-    VectorAttributes *_vecAtts, const char *caption, const char *shortName,
+    VectorAttributes *_vecAtts, const QString &caption, const QString &shortName,
     QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(_vecAtts, caption, shortName, notepad)
 {

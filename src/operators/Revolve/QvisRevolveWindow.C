@@ -76,8 +76,8 @@ using std::string;
 
 QvisRevolveWindow::QvisRevolveWindow(const int type,
                          RevolveAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -113,7 +113,9 @@ QvisRevolveWindow::~QvisRevolveWindow()
 // Creation:   Sun Mar 18 10:37:59 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Apr 24 16:40:16 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -122,52 +124,52 @@ QvisRevolveWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 6,2,  10, "mainLayout");
 
 
-    meshTypeLabel = new QLabel("Type of Mesh?", central, "meshTypeLabel");
+    meshTypeLabel = new QLabel(tr("Type of Mesh?"), central, "meshTypeLabel");
     mainLayout->addWidget(meshTypeLabel,0,0);
     meshType = new QButtonGroup(central, "meshType");
     meshType->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *meshTypeLayout = new QHBoxLayout(meshType);
     meshTypeLayout->setSpacing(10);
-    QRadioButton *meshTypeMeshTypeAuto = new QRadioButton("Auto", meshType);
+    QRadioButton *meshTypeMeshTypeAuto = new QRadioButton(tr("Auto"), meshType);
     meshTypeLayout->addWidget(meshTypeMeshTypeAuto);
-    QRadioButton *meshTypeMeshTypeXY = new QRadioButton("XY", meshType);
+    QRadioButton *meshTypeMeshTypeXY = new QRadioButton(tr("XY"), meshType);
     meshTypeLayout->addWidget(meshTypeMeshTypeXY);
-    QRadioButton *meshTypeMeshTypeRZ = new QRadioButton("RZ", meshType);
+    QRadioButton *meshTypeMeshTypeRZ = new QRadioButton(tr("RZ"), meshType);
     meshTypeLayout->addWidget(meshTypeMeshTypeRZ);
-    QRadioButton *meshTypeMeshTypeZR = new QRadioButton("ZR", meshType);
+    QRadioButton *meshTypeMeshTypeZR = new QRadioButton(tr("ZR"), meshType);
     meshTypeLayout->addWidget(meshTypeMeshTypeZR);
     connect(meshType, SIGNAL(clicked(int)),
             this, SLOT(meshTypeChanged(int)));
     mainLayout->addWidget(meshType, 0,1);
 
     autoAxisLabel = NULL;
-    autoAxis = new QCheckBox("Choose axis based on mesh type?", central, "autoAxis");
+    autoAxis = new QCheckBox(tr("Choose axis based on mesh type?"), central, "autoAxis");
     connect(autoAxis, SIGNAL(toggled(bool)),
             this, SLOT(autoAxisChanged(bool)));
     mainLayout->addWidget(autoAxis, 1,0);
 
-    axisLabel = new QLabel("Axis of revolution", central, "axisLabel");
+    axisLabel = new QLabel(tr("Axis of revolution"), central, "axisLabel");
     mainLayout->addWidget(axisLabel,2,0);
     axis = new QLineEdit(central, "axis");
     connect(axis, SIGNAL(returnPressed()),
             this, SLOT(axisProcessText()));
     mainLayout->addWidget(axis, 2,1);
 
-    startAngleLabel = new QLabel("Start angle", central, "startAngleLabel");
+    startAngleLabel = new QLabel(tr("Start angle"), central, "startAngleLabel");
     mainLayout->addWidget(startAngleLabel,3,0);
     startAngle = new QLineEdit(central, "startAngle");
     connect(startAngle, SIGNAL(returnPressed()),
             this, SLOT(startAngleProcessText()));
     mainLayout->addWidget(startAngle, 3,1);
 
-    stopAngleLabel = new QLabel("Stop angle", central, "stopAngleLabel");
+    stopAngleLabel = new QLabel(tr("Stop angle"), central, "stopAngleLabel");
     mainLayout->addWidget(stopAngleLabel,4,0);
     stopAngle = new QLineEdit(central, "stopAngle");
     connect(stopAngle, SIGNAL(returnPressed()),
             this, SLOT(stopAngleProcessText()));
     mainLayout->addWidget(stopAngle, 4,1);
 
-    stepsLabel = new QLabel("Number of steps", central, "stepsLabel");
+    stepsLabel = new QLabel(tr("Number of steps"), central, "stepsLabel");
     mainLayout->addWidget(stepsLabel,5,0);
     steps = new QLineEdit(central, "steps");
     connect(steps, SIGNAL(returnPressed()),
@@ -306,16 +308,17 @@ QvisRevolveWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val[3];
-            sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2]);
-            atts->SetAxis(val);
+            okay = sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2])==3;
+            if(okay)
+                atts->SetAxis(val);
         }
 
         if(!okay)
         {
             const double *val = atts->GetAxis();
-            msg.sprintf("The value of axis was invalid. "
-                "Resetting to the last good value of <%g %g %g>", 
-                val[0], val[1], val[2]);
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of axis was invalid. "
+                     "Resetting to the last good value of %1.").arg(num); 
             Message(msg);
             atts->SetAxis(atts->GetAxis());
         }
@@ -329,14 +332,15 @@ QvisRevolveWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetStartAngle(val);
+            if(okay)
+                atts->SetStartAngle(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of startAngle was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetStartAngle());
+            msg = tr("The value of startAngle was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetStartAngle());
             Message(msg);
             atts->SetStartAngle(atts->GetStartAngle());
         }
@@ -355,9 +359,9 @@ QvisRevolveWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of stopAngle was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetStopAngle());
+            msg = tr("The value of stopAngle was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetStopAngle());
             Message(msg);
             atts->SetStopAngle(atts->GetStopAngle());
         }
@@ -376,9 +380,9 @@ QvisRevolveWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of steps was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetSteps());
+            msg = tr("The value of steps was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetSteps());
             Message(msg);
             atts->SetSteps(atts->GetSteps());
         }

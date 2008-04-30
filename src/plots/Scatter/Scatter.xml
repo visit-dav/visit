@@ -154,5 +154,7 @@
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
+      <Function name="ScatterGUIPluginInfo::CreatePluginWizard" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

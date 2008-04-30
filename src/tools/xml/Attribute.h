@@ -91,6 +91,9 @@
 //    Update to deal with more restricted CodeFile. Also added support for
 //    different code targets. Made it inherit from AttributeBase.
 //
+//    Brad Whitlock, Fri Apr 25 11:57:45 PDT 2008
+//    Added different access types for functions.
+//
 // ****************************************************************************
 
 class Attribute : public AttributeBase
@@ -216,6 +219,10 @@ class Attribute : public AttributeBase
                 WriteTagAttr(out, "name", f->name);
                 WriteTagAttr(out, "user", Bool2Text(f->user));
                 WriteTagAttr(out, "member", Bool2Text(f->member));
+                if(f->accessType == Function::AccessProtected)
+                    WriteTagAttr(out, "access", "protected");
+                else if(f->accessType == Function::AccessPrivate)
+                    WriteTagAttr(out, "access", "private");
                 FinishOpenTag(out);
 
                 WriteCloseTag(out, "Function", indent);

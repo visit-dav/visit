@@ -77,8 +77,8 @@ class QvisExternalSurfaceWindow : public QvisOperatorWindow
   public:
     QvisExternalSurfaceWindow(const int type,
                          ExternalSurfaceAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisExternalSurfaceWindow();
     virtual void CreateWindowContents();

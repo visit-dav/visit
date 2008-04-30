@@ -63,8 +63,8 @@
 
 QvisTruecolorPlotWindow::QvisTruecolorPlotWindow(const int type,
                          TruecolorAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisPostableWindowObserver(subj, caption, shortName, notepad)
 {

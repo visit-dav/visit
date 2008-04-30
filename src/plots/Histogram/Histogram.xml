@@ -76,6 +76,14 @@
       </Function>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
+      <Function name="HistogramViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="HistogramViewerPluginInfo::ReInitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="HistogramViewerPluginInfo::ResetPlotAtts" user="false" member="true">
+      </Function>
+      <Function name="HistogramViewerPluginInfo::ProvidesLegend" user="false" member="true">
+      </Function>
       <Include file="header" quoted="false">
         PickAttributes.h
       </Include>

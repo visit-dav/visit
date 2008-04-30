@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
   <Plugin name="Spreadsheet" type="plot" label="Spreadsheet" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="scalar" iconFile="Spreadsheet.xpm">
     <Files components="V">
-      SpreadsheetViewerPluginInfo_Custom.C
       avtSpreadsheetFilter.C
       avtSpreadsheetRenderer.C
       avtSpreadsheetRenderer_Viewer.C
@@ -84,6 +83,30 @@
       <Function name="CreateCompatible" user="false" member="true">
       </Function>
       <Function name="SetSubsetName" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::ReInitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::ResetPlotAtts" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::ProvidesLegend" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayCreate" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayDestroy" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayClear" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayHide" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayShow" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayIconify" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::AlternateDisplayDeIconify" user="false" member="true">
+      </Function>
+      <Function name="SpreadsheetViewerPluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
       </Function>
       <Include file="header" quoted="false">
         PlaneAttributes.h

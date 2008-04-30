@@ -481,10 +481,10 @@ QvisSimulationWindow::CreateCommandUI()
     if (DynamicCommandsWin == NULL)
     {
         cmdButtons[CUSTOM_BUTTON]->setEnabled(false);
-        QString msg(tr("VisIt could not locate the simulation's "
-                    "user interface creation file at: %1. The custom user "
-                    "interface for this simulation will be unavailable."));
-        msg.replace("%1", fname);
+        QString msg = tr("VisIt could not locate the simulation's "
+                         "user interface creation file at: %1. The custom user "
+                         "interface for this simulation will be unavailable.").
+                      arg(fname);
         Error(msg);
         return;
     }
@@ -1598,15 +1598,15 @@ QvisSimulationWindow::closeEngine()
     QString msg;
     if (sim == "")
     {
-        msg = tr("Really close the compute engine on host \"%1\"?\n\n");
-        msg.replace("%1", host.c_str());
+        msg = tr("Really close the compute engine on host \"%1\"?\n\n").
+              arg(host.c_str());
     }
     else
     {
         msg = tr("Really disconnect from the simulation \"%1\" on "
-                 "host \"%2\"?\n\n");
-        msg.replace("%1", sim.c_str());
-        msg.replace("%2", host.c_str());
+                 "host \"%2\"?\n\n").
+              arg(sim.c_str()).
+              arg(host.c_str());
     }
 
     // Ask the user if he really wants to close the engine.

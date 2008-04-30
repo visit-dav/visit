@@ -74,8 +74,8 @@ using std::string;
 
 QvisConeWindow::QvisConeWindow(const int type,
                          ConeAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -111,7 +111,9 @@ QvisConeWindow::~QvisConeWindow()
 // Creation:   Mon Jun 3 15:59:57 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 09:30:33 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -120,46 +122,46 @@ QvisConeWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 6,2,  10, "mainLayout");
 
 
-    mainLayout->addWidget(new QLabel("Angle", central, "angleLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("Angle"), central, "angleLabel"),0,0);
     angle = new QLineEdit(central, "angle");
     connect(angle, SIGNAL(returnPressed()),
             this, SLOT(angleProcessText()));
     mainLayout->addWidget(angle, 0,1);
 
-    mainLayout->addWidget(new QLabel("Origin", central, "originLabel"),1,0);
+    mainLayout->addWidget(new QLabel(tr("Origin"), central, "originLabel"),1,0);
     origin = new QLineEdit(central, "origin");
     connect(origin, SIGNAL(returnPressed()),
             this, SLOT(originProcessText()));
     mainLayout->addWidget(origin, 1,1);
 
-    mainLayout->addWidget(new QLabel("Direction", central, "normalLabel"),2,0);
+    mainLayout->addWidget(new QLabel(tr("Direction"), central, "normalLabel"),2,0);
     normal = new QLineEdit(central, "normal");
     connect(normal, SIGNAL(returnPressed()),
             this, SLOT(normalProcessText()));
     mainLayout->addWidget(normal, 2,1);
 
-    mainLayout->addWidget(new QLabel("Representation", central, "representationLabel"),3,0);
+    mainLayout->addWidget(new QLabel(tr("Representation"), central, "representationLabel"),3,0);
     representation = new QButtonGroup(central, "representation");
     representation->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *representationLayout = new QHBoxLayout(representation);
     representationLayout->setSpacing(10);
-    QRadioButton *representationRepresentationThreeD = new QRadioButton("In 3D", representation);
+    QRadioButton *representationRepresentationThreeD = new QRadioButton(tr("In 3D"), representation);
     representationLayout->addWidget(representationRepresentationThreeD);
-    QRadioButton *representationRepresentationFlattened = new QRadioButton("Projected to 2D", representation);
+    QRadioButton *representationRepresentationFlattened = new QRadioButton(tr("Projected to 2D"), representation);
     representationLayout->addWidget(representationRepresentationFlattened);
-    QRadioButton *representationRepresentationR_Theta = new QRadioButton("Cylindrical", representation);
+    QRadioButton *representationRepresentationR_Theta = new QRadioButton(tr("Cylindrical"), representation);
     representationLayout->addWidget(representationRepresentationR_Theta);
     connect(representation, SIGNAL(clicked(int)),
             this, SLOT(representationChanged(int)));
     mainLayout->addWidget(representation, 3,1);
 
-    mainLayout->addWidget(new QLabel("Up Axis", central, "upAxisLabel"),4,0);
+    mainLayout->addWidget(new QLabel(tr("Up Axis"), central, "upAxisLabel"),4,0);
     upAxis = new QLineEdit(central, "upAxis");
     connect(upAxis, SIGNAL(returnPressed()),
             this, SLOT(upAxisProcessText()));
     mainLayout->addWidget(upAxis, 4,1);
 
-    cutByLength = new QCheckBox("Cut cone off?    Length", central, "cutByLength");
+    cutByLength = new QCheckBox(tr("Cut cone off?    Length"), central, "cutByLength");
     connect(cutByLength, SIGNAL(toggled(bool)),
             this, SLOT(cutByLengthChanged(bool)));
     mainLayout->addWidget(cutByLength, 5,0);
@@ -288,9 +290,9 @@ QvisConeWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of angle was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetAngle());
+            msg = tr("The value of angle was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetAngle());
             Message(msg);
             atts->SetAngle(atts->GetAngle());
         }
@@ -313,9 +315,9 @@ QvisConeWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *val = atts->GetOrigin();
-            msg.sprintf("The value of origin was invalid. "
-                "Resetting to the last good value of <%g %g %g>", 
-                val[0], val[1], val[2]);
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of origin was invalid. "
+                     "Resetting to the last good value of %1.").arg(num);
             Message(msg);
             atts->SetOrigin(atts->GetOrigin());
         }
@@ -342,9 +344,9 @@ QvisConeWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *val = atts->GetNormal();
-            msg.sprintf("The value of normal was invalid. "
-                "Resetting to the last good value of <%g %g %g>", 
-                val[0], val[1], val[2]);
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of normal was invalid. "
+                     "Resetting to the last good value of %1.").arg(num);
             Message(msg);
             atts->SetNormal(atts->GetNormal());
         }
@@ -377,9 +379,9 @@ QvisConeWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *val = atts->GetUpAxis();
-            msg.sprintf("The value of upAxis was invalid. "
-                "Resetting to the last good value of <%g %g %g>", 
-                val[0], val[1], val[2]);
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of upAxis was invalid. "
+                     "Resetting to the last good value of %1.").arg(num);
             Message(msg);
             atts->SetUpAxis(atts->GetUpAxis());
         }
@@ -408,9 +410,9 @@ QvisConeWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of length was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetLength());
+            msg = tr("The value of length was invalid. "
+                    "Resetting to the last good value of %1.").
+                  arg(atts->GetLength());
             Message(msg);
             atts->SetLength(atts->GetLength());
         }

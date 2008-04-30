@@ -196,8 +196,8 @@ static const char * white_xpm[] = {
 // ****************************************************************************
 
 QvisVolumePlotWindow::QvisVolumePlotWindow(const int type,
-    VolumeAttributes *volumeAtts_, const char *caption,
-    const char *shortName, QvisNotepadArea *notepad) :
+    VolumeAttributes *volumeAtts_, const QString &caption,
+    const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(volumeAtts_, caption, shortName, notepad)
 {
     plotType    = type;

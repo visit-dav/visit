@@ -54,5 +54,7 @@
       <Field name="distributedResample" label="Distribute resampled data\nset across all processors\n(parallel only)?" type="bool">
         true
       </Field>
+      <Function name="ResampleEnginePluginInfo::AllocAvtPluginFilter" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

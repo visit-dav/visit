@@ -1341,6 +1341,9 @@ ViewerSubject::DisconnectClient(ViewerClientConnection *client)
 //    Brad Whitlock, Thu Jan 31 12:36:52 PST 2008
 //    Added code to remove the crash recovery file.
 //
+//    Brad Whitlock, Wed Apr 30 09:16:01 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 int
@@ -1367,14 +1370,13 @@ ViewerSubject::Execute()
         }
         CATCH2(VisItException, ve)
         {
-            char msg[1024];
-            sprintf(msg, "VisIt has encountered the following error: %s.\n"
+            QString msg = tr("VisIt has encountered the following error: %1.\n"
                     "VisIt will attempt to continue processing, but it may "
                     "behave unreliably.  Please save this error message and "
                     "give it to a VisIt developer.  In addition, you may want"
                     " to save your session and re-start.  Of course, this "
-                    "session may still cause VisIt to malfunction.", 
-                     ve.Message().c_str());
+                    "session may still cause VisIt to malfunction.").
+                    arg(ve.Message().c_str());
             Error(msg);
             keepGoing = true;
         }
@@ -4769,6 +4771,9 @@ ViewerSubject::HandleRequestMetaData()
 //   ViewerWindowManager::CreateDatabaseCorrelation to here so things in the
 //   gui don't update as frequently when opening a database.
 //
+//   Brad Whitlock, Wed Apr 30 09:18:24 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -4782,12 +4787,11 @@ ViewerSubject::CreateDatabaseCorrelation()
     //
     if(ViewerFileServer::Instance()->IsDatabase(name))
     {
-        std::string err("You cannot define a database correlation that "
-                        "has the same name as a source. No database "
-                        "correlation will be created for ");
-        err += name;
-        err += ".";
-        Error(err.c_str());
+        QString err = tr("You cannot define a database correlation that "
+                         "has the same name as a source. No database "
+                         "correlation will be created for %1.").
+                      arg(name.c_str());
+        Error(err);
     }
     else
     {
@@ -4870,6 +4874,9 @@ ViewerSubject::DeleteDatabaseCorrelation()
 //    I made it issue a warning message if a compute engine is already
 //    running on the desired host.
 //
+//    Brad Whitlock, Wed Apr 30 09:19:27 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -4890,10 +4897,10 @@ ViewerSubject::OpenComputeEngine()
     EngineKey key(hostName, "");
     if(ViewerEngineManager::Instance()->EngineExists(key))
     {
-        string msg("VisIt did not open a new compute engine host ");
-        msg += hostName;
-        msg += " because a compute engine is already running there.";
-        Warning(msg.c_str());
+        QString msg = tr("VisIt did not open a new compute engine on host %1 "
+                         "because a compute engine is already running there.").
+                      arg(hostName.c_str());
+        Warning(msg);
     }
     else if (givenOptions)
     {
@@ -5016,6 +5023,10 @@ ViewerSubject::UpdateDBPluginInfo()
 // Programmer: Hank Childs
 // Creation:   February 13, 2006
 //
+// Modifications:
+//   Brad Whitlock, Wed Apr 30 09:20:14 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -5030,13 +5041,13 @@ ViewerSubject::ConstructDDF()
     plist->GetActivePlotIDs(plotIDs);
     if (plotIDs.size() <= 0)
     {
-        Error("To construct a derived data function, you must have an active"
-              " plot.  No DDF was created.");
+        Error(tr("To construct a derived data function, you must have an active"
+                 " plot.  No DDF was created."));
         return;
     }
     if (plotIDs.size() > 1)
-        Message("Only one DDF can be created at a time.  VisIt is using the "
-                "first active plot.");
+        Message(tr("Only one DDF can be created at a time.  VisIt is using the "
+                   "first active plot."));
 
     ViewerPlot *plot = plist->GetPlot(plotIDs[0]);
     const EngineKey   &engineKey = plot->GetEngineKey();
@@ -5046,11 +5057,11 @@ ViewerSubject::ConstructDDF()
         if (ViewerEngineManager::Instance()->ConstructDDF(engineKey, 
                                                           networkId))
         {
-            Message("Created DDF");
+            Message(tr("Created DDF"));
         }
         else
         {
-            Error("Unable to create DDF");
+            Error(tr("Unable to create DDF"));
         }
     }
     CATCH2(VisItException, e)
@@ -5073,9 +5084,11 @@ ViewerSubject::ConstructDDF()
 // Creation:   May 25, 2005
 //
 // Modifications:
+//   Jeremy Meredith, Tue Mar 27 16:55:05 EDT 2007
+//   Added error text to message when we have something more useful to say.
 //
-//    Jeremy Meredith, Tue Mar 27 16:55:05 EDT 2007
-//    Added error text to message when we have something more useful to say.
+//   Brad Whitlock, Wed Apr 30 09:21:22 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -5091,11 +5104,11 @@ ViewerSubject::ExportDatabase()
     plist->GetActivePlotIDs(plotIDs);
     if (plotIDs.size() <= 0)
     {
-        Error("To export a database, you must have an active plot.  No database was saved.");
+        Error(tr("To export a database, you must have an active plot.  No database was saved."));
         return;
     }
     if (plotIDs.size() > 1)
-        Message("Only one database can be exported at a time.  VisIt is exporting the first active plot.");
+        Message(tr("Only one database can be exported at a time.  VisIt is exporting the first active plot."));
 
     ViewerPlot *plot = plist->GetPlot(plotIDs[0]);
     const EngineKey   &engineKey = plot->GetEngineKey();
@@ -5105,17 +5118,16 @@ ViewerSubject::ExportDatabase()
         if (ViewerEngineManager::Instance()->ExportDatabase(engineKey, 
                                                             networkId))
         {
-            Message("Exported database");
+            Message(tr("Exported database"));
         }
         else
         {
-            Error("Unable to export database");
+            Error(tr("Unable to export database"));
         }
     }
     CATCH2(VisItException, e)
     {
-        char msg[2048];
-        sprintf(msg, "Unable to export database: %s", e.Message().c_str());
+        QString msg = tr("Unable to export database: %1").arg(e.Message().c_str());
         Error(msg);
     }
     ENDTRY
@@ -5597,6 +5609,9 @@ ViewerSubject::UpdateColorTable()
 //   I changed the code to send back a status message and an error message
 //   if the color table could not be exported.
 //
+//   Brad Whitlock, Wed Apr 30 09:25:22 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -5612,22 +5627,23 @@ ViewerSubject::ExportColorTable()
         // If we successfully exported the color table, msg is set to the
         // name of the color table file that was created. We want to send
         // a status message and a message.
-        std::string msg2;
-        msg2 = std::string("Color table ") + ctName +
-               std::string(" exported to ") + msg;
-        Status(msg2.c_str());
+        QString msg2 = tr("Color table %1 exported to %2").
+                       arg(ctName.c_str()).
+                       arg(msg.c_str());
+        Status(msg2);
 
         // Tell the user what happened.
-        msg2 = std::string("VisIt exported color table \"") + ctName +
-           std::string( "\" to the file: ") + msg +
-           ". You can share that file with colleagues who want to use your "
+        msg2 = tr("VisIt exported color table \"%1\" to the file: %2. "
+           "You can share that file with colleagues who want to use your "
            "color table. Simply put the file in their .visit directory, run "
            "VisIt and the color table will appear in their list of color "
-           "tables when VisIt starts up.";
-        Message(msg2.c_str());
+           "tables when VisIt starts up.").
+           arg(ctName.c_str()).
+           arg(msg.c_str());
+        Message(msg2);
     }
     else
-        Error(msg.c_str());
+        Error(msg.c_str(), false);
 }
 
 // ****************************************************************************
@@ -5655,6 +5671,9 @@ ViewerSubject::ExportColorTable()
 //    Brad Whitlock, Thu Feb 17 16:11:21 PST 2005
 //    I made it issue an error message if the settings can't be saved.
 //
+//    Brad Whitlock, Wed Apr 30 09:26:08 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -5673,10 +5692,9 @@ ViewerSubject::WriteConfigFile()
     //
     if(!configMgr->WriteConfigFile(defaultConfigFile))
     {
-        std::string err("VisIt could not save your settings to: ");
-        err += defaultConfigFile;
-        err += ".";
-        Error(err.c_str());
+        QString err = tr("VisIt could not save your settings to: %1.").
+                      arg(defaultConfigFile);
+        Error(err);
     }
 
     //
@@ -6662,15 +6680,18 @@ ViewerSubject::CopyPlotsToWindow(int from, int to)
 //   Hank Childs, Tue Jul 11 14:34:06 PDT 2006
 //   Add double arguments.
 //
+//   Brad Whitlock, Wed Apr 30 09:27:08 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::DatabaseQuery()
 {
     // Send the client a status message.
-    QString msg;
-    msg.sprintf("Performing %s query...", GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
-    Status(msg.latin1());
+    QString msg = tr("Performing %1 query...").
+                  arg(GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
+    Status(msg);
 
     ViewerWindow *vw = ViewerWindowManager::Instance()->GetActiveWindow();
     ViewerQueryManager *qm = ViewerQueryManager::Instance();
@@ -6706,17 +6727,19 @@ ViewerSubject::DatabaseQuery()
 //
 //   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
 //   Added another bool arg to qm->DatabaseQuery. 
-//   
+//
+//   Brad Whitlock, Wed Apr 30 09:27:46 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::PointQuery()
 {
     // Send the client a status message.
-    QString msg;
-    msg.sprintf("Performing %s query...", 
-                GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
-    Status(msg.latin1());
+    QString msg = tr("Performing %1 query...").
+                  arg(GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
+    Status(msg);
 
     ViewerQueryManager *qm = ViewerQueryManager::Instance();
     qm->PointQuery(GetViewerState()->GetViewerRPC()->GetQueryName(), 
@@ -6753,6 +6776,9 @@ ViewerSubject::PointQuery()
 //   
 //   Kathleen Bonnell, Tue May 15 10:43:49 PDT 2007 
 //   Added bool arg to StartLineQuery. 
+//
+//   Brad Whitlock, Wed Apr 30 09:27:08 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -6760,9 +6786,9 @@ void
 ViewerSubject::LineQuery()
 {
     // Send the client a status message.
-    QString msg;
-    msg.sprintf("Performing %s query...", GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
-    Status(msg.latin1());
+    QString msg = tr("Performing %1 query...").
+                  arg(GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
+    Status(msg);
 
     ViewerQueryManager::Instance()->StartLineQuery( 
         GetViewerState()->GetViewerRPC()->GetQueryName().c_str(),
@@ -7343,7 +7369,7 @@ ViewerSubject::SendKeepAlives()
     }
     else
     {
-        Status("Sending keep alive signals...");
+        Status(tr("Sending keep alive signals..."));
         ViewerFileServer::Instance()->SendKeepAlives();
         ViewerEngineManager::Instance()->SendKeepAlives();
         ViewerServerManager::SendKeepAlivesToLaunchers();
@@ -8610,8 +8636,8 @@ ViewerSubject::GetProcessAttributes()
     }
     else
     {
-        Warning("Currently, GetProcessAttributes() works only for "
-                "\"engine\" or \"viewer\"");
+        Warning(tr("Currently, GetProcessAttributes() works only for "
+                "\"engine\" or \"viewer\""));
         return;
     }
 
@@ -8631,6 +8657,8 @@ ViewerSubject::GetProcessAttributes()
 // Creation:   Wed May 4 11:36:45 PDT 2005
 //
 // Modifications:
+//   Brad Whitlock, Wed Apr 30 09:27:08 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -8683,7 +8711,7 @@ ViewerSubject::OpenClient()
         connect(newClient, SIGNAL(DisconnectClient(ViewerClientConnection *)),
                 this,      SLOT(DisconnectClient(ViewerClientConnection *)));
 
-        Message("Added a new client to the viewer.");
+        Message(tr("Added a new client to the viewer."));
 
         // Discover the client's information.
         QTimer::singleShot(100, this, SLOT(DiscoverClientInformation()));
@@ -8692,10 +8720,9 @@ ViewerSubject::OpenClient()
     {
         delete newClient;
 
-        std::string msg("VisIt could not connect to the new client ");
-        msg += program;
-        msg += ".";
-        Error(msg.c_str());
+        QString msg = tr("VisIt could not connect to the new client %1.").
+                      arg(program.c_str());
+        Error(msg);
     }
     ENDTRY
 
@@ -9293,13 +9320,13 @@ ViewerSubject::UpdatePlotInfoAtts()
             }
             else
             {
-            Warning("Invalid PlotId");
+                Warning(tr("Invalid PlotId"));
             }
         }
     }
     else
     {
-        Warning("Invalid WindowId");
+        Warning(tr("Invalid WindowId"));
     }
     GetViewerState()->GetPlotInfoAttributes()->Notify();
 }

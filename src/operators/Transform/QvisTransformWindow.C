@@ -73,8 +73,8 @@
 
 QvisTransformWindow::QvisTransformWindow(const int type,
                          TransformAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type, subj, caption, shortName, notepad)
 {
@@ -118,7 +118,11 @@ QvisTransformWindow::~QvisTransformWindow()
 //    Jeremy Meredith, Tue Apr 15 13:42:44 EDT 2008
 //    Added support for linear transforms.
 //
+//    Brad Whitlock, Thu Apr 24 15:50:49 PDT 2008
+//    Added tr()'s
+//
 // ****************************************************************************
+
 void
 QvisTransformWindow::CreateWindowContents()
 {
@@ -129,32 +133,32 @@ QvisTransformWindow::CreateWindowContents()
     // First page
     // ----------------------------------------------------------------------
     firstPage = new QFrame(central, "firstPage");
-    transformTypeTabs->addTab(firstPage, "Arbitrary");
+    transformTypeTabs->addTab(firstPage, tr("Arbitrary"));
 
     QGridLayout *mainLayout = new QGridLayout(firstPage, 9,7, 10, 10, "mainLayout");
     mainLayout->addColSpacing(0, 15);
 
     // ---------------
-    doRotate = new QCheckBox("Rotate", firstPage, "doRotate");
+    doRotate = new QCheckBox(tr("Rotate"), firstPage, "doRotate");
     connect(doRotate, SIGNAL(toggled(bool)),
             this, SLOT(doRotateChanged(bool)));
     mainLayout->addMultiCellWidget(doRotate, 0,0, 0,2);
 
-    rotateOriginLabel = new QLabel("Origin", firstPage, "rotateOriginLabel");
+    rotateOriginLabel = new QLabel(tr("Origin"), firstPage, "rotateOriginLabel");
     mainLayout->addWidget(rotateOriginLabel,1,1, Qt::AlignRight);
     rotateOrigin = new QLineEdit(firstPage, "rotateOrigin");
     connect(rotateOrigin, SIGNAL(returnPressed()),
             this, SLOT(rotateOriginProcessText()));
     mainLayout->addMultiCellWidget(rotateOrigin, 1,1, 2,6);
 
-    rotateAxisLabel = new QLabel("Axis", firstPage, "rotateAxisLabel");
+    rotateAxisLabel = new QLabel(tr("Axis"), firstPage, "rotateAxisLabel");
     mainLayout->addWidget(rotateAxisLabel,2,1, Qt::AlignRight);
     rotateAxis = new QLineEdit(firstPage, "rotateAxis");
     connect(rotateAxis, SIGNAL(returnPressed()),
             this, SLOT(rotateAxisProcessText()));
     mainLayout->addMultiCellWidget(rotateAxis, 2,2 ,2,6);
 
-    rotateAmountLabel = new QLabel("Amount", firstPage, "rotateAmountLabel");
+    rotateAmountLabel = new QLabel(tr("Amount"), firstPage, "rotateAmountLabel");
     mainLayout->addWidget(rotateAmountLabel,3,1, Qt::AlignRight);
     rotateAmount = new QNarrowLineEdit(firstPage, "rotateAmount");
     connect(rotateAmount, SIGNAL(returnPressed()),
@@ -165,42 +169,42 @@ QvisTransformWindow::CreateWindowContents()
     rotateType->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *rotateTypeLayout = new QHBoxLayout(rotateType);
     rotateTypeLayout->setSpacing(10);
-    QRadioButton *rotateTypeAngleTypeDeg = new QRadioButton("Deg", rotateType);
+    QRadioButton *rotateTypeAngleTypeDeg = new QRadioButton(tr("Deg"), rotateType);
     rotateTypeLayout->addWidget(rotateTypeAngleTypeDeg);
-    QRadioButton *rotateTypeAngleTypeRad = new QRadioButton("Rad", rotateType);
+    QRadioButton *rotateTypeAngleTypeRad = new QRadioButton(tr("Rad"), rotateType);
     rotateTypeLayout->addWidget(rotateTypeAngleTypeRad);
     connect(rotateType, SIGNAL(clicked(int)),
             this, SLOT(rotateTypeChanged(int)));
     mainLayout->addMultiCellWidget(rotateType, 3,3, 4,6);
 
     // ---------------
-    doScale = new QCheckBox("Scale", firstPage, "doScale");
+    doScale = new QCheckBox(tr("Scale"), firstPage, "doScale");
     connect(doScale, SIGNAL(toggled(bool)),
             this, SLOT(doScaleChanged(bool)));
     mainLayout->addMultiCellWidget(doScale, 4,4, 0,2);
 
-    scaleOriginLabel = new QLabel("Origin", firstPage, "scaleOriginLabel");
+    scaleOriginLabel = new QLabel(tr("Origin"), firstPage, "scaleOriginLabel");
     mainLayout->addWidget(scaleOriginLabel,5,1, Qt::AlignRight);
     scaleOrigin = new QLineEdit(firstPage, "scaleOrigin");
     connect(scaleOrigin, SIGNAL(returnPressed()),
             this, SLOT(scaleOriginProcessText()));
     mainLayout->addMultiCellWidget(scaleOrigin, 5,5, 2,6);
 
-    scaleXLabel = new QLabel("X", firstPage, "scaleXLabel");
+    scaleXLabel = new QLabel(tr("X"), firstPage, "scaleXLabel");
     mainLayout->addWidget(scaleXLabel,6,1, Qt::AlignRight);
     scaleX = new QNarrowLineEdit(firstPage, "scaleX");
     connect(scaleX, SIGNAL(returnPressed()),
             this, SLOT(scaleXProcessText()));
     mainLayout->addWidget(scaleX, 6,2);
 
-    scaleYLabel = new QLabel("Y", firstPage, "scaleYLabel");
+    scaleYLabel = new QLabel(tr("Y"), firstPage, "scaleYLabel");
     mainLayout->addWidget(scaleYLabel,6,3, Qt::AlignRight);
     scaleY = new QNarrowLineEdit(firstPage, "scaleY");
     connect(scaleY, SIGNAL(returnPressed()),
             this, SLOT(scaleYProcessText()));
     mainLayout->addWidget(scaleY, 6,4);
 
-    scaleZLabel = new QLabel("Z", firstPage, "scaleZLabel");
+    scaleZLabel = new QLabel(tr("Z"), firstPage, "scaleZLabel");
     mainLayout->addWidget(scaleZLabel,6,5, Qt::AlignRight);
     scaleZ = new QNarrowLineEdit(firstPage, "scaleZ");
     connect(scaleZ, SIGNAL(returnPressed()),
@@ -208,26 +212,26 @@ QvisTransformWindow::CreateWindowContents()
     mainLayout->addWidget(scaleZ, 6,6);
 
     // ---------------
-    doTranslate = new QCheckBox("Translate", firstPage, "doTranslate");
+    doTranslate = new QCheckBox(tr("Translate"), firstPage, "doTranslate");
     connect(doTranslate, SIGNAL(toggled(bool)),
             this, SLOT(doTranslateChanged(bool)));
     mainLayout->addMultiCellWidget(doTranslate, 7,7, 0,2);
 
-    translateXLabel = new QLabel("X", firstPage, "translateXLabel");
+    translateXLabel = new QLabel(tr("X"), firstPage, "translateXLabel");
     mainLayout->addWidget(translateXLabel,8,1, Qt::AlignRight);
     translateX = new QNarrowLineEdit(firstPage, "translateX");
     connect(translateX, SIGNAL(returnPressed()),
             this, SLOT(translateXProcessText()));
     mainLayout->addWidget(translateX, 8,2);
 
-    translateYLabel = new QLabel("Y", firstPage, "translateYLabel");
+    translateYLabel = new QLabel(tr("Y"), firstPage, "translateYLabel");
     mainLayout->addWidget(translateYLabel,8,3, Qt::AlignRight);
     translateY = new QNarrowLineEdit(firstPage, "translateY");
     connect(translateY, SIGNAL(returnPressed()),
             this, SLOT(translateYProcessText()));
     mainLayout->addWidget(translateY, 8,4);
 
-    translateZLabel = new QLabel("Z", firstPage, "translateZLabel");
+    translateZLabel = new QLabel(tr("Z"), firstPage, "translateZLabel");
     mainLayout->addWidget(translateZLabel,8,5, Qt::AlignRight);
     translateZ = new QNarrowLineEdit(firstPage, "translateZ");
     connect(translateZ, SIGNAL(returnPressed()),
@@ -242,7 +246,7 @@ QvisTransformWindow::CreateWindowContents()
 
     QVBoxLayout *secondPageLayout = new QVBoxLayout(secondPage, 10, 10, "secondPageLayout");
 
-    QVGroupBox *inputFrame = new QVGroupBox("Input coordinates", secondPage, "inputFrame");
+    QVGroupBox *inputFrame = new QVGroupBox(tr("Input coordinates"), secondPage, "inputFrame");
     secondPageLayout->addWidget(inputFrame);
     inputFrame->setFrameStyle(QFrame::Box | QFrame::Sunken );
 
@@ -250,14 +254,14 @@ QvisTransformWindow::CreateWindowContents()
     inputCoord->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *inputCoordLayout = new QVBoxLayout(inputCoord,0,0);
     inputCoordLayout->setSpacing(10);
-    QRadioButton *iCart = new QRadioButton("Cartesian (x,y,z)", inputCoord);
+    QRadioButton *iCart = new QRadioButton(tr("Cartesian (x,y,z)"), inputCoord);
     inputCoordLayout->addWidget(iCart);
-    QRadioButton *iCyl  = new QRadioButton("Cylindrical (r,phi,z)", inputCoord);
+    QRadioButton *iCyl  = new QRadioButton(tr("Cylindrical (r,phi,z)"), inputCoord);
     inputCoordLayout->addWidget(iCyl);
-    QRadioButton *iSph  = new QRadioButton("Spherical (r,phi,theta)", inputCoord);
+    QRadioButton *iSph  = new QRadioButton(tr("Spherical (r,phi,theta)"), inputCoord);
     inputCoordLayout->addWidget(iSph);
 
-    QVGroupBox *outputFrame = new QVGroupBox("Output coordinates", secondPage, "outputFrame");
+    QVGroupBox *outputFrame = new QVGroupBox(tr("Output coordinates"), secondPage, "outputFrame");
     secondPageLayout->addWidget(outputFrame);
     outputFrame->setFrameStyle(QFrame::Box | QFrame::Sunken );
 
@@ -265,11 +269,11 @@ QvisTransformWindow::CreateWindowContents()
     outputCoord->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *outputCoordLayout = new QVBoxLayout(outputCoord,0,0);
     outputCoordLayout->setSpacing(10);
-    QRadioButton *oCart = new QRadioButton("Cartesian (x,y,z)", outputCoord);
+    QRadioButton *oCart = new QRadioButton(tr("Cartesian (x,y,z)"), outputCoord);
     outputCoordLayout->addWidget(oCart);
-    QRadioButton *oCyl  = new QRadioButton("Cylindrical (r,phi,z)", outputCoord);
+    QRadioButton *oCyl  = new QRadioButton(tr("Cylindrical (r,phi,z)"), outputCoord);
     outputCoordLayout->addWidget(oCyl);
-    QRadioButton *oSph  = new QRadioButton("Spherical (r,phi,theta)", outputCoord);
+    QRadioButton *oSph  = new QRadioButton(tr("Spherical (r,phi,theta)"), outputCoord);
     outputCoordLayout->addWidget(oSph);
 
     secondPageLayout->addStretch(100);
@@ -283,20 +287,20 @@ QvisTransformWindow::CreateWindowContents()
     // Third page
     // ----------------------------------------------------------------------
     thirdPage = new QFrame(central, "thirdPage");
-    transformTypeTabs->addTab(thirdPage, "Linear");
+    transformTypeTabs->addTab(thirdPage, tr("Linear"));
 
     QGridLayout *thirdPageLayout = new QGridLayout(thirdPage, 6,3, 10, 10, "thirdPageLayout");
-    thirdPageLayout->addMultiCellWidget(new QLabel("Matrix elements",thirdPage),
+    thirdPageLayout->addMultiCellWidget(new QLabel(tr("Matrix elements"),thirdPage),
                                         0,0, 0,2);
-    m00 = new QNarrowLineEdit(thirdPage, "m00");
-    m01 = new QNarrowLineEdit(thirdPage, "m01");
-    m02 = new QNarrowLineEdit(thirdPage, "m02");
-    m10 = new QNarrowLineEdit(thirdPage, "m10");
-    m11 = new QNarrowLineEdit(thirdPage, "m11");
-    m12 = new QNarrowLineEdit(thirdPage, "m12");
-    m20 = new QNarrowLineEdit(thirdPage, "m20");
-    m21 = new QNarrowLineEdit(thirdPage, "m21");
-    m22 = new QNarrowLineEdit(thirdPage, "m22");
+    m00 = new QNarrowLineEdit(thirdPage, tr("m00"));
+    m01 = new QNarrowLineEdit(thirdPage, tr("m01"));
+    m02 = new QNarrowLineEdit(thirdPage, tr("m02"));
+    m10 = new QNarrowLineEdit(thirdPage, tr("m10"));
+    m11 = new QNarrowLineEdit(thirdPage, tr("m11"));
+    m12 = new QNarrowLineEdit(thirdPage, tr("m12"));
+    m20 = new QNarrowLineEdit(thirdPage, tr("m20"));
+    m21 = new QNarrowLineEdit(thirdPage, tr("m21"));
+    m22 = new QNarrowLineEdit(thirdPage, tr("m22"));
     thirdPageLayout->addWidget(m00, 1, 0);
     thirdPageLayout->addWidget(m01, 1, 1);
     thirdPageLayout->addWidget(m02, 1, 2);
@@ -315,7 +319,7 @@ QvisTransformWindow::CreateWindowContents()
     connect(m20, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
     connect(m21, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
     connect(m22, SIGNAL(returnPressed()), this, SLOT(ltElementtChanged()));
-    linearInvert = new QCheckBox("Invert linear transform",
+    linearInvert = new QCheckBox(tr("Invert linear transform"),
                                  thirdPage, "linearInvert");
     thirdPageLayout->addMultiCellWidget(linearInvert, 4,4, 0,2);
     connect(linearInvert, SIGNAL(toggled(bool)),
@@ -565,6 +569,9 @@ QvisTransformWindow::UpdateWindow(bool doAll)
 //    Jeremy Meredith, Tue Apr 15 13:42:44 EDT 2008
 //    Added support for linear transforms.
 //
+//    Brad Whitlock, Thu Apr 24 15:53:37 PDT 2008
+//    Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -596,9 +603,9 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const float *val = atts->GetRotateOrigin();
-            msg.sprintf("The value of rotateOrigin was invalid. "
-                "Resetting to the last good value of <%g %g %g>", 
-                val[0], val[1], val[2]);
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of rotateOrigin was invalid. "
+                     "Resetting to the last good value of %1.").arg(num);
             Message(msg);
             atts->SetRotateOrigin(atts->GetRotateOrigin());
         }
@@ -625,9 +632,9 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const float *val = atts->GetRotateAxis();
-            msg.sprintf("The value of rotateAxis was invalid. "
-                "Resetting to the last good value of <%g %g %g>", 
-                val[0], val[1], val[2]);
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of rotateAxis was invalid. "
+                     "Resetting to the last good value of %1.").arg(num);
             Message(msg);
             atts->SetRotateAxis(atts->GetRotateAxis());
         }
@@ -641,14 +648,15 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            atts->SetRotateAmount(val);
+            if(okay)
+                atts->SetRotateAmount(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of rotateAmount was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetRotateAmount());
+            msg = tr("The value of rotateAmount was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetRotateAmount());
             Message(msg);
             atts->SetRotateAmount(atts->GetRotateAmount());
         }
@@ -683,9 +691,9 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const float *val = atts->GetScaleOrigin();
-            msg.sprintf("The value of scaleOrigin was invalid. "
-                "Resetting to the last good value of <%g %g %g>", 
-                val[0], val[1], val[2]);
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of scaleOrigin was invalid. "
+                     "Resetting to the last good value of %1.").arg(num);
             Message(msg);
             atts->SetScaleOrigin(atts->GetScaleOrigin());
         }
@@ -704,9 +712,9 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of scaleX was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetScaleX());
+            msg = tr("The value of scaleX was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetScaleX());
             Message(msg);
             atts->SetScaleX(atts->GetScaleX());
         }
@@ -725,9 +733,9 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of scaleY was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetScaleY());
+            msg = tr("The value of scaleY was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetScaleY());
             Message(msg);
             atts->SetScaleY(atts->GetScaleY());
         }
@@ -746,9 +754,9 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of scaleZ was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetScaleZ());
+            msg = tr("The value of scaleZ was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetScaleZ());
             Message(msg);
             atts->SetScaleZ(atts->GetScaleZ());
         }
@@ -773,9 +781,9 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of translateX was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetTranslateX());
+            msg = tr("The value of translateX was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetTranslateX());
             Message(msg);
             atts->SetTranslateX(atts->GetTranslateX());
         }
@@ -794,9 +802,9 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of translateY was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetTranslateY());
+            msg = tr("The value of translateY was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetTranslateY());
             Message(msg);
             atts->SetTranslateY(atts->GetTranslateY());
         }
@@ -815,9 +823,9 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of translateZ was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetTranslateZ());
+            msg = tr("The value of translateZ was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetTranslateZ());
             Message(msg);
             atts->SetTranslateZ(atts->GetTranslateZ());
         }

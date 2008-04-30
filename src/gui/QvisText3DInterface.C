@@ -409,11 +409,10 @@ QvisText3DInterface::GetCurrentValues(int which_widget)
 
         if (!okay)
         {
-            QString msg(tr("The position must be specified as a 3D coordinate. "
-                           "Resetting to the last good value of %1."));
             QString num; num.sprintf("%lg %lg %lg",
                 annot->GetPosition()[0],annot->GetPosition()[1],annot->GetPosition()[2]);
-            msg.replace("%1", num);
+            QString msg = tr("The position must be specified as a 3D coordinate. "
+                             "Resetting to the last good value of %1.").arg(num);
             Error(msg);
             annot->SetPosition(annot->GetPosition());
         }  
@@ -447,10 +446,9 @@ QvisText3DInterface::GetCurrentValues(int which_widget)
 
         if (!okay)
         {
-            QString msg(tr("The fixed height is a floating point number greater than zero. "
-                           "Resetting to the last good value of %1."));
-            QString num; num.sprintf("%lg", annot->GetFixedHeight());
-            msg.replace("%1", num);
+            QString msg = tr("The fixed height is a floating point number greater than zero. "
+                             "Resetting to the last good value of %1.").
+                          arg(annot->GetFixedHeight());
             Error(msg);
             annot->SetFixedHeight(annot->GetFixedHeight());
         }

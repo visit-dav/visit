@@ -68,6 +68,9 @@ class QToolBar;
 //   Brad Whitlock, Tue Aug 26 17:12:02 PST 2003
 //   I added the isExclusive flag.
 //
+//   Brad Whitlock, Tue Apr 29 11:16:17 PDT 2008
+//   Converted to QString for menu items.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerMultipleAction : public ViewerActionBase
@@ -97,16 +100,16 @@ public:
     virtual void UpdateConstruction();
 
     // Methods to set the action's attributes.
-    virtual void SetAllText(const char *text);
-    virtual void SetText(const char *text);
-    virtual void SetMenuText(const char *text);
-    virtual void SetToolTip(const char *text);
+    virtual void SetAllText(const QString &text);
+    virtual void SetText(const QString &text);
+    virtual void SetMenuText(const QString &text);
+    virtual void SetToolTip(const QString &text);
     virtual void SetIconSet(const QIconSet &icons);
 
-    virtual void AddChoice(const char *menuText);
-    virtual void AddChoice(const char *menuText, const char *toolTip, const
+    virtual void AddChoice(const QString &menuText);
+    virtual void AddChoice(const QString &menuText, const QString &toolTip, const
                            QPixmap &icon);
-    virtual void AddChoice(const char *menuText, const char *toolTip,
+    virtual void AddChoice(const QString &menuText, const QString &toolTip,
                            const QPixmap &small_icon,
                            const QPixmap &large_icon);
 

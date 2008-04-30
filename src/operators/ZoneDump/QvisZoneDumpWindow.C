@@ -76,8 +76,8 @@ using std::string;
 
 QvisZoneDumpWindow::QvisZoneDumpWindow(const int type,
                          ZoneDumpAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -116,6 +116,9 @@ QvisZoneDumpWindow::~QvisZoneDumpWindow()
 //    Cyrus Harrison, Wed Apr  4 08:15:28 PDT 2007
 //    Added range label.
 //
+//    Brad Whitlock, Thu Apr 24 15:47:48 PDT 2008
+//    Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -124,7 +127,7 @@ QvisZoneDumpWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 5,2,  10, "mainLayout");
 
 
-    variableLabel = new QLabel("Dump Variable", central, "variableLabel");
+    variableLabel = new QLabel(tr("Dump Variable"), central, "variableLabel");
     mainLayout->addWidget(variableLabel,0,0);
     int variableMask = QvisVariableButton::Scalars;
     variable = new QvisVariableButton(true, true, true, variableMask, central, "variable");
@@ -132,24 +135,24 @@ QvisZoneDumpWindow::CreateWindowContents()
             this, SLOT(variableChanged(const QString&)));
     mainLayout->addWidget(variable, 0,1);
 
-    QLabel *range_label = new QLabel("Dump Zones in Range:", central, "range_label");
+    QLabel *range_label = new QLabel(tr("Dump Zones in Range:"), central, "range_label");
     mainLayout->addMultiCellWidget(range_label, 1,1,0,1);
 
-    lowerBoundLabel = new QLabel("Lower Bound", central, "lowerBoundLabel");
+    lowerBoundLabel = new QLabel(tr("Lower Bound"), central, "lowerBoundLabel");
     mainLayout->addWidget(lowerBoundLabel,2,0);
     lowerBound = new QLineEdit(central, "lowerBound");
     connect(lowerBound, SIGNAL(returnPressed()),
             this, SLOT(lowerBoundProcessText()));
     mainLayout->addWidget(lowerBound, 2,1);
 
-    upperBoundLabel = new QLabel("Upper Bound", central, "upperBoundLabel");
+    upperBoundLabel = new QLabel(tr("Upper Bound"), central, "upperBoundLabel");
     mainLayout->addWidget(upperBoundLabel,3,0);
     upperBound = new QLineEdit(central, "upperBound");
     connect(upperBound, SIGNAL(returnPressed()),
             this, SLOT(upperBoundProcessText()));
     mainLayout->addWidget(upperBound, 3,1);
 
-    outputFileLabel = new QLabel("Output File", central, "outputFileLabel");
+    outputFileLabel = new QLabel(tr("Output File"), central, "outputFileLabel");
     mainLayout->addWidget(outputFileLabel,4,0);
     outputFile = new QLineEdit(central, "outputFile");
     connect(outputFile, SIGNAL(returnPressed()),
@@ -157,7 +160,7 @@ QvisZoneDumpWindow::CreateWindowContents()
     mainLayout->addWidget(outputFile, 4,1);
 
     enabledLabel = NULL;
-    enabled = new QCheckBox("Dump Enabled", central, "enabled");
+    enabled = new QCheckBox(tr("Dump Enabled"), central, "enabled");
     connect(enabled, SIGNAL(toggled(bool)),
             this, SLOT(enabledChanged(bool)));
     mainLayout->addWidget(enabled, 5,0);
@@ -285,15 +288,16 @@ QvisZoneDumpWindow::GetCurrentValues(int which_widget)
             else
             {
                 double val = temp.toDouble(&okay);
-                atts->SetLowerBound(val);
+                if(okay)
+                    atts->SetLowerBound(val);
             }
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of lowerBound was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetLowerBound());
+            msg = tr("The value of lowerBound was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetLowerBound());
             Message(msg);
             atts->SetLowerBound(atts->GetLowerBound());
         }
@@ -313,15 +317,16 @@ QvisZoneDumpWindow::GetCurrentValues(int which_widget)
             else
             {
                 double val = temp.toDouble(&okay);
-                atts->SetUpperBound(val);
+                if(okay)
+                    atts->SetUpperBound(val);
             }
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of upperBound was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetUpperBound());
+            msg = tr("The value of upperBound was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetUpperBound());
             Message(msg);
             atts->SetUpperBound(atts->GetUpperBound());
         }
@@ -339,9 +344,9 @@ QvisZoneDumpWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of outputFile was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetOutputFile().c_str());
+            msg = tr("The value of outputFile was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetOutputFile().c_str());
             Message(msg);
             atts->SetOutputFile(atts->GetOutputFile());
         }

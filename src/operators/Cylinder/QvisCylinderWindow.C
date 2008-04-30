@@ -74,8 +74,8 @@ using std::string;
 
 QvisCylinderWindow::QvisCylinderWindow(const int type,
                          CylinderAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -111,7 +111,9 @@ QvisCylinderWindow::~QvisCylinderWindow()
 // Creation:   Tue Oct 21 13:17:13 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 09:18:48 PDT 2008
+//   Added tr().
+//
 // ****************************************************************************
 
 void
@@ -120,21 +122,21 @@ QvisCylinderWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 3,2,  10, "mainLayout");
 
 
-    point1Label = new QLabel("Endpoint 1", central, "point1Label");
+    point1Label = new QLabel(tr("Endpoint 1"), central, "point1Label");
     mainLayout->addWidget(point1Label,0,0);
     point1 = new QLineEdit(central, "point1");
     connect(point1, SIGNAL(returnPressed()),
             this, SLOT(point1ProcessText()));
     mainLayout->addWidget(point1, 0,1);
 
-    point2Label = new QLabel("Endpoint 2", central, "point2Label");
+    point2Label = new QLabel(tr("Endpoint 2"), central, "point2Label");
     mainLayout->addWidget(point2Label,1,0);
     point2 = new QLineEdit(central, "point2");
     connect(point2, SIGNAL(returnPressed()),
             this, SLOT(point2ProcessText()));
     mainLayout->addWidget(point2, 1,1);
 
-    radiusLabel = new QLabel("Radius", central, "radiusLabel");
+    radiusLabel = new QLabel(tr("Radius"), central, "radiusLabel");
     mainLayout->addWidget(radiusLabel,2,0);
     radius = new QLineEdit(central, "radius");
     connect(radius, SIGNAL(returnPressed()),
@@ -231,16 +233,17 @@ QvisCylinderWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val[3];
-            sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2]);
-            atts->SetPoint1(val);
+            okay = sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2])==3;
+            if(okay)
+                atts->SetPoint1(val);
         }
 
         if(!okay)
         {
             const double *val = atts->GetPoint1();
-            msg.sprintf("The value of point1 was invalid. "
-                "Resetting to the last good value of <%g %g %g>", 
-                val[0], val[1], val[2]);
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of point1 was invalid. "
+                     "Resetting to the last good value of %1.").arg(num);
             Message(msg);
             atts->SetPoint1(atts->GetPoint1());
         }
@@ -254,16 +257,17 @@ QvisCylinderWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val[3];
-            sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2]);
-            atts->SetPoint2(val);
+            okay = sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2])==3;
+            if(okay)
+                atts->SetPoint2(val);
         }
 
         if(!okay)
         {
             const double *val = atts->GetPoint2();
-            msg.sprintf("The value of point2 was invalid. "
-                "Resetting to the last good value of <%g %g %g>", 
-                val[0], val[1], val[2]);
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of point2 was invalid. "
+                     "Resetting to the last good value of %1.").arg(num);
             Message(msg);
             atts->SetPoint2(atts->GetPoint2());
         }
@@ -277,14 +281,15 @@ QvisCylinderWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetRadius(val);
+            if(okay)
+                atts->SetRadius(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of radius was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetRadius());
+            msg = tr("The value of radius was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetRadius());
             Message(msg);
             atts->SetRadius(atts->GetRadius());
         }

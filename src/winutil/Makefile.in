@@ -57,6 +57,9 @@
 #    Eric Brugger, Fri Jun 29 09:36:54 PDT 2007
 #    Removed the setting of the NOT_DISTRIB variable.
 #
+#    Brad Whitlock, Tue Apr 29 10:07:41 PDT 2008
+#    Added UnicodeHelper.
+#
 ##############################################################################
 
 ##
@@ -75,7 +78,7 @@ HDRMOC = QvisColorTableButton.h \
          QvisVariableButton.h \
          QvisVariableButtonHelper.h \
          QvisVariablePopupMenu.h
-HDR=VariableMenuPopulator.h WindowMetrics.h ${HDRMOC}
+HDR=VariableMenuPopulator.h WindowMetrics.h UnicodeHelper.h ${HDRMOC}
 SRC=${HDR:.h=.C}
 SRCMOC=${HDRMOC:.h=_moc.C}
 OBJMOC=${SRCMOC:.C=.o}

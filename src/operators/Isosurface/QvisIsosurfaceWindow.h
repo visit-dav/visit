@@ -82,8 +82,8 @@ class QvisIsosurfaceWindow : public QvisOperatorWindow
   public:
     QvisIsosurfaceWindow(const int type,
                          IsosurfaceAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisIsosurfaceWindow();
     virtual void CreateWindowContents();

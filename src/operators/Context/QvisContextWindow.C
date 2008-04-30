@@ -74,8 +74,8 @@ using std::string;
 
 QvisContextWindow::QvisContextWindow(const int type,
                          ContextAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -111,7 +111,9 @@ QvisContextWindow::~QvisContextWindow()
 // Creation:   Fri Apr 12 14:40:17 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 09:27:14 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -120,43 +122,43 @@ QvisContextWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 7,2,  10, "mainLayout");
 
 
-    mainLayout->addWidget(new QLabel("Offset the primary variable by ", central, "offsetLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("Offset the primary variable by "), central, "offsetLabel"),0,0);
     offset = new QLineEdit(central, "offset");
     connect(offset, SIGNAL(returnPressed()),
             this, SLOT(offsetProcessText()));
     mainLayout->addWidget(offset, 0,1);
 
-    mainLayout->addWidget(new QLabel("Use the primary variable if it is above ", central, "lowLabel"),1,0);
+    mainLayout->addWidget(new QLabel(tr("Use the primary variable if it is above "), central, "lowLabel"),1,0);
     low = new QLineEdit(central, "low");
     connect(low, SIGNAL(returnPressed()),
             this, SLOT(lowProcessText()));
     mainLayout->addWidget(low, 1,1);
 
-    mainLayout->addWidget(new QLabel("Use the primary variable if it is below ", central, "hiLabel"),2,0);
+    mainLayout->addWidget(new QLabel(tr("Use the primary variable if it is below "), central, "hiLabel"),2,0);
     hi = new QLineEdit(central, "hi");
     connect(hi, SIGNAL(returnPressed()),
             this, SLOT(hiProcessText()));
     mainLayout->addWidget(hi, 2,1);
 
-    mainLayout->addWidget(new QLabel("Context Variable", central, "contextLabel"),3,0);
+    mainLayout->addWidget(new QLabel(tr("Context Variable"), central, "contextLabel"),3,0);
     context = new QLineEdit(central, "context");
     connect(context, SIGNAL(returnPressed()),
             this, SLOT(contextProcessText()));
     mainLayout->addWidget(context, 3,1);
 
-    mainLayout->addWidget(new QLabel("Cutoff for context variable", central, "cutoffLabel"),4,0);
+    mainLayout->addWidget(new QLabel(tr("Cutoff for context variable"), central, "cutoffLabel"),4,0);
     cutoff = new QLineEdit(central, "cutoff");
     connect(cutoff, SIGNAL(returnPressed()),
             this, SLOT(cutoffProcessText()));
     mainLayout->addWidget(cutoff, 4,1);
 
-    mainLayout->addWidget(new QLabel("Map values below the cutoff to ", central, "belowLabel"),5,0);
+    mainLayout->addWidget(new QLabel(tr("Map values below the cutoff to "), central, "belowLabel"),5,0);
     below = new QLineEdit(central, "below");
     connect(below, SIGNAL(returnPressed()),
             this, SLOT(belowProcessText()));
     mainLayout->addWidget(below, 5,1);
 
-    mainLayout->addWidget(new QLabel("Map values above the cutoff to ", central, "aboveLabel"),6,0);
+    mainLayout->addWidget(new QLabel(tr("Map values above the cutoff to "), central, "aboveLabel"),6,0);
     above = new QLineEdit(central, "above");
     connect(above, SIGNAL(returnPressed()),
             this, SLOT(aboveProcessText()));
@@ -258,14 +260,15 @@ QvisContextWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetOffset(val);
+            if(okay)
+                atts->SetOffset(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of offset was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetOffset());
+            msg = tr("The value of offset was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetOffset());
             Message(msg);
             atts->SetOffset(atts->GetOffset());
         }
@@ -279,14 +282,15 @@ QvisContextWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetLow(val);
+            if(okay)
+                atts->SetLow(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of low was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetLow());
+            msg = tr("The value of low was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetLow());
             Message(msg);
             atts->SetLow(atts->GetLow());
         }
@@ -300,14 +304,15 @@ QvisContextWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetHi(val);
+            if(okay)
+                atts->SetHi(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of hi was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetHi());
+            msg = tr("The value of hi was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetHi());
             Message(msg);
             atts->SetHi(atts->GetHi());
         }
@@ -325,9 +330,9 @@ QvisContextWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of context was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetContext().c_str());
+            msg = tr("The value of context was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetContext().c_str());
             Message(msg);
             atts->SetContext(atts->GetContext());
         }
@@ -341,14 +346,15 @@ QvisContextWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetCutoff(val);
+            if(okay)
+                atts->SetCutoff(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of cutoff was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetCutoff());
+            msg = tr("The value of cutoff was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetCutoff());
             Message(msg);
             atts->SetCutoff(atts->GetCutoff());
         }
@@ -362,14 +368,15 @@ QvisContextWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetBelow(val);
+            if(okay)
+                atts->SetBelow(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of below was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetBelow());
+            msg = tr("The value of below was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetBelow());
             Message(msg);
             atts->SetBelow(atts->GetBelow());
         }
@@ -388,9 +395,9 @@ QvisContextWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of above was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetAbove());
+            msg = tr("The value of above was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetAbove());
             Message(msg);
             atts->SetAbove(atts->GetAbove());
         }

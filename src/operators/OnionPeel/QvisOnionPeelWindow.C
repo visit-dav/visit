@@ -78,8 +78,8 @@
 
 QvisOnionPeelWindow::QvisOnionPeelWindow(const int type,
                          OnionPeelAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad) 
 {
@@ -127,6 +127,9 @@ QvisOnionPeelWindow::~QvisOnionPeelWindow()
 //   Kathleen Bonnell, Wed Jun  6 17:22:08 PDT 2007 
 //   Replace categoryName/subsetName combo boxes with QvisSILSetSelector.
 //
+//   Brad Whitlock, Fri Apr 25 08:54:57 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -137,14 +140,14 @@ QvisOnionPeelWindow::CreateWindowContents()
     //
     // Adjacency
     //
-    mainLayout->addWidget(new QLabel("Adjacency", central, "adjacencyTypeLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("Adjacency"), central, "adjacencyTypeLabel"),0,0);
     adjacencyType = new QButtonGroup(central, "adjacencyType");
     adjacencyType->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *adjacencyTypeLayout = new QHBoxLayout(adjacencyType);
     adjacencyTypeLayout->setSpacing(10);
-    QRadioButton *adjacencyTypeNodeFaceNode = new QRadioButton("Node", adjacencyType);
+    QRadioButton *adjacencyTypeNodeFaceNode = new QRadioButton(tr("Node"), adjacencyType);
     adjacencyTypeLayout->addWidget(adjacencyTypeNodeFaceNode);
-    QRadioButton *adjacencyTypeNodeFaceFace = new QRadioButton("Face", adjacencyType);
+    QRadioButton *adjacencyTypeNodeFaceFace = new QRadioButton(tr("Face"), adjacencyType);
     adjacencyTypeLayout->addWidget(adjacencyTypeNodeFaceFace);
     connect(adjacencyType, SIGNAL(clicked(int)),
             this, SLOT(adjacencyTypeChanged(int)));
@@ -167,14 +170,14 @@ QvisOnionPeelWindow::CreateWindowContents()
     //
     // Seed
     //
-    mainLayout->addWidget(new QLabel("Seed", central, "seedTypeLabel"),2,0);
+    mainLayout->addWidget(new QLabel(tr("Seed"), central, "seedTypeLabel"),2,0);
     seedType = new QButtonGroup(central, "seedType");
     seedType->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *seedTypeLayout = new QHBoxLayout(seedType);
     seedTypeLayout->setSpacing(10);
-    QRadioButton *rb = new QRadioButton("Cell", seedType);
+    QRadioButton *rb = new QRadioButton(tr("Cell"), seedType);
     seedTypeLayout->addWidget(rb);
-    rb = new QRadioButton("Node", seedType);
+    rb = new QRadioButton(tr("Node"), seedType);
     seedTypeLayout->addWidget(rb);
     connect(seedType, SIGNAL(clicked(int)),
             this, SLOT(seedTypeChanged(int)));
@@ -184,10 +187,10 @@ QvisOnionPeelWindow::CreateWindowContents()
     // Index
     //
 #if 0
-    mainLayout->addMultiCellWidget(new QLabel("Seed # or i j [k]", 
+    mainLayout->addMultiCellWidget(new QLabel(tr("Seed # or i j [k]"), 
                 central, "indexLabel"),3,3,0,1);
 #endif
-    mainLayout->addWidget(new QLabel("Seed # or i j [k]", 
+    mainLayout->addWidget(new QLabel(tr("Seed # or i j [k]"), 
                 central, "indexLabel"),3,0);
     index = new QLineEdit(central, "index");
     index->setText(QString("1"));
@@ -198,7 +201,7 @@ QvisOnionPeelWindow::CreateWindowContents()
     //
     // UseGlobalId
     //
-    useGlobalId = new QCheckBox("Seed # is Global", central, "useGlobalId");
+    useGlobalId = new QCheckBox(tr("Seed # is Global"), central, "useGlobalId");
     useGlobalId->setChecked(false);
     connect(useGlobalId, SIGNAL(toggled(bool)),
             this, SLOT(useGlobalIdToggled(bool)));
@@ -207,7 +210,7 @@ QvisOnionPeelWindow::CreateWindowContents()
     //
     // Layers
     //
-    mainLayout->addWidget(new QLabel("Layers", central, "requestedLayerLabel"),5,0);
+    mainLayout->addWidget(new QLabel(tr("Layers"), central, "requestedLayerLabel"),5,0);
     requestedLayer = new QSpinBox(0, 10000, 1, central, "requestedLayer");
     connect(requestedLayer, SIGNAL(valueChanged(int)), 
             this, SLOT(requestedLayerChanged(int)));
@@ -373,8 +376,8 @@ QvisOnionPeelWindow::GetCurrentValues(int which_widget)
         } 
         else 
         {
-            msg.sprintf("The values for the index were invalid. "
-                "Resetting to the last good value."); 
+            msg = tr("The values for the index were invalid. "
+                     "Resetting to the last good value.");
             Message(msg);
             atts->SetLogical(atts->GetLogical());
             atts->SetIndex(atts->GetIndex());

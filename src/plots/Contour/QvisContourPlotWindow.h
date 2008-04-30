@@ -89,8 +89,8 @@ class QvisContourPlotWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisContourPlotWindow(const int type, ContourAttributes *materialAtts_,
-                          const char *caption = 0,
-                          const char *shortName = 0,
+                          const QString &caption = QString::null,
+                          const QString &shortName = QString::null,
                           QvisNotepadArea *notepad = 0);
     virtual ~QvisContourPlotWindow();
     virtual void CreateWindowContents();

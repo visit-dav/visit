@@ -146,8 +146,7 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
 
     // If the window manager is dumb enough to put decorations on this
     // window, at least put a reasonable title on it.
-    QString caption(tr("VisIt %1 splash screen"));
-    caption.replace("%1", VERSION);
+    QString caption(tr("VisIt %1 splash screen").arg(VERSION));
     setCaption(caption);
 
     // Set up a box to put the picture in
@@ -197,10 +196,7 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
     }
     else if(patch > 0)
     {
-        QString p(tr("Patch %1"));
-        ver.sprintf("%d", patch);
-        p.replace("%1", ver);
-        ver = p;
+        ver = tr("Patch %1").arg(patch);
         drawVersion = true;
     }
 

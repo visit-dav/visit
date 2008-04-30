@@ -43,6 +43,7 @@
 
 #include <MessageAttributes.h>
 #include <StatusAttributes.h>
+#include <UnicodeHelper.h>
 
 #include <DebugStream.h>
 
@@ -145,6 +146,9 @@ ViewerBase::GetViewerMethods()
 //
 // Arguments:
 //   message : The message that gets sent to the GUI.
+//   hasUnicode : True if the message was originally created using QStrings.
+//                We provide the option for false in the event that we want
+//                pass an AVT error message (no translation) up.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Apr 23 13:41:01 PST 2001
@@ -159,16 +163,20 @@ ViewerBase::GetViewerMethods()
 //   Cyrus Harrison, Thu Feb 21 15:01:20 PST 2008
 //   Added check for message suppression.
 //
+//   Brad Whitlock, Tue Apr 29 10:58:40 PDT 2008
+//   Converted to QString.
+//
 // ****************************************************************************
 
 void
-ViewerBase::Error(const char *message)
+ViewerBase::Error(const QString &message, bool hasUnicode)
 {
-    if ((message == 0) || (strlen(message) < 1) || suppressMessages )
+    if (message.isEmpty() || suppressMessages )
         return;
 
     // Send the message to the observers of the viewer's messageAtts.
-    GetViewerState()->GetMessageAttributes()->SetText(std::string(message));
+    MessageAttributes_SetText(*GetViewerState()->GetMessageAttributes(),
+                              message, hasUnicode);
     GetViewerState()->GetMessageAttributes()->SetSeverity(MessageAttributes::Error);
     GetViewerState()->GetMessageAttributes()->Notify();
 
@@ -197,16 +205,20 @@ ViewerBase::Error(const char *message)
 //   Cyrus Harrison, Thu Feb 21 15:01:20 PST 2008
 //   Added check for message suppression.
 //
+//   Brad Whitlock, Tue Apr 29 10:58:40 PDT 2008
+//   Converted to QString.
+//
 // ****************************************************************************
 
 void
-ViewerBase::Warning(const char *message)
+ViewerBase::Warning(const QString &message, bool hasUnicode)
 {
-    if ((message == 0) || (strlen(message) < 1) || suppressMessages)
+    if (message.isEmpty() || suppressMessages)
         return;
 
     // Send the message to the observers of the viewer's messageAtts.
-    GetViewerState()->GetMessageAttributes()->SetText(std::string(message));
+    MessageAttributes_SetText(*GetViewerState()->GetMessageAttributes(),
+                              message, hasUnicode);
     GetViewerState()->GetMessageAttributes()->SetSeverity(MessageAttributes::Warning);
     GetViewerState()->GetMessageAttributes()->Notify();
 
@@ -235,16 +247,20 @@ ViewerBase::Warning(const char *message)
 //   Cyrus Harrison, Thu Feb 21 15:01:20 PST 2008
 //   Added check for message suppression.
 //
+//   Brad Whitlock, Tue Apr 29 10:58:40 PDT 2008
+//   Converted to QString.
+//
 // ****************************************************************************
 
 void
-ViewerBase::Message(const char *message)
+ViewerBase::Message(const QString &message, bool hasUnicode)
 {
-    if ((message == 0) || (strlen(message) < 1) || suppressMessages )
+    if (message.isEmpty() || suppressMessages )
         return;
 
     // Send the message to the observers of the viewer's messageAtts.
-    GetViewerState()->GetMessageAttributes()->SetText(std::string(message));
+    MessageAttributes_SetText(*GetViewerState()->GetMessageAttributes(),
+                              message, hasUnicode);
     GetViewerState()->GetMessageAttributes()->SetSeverity(MessageAttributes::Message);
     GetViewerState()->GetMessageAttributes()->Notify();
 
@@ -261,6 +277,8 @@ ViewerBase::Message(const char *message)
 // Creation:   Thu May 11 15:06:36 PST 2006
 //
 // Modifications:
+//   Brad Whitlock, Tue Apr 29 11:04:39 PDT 2008
+//   Set a new unicode flag.
 //
 // ****************************************************************************
 
@@ -270,6 +288,7 @@ ViewerBase::ErrorClear()
     // Send the message to the observers of the viewer's messageAtts.
     debug1 << "Sending ErrorClear message to clients." << endl;
     GetViewerState()->GetMessageAttributes()->SetText("");
+    GetViewerState()->GetMessageAttributes()->SetHasUnicode(false);
     GetViewerState()->GetMessageAttributes()->SetSeverity(MessageAttributes::ErrorClear);
     GetViewerState()->GetMessageAttributes()->Notify();
 }
@@ -293,15 +312,18 @@ ViewerBase::ErrorClear()
 //    Brad Whitlock, Fri Sep 21 13:26:46 PST 2001
 //    Added the duration field.
 //
+//    Brad Whitlock, Tue Apr 29 11:05:28 PDT 2008
+//    Converted to QString.
+//
 // ****************************************************************************
 
 void
-ViewerBase::Status(const char *message)
+ViewerBase::Status(const QString &message)
 {
     GetViewerState()->GetStatusAttributes()->SetSender("viewer");
     GetViewerState()->GetStatusAttributes()->SetClearStatus(false);
     GetViewerState()->GetStatusAttributes()->SetMessageType(1);
-    GetViewerState()->GetStatusAttributes()->SetStatusMessage(message);
+    StatusAttributes_SetStatusMessage(*GetViewerState()->GetStatusAttributes(), message);
     GetViewerState()->GetStatusAttributes()->SetDuration(StatusAttributes::DEFAULT_DURATION);
     GetViewerState()->GetStatusAttributes()->Notify();
 }
@@ -320,16 +342,18 @@ ViewerBase::Status(const char *message)
 // Creation:   Fri Sep 21 13:24:52 PST 2001
 //
 // Modifications:
+//    Brad Whitlock, Tue Apr 29 11:05:28 PDT 2008
+//    Converted to QString.
 //
 // ****************************************************************************
 
 void
-ViewerBase::Status(const char *message, int milliseconds)
+ViewerBase::Status(const QString &message, int milliseconds)
 {
     GetViewerState()->GetStatusAttributes()->SetSender("viewer");
     GetViewerState()->GetStatusAttributes()->SetClearStatus(false);
     GetViewerState()->GetStatusAttributes()->SetMessageType(1);
-    GetViewerState()->GetStatusAttributes()->SetStatusMessage(message);
+    StatusAttributes_SetStatusMessage(*GetViewerState()->GetStatusAttributes(), message);
     GetViewerState()->GetStatusAttributes()->SetDuration(milliseconds);
     GetViewerState()->GetStatusAttributes()->Notify();
 }
@@ -357,12 +381,12 @@ ViewerBase::Status(const char *message, int milliseconds)
 // ****************************************************************************
 
 void
-ViewerBase::Status(const char *sender, const char *message)
+ViewerBase::Status(const char *sender, const QString &message)
 {
     GetViewerState()->GetStatusAttributes()->SetSender(sender);
     GetViewerState()->GetStatusAttributes()->SetClearStatus(false);
     GetViewerState()->GetStatusAttributes()->SetMessageType(1);
-    GetViewerState()->GetStatusAttributes()->SetStatusMessage(message);
+    StatusAttributes_SetStatusMessage(*GetViewerState()->GetStatusAttributes(), message);
     GetViewerState()->GetStatusAttributes()->SetDuration(StatusAttributes::DEFAULT_DURATION);
     GetViewerState()->GetStatusAttributes()->Notify();
 }
@@ -392,6 +416,9 @@ ViewerBase::Status(const char *sender, const char *message)
 //    Brad Whitlock, Fri Sep 21 13:26:46 PST 2001
 //    Added the duration field.
 //
+//    Brad Whitlock, Tue Apr 29 11:10:16 PDT 2008
+//    Set the hasUnicode flag to false.
+//
 // ****************************************************************************
 
 void
@@ -406,6 +433,7 @@ ViewerBase::Status(const char *sender, int percent, int curStage,
     GetViewerState()->GetStatusAttributes()->SetCurrentStageName(curStageName);
     GetViewerState()->GetStatusAttributes()->SetMaxStage(maxStage);
     GetViewerState()->GetStatusAttributes()->SetDuration(StatusAttributes::DEFAULT_DURATION);
+    GetViewerState()->GetStatusAttributes()->SetHasUnicode(false);
     GetViewerState()->GetStatusAttributes()->Notify();
 }
 

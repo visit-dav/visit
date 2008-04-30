@@ -61,6 +61,7 @@
 #include <InvalidVariableException.h>
 #include <Plot.h>
 #include <PlotList.h>
+#include <PlotPluginInfo.h>
 #include <PlotPluginManager.h>
 #include <OperatorPluginManager.h>
 #include <RecursiveExpressionException.h>
@@ -580,7 +581,9 @@ ViewerPlotList::GetTimeSliderInformation(int &activeTS,
 // Creation:   Mon Mar 22 15:23:26 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 29 15:52:45 PDT 2008
+//   Added tr().
+//
 // ****************************************************************************
 
 void
@@ -592,9 +595,9 @@ ViewerPlotList::SetActiveTimeSlider(const std::string &newTimeSlider)
         activeTimeSlider = newTimeSlider;
     else
     {
-        char err[200];
-        SNPRINTF(err, 200, "There is no time slider called %s. VisIt cannot "
-                 "use it as the active time slider.", newTimeSlider.c_str());
+        QString err = tr("There is no time slider called %1. VisIt cannot "
+                         "use it as the active time slider.").
+                      arg(newTimeSlider.c_str());
         Error(err);
     }    
 }
@@ -1610,6 +1613,9 @@ ViewerPlotList::DeleteTimeSlider(const std::string &ts, bool update)
 //   Reformatted the text and put it at the end of the prompt instead of
 //   in the middle.
 //
+//   Brad Whitlock, Tue Apr 29 15:55:10 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 bool
@@ -1634,12 +1640,11 @@ ViewerPlotList::AskForCorrelationPermission(const stringVector &dbs) const
         DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
         int defMethod = cL->GetDefaultCorrelationMethod();
 
-        static char prompt[512];
-        SNPRINTF(prompt, sizeof(prompt), "Would you like to create a \"%s\" "
-                "database correlation for the following databases?\n",
-                DatabaseCorrelation::GetMethodNameFromMethod(
+        QString text = tr("Would you like to create a \"%1\" "
+                          "database correlation for the following databases?\n").
+                arg(DatabaseCorrelation::GetMethodNameFromMethod(
                     cL->GetDefaultCorrelationMethod()));
-        QString text(prompt);
+
         QString fileStr;
         for(int i = 0; i < dbs.size(); ++i)
             fileStr += (QString(dbs[i].c_str()) + QString("\n"));
@@ -1648,11 +1653,11 @@ ViewerPlotList::AskForCorrelationPermission(const stringVector &dbs) const
         // Add a disclaimer in the event of a "Time" correlation.
         if (defMethod == DatabaseCorrelation::TimeCorrelation)
         {
-            text += "\n"
+            text += tr("\n"
                "Please be aware that \"Time\" database correlations may require\n"
                "opening and reading time information from all files in the database.\n"
                "Depending on the database plugin type and the file system, this\n"
-               "operation could take as much as a few minutes.";
+               "operation could take as much as a few minutes.");
         }
 
         debug3 << "Asking for permission to create correlation. Prompt="
@@ -1669,12 +1674,11 @@ ViewerPlotList::AskForCorrelationPermission(const stringVector &dbs) const
         // should not try to correlate these databases in the future.
         if(!permission)
         {
-            QString msg("You chose not to create a database correlation. "
-                        "VisIt will not prompt you again to create a "
-                        "database correlation for:\n");
-            msg += fileStr;
+            QString msg = tr("You chose not to create a database correlation. "
+                             "VisIt will not prompt you again to create a "
+                             "database correlation for:\n%1").arg(fileStr);
             fs->DeclineCorrelationCreation(dbs);
-            Warning(msg.latin1());
+            Warning(msg);
         }
 
         viewerSubject->BlockSocketSignals(false);
@@ -2456,6 +2460,9 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Update the expression list here; since some operators can now create
 //    new variables, the expression list might change when a plot is created.
 //
+//    Brad Whitlock, Tue Apr 29 15:57:25 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 int
@@ -2464,7 +2471,7 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
 {
     if (databaseName.size() < 1)
     {
-        Error("Cannot create a plot until a database has been opened.");
+        Error(tr("Cannot create a plot until a database has been opened."));
         return -1;
     }
 
@@ -2479,7 +2486,7 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
                           var, applyOperators, inheritSILRestriction, 0);
         if (newPlot == 0)
         {
-            Error("VisIt could not create the desired plot.");
+            Error(tr("VisIt could not create the desired plot."));
             hadError = true;
         }
     }
@@ -2888,6 +2895,9 @@ ViewerPlotList::MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame)
 //    Make plots in each plot list have the same name so legend annotation
 //    objects are set properly later.
 //
+//    Brad Whitlock, Tue Apr 29 15:58:03 PDT 2008
+//    Added tr().
+//
 // ****************************************************************************
 
 void
@@ -2970,7 +2980,7 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl, bool copyPlots)
              }
              else
              {
-                 Error("VisIt could not copy plots.");
+                 Error(tr("VisIt could not copy plots."));
                  return;
              }
         }
@@ -3200,6 +3210,9 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
 //   Changed code so the new plot's SIL restriction is brand new in the event
 //   that we're not inheriting it from another the default SIL.
 //
+//   Brad Whitlock, Tue Apr 29 15:58:55 PDT 2008
+//   Added tr().
+//
 // ****************************************************************************
 
 ViewerPlot *
@@ -3267,9 +3280,9 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
 
     if (*silr == 0)
     {
-        char str[400];
-        SNPRINTF(str, 400, "VisIt could not create a SIL restriction for %s. "
-                     "The plot of \"%s\" cannot be added.", db.c_str(), newVarName.c_str());
+        QString str = tr("VisIt could not create a SIL restriction for %1. "
+                         "The plot of \"%2\" cannot be added.").
+                      arg(db.c_str()).arg(newVarName.c_str());
         Error(str);
         return 0;
     }
@@ -3812,7 +3825,7 @@ ViewerPlotList::CopyActivePlots()
 	    }
 	    else
 	    {
-	        Error( "Visit could not copy active plot." );
+	        Error(tr("Visit could not copy active plot."));
 	        return;
 	    }
 	}
@@ -4094,6 +4107,9 @@ ViewerPlotList::SetPlotVar(const std::string &variable)
 //    If no ACTIVE plot matches the plot type, but there is ONE plot of the
 //    given type, go ahead and set that plot's attributes.
 //
+//    Brad Whitlock, Tue Apr 29 16:01:34 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -4156,17 +4172,21 @@ ViewerPlotList::SetPlotAtts(const int plotType)
     else
     {
         PlotPluginManager *pMgr = PlotPluginManager::Instance();
-        std::string msg;
-        msg = std::string("VisIt cannot set the ") + 
-              pMgr->GetPluginName(pMgr->GetEnabledID(plotType)) + 
-              std::string(" plot attributes since no"
-                          " plots of that type are selected."
-                          " Please select a ") +
-              pMgr->GetPluginName(pMgr->GetEnabledID(plotType)) + 
-              std::string(" plot before trying to modify its plot"
-                          " attributes.");
+        ViewerPlotPluginInfo *info = pMgr->GetViewerPluginInfo(pMgr->GetEnabledID(plotType));
+        QString plotName;
+        if(info)
+        {
+             QString *s = info->GetMenuName();
+             plotName = *s;
+             delete s;
+        }
 
-        Warning(msg.c_str());
+        QString msg;
+        msg = tr("VisIt cannot set the %1 plot attributes since no plots "
+                 "of that type are selected. Please select a %2 plot "
+                 "before trying to modify its plot attributes.").
+              arg(plotName).arg(plotName);
+        Warning(msg);
     }
 }
 
@@ -4468,6 +4488,9 @@ ViewerPlotList::CloseDatabase(const std::string &dbName)
 //   Added code to get metadata for new database's state and call to
 //   PrepareCacheForReplace.
 //
+//   Brad Whitlock, Tue Apr 29 16:03:00 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -4565,13 +4588,12 @@ ViewerPlotList::ReplaceDatabase(const EngineKey &key,
             }
             CATCH(InvalidVariableException)
             {
-                char str[1024];
-                SNPRINTF(str, 1024, "The %s plot of \"%s\" cannot be regenerated "
-                             "using the database: %s since the variable "
-                             "is not contained in the new database.",
-                             plot->GetPlotTypeName(),
-                             plot->GetVariableName().c_str(),
-                             database.c_str());
+                QString str = tr("The %1 plot of \"%2\" cannot be regenerated "
+                                 "using the database: %3 since the variable "
+                                 "is not contained in the new database.").
+                              arg(plot->GetMenuName()).
+                              arg(plot->GetVariableName().c_str()).
+                              arg(database.c_str());
                 Error(str);
             }
             CATCH2(VisItException, e)
@@ -4644,6 +4666,9 @@ ViewerPlotList::ReplaceDatabase(const EngineKey &key,
 //   Brad Whitlock, Mon May 3 12:43:31 PDT 2004
 //   I removed the host argument since that info is in the engine key.
 //
+//   Brad Whitlock, Tue Apr 29 16:03:49 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -4683,13 +4708,12 @@ ViewerPlotList::OverlayDatabase(const EngineKey &ek,
         }
         else
         {
-            char str[1024];
-            SNPRINTF(str, 1024, "The %s plot of \"%s\" cannot be overlayed "
-                         "using the database: %s since the variable "
-                         "is not contained in the new database.",
-                         plots[i].plot->GetPlotTypeName(),
-                         plots[i].plot->GetVariableName().c_str(),
-                         database.c_str());
+            QString str = tr("The %1 plot of \"%2\" cannot be overlayed "
+                             "using the database: %3 since the variable "
+                             "is not contained in the new database.").
+                          arg(plots[i].plot->GetMenuName()).
+                          arg(plots[i].plot->GetVariableName().c_str()).
+                          arg(database.c_str());
             Error(str);
         }
     }
@@ -4772,6 +4796,9 @@ ViewerPlotList::OverlayDatabase(const EngineKey &ek,
 //   material used to fill up the remainder material fraction, since material
 //   fractions in a Chombo file will not add up to 100%).
 //
+//   Brad Whitlock, Tue Apr 29 16:05:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 avtSILRestriction_p
@@ -4782,7 +4809,7 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
     avtSILRestriction_p silr(0);
     ViewerFileServer *server = ViewerFileServer::Instance();
     int topSet = 0;
-    char str[400];
+    QString str;
 
     //
     // Get the SIL from the file server.
@@ -4790,8 +4817,8 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
     const avtSIL *sil = server->GetSILForState(host, database, state);
     if (sil == 0)
     {
-        SNPRINTF(str, 400, "VisIt could not read the SIL for %s at state %d.",
-            database.c_str(), state);
+        str = tr("VisIt could not read the SIL for %1 at state %2.").
+              arg(database.c_str()).arg(state);
         Error(str);
         return silr;
     }
@@ -4813,8 +4840,8 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
         (avtDatabaseMetaData *)server->GetMetaDataForState(host, database, state);
     if (md == 0)
     {
-        SNPRINTF(str, 400, "VisIt could not read the MetaData for %s at state %d.",
-            database.c_str(), state);
+        str = tr("VisIt could not read the MetaData for %1 at state %2.").
+              arg(database.c_str()).arg(state);
         Error(str);
         return silr;
     }
@@ -5002,9 +5029,12 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
 // Creation:   Mon Jul 29 15:57:38 PST 2002
 //
 // Modifications:
-//    Gunther H. Weber, Mon Jan 28 13:56:41 PST 2008
-//    Added diagnostic output to debug5
-//   
+//   Gunther H. Weber, Mon Jan 28 13:56:41 PST 2008
+//   Added diagnostic output to debug5
+//
+//   Brad Whitlock, Tue Apr 29 16:06:44 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -5021,8 +5051,8 @@ ViewerPlotList::ClearDefaultSILRestrictions(const std::string &host,
     const avtSIL *sil = server->GetSIL(host, database);
     if (sil == 0)
     {
-        char str[400];
-        SNPRINTF(str, 400, "VisIt could not read the SIL for %s.", database.c_str());
+        QString str = tr("VisIt could not read the SIL for %1.").
+                      arg(database.c_str());
         Error(str);
         return;
     }
@@ -5790,6 +5820,9 @@ ViewerPlotList::InterruptUpdatePlotList()
 //    I removed the call to CanMeshPlotsBeOpaque because I moved it to a
 //    central location to fix issues with the opacity and keyframing.
 //
+//    Brad Whitlock, Tue Apr 29 16:07:34 PDT 2008
+//    Added tr().
+//
 // ****************************************************************************
 
 bool
@@ -5878,8 +5911,8 @@ ViewerPlotList::UpdatePlots(bool animating)
 
             if(attempts > 0)
             {
-                Message("Some plots had errors. VisIt will try to regenerate "
-                        "those plots");
+                Message(tr("Some plots had errors. VisIt will try to regenerate "
+                        "those plots"));
             }
         }
         else
@@ -6011,6 +6044,9 @@ PthreadAttrInit(pthread_attr_t *attr)
 //    Added additional check for IsChangingScalableRenderingMode when
 //    issuing no data warning
 //
+//    Brad Whitlock, Tue Apr 29 16:09:05 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void *
@@ -6036,12 +6072,11 @@ CreatePlot(void *info)
             if (actorHasNoData && !plotInfo->window->GetScalableRendering() &&
                 !plotInfo->window->IsChangingScalableRenderingMode(true))
             {
-                char message[256];
-                SNPRINTF(message, sizeof(message),
-                    "The %s plot of variable \"%s\" yielded no data.",
-                    plotInfo->plot->GetPlotTypeName(),
-                    plotInfo->plot->GetVariableName().c_str());
-                plotInfo->plotList->Warning(message);
+                QString msg = ViewerPlotList::tr("The %1 plot of variable "
+                                                 "\"%2\" yielded no data.").
+                    arg(plotInfo->plot->GetMenuName()).
+                    arg(plotInfo->plot->GetVariableName().c_str());
+                plotInfo->plotList->Warning(msg);
             }
         }
         else
@@ -6270,7 +6305,7 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
             {
 		if (errorCount == 0)
                 {
-                    Error("The plot dimensions do not match.");
+                    Error(tr("The plot dimensions do not match."));
                     ++errorCount;
                 }
 
@@ -7461,6 +7496,9 @@ ViewerPlotList::ClearPipelines()
 //    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004 
 //    Added bool args needZones and needInvTransform.
 //
+//    Brad Whitlock, Tue Apr 29 16:11:55 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void 
@@ -7476,12 +7514,11 @@ ViewerPlotList::StartPick(const bool needZones, const bool needInvTransform)
     }
     if (needsUpdate)
     {
-        char msg[350];
-        SNPRINTF(msg, 350, "%s%s%s%s%s%s", "VisIt does not have all the ",
-                 "information it needs to perform a pick.  Please wait ",
-                 "while the necessary information is calculated.  All ",
-                 "current pick selections have been cached and will be ",
-                 "performed when calculations are complete.  VisIt will ",
+        QString msg = tr("VisIt does not have all the "
+                 "information it needs to perform a pick.  Please wait "
+                 "while the necessary information is calculated.  All "
+                 "current pick selections have been cached and will be "
+                 "performed when calculations are complete.  VisIt will "
                  "notify you when it is fully ready for more picks.");
         //
         //  Using "Warning" instead of "Message" so that it pops up.
@@ -7490,7 +7527,7 @@ ViewerPlotList::StartPick(const bool needZones, const bool needInvTransform)
   
         UpdatePlotList();
         UpdateFrame();
-        Warning("Pick mode now fully ready." );
+        Warning(tr("Pick mode now fully ready."));
     }
 }
 
@@ -8120,12 +8157,12 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
     //
         if(sourceToDB.size() > 0)
         {
-            Warning("Your session file was saved before VisIt 1.5.5. If "
+            Warning(tr("Your session file was saved before VisIt 1.5.5. If "
                     "you want to restore your session file using a different "
                     "list of data sources then you will first have to load "
                     "your session into VisIt 1.5.5 and save it before "
                     "attempting to restore the session with a different "
-                    "list of sources.");
+                    "list of sources."));
         }
 
         // Make sure that the host, database, and host+database get set.
@@ -8556,8 +8593,11 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
 //
 // Modifications:
 //   Brad Whitlock, Thu Feb 14 14:56:43 PST 2008
-//   Use SearchForNode to get the ViewerPlostList node in case we have an
+//   Use SearchForNode to get the ViewerPlotList node in case we have an
 //   old pre-1.3 session file. GetNode no longer recurses.
+//
+//   Brad Whitlock, Tue Apr 29 16:17:52 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -8583,7 +8623,7 @@ ViewerPlotList::SessionContainsErrors(DataNode *parentNode)
     }
     else
     {
-        Error("The session file did not specify how many plots to create.");
+        Error(tr("The session file did not specify how many plots to create."));
     }
 
     for(int i = 0; i < expectedPlots && !fatalError; ++i)

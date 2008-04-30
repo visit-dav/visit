@@ -78,8 +78,8 @@ class QvisMoleculePlotWindow : public QvisPostableWindowObserver
   public:
     QvisMoleculePlotWindow(const int type,
                          MoleculeAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisMoleculePlotWindow();
     virtual void CreateWindowContents();

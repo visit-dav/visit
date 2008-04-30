@@ -38,6 +38,8 @@
 
 package llnl.visit;
 
+import java.lang.Byte;
+import java.util.Vector;
 
 // ****************************************************************************
 // Class: StatusAttributes
@@ -62,11 +64,13 @@ public class StatusAttributes extends AttributeSubject
 
     public StatusAttributes()
     {
-        super(9);
+        super(11);
 
         sender = new String("viewer");
         clearStatus = false;
         statusMessage = new String("");
+        unicode = new Vector();
+        hasUnicode = false;
         percent = 0;
         currentStage = 1;
         currentStageName = new String("stage1");
@@ -77,11 +81,21 @@ public class StatusAttributes extends AttributeSubject
 
     public StatusAttributes(StatusAttributes obj)
     {
-        super(9);
+        super(11);
+
+        int i;
 
         sender = new String(obj.sender);
         clearStatus = obj.clearStatus;
         statusMessage = new String(obj.statusMessage);
+        unicode = new Vector(obj.unicode.size());
+        for(i = 0; i < obj.unicode.size(); ++i)
+        {
+            Byte bv = (Byte)obj.unicode.elementAt(i);
+            unicode.addElement(new Byte(bv.byteValue()));
+        }
+
+        hasUnicode = obj.hasUnicode;
         percent = obj.percent;
         currentStage = obj.currentStage;
         currentStageName = new String(obj.currentStageName);
@@ -94,10 +108,23 @@ public class StatusAttributes extends AttributeSubject
 
     public boolean equals(StatusAttributes obj)
     {
+        int i;
+
+        // Compare the elements in the unicode vector.
+        boolean unicode_equal = (obj.unicode.size() == unicode.size());
+        for(i = 0; (i < unicode.size()) && unicode_equal; ++i)
+        {
+            // Make references to Byte from Object.
+            Byte unicode1 = (Byte)unicode.elementAt(i);
+            Byte unicode2 = (Byte)obj.unicode.elementAt(i);
+            unicode_equal = unicode1.equals(unicode2);
+        }
         // Create the return value
         return ((sender.equals(obj.sender)) &&
                 (clearStatus == obj.clearStatus) &&
                 (statusMessage.equals(obj.statusMessage)) &&
+                unicode_equal &&
+                (hasUnicode == obj.hasUnicode) &&
                 (percent == obj.percent) &&
                 (currentStage == obj.currentStage) &&
                 (currentStageName.equals(obj.currentStageName)) &&
@@ -125,46 +152,60 @@ public class StatusAttributes extends AttributeSubject
         Select(2);
     }
 
+    public void SetUnicode(Vector unicode_)
+    {
+        unicode = unicode_;
+        Select(3);
+    }
+
+    public void SetHasUnicode(boolean hasUnicode_)
+    {
+        hasUnicode = hasUnicode_;
+        Select(4);
+    }
+
     public void SetPercent(int percent_)
     {
         percent = percent_;
-        Select(3);
+        Select(5);
     }
 
     public void SetCurrentStage(int currentStage_)
     {
         currentStage = currentStage_;
-        Select(4);
+        Select(6);
     }
 
     public void SetCurrentStageName(String currentStageName_)
     {
         currentStageName = currentStageName_;
-        Select(5);
+        Select(7);
     }
 
     public void SetMaxStage(int maxStage_)
     {
         maxStage = maxStage_;
-        Select(6);
+        Select(8);
     }
 
     public void SetMessageType(int messageType_)
     {
         messageType = messageType_;
-        Select(7);
+        Select(9);
     }
 
     public void SetDuration(int duration_)
     {
         duration = duration_;
-        Select(8);
+        Select(10);
     }
 
     // Property getting methods
     public String  GetSender() { return sender; }
     public boolean GetClearStatus() { return clearStatus; }
     public String  GetStatusMessage() { return statusMessage; }
+    public Vector  GetUnicode() { return unicode; }
+    public boolean GetHasUnicode() { return hasUnicode; }
     public int     GetPercent() { return percent; }
     public int     GetCurrentStage() { return currentStage; }
     public String  GetCurrentStageName() { return currentStageName; }
@@ -182,16 +223,20 @@ public class StatusAttributes extends AttributeSubject
         if(WriteSelect(2, buf))
             buf.WriteString(statusMessage);
         if(WriteSelect(3, buf))
-            buf.WriteInt(percent);
+            buf.WriteByteVector(unicode);
         if(WriteSelect(4, buf))
-            buf.WriteInt(currentStage);
+            buf.WriteBool(hasUnicode);
         if(WriteSelect(5, buf))
-            buf.WriteString(currentStageName);
+            buf.WriteInt(percent);
         if(WriteSelect(6, buf))
-            buf.WriteInt(maxStage);
+            buf.WriteInt(currentStage);
         if(WriteSelect(7, buf))
-            buf.WriteInt(messageType);
+            buf.WriteString(currentStageName);
         if(WriteSelect(8, buf))
+            buf.WriteInt(maxStage);
+        if(WriteSelect(9, buf))
+            buf.WriteInt(messageType);
+        if(WriteSelect(10, buf))
             buf.WriteInt(duration);
     }
 
@@ -212,21 +257,27 @@ public class StatusAttributes extends AttributeSubject
                 SetStatusMessage(buf.ReadString());
                 break;
             case 3:
-                SetPercent(buf.ReadInt());
+                SetUnicode(buf.ReadByteVector());
                 break;
             case 4:
-                SetCurrentStage(buf.ReadInt());
+                SetHasUnicode(buf.ReadBool());
                 break;
             case 5:
-                SetCurrentStageName(buf.ReadString());
+                SetPercent(buf.ReadInt());
                 break;
             case 6:
-                SetMaxStage(buf.ReadInt());
+                SetCurrentStage(buf.ReadInt());
                 break;
             case 7:
-                SetMessageType(buf.ReadInt());
+                SetCurrentStageName(buf.ReadString());
                 break;
             case 8:
+                SetMaxStage(buf.ReadInt());
+                break;
+            case 9:
+                SetMessageType(buf.ReadInt());
+                break;
+            case 10:
                 SetDuration(buf.ReadInt());
                 break;
             }
@@ -239,6 +290,8 @@ public class StatusAttributes extends AttributeSubject
         str = str + stringToString("sender", sender, indent) + "\n";
         str = str + boolToString("clearStatus", clearStatus, indent) + "\n";
         str = str + stringToString("statusMessage", statusMessage, indent) + "\n";
+        str = str + ucharVectorToString("unicode", unicode, indent) + "\n";
+        str = str + boolToString("hasUnicode", hasUnicode, indent) + "\n";
         str = str + intToString("percent", percent, indent) + "\n";
         str = str + intToString("currentStage", currentStage, indent) + "\n";
         str = str + stringToString("currentStageName", currentStageName, indent) + "\n";
@@ -253,6 +306,8 @@ public class StatusAttributes extends AttributeSubject
     private String  sender;
     private boolean clearStatus;
     private String  statusMessage;
+    private Vector  unicode; // vector of Byte objects
+    private boolean hasUnicode;
     private int     percent;
     private int     currentStage;
     private String  currentStageName;

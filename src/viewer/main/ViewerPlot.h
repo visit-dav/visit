@@ -282,6 +282,9 @@ class avtToolInterface;
 //    Save the meshname for the plot's variable.  This is useful for
 //    operators that create their own variables.
 //
+//    Brad Whitlock, Tue Apr 29 15:34:48 PDT 2008
+//    Added GetMenuName.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot : public ViewerBase
@@ -308,6 +311,7 @@ class VIEWER_API ViewerPlot : public ViewerBase
     // Methods to identify the plot plugin.
     //
     const char *GetPlotTypeName() const;
+    QString     GetMenuName() const;
     const char *GetPluginID() const;
     int         GetType() const;
 

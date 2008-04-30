@@ -38,6 +38,8 @@
 
 package llnl.visit;
 
+import java.lang.Byte;
+import java.util.Vector;
 
 // ****************************************************************************
 // Class: MessageAttributes
@@ -66,17 +68,29 @@ public class MessageAttributes extends AttributeSubject
 
     public MessageAttributes()
     {
-        super(2);
+        super(4);
 
         text = new String("");
+        unicode = new Vector();
+        hasUnicode = false;
         severity = SEVERITY_MESSAGE;
     }
 
     public MessageAttributes(MessageAttributes obj)
     {
-        super(2);
+        super(4);
+
+        int i;
 
         text = new String(obj.text);
+        unicode = new Vector(obj.unicode.size());
+        for(i = 0; i < obj.unicode.size(); ++i)
+        {
+            Byte bv = (Byte)obj.unicode.elementAt(i);
+            unicode.addElement(new Byte(bv.byteValue()));
+        }
+
+        hasUnicode = obj.hasUnicode;
         severity = obj.severity;
 
         SelectAll();
@@ -84,8 +98,21 @@ public class MessageAttributes extends AttributeSubject
 
     public boolean equals(MessageAttributes obj)
     {
+        int i;
+
+        // Compare the elements in the unicode vector.
+        boolean unicode_equal = (obj.unicode.size() == unicode.size());
+        for(i = 0; (i < unicode.size()) && unicode_equal; ++i)
+        {
+            // Make references to Byte from Object.
+            Byte unicode1 = (Byte)unicode.elementAt(i);
+            Byte unicode2 = (Byte)obj.unicode.elementAt(i);
+            unicode_equal = unicode1.equals(unicode2);
+        }
         // Create the return value
         return ((text.equals(obj.text)) &&
+                unicode_equal &&
+                (hasUnicode == obj.hasUnicode) &&
                 (severity == obj.severity));
     }
 
@@ -96,15 +123,29 @@ public class MessageAttributes extends AttributeSubject
         Select(0);
     }
 
-    public void SetSeverity(int severity_)
+    public void SetUnicode(Vector unicode_)
     {
-        severity = severity_;
+        unicode = unicode_;
         Select(1);
     }
 
+    public void SetHasUnicode(boolean hasUnicode_)
+    {
+        hasUnicode = hasUnicode_;
+        Select(2);
+    }
+
+    public void SetSeverity(int severity_)
+    {
+        severity = severity_;
+        Select(3);
+    }
+
     // Property getting methods
-    public String GetText() { return text; }
-    public int    GetSeverity() { return severity; }
+    public String  GetText() { return text; }
+    public Vector  GetUnicode() { return unicode; }
+    public boolean GetHasUnicode() { return hasUnicode; }
+    public int     GetSeverity() { return severity; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -112,6 +153,10 @@ public class MessageAttributes extends AttributeSubject
         if(WriteSelect(0, buf))
             buf.WriteString(text);
         if(WriteSelect(1, buf))
+            buf.WriteByteVector(unicode);
+        if(WriteSelect(2, buf))
+            buf.WriteBool(hasUnicode);
+        if(WriteSelect(3, buf))
             buf.WriteInt(severity);
     }
 
@@ -126,6 +171,12 @@ public class MessageAttributes extends AttributeSubject
                 SetText(buf.ReadString());
                 break;
             case 1:
+                SetUnicode(buf.ReadByteVector());
+                break;
+            case 2:
+                SetHasUnicode(buf.ReadBool());
+                break;
+            case 3:
                 SetSeverity(buf.ReadInt());
                 break;
             }
@@ -136,6 +187,8 @@ public class MessageAttributes extends AttributeSubject
     {
         String str = new String();
         str = str + stringToString("text", text, indent) + "\n";
+        str = str + ucharVectorToString("unicode", unicode, indent) + "\n";
+        str = str + boolToString("hasUnicode", hasUnicode, indent) + "\n";
         str = str + indent + "severity = ";
         if(severity == SEVERITY_ERROR)
             str = str + "SEVERITY_ERROR";
@@ -153,7 +206,9 @@ public class MessageAttributes extends AttributeSubject
 
 
     // Attributes
-    private String text;
-    private int    severity;
+    private String  text;
+    private Vector  unicode; // vector of Byte objects
+    private boolean hasUnicode;
+    private int     severity;
 }
 

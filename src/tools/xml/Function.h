@@ -62,10 +62,15 @@
 //    Brad Whitlock, Wed Feb 27 15:55:37 PST 2008
 //    Added target.
 //
+//    Brad Whitlock, Fri Apr 25 11:13:20 PDT 2008
+//    Added accessType
+//
 // ****************************************************************************
 class Function
 {
   public:
+    typedef enum {AccessPrivate, AccessProtected, AccessPublic} AccessType;
+
     QString name;
     QString decl;
     QString def;
@@ -73,17 +78,25 @@ class Function
     bool    member;
     QString target;
     bool    usedThisFunction;
+    AccessType accessType;
   public:
     Function(const QString &n, const QString &dc, const QString &df, bool u,
         bool m, const QString &t) : name(n), decl(dc), def(df), user(u), 
-        member(m), target(t)
+        member(m), target(t), accessType(AccessPublic)
     {
         usedThisFunction = false;
     }
     void Print(ostream &out, const QString &generatorName = QString::null)
     {
         if(generatorName.isEmpty() || generatorName == target)
-            out << "        Function: (" << target << ") " << decl << endl;
+        {
+            out << "        Function: (" << target;
+            if(accessType == AccessPrivate)
+                out << ",private";
+            else if(accessType == AccessProtected)
+                out << ",protected";
+            out << ") " << decl << endl;
+        }
     }
 };
 

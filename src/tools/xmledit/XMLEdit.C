@@ -74,48 +74,48 @@
 XMLEdit::XMLEdit(const QString &file, QWidget *p, const QString &n)
     : QMainWindow(p,n)
 {
-    setCaption("XMLEdit: "+file);
+    setCaption(tr("XMLEdit: %1").arg(file));
 
     QPopupMenu *filemenu = new QPopupMenu( this );
     menuBar()->insertItem(tr("&File"),filemenu);
-    filemenu->insertItem( "&New",  this, SLOT(newdoc()),  CTRL+Key_N );
-    filemenu->insertItem( "&Open",  this, SLOT(open()),  CTRL+Key_O );
-    filemenu->insertItem( "&Save",  this, SLOT(save()),  CTRL+Key_S );
-    filemenu->insertItem( "Save &as",  this, SLOT(saveAs()),  CTRL+Key_A );
+    filemenu->insertItem( tr("&New"),  this, SLOT(newdoc()),  CTRL+Key_N );
+    filemenu->insertItem( tr("&Open"),  this, SLOT(open()),  CTRL+Key_O );
+    filemenu->insertItem( tr("&Save"),  this, SLOT(save()),  CTRL+Key_S );
+    filemenu->insertItem( tr("Save &as"),  this, SLOT(saveAs()),  CTRL+Key_A );
     filemenu->insertSeparator();
-    filemenu->insertItem( "&Generate code",  this, SLOT(generateCode()),  CTRL+Key_G );
+    filemenu->insertItem( tr("&Generate code"),  this, SLOT(generateCode()),  CTRL+Key_G );
     filemenu->insertSeparator();
-    filemenu->insertItem( "E&xit", this, SLOT(close()),  CTRL+Key_X );
+    filemenu->insertItem( tr("E&xit"), this, SLOT(close()),  CTRL+Key_X );
 
     tabs = new QTabWidget(this, "tabs");
     tabs->setMargin(5);
 
     plugintab = new XMLEditPlugin(this, "plugintab");
-    tabs->insertTab(plugintab, "Plugin");
+    tabs->insertTab(plugintab, tr("Plugin"));
 
     makefiletab = new XMLEditMakefile(this, "makefiletab");
-    tabs->insertTab(makefiletab, "Makefile");
+    tabs->insertTab(makefiletab, tr("Makefile"));
 
     attributetab = new XMLEditAttribute(this, "attributetab");
-    tabs->insertTab(attributetab, "Attribute");
+    tabs->insertTab(attributetab, tr("Attribute"));
 
     enumstab = new XMLEditEnums(this, "enumstab");
-    tabs->insertTab(enumstab, "Enums");
+    tabs->insertTab(enumstab, tr("Enums"));
 
     fieldstab = new XMLEditFields(this, "fieldstab");
-    tabs->insertTab(fieldstab, "Fields");
+    tabs->insertTab(fieldstab, tr("Fields"));
 
     functionstab = new XMLEditFunctions(this, "functionstab");
-    tabs->insertTab(functionstab, "Functions");
+    tabs->insertTab(functionstab, tr("Functions"));
 
     constantstab = new XMLEditConstants(this, "constantstab");
-    tabs->insertTab(constantstab, "Constants");
+    tabs->insertTab(constantstab, tr("Constants"));
 
     includestab = new XMLEditIncludes(this, "includestab");
-    tabs->insertTab(includestab, "Includes");
+    tabs->insertTab(includestab, tr("Includes"));
 
     codetab = new XMLEditCode(this, "codetab");
-    tabs->insertTab(codetab, "Code");
+    tabs->insertTab(codetab, tr("Code"));
 
     connect(tabs, SIGNAL(currentChanged(QWidget*)),
             this, SLOT(updateTab(QWidget*)));
@@ -129,7 +129,7 @@ XMLEdit::XMLEdit(const QString &file, QWidget *p, const QString &n)
 void
 XMLEdit::newdoc()
 {
-    OpenFile("untitled.xml");
+    OpenFile(tr("untitled.xml"));
 }
 
 // ****************************************************************************
@@ -147,8 +147,8 @@ XMLEdit::open()
 {
     QString file = 
         QFileDialog::getOpenFileName(QString(),
-                                     "XML files (*.xml)",
-                                     NULL, "XMLOpen", "Open file...");
+                                     tr("XML files (*.xml)"),
+                                     NULL, tr("XMLOpen"), tr("Open file..."));
     if (file.isNull())
         return;
 
@@ -170,8 +170,8 @@ XMLEdit::saveAs()
 {
     QString file = 
         QFileDialog::getSaveFileName(QString(),
-                                     "XML files (*.xml)",
-                                     NULL, "XMLSave", "Save file...");
+                                     tr("XML files (*.xml)"),
+                                     NULL, tr("XMLSave"), tr("Save file..."));
     if (file.isNull())
         return;
 
@@ -192,7 +192,7 @@ XMLEdit::saveAs()
 void
 XMLEdit::save()
 {
-    if (xmldoc->filename == "untitled.xml")
+    if (xmldoc->filename == tr("untitled.xml"))
     {
         saveAs();
         return;
@@ -242,7 +242,7 @@ XMLEdit::OpenFile(const QString &file)
     includestab->UpdateWindowContents();
     codetab->UpdateWindowContents();
 
-    setCaption("XMLEdit: "+file);
+    setCaption(tr("XMLEdit: %1").arg(file));
 }
 
 // ****************************************************************************
@@ -263,7 +263,7 @@ XMLEdit::SaveFile(const QString &file)
 {
     xmldoc->save(file);
 
-    setCaption("XMLEdit: "+file);
+    setCaption(tr("XMLEdit: ")+file);
 }
 
 // ****************************************************************************
@@ -323,7 +323,7 @@ XMLEdit::generateCode()
 {
     // First save the file.
     bool firstGeneration = false;
-    if(xmldoc->filename == "untitled.xml")
+    if(xmldoc->filename == tr("untitled.xml"))
     {
         saveAs();
         firstGeneration = true;
@@ -351,13 +351,12 @@ XMLEdit::generateCode()
     toolEnabled[ID_XML2AVT] = plugin;
 
     // Call the dialog that lets the user pick which items to regenerate.
-    if(XMLEditCodeSelectionDialog::selectTools("Select items to generate",
+    if(XMLEditCodeSelectionDialog::selectTools(tr("Select items to generate"),
        useTool, toolEnabled))
     {
         if(codeGenerationWindow == 0)
             codeGenerationWindow = new XMLEditCodeGeneratorWindow(0,"codeGeneratorWindow");
-        codeGenerationWindow->setCaption(QString("Generate code for ") + 
-            xmldoc->filename);
+        codeGenerationWindow->setCaption(tr("Generate code for %1").arg(xmldoc->filename));
 
         // Generate the code for the selected tools.
         codeGenerationWindow->GenerateCode(xmldoc->filename, useTool);

@@ -528,8 +528,7 @@ QvisDatabaseCorrelationListWindow::editCorrelation()
         DatabaseCorrelation *c = correlationList->FindCorrelation(realName);
         if(c != 0)
         {
-            QString caption(tr("Alter database correlation: "));
-            caption += realName;
+            QString caption(tr("Alter database correlation: %1").arg(realName.c_str()));
             QvisDatabaseCorrelationWindow *win = new QvisDatabaseCorrelationWindow(
                 *c, caption.latin1());
             connect(win, SIGNAL(deleteMe(QvisWindowBase *)),
