@@ -77,8 +77,8 @@ class QvisTraceHistoryWindow : public QvisOperatorWindow
   public:
     QvisTraceHistoryWindow(const int type,
                          TraceHistoryAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisTraceHistoryWindow();
     virtual void CreateWindowContents();

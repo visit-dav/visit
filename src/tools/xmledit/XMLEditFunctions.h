@@ -42,6 +42,7 @@
 #include <qframe.h>
 
 struct XMLDocument;
+class QLabel;
 class QLineEdit;
 class QButtonGroup;
 class QComboBox;
@@ -64,6 +65,9 @@ class QPushButton;
 //    Brad Whitlock, Thu Mar 6 15:45:09 PST 2008
 //    Added target.
 //
+//    Brad Whitlock, Mon Apr 28 15:59:21 PDT 2008
+//    Added accessGroup.
+//
 // ****************************************************************************
 class XMLEditFunctions : public QFrame
 {
@@ -78,6 +82,7 @@ class XMLEditFunctions : public QFrame
     void UpdateWindowSingleItem();
     void nameTextChanged(const QString&);
     void typeGroupChanged(int);
+    void accessChanged(int);
     void memberChanged();
     void targetTextChanged(const QString&);
     void declarationTextChanged(const QString&);
@@ -99,6 +104,8 @@ class XMLEditFunctions : public QFrame
     QRadioButton   *replaceBuiltinButton;
     QCheckBox      *member;
     QLineEdit      *target;
+    QLabel         *accessLabel;
+    QComboBox      *access;
     QLineEdit      *declaration;
     QMultiLineEdit *definition;
 };

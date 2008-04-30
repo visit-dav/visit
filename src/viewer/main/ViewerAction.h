@@ -64,6 +64,9 @@ class QToolBar;
 //   Brad Whitlock, Tue Feb 25 10:03:30 PDT 2003
 //   I added the RemoveFromMenu and RemoveFromToolbar methods.
 //
+//   Brad Whitlock, Tue Apr 29 11:20:27 PDT 2008
+//   Use QString for visible text.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerAction : public ViewerActionBase
@@ -87,10 +90,10 @@ public:
     virtual void RemoveFromToolbar(QToolBar *toolbar);
 
     // Methods to set the action's attributes.
-    virtual void SetAllText(const char *text);
-    virtual void SetText(const char *text);
-    virtual void SetMenuText(const char *text);
-    virtual void SetToolTip(const char *text);
+    virtual void SetAllText(const QString &text);
+    virtual void SetText(const QString &text);
+    virtual void SetMenuText(const QString &text);
+    virtual void SetToolTip(const QString &text);
     virtual void SetIconSet(const QIconSet &icons);
     virtual void SetToggleAction(bool val);
 protected slots:

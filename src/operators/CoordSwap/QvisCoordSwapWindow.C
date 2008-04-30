@@ -76,8 +76,8 @@ using std::string;
 
 QvisCoordSwapWindow::QvisCoordSwapWindow(const int type,
                          CoordSwapAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -113,7 +113,9 @@ QvisCoordSwapWindow::~QvisCoordSwapWindow()
 // Creation:   Wed Feb 2 15:47:40 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 09:26:24 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -122,49 +124,49 @@ QvisCoordSwapWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 3,2,  10, "mainLayout");
 
 
-    newCoord1Label = new QLabel("New Coordinate 1?", central, "newCoord1Label");
+    newCoord1Label = new QLabel(tr("New Coordinate 1?"), central, "newCoord1Label");
     mainLayout->addWidget(newCoord1Label,0,0);
     newCoord1 = new QButtonGroup(central, "newCoord1");
     newCoord1->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *newCoord1Layout = new QHBoxLayout(newCoord1);
     newCoord1Layout->setSpacing(10);
-    QRadioButton *newCoord1CoordCoord1 = new QRadioButton("Old Coordinate 1", newCoord1);
+    QRadioButton *newCoord1CoordCoord1 = new QRadioButton(tr("Old Coordinate 1"), newCoord1);
     newCoord1Layout->addWidget(newCoord1CoordCoord1);
-    QRadioButton *newCoord1CoordCoord2 = new QRadioButton("Old Coordinate 2", newCoord1);
+    QRadioButton *newCoord1CoordCoord2 = new QRadioButton(tr("Old Coordinate 2"), newCoord1);
     newCoord1Layout->addWidget(newCoord1CoordCoord2);
-    QRadioButton *newCoord1CoordCoord3 = new QRadioButton("Old Coordinate 3", newCoord1);
+    QRadioButton *newCoord1CoordCoord3 = new QRadioButton(tr("Old Coordinate 3"), newCoord1);
     newCoord1Layout->addWidget(newCoord1CoordCoord3);
     connect(newCoord1, SIGNAL(clicked(int)),
             this, SLOT(newCoord1Changed(int)));
     mainLayout->addWidget(newCoord1, 0,1);
 
-    newCoord2Label = new QLabel("New Coordinate 2?", central, "newCoord2Label");
+    newCoord2Label = new QLabel(tr("New Coordinate 2?"), central, "newCoord2Label");
     mainLayout->addWidget(newCoord2Label,1,0);
     newCoord2 = new QButtonGroup(central, "newCoord2");
     newCoord2->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *newCoord2Layout = new QHBoxLayout(newCoord2);
     newCoord2Layout->setSpacing(10);
-    QRadioButton *newCoord2CoordCoord1 = new QRadioButton("Old Coordinate 1", newCoord2);
+    QRadioButton *newCoord2CoordCoord1 = new QRadioButton(tr("Old Coordinate 1"), newCoord2);
     newCoord2Layout->addWidget(newCoord2CoordCoord1);
-    QRadioButton *newCoord2CoordCoord2 = new QRadioButton("Old Coordinate 2", newCoord2);
+    QRadioButton *newCoord2CoordCoord2 = new QRadioButton(tr("Old Coordinate 2"), newCoord2);
     newCoord2Layout->addWidget(newCoord2CoordCoord2);
-    QRadioButton *newCoord2CoordCoord3 = new QRadioButton("Old Coordinate 3", newCoord2);
+    QRadioButton *newCoord2CoordCoord3 = new QRadioButton(tr("Old Coordinate 3"), newCoord2);
     newCoord2Layout->addWidget(newCoord2CoordCoord3);
     connect(newCoord2, SIGNAL(clicked(int)),
             this, SLOT(newCoord2Changed(int)));
     mainLayout->addWidget(newCoord2, 1,1);
 
-    newCoord3Label = new QLabel("New Coordinate 3", central, "newCoord3Label");
+    newCoord3Label = new QLabel(tr("New Coordinate 3"), central, "newCoord3Label");
     mainLayout->addWidget(newCoord3Label,2,0);
     newCoord3 = new QButtonGroup(central, "newCoord3");
     newCoord3->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *newCoord3Layout = new QHBoxLayout(newCoord3);
     newCoord3Layout->setSpacing(10);
-    QRadioButton *newCoord3CoordCoord1 = new QRadioButton("Old Coordinate 1", newCoord3);
+    QRadioButton *newCoord3CoordCoord1 = new QRadioButton(tr("Old Coordinate 1"), newCoord3);
     newCoord3Layout->addWidget(newCoord3CoordCoord1);
-    QRadioButton *newCoord3CoordCoord2 = new QRadioButton("Old Coordinate 2", newCoord3);
+    QRadioButton *newCoord3CoordCoord2 = new QRadioButton(tr("Old Coordinate 2"), newCoord3);
     newCoord3Layout->addWidget(newCoord3CoordCoord2);
-    QRadioButton *newCoord3CoordCoord3 = new QRadioButton("Old Coordinate 3", newCoord3);
+    QRadioButton *newCoord3CoordCoord3 = new QRadioButton(tr("Old Coordinate 3"), newCoord3);
     newCoord3Layout->addWidget(newCoord3CoordCoord3);
     connect(newCoord3, SIGNAL(clicked(int)),
             this, SLOT(newCoord3Changed(int)));
@@ -289,9 +291,8 @@ QvisCoordSwapWindow::GetCurrentValues(int which_widget)
 
     if (!haveCoord1 || !haveCoord2 || !haveCoord3)
     {
-        msg.sprintf("One coordinate is being used more than one time.  "
-                    "Resetting to the initial state.");
-        Warning(msg);
+        Warning(tr("One coordinate is being used more than one time.  "
+                    "Resetting to the initial state."));
         atts->SetNewCoord1(CoordSwapAttributes::Coord1);
         atts->SetNewCoord2(CoordSwapAttributes::Coord2);
         atts->SetNewCoord3(CoordSwapAttributes::Coord3);

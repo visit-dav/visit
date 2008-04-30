@@ -74,8 +74,8 @@ using std::string;
 
 QvisTopologyPlotWindow::QvisTopologyPlotWindow(const int type,
                          TopologyAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisPostableWindowObserver(subj, caption, shortName, notepad)
 {

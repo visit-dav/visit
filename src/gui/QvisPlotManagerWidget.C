@@ -1085,15 +1085,18 @@ QvisPlotManagerWidget::UpdateHideDeleteDrawButtonsEnabledState() const
 //   Brad Whitlock, Thu Dec 20 10:32:59 PST 2007
 //   Changed the code so it calls other methods that we can reuse.
 //
+//   Brad Whitlock, Fri Apr 25 10:19:43 PDT 2008
+//   I made plotName be a QString so we can internationalize the plot names.
+//
 // ****************************************************************************
 
 void
-QvisPlotManagerWidget::AddPlotType(const char *plotName, const int varTypes,
+QvisPlotManagerWidget::AddPlotType(const QString &plotName, const int varTypes,
     const char **iconData)
 {
     PluginEntry entry;
     entry.pluginName = plotName;
-    entry.menuName = QString(plotName) + QString(" . . .");
+    entry.menuName = plotName + QString(" . . .");
     entry.varMenu = 0;
     entry.varTypes = varTypes;
     entry.varMask = 1;
@@ -1228,10 +1231,13 @@ QvisPlotManagerWidget::CreatePlotMenuItem(int index)
 //   Brad Whitlock, Thu Dec 20 10:34:29 PST 2007
 //   Fill in some new PluginEntry members.
 //
+//   Brad Whitlock, Fri Apr 25 10:20:31 PDT 2008
+//   Made operatorName be a QString so we can internationalize the operator names.
+//
 // ****************************************************************************
 
 void
-QvisPlotManagerWidget::AddOperatorType(const char *operatorName,
+QvisPlotManagerWidget::AddOperatorType(const QString &operatorName,
     const int varTypes, const int varMask, bool userSelectable,
     const char **iconData)
 {
@@ -1240,7 +1246,7 @@ QvisPlotManagerWidget::AddOperatorType(const char *operatorName,
     // Add the operator plugin information to the operator plugin list.
     PluginEntry entry;
     entry.pluginName = operatorName;
-    entry.menuName = QString(operatorName) + QString(" . . .");
+    entry.menuName = operatorName + QString(" . . .");
     entry.varMenu = 0;
     entry.varTypes = varTypes;
     entry.varMask = varMask;

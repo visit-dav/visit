@@ -78,8 +78,8 @@ static const int operator2WidgetOctants[] = {0, 1, 3, 2, 4, 5, 7, 6};
 
 QvisReflectWindow::QvisReflectWindow(const int type,
                          ReflectAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type, subj, caption, shortName, notepad, false)
 {
@@ -134,6 +134,9 @@ QvisReflectWindow::~QvisReflectWindow()
 //    I had it update the octant menu since we only
 //    update it when it changes now.
 //
+//    Brad Whitlock, Thu Apr 24 16:54:17 PDT 2008
+//    Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -144,12 +147,12 @@ QvisReflectWindow::CreateWindowContents()
     // Add the controls to select the input mode.
     QGridLayout *octantLayout = new QGridLayout(mainLayout, 2, 3);
     modeButtons = new QButtonGroup(0, "modeButtons");
-    octantLayout->addWidget(new QLabel("Input mode", central, "inputModeLabel"),
+    octantLayout->addWidget(new QLabel(tr("Input mode"), central, "inputModeLabel"),
                             0, 0);
-    QRadioButton *rb = new QRadioButton("2D", central, "mode2D");
+    QRadioButton *rb = new QRadioButton(tr("2D"), central, "mode2D");
     modeButtons->insert(rb);
     octantLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton("3D", central, "mode3D");
+    rb = new QRadioButton(tr("3D"), central, "mode3D");
     modeButtons->insert(rb);
     modeButtons->setButton(0);
     connect(modeButtons, SIGNAL(clicked(int)),
@@ -157,7 +160,7 @@ QvisReflectWindow::CreateWindowContents()
     octantLayout->addWidget(rb, 0, 2);
 
     // Octant
-    originalDataLabel = new QLabel("Original data quadrant", central,
+    originalDataLabel = new QLabel(tr("Original data quadrant"), central,
         "originalDataLabel");
     octantLayout->addWidget(originalDataLabel, 1, 0);
     octant = new QComboBox(false, central, "octant");
@@ -168,18 +171,18 @@ QvisReflectWindow::CreateWindowContents()
     reflect->setMode2D(mode2D);
     connect(reflect, SIGNAL(valueChanged(bool*)),
             this, SLOT(selectOctants(bool*)));
-    reflectionLabel = new QLabel(reflect, "Reflection quadrants", central);
+    reflectionLabel = new QLabel(reflect, tr("Reflection quadrants"), central);
     mainLayout->addWidget(reflectionLabel);
     mainLayout->addWidget(reflect, 100);
 
     // Limits
-    mainLayout->addWidget(new QLabel("Reflection Limits:", central, "reflectionLabel"));
+    mainLayout->addWidget(new QLabel(tr("Reflection Limits:"), central, "reflectionLabel"));
     QGridLayout *limitsLayout = new QGridLayout(mainLayout, 3,4, 10, "limitsLayout");
     limitsLayout->addColSpacing(0, 20);
 
     xBound = new QButtonGroup(0, "xBound");
-    xUseData = new QRadioButton("Use X Min",   central, "xUseData");
-    xSpecify = new QRadioButton("Specify X =", central, "xSpecify");
+    xUseData = new QRadioButton(tr("Use X Min"),   central, "xUseData");
+    xSpecify = new QRadioButton(tr("Specify X ="), central, "xSpecify");
     xBound->insert(xUseData);
     xBound->insert(xSpecify);
     specifiedX = new QLineEdit("0", central);
@@ -188,8 +191,8 @@ QvisReflectWindow::CreateWindowContents()
     limitsLayout->addWidget(specifiedX, 0, 3);
 
     yBound = new QButtonGroup(0, "yBound");
-    yUseData = new QRadioButton("Use Y Min",   central, "yUseData");
-    ySpecify = new QRadioButton("Specify Y =", central, "ySpecify");
+    yUseData = new QRadioButton(tr("Use Y Min"),   central, "yUseData");
+    ySpecify = new QRadioButton(tr("Specify Y ="), central, "ySpecify");
     yBound->insert(yUseData);
     yBound->insert(ySpecify);
     specifiedY = new QLineEdit("0", central);
@@ -198,8 +201,8 @@ QvisReflectWindow::CreateWindowContents()
     limitsLayout->addWidget(specifiedY, 1, 3);
 
     zBound = new QButtonGroup(0, "zBound");
-    zUseData = new QRadioButton("Use Z Min",   central, "zUseData");
-    zSpecify = new QRadioButton("Specify Z =", central, "zSpecify");
+    zUseData = new QRadioButton(tr("Use Z Min"),   central, "zUseData");
+    zSpecify = new QRadioButton(tr("Specify Z ="), central, "zSpecify");
     zBound->insert(zUseData);
     zBound->insert(zSpecify);
     specifiedZ = new QLineEdit("0", central);
@@ -252,6 +255,9 @@ QvisReflectWindow::CreateWindowContents()
 //    Replaced simple QString::sprintf's with a setNum because there seems
 //    to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//    Brad Whitlock, Thu Apr 24 16:55:18 PDT 2008
+//    Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -280,7 +286,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
             setOctant = true;
             break;
           case 1: //xBound
-            xUseData->setText((atts->GetOctant()&0x01) ? "Use dataset max" : "Use dataset min");
+            xUseData->setText((atts->GetOctant()&0x01) ? tr("Use dataset max") : tr("Use dataset min"));
             xBound->setButton(atts->GetUseXBoundary() ? 0 : 1);
             specifiedX->setEnabled(atts->GetUseXBoundary() ? false : true);
             break;
@@ -289,7 +295,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
             specifiedX->setText(temp);
             break;
           case 3: //yBound
-            yUseData->setText((atts->GetOctant()&0x02) ? "Use dataset max" : "Use dataset min");
+            yUseData->setText((atts->GetOctant()&0x02) ? tr("Use dataset max") : tr("Use dataset min"));
             yBound->setButton(atts->GetUseYBoundary() ? 0 : 1);
             specifiedY->setEnabled(atts->GetUseYBoundary() ? false : true);
             break;
@@ -298,7 +304,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
             specifiedY->setText(temp);
             break;
           case 5: //zBound
-            zUseData->setText((atts->GetOctant()&0x04) ? "Use dataset max" : "Use dataset min");
+            zUseData->setText((atts->GetOctant()&0x04) ? tr("Use dataset max") : tr("Use dataset min"));
             zBound->setButton(atts->GetUseZBoundary() ? 0 : 1);
             specifiedZ->setEnabled(atts->GetUseZBoundary() ? false : true);
             break;
@@ -369,8 +375,11 @@ QvisReflectWindow::UpdateWindow(bool doAll)
 // Creation:   Wed Jun 25 09:34:50 PDT 2003
 //
 // Modifications:
-//    Jeremy Meredith, Mon Aug 18 11:38:56 PDT 2003
-//    Removed Z axis from 2D labels.
+//   Jeremy Meredith, Mon Aug 18 11:38:56 PDT 2003
+//   Removed Z axis from 2D labels.
+//
+//   Brad Whitlock, Thu Apr 24 16:55:58 PDT 2008
+//   Added tr()'s
 //
 // ****************************************************************************
 
@@ -380,25 +389,25 @@ QvisReflectWindow::UpdateOctantMenuContents()
     octant->clear();
     if (mode2D)
     {
-        octant->insertItem("+X  +Y");
-        octant->insertItem("-X  +Y");
-        octant->insertItem("+X  -Y");
-        octant->insertItem("-X  -Y");
-        reflectionLabel->setText("Reflection quadrants");
-        originalDataLabel->setText("Original data quadrant");
+        octant->insertItem(tr("+X  +Y"));
+        octant->insertItem(tr("-X  +Y"));
+        octant->insertItem(tr("+X  -Y"));
+        octant->insertItem(tr("-X  -Y"));
+        reflectionLabel->setText(tr("Reflection quadrants"));
+        originalDataLabel->setText(tr("Original data quadrant"));
     }
     else
     {
-        octant->insertItem("+X  +Y  +Z");
-        octant->insertItem("-X  +Y  +Z");
-        octant->insertItem("+X  -Y  +Z");
-        octant->insertItem("-X  -Y  +Z");
-        octant->insertItem("+X  +Y  -Z");
-        octant->insertItem("-X  +Y  -Z");
-        octant->insertItem("+X  -Y  -Z");
-        octant->insertItem("-X  -Y  -Z");
-        reflectionLabel->setText("Reflection octants");
-        originalDataLabel->setText("Original data octant");
+        octant->insertItem(tr("+X  +Y  +Z"));
+        octant->insertItem(tr("-X  +Y  +Z"));
+        octant->insertItem(tr("+X  -Y  +Z"));
+        octant->insertItem(tr("-X  -Y  +Z"));
+        octant->insertItem(tr("+X  +Y  -Z"));
+        octant->insertItem(tr("-X  +Y  -Z"));
+        octant->insertItem(tr("+X  -Y  -Z"));
+        octant->insertItem(tr("-X  -Y  -Z"));
+        reflectionLabel->setText(tr("Reflection octants"));
+        originalDataLabel->setText(tr("Original data octant"));
     }
 }
 
@@ -429,14 +438,15 @@ QvisReflectWindow::GetCurrentValues(int which_field)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetSpecifiedX(val);
+            if(okay)
+                atts->SetSpecifiedX(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of specifiedX was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetSpecifiedX());
+            msg = tr("The value of specifiedX was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetSpecifiedX());
             Message(msg);
             atts->SetSpecifiedX(atts->GetSpecifiedX());
         }
@@ -450,14 +460,15 @@ QvisReflectWindow::GetCurrentValues(int which_field)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetSpecifiedY(val);
+            if(okay)
+                atts->SetSpecifiedY(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of specifiedY was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetSpecifiedY());
+            msg = tr("The value of specifiedY was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetSpecifiedY());
             Message(msg);
             atts->SetSpecifiedY(atts->GetSpecifiedY());
         }
@@ -471,14 +482,15 @@ QvisReflectWindow::GetCurrentValues(int which_field)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetSpecifiedZ(val);
+            if(okay)
+                atts->SetSpecifiedZ(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of specifiedZ was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetSpecifiedZ());
+            msg = tr("The value of specifiedZ was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetSpecifiedZ());
             Message(msg);
             atts->SetSpecifiedZ(atts->GetSpecifiedZ());
         }
@@ -558,9 +570,9 @@ QvisReflectWindow::octantChanged(int val)
         reflect->setValues(b);
         reflect->blockSignals(false);
 
-        xUseData->setText((New&0x01) ? "Use dataset max" : "Use dataset min");
-        yUseData->setText((New&0x02) ? "Use dataset max" : "Use dataset min");
-        zUseData->setText((New&0x04) ? "Use dataset max" : "Use dataset min");
+        xUseData->setText((New&0x01) ? tr("Use dataset max") : tr("Use dataset min"));
+        yUseData->setText((New&0x02) ? tr("Use dataset max") : tr("Use dataset min"));
+        zUseData->setText((New&0x04) ? tr("Use dataset max") : tr("Use dataset min"));
 
         atts->SetOctant(New);
         Apply();
@@ -663,9 +675,9 @@ QvisReflectWindow::selectMode(int mode)
 
         if(originIs3D || reflection3D)
         {
-            Error("The reflection attributes require the 3D input mode because "
-                  "the original data octant or one or more of the reflection "
-                  "octants has a negative Z value. The input mode will remain 3D.");
+            Error(tr("The reflection attributes require the 3D input mode because "
+                     "the original data octant or one or more of the reflection "
+                     "octants has a negative Z value. The input mode will remain 3D."));
             mode2D = false;
             modeButtons->blockSignals(true);
             modeButtons->setButton(1);

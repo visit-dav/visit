@@ -98,3 +98,38 @@ ScatterAttributes::ChangesRequireRecalculation(const ScatterAttributes &obj) con
            var4Changed;
 }
 
+Target: xml2info
+Function: ScatterGUIPluginInfo::CreatePluginWizard
+Declaration: virtual QvisWizard *ScatterGUIPluginInfo::CreatePluginWizard(...);
+Definition:
+// ****************************************************************************
+// Method: ScatterGUIPluginInfo::CreatePluginWizard
+//
+// Purpose: 
+//   Creates a Scatter plot wizard and returns a pointer to it.
+//
+// Arguments:
+//   attr   : The attributes that should be used for the plot.
+//   parent : The wizard's parent widget.
+//   name   : The name of the wizard.
+//
+// Returns:    A pointer to the new wizard.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 14 09:48:06 PDT 2004
+//
+// Modifications:
+//   Mark Blair, Mon Aug 21 18:29:00 PDT 2006
+//   Made argument sequence compatible with upgraded base class.
+//
+// ****************************************************************************
+#include <QvisScatterPlotWizard.h>
+QvisWizard *
+ScatterGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
+    QWidget *parent, const std::string &varName, const avtDatabaseMetaData *md,
+    const ExpressionList *expList, const char *name)
+{
+    return new QvisScatterPlotWizard(attr, parent, name);
+}

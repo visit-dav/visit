@@ -95,9 +95,9 @@ class QvisSubsetPlotWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisSubsetPlotWindow(const int type, SubsetAttributes *subsetAtts_,
-                           const char *caption = 0,
-                           const char *shortName = 0,
-                           QvisNotepadArea *notepad = 0);
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
+                         QvisNotepadArea *notepad = 0);
     virtual ~QvisSubsetPlotWindow();
     virtual void CreateWindowContents();
 public slots:

@@ -37,6 +37,22 @@
       </Function>
       <Function name="Print" user="true" member="true">
       </Function>
+      <Function name="LineoutGUIPluginInfo::GetVariableTypes" user="false" member="true">
+      </Function>
+      <Function name="LineoutGUIPluginInfo::GetVariableMask" user="false" member="true">
+      </Function>
+      <Function name="LineoutGUIPluginInfo::GetUserSelectable" user="false" member="true">
+      </Function>
+      <Function name="LineoutViewerPluginInfo::GetUserSelectable" user="false" member="true">
+      </Function>
+      <Function name="LineoutViewerPluginInfo::Removeable" user="false" member="true">
+      </Function>
+      <Function name="LineoutViewerPluginInfo::Moveable" user="false" member="true">
+      </Function>
+      <Function name="LineoutViewerPluginInfo::AllowsSubsequentOperators" user="false" member="true">
+      </Function>
+      <Function name="LineoutEnginePluginInfo::AllocAvtPluginFilter" user="false" member="true">
+      </Function>
       <Include file="source" quoted="false">
         Line.h
       </Include>

@@ -47,8 +47,8 @@
 
 #include <EngineList.h>
 #include <StatusAttributes.h>
+#include <UnicodeHelper.h>
 #include <ViewerProxy.h>
-#include <string>
 #include <string>
 
 using std::string;
@@ -475,7 +475,7 @@ QvisEngineWindow::UpdateInformation(int index)
 //    Jeremy Meredith, Thu Jul  5 12:40:30 PDT 2001
 //    Added an explicit cast to avoid a warning.
 //
-//    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//    Brad Whitlock, Tue Apr 29 10:45:23 PDT 2008
 //    Support for internationalization.
 //
 // ****************************************************************************
@@ -511,7 +511,7 @@ QvisEngineWindow::UpdateStatusArea()
 
         if(s->GetMessageType() == 1)
         {
-            totalStatusLabel->setText(QString(s->GetStatusMessage().c_str()));
+            totalStatusLabel->setText(StatusAttributes_GetStatusMessage(*s));
             stageStatusLabel->setText(tr("Stage Status:"));
         }
         else if (s->GetMessageType() == 2)
@@ -685,20 +685,20 @@ QvisEngineWindow::closeEngine()
     QString msg;
     if (sim == "")
     {
-        msg = tr("Really close the compute engine on host \"%1\"?\n\n");
-        msg.replace("%1", host.c_str());
+        msg = tr("Really close the compute engine on host \"%1\"?\n\n").
+              arg(host.c_str());
     }
     else
     {
         msg = tr("Really disconnect from the simulation \"%1\" on "
-                 "host \"%2\"?\n\n");
-        msg.replace("%1", sim.c_str());
-        msg.replace("%2", host.c_str());
+                 "host \"%2\"?\n\n").
+              arg(sim.c_str()).
+              arg(host.c_str());
     }
 
     // Ask the user if he really wants to close the engine.
     if(QMessageBox::warning( this, "VisIt",
-                             msg.latin1(),
+                             msg,
                              tr("Ok"), tr("Cancel"), 0,
                              0, 1 ) == 0)
     {

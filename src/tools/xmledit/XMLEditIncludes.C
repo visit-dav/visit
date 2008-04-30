@@ -72,10 +72,10 @@ XMLEditIncludes::XMLEditIncludes(QWidget *p, const QString &n)
     includelist = new QListBox(this);
     listLayout->addMultiCellWidget(includelist, 0,0, 0,1);
 
-    newButton = new QPushButton("New", this);
+    newButton = new QPushButton(tr("New"), this);
     listLayout->addWidget(newButton, 1,0);
 
-    delButton = new QPushButton("Del", this);
+    delButton = new QPushButton(tr("Del"), this);
     listLayout->addWidget(delButton, 1,1);
 
     hLayout->addSpacing(10);
@@ -85,8 +85,8 @@ XMLEditIncludes::XMLEditIncludes(QWidget *p, const QString &n)
     int row = 0;
 
     fileGroup = new QButtonGroup();
-    CButton = new QRadioButton("Source (.C) file", this);
-    HButton = new QRadioButton("Header (.h) file", this);
+    CButton = new QRadioButton(tr("Source (.C) file"), this);
+    HButton = new QRadioButton(tr("Header (.h) file"), this);
     fileGroup->insert(CButton);
     fileGroup->insert(HButton);
     topLayout->addWidget(CButton, row, 0);
@@ -94,20 +94,20 @@ XMLEditIncludes::XMLEditIncludes(QWidget *p, const QString &n)
     row++;
 
     quotedGroup = new QButtonGroup();
-    quotesButton = new QRadioButton("Use quotes \"\"", this);
-    bracketsButton = new QRadioButton("Use angle brackets <>", this);
+    quotesButton = new QRadioButton(tr("Use quotes \"\""), this);
+    bracketsButton = new QRadioButton(tr("Use angle brackets <>"), this);
     quotedGroup->insert(quotesButton);
     quotedGroup->insert(bracketsButton);
     topLayout->addWidget(quotesButton, row, 0);
     topLayout->addWidget(bracketsButton, row, 1);
     row++;
 
-    topLayout->addWidget(new QLabel("Target", this), row, 0);
+    topLayout->addWidget(new QLabel(tr("Target"), this), row, 0);
     target = new QLineEdit(this);
     topLayout->addWidget(target, row, 1);
     row++;
 
-    topLayout->addWidget(new QLabel("Include file", this), row, 0);
+    topLayout->addWidget(new QLabel(tr("Include file"), this), row, 0);
     file = new QLineEdit(this);
     topLayout->addWidget(file, row, 1);
     row++;

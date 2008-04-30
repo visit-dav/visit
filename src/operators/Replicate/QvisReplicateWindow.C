@@ -76,8 +76,8 @@ using std::string;
 
 QvisReplicateWindow::QvisReplicateWindow(const int type,
                          ReplicateAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -119,7 +119,10 @@ QvisReplicateWindow::~QvisReplicateWindow()
 //    to two lines long and more descriptive, and 2) the checkboxes are
 //    added using addMultiCellWidget so they can span columns 0 and 1.
 //    If this file is regenerated, be mindful of these changes.
-//   
+// 
+//   Brad Whitlock, Thu Apr 24 16:48:54 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -129,47 +132,47 @@ QvisReplicateWindow::CreateWindowContents()
 
 
     useUnitCellVectorsLabel = NULL;
-    useUnitCellVectors = new QCheckBox("Use provided unit cell vectors", central, "useUnitCellVectors");
+    useUnitCellVectors = new QCheckBox(tr("Use provided unit cell vectors"), central, "useUnitCellVectors");
     connect(useUnitCellVectors, SIGNAL(toggled(bool)),
             this, SLOT(useUnitCellVectorsChanged(bool)));
     mainLayout->addMultiCellWidget(useUnitCellVectors, 0,0, 0,1);
 
-    xVectorLabel = new QLabel("Vector for X", central, "xVectorLabel");
+    xVectorLabel = new QLabel(tr("Vector for X"), central, "xVectorLabel");
     mainLayout->addWidget(xVectorLabel,1,0);
     xVector = new QLineEdit(central, "xVector");
     connect(xVector, SIGNAL(returnPressed()),
             this, SLOT(xVectorProcessText()));
     mainLayout->addWidget(xVector, 1,1);
 
-    yVectorLabel = new QLabel("Vector for Y", central, "yVectorLabel");
+    yVectorLabel = new QLabel(tr("Vector for Y"), central, "yVectorLabel");
     mainLayout->addWidget(yVectorLabel,2,0);
     yVector = new QLineEdit(central, "yVector");
     connect(yVector, SIGNAL(returnPressed()),
             this, SLOT(yVectorProcessText()));
     mainLayout->addWidget(yVector, 2,1);
 
-    zVectorLabel = new QLabel("Vector for Z", central, "zVectorLabel");
+    zVectorLabel = new QLabel(tr("Vector for Z"), central, "zVectorLabel");
     mainLayout->addWidget(zVectorLabel,3,0);
     zVector = new QLineEdit(central, "zVector");
     connect(zVector, SIGNAL(returnPressed()),
             this, SLOT(zVectorProcessText()));
     mainLayout->addWidget(zVector, 3,1);
 
-    xReplicationsLabel = new QLabel("Replications in X", central, "xReplicationsLabel");
+    xReplicationsLabel = new QLabel(tr("Replications in X"), central, "xReplicationsLabel");
     mainLayout->addWidget(xReplicationsLabel,4,0);
     xReplications = new QLineEdit(central, "xReplications");
     connect(xReplications, SIGNAL(returnPressed()),
             this, SLOT(xReplicationsProcessText()));
     mainLayout->addWidget(xReplications, 4,1);
 
-    yReplicationsLabel = new QLabel("Replications in Y", central, "yReplicationsLabel");
+    yReplicationsLabel = new QLabel(tr("Replications in Y"), central, "yReplicationsLabel");
     mainLayout->addWidget(yReplicationsLabel,5,0);
     yReplications = new QLineEdit(central, "yReplications");
     connect(yReplications, SIGNAL(returnPressed()),
             this, SLOT(yReplicationsProcessText()));
     mainLayout->addWidget(yReplications, 5,1);
 
-    zReplicationsLabel = new QLabel("Replications in Z", central, "zReplicationsLabel");
+    zReplicationsLabel = new QLabel(tr("Replications in Z"), central, "zReplicationsLabel");
     mainLayout->addWidget(zReplicationsLabel,6,0);
     zReplications = new QLineEdit(central, "zReplications");
     connect(zReplications, SIGNAL(returnPressed()),
@@ -177,13 +180,13 @@ QvisReplicateWindow::CreateWindowContents()
     mainLayout->addWidget(zReplications, 6,1);
 
     mergeResultsLabel = NULL;
-    mergeResults = new QCheckBox("Merge into one block when possible", central, "mergeResults");
+    mergeResults = new QCheckBox(tr("Merge into one block when possible"), central, "mergeResults");
     connect(mergeResults, SIGNAL(toggled(bool)),
             this, SLOT(mergeResultsChanged(bool)));
     mainLayout->addMultiCellWidget(mergeResults, 7,7, 0,1);
 
     replicateUnitCellAtomsLabel = NULL;
-    replicateUnitCellAtoms = new QCheckBox("For molecular data, periodically replicate\natoms at unit cell boundaries.",
+    replicateUnitCellAtoms = new QCheckBox(tr("For molecular data, periodically replicate\natoms at unit cell boundaries."),
                                            central, "replicateUnitCellAtoms");
     connect(replicateUnitCellAtoms, SIGNAL(toggled(bool)),
             this, SLOT(replicateUnitCellAtomsChanged(bool)));
@@ -370,16 +373,17 @@ QvisReplicateWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val[3];
-            sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2]);
-            atts->SetXVector(val);
+            okay = sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2])==3;
+            if(okay)
+                atts->SetXVector(val);
         }
 
         if(!okay)
         {
             const double *val = atts->GetXVector();
-            msg.sprintf("The value of xVector was invalid. "
-                "Resetting to the last good value of <%g %g %g>", 
-                val[0], val[1], val[2]);
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of xVector was invalid. "
+                     "Resetting to the last good value of %1.").arg(num);
             Message(msg);
             atts->SetXVector(atts->GetXVector());
         }
@@ -393,16 +397,17 @@ QvisReplicateWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val[3];
-            sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2]);
-            atts->SetYVector(val);
+            okay = sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2])==3;
+            if(okay)
+                atts->SetYVector(val);
         }
 
         if(!okay)
         {
             const double *val = atts->GetYVector();
-            msg.sprintf("The value of yVector was invalid. "
-                "Resetting to the last good value of <%g %g %g>", 
-                val[0], val[1], val[2]);
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of yVector was invalid. "
+                     "Resetting to the last good value of %1.").arg(num);
             Message(msg);
             atts->SetYVector(atts->GetYVector());
         }
@@ -416,16 +421,17 @@ QvisReplicateWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val[3];
-            sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2]);
-            atts->SetZVector(val);
+            okay = sscanf(temp.latin1(), "%lg %lg %lg", &val[0], &val[1], &val[2])==3;
+            if(okay)
+                atts->SetZVector(val);
         }
 
         if(!okay)
         {
             const double *val = atts->GetZVector();
-            msg.sprintf("The value of zVector was invalid. "
-                "Resetting to the last good value of <%g %g %g>", 
-                val[0], val[1], val[2]);
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of zVector was invalid. "
+                     "Resetting to the last good value of %1.").arg(num);
             Message(msg);
             atts->SetZVector(atts->GetZVector());
         }
@@ -444,9 +450,9 @@ QvisReplicateWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of xReplications was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetXReplications());
+            msg = tr("The value of xReplications was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetXReplications());
             Message(msg);
             atts->SetXReplications(atts->GetXReplications());
         }
@@ -465,9 +471,9 @@ QvisReplicateWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of yReplications was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetYReplications());
+            msg = tr("The value of yReplications was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetYReplications());
             Message(msg);
             atts->SetYReplications(atts->GetYReplications());
         }
@@ -486,9 +492,9 @@ QvisReplicateWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of zReplications was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetZReplications());
+            msg = tr("The value of zReplications was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetZReplications());
             Message(msg);
             atts->SetZReplications(atts->GetZReplications());
         }

@@ -68,7 +68,7 @@
 ToggleLockViewAction::ToggleLockViewAction(ViewerWindow *win) :
     ViewerToggleAction(win, "ToggleLockViewAction")
 {
-    SetAllText("Lock view");
+    SetAllText(tr("Lock view"));
     if (!win->GetNoWinMode())
         SetIcons(QPixmap(viewlockon_xpm), QPixmap(viewlockoff_xpm));
 }
@@ -114,7 +114,7 @@ ToggleLockViewAction::Toggled() const
 ToggleLockTimeAction::ToggleLockTimeAction(ViewerWindow *win) :
     ViewerToggleAction(win, "ToggleLockTimeAction")
 {
-    SetAllText("Lock time");
+    SetAllText(tr("Lock time"));
     if (!win->GetNoWinMode())
         SetIcons(QPixmap(timelockon_xpm), QPixmap(timelockoff_xpm));
 }
@@ -152,7 +152,7 @@ ToggleLockTimeAction::Toggled() const
 ToggleLockToolAction::ToggleLockToolAction(ViewerWindow *win) :
     ViewerToggleAction(win, "ToggleLockToolAction")
 {
-    SetAllText("Lock tools");
+    SetAllText(tr("Lock tools"));
     if (!win->GetNoWinMode())
         SetIcons(QPixmap(toollockon_xpm), QPixmap(toollockoff_xpm));
 }
@@ -190,7 +190,7 @@ ToggleLockToolAction::Toggled() const
 TurnOffAllLocksAction::TurnOffAllLocksAction(ViewerWindow *win) :
     ViewerAction(win, "TurnOffAllLocksAction")
 {
-    SetAllText("Unlock everything");
+    SetAllText(tr("Unlock everything"));
 }
 
 // ****************************************************************************

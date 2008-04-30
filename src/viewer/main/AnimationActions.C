@@ -63,8 +63,8 @@
 TimeSliderReverseStepAction::TimeSliderReverseStepAction(ViewerWindow *win) :
     ViewerAction(win, "ReverseStep")
 {
-    SetAllText("Reverse step");
-    SetToolTip("Step back one frame");
+    SetAllText(tr("Reverse step"));
+    SetToolTip(tr("Step back one frame"));
     if (!win->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(animationreversestep_xpm)));
 }
@@ -87,8 +87,8 @@ TimeSliderReverseStepAction::Enabled() const
 AnimationReversePlayAction::AnimationReversePlayAction(ViewerWindow *win) :
     ViewerToggleAction(win, "ReversePlay")
 {
-    SetAllText("Reverse play");
-    SetToolTip("Play animation in reverse");
+    SetAllText(tr("Reverse play"));
+    SetToolTip(tr("Play animation in reverse"));
     if (!win->GetNoWinMode())
         SetIcons(QPixmap(animationreverseplayon_xpm), QPixmap(animationreverseplayoff_xpm));
 }
@@ -118,8 +118,8 @@ AnimationReversePlayAction::Toggled() const
 AnimationStopAction::AnimationStopAction(ViewerWindow *win) :
     ViewerToggleAction(win, "Stop")
 {
-    SetAllText("Stop");
-    SetToolTip("Stop animation");
+    SetAllText(tr("Stop"));
+    SetToolTip(tr("Stop animation"));
     if (!win->GetNoWinMode())
         SetIcons(QPixmap(animationstopon_xpm), QPixmap(animationstopoff_xpm));
 }
@@ -149,8 +149,8 @@ AnimationStopAction::Toggled() const
 AnimationPlayAction::AnimationPlayAction(ViewerWindow *win) :
     ViewerToggleAction(win, "Play")
 {
-    SetAllText("Play");
-    SetToolTip("Play animation");
+    SetAllText(tr("Play"));
+    SetToolTip(tr("Play animation"));
     if (!win->GetNoWinMode())
         SetIcons(QPixmap(animationplayon_xpm), QPixmap(animationplayoff_xpm));
 }
@@ -180,8 +180,8 @@ AnimationPlayAction::Toggled() const
 TimeSliderForwardStepAction::TimeSliderForwardStepAction(ViewerWindow *win) :
     ViewerAction(win, "ForwardStep")
 {
-    SetAllText("Forward step");
-    SetToolTip("Step forward one frame");
+    SetAllText(tr("Forward step"));
+    SetToolTip(tr("Step forward one frame"));
     if (!win->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(animationforwardstep_xpm)));
 }

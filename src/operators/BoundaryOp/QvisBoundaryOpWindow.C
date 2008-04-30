@@ -76,8 +76,8 @@ using std::string;
 
 QvisBoundaryOpWindow::QvisBoundaryOpWindow(const int type,
                          BoundaryOpAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -113,7 +113,9 @@ QvisBoundaryOpWindow::~QvisBoundaryOpWindow()
 // Creation:   Tue Aug 14 10:29:40 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 09:47:48 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -126,14 +128,14 @@ QvisBoundaryOpWindow::CreateWindowContents()
     QGridLayout *smoothingLayout = new QGridLayout(topLayout, 1, 5);
     smoothingLayout->setSpacing(10);
     smoothingLayout->setColStretch(4, 1000);
-    smoothingLayout->addWidget(new QLabel("Geometry smoothing", central), 0,0);
-    QRadioButton *rb = new QRadioButton("None", central, "NoSmoothing");
+    smoothingLayout->addWidget(new QLabel(tr("Geometry smoothing"), central), 0,0);
+    QRadioButton *rb = new QRadioButton(tr("None"), central, "NoSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton("Fast", central, "LowSmoothing");
+    rb = new QRadioButton(tr("Fast"), central, "LowSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 2);
-    rb = new QRadioButton("High", central, "HighSmoothing");
+    rb = new QRadioButton(tr("High"), central, "HighSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 3);
 }

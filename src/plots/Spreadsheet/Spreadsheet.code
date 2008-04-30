@@ -154,3 +154,402 @@ SpreadsheetAttributes::SetSubsetName(const std::string &subsetName_)
     Select(0, (void *)&subsetName);
 }
 
+Target: xml2info
+Function: SpreadsheetViewerPluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+Definition:
+// ****************************************************************************
+// Method: SpreadsheetViewerPluginInfo::InitializePlotAtts
+//
+// Purpose: 
+//   Initializes the plot attributes.
+//
+// Arguments:
+//   atts    : The plot attributes to check.
+//   md      : The plot metadata.
+//   varName : The plot variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 21 11:36:13 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+SpreadsheetViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
+    ViewerPlot *plot)
+{
+    *(SpreadsheetAttributes*)atts = *defaultAtts;
+
+    PrivateSetPlotAtts(atts, plot);
+}
+
+Function: SpreadsheetViewerPluginInfo::ReInitializePlotAtts
+Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+Definition:
+// ****************************************************************************
+// Method: SpreadsheetViewerPluginInfo::ReInitializePlotAtts
+//
+// Purpose: 
+//   Makes sure that the subset name in the plot attributes is valid.
+//
+// Arguments:
+//   atts    : The plot attributes to check.
+//   md      : The plot metadata.
+//   varName : The plot variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 21 11:36:13 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+SpreadsheetViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
+    ViewerPlot *plot)
+{
+    PrivateSetPlotAtts(atts, plot);
+}
+
+Function: SpreadsheetViewerPluginInfo::ResetPlotAtts
+Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, ViewerPlot *);
+Definition:
+// ****************************************************************************
+// Method: SpreadsheetViewerPluginInfo::ResetPlotAtts
+//
+// Purpose: 
+//   Resets the plot attributes.
+//
+// Arguments:
+//   atts    : The plot attributes to reset.
+//   md      : The plot metadata.
+//   varName : The plot variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 21 11:36:13 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
+    ViewerPlot *plot)
+
+{
+    *(SpreadsheetAttributes*)atts = *defaultAtts;
+
+    PrivateSetPlotAtts(atts, plot);
+}
+
+Function: SpreadsheetViewerPluginInfo::ProvidesLegend
+Declaration:virtual bool ProvidesLegend() const;
+Definition:
+bool
+SpreadsheetViewerPluginInfo::ProvidesLegend() const
+{
+    return false;
+}
+
+Function: SpreadsheetViewerPluginInfo::AlternateDisplayCreate
+Declaration: virtual void *AlternateDisplayCreate(ViewerPlot *plot);
+Definition:
+// ****************************************************************************
+// Method: SpreadsheetViewerPluginInfo::AlternateDisplayCreate
+//
+// Purpose: 
+//   Creates an alternate display that will display data for the Spreadsheet
+//   plot.
+//
+// Arguments:
+//   plot : Pointer to the ViewerPlot that will own the alternate display.
+//
+// Returns:    A pointer to the alternate display.
+//
+// Note:       We refer to the alternate display using void* so it can be
+//             whatever type of display that is most appropriate Qt, X, ...
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 21 10:53:23 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+#include <SpreadsheetViewer.h>
+#include <avtCallback.h>
+void *
+SpreadsheetViewerPluginInfo::AlternateDisplayCreate(ViewerPlot *plot)
+{
+    void *dpy = 0;
+
+    if(!avtCallback::GetNowinMode())
+    {
+        // We're not in nowin mode so create the spreadsheet viewer.
+        SpreadsheetViewer *win = new SpreadsheetViewer(plot, 0, "SpreadsheetViewer");
+        dpy = (void *)win;
+    }
+
+    return dpy;
+}
+
+Function: SpreadsheetViewerPluginInfo::AlternateDisplayDestroy
+Declaration: virtual void AlternateDisplayDestroy(void *dpy);
+Definition:
+// ****************************************************************************
+// Method: SpreadsheetViewerPluginInfo::AlternateDisplayDestroy
+//
+// Purpose: 
+//   This method is called when the alternate display must be destroyed.
+//
+// Arguments:
+//   dpy : The handle to the alternate display.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 21 10:55:03 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void 
+SpreadsheetViewerPluginInfo::AlternateDisplayDestroy(void *dpy)
+{
+    if(dpy != 0)
+    {
+        SpreadsheetViewer *v = (SpreadsheetViewer *)dpy;
+        delete v;
+    }
+}
+
+Function: SpreadsheetViewerPluginInfo::AlternateDisplayClear
+Declaration: virtual void AlternateDisplayClear(void *dpy);
+Definition:
+// ****************************************************************************
+// Method: SpreadsheetViewerPluginInfo::AlternateDisplayClear
+//
+// Purpose: 
+//   This method is called when the alternate display must be cleared of data.
+//
+// Arguments:
+//   dpy : The handle to the alternate display.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 21 10:55:03 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void 
+SpreadsheetViewerPluginInfo::AlternateDisplayClear(void *dpy)
+{
+    if(dpy != 0)
+    {
+        SpreadsheetViewer *v = (SpreadsheetViewer *)dpy;
+        v->clear();
+    }
+}
+
+Function: SpreadsheetViewerPluginInfo::AlternateDisplayHide
+Declaration: virtual void AlternateDisplayHide(void *dpy);
+Definition:
+// ****************************************************************************
+// Method: SpreadsheetViewerPluginInfo::AlternateDisplayHide
+//
+// Purpose: 
+//   This method is called when the alternate display must be hidden.
+//
+// Arguments:
+//   dpy : The handle to the alternate display.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 21 10:55:03 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void 
+SpreadsheetViewerPluginInfo::AlternateDisplayHide(void *dpy)
+{
+    if(dpy != 0)
+    {
+        SpreadsheetViewer *v = (SpreadsheetViewer *)dpy;
+        v->hide();
+    }
+}
+
+Function: SpreadsheetViewerPluginInfo::AlternateDisplayShow
+Declaration: virtual void AlternateDisplayShow(void *dpy);
+Definition:
+// ****************************************************************************
+// Method: SpreadsheetViewerPluginInfo::AlternateDisplayShow
+//
+// Purpose: 
+//   This method is called when the alternate display must be shown.
+//
+// Arguments:
+//   dpy : The handle to the alternate display.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 21 10:55:03 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void 
+SpreadsheetViewerPluginInfo::AlternateDisplayShow(void *dpy)
+{
+    if(dpy != 0)
+    {
+        SpreadsheetViewer *v = (SpreadsheetViewer *)dpy;
+        if(v->isMinimized())
+            v->showNormal();
+        else
+            v->show();
+        v->raise();
+    }
+}
+
+Function: SpreadsheetViewerPluginInfo::AlternateDisplayIconify
+Declaration: virtual void AlternateDisplayIconify(void *dpy);
+Definition:
+// ****************************************************************************
+// Method: SpreadsheetViewerPluginInfo::AlternateDisplayIconify
+//
+// Purpose: 
+//   This method is called when the alternate display must be iconified.
+//
+// Arguments:
+//   dpy : The handle to the alternate display.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 21 10:55:03 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void 
+SpreadsheetViewerPluginInfo::AlternateDisplayIconify(void *dpy)
+{
+    if(dpy != 0)
+    {
+        SpreadsheetViewer *v = (SpreadsheetViewer *)dpy;
+        v->showMinimized();
+    }
+}
+
+Function: SpreadsheetViewerPluginInfo::AlternateDisplayDeIconify
+Declaration: virtual void AlternateDisplayDeIconify(void *dpy);
+Definition:
+// ****************************************************************************
+// Method: SpreadsheetViewerPluginInfo::AlternateDisplayDeIconify
+//
+// Purpose: 
+//   This method is called when the alternate display must be de-iconified.
+//
+// Arguments:
+//   dpy : The handle to the alternate display.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 21 10:55:03 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void 
+SpreadsheetViewerPluginInfo::AlternateDisplayDeIconify(void *dpy)
+{
+    if(dpy != 0)
+    {
+        SpreadsheetViewer *v = (SpreadsheetViewer *)dpy;
+        v->showNormal();
+    }
+}
+
+Function: SpreadsheetViewerPluginInfo::PrivateSetPlotAtts
+Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, ViewerPlot *);
+Definition:
+// ****************************************************************************
+// Method: SpreadsheetViewerPluginInfo::PrivateSetPlotAtts
+//
+// Purpose: 
+//   Makes sure that the subset name in the plot attributes is valid.
+//
+// Arguments:
+//   atts    : The plot attributes to check.
+//   md      : The plot metadata.
+//   varName : The plot variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 21 11:36:13 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+#include <avtSILRestriction.h>
+#include <ViewerPlot.h>
+
+void
+SpreadsheetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
+    ViewerPlot *plot)
+{
+    const char *mName = "SpreadsheetViewerPluginInfo::PrivateSetPlotAtts: ";
+
+    // Search for a SIL_DOMAIN category under the current silTopSet and add
+    // sets that are used.
+    SpreadsheetAttributes *sAtts = (SpreadsheetAttributes *)atts;
+    bool validName = false;
+    bool firstNameSet = false;
+    std::string firstName;
+    int nSets = 1;
+    avtSILRestriction_p silr = plot->GetSILRestriction();
+    avtSILSet_p current = silr->GetSILSet(silr->GetTopSet());
+    const std::vector<int> &mapsOut = current->GetMapsOut();
+    for(int j = 0; j < mapsOut.size() && !validName; ++j)
+    {
+        int cIndex = mapsOut[j];
+        avtSILCollection_p collection = silr->GetSILCollection(cIndex);
+        if(*collection != NULL && collection->GetRole() == SIL_DOMAIN) 
+        {
+            const std::vector<int> &setIds = collection->GetSubsetList();
+            nSets = setIds.size();
+            for(int si = 0; si < setIds.size() && !validName; ++si)
+            {
+                if(!firstNameSet)
+                {
+                    firstName = silr->GetSILSet(setIds[si])->GetName();
+                    firstNameSet = true;
+                }
+                validName = (silr->GetSILSet(setIds[si])->GetName() == 
+                             sAtts->GetSubsetName());
+            }
+            break;
+        }
+    }
+
+    // If the subset name is not valid then override it. Set it in the
+    // default attributes so the GUI window does not get too confused when
+    // the default attributes get sent to the client as when a plot of another
+    // type is selected.
+    if(!validName)
+    {
+        if(nSets > 1)
+        {
+            if(firstNameSet)
+            {
+                sAtts->SetSubsetName(firstName);
+                defaultAtts->SetSubsetName(firstName);
+            }
+        }
+        else
+        {
+            sAtts->SetSubsetName("Whole");
+            defaultAtts->SetSubsetName("Whole");
+        }
+    }
+}
+

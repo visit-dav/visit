@@ -67,6 +67,10 @@
       </Function>
       <Function name="ResetAxes" user="true" member="true">
       </Function>
+      <Function name="ParallelCoordinatesGUIPluginInfo::CreatePluginWizard" user="false" member="true">
+      </Function>
+      <Function name="ParallelCoordinatesViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
       <Include file="header" quoted="false">
         AxisRestrictionAttributes.h
       </Include>

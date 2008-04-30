@@ -90,6 +90,12 @@
       </Function>
       <Function name="SetFromNode" user="false" member="true">
       </Function>
+      <Function name="ContourViewerPluginInfo::InitializeGlobalObjects" user="false" member="true">
+      </Function>
+      <Function name="ContourViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="ContourViewerPluginInfo::InitializeDefaultPalette" user="true" member="true" access="private">
+      </Function>
       <Constant name="MAX_CONTOURS" member="true">
       </Constant>
       <Include file="source" quoted="false">

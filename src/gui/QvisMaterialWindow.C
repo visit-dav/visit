@@ -392,10 +392,9 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            QString num; num.sprintf("%d", atts->GetMaxMaterialsPerZone());
             msg = tr("Max mats per zone must be at least 1."
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetMaxMaterialsPerZone());
             Message(msg);
             atts->SetMaxMaterialsPerZone(atts->GetMaxMaterialsPerZone());
         }
@@ -417,10 +416,9 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
 
         if (!okay)
         {
-            QString num; num.sprintf("%g", atts->GetIsoVolumeFraction());
             msg = tr("The value of isoVolumeFraction was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetIsoVolumeFraction());
             Message(msg);
             atts->SetIsoVolumeFraction(atts->GetIsoVolumeFraction());
         }

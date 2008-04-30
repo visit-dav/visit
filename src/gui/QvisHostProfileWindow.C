@@ -1695,8 +1695,8 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
         else
         {
             needNotify = true;
-            msg = tr("Profile name cannot be empty, reverting to \"%1\".");
-            msg.replace("%1", current.GetProfileName().c_str());
+            msg = tr("Profile name cannot be empty, reverting to \"%1\".").
+                  arg(current.GetProfileName().c_str());
             Message(msg);
         }
     }
@@ -1722,8 +1722,8 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
         else
         {
             needNotify = true;
-            msg = tr("Host name cannot be empty, reverting to \"%1\".");
-            msg.replace("%1", current.GetHost().c_str());
+            msg = tr("Host name cannot be empty, reverting to \"%1\".").
+                  arg(current.GetHost().c_str());
             Message(msg);
         }
     }
@@ -1741,8 +1741,8 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
         else
         {
             needNotify = true;
-            msg = tr("Username cannot be empty, reverting to \"%1\".");
-            msg.replace("%1", current.GetUserName().c_str());
+            msg = tr("Username cannot be empty, reverting to \"%1\".").
+                  arg(current.GetUserName().c_str());
             Message(msg);
         }
     }
@@ -1779,10 +1779,9 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             needNotify = true;
-            QString num; num.sprintf("%d", current.GetNumProcessors());
             msg = tr("An invalid number of processors was specified,"
-                     " reverting to %1 processors.");
-            msg.replace("%1", num);
+                     " reverting to %1 processors.").
+                  arg(current.GetNumProcessors());
             Message(msg);
         }
     }
@@ -1806,10 +1805,9 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             needNotify = true;
-            QString num; num.sprintf("%d", current.GetNumNodes());
             msg = tr("An invalid number of nodes was specified,"
-                     " reverting to %1 nodes.");
-            msg.replace("%1", num);
+                     " reverting to %1 nodes.").
+                  arg(current.GetNumNodes());
             Message(msg);
         }
     }
@@ -1893,9 +1891,8 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             needNotify = true;
-            QString num; num.sprintf("%d", current.GetTimeout());
-            msg = tr("An invalid timeout was specified, reverting to %1 minutes.");
-            msg.replace("%1", num);
+            msg = tr("An invalid timeout was specified, reverting to %1 minutes.").
+                  arg(current.GetTimeout());
             Message(msg);
         }
     }

@@ -72,7 +72,7 @@
 // ****************************************************************************
 
 QvisTensorPlotWindow::QvisTensorPlotWindow(const int type,
-    TensorAttributes *_vecAtts, const char *caption, const char *shortName,
+    TensorAttributes *_vecAtts, const QString &caption, const QString &shortName,
     QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(_vecAtts, caption, shortName, notepad)
 {

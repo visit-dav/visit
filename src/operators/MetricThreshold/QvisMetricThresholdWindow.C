@@ -279,8 +279,8 @@ const struct PresetValueTableType PresetValueTable[_LAST_PRESET+1] =
 
 QvisMetricThresholdWindow::QvisMetricThresholdWindow(const int type,
                          MetricThresholdAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -316,7 +316,9 @@ QvisMetricThresholdWindow::~QvisMetricThresholdWindow()
 // Creation:   Mon Jul 29 14:33:19 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 08:56:37 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -328,135 +330,135 @@ QvisMetricThresholdWindow::CreateWindowContents()
 
     // Preset
     QHBoxLayout *presetLayout = new QHBoxLayout(mainLayout);
-    presetLayout->addWidget(new QLabel("Preset Data for: ", central, "presetLayout"));
+    presetLayout->addWidget(new QLabel(tr("Preset Data for: "), central, "presetLayout"));
     preset = new QComboBox(false, central, "preset");
-    preset->insertItem("None");
-    preset->insertItem("Aspect Ratio");
-    preset->insertItem("Aspect Gamma");
-    preset->insertItem("Skew");
-    preset->insertItem("Taper");
-    preset->insertItem("Volume");
-    preset->insertItem("Stretch");
-    preset->insertItem("Diagonal");
-    preset->insertItem("Dimension");
-    preset->insertItem("Oddy");
-    preset->insertItem("Condition");
-    preset->insertItem("Jacobian");
-    preset->insertItem("Scaled Jacobian");
-    preset->insertItem("Shear");
-    preset->insertItem("Shape");
-    preset->insertItem("Relative Size");
-    preset->insertItem("Shape and Size");
-    preset->insertItem("Area");
-    preset->insertItem("Warpage");
-    preset->insertItem("Smallest Angle");
-    preset->insertItem("Largest Angle");
+    preset->insertItem(tr("None"));
+    preset->insertItem(tr("Aspect Ratio"));
+    preset->insertItem(tr("Aspect Gamma"));
+    preset->insertItem(tr("Skew"));
+    preset->insertItem(tr("Taper"));
+    preset->insertItem(tr("Volume"));
+    preset->insertItem(tr("Stretch"));
+    preset->insertItem(tr("Diagonal"));
+    preset->insertItem(tr("Dimension"));
+    preset->insertItem(tr("Oddy"));
+    preset->insertItem(tr("Condition"));
+    preset->insertItem(tr("Jacobian"));
+    preset->insertItem(tr("Scaled Jacobian"));
+    preset->insertItem(tr("Shear"));
+    preset->insertItem(tr("Shape"));
+    preset->insertItem(tr("Relative Size"));
+    preset->insertItem(tr("Shape and Size"));
+    preset->insertItem(tr("Area"));
+    preset->insertItem(tr("Warpage"));
+    preset->insertItem(tr("Smallest Angle"));
+    preset->insertItem(tr("Largest Angle"));
     presetLayout->addWidget(preset);
 
     connect(preset, SIGNAL(activated(int)),
             this, SLOT(presetChanged(int)));
     mainLayout->addWidget(preset, 0,1);
 
-    Hexahedron = new QCheckBox("Hexahedron", central, "Hexahedron");
+    Hexahedron = new QCheckBox(tr("Hexahedron"), central, "Hexahedron");
     connect(Hexahedron, SIGNAL(toggled(bool)),
             this, SLOT(HexahedronChanged(bool)));
     mainLayout->addWidget(Hexahedron, 2,0);
 
-    mainLayout->addWidget(new QLabel("Enable Type", central, "et_label"),1,0);
-    mainLayout->addWidget(new QLabel("Exclusion Range", central, "er_label"),1,1);
+    mainLayout->addWidget(new QLabel(tr("Enable Type"), central, "et_label"),1,0);
+    mainLayout->addWidget(new QLabel(tr("Exclusion Range"), central, "er_label"),1,1);
 
-    mainLayout->addWidget(new QLabel("hex_lower", central, "hex_lowerLabel"),3,0);
+    mainLayout->addWidget(new QLabel(tr("hex_lower"), central, "hex_lowerLabel"),3,0);
     hex_lower = new QLineEdit(central, "hex_lower");
     connect(hex_lower, SIGNAL(returnPressed()),
             this, SLOT(hex_lowerProcessText()));
     mainLayout->addWidget(hex_lower, 3,1);
 
-    mainLayout->addWidget(new QLabel("hex_upper", central, "hex_upperLabel"),4,0);
+    mainLayout->addWidget(new QLabel(tr("hex_upper"), central, "hex_upperLabel"),4,0);
     hex_upper = new QLineEdit(central, "hex_upper");
     connect(hex_upper, SIGNAL(returnPressed()),
             this, SLOT(hex_upperProcessText()));
     mainLayout->addWidget(hex_upper, 4,1);
 
-    Tetrahedron = new QCheckBox("Tetrahedron", central, "Tetrahedron");
+    Tetrahedron = new QCheckBox(tr("Tetrahedron"), central, "Tetrahedron");
     connect(Tetrahedron, SIGNAL(toggled(bool)),
             this, SLOT(TetrahedronChanged(bool)));
     mainLayout->addWidget(Tetrahedron, 5,0);
 
-    mainLayout->addWidget(new QLabel("tet_lower", central, "tet_lowerLabel"),6,0);
+    mainLayout->addWidget(new QLabel(tr("tet_lower"), central, "tet_lowerLabel"),6,0);
     tet_lower = new QLineEdit(central, "tet_lower");
     connect(tet_lower, SIGNAL(returnPressed()),
             this, SLOT(tet_lowerProcessText()));
     mainLayout->addWidget(tet_lower, 6,1);
 
-    mainLayout->addWidget(new QLabel("tet_upper", central, "tet_upperLabel"),7,0);
+    mainLayout->addWidget(new QLabel(tr("tet_upper"), central, "tet_upperLabel"),7,0);
     tet_upper = new QLineEdit(central, "tet_upper");
     connect(tet_upper, SIGNAL(returnPressed()),
             this, SLOT(tet_upperProcessText()));
     mainLayout->addWidget(tet_upper, 7,1);
 
-    Wedge = new QCheckBox("Wedge", central, "Wedge");
+    Wedge = new QCheckBox(tr("Wedge"), central, "Wedge");
     connect(Wedge, SIGNAL(toggled(bool)),
             this, SLOT(WedgeChanged(bool)));
     mainLayout->addWidget(Wedge, 8,0);
 
-    mainLayout->addWidget(new QLabel("wed_lower", central, "wed_lowerLabel"),9,0);
+    mainLayout->addWidget(new QLabel(tr("wed_lower"), central, "wed_lowerLabel"),9,0);
     wed_lower = new QLineEdit(central, "wed_lower");
     connect(wed_lower, SIGNAL(returnPressed()),
             this, SLOT(wed_lowerProcessText()));
     mainLayout->addWidget(wed_lower, 9,1);
 
-    mainLayout->addWidget(new QLabel("wed_upper", central, "wed_upperLabel"),10,0);
+    mainLayout->addWidget(new QLabel(tr("wed_upper"), central, "wed_upperLabel"),10,0);
     wed_upper = new QLineEdit(central, "wed_upper");
     connect(wed_upper, SIGNAL(returnPressed()),
             this, SLOT(wed_upperProcessText()));
     mainLayout->addWidget(wed_upper, 10,1);
 
-    Pyramid = new QCheckBox("Pyramid", central, "Pyramid");
+    Pyramid = new QCheckBox(tr("Pyramid"), central, "Pyramid");
     connect(Pyramid, SIGNAL(toggled(bool)),
             this, SLOT(PyramidChanged(bool)));
     mainLayout->addWidget(Pyramid, 11,0);
 
-    mainLayout->addWidget(new QLabel("pyr_lower", central, "pyr_lowerLabel"),12,0);
+    mainLayout->addWidget(new QLabel(tr("pyr_lower"), central, "pyr_lowerLabel"),12,0);
     pyr_lower = new QLineEdit(central, "pyr_lower");
     connect(pyr_lower, SIGNAL(returnPressed()),
             this, SLOT(pyr_lowerProcessText()));
     mainLayout->addWidget(pyr_lower, 12,1);
 
-    mainLayout->addWidget(new QLabel("pyr_upper", central, "pyr_upperLabel"),13,0);
+    mainLayout->addWidget(new QLabel(tr("pyr_upper"), central, "pyr_upperLabel"),13,0);
     pyr_upper = new QLineEdit(central, "pyr_upper");
     connect(pyr_upper, SIGNAL(returnPressed()),
             this, SLOT(pyr_upperProcessText()));
     mainLayout->addWidget(pyr_upper, 13,1);
 
-    Triangle = new QCheckBox("Triangle", central, "Triangle");
+    Triangle = new QCheckBox(tr("Triangle"), central, "Triangle");
     connect(Triangle, SIGNAL(toggled(bool)),
             this, SLOT(TriangleChanged(bool)));
     mainLayout->addWidget(Triangle, 14,0);
 
-    mainLayout->addWidget(new QLabel("tri_lower", central, "tri_lowerLabel"),15,0);
+    mainLayout->addWidget(new QLabel(tr("tri_lower"), central, "tri_lowerLabel"),15,0);
     tri_lower = new QLineEdit(central, "tri_lower");
     connect(tri_lower, SIGNAL(returnPressed()),
             this, SLOT(tri_lowerProcessText()));
     mainLayout->addWidget(tri_lower, 15,1);
 
-    mainLayout->addWidget(new QLabel("tri_upper", central, "tri_upperLabel"),16,0);
+    mainLayout->addWidget(new QLabel(tr("tri_upper"), central, "tri_upperLabel"),16,0);
     tri_upper = new QLineEdit(central, "tri_upper");
     connect(tri_upper, SIGNAL(returnPressed()),
             this, SLOT(tri_upperProcessText()));
     mainLayout->addWidget(tri_upper, 16,1);
 
-    Quad = new QCheckBox("Quad", central, "quad");
+    Quad = new QCheckBox(tr("Quad"), central, "quad");
     connect(Quad, SIGNAL(toggled(bool)),
             this, SLOT(QuadChanged(bool)));
     mainLayout->addWidget(Quad, 17,0);
 
-    mainLayout->addWidget(new QLabel("quad_lower", central, "quad_lowerLabel"),18,0);
+    mainLayout->addWidget(new QLabel(tr("quad_lower"), central, "quad_lowerLabel"),18,0);
     quad_lower = new QLineEdit(central, "quad_lower");
     connect(quad_lower, SIGNAL(returnPressed()),
             this, SLOT(quad_lowerProcessText()));
     mainLayout->addWidget(quad_lower, 18,1);
 
-    mainLayout->addWidget(new QLabel("quad_upper", central, "quad_upperLabel"),19,0);
+    mainLayout->addWidget(new QLabel(tr("quad_upper"), central, "quad_upperLabel"),19,0);
     quad_upper = new QLineEdit(central, "quad_upper");
     connect(quad_upper, SIGNAL(returnPressed()),
             this, SLOT(quad_upperProcessText()));
@@ -611,14 +613,15 @@ QvisMetricThresholdWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetHex_lower(val);
+            if(okay)
+                atts->SetHex_lower(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of hex_lower was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetHex_lower());
+            msg = tr("The value of hex_lower was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetHex_lower());
             Message(msg);
             atts->SetHex_lower(atts->GetHex_lower());
         }
@@ -632,14 +635,15 @@ QvisMetricThresholdWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetHex_upper(val);
+            if(okay)
+                atts->SetHex_upper(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of hex_upper was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetHex_upper());
+            msg = tr("The value of hex_upper was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetHex_upper());
             Message(msg);
             atts->SetHex_upper(atts->GetHex_upper());
         }
@@ -659,14 +663,15 @@ QvisMetricThresholdWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetTet_lower(val);
+            if(okay)
+                atts->SetTet_lower(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of tet_lower was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetTet_lower());
+            msg = tr("The value of tet_lower was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetTet_lower());
             Message(msg);
             atts->SetTet_lower(atts->GetTet_lower());
         }
@@ -680,14 +685,15 @@ QvisMetricThresholdWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetTet_upper(val);
+            if(okay)
+                atts->SetTet_upper(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of tet_upper was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetTet_upper());
+            msg = tr("The value of tet_upper was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetTet_upper());
             Message(msg);
             atts->SetTet_upper(atts->GetTet_upper());
         }
@@ -707,14 +713,15 @@ QvisMetricThresholdWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetWed_lower(val);
+            if(okay)
+                atts->SetWed_lower(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of wed_lower was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetWed_lower());
+            msg = tr("The value of wed_lower was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetWed_lower());
             Message(msg);
             atts->SetWed_lower(atts->GetWed_lower());
         }
@@ -728,14 +735,15 @@ QvisMetricThresholdWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetWed_upper(val);
+            if(okay)
+                atts->SetWed_upper(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of wed_upper was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetWed_upper());
+            msg = tr("The value of wed_upper was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetWed_upper());
             Message(msg);
             atts->SetWed_upper(atts->GetWed_upper());
         }
@@ -755,14 +763,15 @@ QvisMetricThresholdWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetPyr_lower(val);
+            if(okay)
+                atts->SetPyr_lower(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of pyr_lower was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetPyr_lower());
+            msg = tr("The value of pyr_lower was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetPyr_lower());
             Message(msg);
             atts->SetPyr_lower(atts->GetPyr_lower());
         }
@@ -776,14 +785,15 @@ QvisMetricThresholdWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetPyr_upper(val);
+            if(okay)
+                atts->SetPyr_upper(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of pyr_upper was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetPyr_upper());
+            msg = tr("The value of pyr_upper was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetPyr_upper());
             Message(msg);
             atts->SetPyr_upper(atts->GetPyr_upper());
         }
@@ -803,14 +813,15 @@ QvisMetricThresholdWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetTri_lower(val);
+            if(okay)
+                atts->SetTri_lower(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of tri_lower was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetTri_lower());
+            msg = tr("The value of tri_lower was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetTri_lower());
             Message(msg);
             atts->SetTri_lower(atts->GetTri_lower());
         }
@@ -824,14 +835,15 @@ QvisMetricThresholdWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetTri_upper(val);
+            if(okay)
+                atts->SetTri_upper(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of tri_upper was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetTri_upper());
+            msg = tr("The value of tri_upper was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetTri_upper());
             Message(msg);
             atts->SetTri_upper(atts->GetTri_upper());
         }
@@ -851,14 +863,15 @@ QvisMetricThresholdWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetQuad_lower(val);
+            if(okay)
+                atts->SetQuad_lower(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of quad_lower was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetQuad_lower());
+            msg = tr("The value of quad_lower was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetQuad_lower());
             Message(msg);
             atts->SetQuad_lower(atts->GetQuad_lower());
         }
@@ -872,14 +885,15 @@ QvisMetricThresholdWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetQuad_upper(val);
+            if(okay)
+                atts->SetQuad_upper(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of quad_upper was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetQuad_upper());
+            msg = tr("The value of quad_upper was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetQuad_upper());
             Message(msg);
             atts->SetQuad_upper(atts->GetQuad_upper());
         }

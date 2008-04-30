@@ -278,9 +278,9 @@ QvisAnnotationObjectInterface::GetPosition(QLineEdit *le, const QString &name)
         }
         else
         {
-            QString msg(tr("The %1 value was invalid. "
-                           "Resetting to the last good value."));
-            msg.replace("%1", name);
+            QString msg = tr("The %1 value was invalid. "
+                             "Resetting to the last good value.").
+                          arg(name);
             Error(msg);
             annot->SetPosition(annot->GetPosition());
         }
@@ -320,9 +320,9 @@ QvisAnnotationObjectInterface::GetPosition2(QLineEdit *le, const QString &name)
         }
         else
         {
-            QString msg(tr("The %1 value was invalid. "
-                           "Resetting to the last good value."));
-            msg.replace("%1", name);
+            QString msg = tr("The %1 value was invalid. "
+                             "Resetting to the last good value.").
+                          arg(name);
             Error(msg);
             annot->SetPosition2(annot->GetPosition2());
         }
@@ -363,9 +363,9 @@ QvisAnnotationObjectInterface::GetScreenPosition(QvisScreenPositionEdit *spe,
         }
         else
         {
-            QString msg(tr("The %1 value was invalid. "
-                           "Resetting to the last good value."));
-            msg.replace("%1", name);
+            QString msg = tr("The %1 value was invalid. "
+                             "Resetting to the last good value.").
+                          arg(name);
             Error(msg);
             annot->SetPosition(annot->GetPosition());
         }
@@ -406,9 +406,9 @@ QvisAnnotationObjectInterface::GetScreenPosition2(QvisScreenPositionEdit *spe,
         }
         else
         {
-            QString msg(tr("The %1 value was invalid. "
-                           "Resetting to the last good value."));
-            msg.replace("%1", name);
+            QString msg = tr("The %1 value was invalid. "
+                             "Resetting to the last good value.").
+                          arg(name);
             Error(msg);
             annot->SetPosition2(annot->GetPosition2());
         }

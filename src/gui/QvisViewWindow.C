@@ -1400,8 +1400,8 @@ QvisViewWindow::GetCurrentValuesAxisArray(int which_widget)
                  viewAxisArray->GetViewportCoords()[2],
                  viewAxisArray->GetViewportCoords()[3]);
             msg = tr("The viewport values were invalid. "
-                     "Resetting to the last good values of %1.");
-            msg.replace("%1", vpt);
+                     "Resetting to the last good values of %1.").
+                  arg(vpt);
             Error(msg);
             viewAxisArray->SetViewportCoords(viewAxisArray->GetViewportCoords());
         }
@@ -1430,8 +1430,8 @@ QvisViewWindow::GetCurrentValuesAxisArray(int which_widget)
                  viewAxisArray->GetDomainCoords()[0],
                  viewAxisArray->GetDomainCoords()[1]);
             msg = tr("The domain values were invalid. "
-                     "Resetting to the last good values of %1.");
-            msg.replace("%1", dom);
+                     "Resetting to the last good values of %1.").
+                  arg(dom);
             Error(msg);
             viewAxisArray->SetDomainCoords(viewAxisArray->GetDomainCoords());
         }
@@ -1460,8 +1460,8 @@ QvisViewWindow::GetCurrentValuesAxisArray(int which_widget)
                  viewAxisArray->GetRangeCoords()[0],
                  viewAxisArray->GetRangeCoords()[1]);
             msg = tr("The range values were invalid. "
-                     "Resetting to the last good values of %1.");
-            msg.replace("%1", range);
+                     "Resetting to the last good values of %1.").
+                  arg(range);
             Error(msg);
             viewAxisArray->SetRangeCoords(viewAxisArray->GetRangeCoords());
         }
@@ -1517,8 +1517,8 @@ QvisViewWindow::GetCurrentValuesCurve(int which_widget)
                  viewCurve->GetViewportCoords()[2],
                  viewCurve->GetViewportCoords()[3]);
             msg = tr("The viewport values were invalid. "
-                     "Resetting to the last good values of %1.");
-            msg.replace("%1", vpt);
+                     "Resetting to the last good values of %1.").
+                  arg(vpt);
             Error(msg);
             viewCurve->SetViewportCoords(viewCurve->GetViewportCoords());
         }
@@ -1547,8 +1547,8 @@ QvisViewWindow::GetCurrentValuesCurve(int which_widget)
                  viewCurve->GetDomainCoords()[0],
                  viewCurve->GetDomainCoords()[1]);
             msg = tr("The domain values were invalid. "
-                     "Resetting to the last good values of %1.");
-            msg.replace("%1", dom);
+                     "Resetting to the last good values of %1.").
+                  arg(dom);
             Error(msg);
             viewCurve->SetDomainCoords(viewCurve->GetDomainCoords());
         }
@@ -1577,8 +1577,8 @@ QvisViewWindow::GetCurrentValuesCurve(int which_widget)
                  viewCurve->GetRangeCoords()[0],
                  viewCurve->GetRangeCoords()[1]);
             msg = tr("The range values were invalid. "
-                     "Resetting to the last good values of %1.");
-            msg.replace("%1", range);
+                     "Resetting to the last good values of %1.").
+                  arg(range);
             Error(msg);
             viewCurve->SetRangeCoords(viewCurve->GetRangeCoords());
         }
@@ -1644,8 +1644,7 @@ QvisViewWindow::GetCurrentValues2d(int which_widget)
                  view2d->GetViewportCoords()[2],
                  view2d->GetViewportCoords()[3]);
             msg = tr("The viewport values were invalid. "
-                     "Resetting to the last good values of %1.");
-            msg.replace("%1", vpt);
+                     "Resetting to the last good values of %1.").arg(vpt);
             Error(msg);
             view2d->SetViewportCoords(view2d->GetViewportCoords());
         }
@@ -1676,8 +1675,7 @@ QvisViewWindow::GetCurrentValues2d(int which_widget)
                  view2d->GetWindowCoords()[2],
                  view2d->GetWindowCoords()[3]);
             msg = tr("The window values were invalid. "
-                     "Resetting to the last good values of %1.");
-            msg.replace("%1", win);
+                     "Resetting to the last good values of %1.").arg(win);
             Error(msg);
             view2d->SetWindowCoords(view2d->GetWindowCoords());
         }
@@ -1745,8 +1743,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
                  view3d->GetViewNormal()[1],
                  view3d->GetViewNormal()[2]);
             msg = tr("The normal location values were invalid. "
-                     "Resetting to the last good values of %1.");
-            msg.replace("%1", n);
+                     "Resetting to the last good values of %1.").arg(n);
             Error(msg);
             view3d->SetViewNormal(view3d->GetViewNormal());
         }
@@ -1776,8 +1773,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
                  view3d->GetFocus()[1],
                  view3d->GetFocus()[2]);
             msg = tr("The focus location values were invalid. "
-                     "Resetting to the last good values of %1.");
-            msg.replace("%1", f);
+                     "Resetting to the last good values of %1.").arg(f);
             Error(msg);
             view3d->SetFocus(view3d->GetFocus());
         }
@@ -1807,8 +1803,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
                  view3d->GetViewUp()[1],
                  view3d->GetViewUp()[2]);
             msg = tr("The up vector values were invalid. "
-                     "Resetting to the last good values of %1.");
-            msg.replace("%1", v);
+                     "Resetting to the last good values of %1.").arg(v);
             Error(msg);
             view3d->SetViewUp(view3d->GetViewUp());
         }
@@ -1837,8 +1832,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
         {
             QString v; v.sprintf("%g", view3d->GetViewAngle());
             msg = tr("The viewangle was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", v);
+                     "Resetting to the last good value of %1.").arg(v);
             Error(msg);
             view3d->SetViewAngle(view3d->GetViewAngle());
         }
@@ -1864,8 +1858,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
         {
             QString p; p.sprintf("%g", view3d->GetParallelScale());
             msg = tr("The parallel scale was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", p);
+                     "Resetting to the last good value of %1.").arg(p);
             Error(msg);
             view3d->SetParallelScale(view3d->GetParallelScale());
         }
@@ -1891,8 +1884,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
         {
             QString p; p.sprintf("%g", view3d->GetNearPlane());
             msg = tr("The near clipping value was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", p);
+                     "Resetting to the last good value of %1.").arg(p);
             Error(msg);
             view3d->SetNearPlane(view3d->GetNearPlane());
         }
@@ -1918,8 +1910,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
         {
             QString p; p.sprintf("%g", view3d->GetFarPlane());
             msg = tr("The far clipping value was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", p);
+                     "Resetting to the last good value of %1.").arg(p);
             Error(msg);
             view3d->SetFarPlane(view3d->GetFarPlane());
         }
@@ -1947,8 +1938,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
             QString p; p.sprintf("%g %g", view3d->GetImagePan()[0],
                 view3d->GetImagePan()[1]);
             msg = tr("The image pan values were invalid. "
-                     "Resetting to the last good values of %1.");
-            msg.replace("%1", p);
+                     "Resetting to the last good values of %1.").arg(p);
             Error(msg);
             view3d->SetImagePan(view3d->GetImagePan());
         }
@@ -1974,8 +1964,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
         {
             QString z; z.sprintf("%g", view3d->GetImageZoom());
             msg = tr("The image zoom value was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", z);
+                     "Resetting to the last good value of %1.").arg(z);
             Error(msg);
             view3d->SetImageZoom(view3d->GetImageZoom());
         }
@@ -2002,8 +1991,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
         {
             QString e; e.sprintf("%g", view3d->GetEyeAngle());
             msg = tr("The eye angle value was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", e);
+                     "Resetting to the last good value of %1.").arg(e);
             Error(msg);
             view3d->SetEyeAngle(view3d->GetEyeAngle());
         }
@@ -2033,8 +2021,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
                  view3d->GetCenterOfRotation()[1],
                  view3d->GetCenterOfRotation()[2]);
             msg = tr("The center of rotation values were invalid. "
-                     "Resetting to the last good values of %1.");
-            msg.replace("%1", c);
+                     "Resetting to the last good values of %1.").arg(c);
             Error(msg);
             view3d->SetCenterOfRotation(view3d->GetCenterOfRotation());
         }

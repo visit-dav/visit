@@ -52,6 +52,7 @@ class QvisNotepadArea;
 class QvisPostableWindowObserver;
 class QvisWizard;
 class QWidget;
+class QString;
 class avtPluginFilter;
 class ViewerPlot;
 class ExpressionList;
@@ -110,15 +111,20 @@ class ExpressionList;
 //    definition is intended for intialization; the filter should override
 //    the actual values of the variable.
 //
+//    Brad Whitlock, Fri Apr 25 10:11:20 PDT 2008
+//    Made GetMenuName in the GUI info return QString so we can 
+//    internationalize plot names. Added const to strings returned from
+//    GeneralOperatorPluginInfo.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralOperatorPluginInfo
 {
   public:
     virtual ~GeneralOperatorPluginInfo() {;};
-    virtual char *GetName() const = 0;
-    virtual char *GetVersion() const = 0;
-    virtual char *GetID() const = 0;
+    virtual const char *GetName() const = 0;
+    virtual const char *GetVersion() const = 0;
+    virtual const char *GetID() const = 0;
     virtual bool  EnabledByDefault() const { return true; }
 };
 
@@ -133,9 +139,10 @@ class PLUGIN_API CommonOperatorPluginInfo : public virtual GeneralOperatorPlugin
 class PLUGIN_API GUIOperatorPluginInfo : public virtual CommonOperatorPluginInfo
 {
   public:
-    virtual const char *GetMenuName() const = 0;
+    virtual QString *GetMenuName() const = 0;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
-        AttributeSubject *attr, QvisNotepadArea *notepad) = 0;
+        AttributeSubject *attr, const QString &caption, const QString &shortName,
+        QvisNotepadArea *notepad) = 0;
     virtual QvisWizard *CreatePluginWizard(AttributeSubject *attr,
         QWidget *parent, const char *name =0)
     {
@@ -158,7 +165,9 @@ class PLUGIN_API ViewerOperatorPluginInfo : public virtual CommonOperatorPluginI
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
                                         const ViewerPlot *plot,
                                         const bool fromDefault) = 0;
+    virtual QString *GetMenuName() const = 0;
     virtual const char **XPMIconData() const { return 0; }
+    virtual bool GetUserSelectable() const { return true; }
     virtual bool Removeable() const { return true; }
     virtual bool Moveable() const { return true; }
     virtual bool AllowsSubsequentOperators() const { return true; }

@@ -41,6 +41,7 @@
 #include <qmessagebox.h>
 
 #include <GlobalAttributes.h>
+#include <OperatorPluginInfo.h>
 #include <OperatorPluginManager.h>
 #include <Plot.h>
 #include <PlotList.h>
@@ -232,12 +233,21 @@ QvisOperatorWindow::SetOperatorOptions()
                 OperatorPluginManager *opMgr = OperatorPluginManager::Instance();
 
                 // Create a prompt for the user.
-                std::string opName(opMgr->GetPluginName(
-                                   opMgr->GetEnabledID(operatorType)));
-                QString msg(
-                    tr("No %1 operator was found for the selected plots.") + QString("\n") + 
-                    tr("Do you want to apply the %1 operator?") + QString("\n\n"));
-                msg.replace("%1", opName.c_str());
+                GUIOperatorPluginInfo *info = opMgr->GetGUIPluginInfo(
+                                              opMgr->GetEnabledID(operatorType));
+                QString menuName, *s = 0;
+                if(info)
+                {
+                    s = info->GetMenuName();
+                    menuName = *s;
+                }
+
+                QString msg = tr("No %1 operator was found for the selected plots.\n"
+                                 "Do you want to apply the %2 operator?\n\n").
+                              arg(menuName).arg(menuName);
+
+                if(s != 0)
+                    delete s;
 
                 // Ask the user if he really wants to close the engine.
                 button = QMessageBox::warning(this, "VisIt",

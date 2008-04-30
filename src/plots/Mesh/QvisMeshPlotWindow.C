@@ -77,7 +77,7 @@
 // ****************************************************************************
 
 QvisMeshPlotWindow::QvisMeshPlotWindow(const int type,
-    MeshAttributes *_meshAtts, const char *caption, const char *shortName,
+    MeshAttributes *_meshAtts, const QString &caption, const QString &shortName,
     QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(_meshAtts, caption, shortName, notepad)
 {

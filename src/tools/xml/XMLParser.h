@@ -186,6 +186,9 @@ ParseCharacters(const QString &buff)
 //    Hank Childs, Thu Jan 10 14:51:51 PST 2008
 //    Added support for explicit filenames.
 //
+//    Brad Whitlock, Fri Apr 25 11:23:20 PDT 2008
+//    Added support for setting access type on functions.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -400,6 +403,14 @@ class XMLParser : public QXmlDefaultHandler
             QString member = atts.value("member");
             if (member.isNull())
                 member = "true";
+            QString access = atts.value("access");
+            Function::AccessType a;
+            if(access == "protected")
+                a = Function::AccessProtected;
+            else if(access == "private")
+                a = Function::AccessPrivate;
+            else
+                a = Function::AccessPublic;
 
             if (!currentAttribute)
                 throw QString().sprintf("No current attribute when specifying function %s",name.latin1());
@@ -420,6 +431,7 @@ class XMLParser : public QXmlDefaultHandler
                                                    second[i],
                                                    Text2Bool(user), Text2Bool(member),
                                                    targets[i]);
+                currentFunctions[i]->accessType = a;
             }
             currentFunctions[targets.size()] = NULL;
         }

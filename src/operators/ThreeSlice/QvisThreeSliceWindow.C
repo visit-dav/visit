@@ -74,8 +74,8 @@ using std::string;
 
 QvisThreeSliceWindow::QvisThreeSliceWindow(const int type,
                          ThreeSliceAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -111,7 +111,9 @@ QvisThreeSliceWindow::~QvisThreeSliceWindow()
 // Creation:   Wed Jul 2 15:36:50 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Apr 24 16:01:55 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -120,25 +122,25 @@ QvisThreeSliceWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 4,2,  10, "mainLayout");
 
 
-    mainLayout->addWidget(new QLabel("x", central, "xLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("X"), central, "xLabel"),0,0);
     x = new QLineEdit(central, "x");
     connect(x, SIGNAL(returnPressed()),
             this, SLOT(xProcessText()));
     mainLayout->addWidget(x, 0,1);
 
-    mainLayout->addWidget(new QLabel("y", central, "yLabel"),1,0);
+    mainLayout->addWidget(new QLabel(tr("Y"), central, "yLabel"),1,0);
     y = new QLineEdit(central, "y");
     connect(y, SIGNAL(returnPressed()),
             this, SLOT(yProcessText()));
     mainLayout->addWidget(y, 1,1);
 
-    mainLayout->addWidget(new QLabel("z", central, "zLabel"),2,0);
+    mainLayout->addWidget(new QLabel(tr("Z"), central, "zLabel"),2,0);
     z = new QLineEdit(central, "z");
     connect(z, SIGNAL(returnPressed()),
             this, SLOT(zProcessText()));
     mainLayout->addWidget(z, 2,1);
 
-    interactive = new QCheckBox("Interactive", central, "interactive");
+    interactive = new QCheckBox(tr("Interactive"), central, "interactive");
     connect(interactive, SIGNAL(toggled(bool)),
             this, SLOT(interactiveChanged(bool)));
     mainLayout->addWidget(interactive, 3,0);
@@ -234,14 +236,15 @@ QvisThreeSliceWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            atts->SetX(val);
+            if(okay)
+                atts->SetX(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of x was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetX());
+            msg = tr("The value of x was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetX());
             Message(msg);
             atts->SetX(atts->GetX());
         }
@@ -255,14 +258,15 @@ QvisThreeSliceWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            atts->SetY(val);
+            if(okay)
+               atts->SetY(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of y was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetY());
+            msg = tr("The value of y was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetY());
             Message(msg);
             atts->SetY(atts->GetY());
         }
@@ -276,14 +280,15 @@ QvisThreeSliceWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             float val = temp.toFloat(&okay);
-            atts->SetZ(val);
+            if(okay)
+                atts->SetZ(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of z was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetZ());
+            msg = tr("The value of z was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetZ());
             Message(msg);
             atts->SetZ(atts->GetZ());
         }

@@ -50,6 +50,7 @@
 
 // Forward declarations.
 class AttributeSubject;
+class QString;
 class QvisNotepadArea;
 class QvisPostableWindowObserver;
 class QvisWizard;
@@ -134,15 +135,19 @@ class ViewerPlot;
 //    Brad Whitlock, Tue Mar 20 11:44:35 PDT 2007
 //    Added ProvidesLegend method on the viewer plugin info.
 //
+//    Brad Whitlock, Fri Apr 25 10:09:24 PDT 2008
+//    Made the GUI plugin info return QString so we can internationalize
+//    plot names. Added const to strings returned from GeneralPlotPluginInfo.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralPlotPluginInfo
 {
   public:
     virtual ~GeneralPlotPluginInfo() { ; };
-    virtual char *GetName() const = 0;
-    virtual char *GetVersion() const = 0;
-    virtual char *GetID() const = 0;
+    virtual const char *GetName() const = 0;
+    virtual const char *GetVersion() const = 0;
+    virtual const char *GetID() const = 0;
     virtual bool  EnabledByDefault() const { return true; }
 };
 
@@ -157,10 +162,11 @@ class PLUGIN_API CommonPlotPluginInfo : public virtual GeneralPlotPluginInfo
 class PLUGIN_API GUIPlotPluginInfo : public virtual CommonPlotPluginInfo
 {
   public:
-    virtual const char *GetMenuName() const = 0;
+    virtual QString *GetMenuName() const = 0;
     virtual int GetVariableTypes() const = 0;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
-        AttributeSubject *attr, QvisNotepadArea *notepad) = 0;
+        AttributeSubject *attr, const QString &caption, const QString &shortName,
+        QvisNotepadArea *notepad) = 0;
     virtual QvisWizard *CreatePluginWizard(AttributeSubject *attr, QWidget *parent,
         const std::string &varName, const avtDatabaseMetaData *md,
         const ExpressionList *expList, const char *name =0)
@@ -189,6 +195,7 @@ class PLUGIN_API ViewerPlotPluginInfo : public virtual CommonPlotPluginInfo
     virtual void ResetPlotAtts(AttributeSubject *atts,
         ViewerPlot *) { ; }
 
+    virtual QString *GetMenuName() const = 0;
     virtual const char **XPMIconData() const { return 0; }
     virtual int GetVariableTypes() const = 0;
 

@@ -668,8 +668,8 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
         else
         {
             msg = tr("The output directory was invalid. "
-                     "Resetting to the last good value \"%1\".");
-            msg.replace("%1", saveWindowAtts->GetOutputDirectory().c_str());
+                     "Resetting to the last good value \"%1\".").
+                  arg(saveWindowAtts->GetOutputDirectory().c_str());
             Message(msg);
             saveWindowAtts->SetOutputDirectory(saveWindowAtts->GetOutputDirectory());
         }
@@ -687,8 +687,8 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
         else
         {
             msg = tr("The filename was invalid. "
-                     "Resetting to the last good value \"%1\".");
-            msg.replace("%1", saveWindowAtts->GetFileName().c_str());
+                     "Resetting to the last good value \"%1\".").
+                  arg(saveWindowAtts->GetFileName().c_str());
             Message(msg);
             saveWindowAtts->SetFileName(saveWindowAtts->GetFileName());
         }
@@ -718,10 +718,9 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            QString num; num.sprintf("%d", saveWindowAtts->GetWidth());
             msg = tr("The width was invalid. "
-                     "Resetting to the last good value %d.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value %1.").
+                  arg(saveWindowAtts->GetWidth());
             Message(msg);
             saveWindowAtts->SetWidth(saveWindowAtts->GetWidth());
         }
@@ -751,10 +750,9 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            QString num; num.sprintf("%d", saveWindowAtts->GetHeight());
             msg = tr("The height was invalid. "
-                     "Resetting to the last good value %d.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value %1.").
+                  arg(saveWindowAtts->GetHeight());
             Message(msg);
             saveWindowAtts->SetHeight(saveWindowAtts->GetHeight());
         }

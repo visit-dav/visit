@@ -79,70 +79,70 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
     QGridLayout *topLayout = new QGridLayout(this, 11,2, 5);
     int row = 0;
 
-    topLayout->addWidget(new QLabel("CXXFLAGS", this), row, 0);
+    topLayout->addWidget(new QLabel(tr("CXXFLAGS"), this), row, 0);
     CXXFLAGS = new QLineEdit(this);
     topLayout->addWidget(CXXFLAGS, row, 1);
     row++;
 
-    topLayout->addWidget(new QLabel("LDFLAGS", this), row, 0);
+    topLayout->addWidget(new QLabel(tr("LDFLAGS"), this), row, 0);
     LDFLAGS = new QLineEdit(this);
     topLayout->addWidget(LDFLAGS, row, 1);
     row++;
 
-    topLayout->addWidget(new QLabel("LIBS", this), row, 0);
+    topLayout->addWidget(new QLabel(tr("LIBS"), this), row, 0);
     LIBS = new QLineEdit(this);
     topLayout->addWidget(LIBS, row, 1);
     row++;
 
-    customGFiles = new QCheckBox("GUI Files", this);
+    customGFiles = new QCheckBox(tr("GUI Files"), this);
     GFiles = new QLineEdit(this);
     topLayout->addWidget(customGFiles, row, 0);
     topLayout->addWidget(GFiles, row, 1);
     row++;
 
-    customWFiles = new QCheckBox("GUI Widget Files", this);
+    customWFiles = new QCheckBox(tr("GUI Widget Files"), this);
     WFiles = new QLineEdit(this);
     topLayout->addWidget(customWFiles, row, 0);
     topLayout->addWidget(WFiles, row,1);
     row++;
 
-    customSFiles = new QCheckBox("Scripting Files", this);
+    customSFiles = new QCheckBox(tr("Scripting Files"), this);
     SFiles = new QLineEdit(this);
     topLayout->addWidget(customSFiles, row, 0);
     topLayout->addWidget(SFiles, row,1);
     row++;
 
-    customVFiles = new QCheckBox("Viewer Files", this);
+    customVFiles = new QCheckBox(tr("Viewer Files"), this);
     VFiles = new QLineEdit(this);
     topLayout->addWidget(customVFiles, row, 0);
     topLayout->addWidget(VFiles, row,1);
     row++;
 
-    customVWFiles = new QCheckBox("Viewer Widget Files", this);
+    customVWFiles = new QCheckBox(tr("Viewer Widget Files"), this);
     VWFiles = new QLineEdit(this);
     topLayout->addWidget(customVWFiles, row, 0);
     topLayout->addWidget(VWFiles, row,1);
     row++;
 
-    customMFiles = new QCheckBox("MDServer Files", this);
+    customMFiles = new QCheckBox(tr("MDServer Files"), this);
     MFiles = new QLineEdit(this);
     topLayout->addWidget(customMFiles, row, 0);
     topLayout->addWidget(MFiles, row,1);
     row++;
 
-    customEFiles = new QCheckBox("Engine Files", this);
+    customEFiles = new QCheckBox(tr("Engine Files"), this);
     EFiles = new QLineEdit(this);
     topLayout->addWidget(customEFiles, row, 0);
     topLayout->addWidget(EFiles, row,1);
     row++;
 
-    engSpecificCode = new QCheckBox("Plugin has code specific to the Engine",
+    engSpecificCode = new QCheckBox(tr("Plugin has code specific to the Engine"),
                                     this);
     topLayout->addMultiCellWidget(engSpecificCode, row,row, 0,1);
     row++;
 
-    mdSpecificCode = new QCheckBox("Plugin has code specific to the MDServer "
-                                   "(Database Plugins only)", this);
+    mdSpecificCode = new QCheckBox(tr("Plugin has code specific to the MDServer "
+                                   "(Database Plugins only)"), this);
     topLayout->addMultiCellWidget(mdSpecificCode, row,row, 0,1);
     row++;
 

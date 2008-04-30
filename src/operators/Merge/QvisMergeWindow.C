@@ -76,8 +76,8 @@ using std::string;
 
 QvisMergeWindow::QvisMergeWindow(const int type,
                          MergeOperatorAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -113,7 +113,9 @@ QvisMergeWindow::~QvisMergeWindow()
 // Creation:   Mon Dec 17 11:54:23 PDT 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 09:00:14 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -122,12 +124,12 @@ QvisMergeWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 2,2,  10, "mainLayout");
 
 
-    parallelMerge = new QCheckBox("Merge across all processors?", central, "parallelMerge");
+    parallelMerge = new QCheckBox(tr("Merge across all processors?"), central, "parallelMerge");
     connect(parallelMerge, SIGNAL(toggled(bool)),
             this, SLOT(parallelMergeChanged(bool)));
     mainLayout->addWidget(parallelMerge, 0,0);
 
-    toleranceLabel = new QLabel("Maximum distance between points that should be merged", central, "toleranceLabel");
+    toleranceLabel = new QLabel(tr("Maximum distance between points that should be merged"), central, "toleranceLabel");
     mainLayout->addWidget(toleranceLabel,1,0);
     tolerance = new QLineEdit(central, "tolerance");
     connect(tolerance, SIGNAL(returnPressed()),
@@ -218,14 +220,15 @@ QvisMergeWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetTolerance(val);
+            if(okay)
+                atts->SetTolerance(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of tolerance was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetTolerance());
+            msg = tr("The value of tolerance was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetTolerance());
             Message(msg);
             atts->SetTolerance(atts->GetTolerance());
         }

@@ -75,6 +75,9 @@ class ViewerWindowManager;
 //   Brad Whitlock, Mon Feb 12 17:20:49 PST 2007
 //   Inherit ViewerBase.
 //
+//   Brad Whitlock, Tue Apr 29 11:22:02 PDT 2008
+//   Use QString.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerActionBase : public ViewerBase
@@ -121,9 +124,9 @@ protected:
     virtual void PreExecute() { }
 
     // Methods to set the action's attributes.
-    virtual void SetText(const char *text) = 0;
-    virtual void SetMenuText(const char *text) = 0;
-    virtual void SetToolTip(const char *text) = 0;
+    virtual void SetText(const QString &text) = 0;
+    virtual void SetMenuText(const QString &text) = 0;
+    virtual void SetToolTip(const QString &text) = 0;
     virtual void DisableVisual()       { allowVisualRepresentation = false; }
     virtual void EnableVisual()        { allowVisualRepresentation = true; }
 

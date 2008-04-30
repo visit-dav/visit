@@ -77,8 +77,8 @@ using std::string;
 
 QvisIndexSelectWindow::QvisIndexSelectWindow(const int type,
                          IndexSelectAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -130,6 +130,9 @@ QvisIndexSelectWindow::~QvisIndexSelectWindow()
 //   Added QvisSILSetSelector to replace domainIndex and groupIndex. 
 //   Changed whichData button group to useWholeCollection checkbox.
 // 
+//   Brad Whitlock, Fri Apr 25 09:08:02 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -141,16 +144,16 @@ QvisIndexSelectWindow::CreateWindowContents()
     wholeLayout->addMultiCellLayout(mainLayout, 0, 0, 0, 3);
 
 
-    mainLayout->addWidget(new QLabel("Dimension", central, "dimLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("Dimension"), central, "dimLabel"),0,0);
     dim = new QButtonGroup(central, "dim");
     dim->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *dimLayout = new QHBoxLayout(dim);
     dimLayout->setSpacing(2);
-    QRadioButton *dimDimensionOneD = new QRadioButton("1D", dim);
+    QRadioButton *dimDimensionOneD = new QRadioButton(tr("1D"), dim);
     dimLayout->addWidget(dimDimensionOneD);
-    QRadioButton *dimDimensionTwoD = new QRadioButton("2D", dim);
+    QRadioButton *dimDimensionTwoD = new QRadioButton(tr("2D"), dim);
     dimLayout->addWidget(dimDimensionTwoD);
-    QRadioButton *dimDimensionThreeD = new QRadioButton("3D", dim);
+    QRadioButton *dimDimensionThreeD = new QRadioButton(tr("3D"), dim);
     dimLayout->addWidget(dimDimensionThreeD);
     connect(dim, SIGNAL(clicked(int)),
             this, SLOT(dimChanged(int)));
@@ -160,13 +163,13 @@ QvisIndexSelectWindow::CreateWindowContents()
     QGridLayout *labelLayout = new QGridLayout(1, 3, 10, "labelLayout");
     wholeLayout->addMultiCellLayout(labelLayout, 1, 1, 0,3 );
 
-    QLabel *minLabel = new QLabel("Min", central, "minLabel");
+    QLabel *minLabel = new QLabel(tr("Min"), central, "minLabel");
     minLabel->setAlignment(AlignCenter);
     labelLayout->addWidget(minLabel, 0, 0); 
-    QLabel *maxLabel = new QLabel("Max", central, "maxLabel");
+    QLabel *maxLabel = new QLabel(tr("Max"), central, "maxLabel");
     maxLabel->setAlignment(AlignCenter);
     labelLayout->addWidget(maxLabel, 0, 1); 
-    QLabel *incrLabel = new QLabel("Incr", central, "incrLabel");
+    QLabel *incrLabel = new QLabel(tr("Incr"), central, "incrLabel");
     incrLabel->setAlignment(AlignCenter);
     labelLayout->addWidget(incrLabel, 0, 2); 
 
@@ -177,7 +180,7 @@ QvisIndexSelectWindow::CreateWindowContents()
     oneDWidgetGroup = new QGroupBox(central, "oneDWidgetGroup"); 
     oneDWidgetGroup->setFrameShape(QFrame::NoFrame);
     QGridLayout *oneDLayout = new QGridLayout(oneDWidgetGroup, 1, 6);
-    oneDLabel = new QLabel(central, "I", oneDWidgetGroup);
+    oneDLabel = new QLabel(central, tr("I"), oneDWidgetGroup);
     oneDLabel->setAlignment(AlignCenter);
     oneDLayout->addWidget(oneDLabel, 0, 0);
 
@@ -190,7 +193,7 @@ QvisIndexSelectWindow::CreateWindowContents()
 
     // Set Up Max
     oneDMax = new QSpinBox(-1, MAX_VAL, 1, oneDWidgetGroup, "oneDMax");
-    oneDMax->setSpecialValueText("max");
+    oneDMax->setSpecialValueText(tr("max"));
     oneDMax->setValue(-1);
     connect(oneDMax, SIGNAL(valueChanged(int)),
              this, SLOT(oneDMaxChanged(int)));
@@ -211,7 +214,7 @@ QvisIndexSelectWindow::CreateWindowContents()
     twoDWidgetGroup = new QGroupBox(central, "twoDWidgetGroup"); 
     twoDWidgetGroup->setFrameShape(QFrame::NoFrame);
     QGridLayout *twoDLayout = new QGridLayout(twoDWidgetGroup, 1, 6);
-    twoDLabel = new QLabel(central, "J", twoDWidgetGroup);
+    twoDLabel = new QLabel(central, tr("J"), twoDWidgetGroup);
     twoDLabel->setAlignment(AlignCenter);
     twoDLayout->addWidget(twoDLabel, 0, 0);
 
@@ -224,7 +227,7 @@ QvisIndexSelectWindow::CreateWindowContents()
 
     // Set Up Max
     twoDMax = new QSpinBox(-1, MAX_VAL, 1, twoDWidgetGroup, "twoDMax");
-    twoDMax->setSpecialValueText("max");
+    twoDMax->setSpecialValueText(tr("max"));
     twoDMax->setValue(-1);
     connect(twoDMax, SIGNAL(valueChanged(int)),
              this, SLOT(twoDMaxChanged(int)));
@@ -246,7 +249,7 @@ QvisIndexSelectWindow::CreateWindowContents()
     threeDWidgetGroup->setFrameShape(QFrame::NoFrame);
 
     QGridLayout *threeDLayout = new QGridLayout(threeDWidgetGroup, 1, 6);
-    threeDLabel = new QLabel(central, "K", threeDWidgetGroup);
+    threeDLabel = new QLabel(central, tr("K"), threeDWidgetGroup);
     threeDLabel->setAlignment(AlignCenter);
     threeDLayout->addWidget(threeDLabel, 0, 0);
 
@@ -259,7 +262,7 @@ QvisIndexSelectWindow::CreateWindowContents()
 
     // Set Up Max
     threeDMax = new QSpinBox(-1, MAX_VAL, 1, threeDWidgetGroup, "threeDMax");
-    threeDMax->setSpecialValueText("max");
+    threeDMax->setSpecialValueText(tr("max"));
     threeDMax->setValue(-1);
     connect(threeDMax, SIGNAL(valueChanged(int)),
              this, SLOT(threeDMaxChanged(int)));
@@ -275,7 +278,7 @@ QvisIndexSelectWindow::CreateWindowContents()
     wholeLayout->addMultiCellWidget(threeDWidgetGroup, 4,4, 0,3);
 
 
-    useWholeCollection = new QCheckBox("Use Whole Collection", central, "useWholeCollection");
+    useWholeCollection = new QCheckBox(tr("Use Whole Collection"), central, "useWholeCollection");
     useWholeCollection->setChecked(false);
     connect(useWholeCollection, SIGNAL(toggled(bool)),
             this, SLOT(useWholeCollectionToggled(bool)));

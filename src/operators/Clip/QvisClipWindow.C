@@ -79,7 +79,7 @@
 // ****************************************************************************
 
 QvisClipWindow::QvisClipWindow(const int type,
-    ClipAttributes *subj, const char *caption, const char *shortName,
+    ClipAttributes *subj, const QString &caption, const QString &shortName,
     QvisNotepadArea *notepad) :
     QvisOperatorWindow(type, subj, caption, shortName, notepad)
 {
@@ -140,6 +140,9 @@ QvisClipWindow::~QvisClipWindow()
 //   Added 'fast' vs. 'accurate' quality options.  I also removed the tab
 //   widget, as it shouldn't be used in the way it was.
 //
+//   Brad Whitlock, Fri Apr 25 09:34:26 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -147,10 +150,10 @@ QvisClipWindow::CreateWindowContents()
 {
     qualityGroup = new QButtonGroup(central, "Quality");
     QHBoxLayout *qualityLayout = new QHBoxLayout(qualityGroup);
-    qualityLayout->addWidget(new QLabel("Quality:", qualityGroup));
+    qualityLayout->addWidget(new QLabel(tr("Quality:"), qualityGroup));
     QRadioButton *fastQuality = new QRadioButton("Fast", qualityGroup);
     qualityLayout->addWidget(fastQuality);
-    QRadioButton *accurateQuality = new QRadioButton("Accurate", qualityGroup);
+    QRadioButton *accurateQuality = new QRadioButton(tr("Accurate"), qualityGroup);
     qualityLayout->addWidget(accurateQuality);
     topLayout->addWidget(qualityGroup);
     connect(qualityGroup, SIGNAL(clicked(int)),
@@ -158,16 +161,16 @@ QvisClipWindow::CreateWindowContents()
 
     typeGroup = new QButtonGroup(central, "Type");
     QHBoxLayout *typeLayout = new QHBoxLayout(typeGroup);
-    typeLayout->addWidget(new QLabel("Slice type:", typeGroup));
-    QRadioButton *planeType = new QRadioButton("Plane", typeGroup);
+    typeLayout->addWidget(new QLabel(tr("Slice type:"), typeGroup));
+    QRadioButton *planeType = new QRadioButton(tr("Plane"), typeGroup);
     typeLayout->addWidget(planeType);
-    QRadioButton *sphereType = new QRadioButton("Sphere", typeGroup);
+    QRadioButton *sphereType = new QRadioButton(tr("Sphere"), typeGroup);
     typeLayout->addWidget(sphereType);
     topLayout->addWidget(typeGroup);
     connect(typeGroup, SIGNAL(clicked(int)),
             this, SLOT(sliceTypeChanged(int)));
 
-    QVGroupBox *frame = new QVGroupBox("Clip parameters", central,
+    QVGroupBox *frame = new QVGroupBox(tr("Clip parameters"), central,
                                        "clipParameters");
     topLayout->addWidget(frame);
 
@@ -209,24 +212,24 @@ QvisClipWindow::CreateWindowContents()
         SLOT(processPlane3Normal()), 3);
 
     // Plane Inverse
-    planeInverse = new QCheckBox("Inverse", planeWidgets, "planeInverse");
+    planeInverse = new QCheckBox(tr("Inverse"), planeWidgets, "planeInverse");
     planeInverse->setChecked(false);
     connect(planeInverse, SIGNAL(toggled(bool)),
             this, SLOT(planeInverseToggled(bool)));
 
     // Plane tool controls
-    QLabel *planeToolControlledClipPlaneLabel = new QLabel("Plane tool controls:", planeWidgets, "planeToolControlledClipPlaneLabel");
+    QLabel *planeToolControlledClipPlaneLabel = new QLabel(tr("Plane tool controls:"), planeWidgets, "planeToolControlledClipPlaneLabel");
     planeToolControlledClipPlane = new QButtonGroup(planeWidgets, "planeToolControlledClipPlane");
     planeToolControlledClipPlane->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *planeToolControlledClipPlaneLayout = new QHBoxLayout(planeToolControlledClipPlane);
     planeToolControlledClipPlaneLayout->setSpacing(10);
-    QRadioButton *planeToolControlledClipPlaneWhichClipPlaneNone = new QRadioButton("Nothing", planeToolControlledClipPlane);
+    QRadioButton *planeToolControlledClipPlaneWhichClipPlaneNone = new QRadioButton(tr("Nothing"), planeToolControlledClipPlane);
     planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlaneNone);
-    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane1 = new QRadioButton("Plane 1", planeToolControlledClipPlane);
+    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane1 = new QRadioButton(tr("Plane 1"), planeToolControlledClipPlane);
     planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlanePlane1);
-    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane2 = new QRadioButton("Plane 2", planeToolControlledClipPlane);
+    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane2 = new QRadioButton(tr("Plane 2"), planeToolControlledClipPlane);
     planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlanePlane2);
-    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane3 = new QRadioButton("Plane 3", planeToolControlledClipPlane);
+    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane3 = new QRadioButton(tr("Plane 3"), planeToolControlledClipPlane);
     planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlanePlane3);
     connect(planeToolControlledClipPlane, SIGNAL(clicked(int)),
             this, SLOT(planeToolControlledClipPlaneChanged(int)));
@@ -238,7 +241,7 @@ QvisClipWindow::CreateWindowContents()
     QGridLayout *sphereLayout = new QGridLayout(sphereWidgets, 3, 2, 10, 10);
 
     // Sphere center
-    sphereLayout->addWidget(new QLabel("Center", sphereWidgets,
+    sphereLayout->addWidget(new QLabel(tr("Center"), sphereWidgets,
                                        "centerLabel"),
                             0, 0, Qt::AlignRight);
     centerLineEdit = new QLineEdit(sphereWidgets, "center");
@@ -247,7 +250,7 @@ QvisClipWindow::CreateWindowContents()
             this, SLOT(processCenterText()));
 
     // Sphere Radius 
-    sphereLayout->addWidget(new QLabel("Radius", sphereWidgets,
+    sphereLayout->addWidget(new QLabel(tr("Radius"), sphereWidgets,
                                        "radiusLabel"),
                             1, 0, Qt::AlignRight);
     radiusLineEdit = new QLineEdit(sphereWidgets, "radius");
@@ -256,7 +259,7 @@ QvisClipWindow::CreateWindowContents()
             this, SLOT(processRadiusText()));
 
     // Sphere Inverse
-    sphereInverse = new QCheckBox("Inverse", sphereWidgets, "sphereInverse");
+    sphereInverse = new QCheckBox(tr("Inverse"), sphereWidgets, "sphereInverse");
     sphereInverse->setChecked(false);
     sphereLayout->addMultiCellWidget(sphereInverse, 2, 2, 0, 1);
     connect(sphereInverse, SIGNAL(toggled(bool)),
@@ -285,7 +288,9 @@ QvisClipWindow::CreateWindowContents()
 // Creation:   Tue Dec 21 09:47:49 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 09:36:02 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -298,7 +303,7 @@ QvisClipWindow::CreatePlaneGroup(QWidget *parent, QWidget **planeStatus,
     const char *planeOriginSlot,
     const char *planeNormalSlot, int index)
 {
-    QString title; title.sprintf("Plane %d", index);
+    QString title(tr("Plane %1").arg(index));
     QString n; n.sprintf("plane%d", index);
 #define N(s) QString(s).latin1()
 
@@ -323,14 +328,14 @@ QvisClipWindow::CreatePlaneGroup(QWidget *parent, QWidget **planeStatus,
 #endif
 
     // Plane origin
-    new QLabel("Origin", planeGroup, N(n+"OriginLabel"));
+    new QLabel(tr("Origin"), planeGroup, N(n+"OriginLabel"));
     QLineEdit *origin = new QLineEdit(planeGroup, N(n+"Origin"));
     *planeOrigin = origin;
     connect(origin, SIGNAL(returnPressed()),
             this, planeOriginSlot);
 
     // Plane normal 
-    new QLabel("Normal", planeGroup, N(n+"NormalLabel"));
+    new QLabel(tr("Normal"), planeGroup, N(n+"NormalLabel"));
     QLineEdit *normal = new QLineEdit(planeGroup, N(n+"Normal"));
     *planeNormal = normal;
     connect(normal, SIGNAL(returnPressed()),
@@ -580,9 +585,9 @@ QvisClipWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *d = clipAtts->GetPlane1Origin();
-            msg.sprintf("The origin vector was invalid. "
-                "Resetting to the last good value <%g %g %g>.", 
-                d[0], d[1], d[2]);
+            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
+            msg = tr("The origin vector was invalid. "
+                     "Resetting to the last good value %1.").arg(num);
             Message(msg);
             clipAtts->SetPlane1Origin(d);
         }
@@ -605,9 +610,9 @@ QvisClipWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *d = clipAtts->GetPlane2Origin();
-            msg.sprintf("The origin vector was invalid. "
-                "Resetting to the last good value <%g %g %g>.", 
-                d[0], d[1], d[2]);
+            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
+            msg = tr("The origin vector was invalid. "
+                     "Resetting to the last good value %1.").arg(num);
             Message(msg);
             clipAtts->SetPlane2Origin(d);
         }
@@ -631,9 +636,9 @@ QvisClipWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *d = clipAtts->GetPlane3Origin();
-            msg.sprintf("The origin vector was invalid. "
-                "Resetting to the last good value <%g %g %g>.", 
-                d[0], d[1], d[2]);
+            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
+            msg = tr("The origin vector was invalid. "
+                     "Resetting to the last good value %1.").arg(num);
             Message(msg);
             clipAtts->SetPlane3Origin(d);
         }
@@ -660,9 +665,9 @@ QvisClipWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *d = clipAtts->GetPlane1Normal();
-            msg.sprintf("The normal vector was invalid. "
-                "Resetting to the last good value <%g %g %g>.", 
-                 d[0], d[1], d[2]);
+            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
+            msg = tr("The normal vector was invalid. "
+                     "Resetting to the last good value %1.").arg(num);
             Message(msg);
             clipAtts->SetPlane1Normal(d);
         }
@@ -689,9 +694,9 @@ QvisClipWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *d = clipAtts->GetPlane2Normal();
-            msg.sprintf("The normal vector was invalid. "
-                "Resetting to the last good value <%g %g %g>.", 
-                 d[0], d[1], d[2]);
+            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
+            msg = tr("The normal vector was invalid. "
+                     "Resetting to the last good value %1.").arg(num);
             Message(msg);
             clipAtts->SetPlane2Normal(d);
         }
@@ -718,9 +723,9 @@ QvisClipWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *d = clipAtts->GetPlane3Normal();
-            msg.sprintf("The normal vector was invalid. "
-                "Resetting to the last good value <%g %g %g>.", 
-                 d[0], d[1], d[2]);
+            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
+            msg = tr("The normal vector was invalid. "
+                     "Resetting to the last good value %1.").arg(num);
             Message(msg);
             clipAtts->SetPlane3Normal(d);
         }
@@ -743,9 +748,9 @@ QvisClipWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *d = clipAtts->GetCenter();
-            msg.sprintf("The center was invalid. "
-                "Resetting to the last good value <%g %g %g>.", 
-                 d[0], d[1], d[2]);
+            QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
+            msg = tr("The center was invalid. "
+                     "Resetting to the last good value %1.").arg(num);
             Message(msg);
             clipAtts->SetCenter(d);
         }
@@ -767,8 +772,8 @@ QvisClipWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             double r = clipAtts->GetRadius();
-            msg.sprintf("The radius was invalid. "
-                "Resetting to the last good value <%g>.", r); 
+            msg = tr("The radius was invalid. "
+                     "Resetting to the last good value %1.").arg(r); 
             Message(msg);
             clipAtts->SetRadius(r);
         }

@@ -100,8 +100,8 @@
 AddWindowAction::AddWindowAction(ViewerWindow *win) :
     ViewerAction(win, "AddWindowAction")
 {
-    SetAllText("Add new window");
-    SetMenuText("Add");
+    SetAllText(tr("Add new window"));
+    SetMenuText(tr("Add"));
     if (!win->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(newwindow_xpm)));
 }
@@ -146,8 +146,8 @@ AddWindowAction::Execute()
 CloneWindowAction::CloneWindowAction(ViewerWindow *win) :
     ViewerAction(win, "CloneWindowAction")
 {
-    SetAllText("Clone window");
-    SetMenuText("Clone");
+    SetAllText(tr("Clone window"));
+    SetMenuText(tr("Clone"));
     if (!win->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(copymenu_xpm)));
 }
@@ -196,8 +196,8 @@ CloneWindowAction::Execute()
 DeleteWindowAction::DeleteWindowAction(ViewerWindow *win) :
     ViewerAction(win, "DeleteWindowAction")
 {
-    SetAllText("Delete window");
-    SetMenuText("Delete");
+    SetAllText(tr("Delete window"));
+    SetMenuText(tr("Delete"));
     if (!win->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(deletewindow_xpm)));
 }
@@ -270,7 +270,7 @@ DeleteWindowAction::Update()
 ClearWindowAction::ClearWindowAction(ViewerWindow *win) :
     ViewerAction(win, "ClearWindowAction")
 {
-    SetAllText("Clear plots");
+    SetAllText(tr("Clear plots"));
     if (!win->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(clearwindow_xpm)));
 }
@@ -338,7 +338,7 @@ ClearWindowAction::Enabled() const
 ClearAllWindowsAction::ClearAllWindowsAction(ViewerWindow *win) :
     ViewerAction(win, "ClearAllWindowsAction")
 {
-    SetAllText("Clear all windows");
+    SetAllText(tr("Clear all windows"));
 }
 
 // ****************************************************************************
@@ -381,7 +381,7 @@ ClearAllWindowsAction::Execute()
 ClearPickPointsAction::ClearPickPointsAction(ViewerWindow *win) :
     ViewerAction(win, "ClearPickPointsAction")
 {
-    SetAllText("Clear pick points");
+    SetAllText(tr("Clear pick points"));
 }
 
 // ****************************************************************************
@@ -447,7 +447,7 @@ ClearPickPointsAction::Enabled() const
 ClearReferenceLinesAction::ClearReferenceLinesAction(ViewerWindow *win) :
     ViewerAction(win, "ClearReferenceLinesAction")
 {
-    SetAllText("Clear reference lines");
+    SetAllText(tr("Clear reference lines"));
 }
 
 // ****************************************************************************
@@ -516,8 +516,8 @@ ClearReferenceLinesAction::Enabled() const
 SetActiveWindowAction::SetActiveWindowAction(ViewerWindow *win) :
     ViewerToggleAction(win, "Active window")
 {
-    SetAllText("Make active");
-    SetToolTip("Make window active");
+    SetAllText(tr("Make active"));
+    SetToolTip(tr("Make window active"));
     if (!win->GetNoWinMode())
         SetIcons(QPixmap(checkwindow_xpm), QPixmap(blankwindow_xpm));
 }
@@ -606,8 +606,8 @@ SetActiveWindowAction::Toggled() const
 ToggleSpinModeAction::ToggleSpinModeAction(ViewerWindow *win) :
     ViewerToggleAction(win, "Spin mode")
 {
-    SetAllText("Spin");
-    SetToolTip("Toggle spin mode");
+    SetAllText(tr("Spin"));
+    SetToolTip(tr("Toggle spin mode"));
     if (!win->GetNoWinMode())
         SetIcons(QPixmap(spinon_xpm), QPixmap(spinoff_xpm));
 }
@@ -696,8 +696,8 @@ ToggleSpinModeAction::Toggled() const
 ToggleBoundingBoxModeAction::ToggleBoundingBoxModeAction(ViewerWindow *win) :
     ViewerToggleAction(win, "ToggleBoundingBoxModeAction")
 {
-    SetAllText("Navigate bbox");
-    SetToolTip("Toggle bounding box navigation");
+    SetAllText(tr("Navigate bbox"));
+    SetToolTip(tr("Toggle bounding box navigation"));
     if (!win->GetNoWinMode())
         SetIcons(QPixmap(navigatebboxon_xpm), QPixmap(navigatebboxoff_xpm));
 }
@@ -788,29 +788,29 @@ ToggleBoundingBoxModeAction::Toggled() const
 SetWindowLayoutAction::SetWindowLayoutAction(ViewerWindow *win) :
     ViewerMultipleAction(win, "Window layout")
 {
-    SetAllText("Layout");
-    SetToolTip("Set window layout");
+    SetAllText(tr("Layout"));
+    SetToolTip(tr("Set window layout"));
     if (!win->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(layout2x2_xpm)));
     SetExclusive(true);
 
     if (!win->GetNoWinMode())
     {
-        AddChoice("1x1", "1 x 1 window layout", QPixmap(layout1x1_xpm), QPixmap(layout1x1_xpm));
-        AddChoice("1x2", "1 x 2 window layout", QPixmap(layout1x2_xpm), QPixmap(layout1x2_xpm));
-        AddChoice("2x2", "2 x 2 window layout", QPixmap(layout2x2_xpm), QPixmap(layout2x2_xpm));
-        AddChoice("2x3", "2 x 3 window layout", QPixmap(layout2x3_xpm), QPixmap(layout2x3_xpm));
-        AddChoice("2x4", "2 x 4 window layout", QPixmap(layout2x4_xpm), QPixmap(layout2x4_xpm));
-        AddChoice("3x3", "3 x 3 window layout", QPixmap(layout3x3_xpm), QPixmap(layout3x3_xpm));
+        AddChoice(tr("1x1"), tr("1 x 1 window layout"), QPixmap(layout1x1_xpm), QPixmap(layout1x1_xpm));
+        AddChoice(tr("1x2"), tr("1 x 2 window layout"), QPixmap(layout1x2_xpm), QPixmap(layout1x2_xpm));
+        AddChoice(tr("2x2"), tr("2 x 2 window layout"), QPixmap(layout2x2_xpm), QPixmap(layout2x2_xpm));
+        AddChoice(tr("2x3"), tr("2 x 3 window layout"), QPixmap(layout2x3_xpm), QPixmap(layout2x3_xpm));
+        AddChoice(tr("2x4"), tr("2 x 4 window layout"), QPixmap(layout2x4_xpm), QPixmap(layout2x4_xpm));
+        AddChoice(tr("3x3"), tr("3 x 3 window layout"), QPixmap(layout3x3_xpm), QPixmap(layout3x3_xpm));
     }
     else
     {
-        AddChoice("1x1");
-        AddChoice("1x2");
-        AddChoice("2x2");
-        AddChoice("2x3");
-        AddChoice("2x4");
-        AddChoice("3x3");
+        AddChoice(tr("1x1"));
+        AddChoice(tr("1x2"));
+        AddChoice(tr("2x2"));
+        AddChoice(tr("2x3"));
+        AddChoice(tr("2x4"));
+        AddChoice(tr("3x3"));
     }
 }
 
@@ -943,8 +943,8 @@ SetWindowLayoutAction::ChoiceToggled(int i) const
 InvertBackgroundAction::InvertBackgroundAction(ViewerWindow *win) :
     ViewerAction(win, "Invert background")
 {
-    SetAllText("Invert background");
-    SetToolTip("Swap background and foreground colors");
+    SetAllText(tr("Invert background"));
+    SetToolTip(tr("Swap background and foreground colors"));
     if (!win->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(invertbackground_xpm)));
 }
@@ -996,27 +996,27 @@ InvertBackgroundAction::Execute()
 SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
     ViewerMultipleAction(win, "Mode")
 {
-    SetAllText("Mode");
-    SetToolTip("Set window mode");
+    SetAllText(tr("Mode"));
+    SetToolTip(tr("Set window mode"));
     SetExclusive(true);
 
     if (!win->GetNoWinMode())
     {
-        AddChoice("Navigate", "Navigate mode", QPixmap(navigatemode_xpm));
-        AddChoice("Zone Pick", "Zone Pick mode", QPixmap(zonepickmode_xpm));
-        AddChoice("Node Pick", "Node Pick mode", QPixmap(nodepickmode_xpm));
-        AddChoice("Zoom", "Zoom mode", QPixmap(zoommode_xpm));
-        AddChoice("Lineout", "Lineout mode", QPixmap(lineoutmode_xpm));
-        AddChoice("Spreadsheet Pick", "Spreadsheet Pick mode", QPixmap(spreadsheetpickmode_xpm));
+        AddChoice(tr("Navigate"), tr("Navigate mode"), QPixmap(navigatemode_xpm));
+        AddChoice(tr("Zone Pick"), tr("Zone Pick mode"), QPixmap(zonepickmode_xpm));
+        AddChoice(tr("Node Pick"), tr("Node Pick mode"), QPixmap(nodepickmode_xpm));
+        AddChoice(tr("Zoom"), tr("Zoom mode"), QPixmap(zoommode_xpm));
+        AddChoice(tr("Lineout"), tr("Lineout mode"), QPixmap(lineoutmode_xpm));
+        AddChoice(tr("Spreadsheet Pick"), tr("Spreadsheet Pick mode"), QPixmap(spreadsheetpickmode_xpm));
     }
     else 
     {
-        AddChoice("Navigate");
-        AddChoice("Zone Pick");
-        AddChoice("Node Pick");
-        AddChoice("Zoom");
-        AddChoice("Lineout");
-        AddChoice("Spreadsheet Pick");
+        AddChoice(tr("Navigate"));
+        AddChoice(tr("Zone Pick"));
+        AddChoice(tr("Node Pick"));
+        AddChoice(tr("Zoom"));
+        AddChoice(tr("Lineout"));
+        AddChoice(tr("Spreadsheet Pick"));
     }
 }
 
@@ -1216,15 +1216,15 @@ SetWindowModeAction::ChoiceToggled(int i) const
 //    Jeremy Meredith, Fri Feb  1 17:59:23 EST 2008
 //    Added Axis restriction tool.
 //
-//   Jeremy Meredith, Tue Apr 22 14:31:20 EDT 2008
-//   Removed Extents tool.  (Subsumed by axis restriction tool.)
+//    Jeremy Meredith, Tue Apr 22 14:31:20 EDT 2008
+//    Removed Extents tool.  (Subsumed by axis restriction tool.)
 //
 // ****************************************************************************
 
 EnableToolAction::EnableToolAction(ViewerWindow *win) :
     ViewerMultipleAction(win, "Tools")
 {
-    SetAllText("Tools");
+    SetAllText(tr("Tools"));
     SetExclusive(false);
 
     for(int i = 0; i < window->GetNumTools(); ++i)
@@ -1233,17 +1233,17 @@ EnableToolAction::EnableToolAction(ViewerWindow *win) :
         if (!win->GetNoWinMode())
         {
             if(tool == "Box")
-                AddChoice(tool.c_str(), "Box tool", QPixmap(boxtool_xpm));
+                AddChoice(tr("Box"), tr("Box tool"), QPixmap(boxtool_xpm));
             else if(tool == "Line")
-                AddChoice(tool.c_str(), "Line tool", QPixmap(linetool_xpm));
+                AddChoice(tr("Line"), tr("Line tool"), QPixmap(linetool_xpm));
             else if(tool == "Plane")
-                AddChoice(tool.c_str(), "Plane tool", QPixmap(planetool_xpm));
+                AddChoice(tr("Plane"), tr("Plane tool"), QPixmap(planetool_xpm));
             else if(tool == "Sphere")
-                AddChoice(tool.c_str(), "Sphere tool", QPixmap(spheretool_xpm));
+                AddChoice(tr("Sphere"), tr("Sphere tool"), QPixmap(spheretool_xpm));
             else if(tool == "Point")
-                AddChoice(tool.c_str(), "Point tool", QPixmap(pointtool_xpm));
+                AddChoice(tr("Point"), tr("Point tool"), QPixmap(pointtool_xpm));
             else if(tool == "AxisRestriction")
-                AddChoice(tool.c_str(), "Axis Restriction tool", QPixmap(axisrestrictiontool_xpm));
+                AddChoice(tr("Axis Restriction"), tr("Axis Restriction tool"), QPixmap(axisrestrictiontool_xpm));
             else
                 AddChoice(tool.c_str());
         }

@@ -99,8 +99,8 @@ class QvisThresholdWindow : public QvisOperatorWindow
 public:
     QvisThresholdWindow(const int type,
                         ThresholdAttributes *subj,
-                        const char *caption = 0,
-                        const char *shortName = 0,
+                        const QString &caption = QString::null,
+                        const QString &shortName = QString::null,
                         QvisNotepadArea *notepad = 0);
     virtual            ~QvisThresholdWindow();
     virtual void        CreateWindowContents();

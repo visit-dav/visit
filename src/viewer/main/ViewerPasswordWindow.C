@@ -86,6 +86,9 @@ std::set<int> ViewerPasswordWindow::failedPortForwards;
 //    Hank Childs, Sun Nov 11 22:21:55 PST 2007
 //    Add support for changing the username.
 //
+//    Brad Whitlock, Tue Apr 29 15:09:31 PDT 2008
+//    Added tr()'s
+//
 // ****************************************************************************
 
 ViewerPasswordWindow::ViewerPasswordWindow(QWidget *parent, const char *name)
@@ -96,7 +99,7 @@ ViewerPasswordWindow::ViewerPasswordWindow(QWidget *parent, const char *name)
 
     QHBoxLayout *l2 = new QHBoxLayout(layout);
     l2->setSpacing(5);
-    label = new QLabel("Password for localhost: ", this);
+    label = new QLabel(tr("Password for localhost: "), this);
     l2->addWidget(label);
 
     passedit = new QLineEdit(this);
@@ -106,22 +109,22 @@ ViewerPasswordWindow::ViewerPasswordWindow(QWidget *parent, const char *name)
     layout->addSpacing(20);
 
     QHBoxLayout *l3 = new QHBoxLayout(layout);
-    QPushButton *okay = new QPushButton("OK", this, "OK");
+    QPushButton *okay = new QPushButton(tr("OK"), this, "OK");
     connect(okay, SIGNAL(clicked()), this, SLOT(accept()));
     l3->addWidget(okay);
     l3->addStretch(10);
 
-    QPushButton *cub = new QPushButton("Change username", this, 
+    QPushButton *cub = new QPushButton(tr("Change username"), this, 
                                                   "changeUsernameButton");
     connect(cub, SIGNAL(clicked()), this, SLOT(changeUsername()));
     l3->addWidget(cub);
     l3->addStretch(10);
 
-    QPushButton *cancel = new QPushButton("Cancel", this, "Cancel");
+    QPushButton *cancel = new QPushButton(tr("Cancel"), this, "Cancel");
     connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
     l3->addWidget(cancel);
 
-    setCaption("Enter password");
+    setCaption(tr("Enter password"));
 }
 
 // ****************************************************************************
@@ -396,9 +399,9 @@ ViewerPasswordWindow::getPassword(const char *username, const char *host,
 
     const char *queryType = passphrase ? "Passphrase" : "Password";
     if (passphrase)
-        instance->setCaption("Enter passphrase");
+        instance->setCaption(tr("Enter passphrase"));
     else
-        instance->setCaption("Enter password");
+        instance->setCaption(tr("Enter password"));
 
     // Set the password prompt.
     QString labelText;

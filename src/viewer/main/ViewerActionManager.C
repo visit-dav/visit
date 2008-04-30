@@ -71,7 +71,9 @@
 // Creation:   Wed Feb 5 15:51:32 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 29 11:55:49 PDT 2008
+//   Added tr()
+//
 // ****************************************************************************
 
 class EnableToolbarAction : public ViewerMultipleAction
@@ -80,8 +82,8 @@ public:
     EnableToolbarAction(ViewerWindow *win) :
         ViewerMultipleAction(win, "Enable toolbars")
     {
-        SetAllText("Toolbars");
-        SetToolTip("Enable toolbars");
+        SetAllText(tr("Toolbars"));
+        SetToolTip(tr("Enable toolbars"));
         SetExclusive(false);
 
         // Add all of the action groups as choices.
@@ -131,6 +133,9 @@ public:
 //   Brad Whitlock, Tue Feb 24 13:30:24 PST 2004
 //   I added code to record that toolbars should be off.
 //
+//   Brad Whitlock, Tue Apr 29 11:55:58 PDT 2008
+//   Added tr()
+//
 // ****************************************************************************
 
 class HideToolbarsAction : public ViewerAction
@@ -138,7 +143,7 @@ class HideToolbarsAction : public ViewerAction
 public:
     HideToolbarsAction(ViewerWindow *win) : ViewerAction(win, "HideToolbarsAction")
     {
-        SetAllText("Hide toolbars");
+        SetAllText(tr("Hide toolbars"));
     }
 
     virtual ~HideToolbarsAction() { }
@@ -172,7 +177,10 @@ public:
 // Modifications:
 //   Brad Whitlock, Tue Feb 24 13:30:24 PST 2004
 //   I added code to record that toolbars should be off.
-//   
+//
+//   Brad Whitlock, Tue Apr 29 11:56:13 PDT 2008
+//   Added tr()
+//
 // ****************************************************************************
 
 class HideToolbarsForAllWindowsAction : public ViewerAction
@@ -181,7 +189,7 @@ public:
     HideToolbarsForAllWindowsAction(ViewerWindow *win) : ViewerAction(win,
         "HideToolbarsForAllWindowsAction")
     {
-        SetAllText("Hide toolbars (all windows)");
+        SetAllText(tr("Hide toolbars (all windows)"));
     }
 
     virtual ~HideToolbarsForAllWindowsAction() { }
@@ -211,7 +219,10 @@ public:
 // Modifications:
 //   Brad Whitlock, Tue Feb 24 13:30:24 PST 2004
 //   I added code to record that toolbars should be on.
-//   
+//
+//   Brad Whitlock, Tue Apr 29 11:56:27 PDT 2008
+//   Added tr()
+//
 // ****************************************************************************
 
 class ShowToolbarsAction : public ViewerAction
@@ -219,7 +230,7 @@ class ShowToolbarsAction : public ViewerAction
 public:
     ShowToolbarsAction(ViewerWindow *win) : ViewerAction(win, "ShowToolbarsAction")
     {
-        SetAllText("Show toolbars");
+        SetAllText(tr("Show toolbars"));
     }
 
     virtual ~ShowToolbarsAction() { }
@@ -253,7 +264,10 @@ public:
 // Modifications:
 //   Brad Whitlock, Tue Feb 24 13:30:24 PST 2004
 //   I added code to record that toolbars should be on.
-//   
+//
+//   Brad Whitlock, Tue Apr 29 11:56:44 PDT 2008
+//   Added tr()
+//
 // ****************************************************************************
 
 class ShowToolbarsForAllWindowsAction : public ViewerAction
@@ -262,7 +276,7 @@ public:
     ShowToolbarsForAllWindowsAction(ViewerWindow *win) : ViewerAction(win,
         "ShowToolbarsForAllWindowsAction")
     {
-        SetAllText("Show toolbars (all windows)");
+        SetAllText(tr("Show toolbars (all windows)"));
     }
 
     virtual ~ShowToolbarsForAllWindowsAction() { }
@@ -294,6 +308,9 @@ public:
 //   Brad Whitlock, Mon Aug 2 10:17:06 PDT 2004
 //   Fixed to account for changes in ViewerToggleAction.
 //
+//   Brad Whitlock, Tue Apr 29 11:56:57 PDT 2008
+//   Added tr()
+//
 // ****************************************************************************
 
 class SetToolbarIconSizeAction : public ViewerToggleAction
@@ -302,7 +319,7 @@ public:
     SetToolbarIconSizeAction(ViewerWindow *win) : ViewerToggleAction(win,
         "SetToolbarIconSizeAction")
     {
-        SetAllText("Use large icons (all windows)");
+        SetAllText(tr("Use large icons (all windows)"));
         toggled = !windowMgr->UsesLargeIcons();
     }
 

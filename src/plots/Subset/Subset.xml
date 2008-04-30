@@ -80,5 +80,13 @@
       </Function>
       <Function name="PySubsetAttributes_SetDefaults" user="false" member="true">
       </Function>
+      <Function name="SubsetViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="SubsetViewerPluginInfo::ReInitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="SubsetViewerPluginInfo::ResetPlotAtts" user="false" member="true">
+      </Function>
+      <Function name="SubsetViewerPluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
+      </Function>
     </Attribute>
   </Plugin>

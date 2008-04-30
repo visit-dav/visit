@@ -76,8 +76,8 @@ using std::string;
 
 QvisElevateWindow::QvisElevateWindow(const int type,
                          ElevateAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -115,7 +115,10 @@ QvisElevateWindow::~QvisElevateWindow()
 // Modifications:
 //   Brad Whitlock, Thu Mar 3 13:30:11 PST 2005
 //   Changed the layout a little.
-//   
+//
+//   Brad Whitlock, Fri Apr 25 09:11:02 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -125,42 +128,42 @@ QvisElevateWindow::CreateWindowContents()
 
 
     useXYLimitsLabel = NULL;
-    useXYLimits = new QCheckBox("Elevation height relative to XY limits?", central, "useXYLimits");
+    useXYLimits = new QCheckBox(tr("Elevation height relative to XY limits?"), central, "useXYLimits");
     connect(useXYLimits, SIGNAL(toggled(bool)),
             this, SLOT(useXYLimitsChanged(bool)));
     mainLayout->addMultiCellWidget(useXYLimits, 0,0,0,1);
 
-    limitsModeLabel = new QLabel("LimitsMode", central, "limitsModeLabel");
+    limitsModeLabel = new QLabel(tr("Limits mode"), central, "limitsModeLabel");
     mainLayout->addWidget(limitsModeLabel,1,0);
     limitsMode = new QButtonGroup(central, "limitsMode");
     limitsMode->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *limitsModeLayout = new QHBoxLayout(limitsMode);
     limitsModeLayout->setSpacing(10);
-    QRadioButton *limitsModeLimitsModeOriginalData = new QRadioButton("OriginalData", limitsMode);
+    QRadioButton *limitsModeLimitsModeOriginalData = new QRadioButton(tr("Original Data"), limitsMode);
     limitsModeLayout->addWidget(limitsModeLimitsModeOriginalData);
-    QRadioButton *limitsModeLimitsModeCurrentPlot = new QRadioButton("CurrentPlot", limitsMode);
+    QRadioButton *limitsModeLimitsModeCurrentPlot = new QRadioButton(tr("Current Plot"), limitsMode);
     limitsModeLayout->addWidget(limitsModeLimitsModeCurrentPlot);
     connect(limitsMode, SIGNAL(clicked(int)),
             this, SLOT(limitsModeChanged(int)));
     mainLayout->addWidget(limitsMode, 1,1);
 
-    scalingLabel = new QLabel("Scale", central, "scalingLabel");
+    scalingLabel = new QLabel(tr("Scale"), central, "scalingLabel");
     mainLayout->addWidget(scalingLabel,2,0);
     scaling = new QButtonGroup(central, "scaling");
     scaling->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *scalingLayout = new QHBoxLayout(scaling);
     scalingLayout->setSpacing(10);
-    QRadioButton *scalingScalingLinear = new QRadioButton("Linear", scaling);
+    QRadioButton *scalingScalingLinear = new QRadioButton(tr("Linear"), scaling);
     scalingLayout->addWidget(scalingScalingLinear);
-    QRadioButton *scalingScalingLog = new QRadioButton("Log", scaling);
+    QRadioButton *scalingScalingLog = new QRadioButton(tr("Log"), scaling);
     scalingLayout->addWidget(scalingScalingLog);
-    QRadioButton *scalingScalingSkew = new QRadioButton("Skew", scaling);
+    QRadioButton *scalingScalingSkew = new QRadioButton(tr("Skew"), scaling);
     scalingLayout->addWidget(scalingScalingSkew);
     connect(scaling, SIGNAL(clicked(int)),
             this, SLOT(scalingChanged(int)));
     mainLayout->addWidget(scaling, 2,1);
 
-    skewFactorLabel = new QLabel("Skew factor", central, "skewFactorLabel");
+    skewFactorLabel = new QLabel(tr("Skew factor"), central, "skewFactorLabel");
     mainLayout->addWidget(skewFactorLabel,3,0);
     skewFactor = new QLineEdit(central, "skewFactor");
     connect(skewFactor, SIGNAL(returnPressed()),
@@ -168,12 +171,12 @@ QvisElevateWindow::CreateWindowContents()
     mainLayout->addWidget(skewFactor, 3,1);
 
     minFlagLabel = NULL;
-    minFlag = new QCheckBox("Use min", central, "minFlag");
+    minFlag = new QCheckBox(tr("Use min"), central, "minFlag");
     connect(minFlag, SIGNAL(toggled(bool)),
             this, SLOT(minFlagChanged(bool)));
     mainLayout->addWidget(minFlag, 4,0);
 
-    minLabel = new QLabel("Min", central, "minLabel");
+    minLabel = new QLabel(tr("Min"), central, "minLabel");
     mainLayout->addWidget(minLabel,5,0);
     min = new QLineEdit(central, "min");
     connect(min, SIGNAL(returnPressed()),
@@ -181,12 +184,12 @@ QvisElevateWindow::CreateWindowContents()
     mainLayout->addWidget(min, 5,1);
 
     maxFlagLabel = NULL;
-    maxFlag = new QCheckBox("Use max", central, "maxFlag");
+    maxFlag = new QCheckBox(tr("Use max"), central, "maxFlag");
     connect(maxFlag, SIGNAL(toggled(bool)),
             this, SLOT(maxFlagChanged(bool)));
     mainLayout->addWidget(maxFlag, 6,0);
 
-    maxLabel = new QLabel("Max", central, "maxLabel");
+    maxLabel = new QLabel(tr("Max"), central, "maxLabel");
     mainLayout->addWidget(maxLabel,7,0);
     max = new QLineEdit(central, "max");
     connect(max, SIGNAL(returnPressed()),
@@ -194,12 +197,12 @@ QvisElevateWindow::CreateWindowContents()
     mainLayout->addWidget(max, 7,1);
 
     zeroFlagLabel = NULL;
-    zeroFlag = new QCheckBox("Elevate with zero height?", central, "zeroFlag");
+    zeroFlag = new QCheckBox(tr("Elevate with zero height?"), central, "zeroFlag");
     connect(zeroFlag, SIGNAL(toggled(bool)),
             this, SLOT(zeroFlagChanged(bool)));
     mainLayout->addMultiCellWidget(zeroFlag, 8,8,0,1);
 
-    variableLabel = new QLabel("Elevate by Variable", central, "variableLabel");
+    variableLabel = new QLabel(tr("Elevate by variable"), central, "variableLabel");
     mainLayout->addWidget(variableLabel,9,0);
     int variableMask = QvisVariableButton::Scalars;
     variable = new QvisVariableButton(true, true, true, variableMask, central, "variable");
@@ -448,14 +451,15 @@ QvisElevateWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetSkewFactor(val);
+            if(okay)
+                atts->SetSkewFactor(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of skewFactor was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetSkewFactor());
+            msg = tr("The value of skewFactor was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetSkewFactor());
             Message(msg);
             atts->SetSkewFactor(atts->GetSkewFactor());
         }
@@ -475,14 +479,15 @@ QvisElevateWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetMin(val);
+            if(okay)
+                atts->SetMin(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of min was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetMin());
+            msg = tr("The value of min was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetMin());
             Message(msg);
             atts->SetMin(atts->GetMin());
         }
@@ -502,14 +507,15 @@ QvisElevateWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetMax(val);
+            if(okay)
+                atts->SetMax(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of max was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetMax());
+            msg = tr("The value of max was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetMax());
             Message(msg);
             atts->SetMax(atts->GetMax());
         }

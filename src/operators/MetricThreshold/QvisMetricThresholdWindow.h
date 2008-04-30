@@ -76,8 +76,8 @@ class QvisMetricThresholdWindow : public QvisOperatorWindow
   public:
     QvisMetricThresholdWindow(const int type,
                          MetricThresholdAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisMetricThresholdWindow();
     virtual void CreateWindowContents();

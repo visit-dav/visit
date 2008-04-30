@@ -1156,10 +1156,9 @@ QvisKeyframeWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            QString num; num.sprintf("%d", kfAtts->GetNFrames());
             msg = tr("The value for the number of frames was invalid. "
-                     "Resetting to the last good value of %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value of %1.").
+                  arg(kfAtts->GetNFrames());
             Message(msg);
             GetViewerMethods()->AnimationSetNFrames(kfAtts->GetNFrames());
         }

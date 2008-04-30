@@ -37,6 +37,8 @@
       </Function>
       <Function name="SwitchDefaultVariableNameToTrueName" user="true" member="true">
       </Function>
+      <Function name="ThresholdViewerPluginInfo::InitializeOperatorAtts" user="false" member="true">
+      </Function>
       <Include file="header" quoted="false">
         AxisRestrictionAttributes.h
       </Include>

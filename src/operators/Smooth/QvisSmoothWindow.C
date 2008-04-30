@@ -76,8 +76,8 @@ using std::string;
 
 QvisSmoothWindow::QvisSmoothWindow(const int type,
                          SmoothOperatorAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -113,7 +113,9 @@ QvisSmoothWindow::~QvisSmoothWindow()
 // Creation:   Sun Aug 14 11:59:57 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Apr 24 16:30:25 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -122,47 +124,47 @@ QvisSmoothWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 7,2,  10, "mainLayout");
 
 
-    numIterationsLabel = new QLabel("Maximum Number of Iterations", central, "numIterationsLabel");
+    numIterationsLabel = new QLabel(tr("Maximum Number of Iterations"), central, "numIterationsLabel");
     mainLayout->addWidget(numIterationsLabel,0,0);
     numIterations = new QLineEdit(central, "numIterations");
     connect(numIterations, SIGNAL(returnPressed()),
             this, SLOT(numIterationsProcessText()));
     mainLayout->addWidget(numIterations, 0,1);
 
-    relaxationFactorLabel = new QLabel("Relaxation Factor", central, "relaxationFactorLabel");
+    relaxationFactorLabel = new QLabel(tr("Relaxation Factor"), central, "relaxationFactorLabel");
     mainLayout->addWidget(relaxationFactorLabel,1,0);
     relaxationFactor = new QLineEdit(central, "relaxationFactor");
     connect(relaxationFactor, SIGNAL(returnPressed()),
             this, SLOT(relaxationFactorProcessText()));
     mainLayout->addWidget(relaxationFactor, 1,1);
 
-    convergenceLabel = new QLabel("Convergence", central, "convergenceLabel");
+    convergenceLabel = new QLabel(tr("Convergence"), central, "convergenceLabel");
     mainLayout->addWidget(convergenceLabel,2,0);
     convergence = new QLineEdit(central, "convergence");
     connect(convergence, SIGNAL(returnPressed()),
             this, SLOT(convergenceProcessText()));
     mainLayout->addWidget(convergence, 2,1);
 
-    maintainFeatures = new QCheckBox("Maintain Features", central, "maintainFeatures");
+    maintainFeatures = new QCheckBox(tr("Maintain Features"), central, "maintainFeatures");
     connect(maintainFeatures, SIGNAL(toggled(bool)),
             this, SLOT(maintainFeaturesChanged(bool)));
     mainLayout->addWidget(maintainFeatures, 3,0);
 
-    featureAngleLabel = new QLabel("Feature Angle", central, "featureAngleLabel");
+    featureAngleLabel = new QLabel(tr("Feature Angle"), central, "featureAngleLabel");
     mainLayout->addWidget(featureAngleLabel,4,0);
     featureAngle = new QLineEdit(central, "featureAngle");
     connect(featureAngle, SIGNAL(returnPressed()),
             this, SLOT(featureAngleProcessText()));
     mainLayout->addWidget(featureAngle, 4,1);
 
-    edgeAngleLabel = new QLabel("Max Edge Angle", central, "edgeAngleLabel");
+    edgeAngleLabel = new QLabel(tr("Max Edge Angle"), central, "edgeAngleLabel");
     mainLayout->addWidget(edgeAngleLabel,5,0);
     edgeAngle = new QLineEdit(central, "edgeAngle");
     connect(edgeAngle, SIGNAL(returnPressed()),
             this, SLOT(edgeAngleProcessText()));
     mainLayout->addWidget(edgeAngle, 5,1);
 
-    smoothBoundaries = new QCheckBox("Smooth Along Boundaries", central, "smoothBoundaries");
+    smoothBoundaries = new QCheckBox(tr("Smooth Along Boundaries"), central, "smoothBoundaries");
     connect(smoothBoundaries, SIGNAL(toggled(bool)),
             this, SLOT(smoothBoundariesChanged(bool)));
     mainLayout->addWidget(smoothBoundaries, 6,0);
@@ -276,14 +278,15 @@ QvisSmoothWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            atts->SetNumIterations(val);
+            if(okay)
+                atts->SetNumIterations(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of numIterations was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetNumIterations());
+            msg = tr("The value of numIterations was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetNumIterations());
             Message(msg);
             atts->SetNumIterations(atts->GetNumIterations());
         }
@@ -297,14 +300,15 @@ QvisSmoothWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetRelaxationFactor(val);
+            if(okay)
+                atts->SetRelaxationFactor(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of relaxationFactor was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetRelaxationFactor());
+            msg = tr("The value of relaxationFactor was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetRelaxationFactor());
             Message(msg);
             atts->SetRelaxationFactor(atts->GetRelaxationFactor());
         }
@@ -318,14 +322,15 @@ QvisSmoothWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetConvergence(val);
+            if(okay)
+                atts->SetConvergence(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of convergence was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetConvergence());
+            msg = tr("The value of convergence was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetConvergence());
             Message(msg);
             atts->SetConvergence(atts->GetConvergence());
         }
@@ -345,14 +350,15 @@ QvisSmoothWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetFeatureAngle(val);
+            if(okay)
+                atts->SetFeatureAngle(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of featureAngle was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetFeatureAngle());
+            msg = tr("The value of featureAngle was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetFeatureAngle());
             Message(msg);
             atts->SetFeatureAngle(atts->GetFeatureAngle());
         }
@@ -366,14 +372,15 @@ QvisSmoothWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetEdgeAngle(val);
+            if(okay)
+                atts->SetEdgeAngle(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of edgeAngle was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetEdgeAngle());
+            msg = tr("The value of edgeAngle was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetEdgeAngle());
             Message(msg);
             atts->SetEdgeAngle(atts->GetEdgeAngle());
         }

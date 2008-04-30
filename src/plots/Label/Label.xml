@@ -120,5 +120,13 @@
       </Function>
       <Function name="PyLabelAttributes_SetDefaults" user="false" member="true">
       </Function>
+      <Function name="LabelViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="LabelViewerPluginInfo::ReInitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="LabelViewerPluginInfo::ResetPlotAtts" user="false" member="true">
+      </Function>
+      <Function name="LabelViewerPluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
+      </Function>
     </Attribute>
   </Plugin>

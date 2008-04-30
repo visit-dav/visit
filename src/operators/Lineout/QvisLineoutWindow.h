@@ -71,8 +71,8 @@ class QvisLineoutWindow : public QvisOperatorWindow
   public:
     QvisLineoutWindow(const int type,
                          LineoutAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisLineoutWindow();
     virtual void CreateWindowContents();

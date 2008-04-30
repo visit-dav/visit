@@ -76,8 +76,8 @@ using std::string;
 
 QvisIsovolumeWindow::QvisIsovolumeWindow(const int type,
                          IsovolumeAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -116,6 +116,9 @@ QvisIsovolumeWindow::~QvisIsovolumeWindow()
 //   Brad Whitlock, Fri Dec 10 09:22:21 PDT 2004
 //   I changed it so it uses a variable button.
 //
+//   Brad Whitlock, Fri Apr 25 09:03:49 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -124,21 +127,21 @@ QvisIsovolumeWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 3,2,  10, "mainLayout");
 
 
-    lboundLabel = new QLabel("Lower bound", central, "lboundLabel");
+    lboundLabel = new QLabel(tr("Lower bound"), central, "lboundLabel");
     mainLayout->addWidget(lboundLabel,0,0);
     lbound = new QLineEdit(central, "lbound");
     connect(lbound, SIGNAL(returnPressed()),
             this, SLOT(lboundProcessText()));
     mainLayout->addWidget(lbound, 0,1);
 
-    uboundLabel = new QLabel("Upper bound", central, "uboundLabel");
+    uboundLabel = new QLabel(tr("Upper bound"), central, "uboundLabel");
     mainLayout->addWidget(uboundLabel,1,0);
     ubound = new QLineEdit(central, "ubound");
     connect(ubound, SIGNAL(returnPressed()),
             this, SLOT(uboundProcessText()));
     mainLayout->addWidget(ubound, 1,1);
 
-    variableLabel = new QLabel("variable", central, "variableLabel");
+    variableLabel = new QLabel(tr("Variable"), central, "variableLabel");
     mainLayout->addWidget(variableLabel,2,0);
     int varMask = QvisVariableButton::Scalars;
     variable = new QvisVariableButton(true, true, true, varMask,
@@ -251,9 +254,9 @@ QvisIsovolumeWindow::GetCurrentValues(int which_widget)
 
             if(!okay)
             {
-                msg.sprintf("The value of lbound was invalid. "
-                            "Resetting to the last good value of %g.",
-                            atts->GetLbound());
+                msg = tr("The lower bound value was invalid. "
+                         "Resetting to the last good value of %1.").
+                      arg(atts->GetLbound());
                 Message(msg);
                 atts->SetLbound(atts->GetLbound());
             }
@@ -277,9 +280,9 @@ QvisIsovolumeWindow::GetCurrentValues(int which_widget)
 
             if(!okay)
             {
-                msg.sprintf("The value of ubound was invalid. "
-                            "Resetting to the last good value of %g.",
-                            atts->GetUbound());
+                msg = tr("The upper bound value was invalid. "
+                         "Resetting to the last good value of %1.").
+                      arg(atts->GetUbound());
                 Message(msg);
                 atts->SetUbound(atts->GetUbound());
             }

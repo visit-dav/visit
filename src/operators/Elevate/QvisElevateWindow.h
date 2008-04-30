@@ -77,8 +77,8 @@ class QvisElevateWindow : public QvisOperatorWindow
   public:
     QvisElevateWindow(const int type,
                          ElevateAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisElevateWindow();
     virtual void CreateWindowContents();

@@ -71,10 +71,10 @@ XMLEditCode::XMLEditCode(QWidget *p, const QString &n)
     codelist = new QListBox(this);
     listLayout->addMultiCellWidget(codelist, 0,0, 0,1);
 
-    newButton = new QPushButton("New", this);
+    newButton = new QPushButton(tr("New"), this);
     listLayout->addWidget(newButton, 1,0);
 
-    delButton = new QPushButton("Del", this);
+    delButton = new QPushButton(tr("Del"), this);
     listLayout->addWidget(delButton, 1,1);
 
     hLayout->addSpacing(10);
@@ -82,17 +82,17 @@ XMLEditCode::XMLEditCode(QWidget *p, const QString &n)
     QGridLayout *topLayout = new QGridLayout(hLayout, 6,2, 5);
     int row = 0;
 
-    topLayout->addWidget(new QLabel("Target", this), row, 0);
+    topLayout->addWidget(new QLabel(tr("Target"), this), row, 0);
     target = new QLineEdit(this);
     topLayout->addWidget(target, row, 1);
     row++;
 
-    topLayout->addWidget(new QLabel("Name", this), row, 0);
+    topLayout->addWidget(new QLabel(tr("Name"), this), row, 0);
     name = new QLineEdit(this);
     topLayout->addWidget(name, row, 1);
     row++;
 
-    topLayout->addWidget(new QLabel("Prefix", this), row, 0);
+    topLayout->addWidget(new QLabel(tr("Prefix"), this), row, 0);
     row++;
 
     QFont monospaced("Courier");
@@ -103,7 +103,7 @@ XMLEditCode::XMLEditCode(QWidget *p, const QString &n)
     topLayout->addMultiCellWidget(prefix, row,row, 0,1);
     row++;
 
-    topLayout->addWidget(new QLabel("Postfix", this), row, 0);
+    topLayout->addWidget(new QLabel(tr("Postfix"), this), row, 0);
     row++;
 
     postfix = new QMultiLineEdit(this);
@@ -407,7 +407,7 @@ XMLEditCode::codelistNew()
     while (!okay)
     {
         okay = true;
-        newname.sprintf("unnamed%d", newid);
+        newname = tr("unnamed%1").arg(newid);
         for (int i=0; i<codelist->count() && okay; i++)
         {
             if (codelist->text(i) == newname)

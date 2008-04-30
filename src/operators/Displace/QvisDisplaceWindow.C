@@ -76,8 +76,8 @@ using std::string;
 
 QvisDisplaceWindow::QvisDisplaceWindow(const int type,
                          DisplaceAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -117,6 +117,9 @@ QvisDisplaceWindow::~QvisDisplaceWindow()
 //   Hank Childs, Tue Sep  5 15:51:59 PDT 2006
 //   Remove vestiges of "DISPL".
 //
+//   Brad Whitlock, Fri Apr 25 09:16:05 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -125,14 +128,14 @@ QvisDisplaceWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 2,2,  10, "mainLayout");
 
 
-    mainLayout->addWidget(new QLabel("Displacement multiplier ", central, "factorLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("Displacement multiplier "), central, "factorLabel"),0,0);
 
     factor = new QLineEdit(central, "factor");
     connect(factor, SIGNAL(returnPressed()),
             this, SLOT(factorProcessText()));
     mainLayout->addWidget(factor, 0,1);
 
-    mainLayout->addWidget(new QLabel("Displacement variable", central, "variableLabel"),1,0);
+    mainLayout->addWidget(new QLabel(tr("Displacement variable"), central, "variableLabel"),1,0);
     variable = new QvisVariableButton(true, true, true,
         QvisVariableButton::Vectors, central, "variable");
     variable->setDefaultVariable("default");
@@ -214,14 +217,15 @@ QvisDisplaceWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetFactor(val);
+            if(okay)
+                atts->SetFactor(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of factor was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetFactor());
+            msg = tr("The value of factor was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetFactor());
             Message(msg);
             atts->SetFactor(atts->GetFactor());
         }

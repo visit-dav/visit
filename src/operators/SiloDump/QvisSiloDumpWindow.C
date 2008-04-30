@@ -74,8 +74,8 @@ using std::string;
 
 QvisSiloDumpWindow::QvisSiloDumpWindow(const int type,
                          SiloDumpAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -120,13 +120,13 @@ QvisSiloDumpWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 2,2,  10, "mainLayout");
 
 
-    mainLayout->addWidget(new QLabel("Filename", central, "filenameLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("Filename"), central, "filenameLabel"),0,0);
     filename = new QLineEdit(central, "filename");
     connect(filename, SIGNAL(returnPressed()),
             this, SLOT(filenameProcessText()));
     mainLayout->addWidget(filename, 0,1);
 
-    display = new QCheckBox("Display output", central, "display");
+    display = new QCheckBox(tr("Display output"), central, "display");
     connect(display, SIGNAL(toggled(bool)),
             this, SLOT(displayChanged(bool)));
     mainLayout->addWidget(display, 1,0);
@@ -207,9 +207,9 @@ QvisSiloDumpWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of filename was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetFilename().c_str());
+            msg = tr("The value of filename was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetFilename().c_str());
             Message(msg);
             atts->SetFilename(atts->GetFilename());
         }

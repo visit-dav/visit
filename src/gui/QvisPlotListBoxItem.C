@@ -73,6 +73,9 @@ QPixmap *QvisPlotListBoxItem::subsetIcon = 0;
 //   I made it store the plot information and I made it look up icons that
 //   it will need in order to paint the item.
 //
+//   Brad Whitlock, Wed Apr 30 14:09:34 PDT 2008
+//   Use GetMenuName from the plugin info.
+//
 // ****************************************************************************
 
 QvisPlotListBoxItem::QvisPlotListBoxItem(const QString &prefix_, const Plot &p)
@@ -92,10 +95,12 @@ QvisPlotListBoxItem::QvisPlotListBoxItem(const QString &prefix_, const Plot &p)
     //
     QString key;
     PlotPluginManager *pMgr = PlotPluginManager::Instance();
-    CommonPlotPluginInfo *plotInfo = pMgr->GetCommonPluginInfo(
+    GUIPlotPluginInfo *plotInfo = pMgr->GetGUIPluginInfo(
         pMgr->GetEnabledID(plot.GetPlotType()));
     // Store the plot name
-    plotName = QString(plotInfo->GetName());
+    QString *s = plotInfo->GetMenuName();
+    plotName = *s;
+    delete s;
     // Store the plot icon if it has one.
     GetPlotPixmap(plot.GetPlotType(), plotIcon);
     maxIconWidth  = plotIcon.width();
@@ -115,11 +120,13 @@ QvisPlotListBoxItem::QvisPlotListBoxItem(const QString &prefix_, const Plot &p)
         for(int i = 0; i < plot.GetNumOperators(); ++i)
         {
             int operatorIndex = plot.GetOperator(i);
-            CommonOperatorPluginInfo *info = oMgr->GetCommonPluginInfo(
+            GUIOperatorPluginInfo *info = oMgr->GetGUIPluginInfo(
                 oMgr->GetEnabledID(operatorIndex));
 
             // Store the operator name
-            operatorNames[i] = info->GetName();
+            s = info->GetMenuName();
+            operatorNames[i] = *s;
+            delete s;
 
             // Store the operator pixmap if it has one.
             GetOperatorPixmap(operatorIndex, operatorIcons[i]);
@@ -982,10 +989,12 @@ QvisPlotListBoxItem::GetDisplayString(const Plot &plot, const QString &prefix)
 {
     // Get a pointer to the plot plugin manager.
     PlotPluginManager *plotPluginManager = PlotPluginManager::Instance();
-    CommonPlotPluginInfo *plotInfo = NULL;
-    plotInfo = plotPluginManager->GetCommonPluginInfo(
+    GUIPlotPluginInfo *plotInfo = NULL;
+    plotInfo = plotPluginManager->GetGUIPluginInfo(
                   plotPluginManager->GetEnabledID(plot.GetPlotType()));
-    QString plotTypeName(plotInfo->GetName());
+    QString *s = plotInfo->GetMenuName();
+    QString plotTypeName(*s);
+    delete s;
 
     // Get a pointer to the operator plugin manager.
     OperatorPluginManager *operatorPluginManager = OperatorPluginManager::Instance();
@@ -995,10 +1004,12 @@ QvisPlotListBoxItem::GetDisplayString(const Plot &plot, const QString &prefix)
     QString plotVar;
     for(i = plot.GetNumOperators(); i > 0; --i)
     {
-        CommonOperatorPluginInfo *operatorInfo = 
-            operatorPluginManager->GetCommonPluginInfo(
+        GUIOperatorPluginInfo *operatorInfo = 
+            operatorPluginManager->GetGUIPluginInfo(
                   operatorPluginManager->GetEnabledID(plot.GetOperator(i-1)));
-        plotVar += QString(operatorInfo->GetName());
+        s = operatorInfo->GetMenuName();
+        plotVar += QString(*s);
+        delete s;
         plotVar += QString("(");
     }
     plotVar += QString(plot.GetPlotVar().c_str());
@@ -1006,13 +1017,11 @@ QvisPlotListBoxItem::GetDisplayString(const Plot &plot, const QString &prefix)
         plotVar += QString(")");
 
     // Create the display string
-    QString temp;
-    temp.sprintf("%s%s - %s", prefix.latin1(),
-        plotTypeName.latin1(), plotVar.latin1());
+    QString display = prefix + plotTypeName + QString(" - ") + plotVar;
     if(plot.GetHiddenFlag())
-        temp += (QString(" (") + QObject::tr("hidden","") + QString(")"));
+        display += (QString(" (") + QObject::tr("QvisPlotListBoxItem","hidden") + QString(")"));
 
-    return temp;
+    return display;
 }
 
 // ****************************************************************************

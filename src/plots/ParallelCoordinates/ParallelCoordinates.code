@@ -399,3 +399,189 @@ ParallelCoordinatesAttributes::ResetAxes()
     
     SelectAll();
 }
+
+Target: xml2info
+Function: ParallelCoordinatesGUIPluginInfo::CreatePluginWizard
+Declaration: QvisWizard *ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(...);
+Definition:
+// ****************************************************************************
+// Method: ScatterGUIPluginInfo::CreatePluginWizard
+//
+// Purpose:
+//   Creates a ParallelCoordinates plot wizard and returns a pointer to it.
+//
+// Arguments:
+//   attr        : Attributes that should be used for the plot.
+//   parent      : Wizard's parent widget.
+//   plotVarName : Name of the plot's variable
+//   plotVarType : Data type of the plot's variable
+//   name        : Name of the wizard
+//
+// Returns:    A pointer to the new wizard
+//
+// Note:       
+//
+// Programmer: Mark Blair
+// Creation:   Wed Jun 21 19:02:00 PDT 2006
+//
+// Modifications:
+//    Jeremy Meredith, Thu Feb  7 12:58:15 EST 2008
+//    A wizard is needed because you can't reset the default plot attributes
+//    without a wizard's accept action having been called.  If you don't, then
+//    you'll have the wrong number of axes defined in the plot attributes.
+//    As such, I extended the wizard to support a "no-op" mode.
+//   
+// ****************************************************************************
+#include <QvisParallelCoordinatesPlotWizard.h>
+#include <Expression.h>
+#include <avtDatabaseMetaData.h>
+#include <ViewerMethods.h>
+
+QvisWizard *
+ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
+    QWidget *parent, const std::string &varName, const avtDatabaseMetaData *md,
+    const ExpressionList *expList, const char *name)
+{
+    bool doNothing = false;
+    if (md->GetScalar(varName) == NULL)
+    {
+        int expressionCount = expList->GetNumExpressions();
+        int expNum;
+        
+        for (expNum = 0; expNum < expressionCount; expNum++)
+        {
+            if (expList->GetExpressions(expNum).GetName() == varName)
+            {
+                if (expList->GetExpressions(expNum).GetType() ==
+                    Expression::ScalarMeshVar)
+                    break;
+            }
+        }
+        
+        if (expNum >= expressionCount)
+            doNothing = true;
+    }
+
+    return (new QvisParallelCoordinatesPlotWizard(attr, parent, varName,
+                                                  doNothing, name));
+}
+
+Function: ParallelCoordinatesViewerPluginInfo::InitializePlotAtts
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+Definition:
+// ****************************************************************************
+//  Method: ParallelCoordinatesViewerPluginInfo::InitializePlotAtts
+//
+//  Purpose:
+//    Initialize the plot attributes to the default attributes.
+//
+//  Arguments:
+//    atts      The attribute subject to initialize.
+//    md        The metadata used to initialize.
+//    atts      The variable name used to initialize.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February  6, 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Feb  7 17:49:50 EST 2008
+//    Took out all the parsing.  It was never a good idea.
+//
+//    Jeremy Meredith, Mon Feb 18 14:51:40 EST 2008
+//    Added a little smarts to attempt to populate the axis names.
+//    Note that this did require adding some minimal parsing in -- however,
+//    we are not relying on it; if it fails, everything still works, except
+//    that the GUI window can't tell the user what the axis names are until
+//    the axis restriction tool has been used to limit the axis extents.
+//
+// ****************************************************************************
+#include <ViewerPlot.h>
+#include <ParsingExprList.h>
+#include <Expression.h>
+#include <ColorAttribute.h>
+#include <ExprNode.h>
+#include <avtArrayMetaData.h>
+#include <avtDatabaseMetaData.h>
+
+#include <InvalidVariableException.h>
+#include <ImproperUseException.h>
+#include <DebugStream.h>
+
+void
+ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
+    AttributeSubject *atts, ViewerPlot *plot)
+{
+    // If we had scalar names, we can just copy the default atts
+    // and return.
+    if (defaultAtts->GetScalarAxisNames().size() != 0)
+    {
+        // One helpful thing we can do: make sure the user set the
+        // visual axis names.  They really should have, but since
+        // we can blindly copy them from the scalar axis names in
+        // this case, no harm doing it for them.
+        if (defaultAtts->GetVisualAxisNames().size() == 0)
+            defaultAtts->SetVisualAxisNames(defaultAtts->GetScalarAxisNames());
+
+        *(ParallelCoordinatesAttributes*)atts = *defaultAtts;
+
+        return;
+    }
+
+    // Otherwise,  we must be an array variable; try to get
+    // some names for its components....
+    const avtDatabaseMetaData *md = plot->GetMetaData();
+    const std::string &var = plot->GetVariableName();
+    const avtArrayMetaData *array = md->GetArray(var);
+    stringVector subNames;
+    if (array)
+    {
+        subNames = array->compNames;
+    }
+    else
+    {
+        Expression *exp =
+            ParsingExprList::GetExpression(plot->GetVariableName());
+        if (exp == NULL || exp->GetType() != Expression::ArrayMeshVar)
+        {
+            debug3 << "ParallelCoordinatesAttributes::InitializePlotAtts: "
+                   << "variable wasn't an array database variable, an "
+                   << "array expression, or a list of scalars.  This can "
+                   << "happen if the user attempts to create this plot "
+                   << "without the use off a wizard, e.g. in the case of "
+                   << "the cli.  Assuming this is the case and continuing "
+                   << "without error.\n";
+            return;
+        }
+        // If we have any problems walking the expression tree, just return;
+        // the worst case scenario if we don't populate the visual axis
+        // name list is that the GUI window is temporarily blank.
+        ExprNode *root = ParsingExprList::GetExpressionTree(exp);
+        if (root->GetTypeName() != "Function")
+            return;
+        FunctionExpr *fn = dynamic_cast<FunctionExpr*>(root);
+        if (fn->GetName() != "array_compose" &&
+            fn->GetName() != "array_compose_with_bins")
+            return;
+        ArgsExpr *argsExpr = fn->GetArgsExpr();
+        vector<ArgExpr*> *args = argsExpr ? argsExpr->GetArgs() : NULL;
+        if (!args)
+            return;
+        for (int i=0; i<args->size(); i++)
+        {
+            ExprNode *arg = (ExprNode*)((*args)[i]->GetExpr());
+            if (arg->GetTypeName() == "List")
+                break;
+            subNames.push_back(arg->GetPos().GetText(exp->GetDefinition()));
+        }
+    }
+
+    doubleVector extMin(subNames.size(), -1e+37);
+    doubleVector extMax(subNames.size(), +1e+37);
+
+    // Set up the default attributes to contain these values, so
+    // if the user hits reset, the axis names are retained.
+    defaultAtts->SetVisualAxisNames(subNames);
+    defaultAtts->SetExtentMinima(extMin);
+    defaultAtts->SetExtentMaxima(extMax);
+    *(ParallelCoordinatesAttributes*)atts = *defaultAtts;
+}

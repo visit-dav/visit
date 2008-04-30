@@ -74,8 +74,8 @@ using std::string;
 
 QvisTubeWindow::QvisTubeWindow(const int type,
                          TubeAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -111,7 +111,9 @@ QvisTubeWindow::~QvisTubeWindow()
 // Creation:   Wed Oct 30 10:58:01 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Apr 24 15:49:27 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -120,19 +122,19 @@ QvisTubeWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 3,2,  10, "mainLayout");
 
 
-    mainLayout->addWidget(new QLabel("width", central, "widthLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("width"), central, "widthLabel"),0,0);
     width = new QLineEdit(central, "width");
     connect(width, SIGNAL(returnPressed()),
             this, SLOT(widthProcessText()));
     mainLayout->addWidget(width, 0,1);
 
-    mainLayout->addWidget(new QLabel("Fineness of tube", central, "finenessLabel"),1,0);
+    mainLayout->addWidget(new QLabel(tr("Fineness of tube"), central, "finenessLabel"),1,0);
     fineness = new QLineEdit(central, "fineness");
     connect(fineness, SIGNAL(returnPressed()),
             this, SLOT(finenessProcessText()));
     mainLayout->addWidget(fineness, 1,1);
 
-    capping = new QCheckBox("Cap Tubes?", central, "capping");
+    capping = new QCheckBox(tr("Cap Tubes?"), central, "capping");
     connect(capping, SIGNAL(toggled(bool)),
             this, SLOT(cappingChanged(bool)));
     mainLayout->addWidget(capping, 2,0);
@@ -221,9 +223,9 @@ QvisTubeWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of width was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetWidth());
+            msg = tr("The value of width was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetWidth());
             Message(msg);
             atts->SetWidth(atts->GetWidth());
         }
@@ -239,8 +241,8 @@ QvisTubeWindow::GetCurrentValues(int which_widget)
             int val = temp.toInt(&okay);
             if (val < 3 || val > 12)
             {
-                msg.sprintf("The fineness of the tube is limited from 3 "
-                    "(coarsest) to 12 (finest)");
+                msg = tr("The fineness of the tube is limited from 3 "
+                         "(coarsest) to 12 (finest)");
                 Message(msg);
                 atts->SetFineness(atts->GetFineness());
             }
@@ -252,9 +254,9 @@ QvisTubeWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of fineness was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetFineness());
+            msg = tr("The value of fineness was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetFineness());
             Message(msg);
             atts->SetFineness(atts->GetFineness());
         }

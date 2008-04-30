@@ -37,7 +37,7 @@
 *****************************************************************************/
 #ifndef SPREADSHEET_TABLE_H
 #define SPREADSHEET_TABLE_H
-
+#include <string>
 #include <qtable.h>
 #include <list>
 

@@ -76,8 +76,8 @@ class QvisConeWindow : public QvisOperatorWindow
   public:
     QvisConeWindow(const int type,
                          ConeAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisConeWindow();
     virtual void CreateWindowContents();

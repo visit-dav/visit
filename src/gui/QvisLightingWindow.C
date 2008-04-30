@@ -473,8 +473,7 @@ QvisLightingWindow::GetCurrentValues(int which_widget)
             const double *d = light.GetDirection();
             QString num; num.sprintf("<%g %g %g>.", d[0], d[1], d[2]);
             msg = tr("The direction vector was invalid. "
-                     "Resetting to the last good value %1.");
-            msg.replace("%1", num);
+                     "Resetting to the last good value %1.").arg(num);
             Message(msg);
             light.SetDirection(d);
             lights->SelectLight(activeLight);

@@ -79,8 +79,8 @@ class QvisReflectWindow : public QvisOperatorWindow
   public:
     QvisReflectWindow(const int type,
                          ReflectAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisReflectWindow();
     virtual void CreateWindowContents();

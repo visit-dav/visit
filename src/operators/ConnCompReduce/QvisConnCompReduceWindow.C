@@ -74,8 +74,8 @@ using std::string;
 
 QvisConnCompReduceWindow::QvisConnCompReduceWindow(const int type,
                          ConnCompReduceAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -120,7 +120,7 @@ QvisConnCompReduceWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 1,2,  10, "mainLayout");
 
 
-    mainLayout->addWidget(new QLabel("Target Reduction ", central, "targetLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("Target Reduction "), central, "targetLabel"),0,0);
     target = new QLineEdit(central, "target");
     connect(target, SIGNAL(returnPressed()),
             this, SLOT(targetProcessText()));
@@ -198,14 +198,15 @@ QvisConnCompReduceWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetTarget(val);
+            if(okay)
+                atts->SetTarget(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of target was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetTarget());
+            msg = tr("The value of target was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetTarget());
             Message(msg);
             atts->SetTarget(atts->GetTarget());
         }

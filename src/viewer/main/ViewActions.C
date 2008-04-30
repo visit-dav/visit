@@ -75,8 +75,8 @@
 
 TogglePerspectiveViewAction::TogglePerspectiveViewAction(ViewerWindow *win) : ViewerToggleAction(win, "Perspective")
 {
-    SetAllText("Perspective");
-    SetToolTip("Toggle perspective view");
+    SetAllText(tr("Perspective"));
+    SetToolTip(tr("Toggle perspective view"));
     if (!win->GetNoWinMode())
         SetIcons(QPixmap(perspectiveon_xpm), QPixmap(perspectiveoff_xpm));
 }
@@ -105,7 +105,7 @@ TogglePerspectiveViewAction::Toggled() const
 
 ResetViewAction::ResetViewAction(ViewerWindow *win) : ViewerAction(win, "ResetViewAction")
 {
-    SetAllText("Reset view");
+    SetAllText(tr("Reset view"));
     if (!win->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(resetview_xpm)));
 }
@@ -129,7 +129,7 @@ ResetViewAction::Enabled() const
 RecenterViewAction::RecenterViewAction(ViewerWindow *win) :
     ViewerAction(win, "RecenterViewAction")
 {
-    SetAllText("Recenter view");
+    SetAllText(tr("Recenter view"));
     if (!win->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(recenterview_xpm)));
 }
@@ -153,7 +153,7 @@ RecenterViewAction::Enabled() const
 UndoViewAction::UndoViewAction(ViewerWindow *win) :
     ViewerAction(win, "UndoViewAction")
 {
-    SetAllText("Undo view");
+    SetAllText(tr("Undo view"));
     if (!win->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(undoview_xpm)));
 }
@@ -178,7 +178,7 @@ UndoViewAction::Enabled() const
 RedoViewAction::RedoViewAction(ViewerWindow *win) :
     ViewerAction(win, "RedoViewAction")
 {
-    SetAllText("Redo view");
+    SetAllText(tr("Redo view"));
     if (!win->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(redoview_xpm)));
 }
@@ -203,8 +203,8 @@ RedoViewAction::Enabled() const
 ToggleFullFrameAction::ToggleFullFrameAction(ViewerWindow *win) : 
     ViewerToggleAction(win, "Full frame")
 {
-    SetAllText("Full frame");
-    SetToolTip("Toggle full frame");
+    SetAllText(tr("Full frame"));
+    SetToolTip(tr("Toggle full frame"));
 }
 
 void
@@ -248,15 +248,17 @@ const int SaveViewAction::VIEW3D = 3;
 // Creation:   Wed Feb 26 08:53:26 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 29 11:49:16 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 SaveViewAction::SaveViewAction(ViewerWindow *win) : ViewerMultipleAction(win,
     "SaveView"), views()
 {
-    const char *s1 = "Clear saved views";
-    const char *s2 = "Save view";
-    const char *s3 = "Save current view";
+    QString s1(tr("Clear saved views"));
+    QString s2(tr("Save view"));
+    QString s3(tr("Save current view"));
 
     SetAllText(s2);
     SetToolTip(s3);
@@ -272,7 +274,7 @@ SaveViewAction::SaveViewAction(ViewerWindow *win) : ViewerMultipleAction(win,
         paint.setPen(pen);
         paint.drawLine(clearIcon.width()-1, 0, 0, clearIcon.height()-1);
         AddChoice(s1, s1, clearIcon);
-        
+
         // Add the save view choice
         QPixmap icon(saveview_xpm);
         SetIconSet(QIconSet(icon));
@@ -502,6 +504,9 @@ SaveViewAction::CopyFrom(const ViewerActionBase *obj)
 //   I Modified the routine to use the window mode to determine the type of
 //   view to save.
 //
+//   Brad Whitlock, Tue Apr 29 11:50:01 PDT 2008
+//   Added tr()
+//
 // ****************************************************************************
 
 void
@@ -546,7 +551,7 @@ SaveViewAction::SaveCurrentView()
     {
         // We only have this limit because I made ViewerMultipleActions
         // capable of containing a finite number of actions.
-        Warning("You cannot save more than 15 views.");
+        Warning(tr("You cannot save more than 15 views."));
     }
 }
 
@@ -565,7 +570,9 @@ SaveViewAction::SaveCurrentView()
 // Creation:   Tue Jul 1 14:51:22 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 29 11:50:45 PDT 2008
+//   Added tr().
+//
 // ****************************************************************************
 
 void
@@ -582,8 +589,7 @@ SaveViewAction::AddNewView(void *v, int vt)
     //
     // Add the view to the action so that it is available in the toolbar.
     //
-    char tmp[20];
-    SNPRINTF(tmp, 20, "Use saved view %d", views.size());
+    QString tmp(tr("Use saved view %1").arg(views.size()));
 
     if (!window->GetNoWinMode())
     {
@@ -628,7 +634,10 @@ SaveViewAction::AddNewView(void *v, int vt)
 //   Eric Brugger, Wed Aug 20 10:56:24 PDT 2003
 //   I modified the routine to use the window mode to determine if the saved
 //   view is appropriate.  I changed the call to UpdateViewAtts.
-//   
+//
+//   Brad Whitlock, Tue Apr 29 11:51:55 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -644,10 +653,10 @@ SaveViewAction::UseSavedView(int index)
             }
             else
             {
-                char msg[200];
-                SNPRINTF(msg, 200, "VisIt cannot use saved view %d because "
-                         "it is a curve view and the window does not "
-                         "contain curves.", index + 1);
+                QString msg(
+                    tr("VisIt cannot use saved view %1 because "
+                       "it is a curve view and the window does not "
+                       "contain curves.").arg(index + 1));
                 Error(msg);
             }
         }
@@ -661,10 +670,10 @@ SaveViewAction::UseSavedView(int index)
             }
             else
             {
-                char msg[200];
-                SNPRINTF(msg, 200, "VisIt cannot use saved view %d because "
-                         "it is a 2D view and the window does not "
-                         "contain 2D plots.", index + 1);
+                QString msg(
+                    tr("VisIt cannot use saved view %1 because "
+                       "it is a 2D view and the window does not "
+                       "contain 2D plots.").arg(index + 1));
                 Error(msg);
             }
         }
@@ -678,10 +687,10 @@ SaveViewAction::UseSavedView(int index)
             }
             else
             {
-                char msg[200];
-                SNPRINTF(msg, 200, "VisIt cannot use saved view %d because "
-                         "it is a 3D view and the window does not "
-                         "contain 3D plots.", index + 1);
+                QString msg(
+                    tr("VisIt cannot use saved view %1 because "
+                       "it is a 3D view and the window does not "
+                       "contain 3D plots.").arg(index + 1));
                 Error(msg);
             }
         }
@@ -1110,8 +1119,8 @@ SetCenterOfRotationAction::Enabled() const
 ChooseCenterOfRotationAction::ChooseCenterOfRotationAction(ViewerWindow *win) :
     ViewerAction(win, "ChooseCenterOfRotationAction")
 {
-    SetAllText("Choose center");
-    SetToolTip("Choose center of rotation");
+    SetAllText(tr("Choose center"));
+    SetToolTip(tr("Choose center of rotation"));
     if (!win->GetNoWinMode())
         SetIconSet(QIconSet(QPixmap(choosecenterofrotation_xpm)));
 }
@@ -1213,8 +1222,8 @@ ChooseCenterOfRotationAction::Execute()
     }
     else
     {
-        Error("The center of rotation cannot be chosen interactively when "
-              "VisIt is run in -nowin mode.");
+        Error(tr("The center of rotation cannot be chosen interactively when "
+              "VisIt is run in -nowin mode."));
     }
 }
 
@@ -1288,7 +1297,10 @@ ChooseCenterOfRotationAction::FinishCB(void *data, bool success,
 // Modifications:
 //   Kathleen Bonnell, Tue Mar  7 08:38:29 PST 2006
 //   Handle SR mode.
-//   
+//
+//   Brad Whitlock, Tue Apr 29 11:54:47 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1322,9 +1334,8 @@ ChooseCenterOfRotationAction::FinishExecute(bool success,
     if (success)
     {
         // Tell the client about the new center of rotation.
-        char msg[500];
-        SNPRINTF(msg, 500, "The new center of rotation is: <%g, %g, %g>.",
-                      pt[0], pt[1], pt[2]);
+        QString num; num.sprintf("<%g, %g, %g>", pt[0], pt[1], pt[2]);
+        QString msg = tr("The new center of rotation is: %1.").arg(num);
         Message(msg);
 
         // Set the new center of rotation.
@@ -1333,8 +1344,8 @@ ChooseCenterOfRotationAction::FinishExecute(bool success,
     }
     else 
     {
-        Warning("VisIt could not set the center of rotation. "
-                "You might not have clicked on a plot.");
+        Warning(tr("VisIt could not set the center of rotation. "
+                "You might not have clicked on a plot."));
     }
 
      //

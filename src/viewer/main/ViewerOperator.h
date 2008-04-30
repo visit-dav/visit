@@ -120,6 +120,9 @@ class ExpressionList;
 //    Jeremy Meredith, Tue Feb 19 15:39:42 EST 2008
 //    Allow operators to construct full expressions for their new variables.
 //
+//    Brad Whitlock, Tue Apr 29 15:14:33 PDT 2008
+//    Added GetMenuName.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerOperator : public ViewerBase
@@ -134,6 +137,7 @@ class VIEWER_API ViewerOperator : public ViewerBase
     int  GetType() const;
     const char *GetPluginID() const;
     const char *GetName() const;
+    QString GetMenuName() const;
 
     void SetPlot(ViewerPlot *p);
     void SetClientAttsFromOperator();

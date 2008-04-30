@@ -92,16 +92,16 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
     fieldlist->insertItem("testfloat");
     listLayout->addMultiCellWidget(fieldlist, 0,0, 0,1);
 
-    upButton = new QPushButton("Up", this);
+    upButton = new QPushButton(tr("Up"), this);
     listLayout->addWidget(upButton, 1,0);
 
-    downButton = new QPushButton("Down", this);
+    downButton = new QPushButton(tr("Down"), this);
     listLayout->addWidget(downButton, 1,1);
 
-    newButton = new QPushButton("New", this);
+    newButton = new QPushButton(tr("New"), this);
     listLayout->addWidget(newButton, 2,0);
 
-    delButton = new QPushButton("Del", this);
+    delButton = new QPushButton(tr("Del"), this);
     listLayout->addWidget(delButton, 2,1);
 
     hLayout->addSpacing(10);
@@ -116,49 +116,49 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
     topLayout->setColStretch(4, 25);
 
     name = new QLineEdit(this);
-    topLayout->addMultiCellWidget(new QLabel("Name", this), row,row, 0,0);
+    topLayout->addMultiCellWidget(new QLabel(tr("Name"), this), row,row, 0,0);
     topLayout->addMultiCellWidget(name, row,row, 1,4);
     row++;
 
     label = new QLineEdit(this);
-    topLayout->addMultiCellWidget(new QLabel("Label", this), row,row, 0,0);
+    topLayout->addMultiCellWidget(new QLabel(tr("Label"), this), row,row, 0,0);
     topLayout->addMultiCellWidget(label, row,row, 1,4);
     row++;
 
     type = new QComboBox(this);
     type->insertItem("");
     type->setMinimumWidth(150);
-    topLayout->addMultiCellWidget(new QLabel("Type", this), row,row, 0,0);
+    topLayout->addMultiCellWidget(new QLabel(tr("Type"), this), row,row, 0,0);
     topLayout->addMultiCellWidget(type, row,row, 1,3);
     QHBox *lengthHBox = new QHBox(this, "lengthHBox");
-    new QLabel("Length", lengthHBox);
+    new QLabel(tr("Length"), lengthHBox);
     length = new QNarrowLineEdit(lengthHBox);
     topLayout->addWidget(lengthHBox, row, 4);
     row++;
 
     subtype = new QLineEdit(this);
-    topLayout->addMultiCellWidget(new QLabel("Subtype", this), row,row, 0,0);
+    topLayout->addMultiCellWidget(new QLabel(tr("Subtype"), this), row,row, 0,0);
     topLayout->addMultiCellWidget(subtype, row,row, 1,4);
     row++;
 
     enabler = new QComboBox(this);
-    enabler->insertItem("(none)");
-    topLayout->addMultiCellWidget(new QLabel("Enabler", this), row,row, 0,0);
+    enabler->insertItem(tr("(none)"));
+    topLayout->addMultiCellWidget(new QLabel(tr("Enabler"), this), row,row, 0,0);
     topLayout->addMultiCellWidget(enabler, row,row, 1,4);
     row++;
 
     enableval = new QLineEdit(this);
-    topLayout->addMultiCellWidget(new QLabel("Values", this), row,row, 1,1);
+    topLayout->addMultiCellWidget(new QLabel(tr("Values"), this), row,row, 1,1);
     topLayout->addMultiCellWidget(enableval, row,row, 2,4); 
     row++;
 
-    internal = new QCheckBox("Internal use only", this);
+    internal = new QCheckBox(tr("Internal use only"), this);
     topLayout->addMultiCellWidget(internal, row,row, 0,2);
 
     // Add a group box that contains controls to set the variable
     // types that will be accepted by a variablename object.
     variableNameGroup = new QGroupBox(this, "variableNameGroup");
-    variableNameGroup->setTitle("Accepted variable types");
+    variableNameGroup->setTitle(tr("Accepted variable types"));
     QVBoxLayout *innerVarNameLayout = new QVBoxLayout(variableNameGroup);
     innerVarNameLayout->setMargin(10);
     innerVarNameLayout->addSpacing(15);
@@ -167,62 +167,62 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
     varNameButtons = new QButtonGroup(0, "varNameButtons");
     connect(varNameButtons, SIGNAL(clicked(int)),
             this, SLOT(variableTypeClicked(int)));
-    QCheckBox *cb = new QCheckBox("Meshes", variableNameGroup);
+    QCheckBox *cb = new QCheckBox(tr("Meshes"), variableNameGroup);
     varNameButtons->insert(cb,0);
     vnLayout->addWidget(cb, 0, 0);
-    cb = new QCheckBox("Scalars", variableNameGroup);
+    cb = new QCheckBox(tr("Scalars"), variableNameGroup);
     varNameButtons->insert(cb,1);
     vnLayout->addWidget(cb, 1, 0);
-    cb = new QCheckBox("Materials", variableNameGroup);
+    cb = new QCheckBox(tr("Materials"), variableNameGroup);
     varNameButtons->insert(cb,2);
     vnLayout->addWidget(cb, 2, 0);
-    cb = new QCheckBox("Labels", variableNameGroup);
+    cb = new QCheckBox(tr("Labels"), variableNameGroup);
     varNameButtons->insert(cb,9);
     vnLayout->addWidget(cb, 3, 0);
 
-    cb = new QCheckBox("Vectors", variableNameGroup);
+    cb = new QCheckBox(tr("Vectors"), variableNameGroup);
     varNameButtons->insert(cb,3);
     vnLayout->addWidget(cb, 0, 1);
-    cb = new QCheckBox("Subsets", variableNameGroup);
+    cb = new QCheckBox(tr("Subsets"), variableNameGroup);
     varNameButtons->insert(cb,4);
     vnLayout->addWidget(cb, 1, 1);
-    cb = new QCheckBox("Species", variableNameGroup);
+    cb = new QCheckBox(tr("Species"), variableNameGroup);
     varNameButtons->insert(cb,5);
     vnLayout->addWidget(cb, 2, 1);
-    cb = new QCheckBox("Arrays", variableNameGroup);
+    cb = new QCheckBox(tr("Arrays"), variableNameGroup);
     varNameButtons->insert(cb,10);
     vnLayout->addWidget(cb, 3, 1);
 
-    cb = new QCheckBox("Curves", variableNameGroup);
+    cb = new QCheckBox(tr("Curves"), variableNameGroup);
     varNameButtons->insert(cb,6);
     vnLayout->addWidget(cb, 0, 2);
-    cb = new QCheckBox("Tensors", variableNameGroup);
+    cb = new QCheckBox(tr("Tensors"), variableNameGroup);
     varNameButtons->insert(cb,7);
     vnLayout->addWidget(cb, 1, 2);
-    cb = new QCheckBox("Symmetric Tensors", variableNameGroup);
+    cb = new QCheckBox(tr("Symmetric Tensors"), variableNameGroup);
     varNameButtons->insert(cb,8);
     vnLayout->addWidget(cb, 2, 2);
 
     topLayout->addMultiCellWidget(variableNameGroup, row,row+2,3,4);
     row++;
 
-    ignoreeq = new QCheckBox("Ignore field for attribute\nequality calculations", this);
+    ignoreeq = new QCheckBox(tr("Ignore field for attribute\nequality calculations"), this);
     topLayout->addMultiCellWidget(ignoreeq, row,row, 0,2);
     row++;
 
-    access = new QButtonGroup("Access", this, "access");
+    access = new QButtonGroup(tr("Access"), this, "access");
     access->setColumns(1);
-    new QRadioButton("private", access, "private");
-    new QRadioButton("protected", access, "protected");
-    new QRadioButton("public", access, "public");
+    new QRadioButton(tr("private"), access, "private");
+    new QRadioButton(tr("protected"), access, "protected");
+    new QRadioButton(tr("public"), access, "public");
     topLayout->addMultiCellWidget(access, row,row, 0,2);
     row++;
 
-    init = new QCheckBox("Special initialization code", this);
+    init = new QCheckBox(tr("Special initialization code"), this);
     topLayout->addMultiCellWidget(init, row,row, 0,2);
     row++;
 
-    topLayout->addMultiCellWidget(new QLabel("Initialization Values / Code", this), row,row, 0,4);
+    topLayout->addMultiCellWidget(new QLabel(tr("Initialization Values / Code"), this), row,row, 0,4);
     row++;
 
     values = new QMultiLineEdit(this);
@@ -326,7 +326,7 @@ XMLEditFields::UpdateWindowSensitivity()
                                    type->currentText() == "attVector"));
     length->setEnabled(active && (type->currentText().right(5) == "Array"));
     enabler->setEnabled(active);
-    enableval->setEnabled(active && enabler->currentText() != "(none)");
+    enableval->setEnabled(active && enabler->currentText() != tr("(none)"));
     internal->setEnabled(active);
     ignoreeq->setEnabled(active);
     variableNameGroup->setEnabled(active && type->currentText() == "variablename");
@@ -568,7 +568,7 @@ XMLEditFields::UpdateEnablerList()
     Attribute *a = xmldoc->attribute;
 
     enabler->clear();
-    enabler->insertItem("(none)");
+    enabler->insertItem(tr("(none)"));
     for (int i=0; i<a->fields.size(); i++)
     {
         if (name->text() != a->fields[i]->name)

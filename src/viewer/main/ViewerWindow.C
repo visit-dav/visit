@@ -1247,6 +1247,9 @@ ViewerWindow::ClearViewKeyframes()
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //
+//    Brad Whitlock, Wed Apr 30 09:32:47 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1254,8 +1257,8 @@ ViewerWindow::DeleteViewKeyframe(const int index)
 {
     if(!GetPlotList()->GetKeyframeMode())
     {
-        Error("VisIt does not allow view keyframes to be deleted when the "
-              "active window is not in keyframe mode.");
+        Error(tr("VisIt does not allow view keyframes to be deleted when the "
+                 "active window is not in keyframe mode."));
     }
     else
     {
@@ -1319,6 +1322,9 @@ ViewerWindow::DeleteViewKeyframe(const int index)
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //
+//    Brad Whitlock, Wed Apr 30 09:32:47 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1326,8 +1332,8 @@ ViewerWindow::MoveViewKeyframe(int oldIndex, int newIndex)
 {
     if(!GetPlotList()->GetKeyframeMode())
     {
-        Error("VisIt does not allow view keyframes to be moved when the "
-              "active window is not in keyframe mode.");
+        Error(tr("VisIt does not allow view keyframes to be moved when the "
+                 "active window is not in keyframe mode."));
     }
     else
     {
@@ -1402,6 +1408,9 @@ ViewerWindow::MoveViewKeyframe(int oldIndex, int newIndex)
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //
+//    Brad Whitlock, Wed Apr 30 09:32:47 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1409,8 +1418,8 @@ ViewerWindow::SetViewKeyframe()
 {
     if(!GetPlotList()->GetKeyframeMode())
     {
-        Error("VisIt does not allow view keyframes to be added when the "
-              "active window is not in keyframe mode.");
+        Error(tr("VisIt does not allow view keyframes to be added when the "
+                 "active window is not in keyframe mode."));
     }
     else
     {
@@ -3473,6 +3482,9 @@ ViewerWindow::CopyAnnotationObjectList(const ViewerWindow *source,
 //   Brad Whitlock, Tue Mar 20 10:01:35 PDT 2007
 //   Name the new object.
 //
+//   Brad Whitlock, Wed Apr 30 09:32:47 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 bool
@@ -3484,7 +3496,7 @@ ViewerWindow::AddAnnotationObject(int annotType, const std::string &annotName)
         SendUpdateFrameMessage();
     else
     {
-        Warning("The annotation object could not be added.");
+        Warning(tr("The annotation object could not be added."));
     }
 
     return ret;
@@ -4057,6 +4069,9 @@ ViewerWindow::GetScaleFactorAndType(double &s, int &t)
 //    Record when log of the domain/range coords has been done.
 //    Ensure we aren't attempting log scaling when plots don't support it.
 //
+//    Brad Whitlock, Wed Apr 30 09:32:47 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -4116,8 +4131,8 @@ ViewerWindow::RecenterViewCurve(const double *limits)
             viewCurve.rangeScale = LINEAR;
             viewCurve.havePerformedLogDomain = false;
             viewCurve.havePerformedLogRange = false;
-            Warning("There are plots in the window that do not\n"
-                    "support log-scaling.  It will not be done.");
+            Warning(tr("There are plots in the window that do not\n"
+                       "support log-scaling.  It will not be done."));
         }
     }
 
@@ -4163,6 +4178,9 @@ ViewerWindow::RecenterViewCurve(const double *limits)
 //
 //    Kathleen Bonnell, Wed May  9 17:33:41 PDT 2007 
 //    Support log scaling.
+//
+//    Brad Whitlock, Wed Apr 30 09:32:47 PDT 2008
+//    Support for internationalization.
 //
 // ****************************************************************************
 
@@ -4225,8 +4243,8 @@ ViewerWindow::RecenterView2d(const double *limits)
             view2D.yScale = LINEAR;
             view2D.havePerformedLogX = false;
             view2D.havePerformedLogY = false;
-            Warning("There are plots in the window that do not\n"
-                    "support log-scaling.  It will not be done.");
+            Warning(tr("There are plots in the window that do not\n"
+                       "support log-scaling.  It will not be done."));
         }
     }
 
@@ -4481,6 +4499,9 @@ ViewerWindow::RecenterViewAxisArray(const double *limits)
 //    Record when log of the domain/range coords has been done.  Ensure
 //    we aren't attempting log scaling when plots don't support it.
 //
+//    Brad Whitlock, Wed Apr 30 09:32:47 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -4546,8 +4567,8 @@ ViewerWindow::ResetViewCurve()
             viewCurve.rangeScale = LINEAR;
             viewCurve.havePerformedLogDomain = false;
             viewCurve.havePerformedLogRange = false;
-            Warning("There are plots in the window that do not\n"
-                  "support log-scaling.  It will not be done.");
+            Warning(tr("There are plots in the window that do not\n"
+                       "support log-scaling.  It will not be done."));
  
         }
     }
@@ -4608,6 +4629,9 @@ ViewerWindow::ResetViewCurve()
 //
 //    Kathleen Bonnell, Fri May 11 09:20:06 PDT 2007 
 //    Added support for Log scaling.
+//
+//    Brad Whitlock, Wed Apr 30 09:32:47 PDT 2008
+//    Support for internationalization.
 //
 // ****************************************************************************
 
@@ -4674,8 +4698,8 @@ ViewerWindow::ResetView2d()
             view2D.yScale = LINEAR;
             view2D.havePerformedLogX = false;
             view2D.havePerformedLogY = false;
-            Warning("There are plots in the window that do not\n"
-                  "support log-scaling.  It will not be done.");
+            Warning(tr("There are plots in the window that do not\n"
+                       "support log-scaling.  It will not be done."));
         }
     }
     
@@ -5741,7 +5765,10 @@ ViewerWindow::SetCenterOfRotation(double x, double y, double z)
 //   Use direct visWindow->FindIntersection if !SR, pick is too complex for
 //   this simple operation.  If SR mode, call GetPickAttributesForScreenPoint,
 //   which will have the engine query it's viswin for the intersection. 
-//   
+//
+//   Brad Whitlock, Wed Apr 30 09:32:47 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -5777,8 +5804,8 @@ ViewerWindow::ChooseCenterOfRotation(double sx, double sy)
     }
     else
     {
-        Warning("VisIt could not pick the center of rotation. "
-                "You might not have clicked on a plot.");
+        Warning(tr("VisIt could not pick the center of rotation. "
+                   "You might not have clicked on a plot."));
     }
 }
 
@@ -6478,6 +6505,9 @@ ViewerWindow::Pick(int x, int y, const INTERACTION_MODE pickMode)
 //    Hank Childs, Tue Sep  4 15:03:48 PDT 2007
 //    Add better error handling.
 //
+//    Brad Whitlock, Wed Apr 30 09:37:27 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 bool
@@ -6516,14 +6546,13 @@ ViewerWindow::GetPickAttributesForScreenPoint(double sx, double sy,
     }
     CATCH2(VisItException, e)
     {
-        char msg[1024];
-        SNPRINTF(msg, 1024, "An error occurred while trying to take a pick."
+        QString msg = tr("An error occurred while trying to take a pick."
                  "\nThis happens most often when trying to do a choose center"
                  " while the engine times out or otherwise has problems."
-                 "\n\nThe type of exception was: %s"
-                 "\nThe error message was: %s",
-                 e.GetExceptionType().c_str(),
-                 e.Message().c_str());
+                 "\n\nThe type of exception was: %1"
+                 "\nThe error message was: %2").
+                 arg(e.GetExceptionType().c_str()).
+                 arg(e.Message().c_str());
         Error(msg);
     }
     ENDTRY
@@ -9309,7 +9338,7 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
             e.GetExceptionType().c_str(),
             e.Message().c_str());
 
-        Error(message);
+        Error(message, false);
 
         // finally, make sure we return a "blank" image
         dob = NULL;
@@ -9510,7 +9539,7 @@ ViewerWindow::ExternalRenderAuto(avtDataObject_p& dob, bool leftEye)
     // return nothing if the request failed
     if (!success)
     {
-        Warning("Unable to update view with new image from engine");
+        Warning(tr("Unable to update view with new image from engine"));
         GetPlotList()->SetErrorFlagAllPlots(true);
         GetPlotList()->ClearActors();
         GetPlotList()->UpdateFrame();

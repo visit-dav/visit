@@ -146,7 +146,7 @@ ViewerAction::Update()
 }
 
 void
-ViewerAction::SetAllText(const char *text)
+ViewerAction::SetAllText(const QString &text)
 {
     SetText(text);
     SetMenuText(text);
@@ -154,19 +154,19 @@ ViewerAction::SetAllText(const char *text)
 }
 
 void
-ViewerAction::SetText(const char *text)
+ViewerAction::SetText(const QString &text)
 {
     action->setText(text);
 }
 
 void
-ViewerAction::SetMenuText(const char *text)
+ViewerAction::SetMenuText(const QString &text)
 {
     action->setMenuText(text);
 }
 
 void
-ViewerAction::SetToolTip(const char *text)
+ViewerAction::SetToolTip(const QString &text)
 {
     action->setToolTip(text);
 }

@@ -41,6 +41,7 @@
 #include <MessageAttributes.h>
 
 #include <TimingsManager.h> // for DELTA_TOA_THIS_LINE
+#include <UnicodeHelper.h>
 
 #include <qapplication.h>
 #include <qlabel.h>
@@ -169,7 +170,7 @@ QvisMessageWindow::~QvisMessageWindow()
 //   warning message comes in. Incoming "Message" messages do not overwrite
 //   an Information message while the window is showing.
 //
-//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
+//   Brad Whitlock, Tue Apr 29 10:27:01 PDT 2008
 //   Support for internationalization.
 //
 // *************************************************************************************
@@ -209,7 +210,7 @@ QvisMessageWindow::Update(Subject *)
 
             // catenate new message onto old 
             msgText = messageText->text();
-            QString newMsgText = QString(ma->GetText().c_str());
+            QString newMsgText = MessageAttributes_GetText(*ma);
             if (msgText.find(newMsgText) == -1)
             {
                 msgText += "\n\n";
@@ -220,7 +221,7 @@ QvisMessageWindow::Update(Subject *)
         }
         else if(severity == MessageAttributes::Information)
         {
-            msgText = ma->GetText().c_str();
+            msgText = MessageAttributes_GetText(*ma);
             preserveInformation = false;
         }
         else if((severity == MessageAttributes::Error ||
@@ -228,13 +229,13 @@ QvisMessageWindow::Update(Subject *)
                  oldSeverity == MessageAttributes::Information)
         {
             // Incoming Error, Warnings may overwrite Information.
-            msgText = ma->GetText().c_str();
+            msgText = MessageAttributes_GetText(*ma);
             preserveInformation = false;
         }
     }
     else
     {
-        msgText = QString(ma->GetText().c_str());
+        msgText = MessageAttributes_GetText(*ma);
         
         // Don't preserve information if a new information message is
         // coming in. Also let error, warning override the existing

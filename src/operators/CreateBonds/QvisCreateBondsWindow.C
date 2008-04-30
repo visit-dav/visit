@@ -84,8 +84,8 @@ using std::string;
 
 QvisCreateBondsWindow::QvisCreateBondsWindow(const int type,
                          CreateBondsAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -121,10 +121,13 @@ QvisCreateBondsWindow::~QvisCreateBondsWindow()
 // Creation:   August 29, 2006
 //
 // Modifications:
-//    Jeremy Meredith, Mon Feb 11 16:52:06 EST 2008
-//    Support wildcards in matches.  This added a need for an up/down button
-//    (since order is now significant).
-//   
+//   Jeremy Meredith, Mon Feb 11 16:52:06 EST 2008
+//   Support wildcards in matches.  This added a need for an up/down button
+//   (since order is now significant).
+//
+//   Brad Whitlock, Fri Apr 25 09:21:43 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -132,7 +135,7 @@ QvisCreateBondsWindow::CreateWindowContents()
 {
     QGridLayout *mainLayout = new QGridLayout(topLayout, 3,2,  10, "mainLayout");
 
-    elementVariableLabel = new QLabel("Variable for atomic number", central, "elementVariableLabel");
+    elementVariableLabel = new QLabel(tr("Variable for atomic number"), central, "elementVariableLabel");
     mainLayout->addWidget(elementVariableLabel,0,0);
     int elementVariableMask = QvisVariableButton::Scalars;
     elementVariable = new QvisVariableButton(true, true, true, elementVariableMask, central, "elementVariable");
@@ -140,7 +143,7 @@ QvisCreateBondsWindow::CreateWindowContents()
             this, SLOT(elementVariableChanged(const QString&)));
     mainLayout->addWidget(elementVariable, 0,1);
 
-    maxBondsLabel = new QLabel("Maximum bonds per atom", central, "maxBondsLabel");
+    maxBondsLabel = new QLabel(tr("Maximum bonds per atom"), central, "maxBondsLabel");
     mainLayout->addWidget(maxBondsLabel,1,0);
     maxBonds = new QLineEdit(central, "maxBonds");
     mainLayout->addWidget(maxBonds,1,1);
@@ -149,15 +152,15 @@ QvisCreateBondsWindow::CreateWindowContents()
 
     // ------------------------------------------------------------------------
 
-    QGroupBox *bondsListGroup = new QGroupBox("Bonds", central);
+    QGroupBox *bondsListGroup = new QGroupBox(tr("Bonds"), central);
     mainLayout->addMultiCellWidget(bondsListGroup, 2,2, 0,1);
     mainLayout->setRowStretch(2, 1000);
 
     QVBoxLayout *listLayout = new QVBoxLayout(bondsListGroup, 10);
     listLayout->addSpacing(15);
 
-    QLabel *noteLabel = new QLabel("Note: first match is taken, so "
-                                   "order is significant",
+    QLabel *noteLabel = new QLabel(tr("Note: first match is taken, so "
+                                      "order is significant"),
                                    bondsListGroup);
     QFont ital(noteLabel->font());
     ital.setItalic(true);
@@ -166,10 +169,10 @@ QvisCreateBondsWindow::CreateWindowContents()
     listLayout->addWidget(noteLabel);
 
     bondsList = new QListView(bondsListGroup);
-    bondsList->addColumn("1st");
-    bondsList->addColumn("2nd");
-    bondsList->addColumn("Min");
-    bondsList->addColumn("Max");
+    bondsList->addColumn(tr("1st"));
+    bondsList->addColumn(tr("2nd"));
+    bondsList->addColumn(tr("Min"));
+    bondsList->addColumn(tr("Max"));
     bondsList->setColumnWidth(0, 50);
     bondsList->setColumnWidth(1, 50);
     bondsList->setResizeMode(QListView::AllColumns);
@@ -183,16 +186,16 @@ QvisCreateBondsWindow::CreateWindowContents()
     QHBoxLayout *listButtonLayout = new QHBoxLayout(listLayout);
     //listLayout->add
 
-    newButton = new QPushButton("New", bondsListGroup);
+    newButton = new QPushButton(tr("New"), bondsListGroup);
     listButtonLayout->addWidget(newButton);
 
-    delButton = new QPushButton("Del", bondsListGroup);
+    delButton = new QPushButton(tr("Del"), bondsListGroup);
     listButtonLayout->addWidget(delButton);
 
-    upButton = new QPushButton("Up", bondsListGroup);
+    upButton = new QPushButton(tr("Up"), bondsListGroup);
     listButtonLayout->addWidget(upButton);
 
-    downButton = new QPushButton("Down", bondsListGroup);
+    downButton = new QPushButton(tr("Down"), bondsListGroup);
     listButtonLayout->addWidget(downButton);
 
     connect(newButton, SIGNAL(pressed()),
@@ -205,7 +208,7 @@ QvisCreateBondsWindow::CreateWindowContents()
             this, SLOT(bondsListDown()));
 
 
-    QGroupBox *bondsDetailsGroup = new QGroupBox("Details", bondsListGroup);
+    QGroupBox *bondsDetailsGroup = new QGroupBox(tr("Details"), bondsListGroup);
     listLayout->addWidget(bondsDetailsGroup);
 
     QVBoxLayout *bondDetailsTopLayout = new QVBoxLayout(bondsDetailsGroup, 10);
@@ -214,17 +217,17 @@ QvisCreateBondsWindow::CreateWindowContents()
     QHBoxLayout *bondDetailsLayout = new QHBoxLayout(bondDetailsTopLayout);
     firstElement = new QvisElementButton(bondsDetailsGroup, "firstElement");
     secondElement = new QvisElementButton(bondsDetailsGroup, "secondElement");
-    bondDetailsLayout->addWidget(new QLabel("1st:", bondsDetailsGroup));
+    bondDetailsLayout->addWidget(new QLabel(tr("1st:"), bondsDetailsGroup));
     bondDetailsLayout->addWidget(firstElement);
-    bondDetailsLayout->addWidget(new QLabel("2nd:", bondsDetailsGroup));
+    bondDetailsLayout->addWidget(new QLabel(tr("2nd:"), bondsDetailsGroup));
     bondDetailsLayout->addWidget(secondElement);
 
     QHBoxLayout *bondDetailsLayout2 = new QHBoxLayout(bondDetailsTopLayout);
-    bondDetailsLayout2->addWidget(new QLabel("Min:", bondsDetailsGroup));
+    bondDetailsLayout2->addWidget(new QLabel(tr("Min:"), bondsDetailsGroup));
     minDist = new QLineEdit(bondsDetailsGroup);
     bondDetailsLayout2->addWidget(minDist);
     
-    bondDetailsLayout2->addWidget(new QLabel("Max:", bondsDetailsGroup));
+    bondDetailsLayout2->addWidget(new QLabel(tr("Max:"), bondsDetailsGroup));
     maxDist = new QLineEdit(bondsDetailsGroup);
     bondDetailsLayout2->addWidget(maxDist);
 
@@ -393,7 +396,7 @@ QvisCreateBondsWindow::GetCurrentValues(int which_widget)
         int newval = maxBonds->displayText().toInt();
         if (newval < 1 || newval > 100)
         {
-            Message("The value for maxBonds must be between 1 and 100.");
+            Message(tr("The value for maxBonds must be between 1 and 100."));
             atts->SetMaxBondsClamp(oldval);
         }
         else

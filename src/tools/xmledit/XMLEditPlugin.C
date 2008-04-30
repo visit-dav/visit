@@ -93,8 +93,8 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     int row = 0;
 
     attpluginGroup = new QButtonGroup();
-    QRadioButton *pluginButton = new QRadioButton("Plugin", this);
-    QRadioButton *attButton    = new QRadioButton("Attribute only", this);
+    QRadioButton *pluginButton = new QRadioButton(tr("Plugin"), this);
+    QRadioButton *attButton    = new QRadioButton(tr("Attribute only"), this);
     attpluginGroup->insert(pluginButton);
     attpluginGroup->insert(attButton);
     topLayout->addWidget(pluginButton, row, 0);
@@ -106,7 +106,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     //
     int pRow = 0;
     pluginGroup = new QGroupBox(this, "pluginGroup");
-    pluginGroup->setTitle("General Plugin attributes");
+    pluginGroup->setTitle(tr("General Plugin attributes"));
     topLayout->addMultiCellWidget(pluginGroup, row, row, 0, 4);
     ++row;
     QVBoxLayout *innerPluginLayout = new QVBoxLayout(pluginGroup);
@@ -117,31 +117,31 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
 
     pluginType = new QComboBox(pluginGroup);
     pluginType->insertItem("");
-    pluginType->insertItem("Plot");
-    pluginType->insertItem("Operator");
-    pluginType->insertItem("Database");
-    pluginLayout->addWidget(new QLabel("Plugin type", pluginGroup), pRow, 0);
+    pluginType->insertItem(tr("Plot"));
+    pluginType->insertItem(tr("Operator"));
+    pluginType->insertItem(tr("Database"));
+    pluginLayout->addWidget(new QLabel(tr("Plugin type"), pluginGroup), pRow, 0);
     pluginLayout->addWidget(pluginType, pRow, 1);
 
-    enabledByDefault = new QCheckBox("Plugin is enabled by default", pluginGroup);
+    enabledByDefault = new QCheckBox(tr("Plugin is enabled by default"), pluginGroup);
     enabledByDefault->setChecked(true);
     pluginLayout->addMultiCellWidget(enabledByDefault, pRow, pRow, 4, 5);
     pRow++;
 
     name = new QLineEdit(pluginGroup);
-    pluginLayout->addWidget(new QLabel("Name", pluginGroup), pRow, 0);
+    pluginLayout->addWidget(new QLabel(tr("Name"), pluginGroup), pRow, 0);
     pluginLayout->addWidget(name, pRow, 1);
 
     label = new QLineEdit(pluginGroup);
-    pluginLayout->addWidget(new QLabel("Label", pluginGroup), pRow, 2);
+    pluginLayout->addWidget(new QLabel(tr("Label"), pluginGroup), pRow, 2);
     pluginLayout->addWidget(label, pRow, 3);
 
     version = new QLineEdit(pluginGroup);
-    pluginLayout->addWidget(new QLabel("Version", pluginGroup), pRow, 4);
+    pluginLayout->addWidget(new QLabel(tr("Version"), pluginGroup), pRow, 4);
     pluginLayout->addWidget(version, pRow, 5);
     pRow++;
 
-    hasIcon = new QCheckBox("Has icon", pluginGroup);
+    hasIcon = new QCheckBox(tr("Has icon"), pluginGroup);
     hasIcon->setChecked(false);
     pluginLayout->addWidget(hasIcon, pRow, 0);
     iconFile = new QLineEdit(pluginGroup);
@@ -153,7 +153,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     // Plot plugin attributes
     //
     plotPluginGroup = new QGroupBox(this, "plotPluginGroup");
-    plotPluginGroup->setTitle("Plot Plugin attributes");
+    plotPluginGroup->setTitle(tr("Plot Plugin attributes"));
     topLayout->addMultiCellWidget(plotPluginGroup, row, row, 0, 4);
     ++row;
     QVBoxLayout *innerPlotPluginLayout = new QVBoxLayout(plotPluginGroup);
@@ -164,21 +164,21 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     int plRow = 0;
 
     plotPluginLayout->addMultiCellWidget(
-        new QLabel("Variable types accepted by the plot", plotPluginGroup),
+        new QLabel(tr("Variable types accepted by the plot"), plotPluginGroup),
         plRow,plRow, 0,5);
     ++plRow;
 
-    varTypeMesh            = new QCheckBox("Mesh", plotPluginGroup);
-    varTypeScalar          = new QCheckBox("Scalar", plotPluginGroup);
-    varTypeVector          = new QCheckBox("Vector", plotPluginGroup);
-    varTypeMaterial        = new QCheckBox("Material", plotPluginGroup);
-    varTypeSubset          = new QCheckBox("Subset", plotPluginGroup);
-    varTypeSpecies         = new QCheckBox("Species", plotPluginGroup);
-    varTypeCurve           = new QCheckBox("Curve", plotPluginGroup);
-    varTypeTensor          = new QCheckBox("Tensor", plotPluginGroup);
-    varTypeSymmetricTensor = new QCheckBox("Symmetric Tensor", plotPluginGroup);
-    varTypeLabel           = new QCheckBox("Label", plotPluginGroup);
-    varTypeArray           = new QCheckBox("Array", plotPluginGroup);
+    varTypeMesh            = new QCheckBox(tr("Mesh"), plotPluginGroup);
+    varTypeScalar          = new QCheckBox(tr("Scalar"), plotPluginGroup);
+    varTypeVector          = new QCheckBox(tr("Vector"), plotPluginGroup);
+    varTypeMaterial        = new QCheckBox(tr("Material"), plotPluginGroup);
+    varTypeSubset          = new QCheckBox(tr("Subset"), plotPluginGroup);
+    varTypeSpecies         = new QCheckBox(tr("Species"), plotPluginGroup);
+    varTypeCurve           = new QCheckBox(tr("Curve"), plotPluginGroup);
+    varTypeTensor          = new QCheckBox(tr("Tensor"), plotPluginGroup);
+    varTypeSymmetricTensor = new QCheckBox(tr("Symmetric Tensor"), plotPluginGroup);
+    varTypeLabel           = new QCheckBox(tr("Label"), plotPluginGroup);
+    varTypeArray           = new QCheckBox(tr("Array"), plotPluginGroup);
 
     plotPluginLayout->addWidget(varTypeMesh, plRow, 0);
     plotPluginLayout->addWidget(varTypeScalar, plRow, 1);
@@ -200,7 +200,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     // Database plugin attributes
     //
     dbPluginGroup = new QGroupBox(this, "dbPluginGroup");
-    dbPluginGroup->setTitle("Database Plugin attributes");
+    dbPluginGroup->setTitle(tr("Database Plugin attributes"));
     topLayout->addMultiCellWidget(dbPluginGroup, row, row, 0, 4);
     ++row;
     QVBoxLayout *innerdbPluginLayout = new QVBoxLayout(dbPluginGroup);
@@ -212,36 +212,36 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
 
     dbType = new QComboBox(dbPluginGroup);
     dbType->insertItem("");
-    dbType->insertItem("STSD - Generic single time single domain");
-    dbType->insertItem("MTSD - Generic multi  time single domain");
-    dbType->insertItem("STMD - Generic single time multi  domain");
-    dbType->insertItem("MTMD - Generic multi  time multi  domain");
-    dbType->insertItem("Custom - Fully customized database type");
+    dbType->insertItem(tr("STSD - Generic single time single domain"));
+    dbType->insertItem(tr("MTSD - Generic multi  time single domain"));
+    dbType->insertItem(tr("STMD - Generic single time multi  domain"));
+    dbType->insertItem(tr("MTMD - Generic multi  time multi  domain"));
+    dbType->insertItem(tr("Custom - Fully customized database type"));
     dbPluginLayout->addWidget(new QLabel("Database type", dbPluginGroup), dbRow, 0);
     dbPluginLayout->addWidget(dbType, dbRow, 1);
     dbRow++;
 
-    dbPluginLayout->addWidget(new QLabel("Extensions", dbPluginGroup), dbRow, 0);
+    dbPluginLayout->addWidget(new QLabel(tr("Extensions"), dbPluginGroup), dbRow, 0);
     extensions = new QLineEdit(dbPluginGroup);
     dbPluginLayout->addWidget(extensions, dbRow, 1);
     dbRow++;
 
-    hasWriter = new QCheckBox("File format can also write data", dbPluginGroup);
+    hasWriter = new QCheckBox(tr("File format can also write data"), dbPluginGroup);
     hasWriter->setChecked(false);
     dbPluginLayout->addMultiCellWidget(hasWriter, dbRow,dbRow, 0,1);
     dbRow++;
 
-    hasOptions = new QCheckBox("File format provides options for reading or writing data.", dbPluginGroup);
+    hasOptions = new QCheckBox(tr("File format provides options for reading or writing data."), dbPluginGroup);
     hasOptions->setChecked(false);
     dbPluginLayout->addMultiCellWidget(hasOptions, dbRow,dbRow, 0,1);
     dbRow++;
 
-    specifiedFilenames = new QCheckBox("Format uses explicit filenames", dbPluginGroup);
+    specifiedFilenames = new QCheckBox(tr("Format uses explicit filenames"), dbPluginGroup);
     specifiedFilenames->setChecked(false);
     dbPluginLayout->addMultiCellWidget(specifiedFilenames, dbRow,dbRow, 0,1);
     dbRow++;
 
-    dbPluginLayout->addWidget(new QLabel("Filenames", dbPluginGroup), dbRow, 0);
+    dbPluginLayout->addWidget(new QLabel(tr("Filenames"), dbPluginGroup), dbRow, 0);
     filenames = new QLineEdit(dbPluginGroup);
     dbPluginLayout->addWidget(filenames, dbRow,1);
     dbRow++;

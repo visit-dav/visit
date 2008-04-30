@@ -1658,8 +1658,7 @@ QvisRenderingWindow::GetCurrentValues()
             const double *d = renderAtts->GetStartCuePoint();
             QString pt; pt.sprintf("<%g %g %g>", d[0], d[1], d[2]);
             msg = tr("The start point was invalid. "
-                     "Resetting to the last good value %1.");
-            msg.replace("%1", pt);
+                     "Resetting to the last good value %1.").arg(pt);
             Message(msg);
             renderAtts->SetStartCuePoint(d);
         }
@@ -1681,8 +1680,7 @@ QvisRenderingWindow::GetCurrentValues()
             const double *d = renderAtts->GetEndCuePoint();
             QString pt; pt.sprintf("<%g %g %g>", d[0], d[1], d[2]);
             msg = tr("The end point was invalid. "
-                     "Resetting to the last good value %1.");
-            msg.replace("%1", pt);
+                     "Resetting to the last good value %1.").arg(pt);
             Message(msg);
             renderAtts->SetEndCuePoint(d);
         }

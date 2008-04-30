@@ -71,6 +71,12 @@
       </Function>
       <Function name="Print" user="true" member="true">
       </Function>
+      <Function name="CurveViewerPluginInfo::InitializeGlobalObjects" user="false" member="true">
+      </Function>
+      <Function name="CurveViewerPluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="CurveViewerPluginInfo::SetColor" user="true" member="true" access="private">
+      </Function>
       <Include file="source" quoted="false">
         Line.h
       </Include>

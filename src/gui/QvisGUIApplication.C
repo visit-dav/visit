@@ -3649,6 +3649,9 @@ QvisGUIApplication::LoadPlugins()
 //   Brad Whitlock, Tue Apr 25 16:41:59 PST 2006
 //   I added support for operators influencing the variable menu contents.
 //
+//   Brad Whitlock, Fri Apr 25 10:42:46 PDT 2008
+//   Support for internationalization of plot and operator names.
+//
 // ****************************************************************************
 
 void
@@ -3677,9 +3680,11 @@ QvisGUIApplication::CreatePluginWindows()
         */
 
         // Add an option to the main window's plot manager widget's plot list.
-        mainWin->GetPlotManager()->AddPlotType(GUIInfo->GetMenuName(),
+        QString *menuName = GUIInfo->GetMenuName();
+        mainWin->GetPlotManager()->AddPlotType(*menuName,
                                                GUIInfo->GetVariableTypes(),
                                                GUIInfo->XPMIconData());
+        delete menuName;
     }
 
     // Get a pointer to the operator plugin manager.
@@ -3698,9 +3703,11 @@ QvisGUIApplication::CreatePluginWindows()
 
         // Add an option to the main window's operator manager widget's
         // operator list.
-        mainWin->GetPlotManager()->AddOperatorType(GUIInfo->GetMenuName(),
+        QString *menuName = GUIInfo->GetMenuName();
+        mainWin->GetPlotManager()->AddOperatorType(*menuName,
             GUIInfo->GetVariableTypes(), GUIInfo->GetVariableMask(),
             GUIInfo->GetUserSelectable(), GUIInfo->XPMIconData());
+        delete menuName;
     }
 }
 
@@ -3718,7 +3725,9 @@ QvisGUIApplication::CreatePluginWindows()
 // Creation:   Thu May 6 14:57:52 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 25 10:35:45 PDT 2008
+//   Pass caption and shortName into the plugin window creation method.
+//
 // ****************************************************************************
 
 void
@@ -3732,10 +3741,18 @@ QvisGUIApplication::EnsurePlotWindowIsCreated(int i)
         // Get a pointer to the GUI portion of the plot plugin information.
         GUIPlotPluginInfo *GUIInfo = plotPluginManager->GetGUIPluginInfo(
             plotPluginManager->GetEnabledID(i));
-   
+
+        // Get the menu name
+        QString *menuName = GUIInfo->GetMenuName();
+        QString caption(tr("%1 plot attributes").arg(*menuName));
+        QString shortName(tr("%1 plot").arg(*menuName));
+
         // Create the plot plugin window.
         plotWindows[i] = GUIInfo->CreatePluginWindow(i,
-            GetViewerState()->GetPlotAttributes(i), mainWin->GetNotepad());
+            GetViewerState()->GetPlotAttributes(i), 
+            caption, shortName, mainWin->GetNotepad());
+
+        delete menuName;
     }
 }
 
@@ -3753,6 +3770,8 @@ QvisGUIApplication::EnsurePlotWindowIsCreated(int i)
 // Creation:   Thu May 6 14:57:52 PST 2004
 //
 // Modifications:
+//   Brad Whitlock, Fri Apr 25 10:35:45 PDT 2008
+//   Pass caption and shortName into the plugin window creation method.
 //   
 // ****************************************************************************
 
@@ -3768,9 +3787,15 @@ QvisGUIApplication::EnsureOperatorWindowIsCreated(int i)
         GUIOperatorPluginInfo *GUIInfo = operatorPluginManager->GetGUIPluginInfo(
             operatorPluginManager->GetEnabledID(i));
 
+        // Get the menu name
+        QString *menuName = GUIInfo->GetMenuName();
+        QString caption(tr("%1 operator attributes").arg(*menuName));
+        QString shortName(tr("%1 operator").arg(*menuName));
+
         // Create the operator plugin window.
         operatorWindows[i] = GUIInfo->CreatePluginWindow(i,
-            GetViewerState()->GetOperatorAttributes(i), mainWin->GetNotepad());
+            GetViewerState()->GetOperatorAttributes(i), 
+            caption, shortName, mainWin->GetNotepad());
     }
 }
 
@@ -4365,13 +4390,12 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
             }
             else
             {
-                QString warn(tr("VisIt was able to read the session file, %1, "
+                QString warn = tr("VisIt was able to read the session file, %1, "
                     "but the session file might be from before VisIt 1.5.5. "
                     "Consequently, VisIt will open the session file in "
                     "the normal manner. If you want to restore this session "
                     "using different sources then you should first resave your "
-                    "session with a newer version of VisIt."));
-                warn.replace("%1", s);
+                    "session with a newer version of VisIt.").arg(s);
                 Warning(warn);
                 stringVector noSources;
                 RestoreSessionFile(s, noSources);
@@ -4821,6 +4845,10 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
 //   I added code to create plugin windows that don't exist at the time we
 //   are reading the config file.
 //
+//   Brad Whitlock, Fri Apr 25 10:18:37 PDT 2008
+//   Use the GetName method instead of GetMenuName for the key that we use
+//   to read plugin settings.
+//
 // ****************************************************************************
 
 void
@@ -4839,7 +4867,7 @@ QvisGUIApplication::ReadPluginWindowConfigs(DataNode *parentNode,
         GUIPlotPluginInfo *GUIInfo = plotPluginManager->GetGUIPluginInfo(
             plotPluginManager->GetEnabledID(i));
 
-        std::string key(GUIInfo->GetMenuName());
+        std::string key(GUIInfo->GetName());
         key += " plot attributes";
 
         if(plotWindows[i] != 0 &&
@@ -4870,7 +4898,7 @@ QvisGUIApplication::ReadPluginWindowConfigs(DataNode *parentNode,
         GUIOperatorPluginInfo *GUIInfo = operatorPluginManager->GetGUIPluginInfo(
                                        operatorPluginManager->GetEnabledID(i));
 
-        std::string key(GUIInfo->GetMenuName());
+        std::string key(GUIInfo->GetName());
         key += " operator attributes";
 
         if(operatorWindows[i] != 0 &&
@@ -5108,9 +5136,9 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
                 // with a warning message.
                 if(localOnly && (oldHost != fileServer->GetHost()))
                 {
-                    QString msg(tr("Preventing the metadata server from being "
-                                   "launched on %1."));
-                    msg.replace("%1", fileServer->GetHost().c_str());
+                    QString msg = tr("Preventing the metadata server from being "
+                                     "launched on %1.").
+                                  arg(fileServer->GetHost().c_str());
                     Warning(msg);
                     fileServer->SetHost(oldHost);
                     fileServer->SetPath(oldPath);
@@ -5139,8 +5167,8 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
     }
     CATCH2(BadHostException, bhe)
     {
-        QString msg = tr("Hostname \"%1\" is not a recognized host.");
-        msg.replace("%1", bhe.GetHostName().c_str());
+        QString msg = tr("Hostname \"%1\" is not a recognized host.").
+                      arg(bhe.GetHostName().c_str());
         Error(msg);
 
         TRY
@@ -5161,14 +5189,14 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
         CATCH(CouldNotConnectException)
         {
             msg = tr("VisIt could not set the host back to \"%1\" because "
-                     "no metadata server could be launched on that host.");
-            msg.replace("%1", oldHost.c_str());
+                     "no metadata server could be launched on that host.").
+                  arg(oldHost.c_str());
             Error(msg);
         }
         CATCH(VisItException)
         {
-            msg = tr("VisIt could not set the host back to \"%1\".");
-            msg.replace("%1", oldHost.c_str());
+            msg = tr("VisIt could not set the host back to \"%1\".").
+                  arg(oldHost.c_str());
             Error(msg);
         }
         ENDTRY
@@ -5176,10 +5204,10 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
     CATCH2(ChangeDirectoryException, cde)
     {
         // Create a message and tell the user.
-        QString msgStr(tr("The metadata server running on %1 "
-            "could not change the current directory to %2."));
-        msgStr.replace("%1", fileServer->GetHost().c_str());
-        msgStr.replace("%2", cde.GetDirectory().c_str());
+        QString msgStr = tr("The metadata server running on %1 "
+                            "could not change the current directory to %2.").
+                         arg(fileServer->GetHost().c_str()).
+                         arg(cde.GetDirectory().c_str());
         Error(msgStr);
 
         // Now set the path to the user's home directory and get the file
@@ -5195,23 +5223,23 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
     CATCH(GetFileListException)
     {
         // Create a message and tell the user.
-        QString msgStr(tr("The metadata server running on %1 could not "
-             "get the file list for the current directory."));
-        msgStr.replace("%1", fileServer->GetHost().c_str());
+        QString msgStr = tr("The metadata server running on %1 could not "
+                            "get the file list for the current directory.").
+                         arg(fileServer->GetHost().c_str());
         Error(msgStr);
     }
     CATCH(CouldNotConnectException)
     {
-        QString msgStr(tr("VisIt could not launch a metadata server on "
-                          "host \"%1\"."));
-        msgStr.replace("%1", fileServer->GetHost().c_str());
+        QString msgStr = tr("VisIt could not launch a metadata server on "
+                            "host \"%1\".").
+                         arg(fileServer->GetHost().c_str());
         Error(msgStr);
     }
     CATCH(CancelledConnectException)
     {
-        QString msgStr(tr("The launch of a metadata server on "
-                          "host \"%1\" was cancelled."));
-        msgStr.replace("%1", fileServer->GetHost().c_str());
+        QString msgStr = tr("The launch of a metadata server on "
+                            "host \"%1\" was cancelled.").
+                         arg(fileServer->GetHost().c_str());
         Error(msgStr);
     }
     ENDTRY
@@ -5576,8 +5604,8 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
         }
         CATCH2(BadHostException, bhe)
         {
-            QString msg(tr("Hostname \"%1\" is not a recognized host."));
-            msg.replace("%1", bhe.GetHostName().c_str());
+            QString msg = tr("Hostname \"%1\" is not a recognized host.").
+                          arg(bhe.GetHostName().c_str());
             Error(msg);
 
             // Set the file server host, etc. back to the previous values.
@@ -5596,10 +5624,10 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
         CATCH2(ChangeDirectoryException, cde)
         {
             // Create a message and tell the user.
-            QString msgStr(tr("The metadata server running on %1 "
-                "could not change the current directory to %2."));
-            msgStr.replace("%1", fileServer->GetHost().c_str());
-            msgStr.replace("%2", cde.GetDirectory().c_str());
+            QString msgStr = tr("The metadata server running on %1 "
+                                "could not change the current directory to %2.").
+                             arg(fileServer->GetHost().c_str()).
+                             arg(cde.GetDirectory().c_str());
             Error(msgStr);
 
             // Now set the path to the user's home directory and get the file
@@ -5617,17 +5645,17 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
         CATCH(GetFileListException)
         {
             // Create a message and tell the user.
-            QString msgStr(tr("The metadata server running on %1 could not "
-                "get the file list for the current directory."));
-            msgStr.replace("%1", fileServer->GetHost().c_str());
+            QString msgStr = tr("The metadata server running on %1 could not "
+                                "get the file list for the current directory.").
+                             arg(fileServer->GetHost().c_str());
             Error(msgStr);
         }
         CATCH(CouldNotConnectException)
         {
-            QString msgStr(tr("VisIt could not open %1 because it could not "
-                              "launch a metadata server on host \"%1\"."));
-            msgStr.replace("%1", f.FullName().c_str());
-            msgStr.replace("%2", fileServer->GetHost().c_str());
+            QString msgStr = tr("VisIt could not open %1 because it could not "
+                                "launch a metadata server on host \"%1\".").
+                             arg(f.FullName().c_str()).
+                             arg(fileServer->GetHost().c_str());
             Error(msgStr);
         }
         CATCH(CancelledConnectException)
@@ -6956,9 +6984,9 @@ QvisGUIApplication::HandleClientMethod()
         }
         else if(okay == 1)
         {
-            QString s(tr("Client method %1 is supported by the GUI but not "
-                         "enough information was passed in the method request."));
-            s.replace("%1", method->GetMethodName().c_str());
+            QString s = tr("Client method %1 is supported by the GUI but not "
+                           "enough information was passed in the method request.").
+                        arg(method->GetMethodName().c_str());
             Warning(s);
         }
         else
@@ -7732,8 +7760,7 @@ QvisGUIApplication::SaveMovieMain()
                 if(!movieMaker->start())
                 {
                     errFlag = true;
-                    QString noRun(tr("VisIt could not run %1."));
-                    noRun.replace("%1", program);
+                    QString noRun(tr("VisIt could not run %1.").arg(program));
                     Error(noRun);
                 }
             }

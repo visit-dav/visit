@@ -67,6 +67,10 @@ ViewerChangeUsernameWindow *ViewerChangeUsernameWindow::instance = NULL;
 //  Programmer:  Hank Childs
 //  Creation:    November 11, 2007
 //
+//  Modifications:
+//    Brad Whitlock, Tue Apr 29 11:58:00 PDT 2008
+//    Added tr()'s
+//
 // ****************************************************************************
 
 ViewerChangeUsernameWindow::ViewerChangeUsernameWindow(QWidget *parent, const char *name)
@@ -77,7 +81,7 @@ ViewerChangeUsernameWindow::ViewerChangeUsernameWindow(QWidget *parent, const ch
 
     QHBoxLayout *l2 = new QHBoxLayout(layout);
     l2->setSpacing(5);
-    label = new QLabel("Username for localhost: ", this);
+    label = new QLabel(tr("Username for localhost: "), this);
     l2->addWidget(label);
 
     usernameedit = new QLineEdit(this);
@@ -86,12 +90,12 @@ ViewerChangeUsernameWindow::ViewerChangeUsernameWindow(QWidget *parent, const ch
     layout->addSpacing(20);
 
     QHBoxLayout *l3 = new QHBoxLayout(layout);
-    QPushButton *okay = new QPushButton("Confirm username", this, "OK");
+    QPushButton *okay = new QPushButton(tr("Confirm username"), this, "OK");
     connect(okay, SIGNAL(clicked()), this, SLOT(accept()));
     l3->addWidget(okay);
     l3->addStretch(10);
 
-    QPushButton *cancel = new QPushButton("Cancel", this, "Cancel");
+    QPushButton *cancel = new QPushButton(tr("Cancel"), this, "Cancel");
     connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
     l3->addWidget(cancel);
 }
@@ -147,6 +151,10 @@ ViewerChangeUsernameWindow::getUsername()
 // Programmer: Hank Childs
 // Creation:   November 11, 2007
 //
+// Modifications:
+//   Brad Whitlock, Tue Apr 29 11:58:35 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 bool
@@ -157,11 +165,10 @@ ViewerChangeUsernameWindow::changeUsername(const char *host)
     if(!instance)
         instance = new ViewerChangeUsernameWindow();
 
-    instance->setCaption("Choose new username");
+    instance->setCaption(tr("Choose new username"));
 
     // Set the username prompt.
-    QString labelText;
-    labelText.sprintf("New username for %s: ", host);
+    QString labelText(tr("New username for %1: ").arg(host));
     instance->label->setText(labelText);
 
     // Make the username window be the active window.

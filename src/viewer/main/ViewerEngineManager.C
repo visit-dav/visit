@@ -576,6 +576,9 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 //    For new engines, make sure they get our current default file opening
 //    options.
 //
+//    Brad Whitlock, Tue Apr 29 13:20:06 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 bool
@@ -641,9 +644,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     //
     // Send a status message.
     //
-    char msg[250];
-    SNPRINTF(msg, 250, "Launching engine on %s", ek.HostName().c_str());
-    Status(msg);
+    Status(tr("Launching engine on %1").arg(ek.HostName().c_str()));
 
     //
     // Add the new engine proxy to the engine list.
@@ -711,9 +712,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine could not be launched.
-        SNPRINTF(msg, 250, "VisIt could not launch a compute engine on host "
-                "\"%s\" because that host does not exist.",
-                e.GetHostName().c_str());
+        QString msg = tr("VisIt could not launch a compute engine on host "
+                         "\"%1\" because that host does not exist.").
+                      arg(e.GetHostName().c_str());
         Error(msg);
     }
     CATCH(IncompatibleVersionException)
@@ -724,9 +725,10 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine is a different version.
-        SNPRINTF(msg, 250, "VisIt cannot use the compute engine on "
-                 "host \"%s\" because the engine has an incompatible "
-                 " version number.", ek.HostName().c_str());
+        QString msg = tr("VisIt cannot use the compute engine on "
+                         "host \"%1\" because the engine has an incompatible "
+                         " version number.").
+                      arg(ek.HostName().c_str());
         Error(msg);
     }
     CATCH(IncompatibleSecurityTokenException)
@@ -737,9 +739,10 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine is a different version.
-        SNPRINTF(msg, 250, "VisIt cannot use the compute engine on host \"%s\""
-                 "because the compute engine did not provide the proper "
-                 "credentials.", ek.HostName().c_str());
+        QString msg = tr("VisIt cannot use the compute engine on host \"%1\""
+                         "because the compute engine did not provide the proper "
+                         "credentials.").
+                      arg(ek.HostName().c_str());
         Error(msg);
     }
     CATCH(CouldNotConnectException)
@@ -749,8 +752,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine was not launched
-        SNPRINTF(msg, 250, "VisIt could not launch the compute engine on "
-                "host \"%s\".", ek.HostName().c_str());
+        QString msg = tr("VisIt could not launch the compute engine on "
+                         "host \"%1\".").
+                      arg(ek.HostName().c_str());
         Error(msg);
     }
     CATCH(CancelledConnectException)
@@ -760,8 +764,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine was not launched
-        SNPRINTF(msg, 250, "The launch of the compute engine on "
-                "host \"%s\" has been cancelled.", ek.HostName().c_str());
+        QString msg = tr("The launch of the compute engine on "
+                         "host \"%1\" has been cancelled.").
+                      arg(ek.HostName().c_str());
         Error(msg);
     }
     ENDTRY
@@ -807,6 +812,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 //    Jeremy Meredith, Thu May 24 10:33:27 EDT 2007
 //    Added SSH tunneling option to EngineProxy::Create, and set it to false.
 //
+//    Brad Whitlock, Tue Apr 29 13:23:21 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 bool
@@ -845,8 +853,8 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
     //
     // Send a status message.
     //
-    char msg[250];
-    SNPRINTF(msg, 250, "Connecting to simulation at %s:%d", simHost.c_str(), simPort);
+    QString msg = tr("Connecting to simulation at %1:%2").
+                  arg(simHost.c_str()).arg(simPort);
     Status(msg);
 
     //
@@ -905,9 +913,9 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine could not be launched.
-        SNPRINTF(msg, 250, "VisIt could not connect to the simulation on host "
-                 "\"%s\" because that host does not exist.",
-                 e.GetHostName().c_str());
+        msg = tr("VisIt could not connect to the simulation on host "
+                 "\"%1\" because that host does not exist.").
+              arg(e.GetHostName().c_str());
         Error(msg);
     }
     CATCH(IncompatibleVersionException)
@@ -918,9 +926,10 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine is a different version.
-        SNPRINTF(msg, 250, "VisIt cannot use the simulation on "
-                 "host \"%s\" because the simulation has an incompatible "
-                 " version number.", ek.HostName().c_str());
+        msg = tr("VisIt cannot use the simulation on "
+                 "host \"%1\" because the simulation has an incompatible "
+                 " version number.").
+              arg(ek.HostName().c_str());
         Error(msg);
     }
     CATCH(IncompatibleSecurityTokenException)
@@ -931,9 +940,10 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine is a different version.
-        SNPRINTF(msg, 250, "VisIt cannot use the simulation on host \"%s\""
+        msg = tr("VisIt cannot use the simulation on host \"%1\""
                  "because the simulation did not provide the proper "
-                 "credentials.", ek.HostName().c_str());
+                 "credentials.").
+              arg(ek.HostName().c_str());
         Error(msg);
     }
     CATCH(CouldNotConnectException)
@@ -943,8 +953,8 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine was not launched
-        SNPRINTF(msg, 250, "VisIt could not connect to the simulation on "
-                 "host \"%s\".", ek.HostName().c_str());
+        msg = tr("VisIt could not connect to the simulation on "
+                 "host \"%1\".").arg(ek.HostName().c_str());
         Error(msg);
     }
     CATCH(CancelledConnectException)
@@ -954,8 +964,9 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine was not launched
-        SNPRINTF(msg, 250, "The connection to the simulation on "
-                 "host \"%s\" has been cancelled.", ek.HostName().c_str());
+        msg = tr("The connection to the simulation on "
+                 "host \"%1\" has been cancelled.").
+              arg(ek.HostName().c_str());
         Error(msg);
     }
     ENDTRY
@@ -1062,6 +1073,9 @@ ViewerEngineManager::CloseEngines()
 //   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //   Use a map of engines based on a key, and be aware of simulations.
 //
+//   Brad Whitlock, Tue Apr 29 14:39:47 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1071,7 +1085,7 @@ ViewerEngineManager::CloseEngine(const EngineKey &ek)
     // the options the next time we launch an engine
     ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
-    char message[200];
+    QString msg;
 
     // We found an engine.
     if (EngineExists(ek))
@@ -1079,16 +1093,17 @@ ViewerEngineManager::CloseEngine(const EngineKey &ek)
         RemoveEngine(ek, true);
         UpdateEngineList();
 
-        SNPRINTF(message, 200, "Closed the compute engine on host %s.",
-                 ek.HostName().c_str());
-        Message(message);
+        msg = tr("Closed the compute engine on host %1.").
+              arg(ek.HostName().c_str());
+        Message(msg);
     }
     else
     {
-        SNPRINTF(message, 200, "Cannot close the compute engine on "
-                 "host %s because there is no compute engine running on "
-                 "that host.", ek.HostName().c_str());
-        Error(message);
+        msg = tr("Cannot close the compute engine on "
+                 "host %1 because there is no compute engine running on "
+                 "that host.").
+              arg(ek.HostName().c_str());
+        Error(msg);
     }
 }
 
@@ -1126,26 +1141,29 @@ ViewerEngineManager::CloseEngine(const EngineKey &ek)
 //   Brad Whitlock, Wed Aug 4 17:21:59 PST 2004
 //   Changed EngineMap.
 //
+//   Brad Whitlock, Tue Apr 29 14:41:03 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
 ViewerEngineManager::InterruptEngine(const EngineKey &ek)
 {
-    char message[200];
+    QString message;
 
     // We found an engine.
     if (EngineExists(ek))
     {
         engines[ek].proxy->Interrupt();
-        SNPRINTF(message, 200, "Interrupting the compute engine on host %s.",
-                 ek.HostName().c_str());
+        message = tr("Interrupting the compute engine on host %1.").
+                  arg(ek.HostName().c_str());
         Message(message);
     }
     else
     {
-        SNPRINTF(message, 200, "Cannot interrupt the compute engine on host %s "
-                 "because there is no compute engine running on that host.",
-                 ek.HostName().c_str());
+        message = tr("Cannot interrupt the compute engine on host %1 "
+                     "because there is no compute engine running on that host.").
+                  arg(ek.HostName().c_str());
         Error(message);
     }
 }
@@ -1334,22 +1352,27 @@ ViewerEngineManager::GetEngine(const EngineKey &ek)
 //   connected instead of informing the user that we were about to restart
 //   an engine for that host.
 //
+//   Brad Whitlock, Tue Apr 29 14:42:28 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
 ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 {
-    char message[200] = { '\0' };
+    QString message;
     if (ek.IsSimulation())
     {
-        SNPRINTF(message, 200, "VisIt is not connected to the simulation '%s' "
-                 "on host %s", ek.SimName().c_str(), ek.HostName().c_str());
+        message = tr("VisIt is not connected to the simulation '%1' "
+                     "on host %2").
+                 arg(ek.SimName().c_str()).arg(ek.HostName().c_str());
     }
     else if (ek.HostName() != "<unset>")
     {
-        SNPRINTF(message, 200, "VisIt could not find a compute engine to use "
-                 "for the plot on host %s. VisIt will try to launch a compute "
-                 "engine on that host.", ek.HostName().c_str());
+        message = tr("VisIt could not find a compute engine to use "
+                     "for the plot on host %1. VisIt will try to launch a compute "
+                     "engine on that host.").
+                  arg(ek.HostName().c_str());
     }
         
     if (strlen(message) > 0)
@@ -2544,23 +2567,27 @@ ViewerEngineManager::RemoveEngine(const EngineKey &ek, bool close)
 //   I made it tell all plots that use the failed engine key to reset
 //   their network ids.
 //
+//   Brad Whitlock, Tue Apr 29 14:44:53 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
 ViewerEngineManager::RemoveFailedEngine(const EngineKey &ek)
 {
     // Tell the GUI about the error.
-    char message[200];
+    QString message;
     if (ek.SimName() != "")
     {
-        SNPRINTF(message, 200, "VisIt has been disconnected from the "
-                 "simulation '%s' on host %s",
-                 ek.SimName().c_str(), ek.HostName().c_str());
+        message = tr("VisIt has been disconnected from the "
+                     "simulation '%1' on host %2").
+                  arg(ek.SimName().c_str()).arg(ek.HostName().c_str());
     }
     else
     {
-        SNPRINTF(message, 200, "The compute engine running on %s has exited "
-                 "abnormally.", ek.HostName().c_str());
+        message = tr("The compute engine running on %1 has exited "
+                     "abnormally.").
+                  arg(ek.HostName().c_str());
     }
     Error(message);
 
@@ -2682,6 +2709,9 @@ ViewerEngineManager::UpdateEngineList()
 //    opcode coming from the clients and we don't need to check for it here
 //    anymore since we always listen to the clients now.
 //
+//    Brad Whitlock, Tue Apr 29 14:47:05 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -2722,12 +2752,11 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
         // The message field was selected.
         if (EngineExists(ek))
         {
-            string tmp1("The compute engine running on host ");
-            string tmp2(ek.HostName());
-            string tmp3(" issued the following warning: ");
-            string tmp;
-            tmp = tmp1 + tmp2 + tmp3 + statusAtts->GetStatusMessage();
-            Warning(tmp.c_str());
+            QString msg = tr("The compute engine running on host %1 issued "
+                             "the following warning: %2").
+                          arg(ek.HostName().c_str()).
+                          arg(statusAtts->GetStatusMessage().c_str());
+            Warning(msg);
         }
         else
             Warning(statusAtts->GetStatusMessage().c_str());
@@ -3273,6 +3302,9 @@ ViewerEngineManager::SetExportDBAtts(ExportDBAttributes *e)
 //    Brad Whitlock, Fri Nov 3 09:49:33 PDT 2006
 //    Prevented non-sim data from being exported to a simulation.
 //
+//    Brad Whitlock, Tue Apr 29 14:48:11 PDT 2008
+//    Added tr()
+//
 // ****************************************************************************
 
 bool
@@ -3283,8 +3315,8 @@ ViewerEngineManager::ExportDatabase(const EngineKey &ek, int id)
     // a simulation then issue an error message.
     if(exportDBAtts->GetDb_type() == "SimV1" && !ek.IsSimulation())
     {
-        Error("VisIt can only export data to a simulation if the "
-              "data being exported originated in a simulation.");
+        Error(tr("VisIt can only export data to a simulation if the "
+                 "data being exported originated in a simulation."));
         CATCH_RETURN2(1, false);
     }
     else

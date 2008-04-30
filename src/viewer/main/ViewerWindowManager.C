@@ -540,6 +540,9 @@ ViewerWindowManager::SetGeometry(const char *windowGeometry)
 //    Brad Whitlock, Mon Mar 26 14:53:21 PST 2007
 //    Allow legend annotation objects from being copied to the new window.
 //
+//    Brad Whitlock, Wed Apr 30 09:44:17 PDT 2008
+//    Added tr().
+//
 // ****************************************************************************
 
 void
@@ -553,7 +556,7 @@ ViewerWindowManager::AddWindow(bool copyAtts)
     windowIndex = SimpleAddWindow();
     if (windowIndex == -1)
     {
-        Error("The maximum number of windows was exceeded.");
+        Error(tr("The maximum number of windows was exceeded."));
         return;
     }
 
@@ -891,7 +894,10 @@ ViewerWindowManager::DeleteWindow()
 //
 //    Kathleen Bonnell, Wed Apr 14 16:19:18 PDT 2004 
 //    Added call to ResetTimeQueryDesignation. 
-//    
+//
+//    Brad Whitlock, Wed Apr 30 09:44:37 PDT 2008
+//    Added tr().
+//
 // ****************************************************************************
 
 void
@@ -902,7 +908,7 @@ ViewerWindowManager::DeleteWindow(ViewerWindow *win)
     //
     if(nWindows <= 1)
     {
-        Error("Can't delete the last window.");
+        Error(tr("Can't delete the last window."));
         return;
     }
 
@@ -970,8 +976,7 @@ ViewerWindowManager::DeleteWindow(ViewerWindow *win)
     //
     // Send a message to the client that indicates which window was deleted.
     //
-    char msg[200];
-    SNPRINTF(msg, 200, "Window %d was deleted.", windowIndex + 1);
+    QString msg = tr("Window %1 was deleted.").arg(windowIndex + 1);
     Message(msg);
 
     //
@@ -1264,7 +1269,9 @@ ViewerWindowManager::RedrawWindow(int windowIndex)
 // Creation:   Thu Nov 17 17:18:45 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 30 09:45:50 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1272,10 +1279,9 @@ ViewerWindowManager::MoveWindow(int windowIndex, int x, int y)
 {
     if(windowIndex < 0 || windowIndex >= maxWindows)
     {
-        char buf[200];
-        SNPRINTF(buf, 200, "Invalid window index (windowIndex = %d)",
-                 windowIndex);
-        Error(buf);
+        QString msg = tr("Invalid window index (windowIndex = %1)").
+                      arg(windowIndex);
+        Error(msg);
         return;
     }
 
@@ -1285,7 +1291,7 @@ ViewerWindowManager::MoveWindow(int windowIndex, int x, int y)
                                           y + borderTop  - shiftY);
     }
     else
-        Error("The specified window does not exist.");
+        Error(tr("The specified window does not exist."));
 }
 
 // ****************************************************************************
@@ -1298,6 +1304,8 @@ ViewerWindowManager::MoveWindow(int windowIndex, int x, int y)
 // Creation:   Thu Nov 17 17:18:59 PST 2005
 //
 // Modifications:
+//   Brad Whitlock, Wed Apr 30 09:45:50 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -1307,10 +1315,9 @@ ViewerWindowManager::MoveAndResizeWindow(int windowIndex, int x, int y,
 {
     if(windowIndex < 0 || windowIndex >= maxWindows)
     {
-        char buf[200];
-        SNPRINTF(buf, 200, "Invalid window index (windowIndex = %d)",
-                 windowIndex);
-        Error(buf);
+        QString msg = tr("Invalid window index (windowIndex = %1)").
+                      arg(windowIndex);
+        Error(msg);
         return;
     }
 
@@ -1325,7 +1332,7 @@ ViewerWindowManager::MoveAndResizeWindow(int windowIndex, int x, int y,
         UpdateWindowInformation(WINDOWINFO_WINDOWSIZE, windowIndex);
     }
     else
-        Error("The specified window does not exist.");
+        Error(tr("The specified window does not exist."));
 }
 
 // ****************************************************************************
@@ -1338,6 +1345,8 @@ ViewerWindowManager::MoveAndResizeWindow(int windowIndex, int x, int y,
 // Creation:   Thu Nov 17 17:19:19 PST 2005
 //
 // Modifications:
+//   Brad Whitlock, Wed Apr 30 09:45:50 PDT 2008
+//   Support for internationalization.
 //   
 // ****************************************************************************
 
@@ -1346,10 +1355,9 @@ ViewerWindowManager::ResizeWindow(int windowIndex, int w, int h)
 {
     if(windowIndex < 0 || windowIndex >= maxWindows)
     {
-        char buf[200];
-        SNPRINTF(buf, 200, "Invalid window index (windowIndex = %d)",
-                 windowIndex);
-        Error(buf);
+        QString msg = tr("Invalid window index (windowIndex = %1)").
+                      arg(windowIndex);
+        Error(msg);
         return;
     }
 
@@ -1362,7 +1370,7 @@ ViewerWindowManager::ResizeWindow(int windowIndex, int w, int h)
         UpdateWindowInformation(WINDOWINFO_WINDOWSIZE, windowIndex);
     }
     else
-        Error("The specified window does not exist.");
+        Error(tr("The specified window does not exist."));
 }
 
 // ****************************************************************************
@@ -1616,6 +1624,10 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Dave Bremer, Thu Oct 11 18:56:56 PDT 2007
 //    Added a check for windows larger than the max Mesa can handle, and
 //    reduced the resolution proportionally.
+//
+//    Brad Whitlock, Wed Apr 30 09:46:59 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -1635,7 +1647,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     }
     CATCH(ImproperUseException)
     {
-        Error("VisIt cannot save images in the specified file format.");
+        Error(tr("VisIt cannot save images in the specified file format."));
         CATCH_RETURN(1);
     }
     ENDTRY
@@ -1658,9 +1670,9 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             if(f.size() == 0) 
             {
                 f = "visit";
-                Warning("The specified filename was empty. VisIt will "
-                        "use the name \"visit\" as the base for the files "
-                        "to be saved.");
+                Warning(tr("The specified filename was empty. VisIt will "
+                           "use the name \"visit\" as the base for the files "
+                           "to be saved."));
             }
 
             if(fileBase[fileBase.size() - 1] == SLASH_CHAR)
@@ -1766,16 +1778,15 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     // Send a status message about starting to render the image and make the
     // status message display for 10 minutes.
     //
-    char message[1000];
+    QString message;
     int  iCurrWindow = (windowIndex == -1) ? activeWindow : windowIndex;
     if(saveWindowClientAtts->GetSaveTiled())
     {
-        strcpy(message, "Saving tiled image...");
+        message = tr("Saving tiled image...");
     }
     else
     {
-        SNPRINTF(message, sizeof(message), "Rendering window %d...",
-                 iCurrWindow+1);
+        message = tr("Rendering window %1...").arg(iCurrWindow+1);
     }
     Status(message, 6000000);
     Message(message);
@@ -1808,15 +1819,15 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             {
                 h = (int)((double)h * (double)MAX_WINDOW_SIZE / (double)w);
                 w = MAX_WINDOW_SIZE;
-                Message("The window was too large to save at the requested resolution.  "
-                        "The resolution has been automatically reduced.");
+                Message(tr("The window was too large to save at the requested resolution.  "
+                           "The resolution has been automatically reduced."));
             }
             else if (h >= w && h > MAX_WINDOW_SIZE)
             {
                 w = (int)((double)w * (double)MAX_WINDOW_SIZE / (double)h);
                 h = MAX_WINDOW_SIZE;
-                Message("The window was too large to save at the requested resolution.  "
-                        "The resolution has been automatically reduced.");
+                Message(tr("The window was too large to save at the requested resolution.  "
+                           "The resolution has been automatically reduced."));
             }
 
             if (saveWindowClientAtts->GetSaveTiled())
@@ -1864,8 +1875,8 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 
         if (windowIsInScalableRenderingMode)
         {
-            Error("You cannot save curve formats (ultra, curve) from a window "
-                  "that is currently in scalable rendering mode.");
+            Error(tr("You cannot save curve formats (ultra, curve) from a window "
+                     "that is currently in scalable rendering mode."));
             return;
         }
 
@@ -1883,8 +1894,8 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     //
     if(!saveWindowClientAtts->GetSaveTiled())
     {
-        SNPRINTF(message, sizeof(message), "Saving window %d...",
-                (windowIndex == -1) ? (activeWindow + 1) : (windowIndex + 1));
+        message = tr("Saving window %1...").
+                  arg((windowIndex == -1) ? (activeWindow + 1) : (windowIndex + 1));
         Status(message, 6000000);    
         Message(message);
     }
@@ -1925,21 +1936,21 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     {
         if (saveWindowClientAtts->CurrentFormatIsImageFormat())
         {
-            Warning("No image was saved.  This is "
+            Warning(tr("No image was saved.  This is "
                   "frequently because you have asked to save an empty window."
                   "  If this is not the case, please contact a VisIt "
-                  "developer.");
+                  "developer."));
         }
         else
         {
-            Warning("No surface was saved.  This is "
+            Warning(tr("No surface was saved.  This is "
                   "frequently because you have asked to save an empty window."
                   "  This also happens if you are in Scalable Rendering mode."
                   "  If this is not the case, please contact a VisIt "
                   "developer.\n\n\n"
                   "If you are in scalable rendering mode and want to save a "
                   "polygonal file, go to Options->Rendering to disable this "
-                  "mode.  This may cause VisIt to slow down substantially.");
+                  "mode.  This may cause VisIt to slow down substantially."));
         }
         ClearStatus();
         savedWindow = false;
@@ -1948,14 +1959,14 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     // Send a message to indicate that we're done saving the image.
     if (savedWindow && filename != NULL)
     {
-        SNPRINTF(message, 1000, "Saved %s", filename);
+        message = tr("Saved %1").arg(filename);
         Status(message);
         Message(message);
         saveWindowClientAtts->SetLastRealFilename(filename);
     }
     else
     {
-        SNPRINTF(message, 1000, "Could not save window");
+        message = tr("Could not save window");
         Status(message);
         Message(message);
 
@@ -2015,6 +2026,9 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 //    previous warning when animation caching was also enabled, but this
 //    wasn't broad enough.
 //
+//    Brad Whitlock, Wed Apr 30 09:50:48 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -2040,13 +2054,13 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
             }
             else
             {
-                Warning("Currently, you cannot save images when in nowin"
+                Warning(tr("Currently, you cannot save images when in nowin"
                         " mode using screen capture and Mesa has been"
                         " stubbed out in the viewer.  Either disable"
                         " screen capture, or rebuild without the Mesa"
                         " stub library.  Note that the Mesa stub"
                         " library was in place to prevent compatibility"
-                        " problems with some graphics drivers.");
+                        " problems with some graphics drivers."));
             }
 #else
             retval = windows[index]->ScreenCapture();
@@ -2056,9 +2070,9 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
         {
             if (windows[index]->GetAnimationAttributes()->GetPipelineCachingMode())
             {
-                Warning("Currently, you cannot use non-screen-capture mode saves "
+                Warning(tr("Currently, you cannot use non-screen-capture mode saves "
                     "when you have animation caching turned on. Either turn off "
-                    "animation caching or use screen capture to save your windows.");
+                    "animation caching or use screen capture to save your windows."));
             }
             else
             {
@@ -2096,6 +2110,9 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
 //    Brad Whitlock, Thu Jul 15 13:38:37 PST 2004
 //    Implemented the method finally.
 //
+//    Brad Whitlock, Wed Apr 30 09:51:28 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -2132,8 +2149,8 @@ ViewerWindowManager::CreateTiledImage(int width, int height, bool leftEye)
     if(windowsWithPlots == 0)
     {
         delete [] sortedWindows;
-        Warning("VisIt did not save a tiled image because none of the "
-                "windows had any plots.");
+        Warning(tr("VisIt did not save a tiled image because none of the "
+                   "windows had any plots."));
         return NULL;
     }
     else if(windowsWithPlots == 1)
@@ -2171,7 +2188,7 @@ ViewerWindowManager::CreateTiledImage(int width, int height, bool leftEye)
             tiler.AddImage(CreateSingleImage(sortedWindows[index]->GetWindowId(),
                 imageWidth, imageHeight,
                 saveWindowClientAtts->GetScreenCapture(), leftEye));
-            Message("Saving tiled image...");
+            Message(tr("Saving tiled image..."));
         }
     }
     delete [] sortedWindows;
@@ -2242,6 +2259,10 @@ ViewerWindowManager::GetDataset(int windowIndex,
 //
 //   Mark C. Miller, Wed Aug  8 17:19:14 PDT 2007
 //   Handled null return from CreateSingleImage
+//
+//   Brad Whitlock, Wed Apr 30 09:52:21 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -2263,8 +2284,8 @@ ViewerWindowManager::PrintWindow(int windowIndex)
     {
         if(printerAtts->GetOutputToFileName().empty())
         {
-            Error("You cannot print the window to a file because you "
-                  "did not specify an output filename.");
+            Error(tr("You cannot print the window to a file because you "
+                     "did not specify an output filename."));
             return;
         }
     }
@@ -2272,8 +2293,8 @@ ViewerWindowManager::PrintWindow(int windowIndex)
     {
         if(printerAtts->GetPrinterName().empty())
         {
-            Error("You cannot print the window because you have not "
-                  "specified a printer name.");
+            Error(tr("You cannot print the window because you have not "
+                     "specified a printer name."));
             return;
         }
     }
@@ -2282,9 +2303,9 @@ ViewerWindowManager::PrintWindow(int windowIndex)
     // Send a status message about starting to save the image and make the
     // status message display for 10 minutes.
     //
-    char message[1000];
+    QString message;
     int index = (windowIndex == -1) ? (activeWindow + 1) : (windowIndex + 1);
-    SNPRINTF(message, sizeof(message), "Printing window %d...", index);
+    message = tr("Printing window %1...").arg(index);
     Status(message, 6000000);
 
     //
@@ -2320,8 +2341,8 @@ ViewerWindowManager::PrintWindow(int windowIndex)
     //
     if (*image == 0)
     {
-        Error("Unable to obtain an image to print.");
-        SNPRINTF(message, sizeof(message), "Print from VisIt failed....", index);
+        Error(tr("Unable to obtain an image to print."));
+        message = tr("Print from VisIt failed....");
         Status(message, 6000000);
         return;
     }
@@ -2345,13 +2366,14 @@ ViewerWindowManager::PrintWindow(int windowIndex)
     //
     if(printerAtts->GetOutputToFile())
     {
-        SNPRINTF(message, sizeof(message), "Window %d saved to %s.", index,
-                 printerAtts->GetOutputToFileName().c_str());
+        message = tr("Window %1 saved to %2.").
+                  arg(index).
+                  arg(printerAtts->GetOutputToFileName().c_str());
         Status(message);
     }
     else
     {
-        SNPRINTF(message, sizeof(message), "Window %d sent to printer.", index);
+        message = tr("Window %1 sent to printer.").arg(index);
         Status(message);
     }
 }
@@ -2413,6 +2435,9 @@ ViewerWindowManager::SetInteractionMode(INTERACTION_MODE m,
 //    Have the various calls to UpdateViewAtts tell the routine not to bother
 //    updating the atttributes for the Axis Array window modality.
 //
+//    Brad Whitlock, Wed Apr 30 09:54:48 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -2436,8 +2461,8 @@ ViewerWindowManager::SetViewCurveFromClient()
            (vpl->GetNumPlots() > 0 && !vpl->CanDoLogViewScaling(WINMODE_CURVE)))
         {
             UpdateViewAtts(activeWindow, true, false, false, false);
-            Error("There are plots in the window that do not\n"
-                  "support log-scaling.  It will not be done.");
+            Error(tr("There are plots in the window that do not\n"
+                     "support log-scaling.  It will not be done."));
             return;
         }
         if (updateScaleMode && newDomainScale == LOG)
@@ -2445,11 +2470,11 @@ ViewerWindowManager::SetViewCurveFromClient()
             if (domain[0] <= 0 || domain[1] <= 0) 
             {
                 UpdateViewAtts(activeWindow, true, false, false, false);
-                Error("There are non-positive values in the domain of the\n"
+                Error(tr("There are non-positive values in the domain of the\n"
                       "curve, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
                       "e.g. via Transform or Box operators and/or\n"
-                      "setting view extents type to 'actual'");
+                      "setting view extents type to 'actual'"));
                 return;
             }
         }
@@ -2458,11 +2483,11 @@ ViewerWindowManager::SetViewCurveFromClient()
             if (range[0] <= 0 || range[1] <= 0) 
             {
                 UpdateViewAtts(activeWindow, true, false, false, false);
-                Error("There are non-positive values in the range of the\n"
+                Error(tr("There are non-positive values in the range of the\n"
                       "curve, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
                       "e.g. via Transform or Box operators and/or\n"
-                      "setting view extents type to 'actual'");
+                      "setting view extents type to 'actual'"));
                 return;
             }
         }
@@ -2569,6 +2594,9 @@ ViewerWindowManager::SetViewCurveFromClient()
 //    Have the various calls to UpdateViewAtts tell the routine not to bother
 //    updating the atttributes for the Axis Array window modality.
 //
+//    Brad Whitlock, Wed Apr 30 09:55:23 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -2594,8 +2622,8 @@ ViewerWindowManager::SetView2DFromClient()
             (vpl->GetNumPlots() > 0 && !vpl->CanDoLogViewScaling(WINMODE_2D)))
         {
             UpdateViewAtts(activeWindow, false, true, false, false);
-            Error("There are plots in the window that do not\n" 
-                  "support log-scaling.  It will not be done.");
+            Error(tr("There are plots in the window that do not\n" 
+                     "support log-scaling.  It will not be done."));
             return;
         }
         if (updateScaleMode && newXScale == LOG)
@@ -2603,11 +2631,11 @@ ViewerWindowManager::SetView2DFromClient()
             if (view2d.window[0] <= 0 || view2d.window[1] <= 0) 
             {
                 UpdateViewAtts(activeWindow, false, true, false, false);
-                Error("There are non-positive values in the x-coords of\n"
+                Error(tr("There are non-positive values in the x-coords of\n"
                       "the mesh, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
                       "e.g. via Transform or Box operators and/or\n"
-                      "setting view extents type to 'actual'");
+                      "setting view extents type to 'actual'"));
                 return;
             }
         }
@@ -2616,11 +2644,11 @@ ViewerWindowManager::SetView2DFromClient()
             if (view2d.window[2] <= 0 || view2d.window[3] <= 0) 
             {
                 UpdateViewAtts(activeWindow, false, true, false, false);
-                Error("There are non-positive values in the y-coords of\n"
+                Error(tr("There are non-positive values in the y-coords of\n"
                       "the mesh, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
                       "e.g. via Transform or Box operators and/or\n"
-                      "setting view extents type to 'actual'");
+                      "setting view extents type to 'actual'"));
                 return;
             }
         }
@@ -3294,7 +3322,7 @@ ViewerWindowManager::CreateMultiWindowCorrelationHelper(const stringVector &dbs)
     ViewerFileServer *fs = ViewerFileServer::Instance();
     DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
     DatabaseCorrelation *correlation = fs->GetMostSuitableCorrelation(dbs);
-    char msg[400];
+    QString msg;
 
     if(correlation)
     {
@@ -3305,10 +3333,10 @@ ViewerWindowManager::CreateMultiWindowCorrelationHelper(const stringVector &dbs)
         //
         if(correlation->GetNumDatabases() < dbs.size())
         {
-            SNPRINTF(msg, 400, "Would you like to modify the %s correlation so "
-                "it correlates the following databases?",
-                 correlation->GetName().c_str());
-            if(AskForCorrelationPermission(msg, "Alter correlation?", dbs))
+            msg = tr("Would you like to modify the %1 correlation so "
+                     "it correlates the following databases?").
+                  arg(correlation->GetName().c_str());
+            if(AskForCorrelationPermission(msg, tr("Alter correlation?"), dbs))
             {
                 createNewCorrelation = false;
 
@@ -3328,13 +3356,13 @@ ViewerWindowManager::CreateMultiWindowCorrelationHelper(const stringVector &dbs)
         }
     }
 
-    const char *prompt =
+    QString prompt = tr(
         "Would you like to correlate the following databases\n"
         "to ensure that changing the time will apply to all\n"
-        "windows that are locked in time?\n";
+        "windows that are locked in time?\n");
     if(createNewCorrelation)
     {
-        if(AskForCorrelationPermission(prompt, "Create correlation?", dbs))
+        if(AskForCorrelationPermission(prompt, tr("Create correlation?"), dbs))
         {
             //
             // Create a new database correlation since there was no suitable
@@ -3355,8 +3383,8 @@ ViewerWindowManager::CreateMultiWindowCorrelationHelper(const stringVector &dbs)
                        << newName.c_str() << endl << *correlation << endl;
 
                 // Tell the user about the new correlation.
-                SNPRINTF(msg, 400, "VisIt created a new database correlation "
-                         "called %s.", correlation->GetName().c_str());
+                msg = tr("VisIt created a new database correlation "
+                         "called %1.").arg(correlation->GetName().c_str());
                 Message(msg);
             }
         }
@@ -3366,9 +3394,9 @@ ViewerWindowManager::CreateMultiWindowCorrelationHelper(const stringVector &dbs)
             // The user opted to not create a multi-window correlation.
             // Issue a warning message.
             //
-            Warning("Since you opted not to create a database correlation, "
-                    "changing time sliders in one locked window might not "
-                    "affect other locked windows.");
+            Warning(tr("Since you opted not to create a database correlation, "
+                       "changing time sliders in one locked window might not "
+                       "affect other locked windows."));
             correlation = 0;
         }
     }
@@ -4032,6 +4060,9 @@ ViewerWindowManager::UpdateColorTable(const char *ctName)
 //    Changed the code so window layout 1 is handled specially and we get the
 //    active window showing instead of window 1.
 //
+//    Brad Whitlock, Wed Apr 30 09:58:46 PDT 2008
+//    Added tr().
+//
 // ****************************************************************************
 
 void
@@ -4050,9 +4081,8 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
 
     if (iLayout == maxLayouts)
     {
-        char msg[200];
-        SNPRINTF(msg, 200, "Window layout %d is an unsupported layout.",
-                 windowLayout);
+        QString msg = tr("Window layout %1 is an unsupported layout.").
+                      arg(windowLayout);
         Error(msg);
         return;
     }
@@ -4206,6 +4236,9 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
 //    Brad Whitlock, Mon Mar 26 16:43:07 PST 2007
 //    Copy the annotation objects too.
 //
+//    Brad Whitlock, Wed Apr 30 09:58:30 PDT 2008
+//    Added tr().
+//
 // ****************************************************************************
 
 void
@@ -4217,7 +4250,7 @@ ViewerWindowManager::SetActiveWindow(const int windowId)
     int winIndex = windowId - 1;
     if (windowId <= 0 || windowId > maxWindows || windows[winIndex] == 0)
     {
-        Error("The specified window doesn't exist.");
+        Error(tr("The specified window doesn't exist."));
         return;
     }
 
@@ -4303,6 +4336,9 @@ ViewerWindowManager::SetActiveWindow(const int windowId)
 //    Kathleen Bonnell, Fri Apr 19 09:07:13 PDT 2002
 //    Changed error message to report correct method name
 //
+//    Brad Whitlock, Wed Apr 30 09:59:11 PDT 2008
+//    Added tr().
+//
 // ****************************************************************************
 
 ViewerWindow *
@@ -4313,7 +4349,7 @@ ViewerWindowManager::GetActiveWindow() const
     //
     if (nWindows == 0)
     {
-        Error("ViewerWindowManager::GetActiveWindow() There are no windows.\n");
+        Error(tr("ViewerWindowManager::GetActiveWindow() There are no windows.\n"));
         return 0;
     }
 
@@ -5559,6 +5595,10 @@ ViewerWindowManager::SetFrameIndex(int state, int windowIndex)
 // Programmer: Hank Childs
 // Creation:   February 7, 2008
 //
+// Modifications:
+//   Brad Whitlock, Wed Apr 30 10:07:02 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -5629,31 +5669,24 @@ ViewerWindowManager::SynchronizeTimeLockedWindows(int windowIndex, int state)
 
     if (badWindowIds.size() > 0)
     {
-        std::string msg("VisIt did not set the time state for window");
-        if (badWindowIds.size() > 1)
-            msg += "s (";
-        else
-            msg += " ";
+        QString badList;
         char tmp[50];
         for (int j = 0; j < badWindowIds.size(); ++j)
         {
             SNPRINTF(tmp, 50, "%d", badWindowIds[j] + 1);
-            msg += tmp;
+            badList += tmp;
             if(j < badWindowIds.size() - 1)
-                msg += ", ";
+                badList += ", ";
         }
 
-        if (badWindowIds.size() > 1)
-            msg += ") because the time sliders in those windows ";
-        else
-            msg += " because the time slider in that window ";
-
-        msg += "cannot be set by the active window's time slider "
-               "since the correlations of the time sliders have "
-               "nothing in common.\n\nTo avoid this warning in the "
-               "future, make sure that locked windows have compatible "
-               "time sliders.";
-        Warning(msg.c_str());
+        QString msg = tr("VisIt did not set the time state for these windows: %1."
+                         "The time slider in cannot be set by the "
+                         "active window's time slider since the correlations of "
+                         "the time sliders have nothing in common.\n\nTo avoid "
+                         "this warning in the future, make sure that locked "
+                         "windows have compatible time sliders.").
+                      arg(badList);
+        Warning(msg);
     }
 }
 
@@ -5981,6 +6014,9 @@ ViewerWindowManager::ReversePlay(int windowIndex)
 //   Pass false for new argument of GetDatabasesForWindows to preserve old
 //   behavior.
 //
+//   Brad Whitlock, Wed Apr 30 10:07:42 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -6002,9 +6038,9 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
         bool kfTimeSlider = (ts == KF_TIME_SLIDER);
         if(!kfTimeSlider && correlation == 0)
         {
-            Error("VisIt could not find a database correlation "
-                  "for the desired time slider so it must not be a valid time "
-                  "slider.");
+            Error(tr("VisIt could not find a database correlation "
+                     "for the desired time slider so it must not be a valid time "
+                     "slider."));
             return;
         }
 
@@ -6027,10 +6063,10 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
             //
             if(windows[index]->GetPlotList()->GetKeyframeMode() && kfTimeSlider)
             {
-                Warning("You've made the keyframe animation time slider be the "
+                Warning(tr("You've made the keyframe animation time slider be the "
                         "active time slider. Other windows that are also time "
                         "locked will not have their time sliders set to the "
-                        "keyframe time slider.");
+                        "keyframe time slider."));
                 return;
             }
 
@@ -6078,34 +6114,24 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
             //
             if(badWindowIds.size() > 0)
             {
-                std::string msg("VisIt could not set the active time slider "
-                    "for window");
-                if(badWindowIds.size() > 1)
-                    msg += "s (";
-                else
-                    msg += " ";
+                QString badList;
                 char tmp[50];
-                for(int j = 0; j < badWindowIds.size(); ++j)
+                for (int j = 0; j < badWindowIds.size(); ++j)
                 {
                     SNPRINTF(tmp, 50, "%d", badWindowIds[j] + 1);
-                    msg += tmp;
+                    badList += tmp;
                     if(j < badWindowIds.size() - 1)
-                        msg += ", ";
+                        badList += ", ";
                 }
 
-                if(badWindowIds.size() > 1)
-                    msg += ") because those windows contain ";
-                else
-                    msg += " because that window contains ";
-
-                msg += "at least one database that is not used by the new "
-                       "time slider.\n\nYou may want to create a new database "
-                       "correlation using all of the databases for your "
-                       "locked windows and use that database correlation "
-                       "for your active time slider or you may find that "
-                       "not all windows update when you change the time "
-                       "slider's active time state.";
-                Warning(msg.c_str());
+                QString msg = tr("VisIt did not set the time state for these windows: %1."
+                                 "The time slider in cannot be set by the "
+                                 "active window's time slider since the correlations of "
+                                 "the time sliders have nothing in common.\n\nTo avoid "
+                                 "this warning in the future, make sure that locked "
+                                 "windows have compatible time sliders.").
+                              arg(badList);
+                Warning(msg);
             }
         }
 
@@ -6288,6 +6314,9 @@ ViewerWindowManager::CreateDatabaseCorrelation(const std::string &name,
 //   I removed the code to update the window information since it is already
 //   done by the caller and the update here caused 2 updates.
 //
+//   Brad Whitlock, Wed Apr 30 10:09:50 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -6303,8 +6332,8 @@ ViewerWindowManager::AlterDatabaseCorrelation(const std::string &name,
         // an existing source.
         if(fs->IsDatabase(name))
         {
-            Error("You cannot alter a database correlation that "
-                  "corresponds directly to a database.");
+            Error(tr("You cannot alter a database correlation that "
+                     "corresponds directly to a database."));
         }
         else
         {
@@ -6341,10 +6370,9 @@ ViewerWindowManager::AlterDatabaseCorrelation(const std::string &name,
     }
     else
     {
-        char msg[300];
-        SNPRINTF(msg, 300, "You cannot alter a database correlation for %s "
-                 "because there is no such database correlation.", 
-                 name.c_str());
+        QString msg = tr("You cannot alter a database correlation for %1 "
+                         "because there is no such database correlation.").
+                      arg(name.c_str());
         Error(msg);
     }
 }
@@ -6362,7 +6390,9 @@ ViewerWindowManager::AlterDatabaseCorrelation(const std::string &name,
 // Creation:   Mon Mar 29 11:24:10 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 30 10:10:07 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -6377,8 +6407,8 @@ ViewerWindowManager::DeleteDatabaseCorrelation(const std::string &name)
         // an existing source.
         if(fs->IsDatabase(name))
         {
-            Error("You cannot delete a database correlation that "
-                  "corresponds directly to a source.");
+            Error(tr("You cannot delete a database correlation that "
+                     "corresponds directly to a source."));
         }
         else
         {
@@ -6500,13 +6530,14 @@ ViewerWindowManager::GetDatabasesForWindows(const intVector &windowIds,
 //    Brad Whitlock, Tue Feb 22 14:37:14 PST 2005
 //    Guarded against a NULL metadata pointer.
 //
+//    Brad Whitlock, Wed Apr 30 10:10:43 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
 ViewerWindowManager::CloseDatabase(const std::string &dbName)
 {
-    char tmp[300];
-
     //
     // Expand the filename in case it contains relative paths, etc.
     //
@@ -6521,10 +6552,10 @@ ViewerWindowManager::CloseDatabase(const std::string &dbName)
 
     if(FileInUse(host, db))
     {
-        SNPRINTF(tmp, 300, "VisIt could not close \"%s\" because it is still "
-                 "being used by one or more plots.",
-                 expandedDB.c_str());
-        Error(tmp);
+        QString msg = tr("VisIt could not close \"%1\" because it is still "
+                         "being used by one or more plots.").
+                      arg(expandedDB.c_str());
+        Error(msg);
     }
     else
     {
@@ -6576,8 +6607,7 @@ ViewerWindowManager::CloseDatabase(const std::string &dbName)
         ViewerEngineManager::Instance()->ClearCache(EngineKey(host, sim),
                                                     db.c_str());
 
-        SNPRINTF(tmp, 300, "VisIt closed \"%s\".", expandedDB.c_str());
-        Message(tmp);        
+        Message(tr("VisIt closed \"%1\".").arg(expandedDB.c_str()));        
     }
 }
 
@@ -7717,6 +7747,9 @@ ViewerWindowManager::SimpleAddWindow()
 //    I set the referenced flag for the window to false so it is right if
 //    we delete and recreate a window.
 //
+//    Brad Whitlock, Wed Apr 30 10:13:32 PDT 2008
+//    Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -7724,14 +7757,12 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
                                      const int width, const int height,
                                      const int x, const int y)
 {
-    char      title[24];
-
     windows[windowIndex] = new ViewerWindow(windowIndex);
 
     windows[windowIndex]->SetSize(width, height);
 
-    SNPRINTF(title, 24, "Window %d", windowIndex+1);
-    windows[windowIndex]->SetTitle(title);
+    QString title = tr("Window %1").arg(windowIndex+1);
+    windows[windowIndex]->SetTitle(title.latin1()); // Because Viswin can't take QString.
     if (windowsHidden == false)
     {
         windows[windowIndex]->SetLocation(x - preshiftX, y - preshiftY);
@@ -8522,6 +8553,9 @@ ViewerWindowManager::SetDefaultAnnotationObjectListFromClient()
 //   added int arg to specify a particular window to return (or create). 
 //   Added logic to return specified window (if useThisId not -1).
 //   
+//   Brad Whitlock, Wed Apr 30 10:14:36 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 ViewerWindow *
@@ -8538,8 +8572,8 @@ ViewerWindowManager::GetLineoutWindow(int useThisId)
             int newWin = SimpleAddWindow();
             if (newWin == -1)
             {
-                Error("VisIt could not open a window for Lineout because "
-                      "the maximum number of windows was exceeded.");
+                Error(tr("VisIt could not open a window for Lineout because "
+                         "the maximum number of windows was exceeded."));
                 return NULL;
             }
             SetWindowAttributes(newWin, false);
@@ -8583,8 +8617,8 @@ ViewerWindowManager::GetLineoutWindow(int useThisId)
         }
         else
         {
-            Error("VisIt could not open a window for Lineout because the "
-                  "maximum number of windows was exceeded.");
+            Error(tr("VisIt could not open a window for Lineout because the "
+                     "maximum number of windows was exceeded."));
             return NULL;
         }
         windows[lineoutWindow]->SetInteractionMode(NAVIGATE);
@@ -9402,6 +9436,8 @@ ViewerWindowManager::SessionContainsErrors(DataNode *parentNode)
 // Creation:   March 19, 2004 
 //
 // Modifications:
+//   Brad Whitlock, Wed Apr 30 10:16:27 PDT 2008
+//   Support for internationalization.
 //
 // ****************************************************************************
 
@@ -9425,19 +9461,20 @@ ViewerWindowManager::GetEmptyWindow()
                 break;
         }
     }
+    QString msg = tr("The maximum number of windows are already being used.");
     if (winIdx == -1)
     {
         winIdx = SimpleAddWindow();
         if (winIdx == -1)
         {
-            Error("The maximum number of windows are already being used.");
+            Error(msg);
             return NULL;
         }
         SetWindowAttributes(winIdx, false);
     }
     else if (winIdx >= maxWindows)
     {
-        Error("The maximum number of windows are already being used.");
+        Error(msg);
         return NULL;
     }
     windows[winIdx]->SetInteractionMode(NAVIGATE);
@@ -9492,11 +9529,17 @@ ViewerWindowManager::GetWindow(int windowIndex)
 //   Kathleen Bonnell, Tue Jul 20 10:47:26 PDT 2004
 //   Added optional arg specifiying the windowId to retrieve.
 //
+//   Brad Whitlock, Wed Apr 30 10:17:37 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 ViewerWindow *
 ViewerWindowManager::GetTimeQueryWindow(int useThisId) 
 {
+    QString msg = tr("VisIt could not open a window for TimeQuery because "
+                     "the maximum number of windows was exceeded.");
+
     int returnId = timeQueryWindow;
     if (useThisId != -1)
     {
@@ -9505,8 +9548,7 @@ ViewerWindowManager::GetTimeQueryWindow(int useThisId)
             int newWin = SimpleAddWindow();
             if (newWin == -1)
             {
-                Error("VisIt could not open a window for TimeQuery because "
-                      "the maximum number of windows was exceeded.");
+                Error(msg);
                 return NULL;
             } 
             SetWindowAttributes(newWin, false);
@@ -9549,8 +9591,7 @@ ViewerWindowManager::GetTimeQueryWindow(int useThisId)
         }
         else
         {
-            Error("VisIt could not open a window for TimeQuery because the "
-                  "maximum number of windows was exceeded.");
+            Error(msg);
             return NULL;
         }
         windows[timeQueryWindow]->SetInteractionMode(NAVIGATE);

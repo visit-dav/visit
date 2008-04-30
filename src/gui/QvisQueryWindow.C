@@ -1323,8 +1323,8 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
             // Display a status message.
             if(noErrors)
             {
-                QString str(tr("Performing %1 query."));
-                str.replace("%1", names[index].c_str());
+                QString str = tr("Performing %1 query.").
+                              arg(names[index].c_str());
                 Status(str);
             }
         }
@@ -1376,9 +1376,9 @@ QvisQueryWindow::GetPoint(int index, const QString &pname, double pt[3])
             okay = (numScanned == 2 || numScanned == 3);
             if(!okay)
             {
-                QString msg(tr("The %1 is not valid. It should consist of "
-                               "two or three real world coordinate values."));
-                msg.replace("%1", pname);
+                QString msg = tr("The %1 is not valid. It should consist of "
+                                 "two or three real world coordinate values.").
+                              arg(pname);
                 Error(msg);
             }
         }

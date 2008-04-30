@@ -77,8 +77,8 @@ using std::string;
 
 QvisIsosurfaceWindow::QvisIsosurfaceWindow(const int type,
                          IsosurfaceAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -120,6 +120,9 @@ QvisIsosurfaceWindow::~QvisIsosurfaceWindow()
 //   Brad Whitlock, Thu Dec 9 17:45:51 PST 2004
 //   I made it use a variable button.
 //
+//   Brad Whitlock, Fri Apr 25 09:05:45 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -131,12 +134,12 @@ QvisIsosurfaceWindow::CreateWindowContents()
 
     // Add the select by combo box.
     selectByComboBox = new QComboBox(false, central, "selectByComboBox");
-    selectByComboBox->insertItem("N levels");
-    selectByComboBox->insertItem("Value(s)");
-    selectByComboBox->insertItem("Percent(s)");
+    selectByComboBox->insertItem(tr("N levels"));
+    selectByComboBox->insertItem(tr("Value(s)"));
+    selectByComboBox->insertItem(tr("Percent(s)"));
     connect(selectByComboBox, SIGNAL(activated(int)),
            this, SLOT(selectByChanged(int)));
-    QLabel *selectByLabel = new QLabel(selectByComboBox, "Select by",
+    QLabel *selectByLabel = new QLabel(selectByComboBox, tr("Select by"),
                                        central, "selectByLabel");
     limitsLayout->addWidget(selectByLabel, 0, 0);
     limitsLayout->addWidget(selectByComboBox, 0, 1);
@@ -155,17 +158,17 @@ QvisIsosurfaceWindow::CreateWindowContents()
     // Create a group of radio buttons
     scalingButtons = new QButtonGroup( central, "scaleRadioGroup" );
     scalingButtons->setFrameStyle(QFrame::NoFrame);
-    QLabel *scaleLabel = new QLabel(scalingButtons, "Scale", central,
+    QLabel *scaleLabel = new QLabel(scalingButtons, tr("Scale"), central,
         "scaleLabel");
     scaleLayout->addWidget(scaleLabel);
  
     QHBoxLayout *scaleButtonsLayout = new QHBoxLayout(scalingButtons);
     scaleButtonsLayout->setSpacing(10);
-    QRadioButton *rb = new QRadioButton("Linear", scalingButtons );
+    QRadioButton *rb = new QRadioButton(tr("Linear"), scalingButtons );
     rb->setChecked( TRUE );
     scaleButtonsLayout->addWidget(rb);
     rb = new QRadioButton( scalingButtons );
-    rb->setText( "Log" );
+    rb->setText( tr("Log") );
     scaleButtonsLayout->addWidget(rb);
     scaleLayout->addWidget( scalingButtons );
     scaleLayout->addStretch(0);
@@ -176,10 +179,10 @@ QvisIsosurfaceWindow::CreateWindowContents()
     //
     // Create the Limits stuff
     //
-    QLabel *limitsLabel = new QLabel("Limits", central, "limitsLabel");
+    QLabel *limitsLabel = new QLabel(tr("Limits"), central, "limitsLabel");
     limitsLayout->addWidget(limitsLabel, 1, 0);
     // Create the min toggle and line edit
-    minToggle = new QCheckBox("Min", central, "minToggle");
+    minToggle = new QCheckBox(tr("Min"), central, "minToggle");
     limitsLayout->addWidget(minToggle, 1, 1);
     connect(minToggle, SIGNAL(toggled(bool)),
             this, SLOT(minToggled(bool)));
@@ -189,7 +192,7 @@ QvisIsosurfaceWindow::CreateWindowContents()
     limitsLayout->addWidget(minLineEdit, 1, 2);
  
     // Create the max toggle and line edit
-    maxToggle = new QCheckBox("Max", central, "maxToggle");
+    maxToggle = new QCheckBox(tr("Max"), central, "maxToggle");
     limitsLayout->addWidget(maxToggle, 2, 1);
     connect(maxToggle, SIGNAL(toggled(bool)),
             this, SLOT(maxToggled(bool)));
@@ -198,7 +201,7 @@ QvisIsosurfaceWindow::CreateWindowContents()
             this, SLOT(processMaxLimitText()));
     limitsLayout->addWidget(maxLineEdit, 2, 2);
 
-    limitsLayout->addWidget(new QLabel("Variable", central, "variableLabel"),3,0);
+    limitsLayout->addWidget(new QLabel(tr("Variable"), central, "variableLabel"),3,0);
     variable = new QvisVariableButton(true, true, true, 
         QvisVariableButton::Scalars, central, "variable");
     connect(variable, SIGNAL(activated(const QString &)),
@@ -392,7 +395,7 @@ QvisIsosurfaceWindow::ProcessSelectByText()
         // Prevent less than one contour
         if(nlevels < 1)
         {
-            Warning("VisIt requires at least one contour.");
+            Warning(tr("VisIt requires at least one contour."));
             nlevels = 1;
         }
  
@@ -448,14 +451,15 @@ QvisIsosurfaceWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetMin(val);
+            if(okay)
+                atts->SetMin(val);
         }
  
         if(!okay)
         {
-            msg.sprintf("The minimum value was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetMin());
+            msg = tr("The minimum value was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetMin());
             Message(msg);
             atts->SetMin(atts->GetMin());
         }
@@ -469,14 +473,15 @@ QvisIsosurfaceWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetMax(val);
+            if(okay)
+                atts->SetMax(val);
         }
  
         if(!okay)
         {
-            msg.sprintf("The maximum value was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetMax());
+            msg = tr("The maximum value was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetMax());
             Message(msg);
             atts->SetMax(atts->GetMax());
         }

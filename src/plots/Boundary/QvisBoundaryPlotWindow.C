@@ -149,8 +149,8 @@ protected:
 // ****************************************************************************
 
 QvisBoundaryPlotWindow::QvisBoundaryPlotWindow(const int type,
-    BoundaryAttributes *boundaryAtts_, const char *caption,
-    const char *shortName, QvisNotepadArea *notepad) :
+    BoundaryAttributes *boundaryAtts_, const QString &caption,
+    const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(boundaryAtts_, caption, shortName, notepad,
                                QvisPostableWindowObserver::AllExtraButtons,
                                false)

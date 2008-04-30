@@ -74,8 +74,8 @@ using std::string;
 
 QvisSubdivideQuadsWindow::QvisSubdivideQuadsWindow(const int type,
                          SubdivideQuadsAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -111,7 +111,9 @@ QvisSubdivideQuadsWindow::~QvisSubdivideQuadsWindow()
 // Creation:   Tue Nov 2 06:28:41 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Apr 24 16:27:28 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -120,31 +122,31 @@ QvisSubdivideQuadsWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 5,2,  10, "mainLayout");
 
 
-    thresholdLabel = new QLabel("Biggest change allowed in a zone?", central, "thresholdLabel");
+    thresholdLabel = new QLabel(tr("Biggest change allowed in a zone?"), central, "thresholdLabel");
     mainLayout->addWidget(thresholdLabel,0,0);
     threshold = new QLineEdit(central, "threshold");
     connect(threshold, SIGNAL(returnPressed()),
             this, SLOT(thresholdProcessText()));
     mainLayout->addWidget(threshold, 0,1);
 
-    maxSubdivsLabel = new QLabel("Maximum number of subdivisions", central, "maxSubdivsLabel");
+    maxSubdivsLabel = new QLabel(tr("Maximum number of subdivisions"), central, "maxSubdivsLabel");
     mainLayout->addWidget(maxSubdivsLabel,1,0);
     maxSubdivs = new QLineEdit(central, "maxSubdivs");
     connect(maxSubdivs, SIGNAL(returnPressed()),
             this, SLOT(maxSubdivsProcessText()));
     mainLayout->addWidget(maxSubdivs, 1,1);
 
-    fanOutPoints = new QCheckBox("Fan out points to cover up T-intersections?", central, "fanOutPoints");
+    fanOutPoints = new QCheckBox(tr("Fan out points to cover up T-intersections?"), central, "fanOutPoints");
     connect(fanOutPoints, SIGNAL(toggled(bool)),
             this, SLOT(fanOutPointsChanged(bool)));
     mainLayout->addWidget(fanOutPoints, 2,0);
 
-    doTriangles = new QCheckBox("Subdivide triangles", central, "doTriangles");
+    doTriangles = new QCheckBox(tr("Subdivide triangles"), central, "doTriangles");
     connect(doTriangles, SIGNAL(toggled(bool)),
             this, SLOT(doTrianglesChanged(bool)));
     mainLayout->addWidget(doTriangles, 3,0);
 
-    variableLabel = new QLabel("Variable to base subdivision on", central, "variableLabel");
+    variableLabel = new QLabel(tr("Variable to base subdivision on"), central, "variableLabel");
     mainLayout->addWidget(variableLabel,4,0);
     variable = new QLineEdit(central, "variable");
     connect(variable, SIGNAL(returnPressed()),
@@ -245,14 +247,15 @@ QvisSubdivideQuadsWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            atts->SetThreshold(val);
+            if(okay)
+                atts->SetThreshold(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of threshold was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetThreshold());
+            msg = tr("The value of threshold was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetThreshold());
             Message(msg);
             atts->SetThreshold(atts->GetThreshold());
         }
@@ -266,14 +269,15 @@ QvisSubdivideQuadsWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            atts->SetMaxSubdivs(val);
+            if(okay)
+                atts->SetMaxSubdivs(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of maxSubdivs was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetMaxSubdivs());
+            msg = tr("The value of maxSubdivs was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetMaxSubdivs());
             Message(msg);
             atts->SetMaxSubdivs(atts->GetMaxSubdivs());
         }
@@ -303,9 +307,9 @@ QvisSubdivideQuadsWindow::GetCurrentValues(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The value of variable was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetVariable().c_str());
+            msg = tr("The value of variable was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetVariable().c_str());
             Message(msg);
             atts->SetVariable(atts->GetVariable());
         }

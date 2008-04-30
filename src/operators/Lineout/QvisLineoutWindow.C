@@ -66,8 +66,8 @@ using std::string;
 
 QvisLineoutWindow::QvisLineoutWindow(const int type,
                          LineoutAttributes *subj,
-                         const char *caption,
-                         const char *shortName,
+                         const QString &caption,
+                         const QString &shortName,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
@@ -106,6 +106,9 @@ QvisLineoutWindow::~QvisLineoutWindow()
 //   Brad Whitlock, Tue Dec 21 11:53:09 PDT 2004
 //   Added code to support Qt pre-3.2.
 //
+//   Brad Whitlock, Fri Apr 25 09:00:46 PDT 2008
+//   Added tr()'s
+//
 // ****************************************************************************
 
 void
@@ -119,7 +122,7 @@ QvisLineoutWindow::CreateWindowContents()
     point1 = new QLineEdit(central, "point1");
     connect(point1, SIGNAL(returnPressed()),
             this, SLOT(point1ProcessText()));
-    mainLayout->addWidget(new QLabel(point1, "Point 1", central,
+    mainLayout->addWidget(new QLabel(point1, tr("Point 1"), central,
         "point1Label"), 0,0);
     mainLayout->addWidget(point1, 0,1);
 
@@ -129,14 +132,14 @@ QvisLineoutWindow::CreateWindowContents()
     point2 = new QLineEdit(central, "point2");
     connect(point2, SIGNAL(returnPressed()),
             this, SLOT(point2ProcessText()));
-    mainLayout->addWidget(new QLabel(point2, "Point 2", central,
+    mainLayout->addWidget(new QLabel(point2, tr("Point 2"), central,
         "point2Label"), 1,0);
     mainLayout->addWidget(point2, 1,1);
 
     //
     // Interactive
     //
-    interactive = new QCheckBox("Interactive", central, "interactive");
+    interactive = new QCheckBox(tr("Interactive"), central, "interactive");
     connect(interactive, SIGNAL(toggled(bool)),
             this, SLOT(interactiveChanged(bool)));
     mainLayout->addMultiCellWidget(interactive, 2,2,0,1);
@@ -146,7 +149,7 @@ QvisLineoutWindow::CreateWindowContents()
     //
     QGroupBox *globalGroup;
 #if QT_VERSION >= 0x030200
-    ignoreGlobal = new QGroupBox("Override Global Lineout Settings",
+    ignoreGlobal = new QGroupBox(tr("Override Global Lineout Settings"),
                                   central, "ignoreGlobal");
     ignoreGlobal->setCheckable(true);
     globalGroup = ignoreGlobal;
@@ -154,13 +157,13 @@ QvisLineoutWindow::CreateWindowContents()
             this, SLOT(ignoreGlobalChanged(bool)));
     topLayout->addWidget(ignoreGlobal);
 #else
-    ignoreGlobal = new QCheckBox("Override Global Lineout Settings",
+    ignoreGlobal = new QCheckBox(tr("Override Global Lineout Settings"),
         central, "ignoreGlobal");
     connect(ignoreGlobal, SIGNAL(toggled(bool)),
             this, SLOT(ignoreGlobalChanged(bool)));
     mainLayout->addMultiCellWidget(ignoreGlobal,3,3,0,1);
 
-    ignoreGlobalGroup = new QGroupBox("Global Lineout Overrides",
+    ignoreGlobalGroup = new QGroupBox(tr("Global Lineout Overrides"),
         central, "ignoreGlobal");
     topLayout->addWidget(ignoreGlobalGroup);
     globalGroup = ignoreGlobalGroup;
@@ -174,7 +177,7 @@ QvisLineoutWindow::CreateWindowContents()
     //
     // SamplingOn
     //
-    samplingOn = new QCheckBox("Use Sampling", globalGroup, "samplingOn");
+    samplingOn = new QCheckBox(tr("Use Sampling"), globalGroup, "samplingOn");
     connect(samplingOn, SIGNAL(toggled(bool)),
             this, SLOT(samplingOnChanged(bool)));
     qgrid->addWidget(samplingOn, 1,0);
@@ -182,7 +185,7 @@ QvisLineoutWindow::CreateWindowContents()
     //
     // NumberOfSamplePoints
     //
-    numberOfSamplePointsLabel = new QLabel("Samples",  globalGroup,
+    numberOfSamplePointsLabel = new QLabel(tr("Samples"),  globalGroup,
                                             "numberOfSamplePointsLabel");
     numberOfSamplePointsLabel->setAlignment(Qt::AlignCenter);
     qgrid->addWidget(numberOfSamplePointsLabel,2,0);
@@ -194,7 +197,7 @@ QvisLineoutWindow::CreateWindowContents()
     //
     // ReflineLabels
     //
-    reflineLabels = new QCheckBox("Refline Labels", globalGroup, "reflineLabels");
+    reflineLabels = new QCheckBox(tr("Refline Labels"), globalGroup, "reflineLabels");
     connect(reflineLabels, SIGNAL(toggled(bool)),
             this, SLOT(reflineLabelsChanged(bool)));
     qgrid->addWidget(reflineLabels, 3,0);
@@ -318,9 +321,10 @@ QvisLineoutWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *val = atts->GetPoint1();
-            msg.sprintf("The value of point1 is not valid. It should consist "
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of point1 is not valid. It should consist "
                 "of two or three real world coordinate values.  Resetting to "
-                "the last good value of <%g %g %g>", val[0], val[1], val[2]);
+                "the last good value of %1.").arg(num);
             Message(msg);
             atts->SetPoint1(atts->GetPoint1());
         }
@@ -347,9 +351,10 @@ QvisLineoutWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             const double *val = atts->GetPoint2();
-            msg.sprintf("The value of point2 is not valid. It should consist "
+            QString num; num.sprintf("<%g %g %g>", val[0], val[1], val[2]);
+            msg = tr("The value of point2 is not valid. It should consist "
                 "of two or three real world coordinate values.  Resetting to "
-                "the last good value of <%g %g %g>", val[0], val[1], val[2]);
+                "the last good value of %1.").arg(num);
             Message(msg);
             atts->SetPoint2(atts->GetPoint2());
         }
@@ -381,14 +386,15 @@ QvisLineoutWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             int val = temp.toInt(&okay);
-            atts->SetNumberOfSamplePoints(val);
+            if(okay)
+                atts->SetNumberOfSamplePoints(val);
         }
 
         if(!okay)
         {
-            msg.sprintf("The value of numberOfSamplePoints was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetNumberOfSamplePoints());
+            msg = tr("The value of numberOfSamplePoints was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetNumberOfSamplePoints());
             Message(msg);
             atts->SetNumberOfSamplePoints(atts->GetNumberOfSamplePoints());
         }

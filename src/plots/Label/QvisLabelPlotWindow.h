@@ -75,8 +75,8 @@ class QvisLabelPlotWindow : public QvisPostableWindowObserver
 public:
     QvisLabelPlotWindow(const int type,
                          LabelAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
+                         const QString &caption = QString::null,
+                         const QString &shortName = QString::null,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisLabelPlotWindow();
     virtual void CreateWindowContents();

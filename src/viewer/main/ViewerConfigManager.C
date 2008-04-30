@@ -454,6 +454,9 @@ ViewerConfigManager::Add(AttributeSubject *subject)
 //   Brad Whitlock, Thu Feb 17 16:08:58 PST 2005
 //   Added an error message if the session file could not be saved.
 //
+//   Brad Whitlock, Tue Apr 29 12:00:57 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -465,17 +468,15 @@ ViewerConfigManager::ExportEntireState(const std::string &filename)
 
     if(wroteSession)
     {
-        std::string str("VisIt exported the current session to: ");
-        str += filename;
-        str += ".";
-        Message(str.c_str());
+        QString str(tr("VisIt exported the current session to: %1.").
+            arg(filename.c_str()));
+        Message(str);
     }
     else
     {
-        std::string str("VisIt could not save your session to: ");
-        str += filename;
-        str += ".";
-        Error(str.c_str());
+        QString str(tr("VisIt could not save your session to: %1.").
+            arg(filename.c_str()));
+        Error(str);
     }
 }
 
@@ -510,6 +511,9 @@ ViewerConfigManager::ExportEntireState(const std::string &filename)
 //   Brad Whitlock, Wed Feb 13 14:10:51 PST 2008
 //   Pass the config version to the SetFromNode method.
 //
+//   Brad Whitlock, Tue Apr 29 12:05:17 PDT 2008
+//   Support for internationalization.
+//
 // ****************************************************************************
 
 void
@@ -534,7 +538,7 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
         DataNode *visitRoot = node->GetNode("VisIt");
         if(visitRoot != 0)
         {
-            std::string differentVersionMessage;
+            QString differentVersionMessage;
             DataNode *versionNode = visitRoot->GetNode("Version");
             std::string configVersion(VERSION);
             if(versionNode != 0)
@@ -542,13 +546,10 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
                 configVersion = versionNode->AsString();
                 if(versionNode->AsString() != VERSION)
                 {
-                    differentVersionMessage +=
-                        " Note that the session file was saved using VisIt ";
-                    differentVersionMessage += versionNode->AsString();
-                    differentVersionMessage +=
-                        " and it may not be 100% compatible with VisIt ";
-                    differentVersionMessage += VERSION;
-                    differentVersionMessage += ".";
+                    differentVersionMessage = tr(
+                        " Note that the session file was saved using VisIt %1 "
+                        " and it may not be 100% compatible with VisIt %2.").
+                        arg(versionNode->AsString().c_str()).arg(VERSION);
                 }
             }
 
@@ -562,8 +563,8 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
                 {
                     if(sources.size() == 0)
                     {
-                        Error("The list of sources used to restore the session "
-                              "was empty. The session could not be restored.");
+                        Error(tr("The list of sources used to restore the session "
+                              "was empty. The session could not be restored."));
                         return;
                     }
                     else
@@ -625,20 +626,18 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
 
                 if(fatalError)
                 {
-                    std::string str("VisIt detected serious errors in the "
-                        "session file from: ");
-                    str += filename;
-                    str += " so the session was not restored.";
+                    QString str(tr("VisIt detected serious errors in the "
+                        "session file from: %1 so the session was not restored.").
+                        arg(filename.c_str()));
                     str += differentVersionMessage;
-                    Error(str.c_str());
+                    Error(str);
                 }
                 else
                 {
-                    std::string str("VisIt imported a session from: ");
-                    str += filename;
-                    str += ".";
+                    QString str(tr("VisIt imported a session from: %1.").
+                        arg(filename.c_str()));
                     str += differentVersionMessage;
-                    Message(str.c_str());
+                    Message(str);
                 }
 
                 return;
@@ -646,19 +645,19 @@ ViewerConfigManager::ImportEntireState(const std::string &filename,
         }
     }
 
-    std::string str("VisIt could not locate the session file: ");
+    QString str;
     if(inVisItDir)
     {
-        str += filename;
-        str += ". VisIt looks for session files in ";
-        str += GetUserVisItDirectory();
-        str += " by default";
+        str = tr("VisIt could not locate the session file: %1.").arg(filename.c_str());
+        str += tr(" VisIt looks for session files in %1 by default.").
+            arg(GetUserVisItDirectory().c_str());
     }
     else
-        str += file2;
-    str += ". Check that you provided the correct session "
+        str = tr("VisIt could not locate the session file: %1.").arg(file2.c_str());
+
+    str += tr(" Check that you provided the correct session "
            "file name or try including the entire path to the "
-           "session file.";
-    Error(str.c_str());
+           "session file.");
+    Error(str);
 }
 
