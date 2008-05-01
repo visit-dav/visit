@@ -210,8 +210,8 @@ void
 Parser::PrintState(ostream &o)
 {
 #ifdef DEBUG
-    //o << "state= "; for (int i=0; i<states.size(); i++) o << states[i] << " "; o << endl;
-    o << "stack= "; for (int i=0; i<elems.size(); i++) o << *(elems[i].sym) << " "; o << endl;
+    //o << "state= "; for (size_t i=0; i<states.size(); i++) o << states[i] << " "; o << endl;
+    o << "stack= "; for (size_t i=0; i<elems.size(); i++) o << *(elems[i].sym) << " "; o << endl;
 #endif
 }
 

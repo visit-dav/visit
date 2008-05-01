@@ -495,8 +495,6 @@ PluginManager::EnablePlugin(const string &id)
 void
 PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 {
-    int dir, f;
-
     // Read the files in the plugin directory.
     vector< vector<pair<string,string> > > files;
     ReadPluginDir(files);
@@ -507,9 +505,9 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 
     vector< vector<pair<string,string> > > tmp;
     tmp.resize(files.size());
-    for (dir = 0 ; dir < files.size() ; dir++)
+    for (size_t dir = 0 ; dir < files.size() ; dir++)
     {
-        for (f = 0; f < files[dir].size(); f++)
+        for (size_t f = 0; f < files[dir].size(); f++)
         {
             const string &filename = files[dir][f].second;
 
@@ -534,10 +532,10 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 
     // Sort the file names, but keep the precedence of the directory
     // they came from preserved.
-    for (dir = 0 ; dir < tmp.size() ; dir++)
+    for (size_t dir = 0 ; dir < tmp.size() ; dir++)
     {
         sort(tmp[dir].begin(), tmp[dir].end());
-        for (f = 0 ; f < tmp[dir].size() ; f++)
+        for (size_t f = 0 ; f < tmp[dir].size() ; f++)
             libs.push_back(tmp[dir][f]);
     }
 }
@@ -612,7 +610,7 @@ PluginManager::ReadPluginInfo()
     string ext(PLUGIN_EXTENSION);
     vector<string> alreadyLoaded;
     vector<string> alreadyLoadedDir;
-    for (int i=0; i<libs.size(); i++)
+    for (size_t i=0; i<libs.size(); i++)
     {
         const string &dirname  = libs[i].first;
         const string &filename = libs[i].second;
@@ -635,8 +633,7 @@ PluginManager::ReadPluginInfo()
                           break;
         }
         bool match = false;
-        int j;
-        for (j=0; j<libs.size() && !match; j++)
+        for (size_t j=0; j<libs.size() && !match; j++)
         {
             if (libs[i].first  == dirname &&
                 libs[j].second == str)
@@ -648,7 +645,7 @@ PluginManager::ReadPluginInfo()
         // see if this plugin has already been loaded, presumably because
         // we loaded a private one and now we're considering the installed
         // version.
-        for (j = 0 ; j < alreadyLoaded.size() ; j++)
+        for (size_t j = 0 ; j < alreadyLoaded.size() ; j++)
         {
             if (filename == alreadyLoaded[j])
             {
@@ -699,7 +696,7 @@ PluginManager::ReadPluginInfo()
         pluginInitErrors += "The following plugins were built with an old "
             "version of VisIt.  Please either rebuild the plugins associated "
             "with these files or delete them:\n";
-        for (int i=0; i<pluginsWithWrongVersion.size(); i++)
+        for (size_t i=0; i<pluginsWithWrongVersion.size(); i++)
         {
             string pluginFile(pluginsWithWrongVersion[i]);
             string ext(PLUGIN_EXTENSION);
@@ -715,7 +712,7 @@ PluginManager::ReadPluginInfo()
 
             pluginInitErrors += string("   the ")+pluginPrefix+
                                 " plugin in the directory "+dirname+"\n";
-            for (int j = 0 ; j < alreadyLoaded.size() ; j++)
+            for (size_t j = 0 ; j < alreadyLoaded.size() ; j++)
             {
                 if (alreadyLoaded[j] == pluginlib)
                     pluginInitErrors += string("\t(Note that the plugin from ")
@@ -733,7 +730,7 @@ PluginManager::ReadPluginInfo()
             "with an old version of VisIt.  Please either regenerate the "
             "plugin info files by running xml2info and rebuild them, or else "
             "simply delete them:\n";
-        for (int i=0; i<pluginsWithNoVersion.size(); i++)
+        for (size_t i=0; i<pluginsWithNoVersion.size(); i++)
         {
             string pluginFile(pluginsWithNoVersion[i]);
             string ext(PLUGIN_EXTENSION);
@@ -798,7 +795,7 @@ PluginManager::IsGeneralPlugin(const string &pluginFile) const
 void
 PluginManager::LoadPluginsNow()
 {
-    for (int i=0; i<libfiles.size(); i++)
+    for (size_t i=0; i<libfiles.size(); i++)
     {
         LoadSinglePlugin(i);
     }
@@ -979,8 +976,6 @@ PluginManager::LoadPluginsOnDemand()
 void
 PluginManager::UnloadPlugins()
 {
-    int i;
-
     FreeCommonPluginInfo();
     FreeGUIPluginInfo();
     FreeViewerPluginInfo();
@@ -989,7 +984,7 @@ PluginManager::UnloadPlugins()
     FreeScriptingPluginInfo();
 
     // Close the plugins.
-    for (i=0; i < loadedhandles.size(); i++)
+    for (size_t i=0; i < loadedhandles.size(); i++)
     {
         handle = loadedhandles[i];
         PluginClose();
@@ -1053,7 +1048,7 @@ PluginManager::GetAllIndex(const string &id) const
     // Look through the entire list of plugins for the specified name.
     //
     int pluginTypeIndex = -1;
-    for(int i = 0; i < ids.size(); ++i)
+    for(size_t i = 0; i < ids.size(); ++i)
     {
         if(id == ids[i])
         {
@@ -1093,7 +1088,7 @@ PluginManager::GetAllIndexFromName(const string &name) const
     // Look through the entire list of plugins for the specified name.
     //
     int pluginTypeIndex = -1;
-    for(int i = 0; i < names.size(); ++i)
+    for(size_t i = 0; i < names.size(); ++i)
     {
         if(name == names[i])
         {
@@ -1518,7 +1513,7 @@ void
 PluginManager::ReadPluginDir(vector< vector<pair<string,string> > > &files)
 {
     files.resize(pluginDirs.size());
-    for (int i=0; i<pluginDirs.size(); i++)
+    for (size_t i=0; i<pluginDirs.size(); i++)
     {
         string pluginDir(pluginDirs[i]);
 

@@ -80,7 +80,7 @@ Grammar::Grammar(Dictionary &d)
 // ****************************************************************************
 Grammar::~Grammar()
 {
-    for (int i=1; i<rules.size(); i++)
+    for (size_t i=1; i<rules.size(); i++)
         delete rules[i];
 }
 
@@ -113,12 +113,11 @@ Grammar::SetPrinter(ostream *o)
 void
 Grammar::Print(ostream &o)
 {
-    int i;
     o << endl << TermBold << TermBrown << "- - - ------------- rules ------------- - - -\n" << TermReset;
-    for (i=0; i<rules.size(); i++)
+    for (size_t i=0; i<rules.size(); i++)
         o << *(rules[i]) << endl;
     o << endl << TermBold << TermBrown << "- - - ------------- states ------------- - - -\n" << TermReset;
-    for (i=0; i<sets.size(); i++)
+    for (size_t i=0; i<sets.size(); i++)
     {
         if (sets[i].HasConflict())   o << TermRed;
         else                         o << TermBold << TermBlue;
@@ -282,13 +281,12 @@ Grammar::Configure()
     sets.push_back(start);
 
     // For every state in the grammar
-    for (int j=0; j<sets.size(); j++)
+    for (size_t j=0; j<sets.size(); j++)
     {
         // Add new states to the grammar resulting from shifting a symbol
         // in the current state
-        int i;
         SymbolSet shift = sets[j].GetShiftSymbols();
-        for (i=0; i<shift.size(); i++)
+        for (size_t i=0; i<shift.size(); i++)
         {
             const Symbol *ssym = shift.set[i];
             if (!ssym)
@@ -297,8 +295,8 @@ Grammar::Configure()
             ConfiguratingSet cs = sets[j].GetShiftSet(ssym);
             cs.Close(rules);
 
-            int match = sets.size();
-            for (int k=0; k<sets.size(); k++)
+            size_t match = sets.size();
+            for (size_t k=0; k<sets.size(); k++)
             {
                 if (cs == sets[k])
                 {
@@ -316,7 +314,7 @@ Grammar::Configure()
         // Add the reduce rules for the current state, looking for 
         // and reduce-reduce conflicts
         SymbolSet reduce = sets[j].GetReduceSymbols();
-        for (i=0; i<reduce.size(); i++)
+        for (size_t i=0; i<reduce.size(); i++)
         {
             const Symbol *rsym = reduce.set[i];
             if (!rsym)
@@ -330,7 +328,7 @@ Grammar::Configure()
                 // I never bothered since it never came up in our grammar
                 (*out) << TermRed << "Reduce-reduce conflict in state " << j
                      << " for symbol " << *rsym << ":" << endl;
-                for (int k=0; k<reducerules.size(); k++)
+                for (size_t k=0; k<reducerules.size(); k++)
                 {
                     (*out) << TermRed << "\tRule "<<reducerules[k]<<": " << TermReset;
                     rules[reducerules[k]]->Print((*out));
@@ -340,12 +338,12 @@ Grammar::Configure()
                 sets[j].SetConflict(true);
                 okay = false;
             }
-            for (int k=0; k<reducerules.size(); k++)
+            for (size_t k=0; k<reducerules.size(); k++)
                 sets[j].SetReduceRule(rsym, reducerules[k]);
         }
 
         // Look for any shift-reduce conflicts
-        for (i=0; i<shift.size(); i++)
+        for (size_t i=0; i<shift.size(); i++)
         {
             const Symbol *ssym = shift.set[i];
             if (!ssym || !reduce.set[i])
@@ -397,7 +395,7 @@ Grammar::Configure()
     // Create the states directly from the configurating sets
     if (okay)
     {
-        for (int i=0; i<sets.size(); i++)
+        for (size_t i=0; i<sets.size(); i++)
             states.push_back(State(sets[i]));
     }
 
@@ -438,8 +436,6 @@ Grammar::Configure()
 void
 Grammar::WriteStateInitialization(const string &name, ostream &o)
 {
-    int i;
-
     o << "/*****************************************************************************" << endl;
     o << "*" << endl;
     o << "* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC" << endl;
@@ -497,7 +493,7 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
     o << "}" << endl;
     o << "" << endl;
 
-    for (i=0; i<states.size(); i++)
+    for (size_t i=0; i<states.size(); i++)
     {
         o << "static void InitState_"<<i<<"(Dictionary &d, State &s)" << endl;
         o << "{" << endl;
@@ -575,7 +571,7 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
     o << "{" << endl;
     o << "    states.resize(" << states.size() << ");" << endl;
     o << endl;
-    for (i=0; i<states.size(); i++)
+    for (size_t i=0; i<states.size(); i++)
     {
         o << "    InitState_"<<i<<"(dictionary, states[" << i << "]);" << endl;
     }

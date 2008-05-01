@@ -465,7 +465,7 @@ OperatorPluginManager::LoadScriptingPluginInfo()
 void
 OperatorPluginManager::FreeCommonPluginInfo()
 {
-    for (int i=0; i<commonPluginInfo.size(); i++)
+    for (size_t i=0; i<commonPluginInfo.size(); i++)
         delete commonPluginInfo[i];
     commonPluginInfo.clear();
 }
@@ -486,7 +486,7 @@ OperatorPluginManager::FreeCommonPluginInfo()
 void
 OperatorPluginManager::FreeGUIPluginInfo()
 {
-    for (int i=0; i<guiPluginInfo.size(); i++)
+    for (size_t i=0; i<guiPluginInfo.size(); i++)
         delete guiPluginInfo[i];
     guiPluginInfo.clear();
 }
@@ -507,7 +507,7 @@ OperatorPluginManager::FreeGUIPluginInfo()
 void
 OperatorPluginManager::FreeViewerPluginInfo()
 {
-    for (int i=0; i<viewerPluginInfo.size(); i++)
+    for (size_t i=0; i<viewerPluginInfo.size(); i++)
         delete viewerPluginInfo[i];
     viewerPluginInfo.clear();
 }
@@ -528,7 +528,7 @@ OperatorPluginManager::FreeViewerPluginInfo()
 void
 OperatorPluginManager::FreeEnginePluginInfo()
 {
-    for (int i=0; i<enginePluginInfo.size(); i++)
+    for (size_t i=0; i<enginePluginInfo.size(); i++)
         delete enginePluginInfo[i];
     enginePluginInfo.clear();
 }
@@ -549,7 +549,7 @@ OperatorPluginManager::FreeEnginePluginInfo()
 void
 OperatorPluginManager::FreeScriptingPluginInfo()
 {
-    for (int i=0; i<scriptingPluginInfo.size(); i++)
+    for (size_t i=0; i<scriptingPluginInfo.size(); i++)
         delete scriptingPluginInfo[i];
     scriptingPluginInfo.clear();
 }
@@ -586,7 +586,7 @@ OperatorPluginManager::ReloadPlugins()
     vector<ScriptingOperatorPluginInfo*> new_scriptingPluginInfo;
 
     loadedindexmap.clear();
-    for (int i=0; i<loadedhandles.size(); i++)
+    for (size_t i=0; i<loadedhandles.size(); i++)
     {
         if (enabled[allindexmap[commonPluginInfo[i]->GetID()]])
         {

@@ -122,7 +122,7 @@ Sequence::Print(ostream &o, int pos) const
     }
     else
     {
-        for (int i=0; i<symbols.size(); i++)
+        for (size_t i=0; i<symbols.size(); i++)
         {
             if (pos == i) o << dot.c_str() << " ";
                 o << *(symbols[i]) << " ";
@@ -147,13 +147,12 @@ Sequence::IsNullable(const vector<const Rule*> &rules) const
     if (symbols.empty())
         return true;
  
-    int i;
-    for (i=0; i<symbols.size(); i++)
+    for (size_t i=0; i<symbols.size(); i++)
         if (symbols[i]->IsTerminal())
             return false;
 
     bool nullable = true;
-    for (i=0; i<symbols.size() && nullable; i++)
+    for (size_t i=0; i<symbols.size() && nullable; i++)
     {
         nullable = symbols[i]->IsNullable(rules);
     }
@@ -174,8 +173,7 @@ SymbolSet
 Sequence::GetFirstSet(const vector<const Rule*> &rules) const
 {
     SymbolSet first;
-    int i;
-    for (i=0; i<symbols.size(); i++)
+    for (size_t i=0; i<symbols.size(); i++)
     {
         if (symbols[i]->IsTerminal())
         {
@@ -240,7 +238,7 @@ Sequence
 Sequence::GetSubsequence(int pos) const
 {
     Sequence s;
-    for (int i=pos; i<symbols.size(); i++)
+    for (size_t i=pos; i<symbols.size(); i++)
         s.AddSymbol(*symbols[i]);
     return s;
 }
@@ -259,7 +257,7 @@ const Symbol*
 Sequence::GetLastTerminal() const
 {
     const Symbol *nt = NULL;
-    for (int i=0; i<symbols.size(); i++)
+    for (size_t i=0; i<symbols.size(); i++)
         if (symbols[i]->IsTerminal())
             nt = symbols[i];
     return nt;

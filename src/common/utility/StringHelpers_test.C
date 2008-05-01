@@ -117,7 +117,7 @@ int main(int argc, char **argv)
         cerr << "Strings in \"" << argv[0] << "\" on the following lines" << endl;
 	cerr << "failed when they should have succeeded..." << endl;
 	cerr << "    ";
-        for (int i = 0; i < falseNegatives.size(); i++)
+        for (size_t i = 0; i < falseNegatives.size(); i++)
             cerr << falseNegatives[i]-1 << ", ";
         cerr << endl;
     }
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
         cerr << "Strings in \"" << argv[0] << "\" on the following lines" << endl;
 	cerr << "succeeded when they should have failed..." << endl;
 	cerr << "    ";
-        for (int i = 0; i < falsePositives.size(); i++)
+        for (size_t i = 0; i < falsePositives.size(); i++)
             cerr << falsePositives[i]-1 << ", ";
         cerr << endl;
     }

@@ -564,7 +564,7 @@ ExprParser::Parse(const std::string &s)
 
     // Change weird spacing (tabs, newlines) to normal ones.
     // This will make printing error messages later much easier.
-    for (int i=0; i<text.length(); i++)
+    for (size_t i=0; i<text.length(); i++)
         if (text[i] == '\t' || text[i] == '\n') text[i] = ' ';
 
     TRY

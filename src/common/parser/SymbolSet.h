@@ -64,7 +64,7 @@ struct PARSER_API SymbolSet
     {
         memset(set, 0, sizeof(const Symbol*)*MAXSYMBOLS);
     }
-    int  size() const
+    size_t  size() const
     {
         return MAXSYMBOLS;
     }

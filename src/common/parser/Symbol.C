@@ -153,7 +153,7 @@ Symbol::IsNullable(const vector<const Rule*> &rules) const
     if (type == Terminal)
         return false;
 
-    for (int i=0; i<rules.size(); i++)
+    for (size_t i=0; i<rules.size(); i++)
     {
         if (rules[i]->GetLHS() == this)
         {
@@ -185,7 +185,7 @@ Symbol::GetFirstSet(const vector<const Rule*> &rules) const
     }
     else
     {
-        for (int i=0; i<rules.size(); i++)
+        for (size_t i=0; i<rules.size(); i++)
         {
             if (rules[i]->GetLHS() == this &&
                 // Try to avoid infinite recursion -- this should be improved!

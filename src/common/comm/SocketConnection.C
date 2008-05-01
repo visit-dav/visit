@@ -194,7 +194,7 @@ SocketConnection::Flush()
     int count = 0;
 
     // Write out the entire buffer, in pieces, to the socket descriptor.
-    for(int bufindex = 0; bufindex < buffer.size(); ++bufindex)
+    for(size_t bufindex = 0; bufindex < buffer.size(); ++bufindex)
     {
         buf[count++] = buffer[bufindex];
 

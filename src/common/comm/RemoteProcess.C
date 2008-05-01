@@ -1134,7 +1134,7 @@ RemoteProcess::Open(const std::string &rHost,
                       numRead, numWrite,
                       createAsThoughLocal);
     debug5 << mName << "Creating the command line to use: (";
-    for(int i = 0; i < commandLine.size(); ++i)
+    for(size_t i = 0; i < commandLine.size(); ++i)
     {
         debug5 << commandLine[i].c_str();
         if(i < commandLine.size()-1)
@@ -1849,7 +1849,7 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
     //
     // Add the program's additional arguments.
     //
-    for(int i = 0; i < argList.size(); ++i)
+    for(size_t i = 0; i < argList.size(); ++i)
         args.push_back(argList[i]);
 
 

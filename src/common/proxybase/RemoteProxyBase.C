@@ -395,8 +395,6 @@ void
 RemoteProxyBase::AddProfileArguments(const HostProfile &profile,
     bool addParallelArgs)
 {
-    int  i;
-
     //
     // Set the user's login name.
     //
@@ -559,7 +557,7 @@ RemoteProxyBase::AddProfileArguments(const HostProfile &profile,
     //
     // Add any additional arguments specified in the profile
     //
-    for (i = 0; i < profile.GetArguments().size(); ++i)
+    for (size_t i = 0; i < profile.GetArguments().size(); ++i)
         AddArgument(profile.GetArguments()[i]);
 }
 
@@ -605,7 +603,7 @@ RemoteProxyBase::GetVisItString() const
     // The -dir flag means that the visit script is not in our path, so we
     // must prepend it to the name of the visit script.  Do that check now.
     std::string visitString = "visit";
-    for (int i = 0 ; i < argv.size() ; ++i)
+    for (size_t i = 0 ; i < argv.size() ; ++i)
     {
         if (argv[i] == "-dir" && (i + 1) < argv.size())
         {
@@ -648,7 +646,7 @@ RemoteProxyBase::AddExtraArguments()
     //
     // Add any extra arguments to the component before opening it.
     //
-    for(int i = 0; i < argv.size(); ++i)
+    for(size_t i = 0; i < argv.size(); ++i)
         component->AddArgument(argv[i]);
 }
 

@@ -110,7 +110,7 @@ InvalidFilesException::InvalidFilesException(const char *filename,
     sprintf(str, "There was an error opening %s. It may be an "
             "invalid file.  VisIt tried using the following file format "
             "readers to open the file: ", filename);
-    for (int i = 0 ; i < plugins.size() ; i++)
+    for (size_t i = 0 ; i < plugins.size() ; i++)
     {
         if (i != plugins.size()-1)
             sprintf(strlen(str)+str, "%s, ", plugins[i].c_str());
@@ -147,7 +147,7 @@ InvalidFilesException::InvalidFilesException(const char *filename,
     sprintf(str, "There was an error opening %s. It may be an "
             "invalid file.  VisIt tried using the following file format "
             "readers to open the file: ", filename);
-    for (int i = 0 ; i < plugins.size() ; i++)
+    for (size_t i = 0 ; i < plugins.size() ; i++)
     {
         if (i != plugins.size()-1)
             sprintf(strlen(str)+str, "%s, ", plugins[i].c_str());
