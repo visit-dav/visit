@@ -1355,6 +1355,9 @@ ViewerEngineManager::GetEngine(const EngineKey &ek)
 //   Brad Whitlock, Tue Apr 29 14:42:28 PDT 2008
 //   Support for internationalization.
 //
+//   Jeremy Meredith, Thu May  1 13:42:55 EDT 2008
+//   Account for null error strings.
+//
 // ****************************************************************************
 
 void
@@ -1375,7 +1378,7 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
                   arg(ek.HostName().c_str());
     }
         
-    if (strlen(message) > 0)
+    if (!message.isEmpty())
         Warning(message);
 }
 
