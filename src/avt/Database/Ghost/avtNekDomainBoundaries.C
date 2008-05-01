@@ -340,7 +340,7 @@ avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
                                            const vector<vtkDataSet*> &meshes)
 {
     int nLocalDomains = meshes.size();
-    int ii, jj, ff, pp, cc;
+    int ii, ff, pp, cc;
     const int  f[6][4] = { {0, 2, 4, 6},
                            {1, 3, 5, 7},
                            {0, 1, 4, 5}, 
@@ -679,7 +679,6 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
         CreateNeighborList(domainNum, meshes);
     }
 
-    int ii, jj, kk;
     bool  bAllDomainsSequential = true;
     bool  bAllDomainsSorted = true;
 
@@ -687,7 +686,7 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
     //loop is wrapped in an if test.
     if (meshes.size() > 0)
     {
-        for (ii = 0; ii < allDomains.size()-1 && (bAllDomainsSequential || bAllDomainsSorted); ii++)
+        for (size_t ii = 0; ii < allDomains.size()-1 && (bAllDomainsSequential || bAllDomainsSorted); ii++)
         {
             if (allDomains[ii] != allDomains[ii+1]-1)
                 bAllDomainsSequential = false;
@@ -697,7 +696,7 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
         }
     }
     
-    for (ii = 0; ii < meshes.size(); ii++)
+    for (size_t ii = 0; ii < meshes.size(); ii++)
     {
         int dom = domainNum[ii];
     
@@ -709,10 +708,10 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
         gn->SetName("avtGhostNodes");
         unsigned char *gnp = gn->GetPointer(0);
     
-        for (jj = 0; jj < nPts; jj++)
+        for (int jj = 0; jj < nPts; jj++)
             gnp[jj] = 0;
 
-        for (jj = 0; jj < 6; jj++)
+        for (int jj = 0; jj < 6; jj++)
         {
             //Look in allDomains for the domain that neighbors the current face
             //If found, mark the points on this face.
@@ -746,7 +745,7 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
             }
             else
             {
-                for (kk = 0; kk < allDomains.size(); kk++)
+                for (size_t kk = 0; kk < allDomains.size(); kk++)
                 {
                     if (allDomains[kk] == iNeighborDomain)
                     {

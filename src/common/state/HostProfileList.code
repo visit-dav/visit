@@ -59,7 +59,7 @@ HostProfileList::FindMatchingProfileForHost(const std::string &hostName) const
     std::vector<const HostProfile*> profiles =
                                       FindAllMatchingProfileForHost(hostName);
 
-    for (int i=0; i<profiles.size(); i++)
+    for (size_t i=0; i<profiles.size(); i++)
         if (profiles[i]->GetActive())
             return profiles[i];
 
@@ -108,7 +108,7 @@ HostProfileList::FindAllMatchingProfileForHost(const std::string &hostName) cons
     if (hostEnt)
         fqhostName = std::string(hostEnt->h_name);
 
-    for(int i = 0; i < profiles.size(); i++)
+    for(size_t i = 0; i < profiles.size(); i++)
     {
         const HostProfile *p = (const HostProfile *)(profiles[i]);
 
@@ -118,7 +118,7 @@ HostProfileList::FindAllMatchingProfileForHost(const std::string &hostName) cons
 
     if (matches.size() == 0)
     {
-        for(int i = 0; i < profiles.size(); i++)
+        for(size_t i = 0; i < profiles.size(); i++)
         {
             const HostProfile *p = (const HostProfile *)(profiles[i]);
 
@@ -164,7 +164,7 @@ HostProfileList::GetProfileForHost(const std::string &hostName) const
     const HostProfile *retval = 0;
     bool notfound = true;
 
-    for(int i = 0; (i < profiles.size()) && notfound; ++i)
+    for(size_t i = 0; (i < profiles.size()) && notfound; ++i)
     {
         retval = ((const HostProfile *)(profiles[i]));
         notfound = (retval->GetHost() != hostName ||
@@ -203,7 +203,7 @@ HostProfileList::GetNumProfilesForHost(const std::string &hostName) const
 {
     int nHosts = 0;
 
-    for(int i = 0; i < profiles.size(); ++i)
+    for(size_t i = 0; i < profiles.size(); ++i)
     {
         const HostProfile *current = (const HostProfile *)(profiles[i]);
         if(current->GetHost() == hostName)
@@ -250,7 +250,7 @@ HostProfileList::SetAsActiveProfile(int index)
 
     // Make sure that all other profiles having the same host
     // are NOT the active profile.
-    for(int i = 0; i < profiles.size(); ++i)
+    for(size_t i = 0; i < profiles.size(); ++i)
     {
         if(i == index)
             continue;
@@ -493,7 +493,7 @@ HostProfileList::SetFromNode(DataNode *parentNode)
             AttributeGroupVector::iterator pos;
             bool notFound = true;
             int profileIndex = 0;
-            for(int j = 0; j < profiles.size(); ++j)
+            for(size_t j = 0; j < profiles.size(); ++j)
             {
                 HostProfile *p = (HostProfile *)profiles[j];
                 if((temp.GetProfileName() == p->GetProfileName()) &&

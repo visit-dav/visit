@@ -318,7 +318,7 @@ FileContentsChecksum(const QString &name, unsigned int *sum)
     while (!file.eof())
     {
         file.read(buf, sizeof(buf));
-	*sum = BJHash::Hash((unsigned char *) buf, file.gcount(), *sum);
+        *sum = BJHash::Hash((unsigned char *) buf, file.gcount(), *sum);
     }
 
     file.close();
@@ -364,23 +364,23 @@ CloseHeader(ofstream &file, const QString &pre_name_withoutpath)
     {
         if (post_cksum == pre_cksum)
         {
-	    // Since the new header file is the same as the old, don't
-	    // touch the old and remove the new (pre) one.
+            // Since the new header file is the same as the old, don't
+            // touch the old and remove the new (pre) one.
             unlink(pre_name.latin1());
-	    cout << "Note: Header file \"" << post_name << "\" did NOT change." << endl;
+            cout << "Note: Header file \"" << post_name << "\" did NOT change." << endl;
         }
         else
         {
-	    // Since the new headeer file is different from the old,
-	    // remove the old one and rename the new one.
+            // Since the new headeer file is different from the old,
+            // remove the old one and rename the new one.
             unlink(post_name.latin1());
-	    rename(pre_name.latin1(), post_name.latin1());
-	    cout << "Note: Header file \"" << post_name << "\" changed." << endl;
+            rename(pre_name.latin1(), post_name.latin1());
+            cout << "Note: Header file \"" << post_name << "\" changed." << endl;
         }
     }
     else
     {
-	rename(pre_name.latin1(), post_name.latin1());
+        rename(pre_name.latin1(), post_name.latin1());
     }
 }
 
@@ -670,7 +670,7 @@ ProcessFile(QString file)
     {
         if (print)
         {
-            for (int i=0; i<EnumType::enums.size(); i++)
+            for (size_t i=0; i<EnumType::enums.size(); i++)
             {
                 EnumType::enums[i]->Print(cout);
                 cout << endl;
@@ -699,7 +699,7 @@ ProcessFile(QString file)
             if (Open(h, "pre_"+attribute->name+".h"))
             {
                 attribute->WriteHeader(h);
-		CloseHeader(h, "pre_"+attribute->name+".h");
+                CloseHeader(h, "pre_"+attribute->name+".h");
             }
 
             ofstream c;
@@ -728,7 +728,7 @@ ProcessFile(QString file)
             if (Open(h, "pre_"+attribute->windowname+".h"))
             {
                 attribute->WriteHeader(h);
-		CloseHeader(h, "pre_"+attribute->windowname+".h");
+                CloseHeader(h, "pre_"+attribute->windowname+".h");
             }
 
             ofstream c;
@@ -947,7 +947,7 @@ ProcessFile(QString file)
                 {
                     attribute->WriteHeader(h);
                 }
-		CloseHeader(h, "pre_"+prefix+attribute->name+".h");
+                CloseHeader(h, "pre_"+prefix+attribute->name+".h");
             }
 
             ofstream s;

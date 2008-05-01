@@ -252,10 +252,8 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6])
 void
 Boundary::DeleteNeighbor(int d, vector<Boundary> &wholelist)
 {
-    int   i;
-
     vector<int> delete_list;
-    for (i=0; i<neighbors.size(); i++)
+    for (size_t i=0; i<neighbors.size(); i++)
         if (neighbors[i].domain == d)
             delete_list.push_back(i);
 
@@ -271,7 +269,7 @@ Boundary::DeleteNeighbor(int d, vector<Boundary> &wholelist)
         return;
     }
 
-    for (i = delete_list.size()-1 ; i >= 0 ; i--)
+    for (size_t i = delete_list.size()-1 ; i >= 0 ; i--)
     {
         int n = delete_list[i];
         // Stop expansion of the boundary
@@ -289,13 +287,13 @@ Boundary::DeleteNeighbor(int d, vector<Boundary> &wholelist)
             expand[5] = 0;
     
         // Remove the neighbor from the list
-        for (int i=n+1; i<neighbors.size(); i++)
+        for (size_t j=n+1; j<neighbors.size(); j++)
         {
-            int d = neighbors[i].domain;
-            int entry = neighbors[i].match;
+            int d = neighbors[j].domain;
+            int entry = neighbors[j].match;
             if (entry >= 0 && entry < wholelist[d].neighbors.size())
                 wholelist[d].neighbors[entry].match--;
-            neighbors[i-1] = neighbors[i];
+            neighbors[j-1] = neighbors[j];
         }
         neighbors.resize(neighbors.size()-1);
     }
@@ -755,7 +753,7 @@ operator<<(ostream &o, Boundary &b)
       << (b.expand[3] ? "+j" : "") << " "
       << (b.expand[4] ? "-k" : "") << " "
       << (b.expand[5] ? "+k" : "") << "\n";
-    for (int j=0; j<b.neighbors.size(); j++)
+    for (size_t j=0; j<b.neighbors.size(); j++)
     {
         o << "                           >>>"
           << "\t d=" << b.neighbors[j].domain

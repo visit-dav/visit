@@ -827,7 +827,7 @@ class InfoGeneratorPlugin : public Plugin
             c << ""<<name<<"GeneralPluginInfo::GetDfltExtsFromGen() const" << endl;
             c << "{" << endl;
             c << "    std::vector<std::string> defaultExtensions;" << endl;
-            for (int i=0; i<extensions.size(); i++)
+            for (size_t i=0; i<extensions.size(); i++)
             {
                 c << "    defaultExtensions.push_back(\""<<extensions[i]<<"\");" << endl;
             }
@@ -850,7 +850,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << ""<<name<<"GeneralPluginInfo::GetFilenamesFromGen() const" << endl;
                 c << "{" << endl;
                 c << "    std::vector<std::string> filenames;" << endl;
-                for (int i=0; i<filenames.size(); i++)
+                for (size_t i=0; i<filenames.size(); i++)
                 {
                     c << "    filenames.push_back(\""<<filenames[i]<<"\");" << endl;
                 }
@@ -1193,7 +1193,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << "{" << endl;
                 c << "    return ";
                 vector<QString> types = SplitValues(vartype);
-                for (int i=0; i<types.size(); i++)
+                for (size_t i=0; i<types.size(); i++)
                 {
                     if (i>0) c << " | ";
                     if      (types[i] == "mesh")
@@ -1587,7 +1587,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << "{" << endl;
                 c << "    return ";
                 vector<QString> types = SplitValues(vartype);
-                for (int i=0; i<types.size(); i++)
+                for (size_t i=0; i<types.size(); i++)
                 {
                     if (i>0) c << " | ";
                     if      (types[i] == "mesh")

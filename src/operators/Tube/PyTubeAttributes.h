@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyTubeAttributes_StartUp(TubeAttributes *subj, void *data);
-void            PyTubeAttributes_CloseDown();
+void           PyTubeAttributes_StartUp(TubeAttributes *subj, void *data);
+void           PyTubeAttributes_CloseDown();
 PyMethodDef *   PyTubeAttributes_GetMethodTable(int *nMethods);
-bool            PyTubeAttributes_Check(PyObject *obj);
+bool           PyTubeAttributes_Check(PyObject *obj);
 TubeAttributes *  PyTubeAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyTubeAttributes_New();
 PyObject *      PyTubeAttributes_Wrap(const TubeAttributes *attr);
-void            PyTubeAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyTubeAttributes_SetDefaults(const TubeAttributes *atts);
-std::string     PyTubeAttributes_GetLogString();
-std::string     PyTubeAttributes_ToString(const TubeAttributes *, const char *);
+void           PyTubeAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyTubeAttributes_SetDefaults(const TubeAttributes *atts);
+std::string    PyTubeAttributes_GetLogString();
+std::string    PyTubeAttributes_ToString(const TubeAttributes *, const char *);
 
 #endif
 

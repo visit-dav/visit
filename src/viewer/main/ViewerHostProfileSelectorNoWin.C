@@ -106,7 +106,6 @@ bool
 ViewerHostProfileSelectorNoWin::SelectProfile(
     HostProfileList *hostProfileList, const string &hostName, bool skipChooser)
 {
-    int  i;
     profile = HostProfile();
 
     if (skipChooser)
@@ -133,7 +132,7 @@ ViewerHostProfileSelectorNoWin::SelectProfile(
             (matchingProfiles.size() == 1 &&
              matchingProfiles[0]->GetParallel()))
         {
-            for (i = 0; i < matchingProfiles.size(); i++)
+            for (size_t i = 0; i < matchingProfiles.size(); i++)
             {
                 if (matchingProfiles[i]->GetActive())
                 {

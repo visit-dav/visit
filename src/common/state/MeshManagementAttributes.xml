@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="MeshManagementAttributes" purpose="Global variables controlling reading and conversion of non-standard meshes" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="MeshManagementAttributes" purpose="Global variables controlling reading and conversion of non-standard meshes" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="MeshManagementAttributes.code">
     <Enum name="DiscretizationModes">
       Uniform
       Adaptive
@@ -24,4 +24,6 @@
     <Field name="passNativeCSG" label="passNativeCSG" type="bool">
       false
     </Field>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
   </Attribute>

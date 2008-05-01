@@ -279,8 +279,9 @@ avtPerformColorTableLookupExpression::DoOperation(vtkDataArray *in, vtkDataArray
 
     // Set value range
     vtkLUT->SetRange(mExtents[0], mExtents[1]);
-    if (mLUTMapping == Skew) std::cout << dynamic_cast<vtkSkewLookupTable*>(vtkLUT)->GetSkewFactor() << std::endl;
-    double col[3];
+    if (mLUTMapping == Skew) 
+        std::cout << dynamic_cast<vtkSkewLookupTable*>(vtkLUT)->GetSkewFactor()
+                   << std::endl;
 
     // Perform lookup for each scalar in the data set
     for (int i = 0 ; i < ntuples ; i++)

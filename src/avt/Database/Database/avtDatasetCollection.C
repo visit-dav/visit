@@ -265,7 +265,7 @@ avtDatasetCollection::AddMixVar(int dom, void_ref_ptr mv)
 void_ref_ptr
 avtDatasetCollection::GetMixVar(int dom, std::string name)
 {
-    for (int i = 0 ; i < mixvars[dom].size() ; i++)
+    for (size_t i = 0 ; i < mixvars[dom].size() ; i++)
     {
         avtMixedVariable *mixvar = (avtMixedVariable *) *mixvars[dom][i];
         if (mixvar->GetVarname() == name)
@@ -321,7 +321,7 @@ avtDatasetCollection::ReplaceMixVar(int dom, void_ref_ptr mix)
 {
     avtMixedVariable *mv = (avtMixedVariable *) *mix;
 
-    for (int i = 0 ; i < mixvars[dom].size() ; i++)
+    for (size_t i = 0 ; i < mixvars[dom].size() ; i++)
     {
         avtMixedVariable *nmv = (avtMixedVariable *) *mixvars[dom][i];
         if (nmv->GetVarname() == mv->GetVarname())

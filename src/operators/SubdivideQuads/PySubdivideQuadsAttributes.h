@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PySubdivideQuadsAttributes_StartUp(SubdivideQuadsAttributes *subj, void *data);
-void            PySubdivideQuadsAttributes_CloseDown();
+void           PySubdivideQuadsAttributes_StartUp(SubdivideQuadsAttributes *subj, void *data);
+void           PySubdivideQuadsAttributes_CloseDown();
 PyMethodDef *   PySubdivideQuadsAttributes_GetMethodTable(int *nMethods);
-bool            PySubdivideQuadsAttributes_Check(PyObject *obj);
+bool           PySubdivideQuadsAttributes_Check(PyObject *obj);
 SubdivideQuadsAttributes *  PySubdivideQuadsAttributes_FromPyObject(PyObject *obj);
 PyObject *      PySubdivideQuadsAttributes_New();
 PyObject *      PySubdivideQuadsAttributes_Wrap(const SubdivideQuadsAttributes *attr);
-void            PySubdivideQuadsAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PySubdivideQuadsAttributes_SetDefaults(const SubdivideQuadsAttributes *atts);
-std::string     PySubdivideQuadsAttributes_GetLogString();
-std::string     PySubdivideQuadsAttributes_ToString(const SubdivideQuadsAttributes *, const char *);
+void           PySubdivideQuadsAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PySubdivideQuadsAttributes_SetDefaults(const SubdivideQuadsAttributes *atts);
+std::string    PySubdivideQuadsAttributes_GetLogString();
+std::string    PySubdivideQuadsAttributes_ToString(const SubdivideQuadsAttributes *, const char *);
 
 #endif
 

@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyVectorAttributes_StartUp(VectorAttributes *subj, void *data);
-void            PyVectorAttributes_CloseDown();
+void           PyVectorAttributes_StartUp(VectorAttributes *subj, void *data);
+void           PyVectorAttributes_CloseDown();
 PyMethodDef *   PyVectorAttributes_GetMethodTable(int *nMethods);
-bool            PyVectorAttributes_Check(PyObject *obj);
+bool           PyVectorAttributes_Check(PyObject *obj);
 VectorAttributes *  PyVectorAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyVectorAttributes_New();
 PyObject *      PyVectorAttributes_Wrap(const VectorAttributes *attr);
-void            PyVectorAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyVectorAttributes_SetDefaults(const VectorAttributes *atts);
-std::string     PyVectorAttributes_GetLogString();
-std::string     PyVectorAttributes_ToString(const VectorAttributes *, const char *);
+void           PyVectorAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyVectorAttributes_SetDefaults(const VectorAttributes *atts);
+std::string    PyVectorAttributes_GetLogString();
+std::string    PyVectorAttributes_ToString(const VectorAttributes *, const char *);
 
 #endif
 

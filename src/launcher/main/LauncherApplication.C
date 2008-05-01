@@ -758,7 +758,7 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
     int  oldlocalport       = -1;
     int  portargument       = -1;
     int  hostargument       = -1;
-    for (int i=0; i<launchArgs.size(); i++)
+    for (size_t i=0; i<launchArgs.size(); i++)
     {
         if (launchArgs[i] == "-np" || launchArgs[i] == "-par")
         {
@@ -900,8 +900,7 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
     // Make a command line array for the exec functions.
     char **args = new char *[launchArgs.size() + 1];
     memset(args, 0, (launchArgs.size() + 1) * sizeof(char *));
-    int i;
-    for(i = 0; i < launchArgs.size(); ++i)
+    for(size_t i = 0; i < launchArgs.size(); ++i)
     {
         args[i] = new char[launchArgs[i].size() + 1];
         strcpy(args[i], launchArgs[i].c_str());
@@ -971,7 +970,7 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
         // method because it creates a ParentProcess object that will
         // rearrange the pointers in the array.
         char **args2 = new char *[launchArgs.size() + 1];
-        for(i = 0; i < launchArgs.size(); ++i)
+        for(size_t i = 0; i < launchArgs.size(); ++i)
             args2[i] = args[i];
 
         // Tell the client that we could not connect.
@@ -991,7 +990,7 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
 #endif
 
     // Free the command line storage.
-    for(i = 0; i < launchArgs.size(); ++i)
+    for(size_t i = 0; i < launchArgs.size(); ++i)
         delete [] args[i];
     delete [] args;
 }
@@ -1122,7 +1121,7 @@ LauncherApplication::ConnectSimulation(const stringVector &launchArgs,
 
     // Create the Launch args
     strcpy(tmp, "");
-    for (int i=0; i<launchArgs.size(); i++)
+    for (size_t i=0; i<launchArgs.size(); i++)
     {
         strcat(tmp, launchArgs[i].c_str());
         strcat(tmp, "\n");

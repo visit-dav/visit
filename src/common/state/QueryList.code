@@ -57,9 +57,8 @@ Definition:
 bool
 QueryList::QueryExists(const std::string &name, QueryType t)
 {
-    int i;
     bool match = false;
-    for (i = 0; i < names.size(); i++)
+    for (size_t i = 0; i < names.size(); i++)
     {
         if (name == names[i]) 
         {
@@ -90,8 +89,7 @@ Definition:
 int
 QueryList::NumberOfInputsForQuery(const std::string &name)
 {
-    int i;
-    for (i = 0; i < names.size(); i++)
+    for (size_t i = 0; i < names.size(); i++)
     {
         if (name == names[i]) 
         {
@@ -118,8 +116,7 @@ Definition:
 int
 QueryList::AllowedVarsForQuery(const std::string &name)
 {
-    int i;
-    for (i = 0; i < names.size(); i++)
+    for (size_t i = 0; i < names.size(); i++)
     {
         if (name == names[i]) 
         {
@@ -146,9 +143,8 @@ Definition:
 bool
 QueryList::TimeQueryAvailable(const std::string &name)
 {
-    int i;
     bool canDoTime = false;
-    for (i = 0; i < names.size(); i++)
+    for (size_t i = 0; i < names.size(); i++)
     {
         if (name == names[i]) 
         {
@@ -176,9 +172,8 @@ Definition:
 int
 QueryList::GetWindowType(const std::string &name)
 {
-    int i;
     int wt = -1; 
-    for (i = 0; i < names.size(); i++)
+    for (size_t i = 0; i < names.size(); i++)
     {
         if (name == names[i]) 
         {
@@ -206,8 +201,7 @@ Definition:
 int
 QueryList::NumberOfVarsForQuery(const std::string &name)
 {
-    int i;
-    for (i = 0; i < names.size(); i++)
+    for (size_t i = 0; i < names.size(); i++)
     {
         if (name == names[i]) 
         {
@@ -234,9 +228,8 @@ Definition:
 bool
 QueryList::RegularQueryAvailable(const std::string &name)
 {
-    int i;
     bool canDoRegular = false;
-    for (i = 0; i < names.size(); i++)
+    for (size_t i = 0; i < names.size(); i++)
     {
         if (name == names[i]) 
         {

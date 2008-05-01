@@ -53,7 +53,7 @@ MovieAttributes::ValidateFormats(DataNode *searchNode)
     unsignedCharVector useCurrentSizeVec;
 
     // Populate the vectors based on the DataNode values.
-    int len = 0;
+    size_t len = 0;
     GET_MOVIE_DATA(ffNode, fileFormatsVec, AsStringVector,  "fileFormats");
     GET_MOVIE_DATA(wNode, widthsVec, AsIntVector, "widths");
     GET_MOVIE_DATA(hNode, heightsVec, AsIntVector, "heights");

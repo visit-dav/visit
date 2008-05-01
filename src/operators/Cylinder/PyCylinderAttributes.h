@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyCylinderAttributes_StartUp(CylinderAttributes *subj, void *data);
-void            PyCylinderAttributes_CloseDown();
+void           PyCylinderAttributes_StartUp(CylinderAttributes *subj, void *data);
+void           PyCylinderAttributes_CloseDown();
 PyMethodDef *   PyCylinderAttributes_GetMethodTable(int *nMethods);
-bool            PyCylinderAttributes_Check(PyObject *obj);
+bool           PyCylinderAttributes_Check(PyObject *obj);
 CylinderAttributes *  PyCylinderAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyCylinderAttributes_New();
 PyObject *      PyCylinderAttributes_Wrap(const CylinderAttributes *attr);
-void            PyCylinderAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyCylinderAttributes_SetDefaults(const CylinderAttributes *atts);
-std::string     PyCylinderAttributes_GetLogString();
-std::string     PyCylinderAttributes_ToString(const CylinderAttributes *, const char *);
+void           PyCylinderAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyCylinderAttributes_SetDefaults(const CylinderAttributes *atts);
+std::string    PyCylinderAttributes_GetLogString();
+std::string    PyCylinderAttributes_ToString(const CylinderAttributes *, const char *);
 
 #endif
 

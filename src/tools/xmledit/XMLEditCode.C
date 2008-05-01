@@ -156,7 +156,7 @@ XMLEditCode::CountCodes(const QString &name) const
 {
     Attribute *a = xmldoc->attribute;
     int codeCount = 0;
-    for (int j=0; j<a->codes.size(); j++)
+    for (size_t j=0; j<a->codes.size(); j++)
         codeCount += (name == a->codes[j]->name) ? 1 : 0;
     return codeCount;
 }
@@ -182,7 +182,7 @@ XMLEditCode::UpdateWindowContents()
 
     Attribute *a = xmldoc->attribute;
     codelist->clear();
-    for (int i=0; i<a->codes.size(); i++)
+    for (size_t i=0; i<a->codes.size(); i++)
     {
         if(CountCodes(a->codes[i]->name) > 1)
         { 
@@ -408,7 +408,7 @@ XMLEditCode::codelistNew()
     {
         okay = true;
         newname = tr("unnamed%1").arg(newid);
-        for (int i=0; i<codelist->count() && okay; i++)
+        for (size_t i=0; i<codelist->count() && okay; i++)
         {
             if (codelist->text(i) == newname)
                 okay = false;
@@ -421,7 +421,7 @@ XMLEditCode::codelistNew()
     
     a->codes.push_back(c);
     UpdateWindowContents();
-    for (int i=0; i<codelist->count(); i++)
+    for (size_t i=0; i<codelist->count(); i++)
     {
         if (codelist->text(i) == newname)
         {
@@ -449,7 +449,7 @@ XMLEditCode::codelistDel()
 
     Code *c = a->codes[index];
     vector<Code*> newlist;
-    for (int i=0; i<a->codes.size(); i++)
+    for (size_t i=0; i<a->codes.size(); i++)
     {
         if (a->codes[i] != c)
             newlist.push_back(a->codes[i]);

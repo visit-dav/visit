@@ -787,7 +787,7 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
       vtkUnsignedCharArray *new_gz = vtkUnsignedCharArray::New();
       new_gz->SetName("avtGhostZones");
       new_gz->SetNumberOfTuples(ghost_zones.size());
-      for (int i = 0 ; i < ghost_zones.size() ; i++)
+      for (size_t i = 0 ; i < ghost_zones.size() ; i++)
       {
           new_gz->SetValue(i, ghost_zones[i]);
       }

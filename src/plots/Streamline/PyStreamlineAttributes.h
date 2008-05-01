@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyStreamlineAttributes_StartUp(StreamlineAttributes *subj, void *data);
-void            PyStreamlineAttributes_CloseDown();
+void           PyStreamlineAttributes_StartUp(StreamlineAttributes *subj, void *data);
+void           PyStreamlineAttributes_CloseDown();
 PyMethodDef *   PyStreamlineAttributes_GetMethodTable(int *nMethods);
-bool            PyStreamlineAttributes_Check(PyObject *obj);
+bool           PyStreamlineAttributes_Check(PyObject *obj);
 StreamlineAttributes *  PyStreamlineAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyStreamlineAttributes_New();
 PyObject *      PyStreamlineAttributes_Wrap(const StreamlineAttributes *attr);
-void            PyStreamlineAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyStreamlineAttributes_SetDefaults(const StreamlineAttributes *atts);
-std::string     PyStreamlineAttributes_GetLogString();
-std::string     PyStreamlineAttributes_ToString(const StreamlineAttributes *, const char *);
+void           PyStreamlineAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyStreamlineAttributes_SetDefaults(const StreamlineAttributes *atts);
+std::string    PyStreamlineAttributes_GetLogString();
+std::string    PyStreamlineAttributes_ToString(const StreamlineAttributes *, const char *);
 
 #endif
 

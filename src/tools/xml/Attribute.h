@@ -109,14 +109,14 @@ class Attribute : public AttributeBase
 
     virtual ~Attribute()
     {
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
             delete fields[i];
         fields.clear();
     }
 
     virtual void Print(ostream &out)
     {
-        int i;
+        size_t i;
         out << "    Attribute: " << name << " (" << purpose << ")" << endl;
         for (i=0; i<fields.size(); i++)
             fields[i]->Print(out);
@@ -141,7 +141,7 @@ class Attribute : public AttributeBase
             WriteTagAttr(out, "codefile", codeFile->FileBase());
         FinishOpenTag(out);
 
-        int i;
+        size_t i;
         for (i=0; i<EnumType::enums.size(); i++)
         {
             StartOpenTag(out, "Enum", indent);
@@ -273,7 +273,7 @@ class Attribute : public AttributeBase
         if (!out)
             throw "Could not open code file for saving\n";
 
-        int i;
+        size_t i;
         QString currentTarget = "xml2atts";
         for (i=0; i<codes.size(); i++)
         {

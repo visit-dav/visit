@@ -258,7 +258,6 @@ VolumeAttributes::VolumeAttributes() :
 VolumeAttributes::VolumeAttributes(const VolumeAttributes &obj) : 
     AttributeSubject(VolumeAttributes::TypeMapFormatString)
 {
-    int i;
 
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
@@ -268,7 +267,7 @@ VolumeAttributes::VolumeAttributes(const VolumeAttributes &obj) :
     opacityControlPoints = obj.opacityControlPoints;
     resampleTarget = obj.resampleTarget;
     opacityVariable = obj.opacityVariable;
-    for(i = 0; i < 256; ++i)
+    for(int i = 0; i < 256; ++i)
         freeformOpacity[i] = obj.freeformOpacity[i];
 
     useColorVarMin = obj.useColorVarMin;
@@ -331,7 +330,6 @@ VolumeAttributes&
 VolumeAttributes::operator = (const VolumeAttributes &obj)
 {
     if (this == &obj) return *this;
-    int i;
 
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
@@ -341,7 +339,7 @@ VolumeAttributes::operator = (const VolumeAttributes &obj)
     opacityControlPoints = obj.opacityControlPoints;
     resampleTarget = obj.resampleTarget;
     opacityVariable = obj.opacityVariable;
-    for(i = 0; i < 256; ++i)
+    for(int i = 0; i < 256; ++i)
         freeformOpacity[i] = obj.freeformOpacity[i];
 
     useColorVarMin = obj.useColorVarMin;
@@ -384,11 +382,9 @@ VolumeAttributes::operator = (const VolumeAttributes &obj)
 bool
 VolumeAttributes::operator == (const VolumeAttributes &obj) const
 {
-    int i;
-
     // Compare the freeformOpacity arrays.
     bool freeformOpacity_equal = true;
-    for(i = 0; i < 256 && freeformOpacity_equal; ++i)
+    for(int i = 0; i < 256 && freeformOpacity_equal; ++i)
         freeformOpacity_equal = (freeformOpacity[i] == obj.freeformOpacity[i]);
 
     // Create the return value
@@ -815,7 +811,6 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
 void
 VolumeAttributes::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 
@@ -1508,8 +1503,6 @@ VolumeAttributes::GetFieldTypeName(int index) const
 bool
 VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 {
-    int i;
-
     const VolumeAttributes &obj = *((const VolumeAttributes*)rhs);
     bool retval = false;
     switch (index_)
@@ -1558,7 +1551,7 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         {  // new scope
         // Compare the freeformOpacity arrays.
         bool freeformOpacity_equal = true;
-        for(i = 0; i < 256 && freeformOpacity_equal; ++i)
+        for(int i = 0; i < 256 && freeformOpacity_equal; ++i)
             freeformOpacity_equal = (freeformOpacity[i] == obj.freeformOpacity[i]);
 
         retval = freeformOpacity_equal;

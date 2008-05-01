@@ -169,7 +169,7 @@ avtShapeletDecompResult::ToString() const
         <<  "Height = " << height << endl
         <<  "Coefficients:" << endl
         <<  "[coeffs.size] = " << coeffs.size() << endl;
-    for(int i=0; i < coeffs.size(); i++)
+    for(size_t i=0; i < coeffs.size(); i++)
         oss << coeffs[i] << " ";
     oss  << endl;
     return oss.str();

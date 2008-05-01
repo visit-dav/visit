@@ -311,7 +311,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
                    std::vector<avtMixedVariable*> mixvars, bool doMats,
                    avtMaterial *mat)
 {
-    int i, j, timerHandle = visitTimer->StartTimer();
+    int timerHandle = visitTimer->StartTimer();
     bool doAllMats = mats.empty();
 
     //
@@ -321,9 +321,9 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     bool *matFlag = new bool[nMaterials+1];
     if (!doAllMats)
     {
-        for (i = 0; i < nMaterials+1; i++)
+        for (int i = 0; i < nMaterials+1; i++)
             matFlag[i] = false;
-        for (i = 0; i < mats.size(); i++)
+        for (size_t i = 0; i < mats.size(); i++)
         {
             int origmatno = mats[i];
             if (origmatno == nOrigMaterials)
@@ -340,7 +340,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     }
     else
     {
-        for (i = 0; i < nMaterials+1; i++)
+        for (int i = 0; i < nMaterials+1; i++)
             matFlag[i] = true;
     }
 
@@ -408,13 +408,13 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         outPts->SetNumberOfPoints(npoints);
         float *pts_buff = (float *) outPts->GetVoidPointer(0);
         int outIndex = 0;
-        for (i=0; i<origNPoints; i++)
+        for (int i=0; i<origNPoints; i++)
         {
             pts_buff[outIndex++] = origXCoords[i];
             pts_buff[outIndex++] = origYCoords[i];
             pts_buff[outIndex++] = origZCoords[i];
         }
-        for (i=0; i<newNPoints; i++)
+        for (int i=0; i<newNPoints; i++)
         {
             pts_buff[outIndex++] = coordsList[i].x;
             pts_buff[outIndex++] = coordsList[i].y;
@@ -439,7 +439,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     int *cl = cellLocations->GetPointer(0);
 
     int offset = 0;
-    for (i=0; i<ncells; i++)
+    for (int i=0; i<ncells; i++)
     {
         int c = cellList[i];
 
@@ -448,7 +448,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         const int nnodes = zonesList[c].nnodes;
         *nl++ = nnodes;
         const int *indices = &indexList[zonesList[c].startindex];
-        for (j=0; j<nnodes; j++)
+        for (int j=0; j<nnodes; j++)
             *nl++ = indices[j];
         
         *cl++ = offset;
@@ -479,13 +479,13 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         // If the point is new, interpolate the values from the zone it
         // comes from.
         //
-        for (i=0; i<origNPoints; i++)
+        for (int i=0; i<origNPoints; i++)
         {
             outpd->CopyData(inpd, i, outIndex++);
         }
 
         int newPtStartingIndex = outIndex;
-        for (i=0; i<newNPoints; i++)
+        for (int i=0; i<newNPoints; i++)
         {
             ReconstructedCoord &coord = coordsList[i];
             vtkCell *cell = mesh->GetCell(coord.origzone);
@@ -503,7 +503,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
             int  multiplier = origNodes->GetNumberOfComponents();
             int  offset     = (multiplier == 2) ? 1 : 0;
             int *origNodeArray = (int*)origNodes->GetVoidPointer(0);
-            for (i=0; i<newNPoints; i++)
+            for (int i=0; i<newNPoints; i++)
             {
                 origNodeArray[(newPtStartingIndex+i)*multiplier + offset] = -1;
             }
@@ -519,7 +519,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     if (incd->GetNumberOfArrays() > 0)
     {
         outcd->CopyAllocate(incd, ncells);
-        for (i=0; i<ncells; i++)
+        for (int i=0; i<ncells; i++)
         {
             int c = cellList[i];
             int origzone = zonesList[c].origzone;
@@ -531,7 +531,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     // Now go and write over the mixed part of the mixed variables.  The non-
     // mixed part was already copied over in the last operation.
     //
-    for (i=0; i<mixvars.size(); i++)
+    for (size_t i=0; i<mixvars.size(); i++)
     {
         avtMixedVariable *mv = mixvars[i];
         if (mv == NULL)
@@ -546,7 +546,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
                    << "variable array." << endl;
             debug1 << "The mixed variable is " << mv->GetVarname().c_str() << endl;
             debug1 << "Variables in the VTK dataset are: ";
-            for (j = 0 ; j < outcd->GetNumberOfArrays() ; j++)
+            for (int j = 0 ; j < outcd->GetNumberOfArrays() ; j++)
             {
                 debug1 << outcd->GetArray(j)->GetName() << ", ";
             }
@@ -563,7 +563,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         float *outBuff = (float *) arr->GetVoidPointer(0);
         debug4 << "Overwriting mixed values for " << arr->GetName() << endl;
         int nvals = 0;
-        for (j=0; j<ncells; j++)
+        for (int j=0; j<ncells; j++)
         {
             int mix_index = zonesList[cellList[j]].mix_index;
             if (mix_index >= 0)
@@ -586,7 +586,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         outmat->SetName("avtSubsets");
         outmat->SetNumberOfTuples(ncells);
         int *buff = outmat->GetPointer(0);
-        for (i=0; i<ncells; i++)
+        for (int i=0; i<ncells; i++)
         {
             int matno = zonesList[cellList[i]].mat;
             buff[i] = matno < 0 ? nOrigMaterials : mapUsedMatToMat[matno];

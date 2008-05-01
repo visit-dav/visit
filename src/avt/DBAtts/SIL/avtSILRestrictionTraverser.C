@@ -200,7 +200,7 @@ avtSILRestrictionTraverser::GetEnumerationMinMaxSetIds(int parentId, int *minId,
     const vector<int> &mapsOut = set->GetMapsOut();
 
     if (mapsOut.size() == 0)
-	return;
+        return;
 
     for (int i = 0 ; i < mapsOut.size() ; i++)
     {
@@ -209,7 +209,7 @@ avtSILRestrictionTraverser::GetEnumerationMinMaxSetIds(int parentId, int *minId,
         {
             const vector<int> &setList = coll->GetSubsetList();
             for (int j = 0 ; j < setList.size() ; j++)
-	        GetEnumerationMinMaxSetIds(setList[j], minId, maxId);
+                GetEnumerationMinMaxSetIds(setList[j], minId, maxId);
         }
     }
 }
@@ -325,14 +325,14 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
                 enumList.resize(setList.size());
                 for (j = 0 ; j < setList.size() ; j++)
                 {
-		    // do a tiny bit of work to see if this enum has a graph
+                    // do a tiny bit of work to see if this enum has a graph
                     avtSILSet_p tmpSet = silr->GetSILSet(setList[j]);
                     const vector<int> &tmpMapsOut = tmpSet->GetMapsOut();
-		    if (tmpMapsOut.size() > 0)
-		    {
-		        enumGraphIndex = i;
-			break;
-		    }
+                    if (tmpMapsOut.size() > 0)
+                    {
+                        enumGraphIndex = i;
+                        break;
+                    }
 
                     bool val = (useSet[setList[j]] != NoneUsed ? true : false);
                     enumList[j] = val;

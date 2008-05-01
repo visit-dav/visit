@@ -236,7 +236,7 @@ DataNodeToQString(const DataNode *node)
 #define VECTOR_TO_STRING(Type, Method, Fmt, suffix)\
         {\
             const Type &vec = node->Method();\
-            for(i = 0; i < vec.size(); ++i)\
+            for(size_t i = 0; i < vec.size(); ++i)\
             {\
                 tmp.sprintf(Fmt, vec[i] suffix);\
                 if(i > 0)\
@@ -329,7 +329,7 @@ DataNodeToQString(const DataNode *node)
     case CHAR_VECTOR_NODE:
         {
             const charVector &vec = node->AsCharVector();
-            for(i = 0; i < vec.size(); ++i)
+            for(size_t i = 0; i < vec.size(); ++i)
             {
                 tmp.sprintf("%d", (int)vec[i]);
                 if(i > 0)
@@ -341,7 +341,7 @@ DataNodeToQString(const DataNode *node)
     case UNSIGNED_CHAR_VECTOR_NODE:
         {
             const unsignedCharVector &vec = node->AsUnsignedCharVector();
-            for(i = 0; i < vec.size(); ++i)
+            for(size_t i = 0; i < vec.size(); ++i)
             {
                 tmp.sprintf("%d", (int)vec[i]);
                 if(i > 0)

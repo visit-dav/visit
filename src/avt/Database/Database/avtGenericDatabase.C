@@ -3970,33 +3970,36 @@ avtGenericDatabase::EnumScalarSelect(avtDatasetCollection &dsc,
             EXCEPTION1(VisItException, errMsg);
         }
 
-	// setup operator behavior
-	enumThreshold->SetReturnEmptyIfAllCellsKept(true);
-	enumThreshold->SetEnumerationMode((vtkEnumThreshold::EnumerationMode) smd->GetEnumerationType());
+        // setup operator behavior
+        enumThreshold->SetReturnEmptyIfAllCellsKept(true);
+        enumThreshold->SetEnumerationMode((vtkEnumThreshold::EnumerationMode) 
+            smd->GetEnumerationType());
         enumThreshold->SetEnumerationRanges(smd->enumRanges);
-	enumThreshold->SetAlwaysExcludeRange(smd->enumAlwaysExclude[0], smd->enumAlwaysExclude[1]);
-	enumThreshold->SetAlwaysIncludeRange(smd->enumAlwaysInclude[0], smd->enumAlwaysInclude[1]);
-	enumThreshold->SetPartialCellMode((vtkEnumThreshold::PartialCellMode)
-	    smd->GetEnumPartialCellMode());
-	if (smd->GetEnumerationType() == avtScalarMetaData::ByNChooseR)
-	{
-	    enumThreshold->SetNAndMaxRForNChooseRMode(
-	        smd->GetEnumNChooseRN(),smd->GetEnumNChooseRMaxR());
-	}
+        enumThreshold->SetAlwaysExcludeRange(smd->enumAlwaysExclude[0], 
+            smd->enumAlwaysExclude[1]);
+        enumThreshold->SetAlwaysIncludeRange(smd->enumAlwaysInclude[0], 
+            smd->enumAlwaysInclude[1]);
+        enumThreshold->SetPartialCellMode((vtkEnumThreshold::PartialCellMode)
+            smd->GetEnumPartialCellMode());
+        if (smd->GetEnumerationType() == avtScalarMetaData::ByNChooseR)
+        {
+            enumThreshold->SetNAndMaxRForNChooseRMode(
+                smd->GetEnumNChooseRN(),smd->GetEnumNChooseRMaxR());
+        }
         enumThreshold->SetEnumerationSelection(selection);
 
-	// do the operation
+        // do the operation
         enumThreshold->SetInput(ds);
         vtkDataSet *outds = enumThreshold->GetOutput();
         enumThreshold->Update();
 
-	// Only change the dataset if the enum filter actually removed something
-	if (!(enumThreshold->GetReturnEmptyIfAllCellsKept() && 
-	     enumThreshold->GetAllCellsKeptInLastRequestData()))
+        // Only change the dataset if the enum filter actually removed something
+        if (!(enumThreshold->GetReturnEmptyIfAllCellsKept() && 
+              enumThreshold->GetAllCellsKeptInLastRequestData()))
         {
             dsc.SetDataset(i, m, outds);
             outds->Register(NULL);
-	}
+        }
 
         enumThreshold->Delete();
     }

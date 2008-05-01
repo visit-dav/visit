@@ -401,7 +401,6 @@ Point::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
 void
 Point::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 

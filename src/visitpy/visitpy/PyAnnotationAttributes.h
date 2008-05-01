@@ -45,17 +45,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void VISITPY_API          PyAnnotationAttributes_StartUp(AnnotationAttributes *subj, void *data);
-void VISITPY_API          PyAnnotationAttributes_CloseDown();
+void VISITPY_API           PyAnnotationAttributes_StartUp(AnnotationAttributes *subj, void *data);
+void VISITPY_API           PyAnnotationAttributes_CloseDown();
 VISITPY_API PyMethodDef *   PyAnnotationAttributes_GetMethodTable(int *nMethods);
-bool VISITPY_API          PyAnnotationAttributes_Check(PyObject *obj);
+bool VISITPY_API           PyAnnotationAttributes_Check(PyObject *obj);
 VISITPY_API AnnotationAttributes *  PyAnnotationAttributes_FromPyObject(PyObject *obj);
 VISITPY_API PyObject *      PyAnnotationAttributes_New();
 VISITPY_API PyObject *      PyAnnotationAttributes_Wrap(const AnnotationAttributes *attr);
-void VISITPY_API          PyAnnotationAttributes_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API          PyAnnotationAttributes_SetDefaults(const AnnotationAttributes *atts);
-std::string VISITPY_API   PyAnnotationAttributes_GetLogString();
-std::string VISITPY_API   PyAnnotationAttributes_ToString(const AnnotationAttributes *, const char *);
+void VISITPY_API           PyAnnotationAttributes_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API           PyAnnotationAttributes_SetDefaults(const AnnotationAttributes *atts);
+std::string VISITPY_API    PyAnnotationAttributes_GetLogString();
+std::string VISITPY_API    PyAnnotationAttributes_ToString(const AnnotationAttributes *, const char *);
 
 #endif
 

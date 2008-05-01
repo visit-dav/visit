@@ -1298,7 +1298,7 @@ avtStructuredMeshChunker::ModifyGridsForGhostZones(
 {
     int  i, j, k;
 
-    for (int g = 0 ; g < grids.size() ; g++)
+    for (size_t g = 0 ; g < grids.size() ; g++)
     {
         MeshDescription &grid = grids[g];
 

@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyCoordSwapAttributes_StartUp(CoordSwapAttributes *subj, void *data);
-void            PyCoordSwapAttributes_CloseDown();
+void           PyCoordSwapAttributes_StartUp(CoordSwapAttributes *subj, void *data);
+void           PyCoordSwapAttributes_CloseDown();
 PyMethodDef *   PyCoordSwapAttributes_GetMethodTable(int *nMethods);
-bool            PyCoordSwapAttributes_Check(PyObject *obj);
+bool           PyCoordSwapAttributes_Check(PyObject *obj);
 CoordSwapAttributes *  PyCoordSwapAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyCoordSwapAttributes_New();
 PyObject *      PyCoordSwapAttributes_Wrap(const CoordSwapAttributes *attr);
-void            PyCoordSwapAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyCoordSwapAttributes_SetDefaults(const CoordSwapAttributes *atts);
-std::string     PyCoordSwapAttributes_GetLogString();
-std::string     PyCoordSwapAttributes_ToString(const CoordSwapAttributes *, const char *);
+void           PyCoordSwapAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyCoordSwapAttributes_SetDefaults(const CoordSwapAttributes *atts);
+std::string    PyCoordSwapAttributes_GetLogString();
+std::string    PyCoordSwapAttributes_ToString(const CoordSwapAttributes *, const char *);
 
 #endif
 

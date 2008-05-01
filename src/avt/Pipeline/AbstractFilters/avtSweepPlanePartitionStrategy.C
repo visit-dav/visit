@@ -381,7 +381,7 @@ avtSweepPlanePartitionStrategy::ProposeGrid(int iStart, int iEnd, int jStart,
     //
     // Remove all the grids that have conflict with our grid.
     //
-    for (int g = 0 ; g < removeGrid.size() ; g++)
+    for (size_t g = 0 ; g < removeGrid.size() ; g++)
         if (removeGrid[g])
         {
             GridCandidate &gc = proposedGrid[g];
@@ -434,7 +434,7 @@ bool
 avtSweepPlanePartitionStrategy::CommitProposedGrids(std::vector<int> &boxes)
 {
     bool haveGrids = false;
-    for (int g = 0 ; g < proposedGrid.size() ; g++)
+    for (size_t g = 0 ; g < proposedGrid.size() ; g++)
     {
         GridCandidate &gc = proposedGrid[g];
         if (!gc.stillCandidate)

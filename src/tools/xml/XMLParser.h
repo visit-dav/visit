@@ -75,7 +75,7 @@ ParseCharacters(const QString &buff)
     buff.stripWhiteSpace();
     bool quote=false;
     QString tmp="";
-    for (int i=0; i<buff.length(); i++)
+    for (size_t i=0; i<buff.length(); i++)
     {
         if (!quote && buff[i].isSpace())
         {
@@ -219,7 +219,7 @@ class XMLParser : public QXmlDefaultHandler
     {
         vector<QString> strings = ParseCharacters(buff);
 
-        for(int i=0; i<strings.size(); i++)
+        for(size_t i=0; i<strings.size(); i++)
         {
             if (currentTag == "Enum")
                 currentEnum->AddValue(strings[i]);
@@ -345,7 +345,7 @@ class XMLParser : public QXmlDefaultHandler
             {
                 QStringList targets, names, first, second;
                 currentAttribute->codeFile->GetAllCodes(targets, names, first, second);
-                for(int i = 0; i < targets.size(); ++i)
+                for(size_t i = 0; i < targets.size(); ++i)
                 {
                     currentAttribute->codes.push_back(new Code(names[i],
                                                                first[i],
@@ -387,7 +387,7 @@ class XMLParser : public QXmlDefaultHandler
             QStringList targets, first, second;
             codeFile->GetConstant(name, targets, first, second);
             currentConstants = new Constant *[targets.size() + 1];
-            for(int i = 0; i < targets.size(); ++i)
+            for(size_t i = 0; i < targets.size(); ++i)
             {
                 currentConstants[i] = new Constant(name,
                                                    first[i],
@@ -424,7 +424,7 @@ class XMLParser : public QXmlDefaultHandler
             QStringList targets, first, second;
             codeFile->GetFunction(name, targets, first, second);
             currentFunctions = new Function*[targets.size()+1];
-            for(int i = 0; i < targets.size(); ++i)
+            for(size_t i = 0; i < targets.size(); ++i)
             {
                 currentFunctions[i] = new Function(name,
                                                    first[i],
@@ -456,7 +456,7 @@ class XMLParser : public QXmlDefaultHandler
             vector<QString> comps2 = SplitValues(comps1);
             int             comps3 = COMP_NONE;
 
-            for (int i=0; i<comps2.size(); i++)
+            for (size_t i=0; i<comps2.size(); i++)
             {
                 if (comps2[i] == "G")
                 {
@@ -550,11 +550,10 @@ class XMLParser : public QXmlDefaultHandler
 
                 QStringList targets, defs;
                 currentAttribute->codeFile->GetInit(name, targets, defs);
-                for(int i = 0; i < targets.size(); ++i)
+                for(size_t i = 0; i < targets.size(); ++i)
                     currentField->SetInitCode(targets[i], defs[i]);
             }
 
-            int i;
             if (!enabler.isNull())
             {
                 vector<QString> vals = SplitValues(enabler);
@@ -562,7 +561,7 @@ class XMLParser : public QXmlDefaultHandler
                     throw QString().sprintf("enabler for field %s requires a value",name.latin1());
 
                 Field *enablerField = NULL;
-                for (i=0; i<currentAttribute->fields.size(); i++)
+                for (size_t i=0; i<currentAttribute->fields.size(); i++)
                 {
                     if (currentAttribute->fields[i]->name == vals[0])
                         enablerField = currentAttribute->fields[i];
@@ -572,7 +571,7 @@ class XMLParser : public QXmlDefaultHandler
                     throw QString().sprintf("enabler field %s was not defined before current field %s",vals[0].latin1(),name.latin1());
 
                 currentField->SetEnabler(enablerField);
-                for (i=1; i<vals.size(); i++)
+                for (size_t i=1; i<vals.size(); i++)
                 {
                     currentField->SetEnablerValue(vals[i]);
                 }
@@ -581,20 +580,20 @@ class XMLParser : public QXmlDefaultHandler
             if (!internal.isNull())
                 currentField->SetInternal(internal);
 
-            for (i=0; i<atts.length(); i++)
+            for (int j=0; j<atts.length(); j++)
             {
-                if (atts.qName(i) != "name"    &&
-                    atts.qName(i) != "type"    &&
-                    atts.qName(i) != "subtype" &&
-                    atts.qName(i) != "label"   &&
-                    atts.qName(i) != "length"  &&
-                    atts.qName(i) != "enabler" &&
-                    atts.qName(i) != "internal"&&
-                    atts.qName(i) != "ignoreeq"&&
-                    atts.qName(i) != "access"  &&
-                    atts.qName(i) != "init"    )
+                if (atts.qName(j) != "name"    &&
+                    atts.qName(j) != "type"    &&
+                    atts.qName(j) != "subtype" &&
+                    atts.qName(j) != "label"   &&
+                    atts.qName(j) != "length"  &&
+                    atts.qName(j) != "enabler" &&
+                    atts.qName(j) != "internal"&&
+                    atts.qName(j) != "ignoreeq"&&
+                    atts.qName(j) != "access"  &&
+                    atts.qName(j) != "init"    )
                 {
-                    currentField->SetAttrib(atts.qName(i),atts.value(i));
+                    currentField->SetAttrib(atts.qName(j),atts.value(j));
                 }
             }
         }

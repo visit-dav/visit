@@ -322,7 +322,7 @@ protected:
 
     void AddElements(vector<QString> &addTo, const vector<QString> &addFrom)
     {
-        for(int i = 0; i < addFrom.size(); ++i)
+        for(size_t i = 0; i < addFrom.size(); ++i)
             addTo.push_back(addFrom[i]);
     }
 
@@ -412,7 +412,7 @@ protected:
 
         if(customwfiles)
         {
-            for (int i=0; i<wfiles.size(); i++)
+            for (size_t i=0; i<wfiles.size(); i++)
             {
                 if(wfiles[i].right(2) == ".h")
                 {
@@ -425,7 +425,7 @@ protected:
         }
         else
         {
-            for (int i=0; i<defaultwfiles.size(); i++)
+            for (size_t i=0; i<defaultwfiles.size(); i++)
             {
                 if(defaultwfiles[i].right(2) == ".h")
                 {
@@ -476,7 +476,7 @@ protected:
 
         if(customvwfiles)
         {
-            for (int i=0; i<vwfiles.size(); i++)
+            for (size_t i=0; i<vwfiles.size(); i++)
             {
                 if(vwfiles[i].right(2) == ".h")
                 {
@@ -638,7 +638,7 @@ protected:
 
         if(customwfiles)
         {
-            for (int i=0; i<wfiles.size(); i++)
+            for (size_t i=0; i<wfiles.size(); i++)
             {
                 if(wfiles[i].right(2) == ".h")
                 {
@@ -651,7 +651,7 @@ protected:
         }
         else
         {
-            for (int i=0; i<defaultwfiles.size(); i++)
+            for (size_t i=0; i<defaultwfiles.size(); i++)
             {
                 if(defaultwfiles[i].right(2) == ".h")
                 {
@@ -701,7 +701,7 @@ protected:
 
         if(customvwfiles)
         {
-            for (int i=0; i<vwfiles.size(); i++)
+            for (size_t i=0; i<vwfiles.size(); i++)
             {
                 if(vwfiles[i].right(2) == ".h")
                 {
@@ -839,12 +839,12 @@ protected:
         }
         if (custommfiles)
         {
-            for (int i=0; i<mfiles.size(); i++)
+            for (size_t i=0; i<mfiles.size(); i++)
                 srcFiles.push_back(mfiles[i]);
         }
         else
         {
-            for (int i=0; i<defaultmfiles.size(); i++)
+            for (size_t i=0; i<defaultmfiles.size(); i++)
                 srcFiles.push_back(defaultmfiles[i]);
         }
 
@@ -876,12 +876,12 @@ protected:
         }
         if (custommfiles)
         {
-            for (int i=0; i<efiles.size(); i++)
+            for (size_t i=0; i<efiles.size(); i++)
                 srcFiles.push_back(efiles[i]);
         }
         else
         {
-            for (int i=0; i<defaultefiles.size(); i++)
+            for (size_t i=0; i<defaultefiles.size(); i++)
                 srcFiles.push_back(defaultefiles[i]);
         }
 

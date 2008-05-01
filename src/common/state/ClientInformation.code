@@ -16,7 +16,7 @@ Definition:
 int
 ClientInformation::GetMethodIndex(const std::string &name) const
 {
-    for(int i = 0; i < methodNames.size(); ++i)
+    for(size_t i = 0; i < methodNames.size(); ++i)
     {
         if(methodNames[i] == name)
             return i;

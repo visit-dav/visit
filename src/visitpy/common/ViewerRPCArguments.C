@@ -114,7 +114,7 @@ PyTuple_FromIntVector(const intVector &vec)
     else
     {
         tuple = PyTuple_New(vec.size());
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             PyTuple_SET_ITEM(tuple, i, PyLong_FromLong((long)vec[i]));
     }
     return tuple;
@@ -132,7 +132,7 @@ PyTuple_FromDoubleVector(const doubleVector &vec)
     else
     {
         tuple = PyTuple_New(vec.size());
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             PyTuple_SET_ITEM(tuple, i, PyFloat_FromDouble(vec[i]));
     }
     return tuple;
@@ -159,7 +159,7 @@ PyTuple_FromStringVector(const stringVector &vec)
     else
     {
         tuple = PyTuple_New(vec.size());
-        for(int i = 0; i < vec.size(); ++i)
+        for(size_t i = 0; i < vec.size(); ++i)
             PyTuple_SET_ITEM(tuple, i, PyString_FromString(vec[i].c_str()));
     }
     return tuple;

@@ -39,10 +39,9 @@ Definition:
 void
 QueryAttributes::PrintSelf(ostream &os)
 {
-    int i;
     os << "\n" << name.c_str() << ":  ";
     os << "selected variables: ";
-    for (i = 0; i < variables.size(); i++)
+    for (size_t i = 0; i < variables.size(); i++)
         os << variables[i].c_str() << "  ";
     os << "\n";
     os << "Results: <" << resultsMessage.c_str() << ">\n";

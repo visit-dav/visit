@@ -2134,7 +2134,6 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
     boxPoints->Delete();
     map<float, map<float, map<float, int> > > dummyNodemap;
     MakeMeshZone(theBox, boxPoints, boxUgrid, dummyNodemap);
-    int i;
 
     //
     // Set up two "buffers" for pieces that result from repeated clips and
@@ -2188,7 +2187,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
         if (finalPieceCountEstimate > 50000.0)
         {
             // free up all the memory we've used so far
-            for (i = 0; i < piecesCurrent->size(); i++)
+            for (size_t i = 0; i < piecesCurrent->size(); i++)
                 (*piecesCurrent)[i]->Delete();
 
             debug1 << "vtkCSGGrid: Predicting too much memory for cutter4; "
@@ -2205,7 +2204,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
         // currently have with it. If the current boundary's state is already
         // known, then just apply its state to all the pieces.
         //
-        for (i = 0; i < piecesCurrent->size(); i++)
+        for (size_t i = 0; i < piecesCurrent->size(); i++)
         {
             // WE HAVE INEFFICIENCY HERE IN THAT WE WIND UP COPYING BUFFERS FOR NON-EQ_ZERO
             // BOUNDARIES BUT WE DO NEED TO APPEND TO THE MAPS FOR ALL THE PIECES
@@ -2297,7 +2296,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
     // add them as necessary. Delete the pieces too.
     //
     bool addedAPiece = false;
-    for (i = 0; i < piecesCurrent->size(); i++)
+    for (size_t i = 0; i < piecesCurrent->size(); i++)
     {
         Box::FuncState pieceState = (Box::FuncState) EvalBoxStateOfRegion(0, zoneId,
             (*pieceBoundaryToStateMapsCurrent)[i], 0);
@@ -2398,7 +2397,6 @@ vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace3(
     double minY, double maxY,
     double minZ, double maxZ)
 {
-    int i;
     deque<Box*> boxDeque;
 
     // for building unstructured grid
@@ -2422,7 +2420,7 @@ vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace3(
     // Create list of boundary ids to index into boundaries collection
     //
     vector<int> boundaryStates;
-    for (i = 0; i < boundariesToCheck.size(); i++)
+    for (size_t i = 0; i < boundariesToCheck.size(); i++)
         boundaryStates.push_back((int)Box::EQ_ZERO);
 
     // fudge the bounds a bit
@@ -2452,7 +2450,7 @@ vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace3(
         vector<int>  curBoxBoundaryStates = curBox->zids;
         map<int, int> boundaryToStateMap;
         map<int, int> boundaryToSenseMap;
-        for (i = 0; i < curBoxBoundaryStates.size(); i++)
+        for (size_t i = 0; i < curBoxBoundaryStates.size(); i++)
         {
             if (curBoxBoundaryStates[i] == (int) Box::EQ_ZERO)
             {
@@ -2497,10 +2495,9 @@ vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace3(
                 //
                 // Subdivide this box and add boxes to deque
                 //
-                int j;
                 vector<Box*> newBoxes;
                 newBoxes = curBox->Subdivide();
-                for (j = 0; j < newBoxes.size(); j++)
+                for (size_t j = 0; j < newBoxes.size(); j++)
                 {
                     newBoxes[j]->zids = curBoxBoundaryStates;
                     boxDeque.push_back(newBoxes[j]);

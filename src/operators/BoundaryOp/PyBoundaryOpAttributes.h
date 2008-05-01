@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyBoundaryOpAttributes_StartUp(BoundaryOpAttributes *subj, void *data);
-void            PyBoundaryOpAttributes_CloseDown();
+void           PyBoundaryOpAttributes_StartUp(BoundaryOpAttributes *subj, void *data);
+void           PyBoundaryOpAttributes_CloseDown();
 PyMethodDef *   PyBoundaryOpAttributes_GetMethodTable(int *nMethods);
-bool            PyBoundaryOpAttributes_Check(PyObject *obj);
+bool           PyBoundaryOpAttributes_Check(PyObject *obj);
 BoundaryOpAttributes *  PyBoundaryOpAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyBoundaryOpAttributes_New();
 PyObject *      PyBoundaryOpAttributes_Wrap(const BoundaryOpAttributes *attr);
-void            PyBoundaryOpAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyBoundaryOpAttributes_SetDefaults(const BoundaryOpAttributes *atts);
-std::string     PyBoundaryOpAttributes_GetLogString();
-std::string     PyBoundaryOpAttributes_ToString(const BoundaryOpAttributes *, const char *);
+void           PyBoundaryOpAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyBoundaryOpAttributes_SetDefaults(const BoundaryOpAttributes *atts);
+std::string    PyBoundaryOpAttributes_GetLogString();
+std::string    PyBoundaryOpAttributes_ToString(const BoundaryOpAttributes *, const char *);
 
 #endif
 

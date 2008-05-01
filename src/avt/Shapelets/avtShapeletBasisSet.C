@@ -93,9 +93,9 @@ avtShapeletBasisSet::avtShapeletBasisSet(double beta,
         }
     }
     
-    for(int i=0;i<x_basis_set.size();i++)
+    for(size_t i=0;i<x_basis_set.size();i++)
         delete x_basis_set[i];
-    for(int i=0;i<y_basis_set.size();i++)
+    for(size_t i=0;i<y_basis_set.size();i++)
         delete y_basis_set[i];
 }
 
@@ -113,7 +113,7 @@ avtShapeletBasisSet::avtShapeletBasisSet(double beta,
 
 avtShapeletBasisSet::~avtShapeletBasisSet()
 {
-    for(int i=0;i<basisSet.size();i++)
+    for(size_t i=0;i<basisSet.size();i++)
         delete basisSet[i];
 }
 

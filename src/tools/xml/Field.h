@@ -209,7 +209,7 @@ class Field
         QStringList lines(QStringList::split("\n", value));
         QString currentTarget("xml2atts");
         QString currentInit;
-        for(int i = 0; i < lines.size(); ++i)
+        for(size_t i = 0; i < lines.size(); ++i)
         {
             if(lines[i].left(7) == QString("Target:"))
             {
@@ -278,7 +278,7 @@ class Field
         {
             cout << "            enabled when " << enabler->name << " equals ";
             cout << enableval[0];
-            for (int i=1; i<enableval.size(); i++)
+            for (size_t i=1; i<enableval.size(); i++)
             {
                 cout << " or " << enableval[i];
             }
@@ -292,7 +292,7 @@ class Field
         QStringList targets, prefix, postfix;
         if(codeFile!=NULL && codeFile->GetCode(cName, targets, prefix, postfix))
         {
-            for (int i=0; i<targets.size(); i++)
+            for (size_t i=0; i<targets.size(); i++)
                 if(generatorName.isEmpty() || generatorName == targets[i])
                 {
                     if(part == 0)
@@ -310,7 +310,7 @@ class Field
         QStringList targets, prefix, postfix;
         if(codeFile!=NULL && codeFile->GetCode(cName, targets, prefix, postfix))
         {
-            for (int i=0; i<targets.size(); i++)
+            for (size_t i=0; i<targets.size(); i++)
                 if(generatorName.isEmpty() || generatorName == targets[i])
                 {
                     if(part == 0)
@@ -494,7 +494,7 @@ class IntVector : public virtual Field
         if (valueSet)
         {
             out << "            value: ";
-            for (int i=0; i<val.size(); i++)
+            for (size_t i=0; i<val.size(); i++)
                 out << val[i] << "  ";
             out << endl;
         }
@@ -503,7 +503,7 @@ class IntVector : public virtual Field
     {
         vector<QString> retval;
         if (valueSet)
-            for (int i=0; i<val.size(); i++)
+            for (size_t i=0; i<val.size(); i++)
                 retval.push_back(QString().sprintf("%d", val[i]));
         return retval;
     }
@@ -737,7 +737,7 @@ class DoubleVector : public virtual Field
         if (valueSet)
         {
             out << "            value: ";
-            for (int i=0; i<val.size(); i++)
+            for (size_t i=0; i<val.size(); i++)
                 out << val[i] << "  ";
             out << endl;
         }
@@ -746,7 +746,7 @@ class DoubleVector : public virtual Field
     {
         vector<QString> retval;
         if (valueSet)
-            for (int i=0; i<val.size(); i++)
+            for (size_t i=0; i<val.size(); i++)
                 retval.push_back(QString().sprintf("%f", val[i]));
         return retval;
     }
@@ -864,7 +864,7 @@ class UCharVector : public virtual Field
         if (valueSet)
         {
             out << "            value: ";
-            for (int i=0; i<val.size(); i++)
+            for (size_t i=0; i<val.size(); i++)
                 out << int(val[i]) << "  ";
             out << endl;
         }
@@ -873,7 +873,7 @@ class UCharVector : public virtual Field
     {
         vector<QString> retval;
         if (valueSet)
-            for (int i=0; i<val.size(); i++)
+            for (size_t i=0; i<val.size(); i++)
                 retval.push_back(QString().sprintf("%d", int(val[i])));
         return retval;
     }
@@ -944,7 +944,7 @@ class StringVector : public virtual Field
         if (valueSet)
         {
             out << "            value: ";
-            for (int i=0; i<val.size(); i++)
+            for (size_t i=0; i<val.size(); i++)
                 out << "\"" << val[i] << "\"  ";
             out << endl;
         }
@@ -1183,7 +1183,7 @@ class VariableName : public virtual Field
                 const char *val = v.latin1();
                 int m = 1;
                 varTypes = 0;
-                for(int i = 0; i < v.length(); ++i)
+                for(size_t i = 0; i < v.length(); ++i)
                 {
                     if(val[i] == '1')
                         varTypes |= m;
@@ -1339,7 +1339,7 @@ class Enum : public virtual Field
     virtual void SetValue(const QString &s, int = 0)
     {
         val = -1;
-        for (int i=0; i < enumType->values.size(); i++)
+        for (size_t i=0; i < enumType->values.size(); i++)
         {
             if (enumType->values[i] == s)
                 val = i;

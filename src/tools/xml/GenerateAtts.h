@@ -425,7 +425,7 @@ class AttsGeneratorField : public virtual Field
             }
             else
             {
-                c << "    for(i = 0; i < " << length << "; ++i)" << endl;
+                c << "    for(int i = 0; i < " << length << "; ++i)" << endl;
                 c << "        " << name << "[i] = " 
                   <<     "obj." << name << "[i];" << endl;
             }
@@ -458,7 +458,7 @@ class AttsGeneratorField : public virtual Field
         {
             c << indent << "// Compare the " << name << " arrays." << endl;
             c << indent << "bool " << name << "_equal = true;" << endl; 
-            c << indent << "for(i = 0; i < " << length << " && "
+            c << indent << "for(int i = 0; i < " << length << " && "
               << name << "_equal; ++i)" << endl;
             c << indent << "    " << name << "_equal = ("
               << name << "[i] == obj." << name
@@ -543,7 +543,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGen
     }
     virtual void WriteSourceSetDefault(ostream &c)
     {
-        for (int i=0; i < val.size(); i++)
+        for (size_t i=0; i < val.size(); i++)
             c << "    " << name << ".push_back(" << val[i] << ");" << endl;
     }
 };
@@ -687,7 +687,7 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual A
     }
     virtual void WriteSourceSetDefault(ostream &c)
     {
-        for (int i=0; i < val.size(); i++)
+        for (size_t i=0; i < val.size(); i++)
             c << "    " << name << ".push_back(" << val[i] << ");" << endl;
     }
 };
@@ -760,7 +760,7 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Att
     }
     virtual void WriteSourceSetDefault(ostream &c)
     {
-        for (int i=0; i < val.size(); i++)
+        for (size_t i=0; i < val.size(); i++)
             c << "    " << name << ".push_back(" << val[i] << ");" << endl;
     }
 };
@@ -817,7 +817,7 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual A
     }
     virtual void WriteSourceSetDefault(ostream &c)
     {
-        for (int i=0; i < val.size(); i++)
+        for (size_t i=0; i < val.size(); i++)
         c << "    " << name << ".push_back(" << "\"" << val[i].latin1() << "\");" << endl;
     }
 };
@@ -1146,7 +1146,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << "    children = searchNode->GetChildren();" << endl;
         c << "    if(children != 0)" << endl;
         c << "    {" << endl;
-        c << "        for(i = 0; i < searchNode->GetNumChildren(); ++i)" << endl;
+        c << "        for(int i = 0; i < searchNode->GetNumChildren(); ++i)" << endl;
         c << "        {" << endl;
         c << "            if(children[i]->GetKey() == std::string(\"" << attType << "\"))" << endl;
         c << "            {" << endl;
@@ -1287,7 +1287,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         QString s = attType;
         c << indent << "bool " << name << "_equal = (obj." << name 
           << ".size() == " << name << ".size());" << endl;
-        c << indent << "for(i = 0; (i < " << name
+        c << indent << "for(size_t i = 0; (i < " << name
           << ".size()) && " << name << "_equal; ++i)" << endl;
         c << indent << "{" << endl;
         c << indent << "    // Make references to " << s
@@ -1605,7 +1605,7 @@ class AttsGeneratorAttribute : public GeneratorBase
 
     virtual ~AttsGeneratorAttribute()
     {
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
             delete fields[i];
         fields.clear();
     }
@@ -1615,14 +1615,13 @@ class AttsGeneratorAttribute : public GeneratorBase
         out << "    Attribute: " << name << " (" << purpose << ")" << endl;
         out << "        exportAPI=" << exportAPI << endl;
         out << "        exportInclude=" << exportInclude << endl;
-        int i;
-        for (i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
             fields[i]->Print(out);
-        for (i=0; i<includes.size(); i++)
+        for (size_t i=0; i<includes.size(); i++)
             includes[i]->Print(out, generatorName);
-        for (i=0; i<functions.size(); i++)
+        for (size_t i=0; i<functions.size(); i++)
             functions[i]->Print(out, generatorName);
-        for (i=0; i<constants.size(); i++)
+        for (size_t i=0; i<constants.size(); i++)
             constants[i]->Print(out, generatorName);
     }
 
@@ -1640,8 +1639,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         WriteHeaderForwardDeclarations(h);
         WriteHeaderAttributeIncludes(h);
         // write user header includes
-        int i;
-        for (i=0; i<includes.size(); i++)
+        for (size_t i=0; i<includes.size(); i++)
         {
             if (includes[i]->destination=="header" &&
                 includes[i]->target == generatorName)
@@ -1656,7 +1654,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         h << endl;
 
         // write non-member constants
-        for (i=0; i<constants.size(); i++)
+        for (size_t i=0; i<constants.size(); i++)
         {
             if (! constants[i]->member && constants[i]->target == generatorName)
                 h << constants[i]->decl << endl;
@@ -1669,11 +1667,11 @@ class AttsGeneratorAttribute : public GeneratorBase
             h << "class " << exportAPI << " " << name << " : public AttributeSubject" << endl;
         h << "{" << endl;
         h << "public:" << endl;
-        for (i=0; i<EnumType::enums.size(); i++)
+        for (size_t i=0; i<EnumType::enums.size(); i++)
         {
             h << "    enum " << EnumType::enums[i]->type << endl;
             h << "    {" << endl;
-            for (int j=0; j<EnumType::enums[i]->values.size(); j++)
+            for (size_t j=0; j<EnumType::enums[i]->values.size(); j++)
             {
                 h << "        " << EnumType::enums[i]->values[j];
                 if (j < EnumType::enums[i]->values.size()-1)
@@ -1683,7 +1681,7 @@ class AttsGeneratorAttribute : public GeneratorBase
             h << "    };" << endl;
         }
         // write member constants
-        for (i=0; i<constants.size(); i++)
+        for (size_t i=0; i<constants.size(); i++)
         {
             if (constants[i]->member && constants[i]->target == generatorName)
                 h << "    " << constants[i]->decl << endl;
@@ -1711,7 +1709,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         bool hasPrivateFields = false;
         bool hasProtectedFields = false;
         bool hasPublicFields = false;
-        for (i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType == Field::AccessPrivate)
             {
@@ -1731,7 +1729,7 @@ class AttsGeneratorAttribute : public GeneratorBase
             h << "    // Property setting methods" << endl;
         }
         // Write out all the set prototypes
-        for (i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType != Field::AccessPrivate)
                 continue;
@@ -1745,7 +1743,7 @@ class AttsGeneratorAttribute : public GeneratorBase
             h << "    // Property getting methods" << endl;
         }
         // Write out all the get prototypes
-        for (i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType != Field::AccessPrivate)
                 continue;
@@ -1772,14 +1770,14 @@ class AttsGeneratorAttribute : public GeneratorBase
         {
             h << endl;
             h << "    // Attributegroup convenience methods" << endl;
-            for (i=0; i<fields.size(); i++)
+            for (size_t i=0; i<fields.size(); i++)
             {
                 fields[i]->WriteHeaderAGVectorProto(h);
             }
         }
         if (HaveSoloAGVector())
         {
-            for (i=0; i<fields.size(); i++)
+            for (size_t i=0; i<fields.size(); i++)
             {
                 fields[i]->WriteHeaderSoloAGVectorProto(h);
             }
@@ -1801,7 +1799,7 @@ class AttsGeneratorAttribute : public GeneratorBase
 
         // Write user-defined methods
         bool wroteUserDefinedHeading = false;
-        for (i=0; i<functions.size(); i++)
+        for (size_t i=0; i<functions.size(); i++)
         {
             if (functions[i]->user && 
                 functions[i]->member &&
@@ -1833,7 +1831,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         if(hasPublicFields)
         {
             h << "public:" << endl;
-            for (i=0; i<fields.size(); i++)
+            for (size_t i=0; i<fields.size(); i++)
             {
                 if(fields[i]->accessType != Field::AccessPublic)
                     continue;
@@ -1844,7 +1842,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         if(hasProtectedFields)
         {
             h << "protected:" << endl;
-            for (i=0; i<fields.size(); i++)
+            for (size_t i=0; i<fields.size(); i++)
             {
                 if(fields[i]->accessType != Field::AccessProtected)
                     continue;
@@ -1855,7 +1853,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         if(hasPrivateFields)
         {
             h << "private:" << endl;
-            for (i=0; i<fields.size(); i++)
+            for (size_t i=0; i<fields.size(); i++)
             {
                 if(fields[i]->accessType != Field::AccessPrivate)
                     continue;
@@ -1871,7 +1869,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         h << endl;
 
         bool wroteUserDefinedFunctionsHeading = false;
-        for (i=0; i<functions.size(); i++)
+        for (size_t i=0; i<functions.size(); i++)
         {
             if (functions[i]->user && 
                 !functions[i]->member &&
@@ -1893,14 +1891,13 @@ class AttsGeneratorAttribute : public GeneratorBase
     // ------------------------------------------------------------------------
     void WriteSource(ostream &c)
     {
-        int i;
         c << copyright_str.c_str() << endl;
         c << "#include <" << name << ".h>" << endl;
         WriteSourceIncludes(c);
 
         if (!constants.empty())
         {
-            for (i=0; i<constants.size(); i++)
+            for (size_t i=0; i<constants.size(); i++)
             {
                 if (constants[i]->target == generatorName &&
                     !constants[i]->def.simplifyWhiteSpace().isEmpty())
@@ -1941,7 +1938,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         c << "///////////////////////////////////////////////////////////////////////////////" << endl;
         c << "// Set property methods" << endl;
         c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
-        for (i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType == Field::AccessPublic)
                 continue;
@@ -1961,7 +1958,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         c << "///////////////////////////////////////////////////////////////////////////////" << endl;
         c << "// Get property methods" << endl;
         c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
-        for (i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType == Field::AccessPublic)
                 continue;
@@ -1976,7 +1973,7 @@ class AttsGeneratorAttribute : public GeneratorBase
             c << "///////////////////////////////////////////////////////////////////////////////" << endl;
             c << "// Select property methods" << endl;
             c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
-            for (i=0; i<fields.size(); i++)
+            for (size_t i=0; i<fields.size(); i++)
             {
                 if(fields[i]->accessType == Field::AccessPublic)
                     continue;
@@ -1989,7 +1986,7 @@ class AttsGeneratorAttribute : public GeneratorBase
             c << "///////////////////////////////////////////////////////////////////////////////" << endl;
             c << "// AttributeGroupVector convenience methods." << endl;
             c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
-            for (i=0; i<fields.size(); i++)
+            for (size_t i=0; i<fields.size(); i++)
             {
                 if(fields[i]->accessType != Field::AccessPrivate)
                     continue;
@@ -1999,7 +1996,7 @@ class AttsGeneratorAttribute : public GeneratorBase
 
         if (HaveSoloAGVector())
         {
-            for (i=0; i<fields.size(); i++)
+            for (size_t i=0; i<fields.size(); i++)
                 fields[i]->WriteSourceSoloAGVectorFunctions(c, name, purpose);
         }
 
@@ -2015,7 +2012,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         c << "///////////////////////////////////////////////////////////////////////////////" << endl;
         c << "// User-defined methods." << endl;
         c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
-        for (i=0; i<functions.size(); i++)
+        for (size_t i=0; i<functions.size(); i++)
         {
             if (functions[i]->user &&
                 functions[i]->target == generatorName)
@@ -2025,7 +2022,7 @@ class AttsGeneratorAttribute : public GeneratorBase
             }
         }
 
-        for (i=0; i<functions.size(); i++) 
+        for (size_t i=0; i<functions.size(); i++) 
         {
             if (!functions[i]->user &&
                 functions[i]->target == generatorName)
@@ -2047,25 +2044,25 @@ private:
     void WriteHeaderSystemIncludes(ostream &h)
     {
         UniqueStringList sysincludes;
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
             fields[i]->AddSystemIncludes(sysincludes);
         sysincludes.Write(h);
     }
     void WriteHeaderAttributeIncludes(ostream &h)
     {
         UniqueStringList attsincludes;
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
             fields[i]->AddAttributeIncludes(attsincludes);
         attsincludes.Write(h);
     }
     void WriteHeaderForwardDeclarations(ostream &h)
     {
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
             fields[i]->WriteHeaderForwardDeclarations(h);
     }
     void WriteHeaderSelectFunctions(ostream &h)
     {
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType == Field::AccessPrivate)
             fields[i]->WriteHeaderSelectFunction(h);
@@ -2078,7 +2075,7 @@ private:
             h << "    // IDs that can be used to identify fields in case statements" << endl;
             h << "    enum {" << endl;
         }
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             h << "        " << fields[i]->FieldID();
             if(i == 0)
@@ -2099,7 +2096,7 @@ private:
         if(EnumType::enums.size() > 0)
         {
             h << "    // Enum conversion functions" << endl;
-            for (int i = 0; i < EnumType::enums.size(); ++i)
+            for (size_t i = 0; i < EnumType::enums.size(); ++i)
             {
                 h << "    static std::string "<<EnumType::enums[i]->type<<"_ToString("<<EnumType::enums[i]->type<<");" << endl;
                 h << "    static bool "<<EnumType::enums[i]->type<<"_FromString(const std::string &, " << EnumType::enums[i]->type<<" &);" << endl;
@@ -2116,7 +2113,7 @@ private:
 
         // Iterate through the list of attibutes and find the one with
         // the longest name.
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if ( fields[i]->type=="attVector" && considerConst)
                 continue;
@@ -2137,7 +2134,7 @@ private:
     }
     bool SelectFunctionsNeeded()
     {
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType != Field::AccessPrivate)
                 continue;
@@ -2148,7 +2145,7 @@ private:
     }
     bool HaveAGVectors()
     {
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if (fields[i]->type=="attVector")
                 return true;
@@ -2158,7 +2155,7 @@ private:
     bool HaveSoloAGVector()
     {
         int count = 0;
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if (fields[i]->type=="attVector")
                 count++;
@@ -2167,7 +2164,7 @@ private:
     }
     bool HaveArrays()
     {
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if (fields[i]->isArray)
                 return true;
@@ -2176,7 +2173,7 @@ private:
     }
     bool HaveArraysThatNeedIndexVar()
     {
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if (fields[i]->isArray && fields[i]->length >= 4)
                 return true;
@@ -2185,7 +2182,7 @@ private:
     }
     bool HaveVectors()
     {
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if (fields[i]->isVector)
                 return true;
@@ -2198,8 +2195,7 @@ private:
         c << "#include <DataNode.h>" << endl;
 
         // write user source includes
-        int i;
-        for (i=0; i<includes.size(); i++)
+        for (size_t i=0; i<includes.size(); i++)
         {
             if (includes[i]->destination=="source" &&
                 includes[i]->target == generatorName)
@@ -2211,7 +2207,7 @@ private:
             }
         }
 
-        for (i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             fields[i]->WriteSourceIncludes(c);
         }
@@ -2223,8 +2219,7 @@ private:
     {
         // Write the typemap format string.
         QString formatString;
-        int i;
-        for (i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
             formatString += fields[i]->GetAttributeGroupID();
         c << "// Type map format string" << endl;
         c << "const char *" << name << "::TypeMapFormatString = \"" << formatString << "\";";
@@ -2238,8 +2233,8 @@ private:
         c << name << "::" << name << "() : \n    AttributeSubject(" << name << "::TypeMapFormatString)";
 
         // Count the number of fields that require an initializer
-        int nInitializers = 0;
-        for (i=0; i<fields.size(); ++i)
+        size_t nInitializers = 0;
+        for (size_t i=0; i<fields.size(); ++i)
         {
             if(fields[i]->RequiresSourceInitializer())
                 ++nInitializers;
@@ -2249,7 +2244,7 @@ private:
         {
             bool endLine;
             c << "," << endl << "    ";
-            for(int i = 0, j = 0; i < fields.size(); ++i)
+            for(size_t i = 0, j = 0; i < fields.size(); ++i)
             {
                 if(fields[i]->RequiresSourceInitializer())
                 {
@@ -2274,7 +2269,7 @@ private:
             c << endl;
 
         c << "{" << endl;
-        for (i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if (!fields[i]->PrintInit(c, generatorName) &&
                 fields[i]->valueSet)
@@ -2295,12 +2290,11 @@ private:
         }
         if (HaveArraysThatNeedIndexVar())
         {
-            c << "    int i;" << endl;
             skipLine = true;
         }
         if(skipLine)
             c << endl;
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             fields[i]->WriteSourceCopyCode(c);
         }
@@ -2339,11 +2333,9 @@ private:
         {
             if (HaveAGVectors())
                 c << "    AttributeGroupVector::iterator pos;" << endl;
-            /*if (HaveAGArrays())
-              c << "    int i;" << endl;*/
             c << endl;
 
-            for (int i=0; i<fields.size(); i++)
+            for (size_t i=0; i<fields.size(); i++)
                 fields[i]->WriteSourceDestructor(c);
         }
         c << "}" << endl << endl;
@@ -2478,14 +2470,9 @@ private:
           << name << " &obj) const" << endl;
         c << "{" << endl;
 
-        if(HaveArrays() || HaveAGVectors())
-        {
-            c << "    int i;" << endl << endl;
-        }
-
         // Create bool values to evaluate the arrays.
         QString prevValue("true");
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if (!fields[i]->ignoreEquality)
                 fields[i]->WriteSourceComparisonPrecalc(c, "    ");
@@ -2501,7 +2488,7 @@ private:
         }
         else
         {
-            for (int i=0; i<fields.size(); i++)
+            for (size_t i=0; i<fields.size(); i++)
             {
                 if (i > 0)
                     c << "            ";
@@ -2535,7 +2522,7 @@ private:
     int MaxFieldLength() const
     {
         int maxlen = 0;
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             int len = fields[i]->FieldID().length();
             maxlen = (len > maxlen) ? len : maxlen;
@@ -2545,7 +2532,7 @@ private:
     QString PadStringWithSpaces(const QString &s, int len) const
     {
         QString ret(s);
-        while(ret.length() < len)
+        while((int)(ret.length()) < len)
             ret += QString(" ");
         return ret;
     }
@@ -2560,7 +2547,7 @@ private:
         c << name << "::SelectAll()" << endl;
         c << "{" << endl;
         int maxlen = MaxFieldLength() + 2;
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             QString fieldID(PadStringWithSpaces(fields[i]->FieldID() + QString(", "), maxlen));
             if (fields[i]->isArray)
@@ -2582,7 +2569,7 @@ private:
     {
         // See if there are any AG vectors.
         int AG_dynamic_count = 0;
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if (fields[i]->type == "attVector"/* || fields[i]->type == "attArray"*/)
                 ++AG_dynamic_count;
@@ -2599,7 +2586,7 @@ private:
             c << ")" << endl;
             c << "{" << endl;
 
-            for (int i=0; i<fields.size(); i++)
+            for (size_t i=0; i<fields.size(); i++)
             {
                 fields[i]->WriteSourceSubAttributeGroupSingle(c);
             }
@@ -2612,7 +2599,7 @@ private:
             c << "    AttributeGroup *retval = 0;" << endl;
             c << "    switch(attr_id)" << endl;
             c << "    {" << endl;
-            for (int i=0; i<fields.size(); i++)
+            for (size_t i=0; i<fields.size(); i++)
             {
                 fields[i]->WriteSourceSubAttributeGroup(c);
             }
@@ -2642,7 +2629,7 @@ private:
         c << "    DataNode *node = new DataNode(\"" << name << "\");" << endl << endl;
 
         // Write out the DataNode creation for all attributes.
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType == Field::AccessPublic)
             {
@@ -2682,7 +2669,7 @@ private:
             else if(fields[i]->type == "attVector")
             {
                 c << "        addToParent = true;" << endl;
-                c << "        for(int i = 0; i < " << fields[i]->name << ".size(); ++i)" << endl;
+                c << "        for(size_t i = 0; i < " << fields[i]->name << ".size(); ++i)" << endl;
                 c << "            " << fields[i]->name << "[i]->CreateNode(node, completeSave, true);" << endl;
             }
             else if (fields[i]->isArray)
@@ -2734,7 +2721,6 @@ private:
         c << "void" << endl;
         c << name << "::SetFromNode(DataNode *parentNode)" << endl;
         c << "{" << endl;
-        c << "    int i;" << endl;
         c << "    if(parentNode == 0)" << endl;
         c << "        return;" << endl << endl;
         c << "    DataNode *searchNode = parentNode->GetNode(\"" << name << "\");" << endl;
@@ -2751,7 +2737,7 @@ private:
             c << endl;
         }
 
-        for (int i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType == Field::AccessPublic)
             {
@@ -2782,8 +2768,7 @@ private:
         c << "{" << endl;
         c << "    switch (index)" << endl;
         c << "    {" << endl;
-        int i;
-        for (i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             QString fieldID(PadStringWithSpaces(fields[i]->FieldID() + QString(":"), maxlen));
             c << "    case "<<fieldID<<" return \""<<fields[i]->name<<"\";" << endl;
@@ -2801,7 +2786,7 @@ private:
         c << "{" << endl;
         c << "    switch (index)" << endl;
         c << "    {" << endl;
-        for (i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             QString fieldID(PadStringWithSpaces(fields[i]->FieldID() + QString(":"), maxlen));
             c << "    case "<<fieldID<<" return FieldType_"<<fields[i]->GetFieldType()<<";" << endl;
@@ -2819,7 +2804,7 @@ private:
         c << "{" << endl;
         c << "    switch (index)" << endl;
         c << "    {" << endl;
-        for (i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             QString fieldID(PadStringWithSpaces(fields[i]->FieldID() + QString(":"), maxlen));
             c << "    case "<<fieldID<<" return \""<<fields[i]->type<<"\";" << endl;
@@ -2836,11 +2821,6 @@ private:
         c << name << "::FieldsEqual(int index_, const AttributeGroup *rhs) const" << endl;
         c << "{" << endl;
 
-        if(HaveArrays() || HaveAGVectors())
-        {
-            c << "    int i;" << endl << endl;
-        }
-
         c << "    const "<<name<<" &obj = *((const "<<name<<"*)rhs);" << endl;
 
         // Create bool values to evaluate the arrays.
@@ -2849,7 +2829,7 @@ private:
         c << "    {" << endl;
 
         // Create a big boolean return statement.
-        for (i=0; i<fields.size(); i++)
+        for (size_t i=0; i<fields.size(); i++)
         {
             c << "    case "<<fields[i]->FieldID()<<":" << endl;
             c << "        {  // new scope" << endl;
@@ -2867,14 +2847,14 @@ private:
 
     void WriteSourceEnumConversions(ostream &c)
     {
-        for(int i = 0; i < EnumType::enums.size(); ++i)
+        for(size_t i = 0; i < EnumType::enums.size(); ++i)
         {
             c << "//" << endl;
             c << "// Enum conversion methods for "<<name << "::" << EnumType::enums[i]->type << endl;
             c << "//" << endl;
             c << endl;
             c << "static const char *" << EnumType::enums[i]->type << "_strings[] = {" << endl;
-            for(int j = 0; j < EnumType::enums[i]->values.size(); ++j)
+            for(size_t j = 0; j < EnumType::enums[i]->values.size(); ++j)
             {
                 c << "\"" << EnumType::enums[i]->values[j] << "\"";
                 if(j < EnumType::enums[i]->values.size() - 1)

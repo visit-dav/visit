@@ -271,10 +271,8 @@ avtSimulationInformation::operator = (const avtSimulationInformation &obj)
 bool
 avtSimulationInformation::operator == (const avtSimulationInformation &obj) const
 {
-    int i;
-
     bool genericCommands_equal = (obj.genericCommands.size() == genericCommands.size());
-    for(i = 0; (i < genericCommands.size()) && genericCommands_equal; ++i)
+    for(size_t i = 0; (i < genericCommands.size()) && genericCommands_equal; ++i)
     {
         // Make references to avtSimulationCommandSpecification from AttributeGroup *.
         const avtSimulationCommandSpecification &genericCommands1 = *((const avtSimulationCommandSpecification *)(genericCommands[i]));
@@ -283,7 +281,7 @@ avtSimulationInformation::operator == (const avtSimulationInformation &obj) cons
     }
 
     bool customCommands_equal = (obj.customCommands.size() == customCommands.size());
-    for(i = 0; (i < customCommands.size()) && customCommands_equal; ++i)
+    for(size_t i = 0; (i < customCommands.size()) && customCommands_equal; ++i)
     {
         // Make references to avtSimulationCommandSpecification from AttributeGroup *.
         const avtSimulationCommandSpecification &customCommands1 = *((const avtSimulationCommandSpecification *)(customCommands[i]));

@@ -189,7 +189,7 @@ QvisColorManagerWidget::setEnabled(bool val)
     opacityLabel->setEnabled(val);
 
     // Iterate through the color widgets and set their enabled state.
-    for(int i = 0; i < colorEntries.size(); ++i)
+    for(size_t i = 0; i < colorEntries.size(); ++i)
     {
         colorEntries[i]->nameLabel->setEnabled(val);
         colorEntries[i]->colorBox->setEnabled(val);

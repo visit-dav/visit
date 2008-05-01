@@ -676,7 +676,6 @@ AnnotationAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
 void
 AnnotationAttributes::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 
@@ -1530,7 +1529,7 @@ AnnotationAttributes::ProcessOldVersions(DataNode *parentNode,
                 // Reparent the node.
                 stringVector keys = SplitValues(attribute_mappings[key].new_key, '.');
                 DataNode *pNode = searchNode;
-                for(int i = 0; i < keys.size(); ++i)
+                for(size_t i = 0; i < keys.size(); ++i)
                 {
                     if(i < keys.size() - 1)
                     {                     

@@ -358,7 +358,7 @@ XMLNode::FindIndex(const string &name, int start) const
     if(start > children.size())
         return -1;
         
-    for(int i=start; i<children.size(); i++)
+    for(size_t i=start; i<children.size(); i++)
     {
         if(name == children[i]->Name())
             return i;

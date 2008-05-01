@@ -342,9 +342,9 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
         doubleVector toolMinima   = arAtts->GetMinima();
         doubleVector toolMaxima   = arAtts->GetMaxima();
 
-        for (int lv=0; lv < listedVarNames.size(); lv++)
+        for (size_t lv=0; lv < listedVarNames.size(); lv++)
         {
-            for (int tv=0; tv < toolVarNames.size(); tv++)
+            for (size_t tv=0; tv < toolVarNames.size(); tv++)
             {
                 if (toolVarNames[tv] == listedVarNames[lv])
                 {
@@ -547,7 +547,6 @@ ThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
 void
 ThresholdAttributes::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 
@@ -985,7 +984,7 @@ ThresholdAttributes::SupplyMissingDefaultsIfAppropriate()
 bool
 ThresholdAttributes::AttributesAreConsistent() const
 {
-    int varListSize = listedVarNames.size();
+    size_t varListSize = listedVarNames.size();
     
     if ((zonePortions.size() != varListSize) ||
         (lowerBounds.size()  != varListSize) ||
@@ -1015,8 +1014,8 @@ ThresholdAttributes::AttributesAreConsistent() const
 void
 ThresholdAttributes::ForceAttributeConsistency()
 {
-    int varListSize = listedVarNames.size();
-    int varNum;
+    size_t varListSize = listedVarNames.size();
+    size_t varNum;
     double boundValue;
     bool consistent = ((zonePortions.size() == varListSize) &&
                        ( lowerBounds.size() == varListSize) &&
@@ -1091,7 +1090,7 @@ ThresholdAttributes::ForceAttributeConsistency()
 void
 ThresholdAttributes::SwitchDefaultVariableNameToTrueName()
 {
-    int varPosition;
+    size_t varPosition;
     bool changedTheList;
     std::string listedVarName;
 

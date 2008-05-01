@@ -183,7 +183,6 @@ avtUnstructuredDomainBoundaries::SetSharedPoints(int d1, int d2,
                                                const vector<int> &d1pts,
                                                const vector<int> &d2pts)
 {
-    int i;
     int index = GetGivenIndex(d1, d2);
 
     if (index == -1)
@@ -197,7 +196,7 @@ avtUnstructuredDomainBoundaries::SetSharedPoints(int d1, int d2,
     else
         sharedPointsMap[index].clear();
 
-    for (i = 0; i < d1pts.size(); ++i)
+    for (size_t i = 0; i < d1pts.size(); ++i)
     {
         sharedPointsMap[index][d1pts[i]] = d2pts[i];
     }
@@ -216,7 +215,7 @@ avtUnstructuredDomainBoundaries::SetSharedPoints(int d1, int d2,
     else
         sharedPointsMap[index].clear();
 
-    for (i = 0; i < d1pts.size(); ++i)
+    for (size_t i = 0; i < d1pts.size(); ++i)
         sharedPointsMap[index][d2pts[i]] = d1pts[i];
 }
 
@@ -275,8 +274,7 @@ avtUnstructuredDomainBoundaries::SetGivenCellsAndPoints(int fromDom, int toDom,
         
         // Go through and manually insert the points that are not shared.
 
-        int i;
-        for (i = 0; i < points.size(); ++i)
+        for (size_t i = 0; i < points.size(); ++i)
         {
             if (smap.find(points[i]) == smap.end())
             {
@@ -307,8 +305,7 @@ avtUnstructuredDomainBoundaries::SetGivenCellsAndPoints(int fromDom, int toDom,
 int
 avtUnstructuredDomainBoundaries::GetGivenIndex(int from, int to)
 {
-    int i;
-    for (i = 0; i < giveIndex.size(); ++i)
+    for (size_t i = 0; i < giveIndex.size(); ++i)
     {
         if (giveIndex[i].first == from && giveIndex[i].second == to)
             return i;
@@ -394,8 +391,7 @@ avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int>       domainNum,
                                cellTypes, cellPoints, origPointIds,
                                nGainedPoints, nGainedCells, nPointsPerCell);
 
-    int d;
-    for (d = 0; d < domainNum.size(); d++)
+    for (size_t d = 0; d < domainNum.size(); d++)
     {
         int recvDom = domainNum[d];
         vtkUnstructuredGrid *mesh = (vtkUnstructuredGrid*)(meshes[d]);
@@ -735,7 +731,7 @@ avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
                                                   vector<avtMaterial*> mats)
 {
     bool haveMixedMaterials = false;
-    for (int i = 0; i < domainNum.size(); i++)
+    for (size_t i = 0; i < domainNum.size(); i++)
         if (mats[i]->GetMixlen() != 0)
             haveMixedMaterials = true;
 
@@ -772,8 +768,6 @@ vector<avtMaterial*>
 avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
                                                      vector<avtMaterial*> mats)
 {
-    int      i, j, k, l;
-
     int   ***matlist = NULL;
     int   ***mixm = NULL;
     float ***mixvf = NULL;
@@ -788,7 +782,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
 
     vector<avtMaterial*> out(mats.size(), NULL);
 
-    for (i = 0; i < domainNum.size(); ++i)
+    for (size_t i = 0; i < domainNum.size(); ++i)
     {
         avtMaterial *oldMat = mats[i];
  
@@ -797,7 +791,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
         // 
         int newNCells  = oldMat->GetNZones();
         int newMixlen  = oldMat->GetMixlen();
-        for (j = 0 ; j < nTotalDomains ; j++)
+        for (int j = 0 ; j < nTotalDomains ; j++)
         {
             newNCells += nGainedCells[j][domainNum[i]];
             newMixlen += nGainedMixlen[j][domainNum[i]];
@@ -833,11 +827,11 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
         //
         int matlist_cnt = oldMat->GetNZones();
         int mixlen_cnt  = oldMat->GetMixlen();
-        for (j = 0 ; j < nTotalDomains ; j++)
+        for (int j = 0 ; j < nTotalDomains ; j++)
         {
             int ngc = nGainedCells[j][domainNum[i]];
             int lml = 0; // "local" mixlen ... mixlen counter for this domain
-            for (k = 0 ; k < ngc ; k++)
+            for (int k = 0 ; k < ngc ; k++)
             {
                 if (matlist[j][domainNum[i]][k] >= 0)
                 {
@@ -850,7 +844,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
                     new_matlist[matlist_cnt] = -(mixlen_cnt+1);
                     matlist_cnt++;
                     int nmats = -matlist[j][domainNum[i]][k];
-                    for (l = 0 ; l < nmats ; l++)
+                    for (int l = 0 ; l < nmats ; l++)
                     {
                         new_mix_mat[mixlen_cnt]  = mixm[j][domainNum[i]][lml];
                         new_mix_vf[mixlen_cnt]   = mixvf[j][domainNum[i]][lml];
@@ -880,24 +874,24 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
     // Cleanup memory ... a bit of work.
     if (nGainedCells != NULL)
     {
-        for (i = 0 ; i < nTotalDomains ; i++)
+        for (int i = 0 ; i < nTotalDomains ; i++)
             if (nGainedCells[i] != NULL)
                 delete [] nGainedCells[i];
         delete [] nGainedCells;
     }
     if (nGainedMixlen != NULL)
     {
-        for (i = 0 ; i < nTotalDomains ; i++)
+        for (int i = 0 ; i < nTotalDomains ; i++)
             if (nGainedMixlen[i] != NULL)
                 delete [] nGainedMixlen[i];
         delete [] nGainedMixlen;
     }
     if (matlist != NULL)
     {
-        for (i = 0 ; i < nTotalDomains ; i++)
+        for (int i = 0 ; i < nTotalDomains ; i++)
             if (matlist[i] != NULL)
             {
-                for (j = 0 ; j < nTotalDomains ; j++)
+                for (int j = 0 ; j < nTotalDomains ; j++)
                     if (matlist[i][j] != NULL)
                        delete [] matlist[i][j];
                 delete [] matlist[i];
@@ -906,10 +900,10 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
     }
     if (mixm != NULL)
     {
-        for (i = 0 ; i < nTotalDomains ; i++)
+        for (int i = 0 ; i < nTotalDomains ; i++)
             if (mixm[i] != NULL)
             {
-                for (j = 0 ; j < nTotalDomains ; j++)
+                for (int j = 0 ; j < nTotalDomains ; j++)
                     if (mixm[i][j] != NULL)
                        delete [] mixm[i][j];
                 delete [] mixm[i];
@@ -918,10 +912,10 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
     }
     if (mixvf != NULL)
     {
-        for (i = 0 ; i < nTotalDomains ; i++)
+        for (int i = 0 ; i < nTotalDomains ; i++)
             if (mixvf[i] != NULL)
             {
-                for (j = 0 ; j < nTotalDomains ; j++)
+                for (int j = 0 ; j < nTotalDomains ; j++)
                     if (mixvf[i][j] != NULL)
                        delete [] mixvf[i][j];
                 delete [] mixvf[i];
@@ -968,8 +962,7 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
     // Load the materials into data arrays.
     //
     vector<vtkDataArray *> materialArrays(domainNum.size());
-    int i;
-    for (i = 0 ; i < domainNum.size() ; i++)
+    for (size_t i = 0 ; i < domainNum.size() ; i++)
     {
         // This should never happen, but it doesn't hurt to check.
         if (mats[i]->GetMixlen() != 0)
@@ -996,7 +989,7 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
 
     vector<avtMaterial*> out(mats.size(), NULL);
 
-    for (i = 0 ; i < domainNum.size() ; i++)
+    for (size_t i = 0 ; i < domainNum.size() ; i++)
     {
         int nMaterials = mats[i]->GetNMaterials();
         int nZones = result[i]->GetNumberOfTuples();
@@ -1044,8 +1037,6 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
                                           const vector<avtMaterial*> mats,
                                           vector<avtMixedVariable*>  mixvars)
 {
-    int      i, j;
-
     vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
 
     int **nGainedMixlen;
@@ -1063,7 +1054,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
     // zones that are mixed.)
     //
     const char *mixvarname = NULL;
-    for (i = 0 ; i < mixvars.size() ; i++)
+    for (size_t i = 0 ; i < mixvars.size() ; i++)
         if (mixvars[i] != NULL)
             mixvarname = mixvars[i]->GetVarname().c_str();
 
@@ -1094,7 +1085,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
     char *mvname = NULL;
 #endif
 
-    for (i = 0; i < domainNum.size(); ++i)
+    for (size_t i = 0; i < domainNum.size(); ++i)
     {
         avtMixedVariable *oldMV = mixvars[i];
 
@@ -1102,7 +1093,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
         // Estimate the sizes we will need for the new object.
         //
         int newMixlen  = (oldMV != NULL ? oldMV->GetMixlen(): 0);
-        for (j = 0 ; j < nTotalDomains ; j++)
+        for (int j = 0 ; j < nTotalDomains ; j++)
             newMixlen += nGainedMixlen[j][domainNum[i]];
 
         if (newMixlen <= 0)
@@ -1127,7 +1118,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
         // domains in order, we will be constructing ghost information in
         // the exact same order as when we construct ghost zones for the mesh.
         //
-        for (j = 0 ; j < nTotalDomains ; j++)
+        for (int j = 0 ; j < nTotalDomains ; j++)
         {
             memcpy(new_buff+mixlen_cnt, vals[j][domainNum[i]], 
                    sizeof(float)*nGainedMixlen[j][domainNum[i]]);
@@ -1141,10 +1132,10 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
     // Cleanup ... a bit of effort.
     if (vals != NULL)
     {
-        for (i = 0 ; i < nTotalDomains ; i++)
+        for (int i = 0 ; i < nTotalDomains ; i++)
             if (vals[i] != NULL)
             {
-                for (j = 0 ; j < nTotalDomains ; j++)
+                for (int j = 0 ; j < nTotalDomains ; j++)
                     if (vals[i][j] != NULL)
                         delete [] vals[i][j];
                 delete [] vals[i];
@@ -1153,7 +1144,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
     }
     if (nGainedMixlen != NULL)
     {
-        for (i = 0 ; i < nTotalDomains ; i++)
+        for (int i = 0 ; i < nTotalDomains ; i++)
             if (nGainedMixlen[i] != NULL)
                 delete [] nGainedMixlen[i];
         delete [] nGainedMixlen;
@@ -1217,15 +1208,13 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
                                             vector<vtkDataSet*> meshes)
 {
     // Our best bet is to compare some shared points.
-    int i;
-    for (i = 0; i < domainNum.size(); ++i)
+    for (size_t i = 0; i < domainNum.size(); ++i)
     {
         if (meshes[i] == 0)
             continue;
 
         int d1 = domainNum[i];
-        int j;
-        for (j = i + 1; j < domainNum.size(); ++j)
+        for (size_t j = i + 1; j < domainNum.size(); ++j)
         {
             int d2 = domainNum[j];
             int index = GetGivenIndex(d1, d2);
@@ -1392,8 +1381,7 @@ avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
     if (data.size())
         nComponents = data[0]->GetNumberOfComponents();
 
-    int i;
-    for (i = 0; i < domainNum.size(); ++i)
+    for (size_t i = 0; i < domainNum.size(); ++i)
     {
         int recvDom = domainNum[i];
         out[i] = data[i]->NewInstance();
@@ -1500,7 +1488,7 @@ avtUnstructuredDomainBoundaries::CreateDomainToProcessorMap(
 
     // Create the map
     vector<int> domain2proc(nTotalDomains, -1);
-    for (int d = 0; d < domainNum.size(); d++)
+    for (size_t d = 0; d < domainNum.size(); d++)
         domain2proc[domainNum[d]] = rank;
 
 #ifdef PARALLEL
@@ -1592,9 +1580,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
 
     vtkIdList *idList = vtkIdList::New();
     
-    int i;
-    int sendDom;
-    for (sendDom = 0; sendDom < nTotalDomains; ++sendDom)
+    for (int sendDom = 0; sendDom < nTotalDomains; ++sendDom)
     {
         gainedPoints[sendDom] = new float*[nTotalDomains];
         cellTypes[sendDom] = new int*[nTotalDomains];
@@ -1604,8 +1590,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
         nGainedCells[sendDom] = new int[nTotalDomains];
         nPointsPerCell[sendDom] = new int *[nTotalDomains];
 
-        int recvDom;
-        for (recvDom = 0; recvDom < nTotalDomains; ++recvDom)
+        for (int recvDom = 0; recvDom < nTotalDomains; ++recvDom)
         {
             gainedPoints[sendDom][recvDom] = NULL;
             cellTypes[sendDom][recvDom] = NULL;
@@ -1627,6 +1612,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
             // calculation: no communication needed
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
+                size_t i;
                 for (i = 0; i < domainNum.size(); ++i)
                     if (domainNum[i] == sendDom)
                         break;
@@ -1639,7 +1625,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 if (index < 0)
                     continue;
 
-                int nPts = givenPoints[index].size();
+                size_t nPts = givenPoints[index].size();
                 nGainedPoints[sendDom][recvDom] += nPts;
                 
                 gainedPoints[sendDom][recvDom] = new float[nPts * 3];
@@ -1659,7 +1645,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                     *(gainedPtr++) = *(ptPtr++);
                 }
 
-                int nCells = givenCells[index].size();
+                size_t nCells = givenCells[index].size();
                 nGainedCells[sendDom][recvDom] += nCells;
 
                 cellTypes[sendDom][recvDom] = new int[nCells];
@@ -1679,8 +1665,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                     nPtsPerCellPtr[i] = nPts;
 
                     cellPtsPtr[i] = new int[nPts];
-                    int k;
-                    for (k = 0; k < nPts; ++k)
+                    for (size_t k = 0; k < nPts; ++k)
                         cellPtsPtr[i][k] = idList->GetId(k);
                 }
             }
@@ -1916,15 +1901,12 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
     vals      = new float**[nTotalDomains];
     mixGained = new int*[nTotalDomains];
 
-    int i;
-    int sendDom;
-    for (sendDom = 0 ; sendDom < nTotalDomains ; sendDom++)
+    for (int sendDom = 0 ; sendDom < nTotalDomains ; sendDom++)
     {
         vals[sendDom]      = new float*[nTotalDomains];
         mixGained[sendDom] = new int[nTotalDomains];
 
-        int recvDom;
-        for (recvDom = 0 ; recvDom < nTotalDomains ; recvDom++)
+        for (int recvDom = 0 ; recvDom < nTotalDomains ; recvDom++)
         {
             vals[sendDom][recvDom] = NULL;
             mixGained[sendDom][recvDom]  = 0;
@@ -1940,6 +1922,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
                 // Find the index that corresponds to the sendDom.
+                size_t i;
                 for (i = 0 ; i < domainNum.size() ; i++)
                     if (domainNum[i] == sendDom)
                         break;
@@ -1953,7 +1936,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                 avtMaterial      *givingMat = mats[i];
                 avtMixedVariable *givingVar = mixvars[i];
                 
-                int nCells = givenCells[index].size();
+                size_t nCells = givenCells[index].size();
 
                 // Assess the amount of mix in cells along the boundary.
                 // For each cell "C" along the boundary, assume a counting
@@ -2199,9 +2182,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
     nGainedCells  = new int*[nTotalDomains];
     nGainedMixlen = new int*[nTotalDomains];
 
-    int i;
-    int sendDom;
-    for (sendDom = 0 ; sendDom < nTotalDomains ; sendDom++)
+    for (int sendDom = 0 ; sendDom < nTotalDomains ; sendDom++)
     {
         gainedMatlist[sendDom] = new int*[nTotalDomains];
         gainedMixmat[sendDom]  = new int*[nTotalDomains];
@@ -2209,8 +2190,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
         nGainedCells[sendDom]  = new int[nTotalDomains];
         nGainedMixlen[sendDom] = new int[nTotalDomains];
 
-        int recvDom;
-        for (recvDom = 0 ; recvDom < nTotalDomains ; recvDom++)
+        for (int recvDom = 0 ; recvDom < nTotalDomains ; recvDom++)
         {
             gainedMatlist[sendDom][recvDom] = NULL;
             gainedMixmat[sendDom][recvDom]  = NULL;
@@ -2230,6 +2210,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
                 // Find the index that corresponds to the sendDom.
+                size_t i;
                 for (i = 0 ; i < domainNum.size() ; i++)
                     if (domainNum[i] == sendDom)
                         break;
@@ -2242,7 +2223,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
 
                 avtMaterial *givingMat = mats[i];
                 
-                int nCells = givenCells[index].size();
+                size_t nCells = givenCells[index].size();
                 nGainedCells[sendDom][recvDom] = nCells;
 
                 const int *mix_next = mats[i]->GetMixNext();
@@ -2558,7 +2539,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
             // calculation: no communication needed
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
-                int i;
+                size_t i;
                 for (i = 0; i < domainNum.size(); ++i)
                     if (domainNum[i] == sendDom)
                         break;
@@ -2580,11 +2561,10 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                 T * origPtr = (T*)(data[i]->GetVoidPointer(0));
                 T * dataPtr = gainedData[sendDom][recvDom];
 
-                for (i = 0; i < nTuples; ++i)
+                for (int i = 0; i < nTuples; ++i)
                 {
                     T *ptr = origPtr + mapRef[i] * nComponents;
-                    int j;
-                    for (j = 0; j < nComponents; ++j)
+                    for (int j = 0; j < nComponents; ++j)
                     {
                         *(dataPtr++) = *(ptr++);
                     }
@@ -2701,9 +2681,7 @@ avtUnstructuredDomainBoundaries::CreateGhostNodes(vector<int> domainNum,
                                                   vector<vtkDataSet*> meshes,
                                                   vector<int> &allDomains)
 {
-    int  i, j;
-
-    for (i = 0 ; i < domainNum.size() ; i++)
+    for (size_t i = 0 ; i < domainNum.size() ; i++)
     {
         vtkDataSet *ds = meshes[i];
         int npts = ds->GetNumberOfPoints();
@@ -2712,10 +2690,10 @@ avtUnstructuredDomainBoundaries::CreateGhostNodes(vector<int> domainNum,
         gn->SetNumberOfTuples(npts);
         gn->SetName("avtGhostNodes");
         unsigned char *gnp = gn->GetPointer(0);
-        for (j = 0 ; j < npts ; j++)
+        for (int j = 0 ; j < npts ; j++)
             gnp[j] = 0;
 
-        for (j = 0 ; j < giveIndex.size() ; j++)
+        for (size_t j = 0 ; j < giveIndex.size() ; j++)
         {
             if (giveIndex[j].first != domainNum[i])
                 continue;

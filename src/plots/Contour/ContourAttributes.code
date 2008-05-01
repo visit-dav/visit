@@ -179,7 +179,7 @@ Definition:
 bool
 ContourAttributes::ColorIsChanged(int index) const
 {
-    int i = 0;
+    size_t i = 0;
     for(; i < changedColors.size(); ++i)
     {
         if(changedColors[i] == ((unsigned char)index))

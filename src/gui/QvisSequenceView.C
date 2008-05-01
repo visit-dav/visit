@@ -405,7 +405,7 @@ QvisSequenceView::getSequenceInformation(const QString &vpName, int index,
     if(retval)
     {
         retval = false;
-        for(int i = 0; i < it.data().size(); ++i)
+        for(size_t i = 0; i < it.data().size(); ++i)
         {
             if(i == index)
             {
@@ -655,7 +655,7 @@ QvisSequenceView::drawDropSitesThatIntersect(QPainter *p, const QRect &clip)
         QPen newPen(QColor(200,200,200));
         newPen.setWidth(2);
         p->setPen(newPen);
-        for(int i = 0; i < dropSites.size(); ++i)
+        for(size_t i = 0; i < dropSites.size(); ++i)
         {
             if(clip.intersects(dropSites[i].site) && i != dropSiteIndex)
             {
@@ -752,12 +752,12 @@ QvisSequenceView::drawCellContentsOverlay(QPainter *p, const QRect &r, int row, 
     p->setWorldMatrix(QWMatrix(), false);
 
     bool *dsDrawn = new bool[dropSites.size()+1];
-    for(int j = 0; j < dropSites.size()+1; ++j)
+    for(size_t j = 0; j < dropSites.size()+1; ++j)
         dsDrawn[j] = false;
     for(int j = 0; j < numRows(); ++j)
         for(int i = 0; i < numCols(); ++i)
         {
-            for(int ds = 0; ds < dropSites.size(); ++ds)
+            for(size_t ds = 0; ds < dropSites.size(); ++ds)
             {
                 QRect cg(cellGeometry(j, i));
 
@@ -817,7 +817,7 @@ QvisSequenceView::getCellInformation(int row, int col, QString &txt,
         t = -1;
         if(index == row)
         {
-            for(int i = 0; i < it.data().size(); ++i)
+            for(size_t i = 0; i < it.data().size(); ++i)
             {
                 if(i+1 == col)
                 {
@@ -940,7 +940,7 @@ QvisSequenceView::contentsMousePressEvent(QMouseEvent *e)
                     dropSites.push_back(info);
                 }
 
-                for(int i = 0; i < vpt.data().size(); ++i)
+                for(size_t i = 0; i < vpt.data().size(); ++i)
                 {
                     if(srcRow == row && ((srcCol-1) == i || srcCol == i+2))
                     {
@@ -990,7 +990,7 @@ QvisSequenceView::contentsMouseMoveEvent(QMouseEvent *e)
 
         // Figure out the new drop site index.
         int newDropIndex = -1;
-        for(int i = 0; i < dropSites.size(); ++i)
+        for(size_t i = 0; i < dropSites.size(); ++i)
         {
             if(dropSites[i].site.contains(e->pos()))
             {
@@ -1188,7 +1188,7 @@ QvisSequenceView::printContents() const
     {
         qDebug("Viewport: %s", it.key().latin1());
 
-        for(int i = 0; i < it.data().size(); ++i)
+        for(size_t i = 0; i < it.data().size(); ++i)
         {
             qDebug("\tsequence: %s, %d", it.data()[i].name.latin1(), it.data()[i].seqType);
         }

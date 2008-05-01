@@ -6,7 +6,7 @@ DatabaseCorrelationList::FindCorrelation(const std::string &name) const
 {
     DatabaseCorrelation *retval = 0;
 
-    for(int i = 0; i < correlations.size(); ++i)
+    for(size_t i = 0; i < correlations.size(); ++i)
     {
         DatabaseCorrelation *c = (DatabaseCorrelation *)correlations[i];
         if(name == c->GetName())
@@ -104,7 +104,7 @@ DatabaseCorrelationList::CreateNode(DataNode *parentNode, bool completeSave, boo
     DataNode *node = new DataNode("DatabaseCorrelationList");
     if(completeSave)
     {
-        for(int i = 0; i < correlations.size(); ++i)
+        for(size_t i = 0; i < correlations.size(); ++i)
             correlations[i]->CreateNode(node, completeSave, true);
     }
 

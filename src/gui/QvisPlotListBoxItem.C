@@ -796,7 +796,7 @@ QvisPlotListBoxItem::clicked(const QPoint &pos, bool doubleClicked, int &id)
     if(isExpanded())
     {
         bool clickedSomething = false;
-        for(int i = 0; i < clickable.size() && !clickedSomething; ++i)
+        for(size_t i = 0; i < clickable.size() && !clickedSomething; ++i)
         {
             if(clickable[i].r.contains(pos))
             {

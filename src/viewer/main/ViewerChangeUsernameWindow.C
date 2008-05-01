@@ -205,7 +205,7 @@ ViewerChangeUsernameWindow::changeUsername(const char *host)
         std::vector<const HostProfile *> hp = 
                                  profiles->FindAllMatchingProfileForHost(host);
         
-        for (int i = 0 ; i < hp.size() ; i++)
+        for (size_t i = 0 ; i < hp.size() ; i++)
         {
             for (int j = 0 ; j < profiles->GetNumProfiles() ; j++)
             {

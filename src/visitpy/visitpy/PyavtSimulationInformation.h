@@ -45,17 +45,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void VISITPY_API          PyavtSimulationInformation_StartUp(avtSimulationInformation *subj, void *data);
-void VISITPY_API          PyavtSimulationInformation_CloseDown();
+void VISITPY_API           PyavtSimulationInformation_StartUp(avtSimulationInformation *subj, void *data);
+void VISITPY_API           PyavtSimulationInformation_CloseDown();
 VISITPY_API PyMethodDef *   PyavtSimulationInformation_GetMethodTable(int *nMethods);
-bool VISITPY_API          PyavtSimulationInformation_Check(PyObject *obj);
+bool VISITPY_API           PyavtSimulationInformation_Check(PyObject *obj);
 VISITPY_API avtSimulationInformation *  PyavtSimulationInformation_FromPyObject(PyObject *obj);
 VISITPY_API PyObject *      PyavtSimulationInformation_New();
 VISITPY_API PyObject *      PyavtSimulationInformation_Wrap(const avtSimulationInformation *attr);
-void VISITPY_API          PyavtSimulationInformation_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API          PyavtSimulationInformation_SetDefaults(const avtSimulationInformation *atts);
-std::string VISITPY_API   PyavtSimulationInformation_GetLogString();
-std::string VISITPY_API   PyavtSimulationInformation_ToString(const avtSimulationInformation *, const char *);
+void VISITPY_API           PyavtSimulationInformation_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API           PyavtSimulationInformation_SetDefaults(const avtSimulationInformation *atts);
+std::string VISITPY_API    PyavtSimulationInformation_GetLogString();
+std::string VISITPY_API    PyavtSimulationInformation_ToString(const avtSimulationInformation *, const char *);
 
 #endif
 

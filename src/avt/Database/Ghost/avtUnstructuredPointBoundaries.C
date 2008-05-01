@@ -193,15 +193,13 @@ void
 avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
                                          vector<vtkDataSet *> meshes)
 {
-    int i, k, m;
     map<int, int>::iterator miter;
     vtkIdList *cl = vtkIdList::New();
     vtkIdList *pl = vtkIdList::New();
-    for (i = 0; i < domainNum.size(); ++i)
+    for (size_t i = 0; i < domainNum.size(); ++i)
     {
         int sendDom = domainNum[i];
-        int recvDom;
-        for (recvDom = 0; recvDom < nTotalDomains; ++recvDom)
+        for (int recvDom = 0; recvDom < nTotalDomains; ++recvDom)
         {
             if (sendDom == recvDom || CheckGenerated(sendDom, recvDom))
                 continue;
@@ -228,7 +226,7 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
             {
                 ds->GetPointCells(miter->first, cl);
 
-                for (k = 0; k < cl->GetNumberOfIds(); ++k)
+                for (int k = 0; k < cl->GetNumberOfIds(); ++k)
                 {
                     int cellId = cl->GetId(k);
                     
@@ -242,7 +240,7 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
                     
                     cells.insert(cellId);
                     ds->GetCellPoints(cellId, pl);
-                    for (m = 0; m < pl->GetNumberOfIds(); ++m)
+                    for (int m = 0; m < pl->GetNumberOfIds(); ++m)
                         points.insert(pl->GetId(m));
                 }
             }

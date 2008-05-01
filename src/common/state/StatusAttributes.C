@@ -471,7 +471,6 @@ StatusAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
 void
 StatusAttributes::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 

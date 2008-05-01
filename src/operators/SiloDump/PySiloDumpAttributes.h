@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PySiloDumpAttributes_StartUp(SiloDumpAttributes *subj, void *data);
-void            PySiloDumpAttributes_CloseDown();
+void           PySiloDumpAttributes_StartUp(SiloDumpAttributes *subj, void *data);
+void           PySiloDumpAttributes_CloseDown();
 PyMethodDef *   PySiloDumpAttributes_GetMethodTable(int *nMethods);
-bool            PySiloDumpAttributes_Check(PyObject *obj);
+bool           PySiloDumpAttributes_Check(PyObject *obj);
 SiloDumpAttributes *  PySiloDumpAttributes_FromPyObject(PyObject *obj);
 PyObject *      PySiloDumpAttributes_New();
 PyObject *      PySiloDumpAttributes_Wrap(const SiloDumpAttributes *attr);
-void            PySiloDumpAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PySiloDumpAttributes_SetDefaults(const SiloDumpAttributes *atts);
-std::string     PySiloDumpAttributes_GetLogString();
-std::string     PySiloDumpAttributes_ToString(const SiloDumpAttributes *, const char *);
+void           PySiloDumpAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PySiloDumpAttributes_SetDefaults(const SiloDumpAttributes *atts);
+std::string    PySiloDumpAttributes_GetLogString();
+std::string    PySiloDumpAttributes_ToString(const SiloDumpAttributes *, const char *);
 
 #endif
 

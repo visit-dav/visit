@@ -11,10 +11,8 @@ Definition:
 void
 VisualCueList::SetFrom(const std::vector<const VisualCueInfo*>& cueVec)
 {
-    int i;
-
     ClearCues();
-    for (i = 0; i < cueVec.size(); i++)
+    for (size_t i = 0; i < cueVec.size(); i++)
         AddCues(*(cueVec[i]));
 }
 

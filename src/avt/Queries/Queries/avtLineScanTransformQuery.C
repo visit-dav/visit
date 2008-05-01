@@ -413,7 +413,7 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
                 for ( i = 1 ; i <= k - 1 ; i++ )
                 {
                     int incr = 1;
-                    if ((i+k+1) & 0x1 == 1)
+                    if (((i+k+1) & 0x1) == 1)
                         incr = -1;
 
                     double segLen = projectedSegments[k-1] - projectedSegments[i-1];

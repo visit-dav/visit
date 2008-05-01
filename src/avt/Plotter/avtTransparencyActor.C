@@ -351,8 +351,6 @@ void
 avtTransparencyActor::ReplaceInput(int ind, vector<vtkDataSet *> &d, 
                           vector<vtkDataSetMapper *> &m, vector<vtkActor *> &a)
 {
-    int   i;
-
     if (ind >= datasets.size() || ind < 0)
     {
         EXCEPTION2(BadIndexException, ind, datasets.size());
@@ -362,7 +360,7 @@ avtTransparencyActor::ReplaceInput(int ind, vector<vtkDataSet *> &d,
     mappers[ind]  = m;
     actors[ind]   = a;
 
-    for (i = 0 ; i < preparedDataset[ind].size() ; i++)
+    for (size_t i = 0 ; i < preparedDataset[ind].size() ; i++)
     {
         if (preparedDataset[ind][i] != NULL)
         {
@@ -403,7 +401,7 @@ avtTransparencyActor::RemoveInput(int ind)
         EXCEPTION2(BadIndexException, ind, useActor.size());
     }
 
-    for (int i = 0 ; i < preparedDataset[ind].size() ; i++)
+    for (size_t i = 0 ; i < preparedDataset[ind].size() ; i++)
     {
         if (preparedDataset[ind][i] != NULL)
         {
@@ -608,7 +606,7 @@ avtTransparencyActor::PrepareForRender(vtkCamera *cam)
     }
     else
     {
-        for (int i = 0 ; i < useActor.size() ; i++)
+        for (size_t i = 0 ; i < useActor.size() ; i++)
         {
             if (useActor[i] != lastExecutionActorList[i])
             {

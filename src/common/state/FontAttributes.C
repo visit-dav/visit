@@ -456,7 +456,6 @@ FontAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
 void
 FontAttributes::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 

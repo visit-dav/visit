@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyBoxAttributes_StartUp(BoxAttributes *subj, void *data);
-void            PyBoxAttributes_CloseDown();
+void           PyBoxAttributes_StartUp(BoxAttributes *subj, void *data);
+void           PyBoxAttributes_CloseDown();
 PyMethodDef *   PyBoxAttributes_GetMethodTable(int *nMethods);
-bool            PyBoxAttributes_Check(PyObject *obj);
+bool           PyBoxAttributes_Check(PyObject *obj);
 BoxAttributes *  PyBoxAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyBoxAttributes_New();
 PyObject *      PyBoxAttributes_Wrap(const BoxAttributes *attr);
-void            PyBoxAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyBoxAttributes_SetDefaults(const BoxAttributes *atts);
-std::string     PyBoxAttributes_GetLogString();
-std::string     PyBoxAttributes_ToString(const BoxAttributes *, const char *);
+void           PyBoxAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyBoxAttributes_SetDefaults(const BoxAttributes *atts);
+std::string    PyBoxAttributes_GetLogString();
+std::string    PyBoxAttributes_ToString(const BoxAttributes *, const char *);
 
 #endif
 

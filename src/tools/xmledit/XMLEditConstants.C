@@ -157,7 +157,7 @@ XMLEditConstants::CountConstants(const QString &name) const
 {
     Attribute *a = xmldoc->attribute;
     int constantCount = 0;
-    for (int j=0; j<a->constants.size(); j++)
+    for (size_t j=0; j<a->constants.size(); j++)
         constantCount += (name == a->constants[j]->name) ? 1 : 0;
     return constantCount;
 }
@@ -183,7 +183,7 @@ XMLEditConstants::UpdateWindowContents()
 
     Attribute *a = xmldoc->attribute;
     constantlist->clear();
-    for (int i=0; i<a->constants.size(); i++)
+    for (size_t i=0; i<a->constants.size(); i++)
     {
         if(CountConstants(a->constants[i]->name) > 1)
         { 
@@ -436,7 +436,7 @@ XMLEditConstants::constantlistNew()
     {
         okay = true;
         newname = tr("unnamed%1").arg(newid);
-        for (int i=0; i<constantlist->count() && okay; i++)
+        for (size_t i=0; i<constantlist->count() && okay; i++)
         {
             if (constantlist->text(i) == newname)
                 okay = false;
@@ -449,7 +449,7 @@ XMLEditConstants::constantlistNew()
     
     a->constants.push_back(c);
     UpdateWindowContents();
-    for (int i=0; i<constantlist->count(); i++)
+    for (size_t i=0; i<constantlist->count(); i++)
     {
         if (constantlist->text(i) == newname)
         {
@@ -477,7 +477,7 @@ XMLEditConstants::constantlistDel()
 
     Constant *c = a->constants[index];
     vector<Constant*> newlist;
-    for (int i=0; i<a->constants.size(); i++)
+    for (size_t i=0; i<a->constants.size(); i++)
     {
         if (a->constants[i] != c)
             newlist.push_back(a->constants[i]);

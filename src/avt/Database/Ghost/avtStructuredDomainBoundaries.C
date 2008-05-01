@@ -117,7 +117,7 @@ avtStructuredDomainBoundaries::CreateDomainToProcessorMap(const vector<int> &dom
 
     // create the map
     vector<int> domain2proc(ntotaldomains, -1);
-    for (int d=0; d<domainNum.size(); d++)
+    for (size_t d=0; d<domainNum.size(); d++)
         domain2proc[domainNum[d]] = rank;
 #ifdef PARALLEL
     vector<int> domain2proc_tmp(domain2proc);
@@ -155,7 +155,7 @@ avtStructuredDomainBoundaries::CreateCurrentDomainBoundaryInformation(
 {
     int t0 = visitTimer->StartTimer();
     boundary = wholeBoundary;
-    for (int i=0; i<wholeBoundary.size(); i++)
+    for (size_t i=0; i<wholeBoundary.size(); i++)
     {
         Boundary &wbi = wholeBoundary[i];
         if (domain2proc[i] < 0)
@@ -165,7 +165,7 @@ avtStructuredDomainBoundaries::CreateCurrentDomainBoundaryInformation(
             continue;
         }
 
-        for (int j=0; j<wbi.neighbors.size(); j++)
+        for (size_t j=0; j<wbi.neighbors.size(); j++)
         {
             if (domain2proc[wbi.neighbors[j].domain] < 0)
                 boundary[i].DeleteNeighbor(wbi.neighbors[j].domain, boundary);
@@ -193,11 +193,11 @@ T***
 BoundaryHelperFunctions<T>::InitializeBoundaryData()
 {
     T ***data = new T**[sdb->boundary.size()];
-    for (int b = 0; b < sdb->boundary.size(); b++)
+    for (size_t b = 0; b < sdb->boundary.size(); b++)
     {
         Boundary *bi = &sdb->boundary[b];
         data[b] = new T*[bi->neighbors.size()];
-        for (int n = 0; n < bi->neighbors.size(); n++)
+        for (size_t n = 0; n < bi->neighbors.size(); n++)
             data[b][n] = NULL;
     }
     return data;
@@ -239,7 +239,7 @@ BoundaryHelperFunctions<T>::FillBoundaryData(int      d1,
                                                 int      ncomp)
 {
     Boundary *bi = &sdb->boundary[d1];
-    for (int n = 0; n < bi->neighbors.size(); n++)
+    for (size_t n = 0; n < bi->neighbors.size(); n++)
     {
         Neighbor *n1 = &bi->neighbors[n];
         if (isPointData)
@@ -390,7 +390,7 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
     Boundary *bi = &sdb->boundary[d1];
     int k;
 
-    for (int n = 0; n < bi->neighbors.size(); n++)
+    for (size_t n = 0; n < bi->neighbors.size(); n++)
     {
         Neighbor *n1 = &bi->neighbors[n];
         int d2 = n1->domain;
@@ -972,7 +972,7 @@ avtStructuredDomainBoundaries::SetExistence(int      d1,
     }
 
     // set any available boundary to exist
-    for (int n=0; n<bi->neighbors.size(); n++)
+    for (size_t n=0; n<bi->neighbors.size(); n++)
     {
         Neighbor *n1 = &bi->neighbors[n];
         int *n1extents = (isPointData ? n1->nextents : n1->zextents);
@@ -1031,7 +1031,7 @@ BoundaryHelperFunctions<T>::SetNewBoundaryData(int       d1,
                                                   int       ncomp)
 {
     Boundary *bi = &sdb->boundary[d1];
-    for (int n=0; n<bi->neighbors.size(); n++)
+    for (size_t n=0; n<bi->neighbors.size(); n++)
     {
         Neighbor *n1 = &bi->neighbors[n];
         int d2 = n1->domain;
@@ -1195,7 +1195,7 @@ BoundaryHelperFunctions<T>::SetNewMixedBoundaryData(int       d1,
     int newmixindex = oldmat->GetMixlen();
 
     Boundary *bi = &sdb->boundary[d1];
-    for (int n=0; n<bi->neighbors.size(); n++)
+    for (size_t n=0; n<bi->neighbors.size(); n++)
     {
         Neighbor *n1 = &bi->neighbors[n];
         int d2 = n1->domain;
@@ -1267,11 +1267,11 @@ template <class T>
 void
 BoundaryHelperFunctions<T>::FreeBoundaryData(T ***bnddata)
 {
-    for (int b=0; b<sdb->boundary.size(); b++)
+    for (size_t b=0; b<sdb->boundary.size(); b++)
     {
         Boundary *bi = &sdb->boundary[b];
 
-        for (int n=0; n<bi->neighbors.size(); n++)
+        for (size_t n=0; n<bi->neighbors.size(); n++)
             delete[] bnddata[b][n];
         delete[] bnddata[b];
     }
@@ -1620,8 +1620,7 @@ avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
     // Create the matching arrays for the given scalars
     //
     float ***vals = bhf_float->InitializeBoundaryData();
-    int d;
-    for (d = 0; d < scalars.size(); d++)
+    for (size_t d = 0; d < scalars.size(); d++)
     {
         float *oldvals = (float*)scalars[d]->GetVoidPointer(0);
         bhf_float->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
@@ -1629,7 +1628,7 @@ avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
 
     bhf_float->CommunicateBoundaryData(domain2proc, vals, isPointData);
 
-    for (d = 0; d < scalars.size(); d++)
+    for (size_t d = 0; d < scalars.size(); d++)
     {
         Boundary *bi = &boundary[domainNum[d]];
 
@@ -1700,8 +1699,7 @@ avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
     // Create the matching arrays for the given scalars
     //
     int ***vals = bhf_int->InitializeBoundaryData();
-    int d;
-    for (d = 0; d < scalars.size(); d++)
+    for (size_t d = 0; d < scalars.size(); d++)
     {
         int *oldvals = (int*)scalars[d]->GetVoidPointer(0);
         bhf_int->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
@@ -1709,7 +1707,7 @@ avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
 
     bhf_int->CommunicateBoundaryData(domain2proc, vals, isPointData);
 
-    for (d = 0; d < scalars.size(); d++)
+    for (size_t d = 0; d < scalars.size(); d++)
     {
         Boundary *bi = &boundary[domainNum[d]];
 
@@ -1780,8 +1778,7 @@ avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
     // Create the matching arrays for the given scalars
     //
     unsigned char ***vals = bhf_uchar->InitializeBoundaryData();
-    int d;
-    for (d = 0; d < scalars.size(); d++)
+    for (size_t d = 0; d < scalars.size(); d++)
     {
         unsigned char *oldvals = (unsigned char*)scalars[d]->GetVoidPointer(0);
         bhf_uchar->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
@@ -1789,7 +1786,7 @@ avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
 
     bhf_uchar->CommunicateBoundaryData(domain2proc, vals, isPointData);
 
-    for (d = 0; d < scalars.size(); d++)
+    for (size_t d = 0; d < scalars.size(); d++)
     {
         Boundary *bi = &boundary[domainNum[d]];
 
@@ -1876,9 +1873,8 @@ avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
     //
     float ***vals = bhf_float->InitializeBoundaryData();
 
-    int d;
     int nComp = (vectors.size() > 0 ? vectors[0]->GetNumberOfComponents() :-1);
-    for (d = 0; d < vectors.size(); d++)
+    for (size_t d = 0; d < vectors.size(); d++)
     {
         float *oldvals = (float*)vectors[d]->GetVoidPointer(0);
         bhf_float->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
@@ -1886,7 +1882,7 @@ avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
 
     bhf_float->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
 
-    for (d = 0; d < vectors.size(); d++)
+    for (size_t d = 0; d < vectors.size(); d++)
     {
         // Create the new VTK objects
         out[d] = vtkFloatArray::New(); 
@@ -1967,9 +1963,8 @@ avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
     //
     int ***vals = bhf_int->InitializeBoundaryData();
 
-    int d;
     int nComp = (vectors.size() > 0 ? vectors[0]->GetNumberOfComponents(): -1);
-    for (d = 0; d < vectors.size(); d++)
+    for (size_t d = 0; d < vectors.size(); d++)
     {
         int *oldvals = (int*)vectors[d]->GetVoidPointer(0);
         bhf_int->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
@@ -1977,7 +1972,7 @@ avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 
     bhf_int->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
 
-    for (d = 0; d < vectors.size(); d++)
+    for (size_t d = 0; d < vectors.size(); d++)
     {
         // Create the new VTK objects
         out[d] = vectors[d]->NewInstance(); 
@@ -2057,17 +2052,16 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
     int   ***mixzone = bhf_int->InitializeBoundaryData();
     float ***mixvf   = bhf_float->InitializeBoundaryData();
     vector<vector<int> > mixlen(boundary.size());
-    for (int b = 0; b < boundary.size(); b++)
+    for (size_t b = 0; b < boundary.size(); b++)
         mixlen[b] = vector<int>(boundary[b].neighbors.size(), 0);
 
-    int d;
-    for (d = 0; d < mats.size(); d++)
+    for (size_t d = 0; d < mats.size(); d++)
     {
         const int *oldmatlist = mats[d]->GetMatlist();
         bhf_int->FillBoundaryData(domainNum[d], oldmatlist, matlist, false);
     }
 
-    for (d = 0; d < mats.size(); d++)
+    for (size_t d = 0; d < mats.size(); d++)
     {
         bhf_float->FillMixedBoundaryData(domainNum[d], mats[d], mats[d]->GetMixVF(),
                               mixvf, mixmat, mixzone, mixlen[domainNum[d]]);
@@ -2076,7 +2070,7 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
     bhf_int->CommunicateBoundaryData(domain2proc, matlist, false);
     bhf_float->CommunicateMixedBoundaryData(domain2proc, mixvf, mixmat, mixzone, mixlen);
 
-    for (d = 0; d < mats.size(); d++)
+    for (size_t d = 0; d < mats.size(); d++)
     {
         avtMaterial *oldmat = mats[d];
         Boundary    &bi     = boundary[domainNum[d]];
@@ -2087,7 +2081,7 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
 
         int oldmixlen = oldmat->GetMixlen();
         int newmixlen = oldmixlen;
-        for (int n=0; n<bi.neighbors.size(); n++)
+        for (size_t n=0; n<bi.neighbors.size(); n++)
         {
             int mi = bi.neighbors[n].match;
             int d2 = bi.neighbors[n].domain;
@@ -2213,7 +2207,7 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
     // zones that are mixed.)
     //
     const char *mixvarname = NULL;
-    for (int i = 0 ; i < mixvars.size() ; i++)
+    for (size_t  i = 0 ; i < mixvars.size() ; i++)
         if (mixvars[i] != NULL)
             mixvarname = mixvars[i]->GetVarname().c_str();
 
@@ -2251,17 +2245,16 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
     int   ***mixzone = bhf_int->InitializeBoundaryData();
     float ***mixvals = bhf_float->InitializeBoundaryData();
     vector<vector<int> > mixlen(boundary.size());
-    for (int b = 0; b < boundary.size(); b++)
+    for (size_t  b = 0; b < boundary.size(); b++)
         mixlen[b] = vector<int>(boundary[b].neighbors.size(), 0);
 
-    int d;
-    for (d = 0; d < mats.size(); d++)
+    for (size_t d = 0; d < mats.size(); d++)
     {
         const int *oldmatlist = mats[d]->GetMatlist();
         bhf_int->FillBoundaryData(domainNum[d], oldmatlist, matlist, false);
     }
 
-    for (d = 0; d < mats.size(); d++)
+    for (size_t d = 0; d < mats.size(); d++)
     {
         const float *oldmixvals = (mixvars[d] ? mixvars[d]->GetBuffer() : NULL);
         bhf_float->FillMixedBoundaryData(domainNum[d], mats[d], oldmixvals,
@@ -2271,7 +2264,7 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
     bhf_int->CommunicateBoundaryData(domain2proc, matlist, false);
     bhf_float->CommunicateMixedBoundaryData(domain2proc, mixvals, NULL, mixzone, mixlen);
 
-    for (d = 0; d < mats.size(); d++)
+    for (size_t d = 0; d < mats.size(); d++)
     {
         avtMaterial *oldmat    = mats[d];
         avtMixedVariable *oldmixvar = mixvars[d];
@@ -2283,7 +2276,7 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
 
         int oldmixlen = oldmat->GetMixlen();
         int newmixlen = oldmixlen;
-        for (int n=0; n<bi.neighbors.size(); n++)
+        for (size_t n=0; n<bi.neighbors.size(); n++)
         {
             int mi = bi.neighbors[n].match;
             int d2 = bi.neighbors[n].domain;
@@ -2378,7 +2371,7 @@ bool
 avtStructuredDomainBoundaries::ConfirmMesh(vector<int>         domainNum,
                                             vector<vtkDataSet*> meshes)
 {
-    for (int i = 0 ; i < domainNum.size() ; i++)
+    for (size_t i = 0 ; i < domainNum.size() ; i++)
     {
         if (domainNum[i] < 0 || domainNum[i] >= wholeBoundary.size())
         {
@@ -2571,8 +2564,7 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
     // Create the matching arrays for the given meshes
     //
     float ***coord = bhf_float->InitializeBoundaryData();
-    int d;
-    for (d = 0; d < meshes.size(); d++)
+    for (size_t d = 0; d < meshes.size(); d++)
     {
         vtkStructuredGrid *mesh = (vtkStructuredGrid*)(meshes[d]);
         float *oldcoord = (float*)mesh->GetPoints()->GetVoidPointer(0);
@@ -2581,7 +2573,7 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 
     bhf_float->CommunicateBoundaryData(domain2proc, coord, true, 3);
 
-    for (d = 0; d < meshes.size(); d++)
+    for (size_t d = 0; d < meshes.size(); d++)
     {
         if (meshes[d]->GetDataObjectType() != VTK_STRUCTURED_GRID)
         {
@@ -2671,8 +2663,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
     //
     // Create the matching arrays for the given meshes
     //
-    int d;
-    for (d = 0; d < meshes.size(); d++)
+    for (size_t d = 0; d < meshes.size(); d++)
     {
         if (meshes[d]->GetDataObjectType() != VTK_RECTILINEAR_GRID)
         {
@@ -2836,9 +2827,9 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
     // trick because the rest of the routine does not care which domains 
     // are on which processors -- only that we are using them.
     //
-    int i, ntotaldomains = wholeBoundary.size();
+    int ntotaldomains = wholeBoundary.size();
     vector<int> domain2proc(ntotaldomains, -1);
-    for (i = 0 ; i < allDomains.size() ; i++)
+    for (size_t i = 0 ; i < allDomains.size() ; i++)
     {
         if (domain2proc[allDomains[i]] < 0)
             domain2proc[allDomains[i]] = 0;
@@ -2846,7 +2837,7 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
 
     CreateCurrentDomainBoundaryInformation(domain2proc);
 
-    for (i = 0 ; i < domainNum.size() ; i++)
+    for (size_t i = 0 ; i < domainNum.size() ; i++)
     {
         int dom = domainNum[i];
         Boundary *bi = &boundary[dom];
@@ -3091,7 +3082,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
         // for its neighbor.
         sort(list.begin(), list.end());
 
-        for (j = 0 ; j < list.size() ; j++)
+        for (size_t j = 0 ; j < list.size() ; j++)
         {
             if (i == list[j])
                 continue; // Not interested in self-intersection.
@@ -3186,7 +3177,6 @@ void
 avtStructuredDomainBoundaries::GetNeighborPresence(int domain, bool *b,
                                                   std::vector<int> &allDomains)
 {
-    int   i, j;
     int   ntotaldomains = wholeBoundary.size();
 
     if (domain < 0 || domain >= ntotaldomains)
@@ -3195,16 +3185,16 @@ avtStructuredDomainBoundaries::GetNeighborPresence(int domain, bool *b,
     }
 
     Boundary &wbi = wholeBoundary[domain];
-    for (i = 0 ; i < 6 ; i++)
+    for (int i = 0 ; i < 6 ; i++)
          b[i] = false;
-    for (i = 0 ; i < wbi.neighbors.size() ; i++)
+    for (size_t i = 0 ; i < wbi.neighbors.size() ; i++)
     {
         int neighbor = wbi.neighbors[i].domain;
 
         bool foundIt = false;
         if (allDomains.size() == 0)
             foundIt = true;
-        for (j = 0 ; j < allDomains.size() ; j++)
+        for (size_t j = 0 ; j < allDomains.size() ; j++)
              if (allDomains[j] == neighbor)
                  foundIt = true;
         if (!foundIt)

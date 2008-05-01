@@ -126,7 +126,7 @@ avtMaterialMetaData::Print(ostream &out, int indent) const
 
     Indent(out, indent);
     out << "The materials names are = ";
-    for (int i = 0; i < materialNames.size() ; ++i)
+    for (size_t i = 0; i < materialNames.size() ; ++i)
     {
         out << "\"" << materialNames[i].c_str() << "\"";
         if (colorNames.size() && colorNames[i] != "")

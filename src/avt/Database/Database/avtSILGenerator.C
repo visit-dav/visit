@@ -740,21 +740,21 @@ AddEnumScalarSubgraph(avtSIL *sil,
         for (i = 0; i < setIDs.size(); i++)
         {
             if (isTopEnum[i])
-	    {
-	        childSetIDs.push_back(setIDs[i]);
-		childEnumIDs.push_back(i);
-	    }
+            {
+                childSetIDs.push_back(setIDs[i]);
+                childEnumIDs.push_back(i);
+            }
         }
     }
     else
     {
         for (i = 0; i < graphEdges.size(); i+=2)
-	{
-	    if (graphEdges[i] == enumTop)
-	    {
+        {
+            if (graphEdges[i] == enumTop)
+            {
                 childSetIDs.push_back(setIDs[graphEdges[i+1]]);
                 childEnumIDs.push_back(graphEdges[i+1]);
-	    }
+            }
         }
     }
 
@@ -770,11 +770,12 @@ AddEnumScalarSubgraph(avtSIL *sil,
 
         //
         // Recruse on the children
-	//
+        //
         for (i = 0; i < childSetIDs.size(); i++)
-	{
-	    const string name = sil->GetSILSet(childSetIDs[i])->GetName();
-            AddEnumScalarSubgraph(sil, childSetIDs[i], childEnumIDs[i], name, graphEdges, setIDs);
+        {
+            const string name = sil->GetSILSet(childSetIDs[i])->GetName();
+            AddEnumScalarSubgraph(sil, childSetIDs[i], childEnumIDs[i], name, 
+                                  graphEdges, setIDs);
         }
     }
 }

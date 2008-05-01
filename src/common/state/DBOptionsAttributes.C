@@ -489,7 +489,6 @@ DBOptionsAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
 void
 DBOptionsAttributes::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 
@@ -987,12 +986,12 @@ DBOptionsAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 int
 DBOptionsAttributes::FindIndex(const std::string &name) const
 {
-    for (int i = 0 ; i < names.size() ; i++)
+    for (size_t i = 0 ; i < names.size() ; i++)
         if (names[i] == name)
         {
             // Now find the index within its type.
             int nMatches = 0;
-            for (int j = 0 ; j < i ; j++)
+            for (size_t j = 0 ; j < i ; j++)
                  if (types[j] == types[i])
                      nMatches++;
             return nMatches;
@@ -1327,7 +1326,7 @@ DBOptionsAttributes::SetEnumStrings(const std::string &name,
     {
          if (i == eIndex)
          {
-             for (int j = 0 ; j < values.size() ; j++)
+             for (size_t j = 0 ; j < values.size() ; j++)
                  newList.push_back(values[j]);
          }
          else

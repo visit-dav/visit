@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyScatterAttributes_StartUp(ScatterAttributes *subj, void *data);
-void            PyScatterAttributes_CloseDown();
+void           PyScatterAttributes_StartUp(ScatterAttributes *subj, void *data);
+void           PyScatterAttributes_CloseDown();
 PyMethodDef *   PyScatterAttributes_GetMethodTable(int *nMethods);
-bool            PyScatterAttributes_Check(PyObject *obj);
+bool           PyScatterAttributes_Check(PyObject *obj);
 ScatterAttributes *  PyScatterAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyScatterAttributes_New();
 PyObject *      PyScatterAttributes_Wrap(const ScatterAttributes *attr);
-void            PyScatterAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyScatterAttributes_SetDefaults(const ScatterAttributes *atts);
-std::string     PyScatterAttributes_GetLogString();
-std::string     PyScatterAttributes_ToString(const ScatterAttributes *, const char *);
+void           PyScatterAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyScatterAttributes_SetDefaults(const ScatterAttributes *atts);
+std::string    PyScatterAttributes_GetLogString();
+std::string    PyScatterAttributes_ToString(const ScatterAttributes *, const char *);
 
 #endif
 

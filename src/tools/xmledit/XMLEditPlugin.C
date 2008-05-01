@@ -369,7 +369,7 @@ XMLEditPlugin::UpdateWindowContents()
             hasIcon->setChecked(xmldoc->plugin->iconFile.length() > 0);
             pluginType->setCurrentItem(1);
             vector<QString> types = SplitValues(xmldoc->plugin->vartype);
-            for (int i=0; i<types.size(); i++)
+            for (size_t i=0; i<types.size(); i++)
             {
                 if      (types[i] == "mesh")
                     varTypeMesh->setChecked(true);

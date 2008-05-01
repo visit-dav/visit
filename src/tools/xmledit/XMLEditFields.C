@@ -284,7 +284,7 @@ XMLEditFields::UpdateWindowContents()
 
     Attribute *a = xmldoc->attribute;
     fieldlist->clear();
-    for (int i=0; i<a->fields.size(); i++)
+    for (size_t i=0; i<a->fields.size(); i++)
     {
         fieldlist->insertItem(a->fields[i]->name);
     }
@@ -378,7 +378,7 @@ XMLEditFields::UpdateWindowSingleItem()
         access->setButton(0);
         init->setChecked(false);
         values->setText("");
-        for(int i = 0; i < varNameButtons->count(); ++i)
+        for(size_t i = 0; i < varNameButtons->count(); ++i)
         {
             QButton *b = varNameButtons->find(i);
             if(b != 0 && b->isA("QCheckBox"))
@@ -397,7 +397,7 @@ XMLEditFields::UpdateWindowSingleItem()
         if (f->type == "enum")
         {
             QString enumtype = QString("enum:")+f->GetSubtype();
-            for (int i=0; i<type->count(); i++)
+            for (size_t i=0; i<type->count(); i++)
             {
                 if (type->text(i) == enumtype)
                     type->setCurrentItem(i);
@@ -405,7 +405,7 @@ XMLEditFields::UpdateWindowSingleItem()
         }
         else
         {
-            for (int i=0; i<type->count(); i++)
+            for (size_t i=0; i<type->count(); i++)
             {
                 if (type->text(i) == f->type)
                     type->setCurrentItem(i);
@@ -432,7 +432,7 @@ XMLEditFields::UpdateWindowSingleItem()
         UpdateEnablerList();
         if (f->enabler)
         {
-            for (int i=0; i<enabler->count(); i++)
+            for (size_t i=0; i<enabler->count(); i++)
             {
                 if (enabler->text(i) == f->enabler->name)
                     enabler->setCurrentItem(i);
@@ -455,7 +455,7 @@ XMLEditFields::UpdateWindowSingleItem()
         if(f->type == "variablename")
         {
             int mask = 1;
-            for(int i = 0; i < varNameButtons->count(); ++i)
+            for(size_t i = 0; i < varNameButtons->count(); ++i)
             {
                 QButton *b = varNameButtons->find(i);
                 if(b != 0 && b->isA("QCheckBox"))
@@ -546,7 +546,7 @@ XMLEditFields::UpdateTypeList()
     type->insertItem("avtVarType");
 
     // Add enums
-    for (int i=0; i<EnumType::enums.size(); i++)
+    for (size_t i=0; i<EnumType::enums.size(); i++)
     {
         type->insertItem(QString("enum:") + EnumType::enums[i]->type);
     }
@@ -569,7 +569,7 @@ XMLEditFields::UpdateEnablerList()
 
     enabler->clear();
     enabler->insertItem(tr("(none)"));
-    for (int i=0; i<a->fields.size(); i++)
+    for (size_t i=0; i<a->fields.size(); i++)
     {
         if (name->text() != a->fields[i]->name)
             enabler->insertItem(a->fields[i]->name);
@@ -703,7 +703,7 @@ XMLEditFields::typeChanged(int typeindex)
                                          f->label);
     n->CopyValues(f);
 
-    for (int i=0; i<a->fields.size(); i++)
+    for (size_t i=0; i<a->fields.size(); i++)
     {
         if (i == index)
             continue;
@@ -1027,7 +1027,7 @@ XMLEditFields::fieldlistNew()
     {
         okay = true;
         newname.sprintf("unnamed%d", newid);
-        for (int i=0; i<fieldlist->count() && okay; i++)
+        for (size_t i=0; i<fieldlist->count() && okay; i++)
         {
             if (fieldlist->text(i) == newname)
                 okay = false;
@@ -1040,7 +1040,7 @@ XMLEditFields::fieldlistNew()
     
     a->fields.push_back(f);
     UpdateWindowContents();
-    for (int i=0; i<fieldlist->count(); i++)
+    for (size_t i=0; i<fieldlist->count(); i++)
     {
         if (fieldlist->text(i) == newname)
         {
@@ -1068,8 +1068,7 @@ XMLEditFields::fieldlistDel()
 
     Field *f = a->fields[index];
     vector<Field*> newlist;
-    int i;
-    for (i=0; i<a->fields.size(); i++)
+    for (size_t i=0; i<a->fields.size(); i++)
     {
         if (a->fields[i] != f)
             newlist.push_back(a->fields[i]);
@@ -1078,7 +1077,7 @@ XMLEditFields::fieldlistDel()
 
     // Make sure anyone with a reference to the old one
     // points to the new one instead
-    for (i=0; i<a->fields.size(); i++)
+    for (size_t i=0; i<a->fields.size(); i++)
     {
         if (a->fields[i]->enabler == f)
         {

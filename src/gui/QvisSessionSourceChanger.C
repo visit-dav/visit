@@ -154,7 +154,7 @@ QvisSessionSourceChanger::setSources(const stringVector &keys,
     // Update the UI.
     sourceList->blockSignals(true);
     sourceList->clear();
-    for(int i = 0; i < keys.size(); ++i)
+    for(size_t i = 0; i < keys.size(); ++i)
         sourceList->insertItem(keys[i].c_str());
     sourceList->setSelected(0, true);
     sourceList->blockSignals(false);
@@ -199,7 +199,7 @@ QvisSessionSourceChanger::updateControls(int ci)
                 sourceUses.find(sourceIds[ci]);
             if(pos != sourceUses.end())
             {
-                for(int i = 0; i < pos->second.size(); ++i)
+                for(size_t i = 0; i < pos->second.size(); ++i)
                     useList->insertItem(pos->second[i].c_str());        
                 useList->setSelected(ci, true);
             }

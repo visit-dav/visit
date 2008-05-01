@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyResamplePluginAttributes_StartUp(ResamplePluginAttributes *subj, void *data);
-void            PyResamplePluginAttributes_CloseDown();
+void           PyResamplePluginAttributes_StartUp(ResamplePluginAttributes *subj, void *data);
+void           PyResamplePluginAttributes_CloseDown();
 PyMethodDef *   PyResamplePluginAttributes_GetMethodTable(int *nMethods);
-bool            PyResamplePluginAttributes_Check(PyObject *obj);
+bool           PyResamplePluginAttributes_Check(PyObject *obj);
 ResamplePluginAttributes *  PyResamplePluginAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyResamplePluginAttributes_New();
 PyObject *      PyResamplePluginAttributes_Wrap(const ResamplePluginAttributes *attr);
-void            PyResamplePluginAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyResamplePluginAttributes_SetDefaults(const ResamplePluginAttributes *atts);
-std::string     PyResamplePluginAttributes_GetLogString();
-std::string     PyResamplePluginAttributes_ToString(const ResamplePluginAttributes *, const char *);
+void           PyResamplePluginAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyResamplePluginAttributes_SetDefaults(const ResamplePluginAttributes *atts);
+std::string    PyResamplePluginAttributes_GetLogString();
+std::string    PyResamplePluginAttributes_ToString(const ResamplePluginAttributes *, const char *);
 
 #endif
 

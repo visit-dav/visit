@@ -310,7 +310,7 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             cent = GetInput()->GetInfo().GetAttributes().GetCentering(varname);
         }
     }
-    CATCH(VisItException &v)
+    CATCH(VisItException)
     {
         EXCEPTION1(VisItException, "VisIt could not determine which variable to "
                         "elevate by.  Are you possibly applying the Elevate "

@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PySmoothOperatorAttributes_StartUp(SmoothOperatorAttributes *subj, void *data);
-void            PySmoothOperatorAttributes_CloseDown();
+void           PySmoothOperatorAttributes_StartUp(SmoothOperatorAttributes *subj, void *data);
+void           PySmoothOperatorAttributes_CloseDown();
 PyMethodDef *   PySmoothOperatorAttributes_GetMethodTable(int *nMethods);
-bool            PySmoothOperatorAttributes_Check(PyObject *obj);
+bool           PySmoothOperatorAttributes_Check(PyObject *obj);
 SmoothOperatorAttributes *  PySmoothOperatorAttributes_FromPyObject(PyObject *obj);
 PyObject *      PySmoothOperatorAttributes_New();
 PyObject *      PySmoothOperatorAttributes_Wrap(const SmoothOperatorAttributes *attr);
-void            PySmoothOperatorAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PySmoothOperatorAttributes_SetDefaults(const SmoothOperatorAttributes *atts);
-std::string     PySmoothOperatorAttributes_GetLogString();
-std::string     PySmoothOperatorAttributes_ToString(const SmoothOperatorAttributes *, const char *);
+void           PySmoothOperatorAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PySmoothOperatorAttributes_SetDefaults(const SmoothOperatorAttributes *atts);
+std::string    PySmoothOperatorAttributes_GetLogString();
+std::string    PySmoothOperatorAttributes_ToString(const SmoothOperatorAttributes *, const char *);
 
 #endif
 

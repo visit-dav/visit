@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyReplicateAttributes_StartUp(ReplicateAttributes *subj, void *data);
-void            PyReplicateAttributes_CloseDown();
+void           PyReplicateAttributes_StartUp(ReplicateAttributes *subj, void *data);
+void           PyReplicateAttributes_CloseDown();
 PyMethodDef *   PyReplicateAttributes_GetMethodTable(int *nMethods);
-bool            PyReplicateAttributes_Check(PyObject *obj);
+bool           PyReplicateAttributes_Check(PyObject *obj);
 ReplicateAttributes *  PyReplicateAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyReplicateAttributes_New();
 PyObject *      PyReplicateAttributes_Wrap(const ReplicateAttributes *attr);
-void            PyReplicateAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyReplicateAttributes_SetDefaults(const ReplicateAttributes *atts);
-std::string     PyReplicateAttributes_GetLogString();
-std::string     PyReplicateAttributes_ToString(const ReplicateAttributes *, const char *);
+void           PyReplicateAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyReplicateAttributes_SetDefaults(const ReplicateAttributes *atts);
+std::string    PyReplicateAttributes_GetLogString();
+std::string    PyReplicateAttributes_ToString(const ReplicateAttributes *, const char *);
 
 #endif
 

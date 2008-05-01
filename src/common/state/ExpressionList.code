@@ -53,7 +53,7 @@ ExpressionList::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
 
     if(completeSave || !FieldsEqual(ID_expressions, &defaultObject))
     {
-        for(int i = 0; i < expressions.size(); ++i)
+        for(size_t i = 0; i < expressions.size(); ++i)
         {
             Expression *expr = (Expression *)expressions[i];
             if(!expr->GetFromDB())

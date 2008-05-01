@@ -538,7 +538,6 @@ Axes2D::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
 void
 Axes2D::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 

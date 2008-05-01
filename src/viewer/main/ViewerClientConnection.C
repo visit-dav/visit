@@ -243,8 +243,7 @@ ViewerClientConnection::LaunchClient(const std::string &program,
     debug1 << mName << "Process arguments:" << endl;
     debug1 << "\t-reverse_launch" << endl;
     remoteProcess->AddArgument("-reverse_launch");
-    int i;
-    for(i = 0; i < args.size(); ++i)
+    for(size_t i = 0; i < args.size(); ++i)
     {
         remoteProcess->AddArgument(args[i]);
         debug1 << "\t" << args[i].c_str() << endl;
@@ -272,7 +271,7 @@ ViewerClientConnection::LaunchClient(const std::string &program,
     // are: ViewerRPC, PostponedRPC, syncAtts, messageAtts, statusAtts,
     // metaData, silAtts.
     debug1 << mName << "Sending state objects to client." << endl;
-    for(i = viewerState->FreelyExchangedState(); 
+    for(int i = viewerState->FreelyExchangedState(); 
         i < viewerState->GetNumStateObjects(); ++i)
     {
         viewerState->GetStateObject(i)->SelectAll();

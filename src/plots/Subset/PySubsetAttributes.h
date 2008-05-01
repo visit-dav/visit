@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PySubsetAttributes_StartUp(SubsetAttributes *subj, void *data);
-void            PySubsetAttributes_CloseDown();
+void           PySubsetAttributes_StartUp(SubsetAttributes *subj, void *data);
+void           PySubsetAttributes_CloseDown();
 PyMethodDef *   PySubsetAttributes_GetMethodTable(int *nMethods);
-bool            PySubsetAttributes_Check(PyObject *obj);
+bool           PySubsetAttributes_Check(PyObject *obj);
 SubsetAttributes *  PySubsetAttributes_FromPyObject(PyObject *obj);
 PyObject *      PySubsetAttributes_New();
 PyObject *      PySubsetAttributes_Wrap(const SubsetAttributes *attr);
-void            PySubsetAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PySubsetAttributes_SetDefaults(const SubsetAttributes *atts);
-std::string     PySubsetAttributes_GetLogString();
-std::string     PySubsetAttributes_ToString(const SubsetAttributes *, const char *);
+void           PySubsetAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PySubsetAttributes_SetDefaults(const SubsetAttributes *atts);
+std::string    PySubsetAttributes_GetLogString();
+std::string    PySubsetAttributes_ToString(const SubsetAttributes *, const char *);
 
 #endif
 

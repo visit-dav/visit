@@ -62,8 +62,6 @@ Indent(ostream &out, int indent)
 void
 avtSILMetaData::Print(ostream& out, int indent) const
 {
-    int i;
-
     Indent(out, indent);
     out << "Mesh Name = " << meshName.c_str() << endl;
 
@@ -72,7 +70,7 @@ avtSILMetaData::Print(ostream& out, int indent) const
 
     Indent(out, indent);
     out << "Collection class names are..." << endl;
-    for (i = 0; i < classIds.size(); i++)
+    for (size_t i = 0; i < classIds.size(); i++)
     {
        Indent(out, indent+8);
        out << GetCollections(classIds[i]).GetClassName().c_str() << endl;
@@ -84,7 +82,7 @@ avtSILMetaData::Print(ostream& out, int indent) const
 
     Indent(out, indent);
     out << "Collection details are..." << endl;
-    for (i = 0; i < collections.size(); i++)
+    for (size_t i = 0; i < collections.size(); i++)
        GetCollections(i).Print(out,indent+8);
 
 }
@@ -102,7 +100,7 @@ Definition:
 int
 avtSILMetaData::GetCollectionClassId(const std::string& className) const
 {
-    for (int i = 0; i < classIds.size(); i++)
+    for (size_t i = 0; i < classIds.size(); i++)
     {
         const avtSILCollectionMetaData &obj = GetCollections(classIds[i]);
         if (className == obj.GetClassName())
@@ -152,7 +150,7 @@ avtSILMetaData::AddCollectionClass(const std::string &className,
     }
 
     // make sure the class name is unique
-    for (int i = 0; i < classIds.size(); i++)
+    for (size_t i = 0; i < classIds.size(); i++)
     {
         const avtSILCollectionMetaData &obj = GetCollections(classIds[i]);
         if (className == obj.GetClassName())

@@ -251,20 +251,18 @@ avtStructuredDomainNesting::GetSelectedDescendents(
     const vector<int>& allDomainList, int dom,
     vector<int>& selectedDescendents) const
 {
-    int i;
-
     //
     // Build a lookup table for the all domain list 
     //
     int maxDom = allDomainList[0];
-    for (i = 1; i < allDomainList.size(); i++)
+    for (size_t i = 1; i < allDomainList.size(); i++)
     {
         if (allDomainList[i] > maxDom)
             maxDom = allDomainList[i];
     }
 
     vector<bool> lookup(maxDom + 1, false);
-    for (i = 0; i < allDomainList.size(); i++)
+    for (size_t i = 0; i < allDomainList.size(); i++)
         lookup[allDomainList[i]] = true;
 
     vector<int> domQueue;
@@ -276,7 +274,7 @@ avtStructuredDomainNesting::GetSelectedDescendents(
        domQueue.pop_back();
        const vector<int>& childDoms = domainNesting[currentDom].childDomains;
 
-       for (i = 0; i < childDoms.size(); i++)
+       for (size_t i = 0; i < childDoms.size(); i++)
        {
            if ((childDoms[i] <= maxDom) && lookup[childDoms[i]])
                selectedDescendents.push_back(childDoms[i]);
@@ -349,7 +347,7 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
 {
     bool didGhost = false;
 
-    for (int i = 0; i < domainList.size(); i++)
+    for (size_t i = 0; i < domainList.size(); i++)
     {
         unsigned char *ghostData = 0;
 
@@ -451,7 +449,7 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
         //
         // For each descendent, ghost the current domain appropriately
         //
-        for (int j = 0; j < selectedDescendents.size(); j++)
+        for (size_t j = 0; j < selectedDescendents.size(); j++)
         {
             int ratio[3]   = {1, 1, 1};
             int descDom    = selectedDescendents[j];
@@ -594,7 +592,7 @@ bool
 avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
                                         vector<vtkDataSet *> &meshes)
 {
-    for (int i = 0 ; i < domains.size() ; i++)
+    for (size_t i = 0 ; i < domains.size() ; i++)
     {
         int dims[3] = { -1, -1, -1 };
 
@@ -771,7 +769,7 @@ avtStructuredDomainNesting::GetNestingForDomain(int domain,
     children = info.childDomains;
     childExts.clear();
     childExts.resize(6*children.size());
-    for (int i = 0 ; i < children.size() ; i++)
+    for (size_t i = 0 ; i < children.size() ; i++)
     {
         vector<int> ratios = GetRatiosForLevel(info.level, children[i]);
         vector<int> rawExts = domainNesting[children[i]].logicalExtents;

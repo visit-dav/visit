@@ -335,7 +335,7 @@ class MakefileGeneratorPlugin : public Plugin
             out << "CXXFLAGS=$(CXXFLAGSORIG)";
         else
             out << "CXXFLAGS=$(CXXFLAGSORIG) $(QT_CXXFLAGS)";
-        for (int i=0; i<cxxflags.size(); i++)
+        for (size_t i=0; i<cxxflags.size(); i++)
             out << " " << cxxflags[i];
         out << endl;
 #ifndef __APPLE__
@@ -347,7 +347,7 @@ class MakefileGeneratorPlugin : public Plugin
             out << "LDFLAGS=$(LDFLAGSORIG) ";
         else
             out << "LDFLAGS=$(LDFLAGSORIG) $(PY_LDFLAGS) ";
-        for (int i=0; i<ldflags.size(); i++)
+        for (size_t i=0; i<ldflags.size(); i++)
             out << " " << ldflags[i];
         out << " -L" << visitplugininstall << "/" << type << "s";
         out << endl;
@@ -362,13 +362,13 @@ class MakefileGeneratorPlugin : public Plugin
             out << endl;
             out << "WIDGETS=Qvis"<<name<<"Window.h";
             if (customwfiles)
-                for (int i=0; i<wfiles.size(); i++)
+                for (size_t i=0; i<wfiles.size(); i++)
                     out << " " << wfiles[i];
             out << endl;
             out << "VIEWERWIDGETS=";
             if (customvwfiles)
             {
-                for (int i=0; i<vwfiles.size(); i++)
+                for (size_t i=0; i<vwfiles.size(); i++)
                 {
                     out << vwfiles[i];
                     if(i < vwfiles.size() - 1)
@@ -382,18 +382,18 @@ class MakefileGeneratorPlugin : public Plugin
             out <<name<<"CommonPluginInfo.C "<<atts->name<<".C" << endl;
             out << "GSRC="<<name<<"GUIPluginInfo.C Qvis"<<name<<"Window.C";
             if (customgfiles)
-                for (int i=0; i<gfiles.size(); i++)
+                for (size_t i=0; i<gfiles.size(); i++)
                     out << " " << gfiles[i];
             else
-                for (int i=0; i<defaultgfiles.size(); i++)
+                for (size_t i=0; i<defaultgfiles.size(); i++)
                     out << " " << defaultgfiles[i];
             out << endl;
             out << "VSRC="<<name<<"ViewerPluginInfo.C";
             if (customvfiles)
-                for (int i=0; i<vfiles.size(); i++)
+                for (size_t i=0; i<vfiles.size(); i++)
                     out << " " << vfiles[i];
             else
-                for (int i=0; i<defaultvfiles.size(); i++)
+                for (size_t i=0; i<defaultvfiles.size(); i++)
                     out << " " << defaultvfiles[i];
             out << endl;
             out << "ESRC="<<name<<"EnginePluginInfo.C";
@@ -403,18 +403,18 @@ class MakefileGeneratorPlugin : public Plugin
                 out << "ESPECIFICSRC=";
             }
             if (customefiles)
-                for (int i=0; i<efiles.size(); i++)
+                for (size_t i=0; i<efiles.size(); i++)
                     out << " " << efiles[i];
             else
-                for (int i=0; i<defaultefiles.size(); i++)
+                for (size_t i=0; i<defaultefiles.size(); i++)
                     out << " " << defaultefiles[i];
             out << endl;
             out << "SSRC="<<name<<"ScriptingPluginInfo.C Py"<<atts->name<<".C";
             if (customsfiles)
-                for (int i=0; i<sfiles.size(); i++)
+                for (size_t i=0; i<sfiles.size(); i++)
                     out << " " << sfiles[i];
             else
-                for (int i=0; i<defaultsfiles.size(); i++)
+                for (size_t i=0; i<defaultsfiles.size(); i++)
                     out << " " << defaultsfiles[i];
 
             out << "" << endl;
@@ -429,7 +429,7 @@ class MakefileGeneratorPlugin : public Plugin
 
             out << "" << endl;
             out << "SHLIB_FORCED=";
-            for (int i=0; i<libs.size(); i++)
+            for (size_t i=0; i<libs.size(); i++)
                 out << libs[i] << " ";
             out << endl;
             out << "" << endl;
@@ -517,13 +517,13 @@ class MakefileGeneratorPlugin : public Plugin
             out << endl;
             out << "WIDGETS=Qvis"<<name<<"PlotWindow.h";
             if (customwfiles)
-                for (int i=0; i<wfiles.size(); i++)
+                for (size_t i=0; i<wfiles.size(); i++)
                     out << " " << wfiles[i];
             out << endl;
             out << "VIEWERWIDGETS=";
             if (customvwfiles)
             {
-                for (int i=0; i<vwfiles.size(); i++)
+                for (size_t i=0; i<vwfiles.size(); i++)
                 {
                     out << vwfiles[i];
                     if(i < vwfiles.size() - 1)
@@ -537,24 +537,24 @@ class MakefileGeneratorPlugin : public Plugin
             out << name<<"CommonPluginInfo.C "<<atts->name<<".C" << endl;
             out << "GSRC="<<name<<"GUIPluginInfo.C Qvis"<<name<<"PlotWindow.C";
             if (customgfiles)
-                for (int i=0; i<gfiles.size(); i++)
+                for (size_t i=0; i<gfiles.size(); i++)
                     out << " " << gfiles[i];
             else
-                for (int i=0; i<defaultgfiles.size(); i++)
+                for (size_t i=0; i<defaultgfiles.size(); i++)
                     out << " " << defaultgfiles[i];
             out << endl;
             out << "SSRC="<<name<<"ScriptingPluginInfo.C Py"<<atts->name<<".C";
             if (customsfiles)
-                for (int i=0; i<sfiles.size(); i++)
+                for (size_t i=0; i<sfiles.size(); i++)
                     out << " " << sfiles[i];
             else
-                for (int i=0; i<defaultsfiles.size(); i++)
+                for (size_t i=0; i<defaultsfiles.size(); i++)
                     out << " " << defaultsfiles[i];
             out << endl;
             out << "VSRC="<<name<<"ViewerPluginInfo.C avt"<<name<<"Plot.C";
             if (customvfiles)
             {
-                for (int i=0; i<vfiles.size(); i++)
+                for (size_t i=0; i<vfiles.size(); i++)
                 {
                     int suffix = vfiles[i].findRev(".");
                     if(suffix > 0 && vfiles[i].find("Mesa") != -1)
@@ -572,7 +572,7 @@ class MakefileGeneratorPlugin : public Plugin
                 }
             }
             else
-                for (int i=0; i<defaultvfiles.size(); i++)
+                for (size_t i=0; i<defaultvfiles.size(); i++)
                     out << " " << defaultvfiles[i];
             out << endl;
             out << "ESRC="<<name<<"EnginePluginInfo.C";
@@ -585,7 +585,7 @@ class MakefileGeneratorPlugin : public Plugin
 
             if (customefiles)
             {
-                for (int i=0; i<efiles.size(); i++)
+                for (size_t i=0; i<efiles.size(); i++)
                 {
                     int suffix = efiles[i].findRev(".");
                     if(suffix > 0 && efiles[i].find("Mesa") != -1)
@@ -611,7 +611,7 @@ class MakefileGeneratorPlugin : public Plugin
                 }
             }
             else
-                for (int i=0; i<defaultefiles.size(); i++)
+                for (size_t i=0; i<defaultefiles.size(); i++)
                     out << " " << defaultefiles[i];
             out << endl;
 
@@ -627,7 +627,7 @@ class MakefileGeneratorPlugin : public Plugin
 
             out << "" << endl;
             out << "SHLIB_FORCED=";
-            for (int i=0; i<libs.size(); i++)
+            for (size_t i=0; i<libs.size(); i++)
                 out << libs[i] << " ";
             out << endl;
             out << "" << endl;
@@ -692,10 +692,10 @@ class MakefileGeneratorPlugin : public Plugin
                 out << "MSPECIFICSRC=";
             }
             if (custommfiles)
-                for (int i=0; i<mfiles.size(); i++)
+                for (size_t i=0; i<mfiles.size(); i++)
                     out << " " << mfiles[i];
             else
-                for (int i=0; i<defaultmfiles.size(); i++)
+                for (size_t i=0; i<defaultmfiles.size(); i++)
                     out << " " << defaultmfiles[i];
             out << endl;
             out << "ESRC="<<name<<"EnginePluginInfo.C";
@@ -706,10 +706,10 @@ class MakefileGeneratorPlugin : public Plugin
             }
 
             if (customefiles)
-                for (int i=0; i<efiles.size(); i++)
+                for (size_t i=0; i<efiles.size(); i++)
                     out << " " << efiles[i];
             else
-                for (int i=0; i<defaultefiles.size(); i++)
+                for (size_t i=0; i<defaultefiles.size(); i++)
                     out << " " << defaultefiles[i];
             out << endl;
 
@@ -719,7 +719,7 @@ class MakefileGeneratorPlugin : public Plugin
 
             out << "" << endl;
             out << "SHLIB_FORCED=";
-            for (int i=0; i<libs.size(); i++)
+            for (size_t i=0; i<libs.size(); i++)
                 out << libs[i] << " ";
             out << endl;
             out << "" << endl;

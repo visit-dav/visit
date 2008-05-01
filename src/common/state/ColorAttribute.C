@@ -1007,9 +1007,8 @@ ColorAttribute::ColorAttribute() :
 ColorAttribute::ColorAttribute(const ColorAttribute &obj) : 
     AttributeSubject(ColorAttribute::TypeMapFormatString)
 {
-    int i;
 
-    for(i = 0; i < 4; ++i)
+    for(int i = 0; i < 4; ++i)
         color[i] = obj.color[i];
 
 
@@ -1055,9 +1054,8 @@ ColorAttribute&
 ColorAttribute::operator = (const ColorAttribute &obj)
 {
     if (this == &obj) return *this;
-    int i;
 
-    for(i = 0; i < 4; ++i)
+    for(int i = 0; i < 4; ++i)
         color[i] = obj.color[i];
 
 
@@ -1083,11 +1081,9 @@ ColorAttribute::operator = (const ColorAttribute &obj)
 bool
 ColorAttribute::operator == (const ColorAttribute &obj) const
 {
-    int i;
-
     // Compare the color arrays.
     bool color_equal = true;
-    for(i = 0; i < 4 && color_equal; ++i)
+    for(int i = 0; i < 4 && color_equal; ++i)
         color_equal = (color[i] == obj.color[i]);
 
     // Create the return value
@@ -1293,7 +1289,6 @@ ColorAttribute::CreateNode(DataNode *parentNode, bool, bool)
 void
 ColorAttribute::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 
@@ -1443,8 +1438,6 @@ ColorAttribute::GetFieldTypeName(int index) const
 bool
 ColorAttribute::FieldsEqual(int index_, const AttributeGroup *rhs) const
 {
-    int i;
-
     const ColorAttribute &obj = *((const ColorAttribute*)rhs);
     bool retval = false;
     switch (index_)
@@ -1453,7 +1446,7 @@ ColorAttribute::FieldsEqual(int index_, const AttributeGroup *rhs) const
         {  // new scope
         // Compare the color arrays.
         bool color_equal = true;
-        for(i = 0; i < 4 && color_equal; ++i)
+        for(int i = 0; i < 4 && color_equal; ++i)
             color_equal = (color[i] == obj.color[i]);
 
         retval = color_equal;

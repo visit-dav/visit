@@ -382,7 +382,7 @@ QvisPeriodicTableWidget::setHintedElements(const std::vector<int> &elements)
         int element = indexToElement(i);
         if (element <= 0)
             continue;
-        for (int j=0; j<elements.size(); j++)
+        for (size_t j=0; j<elements.size(); j++)
         {
             if (elements[j] == element)
             {

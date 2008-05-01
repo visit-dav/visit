@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyThreeSliceAttributes_StartUp(ThreeSliceAttributes *subj, void *data);
-void            PyThreeSliceAttributes_CloseDown();
+void           PyThreeSliceAttributes_StartUp(ThreeSliceAttributes *subj, void *data);
+void           PyThreeSliceAttributes_CloseDown();
 PyMethodDef *   PyThreeSliceAttributes_GetMethodTable(int *nMethods);
-bool            PyThreeSliceAttributes_Check(PyObject *obj);
+bool           PyThreeSliceAttributes_Check(PyObject *obj);
 ThreeSliceAttributes *  PyThreeSliceAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyThreeSliceAttributes_New();
 PyObject *      PyThreeSliceAttributes_Wrap(const ThreeSliceAttributes *attr);
-void            PyThreeSliceAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyThreeSliceAttributes_SetDefaults(const ThreeSliceAttributes *atts);
-std::string     PyThreeSliceAttributes_GetLogString();
-std::string     PyThreeSliceAttributes_ToString(const ThreeSliceAttributes *, const char *);
+void           PyThreeSliceAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyThreeSliceAttributes_SetDefaults(const ThreeSliceAttributes *atts);
+std::string    PyThreeSliceAttributes_GetLogString();
+std::string    PyThreeSliceAttributes_ToString(const ThreeSliceAttributes *, const char *);
 
 #endif
 
