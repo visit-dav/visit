@@ -1744,6 +1744,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
             // If this process owns the sending domain, we send information.
             else if (domain2proc[sendDom] == rank)
             {
+                int i;
                 int tRank = domain2proc[recvDom];
 
                 int index = GetGivenIndex(sendDom, recvDom); 
@@ -2022,6 +2023,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
             // If this process owns the sending domain, we send information.
             else if (domain2proc[sendDom] == rank)
             {
+                int i;
                 int tRank = domain2proc[recvDom];
 
                 int index = GetGivenIndex(sendDom, recvDom); 
@@ -2334,6 +2336,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
             // If this process owns the sending domain, we send information.
             else if (domain2proc[sendDom] == rank)
             {
+                int i;
                 int tRank = domain2proc[recvDom];
 
                 int index = GetGivenIndex(sendDom, recvDom); 

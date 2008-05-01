@@ -407,6 +407,7 @@ avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
     bFullDomainInfo = (nDomains == meshes.size());
 
 #else
+    int jj;
     int nProcs, iRank, err;
     MPI_Comm_rank(VISIT_MPI_COMM, &iRank);
     MPI_Comm_size(VISIT_MPI_COMM, &nProcs);
