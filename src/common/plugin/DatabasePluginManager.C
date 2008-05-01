@@ -356,7 +356,7 @@ DatabasePluginManager::LoadMDServerPluginInfo()
 void
 DatabasePluginManager::FreeCommonPluginInfo()
 {
-    for (int i=0; i<commonPluginInfo.size(); i++)
+    for (size_t i=0; i<commonPluginInfo.size(); i++)
         delete commonPluginInfo[i];
     commonPluginInfo.clear();
 }
@@ -383,7 +383,7 @@ DatabasePluginManager::ReloadPlugins()
     vector<CommonDatabasePluginInfo*>    new_commonPluginInfo;
 
     loadedindexmap.clear();
-    for (int i=0; i<loadedhandles.size(); i++)
+    for (size_t i=0; i<loadedhandles.size(); i++)
     {
         if (enabled[allindexmap[commonPluginInfo[i]->GetID()]])
         {

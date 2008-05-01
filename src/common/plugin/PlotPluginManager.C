@@ -465,7 +465,7 @@ PlotPluginManager::LoadScriptingPluginInfo()
 void
 PlotPluginManager::FreeCommonPluginInfo()
 {
-    for (int i=0; i<commonPluginInfo.size(); i++)
+    for (size_t i=0; i<commonPluginInfo.size(); i++)
         delete commonPluginInfo[i];
     commonPluginInfo.clear();
 }
@@ -486,7 +486,7 @@ PlotPluginManager::FreeCommonPluginInfo()
 void
 PlotPluginManager::FreeGUIPluginInfo()
 {
-    for (int i=0; i<guiPluginInfo.size(); i++)
+    for (size_t i=0; i<guiPluginInfo.size(); i++)
         delete guiPluginInfo[i];
     guiPluginInfo.clear();
 }
@@ -507,7 +507,7 @@ PlotPluginManager::FreeGUIPluginInfo()
 void
 PlotPluginManager::FreeViewerPluginInfo()
 {
-    for (int i=0; i<viewerPluginInfo.size(); i++)
+    for (size_t i=0; i<viewerPluginInfo.size(); i++)
         delete viewerPluginInfo[i];
     viewerPluginInfo.clear();
 }
@@ -528,7 +528,7 @@ PlotPluginManager::FreeViewerPluginInfo()
 void
 PlotPluginManager::FreeEnginePluginInfo()
 {
-    for (int i=0; i<enginePluginInfo.size(); i++)
+    for (size_t i=0; i<enginePluginInfo.size(); i++)
         delete enginePluginInfo[i];
     enginePluginInfo.clear();
 }
@@ -549,7 +549,7 @@ PlotPluginManager::FreeEnginePluginInfo()
 void
 PlotPluginManager::FreeScriptingPluginInfo()
 {
-    for (int i=0; i<scriptingPluginInfo.size(); i++)
+    for (size_t i=0; i<scriptingPluginInfo.size(); i++)
         delete scriptingPluginInfo[i];
     scriptingPluginInfo.clear();
 }
@@ -586,7 +586,7 @@ PlotPluginManager::ReloadPlugins()
     vector<ScriptingPlotPluginInfo*> new_scriptingPluginInfo;
 
     loadedindexmap.clear();
-    for (int i=0; i<loadedhandles.size(); i++)
+    for (size_t i=0; i<loadedhandles.size(); i++)
     {
         if (enabled[allindexmap[commonPluginInfo[i]->GetID()]])
         {

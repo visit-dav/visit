@@ -270,7 +270,7 @@ ListExpr::ListExpr(const Pos &p, ListElemExpr *e) : ExprParseTreeNode(p)
 
 ListExpr::~ListExpr()
 {
-    for (int i=0; i<elems->size(); i++)
+    for (size_t i=0; i<elems->size(); i++)
     {
         delete (*elems)[i];
     }
@@ -287,7 +287,7 @@ void
 ListExpr::PrintNode(ostream &o)
 {
     o << "List size="<<elems->size()<<":" << endl;
-    for (int i=0; i<elems->size(); i++)
+    for (size_t i=0; i<elems->size(); i++)
     {
         char tmp[256];
         SNPRINTF(tmp, 256, "Element % 2d: ", i);
@@ -342,7 +342,7 @@ ArgsExpr::ArgsExpr(const Pos &p, ArgExpr *e) : ExprParseTreeNode(p)
 
 ArgsExpr::~ArgsExpr()
 {
-    for (int i=0; i<args->size(); i++)
+    for (size_t i=0; i<args->size(); i++)
     {
         delete (*args)[i];
     }
@@ -359,7 +359,7 @@ void
 ArgsExpr::PrintNode(ostream &o)
 {
     o << args->size()<<" arguments:" << endl;
-    for (int i=0; i<args->size(); i++)
+    for (size_t i=0; i<args->size(); i++)
     {
         char tmp[256];
         SNPRINTF(tmp, 256, "Arg % 2d: ", i);
@@ -401,7 +401,7 @@ FunctionExpr::GetVarLeaves()
 
     std::vector<ArgExpr*> *a = args->GetArgs();
 
-    for (int i = 0; i < a->size(); i++)
+    for (size_t i = 0; i < a->size(); i++)
     {
         std::vector<std::string> vars = (*a)[i]->GetExpr()->GetVarLeaves();
 
@@ -429,7 +429,7 @@ FunctionExpr::GetVarLeafNodes()
 
     std::vector<ArgExpr*> *a = args->GetArgs();
 
-    for (int i = 0; i < a->size(); i++)
+    for (size_t i = 0; i < a->size(); i++)
     {
         std::set<ExprParseTreeNode *> vars = (*a)[i]->GetExpr()->GetVarLeafNodes();
 

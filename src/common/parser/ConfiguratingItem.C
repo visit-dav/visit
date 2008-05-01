@@ -107,7 +107,7 @@ ConfiguratingItem::CreateClosure(const vector<const Rule*> &rules)
         {
             closurefollow.merge(follow);
         }
-        for (int i=0; i<rules.size(); i++)
+        for (size_t i=0; i<rules.size(); i++)
         {
             if (s[0] == rules[i]->GetLHS())
             {
@@ -165,7 +165,7 @@ ostream &operator<<(ostream &o, const ConfiguratingItem &ci)
 {
     ci.rule->Print(o, ci.pos);
     o << "    \tfollow={ " << TermGreen;
-    for (int i = 0; i<ci.follow.size(); i++)
+    for (size_t i = 0; i<ci.follow.size(); i++)
     {
         if (ci.follow.set[i])
             o << *(ci.follow.set[i]) << " ";

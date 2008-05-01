@@ -110,7 +110,6 @@ int main()
     DelCache::iterator it;
     const string fullName = "item 2";
     const int n = fullName.size();
-    int j = 0;
     vector<string> keysToRemove;
 
     cerr << "Iterating to find and remove all keys beginning with \"" << fullName.c_str() << "\"" << endl; 
@@ -119,7 +118,7 @@ int main()
         if (fullName.compare(0, n, it->first, 0, n) == 0)
             keysToRemove.push_back(it->first);
     }
-    for (j = 0; j < keysToRemove.size(); j++)
+    for (size_t j = 0; j < keysToRemove.size(); j++)
     {
         dontCache.remove(keysToRemove[j]);
         freeCache.remove(keysToRemove[j]);

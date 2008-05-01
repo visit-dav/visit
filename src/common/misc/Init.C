@@ -354,7 +354,7 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
 void
 Init::SetComponentName(const char *cname)
 {
-   int len;
+   size_t len;
 
    if (cname != 0 && (len = strlen(cname)) > 0)
    {

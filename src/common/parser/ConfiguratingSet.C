@@ -65,12 +65,11 @@ ConfiguratingSet::operator==(const ConfiguratingSet &rhs) const
 {
     if (items.size() != rhs.items.size())
         return false;
-    int n1 = items.size();
-    int n2 = rhs.items.size();
-    for (int i=0; i<n1; i++)
+
+    for (size_t i=0; i<items.size(); i++)
     {
         bool found = false;
-        for (int j=0; j<n2; j++)
+        for (size_t j=0; j<rhs.items.size(); j++)
         {
             if (items[i] == rhs.items[j])
             {
@@ -97,7 +96,7 @@ ConfiguratingSet::operator==(const ConfiguratingSet &rhs) const
 void
 ConfiguratingSet::Merge(const ConfiguratingSet &cs)
 {
-    for (int i=0; i<cs.items.size(); i++)
+    for (size_t i=0; i<cs.items.size(); i++)
     {
         AddItem(cs.items[i]);
     }
@@ -116,7 +115,7 @@ ConfiguratingSet::Merge(const ConfiguratingSet &cs)
 void
 ConfiguratingSet::Close(const vector<const Rule*> &rules)
 {
-    for (int i=0; i<items.size(); i++)
+    for (size_t i=0; i<items.size(); i++)
     {
         Merge(items[i].CreateClosure(rules));
     }
@@ -138,8 +137,7 @@ ConfiguratingSet::Close(const vector<const Rule*> &rules)
 void
 ConfiguratingSet::AddItem(const ConfiguratingItem &ci)
 {
-    int n = items.size();
-    for (int i=0; i<n; i++)
+    for (size_t i=0; i<items.size(); i++)
     {
         if (items[i].CanMerge(ci))
         {
@@ -164,7 +162,7 @@ SymbolSet
 ConfiguratingSet::GetShiftSymbols()
 {
     SymbolSet shiftsymbols;
-    for (int i=0; i<items.size(); i++)
+    for (size_t i=0; i<items.size(); i++)
     {
         if (! items[i].CanReduce())
             shiftsymbols.insert(items[i].GetNextSymbol());
@@ -186,7 +184,7 @@ SymbolSet
 ConfiguratingSet::GetReduceSymbols()
 {
     SymbolSet reducesymbols;
-    for (int i=0; i<items.size(); i++)
+    for (size_t i=0; i<items.size(); i++)
     {
         if (items[i].CanReduce())
         {
@@ -210,7 +208,7 @@ ConfiguratingSet
 ConfiguratingSet::GetShiftSet(const Symbol *s)
 {
     ConfiguratingSet cs;
-    for (int i=0; i<items.size(); i++)
+    for (size_t i=0; i<items.size(); i++)
     {
         if ((!items[i].CanReduce()) &&
             (items[i].GetNextSymbol() == s))
@@ -237,7 +235,7 @@ vector<int>
 ConfiguratingSet::GetReduceRules(const Symbol *s)
 {
     vector<int> rr;
-    for (int i=0; i<items.size(); i++)
+    for (size_t i=0; i<items.size(); i++)
     {
         if (items[i].CanReduce() && items[i].GetFollow().contains(s))
             rr.push_back(items[i].GetRule()->GetIndex());
@@ -263,7 +261,7 @@ ConfiguratingSet::GetReduceRules(const Symbol *s)
 ostream &
 operator<<(ostream &o, const ConfiguratingSet &cs)
 {
-    for (int i=0; i<cs.items.size(); i++)
+    for (size_t i=0; i<cs.items.size(); i++)
     {
         o << "\t";
         //o << "(#"<<cs.items[i].GetRule().GetIndex()<<") ";

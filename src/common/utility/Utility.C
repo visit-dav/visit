@@ -698,7 +698,7 @@ SplitValues(const string &buff, char delim)
     vector<string> output;
     
     string tmp="";
-    for (int i=0; i<buff.length(); i++)
+    for (size_t i=0; i<buff.length(); i++)
     {
         if (buff[i] == delim)
         {
@@ -1578,11 +1578,11 @@ ConvertArgsToTunneledValues(const std::map<int,int> &portTunnelMap,
 {
     bool foundHost = false;
     // strip off -guesshost
-    for (int i=0; i<args.size(); i++)
+    for (size_t i=0; i<args.size(); i++)
     {
         if (args[i] == "-guesshost")
         {
-            for (int j=i+1; j<args.size(); j++)
+            for (size_t j=i+1; j<args.size(); j++)
             {
                 args[j-1] = args[j];
             }
@@ -1591,7 +1591,7 @@ ConvertArgsToTunneledValues(const std::map<int,int> &portTunnelMap,
         }
     }
     // replace host and port
-    for (int i=0; i<args.size(); i++)
+    for (size_t i=0; i<args.size(); i++)
     {
         if (i<args.size()-1 && args[i] == "-host")
         {
