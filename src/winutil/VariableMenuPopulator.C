@@ -410,7 +410,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     for (i = 0; i < md->GetNumMeshes(); ++i)
     {
         const avtMeshMetaData &mmd = md->GetMeshes(i);
-	if (!mmd.hideFromGUI)
+        if (!mmd.hideFromGUI)
             meshVars.AddVariable(mmd.name, mmd.validVariable);
     }
     if (md->GetUseCatchAllMesh())
@@ -418,13 +418,13 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     for (i = 0; i < md->GetNumScalars(); ++i)
     {
         const avtScalarMetaData &smd = md->GetScalars(i);
-	if (!smd.hideFromGUI)
+        if (!smd.hideFromGUI)
             scalarVars.AddVariable(smd.name, smd.validVariable);
     }
     for (i = 0; i < md->GetNumVectors(); ++i)
     {
         const avtVectorMetaData &vmd = md->GetVectors(i);
-	if (!vmd.hideFromGUI)
+        if (!vmd.hideFromGUI)
             vectorVars.AddVariable(vmd.name, vmd.validVariable);
     }
     for (i = 0; i < md->GetNumSpecies(); ++i)
@@ -435,31 +435,31 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     for (i = 0; i < md->GetNumCurves(); ++i)
     {
         const avtCurveMetaData &cmd = md->GetCurves(i);
-	if (!cmd.hideFromGUI)
+        if (!cmd.hideFromGUI)
             curveVars.AddVariable(cmd.name, cmd.validVariable);
     }
     for (i = 0; i < md->GetNumTensors(); ++i)
     {
         const avtTensorMetaData &tmd = md->GetTensors(i);
-	if (!tmd.hideFromGUI)
+        if (!tmd.hideFromGUI)
             tensorVars.AddVariable(tmd.name, tmd.validVariable);
     }
     for (i = 0; i < md->GetNumSymmTensors(); ++i)
     {
         const avtSymmetricTensorMetaData &tmd = md->GetSymmTensors(i);
-	if (!tmd.hideFromGUI)
+        if (!tmd.hideFromGUI)
             symmTensorVars.AddVariable(tmd.name, tmd.validVariable);
     }
     for (i = 0; i < md->GetNumLabels(); ++i)
     {
         const avtLabelMetaData &lmd = md->GetLabels(i);
-	if (!lmd.hideFromGUI)
+        if (!lmd.hideFromGUI)
             labelVars.AddVariable(lmd.name, lmd.validVariable);
     }
     for (i = 0; i < md->GetNumArrays(); ++i)
     {
         const avtArrayMetaData &amd = md->GetArrays(i);
-	if (!amd.hideFromGUI)
+        if (!amd.hideFromGUI)
             arrayVars.AddVariable(amd.name, amd.validVariable);
     }
     visitTimer->StopTimer(id, "Adding variables from metadata");

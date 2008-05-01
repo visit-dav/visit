@@ -453,8 +453,7 @@ GetFileListRPC::FileList::Sort()
     std::vector<FileListInformation> sortVector;
 
     // Fill up the map sorting it in the process.
-    int i;
-    for(i = 0; i < names.size(); ++i)
+    for(size_t i = 0; i < names.size(); ++i)
     {
         sortVector.push_back(
             FileListInformation(names[i], types[i], sizes[i], access[i]));
@@ -464,7 +463,7 @@ GetFileListRPC::FileList::Sort()
     std::sort(sortVector.begin(), sortVector.end());
 
     // Iterate through the map and store the values back into the vectors.
-    for(i = 0; i < sortVector.size(); ++i)
+    for(size_t i = 0; i < sortVector.size(); ++i)
     {
         names[i]  = sortVector[i].name;
         types[i]  = sortVector[i].type;
@@ -494,8 +493,7 @@ ostream &
 operator << (ostream &os, const GetFileListRPC::FileList &fl)
 {
     os << "{";
-    int i;
-    for(i = 0; i < fl.names.size(); ++i)
+    for(size_t i = 0; i < fl.names.size(); ++i)
     {
         os << "{" << fl.names[i].c_str() << ", " << fl.types[i] << ", "
            << fl.sizes[i] << ", " << fl.access[i] << "}";
@@ -506,7 +504,7 @@ operator << (ostream &os, const GetFileListRPC::FileList &fl)
     os << "}" << endl;
     int index = 0;
     int nvf = 0;
-    for(i = 0; i < fl.names.size(); ++i)
+    for(size_t i = 0; i < fl.names.size(); ++i)
     {
         if(fl.types[i] == GetFileListRPC::VIRTUAL)
         {

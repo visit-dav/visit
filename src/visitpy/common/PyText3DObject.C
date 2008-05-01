@@ -128,7 +128,7 @@ PyText3DObject_ToString(const AnnotationObject *atts, const char *prefix)
     {   const stringVector &text = atts->GetText();
         SNPRINTF(tmpStr, 1000, "%stext = (", prefix);
         str += tmpStr;
-        for(int i = 0; i < text.size(); ++i)
+        for(size_t i = 0; i < text.size(); ++i)
         {
             SNPRINTF(tmpStr, 1000, "\"%s\"", text[i].c_str());
             str += tmpStr;

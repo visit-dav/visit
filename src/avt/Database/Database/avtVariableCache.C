@@ -619,8 +619,6 @@ avtVariableCache::CacheVoidRef(const char *name, const char *type,
 void
 avtVariableCache::ClearTimestep(int ts)
 {
-    int   i;
-
     // clear out objectPointerMap items *before* vtkVars and voidRefVars
     std::vector<std::map<vtkObject*,vtkObject*>::iterator> itemsToRemove;
     std::map<vtkObject*,vtkObject*>::iterator it;
@@ -633,15 +631,15 @@ avtVariableCache::ClearTimestep(int ts)
             itemsToRemove.push_back(it);
         }
     }
-    for (i = 0 ; i < itemsToRemove.size() ; i++)
+    for (size_t i = 0 ; i < itemsToRemove.size() ; i++)
     {
         objectPointerMap.erase(itemsToRemove[i]);
     }
-    for (i = 0 ; i < vtkVars.size() ; i++)
+    for (size_t i = 0 ; i < vtkVars.size() ; i++)
     {
         vtkVars[i]->ClearTimestep(ts);
     }
-    for (i = 0 ; i < voidRefVars.size() ; i++)
+    for (size_t i = 0 ; i < voidRefVars.size() ; i++)
     {
         voidRefVars[i]->ClearTimestep(ts);
     }
@@ -950,7 +948,7 @@ void
 avtVariableCache::OneMat::ClearTimestep(int ts)
 {
      std::vector<OneTimestep *> newTimesteps;
-     for (int i = 0 ; i < timesteps.size() ; i++)
+     for (size_t i = 0 ; i < timesteps.size() ; i++)
      {
          if (timesteps[i]->GetTimestep() == ts)
          {
@@ -1129,7 +1127,7 @@ avtVariableCache::OneVar::GetItem(const char *material,
 void
 avtVariableCache::OneVar::ClearTimestep(int ts)
 {
-    for (int i = 0 ; i < materials.size() ; i++)
+    for (size_t i = 0 ; i < materials.size() ; i++)
     {
         materials[i]->ClearTimestep(ts);
     }

@@ -68,7 +68,7 @@ class EnumType
     static EnumType *FindEnum(const QString &s)
     {
         EnumType *e = NULL;
-        for (int i=0; i<enums.size(); i++)
+        for (size_t i=0; i<enums.size(); i++)
         {
             if (enums[i]->type == s)
             {
@@ -90,7 +90,7 @@ class EnumType
     {
         values.push_back(s);
     }
-    const QString& GetValue(int index)
+    const QString& GetValue(size_t index)
     {
         if (index < 0  ||  index >= values.size())
             throw QString().sprintf("tried to access out-of-bounds enum type %d",index);
@@ -99,7 +99,7 @@ class EnumType
     void Print(ostream &out)
     {
         out << "Enum: " << type << endl;
-        for (int i=0; i<values.size(); i++)
+        for (size_t i=0; i<values.size(); i++)
         {
             out << "    " << values[i] << endl;
         }

@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyLabelAttributes_StartUp(LabelAttributes *subj, void *data);
-void            PyLabelAttributes_CloseDown();
+void           PyLabelAttributes_StartUp(LabelAttributes *subj, void *data);
+void           PyLabelAttributes_CloseDown();
 PyMethodDef *   PyLabelAttributes_GetMethodTable(int *nMethods);
-bool            PyLabelAttributes_Check(PyObject *obj);
+bool           PyLabelAttributes_Check(PyObject *obj);
 LabelAttributes *  PyLabelAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyLabelAttributes_New();
 PyObject *      PyLabelAttributes_Wrap(const LabelAttributes *attr);
-void            PyLabelAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyLabelAttributes_SetDefaults(const LabelAttributes *atts);
-std::string     PyLabelAttributes_GetLogString();
-std::string     PyLabelAttributes_ToString(const LabelAttributes *, const char *);
+void           PyLabelAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyLabelAttributes_SetDefaults(const LabelAttributes *atts);
+std::string    PyLabelAttributes_GetLogString();
+std::string    PyLabelAttributes_ToString(const LabelAttributes *, const char *);
 
 #endif
 

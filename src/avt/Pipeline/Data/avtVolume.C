@@ -795,7 +795,7 @@ avtVolume::ConstructMessages(avtImagePartition *part, char **msgs, int *cnt)
                     {
                         std::vector<int> otherParts = 
                                          part->GetPartitionsAsADuplicate(j, i);
-                        for (int p = 0 ; p < otherParts.size() ; p++)
+                        for (size_t p = 0 ; p < otherParts.size() ; p++)
                         {
                             int index = otherParts[p];
                             cnt[index] += 3*sizeof(int);

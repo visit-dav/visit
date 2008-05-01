@@ -130,7 +130,7 @@ class JavaGeneratorField : public virtual Field
     QString GetCPPNameW(int w, bool subtypename=false, const QString &classname="")
     {
         QString s = GetCPPName(subtypename,classname);
-        for (int i = w - s.length(); i > 0; --i)
+        for (size_t i = w - s.length(); i > 0; --i)
             s += " ";
         return s;
     }
@@ -399,7 +399,7 @@ class JavaGeneratorIntVector : public virtual IntVector , public virtual JavaGen
         c << "    " << name << " = new Vector();" << endl;
         if(valueSet)
         {
-            for (int i = 0; i < val.size(); ++i)
+            for (size_t i = 0; i < val.size(); ++i)
                 c << "        " << name << ".addElement(new Integer(" << val[i] << "));" << endl;
         }
     }
@@ -735,7 +735,7 @@ class JavaGeneratorDoubleVector : public virtual DoubleVector , public virtual J
     virtual void WriteSourceSetDefault(ostream &c)
     {
         c << "    " << name << " = new Vector();" << endl;
-        for (int i = 0; i < val.size(); ++i)
+        for (size_t i = 0; i < val.size(); ++i)
             c << "        " << name << ".addElement(new Double(" << val[i] << "));" << endl;
     }
 
@@ -922,7 +922,7 @@ class JavaGeneratorUCharVector : public virtual UCharVector , public virtual Jav
     virtual void WriteSourceSetDefault(ostream &c)
     {
         c << "    " << name << " = new Vector();" << endl;
-        for (int i = 0; i < val.size(); ++i)
+        for (size_t i = 0; i < val.size(); ++i)
             c << "        " << name << ".addElement(new Byte(" << val[i] << "));" << endl;
     }
 
@@ -1033,7 +1033,7 @@ class JavaGeneratorStringVector : public virtual StringVector , public virtual J
     virtual void WriteSourceSetDefault(ostream &c)
     {
         c << "    " << name << " = new Vector();" << endl;
-        for (int i = 0; i < val.size(); ++i)
+        for (size_t i = 0; i < val.size(); ++i)
         c << "        " << name << ".addElement(new String(" << "\"" << val[i].latin1() << "\"));" << endl;
     }
 
@@ -1545,7 +1545,7 @@ class JavaGeneratorEnum : public virtual Enum , public virtual JavaGeneratorFiel
     virtual void WriteToString(ostream &c, const QString &indent)
     {
         c << indent << "str = str + indent + \"" << name <<" = \";" << endl;
-        for(int i = 0; i < enumType->values.size(); ++i)
+        for(size_t i = 0; i < enumType->values.size(); ++i)
         {
             QString constName(enumType->type + QString("_") + enumType->values[i]);
             c << indent << "if(" << name << " == " << constName.upper() << ")" << endl;
@@ -1675,7 +1675,7 @@ class JavaGeneratorAttribute : public GeneratorBase
 
     virtual ~JavaGeneratorAttribute()
     {
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
             delete fields[i];
         fields.clear();
     }
@@ -1685,7 +1685,7 @@ class JavaGeneratorAttribute : public GeneratorBase
         out << "    Attribute: " << name << " (" << purpose << ")" << endl;
         out << "        exportAPI=" << exportAPI << endl;
         out << "        exportInclude=" << exportInclude << endl;
-        int i;
+        size_t i;
         for (i = 0; i < fields.size(); ++i)
             fields[i]->Print(out);
         for (i=0; i<includes.size(); i++)
@@ -1712,7 +1712,7 @@ class JavaGeneratorAttribute : public GeneratorBase
         h << endl;
 
         // Give a little information to the fields.
-        int i;
+        size_t i;
         for (i = 0; i < fields.size(); ++i)
             fields[i]->generatePlugin = generatePlugin;
 
@@ -1830,11 +1830,11 @@ private:
             sysincludes.AddString("import llnl.visit.Plugin;\n");
         }
 
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
             fields[i]->AddImports(sysincludes);
 
         // Add some includes based on the includes from the XML file
-        for(int i = 0; i < includes.size(); ++i)
+        for(size_t i = 0; i < includes.size(); ++i)
         {
             if(includes[i]->target == generatorName)
             {
@@ -1854,7 +1854,7 @@ private:
 
         // Iterate through the list of attibutes and find the one with
         // the longest name.
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
         {
             int len = fields[i]->GetCPPName().length();
 
@@ -1867,7 +1867,7 @@ private:
 
     bool HaveAGVectors()
     {
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
             if (fields[i]->type=="attVector")
                 return true;
         return false;
@@ -1875,7 +1875,7 @@ private:
 
     bool HaveArrays()
     {
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
             if (fields[i]->isArray)
                 return true;
         return false;
@@ -1883,7 +1883,7 @@ private:
 
     bool HaveVectors()
     {
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
             if (fields[i]->isVector)
                 return true;
         return false;
@@ -1902,7 +1902,7 @@ private:
         if(HasCode(name, 0))
             PrintCode(c, name, 0);
 
-        int i;
+        size_t i;
         for (i = 0; i < fields.size(); ++i)
         {
             c << "    ";
@@ -1931,7 +1931,7 @@ private:
         }
         if(skipLine)
             c << endl;
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
         {
             fields[i]->WriteSourceCopyCode(c);
         }
@@ -1957,7 +1957,7 @@ private:
 
         // Create bool values to evaluate the arrays.
         QString prevValue("true");
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
         {
             if (!fields[i]->ignoreEquality)
                 fields[i]->WriteSourceComparisonPrecalc(c);
@@ -1973,7 +1973,7 @@ private:
         }
         else
         {
-            for (int i = 0; i < fields.size(); ++i)
+            for (size_t i = 0; i < fields.size(); ++i)
             {
                 if (i > 0)
                     c << "                ";
@@ -1996,10 +1996,10 @@ private:
         // Write the enums out as groups of static int constants.
         if(EnumType::enums.size() > 0)
             h << "    // Enum values" << endl;
-        int i;
+        size_t i;
         for (i = 0; i < EnumType::enums.size(); ++i)
         {
-            for (int j = 0; j < EnumType::enums[i]->values.size(); ++j)
+            for (size_t j = 0; j < EnumType::enums[i]->values.size(); ++j)
             {
                 QString constName(EnumType::enums[i]->type + QString("_") + EnumType::enums[i]->values[j]);
                 h << "    public final static int " << constName.upper() << " = " << j << ";" << endl;
@@ -2045,7 +2045,7 @@ private:
         }
         h << "    public void WriteAtts(CommunicationBuffer buf)" << endl;
         h << "    {" << endl;
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
         {
             h << "        if(WriteSelect(" << i << ", buf))" << endl;
             fields[i]->WriteSourceWriteAtts(h, "        ");
@@ -2071,7 +2071,7 @@ private:
             h << "            int index = (int)buf.ReadByte();" << endl;
             h << "            switch(index)" << endl;
             h << "            {" << endl;
-            for (int i = 0; i < fields.size(); ++i)
+            for (size_t i = 0; i < fields.size(); ++i)
             {
                 h << "            case " << i << ":" << endl;
                 if(!fields[i]->WriteSourceReadAtts(h, "                "))
@@ -2096,7 +2096,7 @@ private:
         if (HaveAGVectors())
         {
             h << "    // Attributegroup convenience methods" << endl;
-            for (int i = 0; i < fields.size(); ++i)
+            for (size_t i = 0; i < fields.size(); ++i)
                 fields[i]->WriteSourceAGVectorFunctions(h);
         }
         h << endl;
@@ -2109,7 +2109,7 @@ private:
         if(HasCode("toString", 0))
             PrintCode(h, "toString", 0);
         h << "        String str = new String();" << endl;
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
         {
             fields[i]->WriteToString(h, "        ");
         }
@@ -2127,7 +2127,7 @@ private:
 
     void WriteUserDefinedFunctions(ostream &h)
     {
-        for (int i=0; i<functions.size(); i++)
+        for (size_t i=0; i<functions.size(); i++)
             if (functions[i]->target == generatorName)
             {
                 h << functions[i]->def << endl;

@@ -62,7 +62,7 @@ class UniqueStringList
     void AddString(const QString &s)
     {
         bool found = false;
-        for (int i=0; i<strings.size(); i++)
+        for (size_t i=0; i<strings.size(); i++)
         {
             if (strings[i] == s)
                 found = true;
@@ -72,7 +72,7 @@ class UniqueStringList
     }
     void Write(ostream &out)
     {
-        for (int i=0; i<strings.size(); i++)
+        for (size_t i=0; i<strings.size(); i++)
         {
             out << strings[i];
         }
@@ -86,7 +86,7 @@ SplitValues(const QString &buff)
     
     buff.stripWhiteSpace();
     QString tmp="";
-    for (int i=0; i<buff.length(); i++)
+    for (size_t i=0; i<buff.length(); i++)
     {
         if (buff[i].isSpace() ||
             buff[i]==','      ||
@@ -113,7 +113,7 @@ JoinValues(const vector<QString> &strs, char j)
 {
     QString output;
     
-    for (int i=0; i<strs.size(); i++)
+    for (size_t i=0; i<strs.size(); i++)
     {
         output += strs[i];
         if (i < strs.size() - 1)
@@ -128,7 +128,7 @@ JoinValues(const vector<QString> &strs, QString &j)
 {
     QString output;
     
-    for (int i=0; i<strs.size(); i++)
+    for (size_t i=0; i<strs.size(); i++)
     {
         output += strs[i];
         if (i < strs.size() - 1)
@@ -178,7 +178,7 @@ FilePath(const QString &buff)
     QString output;
     
     QString tmp="";
-    for (int i=0; i<buff.length(); i++)
+    for (size_t i=0; i<buff.length(); i++)
     {
         tmp += buff[i];
         if (buff[i]=='/' ||
@@ -196,7 +196,7 @@ inline QString
 FileBase(const QString &buff)
 {
     QString tmp="";
-    for (int i=0; i<buff.length(); i++)
+    for (size_t i=0; i<buff.length(); i++)
     {
         tmp += buff[i];
         if (buff[i]=='/' ||
@@ -257,7 +257,7 @@ inline void
 WriteValues(ostream &out, const vector<QString> &values, QString &indent)
 {
     indent += "  ";
-    for (int i=0; i<values.size(); i++)
+    for (size_t i=0; i<values.size(); i++)
     {
         out << indent << values[i] << endl;
     }

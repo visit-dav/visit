@@ -1202,7 +1202,7 @@ class WindowGeneratorEnum : public virtual Enum , public virtual WindowGenerator
         c << "    QHBoxLayout *"<<name<<"Layout = new QHBoxLayout("<<name<<");" << endl;
         c << "    "<<name<<"Layout->setSpacing(10);" << endl;
 
-        for (int i=0; i<enumType->values.size(); i++)
+        for (size_t i=0; i<enumType->values.size(); i++)
         {
             c << "    QRadioButton *"<<name<<enumType->type<<enumType->values[i]
               << " = new QRadioButton(tr(\""<<enumType->values[i]<<"\"), "<<name<<");" << endl;
@@ -1378,7 +1378,7 @@ class WindowGeneratorAttribute : public GeneratorBase
     WindowGeneratorAttribute(const QString &n, const QString &p, const QString &f,
                              const QString &e, const QString &ei)
         : GeneratorBase(n,p,f,e,ei, GENERATOR_NAME), fields(), 
-          plugintype(), windowname()
+          windowname(), plugintype()
     {
         plugintype = "";
         if (name.right(9) == "Attribute")
@@ -1390,7 +1390,7 @@ class WindowGeneratorAttribute : public GeneratorBase
     }
     virtual ~WindowGeneratorAttribute()
     {
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
             delete fields[i];
         fields.clear();
     }
@@ -1398,7 +1398,7 @@ class WindowGeneratorAttribute : public GeneratorBase
     void Print(ostream &out)
     {
         out << "    Attribute: " << name << " (" << purpose << ")" << endl;
-        int i;
+        size_t i;
         for (i=0; i<fields.size(); i++)
             fields[i]->Print(out);
         for (i=0; i<functions.size(); i++)
@@ -1492,7 +1492,7 @@ class WindowGeneratorAttribute : public GeneratorBase
             h << "    void Apply(bool ignore = false);" << endl;
         }
         h << "  private slots:" << endl;
-        int i;
+        size_t i;
         for (i=0; i<fields.size(); i++)
         {
             if (fields[i]->internal) continue;
@@ -1626,7 +1626,7 @@ class WindowGeneratorAttribute : public GeneratorBase
           << "topLayout, " << fields.size() << ",2,  10, \"mainLayout\");" << endl;
         c << endl;
         c << endl;
-        int i;
+        size_t i;
         for (i=0; i<fields.size(); i++)
         {
             if (fields[i]->internal) continue;
@@ -1673,7 +1673,7 @@ class WindowGeneratorAttribute : public GeneratorBase
             c << "          case "<<name<<"::ID_"<<field->name << ":" << endl;
 
             vector<Field*> enablees;
-            int j;
+            size_t j;
             for (j=0; j<fields.size(); j++)
             {
                 if (fields[j]->enabler == field)
@@ -1690,7 +1690,7 @@ class WindowGeneratorAttribute : public GeneratorBase
                 else
                     c << enablees[j]->enableval[0];
 
-                for (int k=1; k<enablees[j]->enableval.size(); k++)
+                for (size_t k=1; k<enablees[j]->enableval.size(); k++)
                 {
                     c << " || atts->Get"<<field->Name<<"() == ";
                     if (fields[i]->type=="enum")
@@ -1824,7 +1824,7 @@ class WindowGeneratorAttribute : public GeneratorBase
         for (i=0; i<fields.size(); i++)
         {
             if (fields[i]->internal) continue;
-            for (int j=0; j<fields.size(); j++)
+            for (size_t j=0; j<fields.size(); j++)
                 if (fields[j]->enabler == fields[i])
                     enablers.insert(fields[i]);
         }

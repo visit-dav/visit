@@ -116,7 +116,7 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
             break;
           case DBOptionsAttributes::Enum:
             comboboxes[i] = new QComboBox(false, this);
-            for (int j=0; j<atts->GetEnumStrings(name).size(); j++)
+            for (size_t j=0; j<atts->GetEnumStrings(name).size(); j++)
                 comboboxes[i]->insertItem(atts->GetEnumStrings(name)[j].c_str());
             comboboxes[i]->setCurrentItem(atts->GetEnum(name));
             grid->addWidget(new QLabel(name.c_str(), this), i, 0);

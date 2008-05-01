@@ -128,7 +128,7 @@
     {
         const char *digits = "0123456789ABCDEF";
         QString s("------------------------------------");
-        for(int i = 0; i < s.length(); ++i)
+        for(size_t i = 0; i < s.length(); ++i)
         {
             if(i == 8 || i == 13 || i == 18 || i == 23)
                 continue;

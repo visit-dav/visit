@@ -450,7 +450,7 @@ void
 Xfer::ListObjects()
 {
     debug2 << "Xfer: Number of objects: " << subjectList.size() << endl;
-    for(int i = 0; i < subjectList.size(); ++i)
+    for(size_t i = 0; i < subjectList.size(); ++i)
         debug2 << "Object[" << i << "] = " << subjectList[i]->TypeName().c_str()
                << endl;
 }

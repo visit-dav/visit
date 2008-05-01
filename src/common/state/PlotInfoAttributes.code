@@ -4,13 +4,12 @@ Definition:
 void
 PlotInfoAttributes::PrintSelf(ostream &os)
 {
-    int i;
     os << "\nOutputArray:  " ;
     if (outputArray.size() == 0)
         os << "Not Set.";
     else 
     {
-        for (i = 0; i < outputArray.size(); i++)
+        for (size_t i = 0; i < outputArray.size(); i++)
             os << outputArray[i] << "  ";
     }
     os << "\n";

@@ -187,7 +187,7 @@ Definition:
 void
 avtDatabaseMetaData::SetCyclesAreAccurate(bool b)
 {
-    for (int i = 0 ; i < cyclesAreAccurate.size() ; i++)
+    for (size_t i = 0 ; i < cyclesAreAccurate.size() ; i++)
     {
         cyclesAreAccurate[i] = (b ? 1 : 0);
     }
@@ -333,7 +333,7 @@ Definition:
 void
 avtDatabaseMetaData::SetTimesAreAccurate(bool b)
 {
-    for (int i = 0 ; i < timesAreAccurate.size() ; i++)
+    for (size_t i = 0 ; i < timesAreAccurate.size() ; i++)
     {
         timesAreAccurate[i] = (b ? 1 : 0);
     }
@@ -448,7 +448,7 @@ static bool IsForbidden(std::string &origName, std::string &newName,
     for (int i = 0 ; i < len ; i++)
     {
         bool hadBadChar = false;
-        for (int j = 0 ; j < badChars.size() ; j++)
+        for (size_t j = 0 ; j < badChars.size() ; j++)
         {
             if (orig_name[i] == badChars[j])
             {
@@ -3019,7 +3019,7 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
     else
     {
         bool shouldPrintTimes = false;
-        for (int i = 0; i < times.size(); ++i)
+        for (size_t i = 0; i < times.size(); ++i)
         {
             if (times[i] != (double) cycles[i])
             {
@@ -3035,7 +3035,7 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
         if (shouldPrintTimes)
         {
             out << "Times: ";
-            for (int i = 0; i < times.size(); ++i)
+            for (size_t i = 0; i < times.size(); ++i)
             {
                 out << times[i];
                 if(i < times.size() - 1)
@@ -3063,7 +3063,7 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
         else
             out << "All Cycles are ***NOT*** Accurate" << endl;
         out << "Cycles: ";
-        for (int i = 0; i < cycles.size(); ++i)
+        for (size_t i = 0; i < cycles.size(); ++i)
         {
             out << cycles[i];
             if(i < cycles.size() - 1)
@@ -3080,7 +3080,7 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
         out << "Database is virtual" << endl;
         out << "Timesteps are located in " << timeStepPath.c_str() << endl;
         out << "Timesteps:" << endl;
-        for(int i = 0; i < timeStepNames.size(); ++i)
+        for(size_t i = 0; i < timeStepNames.size(); ++i)
             out << "\t" << timeStepNames[i].c_str() << endl;
         out << endl;
     }

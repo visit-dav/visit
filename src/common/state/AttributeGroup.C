@@ -750,8 +750,6 @@ AttributeGroup::TypeName() const
 void
 AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
 {
-    int i;
-
     switch(info.typeCode)
     {
     case msgTypeChar:
@@ -777,7 +775,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           // Write a std::string to the connection
           std::string *sptr = (std::string *)(info.address);
 
-          for(i = 0; i < sptr->size(); ++i)
+          for(size_t i = 0; i < sptr->size(); ++i)
               conn.WriteChar(sptr->at(i));
           conn.WriteChar(0);
         }
@@ -803,7 +801,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
            char *cptr = (char *)(info.address);
 
            conn.WriteInt(info.length);
-           for(i = 0; i < info.length; ++i, ++cptr)
+           for(int i = 0; i < info.length; ++i, ++cptr)
               conn.WriteChar(*cptr);
         }
         break;
@@ -812,7 +810,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
            unsigned char *uptr = (unsigned char *)(info.address);
 
            conn.WriteInt(info.length);
-           for(i = 0; i < info.length; ++i, ++uptr)
+           for(int i = 0; i < info.length; ++i, ++uptr)
               conn.WriteUnsignedChar(*uptr);
         }
         break;
@@ -821,7 +819,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           int *iptr = (int *)(info.address);
 
           conn.WriteInt(info.length);
-          for(i = 0; i < info.length; ++i, ++iptr)
+          for(int i = 0; i < info.length; ++i, ++iptr)
               conn.WriteInt(*iptr);
         }
         break;
@@ -830,7 +828,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           long *lptr = (long *)(info.address);
 
           conn.WriteInt(info.length);
-          for(i = 0; i < info.length; ++i, ++lptr)
+          for(int i = 0; i < info.length; ++i, ++lptr)
               conn.WriteLong(*lptr);
         }
         break;
@@ -839,7 +837,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           float *fptr = (float *)(info.address);
 
           conn.WriteInt(info.length);
-          for(i = 0; i < info.length; ++i, ++fptr)
+          for(int i = 0; i < info.length; ++i, ++fptr)
               conn.WriteFloat(*fptr);
         }
         break;
@@ -848,19 +846,17 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           double *dptr = (double *)(info.address);
 
           conn.WriteInt(info.length);
-          for(i = 0; i < info.length; ++i, ++dptr)
+          for(int i = 0; i < info.length; ++i, ++dptr)
               conn.WriteDouble(*dptr);
         }
         break;
     case msgTypeListString:
         { // new scope
           std::string *sptr = (std::string *)(info.address);
-          int j;
-
           conn.WriteInt(info.length);
-          for(i = 0; i < info.length; ++i)
+          for(int i = 0; i < info.length; ++i)
           {
-              for(j = 0; j < sptr[i].size(); ++j)
+              for(size_t j = 0; j < sptr[i].size(); ++j)
                   conn.WriteChar(sptr[i].at(j));
               conn.WriteChar(0);
           }
@@ -871,7 +867,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           AttributeGroup **aptr = (AttributeGroup **)(info.address);
 
           conn.WriteInt(info.length);
-          for(i = 0; i < info.length; ++i, ++aptr)
+          for(int i = 0; i < info.length; ++i, ++aptr)
           {
               if((*aptr) != 0)
                   (*aptr)->Write(conn);
@@ -883,7 +879,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
            bool *bptr = (bool *)(info.address);
 
            conn.WriteInt(info.length);
-           for(i = 0; i < info.length; ++i, ++bptr)
+           for(int i = 0; i < info.length; ++i, ++bptr)
            {
                if(*bptr)
                    conn.WriteChar(1);
@@ -975,7 +971,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           // Write the strings out as C strings.
           for(spos = vs->begin(); spos != vs->end(); ++spos)
           {
-              for(i = 0; i < spos->size(); ++i)
+              for(size_t i = 0; i < spos->size(); ++i)
                   conn.WriteChar(spos->at(i));
               conn.WriteChar(0);
           }
@@ -1495,7 +1491,7 @@ AttributeGroup::SelectFields(const std::vector<int> &indices)
     {
         UnSelectAll();
 
-        for(int i = 0; i < indices.size(); ++i)
+        for(size_t i = 0; i < indices.size(); ++i)
         {
             int index = indices[i];
             if(index >= 0 && index < typeMap.size())
@@ -1715,7 +1711,7 @@ AttributeGroup::Write(Connection &conn)
         conn.WriteInt(NumAttributesSelected());
 
     // Write the selected attributes.
-    for(int i = 0; i < typeMap.size(); ++i)
+    for(size_t i = 0; i < typeMap.size(); ++i)
     {
         if(typeMap[i].selected)
         {

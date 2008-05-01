@@ -86,19 +86,19 @@ LogCommand(const char *cmd, const char *truncate_at_pattern)
     if (pfile)
     {
         debug5 << endl;
-	debug5 << "Begin output from \"" << cmd << "\"..." << endl;
-	debug5 << "-------------------------------------------------------------" << endl;
-	while (fgets(buf, sizeof(buf)-1, pfile) != 0)
-	{
-	    if (truncate_at_pattern && (FindRE(buf, truncate_at_pattern) != FindNone))
-	    {
-		debug5 << "############### TRUNCATED #################" << endl;
+        debug5 << "Begin output from \"" << cmd << "\"..." << endl;
+        debug5 << "-------------------------------------------------------------" << endl;
+        while (fgets(buf, sizeof(buf)-1, pfile) != 0)
+        {
+            if (truncate_at_pattern && (FindRE(buf, truncate_at_pattern) != FindNone))
+            {
+                debug5 << "############### TRUNCATED #################" << endl;
                 break;
-	    }
-	    debug5 << buf;
-	}
-	debug5 << "End output from \"" << cmd << "\"..." << endl;
-	debug5 << "-------------------------------------------------------------" << endl;
+            }
+            debug5 << buf;
+        }
+        debug5 << "End output from \"" << cmd << "\"..." << endl;
+        debug5 << "-------------------------------------------------------------" << endl;
         debug5 << endl;
         pclose(pfile);
     }
@@ -130,7 +130,7 @@ LogGlxAndXdpyInfo()
     if (debug5_real)
     {
         LogCommand("xdpyinfo", "number of visuals"); // truncate at list of visuals
-	LogCommand("glxinfo -v -t", "^Vis  Vis");    // truncate at table of visuals
+        LogCommand("glxinfo -v -t", "^Vis  Vis");    // truncate at table of visuals
     }
 #endif
 }

@@ -87,7 +87,7 @@ QvisStripChartTabWidget::QvisStripChartTabWidget( QWidget *parent, const char *n
     SC_Info[3] = SC_NamesTabsIndex ( STRIP_CHART_4_WIDGET_NAME,STRIP_CHART_4_TAB_NAME,3);
     SC_Info[4] = SC_NamesTabsIndex ( STRIP_CHART_5_WIDGET_NAME,STRIP_CHART_5_TAB_NAME,4);
     // create the strip charts
-    for ( int i =0; i< SC_Info.size(); i++) 
+    for (size_t i =0; i< SC_Info.size(); i++) 
     {
         stripCharts[SC_Info[i].getIndex()] = new VisItSimStripChart(this,SC_Info[i].getName().ascii(),winX,winY);
         QScrollView *sc = new QScrollView(this,"StripChartScrollWindow");
@@ -242,9 +242,9 @@ void QvisStripChartTabWidget::setTabLabel(int tabIndex, QString newLabel )
 int QvisStripChartTabWidget::nameToIndex(QString SC_Name)
 {
     int ST_Index = -1;
-    for ( int i = 0; i < SC_Info.size(); i++ )
+    for (size_t i = 0; i < SC_Info.size(); i++)
     {
-        if ( SC_Name == stripCharts[i]->name())
+        if (SC_Name == stripCharts[i]->name())
             ST_Index = i;
     }      
    return ST_Index;
@@ -273,12 +273,12 @@ int QvisStripChartTabWidget::nameToIndex(QString SC_Name)
 int
 QvisStripChartTabWidget::nameToTabIndex(QString Tab_Name)
 {
-    
-    for ( int i = 0; i < SC_Info.size(); i++ )
+    for (size_t i = 0; i < SC_Info.size(); i++)
     {
-      if(SC_Info[i].getTabName() == Tab_Name) return i;
+        if(SC_Info[i].getTabName() == Tab_Name) 
+            return i;
     }      
-   return -1;
+    return -1;
 }
 
 // ****************************************************************************

@@ -365,21 +365,19 @@ TransformAttributes::operator = (const TransformAttributes &obj)
 bool
 TransformAttributes::operator == (const TransformAttributes &obj) const
 {
-    int i;
-
     // Compare the rotateOrigin arrays.
     bool rotateOrigin_equal = true;
-    for(i = 0; i < 3 && rotateOrigin_equal; ++i)
+    for(int i = 0; i < 3 && rotateOrigin_equal; ++i)
         rotateOrigin_equal = (rotateOrigin[i] == obj.rotateOrigin[i]);
 
     // Compare the rotateAxis arrays.
     bool rotateAxis_equal = true;
-    for(i = 0; i < 3 && rotateAxis_equal; ++i)
+    for(int i = 0; i < 3 && rotateAxis_equal; ++i)
         rotateAxis_equal = (rotateAxis[i] == obj.rotateAxis[i]);
 
     // Compare the scaleOrigin arrays.
     bool scaleOrigin_equal = true;
-    for(i = 0; i < 3 && scaleOrigin_equal; ++i)
+    for(int i = 0; i < 3 && scaleOrigin_equal; ++i)
         scaleOrigin_equal = (scaleOrigin[i] == obj.scaleOrigin[i]);
 
     // Create the return value
@@ -837,7 +835,6 @@ TransformAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
 void
 TransformAttributes::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 
@@ -1538,8 +1535,6 @@ TransformAttributes::GetFieldTypeName(int index) const
 bool
 TransformAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 {
-    int i;
-
     const TransformAttributes &obj = *((const TransformAttributes*)rhs);
     bool retval = false;
     switch (index_)
@@ -1553,7 +1548,7 @@ TransformAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         {  // new scope
         // Compare the rotateOrigin arrays.
         bool rotateOrigin_equal = true;
-        for(i = 0; i < 3 && rotateOrigin_equal; ++i)
+        for(int i = 0; i < 3 && rotateOrigin_equal; ++i)
             rotateOrigin_equal = (rotateOrigin[i] == obj.rotateOrigin[i]);
 
         retval = rotateOrigin_equal;
@@ -1563,7 +1558,7 @@ TransformAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         {  // new scope
         // Compare the rotateAxis arrays.
         bool rotateAxis_equal = true;
-        for(i = 0; i < 3 && rotateAxis_equal; ++i)
+        for(int i = 0; i < 3 && rotateAxis_equal; ++i)
             rotateAxis_equal = (rotateAxis[i] == obj.rotateAxis[i]);
 
         retval = rotateAxis_equal;
@@ -1588,7 +1583,7 @@ TransformAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         {  // new scope
         // Compare the scaleOrigin arrays.
         bool scaleOrigin_equal = true;
-        for(i = 0; i < 3 && scaleOrigin_equal; ++i)
+        for(int i = 0; i < 3 && scaleOrigin_equal; ++i)
             scaleOrigin_equal = (scaleOrigin[i] == obj.scaleOrigin[i]);
 
         retval = scaleOrigin_equal;

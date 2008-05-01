@@ -427,7 +427,7 @@ QvisVisItUpdate::cleanUp()
 {
     // Delete all of the files in the files list.
     QDir dir;
-    for(int i = 0; i < files.count(); ++i)
+    for(size_t i = 0; i < files.count(); ++i)
     {
         dir.remove(files[i]);
         debug1 << "Removed " << files[i].latin1() << endl;
@@ -942,7 +942,7 @@ QvisVisItUpdate::ftp_commandFinished()
     else if(stage == STAGE_GET_FILES_FOR_VERSION)
     {
         debug1 << "Files for version " << latestVersion.latin1() << ":\n";
-        for(int i = 0; i < files.count(); ++i) 
+        for(size_t i = 0; i < files.count(); ++i) 
             debug1 << "\t" << files[i].latin1() << endl;
         nextStage();
     }

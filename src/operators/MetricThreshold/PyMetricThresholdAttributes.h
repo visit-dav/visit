@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyMetricThresholdAttributes_StartUp(MetricThresholdAttributes *subj, void *data);
-void            PyMetricThresholdAttributes_CloseDown();
+void           PyMetricThresholdAttributes_StartUp(MetricThresholdAttributes *subj, void *data);
+void           PyMetricThresholdAttributes_CloseDown();
 PyMethodDef *   PyMetricThresholdAttributes_GetMethodTable(int *nMethods);
-bool            PyMetricThresholdAttributes_Check(PyObject *obj);
+bool           PyMetricThresholdAttributes_Check(PyObject *obj);
 MetricThresholdAttributes *  PyMetricThresholdAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyMetricThresholdAttributes_New();
 PyObject *      PyMetricThresholdAttributes_Wrap(const MetricThresholdAttributes *attr);
-void            PyMetricThresholdAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyMetricThresholdAttributes_SetDefaults(const MetricThresholdAttributes *atts);
-std::string     PyMetricThresholdAttributes_GetLogString();
-std::string     PyMetricThresholdAttributes_ToString(const MetricThresholdAttributes *, const char *);
+void           PyMetricThresholdAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyMetricThresholdAttributes_SetDefaults(const MetricThresholdAttributes *atts);
+std::string    PyMetricThresholdAttributes_GetLogString();
+std::string    PyMetricThresholdAttributes_ToString(const MetricThresholdAttributes *, const char *);
 
 #endif
 

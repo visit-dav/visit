@@ -484,7 +484,7 @@ avtArrayMetaData::Print(ostream &out, int indent) const
     out << "Number of variables = " << nVars << endl;
     Indent(out, indent);
     out << "Components are: ";
-    for (int i = 0 ; i < compNames.size() ; i++)
+    for (size_t i = 0 ; i < compNames.size() ; i++)
     {
         out << compNames[i].c_str();
         if (i != compNames.size()-1)

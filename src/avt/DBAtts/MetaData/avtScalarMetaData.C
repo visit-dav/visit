@@ -291,16 +291,14 @@ avtScalarMetaData::operator = (const avtScalarMetaData &obj)
 bool
 avtScalarMetaData::operator == (const avtScalarMetaData &obj) const
 {
-    int i;
-
     // Compare the enumAlwaysExclude arrays.
     bool enumAlwaysExclude_equal = true;
-    for(i = 0; i < 2 && enumAlwaysExclude_equal; ++i)
+    for(int i = 0; i < 2 && enumAlwaysExclude_equal; ++i)
         enumAlwaysExclude_equal = (enumAlwaysExclude[i] == obj.enumAlwaysExclude[i]);
 
     // Compare the enumAlwaysInclude arrays.
     bool enumAlwaysInclude_equal = true;
-    for(i = 0; i < 2 && enumAlwaysInclude_equal; ++i)
+    for(int i = 0; i < 2 && enumAlwaysInclude_equal; ++i)
         enumAlwaysInclude_equal = (enumAlwaysInclude[i] == obj.enumAlwaysInclude[i]);
 
     // Create the return value
@@ -951,22 +949,20 @@ avtScalarMetaData::SetEnumAlwaysIncludeRange(double min, double max)
 void
 avtScalarMetaData::BuildEnumNChooseRMap(int n, int maxr, std::vector<std::vector<int> > &ptMap)
 {
-    int row, col;
-
-    for (row = 0; row < ptMap.size(); row++)
+    for (size_t row = 0; row < ptMap.size(); row++)
         ptMap[row].clear();
     ptMap.clear();
 
-    for (row = 0; row < n; row++)
+    for (int row = 0; row < n; row++)
     {
         std::vector<int> tmpRow;
-        for (col = 0; col <= maxr; col++)
+        for (int col = 0; col <= maxr; col++)
             tmpRow.push_back(0);
         ptMap.push_back(tmpRow);
     }
 
-    for (row = 0; row < n; row++)
-        for (col = 0; col <= maxr; col++)
+    for (int row = 0; row < n; row++)
+        for (int col = 0; col <= maxr; col++)
             ptMap[row][col] = int(NChooseR(n-row-1,col));
 }
 
@@ -1092,10 +1088,10 @@ const std::vector<std::vector<int> > &ptMap, int newDigit)
     }
     else
     {
-	// only update if we actually adding a new digit
-	if (newDigit < *it)
-	{
-	    it++;
+        // only update if we actually adding a new digit
+        if (newDigit < *it)
+        {
+            it++;
             currentDigits.insert(it, newDigit);
             ComboValFromDigits(ptMap, currentDigits, id);
         }

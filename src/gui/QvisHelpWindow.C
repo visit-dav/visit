@@ -1551,7 +1551,7 @@ QvisHelpWindow::lookForIndexTopic(const QString &topic)
     // topic that was typed.
     QString key(topic.upper());
     bool matchFound = false;
-    int i;
+    size_t i;
     for(i = 0; i < helpIndex->count() && !matchFound; ++i)
     {
          QString title = helpIndex->text(i).upper();

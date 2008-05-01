@@ -142,7 +142,6 @@ avtMeshMetaData::avtMeshMetaData() :
 avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &obj) : 
     AttributeSubject(avtMeshMetaData::TypeMapFormatString)
 {
-    int i;
 
     name = obj.name;
     originalName = obj.originalName;
@@ -185,11 +184,11 @@ avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &obj) :
     containsGlobalZoneIds = obj.containsGlobalZoneIds;
     loadBalanceScheme = obj.loadBalanceScheme;
     nodesAreCritical = obj.nodesAreCritical;
-    for(i = 0; i < 9; ++i)
+    for(int i = 0; i < 9; ++i)
         unitCellVectors[i] = obj.unitCellVectors[i];
 
     rectilinearGridHasTransform = obj.rectilinearGridHasTransform;
-    for(i = 0; i < 16; ++i)
+    for(int i = 0; i < 16; ++i)
         rectilinearGridTransform[i] = obj.rectilinearGridTransform[i];
 
     nodeOrigin = obj.nodeOrigin;
@@ -238,7 +237,6 @@ avtMeshMetaData&
 avtMeshMetaData::operator = (const avtMeshMetaData &obj)
 {
     if (this == &obj) return *this;
-    int i;
 
     name = obj.name;
     originalName = obj.originalName;
@@ -281,11 +279,11 @@ avtMeshMetaData::operator = (const avtMeshMetaData &obj)
     containsGlobalZoneIds = obj.containsGlobalZoneIds;
     loadBalanceScheme = obj.loadBalanceScheme;
     nodesAreCritical = obj.nodesAreCritical;
-    for(i = 0; i < 9; ++i)
+    for(int i = 0; i < 9; ++i)
         unitCellVectors[i] = obj.unitCellVectors[i];
 
     rectilinearGridHasTransform = obj.rectilinearGridHasTransform;
-    for(i = 0; i < 16; ++i)
+    for(int i = 0; i < 16; ++i)
         rectilinearGridTransform[i] = obj.rectilinearGridTransform[i];
 
     nodeOrigin = obj.nodeOrigin;
@@ -314,26 +312,24 @@ avtMeshMetaData::operator = (const avtMeshMetaData &obj)
 bool
 avtMeshMetaData::operator == (const avtMeshMetaData &obj) const
 {
-    int i;
-
     // Compare the minSpatialExtents arrays.
     bool minSpatialExtents_equal = true;
-    for(i = 0; i < 3 && minSpatialExtents_equal; ++i)
+    for(int i = 0; i < 3 && minSpatialExtents_equal; ++i)
         minSpatialExtents_equal = (minSpatialExtents[i] == obj.minSpatialExtents[i]);
 
     // Compare the maxSpatialExtents arrays.
     bool maxSpatialExtents_equal = true;
-    for(i = 0; i < 3 && maxSpatialExtents_equal; ++i)
+    for(int i = 0; i < 3 && maxSpatialExtents_equal; ++i)
         maxSpatialExtents_equal = (maxSpatialExtents[i] == obj.maxSpatialExtents[i]);
 
     // Compare the unitCellVectors arrays.
     bool unitCellVectors_equal = true;
-    for(i = 0; i < 9 && unitCellVectors_equal; ++i)
+    for(int i = 0; i < 9 && unitCellVectors_equal; ++i)
         unitCellVectors_equal = (unitCellVectors[i] == obj.unitCellVectors[i]);
 
     // Compare the rectilinearGridTransform arrays.
     bool rectilinearGridTransform_equal = true;
-    for(i = 0; i < 16 && rectilinearGridTransform_equal; ++i)
+    for(int i = 0; i < 16 && rectilinearGridTransform_equal; ++i)
         rectilinearGridTransform_equal = (rectilinearGridTransform[i] == obj.rectilinearGridTransform[i]);
 
     // Create the return value
@@ -947,7 +943,7 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "Group ids are:";
-        for (int i = 0 ; i < groupIds.size() ; i++)
+        for (size_t i = 0 ; i < groupIds.size() ; i++)
         {
             out << groupIds[i];
             if(i  < groupIds.size() - 1)

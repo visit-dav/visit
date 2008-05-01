@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyIsovolumeAttributes_StartUp(IsovolumeAttributes *subj, void *data);
-void            PyIsovolumeAttributes_CloseDown();
+void           PyIsovolumeAttributes_StartUp(IsovolumeAttributes *subj, void *data);
+void           PyIsovolumeAttributes_CloseDown();
 PyMethodDef *   PyIsovolumeAttributes_GetMethodTable(int *nMethods);
-bool            PyIsovolumeAttributes_Check(PyObject *obj);
+bool           PyIsovolumeAttributes_Check(PyObject *obj);
 IsovolumeAttributes *  PyIsovolumeAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyIsovolumeAttributes_New();
 PyObject *      PyIsovolumeAttributes_Wrap(const IsovolumeAttributes *attr);
-void            PyIsovolumeAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyIsovolumeAttributes_SetDefaults(const IsovolumeAttributes *atts);
-std::string     PyIsovolumeAttributes_GetLogString();
-std::string     PyIsovolumeAttributes_ToString(const IsovolumeAttributes *, const char *);
+void           PyIsovolumeAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyIsovolumeAttributes_SetDefaults(const IsovolumeAttributes *atts);
+std::string    PyIsovolumeAttributes_GetLogString();
+std::string    PyIsovolumeAttributes_ToString(const IsovolumeAttributes *, const char *);
 
 #endif
 

@@ -113,9 +113,9 @@ QvisColorTableButton::~QvisColorTableButton()
     --numInstances;
 
     // Remove the "this" pointer from the vector.
-    int i, index;
+    size_t index;
     bool notFound = true;
-    for(i = 0; i < buttons.size() && notFound; ++i)
+    for(size_t i = 0; i < buttons.size() && notFound; ++i)
     {
         if(this == buttons[i])
         {
@@ -128,7 +128,7 @@ QvisColorTableButton::~QvisColorTableButton()
     // last element.
     if(!notFound)
     {
-        for(i = index; i < buttons.size() - 1; ++i)
+        for(size_t i = index; i < buttons.size() - 1; ++i)
             buttons[i] = buttons[i + 1];
         buttons.pop_back();
     }
@@ -310,7 +310,7 @@ QvisColorTableButton::popupPressed()
                             p1.y() + ((p2.y() - p1.y()) >> 1));
 
         // Disconnect all other color table buttons.
-        for(int i = 0; i < buttons.size(); ++i)
+        for(size_t i = 0; i < buttons.size(); ++i)
         {
             disconnect(colorTablePopup, SIGNAL(activated(int)),
                        buttons[i], SLOT(colorTableSelected(int)));
@@ -458,7 +458,7 @@ QvisColorTableButton::addColorTable(const QString &ctName)
 void
 QvisColorTableButton::updateColorTableButtons()
 {
-    for(int i = 0; i < buttons.size(); ++i)
+    for(size_t i = 0; i < buttons.size(); ++i)
     {
         // If the color table that was being used by the button is no
         // longer in the list, make it use the default.

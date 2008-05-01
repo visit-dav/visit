@@ -957,7 +957,7 @@ PickVarInfo::FieldsEqual(int index_, const AttributeGroup *rhs) const
 void
 PickVarInfo::PrintSelf(ostream &os)
 {
-    int i, j, k, nMats, matOffset, mixOffset;
+    int j, k, nMats, matOffset, mixOffset;
     os << variableName.c_str() << ":  ";
     switch (centering)
     {
@@ -970,7 +970,7 @@ PickVarInfo::PrintSelf(ostream &os)
         if (variableType == "material")
         {
             mixOffset = 0; 
-            for (i = 0; i < numMatsPerZone.size(); i++)
+            for (size_t i = 0; i < numMatsPerZone.size(); i++)
             {
                 if (names.size() > 0)
                     os << "    " << names[i].c_str() << "\n";
@@ -991,7 +991,7 @@ PickVarInfo::PrintSelf(ostream &os)
         {
             matOffset = 0;
             mixOffset = 0; 
-            for (i = 0; i < numMatsPerZone.size(); i++)
+            for (size_t i = 0; i < numMatsPerZone.size(); i++)
             {
                 if (names.size() > 0)
                 {
@@ -1017,7 +1017,7 @@ PickVarInfo::PrintSelf(ostream &os)
         else 
         {
             mixOffset = 0; 
-            for (i = 0; i < names.size(); i++)
+            for (size_t i = 0; i < names.size(); i++)
             {
                 os << "    " << names[i].c_str() << " = ";
                 if (values.size() > names.size())
@@ -1108,7 +1108,7 @@ PickVarInfo::PrintSelf(ostream &os)
 void
 PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
 {
-    int i, j, k;
+    int j, k;
     int matOffset = 0, mixOffset = 0;
     int nMats;
     char buff[256];
@@ -1159,7 +1159,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
             }
             else
             {
-                for (i = 0; i < numMatsPerZone.size(); i++)
+                for (size_t i = 0; i < numMatsPerZone.size(); i++)
                 {
                     nMats = numMatsPerZone[i];
                     if (names.size() > 0)
@@ -1200,7 +1200,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
             mixOffset  = 0;
             std::string spacing1;
             std::string spacing2;
-            for (i = 0; i < numMatsPerZone.size(); i++)
+            for (size_t i = 0; i < numMatsPerZone.size(); i++)
             {
                 if (names.size() > 0)
                 {
@@ -1250,7 +1250,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
             if (!centeringsMatch)
                os += "\n";
             mixOffset  = 0;
-            for (i = 0; i < names.size(); i++)
+            for (size_t i = 0; i < names.size(); i++)
             {
                 if (!centeringsMatch)
                 {
@@ -1263,7 +1263,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                     format = "= (" + floatFormat;
                     SNPRINTF(buff, 256, format.c_str(), values[i*stride]);
                     os += buff;
-                    for (int j = 1; j < stride-1; j++) 
+                    for (j = 1; j < stride-1; j++) 
                     {
                         format = "," + floatFormat;
                         SNPRINTF(buff, 256, format.c_str(), values[i*stride+j]);
@@ -1311,7 +1311,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                 {
                     int labelSize = values.size() / names.size();
                     os += "= ";
-                    for (int j = labelSize*i; j < labelSize * (i+1); j++) 
+                    for (j = labelSize*i; j < labelSize * (i+1); j++) 
                     {
                         char c[2] = {(char)values[j], 0};
                         os += c;

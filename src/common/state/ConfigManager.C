@@ -169,7 +169,7 @@ ConfigManager::WriteQuotedStringData(const std::string &str)
     if(str.size() > 0)
     {
         const char *cptr = str.c_str();
-        for(int i = 0; i < str.size(); ++i)
+        for(size_t i = 0; i < str.size(); ++i)
         {
             // Add escape characters.
             if(cptr[i] == '"' || cptr[i] == '\\')
@@ -204,7 +204,7 @@ ConfigManager::WriteEscapedString(const std::string &str)
     if(str.size() > 0)
     {
         const char *cptr = str.c_str();
-        for (int i = 0; i < str.size(); ++i)
+        for (size_t i = 0; i < str.size(); ++i)
         {
             // Add escape characters.
             if (cptr[i] == '"'  ||
@@ -248,8 +248,6 @@ ConfigManager::WriteEscapedString(const std::string &str)
 void
 ConfigManager::WriteData(DataNode *node)
 {
-    int i;
-
     switch(node->GetNodeType())
     {
     case CHAR_NODE:
@@ -282,56 +280,56 @@ ConfigManager::WriteData(DataNode *node)
     case CHAR_ARRAY_NODE:
         { // new scope
             const char *cptr = node->AsCharArray();
-            for(i = 0; i < node->GetLength(); ++i)
+            for(int i = 0; i < node->GetLength(); ++i)
                 fprintf(fp, "%c ", *cptr++);
         }
         break;
     case UNSIGNED_CHAR_ARRAY_NODE:
         { // new scope
             const unsigned char *uptr = node->AsUnsignedCharArray();
-            for(i = 0; i < node->GetLength(); ++i)
+            for(int i = 0; i < node->GetLength(); ++i)
                 fprintf(fp, "%d ", (int)*uptr++);
         }
         break;
     case INT_ARRAY_NODE:
         { // new scope
             const int *iptr = node->AsIntArray();
-            for(i = 0; i < node->GetLength(); ++i)
+            for(int i = 0; i < node->GetLength(); ++i)
                 fprintf(fp, "%d ", *iptr++);
         }
         break;
     case LONG_ARRAY_NODE:
         { // new scope
             const long *lptr = node->AsLongArray();
-            for(i = 0; i < node->GetLength(); ++i)
+            for(int i = 0; i < node->GetLength(); ++i)
                 fprintf(fp, "%ld ", *lptr++);
         }
         break;
     case FLOAT_ARRAY_NODE:
         { // new scope
             const float *fptr = node->AsFloatArray();
-            for(i = 0; i < node->GetLength(); ++i)
+            for(int i = 0; i < node->GetLength(); ++i)
                 fprintf(fp, "%g ", *fptr++);
         }
         break;
     case DOUBLE_ARRAY_NODE:
         { // new scope
             const double *dptr = node->AsDoubleArray();
-            for(i = 0; i < node->GetLength(); ++i)
+            for(int i = 0; i < node->GetLength(); ++i)
                 fprintf(fp, "%g ", *dptr++);
         }
         break;
     case STRING_ARRAY_NODE:
         { // new scope
             const std::string *sptr = node->AsStringArray();
-            for(i = 0; i < node->GetLength(); ++i)
+            for(int i = 0; i < node->GetLength(); ++i)
                 WriteQuotedStringData(*sptr++);
         }
         break;
     case BOOL_ARRAY_NODE:
         { // new scope
             const bool *bptr = node->AsBoolArray();
-            for(i = 0; i < node->GetLength(); ++i)
+            for(int i = 0; i < node->GetLength(); ++i)
             {
                 if(*bptr++)
                     fprintf(fp, "true ");
@@ -343,49 +341,49 @@ ConfigManager::WriteData(DataNode *node)
     case CHAR_VECTOR_NODE:
        { // new scope
             const charVector &cvec = node->AsCharVector();
-            for(i = 0; i < cvec.size(); ++i)
+            for(size_t i = 0; i < cvec.size(); ++i)
                 fprintf(fp, "%c ", cvec[i]);
        }
        break;
     case UNSIGNED_CHAR_VECTOR_NODE:
        { // new scope
             const unsignedCharVector &uvec = node->AsUnsignedCharVector();
-            for(i = 0; i < uvec.size(); ++i)
+            for(size_t i = 0; i < uvec.size(); ++i)
                 fprintf(fp, "%d ", (int)uvec[i]);
        }
        break;
     case INT_VECTOR_NODE:
        { // new scope
             const intVector &ivec = node->AsIntVector();
-            for(i = 0; i < ivec.size(); ++i)
+            for(size_t i = 0; i < ivec.size(); ++i)
                 fprintf(fp, "%d ", ivec[i]);
        }
        break;
     case LONG_VECTOR_NODE:
        { // new scope
             const longVector &lvec = node->AsLongVector();
-            for(i = 0; i < lvec.size(); ++i)
+            for(size_t i = 0; i < lvec.size(); ++i)
                 fprintf(fp, "%ld ", lvec[i]);
        }
        break;
     case FLOAT_VECTOR_NODE:
        { // new scope
             const floatVector &fvec = node->AsFloatVector();
-            for(i = 0; i < fvec.size(); ++i)
+            for(size_t i = 0; i < fvec.size(); ++i)
                 fprintf(fp, "%g ", fvec[i]);
        }
        break;
     case DOUBLE_VECTOR_NODE:
        { // new scope
             const doubleVector &dvec = node->AsDoubleVector();
-            for(i = 0; i < dvec.size(); ++i)
+            for(size_t i = 0; i < dvec.size(); ++i)
                fprintf(fp, "%g ", dvec[i]);
        }
        break;
     case STRING_VECTOR_NODE:
        { // new scope
             const stringVector &svec = node->AsStringVector();
-            for(i = 0; i < svec.size(); ++i)
+            for(size_t i = 0; i < svec.size(); ++i)
                 WriteQuotedStringData(svec[i]);
        }
        break;
@@ -701,7 +699,7 @@ ConfigManager::ReadStringVector(char termChar)
 void
 ConfigManager::RemoveLeadAndTailQuotes(stringVector &sv)
 {
-    for(int i = 0; i < sv.size(); ++i)
+    for(size_t i = 0; i < sv.size(); ++i)
     {
         std::string &s = sv[i];
         if(s.size() > 0)
@@ -1196,7 +1194,7 @@ ConfigManager::ReadTag(std::string &tagName, NodeTypeEnum &tagType,
     tagType = INTERNAL_NODE;
     tagLength = 0;
 
-    for(int i = 0; i < sv.size(); ++i)
+    for(size_t i = 0; i < sv.size(); ++i)
     {
         std::string::size_type pos = sv[i].find('=') + 1;
         std::string token(sv[i].substr(0, pos));

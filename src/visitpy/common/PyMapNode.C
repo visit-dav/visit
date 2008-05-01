@@ -83,7 +83,7 @@ PyMapNode_Wrap(const MapNode &node)
     stringVector entry_names;
     node.GetEntryNames(entry_names);    
     
-    for(int i=0;i<entry_names.size();i++)
+    for(size_t i=0;i<entry_names.size();i++)
     {
         const MapNode *child_node = node.GetEntry(entry_names[i]);
         if(child_node == NULL)

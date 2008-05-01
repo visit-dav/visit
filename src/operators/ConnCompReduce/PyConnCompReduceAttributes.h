@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyConnCompReduceAttributes_StartUp(ConnCompReduceAttributes *subj, void *data);
-void            PyConnCompReduceAttributes_CloseDown();
+void           PyConnCompReduceAttributes_StartUp(ConnCompReduceAttributes *subj, void *data);
+void           PyConnCompReduceAttributes_CloseDown();
 PyMethodDef *   PyConnCompReduceAttributes_GetMethodTable(int *nMethods);
-bool            PyConnCompReduceAttributes_Check(PyObject *obj);
+bool           PyConnCompReduceAttributes_Check(PyObject *obj);
 ConnCompReduceAttributes *  PyConnCompReduceAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyConnCompReduceAttributes_New();
 PyObject *      PyConnCompReduceAttributes_Wrap(const ConnCompReduceAttributes *attr);
-void            PyConnCompReduceAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyConnCompReduceAttributes_SetDefaults(const ConnCompReduceAttributes *atts);
-std::string     PyConnCompReduceAttributes_GetLogString();
-std::string     PyConnCompReduceAttributes_ToString(const ConnCompReduceAttributes *, const char *);
+void           PyConnCompReduceAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyConnCompReduceAttributes_SetDefaults(const ConnCompReduceAttributes *atts);
+std::string    PyConnCompReduceAttributes_GetLogString();
+std::string    PyConnCompReduceAttributes_ToString(const ConnCompReduceAttributes *, const char *);
 
 #endif
 

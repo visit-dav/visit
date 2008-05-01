@@ -49,7 +49,7 @@ Definition:
 void
 PickAttributes::PrintSelf(ostream &os)
 {
-    int i;
+    size_t i;
     
     char buff[512];
     
@@ -322,7 +322,6 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         return;
     }
 
-    int i;
     char buff[512];
    
     std::string fileName; 
@@ -532,7 +531,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
             }
             showId = showZoneId;
         }
-        for (i = 0; i < incidentElements.size(); i++)
+        for (size_t i = 0; i < incidentElements.size(); i++)
         {
             if (showId)
             {
@@ -587,7 +586,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         os += "\n";
     }
 
-    for (i = 0; i < varInfo.size(); i++)
+    for (size_t i = 0; i < varInfo.size(); i++)
     {
         std::string iv;
         std::string pt = PickType_ToString(pickType);
@@ -603,7 +602,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     if (invalidVars.size() > 0)
     {
         os += "The following variables are invalid, and Pick ignored them:\n";
-        for (i = 0; i < invalidVars.size(); i++)
+        for (size_t i = 0; i < invalidVars.size(); i++)
         {
             os += "  " + invalidVars[i];
         }
@@ -994,7 +993,6 @@ Definition:
 void
 PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
 {
-    int i;
     char buff[512];
    
     std::string fileName;
@@ -1156,7 +1154,7 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         }
         if (showId && showGlobal)
             os += " (global) ";
-        for (i = 0; i < incidentElements.size(); i++)
+        for (size_t i = 0; i < incidentElements.size(); i++)
         {
             if (showId)
             {
@@ -1203,7 +1201,7 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         os += "\n";
     }
 
-    for (i = 0; i < varInfo.size(); i++)
+    for (size_t i = 0; i < varInfo.size(); i++)
     {
         std::string iv;
         std::string pt = PickType_ToString(pickType);
@@ -1219,7 +1217,7 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     if (invalidVars.size() > 0)
     {
         os += "The following variables are invalid, and Pick ignored them:\n";
-        for (i = 0; i < invalidVars.size(); i++)
+        for (size_t i = 0; i < invalidVars.size(); i++)
         {
             os += "  " + invalidVars[i];
         }

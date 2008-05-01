@@ -187,7 +187,6 @@ PickAttributes::PickAttributes(const PickAttributes &obj) :
     AttributeSubject(PickAttributes::TypeMapFormatString)
 {
     AttributeGroupVector::const_iterator pos;
-    int i;
 
     variables = obj.variables;
     displayIncidentElements = obj.displayIncidentElements;
@@ -221,7 +220,7 @@ PickAttributes::PickAttributes(const PickAttributes &obj) :
     nodePoint[1] = obj.nodePoint[1];
     nodePoint[2] = obj.nodePoint[2];
 
-    for(i = 0; i < 6; ++i)
+    for(int i = 0; i < 6; ++i)
         plotBounds[i] = obj.plotBounds[i];
 
     rayPoint1[0] = obj.rayPoint1[0];
@@ -334,7 +333,6 @@ PickAttributes::operator = (const PickAttributes &obj)
 {
     if (this == &obj) return *this;
     AttributeGroupVector::const_iterator pos;
-    int i;
 
     variables = obj.variables;
     displayIncidentElements = obj.displayIncidentElements;
@@ -368,7 +366,7 @@ PickAttributes::operator = (const PickAttributes &obj)
     nodePoint[1] = obj.nodePoint[1];
     nodePoint[2] = obj.nodePoint[2];
 
-    for(i = 0; i < 6; ++i)
+    for(int i = 0; i < 6; ++i)
         plotBounds[i] = obj.plotBounds[i];
 
     rayPoint1[0] = obj.rayPoint1[0];
@@ -456,40 +454,38 @@ PickAttributes::operator = (const PickAttributes &obj)
 bool
 PickAttributes::operator == (const PickAttributes &obj) const
 {
-    int i;
-
     // Compare the pickPoint arrays.
     bool pickPoint_equal = true;
-    for(i = 0; i < 3 && pickPoint_equal; ++i)
+    for(int i = 0; i < 3 && pickPoint_equal; ++i)
         pickPoint_equal = (pickPoint[i] == obj.pickPoint[i]);
 
     // Compare the cellPoint arrays.
     bool cellPoint_equal = true;
-    for(i = 0; i < 3 && cellPoint_equal; ++i)
+    for(int i = 0; i < 3 && cellPoint_equal; ++i)
         cellPoint_equal = (cellPoint[i] == obj.cellPoint[i]);
 
     // Compare the nodePoint arrays.
     bool nodePoint_equal = true;
-    for(i = 0; i < 3 && nodePoint_equal; ++i)
+    for(int i = 0; i < 3 && nodePoint_equal; ++i)
         nodePoint_equal = (nodePoint[i] == obj.nodePoint[i]);
 
     // Compare the plotBounds arrays.
     bool plotBounds_equal = true;
-    for(i = 0; i < 6 && plotBounds_equal; ++i)
+    for(int i = 0; i < 6 && plotBounds_equal; ++i)
         plotBounds_equal = (plotBounds[i] == obj.plotBounds[i]);
 
     // Compare the rayPoint1 arrays.
     bool rayPoint1_equal = true;
-    for(i = 0; i < 3 && rayPoint1_equal; ++i)
+    for(int i = 0; i < 3 && rayPoint1_equal; ++i)
         rayPoint1_equal = (rayPoint1[i] == obj.rayPoint1[i]);
 
     // Compare the rayPoint2 arrays.
     bool rayPoint2_equal = true;
-    for(i = 0; i < 3 && rayPoint2_equal; ++i)
+    for(int i = 0; i < 3 && rayPoint2_equal; ++i)
         rayPoint2_equal = (rayPoint2[i] == obj.rayPoint2[i]);
 
     bool varInfo_equal = (obj.varInfo.size() == varInfo.size());
-    for(i = 0; (i < varInfo.size()) && varInfo_equal; ++i)
+    for(size_t i = 0; (i < varInfo.size()) && varInfo_equal; ++i)
     {
         // Make references to PickVarInfo from AttributeGroup *.
         const PickVarInfo &varInfo1 = *((const PickVarInfo *)(varInfo[i]));
@@ -2710,8 +2706,6 @@ PickAttributes::GetFieldTypeName(int index) const
 bool
 PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 {
-    int i;
-
     const PickAttributes &obj = *((const PickAttributes*)rhs);
     bool retval = false;
     switch (index_)
@@ -2820,7 +2814,7 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         {  // new scope
         // Compare the pickPoint arrays.
         bool pickPoint_equal = true;
-        for(i = 0; i < 3 && pickPoint_equal; ++i)
+        for(int i = 0; i < 3 && pickPoint_equal; ++i)
             pickPoint_equal = (pickPoint[i] == obj.pickPoint[i]);
 
         retval = pickPoint_equal;
@@ -2830,7 +2824,7 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         {  // new scope
         // Compare the cellPoint arrays.
         bool cellPoint_equal = true;
-        for(i = 0; i < 3 && cellPoint_equal; ++i)
+        for(int i = 0; i < 3 && cellPoint_equal; ++i)
             cellPoint_equal = (cellPoint[i] == obj.cellPoint[i]);
 
         retval = cellPoint_equal;
@@ -2840,7 +2834,7 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         {  // new scope
         // Compare the nodePoint arrays.
         bool nodePoint_equal = true;
-        for(i = 0; i < 3 && nodePoint_equal; ++i)
+        for(int i = 0; i < 3 && nodePoint_equal; ++i)
             nodePoint_equal = (nodePoint[i] == obj.nodePoint[i]);
 
         retval = nodePoint_equal;
@@ -2850,7 +2844,7 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         {  // new scope
         // Compare the plotBounds arrays.
         bool plotBounds_equal = true;
-        for(i = 0; i < 6 && plotBounds_equal; ++i)
+        for(int i = 0; i < 6 && plotBounds_equal; ++i)
             plotBounds_equal = (plotBounds[i] == obj.plotBounds[i]);
 
         retval = plotBounds_equal;
@@ -2860,7 +2854,7 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         {  // new scope
         // Compare the rayPoint1 arrays.
         bool rayPoint1_equal = true;
-        for(i = 0; i < 3 && rayPoint1_equal; ++i)
+        for(int i = 0; i < 3 && rayPoint1_equal; ++i)
             rayPoint1_equal = (rayPoint1[i] == obj.rayPoint1[i]);
 
         retval = rayPoint1_equal;
@@ -2870,7 +2864,7 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         {  // new scope
         // Compare the rayPoint2 arrays.
         bool rayPoint2_equal = true;
-        for(i = 0; i < 3 && rayPoint2_equal; ++i)
+        for(int i = 0; i < 3 && rayPoint2_equal; ++i)
             rayPoint2_equal = (rayPoint2[i] == obj.rayPoint2[i]);
 
         retval = rayPoint2_equal;
@@ -2924,7 +2918,7 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_varInfo:
         {  // new scope
         bool varInfo_equal = (obj.varInfo.size() == varInfo.size());
-        for(i = 0; (i < varInfo.size()) && varInfo_equal; ++i)
+        for(size_t i = 0; (i < varInfo.size()) && varInfo_equal; ++i)
         {
             // Make references to PickVarInfo from AttributeGroup *.
             const PickVarInfo &varInfo1 = *((const PickVarInfo *)(varInfo[i]));
@@ -3143,7 +3137,7 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 void
 PickAttributes::PrintSelf(ostream &os)
 {
-    int i;
+    size_t i;
     
     char buff[512];
     
@@ -3413,7 +3407,6 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         return;
     }
 
-    int i;
     char buff[512];
    
     std::string fileName; 
@@ -3623,7 +3616,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
             }
             showId = showZoneId;
         }
-        for (i = 0; i < incidentElements.size(); i++)
+        for (size_t i = 0; i < incidentElements.size(); i++)
         {
             if (showId)
             {
@@ -3678,7 +3671,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         os += "\n";
     }
 
-    for (i = 0; i < varInfo.size(); i++)
+    for (size_t i = 0; i < varInfo.size(); i++)
     {
         std::string iv;
         std::string pt = PickType_ToString(pickType);
@@ -3694,7 +3687,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     if (invalidVars.size() > 0)
     {
         os += "The following variables are invalid, and Pick ignored them:\n";
-        for (i = 0; i < invalidVars.size(); i++)
+        for (size_t i = 0; i < invalidVars.size(); i++)
         {
             os += "  " + invalidVars[i];
         }
@@ -3848,7 +3841,6 @@ PickAttributes::PrepareForNewPick()
 void
 PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
 {
-    int i;
     char buff[512];
    
     std::string fileName;
@@ -4010,7 +4002,7 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         }
         if (showId && showGlobal)
             os += " (global) ";
-        for (i = 0; i < incidentElements.size(); i++)
+        for (size_t i = 0; i < incidentElements.size(); i++)
         {
             if (showId)
             {
@@ -4057,7 +4049,7 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         os += "\n";
     }
 
-    for (i = 0; i < varInfo.size(); i++)
+    for (size_t i = 0; i < varInfo.size(); i++)
     {
         std::string iv;
         std::string pt = PickType_ToString(pickType);
@@ -4073,7 +4065,7 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     if (invalidVars.size() > 0)
     {
         os += "The following variables are invalid, and Pick ignored them:\n";
-        for (i = 0; i < invalidVars.size(); i++)
+        for (size_t i = 0; i < invalidVars.size(); i++)
         {
             os += "  " + invalidVars[i];
         }

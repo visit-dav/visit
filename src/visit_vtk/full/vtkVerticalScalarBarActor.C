@@ -913,7 +913,7 @@ vtkVerticalScalarBarActor::ShouldCollapseDiscrete(void)
   rgba_base[2] = rgba[2];
   rgba_base[3] = rgba[3];
   
-  for (int i = 1 ; i < definedLabels.size() ; i++)
+  for (size_t i = 1 ; i < definedLabels.size() ; i++)
     {
     if ((it = labelColorMap.find(definedLabels[i])) != labelColorMap.end())
       {
@@ -1235,7 +1235,7 @@ void vtkVerticalScalarBarActor::PrintSelf(ostream& os, vtkIndent indent)
     {
     vtkIndent indent2 = indent.GetNextIndent();
     os << indent << "Defined Labels: \n";
-    for (int i = 0; i < definedLabels.size(); i++)
+    for (size_t i = 0; i < definedLabels.size(); i++)
        os << indent2 << this->definedLabels[i].c_str() << "\n";
     }
   os << indent << "Position: " << this->PositionCoordinate << "\n";
@@ -1268,7 +1268,7 @@ void vtkVerticalScalarBarActor::SetDefinedLabels(const doubleVector &values)
 {
   this->definedLabels.clear();
   char labelString[1024];
-  for (int i = 0; i < values.size(); ++i)
+  for (size_t i = 0; i < values.size(); ++i)
     {
     sprintf(labelString, this->LabelFormat, values[i]);
     this->definedLabels.push_back(labelString);

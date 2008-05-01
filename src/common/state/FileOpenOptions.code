@@ -11,7 +11,7 @@ FileOpenOptions::MergeNewFromPluginInfo(const DBPluginInfoAttributes *dbinfo)
         const std::string &id = dbinfo->GetTypesFullNames()[i];
         const std::string &name = dbinfo->GetTypes()[i];
         int index = -1;
-        for (int j=0; j<typeIDs.size(); j++)
+        for (size_t j=0; j<typeIDs.size(); j++)
         {
             if (typeIDs[j] == id)
                 index = j;
@@ -84,7 +84,7 @@ Definition:
 const DBOptionsAttributes*
 FileOpenOptions::GetOpenOptionsForID(const std::string &id)
 {
-    for (int i=0; i<typeIDs.size(); i++)
+    for (size_t i=0; i<typeIDs.size(); i++)
     {
         if (typeIDs[i] == id)
             return (const DBOptionsAttributes*)(openOptions[i]);

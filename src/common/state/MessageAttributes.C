@@ -430,7 +430,6 @@ MessageAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
 void
 MessageAttributes::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 

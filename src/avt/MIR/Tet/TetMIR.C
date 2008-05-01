@@ -973,7 +973,7 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
                    vector<avtMixedVariable *> mixvars, bool doMats,
                    avtMaterial *)
 {
-    int i, j, timerHandle = visitTimer->StartTimer();
+    int timerHandle = visitTimer->StartTimer();
 
     //
     // Start off by determining which materials we should reconstruct and
@@ -982,9 +982,9 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
     bool *matFlag = new bool[nMaterials];
     if (!mats.empty())
     {
-        for (i = 0; i < nMaterials; i++)
+        for (int i = 0; i < nMaterials; i++)
             matFlag[i] = false;
-        for (i = 0; i < mats.size(); i++)
+        for (size_t i = 0; i < mats.size(); i++)
         {
             int origmatno = mats[i];
             if (origmatno < mapMatToUsedMat.size())
@@ -997,7 +997,7 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
     }
     else
     {
-        for (i = 0; i < nMaterials; i++)
+        for (int i = 0; i < nMaterials; i++)
             matFlag[i] = true;
     }
 
@@ -1032,7 +1032,7 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
         outPts = vtkPoints::New();
         outPts->SetNumberOfPoints(npoints);
         float *pts_buff = (float *) outPts->GetVoidPointer(0);
-        for (i=0; i<npoints; i++)
+        for (int i=0; i<npoints; i++)
         {
             pts_buff[3*i+0] = coordsList[i].x;
             pts_buff[3*i+1] = coordsList[i].y;
@@ -1045,7 +1045,7 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
     // Now insert the connectivity array.
     //
     rv->Allocate(ncells);
-    for (i=0; i<ncells; i++)
+    for (int i=0; i<ncells; i++)
     {
         int c = cellList[i];
         rv->InsertNextCell(zonesList[c].celltype, zonesList[c].nnodes,
@@ -1060,7 +1060,7 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
     if (inpd->GetNumberOfArrays() > 0)
     {
         outpd->CopyAllocate(inpd, npoints);
-        for (i=0; i<npoints; i++)
+        for (int i=0; i<npoints; i++)
         {
             //
             // For each point, copy over the original point data if the
@@ -1092,7 +1092,7 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
     if (incd->GetNumberOfArrays() > 0)
     {
         outcd->CopyAllocate(incd, ncells);
-        for (i=0; i<ncells; i++)
+        for (int i=0; i<ncells; i++)
         {
             int c = cellList[i];
             int origzone = zonesList[c].origzone;
@@ -1104,7 +1104,7 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
     // Now go and write over the mixed part of the mixed variables.  The non-
     // mixed part was already copied over in the last operation.
     //
-    for (i=0; i<mixvars.size(); i++)
+    for (size_t i=0; i<mixvars.size(); i++)
     {
         avtMixedVariable *mv = mixvars[i];
         if (mv == NULL)
@@ -1119,7 +1119,7 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
                    << "variable array." << endl;
             debug1 << "The mixed variable is " << mv->GetVarname().c_str() << endl;
             debug1 << "Variables in the VTK dataset are: ";
-            for (j = 0 ; j < outcd->GetNumberOfArrays() ; j++)
+            for (int j = 0 ; j < outcd->GetNumberOfArrays() ; j++)
             {
                 debug1 << outcd->GetArray(j)->GetName() << ", ";
             }
@@ -1136,7 +1136,7 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
         float *outBuff = (float *) arr->GetVoidPointer(0);
         debug4 << "Overwriting mixed values for " << arr->GetName() << endl;
         int nvals = 0;
-        for (j=0; j<ncells; j++)
+        for (int j=0; j<ncells; j++)
         {
             int mix_index = zonesList[cellList[j]].mix_index;
             if (mix_index >= 0)
@@ -1159,7 +1159,7 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
         outmat->SetName("avtSubsets");
         outmat->SetNumberOfTuples(ncells);
         int *buff = outmat->GetPointer(0);
-        for (i=0; i<ncells; i++)
+        for (int i=0; i<ncells; i++)
         {
             buff[i] = mapUsedMatToMat[zonesList[cellList[i]].mat];
         }

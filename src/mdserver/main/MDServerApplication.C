@@ -100,7 +100,7 @@ MDServerApplication::~MDServerApplication()
 {
     instance = NULL;
 
-    for(int i = 0; i < clients.size(); ++i)
+    for(size_t i = 0; i < clients.size(); ++i)
         delete clients[i];
 }
 
@@ -251,7 +251,7 @@ MDServerApplication::Execute()
         // Create a connection group that we will use to check if any
         // connections have input to be read.
         ConnectionGroup connGroup;
-        for(int i = 0; i < clients.size(); ++i)
+        for(size_t i = 0; i < clients.size(); ++i)
             connGroup.AddConnection(clients[i]->GetWriteConnection());
 
         // Check the connections for input that needs to be processed.
@@ -260,7 +260,7 @@ MDServerApplication::Execute()
             // Test all of the clients' file descriptors to see if they
             // can be read.
             std::vector<int> deadList;
-            for(int i = 0; i < clients.size(); ++i)
+            for(size_t i = 0; i < clients.size(); ++i)
             {
                 if(connGroup.NeedsRead(i))
                 {
@@ -293,7 +293,7 @@ MDServerApplication::Execute()
     // Go through the list of MDServerConnections and close them down
     // by deleting the MDServerConnection objects.
     //
-    for(int i = 0; i < clients.size(); ++i)
+    for(size_t i = 0; i < clients.size(); ++i)
         delete clients[i];
     clients.clear();
 }
@@ -347,12 +347,11 @@ MDServerApplication::ExecuteDebug()
 void
 MDServerApplication::DisconnectDeadConnections(const std::vector<int> &deadList)
 {
-    int  i;
     bool deletedConnections = (deadList.size() > 0);
     MDServerConnectionVector newClientList;
 
     // Delete any connections in the dead list.
-    for(i = 0; i < deadList.size(); ++i)
+    for(size_t i = 0; i < deadList.size(); ++i)
     {
         // Delete the connection.
         delete clients[deadList[i]];
@@ -361,7 +360,7 @@ MDServerApplication::DisconnectDeadConnections(const std::vector<int> &deadList)
 
     // Delete any connections whose quit event indicates they wanted
     // to quit.
-    for(i = 0; i < clients.size(); ++i)
+    for(size_t i = 0; i < clients.size(); ++i)
     {
         if(clients[i] == 0)
             continue;
@@ -384,7 +383,7 @@ MDServerApplication::DisconnectDeadConnections(const std::vector<int> &deadList)
         keepGoing = (clients[0] != 0);
 
         // Make the new client vector
-        for(i = 0; i < clients.size(); ++i)
+        for(size_t i = 0; i < clients.size(); ++i)
         {
             if(clients[i] != 0)
                 newClientList.push_back(clients[i]);

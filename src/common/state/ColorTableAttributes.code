@@ -25,7 +25,7 @@ int
 ColorTableAttributes::GetColorTableIndex(const std::string &name) const
 {
     int retval = -1;
-    for(int i = 0; i < names.size(); ++i)
+    for(size_t i = 0; i < names.size(); ++i)
     {
         if(names[i] == name)
         {
@@ -164,7 +164,7 @@ ColorTableAttributes::AddColorTable(const std::string &name,
 
     // Store the name, colortable pairs into a map.
     std::map<std::string, AttributeGroup *> sortMap;
-    int i;
+    size_t i;
     for(i = 0; i < names.size(); ++i)
         sortMap[names[i]] = colorTables[i];
 
@@ -337,7 +337,7 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
     char tmp[100];
     ColorControlPointList defaultObject;
     int index = 0;
-    for(int i = 0; i < colorTables.size(); ++i)    
+    for(size_t i = 0; i < colorTables.size(); ++i)    
     {
         const ColorControlPointList &ccpl = GetColorTables(i);
         if(!ccpl.GetExternalFlag())
@@ -445,7 +445,7 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
 
                     // Set the color control points.
                     floatVector fvec = pointNode->AsFloatVector();
-                    for(int j = 0; j < fvec.size() / 4; ++j)
+                    for(size_t j = 0; j < fvec.size() / 4; ++j)
                     {
                         // Create a control point based on the values
                         // in the float vector.

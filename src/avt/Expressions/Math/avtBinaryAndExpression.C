@@ -147,6 +147,6 @@ avtBinaryAndExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     else
     {
         EXCEPTION2(ExpressionException, outputVariableName,
-	    "Don't know how to and vectors of differing dimensions.");
+            "Don't know how to and vectors of differing dimensions.");
     }
 }

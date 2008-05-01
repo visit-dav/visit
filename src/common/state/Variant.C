@@ -1035,7 +1035,7 @@ Variant::SetValue(const XMLNode &node)
     }
 
     // loop index
-    int i = 0;
+    size_t i = 0;
     int data_type = NameToTypeID(node.Attribute("type"));
     const char *txt_val = node.Text().c_str();
     
@@ -1571,7 +1571,7 @@ Variant::ToXMLNode() const
     else if(dataType == BOOL_VECTOR_TYPE)
     {
         const boolVector &vec = AsBoolVector();
-            for(int i=0;i<vec.size();i++)
+            for(size_t i=0;i<vec.size();i++)
             {
                 sprintf(buff,"%d ",(int)vec[i]);
                 res_str += buff;
@@ -1580,7 +1580,7 @@ Variant::ToXMLNode() const
     else if(dataType == CHAR_VECTOR_TYPE)
     {
         const charVector &vec = AsCharVector();
-        for(int i=0;i<vec.size();i++)
+        for(size_t i=0;i<vec.size();i++)
         {
             sprintf(buff,"%c ",vec[i]);
             res_str += buff;
@@ -1589,7 +1589,7 @@ Variant::ToXMLNode() const
     else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
     {
         const unsignedCharVector &vec = AsUnsignedCharVector();
-        for(int i=0;i<vec.size();i++)
+        for(size_t i=0;i<vec.size();i++)
         {
             sprintf(buff,"%d ",(int)vec[i]);
             res_str += buff;
@@ -1598,7 +1598,7 @@ Variant::ToXMLNode() const
     else if(dataType == INT_VECTOR_TYPE)
     {
         const intVector &vec = AsIntVector();
-        for(int i=0;i<vec.size();i++)
+        for(size_t i=0;i<vec.size();i++)
         {
             sprintf(buff,"%d ",(int)vec[i]);
             res_str += buff;
@@ -1607,7 +1607,7 @@ Variant::ToXMLNode() const
     else if(dataType == LONG_VECTOR_TYPE)
     {
         const longVector &vec = AsLongVector();
-        for(int i=0;i<vec.size();i++)
+        for(size_t i=0;i<vec.size();i++)
         {
             sprintf(buff,"%ld ",vec[i]);
             res_str += buff;
@@ -1616,7 +1616,7 @@ Variant::ToXMLNode() const
     else if(dataType == FLOAT_VECTOR_TYPE)
     {
         const floatVector &vec = AsFloatVector();
-        for(int i=0;i<vec.size();i++)
+        for(size_t i=0;i<vec.size();i++)
         {
             sprintf(buff,"%g ",vec[i]);
             res_str += buff;
@@ -1625,7 +1625,7 @@ Variant::ToXMLNode() const
     else if(dataType == DOUBLE_VECTOR_TYPE)
     {
         const doubleVector &vec = AsDoubleVector();
-        for(int i=0;i<vec.size();i++)
+        for(size_t i=0;i<vec.size();i++)
         {
             sprintf(buff,"%g ",vec[i]);
             res_str += buff;
@@ -1634,7 +1634,7 @@ Variant::ToXMLNode() const
     else if(dataType == STRING_VECTOR_TYPE)
     {
         const stringVector &vec = AsStringVector();
-        for(int i=0;i<vec.size();i++)
+        for(size_t i=0;i<vec.size();i++)
             res_str += string("\"") + 
                        EscapeQuotedString(vec[i]) + 
                        string("\" ");

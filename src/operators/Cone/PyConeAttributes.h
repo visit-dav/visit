@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyConeAttributes_StartUp(ConeAttributes *subj, void *data);
-void            PyConeAttributes_CloseDown();
+void           PyConeAttributes_StartUp(ConeAttributes *subj, void *data);
+void           PyConeAttributes_CloseDown();
 PyMethodDef *   PyConeAttributes_GetMethodTable(int *nMethods);
-bool            PyConeAttributes_Check(PyObject *obj);
+bool           PyConeAttributes_Check(PyObject *obj);
 ConeAttributes *  PyConeAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyConeAttributes_New();
 PyObject *      PyConeAttributes_Wrap(const ConeAttributes *attr);
-void            PyConeAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyConeAttributes_SetDefaults(const ConeAttributes *atts);
-std::string     PyConeAttributes_GetLogString();
-std::string     PyConeAttributes_ToString(const ConeAttributes *, const char *);
+void           PyConeAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyConeAttributes_SetDefaults(const ConeAttributes *atts);
+std::string    PyConeAttributes_GetLogString();
+std::string    PyConeAttributes_ToString(const ConeAttributes *, const char *);
 
 #endif
 

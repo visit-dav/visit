@@ -451,7 +451,7 @@ ImageObject_GetImage(PyObject *self, PyObject *args)
     // Allocate a tuple the with enough entries to hold the text.
     const stringVector &text = obj->data->GetText();
     PyObject *retval = PyTuple_New(text.size());
-    for(int i = 0; i < text.size(); ++i)
+    for(size_t i = 0; i < text.size(); ++i)
         PyTuple_SET_ITEM(retval, i, PyString_FromString(text[i].c_str()));
     return retval;
 }
@@ -613,7 +613,7 @@ ImageObject_print(PyObject *v, FILE *fp, int flags)
         fprintf(fp, "maintainAspectRatio = 0\n");
     {   const stringVector &image = obj->data->GetText();
         fprintf(fp, "image = (");
-        for(int i = 0; i < image.size(); ++i)
+        for(size_t i = 0; i < image.size(); ++i)
         {
             fprintf(fp, "\"%s\"", image[i].c_str());
             if(i < image.size() - 1)
@@ -722,7 +722,7 @@ PyImageObject_StringRepresentation(const AnnotationObject *atts)
     {   const stringVector &image = atts->GetText();
         SNPRINTF(tmpStr, 1000, "image = (");
         str += tmpStr;
-        for(int i = 0; i < image.size(); ++i)
+        for(size_t i = 0; i < image.size(); ++i)
         {
             SNPRINTF(tmpStr, 1000, "\"%s\"", image[i].c_str());
             str += tmpStr;

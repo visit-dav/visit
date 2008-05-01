@@ -848,7 +848,6 @@ HostProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
 void
 HostProfile::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 
@@ -2204,7 +2203,7 @@ HostProfile::SplitHostPattern(const std::string &host)
     std::vector<std::string> vec;
     std::string              name = "";
 
-    for (int i=0; i<host.length(); i++)
+    for (size_t i=0; i<host.length(); i++)
     {
         if (host[i] == ' '  || host[i] == '\t' || host[i] == ',')
         {
@@ -2251,7 +2250,7 @@ HostProfile::ProfileMatchesHost(const std::string &h) const
 {
     std::vector<std::string> patterns = SplitHostPattern(host);
     bool match = false;
-    int i;
+    size_t i;
 
     // Try to match the actual host name
     for (i = 0; i < patterns.size() && !match; i++)
@@ -2314,18 +2313,18 @@ HostProfile::GetShortHostname(const std::string &host)
         return "";
 
     // find the minimum length of any string
-    int l = patterns[0].length();
-    for (int i = 1; i < patterns.size(); i++)
+    size_t l = patterns[0].length();
+    for (size_t i = 1; i < patterns.size(); i++)
     {
         if (patterns[i].length() < l)
             l = patterns[i].length();
     }
 
     // find a common prefix
-    for (int p = 0; p < l; p++)
+    for (size_t p = 0; p < l; p++)
     {
         char c = patterns[0][p];
-        for (int i = 1; i < patterns.size() && c != '\0'; i++)
+        for (size_t i = 1; i < patterns.size() && c != '\0'; i++)
         {
             if (patterns[i][p] != c)
                 c = '\0';
@@ -2337,10 +2336,10 @@ HostProfile::GetShortHostname(const std::string &host)
     }
 
     // find a common suffix, too
-    for (int s = 0; s < l - prefix.length() - 1 && patterns.size() > 1; s++)
+    for (size_t s = 0; s < l - prefix.length() - 1 && patterns.size() > 1; s++)
     {
         char c = patterns[0][l-1-s];
-        for (int i = 1; i < patterns.size() && c != '\0'; i++)
+        for (size_t i = 1; i < patterns.size() && c != '\0'; i++)
         {
             if (patterns[i][l-1-s] != c)
                 c = '\0';

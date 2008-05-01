@@ -204,7 +204,7 @@ QvisSessionSourceChangerDialog::SplitPrompt(const QString &s) const
         stringVector words(SplitValues(std::string(s.latin1()), ' '));
         QString r;
         int len = 0;
-        for(int i = 0; i < words.size(); ++i)
+        for(size_t i = 0; i < words.size(); ++i)
         {
             if(len > 0)
                 r += " ";

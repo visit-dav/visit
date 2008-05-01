@@ -823,12 +823,12 @@ vtkVisItAxisActor::SetLabels(const vector<string> &labels)
   // If the number of labels has changed, re-allocate the correct
   // amount of memory.
   //
-  int i, numLabels = labels.size();
+  size_t numLabels = labels.size();
   if (this->NumberOfLabelsBuilt != numLabels)
     {
     if (this->LabelMappers != NULL)
       {
-      for (i = 0; i < this->NumberOfLabelsBuilt; i++)
+      for (int i = 0; i < this->NumberOfLabelsBuilt; i++)
         {
         this->LabelVectors[i]->Delete();
         this->LabelMappers[i]->Delete();
@@ -843,7 +843,7 @@ vtkVisItAxisActor::SetLabels(const vector<string> &labels)
     this->LabelMappers = new vtkPolyDataMapper * [numLabels];
     this->LabelActors = new vtkFollower * [numLabels];
 
-    for (i = 0; i < labels.size(); i++)
+    for (size_t i = 0; i < labels.size(); i++)
       {
       this->LabelVectors[i] = vtkMultiFontVectorText::New();
 
@@ -857,7 +857,7 @@ vtkVisItAxisActor::SetLabels(const vector<string> &labels)
   //
   // Set the label vector text. 
   //
-  for (i = 0; i < numLabels; i++)
+  for (size_t i = 0; i < numLabels; i++)
     {
     this->LabelVectors[i]->SetFontFamily(this->LabelTextProperty->GetFontFamily());
     this->LabelVectors[i]->SetBold(this->LabelTextProperty->GetBold());

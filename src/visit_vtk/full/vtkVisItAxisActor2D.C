@@ -1503,7 +1503,6 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
   if (va == 0) // cannot use va for Major Tick comps.
     n = 0;
  
-  int i, j;
   n = (int)(n < (2.0 + EPSILON) ? 2 : n);
 
   lv1 = sortedRange[0];
@@ -1525,7 +1524,7 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
     majorValue.push_back(-1);
     }
 
-  for (i = 1; i < n; i++)
+  for (int i = 1; i < n; i++)
     {
     labelValue.push_back(labelValue[i-1]*10.);
     majorValue.push_back(log10(labelValue[i]));
@@ -1536,18 +1535,18 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
     {
     decadeStart = log10(labelValue[0]/10.);
     decadeRange = majorValue[0] - decadeStart;
-    for (j = 1; j < 7; j++)
+    for (int j = 1; j < 7; j++)
       {
       v = decadeStart + log_value[j] * decadeRange;
       if (v >= lv1 && v < majorValue[0])
         minorValue.push_back(v);
       }
     }
-  for (i = 1; i < n; i++)
+  for (int i = 1; i < n; i++)
     {
     decadeStart = majorValue[i-1];
     decadeRange = majorValue[i] - decadeStart;
-    for (j = 1; j < 7; j++)
+    for (int j = 1; j < 7; j++)
       {
       v = decadeStart + log_value[j] * decadeRange;
       if (v < lv2) // don't want to go past the end
@@ -1561,7 +1560,7 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
     decadeStart = majorValue[n -1];
     decadeEnd = log10(labelValue[n -1]*10.);
     decadeRange = decadeEnd - decadeStart;
-    for (j = 1; j < 7; j++)
+    for (int j = 1; j < 7; j++)
       {
       v = decadeStart + log_value[j] * decadeRange;
       minorValue.push_back(v);
@@ -1573,7 +1572,7 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
   // now compute the proportions for when the ticks are actually created
   if (minorVisible)
     {
-    for (i = 0; i < minorValue.size(); i++)
+    for (size_t i = 0; i < minorValue.size(); i++)
       {
           p = (minorValue[i] - lv1)/ lvr;
           if (p >= 0. && p <= 1.)
@@ -1584,7 +1583,7 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
             }
       }
     }
-  for (i = 0; i < majorValue.size(); i++)
+  for (size_t i = 0; i < majorValue.size(); i++)
     {
     p = (majorValue[i] - lv1)/ lvr;
     if (p >= 0. && p <= 1.)
@@ -1603,7 +1602,7 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
   if (sortedRange[0] != (double)inRange[0])
     {
     // We must reverse all of the proportions.
-    for (j = 0 ; j < numTicks ; j++)
+    for (int j = 0 ; j < numTicks ; j++)
       {
       proportion[j] = 1. - proportion[j];
       }

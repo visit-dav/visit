@@ -184,7 +184,7 @@ XMLEditEnums::UpdateWindowContents()
     BlockAllSignals(true);
 
     enumlist->clear();
-    for (int i=0; i<EnumType::enums.size(); i++)
+    for (size_t i=0; i<EnumType::enums.size(); i++)
     {
         enumlist->insertItem(EnumType::enums[i]->type);
     }
@@ -338,7 +338,7 @@ XMLEditEnums::enumlistNew()
     {
         okay = true;
         newtype = tr("unnamed%1").arg(newid);
-        for (int i=0; i<enumlist->count() && okay; i++)
+        for (size_t i=0; i<enumlist->count() && okay; i++)
         {
             if (enumlist->text(i) == newtype)
                 okay = false;
@@ -350,7 +350,7 @@ XMLEditEnums::enumlistNew()
     EnumType *e = new EnumType(newtype);
     EnumType::enums.push_back(e);
     UpdateWindowContents();
-    for (int i=0; i<enumlist->count(); i++)
+    for (size_t i=0; i<enumlist->count(); i++)
     {
         if (enumlist->text(i) == newtype)
         {
@@ -377,8 +377,7 @@ XMLEditEnums::enumlistDel()
 
     EnumType *e = EnumType::FindEnum(enumlist->currentText());
     vector<EnumType*> newlist;
-    int i;
-    for (i=0; i<EnumType::enums.size(); i++)
+    for (size_t i=0; i<EnumType::enums.size(); i++)
     {
         if (EnumType::enums[i] != e)
             newlist.push_back(EnumType::enums[i]);
@@ -388,7 +387,7 @@ XMLEditEnums::enumlistDel()
     // Make sure anyone with a reference to the old one
     // points to the new one instead
     Attribute *a = xmldoc->attribute;
-    for (i=0; i<a->fields.size(); i++)
+    for (size_t i=0; i<a->fields.size(); i++)
     {
         Field *f = a->fields[i];
         if (f->type == "enum" && f->GetSubtype() == e->type)

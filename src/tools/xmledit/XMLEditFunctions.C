@@ -188,7 +188,7 @@ XMLEditFunctions::CountFunctions(const QString &name) const
 {
     Attribute *a = xmldoc->attribute;
     int funcCount = 0;
-    for (int j=0; j<a->functions.size(); j++)
+    for (size_t j=0; j<a->functions.size(); j++)
         funcCount += (name == a->functions[j]->name) ? 1 : 0;
     return funcCount;
 }
@@ -214,7 +214,7 @@ XMLEditFunctions::UpdateWindowContents()
     Attribute *a = xmldoc->attribute;
 
     functionlist->clear();
-    for (int i=0; i<a->functions.size(); i++)
+    for (size_t i=0; i<a->functions.size(); i++)
     {
         if(CountFunctions(a->functions[i]->name) > 1)
         {
@@ -518,7 +518,7 @@ XMLEditFunctions::functionlistNew()
     {
         okay = true;
         newname = tr("unnamed%1").arg(newid);
-        for (int i=0; i<functionlist->count() && okay; i++)
+        for (size_t i=0; i<functionlist->count() && okay; i++)
         {
             if (functionlist->text(i) == newname)
                 okay = false;
@@ -531,7 +531,7 @@ XMLEditFunctions::functionlistNew()
     
     a->functions.push_back(f);
     UpdateWindowContents();
-    for (int i=0; i<functionlist->count(); i++)
+    for (size_t i=0; i<functionlist->count(); i++)
     {
         if (functionlist->text(i) == newname)
         {
@@ -559,7 +559,7 @@ XMLEditFunctions::functionlistDel()
 
     Function *f = a->functions[index];
     vector<Function*> newlist;
-    for (int i=0; i<a->functions.size(); i++)
+    for (size_t i=0; i<a->functions.size(); i++)
     {
         if (a->functions[i] != f)
             newlist.push_back(a->functions[i]);

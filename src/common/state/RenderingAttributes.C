@@ -338,16 +338,14 @@ RenderingAttributes::operator = (const RenderingAttributes &obj)
 bool
 RenderingAttributes::operator == (const RenderingAttributes &obj) const
 {
-    int i;
-
     // Compare the startCuePoint arrays.
     bool startCuePoint_equal = true;
-    for(i = 0; i < 3 && startCuePoint_equal; ++i)
+    for(int i = 0; i < 3 && startCuePoint_equal; ++i)
         startCuePoint_equal = (startCuePoint[i] == obj.startCuePoint[i]);
 
     // Compare the endCuePoint arrays.
     bool endCuePoint_equal = true;
-    for(i = 0; i < 3 && endCuePoint_equal; ++i)
+    for(int i = 0; i < 3 && endCuePoint_equal; ++i)
         endCuePoint_equal = (endCuePoint[i] == obj.endCuePoint[i]);
 
     // Create the return value
@@ -708,7 +706,6 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
 void
 RenderingAttributes::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 
@@ -1277,8 +1274,6 @@ RenderingAttributes::GetFieldTypeName(int index) const
 bool
 RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 {
-    int i;
-
     const RenderingAttributes &obj = *((const RenderingAttributes*)rhs);
     bool retval = false;
     switch (index_)
@@ -1362,7 +1357,7 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         {  // new scope
         // Compare the startCuePoint arrays.
         bool startCuePoint_equal = true;
-        for(i = 0; i < 3 && startCuePoint_equal; ++i)
+        for(int i = 0; i < 3 && startCuePoint_equal; ++i)
             startCuePoint_equal = (startCuePoint[i] == obj.startCuePoint[i]);
 
         retval = startCuePoint_equal;
@@ -1372,7 +1367,7 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         {  // new scope
         // Compare the endCuePoint arrays.
         bool endCuePoint_equal = true;
-        for(i = 0; i < 3 && endCuePoint_equal; ++i)
+        for(int i = 0; i < 3 && endCuePoint_equal; ++i)
             endCuePoint_equal = (endCuePoint[i] == obj.endCuePoint[i]);
 
         retval = endCuePoint_equal;

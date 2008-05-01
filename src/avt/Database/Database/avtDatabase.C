@@ -1288,8 +1288,8 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
         if (topoDim == 0 || topoDim == 1)
             continue;
 
-	if (mmd->hideFromGUI)
-	    continue;
+        if (mmd->hideFromGUI)
+            continue;
 
         const int nPairs = 24;
         MQExprTopoPair exprs[nPairs];
@@ -1598,8 +1598,8 @@ avtDatabase::AddVectorMagnitudeExpressions(avtDatabaseMetaData *md)
     int nvectors = md->GetNumVectors();
     for( int i=0; i < nvectors; i++)
     {
-	if (md->GetVectors(i).hideFromGUI)
-	    continue;
+        if (md->GetVectors(i).hideFromGUI)
+            continue;
 
         const char *vec_name = md->GetVectors(i).name.c_str();
         Expression new_expr;

@@ -620,10 +620,8 @@ avtDatabaseMetaData::operator = (const avtDatabaseMetaData &obj)
 bool
 avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
 {
-    int i;
-
     bool meshes_equal = (obj.meshes.size() == meshes.size());
-    for(i = 0; (i < meshes.size()) && meshes_equal; ++i)
+    for(size_t i = 0; (i < meshes.size()) && meshes_equal; ++i)
     {
         // Make references to avtMeshMetaData from AttributeGroup *.
         const avtMeshMetaData &meshes1 = *((const avtMeshMetaData *)(meshes[i]));
@@ -632,7 +630,7 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
     }
 
     bool scalars_equal = (obj.scalars.size() == scalars.size());
-    for(i = 0; (i < scalars.size()) && scalars_equal; ++i)
+    for(size_t i = 0; (i < scalars.size()) && scalars_equal; ++i)
     {
         // Make references to avtScalarMetaData from AttributeGroup *.
         const avtScalarMetaData &scalars1 = *((const avtScalarMetaData *)(scalars[i]));
@@ -641,7 +639,7 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
     }
 
     bool vectors_equal = (obj.vectors.size() == vectors.size());
-    for(i = 0; (i < vectors.size()) && vectors_equal; ++i)
+    for(size_t i = 0; (i < vectors.size()) && vectors_equal; ++i)
     {
         // Make references to avtVectorMetaData from AttributeGroup *.
         const avtVectorMetaData &vectors1 = *((const avtVectorMetaData *)(vectors[i]));
@@ -650,7 +648,7 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
     }
 
     bool tensors_equal = (obj.tensors.size() == tensors.size());
-    for(i = 0; (i < tensors.size()) && tensors_equal; ++i)
+    for(size_t i = 0; (i < tensors.size()) && tensors_equal; ++i)
     {
         // Make references to avtTensorMetaData from AttributeGroup *.
         const avtTensorMetaData &tensors1 = *((const avtTensorMetaData *)(tensors[i]));
@@ -659,7 +657,7 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
     }
 
     bool symmTensors_equal = (obj.symmTensors.size() == symmTensors.size());
-    for(i = 0; (i < symmTensors.size()) && symmTensors_equal; ++i)
+    for(size_t i = 0; (i < symmTensors.size()) && symmTensors_equal; ++i)
     {
         // Make references to avtSymmetricTensorMetaData from AttributeGroup *.
         const avtSymmetricTensorMetaData &symmTensors1 = *((const avtSymmetricTensorMetaData *)(symmTensors[i]));
@@ -668,7 +666,7 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
     }
 
     bool arrays_equal = (obj.arrays.size() == arrays.size());
-    for(i = 0; (i < arrays.size()) && arrays_equal; ++i)
+    for(size_t i = 0; (i < arrays.size()) && arrays_equal; ++i)
     {
         // Make references to avtArrayMetaData from AttributeGroup *.
         const avtArrayMetaData &arrays1 = *((const avtArrayMetaData *)(arrays[i]));
@@ -677,7 +675,7 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
     }
 
     bool materials_equal = (obj.materials.size() == materials.size());
-    for(i = 0; (i < materials.size()) && materials_equal; ++i)
+    for(size_t i = 0; (i < materials.size()) && materials_equal; ++i)
     {
         // Make references to avtMaterialMetaData from AttributeGroup *.
         const avtMaterialMetaData &materials1 = *((const avtMaterialMetaData *)(materials[i]));
@@ -686,7 +684,7 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
     }
 
     bool species_equal = (obj.species.size() == species.size());
-    for(i = 0; (i < species.size()) && species_equal; ++i)
+    for(size_t i = 0; (i < species.size()) && species_equal; ++i)
     {
         // Make references to avtSpeciesMetaData from AttributeGroup *.
         const avtSpeciesMetaData &species1 = *((const avtSpeciesMetaData *)(species[i]));
@@ -695,7 +693,7 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
     }
 
     bool curves_equal = (obj.curves.size() == curves.size());
-    for(i = 0; (i < curves.size()) && curves_equal; ++i)
+    for(size_t i = 0; (i < curves.size()) && curves_equal; ++i)
     {
         // Make references to avtCurveMetaData from AttributeGroup *.
         const avtCurveMetaData &curves1 = *((const avtCurveMetaData *)(curves[i]));
@@ -704,7 +702,7 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
     }
 
     bool labels_equal = (obj.labels.size() == labels.size());
-    for(i = 0; (i < labels.size()) && labels_equal; ++i)
+    for(size_t i = 0; (i < labels.size()) && labels_equal; ++i)
     {
         // Make references to avtLabelMetaData from AttributeGroup *.
         const avtLabelMetaData &labels1 = *((const avtLabelMetaData *)(labels[i]));
@@ -713,7 +711,7 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
     }
 
     bool defaultPlots_equal = (obj.defaultPlots.size() == defaultPlots.size());
-    for(i = 0; (i < defaultPlots.size()) && defaultPlots_equal; ++i)
+    for(size_t i = 0; (i < defaultPlots.size()) && defaultPlots_equal; ++i)
     {
         // Make references to avtDefaultPlotMetaData from AttributeGroup *.
         const avtDefaultPlotMetaData &defaultPlots1 = *((const avtDefaultPlotMetaData *)(defaultPlots[i]));
@@ -722,7 +720,7 @@ avtDatabaseMetaData::operator == (const avtDatabaseMetaData &obj) const
     }
 
     bool SILs_equal = (obj.SILs.size() == SILs.size());
-    for(i = 0; (i < SILs.size()) && SILs_equal; ++i)
+    for(size_t i = 0; (i < SILs.size()) && SILs_equal; ++i)
     {
         // Make references to avtSILMetaData from AttributeGroup *.
         const avtSILMetaData &SILs1 = *((const avtSILMetaData *)(SILs[i]));
@@ -3641,7 +3639,7 @@ avtDatabaseMetaData::SetCycleIsAccurate(bool b, int ts)
 void
 avtDatabaseMetaData::SetCyclesAreAccurate(bool b)
 {
-    for (int i = 0 ; i < cyclesAreAccurate.size() ; i++)
+    for (size_t i = 0 ; i < cyclesAreAccurate.size() ; i++)
     {
         cyclesAreAccurate[i] = (b ? 1 : 0);
     }
@@ -3772,7 +3770,7 @@ avtDatabaseMetaData::SetTimeIsAccurate(bool b, int ts)
 void
 avtDatabaseMetaData::SetTimesAreAccurate(bool b)
 {
-    for (int i = 0 ; i < timesAreAccurate.size() ; i++)
+    for (size_t i = 0 ; i < timesAreAccurate.size() ; i++)
     {
         timesAreAccurate[i] = (b ? 1 : 0);
     }
@@ -3878,7 +3876,7 @@ static bool IsForbidden(std::string &origName, std::string &newName,
     for (int i = 0 ; i < len ; i++)
     {
         bool hadBadChar = false;
-        for (int j = 0 ; j < badChars.size() ; j++)
+        for (size_t j = 0 ; j < badChars.size() ; j++)
         {
             if (orig_name[i] == badChars[j])
             {
@@ -5577,6 +5575,9 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
 //    Jeremy Meredith, Wed Aug 23 18:23:16 EDT 2006
 //    Find enumerated scalar type subsets.
 //
+//    Mark C. Miller, Mon Apr 14 15:17:17 PDT 2008
+//    Changed interface to enum scalar
+//
 // ****************************************************************************
 
 avtSubsetType
@@ -6269,7 +6270,7 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
     else
     {
         bool shouldPrintTimes = false;
-        for (int i = 0; i < times.size(); ++i)
+        for (size_t i = 0; i < times.size(); ++i)
         {
             if (times[i] != (double) cycles[i])
             {
@@ -6285,7 +6286,7 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
         if (shouldPrintTimes)
         {
             out << "Times: ";
-            for (int i = 0; i < times.size(); ++i)
+            for (size_t i = 0; i < times.size(); ++i)
             {
                 out << times[i];
                 if(i < times.size() - 1)
@@ -6313,7 +6314,7 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
         else
             out << "All Cycles are ***NOT*** Accurate" << endl;
         out << "Cycles: ";
-        for (int i = 0; i < cycles.size(); ++i)
+        for (size_t i = 0; i < cycles.size(); ++i)
         {
             out << cycles[i];
             if(i < cycles.size() - 1)
@@ -6330,7 +6331,7 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
         out << "Database is virtual" << endl;
         out << "Timesteps are located in " << timeStepPath.c_str() << endl;
         out << "Timesteps:" << endl;
-        for(int i = 0; i < timeStepNames.size(); ++i)
+        for(size_t i = 0; i < timeStepNames.size(); ++i)
             out << "\t" << timeStepNames[i].c_str() << endl;
         out << endl;
     }

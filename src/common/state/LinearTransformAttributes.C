@@ -460,7 +460,6 @@ LinearTransformAttributes::CreateNode(DataNode *parentNode, bool completeSave, b
 void
 LinearTransformAttributes::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 

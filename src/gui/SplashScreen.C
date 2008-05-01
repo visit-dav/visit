@@ -202,7 +202,7 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
 
     if(drawVersion)
     {
-        for(int i = 0; i < pictures.size(); ++i)
+        for(size_t i = 0; i < pictures.size(); ++i)
         {
             QPainter painter(&pictures[i]);
             double scale = 1.5;

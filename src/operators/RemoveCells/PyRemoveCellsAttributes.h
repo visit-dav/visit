@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyRemoveCellsAttributes_StartUp(RemoveCellsAttributes *subj, void *data);
-void            PyRemoveCellsAttributes_CloseDown();
+void           PyRemoveCellsAttributes_StartUp(RemoveCellsAttributes *subj, void *data);
+void           PyRemoveCellsAttributes_CloseDown();
 PyMethodDef *   PyRemoveCellsAttributes_GetMethodTable(int *nMethods);
-bool            PyRemoveCellsAttributes_Check(PyObject *obj);
+bool           PyRemoveCellsAttributes_Check(PyObject *obj);
 RemoveCellsAttributes *  PyRemoveCellsAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyRemoveCellsAttributes_New();
 PyObject *      PyRemoveCellsAttributes_Wrap(const RemoveCellsAttributes *attr);
-void            PyRemoveCellsAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyRemoveCellsAttributes_SetDefaults(const RemoveCellsAttributes *atts);
-std::string     PyRemoveCellsAttributes_GetLogString();
-std::string     PyRemoveCellsAttributes_ToString(const RemoveCellsAttributes *, const char *);
+void           PyRemoveCellsAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyRemoveCellsAttributes_SetDefaults(const RemoveCellsAttributes *atts);
+std::string    PyRemoveCellsAttributes_GetLogString();
+std::string    PyRemoveCellsAttributes_ToString(const RemoveCellsAttributes *, const char *);
 
 #endif
 

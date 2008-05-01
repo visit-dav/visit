@@ -272,7 +272,7 @@ class PythonGeneratorField : public virtual Field
 
         // Write any additional methods that may go along with this field.
         std::vector<QString> additionalMethods(AdditionalMethodNames(className));
-        for(int i = 0; i < additionalMethods.size(); i += 2)
+        for(size_t i = 0; i < additionalMethods.size(); i += 2)
             c << "    {\"" << additionalMethods[i] << "\", " << additionalMethods[i+1] << ", METH_VARARGS}," << endl;
     }
 
@@ -526,7 +526,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
         else
             c << MethodNameGet() << "();" << endl;
         c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << endl;
-        c << "    for(int i = 0; i < "<<name<<".size(); ++i)" << endl;
+        c << "    for(size_t i = 0; i < "<<name<<".size(); ++i)" << endl;
         c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << endl;
     }
 
@@ -540,7 +540,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
         c << ";" << endl;
         c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
-        c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
+        c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << endl;
         c << "        {" << endl;
         c << "            SNPRINTF(tmpStr, 1000, \"%d\", " << name << "[i]);" << endl;
         c << "            str += tmpStr;" << endl;
@@ -974,7 +974,7 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual P
             c <<MethodNameGet()<<"()";
         c << ";" << endl;
         c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << endl;
-        c << "    for(int i = 0; i < "<<name<<".size(); ++i)" << endl;
+        c << "    for(size_t i = 0; i < "<<name<<".size(); ++i)" << endl;
         c << "        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(" << name << "[i]));" << endl;
     }
 
@@ -988,7 +988,7 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual P
         c << ";" << endl;
         c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
-        c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
+        c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << endl;
         c << "        {" << endl;
         c << "            SNPRINTF(tmpStr, 1000, \"%g\", " << name << "[i]);" << endl;
         c << "            str += tmpStr;" << endl;
@@ -1244,7 +1244,7 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
             c <<MethodNameGet()<<"()";
         c << ";" << endl;
         c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << endl;
-        c << "    for(int i = 0; i < "<<name<<".size(); ++i)" << endl;
+        c << "    for(size_t i = 0; i < "<<name<<".size(); ++i)" << endl;
         c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(" << name << "[i])));" << endl;
     }
 
@@ -1258,7 +1258,7 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
         c << ";" << endl;
         c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
-        c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
+        c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << endl;
         c << "        {" << endl;
         c << "            SNPRINTF(tmpStr, 1000, \"%d\", int(" << name << "[i]));" << endl;
         c << "            str += tmpStr;" << endl;
@@ -1376,7 +1376,7 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
             c <<MethodNameGet()<<"()";
         c << ";" << endl;
         c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << endl;
-        c << "    for(int i = 0; i < "<<name<<".size(); ++i)" << endl;
+        c << "    for(size_t i = 0; i < "<<name<<".size(); ++i)" << endl;
         c << "        PyTuple_SET_ITEM(retval, i, PyString_FromString(" << name << "[i].c_str()));" << endl;
     }
 
@@ -1390,7 +1390,7 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         c << ";" << endl;
         c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << endl;
         c << "        str += tmpStr;" << endl;
-        c << "        for(int i = 0; i < " << name << ".size(); ++i)" << endl;
+        c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << endl;
         c << "        {" << endl;
         c << "            SNPRINTF(tmpStr, 1000, \"\\\"%s\\\"\", " << name << "[i].c_str());" << endl;
         c << "            str += tmpStr;" << endl;
@@ -1842,8 +1842,8 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << endl;
             c << "                            // Make sure that the tuple is the right size." << endl;
             c << "                            bool badInput = false;" << endl;
-            c << "                            int i, *C = new int[4 * cL.GetNumColors()];" << endl;
-            c << "                            for(i = 0; i < PyTuple_Size(pyobj) && !badInput; ++i)" << endl;
+            c << "                            int *C = new int[4 * cL.GetNumColors()];" << endl;
+            c << "                            for(int i = 0; i < PyTuple_Size(pyobj) && !badInput; ++i)" << endl;
             c << "                            {" << endl;
             c << "                                PyObject *item = PyTuple_GET_ITEM(pyobj, i);" << endl;
             c << "                                if(PyTuple_Check(item) &&" << endl;
@@ -1874,7 +1874,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                                return NULL;" << endl;
             c << "                            }" << endl;
             c << endl;
-            c << "                            for(i = 0; i < cL.GetNumColors(); ++i)" << endl;
+            c << "                            for(int i = 0; i < cL.GetNumColors(); ++i)" << endl;
             c << "                                cL[i].SetRgba(C[i*4], C[i*4+1], C[i*4+2], C[i*4+3]);" << endl;
             c << "                            delete [] C;" << endl;
             c << "                        }" << endl;
@@ -1886,8 +1886,8 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << endl;
             c << "                            // Make sure that the tuple is the right size." << endl;
             c << "                            bool badInput = false;" << endl;
-            c << "                            int i, *C = new int[4 * cL.GetNumColors()];" << endl;
-            c << "                            for(i = 0; i < PyList_Size(pyobj) && !badInput; ++i)" << endl;
+            c << "                            int *C = new int[4 * cL.GetNumColors()];" << endl;
+            c << "                            for(int i = 0; i < PyList_Size(pyobj) && !badInput; ++i)" << endl;
             c << "                            {" << endl;
             c << "                                PyObject *item = PyList_GET_ITEM(pyobj, i);" << endl;
             c << "                                if(PyTuple_Check(item) &&" << endl;
@@ -1918,7 +1918,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                                return NULL;" << endl;
             c << "                            }" << endl;
             c << endl;
-            c << "                            for(i = 0; i < cL.GetNumColors(); ++i)" << endl;
+            c << "                            for(int i = 0; i < cL.GetNumColors(); ++i)" << endl;
             c << "                                cL[i].SetRgba(C[i*4], C[i*4+1], C[i*4+2], C[i*4+3]);" << endl;
             c << endl;
             c << "                            delete [] C;" << endl;
@@ -2311,7 +2311,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
         c << "                        \"You can also use the following names: \"" 
           << endl;
         c << "                        \"";
-        for(int i = 0; i < enumType->values.size(); ++i)
+        for(size_t i = 0; i < enumType->values.size(); ++i)
         {
             c << enumType->values[i];
             if(i < enumType->values.size() - 1)
@@ -2333,12 +2333,12 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
     {
         // Create a string that shows the possible values.
         c << "    const char *" << name << "_names = \"";
-        for(int j = 0; j < enumType->values.size(); ++j)
+        for(size_t j = 0; j < enumType->values.size(); ++j)
         {
             c << enumType->values[j];
             if(j < enumType->values.size() - 1)
                 c << ", ";
-            if(j  > 0 && j%4==0)
+            if(j  > 0 && j%4==0 && j != enumType->values.size()-1)
             {
                 c << "\"\n        \"";
             }
@@ -2352,7 +2352,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             c << MethodNameGet() << "()";
         c << ")\n    {\n";
 
-        for(int i = 0; i < enumType->values.size(); ++i)
+        for(size_t i = 0; i < enumType->values.size(); ++i)
         {
             c << "      case " << classname << "::" << enumType->values[i] << ":\n";
             c << "          SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s" 
@@ -2376,7 +2376,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
         c << "        return " << classname << "_" << MethodNameGet() 
           << "(self, NULL);" << endl;
 
-        for(int i = 0; i < enumType->values.size(); ++i)
+        for(size_t i = 0; i < enumType->values.size(); ++i)
         {
             c << "    ";
             c << "if";
@@ -2721,7 +2721,7 @@ class PythonGeneratorAttribute : public GeneratorBase
 
     virtual ~PythonGeneratorAttribute()
     {
-        for (int i = 0; i < fields.size(); ++i)
+        for (size_t i = 0; i < fields.size(); ++i)
             delete fields[i];
         fields.clear();
     }
@@ -2730,7 +2730,7 @@ class PythonGeneratorAttribute : public GeneratorBase
 
     void PrintFunction(ostream &out, const QString &f)
     {
-        for (int i=0; i<functions.size(); i++)
+        for (size_t i=0; i<functions.size(); i++)
             if (functions[i]->name == f)
                 out << functions[i]->def;
     }
@@ -2738,7 +2738,7 @@ class PythonGeneratorAttribute : public GeneratorBase
     void Print(ostream &out)
     {
         out << "    Attribute: " << name << " (" << purpose << ")" << endl;
-        int i;
+        size_t i;
         for (i=0; i<fields.size(); i++)
             fields[i]->Print(out);
         for (i=0; i<functions.size(); i++)
@@ -2752,28 +2752,27 @@ class PythonGeneratorAttribute : public GeneratorBase
         h << "#define PY_" << name.upper() << "_H" << endl;
         h << "#include <Python.h>" << endl;
         h << "#include <"<<name<<".h>" << endl;
-        QString api(""), api2(" ");
+        QString api(""); 
         if(visitpy_api)
         {
              h << "#include <visitpy_exports.h>" << endl;
              api = "VISITPY_API ";
-             api2 = "VISITPY_API";
         }
         h << endl;
         h << "//" << endl;
         h << "// Functions exposed to the VisIt module." << endl;
         h << "//" << endl;
-        h << "void "<<api2<<"          Py"<<name<<"_StartUp("<<name<<" *subj, void *data);" << endl;
-        h << "void "<<api2<<"          Py"<<name<<"_CloseDown();" << endl;
+        h << "void "<<api<<"          Py"<<name<<"_StartUp("<<name<<" *subj, void *data);" << endl;
+        h << "void "<<api<<"          Py"<<name<<"_CloseDown();" << endl;
         h << api << "PyMethodDef * "<<"  Py"<<name<<"_GetMethodTable(int *nMethods);" << endl;
-        h << "bool "<<api2<<"          Py"<<name<<"_Check(PyObject *obj);" << endl;
+        h << "bool "<<api<<"          Py"<<name<<"_Check(PyObject *obj);" << endl;
         h << api << name << " * "<<" Py"<<name<<"_FromPyObject(PyObject *obj);" << endl;
         h << api << "PyObject * "<<"     Py"<<name<<"_New();" << endl;
         h << api << "PyObject * "<<"     Py"<<name<<"_Wrap(const " << name << " *attr);" << endl;
-        h << "void "<<api2<<"          Py"<<name<<"_SetParent(PyObject *obj, PyObject *parent);" << endl;
-        h << "void "<<api2<<"          Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << endl;
-        h << "std::string "<<api2<<"   Py"<<name<<"_GetLogString();" << endl;
-        h << "std::string "<<api2<<"   Py"<<name<<"_ToString(const " << name << " *, const char *);" << endl;
+        h << "void "<<api<<"          Py"<<name<<"_SetParent(PyObject *obj, PyObject *parent);" << endl;
+        h << "void "<<api<<"          Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << endl;
+        h << "std::string "<<api<<"   Py"<<name<<"_GetLogString();" << endl;
+        h << "std::string "<<api<<"   Py"<<name<<"_ToString(const " << name << " *, const char *);" << endl;
         h << endl;
         h << "#endif" << endl;
         h << endl;
@@ -2784,7 +2783,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "#include <snprintf.h>" << endl;
 
         // Write the headers that are needed.
-        for(int i = 0; i < fields.size(); ++i)
+        for(size_t i = 0; i < fields.size(); ++i)
             fields[i]->WriteIncludedHeaders(c);
     }
 
@@ -2843,7 +2842,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << endl;
 
         // Write the rest of the methods.
-        for(int i = 0; i < fields.size(); ++i)
+        for(size_t i = 0; i < fields.size(); ++i)
         {
             // Do not add any methods if the field is internal.
             if(fields[i]->internal)
@@ -2877,7 +2876,7 @@ class PythonGeneratorAttribute : public GeneratorBase
 
     void WriteUserDefinedFunctions(ostream &c)
     { 
-        for(int i = 0; i < functions.size(); ++i)
+        for(size_t i = 0; i < functions.size(); ++i)
         {
             if(functions[i]->target == generatorName &&
                functions[i]->user)
@@ -2890,11 +2889,11 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << endl;
         c << "static struct PyMethodDef "<<name<<"_methods[] = {" << endl;
         c << "    {\"Notify\", " << name << "_Notify, METH_VARARGS}," << endl;
-        for(int i = 0; i < fields.size(); ++i)
+        for(size_t i = 0; i < fields.size(); ++i)
         {
             fields[i]->WritePyObjectMethodTable(c, name);
         }
-        for(int i = 0; i < functions.size(); ++i)
+        for(size_t i = 0; i < functions.size(); ++i)
         {
             if(functions[i]->target == generatorName &&
                functions[i]->user)
@@ -2920,7 +2919,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "{" << endl;
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
-        for(int i = 0; i < fields.size(); ++i)
+        for(size_t i = 0; i < fields.size(); ++i)
             fields[i]->WriteGetAttr(c, name);
         c << endl;
         if(HasCode(mName, 1))
@@ -2954,7 +2953,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << endl;
 
         // Figure out the first field that can write a _setattr method.
-        int i, index = 0;
+        size_t i, index = 0;
         for(i = 0; i < fields.size(); ++i)
         {
             if(fields[i]->HasSetAttr() && !fields[i]->internal)
@@ -3022,7 +3021,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << endl;
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
-        for(int i = 0; i < fields.size(); ++i)
+        for(size_t i = 0; i < fields.size(); ++i)
         {
             if(!fields[i]->internal)
                 fields[i]->StringRepresentation(c, name);

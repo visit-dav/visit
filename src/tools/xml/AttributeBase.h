@@ -104,7 +104,7 @@ public:
 
     virtual ~AttributeBase()
     {
-        int i;
+        size_t i;
         for (i = 0; i < functions.size(); ++i)
             delete functions[i];
         functions.clear();
@@ -123,7 +123,7 @@ public:
 
     bool HasFunction(const QString &f, const QString &target = QString::null) const
     {
-        for (int i=0; i<functions.size(); i++)
+        for (size_t i=0; i<functions.size(); i++)
             if (functions[i]->name == f && functions[i]->user == false)
             {
                 if(target.isEmpty() || target == functions[i]->target)
@@ -133,7 +133,7 @@ public:
     }
     void PrintFunction(ostream &out, const QString &f, const QString &target = QString::null) const
     {
-        for (int i=0; i<functions.size(); i++)
+        for (size_t i=0; i<functions.size(); i++)
             if (functions[i]->name == f && functions[i]->user == false)
             {
                 if(target.isEmpty() || target == functions[i]->target)
@@ -147,12 +147,12 @@ public:
 
     void DeleteFunction(ostream &out, const QString &f, const QString &target = QString::null)
     {
-        for (int i=0; i<functions.size(); i++)
+        for (size_t i=0; i<functions.size(); i++)
             if (functions[i]->name == f && functions[i]->user == false)
             {
                 if(target.isEmpty() || target == functions[i]->target)
                 {
-                    for (int j=i+1; j<functions.size(); j++)
+                    for (size_t j=i+1; j<functions.size(); j++)
                         functions[j-1] = functions[j];
                     return;
                 }
@@ -161,7 +161,7 @@ public:
 
     bool HasCode(const QString &cName, int part, const QString &target = QString::null) const
     {
-        for (int i=0; i<codes.size(); i++)
+        for (size_t i=0; i<codes.size(); i++)
             if (codes[i]->name == cName)
             {
                 if(target.isEmpty() || target == codes[i]->target)
@@ -178,7 +178,7 @@ public:
     }
     void PrintCode(ostream &out, const QString &cName, int part, const QString &target = QString::null) const
     {
-        for (int i=0; i<codes.size(); i++)
+        for (size_t i=0; i<codes.size(); i++)
             if (codes[i]->name == cName)
             {
                 if(target.isEmpty() || target == codes[i]->target)

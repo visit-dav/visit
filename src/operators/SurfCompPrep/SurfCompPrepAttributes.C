@@ -646,7 +646,6 @@ SurfCompPrepAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool
 void
 SurfCompPrepAttributes::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 

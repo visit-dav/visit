@@ -384,7 +384,7 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "Group ids are:";
-        for (int i = 0 ; i < groupIds.size() ; i++)
+        for (size_t i = 0 ; i < groupIds.size() ; i++)
         {
             out << groupIds[i];
             if(i  < groupIds.size() - 1)

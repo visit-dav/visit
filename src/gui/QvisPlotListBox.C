@@ -179,7 +179,7 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
     bool bs = signalsBlocked();
     bool emitted = true;
 
-    for(int i = 0; i < count(); ++i)
+    for(size_t i = 0; i < count(); ++i)
     {
         QListBoxItem *current = item(i);
         QvisPlotListBoxItem *item2 = (QvisPlotListBoxItem *)current;
@@ -203,8 +203,7 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
             
             if(action == -1)
             {
-                action = item2->clicked(itemClickLocation, doubleClicked, i);
-                id = i;
+                action = item2->clicked(itemClickLocation, doubleClicked, id);
             }
         }
         else
@@ -558,7 +557,7 @@ QvisPlotListBox::contextMenuEvent(QContextMenuEvent *e)
     // highlighted/selected, non-intuitive...??)
     
     bool anyActive = false;
-    for(int i = 0; i < count(); ++i)
+    for(size_t i = 0; i < count(); ++i)
     {
         QvisPlotListBoxItem *lbi = (QvisPlotListBoxItem *)item(i);
         Plot &currentPlot = lbi->GetPlot();

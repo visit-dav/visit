@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyPDFAttributes_StartUp(PDFAttributes *subj, void *data);
-void            PyPDFAttributes_CloseDown();
+void           PyPDFAttributes_StartUp(PDFAttributes *subj, void *data);
+void           PyPDFAttributes_CloseDown();
 PyMethodDef *   PyPDFAttributes_GetMethodTable(int *nMethods);
-bool            PyPDFAttributes_Check(PyObject *obj);
+bool           PyPDFAttributes_Check(PyObject *obj);
 PDFAttributes *  PyPDFAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyPDFAttributes_New();
 PyObject *      PyPDFAttributes_Wrap(const PDFAttributes *attr);
-void            PyPDFAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyPDFAttributes_SetDefaults(const PDFAttributes *atts);
-std::string     PyPDFAttributes_GetLogString();
-std::string     PyPDFAttributes_ToString(const PDFAttributes *, const char *);
+void           PyPDFAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyPDFAttributes_SetDefaults(const PDFAttributes *atts);
+std::string    PyPDFAttributes_GetLogString();
+std::string    PyPDFAttributes_ToString(const PDFAttributes *, const char *);
 
 #endif
 

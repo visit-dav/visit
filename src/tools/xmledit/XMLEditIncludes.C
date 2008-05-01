@@ -159,7 +159,7 @@ XMLEditIncludes::CountIncludes(const QString &name) const
 {
     Attribute *a = xmldoc->attribute;
     int count = 0;
-    for (int j=0; j<a->includes.size(); j++)
+    for (size_t j=0; j<a->includes.size(); j++)
         count += (name == a->includes[j]->include) ? 1 : 0;
     return count;
 }
@@ -184,7 +184,7 @@ XMLEditIncludes::UpdateWindowContents()
     BlockAllSignals(true);
     Attribute *a = xmldoc->attribute;
     includelist->clear();
-    for (int i=0; i<a->includes.size(); i++)
+    for (size_t i=0; i<a->includes.size(); i++)
     {
         if(CountIncludes(a->includes[i]->include) > 1)
         { 
@@ -423,7 +423,7 @@ XMLEditIncludes::includelistNew()
     {
         okay = true;
         newname.sprintf("unnamed%d", newid);
-        for (int i=0; i<includelist->count() && okay; i++)
+        for (size_t i=0; i<includelist->count() && okay; i++)
         {
             if (includelist->text(i) == newname)
                 okay = false;
@@ -437,7 +437,7 @@ XMLEditIncludes::includelistNew()
     
     a->includes.push_back(n);
     UpdateWindowContents();
-    for (int i=0; i<includelist->count(); i++)
+    for (size_t i=0; i<includelist->count(); i++)
     {
         if (includelist->text(i) == newname)
         {
@@ -465,7 +465,7 @@ XMLEditIncludes::includelistDel()
 
     Include *n = a->includes[index];
     vector<Include*> newlist;
-    for (int i=0; i<a->includes.size(); i++)
+    for (size_t i=0; i<a->includes.size(); i++)
     {
         if (a->includes[i] != n)
             newlist.push_back(a->includes[i]);

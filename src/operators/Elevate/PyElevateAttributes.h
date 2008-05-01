@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyElevateAttributes_StartUp(ElevateAttributes *subj, void *data);
-void            PyElevateAttributes_CloseDown();
+void           PyElevateAttributes_StartUp(ElevateAttributes *subj, void *data);
+void           PyElevateAttributes_CloseDown();
 PyMethodDef *   PyElevateAttributes_GetMethodTable(int *nMethods);
-bool            PyElevateAttributes_Check(PyObject *obj);
+bool           PyElevateAttributes_Check(PyObject *obj);
 ElevateAttributes *  PyElevateAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyElevateAttributes_New();
 PyObject *      PyElevateAttributes_Wrap(const ElevateAttributes *attr);
-void            PyElevateAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyElevateAttributes_SetDefaults(const ElevateAttributes *atts);
-std::string     PyElevateAttributes_GetLogString();
-std::string     PyElevateAttributes_ToString(const ElevateAttributes *, const char *);
+void           PyElevateAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyElevateAttributes_SetDefaults(const ElevateAttributes *atts);
+std::string    PyElevateAttributes_GetLogString();
+std::string    PyElevateAttributes_ToString(const ElevateAttributes *, const char *);
 
 #endif
 

@@ -106,9 +106,9 @@ QvisElementButton::QvisElementButton(QWidget *parent, const char *name,
 QvisElementButton::~QvisElementButton()
 {
     // Remove the "this" pointer from the vector.
-    int i, index;
+    int index;
     bool notFound = true;
-    for(i = 0; i < buttons.size() && notFound; ++i)
+    for(size_t i = 0; i < buttons.size() && notFound; ++i)
     {
         if(this == buttons[i])
         {
@@ -121,7 +121,7 @@ QvisElementButton::~QvisElementButton()
     // last element.
     if(!notFound)
     {
-        for(i = index; i < buttons.size() - 1; ++i)
+        for(size_t i = index; i < buttons.size() - 1; ++i)
             buttons[i] = buttons[i + 1];
         buttons.pop_back();
     }
@@ -250,7 +250,7 @@ QvisElementButton::popupPressed()
                             p1.y() + ((p2.y() - p1.y()) >> 1));
 
         // Disconnect all other colorbuttons.
-        for(int i = 0; i < buttons.size(); ++i)
+        for(size_t i = 0; i < buttons.size(); ++i)
         {
             disconnect(sharedpopup, SIGNAL(selectedElement(int)),
                        buttons[i], SLOT(elementSelected(int)));

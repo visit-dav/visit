@@ -199,7 +199,7 @@ static bool AlreadyAddedCell(vtkCell *theCell,
         // point ids match the point ids of one of the cells we've
         // got stored at this key.
         const vector<vtkIdType> fpids = cellPtIdsAtKey->second;
-        for (int i = 0; i < fpids.size(); i += fpids[i]+1)
+        for (size_t i = 0; i < fpids.size(); i += fpids[i]+1)
         {
             bool haveMatch = true;
             for (int j = 0; haveMatch && (j < fpids[i]); j++)
@@ -245,18 +245,17 @@ static void AddEdgeToMaps(vtkCell *edgeCell,
     map<unsigned int, vector<int> > &edgeMap,
     map<vtkIdType, unsigned char> &nodeMap)
 {
-    int i;
     unsigned int hval;
     vector<vtkIdType> pids;
     HashCell(edgeCell, hval, pids);
 
     // put this edge in the edge map
     edgeMap[hval].push_back((vtkIdType) pids.size());
-    for (i = 0; i < pids.size(); i++)
+    for (size_t i = 0; i < pids.size(); i++)
         edgeMap[hval].push_back(pids[i]);
 
     // put this edge's nodes in the node map
-    for (int i = 0; i < pids.size(); i++)
+    for (size_t i = 0; i < pids.size(); i++)
         AddNodeToMaps(pids[i], nodeMap);
 }
 
@@ -270,25 +269,24 @@ static void AddFaceToMaps(vtkCell *faceCell,
     map<unsigned int, vector<int> > &edgeMap,
     map<vtkIdType, unsigned char> &nodeMap)
 {
-    int i;
     unsigned int hval;
     vector<vtkIdType> pids;
     HashCell(faceCell, hval, pids);
 
     // put this face in the face map
     faceMap[hval].push_back((vtkIdType) pids.size());
-    for (i = 0; i < pids.size(); i++)
+    for (size_t i = 0; i < pids.size(); i++)
         faceMap[hval].push_back(pids[i]);
 
     // put this face's edges in the edge map
-    for (i = 0; i < faceCell->GetNumberOfEdges(); i++)
+    for (int i = 0; i < faceCell->GetNumberOfEdges(); i++)
     {
         vtkCell *edgeCell = faceCell->GetEdge(i);
         AddEdgeToMaps(edgeCell, edgeMap, nodeMap);
     }
 
     // put this face's nodes in the node map
-    for (i = 0; i < pids.size(); i++)
+    for (size_t i = 0; i < pids.size(); i++)
         AddNodeToMaps(pids[i], nodeMap);
 }
 
@@ -297,21 +295,21 @@ static void AddFaceToMaps(vtkCell *faceCell,
 // There were too many internal variables in the main loop of the
 // algorithm to make a nice function.
 //
-#define ADD_CELL_POINTS_AND_CELL(theCell)                                       \
-    for (int kk=0; kk < theCell->GetNumberOfPoints(); kk++)                     \
-    {                                                                           \
-        ptId = theCell->GetPointIds()->GetId(kk);                               \
-        if ( (newId = pointMap->GetId(ptId)) < 0 )                              \
-        {                                                                       \
-            input->GetPoint(ptId, x);                                           \
-            newId = newPoints->InsertNextPoint(x);                              \
-            pointMap->SetId(ptId,newId);                                        \
-            outPD->CopyData(pd,ptId,newId);                                     \
-        }                                                                       \
-        newCellPts->InsertId(kk,newId);                                         \
-    }                                                                           \
-    newCellId = output->InsertNextCell(theCell->GetCellType(),newCellPts);      \
-    outCD->CopyData(cd,cellId,newCellId);                                       \
+#define ADD_CELL_POINTS_AND_CELL(theCell)                                     \
+    for (int kk=0; kk < theCell->GetNumberOfPoints(); kk++)                   \
+    {                                                                         \
+        ptId = theCell->GetPointIds()->GetId(kk);                             \
+        if ( (newId = pointMap->GetId(ptId)) < 0 )                            \
+        {                                                                     \
+            input->GetPoint(ptId, x);                                         \
+            newId = newPoints->InsertNextPoint(x);                            \
+            pointMap->SetId(ptId,newId);                                      \
+            outPD->CopyData(pd,ptId,newId);                                   \
+        }                                                                     \
+        newCellPts->InsertId(kk,newId);                                       \
+    }                                                                         \
+    newCellId = output->InsertNextCell(theCell->GetCellType(),newCellPts);    \
+    outCD->CopyData(cd,cellId,newCellId);                                     \
     newCellPts->Reset();
 
 //  Modifications:  
@@ -704,18 +702,15 @@ static int CompareRanges(const void *a, const void *b)
 //    Made it work correctly in presence of negative enumeration values.
 void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
 {
-    int i;
-
     switch (enumMode)
     {
         case ByValue:
         case ByBitMask:
         case ByNChooseR:
         {
-            int i;
             minEnumerationValue = +DBL_MAX;
             maxEnumerationValue = -DBL_MAX;
-            for (i=0; i<enumerationRanges.size(); i += 2)
+            for (size_t i=0; i<enumerationRanges.size(); i += 2)
             {
                 if (enumerationRanges[i+0] > maxEnumerationValue)
                     maxEnumerationValue = enumerationRanges[i+0];
@@ -734,7 +729,7 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
                 if (enumerationMap)
                     delete[] enumerationMap;
                 enumerationMap = new unsigned char[int(maxEnumerationValue-minEnumerationValue)+1];
-                for (i=0; i<=maxEnumerationValue-minEnumerationValue; i++)
+                for (size_t i=0; i<=maxEnumerationValue-minEnumerationValue; i++)
                     enumerationMap[i] = 0;
             }
 
@@ -742,7 +737,7 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
             // Build the enumeration map (and enum mask for ByBitMask mode)
             //
             selectedEnumMask = 0;
-            for (i=0; i<enumerationRanges.size(); i += 2)
+            for (size_t i=0; i<enumerationRanges.size(); i += 2)
             {
                 if (sel[i/2])
                 {
@@ -761,7 +756,7 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
             double selectedMin = +DBL_MAX;
             double selectedMax = -DBL_MAX;
             vector<double> selectedRanges;
-            for (i=0; i<sel.size(); i++)
+            for (size_t i=0; i<sel.size(); i++)
             {
                 double rMin = enumerationRanges[2*i  ];
                 double rMax = enumerationRanges[2*i+1];
@@ -822,22 +817,20 @@ vtkEnumThreshold::EnumerationMode vtkEnumThreshold::SetEnumerationMode(Enumerati
 
 void vtkEnumThreshold::SetNAndMaxRForNChooseRMode(int n, int maxr)
 {
-    int row, col;
-
-    for (row = 0; row < pascalsTriangleMap.size(); row++)
+    for (size_t row = 0; row < pascalsTriangleMap.size(); row++)
         pascalsTriangleMap[row].clear();
     pascalsTriangleMap.clear();
 
-    for (row = 0; row < n; row++)
+    for (int row = 0; row < n; row++)
     {
         vector<int> tmpRow;
-        for (col = 0; col <= maxr; col++)
+        for (int col = 0; col <= maxr; col++)
             tmpRow.push_back(0);
         pascalsTriangleMap.push_back(tmpRow);
     }
 
-    for (row = 0; row < n; row++)
-        for (col = 0; col <= maxr; col++)
+    for (int row = 0; row < n; row++)
+        for (int col = 0; col <= maxr; col++)
             pascalsTriangleMap[row][col] = int(choose(n-row-1,col));
 
     pascalsTriangleN = n;

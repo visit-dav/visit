@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyLineSurfaceAttributes_StartUp(LineSurfaceAttributes *subj, void *data);
-void            PyLineSurfaceAttributes_CloseDown();
+void           PyLineSurfaceAttributes_StartUp(LineSurfaceAttributes *subj, void *data);
+void           PyLineSurfaceAttributes_CloseDown();
 PyMethodDef *   PyLineSurfaceAttributes_GetMethodTable(int *nMethods);
-bool            PyLineSurfaceAttributes_Check(PyObject *obj);
+bool           PyLineSurfaceAttributes_Check(PyObject *obj);
 LineSurfaceAttributes *  PyLineSurfaceAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyLineSurfaceAttributes_New();
 PyObject *      PyLineSurfaceAttributes_Wrap(const LineSurfaceAttributes *attr);
-void            PyLineSurfaceAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyLineSurfaceAttributes_SetDefaults(const LineSurfaceAttributes *atts);
-std::string     PyLineSurfaceAttributes_GetLogString();
-std::string     PyLineSurfaceAttributes_ToString(const LineSurfaceAttributes *, const char *);
+void           PyLineSurfaceAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyLineSurfaceAttributes_SetDefaults(const LineSurfaceAttributes *atts);
+std::string    PyLineSurfaceAttributes_GetLogString();
+std::string    PyLineSurfaceAttributes_ToString(const LineSurfaceAttributes *, const char *);
 
 #endif
 

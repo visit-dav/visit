@@ -540,9 +540,9 @@ QvisExpressionsWindow::CreateWindowContents()
         QPopupMenu *tmpMenu = new QPopupMenu(f2, exprlist[i].name.ascii());
         for (int j=0; exprlist[i].list[j]; j++)
         {
-	    if (exprlist[i].list[j]=="&")
+            if (exprlist[i].list[j]=="&")
                 tmpMenu->insertItem("&&");
-	    else
+            else
                 tmpMenu->insertItem(exprlist[i].list[j]);
         }
         insertFunctionMenu->insertItem(exprlist[i].name, tmpMenu);
@@ -1119,7 +1119,7 @@ QvisExpressionsWindow::insertFunction(int id)
     if (insertFunctionMenu->text(id) == "&&")
     {
         definitionEdit->insert("&");
-	doParens = false;
+        doParens = false;
     }
     else
     {

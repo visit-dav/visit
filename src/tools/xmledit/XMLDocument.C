@@ -261,7 +261,7 @@ XMLDocument::save(const QString &file)
 
     if (attribute)
     {
-        for (int i=0; i<attribute->fields.size(); i++)
+        for (size_t i=0; i<attribute->fields.size(); i++)
         {
             if (attribute->fields[i]->enabler &&
                 attribute->fields[i]->enableval.empty())

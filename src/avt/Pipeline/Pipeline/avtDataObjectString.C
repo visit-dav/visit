@@ -86,7 +86,7 @@ avtDataObjectString::avtDataObjectString()
 
 avtDataObjectString::~avtDataObjectString()
 {
-    for (int i = 0 ; i < strs.size() ; i++)
+    for (size_t i = 0 ; i < strs.size() ; i++)
     {
         if (ownString[i])
         {

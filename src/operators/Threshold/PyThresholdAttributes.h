@@ -44,17 +44,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void            PyThresholdAttributes_StartUp(ThresholdAttributes *subj, void *data);
-void            PyThresholdAttributes_CloseDown();
+void           PyThresholdAttributes_StartUp(ThresholdAttributes *subj, void *data);
+void           PyThresholdAttributes_CloseDown();
 PyMethodDef *   PyThresholdAttributes_GetMethodTable(int *nMethods);
-bool            PyThresholdAttributes_Check(PyObject *obj);
+bool           PyThresholdAttributes_Check(PyObject *obj);
 ThresholdAttributes *  PyThresholdAttributes_FromPyObject(PyObject *obj);
 PyObject *      PyThresholdAttributes_New();
 PyObject *      PyThresholdAttributes_Wrap(const ThresholdAttributes *attr);
-void            PyThresholdAttributes_SetParent(PyObject *obj, PyObject *parent);
-void            PyThresholdAttributes_SetDefaults(const ThresholdAttributes *atts);
-std::string     PyThresholdAttributes_GetLogString();
-std::string     PyThresholdAttributes_ToString(const ThresholdAttributes *, const char *);
+void           PyThresholdAttributes_SetParent(PyObject *obj, PyObject *parent);
+void           PyThresholdAttributes_SetDefaults(const ThresholdAttributes *atts);
+std::string    PyThresholdAttributes_GetLogString();
+std::string    PyThresholdAttributes_ToString(const ThresholdAttributes *, const char *);
 
 #endif
 
