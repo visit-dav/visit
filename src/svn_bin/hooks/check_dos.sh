@@ -84,7 +84,7 @@ for f in ${files} ; do
     # If the file we're committing has ctrl chars, reject it
     if test $commitFileHasCtrlChars -eq 0; then
         log "File \"$f\" appears to contain '^M' characters, maybe from dos?."
-        log "Please remove them before committing."
+        log "Please remove them before committing. Try using dos2unix tool."
         rm -f $ctrlCharFile
         exit 1
     fi
