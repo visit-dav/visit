@@ -168,6 +168,10 @@ avtProteinDataBankFileFormat::FreeUpResources(void)
 //
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Changed interface to enum scalars
+//
+//    Jeremy Meredith, Thu May  1 12:43:27 EDT 2008
+//    Exposed the occupancy and temperature factor fields.
+//
 // ****************************************************************************
 
 void
@@ -194,7 +198,7 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char name_mesh[80];
         char name_el[80],name_rt[80],name_rs[80],name_bk[80];
         char name_nm[80],name_rn[80],name_lr[80],name_en[80];
-        char name_cmp[80],name_cmpnm[80];
+        char name_cmp[80],name_cmpnm[80],name_occ[80],name_temp[80];
         sprintf(name_mesh, "%smesh",        prefix, i);
         sprintf(name_el,   "%selement",     prefix, i);
         sprintf(name_rt,   "%srestype",     prefix, i);
@@ -206,6 +210,8 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         sprintf(name_en,   "%selementname", prefix, i);
         sprintf(name_cmp,  "%scompound",    prefix, i);
         sprintf(name_cmpnm,"%scompoundname",prefix, i);
+        sprintf(name_occ,  "%soccupancy",   prefix, i);
+        sprintf(name_temp, "%stempFactor",  prefix, i);
 
         avtMeshMetaData *mmd = new avtMeshMetaData(name_mesh, 1, 0,0,0,
                                                    3, 0,
@@ -213,6 +219,7 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mmd->nodesAreCritical = true;
         md->Add(mmd);
 
+        // Add the element scalars
         avtScalarMetaData *el_smd =
             new avtScalarMetaData(name_el, name_mesh, AVT_NODECENT);
         el_smd->SetEnumerationType(avtScalarMetaData::ByValue);
@@ -220,6 +227,7 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 	    el_smd->AddEnumNameValue(element_names[a], a+1);
         md->Add(el_smd);
 
+        // Add the compound scalars
         if (compoundNames.size() > 1)
         {
             avtScalarMetaData *cmp_smd =
@@ -231,9 +239,12 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             md->Add(new avtLabelMetaData(name_cmpnm, name_mesh, AVT_NODECENT));
         }
 
+        // Add the rest of the scalars
         AddScalarVarToMetaData(md, name_rt, name_mesh, AVT_NODECENT);
         AddScalarVarToMetaData(md, name_rs, name_mesh, AVT_NODECENT);
         AddScalarVarToMetaData(md, name_bk, name_mesh, AVT_NODECENT);
+        AddScalarVarToMetaData(md, name_occ, name_mesh, AVT_NODECENT);
+        AddScalarVarToMetaData(md, name_temp, name_mesh, AVT_NODECENT);
 
         // Add a couple of label variables.
         md->Add(new avtLabelMetaData(name_nm, name_mesh, AVT_NODECENT));
@@ -355,6 +366,9 @@ avtProteinDataBankFileFormat::GetMesh(const char *orig_meshname)
 //    Jeremy Meredith, Mon Oct 22 12:58:00 EDT 2007
 //    Added compound name support.
 //
+//    Jeremy Meredith, Thu May  1 12:43:27 EDT 2008
+//    Exposed the occupancy and temperature factor fields.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -431,6 +445,30 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         for (int i=0; i<atoms.size(); i++)
         {
             ptr[i] = atoms[i].compound;
+        }
+        return scalars;
+    }
+
+    if (string(varname) == "occupancy")
+    {
+        vtkFloatArray *scalars = vtkFloatArray::New();
+        scalars->SetNumberOfTuples(atoms.size());
+        float *ptr = (float *) scalars->GetVoidPointer(0);
+        for (int i=0; i<atoms.size(); i++)
+        {
+            ptr[i] = atoms[i].occupancy;
+        }
+        return scalars;
+    }
+
+    if (string(varname) == "tempFactor")
+    {
+        vtkFloatArray *scalars = vtkFloatArray::New();
+        scalars->SetNumberOfTuples(atoms.size());
+        float *ptr = (float *) scalars->GetVoidPointer(0);
+        for (int i=0; i<atoms.size(); i++)
+        {
+            ptr[i] = atoms[i].tempfactor;
         }
         return scalars;
     }
