@@ -61,6 +61,7 @@
 #include <avtDatabase.h>
 #include <avtNekDomainBoundaries.h>
 #include <avtVariableCache.h>
+#include <avtIntervalTree.h>
 #include <snprintf.h>
 
 #include <Expression.h>
@@ -161,7 +162,7 @@ using     std::string;
 //         for each sample in the block
 //             write the sample
 //
-// for each variable in U, P, and any misc scalars
+// for each variable in P, T, and any misc scalars
 //     for each block
 //         for each sample in the block
 //             write the sample
@@ -1765,4 +1766,143 @@ avtNek3DFileFormat::FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLine
 
 
 
+// ****************************************************************************
+//  Method: avtNek3DFileFormat::GetAuxiliaryData
+//
+//  Purpose:
+//      Get the auxiliary data.  Originally implemented to return spatial 
+//      extents.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Wed Apr 23 18:12:50 PDT 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
 
+void *
+avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/, 
+                                     int  /*domain*/, const char *type, void *,
+                                     DestructorFunction &df)
+{
+    void *rv = NULL;
+
+    if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
+    {
+        if (strcmp(var, "mesh") != 0)
+        {
+            EXCEPTION1(InvalidVariableException, var);
+        }
+
+        if (!bBinary || iNumOutputDirs == 1)
+            return NULL;
+
+        int nFloatsPerDomain = 0, d1, d2, d3;
+        GetDomainSizeAndVarOffset(iTimestepsWithMesh[0], NULL, 
+                                  nFloatsPerDomain, d1, d2, d3 );
+
+        int iFileSizeWithoutMetaData = 136 + sizeof(int)*iBlocksPerFile + 
+                                       nFloatsPerDomain*sizeof(float)*iBlocksPerFile;
+
+        int iMDSize = (nFloatsPerDomain * 2 * sizeof(float) * iBlocksPerFile) / 
+                      (iBlockSize[0]*iBlockSize[1]*iBlockSize[2]);
+    
+        int iRank = 0, nProcs = 1;
+#ifdef PARALLEL
+        MPI_Comm_rank(VISIT_MPI_COMM, &iRank);
+        MPI_Comm_size(VISIT_MPI_COMM, &nProcs);
+#endif
+    
+        ifstream f;
+        int ii, jj;
+
+        int errorReadingData = 0;
+
+        char  *blockfilename = new char[ fileTemplate.size() + 64 ];
+        int   *tmpBlocks = new int[iBlocksPerFile];
+        float *tmpBounds = new float[iBlocksPerFile*6];
+
+        float *bounds = new float[iNumBlocks*6];
+        for (ii = 0; ii < iNumBlocks*6; ii++)
+            bounds[ii] = 0.0f;
+
+
+        for (ii = iRank; ii < iNumOutputDirs; ii+=nProcs)
+        {
+            GetFileName(iTimestepsWithMesh[0], ii, blockfilename, fileTemplate.size() + 64);
+            f.open(blockfilename);
+            if (!f.is_open())
+            {
+                errorReadingData = 1;
+                break;
+            }
+            f.seekg( 0, std::ios_base::end );
+            int iFileSize = f.tellg();
+            if (iFileSize != iFileSizeWithoutMetaData+iMDSize)
+            {
+                errorReadingData = 1;
+                break;
+            }
+
+            f.seekg( 136, std::ios_base::beg );
+            f.read( (char *)tmpBlocks, iBlocksPerFile*sizeof(int) );
+            if (bSwapEndian)
+                ByteSwap32(tmpBlocks, iBlocksPerFile);
+    
+            for (jj = 0; jj < iBlocksPerFile; jj++)
+                tmpBlocks[jj]--;
+
+            f.seekg( iFileSizeWithoutMetaData, std::ios_base::beg );
+            f.read( (char *)tmpBounds, iBlocksPerFile*6*sizeof(float) );
+            if (bSwapEndian)
+                ByteSwap32(tmpBounds, iBlocksPerFile*6);
+
+            for (jj = 0; jj < iBlocksPerFile; jj++)
+                memcpy(bounds + tmpBlocks[jj]*6, tmpBounds+jj*6, 6*sizeof(float));
+
+            f.close();
+        }
+        delete[] blockfilename;
+        delete[] tmpBlocks;
+
+#ifdef PARALLEL
+        //See if there any proc had a read error.
+        int  anyErrorReadingData = 0;
+        MPI_Allreduce(&errorReadingData, &anyErrorReadingData, 1, 
+                      MPI_INT, MPI_BOR, VISIT_MPI_COMM);
+        errorReadingData = anyErrorReadingData;
+#endif
+        if (errorReadingData)
+            return NULL;
+
+#ifdef PARALLEL
+        float *mergedBounds = new float[iNumBlocks*6];
+    
+        MPI_Allreduce(bounds, mergedBounds, iNumBlocks*6, 
+                      MPI_FLOAT, MPI_SUM, VISIT_MPI_COMM);
+        delete[] bounds;
+        bounds = mergedBounds;
+#endif
+
+        avtIntervalTree *itree = new avtIntervalTree(iNumBlocks, 3);
+
+        for (ii = 0; ii < iNumBlocks; ii++)
+        {
+            double b[6];
+            b[0] = (double)bounds[ii*6];
+            b[1] = (double)bounds[ii*6+1];
+            b[2] = (double)bounds[ii*6+2];
+            b[3] = (double)bounds[ii*6+3];
+            b[4] = (double)bounds[ii*6+4];
+            b[5] = (double)bounds[ii*6+5];
+            itree->AddElement(ii, b);
+        }
+        itree->Calculate(true);
+        delete[] bounds;
+
+        rv = (void *) itree;
+        df = avtIntervalTree::Destruct;
+    }
+
+    return rv;
+}

@@ -71,6 +71,9 @@
 //    Dave Bremer, Wed Feb  6 19:12:55 PST 2008
 //    Refactored the constructor, moving some functionality into 
 //    other methods, and deferring some significant computation.
+//
+//    Dave Bremer, Wed Apr 23 18:12:50 PDT 2008
+//    Implemented GetAuxiliaryData so I can read spatial extents.
 // ****************************************************************************
 
 class avtNek3DFileFormat : public avtMTMDFileFormat
@@ -83,11 +86,10 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
     // This is used to return unconventional data -- ranging from material
     // information to information about block connectivity.
     //
-    // virtual void      *GetAuxiliaryData(const char *var, int timestep, 
-    //                                     int domain, const char *type, void *args, 
-    //                                     DestructorFunction &);
-    //
-
+    virtual void      *GetAuxiliaryData(const char *var, int timestep, 
+                                        int domain, const char *type, void *args, 
+                                        DestructorFunction &);
+    
     //
     // If you know the times and cycle numbers, overload this function.
     // Otherwise, VisIt will make up some reasonable ones for you.
