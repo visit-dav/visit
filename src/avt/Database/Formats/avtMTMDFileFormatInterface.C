@@ -184,20 +184,17 @@ avtMTMDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)
 //  Programmer: Hank Childs
 //  Creation:   April 4, 2003
 //
+//  Modifications:
+//
+//    Dave Bremer, Wed Apr 23 14:55:31 PDT 2008
+//    Allow metadata requests for information about all domains to go through.
+//
 // ****************************************************************************
 
 void *
 avtMTMDFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int dom,
                           const char *type, void *args, DestructorFunction &df)
 {
-    if (dom == -1)
-    {
-        debug5 << "Auxiliary data was requested of multiple timestep, "
-               << "multiple domain file format.  Since the data was requested "
-               << "for all domains, returning NULL." << endl;
-        return NULL;
-    }
-
     return format->GetAuxiliaryData(var, ts, dom, type, args, df);
 }
 
