@@ -37,12 +37,16 @@
 *****************************************************************************/
 
 #include <avtHohlraumFluxQuery.h>
-#include <vtkCleanPolyData.h>
+
 #include <vtkCellData.h>
-#include <avtOriginatingSource.h>
+#include <vtkCleanPolyData.h>
+#include <vtkPointData.h>
+
 #include <avtLineScanFilter.h>
-#include <avtSourceFromAVTDataset.h>
+#include <avtOriginatingSource.h>
 #include <avtParallel.h>
+#include <avtSourceFromAVTDataset.h>
+
 #include <vectortypes.h>
 
 #include <visitstream.h>
@@ -107,13 +111,25 @@ avtHohlraumFluxQuery::~avtHohlraumFluxQuery()
 //  Programmer: David Bremer
 //  Creation:   Dec 8, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Fri May  2 08:58:15 PDT 2008
+//    Add some error checking.
+//
 // ****************************************************************************
 
 void
 avtHohlraumFluxQuery::SetVariableNames(const stringVector &names)
 {
+    if (names.size() != 1 && names.size() != 2)
+        EXCEPTION1(VisItException, "Not able to find the absorption and "
+                   "emissivity variable names.");
     absVarName  = names[0];
-    emisVarName = names[1];
+    if (names.size() == 2)
+        emisVarName = names[1];
+    else
+        // They put in the same name twice.
+        emisVarName = names[0];
 }
 
 
@@ -196,11 +212,22 @@ avtHohlraumFluxQuery::SetThetaPhi(float thetaInDegrees, float phiInDegrees)
 //    Cyrus Harrison, Tue Sep 18 16:17:57 PDT 2007
 //    Changed sprintf to SNPRINTF
 //
+//    Hank Childs, Fri May  2 09:02:39 PDT 2008
+//    Add a warning for no intersections.
+//
 // ****************************************************************************
 
 void
 avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
 {
+    if (pd == NULL)
+    {
+        const char *msg = "There were no intersections between your rays "
+               "and the data set.  Please change the ray center, radius "
+               "theta and phi to fit your simulation data.";
+        EXCEPTION1(VisItException, msg);
+    }
+
     int extraMsg = 100;
     int totalProg = totalNodes * extraMsg;
     int i;
@@ -233,13 +260,27 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
     if (absorbtivityBins == NULL)
     {
         char msg[256];
-        SNPRINTF(msg,256, "Variable %s not found.", absVarName.c_str());
+        if (output->GetPointData()->GetArray(absVarName.c_str()) != NULL)
+        {
+            SNPRINTF(msg,256, "Failure: variable %s is node-centered, "
+                              "but it must be zone-centered for this query.", 
+                              absVarName.c_str());
+        }
+        else
+            SNPRINTF(msg,256, "Variable %s not found.", absVarName.c_str());
         EXCEPTION1(VisItException, msg);
     }
     if (emissivityBins == NULL)
     {
         char msg[256];
-        SNPRINTF(msg, 256, "Variable %s not found.", emisVarName.c_str());
+        if (output->GetPointData()->GetArray(emisVarName.c_str()) != NULL)
+        {
+            SNPRINTF(msg,256, "Failure: variable %s is node-centered, "
+                              "but it must be zone-centered for this query.", 
+                              emisVarName.c_str());
+        }
+        else
+            SNPRINTF(msg,256, "Variable %s not found.", emisVarName.c_str());
         EXCEPTION1(VisItException, msg);
     }
     if ( emissivityBins->GetNumberOfComponents() != 
@@ -466,11 +507,19 @@ avtHohlraumFluxQuery::IntegrateLine(int oneSide, int otherSide,
 //    Dave Bremer, Wed Sep 26 14:50:57 PDT 2007
 //    Modified the return value, to return temperature if available, 
 //    returning flux otherwise.
+//
+//    Hank Childs, Fri May  2 09:12:50 PDT 2008
+//    Prevent a crash if there was an error earlier.
+//
 // ****************************************************************************
 
 void
 avtHohlraumFluxQuery::PostExecute(void)
 {
+    if (radBins == NULL)
+    {
+        return;
+    }
     double *accumBins = new double[numBins];
 
     SumDoubleArrayAcrossAllProcessors(radBins, accumBins, numBins);
