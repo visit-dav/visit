@@ -70,6 +70,9 @@ for f in ${files} ; do
         *src/tools/qtssh/remotecommand/*)
             continue
             ;;
+        *windowsbuild/projects*/*/*)
+            continue
+            ;;
     esac
 
     # check if the file we're trying to commit is empty (a deletion?) 
