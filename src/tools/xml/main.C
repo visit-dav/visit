@@ -53,7 +53,9 @@
 
 #include <BJHash.h>
 #include <stdio.h>
+#ifndef WIN32
 #include <unistd.h>
+#endif
 
 vector<EnumType*> EnumType::enums;
 

@@ -133,7 +133,7 @@ ImageObject::Write(const char *filename)
 
     // Check the extension.
     bool retval = true;
-    int len = strlen(filename);
+    int len = (int) strlen(filename);
     int writeType = 0;
     if(len > 4)
     {

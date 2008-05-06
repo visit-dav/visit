@@ -873,7 +873,7 @@ Transition_Ripple(const TransitionOptions &options, ImageObject *image1, ImageOb
                 {
                     unsigned char tmp[3];
                     unsigned char gray[3] = {50,50,50};
-                    BlendRGB(tmp, src1, gray, 0.8);
+                    BlendRGB(tmp, src1, gray, 0.8f);
 
                     multiplier = rippleAlpha * s;
                     BlendRGB(dest, src1, tmp, multiplier);
@@ -882,7 +882,7 @@ Transition_Ripple(const TransitionOptions &options, ImageObject *image1, ImageOb
                 {
                     unsigned char tmp[3];
                     unsigned char white[3]={255,255,255};
-                    BlendRGB(tmp, src1, white, 0.6);
+                    BlendRGB(tmp, src1, white, 0.6f);
 
                     multiplier = rippleAlpha * -s;
                     BlendRGB(dest, src1, tmp, multiplier);

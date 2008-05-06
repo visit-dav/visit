@@ -85,7 +85,7 @@ SiloDirTreeView::AddDir(SiloDir *d, QListViewItem *parent)
         item = new SiloDirTreeViewItem(d, parent, d->name);
 
     item->setPixmap(0,*folder_pixmap);
-    for (int i=0; i<d->subdir.size(); i++)
+    for (size_t i=0; i<d->subdir.size(); i++)
         AddDir(d->subdir[i], item);
 
     return item;

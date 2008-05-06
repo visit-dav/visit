@@ -128,7 +128,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *curve = new SiloDirViewItem(NULL,this, "Curves");
         curve->setPixmap(0, *curve_pixmap);
-        for (int i=0; i<d->curve.size(); i++)
+        for (size_t i=0; i<d->curve.size(); i++)
             new SiloDirViewItem(d,curve, d->curve[i]);
         curve->setOpen(true);
     }
@@ -137,7 +137,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *multimesh = new SiloDirViewItem(NULL,this, "MultiMeshes");
         multimesh->setPixmap(0, *mesh_pixmap);
-        for (int i=0; i<d->multimesh.size(); i++)
+        for (size_t i=0; i<d->multimesh.size(); i++)
             new SiloDirViewItem(d,multimesh, d->multimesh[i]);
         multimesh->setOpen(true);
         expandVars = false;
@@ -147,7 +147,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *multivar = new SiloDirViewItem(NULL,this, "MultiVars");
         multivar->setPixmap(0, *var_pixmap);
-        for (int i=0; i<d->multivar.size(); i++)
+        for (size_t i=0; i<d->multivar.size(); i++)
             new SiloDirViewItem(d,multivar, d->multivar[i]);
         multivar->setOpen(true);
         expandVars = false;
@@ -157,7 +157,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *multimeshadj = new SiloDirViewItem(NULL,this, "MultiMesheadjs");
         multimeshadj->setPixmap(0, *mesh_pixmap);
-        for (int i=0; i<d->multimeshadj.size(); i++)
+        for (size_t i=0; i<d->multimeshadj.size(); i++)
             new SiloDirViewItem(d,multimeshadj, d->multimeshadj[i]);
         multimeshadj->setOpen(true);
         expandVars = false;
@@ -168,7 +168,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *multimat = new SiloDirViewItem(NULL,this, "MultiMats");
         multimat->setPixmap(0, *mat_pixmap);
-        for (int i=0; i<d->multimat.size(); i++)
+        for (size_t i=0; i<d->multimat.size(); i++)
             new SiloDirViewItem(d,multimat, d->multimat[i]);
         multimat->setOpen(true);
         expandVars = false;
@@ -178,7 +178,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *multimatspecies = new SiloDirViewItem(NULL,this, "MultiSpecies");
         multimatspecies->setPixmap(0, *spec_pixmap);
-        for (int i=0; i<d->multimatspecies.size(); i++)
+        for (size_t i=0; i<d->multimatspecies.size(); i++)
             new SiloDirViewItem(d,multimatspecies, d->multimatspecies[i]);
         multimatspecies->setOpen(true);
         expandVars = false;
@@ -188,7 +188,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *qmesh = new SiloDirViewItem(NULL,this, "QuadMeshes");
         qmesh->setPixmap(0, *mesh_pixmap);
-        for (int i=0; i<d->qmesh.size(); i++)
+        for (size_t i=0; i<d->qmesh.size(); i++)
             new SiloDirViewItem(d,qmesh, d->qmesh[i]);
         qmesh->setOpen(true);
         expandVars = false;
@@ -198,7 +198,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *qvar = new SiloDirViewItem(NULL,this, "QuadVars");
         qvar->setPixmap(0, *var_pixmap);
-        for (int i=0; i<d->qvar.size(); i++)
+        for (size_t i=0; i<d->qvar.size(); i++)
             new SiloDirViewItem(d,qvar, d->qvar[i]);
         qvar->setOpen(true);
         expandVars = false;
@@ -208,7 +208,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *ucdmesh = new SiloDirViewItem(NULL,this, "UCDMeshes");
         ucdmesh->setPixmap(0, *mesh_pixmap);
-        for (int i=0; i<d->ucdmesh.size(); i++)
+        for (size_t i=0; i<d->ucdmesh.size(); i++)
             new SiloDirViewItem(d,ucdmesh, d->ucdmesh[i]);
         ucdmesh->setOpen(true);
         expandVars = false;
@@ -218,7 +218,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *ucdvar = new SiloDirViewItem(NULL,this, "UCDVars");
         ucdvar->setPixmap(0, *var_pixmap);
-        for (int i=0; i<d->ucdvar.size(); i++)
+        for (size_t i=0; i<d->ucdvar.size(); i++)
             new SiloDirViewItem(d,ucdvar, d->ucdvar[i]);
         ucdvar->setOpen(true);
         expandVars = false;
@@ -228,7 +228,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *ptmesh = new SiloDirViewItem(NULL,this, "PointMeshes");
         ptmesh->setPixmap(0, *mesh_pixmap);
-        for (int i=0; i<d->ptmesh.size(); i++)
+        for (size_t i=0; i<d->ptmesh.size(); i++)
             new SiloDirViewItem(d,ptmesh, d->ptmesh[i]);
         ptmesh->setOpen(true);
         expandVars = false;
@@ -238,7 +238,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *ptvar = new SiloDirViewItem(NULL,this, "PointVars");
         ptvar->setPixmap(0, *var_pixmap);
-        for (int i=0; i<d->ptvar.size(); i++)
+        for (size_t i=0; i<d->ptvar.size(); i++)
             new SiloDirViewItem(d,ptvar, d->ptvar[i]);
         ptvar->setOpen(true);
         expandVars = false;
@@ -248,7 +248,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *csgmesh = new SiloDirViewItem(NULL,this, "CSGMeshes");
         csgmesh->setPixmap(0, *mesh_pixmap);
-        for (int i=0; i<d->csgmesh.size(); i++)
+        for (size_t i=0; i<d->csgmesh.size(); i++)
             new SiloDirViewItem(d,csgmesh, d->csgmesh[i]);
         csgmesh->setOpen(true);
         expandVars = false;
@@ -258,7 +258,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *csgvar = new SiloDirViewItem(NULL,this, "CSGVars");
         csgvar->setPixmap(0, *var_pixmap);
-        for (int i=0; i<d->csgvar.size(); i++)
+        for (size_t i=0; i<d->csgvar.size(); i++)
             new SiloDirViewItem(d,csgvar, d->csgvar[i]);
         csgvar->setOpen(true);
         expandVars = false;
@@ -268,7 +268,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *mat = new SiloDirViewItem(NULL,this, "Materials");
         mat->setPixmap(0, *mat_pixmap);
-        for (int i=0; i<d->mat.size(); i++)
+        for (size_t i=0; i<d->mat.size(); i++)
             new SiloDirViewItem(d,mat, d->mat[i]);
         mat->setOpen(true);
         expandVars = false;
@@ -278,7 +278,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *matspecies = new SiloDirViewItem(NULL,this, "Species");
         matspecies->setPixmap(0, *spec_pixmap);
-        for (int i=0; i<d->matspecies.size(); i++)
+        for (size_t i=0; i<d->matspecies.size(); i++)
             new SiloDirViewItem(d,matspecies, d->matspecies[i]);
         matspecies->setOpen(true);
         expandVars = false;
@@ -288,7 +288,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *obj = new SiloDirViewItem(NULL,this, "Objects");
         obj->setPixmap(0, *obj_pixmap);
-        for (int i=0; i<d->obj.size(); i++)
+        for (size_t i=0; i<d->obj.size(); i++)
             new SiloDirViewItem(d,obj, d->obj[i]);
         obj->setOpen(true);
     }
@@ -297,7 +297,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *array = new SiloDirViewItem(NULL,this, "Arrays");
         array->setPixmap(0, *array_pixmap);
-        for (int i=0; i<d->array.size(); i++)
+        for (size_t i=0; i<d->array.size(); i++)
             new SiloDirViewItem(d,array, d->array[i]);
         array->setOpen(true);
     }
@@ -306,7 +306,7 @@ SiloDirView::Set(SiloDir *d)
     {
         SiloDirViewItem *var = new SiloDirViewItem(NULL,this, "Vars");
         var->setPixmap(0, *silovar_pixmap);
-        for (int i=0; i<d->var.size(); i++)
+        for (size_t i=0; i<d->var.size(); i++)
             new SiloDirViewItem(d,var, d->var[i]);
         if (expandVars)
             var->setOpen(true);

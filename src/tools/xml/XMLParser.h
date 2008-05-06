@@ -75,7 +75,7 @@ ParseCharacters(const QString &buff)
     buff.stripWhiteSpace();
     bool quote=false;
     QString tmp="";
-    for (size_t i=0; i<buff.length(); i++)
+    for (int i=0; i<(int)buff.length(); i++)
     {
         if (!quote && buff[i].isSpace())
         {
