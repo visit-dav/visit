@@ -1497,7 +1497,7 @@ public class ViewerMethods
      *   atts.Notify();<br>
      *   proxy.GetViewerMethods().SetOperatorOptions(type);</p>
      *
-     * @param type Type of the plot for which we're setting default options (an index)
+     * @param type Type of the operator for which we're setting default options (an index)
      * @return true on success; false otherwise.
      */
     public boolean SetOperatorOptions(int type)
@@ -1531,7 +1531,7 @@ public class ViewerMethods
      *   atts.Notify();<br>
      *   proxy.GetViewerMethods().SetOperatorOptions("Slice");</p>
      *
-     * @param type Type of the plot for which we're setting default options.
+     * @param type Type of the operator for which we're setting default options.
      * @return true on success; false otherwise.
      */
     public boolean SetOperatorOptions(String type)
