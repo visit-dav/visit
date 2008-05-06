@@ -41,7 +41,7 @@
 
 #include <qframe.h>
 
-struct XMLDocument;
+class XMLDocument;
 class QLabel;
 class QLineEdit;
 class QButtonGroup;

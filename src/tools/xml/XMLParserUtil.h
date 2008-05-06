@@ -86,7 +86,8 @@ SplitValues(const QString &buff)
     
     buff.stripWhiteSpace();
     QString tmp="";
-    for (size_t i=0; i<buff.length(); i++)
+    int len = buff.length();
+    for (int i=0; i<len; i++)
     {
         if (buff[i].isSpace() ||
             buff[i]==','      ||
@@ -178,7 +179,8 @@ FilePath(const QString &buff)
     QString output;
     
     QString tmp="";
-    for (size_t i=0; i<buff.length(); i++)
+    int len = buff.length();
+    for (int i=0; i<len; i++)
     {
         tmp += buff[i];
         if (buff[i]=='/' ||
@@ -196,7 +198,8 @@ inline QString
 FileBase(const QString &buff)
 {
     QString tmp="";
-    for (size_t i=0; i<buff.length(); i++)
+    int len = buff.length();
+    for (int i=0; i<len; i++)
     {
         tmp += buff[i];
         if (buff[i]=='/' ||

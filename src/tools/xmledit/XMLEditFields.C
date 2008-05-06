@@ -378,7 +378,7 @@ XMLEditFields::UpdateWindowSingleItem()
         access->setButton(0);
         init->setChecked(false);
         values->setText("");
-        for(size_t i = 0; i < varNameButtons->count(); ++i)
+        for(int i = 0; i < varNameButtons->count(); ++i)
         {
             QButton *b = varNameButtons->find(i);
             if(b != 0 && b->isA("QCheckBox"))
@@ -397,7 +397,7 @@ XMLEditFields::UpdateWindowSingleItem()
         if (f->type == "enum")
         {
             QString enumtype = QString("enum:")+f->GetSubtype();
-            for (size_t i=0; i<type->count(); i++)
+            for (int i=0; i<type->count(); i++)
             {
                 if (type->text(i) == enumtype)
                     type->setCurrentItem(i);
@@ -405,7 +405,7 @@ XMLEditFields::UpdateWindowSingleItem()
         }
         else
         {
-            for (size_t i=0; i<type->count(); i++)
+            for (int i=0; i<type->count(); i++)
             {
                 if (type->text(i) == f->type)
                     type->setCurrentItem(i);
@@ -432,7 +432,7 @@ XMLEditFields::UpdateWindowSingleItem()
         UpdateEnablerList();
         if (f->enabler)
         {
-            for (size_t i=0; i<enabler->count(); i++)
+            for (int i=0; i<enabler->count(); i++)
             {
                 if (enabler->text(i) == f->enabler->name)
                     enabler->setCurrentItem(i);
@@ -455,7 +455,7 @@ XMLEditFields::UpdateWindowSingleItem()
         if(f->type == "variablename")
         {
             int mask = 1;
-            for(size_t i = 0; i < varNameButtons->count(); ++i)
+            for(int i = 0; i < varNameButtons->count(); ++i)
             {
                 QButton *b = varNameButtons->find(i);
                 if(b != 0 && b->isA("QCheckBox"))

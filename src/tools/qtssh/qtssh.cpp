@@ -198,15 +198,15 @@ main(int argc, char *argv[])
                     {
                         // first is the R, for Remote
                         portfwd[portfwdpos++] = 'R';
-                        for (int j=0; j<strlen(remoteport); j++)
+                        for (size_t j=0; j<strlen(remoteport); j++)
                             portfwd[portfwdpos++] = remoteport[j];
                         // remote/local separated by tab
                         portfwd[portfwdpos++] = '\t';
-                        for (int j=0; j<strlen(localhost); j++)
+                        for (size_t j=0; j<strlen(localhost); j++)
                             portfwd[portfwdpos++] = localhost[j];
                         // host/port separated by a colon
                         portfwd[portfwdpos++] = ':';
-                        for (int j=0; j<strlen(localport); j++)
+                        for (size_t j=0; j<strlen(localport); j++)
                             portfwd[portfwdpos++] = localport[j];
                         // terminate this forward with a \0
                         portfwd[portfwdpos++] = '\0';

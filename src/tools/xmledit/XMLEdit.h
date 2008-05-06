@@ -43,7 +43,7 @@
 #include <qstring.h>
 
 class QTabWidget;
-struct XMLDocument;
+class XMLDocument;
 
 class XMLEditAttribute;
 class XMLEditMakefile;

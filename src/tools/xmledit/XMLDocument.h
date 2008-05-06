@@ -53,8 +53,9 @@ class Attribute;
 //  Creation:    October 17, 2002
 //
 // ****************************************************************************
-struct XMLDocument
+class XMLDocument
 {
+  public:
     QString     filename;
     QString     docType;
     Plugin     *plugin;
