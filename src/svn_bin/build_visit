@@ -354,6 +354,10 @@
 #     Changed implemented in More options and moved into a function
 #     Added a GUI, and -R option to specify an VisIt SVN revision argument
 #
+#     Thomas R. Treadway, Mon May  5 14:14:11 PDT 2008
+#     Check for wget version 9.x, because SSL options different from V10.
+#     Corrected problem with having QTDIR defined
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -550,7 +554,17 @@ else
    export SVN_ROOT_PATH="svn+ssh://$SVN_NERSC_NAME@svn.nersc.gov/svn/visit"
 fi
 
-export WGET_OPTS=${WGET_OPTS-"--no-check-certificate"}
+if [[ "$OPSYS" != "Darwin" ]]; then
+    WGET_MINOR_VERSION=$(wget --version| head -n 1|cut -d. -f 2)
+    # version 1.7 pre-dates ssl integration
+    if [[ "${WGET_MINOR_VERSION}" == "8" ]] ; then
+       export WGET_OPTS=${WGET_OPTS=""}
+    elif [[ "${WGET_MINOR_VERSION}" == "9" ]] ; then
+       export WGET_OPTS=${WGET_OPTS="--sslcheckcert=0"}
+    else
+       export WGET_OPTS=${WGET_OPTS-"--no-check-certificate"}
+    fi
+fi
 #
 # TARBALL LOCATIONS AND VERSIONS
 #
@@ -6647,8 +6661,6 @@ function build_visit
        PARFLAGS="--enable-parallel"
        CXXFLAGS="$CXX_OPT_FLAGS $PAR_INCLUDE"
     fi
-    
-    QTDIR=""
 
     #
     # Set up the config-site file, which gives configure the information it
@@ -6894,8 +6906,8 @@ usage () {
   printf "\n"
   printf "%s %s %s\n" "-4     Build HDF4 from [" $HDF4_FILE "]"
   printf "%s %s %s\n" "-5     Build HDF5 from [" $HDF5_FILE "]"
-  printf "%s\n" "-a opt The architecture variable name (VISITARCH). This"
-  printf "%s\n" "       variable is used in contructing the 3rd parthy" 
+  printf "%s %s %s\n" "-a opt Architecture variable VISITARCH [" $VISITARCH "]."
+  printf "%s\n" "       This variable is used in contructing the 3rd parthy" 
   printf "%s\n" "       library path usually set to something like"
   printf "%s\n" "       linux_gcc-3.4.6 or Darwin_gcc-4.0.1"
   printf "%s %s %s\n" "-b     Build Boxlib from [" $BOXLIB_FILE "]"
@@ -6923,7 +6935,7 @@ usage () {
   printf "%s %s %s\n" "-m     Build Mili from:[" $MILI_FILE "]."
   printf "%s\n" "       NOTE: not available for download from web"
   printf "%s %s %s\n" "-n     Build NetCDF from [" $NETCDF_FILE "]"
-  printf "%s\n" "-o     Display build log to stdout not to build_visit_log file"
+  printf "%s\n" "-o     Write build log to stdout not to build_visit_log file"
   printf "%s\n" "-p     Enable parallel build, display MPI prompt"
   printf "%s\n" "-R opt Checkout specific revision argument of VisIt from SVN"
   printf "%s %s %s\n" "-r     Build H5Part from [" $H5PART_FILE "]"
@@ -6939,7 +6951,7 @@ usage () {
   printf "%s\n" "       mean the 3rd party libraries are pre-built and are"
   printf "%s\n" "       installed some where like /usr/gapps/visit. The"
   printf "%s\n" "       default assumes 3rd party libraries are to be built"
-  printf "%s\n" "       and installed in [./visit]"
+  printf "%s %s %s\n" "       and installed in [" $THIRD_PARTY_PATH "]"
   printf "%s %s %s\n" "-V     Build ViSUS from:[" $ViSUS_FILE "]-expermintal!"
   printf "%s %s %s\n" "-v opt The VISIT_VERSION value [" $VISIT_VERSION "]"
   printf "%s\n" "-w     Build with the VisIt Python module"
@@ -7341,17 +7353,12 @@ if [[ "$DO_QT" == "yes" ]] ; then
    fi
 fi
 
+QTDIR=""
+
 #
 # Now make sure that we have everything we need to build VisIt, so we can bail
 # out early if we are headed for failure.
 #
-if [[ "$OPSYS" != "Darwin" ]]; then
-    WGET_MINOR_VERSION=$(wget --version| head -n 1|cut -d. -f 2)
-    # version 1.7 pre-dates ssl integration
-    if [[ "${WGET_MINOR_VERSION}" == "8" ]] ; then
-       WGET_OPTS=""
-    fi
-fi
 check_files
 if [[ $? != 0 ]] ; then
    echo "Stopping build because necessary files aren't available."
