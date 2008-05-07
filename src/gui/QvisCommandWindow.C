@@ -564,6 +564,9 @@ QvisCommandWindow::SaveScripts()
 //
 // Modifications:
 //   
+//    Hank Childs, Wed May  7 11:47:25 PDT 2008
+//    Add checking for bad function names.
+//
 // ****************************************************************************
 
 void
@@ -578,11 +581,21 @@ QvisCommandWindow::CreateMacroFromText(const QString &s)
         QLineEdit::Normal, QString::null, &ok, this);
     if(!ok || funcName.isEmpty())
         return;
-    if(funcName.contains(' '))
+    std::string str = funcName.latin1();
+    if(! isalpha(str[0]))
     {
-        Error(tr("Function names may not contain spaces. Please try to create "
-              "the macro again using a valid function name."));
+        Error(tr("Function names must start with a letter. Please try to create "
+              "the macro again with a function name that starts with a letter."));
         return;
+    }
+    for (int i = 0 ; i < str.size() ; i++)
+    {
+        if (!isalpha(str[i]) && !isdigit(str[i]) && str[i] != '_')
+        {
+            Error(tr("Function names may only contain letters, numbers, and underscores."
+                     "  Please try again with only those characters."));
+            return;
+        }
     }
 
     // Get the name of the macro from the user.
@@ -859,11 +872,18 @@ QvisCommandWindow::acceptRecordedMacro(const QString &s)
 //
 // Modifications:
 //   
+//    Hank Childs, Wed May  7 11:44:01 PDT 2008
+//    Add a warning so users know that simply clicking clear will not suffice
+//    in clearing out their macros.
+//
 // ****************************************************************************
 
 void
 QvisCommandWindow::macroClearClicked()
 {
+    Warning("The Clear button will only clear this text area.  If you now want"
+            " to permanently remove the macros (and prevent the CLI from "
+            "launching at startup), you need to also click \"Update Macros\"");
     macroLineEdit->clear();
 }
 
