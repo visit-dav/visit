@@ -919,7 +919,7 @@ avtSIL::GetSILCollection(int index) const
         EXCEPTION2(BadIndexException, index, GetNumCollections());
 
     EntryType t;
-    int iLocalIndex, iLocalSubIndex, jj;
+    int iLocalIndex, iLocalSubIndex;
 
     if (!FindColl(index, t, iLocalIndex, iLocalSubIndex))
     {

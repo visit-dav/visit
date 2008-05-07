@@ -42,8 +42,10 @@
 
 #include <avtPFLOTRANFileFormat.h>
 
+#include <algorithm>
 #include <string>
 #include <DebugStream.h>
+#include <snprintf.h>
 
 #include <vtkDoubleArray.h>
 #include <vtkRectilinearGrid.h>
@@ -141,7 +143,7 @@ avtPFLOTRANFileFormat::LoadFile(void)
     {
         debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not open <" << filename << ">" << endl;
         char error[1024];
-        snprintf(error, 1024, "Cannot be a PFLOTRAN file (%s) since it is not even an HDF5 file:",filename);
+        SNPRINTF(error, 1024, "Cannot be a PFLOTRAN file (%s) since it is not even an HDF5 file:",filename);
         EXCEPTION1(InvalidDBTypeException, error);
     }
 
@@ -379,7 +381,7 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
     }
     hsize_t dims[3], maxdims[3];
     H5Sget_simple_extent_dims(dsSpace, dims, maxdims);
-    double in[dims[0] * dims[1] * dims[2]];
+    double *in = new double[dims[0] * dims[1] * dims[2]];
     herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL,
                          H5P_DEFAULT, in);
 
@@ -398,6 +400,7 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
             for (int i=0;i<nx;i++)
                 out[k*nx*ny + j*nx + i] = in[k + j*nz + i*nz*ny];
 
+    delete [] in;
     return array;
 }
 
