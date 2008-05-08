@@ -37,97 +37,46 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtLaplacianExpression.h                        //
+//                      avtRectilinearLaplacianExpression.h                  //
 // ************************************************************************* //
 
-#include <avtLaplacianExpression.h>
+#ifndef AVT_RECTILINEAR_LAPLACIAN_FILTER_H
+#define AVT_RECTILINEAR_LAPLACIAN_FILTER_H
 
-#include <snprintf.h>
-#include <ExpressionException.h>
 
-// ****************************************************************************
-//  Method: avtLaplacianExpression constructor
-//
-//  Programmer: Hank Childs
-//  Creation:   December 27, 2004
-//
-// ****************************************************************************
+#include <avtSingleInputExpressionFilter.h>
 
-avtLaplacianExpression::avtLaplacianExpression()
-{
-    ;
-}
+class     vtkDataArray;
 
 
 // ****************************************************************************
-//  Method: avtLaplacianExpression destructor
-//
-//  Programmer: Hank Childs
-//  Creation:   December 27, 2004
-//
-// ****************************************************************************
-
-avtLaplacianExpression::~avtLaplacianExpression()
-{
-    ;
-}
-
-
-// ****************************************************************************
-//  Method: avtLaplacianExpression::GetMacro
+//  Class: avtRectilinearLaplacianExpression
 //
 //  Purpose:
-//      Applies the macro to create a new expression corresponding to
-//      the Laplacian.
-//
+//      A filter that calculates the Laplacian by going out only one stencil.
+//          
 //  Programmer: Hank Childs
-//  Creation:   December 28, 2004
-//
-//  Modifications:
-//
-//    Cyrus Harrison, Sat Aug 11 18:45:53 PDT 2007
-//    Add second argument for gradient algorithm selection
-//
-//    Hank Childs, Wed May  7 16:20:59 PDT 2008
-//    Add support for rectilinear Laplacian, which only requires one layer
-//    of data.
+//  Creation:   May 7, 2008
 //
 // ****************************************************************************
 
-void
-avtLaplacianExpression::GetMacro(std::vector<std::string> &args, std::string &ne,
-                             Expression::ExprType &type)
+class EXPRESSION_API avtRectilinearLaplacianExpression 
+                                       : public avtSingleInputExpressionFilter
 {
-    char new_expr[2048];
-    int nargs = args.size();
-    if(nargs == 1)
-    {
-        avtMeshType mt = GetInput()->GetInfo().GetAttributes().GetMeshType();
-        if (mt == AVT_RECTILINEAR_MESH || mt == AVT_AMR_MESH)
-        {
-            SNPRINTF(new_expr, 2048, "rectilinear_laplacian(%s)", args[0].c_str());
-        }
-        else
-        {
-            SNPRINTF(new_expr, 2048, "divergence(gradient(%s))", 
-                                     args[0].c_str());
-        }
-    }
-    else if (nargs == 2)
-    {
-        SNPRINTF(new_expr, 2048,
-                "divergence(gradient(%s,%s))", 
-                args[0].c_str(),args[1].c_str());
-    }
-    else
-    {
-        EXCEPTION2(ExpressionException, outputVariableName, " invalid laplacian syntax. "
-                    "Expected arguments: "
-                    "var, gradient_algorithm\n"
-                    "[gradient_algorithm is optional]");
-    }
-    ne = new_expr;
-    type = Expression::ScalarMeshVar;
-}
+  public:
+                              avtRectilinearLaplacianExpression();
+    virtual                  ~avtRectilinearLaplacianExpression();
+
+    virtual const char       *GetType(void)
+                               { return "avtRectilinearLaplacianExpression"; };
+    virtual const char       *GetDescription(void)
+                                             {return "Calculating Laplacian";};
+  protected:
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual int               GetVariableDimension(void) { return 1; };
+};
+
+
+#endif
 
 

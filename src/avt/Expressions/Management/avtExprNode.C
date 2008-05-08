@@ -82,6 +82,7 @@
 #include <avtCurlExpression.h>
 #include <avtDivergenceExpression.h>
 #include <avtLaplacianExpression.h>
+#include <avtRectilinearLaplacianExpression.h>
 #include <avtResradExpression.h>
 #include <avtMagnitudeExpression.h>
 #include <avtNeighborExpression.h>
@@ -488,6 +489,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Cyrus Harrison, Wed Apr  2 15:34:20 PDT 2008
 //    Added new cylindrical_radius implementation.
 //
+//    Hank Childs, Thu May  8 09:29:08 PDT 2008
+//    Add rectilinear_laplacian.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -637,6 +641,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtDivergenceExpression();
     if (functionName == "laplacian" || functionName == "Laplacian")
         return new avtLaplacianExpression();
+    if (functionName == "rectilinear_laplacian")
+        return new avtRectilinearLaplacianExpression();
     if (functionName == "conn_components")
         return new avtConnComponentsExpression();
     if (functionName == "resrad")

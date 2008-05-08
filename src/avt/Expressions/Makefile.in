@@ -211,6 +211,9 @@
 #   Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 #   Added binary and expression ('&')
 #
+#   Hank Childs, Wed May  7 16:35:06 PDT 2008
+#   Added rectilinear laplacian.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -307,6 +310,7 @@ General_src= \
   General/avtResradExpression.C \
   General/avtRandomExpression.C \
   General/avtRecenterExpression.C \
+  General/avtRectilinearLaplacianExpression.C \
   General/avtSpecMFExpression.C \
   General/avtSurfaceNormalExpression.C \
   General/avtTensorContractionExpression.C \
