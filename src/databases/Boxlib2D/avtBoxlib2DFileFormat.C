@@ -1376,6 +1376,9 @@ avtBoxlib2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Added flag to constructor call of avtRectilinearDomainBoundaries to 
 //    indicate that neighbors can be computed from extents.
 //
+//    Hank Childs, Fri May  9 11:07:42 PDT 2008
+//    Speed up calculation of domain nesting.
+//
 // ****************************************************************************
 
 void
@@ -1477,22 +1480,42 @@ avtBoxlib2DFileFormat::CalculateDomainNesting(void)
                         timestep, -1, vrdb);
 
     //
-    // Calculating the child patches really needs some better sorting than
-    // what I am doing here.  This is likely to become a bottleneck.
+    // Calculate the child patches.
     //
     vector< vector<int> > childPatches(totalPatches);
     for (level = nLevels-1 ; level > 0 ; level--) 
     {
         int prev_level = level-1;
-        int search_start  = levelStart[prev_level];
-        int search_end    = levelEnd[prev_level];
+        int coarse_start  = levelStart[prev_level];
+        int coarse_end    = levelEnd[prev_level];
+        int num_coarse    = coarse_end - coarse_start;
+        avtIntervalTree coarse_levels(num_coarse, dimension, false);
+        double exts[4] = { 0, 0, 0, 0 };
+        for (int i = 0 ; i < num_coarse ; i++)
+        {
+            exts[0] = logIMin[coarse_start+i];
+            exts[1] = logIMax[coarse_start+i];
+            exts[2] = logJMin[coarse_start+i];
+            exts[3] = logJMax[coarse_start+i];
+            coarse_levels.AddElement(i, exts);
+        }
+        coarse_levels.Calculate(true);
+
         int patches_start = levelStart[level];
         int patches_end   = levelEnd[level];
         for (int patch = patches_start ; patch < patches_end ; patch++)
         {
-            for (int candidate = search_start ; candidate < search_end ;
-                 candidate++)
+            double min[2];
+            double max[2];
+            min[0] = logIMin[patch];
+            max[0] = logIMax[patch];
+            min[1] = logJMin[patch];
+            max[1] = logJMax[patch];
+            vector<int> list;
+            coarse_levels.GetElementsListFromRange(min, max, list);
+            for (int i = 0 ; i < list.size() ; i++)
             {
+                int candidate = coarse_start + list[i];
                 if (logIMax[patch] < logIMin[candidate])
                     continue;
                 if (logIMin[patch] >= logIMax[candidate])

@@ -241,7 +241,9 @@ void
 avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState,
     bool forceReadAllCyclesTimes)
 {
+    int t0 = visitTimer->StartTimer();
     Interface->SetDatabaseMetaData(md, timeState, forceReadAllCyclesTimes);
+    visitTimer->StopTimer(t0, "Getting database meta data");
 
     std::vector<char>        forbiddenChars;
     std::vector<std::string> replacementStrs;
