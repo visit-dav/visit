@@ -1132,6 +1132,9 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 //    Do not use a unique but unreadable name for displacement expression
 //    since database-defined expressions are local to database.
 //
+//    Gunther H. Weber, Thu May  8 19:41:52 PDT 2008
+//    Set spatial extents.
+//
 // ****************************************************************************
 
 void
@@ -1163,7 +1166,16 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->blockOrigin = 0;
     mesh->spatialDimension = dimension;
     mesh->topologicalDimension = dimension;
-    mesh->hasSpatialExtents = false;
+    mesh->hasSpatialExtents = true;
+    mesh->minSpatialExtents[0] = lowProbI[0] * dx[0];
+    mesh->maxSpatialExtents[0] = (hiProbI[0] + 1) * dx[0];
+    mesh->minSpatialExtents[1] = lowProbJ[0] * dx[0];
+    mesh->maxSpatialExtents[1] = (hiProbJ[0] + 1) * dx[0];
+    if (dimension == 3)
+    {
+        mesh->minSpatialExtents[2] = lowProbK[0] * dx[0];
+        mesh->maxSpatialExtents[2] = (hiProbK[0] + 1) * dx[0];
+    }
     mesh->blockTitle = "patches";
     mesh->blockPieceName = "patch";
     mesh->numGroups = num_levels;

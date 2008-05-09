@@ -152,6 +152,10 @@ avtGhostZoneFilter::~avtGhostZoneFilter()
 //    Hank Childs, Sun Oct 28 11:17:32 PST 2007
 //    Add support for ghostZoneTypesToRemove.
 //
+//    Gunther H. Weber, Thu May  8 19:36:53 PDT 2008
+//    Bug fix: Consider ghostZoneTypesToRemove and ghostNodeTypesToRemove
+//    when checking if data is all ghost.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -189,7 +193,7 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         const int nCells = in_ds->GetNumberOfCells();
         for (int i = 0 ; i < nCells ; i++)
         {
-            if (gz[i] == '\0')
+            if ((gz[i] & ghostZoneTypesToRemove) == '\0')
             {
                 allGhost = false;
                 break;
@@ -212,7 +216,7 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         const int nNodes = in_ds->GetNumberOfPoints();
         for (int i = 0 ; i < nNodes ; i++)
         {
-            if (gn[i] == '\0')
+            if ((gn[i] & ghostNodeTypesToRemove) == '\0')
             {
                 allGhost = false;
                 break;
