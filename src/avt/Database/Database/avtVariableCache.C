@@ -282,9 +282,17 @@ avtVariableCache::CacheVTKObject(const char *name, const char *type,
 //  Programmer: Mark C. Miller
 //  Creation:   December 3, 2006 
 // 
+//  Modifications:
+//
+//    Hank Childs, Fri May  9 15:51:38 PDT 2008
+//    Make the domain not be a pointer ... it must now be an input to the
+//    method, since searching through all of the domains was causing delays
+//    of upwards of 300 seconds in the transform manager.
+//
 // ****************************************************************************
-bool avtVariableCache::OneDomain::GetItem(int *dom,
-    avtCachableItem *theItem) const
+
+bool avtVariableCache::OneDomain::GetItem(int dom,
+                                          avtCachableItem *theItem) const
 {
     if ((item->GetItemType() == theItem->GetItemType()) &&
         (item->GetItemType() == avtCachableItem::VTKObject))
@@ -295,7 +303,6 @@ bool avtVariableCache::OneDomain::GetItem(int *dom,
         vtkObject *theVTKObject = theObj->GetVTKObject();
         if (thisVTKObject->GetMTime() == theVTKObject->GetMTime())
         {
-            if (dom) *dom = GetDomain();
             return true;
         }
     }
@@ -306,7 +313,6 @@ bool avtVariableCache::OneDomain::GetItem(int *dom,
         avtCachedVoidRef *theRef = (avtCachedVoidRef *) theItem;
         if (theRef && theRef->GetVoidRef() == thisRef->GetVoidRef())
         {
-            if (dom) *dom = GetDomain();
             return true;
         }
     }
@@ -323,22 +329,43 @@ bool avtVariableCache::OneDomain::GetItem(int *dom,
 //  Programmer: Mark C. Miller
 //  Creation:   December 3, 2006 
 // 
+//  Modifications:
+//
+//    Hank Childs, Fri May  9 13:48:07 PDT 2008
+//    Add support for hashing the domains.
+//
 // ****************************************************************************
+
 bool
-avtVariableCache::OneTimestep::GetItem(int *ts, int *dom,
-    avtCachableItem *theItem) const
+avtVariableCache::OneTimestep::GetItem(int *ts, int domain,
+                                       avtCachableItem *theItem) const
 {
+    int L0 = domain % HASH_SIZE;
+    int L1 = (domain / HASH_SIZE) % HASH_SIZE;
+    int L2 = (domain / (HASH_SIZE*HASH_SIZE)) % HASH_SIZE;
+    if (domain < 0) // work around negative modulos.
+        L0 = L1 = L2 = 0;
+
+    if (domains[L0] == NULL)
+        return false;
+    if (domains[L0][L1] == NULL)
+        return false;
+    if (domains[L0][L1][L2] == NULL)
+        return false;
     std::vector<OneDomain *>::const_iterator it;
-    for (it = domains.begin() ; it != domains.end() ; it++)
+    for (it = domains[L0][L1][L2]->begin() ; it != domains[L0][L1][L2]->end() 
+                                                                       ; it++)
     {
-        if ((*it)->GetItem(dom, theItem))
+        if ((*it)->GetItem(domain, theItem))
         {
             if (ts) *ts = GetTimestep();
             return true;
         }
     }
+
     return false;
 }
+
 
 // ****************************************************************************
 //  Method: avtVariableCache::OneMat::GetItem
@@ -350,9 +377,16 @@ avtVariableCache::OneTimestep::GetItem(int *ts, int *dom,
 //  Programmer: Mark C. Miller
 //  Creation:   December 3, 2006 
 // 
+//  Modifications:
+//
+//    Hank Childs, Fri May  9 15:51:38 PDT 2008
+//    Make the domain not be a pointer ... it must now be an input to the
+//    method, since searching through all of the domains was causing delays
+//    of upwards of 300 seconds in the transform manager.
+//
 // ****************************************************************************
 bool
-avtVariableCache::OneMat::GetItem(int *ts, int *dom,
+avtVariableCache::OneMat::GetItem(int *ts, int dom,
     const char **mat, avtCachableItem *theItem) const
 {
     std::vector<OneTimestep *>::const_iterator it;
@@ -377,11 +411,18 @@ avtVariableCache::OneMat::GetItem(int *ts, int *dom,
 //  Programmer: Mark C. Miller
 //  Creation:   December 3, 2006 
 // 
+//  Modifications:
+//
+//    Hank Childs, Fri May  9 15:51:38 PDT 2008
+//    Make the domain not be a pointer ... it must now be an input to the
+//    method, since searching through all of the domains was causing delays
+//    of upwards of 300 seconds in the transform manager.
+//
 // ****************************************************************************
 bool
 avtVariableCache::OneVar::GetItem(
     const char **name, const char **_type,
-    int *ts, int *dom, const char **mat,
+    int *ts, int dom, const char **mat,
     avtCachableItem *theItem) const
 {
     std::vector<OneMat *>::const_iterator it;
@@ -400,19 +441,27 @@ avtVariableCache::OneVar::GetItem(
 // ****************************************************************************
 //  Method: avtVariableCache::GetVTKObjectKey
 //
-//  Purpose: Given a vtkObject pointer, find it in the cache and return other
-//  information associated with it. If the pointer is paired, use the paired
-//  pointer to find it. Otherwise, use the originally given pointer.
+//  Purpose: 
+//      Given a vtkObject pointer, find it in the cache and return other
+//      information associated with it. If the pointer is paired, use the paired
+//      pointer to find it. Otherwise, use the originally given pointer.
 //
 //  Programmer: Mark C. Miller
 //  Creation:   December 3, 2006 
 // 
+//  Modifications:
+//
+//    Hank Childs, Fri May  9 15:51:38 PDT 2008
+//    Make the domain not be a pointer ... it must now be an input to the
+//    method, since searching through all of the domains was causing delays
+//    of upwards of 300 seconds in the transform manager.
+//
 // ****************************************************************************
+
 bool
-avtVariableCache::GetVTKObjectKey(
-    const char **name, const char **type,
-    int *ts, int *dom, const char **mat,
-    vtkObject *theObj) const
+avtVariableCache::GetVTKObjectKey(const char **name, const char **type,
+                                  int *ts, int dom, const char **mat,
+                                  vtkObject *theObj) const
 {
     vtkObject *tmpObj = FindObjectPointerPair(theObj);
     if (tmpObj) theObj = tmpObj;
@@ -431,18 +480,26 @@ avtVariableCache::GetVTKObjectKey(
 // ****************************************************************************
 //  Method: avtVariableCache::GetVoidRefKey
 //
-//  Purpose: Given a void_ref_ptr pointer, find it in the cache and return
-//  other information associated with it. If the pointer is paired, use the
-//  paired pointer to find it. Otherwise, use the originally given pointer.
+//  Purpose: 
+//      Given a void_ref_ptr pointer, find it in the cache and return
+//      other information associated with it. If the pointer is paired, use the
+//      paired pointer to find it. Otherwise, use the originally given pointer.
 //
 //  Programmer: Mark C. Miller
 //  Creation:   December 3, 2006 
 // 
+//  Modifications:
+//
+//    Hank Childs, Fri May  9 15:51:38 PDT 2008
+//    Make the domain not be a pointer ... it must now be an input to the
+//    method, since searching through all of the domains was causing delays
+//    of upwards of 300 seconds in the transform manager.
+//
 // ****************************************************************************
+
 bool
-avtVariableCache::GetVoidRefKey(
-    const char **name, const char **type,
-    int *ts, int *dom, void_ref_ptr vrp) const
+avtVariableCache::GetVoidRefKey(const char **name, const char **type,
+                                int *ts, int dom, void_ref_ptr vrp) const
 {
     // theItem needs to live only for duration of this method
     avtCachedVoidRef theItem(vrp);
@@ -717,11 +774,21 @@ avtVariableCache::OneDomain::CacheItem(avtCachableItem *i)
 //  Programmer: Hank Childs
 //  Creation:   September 15, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Fri May  9 14:16:23 PDT 2008
+//    Add support for hashing.
+//
 // ****************************************************************************
 
 avtVariableCache::OneTimestep::OneTimestep(int t)
 {
     timestep = t;
+    domains = new std::vector<OneDomain *>***[HASH_SIZE];
+    for (int i = 0 ; i < HASH_SIZE ; i++)
+    {
+        domains[i] = NULL;
+    }
 }
 
 
@@ -731,14 +798,38 @@ avtVariableCache::OneTimestep::OneTimestep(int t)
 //  Programmer: Hank Childs
 //  Creation:   October 19, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Fri May  9 14:16:23 PDT 2008
+//    Add support for hashing.
+//
 // ****************************************************************************
 
 avtVariableCache::OneTimestep::~OneTimestep()
 {
-    std::vector<OneDomain *>::iterator it;
-    for (it = domains.begin() ; it != domains.end() ; it++)
+    for (int i = 0 ; i < HASH_SIZE ; i++)
     {
-        delete *it;
+        if (domains[i] == NULL)
+            continue;
+        for (int j = 0 ; j < HASH_SIZE ; j++)
+        {
+            if (domains[i][j] == NULL)
+                continue;
+            for (int k = 0 ; k < HASH_SIZE ; k++)
+            {
+                if (domains[i][j][k] == NULL)
+                    continue;
+                std::vector<OneDomain *>::iterator it;
+                for (it = domains[i][j][k]->begin() ; 
+                         it != domains[i][j][k]->end() ; it++)
+                {
+                    delete *it;
+                }
+                delete [] domains[i][j][k];
+            }
+            delete [] domains[i][j];
+        }
+        delete [] domains[i];
     }
 }
 
@@ -756,14 +847,44 @@ avtVariableCache::OneTimestep::~OneTimestep()
 //  Programmer: Hank Childs
 //  Creation:   September 15, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Fri May  9 14:16:23 PDT 2008
+//    Add support for hashing.
+//
 // ****************************************************************************
 
 void
 avtVariableCache::OneTimestep::CacheItem(int domain, avtCachableItem *im)
 {
-    OneDomain  *d = NULL;
+    int  i;
+
     std::vector<OneDomain *>::iterator it;
-    for (it = domains.begin() ; it != domains.end() ; it++)
+    int L0 = domain % HASH_SIZE;
+    int L1 = (domain / HASH_SIZE) % HASH_SIZE;
+    int L2 = (domain / (HASH_SIZE*HASH_SIZE)) % HASH_SIZE;
+    if (domain < 0) // work around negative modulos.
+        L0 = L1 = L2 = 0;
+    if (domains[L0] == NULL)
+    {
+        domains[L0] = new std::vector<OneDomain *>**[HASH_SIZE];
+        for (i = 0 ; i < HASH_SIZE ; i++)
+            domains[L0][i] = NULL;
+    }
+    if (domains[L0][L1] == NULL)
+    {
+        domains[L0][L1] = new std::vector<OneDomain *>*[HASH_SIZE];
+        for (i = 0 ; i < HASH_SIZE ; i++)
+            domains[L0][L1][i] = NULL;
+    }
+    if (domains[L0][L1][L2] == NULL)
+    {
+        domains[L0][L1][L2] = new std::vector<OneDomain *>;
+    }
+
+    OneDomain  *d = NULL;
+    for (it = domains[L0][L1][L2]->begin() ; it != domains[L0][L1][L2]->end() 
+                                                                       ; it++)
     {
         if (domain == (*it)->GetDomain())
         {
@@ -775,7 +896,7 @@ avtVariableCache::OneTimestep::CacheItem(int domain, avtCachableItem *im)
     if (d == NULL)
     {
         d = new OneDomain(domain);
-        domains.push_back(d);
+        domains[L0][L1][L2]->push_back(d);
     }
 
     d->CacheItem(im);
@@ -793,13 +914,32 @@ avtVariableCache::OneTimestep::CacheItem(int domain, avtCachableItem *im)
 //  Programmer: Hank Childs
 //  Creation:   September 15, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Fri May  9 14:16:23 PDT 2008
+//    Add support for hashing.
+//
 // ****************************************************************************
 
 avtCachableItem *
 avtVariableCache::OneTimestep::GetItem(int domain)
 {
+    int L0 = domain % HASH_SIZE;
+    int L1 = (domain / HASH_SIZE) % HASH_SIZE;
+    int L2 = (domain / (HASH_SIZE*HASH_SIZE)) % HASH_SIZE;
+//cerr << "L0 = " << L0 << ", L2 = " << L2 << endl;
+    if (domain < 0) // work around negative modulos.
+        L0 = L1 = L2 = 0;
+    if (domains[L0] == NULL)
+        return NULL;
+    if (domains[L0][L1] == NULL)
+        return NULL;
+    if (domains[L0][L1][L2] == NULL)
+        return NULL;
+
     std::vector<OneDomain *>::iterator it;
-    for (it = domains.begin() ; it != domains.end() ; it++)
+    for (it = domains[L0][L1][L2]->begin() ; it != domains[L0][L1][L2]->end() 
+                                                                        ; it++)
     {
         if ((*it)->GetDomain() == domain)
         {
@@ -1240,18 +1380,32 @@ avtVariableCache::OneMat::Print(ostream &out, int indent)
 //  Programmer: Hank Childs
 //  Creation:   September 20, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Fri May  9 15:04:35 PDT 2008
+//    Add support for hashing.
+//
 // ****************************************************************************
 
 void
 avtVariableCache::OneTimestep::Print(ostream &out, int indent)
 {
-    Indent(out, indent);
-    out << "Timestep = " << timestep << endl;
-    std::vector<OneDomain *>::iterator it;
-    for (it = domains.begin() ; it != domains.end() ; it++)
-    {
-        (*it)->Print(out, indent+1);
-    }
+    for (int i = 0 ; i < HASH_SIZE ; i++)
+        if (domains[i] != NULL)
+            for (int j = 0 ; j < HASH_SIZE ; j++)
+                if (domains[i][j] != NULL)
+                    for (int k = 0 ; k < HASH_SIZE ; k++)
+                        if (domains[i][j][k] != NULL)
+                        {
+                            Indent(out, indent);
+                            out << "Timestep = " << timestep << endl;
+                            std::vector<OneDomain *>::iterator it;
+                            for (it = domains[i][j][k]->begin() ;
+                                          it != domains[i][j][k]->end() ; it++)
+                            {
+                                (*it)->Print(out, indent+1);
+                            }
+                        }
 }
 
 
