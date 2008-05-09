@@ -655,16 +655,21 @@ avtTransformManager::FreeUpResources(int lastts)
 //    Mark C. Miller, Wed Dec  6 13:40:17 PST 2006
 //    Fixed use of SetScalars|Vectors|Tensors and AddArray for copying
 //    over various cell/point data arrays.
+//
+//    Hank Childs, Fri May  9 16:02:39 PDT 2008
+//    Added argument for the domain ID to the signature.  This is needed for
+//    efficiency when accessing the cache.
+//
 // ****************************************************************************
 vtkDataSet *
 avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
-    const avtDataRequest_p &dataRequest, vtkDataSet *ds)
+    const avtDataRequest_p &dataRequest, vtkDataSet *ds, int dom)
 {
     if (!ds)
         return 0;
 
     const char *vname, *type, *mat;
-    int i, ts, dom;
+    int i, ts;
 
     bool needNativePrecision;
     vector<int> admissibleDataTypes;
@@ -705,7 +710,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
             {
                 // look up this vtk object's "key" in GenericDb's cache
                 objectWasCachedInGenericDB[ds] =
-                    gdbCache->GetVTKObjectKey(&vname, &type, &ts, &dom, &mat, ds);
+                    gdbCache->GetVTKObjectKey(&vname, &type, &ts, dom, &mat, ds);
 
                 // first, see if a converted result is already in tmgr's cache
                 if (objectWasCachedInGenericDB[ds])
@@ -760,7 +765,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                 {
                     // look up this vtk object's "key" in GenericDb's cache
                     objectWasCachedInGenericDB[da] =
-                        gdbCache->GetVTKObjectKey(&vname, &type, &ts, &dom, &mat, da);
+                        gdbCache->GetVTKObjectKey(&vname, &type, &ts, dom, &mat, da);
 
                     vtkDataArray *newda = 0;
                     if (objectWasCachedInGenericDB[da])
@@ -823,7 +828,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                 {
                     // look up this vtk object's "key" in GenericDb's cache
                     objectWasCachedInGenericDB[da] = 
-                        gdbCache->GetVTKObjectKey(&vname, &type, &ts, &dom, &mat, da);
+                        gdbCache->GetVTKObjectKey(&vname, &type, &ts, dom, &mat, da);
 
                     vtkDataArray *newda = 0;
                     if (objectWasCachedInGenericDB[da])
@@ -899,10 +904,15 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
 //    Mark C. Miller, Tue Jun 19 18:29:12 PDT 2007
 //    Corrected code that puts mapped arrays onto output dataset to use
 //    the SetScalars/SetVectors/SetTensors methods as in other cases
+//
+//    Hank Childs, Fri May  9 16:02:39 PDT 2008
+//    Added argument for the domain ID to the signature.  This is needed for
+//    efficiency when accessing the cache.
+//
 // ****************************************************************************
 vtkDataSet *
 avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
-    const avtDataRequest_p &dataRequest, vtkDataSet *ds)
+    const avtDataRequest_p &dataRequest, vtkDataSet *ds, int dom)
 {
 #ifndef PARALLEL
     const int rank = 0;
@@ -918,8 +928,8 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
             // look up this vtk object's "key" in GenericDb's cache
             //
             const char *vname, *type, *mat;
-            int ts, dom;
-            if (!gdbCache->GetVTKObjectKey(&vname, &type, &ts, &dom, &mat, ds))
+            int ts;
+            if (!gdbCache->GetVTKObjectKey(&vname, &type, &ts, dom, &mat, ds))
             {
                 EXCEPTION1(PointerNotInCacheException, ds);
             }
@@ -997,7 +1007,7 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
             {
                 vtkDataArray *da = cd->GetArray(i);
                 // look up this vtk object's "key" in GenericDb's cache
-                if (!gdbCache->GetVTKObjectKey(&vname, &type, &ts, &dom, &mat, da))
+                if (!gdbCache->GetVTKObjectKey(&vname, &type, &ts, dom, &mat, da))
                 {
                     EXCEPTION1(PointerNotInCacheException, da);
                 }
@@ -1040,13 +1050,19 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
 //  Programmer: Mark C. Miller 
 //  Creation:   December 4, 2006 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri May  9 16:02:39 PDT 2008
+//    Added argument for the domain ID to the signature.  This is needed for
+//    efficiency when accessing the cache.
+//
 // ****************************************************************************
 bool
 avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const md,
-    const avtDataRequest_p &dataRequest, avtMaterial **mat)
+    const avtDataRequest_p &dataRequest, avtMaterial **mat, int dom)
 {
     const char *vname, *type;
-    int ts, dom;
+    int ts;
 
     if (mat == 0 || *mat == 0)
         return false;
@@ -1054,7 +1070,7 @@ avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const m
     // find the given material object in Generic DB's cache
     int refCount = 1;
     void_ref_ptr vr = void_ref_ptr(*mat, avtMaterial::Destruct, &refCount);
-    if (!gdbCache->GetVoidRefKey(&vname, &type, &ts, &dom, vr))
+    if (!gdbCache->GetVoidRefKey(&vname, &type, &ts, dom, vr))
     {
         EXCEPTION1(PointerNotInCacheException, *vr);
     }
@@ -1081,7 +1097,7 @@ avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const m
             {
                 EXCEPTION1(PointerNotInCacheException, ds);
             }
-            ds = CSGToDiscrete(md, dataRequest, ds);
+            ds = CSGToDiscrete(md, dataRequest, ds, dom);
         }
 
         // see if we already have transformed avtMaterial result cached
@@ -1152,6 +1168,12 @@ avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const m
 //  Programmer: Mark C. Miller 
 //  Creation:   December 4, 2006 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri May  9 16:01:45 PDT 2008
+//    Pass in domain IDs to transforming functions, because they are needed
+//    to efficiently access cache.
+//
 // ****************************************************************************
 bool
 avtTransformManager::TransformDataset(avtDatasetCollection &dsc,
@@ -1172,7 +1194,7 @@ avtTransformManager::TransformDataset(avtDatasetCollection &dsc,
 
         TRY
         {
-            ds = CSGToDiscrete(md, d_spec, ds);
+            ds = CSGToDiscrete(md, d_spec, ds, domains[i]);
 
             //ds = HangingToConforming(md, d_spec, ds);
 
@@ -1181,7 +1203,7 @@ avtTransformManager::TransformDataset(avtDatasetCollection &dsc,
 
             //ds = PolyhedralToZoo(md, d_spec, ds);
 
-            ds = NativeToFloat(md, d_spec, ds);
+            ds = NativeToFloat(md, d_spec, ds, domains[i]);
 
             if (ds != dsOrig)
             {

@@ -73,6 +73,13 @@ class avtSourceFromDatabase;
 //  Programmer: Mark C. Miller 
 //  Creation:   September 9, 2006 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri May  9 15:59:10 PDT 2008
+//    Change signature of certain methods to allow passing of domain IDs.
+//    This is needed for performance reasons when there are a large number
+//    of entries in the cache.
+//
 // ****************************************************************************
 
 class DATABASE_API avtTransformManager
@@ -90,15 +97,15 @@ class DATABASE_API avtTransformManager
                                    avtDatabaseMetaData *md);
 
     bool                       TransformMaterialDataset(const avtDatabaseMetaData *const md,
-                                   const avtDataRequest_p &spec, avtMaterial **mat);
+                                   const avtDataRequest_p &spec, avtMaterial **mat, int);
   private:
 
     vtkDataSet                *NativeToFloat(const avtDatabaseMetaData *const md,
                                              const avtDataRequest_p &spec,
-                                             vtkDataSet *ds);
+                                             vtkDataSet *ds, int dom);
     vtkDataSet                *CSGToDiscrete(const avtDatabaseMetaData *const md,
                                              const avtDataRequest_p &spec,
-                                             vtkDataSet *ds);
+                                             vtkDataSet *ds, int);
     avtVariableCache           cache;
     avtVariableCache          *gdbCache;
 };

@@ -55,6 +55,9 @@ class   avtCachableItem;
 class   vtkObject;
 
 
+#define HASH_SIZE 25
+
+
 // ****************************************************************************
 //  Class: avtVariableCache
 //
@@ -105,6 +108,11 @@ class   vtkObject;
 //    Cyrus Harrison, Sat Aug 11 19:32:44 PDT 2007
 //    Add support for vtk-debug mode
 //
+//    Hank Childs, Fri May  9 13:41:39 PDT 2008
+//    Add hashing for caching of domains.  Also remove capability to look
+//    for key information by searching over all domains ... it leads to
+//    big performance problems for high domain counts.
+//
 // ****************************************************************************
 
 class DATABASE_API avtVariableCache
@@ -130,8 +138,11 @@ class DATABASE_API avtVariableCache
 
     // given a VTK object pointer, find that object in the cache and return
     // the "key" (name, type, ts, domain, mat) where it is stored in the cache 
+    //
+    // Note: domain cannot be a pointer, because that leads to O(n) searches,
+    // and there may be >50K entries in the cache.
     bool                   GetVTKObjectKey(const char **name, const char **type,
-                               int *ts, int *dom, const char **mat,
+                               int *ts, int dom, const char **mat,
                                vtkObject *obj) const;
 
     bool                   HasVoidRef(const char *name, const char *type,
@@ -141,8 +152,10 @@ class DATABASE_API avtVariableCache
     void                   CacheVoidRef(const char *name, const char *type,
                                         int ts, int domain, void_ref_ptr);
 
+    // Note: domain cannot be a pointer, because that leads to O(n) searches,
+    // and there may be >50K entries in the cache.
     bool                   GetVoidRefKey(const char **name, const char **type,
-                                         int *ts, int *domain, void_ref_ptr vrp) const;
+                                         int *ts, int domain, void_ref_ptr vrp) const;
 
     void                   ClearTimestep(int);
 
@@ -172,7 +185,7 @@ class DATABASE_API avtVariableCache
         void              CacheItem(avtCachableItem *);
         int               GetDomain(void) const  { return domain; };
         avtCachableItem  *GetItem(void)     { return item; };
-        bool              GetItem(int *dom, avtCachableItem *) const;
+        bool              GetItem(int dom, avtCachableItem *) const;
     
         void              Print(ostream &, int);
 
@@ -189,14 +202,16 @@ class DATABASE_API avtVariableCache
         
         void                        CacheItem(int, avtCachableItem *);
         avtCachableItem            *GetItem(int);
-        bool                        GetItem(int *ts, int *dom, avtCachableItem *) const;
+        bool                        GetItem(int *ts, int dom, avtCachableItem *) const;
         int                         GetTimestep(void) const { return timestep; };
     
         void                        Print(ostream &, int);
 
       protected:
         int                         timestep;
-        std::vector<OneDomain *>    domains;
+        // Note that we have three levels of points to make indexing efficient
+        // and searches over all entries also efficient.
+        std::vector<OneDomain *> ****domains;
     };
 
     class OneMat
@@ -208,7 +223,7 @@ class DATABASE_API avtVariableCache
         void                        CacheItem(int, int, avtCachableItem *);
         avtCachableItem            *GetItem(int, int);
         const char                 *GetMaterial(void) const { return material; };
-        bool                        GetItem(int *ts, int *dom,
+        bool                        GetItem(int *ts, int dom,
                                         const char **mat, avtCachableItem *) const;
         void                        ClearTimestep(int);
     
@@ -231,7 +246,7 @@ class DATABASE_API avtVariableCache
         const char                  *GetVar(void) const { return var; };
         const char                  *GetType(void) const { return type; };
         bool                         GetItem(const char **name, const char **_type,
-                                         int *ts, int *dom, const char **mat,
+                                         int *ts, int dom, const char **mat,
                                          avtCachableItem *) const;
         void                         ClearTimestep(int);
     

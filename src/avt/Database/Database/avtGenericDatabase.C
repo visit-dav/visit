@@ -504,8 +504,10 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
         // mesh (e.g. removing hanging nodes), converting arbitrary polyhdra
         // to zoo-type, discretizing a csg mesh, etc.
         //
+        int t0 = visitTimer->StartTimer();
         xformManager->TransformDataset(datasetCollection, domains, spec, src,
                           selectionsApplied, md);
+        visitTimer->StopTimer(t0, "Transform manager");
 
         //
         // Now that we have read things in from disk, verify that the dataset
@@ -3715,6 +3717,10 @@ avtGenericDatabase::GetMaterialIndices(avtMaterial *mat, stringVector &mn,
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added data specification arg as well as transformation of material,
 //    if neededb
+//
+//    Hank Childs, Fri May  9 16:05:46 PDT 2008
+//    Added argument for domainID to TransformMaterialDataset.
+//
 // ****************************************************************************
 
 avtMaterial *
@@ -3741,7 +3747,7 @@ avtGenericDatabase::GetMaterial(int dom, const char *var, int ts,
     avtMaterial *rv = (avtMaterial *) *(mats.list[0]);
 
     // this is a no-op unless transformation is needed
-    xformManager->TransformMaterialDataset(md, *dataRequest ? dataRequest : spec, &rv);
+    xformManager->TransformMaterialDataset(md, *dataRequest ? dataRequest : spec, &rv, dom);
 
     return rv;
 }
