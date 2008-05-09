@@ -66,6 +66,7 @@
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 #include <InvalidDBTypeException.h>
+#include <TimingsManager.h>
 
 #if !defined(_WIN32)
 #include <unistd.h>
@@ -520,8 +521,10 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
     debug4 << "Trying to open the file with the "
            << info->GetName() << " file format." << endl;
 
+    int t0 = visitTimer->StartTimer();
     avtDatabase *rv = info->SetupDatabase(filelist+fileIndex,
                                           filelistN-fileIndex, nBlocks);
+    visitTimer->StopTimer(t0, "Calling file format's SetupDatabase");
 
     //
     // By policy, the plugin doesn't do much work to set up the
@@ -534,6 +537,7 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
     //
     if (rv != NULL)
     {
+        int t0 = visitTimer->StartTimer();
         if (timestep != -2)
             rv->ActivateTimestep(timestep);
         rv->SetFileFormat(info->GetID());
@@ -542,6 +546,7 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
             rv->GetMetaData(timestep, forceReadAllCyclesAndTimes, 
                             forceReadThisStateCycleTime,
                             treatAllDBsAsTimeVarying);
+        visitTimer->StopTimer(t0, "Forcing file format to do initialization");
         debug4 << "File open appears to be successful." << endl;
     }
     else

@@ -76,6 +76,7 @@
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
+#include <TimingsManager.h>
 
 #include <visit-hdf5.h>
 
@@ -883,7 +884,9 @@ avtChomboFileFormat::InitializeReader(void)
     //
     if (!avtDatabase::OnlyServeUpMetaData())
     {
+        int t0 = visitTimer->StartTimer();
         CalculateDomainNesting();
+        visitTimer->StopTimer(t0, "Chombo calculating domain nesting");
     }
 
     initializedReader = true;
@@ -937,6 +940,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     //
     // Calculate some info we will need in the rest of the routine.
     //
+    int t0 = visitTimer->StartTimer();
     int totalPatches = 0;
     vector<int> levelStart;
     vector<int> levelEnd;
@@ -947,11 +951,13 @@ avtChomboFileFormat::CalculateDomainNesting(void)
         totalPatches += patchesPerLevel[level];
         levelEnd.push_back(totalPatches);
     }
+    visitTimer->StopTimer(t0, "Pre-work for domain nesting");
 
     //
     // Now that we know the total number of patches, we can allocate the
     // data structure for the patch nesting.
     //
+    int t1 = visitTimer->StartTimer();
     avtStructuredDomainNesting *dn = new avtStructuredDomainNesting(
                                           totalPatches, num_levels);
 
@@ -983,11 +989,13 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     {
         multiplier[level] = multiplier[level+1]*refinement_ratio[level];
     }
+    visitTimer->StopTimer(t1, "Setting up domain nesting: part 1");
 
     //
     // Now set up the data structure for patch boundaries.  The data 
     // does all the work ... it just needs to know the extents of each patch.
     //
+    int t2 = visitTimer->StartTimer();
     avtRectilinearDomainBoundaries *rdb 
                                     = new avtRectilinearDomainBoundaries(true);
     rdb->SetNumDomains(totalPatches);
@@ -1011,52 +1019,84 @@ avtChomboFileFormat::CalculateDomainNesting(void)
                                    avtStructuredDomainBoundaries::Destruct);
     cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
                         timestep, -1, vrdb);
+    visitTimer->StopTimer(t2, "Chombo reader doing rect domain boundaries");
 
     //
-    // Calculating the child patches really needs some better sorting than
-    // what I am doing here.  This is likely to become a bottleneck in extreme
-    // cases.  Although this routine has performed well for a previous 55K
-    // patch run.
+    // Calculate the child patches.
     //
+    int t3 = visitTimer->StartTimer();
     vector< vector<int> > childPatches(totalPatches);
     for (level = num_levels-1 ; level > 0 ; level--)
     {
         int prev_level = level-1;
-        int search_start  = levelStart[prev_level];
-        int search_end    = levelEnd[prev_level];
-        int mC = multiplier[prev_level];
+        int coarse_start  = levelStart[prev_level];
+        int coarse_end    = levelEnd[prev_level];
+        int num_coarse    = coarse_end - coarse_start;
+        int mc            = multiplier[prev_level];
+        avtIntervalTree coarse_levels(num_coarse, dimension, false);
+        double exts[6] = { 0, 0, 0, 0, 0, 0 };
+        for (int i = 0 ; i < num_coarse ; i++)
+        {
+            exts[0] = mc*lowI[coarse_start+i];
+            exts[1] = mc*hiI[coarse_start+i];
+            exts[2] = mc*lowJ[coarse_start+i];
+            exts[3] = mc*hiJ[coarse_start+i];
+            if (dimension == 3)
+            {
+                exts[4] = mc*lowK[coarse_start+i];
+                exts[5] = mc*hiK[coarse_start+i];
+            }
+            coarse_levels.AddElement(i, exts);
+        }
+        coarse_levels.Calculate(true);
+        
         int patches_start = levelStart[level];
         int patches_end   = levelEnd[level];
-        int mP = multiplier[level];
+        int mp = multiplier[level];
         for (int patch = patches_start ; patch < patches_end ; patch++)
         {
-            for (int candidate = search_start ; candidate < search_end ;
-                 candidate++)
+            double min[3];
+            double max[3];
+            min[0] = mp*lowI[patch];
+            max[0] = mp*hiI[patch];
+            min[1] = mp*lowJ[patch];
+            max[1] = mp*hiJ[patch];
+            if (dimension == 3)
             {
-                if (hiI[patch]*mP < lowI[candidate]*mC)
+                min[2] = mp*lowK[patch];
+                max[2] = mp*hiK[patch];
+            }
+            vector<int> list;
+            coarse_levels.GetElementsListFromRange(min, max, list);
+            for (int i = 0 ; i < list.size() ; i++)
+            {
+                int candidate = coarse_start + list[i];
+                if (hiI[patch]*mp < lowI[candidate]*mc)
                     continue;
-                if (lowI[patch]*mP >= hiI[candidate]*mC)
+                if (lowI[patch]*mp >= hiI[candidate]*mc)
                     continue;
-                if (hiJ[patch]*mP < lowJ[candidate]*mC)
+                if (hiJ[patch]*mp < lowJ[candidate]*mc)
                     continue;
-                if (lowJ[patch]*mP >= hiJ[candidate]*mC)
+                if (lowJ[patch]*mp >= hiJ[candidate]*mc)
                     continue;
                 if (dimension == 3)
                 {
-                    if (hiK[patch]*mP < lowK[candidate]*mC)
+                    if (hiK[patch]*mp < lowK[candidate]*mc)
                         continue;
-                    if (lowK[patch]*mP >= hiK[candidate]*mC)
+                    if (lowK[patch]*mp >= hiK[candidate]*mc)
                         continue;
                 }
                 childPatches[candidate].push_back(patch);
            }
         }
     }
+    visitTimer->StopTimer(t3, "Slow part of Chombo nesting.");
 
     //
     // Now that we know the extents for each patch and what its children are,
     // tell the structured domain boundary that information.
     //
+    int t4 = visitTimer->StartTimer();
     for (int i = 0 ; i < totalPatches ; i++)
     {
         int my_level, local_patch;
@@ -1086,6 +1126,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     void_ref_ptr vr = void_ref_ptr(dn, avtStructuredDomainNesting::Destruct);
     cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
                         timestep, -1, vr);
+    visitTimer->StopTimer(t4, "Final step of Chombo nesting");
 }
 
 

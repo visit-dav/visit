@@ -3053,6 +3053,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                    "computation of neighbors from index extents");
     }
 
+    int t0 = visitTimer->StartTimer();
     int ndoms = levels.size();
     avtIntervalTree itree(ndoms, 3);
     double extf[6];
@@ -3126,6 +3127,8 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
     {
         Finish(i);
     }
+
+    visitTimer->StopTimer(t0, "avtStructuredDomainBoundaries::Calculate");
 }
 
 
