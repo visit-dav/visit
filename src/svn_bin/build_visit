@@ -68,7 +68,7 @@
 #           NetCDF   3.6.0    netcdf.tar.gz          -n
 #           szip     2.1      szip-2.1.tar.gz
 #
-#         Experimental (interal)
+#         Experimental (internal)
 #           ITAPS             ITAPS-MOAB-26Jun07.tar.gz -I
 #           ViSUS             visus_26Feb07.tar.gz      -V
 #
@@ -346,7 +346,7 @@
 #     Thomas R. Treadway, Fri Apr 18 14:03:06 PDT 2008
 #     Correct a printout problem with the -E, display user settable 
 #     environment variables option. Added PAR_INCLUDE and PAR_LIBS 
-#     to the virable list.
+#     to the variable list.
 #
 #     Thomas R. Treadway, Wed Apr 23 15:14:43 PDT 2008
 #     Fixed dialog text input box processing in parallel build dialog
@@ -357,6 +357,9 @@
 #     Thomas R. Treadway, Mon May  5 14:14:11 PDT 2008
 #     Check for wget version 9.x, because SSL options different from V10.
 #     Corrected problem with having QTDIR defined
+#
+#     Sean Ahern, Tue May  6 12:00:35 EDT 2008
+#     Made the Qt OpenGL patch apply more generally to 64-bit platforms.
 #
 # *****************************************************************************
 #
@@ -2490,12 +2493,9 @@ EOF
     # Qt isn't expecting.  Qt compiles itself without OpenGL support,
     # and that leads to linker problems during the visit build.
     # 
-    # If you see libGL.so installed under /usr/lib64, and not in
-    # /usr/lib or /usr/X11R6/lib, then you have this problem, and
-    # can do this to fix it:
+    # If you see libGL.so installed under /usr/lib64, this might fix it:
     if [[ "$QT_PLATFORM" == "linux-g++-64" ]] ; then
-       if [[ -e /usr/lib64/libGL.so && ! -e /usr/lib/libGL.so &&
-          ! -e /usr/X11R6/lib/libGL.so ]] ; then
+        if [[ -e /usr/lib64/libGL.so ]] ; then
           echo "Fixing OpenGLs path to /usr/lib64"
           patch -p1 <<\EOF
 diff -rp qt-x11-free-3.3.8.orig/config.tests/x11/opengl.test qt-x11-free-3.3.8/config.tests/x11/opengl.test
@@ -6922,7 +6922,7 @@ usage () {
   printf "%s %s %s\n" "-f     Build CFITSIO from [" $CFITSIO_FILE "]"
   printf "%s %s %s\n" "-g     Build GDAL from [" $GDAL_FILE "]"
   printf "%s\n" "-h     display this message"
-  printf "%s %s %s\n" "-I     Build ITAPS from [" $ITAPS_FILE "]-expermintal!"
+  printf "%s %s %s\n" "-I     Build ITAPS from [" $ITAPS_FILE "]-experimental!"
   printf "%s\n" "-i     Change the behavior of the install name path for"
   printf "%s\n" "       the Darwin dynamic libraries. Enabling this flag"
   printf "%s\n" "       will used the THIRD_PARTY_PATH path for creating"
@@ -6952,7 +6952,7 @@ usage () {
   printf "%s\n" "       installed some where like /usr/gapps/visit. The"
   printf "%s\n" "       default assumes 3rd party libraries are to be built"
   printf "%s %s %s\n" "       and installed in [" $THIRD_PARTY_PATH "]"
-  printf "%s %s %s\n" "-V     Build ViSUS from:[" $ViSUS_FILE "]-expermintal!"
+  printf "%s %s %s\n" "-V     Build ViSUS from:[" $ViSUS_FILE "]-experimental!"
   printf "%s %s %s\n" "-v opt The VISIT_VERSION value [" $VISIT_VERSION "]"
   printf "%s\n" "-w     Build with the VisIt Python module"
   printf "%s\n" "-x     Turn on SHELL debugging"
