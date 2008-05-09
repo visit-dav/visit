@@ -33,6 +33,9 @@ def onAddPlot(plotType, plotVar):
 RegisterCallback("AddPlotRPC", onAddPlot)
 
 def SetupSlice():
+    # Import global variable
+    global automaticMappingEnabled
+
     # Disable callback
     RegisterCallback("AddPlotRPC")
 
@@ -54,9 +57,16 @@ def SetupSlice():
         AddMappingDisplacementOperator()
 
         # Get the centroid
-        DrawPlots()
-        Query("Centroid", 0, 0, "default")
-        centroid = GetQueryOutputValue()
+        if m.GetMeshes(0).hasSpatialExtents and not automaticMappingEnabled:
+            centroid = (
+                0.5 * (m.GetMeshes(0).minSpatialExtents[0] + m.GetMeshes(0).maxSpatialExtents[0]),
+                0.5 * (m.GetMeshes(0).minSpatialExtents[1] + m.GetMeshes(0).maxSpatialExtents[1]),
+                0.5 * (m.GetMeshes(0).minSpatialExtents[2] + m.GetMeshes(0).maxSpatialExtents[2])
+            )
+        else:
+            DrawPlots()
+            Query("Centroid", 0, 0, "default")
+            centroid = GetQueryOutputValue()
 
         # Hide the mesh plot
         HideActivePlots()
@@ -79,7 +89,6 @@ def SetupSlice():
         EnableTool(4, 1)
 
     # Re-enable callback if necessary
-    global automaticMappingEnabled
     if automaticMappingEnabled:
         RegisterCallback("AddPlotRPC", onAddPlot)
 
@@ -133,9 +142,10 @@ def SetupIsosurf():
 def SetupBoundingBox():
     AddPlot("Subset", "patches")
     SubsetAtts = SubsetAttributes()
-    SubsetAtts.colorType = SubsetAtts.ColorByMultipleColors  # ColorBySingleColor, ColorByMultipleColors, ColorByColorTable
-    SubsetAtts.legendFlag = 1
+    SubsetAtts.colorType = SubsetAtts.ColorBySingleColor  # ColorBySingleColor, ColorByMultipleColors, ColorByColorTable
+    SubsetAtts.legendFlag = 0
     SubsetAtts.lineStyle = SubsetAtts.SOLID  # SOLID, DASH, DOT, DOTDASH
+    SubsetAtts.lineWidth = 1
     SubsetAtts.wireframe = 1
     SetPlotOptions(SubsetAtts)
 
@@ -143,16 +153,19 @@ def SetupBoundary():
     # Get the name of the first variable in the file
     filename = GetWindowInformation().activeSource
     m = GetMetaData(filename)
-    materialsname = m.GetMaterials(0).name
-    AddPlot("Boundary", materialsname)
-    BoundaryAtts = BoundaryAttributes()
-    BoundaryAtts.colorType = BoundaryAtts.ColorBySingleColor  # ColorBySingleColor, ColorByMultipleColors, ColorByColorTable
-    if m.GetMeshes(0).spatialDimension == 2:
-        BoundaryAtts.singleColor = (0, 0, 0, 255)
+    if m.GetNumMaterials() > 0:
+        materialsname = m.GetMaterials(0).name
+        AddPlot("Boundary", materialsname)
+        BoundaryAtts = BoundaryAttributes()
+        BoundaryAtts.colorType = BoundaryAtts.ColorBySingleColor  # ColorBySingleColor, ColorByMultipleColors, ColorByColorTable
+        if m.GetMeshes(0).spatialDimension == 2:
+            BoundaryAtts.singleColor = (0, 0, 0, 255)
+        else:
+            BoundaryAtts.singleColor = (255, 255, 255, 255)
+        BoundaryAtts.boundaryType = BoundaryAtts.Material  # Domain, Group, Material, Unknown
+        SetPlotOptions(BoundaryAtts)
     else:
-        BoundaryAtts.singleColor = (255, 255, 255, 255)
-    BoundaryAtts.boundaryType = BoundaryAtts.Material  # Domain, Group, Material, Unknown
-    SetPlotOptions(BoundaryAtts)
+        print "Error: File contains no EB information."
 
 def GetActivePlots():
     apl = []
@@ -219,7 +232,7 @@ time.sleep(0.5)
 
 RegisterMacro("Slice", SetupSlice)
 RegisterMacro("Contours", SetupIsosurf)
-RegisterMacro("Bounding Boxes", SetupBoundingBox)
-RegisterMacro("Boundaries", SetupBoundary)
+RegisterMacro("Boxes", SetupBoundingBox)
+RegisterMacro("EB", SetupBoundary)
 RegisterMacro("Mapping on", EnableAutomaticMapping)
 RegisterMacro("Mapping off", DisableAutomaticMapping)
