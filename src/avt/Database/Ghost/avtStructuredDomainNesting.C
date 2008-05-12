@@ -244,27 +244,18 @@ DetectBoundaryGhostLayers(int numDims, unsigned char *ghostData, int numCells,
 //
 //  Modifications:
 //
+//    Hank Childs, Mon May 12 08:09:45 PDT 2008
+//    Added the lookup table as an argument, since it was being recalculated 
+//    for each domain and that was adding up (i.e. O(n^2)).
+//
 // ****************************************************************************
 
 void
 avtStructuredDomainNesting::GetSelectedDescendents(
     const vector<int>& allDomainList, int dom,
-    vector<int>& selectedDescendents) const
+    vector<int>& selectedDescendents, const vector<bool> &lookup) const
 {
-    //
-    // Build a lookup table for the all domain list 
-    //
-    int maxDom = allDomainList[0];
-    for (size_t i = 1; i < allDomainList.size(); i++)
-    {
-        if (allDomainList[i] > maxDom)
-            maxDom = allDomainList[i];
-    }
-
-    vector<bool> lookup(maxDom + 1, false);
-    for (size_t i = 0; i < allDomainList.size(); i++)
-        lookup[allDomainList[i]] = true;
-
+    int maxDom = lookup.size()-1;
     vector<int> domQueue;
     domQueue.push_back(dom);
 
@@ -338,6 +329,9 @@ avtStructuredDomainNesting::GetSelectedDescendents(
 //    ghost data with a new array, then step (2) will overwrite the ghost
 //    data from step (1) and the pick from (3) will get the wrong ghost data.
 //
+//    Hank Childs, Mon May 12 08:13:45 PDT 2008
+//    Cache the lookup table to prevent an O(n^2) type algorithm.
+//
 // ****************************************************************************
 
 bool
@@ -346,6 +340,21 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
                                        vector<vtkDataSet*> meshes)
 {
     bool didGhost = false;
+
+    //
+    // Build a lookup table for the all domain list.  This will be sent
+    // into GetSelectedDescendants.  And we are doing it here to prevent
+    // a lot of recalculation.
+    //
+    int maxDom = 0;
+    for (size_t i = 0; i < allDomainList.size(); i++)
+    {
+        if (allDomainList[i] > maxDom)
+            maxDom = allDomainList[i];
+    }
+    vector<bool> lookup(maxDom + 1, false);
+    for (size_t i = 0; i < allDomainList.size(); i++)
+        lookup[allDomainList[i]] = true;
 
     for (size_t i = 0; i < domainList.size(); i++)
     {
@@ -444,7 +453,7 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
         // also in the current selection.
         //
         vector<int> selectedDescendents;
-        GetSelectedDescendents(allDomainList, parentDom, selectedDescendents);
+        GetSelectedDescendents(allDomainList, parentDom, selectedDescendents, lookup);
 
         //
         // For each descendent, ghost the current domain appropriately

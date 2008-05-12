@@ -93,6 +93,9 @@ class vtkDataArray;
 //    Hank Childs, Fri Jul 27 13:15:21 PDT 2007
 //    Added GetNestingForDomain.
 //
+//    Hank Childs, Mon May 12 08:15:13 PDT 2008
+//    Changed signature for GetSelectedDescdendants.
+//
 // ****************************************************************************
 
 typedef struct {
@@ -138,7 +141,8 @@ class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
     protected:
 
         void          GetSelectedDescendents(const vector<int>& allDomainList,
-                          int dom, vector<int>& selectedDescendents) const;
+                          int dom, vector<int>& selectedDescendents,
+                          const vector<bool>& lookup) const;
 
         int numDimensions;
 

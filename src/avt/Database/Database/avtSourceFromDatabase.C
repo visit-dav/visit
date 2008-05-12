@@ -55,6 +55,7 @@
 
 #include <BadIndexException.h>
 #include <DebugStream.h>
+#include <TimingsManager.h>
 
 
 using     std::string;
@@ -224,7 +225,9 @@ avtSourceFromDatabase::FetchDataset(avtDataRequest_p spec,
         vector<int> list;
         avtSILRestrictionTraverser trav(spec->GetRestriction());
         trav.GetDomainList(list);
+        int t0 = visitTimer->StartTimer();
         tree = tree->PruneTree(list);
+        visitTimer->StopTimer(t0, "PruneTree from avtSourceFromDatabase");
     }
     else
     {
