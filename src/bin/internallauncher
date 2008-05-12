@@ -539,17 +539,17 @@ $fullusage = "$usage
         expressions will attempt to generate useful results regardless of the
         similarity of the underlying meshes.
 
-	Note that the differences VisIt will compute in this mode are single
-	precision. This is true regardless of whether the input data is itself
-	double precision. VisIt will convert double precision to single 
-	precision before processing it. Although this is a result of earlier
-	visualization-specific design requirements and constraints, the intention
-	is that eventually double precision will be supported.
+        Note that the differences VisIt will compute in this mode are single
+        precision. This is true regardless of whether the input data is itself
+        double precision. VisIt will convert double precision to single 
+        precision before processing it. Although this is a result of earlier
+        visualization-specific design requirements and constraints, the intention
+        is that eventually double precision will be supported.
 
         Finally, be sure to bring up Controls->Macros in the GUI to find a set
         of useful operations specifically tailored to database differencing. Also,
         typing 'help()' (including the '()') at the python prompt after starting
-	'visit -diff' will generate a more detailed help message.
+        'visit -diff' will generate a more detailed help message.
 
         -diff <ldb> <rdb>    Indicate you wish to run VisIt in database
                              differencing mode and specify the two databases
@@ -561,9 +561,9 @@ $fullusage = "$usage
                              occuring *before* the '-diff' option are treated
                              as options to VisIt.
 
-	-diffsum <ldb> <rdb> Run only the DiffSummary() method of the
-	                     'visit -diff' script, in nowin mode so its fast,
-			     print the results, and immediatly exit.
+        -diffsum <ldb> <rdb> Run only the DiffSummary() method of the
+                             'visit -diff' script, in nowin mode so its fast,
+                             print the results, and immediatly exit.
 
         -force_pos_cmfe      Force use of position-based CMFE expressions.
 
@@ -663,16 +663,16 @@ $fullusage = "$usage
     ---------------------------------------------------------------------------
         -debug <level>       Run with <level> levels of output logging.
                              <level> must be between 1 and 5. This will generate
-			     debug logs for ALL components.
+                             debug logs for ALL components.
         -debug_<compname> <level> Run specified component with <level> of output
-	                     logging. For example, '-debug_mdserver 4' will run
-			     the mdserver with level 4 debugging. Multiple
-			     '-debug_<compname> <level>' args are allowed.
-	-clobber_vlogs       By default, each invokation or restart of a VisIt
-	                     component will write its debug logs to new files.
-			     This flag causes VisIt to overwrite existing debug
-			     logs rather than creating new ones.
-	-vtk-debug           Turn on debugging of vtk objects used in pipelines.
+                             logging. For example, '-debug_mdserver 4' will run
+                             the mdserver with level 4 debugging. Multiple
+                             '-debug_<compname> <level>' args are allowed.
+        -clobber_vlogs       By default, each invokation or restart of a VisIt
+                             component will write its debug logs to new files.
+                             This flag causes VisIt to overwrite existing debug
+                             logs rather than creating new ones.
+        -vtk-debug           Turn on debugging of vtk objects used in pipelines.
         -pid                 Append process ids to the names of log files.
         -timing              Save timing data to files.
         -withhold-timing-output
@@ -713,8 +713,8 @@ $fullusage = "$usage
                              Default <args> is -ttt -T.
 
                              In the above, all arguments between the tool name
-			     and the visit component name are treated as args
-			     to the tool.
+                             and the visit component name are treated as args
+                             to the tool.
 
         -debug-malloc <args> <comp>
                              Run the component with the libMallocDebug library
@@ -903,14 +903,14 @@ while (scalar(@ARGV) > 0) {
                                           $debug_totalview = shift;
                                           if (!IsAVisItComponentName($debug_totalview))
                                           {
-					    push @debug_totalview_args, $debug_totalview;
+                                            push @debug_totalview_args, $debug_totalview;
                                             $debug_totalview = shift;
                                           }
                                           push @norun, $debug_totalview;
                                           push @visitargs, "-norun", $debug_totalview;
                                           if ($exe_name ne $debug_totalview)
                                           {
-					    if (scalar(@debug_totalview_args) == 0)
+                                            if (scalar(@debug_totalview_args) == 0)
                                             {
                                               push @visitargs, "-totalview", $debug_totalview;
                                             }
@@ -924,14 +924,14 @@ while (scalar(@ARGV) > 0) {
                                           $debug_valgrind = shift;
                                           while (!IsAVisItComponentName($debug_valgrind))
                                           {
-					    push @debug_valgrind_args, $debug_valgrind;
+                                            push @debug_valgrind_args, $debug_valgrind;
                                             $debug_valgrind = shift;
                                           }
                                           push @norun, $debug_valgrind;
                                           push @visitargs, "-norun", $debug_valgrind;
                                           if ($exe_name ne $debug_valgrind)
                                           {
-					    if (scalar(@debug_valgrind_args) == 0)
+                                            if (scalar(@debug_valgrind_args) == 0)
                                             {
                                               push @visitargs, "-valgrind", $debug_valgrind;
                                             }
@@ -966,7 +966,7 @@ while (scalar(@ARGV) > 0) {
                                           $debug_malloc = shift;
                                           while (!IsAVisItComponentName($debug_malloc))
                                           {
-					    push @debug_malloc_args, $debug_malloc;
+                                            push @debug_malloc_args, $debug_malloc;
                                             $debug_malloc = shift;
                                           }
                                           if (scalar(@debug_malloc_args) == 0)
@@ -1210,26 +1210,26 @@ if ( ($parallel) and $exe_name eq "engine" and $host =~ /jaguar/ )
     chomp($domain   = `hostname -d`);
     if ( $domain eq "ccs.ornl.gov" )
     {
-	if ( $host eq "jaguar1" ) 
-	{
-	    $IsRunningOnJaguarCNL_ORNL = 1;
-	    $remotehost = "192.168.0.9";
-	}
-	if ( $host eq "jaguar2" )
-	{
-	    $IsRunningOnJaguarCNL_ORNL = 1;
-	    $remotehost = "192.168.0.13";
-	}
-	if ( $host eq "jaguar3" )
-	{
-	    $IsRunningOnJaguarCNL_ORNL = 1;
-	    $remotehost = "192.168.0.17";
-	}
-	if ( $host eq "jaguar4" )
-	{
-	    $IsRunningOnJaguarCNL_ORNL = 1;
-	    $remotehost = "192.168.0.21";
-	}
+        if ( $host eq "jaguar1" ) 
+        {
+            $IsRunningOnJaguarCNL_ORNL = 1;
+            $remotehost = "192.168.0.9";
+        }
+        if ( $host eq "jaguar2" )
+        {
+            $IsRunningOnJaguarCNL_ORNL = 1;
+            $remotehost = "192.168.0.13";
+        }
+        if ( $host eq "jaguar3" )
+        {
+            $IsRunningOnJaguarCNL_ORNL = 1;
+            $remotehost = "192.168.0.17";
+        }
+        if ( $host eq "jaguar4" )
+        {
+            $IsRunningOnJaguarCNL_ORNL = 1;
+            $remotehost = "192.168.0.21";
+        }
     }
 }
 
@@ -2000,8 +2000,8 @@ if ($procs_set or ($parallel and $parlaunch_set))
            
             @parcmd = ($plauncher);
 
-	    # Add the env variables.
-	    push @parcmd, "-v LIBPATH=$ENV{LIBPATH},LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH},VISITPLUGINDIR=$ENV{VISITPLUGINDIR}";
+            # Add the env variables.
+            push @parcmd, "-v LIBPATH=$ENV{LIBPATH},LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH},VISITPLUGINDIR=$ENV{VISITPLUGINDIR}";
 
             # parse for '-l vis' so it can be separated from the
             # launchargs
@@ -2027,13 +2027,13 @@ if ($procs_set or ($parallel and $parlaunch_set))
             push @parcmd, @newlaunchargs if $newlaunchargs_set;
             $nodes = $procs if (!$nodes_set);
             $ppn = ceil($procs / $nodes);
-	    $qsubNumNodeStr = "nodes";
+            $qsubNumNodeStr = "nodes";
             $qsubPPNStr = "ncpus";
-	    if ( $IsRunningOnJaguarCNL_ORNL ) {$qsubNumNodeStr = "size";}
-	    if ( $IsRunningOnFranklinNERSC ) {$qsubNumNodeStr = "mppwidth";}
+            if ( $IsRunningOnJaguarCNL_ORNL ) {$qsubNumNodeStr = "size";}
+            if ( $IsRunningOnFranklinNERSC ) {$qsubNumNodeStr = "mppwidth";}
             if ( $IsRunningOnLens_ORNL ) {$qsubPPNStr = "ppn";}
-	    if ( $use_vis ) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes:$qsubPPNStr=$ppn:vis";}
-	    else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes:$qsubPPNStr=$ppn"; }
+            if ( $use_vis ) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes:$qsubPPNStr=$ppn:vis";}
+            else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes:$qsubPPNStr=$ppn"; }
             push @parcmd, "-l", "walltime=$time" if $time_set;
             if ($UseTTC) { push @parcmd, "-l", "ttc=$procs"; }
             push @parcmd, "-q",  $part  if $part_set;
@@ -2083,7 +2083,7 @@ else
     {
         # Run totalview
         @debugcmd = ("totalview", "$visitbindir/$exe_name", "-a", "-dograb");
-	if (!(scalar(@debug_totalview_args) == 0))
+        if (!(scalar(@debug_totalview_args) == 0))
         {
             push @debugcmd, @debug_totalview_args;
         }
@@ -2100,7 +2100,7 @@ else
         #       and runs twice as fast, but it doesn't catch UMRs
         # Note: could add --leak-check=yes to either tool
         @debugcmd = ("valgrind");
-	if (!(scalar(@debug_valgrind_args) == 0))
+        if (!(scalar(@debug_valgrind_args) == 0))
         {
           push @debugcmd, @debug_valgrind_args;
         }
@@ -2117,7 +2117,7 @@ else
     {
         # Run strace with given args 
         @debugcmd = ("strace");
-	if (!(scalar(@debug_strace_args) == 0))
+        if (!(scalar(@debug_strace_args) == 0))
         {
             push @debugcmd, @debug_strace_args;
         }
