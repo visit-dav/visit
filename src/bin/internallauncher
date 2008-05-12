@@ -320,6 +320,12 @@ $0 = shift @ARGV;
 #    Added loopback support: it replaces the remote host name with 127.0.0.1
 #    unless the "-noloopback" flag is given by visit or by the user.
 #
+#    Sean Ahern, Mon May 12 14:47:11 EDT 2008
+#    Added lens.ccs.ornl.gov specific code.
+# 
+#    Sean Ahern, Mon May 12 14:47:11 EDT 2008
+#    Put back use_vis logic that got accidentally blown away.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1172,6 +1178,29 @@ if ($host eq "redrose1.sandia.gov" || $host eq "redrose2.sandia.gov")
 }
 
 # ----
+# HACK for lens.ccs.ornl.gov @ ORNL
+#
+# ----
+$IsRunningOnLens_ORNL = 0;
+if ( ($parallel) and $exe_name eq "engine" and $host =~ /lens/ )
+{
+    chomp($domain   = `hostname -d`);
+    if ( $domain eq "ccs.ornl.gov" )
+    {
+        $IsRunningOnLens_ORNL = 1;
+
+        # On lens, we need to have a specific LD_LIBRARY_PATH set.  I'm
+        # not sure this script is the right place to do this, but it
+        # works for now.
+    $ENV{LD_LIBRARY_PATH} = join ':' ,
+        ("/sw/analysis-x86/ompi/1.2.6/sl5_gcc4.2.0/lib",
+         "/ccs/compilers/gcc/sl5-x86_64/4.2.0-amd/gnutools-4.2.0-barcelona/lib64",
+         "/ccs/compilers/gcc/sl5-x86_64/4.2.0-amd/binutils/lib64",
+         "/sw/analysis-x86/python/2.5.2/sl5_gnu4.1.1/lib");
+    }
+}
+
+# ----
 # HACK for jaguarcnl @ ORNL
 #
 # ----
@@ -1999,10 +2028,12 @@ if ($procs_set or ($parallel and $parlaunch_set))
             $nodes = $procs if (!$nodes_set);
             $ppn = ceil($procs / $nodes);
 	    $qsubNumNodeStr = "nodes";
+            $qsubPPNStr = "ncpus";
 	    if ( $IsRunningOnJaguarCNL_ORNL ) {$qsubNumNodeStr = "size";}
 	    if ( $IsRunningOnFranklinNERSC ) {$qsubNumNodeStr = "mppwidth";}
-	    if ($use_vis) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes:ncpus=$ppn";}
-	    else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes:ncpus=$ppn"; }
+            if ( $IsRunningOnLens_ORNL ) {$qsubPPNStr = "ppn";}
+	    if ( $use_vis ) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes:$qsubPPNStr=$ppn:vis";}
+	    else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes:$qsubPPNStr=$ppn"; }
             push @parcmd, "-l", "walltime=$time" if $time_set;
             if ($UseTTC) { push @parcmd, "-l", "ttc=$procs"; }
             push @parcmd, "-q",  $part  if $part_set;
