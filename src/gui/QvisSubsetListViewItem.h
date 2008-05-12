@@ -55,6 +55,9 @@ typedef enum {NotChecked, PartiallyChecked, CompletelyChecked} CheckedState;
 //
 // Modifications:
 //   
+//    Gunther H. Weber, Mon May 12 15:38:33 PDT 2008
+//    Implement compare() instead of key() to speed up sorting.
+//
 // ****************************************************************************
 
 class GUI_API QvisSubsetListViewItem : public QCheckListItem
@@ -68,7 +71,7 @@ public:
                            int id_ = 0);
 
     virtual ~QvisSubsetListViewItem();
-    virtual QString key(int column, bool ascending) const;
+    virtual int compare (QListViewItem* i, int col, bool ascending) const;
     virtual void activate();
     virtual void paintCell(QPainter *p, const QColorGroup &cg,
                            int column, int width, int align);
