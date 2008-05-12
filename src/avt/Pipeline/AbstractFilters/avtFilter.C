@@ -310,7 +310,11 @@ avtFilter::Update(avtContract_p spec)
         GetInput()->IsTransient())
     {
         if (GetInput()->GetSource() != NULL)
+        {
+            int t0 = visitTimer->StartTimer();
             GetInput()->GetSource()->ReleaseData();
+            visitTimer->StopTimer(t0, "Calling release data");
+        }
     }
 
     debug1 << "Done Updating " << GetType() << endl;

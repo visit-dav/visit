@@ -57,6 +57,7 @@
 #include <ImproperUseException.h>
 #include <NoInputException.h>
 #include <DebugStream.h>
+#include <TimingsManager.h>
 
 
 // ****************************************************************************
@@ -1000,57 +1001,40 @@ avtDataTree::Traverse(TraverseFunc func, void *arg, bool &flag)
 avtDataTree_p
 avtDataTree::PruneTree(const vector<int> &list)
 {
+    int t0 = visitTimer->StartTimer();
     struct map
     {
-        int            chunkId;
-        avtDataTree_p  subtree;
+        vector<bool>           lookup;
+        vector<avtDataTree_p>  new_nodes;
     } pmap;
 
-    bool success;
-
-    avtDataTree_p *treelist = new avtDataTree_p[list.size()+1];
-    int count = 0;
-    for (int i = 0 ; i < list.size() ; i++)
-    {
-        success = false;
-        pmap.chunkId = list[i];
-        pmap.subtree = new avtDataTree();
-        Traverse(CGetChunkByDomain, &pmap, success);
-
-        if (success)
-        {
-            treelist[count] = pmap.subtree;
-            count++;
-        }
-    }
-
     //
-    //   Add a subtree for datasets with 'unknown' domains.
-    //   (chunkId == -1). 
+    // Build a lookup table for the all domain list.  This will be sent
+    // into Traverse.  And we are doing it here to prevent a lot of recalculation.
     //
-    success = false;
-    pmap.chunkId = -1;
-    pmap.subtree = new avtDataTree();
-    Traverse(CGetChunkByDomain, &pmap, success);
-    if (success)
+    int maxDom = 0;
+    for (size_t i = 0; i < list.size(); i++)
     {
-        debug5 << "Found leaves with id == -1, including them "
-               << "in the pruned tree." << endl;
-        treelist[count] = pmap.subtree;
-        count++;
+        if (list[i] > maxDom)
+            maxDom = list[i];
     }
+    pmap.lookup.resize(maxDom + 1, false);
+    for (size_t i = 0; i < list.size(); i++)
+        pmap.lookup[list[i]] = true;
 
-
+    bool success = false;
+    Traverse(CPruneByDomainList, &pmap, success);
     avtDataTree_p rv = NULL;
-    if (count <= 0)
+    if (!success)
     {
         rv =  new avtDataTree();
     }
     else
     {
-        rv =  new avtDataTree(count, treelist);
+        rv = new avtDataTree(pmap.new_nodes.size(), &(pmap.new_nodes[0]));
     }
-    delete [] treelist;
+
+    visitTimer->StopTimer(t0, "Prune tree (vector<int>)");
     return rv;
 }
 
@@ -1084,6 +1068,7 @@ avtDataTree::PruneTree(const vector<int> &list)
 avtDataTree_p
 avtDataTree::PruneTree(const vector<int> &list, vector<int> &goodIds)
 {
+    int t0 = visitTimer->StartTimer();
     if (!goodIds.empty())
     {
         goodIds.clear();
@@ -1123,6 +1108,7 @@ avtDataTree::PruneTree(const vector<int> &list, vector<int> &goodIds)
         rv = new avtDataTree(count, treelist);
     }
     delete [] treelist;
+    visitTimer->StopTimer(t0, "Prune tree (vector<int>, vector<int>)");
     return rv;
 }
 
@@ -1155,6 +1141,7 @@ avtDataTree::PruneTree(const vector<int> &list, vector<int> &goodIds)
 avtDataTree_p
 avtDataTree::PruneTree(const vector<string> &labels)
 {
+    int t0 = visitTimer->StartTimer();
     struct map
     {
         string         label;
@@ -1188,6 +1175,7 @@ avtDataTree::PruneTree(const vector<string> &labels)
         rv = new avtDataTree(count, treelist);
     }
     delete [] treelist;
+    visitTimer->StopTimer(t0, "Prune tree (vector<string>)");
     return rv;
 }
 
@@ -1221,6 +1209,7 @@ avtDataTree::PruneTree(const vector<string> &labels)
 avtDataTree_p
 avtDataTree::PruneTree(const vector<string> &labels, vector<string> &goodLabels)
 {
+    int t0 = visitTimer->StartTimer();
     if (!goodLabels.empty())
     {
         goodLabels.clear();
@@ -1260,6 +1249,7 @@ avtDataTree::PruneTree(const vector<string> &labels, vector<string> &goodLabels)
         rv = new avtDataTree(count, treelist);
     }
     delete [] treelist;
+    visitTimer->StopTimer(t0, "Prune tree (vector<string>, vector<string>)");
     return rv;
 }
 

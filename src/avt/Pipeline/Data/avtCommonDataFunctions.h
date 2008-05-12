@@ -119,6 +119,9 @@ class     vtkDataArray;
 //    Jeremy Meredith, Thu Feb  7 17:54:34 EST 2008
 //    Added GetDataAllComponentsRange.
 //
+//    Hank Childs, Mon May 12 09:12:36 PDT 2008
+//    Added CPruneByDomainList
+//
 // ****************************************************************************
 
 //
@@ -134,6 +137,7 @@ PIPELINE_API void CBreakVTKPipelineConnections(avtDataRepresentation &,
 PIPELINE_API void CGetAllDatasets(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfZones(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetChunkByDomain(avtDataRepresentation &, void *, bool &);
+PIPELINE_API void CPruneByDomainList(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetChunkByLabel(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CSetActiveVariable(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CRemoveVariable(avtDataRepresentation &, void *, bool &);
