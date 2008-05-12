@@ -124,27 +124,26 @@ QvisSubsetListViewItem::~QvisSubsetListViewItem()
 }
 
 // ****************************************************************************
-// Method: QvisSubsetListViewItem::key
+// Method: QvisSubsetListViewItem::compare(QListViewItem* i, int col, bool)
 //
 // Purpose: 
-//   This method returns the key string that is used to sort the items in
-//   the listview.
+//   Compares this list view item to i using the column col in ascending order.
 //
-// Returns:    A key string used for sorting.
+// Returns:
+//   < 0 if this item is less than i, 0 if they are equal and > 0 if this item
+//   is greater than i.
 //
-// Programmer: Brad Whitlock
-// Creation:   Thu Jul 5 09:36:54 PDT 2001
+// Programmer: Gunther H. Weber
+// Creation:   Mon May 12 14:55:15 PDT 2008
 //
 // Modifications:
 //   
 // ****************************************************************************
 
-QString
-QvisSubsetListViewItem::key(int, bool) const
+int
+QvisSubsetListViewItem::compare (QListViewItem* i, int col, bool ascending) const
 {
-    QString tmp;
-    tmp.sprintf("%08d", itemId);
-    return tmp;
+    return itemId - static_cast<QvisSubsetListViewItem*>(i)->itemId;
 }
 
 // ****************************************************************************
