@@ -475,7 +475,7 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
         setTextPen(painter, false);
         if(plot.GetHiddenFlag())
         {
-            QString hidden(QString(" (") + QObject::tr("hidden","") + QString(")"));
+            QString hidden(QString(" (") + QObject::tr("hidden", "QvisPlotListBoxItem") + QString(")"));
             painter->drawText(textX, thisTextY, plotName + hidden);
         }
         else
@@ -1019,7 +1019,7 @@ QvisPlotListBoxItem::GetDisplayString(const Plot &plot, const QString &prefix)
     // Create the display string
     QString display = prefix + plotTypeName + QString(" - ") + plotVar;
     if(plot.GetHiddenFlag())
-        display += (QString(" (") + QObject::tr("QvisPlotListBoxItem","hidden") + QString(")"));
+        display += (QString(" (") + QObject::tr("hidden", "QvisPlotListBoxItem") + QString(")"));
 
     return display;
 }

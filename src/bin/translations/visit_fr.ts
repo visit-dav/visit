@@ -1,94 +1,6 @@
 <!DOCTYPE TS><TS>
 <context>
     <name>@default</name>
-    <message>
-        <source>Launching engine on %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt could not launch a compute engine on host &quot;%1&quot; because that host does not exist.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt cannot use the compute engine on host &quot;%1&quot; because the engine has an incompatible  version number.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt cannot use the compute engine on host &quot;%1&quot;because the compute engine did not provide the proper credentials.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt could not launch the compute engine on host &quot;%1&quot;.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The launch of the compute engine on host &quot;%1&quot; has been cancelled.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connecting to simulation at %1:%2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt could not connect to the simulation on host &quot;%1&quot; because that host does not exist.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt cannot use the simulation on host &quot;%1&quot; because the simulation has an incompatible  version number.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt cannot use the simulation on host &quot;%1&quot;because the simulation did not provide the proper credentials.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt could not connect to the simulation on host &quot;%1&quot;.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The connection to the simulation on host &quot;%1&quot; has been cancelled.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Closed the compute engine on host %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cannot close the compute engine on host %1 because there is no compute engine running on that host.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Interrupting the compute engine on host %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cannot interrupt the compute engine on host %1 because there is no compute engine running on that host.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt is not connected to the simulation &apos;%1&apos; on host %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt could not find a compute engine to use for the plot on host %1. VisIt will try to launch a compute engine on that host.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt has been disconnected from the simulation &apos;%1&apos; on host %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The compute engine running on %1 has exited abnormally.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The compute engine running on host %1 issued the following warning: %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VisIt can only export data to a simulation if the data being exported originated in a simulation.</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>AddOperatorAction</name>
@@ -258,7 +170,7 @@
     </message>
     <message>
         <source>Box</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Boîte</translation>
     </message>
     <message>
         <source>Box tool</source>
@@ -796,6 +708,7 @@
     <name>QObject</name>
     <message>
         <source>hidden</source>
+        <comment>QvisPlotListBoxItem</comment>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1594,15 +1507,19 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Function names may not contain spaces. Please try to create the macro again using a valid function name.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Please enter the name of the macro to be defined (as you want it to appear in a button).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>VisIt could not update the file: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Function names must start with a letter. Please try to create the macro again with a function name that starts with a letter.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Function names may only contain letters, numbers, and underscores.  Please try again with only those characters.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2502,7 +2419,7 @@
     </message>
     <message>
         <source>Tensor</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Tenseur</translation>
     </message>
     <message>
         <source>Array</source>
@@ -2514,7 +2431,7 @@
     </message>
     <message>
         <source>Mesh</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Maille</translation>
     </message>
     <message>
         <source>Mesh Quality</source>
@@ -3105,7 +3022,7 @@
     </message>
     <message>
         <source>Subset</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Partie</translation>
     </message>
     <message>
         <source>Plugin Manager</source>
@@ -3725,7 +3642,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Curve</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Courbe</translation>
     </message>
     <message>
         <source>Block</source>
@@ -5382,7 +5299,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <source>Volume</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Rendu volumique </translation>
     </message>
     <message>
         <source>Stretch</source>
@@ -6464,7 +6381,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Plots</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Graphes</translation>
     </message>
     <message>
         <source>Remove last</source>
@@ -6527,7 +6444,7 @@ Choose a unique scalar variable for the new axis.</source>
     <name>QvisPluginWindow</name>
     <message>
         <source>Plots</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Graphes</translation>
     </message>
     <message>
         <source>Name</source>
@@ -6582,7 +6499,7 @@ Choose a unique scalar variable for the new axis.</source>
     </message>
     <message>
         <source>Box</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Boîte</translation>
     </message>
     <message>
         <source>Axis</source>
@@ -7089,7 +7006,7 @@ use this same window.</source>
     </message>
     <message>
         <source>Beta</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Bêta</translation>
     </message>
     <message>
         <source>NMax</source>
@@ -8420,7 +8337,7 @@ set across all processors
     </message>
     <message>
         <source>Box</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Boîte</translation>
     </message>
     <message>
         <source>Axis</source>
@@ -8888,7 +8805,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Mesh</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Maille</translation>
     </message>
     <message>
         <source>Up Axis</source>
@@ -9108,7 +9025,7 @@ plot&apos;s color.</source>
     </message>
     <message>
         <source>Box</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Boîte</translation>
     </message>
     <message>
         <source>Location</source>
@@ -9673,7 +9590,7 @@ plot&apos;s color.</source>
     <name>QvisSurfacePlotWindow</name>
     <message>
         <source>Surface</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Surface</translation>
     </message>
     <message>
         <source>Wireframe</source>
@@ -11704,6 +11621,97 @@ FTP Error: </source>
     </message>
 </context>
 <context>
+    <name>ViewerEngineManager</name>
+    <message>
+        <source>Launching engine on %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not launch a compute engine on host &quot;%1&quot; because that host does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt cannot use the compute engine on host &quot;%1&quot; because the engine has an incompatible  version number.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt cannot use the compute engine on host &quot;%1&quot;because the compute engine did not provide the proper credentials.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not launch the compute engine on host &quot;%1&quot;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The launch of the compute engine on host &quot;%1&quot; has been cancelled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connecting to simulation at %1:%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not connect to the simulation on host &quot;%1&quot; because that host does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt cannot use the simulation on host &quot;%1&quot; because the simulation has an incompatible  version number.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt cannot use the simulation on host &quot;%1&quot;because the simulation did not provide the proper credentials.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not connect to the simulation on host &quot;%1&quot;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The connection to the simulation on host &quot;%1&quot; has been cancelled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Closed the compute engine on host %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot close the compute engine on host %1 because there is no compute engine running on that host.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Interrupting the compute engine on host %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot interrupt the compute engine on host %1 because there is no compute engine running on that host.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt is not connected to the simulation &apos;%1&apos; on host %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt could not find a compute engine to use for the plot on host %1. VisIt will try to launch a compute engine on that host.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt has been disconnected from the simulation &apos;%1&apos; on host %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The compute engine running on %1 has exited abnormally.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The compute engine running on host %1 issued the following warning: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VisIt can only export data to a simulation if the data being exported originated in a simulation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ViewerFileServer</name>
     <message>
         <source>GetMetaDataForState called with ANY_STATE. That is not allowed so VisIt will instead use time state 0.</source>
@@ -12827,7 +12835,7 @@ To avoid this warning in the future, make sure that locked windows have compatib
     </message>
     <message>
         <source>Label</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">étiquette</translation>
     </message>
     <message>
         <source>Type</source>
@@ -13116,7 +13124,7 @@ equality calculations</source>
     </message>
     <message>
         <source>Label</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">étiquette</translation>
     </message>
     <message>
         <source>Version</source>
@@ -13136,7 +13144,7 @@ equality calculations</source>
     </message>
     <message>
         <source>Mesh</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Maille</translation>
     </message>
     <message>
         <source>Scalar</source>
@@ -13152,7 +13160,7 @@ equality calculations</source>
     </message>
     <message>
         <source>Subset</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Partie</translation>
     </message>
     <message>
         <source>Species</source>
@@ -13160,11 +13168,11 @@ equality calculations</source>
     </message>
     <message>
         <source>Curve</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Courbe</translation>
     </message>
     <message>
         <source>Tensor</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Tenseur</translation>
     </message>
     <message>
         <source>Symmetric Tensor</source>
