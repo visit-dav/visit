@@ -485,7 +485,7 @@ CBreakVTKPipelineConnections(avtDataRepresentation &data, void *arg, bool &)
     newDS->ShallowCopy(ds);
     avtDataRepresentation new_data(newDS, data.GetDomain(),
                                    data.GetLabel());
-                                   
+
     // If vtk-debug turn on debug for the new dataset and its vars
     if(arg != NULL &&  *((bool*)arg))
     {
@@ -730,6 +730,60 @@ CGetAllDatasets(avtDataRepresentation & data, void *arg, bool &)
     args->datasets.push_back(ds);
     args->domains.push_back(data.GetDomain());
     args->labels.push_back(data.GetLabel());
+}
+
+
+// ****************************************************************************
+//  Method: CPruneByDomainList
+//
+//  Purpose:
+//      Takes a domain list and prunes off all IDs that are not in the list.
+//
+//  Arguments:
+//    data      The data to use as input to the mappers.
+//    arg       The arguments specific to this function.
+//    success   Assigned true if operation successful, false otherwise. 
+//
+//  Notes:
+//      This method is designed to be used as the function parameter of
+//      avtDataTree::Iterate.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 12, 2008
+//
+// ****************************************************************************
+
+void
+CPruneByDomainList(avtDataRepresentation & data, void *arg, bool &success)
+{
+    if (!data.Valid())
+    {
+        EXCEPTION0(NoInputException);
+    }
+
+    struct map
+    {
+        vector<bool>           lookup;
+        vector<avtDataTree_p>  new_nodes;
+    } *pmap;
+
+    pmap = (struct map *) arg;
+
+    bool keepIt = false;
+    if (data.GetDomain() < 0)
+        keepIt = true;
+    else if (data.GetDomain() < pmap->lookup.size())
+        keepIt = pmap->lookup[data.GetDomain()];
+    if (keepIt)
+    {
+        success = true;
+        avtDataTree_p child = new avtDataTree(data);
+        pmap->new_nodes.push_back(child);
+    }
+    else
+    {
+        success |= false;
+    }
 }
 
 

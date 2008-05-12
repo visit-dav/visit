@@ -44,6 +44,8 @@
 
 #include <avtCommonDataFunctions.h>
 
+#include <TimingsManager.h>
+
 bool avtDataObjectToDatasetFilter::vtkDebugMode = false;
 
 // ****************************************************************************
@@ -164,10 +166,14 @@ avtDataObjectToDatasetFilter::PostExecute(void)
     if ((atts.GetSpatialDimension()==3 && atts.GetTopologicalDimension()<3) ||
         (atts.GetSpatialDimension()==2 && atts.GetTopologicalDimension()<2))
     {
+        int t0 = visitTimer->StartTimer();
         tree->Traverse(CConvertUnstructuredGridToPolyData, NULL, dummy);
+        visitTimer->StopTimer(t0, "converting ugrids to polydata in postex");
     }
 
+    int t0 = visitTimer->StartTimer();
     tree->Traverse(CBreakVTKPipelineConnections, (void*)&vtkDebugMode, dummy);
+    visitTimer->StopTimer(t0, "Breaking pipeline connections in postex");
 }
 
 
