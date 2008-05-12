@@ -825,7 +825,7 @@ avtVariableCache::OneTimestep::~OneTimestep()
                 {
                     delete *it;
                 }
-                delete [] domains[i][j][k];
+                delete domains[i][j][k];
             }
             delete [] domains[i][j];
         }

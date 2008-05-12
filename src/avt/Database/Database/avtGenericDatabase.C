@@ -513,6 +513,7 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
         // Now that we have read things in from disk, verify that the dataset
         // is valid, since routines like the MIR downstream will assume they are.
         //
+        int t1 = visitTimer->StartTimer();
         avtDatasetVerifier verifier;
         vtkDataSet **ds_list = new vtkDataSet*[nDomains];
         for (i = 0 ; i < nDomains ; i++)
@@ -521,6 +522,7 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
         }
         verifier.VerifyDatasets(nDomains, ds_list, domains);
         delete [] ds_list;
+        visitTimer->StopTimer(t1, "Verifying dataset");
 
         //
         // Do species selection if appropriate.
@@ -528,9 +530,10 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
         boolVector speciesList;
         if (trav.GetSpecies(speciesList))
         {
+            int t2 = visitTimer->StartTimer();
             SpeciesSelect(datasetCollection, domains, speciesList, spec, src);
+            visitTimer->StopTimer(t2, "Species selection");
         }
-
 
         //
         //  HACK!!! Pick requires original cells array whenever 
@@ -555,7 +558,9 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
             needSelection = trav.GetEnumeration(i, selection, varname);
             if (needSelection)
             {
+                int t3 = visitTimer->StartTimer();
                 EnumScalarSelect(datasetCollection, selection, md, varname);
+                visitTimer->StopTimer(t3, "Enumeration selection");
             }
         }
     }
@@ -613,6 +618,7 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     bool didSimplifiedNesting = false;
     if (spec->GetSimplifiedNestingRepresentation())
     {
+        int t0 = visitTimer->StartTimer();
         if (!shouldDoMatSelect &&
             !spec->NeedNodeNumbers() &&
             !spec->NeedZoneNumbers() &&
@@ -633,6 +639,7 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
                 didSimplifiedNesting = true;
             }
         }
+        visitTimer->StopTimer(t0, "Creating simplified nesting rep.");
     }
 
     //
@@ -640,12 +647,14 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     //
     if (spec->NeedNodeNumbers())
     {
+        int t0 = visitTimer->StartTimer();
         CreateOriginalNodes(datasetCollection, domains, src);
         //
         // Tell everything downstream that we do have original cells.
         //
         string meshname = md->MeshForVar(spec->GetVariable());
         md->SetContainsOriginalNodes(meshname, true);
+        visitTimer->StopTimer(t0, "Creating original node numbers");
     }
 
     //
@@ -653,12 +662,14 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     //
     if (spec->NeedZoneNumbers())
     {
+        int t0 = visitTimer->StartTimer();
         CreateOriginalZones(datasetCollection, domains, src);
         //
         // Tell everything downstream that we do have original cells.
         //
         string meshname = md->MeshForVar(spec->GetVariable());
         md->SetContainsOriginalCells(meshname, true);
+        visitTimer->StopTimer(t0, "Creating original zone numbers");
     }
 
     //
@@ -666,7 +677,9 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     //
     if (spec->NeedGlobalNodeNumbers())
     {
+        int t0 = visitTimer->StartTimer();
         CreateGlobalNodes(datasetCollection, domains, src, spec);
+        visitTimer->StopTimer(t0, "Creating global node numbers");
     }
 
     //
@@ -674,7 +687,9 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     //
     if (spec->NeedGlobalZoneNumbers())
     {
+        int t0 = visitTimer->StartTimer();
         CreateGlobalZones(datasetCollection, domains, src, spec);
+        visitTimer->StopTimer(t0, "Creating global zone numbers");
     }
 
     //
@@ -682,16 +697,19 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     //
     if (spec->NeedStructuredIndices())
     {
+        int t0 = visitTimer->StartTimer();
         CreateStructuredIndices(datasetCollection, src);
         //
         // Tell everything downstream that we do have original cells.
         //
         string meshname = md->MeshForVar(spec->GetVariable());
         md->SetContainsOriginalCells(meshname, true);
+        visitTimer->StopTimer(t0, "Creating structured indices");
     }
 
     if (spec->NeedAMRIndices() >= 0)
     {
+        int t0 = visitTimer->StartTimer();
         CreateAMRIndices(datasetCollection, domains, spec, src, 
                          spec->NeedAMRIndices());
         //
@@ -699,14 +717,19 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
         //
         string meshname = md->MeshForVar(spec->GetVariable());
         md->SetContainsOriginalCells(meshname, true);
+        visitTimer->StopTimer(t0, "Creating AMR indices");
     }
 
     //
     // Apply ghosting when domains nest within other domains (AMR meshes)
     //
     if (!alreadyDidNesting)
+    {
+        int t0 = visitTimer->StartTimer();
         ApplyGhostForDomainNesting(datasetCollection, domains, allDomains, spec,
                                canDoCollectiveCommunication);
+        visitTimer->StopTimer(t0, "Doing ghost nesting");
+    }
 
     //
     // Communicates ghost zones if they are not present and we have domain
@@ -6969,7 +6992,9 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
 
     if (!shouldStop)  
     {
+        int t0 = visitTimer->StartTimer();
         rv = dn->ApplyGhost(doms, allDoms, list);
+        visitTimer->StopTimer(t0, "DomainNesting::ApplyGhost");
 
         //
         // Tell everything downstream that we do have ghost zones.
