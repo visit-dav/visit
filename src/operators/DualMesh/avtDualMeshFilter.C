@@ -59,7 +59,8 @@
 
 avtDualMeshFilter::avtDualMeshFilter()
 {
-    actualMode = 0;
+    actualVar  = "";
+    actualMode = DualMeshAttributes::Auto;
 }
 
 
@@ -143,12 +144,18 @@ avtDualMeshFilter::Equivalent(const AttributeGroup *a)
 //
 //  Modifications:
 //
+//  Cyrus Harrison, Tue May 13 13:42:13 PDT 2008
+//  Fixed mode setting for empy meshes. 
+//
 // ****************************************************************************
 
 void
 avtDualMeshFilter::UpdateDataObjectInfo(void)
 {
-    actualMode = DualMeshAttributes::NodesToZones;
+    actualMode = atts.GetMode();
+    
+    GetOutput()->GetInfo().GetValidity().InvalidateZones();
+    GetOutput()->GetInfo().GetValidity().InvalidateZones();
     
     avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
     if (!in_atts.ValidActiveVariable())
@@ -156,9 +163,11 @@ avtDualMeshFilter::UpdateDataObjectInfo(void)
         // We don't have enough information to resolve Auto mode.
         return;
     }
+    
         
     if(atts.GetMode() == DualMeshAttributes::Auto)
     {
+        actualMode = DualMeshAttributes::NodesToZones;
         // if the active variable is not a mesh, use it to determine
         // conversion mode
         avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
@@ -169,13 +178,7 @@ avtDualMeshFilter::UpdateDataObjectInfo(void)
             actualMode = DualMeshAttributes::ZonesToNodes;
         }
     }
-    else if(atts.GetMode() == DualMeshAttributes::ZonesToNodes)
-    {
-        actualMode = DualMeshAttributes::ZonesToNodes;
-    }
 
-    GetOutput()->GetInfo().GetValidity().InvalidateZones();
-    GetOutput()->GetInfo().GetValidity().InvalidateZones();
     
     if( actualMode == DualMeshAttributes::NodesToZones)
         GetOutput()->GetInfo().GetAttributes().SetCentering(AVT_ZONECENT);
