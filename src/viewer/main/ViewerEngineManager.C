@@ -580,8 +580,10 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 
         // Tell the user that the engine was not launched
         QString msg = tr("The launch of the compute engine on "
-                         "host \"%1\" has been cancelled.").
-                      arg(ek.HostName().c_str());
+                         "host \"%1\" has been cancelled.\n\nYou "
+                         "might want to check the job control system "
+                         "on \"%2\" to be sure the job is no longer present").
+                      arg(ek.HostName().c_str()).arg(ek.HostName().c_str());
         Error(msg);
     }
     ENDTRY
