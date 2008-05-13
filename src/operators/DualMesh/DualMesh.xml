@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+  <Plugin name="DualMesh" type="operator" label="Dual Mesh" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="DualMesh.xpm">
+    <Attribute name="DualMeshAttributes" purpose="Atts for Dual Mesh Operator" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Enum name="ConversionMode">
+        Auto
+        NodesToZones
+        ZonesToNodes
+      </Enum>
+      <Field name="mode" label="Conversion Mode:" type="enum" subtype="ConversionMode">
+      </Field>
+    </Attribute>
+  </Plugin>

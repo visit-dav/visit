@@ -206,6 +206,9 @@
 #    Jeremy Meredith, Thu Sep  6 16:53:41 EDT 2007
 #    Use ALLSUBDIRS for distclean.
 #
+#    Cyrus Harrison, Thu May  8 13:37:06 PDT 2008
+#    Added DualMesh operator. 
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -217,8 +220,8 @@ OPTIONAL=Context ConnCompReduce MetricThreshold RemoveCells SiloDump \
          SubdivideQuads SurfCompPrep TraceHistory
 
 REQUIRED=BoundaryOp Box Clip Cone CoordSwap CracksClipper CreateBonds Cylinder \
-         Decimate DeferExpression Displace Elevate ExternalSurface IndexSelect \
-         InverseGhostZone Isosurface Isovolume Lineout Merge OnionPeel \
+         Decimate DeferExpression Displace DualMesh Elevate ExternalSurface \
+         IndexSelect InverseGhostZone Isosurface Isovolume Lineout Merge OnionPeel \
          PDF Project Reflect Replicate Resample Revolve Slice Smooth \
          SphereSlice ThreeSlice Threshold Transform Tube ZoneDump
 
