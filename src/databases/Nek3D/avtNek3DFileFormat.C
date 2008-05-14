@@ -687,6 +687,10 @@ avtNek3DFileFormat::ParseNekFileHeader()
 //  Modified:
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
 //    Use the GetFileName method.  Changed sprintf to SNPRINTF.
+//
+//    Dave Bremer, Tue May 13 19:51:04 CDT 2008
+//    Use a simpler block numbering scheme, to provide faster I/O because of
+//    more coherent file access.
 // ****************************************************************************
 
 void
@@ -699,6 +703,18 @@ avtNek3DFileFormat::ReadBlockLocations()
     if (!bBinary || iNumOutputDirs == 1 || aBlockLocs != NULL)
         return;
 
+    int ii, jj;
+#define USE_SIMPLE_BLOCK_NUMBERING 1
+#ifdef USE_SIMPLE_BLOCK_NUMBERING
+    //Temporary code that makes block reads as coherent as possible.
+    aBlockLocs = new int[2*iNumBlocks];
+    for (ii = 0; ii < iNumBlocks; ii++)
+    {
+        aBlockLocs[ii*2]   = ii / iBlocksPerFile;
+        aBlockLocs[ii*2+1] = ii % iBlocksPerFile;
+    }
+    return;
+#else
     int t0 = visitTimer->StartTimer();
 
     int iRank = 0, nProcs = 1;
@@ -708,7 +724,6 @@ avtNek3DFileFormat::ReadBlockLocations()
 #endif
 
     ifstream f;
-    int ii, jj;
     aBlockLocs = new int[2*iNumBlocks];
     for (ii = 0; ii < 2*iNumBlocks; ii++)
     {
@@ -762,6 +777,7 @@ avtNek3DFileFormat::ReadBlockLocations()
 #endif
 
     visitTimer->StopTimer(t0, "avtNek3DFileFormat  reading block locations");
+#endif
 }
 
 
@@ -1866,7 +1882,7 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/,
         delete[] tmpBlocks;
 
 #ifdef PARALLEL
-        //See if there any proc had a read error.
+        //See if any proc had a read error.
         int  anyErrorReadingData = 0;
         MPI_Allreduce(&errorReadingData, &anyErrorReadingData, 1, 
                       MPI_INT, MPI_BOR, VISIT_MPI_COMM);
@@ -1906,3 +1922,67 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/,
 
     return rv;
 }
+
+
+
+// ****************************************************************************
+//  Method: avtNek3DFileFormat::PopulateIOInformation
+//
+//  Purpose:
+//      Provide info on which blocks are in which files, to allow more 
+//      coherent data access.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Thu May  1 19:33:44 PDT 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtNek3DFileFormat::PopulateIOInformation(int /*ts*/, avtIOInformation &ioInfo)
+{
+    //Don't exec if the mdserver is calling.
+    if (avtDatabase::OnlyServeUpMetaData())
+        return;
+
+    //Not applicable unless it is a parallel file.
+    if (iNumOutputDirs == 1)
+        return;
+
+    //Make sure these are up to date.  Exits early if they've been read.
+    ReadBlockLocations();
+
+    vector<vector<int> > groups(iNumOutputDirs);
+    size_t ii;
+
+    for (ii = 0; ii < groups.size(); ii++)
+    {
+        groups[ii].resize(iBlocksPerFile);
+    }
+
+    //aBlockLocs contains pairs of ints that map the zero-based block index
+    //to a file number and offset within the file.  This loop creates the
+    //inverse mapping, filling in the block indices within each file.
+    for (ii = 0; ii < iNumBlocks; ii++)
+    {
+        groups[aBlockLocs[ii*2]][aBlockLocs[ii*2+1]] = ii;
+    }
+
+    ioInfo.SetNDomains(iNumBlocks);
+    ioInfo.AddHints(groups);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

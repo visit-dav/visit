@@ -74,6 +74,10 @@
 //
 //    Dave Bremer, Wed Apr 23 18:12:50 PDT 2008
 //    Implemented GetAuxiliaryData so I can read spatial extents.
+//
+//    Dave Bremer, Tue May 13 19:51:04 CDT 2008
+//    Added PopulateIOInformation to give hints to improve IO patterns,
+//    but the info is currently not used.
 // ****************************************************************************
 
 class avtNek3DFileFormat : public avtMTMDFileFormat
@@ -90,6 +94,8 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
                                         int domain, const char *type, void *args, 
                                         DestructorFunction &);
     
+    virtual void       PopulateIOInformation(int /*ts*/, avtIOInformation &ioInfo);
+
     //
     // If you know the times and cycle numbers, overload this function.
     // Otherwise, VisIt will make up some reasonable ones for you.
