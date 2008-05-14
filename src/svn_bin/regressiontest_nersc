@@ -292,8 +292,9 @@ env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel 1>> config_log.txt 2>
 checkAndHandleError $? fatal "FIRST configure failed" config_log.txt 
 
 # test 'make clean' acts as expected
+rm -f ./make_clean.out
 cd data
-gmake clean 1> ./make_clean.out 2>&1
+gmake clean 1> ../make_clean.out 2>&1
 cd ..
 gmake clean 1>> ./make_clean.out 2>&1
 rm -f uncleaned_files_log.txt
@@ -305,10 +306,11 @@ if test $uncleanedFilesCount -ne 0; then
 fi
 
 # test 'make distclean' acts as expected
+rm -f ./make_distclean.out
 cd data
-gmake distclean 1> ./make_distclean.out 2>&1
+gmake distclean 1> ../make_distclean.out 2>&1
 cd ..
-make distclean 1>> ./make_distclean.out 2>&1
+gmake distclean 1>> ./make_distclean.out 2>&1
 rm -f undistcleaned_files_log.txt
 find . -name .svn -prune -false -o -name '*.d' -o -name '.depend' -o -name '.pardepend' 1> undistcleaned_files_log.txt
 # The 2nd find, below, finds only those Makefiles for which there is also
