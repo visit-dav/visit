@@ -214,7 +214,12 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
     char fname[256];
     sprintf(fname, "%sgrid/domain%04d", dirname.c_str(), dom);
     ifstream in(fname, ios::in);
-    if (!in && gridType != AVT_RECTILINEAR_MESH)
+    if (in.fail())
+    {
+        EXCEPTION1(InvalidFilesException, fname);
+    }
+
+    if (gridType == AVT_RECTILINEAR_MESH)
     {
 	int i,j;
         vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
@@ -227,11 +232,11 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
         for (i = 0 ; i < 3 ; i++)
         {
 	    int origin = 0;
-	    switch (i) {
-	    case 0: origin = origins[dom].x0; break;
-	    case 1: origin = origins[dom].y0; break;
-	    case 2: origin = origins[dom].z0; break;
-	    }
+            switch (i) {
+            case 0: origin = origins[dom].x0; break;
+            case 1: origin = origins[dom].y0; break;
+            case 2: origin = origins[dom].z0; break;
+            }
 
             // Default number of components for an array is 1.
             coords[i] = vtkFloatArray::New();
@@ -260,10 +265,6 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
         coords[2]->Delete();
 
         return rgrid;
-    }
-    else
-    {
-        EXCEPTION1(InvalidFilesException, fname);
     }
 
     //
@@ -606,19 +607,24 @@ avtRectFileFormat::ReadVizFile(ifstream &in)
 
     for (i=0; i<ndomains; i++)
     {
-        in >> buff;
+	if (i > 0 || buff == "gridtype")
+            in >> buff;
         int x,y,z;
         in >> x >> y >> z;
         dxsize.push_back(x);
         dysize.push_back(y);
         dzsize.push_back(z);
         numpts.push_back(x*y*z);
+        debug4 << "domain " << i << ": xsize = "
+	       << x << ", ysize = " << y << ", zsize = " << z;
 	if (gridType == AVT_RECTILINEAR_MESH)
 	{
 	    origin_t o;
             in >> o.x0 >> o.y0 >> o.z0;
 	    origins.push_back(o);
+            debug4 << " (xo = " << o.x0 << ", yo = " << o.y0 << ", zo = " << o.z0 << ")";
 	}
+	debug4 << endl;
     }
 }
 
