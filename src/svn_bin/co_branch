@@ -22,6 +22,9 @@
 #    Hank Childs, Mon Feb 25 09:04:07 PST 2008
 #    Remove print statements that were left in.
 #
+#    Sean Ahern, Thu May 15 16:53:56 EDT 2008
+#    Fixed \t printing problems by turning them into spaces.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -51,18 +54,18 @@ if [[ "$issueHelp" == "yes" ]] ; then
    echo "     (Make sure to specify that developers NERSC username)"
    echo ""
    echo "Example: ${0##*/} my_dev_work /src"
-   echo "\twill check out the /src directory of the branch my_dev_work "
-   echo "\tinto the subdirectory /my_dev_work"
+   echo "    will check out the /src directory of the branch my_dev_work "
+   echo "    into the subdirectory /my_dev_work"
    echo ""
    echo "Example: ${0##*/} my_dev_work /src/plots/Volume"
-   echo "\twill check out the /src/plots/Volume directory of the branch "
-   echo "\tmy_dev_work into the subdirectory /my_dev_work"
+   echo "    will check out the /src/plots/Volume directory of the branch "
+   echo "    my_dev_work into the subdirectory /my_dev_work"
    echo ""
    echo "known-dir-combos: \"all\" (all subdirs), \"sdt\" (source-data-test)"
    echo ""
    echo "Example: ${0##*/} my_dev_work sdt"
-   echo "\twill check out the /src, /data/, and /test directories of the "
-   echo "\tbranch my_dev_work into the subdirectory /my_dev_work"
+   echo "    will check out the /src, /data/, and /test directories of the "
+   echo "    branch my_dev_work into the subdirectory /my_dev_work"
    echo ""
    echo "Note: you *can* check out different directories through multiple "
    echo "invocations, for example: ${0##*/} branch /src followed by "

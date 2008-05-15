@@ -13,6 +13,9 @@
 #    Hank Childs, Wed Jun 27 15:12:27 PDT 2007
 #    Fix typo where 'sdt' sequence does not work.
 #
+#    Sean Ahern, Thu May 15 16:53:56 EDT 2008
+#    Fixed \t printing problems by turning them into spaces.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -34,17 +37,17 @@ if [[ "$issueHelp" == "yes" ]] ; then
    echo "Usage:   ${0##*/} RC_NAME <known-dir-combo>"
    echo ""
    echo "Example: ${0##*/} 1.6.1RC /src"
-   echo "\twill check out the /src directory of the 1.6.1RC trunk into the subdirectory /1.6.1RC"
+   echo "    will check out the /src directory of the 1.6.1RC trunk into the subdirectory /1.6.1RC"
    echo ""
    echo "Example: ${0##*/} 1.6.1RC /src/plots/Volume"
-   echo "\twill check out the /src/plots/Volume directory of the 1.6.1RC trunk "
-   echo "\tinto the subdirectory /1.6.1RC"
+   echo "    will check out the /src/plots/Volume directory of the 1.6.1RC trunk "
+   echo "    into the subdirectory /1.6.1RC"
    echo ""
    echo "known-dir-combos: \"all\" (all subdirs), \"sdt\" (source-data-test)"
    echo ""
    echo "Example: ${0##*/} 1.6.1RC sdt"
-   echo "\twill check out the /src, /data/, and /test directories of the "
-   echo "\t1.6.1RC trunk into the subdirectory /1.6.1RC"
+   echo "    will check out the /src, /data/, and /test directories of the "
+   echo "    1.6.1RC trunk into the subdirectory /1.6.1RC"
    echo ""
    echo "Note: you *can* check out different directories through multiple "
    echo "invocations, for example: ${0##*/} 1.6.1RC /src followed by "

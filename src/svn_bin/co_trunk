@@ -13,6 +13,9 @@
 #    Hank Childs, Mon Aug 13 14:24:48 PDT 2007
 #    Ported to bash from ksh
 #
+#    Sean Ahern, Thu May 15 16:53:56 EDT 2008
+#    Fixed \t printing problems by turning them into spaces.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -38,17 +41,17 @@ if [[ "$issueHelp" == "yes" ]] ; then
    echo "Usage:   ${0##*/} <known-dir-combo>"
    echo ""
    echo "Example: ${0##*/} /src"
-   echo "\twill check out the /src directory of the trunk into the subdirectory /trunk"
+   echo "    will check out the /src directory of the trunk into the subdirectory /trunk"
    echo ""
    echo "Example: ${0##*/} /src/plots/Volume"
-   echo "\twill check out the /src/plots/Volume directory of the trunk "
-   echo "\tinto the subdirectory trunk"
+   echo "    will check out the /src/plots/Volume directory of the trunk "
+   echo "    into the subdirectory trunk"
    echo ""
    echo "known-dir-combos: \"all\" (all subdirs), \"sdt\" (source-data-test)"
    echo ""
    echo "Example: ${0##*/} sdt"
-   echo "\twill check out the /src, /data/, and /test directories of the "
-   echo "\ttrunk into the subdirectory /trunk"
+   echo "    will check out the /src, /data/, and /test directories of the "
+   echo "    trunk into the subdirectory /trunk"
    echo ""
    echo "Note: you *can* check out different directories through multiple "
    echo "invocations, for example: ${0##*/} /src followed by "
