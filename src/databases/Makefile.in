@@ -309,6 +309,9 @@
 #
 #   Hank Childs, Mon Mar 10 20:16:32 PDT 2008
 #   Added CEAucd, based on reader by Thierry Carard.
+#   
+#   Sean Ahern, Thu May 15 13:13:25 EDT 2008
+#   Added initial version of PFLOTRAN reader.
 #
 ##############################################################################
 
@@ -324,7 +327,19 @@ CGNS=CGNS
 EXODUS=Exodus TimeVaryingExodus
 GDAL=GDAL
 HDF4=Cosmos Enzo ZeusMP
-HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH Chombo GTC H5Nimrod  M3D XDMF 
+HDF5= \
+	Chombo \
+	CosmosPP \
+	FLASH \
+	GTC \
+	H5Nimrod \
+	M3D \
+	PFLOTRAN \
+	Pixie \
+	SAMRAI \
+	Tetrad \
+	XDMF
+
 MILI=Mili
 NETCDF=NETCDF S3D
 PDB=KullLite PDB Cale
