@@ -45,6 +45,8 @@
 #    Mark C. Miller, Thu Mar  6 10:03:17 PST 2008
 #    Forgot to 'post' the py file source code for failed tests. Added it.
 #
+#    Mark C. Miller, Thu May 15 13:34:29 PDT 2008
+#    Added --enable-buildall configuration option to all configure invokations
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -282,7 +284,7 @@ echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> config_log.txt 2>&1
 echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1>> config_log.txt 2>&1
 LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
-env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel --enable-viewer-mesa-stub=no 1>> config_log.txt 2>&1
+env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel --enable-viewer-mesa-stub=no --enable-buildall 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "FIRST configure failed" config_log.txt 
 cd ..
 
@@ -318,7 +320,7 @@ if test -n "$undistcleanedFilesCount" -a test $undistcleanedFilesCount -ne 0; th
 fi
 
 # ok, now really go ahead and configure and build VisIt
-env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel --enable-viewer-mesa-stub=no 1>> config_log.txt 2>&1
+env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel --enable-viewer-mesa-stub=no --enable-buildall 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "SECOND configure failed" config_log.txt 
 gmake -j 4 1>> make_log.txt 2>&1
 checkAndHandleError $? fatal "gmake -j 4 failed in src" make_log.txt

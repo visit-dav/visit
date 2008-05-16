@@ -39,6 +39,9 @@
 #    Hank Childs, Sat Feb  9 15:23:42 PST 2008
 #    Rename components directory to avt.
 #
+#    Mark C. Miller, Thu May 15 13:34:29 PDT 2008
+#    Added --enable-buildall configuration option to all configure invokations
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -288,7 +291,7 @@ echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> config_log.txt 2>&1
 echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1>> config_log.txt 2>&1
 LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
-env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel 1>> config_log.txt 2>&1
+env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel --enable-buildall 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "FIRST configure failed" config_log.txt 
 
 # test 'make clean' acts as expected
@@ -325,7 +328,7 @@ if test $undistcleanedFilesCount -ne 0; then
 fi
 
 # ok, now really go ahead and configure and build VisIt
-env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel 1>> config_log.txt 2>&1
+env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel --enable-buildall 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "SECOND configure failed" config_log.txt 
 gmake -j 4 1>> make_log.txt 2>&1
 checkAndHandleError $? fatal "gmake -j 4 failed in src" make_log.txt
