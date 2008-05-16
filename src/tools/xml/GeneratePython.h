@@ -2897,7 +2897,12 @@ class PythonGeneratorAttribute : public GeneratorBase
         {
             if(functions[i]->target == generatorName &&
                functions[i]->user)
-                c << functions[i]->decl << ", " << endl;
+            {
+                QString pyMethName = functions[i]->decl;
+                if (functions[i]->decl.startsWith(name + "_"))
+                    pyMethName = functions[i]->decl.right(functions[i]->decl.length()-name.length()-1); 
+                c << "    {\"" << pyMethName << "\", " << functions[i]->decl << ", METH_VARARGS}," << endl;
+            }
         }
         c << "    {NULL, NULL}" << endl;
         c << "};" << endl;
