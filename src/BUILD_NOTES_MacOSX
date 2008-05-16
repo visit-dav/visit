@@ -63,7 +63,7 @@ Universal binary
   Each of these tarballs can be installed in a executable distributions,
   see: http://www/visit/1.9.0/INSTALL_NOTES.
 
-Build Notes (if you still want to do it by hand)s
+Build Notes (if you still want to do it by hand)
   VisIt relies on several external libraries which must be built and installed
   prior to building VisIt.  This document provides detailed step by step
   instructions for building VisIt and each of the dependent libraries.  The
@@ -145,24 +145,24 @@ Crucial linker flags for dynamic library
 
 -install_name        The -install_name flag inserts the name of the library
                      into the actual dylib file. Normally if you do not
-		     provide this flag, the path where you built the library is
-		     inserted into the dylib file and applications that link
-		     with the dylib look for it in the path stored in the dylib,
-		     which easily leads to the library not being found. In order
-		     to make sure that the system can find the dylib file used
-		     by your application, make sure you build dylib files so
-		     their installed name is relative to the executable.
-		   
-		     For VisIt, which has a bin directory and a separate lib
-		     directory for libraries, we set the installation name like
-		     this:
-		     
-		     -install_name,@executable_path/../lib/libfoo.dylib.
-		     
-		     The above example makes sure that applications in bin that
-		     linked with libfoo.dylib look for it in ../lib instead of
-		     a hardcoded path.
-		 
+                     provide this flag, the path where you built the library is
+                     inserted into the dylib file and applications that link
+                     with the dylib look for it in the path stored in the dylib,
+                     which easily leads to the library not being found. In order
+                     to make sure that the system can find the dylib file used
+                     by your application, make sure you build dylib files so
+                     their installed name is relative to the executable.
+                   
+                     For VisIt, which has a bin directory and a separate lib
+                     directory for libraries, we set the installation name like
+                     this:
+                     
+                     -install_name,@executable_path/../lib/libfoo.dylib.
+                     
+                     The above example makes sure that applications in bin that
+                     linked with libfoo.dylib look for it in ../lib instead of
+                     a hardcoded path.
+                 
 
 ==============================================================================
 install_name_tool
@@ -398,7 +398,7 @@ cd qt-mac-free-3.3.8
 #
 export QTDIR=$(pwd)
 export DYLD_LIBRARY_PATH=$QTDIR/lib:$DYLD_LIBRARY_PATH
-./configure -thread -platform macx-g++ -prefix=$VISITPATH/qt
+./configure -thread -platform macx-g++ --prefix=$VISITPATH/qt
 make
 
 # Install headers Qt
@@ -419,7 +419,7 @@ cd ../..
 
 ==============================================================================
 Building Mesa 
-==============================================================================		    
+==============================================================================              
 
 Mesa is a 3-D graphics library with an API which is very similar to that of
 OpenGL.  It is used for performing off-screen rendering.
