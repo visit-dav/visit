@@ -299,7 +299,7 @@ do
          shift
          ;;
       -v|-verbose)
-	 verbose="-verbose"
+         verbose="-verbose"
          shift
          ;;
       -lv|-lessverbose)
@@ -337,48 +337,48 @@ do
          if test -z "$2"; then
              echo "Expected a comma separated list of classes for $1"
              opterror=1
-	 else
-	     doFiltering=1
+         else
+             doFiltering=1
              classes=$2
              shift 2
-	 fi 
+         fi 
          ;;
       -l|-limit)
          if test -z "$2"; then
              echo "Expected an argument for $1"
              opterror=1
-	 else
-	     timeLimit="-timeout $2"
+         else
+             timeLimit="-timeout $2"
              shift 2
-	 fi
-	 ;;
+         fi
+         ;;
       -d|-date)
          if test -z "$2"; then
              echo "Expected a date string for $1"
              opterror=1
-	 else
-	     useDate=$2
+         else
+             useDate=$2
              shift 2
-	 fi
-	 ;;
+         fi
+         ;;
       -s|-skip)
          if test -z "$2"; then
              echo "Expected a quoted string of tests to skip for $1"
              opterror=1
-	 else
-	     skipList=$2
+         else
+             skipList=$2
              shift 2
-	 fi
-	 ;;
+         fi
+         ;;
       -e|-executable)
          if test -z "$2"; then
              echo "Expected a quoted string of path to executable for $1"
              opterror=1
-	 else
-	     exepath=$2
+         else
+             exepath=$2
              shift 2
-	 fi
-	 ;;
+         fi
+         ;;
       -i|-interactive)
          interactive="-interactive"
          nowin=""
@@ -388,37 +388,37 @@ do
          if test -z "$2"; then
              echo "Expected an argument for $1"
              opterror=1
-	 else
-	     pixdiff="-pixdiff=$2"
+         else
+             pixdiff="-pixdiff=$2"
              shift 2
-	 fi
-	 ;;
+         fi
+         ;;
       -avgdiff)
          if test -z "$2"; then
              echo "Expected an argument for $1"
              opterror=1
-	 else
-	     avgdiff="-avgdiff=$2"
+         else
+             avgdiff="-avgdiff=$2"
              shift 2
-	 fi
-	 ;;
+         fi
+         ;;
       -numdiff)
          if test -z "$2"; then
              echo "Expected an argument for $1"
              opterror=1
-	 else
-	     numdiff="-numdiff=$2"
+         else
+             numdiff="-numdiff=$2"
              shift 2
-	 fi
-	 ;;
+         fi
+         ;;
       -notrackmem)
          notrackMem="-notrackmem"
-	 shift
-	 ;;
+         shift
+         ;;
       -nonowin)
          nowin=""
-	 shift
-	 ;;
+         shift
+         ;;
       -help)
          opterror=1
          shift
@@ -427,11 +427,11 @@ do
          if test -z "$2"; then
              echo "Expected quoted string of args for $1"
              opterror=1
-	 else
+         else
              otherArgs=$2
              shift 2
-	 fi
-	 ;;
+         fi
+         ;;
       -*)
          echo "Unknown option $1"
          opterror=1
@@ -519,7 +519,7 @@ if test -z "$testcases"; then
     for test in $candidateTests; do
        hasClass=`grep '^#  CLASSES: ' $test | egrep -e \($grepClasses\)`
        if test -n "$hasClass"; then
-	  testcases="$testcases $test"
+          testcases="$testcases $test"
        fi
     done
 fi
@@ -530,7 +530,7 @@ fi
 if test $doFiltering -eq 1; then
     echo "Will run the following tests..."
     for t in $testcases; do
-	echo "    $t"
+        echo "    $t"
     done
 fi
 
@@ -568,14 +568,14 @@ if test ! -f ../data/globe.silo; then
             echo ""
             echo "Rebuilding test data (PDB format) based on the fact that ../data/globe.silo doesn't exist."
             echo ""
-	fi
+        fi
         (cd ../data && make test 1>/dev/null 2>&1)
     else
         if test $quiet -eq 0; then
             echo ""
             echo "Rebuilding test data (HDF5 format) based on the fact that ../data/globe.silo doesn't exist."
             echo ""
-	fi
+        fi
         (cd ../data && make testh5 1>/dev/null 2>&1)
     fi
 else
@@ -585,18 +585,18 @@ else
                 echo ""
                 echo "Rebuilding test data (PDB format) based on the fact that ../data/globe.silo is wrong format."
                 echo ""
-	    fi
+            fi
             (cd ../data && make test 1>/dev/null 2>&1)
-	fi
+        fi
     else
         if test -z "`head -n 1 ../data/globe.silo | grep HDF`"; then
             if test $quiet -eq 0; then
                 echo ""
                 echo "Rebuilding test data (HDF5 format) based on the fact that ../data/globe.silo is wrong format."
                 echo ""
-	    fi
+            fi
             (cd ../data && make testh5 1>/dev/null 2>&1)
-	fi
+        fi
     fi
 fi
 if test $? -ne 0 && test $quiet -eq 0; then
@@ -620,10 +620,10 @@ if test $purify -eq 1; then
     #
     if test -e /usr/local/rational/purifyplus_setup.sh; then
         source /usr/local/rational/purifyplus_setup.sh
-#	if test $? -ne 0; then
-#	    echo "Error sourcing /usr/local/rational/purifyplus_setup.sh"
-#	    exit 1
-#	fi
+#       if test $? -ne 0; then
+#           echo "Error sourcing /usr/local/rational/purifyplus_setup.sh"
+#           exit 1
+#       fi
     else
         echo "Unable to source requisite purify setup"
         exit 1
@@ -648,16 +648,16 @@ if test $purify -eq 1; then
         if test -z "`grep ^CXXFLAGS ../src/include/make-variables | grep ' -g'`" && test $quiet -eq 0; then
             echo "#########################################################"
             echo "#########################################################"
-	    echo "Warning: Purify results aren't very useful without having"
-	    echo "compiled with debugging (-g) turned on"
+            echo "Warning: Purify results aren't very useful without having"
+            echo "compiled with debugging (-g) turned on"
             echo "#########################################################"
             echo "#########################################################"
         fi
         if test -z "`grep ^CXXFLAGS ../src/include/make-variables | grep ' -DDEBUG_MEMORY_LEAKS'`" && test $quiet -eq 0; then
             echo "#########################################################"
             echo "#########################################################"
-	    echo "Warning: You should really re-configure and re-build with" 
-	    echo "CXXFLAGS='-g -DDEBUG_MEMORY_LEAKS'"
+            echo "Warning: You should really re-configure and re-build with" 
+            echo "CXXFLAGS='-g -DDEBUG_MEMORY_LEAKS'"
             echo "#########################################################"
             echo "#########################################################"
         fi
@@ -754,17 +754,17 @@ for t in $testcases; do
     # check if this test is in the current skip list
     skipIt=false
     for skipTest in $skipList; do
-	skipMode=`echo $skipTest | cut -d':' -f1`
-	skipFile=`echo $skipTest | cut -d':' -f2`
-	skipCases=`echo $skipTest | cut -d':' -f3`
-	if test "$modes" = "$skipMode" && test "$t" = "$skipFile"; then
-	    if test -z "$skipCases"; then
-	        skipIt=true;
-	        break;
-	    else
-	        VISIT_TEST_SKIP_CASES=$skipCases
-	    fi
-	fi
+        skipMode=`echo $skipTest | cut -d':' -f1`
+        skipFile=`echo $skipTest | cut -d':' -f2`
+        skipCases=`echo $skipTest | cut -d':' -f3`
+        if test "$modes" = "$skipMode" && test "$t" = "$skipFile"; then
+            if test -z "$skipCases"; then
+                skipIt=true;
+                break;
+            else
+                VISIT_TEST_SKIP_CASES=$skipCases
+            fi
+        fi
     done
 
     # handle specialized settings for this test such as environment
@@ -784,8 +784,8 @@ for t in $testcases; do
     if test -n "$theArgs"; then
         tbase=`basename $t .py`
         rm -f ${tbase}_clargs.py
-	cat $testpyfile $t > ${tbase}_clargs.py 
-	t=${tbase}_clargs.py
+        cat $testpyfile $t > ${tbase}_clargs.py 
+        t=${tbase}_clargs.py
     fi
 
     purifyoptions=""
@@ -802,39 +802,39 @@ for t in $testcases; do
     # run the test or skip it depending on 'skipIt'
     rm -f engine_pids.txt
     if test "$skipIt" = "true"; then
-	skippedATest=1
-	runtime=skipped
+        skippedATest=1
+        runtime=skipped
         if test -n "$verbose"; then
             echo "WARNING: test $t is in the skipList. It is being skipped"
-	fi
-	# indicate the test was skipped
-	error=116
+        fi
+        # indicate the test was skipped
+        error=116
     else
         testProcId=0
-	starttime=`date +%s`
+        starttime=`date +%s`
         if test "$interactive" = "-interactive"; then
             if test -n "$theArgs"; then
                 env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb -verbose -numrestarts 0 $timeLimit $notrackMem $interactive $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry
-	    else
+            else
                 env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb -verbose -numrestarts 0 $timeLimit $notrackMem $interactive $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile
-	    fi
-	else
+            fi
+        else
             if test -n "$verbose"; then
-	        if test -n "$theArgs"; then
+                if test -n "$theArgs"; then
                     env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing $configoptions < $t &
-    	            testProcId=$!
-		else
+                    testProcId=$!
+                else
                     env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t &
-    	            testProcId=$!
-		fi
-	    else
-	        if test -n "$theArgs"; then
+                    testProcId=$!
+                fi
+            else
+                if test -n "$theArgs"; then
                     env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing $configoptions < $t 2> /dev/null & 
-	            testProcId=$!
-		else
+                    testProcId=$!
+                else
                     env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t 2> /dev/null &
-	            testProcId=$!
-		fi
+                    testProcId=$!
+                fi
             fi
         fi
         # wait to get engine pids for max of 10 seconds
@@ -845,35 +845,35 @@ for t in $testcases; do
         done
         if test -f engine_pids.txt; then
             while read epid; do
- 	        ./limitTest $limitSeconds 15 $epid &
+                ./limitTest $limitSeconds 15 $epid &
             done < engine_pids.txt
             rm -f engine_pids.txt
         fi
-	limitProcId=0
-	if test $testProcId -ne 0; then
- 	    ./limitTest $limitSeconds 15 $testProcId &
-	    limitProcId=$!
-	fi
-	wait $testProcId 1>/dev/null 2>&1
+        limitProcId=0
+        if test $testProcId -ne 0; then
+            ./limitTest $limitSeconds 15 $testProcId &
+            limitProcId=$!
+        fi
+        wait $testProcId 1>/dev/null 2>&1
         error=$?
-	if test $error -eq 137; then
-	    error=118
-	fi
-	#
-	# This kill command introduces some problems and is NOT
-	# really necessary. limitTest will automatically exit
-	# if the process it is watching completes. The kill
-	# command itself results in an error message getting 
-	# sent to stderr and there appears to be no way to
-	# get rid of it, except by re-directing output of this
-	# whole 'for t in $testcases' loop. However, that causes
-	# the loop to get executed in a subshell and so is bad
-	# for other reasons.
-	# if test $limitProcId -ne 0; then
-	#     kill -9 $limitProcId 1>/dev/null 2>&1
-	# fi
-	endtime=`date +%s`
-	runtime=`expr $endtime - $starttime`
+        if test $error -eq 137; then
+            error=118
+        fi
+        #
+        # This kill command introduces some problems and is NOT
+        # really necessary. limitTest will automatically exit
+        # if the process it is watching completes. The kill
+        # command itself results in an error message getting 
+        # sent to stderr and there appears to be no way to
+        # get rid of it, except by re-directing output of this
+        # whole 'for t in $testcases' loop. However, that causes
+        # the loop to get executed in a subshell and so is bad
+        # for other reasons.
+        # if test $limitProcId -ne 0; then
+        #     kill -9 $limitProcId 1>/dev/null 2>&1
+        # fi
+        endtime=`date +%s`
+        runtime=`expr $endtime - $starttime`
     fi
     t=$torig
 
@@ -892,8 +892,8 @@ for t in $testcases; do
 
     if test "$prevcategory" != "$category"; then
         echo " <tr><td><i>$category</></i></td></tr>" >> html/index.html
-	echo "" >> summary
-	echo "--- category $category ---" >> summary
+        echo "" >> summary
+        echo "--- category $category ---" >> summary
     fi
     prevcategory=$category
 
@@ -911,23 +911,28 @@ for t in $testcases; do
     # (error is return result from viewer and other components may have cored)
     # Move core files to core dir.
     #
-    if test -d cores; then
-        coreFileNames=`ls -1d *core* | grep -v -x cores`
-        if test "$coreFileNames" != ""; then
-	    modesnm="`echo $modes | sed s/,/_/`"
-	    unki=0
-	    for fname in $coreFileNames; do
-	        fileType=`file $fname | cut -d':' -f2 | grep core`
-	        if test "$fileType" != ""; then
+    coreFileNames=`ls -1d *core* | grep -v -x cores`
+    if test "$coreFileNames" != ""; then
+        # make cores dir if it isn't there already
+        if test ! -d cores; then
+            mkdir cores
+        fi
+        # only do this work if cores dir is less than 100 Megs
+        if test `du -sk cores | cut -f1` -lt 100000; then
+            modesnm="`echo $modes | sed s/,/_/`"
+            unki=0
+            for fname in $coreFileNames; do
+                fileType=`file $fname | cut -d':' -f2 | grep core`
+                if test "$fileType" != ""; then
                     error=1 
-	            coreName=`echo $fileType | cut -d',' -f4 | cut -d' ' -f3 | sed s/\'//g`
-		    cp ../src/exe/$coreName cores/.
-	            mv $fname cores/core.${coreName}_${category}_${base}_${modesnm}
-	        else
-	            mv $fname cores/${fname}.unknown.${unki}
-		    unki=`expr $unki + 1`
-	        fi
-	    done
+                    coreName=`echo $fileType | cut -d',' -f4 | cut -d' ' -f3 | sed s/\'//g`
+                    #cp ../src/exe/$coreName cores/.
+                    mv $fname cores/core.${coreName}_${category}_${base}_${modesnm}
+                else
+                    mv $fname cores/${fname}.unknown.${unki}
+                    unki=`expr $unki + 1`
+                fi
+            done
         fi
     fi
 
@@ -939,45 +944,45 @@ for t in $testcases; do
     # we're really after, which is purify errors
     #
     if test $purify -eq 1 && test "$error" = "111"; then
-	echo -e "    $name:\tcompleted" >> summary
+        echo -e "    $name:\tcompleted" >> summary
         echo -e "  <td align=center bgcolor=\"#ffcccc\"><b><i>Purify Run</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Purify completed test file: $t"
         fi
     elif test $purify -eq 1 && test "$error" = "112"; then
-	echo -e "    $name:\tcompleted" >> summary
+        echo -e "    $name:\tcompleted" >> summary
         echo -e "  <td align=center bgcolor=\"#ffcccc\"><b><i>Purify Run</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Purify completed test file: $t"
         fi
     elif test $purify -eq 1 && test "$error" = "113"; then
-	echo -e "    $name:\tcompleted" >> summary
+        echo -e "    $name:\tcompleted" >> summary
         echo -e "  <td align=center bgcolor=\"#ffcccc\"><b><i>Purify Run</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Purify completed test file: $t"
         fi
     elif test "$error" = "111"; then
-	echo -e "    $name:\tsucceeded" >> summary
+        echo -e "    $name:\tsucceeded" >> summary
         echo -e "  <td align=center bgcolor=\"#00ff00\"><b><i>Succeeded</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Passed with zero differences in test file: $t"
         fi
     elif test "$error" = "112"; then
-	echo -e "    $name:\tsucceeded, acceptable differences" >> summary
+        echo -e "    $name:\tsucceeded, acceptable differences" >> summary
         anyerror=1
         echo -e "  <td align=center bgcolor=\"#00ff00\"><b><i>Acceptable</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Acceptable differences found in test file: $t"
         fi
     elif test "$error" = "113"; then
-	echo -e "    $name:\tfailed, unacceptable differences" >> summary
+        echo -e "    $name:\tfailed, unacceptable differences" >> summary
         anyerror=1
         echo -e "  <td align=center bgcolor=\"#ff8f00\"><b><i>Unacceptable</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Unacceptable differences found in test file: $t"
         fi
     elif test "$error" = "114"; then
-	echo -e "    $name:\tunknown result; no PIL" >> summary
+        echo -e "    $name:\tunknown result; no PIL" >> summary
         anyerror=1
         echo -e "  <td align=center bgcolor=\"#ffffff\"><b><i>Unknown</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
@@ -1005,13 +1010,13 @@ for t in $testcases; do
             echo -e ">> Killed after $limitSeconds seconds when running test file: $t"
         fi
     elif test "$error" = "119"; then
-	echo -e "    $name:\tpartially skipped" >> summary
+        echo -e "    $name:\tpartially skipped" >> summary
         echo -e "  <td align=center bgcolor=\"#00ffff\"><b><i>Partially Skipped</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Passed with partial skips in test file: $t"
         fi
     else
-	echo -e "    $name:\tfailed, VisIt crashed" >> summary
+        echo -e "    $name:\tfailed, VisIt crashed" >> summary
         anyerror=1
         echo -e "  <td align=center bgcolor=\"#ff0000\"><b><i>Failed - VisIt Crashed</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
@@ -1025,20 +1030,20 @@ for t in $testcases; do
     # Examine runtime and see if it exceeded a threshold relative to baseline
     #
     if test "$runtime" != "skipped" && test -e baseline/runtimes.txt; then
-	baseruntime=`egrep "^$modes:tests/$category/$name" "baseline/runtimes.txt" | grep -v skipped$ | cut -d' ' -f2`
-	if test -n "$baseruntime" && test $baseruntime -gt 0; then
-	    rtdiff=`expr $baseruntime - $runtime`
-	    prtdiff=`expr 100 \* $rtdiff / $baseruntime`
-	    if test $prtdiff -lt -50; then
+        baseruntime=`egrep "^$modes:tests/$category/$name" "baseline/runtimes.txt" | grep -v skipped$ | cut -d' ' -f2`
+        if test -n "$baseruntime" && test $baseruntime -gt 0; then
+            rtdiff=`expr $baseruntime - $runtime`
+            prtdiff=`expr 100 \* $rtdiff / $baseruntime`
+            if test $prtdiff -lt -50; then
                 echo "<td bgcolor=\"#ff0000\">$runtime</td>" >> html/index.html
-	    elif test $prtdiff -gt 50; then
+            elif test $prtdiff -gt 50; then
                 echo "<td bgcolor=\"#00ff00\">$runtime</td>" >> html/index.html
-	    else
+            else
                 echo "<td>$runtime</td>" >> html/index.html
-	    fi
-	else
+            fi
+        else
             echo "<td>$runtime</td>" >> html/index.html
-	fi
+        fi
     else
         echo "<td>$runtime</td>" >> html/index.html
     fi
@@ -1059,96 +1064,96 @@ for t in $testcases; do
        purifyfiles=`ls *_purify.txt 2>/dev/null`
        for purefile in $purifyfiles; do
 
-	  #
-	  # wait until we're sure purify is done producing this file
-	  # or until we've waited 5 minutes and file size has not changed 
-	  #
-	  doneWaitingForPurify=0
-	  numWaitsForPurify=0
-	  purefileSize=`stat -t $purefile | cut -d' ' -f2`
-	  while test $doneWaitingForPurify -eq 0 && test $numWaitsForPurify -lt 360; do
-	      if test -n "`grep 'Program exited with status' $purefile`"; then
-	          doneWaitingForPurify=1
-	      elif test -n "`grep 'Purify output truncated after' $purefile`"; then
-	          doneWaitingForPurify=1
-	      else
-	          newpurefileSize=`stat -t $purefile | cut -d' ' -f2`
-	          if test $newpurefileSize -le $purefileSize; then
-	             numWaitsForPurify=`expr $numWaitsForPurify + 1`
-	          else
-	             numWaitsForPurify=0
-		     purefileSize=$newpurefileSize
-	          fi
-	      fi
+          #
+          # wait until we're sure purify is done producing this file
+          # or until we've waited 5 minutes and file size has not changed 
+          #
+          doneWaitingForPurify=0
+          numWaitsForPurify=0
+          purefileSize=`stat -t $purefile | cut -d' ' -f2`
+          while test $doneWaitingForPurify -eq 0 && test $numWaitsForPurify -lt 360; do
+              if test -n "`grep 'Program exited with status' $purefile`"; then
+                  doneWaitingForPurify=1
+              elif test -n "`grep 'Purify output truncated after' $purefile`"; then
+                  doneWaitingForPurify=1
+              else
+                  newpurefileSize=`stat -t $purefile | cut -d' ' -f2`
+                  if test $newpurefileSize -le $purefileSize; then
+                     numWaitsForPurify=`expr $numWaitsForPurify + 1`
+                  else
+                     numWaitsForPurify=0
+                     purefileSize=$newpurefileSize
+                  fi
+              fi
               if test -n "$verbose"; then
-	          echo "$numWaitsForPurify: Waiting for Purify to finish writing \"$purefile\" [$purefileSize bytes]"
-	      fi
-	      sleep 1
-	  done
+                  echo "$numWaitsForPurify: Waiting for Purify to finish writing \"$purefile\" [$purefileSize bytes]"
+              fi
+              sleep 1
+          done
 
           progname=`echo $purefile | cut -d'_' -f1`
-	  purifyoutfile=${category}_${base}_${progname}_purify.txt
-	  mv $purefile current/$purifyoutfile
+          purifyoutfile=${category}_${base}_${progname}_purify.txt
+          mv $purefile current/$purifyoutfile
 
-	  echo "<tr>" >> html/index.html
+          echo "<tr>" >> html/index.html
           tmpcurdate=$curdate
-	  modesdir=""
+          modesdir=""
           if test -n "$useDate"; then
               tmpcurdate=$useDate
               modesdir="`echo $modes | sed s/,/_/`/"
           fi
-	  if test $numWaitsForPurify -ge 360; then
-	      if test "$post" = "1"; then
+          if test $numWaitsForPurify -ge 360; then
+              if test "$post" = "1"; then
                   echo "<td bgcolor=\"#ff0000\"><a href=file:/home/visit/public_html/${tmpcurdate}/${modesdir}${category}_${base}_${progname}_purify.txt.gz>$progname (DNF)</a></td>" >> html/index.html
-	      else
-	          currentwd=`pwd`
+              else
+                  currentwd=`pwd`
                   echo "<td bgcolor=\"#ff0000\"><a href=file:${currentwd}/html/${category}_${base}_${progname}_purify.txt.gz>$progname (DNF)</a></td>" >> html/index.html
-	      fi
-	  else
-	      if test "$post" = "1"; then
+              fi
+          else
+              if test "$post" = "1"; then
                   echo "<td><a href=file:/home/visit/public_html/${tmpcurdate}/${modesdir}${category}_${base}_${progname}_purify.txt.gz>$progname</a></td>" >> html/index.html
-	      else
-	          currentwd=`pwd`
+              else
+                  currentwd=`pwd`
                   echo "<td bgcolor=\"#ff0000\"><a href=file:${currentwd}/html/${category}_${base}_${progname}_purify.txt.gz>$progname (DNF)</a></td>" >> html/index.html
-	      fi
-	  fi
+              fi
+          fi
 
-	  #
+          #
           # scan purify file for errors and leaks 
-	  #
-	  hadPurifyErrors=0
+          #
+          hadPurifyErrors=0
           for code in $errorCodes; do
-	      curcount=`grep ^$code current/$purifyoutfile | wc -l`
-	      if test $curcount -gt 0; then
-		 echo "      <td bgcolor=\"#ff0000\">${code}:${curcount}</td>" >> html/index.html 
-		 hadPurifyErrors=1
-	      fi
+              curcount=`grep ^$code current/$purifyoutfile | wc -l`
+              if test $curcount -gt 0; then
+                 echo "      <td bgcolor=\"#ff0000\">${code}:${curcount}</td>" >> html/index.html 
+                 hadPurifyErrors=1
+              fi
           done
           for code in $leakCodes; do
-	      curcount=`grep ^$code current/$purifyoutfile | wc -l`
-	      counts=`grep ^$code current/$purifyoutfile | cut -d' ' -f1,2 | sed s/$code:/+/`
-	      curtot=`expr 0 $counts`
-	      if test $curtot -gt 0; then
-		 echo "      <td bgcolor=\"#ff0000\">${code}:${curtot}</td>" >> html/index.html 
-		 hadPurifyErrors=1
-	      fi
+              curcount=`grep ^$code current/$purifyoutfile | wc -l`
+              counts=`grep ^$code current/$purifyoutfile | cut -d' ' -f1,2 | sed s/$code:/+/`
+              curtot=`expr 0 $counts`
+              if test $curtot -gt 0; then
+                 echo "      <td bgcolor=\"#ff0000\">${code}:${curtot}</td>" >> html/index.html 
+                 hadPurifyErrors=1
+              fi
           done
 
-	  # copy this purify data to the html directory
-	  if test $hadPurifyErrors -ne 0; then
-	      gzip -f current/$purifyoutfile
-	      cp current/${purifyoutfile}.gz html/.
-	      anyerror=1
-	      # hack to add the word 'Failed' to purify results so that code
-	      # below will report it correctly when re-building the top-level html
-	      echo "<!-- This Purify Test Failed -->" >> html/index.html
-	  elif test "`grep suppress known_suppressions | wc -l`" -eq 0; then
-	      # fake runtest script into thinking we've skipped a
-	      # test so that it reports PASSED w/SKIPS instead of PASSED
-	      skippedATest=1
-	  fi
+          # copy this purify data to the html directory
+          if test $hadPurifyErrors -ne 0; then
+              gzip -f current/$purifyoutfile
+              cp current/${purifyoutfile}.gz html/.
+              anyerror=1
+              # hack to add the word 'Failed' to purify results so that code
+              # below will report it correctly when re-building the top-level html
+              echo "<!-- This Purify Test Failed -->" >> html/index.html
+          elif test "`grep suppress known_suppressions | wc -l`" -eq 0; then
+              # fake runtest script into thinking we've skipped a
+              # test so that it reports PASSED w/SKIPS instead of PASSED
+              skippedATest=1
+          fi
 
-	  echo "</tr>" >> html/index.html
+          echo "</tr>" >> html/index.html
 
        done # if test $purify -eq 1; then
 
@@ -1223,13 +1228,13 @@ if test "$post" = "1"; then
 
     # tack on line for current run's results
     if test "$anyerror" = "1"; then
-	echo "<tr><td align=center><b><a href=\"$curdate/$modesdir\">$modes</a></b></td><td align=center bgcolor="#ff0000"><b>FAILED</b></td><td align=center><i>$now</i></td></tr>" >> index.html
+        echo "<tr><td align=center><b><a href=\"$curdate/$modesdir\">$modes</a></b></td><td align=center bgcolor="#ff0000"><b>FAILED</b></td><td align=center><i>$now</i></td></tr>" >> index.html
     else
         if test "$skippedATest" = "0"; then
-	    echo "<tr><td align=center><b><a href=\"$curdate/$modesdir\">$modes</a></b></td><td align=center bgcolor="#00ff00"><b>PASSED</b></td><td align=center><i>$now</i></td></tr>" >> index.html
-	else
-	    echo "<tr><td align=center><b><a href=\"$curdate/$modesdir\">$modes</a></b></td><td align=center bgcolor="#0000ff"><b>PASSED w/SKIPS</b></td><td align=center><i>$now</i></td></tr>" >> index.html
-	fi
+            echo "<tr><td align=center><b><a href=\"$curdate/$modesdir\">$modes</a></b></td><td align=center bgcolor="#00ff00"><b>PASSED</b></td><td align=center><i>$now</i></td></tr>" >> index.html
+        else
+            echo "<tr><td align=center><b><a href=\"$curdate/$modesdir\">$modes</a></b></td><td align=center bgcolor="#0000ff"><b>PASSED w/SKIPS</b></td><td align=center><i>$now</i></td></tr>" >> index.html
+        fi
     fi
 
     echo "</table>" >> index.html
@@ -1253,50 +1258,50 @@ if test "$post" = "1"; then
                 continue
             fi
 
-	    if test -f $d/index.html; then
+            if test -f $d/index.html; then
                 # if its an old style test dir, assume serial
-		oldMode=`grep -m 1 'Results of VisIt Regression Test' $d/index.html | cut -d'(' -f2 | cut -d')' -f1`
-		if test -z "$oldMode"; then
-		    oldMode="serial"
-		fi
-		hasFailed=`grep -m 1 Failed $d/index.html`
-		if test "$hasFailed" = ""; then
-		    hasFailed=`grep -m 1 Unacceptable $d/index.html`
-		fi
-		if test "$hasFailed" = ""; then
+                oldMode=`grep -m 1 'Results of VisIt Regression Test' $d/index.html | cut -d'(' -f2 | cut -d')' -f1`
+                if test -z "$oldMode"; then
+                    oldMode="serial"
+                fi
+                hasFailed=`grep -m 1 Failed $d/index.html`
+                if test "$hasFailed" = ""; then
+                    hasFailed=`grep -m 1 Unacceptable $d/index.html`
+                fi
+                if test "$hasFailed" = ""; then
                     echo "<tr><td>$dir</td><td bgcolor="#00ff00"><b><a href=\"$dir\">$oldMode</a></b></td></tr>" >> index.html
-		else
+                else
                     echo "<tr><td>$dir</td><td bgcolor="#ff0000"><b><a href=\"$dir\">$oldMode</a></b></td></tr>" >> index.html
-		fi
-	    else
+                fi
+            else
                 # create a link for each mode that was tested
-	        modedirs=`find $d -type d -maxdepth 1 -print`
-	        if test ! "$modedirs" = "$d"; then
-		    echo "<tr>" >> index.html
-		    echo "<td>$dir</td>" >> index.html
-		    for mdir in $modedirs; do
-			bmdir=`basename $mdir`
-			if test "$bmdir" = "$dir"; then
-			    continue
-			fi
-		        hasFailed=`grep -m 1 Failed /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
-		        if test "$hasFailed" = ""; then
-		            hasFailed=`grep -m 1 Unacceptable /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
-		        fi
-		        hasSkips=`grep -m 1 Skipped /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
-		        if test "$hasFailed" = ""; then
-			    if test "$hasSkips" = ""; then
+                modedirs=`find $d -type d -maxdepth 1 -print`
+                if test ! "$modedirs" = "$d"; then
+                    echo "<tr>" >> index.html
+                    echo "<td>$dir</td>" >> index.html
+                    for mdir in $modedirs; do
+                        bmdir=`basename $mdir`
+                        if test "$bmdir" = "$dir"; then
+                            continue
+                        fi
+                        hasFailed=`grep -m 1 Failed /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
+                        if test "$hasFailed" = ""; then
+                            hasFailed=`grep -m 1 Unacceptable /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
+                        fi
+                        hasSkips=`grep -m 1 Skipped /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
+                        if test "$hasFailed" = ""; then
+                            if test "$hasSkips" = ""; then
                                 echo "<td bgcolor="#00ff00"><b><a href=\"$dir/$bmdir\">$bmdir</a></b></td>" >> index.html
-			    else
+                            else
                                 echo "<td bgcolor="#0000ff"><b><a href=\"$dir/$bmdir\">$bmdir</a></b></td>" >> index.html
-			    fi
-			else
+                            fi
+                        else
                             echo "<td bgcolor="#ff0000"><b><a href=\"$dir/$bmdir\">$bmdir</a></b></td>" >> index.html
-			fi
-		    done
-		    echo "</tr>" >> index.html
-	        fi
-	    fi
+                        fi
+                    done
+                    echo "</tr>" >> index.html
+                fi
+            fi
         done
         echo "</table>" >> index.html
     fi
@@ -1306,7 +1311,7 @@ if test "$post" = "1"; then
     postToHost="sunburn"
     if test $purify -eq 1; then
         postToHost="sunburn"
-	rm -f html/*.jpg
+        rm -f html/*.jpg
     fi
 
     ssh visit@${postToHost} -x "rm -f public_html/index.html"
