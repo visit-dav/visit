@@ -248,6 +248,9 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6])
 //    Kathleen Bonnell, Tue Oct 31 16:30:13 PST 2006 
 //    Add sanity check, that entry is a valid index, to prevent possible SEGV. 
 //
+//    Hank Childs, Fri May 16 09:32:44 PDT 2008
+//    Fix indexing bug introduced by int -> size_t changes for Windows.
+//
 // ****************************************************************************
 void
 Boundary::DeleteNeighbor(int d, vector<Boundary> &wholelist)
@@ -269,8 +272,11 @@ Boundary::DeleteNeighbor(int d, vector<Boundary> &wholelist)
         return;
     }
 
-    for (size_t i = delete_list.size()-1 ; i >= 0 ; i--)
+    // Note that we are doing funny indexing here to count down, because
+    // unsigned ints don't ever go below 0.
+    for (size_t ii = 0 ; ii < delete_list.size() ; ii++)
     {
+        int i = delete_list.size() - (ii+1);
         int n = delete_list[i];
         // Stop expansion of the boundary
         if (neighbors[n].type == IMIN)
