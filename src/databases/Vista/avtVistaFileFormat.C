@@ -263,6 +263,10 @@ avtVistaFileFormat::CreateFileFormatInterface(const char *const *list, int nList
 //    Mark C. Miller, Tue Oct 26 10:28:36 PDT 2004
 //    Added argument for format type
 //
+//    Mark C. Miller, Fri May 16 15:49:07 PDT 2008
+//    Moved code to set file type based on name of writer into the else
+//    block of test of writer name for null.
+//
 // ****************************************************************************
 
 avtVistaFileFormat::avtVistaFileFormat(const char *filename,
@@ -332,16 +336,18 @@ avtVistaFileFormat::avtVistaFileFormat(const char *filename,
             if (!avtCallback::IssueWarning(msg))
                 cerr << msg << endl;
         }
-
-        //
-        // Determine format type
-        //
-        if (strcmp(writerName, "ALE3D") == 0)
-            formatType = FTYPE_ALE3D;
-        else if (strcmp(writerName, "DIABLO") == 0)
-            formatType = FTYPE_DIABLO;
         else
-            formatType = FTYPE_UNKNOWN;
+        {
+            //
+            // Determine format type
+            //
+            if (strcmp(writerName, "ALE3D") == 0)
+                formatType = FTYPE_ALE3D;
+            else if (strcmp(writerName, "DIABLO") == 0)
+                formatType = FTYPE_DIABLO;
+            else
+                formatType = FTYPE_UNKNOWN;
+        }
     }
 
     //
