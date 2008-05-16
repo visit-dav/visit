@@ -911,7 +911,7 @@ for t in $testcases; do
     # (error is return result from viewer and other components may have cored)
     # Move core files to core dir.
     #
-    coreFileNames=`ls -1d *core* | grep -v -x cores`
+    coreFileNames=`ls -1d *core* 2>/dev/null | grep -v -x cores`
     if test "$coreFileNames" != ""; then
         # make cores dir if it isn't there already
         if test ! -d cores; then
@@ -933,6 +933,9 @@ for t in $testcases; do
                     unki=`expr $unki + 1`
                 fi
             done
+        else
+            error=1 
+            rm -f $coreFileNames
         fi
     fi
 
@@ -1329,9 +1332,9 @@ if test "$post" = "1"; then
     ssh visit@${postToHost} -x "rm -f public_html/current"
     ssh visit@${postToHost} -x "ln -s /home/visit/public_html/$curdate public_html/current"
     scp -r $scpverbose html  visit@${postToHost}:public_html/$curdate/$modesdir
-    if test "`ls cores`" != ""; then
-        scp -r $scpverbose cores visit@${postToHost}:public_html/$curdate/$modesdir/.
-    fi
+#    if test "`ls cores`" != ""; then
+#        scp -r $scpverbose cores visit@${postToHost}:public_html/$curdate/$modesdir/.
+#    fi
     scp $scpverbose log     visit@${postToHost}:public_html/$curdate/$modesdir
     scp $scpverbose summary visit@${postToHost}:public_html/$curdate/$modesdir
     scp $scpverbose current/runtimes.txt visit@${postToHost}:public_html/$curdate/$modesdir
