@@ -7096,7 +7096,7 @@ const char *visit_SetView_doc =
 "DrawPlots()\n"
 "\n"
 "va = GetView3D()\n"
-"va.RotateAxis(2,30.0) # rotate around the y axis 30 degrees.\n"
+"va.RotateAxis(1,30.0) # rotate around the y axis 30 degrees.\n"
 "SetView3D(va)\n"
 "\n"
 "v0 = GetView3D()\n"
