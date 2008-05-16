@@ -243,6 +243,9 @@
 #    Mark C. Miller, Tue Mar  4 18:36:42 PST 2008
 #    Reduced time to wait to get engine pids from 25 to 10 seconds; check
 #    for existence of engine_pids.txt file before trying to read it.
+#
+#    Mark C. Miller, Fri May 16 08:39:57 PDT 2008
+#    Fixed problems with detecting and saving cores.
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
