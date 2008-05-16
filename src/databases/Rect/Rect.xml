@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
   <Plugin name="Rect" type="database" label="Rect" version="1.0" dbtype="MTMD">
     <Extensions>
-      viz
+      rect 
     </Extensions>
     <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
     </Attribute>
