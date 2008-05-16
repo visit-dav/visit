@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="View3DAttributes" purpose="This class contains the 3d view attributes." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="View3DAttributes" purpose="This class contains the 3d view attributes." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="View3DAttributes.code">
     <Field name="viewNormal" label="viewNormal" type="doubleArray" length="3">
       0.000000
       0.000000
@@ -48,4 +48,8 @@
       0.000000
       0.000000
     </Field>
+    <Function name="RotateAxis" user="true" member="true">
+    </Function>
+    <Function name="View3DAttributes_RotateAxis" user="true" member="true">
+    </Function>
   </Attribute>

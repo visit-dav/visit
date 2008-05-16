@@ -847,7 +847,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                         }
                         else
                         {
-                            cerr << "Not caching this array" << endl;
+                            debug5 << "Not caching this array" << endl;
                         }
                     }
                     if (pd->GetScalars() == da)

@@ -3835,7 +3835,7 @@ else
 fi;
 case $withval in
     all)
-        DB_BUILD_DIRS="$""(REQUIRED) $""(THIRDPARTY_DEPENDENT) $""(OPTIONAL)"
+        DB_BUILD_DIRS="$""(REQUIRED) $""(THIRDPARTY_DEPENDENT) $""(OPTIONAL) $""(SAMPLES)"
         echo "$as_me:$LINENO: result: all" >&5
 echo "${ECHO_T}all" >&6
         ;;

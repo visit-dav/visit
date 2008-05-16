@@ -2394,6 +2394,8 @@ QvisViewWindow::Pan(double panx, double pany)
 void
 QvisViewWindow::RotateAxis(int axis, double angle)
 {
+    view3d->RotateAxis(axis, angle);
+#if 0
     double angleRadians;
     double v1[3], v2[3], v3[3];
     double t1[16], t2[16], m1[16], m2[16], r[16];
@@ -2681,7 +2683,7 @@ QvisViewWindow::RotateAxis(int axis, double angle)
 
         view3d->SetFocus(viewFocus);
     }
-
+#endif
     Update3D(true);
 }
  
