@@ -487,12 +487,16 @@ avtXDMFFileFormat::ReadXMLDataItem(DataItem *dataItem, void *buf, int lBuf,
 //    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
 //    I added the argument bufType.
 //
+//    Brad Whitlock, Fri May 16 09:52:31 PDT 2008
+//    Added debugging info since it can help debug creation of XML schemas.
+//
 // ****************************************************************************
 
 int
 avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
     int bufType)
 {
+    const char *mName = "avtXDMFFileFormat::ReadHDFDataItem: ";
     hid_t     file_id, dataset_id, dataspace_id;
 
     //
@@ -527,6 +531,7 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
         avtCallback::IssueWarning("Dataset specification invalid.");
         return 0;
     }
+    debug4 << mName << "filename = " << filename << endl;
 
     //
     // Open the data file.
@@ -536,6 +541,7 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
         avtCallback::IssueWarning("Unable to open file.");
         return 0;
     }
+    debug4 << mName << "datasetname = " << datasetname << endl;
 
     //
     // Open the data set.
@@ -567,8 +573,14 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
     // Check that the size of the dataset and the dimensions match.
     //
     int ldataItem = 1;
+    debug4 << mName << "nDims = " << dataItem->nDims << "  {";
     for (int i = 0; i < dataItem->nDims; i++)
+    {
         ldataItem *= dataItem->dims[i];
+        debug4 << dataItem->dims[i] << " ";
+    }
+    debug4 << "}" << endl;
+    debug4 << mName << "ldataset=" << ldataset << endl;
     if (ldataItem != ldataset)
     {
         avtCallback::IssueWarning("Dimensions don't match dataset size.");
@@ -2232,6 +2244,10 @@ avtXDMFFileFormat::GetStructuredGhostZones(MeshInfo *meshInfo, vtkDataSet *ds)
 //  Programmer: Eric Brugger
 //  Creation:   Fri Mar 21 15:22:11 PDT 2008
 //
+//  Modifications:
+//    Brad Whitlock, Fri May 16 09:50:56 PDT 2008
+//    Fixed pointer arithmetic bug in TYPE_VXVYVZ code.
+//
 // ****************************************************************************
 
 vtkPoints *
@@ -2276,32 +2292,37 @@ avtXDMFFileFormat::GetPoints(MeshInfo *meshInfo, int nnodes)
         {
             float *xcoords = new float[nnodes];
             float *ycoords = new float[nnodes];
-            float *zcoords = new float[nnodes];
             if (!ReadDataItem(meshInfo->meshData[0], xcoords, nnodes,
                 VTK_FLOAT))
             {
-                delete [] xcoords; delete [] ycoords; delete [] zcoords;
+                delete [] xcoords; delete [] ycoords;
                 points->Delete();
                 return NULL;
             }
             if (!ReadDataItem(meshInfo->meshData[1], ycoords, nnodes,
                 VTK_FLOAT))
             {
-                delete [] xcoords; delete [] ycoords; delete [] zcoords;
+                delete [] xcoords; delete [] ycoords;
                 points->Delete();
                 return NULL;
             }
             if (meshInfo->meshData[2] == NULL)
             {
+                float *xc = xcoords;
+                float *yc = ycoords;
                 for (int i = 0; i < nnodes; i++)
                 {
-                    *pts++ = *xcoords++;
-                    *pts++ = *ycoords++;
+                    *pts++ = *xc++;
+                    *pts++ = *yc++;
                     *pts++ = 0.;
                 }
             }
             else
             {
+                float *zcoords = new float[nnodes];
+                float *xc = xcoords;
+                float *yc = ycoords;
+                float *zc = zcoords;
                 if (!ReadDataItem(meshInfo->meshData[2], zcoords, nnodes,
                     VTK_FLOAT))
                 {
@@ -2311,14 +2332,14 @@ avtXDMFFileFormat::GetPoints(MeshInfo *meshInfo, int nnodes)
                 }
                 for (int i = 0; i < nnodes; i++)
                 {
-                    *pts++ = *xcoords++;
-                    *pts++ = *ycoords++;
-                    *pts++ = *zcoords++;
+                    *pts++ = *xc++;
+                    *pts++ = *yc++;
+                    *pts++ = *zc++;
                 }
+                delete [] zcoords;
             }
             delete [] xcoords;
             delete [] ycoords;
-            delete [] zcoords;
         }
         break;
 
@@ -2472,17 +2493,27 @@ avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
 //    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
 //    I replaced some code with a call to the function GetPoints.
 //
+//    Brad Whitlock, Fri May 16 09:52:31 PDT 2008
+//    Added debugging info since it can help debug creation of XML schemas.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
 {
+    const char *mName = "avtXDMFFileFormat::GetCurvilinearMesh: ";
+
     //
     // Populate the coordinates.  Put in 3D points with z=0 if the
     // mesh is 2D.
     //
     int nnodes = meshInfo->dimensions[0] * meshInfo->dimensions[1] *
                  meshInfo->dimensions[2];
+    debug4 << mName << "nnodes=" << nnodes << endl;
+    debug4 << mName << "dims[] = {"
+       << meshInfo->dimensions[0]
+       << ", " << meshInfo->dimensions[1]
+       << ", " << meshInfo->dimensions[2] << endl;
 
     vtkPoints *points = GetPoints(meshInfo, nnodes);
     if (points == NULL)
