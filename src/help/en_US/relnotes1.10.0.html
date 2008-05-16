@@ -63,7 +63,9 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>&nbsp;</li>
     <li>&nbsp;</li>
     <li>&nbsp;</li>
-    <li>&nbsp;</li>
+    <li>The XDMF reader has been fixed so it no longer causes memory problems when
+        reading meshes of type VxVyVz, which are curvilinear meshes where the coordinates
+        exist in separate HDF5 arrays.</li>
     <li>The BOV reader has been optimized to perform better when using a large number
         of processors.  Previously, all of VisIt's processors read the same header
         file simultaneously, which severely affects parallel performance on some
