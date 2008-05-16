@@ -38,6 +38,7 @@
 
 #include <View3DAttributes.h>
 #include <DataNode.h>
+#include <math.h>
 
 // Type map format string
 const char *View3DAttributes::TypeMapFormatString = "DDDddddDdbdbD";
