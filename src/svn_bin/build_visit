@@ -361,6 +361,16 @@
 #     Sean Ahern, Tue May  6 12:00:35 EDT 2008
 #     Made the Qt OpenGL patch apply more generally to 64-bit platforms.
 #
+#     Thomas R. Treadway, Wed May  7 15:15:58 PDT 2008
+#     Added better logic for VISITARCH variable feedback.
+#
+#     Thomas R. Treadway, Tue May 13 16:24:20 PDT 2008
+#     Fixed CCMIO library creation for Darwin.
+#     Commented out the SETPGRP_HAVE_ARG fix.
+#
+#     Thomas R. Treadway, Mon May 19 12:16:21 PDT 2008
+#     Support for poor MacOS X 10.3 and C99 additions.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -372,12 +382,12 @@
 # *************************************************************************** #
 
 export OPSYS=${OPSYS-$(uname -s)}
+export PROC=${PROC-$(uname -p)}
+export REL=${REL-$(uname -r)}
 # Determine architecture
 if [[ "$OPSYS" == "Darwin" ]]; then
-   export PROC=${PROC-$(uname -p)}
-   export REL=${REL-$(uname -r)}
    export ARCH=${ARCH-"${PROC}-apple-darwin${REL%%.*}"}
-   export VISITARCH=${VISITARCH-${ARCH}}
+#  export VISITARCH=${VISITARCH-${ARCH}}
    export SO_EXT="dylib"
    VER=$(uname -r)
 # Check for Panther, because MACOSX_DEPLOYMENT_TARGET will default to 10.1
@@ -399,7 +409,10 @@ if [[ "$OPSYS" == "Darwin" ]]; then
 elif [[ "$OPSYS" == "Linux" ]]; then
    export ARCH=${ARCH-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
    export SO_EXT="so"
-   if [[ "$(uname -m)" == "i686" ]] ; then
+   if [[ "$(uname -m)" == "i386" ]] ; then
+###   export MESA_TARGET=${MESA_TARGET-"linux-x86"} # Mesa-6.x
+      export MESA_TARGET=${MESA_TARGET-"linux"}
+   elif [[ "$(uname -m)" == "i686" ]] ; then
 ###   export MESA_TARGET=${MESA_TARGET-"linux-x86"} # Mesa-6.x
       export MESA_TARGET=${MESA_TARGET-"linux"}
    elif [[ "$(uname -m)" == "x86_64" ]] ; then
@@ -472,6 +485,21 @@ export THIRD_PARTY_PATH=${THIRD_PARTY_PATH-"./visit"}
 export GROUP=${GROUP-"visit"}
 export LOG_FILE=${LOG_FILE-"build_visit_log"}
 export SVNREVISION=${SVNREVISION-""}
+# Created a temporary value because the user can override most of 
+# the components, which forr the GUI happens at a later time.
+# the tmp value is useful for user feedback.
+if [[ $VISITARCH == "" ]] ; then
+    export VISITARCHTMP=${ARCH}_${C_COMPILER}
+    if [[ "$CXX_COMPILER" == "g++" ]] ; then
+        VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3)
+        if [[ ${#VERSION} == 5 ]] ; then
+            VISITARCHTMP=${VISITARCHTMP}-${VERSION}
+        fi
+    fi
+else
+# use environment variable value
+    export VISITARCHTMP=$VISITARCH
+fi
 
 #
 # OPTIONS
@@ -1711,7 +1739,7 @@ function check_variables
            "CXX_COMPILER"     "$CXX_COMPILER"      "off" \
            "C_OPT_FLAGS"      "$C_OPT_FLAGS"       "off" \
            "CXX_OPT_FLAGS"    "$CXX_OPT_FLAGS"     "off" \
-           "VISITARCH"        "$VISITARCH"         "off" \
+           "VISITARCH"        "$VISITARCHTMP"      "off" \
            "REVISION"         "$SVNREVISION"       "off" 2> tmp$$
            retval=$?
 
@@ -1761,13 +1789,13 @@ function check_variables
                      VISITARCH)
                         $DLG --backtitle "$DLG_BACKTITLE" \
                            --no-cancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISITARCH" 2> tmp$$
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISITARCHTMP" 2> tmp$$
                         VISITARCH="$(cat tmp$$)"
                         ;;
                      REVISION)
                         $DLG --backtitle "$DLG_BACKTITLE" \
                            --no-cancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISITARCH" 2> tmp$$
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$SVNREVISION" 2> tmp$$
                         SVNREVISION="$(cat tmp$$)"
                         DO_SVN="yes"
                         DO_REVISION="yes"
@@ -2493,9 +2521,11 @@ EOF
     # Qt isn't expecting.  Qt compiles itself without OpenGL support,
     # and that leads to linker problems during the visit build.
     # 
-    # If you see libGL.so installed under /usr/lib64, this might fix it:
+    # If you see libGL.so installed under /usr/lib64, and not in
+    # /usr/lib or /usr/X11R6/lib, then you have this problem, and
+    # can do this to fix it:
     if [[ "$QT_PLATFORM" == "linux-g++-64" ]] ; then
-        if [[ -e /usr/lib64/libGL.so ]] ; then
+       if [[ -e /usr/lib64/libGL.so ]] ; then
           echo "Fixing OpenGLs path to /usr/lib64"
           patch -p1 <<\EOF
 diff -rp qt-x11-free-3.3.8.orig/config.tests/x11/opengl.test qt-x11-free-3.3.8/config.tests/x11/opengl.test
@@ -3304,9 +3334,9 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
     if [[ "$OPSYS" == "Darwin" ]]; then
         # Check for version >= 9.0.0 (MacOS 10.5, Leopard)
         VER=$(uname -r)
-        if (( ${VER%%.*} > 8 )) ; then
-           echo '#define SETPGRP_HAVE_ARG' >> pyconfig.h
-        fi
+#       if (( ${VER%%.*} > 8 )) ; then
+#          echo '#define SETPGRP_HAVE_ARG' >> pyconfig.h
+#       fi
     fi
     #
     # Build Python.
@@ -6336,13 +6366,15 @@ EOF
         else
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
+        cp lib/release-shared/libadf.dylib .
+        cp lib/release-shared/libccmio.dylib .
         install_name_tool -id \
           "$INSTALLNAMEPATH/libadf.$SO_EXT" "libadf.$SO_EXT"
         install_name_tool -id \
           "$INSTALLNAMEPATH/libccmio.$SO_EXT" "libccmio.$SO_EXT"
-        install_name_tool -change \
-          libadf.dylib.5.01.000 "$INSTALLNAMEPATH/libadf.$SO_EXT" \
-          "libccmio.$SO_EXT"
+#       install_name_tool -change \
+#         libadf.dylib.5.01.000 "$INSTALLNAMEPATH/libadf.$SO_EXT" \
+#         "libccmio.$SO_EXT"
         cp "libadf.$SO_EXT" \
           "$VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/lib/libadf.$SO_EXT"
         cp "libccmio.$SO_EXT" \
@@ -6714,6 +6746,16 @@ function build_visit
            cat databases/Fluent/Makefile | sed '/CXXFLAGS/s/$/ -O0/g' > Make.tmp
            mv -f databases/Fluent/Makefile databases/Fluent/Makefile.orig
            mv -f Make.tmp databases/Fluent/Makefile
+           cat avt/Pipeline/Data/avtCommonDataFunctions.C | \
+              sed '/isfinite/s/isfinite/__isfinited/g' > C.tmp
+           mv -f avt/Pipeline/Data/avtCommonDataFunctions.C \
+              avt/Pipeline/Data/avtCommonDataFunctions.C.orig
+           mv -f C.tmp avt/Pipeline/Data/avtCommonDataFunctions.C
+           cat avt/Expressions/Abstract/avtExpressionFilter.C | \
+              sed '/isfinite/s/isfinite/__isfinited/g' > C.tmp
+           mv -f avt/Expressions/Abstract/avtExpressionFilter.C \
+              avt/Expressions/Abstract/avtExpressionFilter.C.orig
+           mv -f C.tmp avt/Expressions/Abstract/avtExpressionFilter.C
         fi
         if (( ${VER%%.*} < 7 )) ; then
            cat third_party_builtin/mesa_stub/Makefile | \
@@ -6784,7 +6826,7 @@ printvariables () {
   printf "%s%s\n" "PROC=" "${PROC}"
   printf "%s%s\n" "REL=" "${REL}"
   printf "%s%s\n" "ARCH=" "${ARCH}"
-  printf "%s%s\n" "VISITARCH=" "${VISITARCH}"
+  printf "%s%s\n" "VISITARCH=" "${VISITARCHTMP}"
 
   printf "%s%s\n" "C_COMPILER=" "${C_COMPILER}"
   printf "%s%s\n" "CXX_COMPILER=" "${CXX_COMPILER}"
@@ -6904,25 +6946,25 @@ usage () {
   printf "Usage: %s [-45bCcdEefghIijkmnoprSsVwxyz] [-a opt] [-l opt]\n" $0
   printf "       [-t opt] [-u opt] [-v opt] [-D opt] [-J opt] [-R opt]\n"
   printf "\n"
-  printf "%s %s %s\n" "-4     Build HDF4 from [" $HDF4_FILE "]"
-  printf "%s %s %s\n" "-5     Build HDF5 from [" $HDF5_FILE "]"
-  printf "%s %s %s\n" "-a opt Architecture variable VISITARCH [" $VISITARCH "]."
+  printf "%s %s %s\n" "-4     Build HDF4 from ["$HDF4_FILE"]"
+  printf "%s %s %s\n" "-5     Build HDF5 from ["$HDF5_FILE"]"
+  printf "%s %s %s\n" "-a opt Architecture variable VISITARCH ["$VISITARCHTMP"]"
   printf "%s\n" "       This variable is used in contructing the 3rd parthy" 
   printf "%s\n" "       library path usually set to something like"
   printf "%s\n" "       linux_gcc-3.4.6 or Darwin_gcc-4.0.1"
-  printf "%s %s %s\n" "-b     Build Boxlib from [" $BOXLIB_FILE "]"
-  printf "%s %s %s\n" "-C     Build Star-CD support from [" $CCMIO_FILE "]"
-  printf "%s %s %s\n" "-c     Build CGNS from [" $CGNS_FILE "]"
+  printf "%s %s %s\n" "-b     Build Boxlib from ["$BOXLIB_FILE"]"
+  printf "%s %s %s\n" "-C     Build Star-CD support from ["$CCMIO_FILE"]"
+  printf "%s %s %s\n" "-c     Build CGNS from ["$CGNS_FILE"]"
   printf "%s\n" "-D opt Select -g level debugging flag in CFLAGS/CXXFLAGS"
   printf "%s\n" "       The default level is 2 (-g2). Level 1 produces"
   printf "%s\n" "       minimal information, while level 3 includes extra"
   printf "%s\n" "-d     Turn on -g, debugging flag in CFLAGS/CXXFLAGS"
   printf "%s\n" "-E     Display user settable environment variables"
-  printf "%s %s %s\n" "-e     Build Exodus from [" $EXODUS_FILE "]"
-  printf "%s %s %s\n" "-f     Build CFITSIO from [" $CFITSIO_FILE "]"
-  printf "%s %s %s\n" "-g     Build GDAL from [" $GDAL_FILE "]"
+  printf "%s %s %s\n" "-e     Build Exodus from ["$EXODUS_FILE"]"
+  printf "%s %s %s\n" "-f     Build CFITSIO from ["$CFITSIO_FILE"]"
+  printf "%s %s %s\n" "-g     Build GDAL from ["$GDAL_FILE"]"
   printf "%s\n" "-h     display this message"
-  printf "%s %s %s\n" "-I     Build ITAPS from [" $ITAPS_FILE "]-experimental!"
+  printf "%s %s %s\n" "-I     Build ITAPS from ["$ITAPS_FILE"]-experimental!"
   printf "%s\n" "-i     Change the behavior of the install name path for"
   printf "%s\n" "       the Darwin dynamic libraries. Enabling this flag"
   printf "%s\n" "       will used the THIRD_PARTY_PATH path for creating"
@@ -6931,19 +6973,19 @@ usage () {
   printf "%s\n" "-J opt Set -j level for parallel makes"
   printf "%s\n" "-j     Do not build VisIt, build 3rd party libraries only"
   printf "%s\n" "-k     Do not build required 3rd party libraries"
-  printf "%s %s %s\n" "-l opt Group name of installed libraries [" $GROUP "]"
-  printf "%s %s %s\n" "-m     Build Mili from:[" $MILI_FILE "]."
+  printf "%s %s %s\n" "-l opt Group name of installed libraries ["$GROUP"]"
+  printf "%s %s %s\n" "-m     Build Mili from:["$MILI_FILE"]."
   printf "%s\n" "       NOTE: not available for download from web"
-  printf "%s %s %s\n" "-n     Build NetCDF from [" $NETCDF_FILE "]"
+  printf "%s %s %s\n" "-n     Build NetCDF from ["$NETCDF_FILE"]"
   printf "%s\n" "-o     Write build log to stdout not to build_visit_log file"
   printf "%s\n" "-p     Enable parallel build, display MPI prompt"
   printf "%s\n" "-R opt Checkout specific revision argument of VisIt from SVN"
-  printf "%s %s %s\n" "-r     Build H5Part from [" $H5PART_FILE "]"
+  printf "%s %s %s\n" "-r     Build H5Part from ["$H5PART_FILE"]"
   printf "%s\n" "-S     Build with SLIVR shader support"
   printf "%s\n" "-s     Use the SVN server for the VisIt distribution"
-  printf "%s %s %s\n" "       [ svn co $SVN_ROOT_PATH/trunk/src ]"
+  printf "%s %s %s\n" "       [svn co $SVN_ROOT_PATH/trunk/src]"
   printf "%s\n" "-t opt The name of the distribution tarball, the VISIT_FILE"
-  printf "%s %s %s\n" "       variable [" $VISIT_FILE "]"
+  printf "%s %s %s\n" "       variable ["$VISIT_FILE"]"
   printf "%s\n" "       This option will over-ride the above SVN, -s section"
   printf "%s\n" "-u opt The THIRD_PARTY_PATH path contains the root"
   printf "%s\n" "       directory name underwhich the 3rd party libraries"
@@ -6951,9 +6993,9 @@ usage () {
   printf "%s\n" "       mean the 3rd party libraries are pre-built and are"
   printf "%s\n" "       installed some where like /usr/gapps/visit. The"
   printf "%s\n" "       default assumes 3rd party libraries are to be built"
-  printf "%s %s %s\n" "       and installed in [" $THIRD_PARTY_PATH "]"
-  printf "%s %s %s\n" "-V     Build ViSUS from:[" $ViSUS_FILE "]-experimental!"
-  printf "%s %s %s\n" "-v opt The VISIT_VERSION value [" $VISIT_VERSION "]"
+  printf "%s %s %s\n" "       and installed in ["$THIRD_PARTY_PATH"]"
+  printf "%s %s %s\n" "-V     Build ViSUS from:["$VISUS_FILE"]-experimental!"
+  printf "%s %s %s\n" "-v opt The VISIT_VERSION value ["$VISIT_VERSION"]"
   printf "%s\n" "-w     Build with the VisIt Python module"
   printf "%s\n" "-x     Turn on SHELL debugging"
   printf "%s\n" "-y     Build with the Java client library"
