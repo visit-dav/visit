@@ -1858,6 +1858,11 @@ class MakeMovie:
     #   Brad Whitlock, Tue Jun 21 11:10:47 PDT 2005
     #   I made it re-raise VisItInterrupt if it gets one.
     #
+    #   Brad Whitlock, Mon May 19 13:38:42 PDT 2008
+    #   Check the number of keys in allEngineProperties not in
+    #   self.engineCommandLineProperties. This makes the script once again
+    #   able to read engine settings used to create a session file.
+    #
     ###########################################################################
 
     def ReadEngineProperties(self, sessionfile):   
@@ -1873,7 +1878,7 @@ class MakeMovie:
                 p.feed(line)
             p.close()
 
-            if len(self.engineCommandLineProperties.keys()) == 0:
+            if len(p.allEngineProperties.keys()) == 0:
                 # There were no hosts in the engine attributes so add the command
                 # line options for localhost.
                 p.allEngineProperties["localhost"] = self.engineCommandLineProperties
