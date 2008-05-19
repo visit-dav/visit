@@ -95,6 +95,7 @@
 #include <avtRadianToDegreeExpression.h>
 #include <avtRevolvedVolume.h>
 #include <avtSideVolume.h>
+#include <avtCornerAngle.h>
 #include <avtEdgeLength.h>
 #include <avtRevolvedSurfaceArea.h>
 #include <avtSpecMFExpression.h>
@@ -492,6 +493,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Hank Childs, Thu May  8 09:29:08 PDT 2008
 //    Add rectilinear_laplacian.
 //
+//    Hank Childs, Mon May 19 10:57:10 PDT 2008
+//    Added [min|max]_corner_angle.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -701,6 +705,18 @@ avtFunctionExpr::CreateFilters(string functionName)
         avtVMetricVolume *vol = new avtVMetricVolume();
         vol->UseVerdictHex(false);
         return vol;
+    }
+    if (functionName == "min_corner_angle")
+    {
+        avtCornerAngle *ca = new avtCornerAngle();
+        ca->SetTakeMin(true);
+        return ca;
+    }
+    if (functionName == "max_corner_angle")
+    {
+        avtCornerAngle *ca = new avtCornerAngle();
+        ca->SetTakeMin(false);
+        return ca;
     }
     if (functionName == "min_edge_length")
     {
