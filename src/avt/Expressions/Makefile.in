@@ -214,6 +214,9 @@
 #   Hank Childs, Wed May  7 16:35:06 PDT 2008
 #   Added rectilinear laplacian.
 #
+#   Hank Childs, Mon May 19 10:54:22 PDT 2008
+#   Added avtCornerAngle.C
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -374,6 +377,7 @@ Math_src= \
   Math/avtVectorCrossProductExpression.C
 
 MeshQuality_src= \
+  MeshQuality/avtCornerAngle.C \
   MeshQuality/avtEdgeLength.C \
   MeshQuality/avtNeighborExpression.C \
   MeshQuality/avtNodeDegreeExpression.C \
