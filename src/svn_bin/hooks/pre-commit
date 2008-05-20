@@ -54,5 +54,8 @@ runhook_sh "count_tabs.sh"
 # Check for possible dos file format
 runhook_sh "check_dos.sh"
 
+# Check for #warning compiler directives
+runhook_sh "check_pound_warning.sh"
+
 # All checks passed, so allow the commit.
 exit 0
