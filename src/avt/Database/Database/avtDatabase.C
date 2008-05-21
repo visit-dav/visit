@@ -2080,6 +2080,10 @@ avtDatabase::NumStagesForFetch(avtDataRequest_p)
 //    from getline ends in '\r'.  Also, convert slashes found in the textfile
 //    to those appropriate for this system.
 //
+//    Mark C. Miller, Mon May 19 23:50:24 PDT 2008
+//    Fixed case where strlen(str_auto) == 0 causing uninitialized data being
+//    used in conditional jump.
+//
 // ****************************************************************************
 
 void
@@ -2111,9 +2115,10 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
     {
         str_auto[0] = '\0';
         ifile.getline(str_auto, 1024, '\n');
+        int str_auto_len = strlen(str_auto);
 
-        if (str_auto[strlen(str_auto)-1] == '\r')
-            str_auto[strlen(str_auto)-1] = '\0';
+        if (str_auto_len > 0 && str_auto[str_auto_len-1] == '\r')
+            str_auto[str_auto_len-1] = '\0';
 
         if (str_auto[0] != '\0' && str_auto[0] != '#')
         {
