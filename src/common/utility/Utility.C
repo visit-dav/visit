@@ -984,9 +984,14 @@ GetSystemVisItRCFile()
 }
 
 #if defined(_WIN32)
+// ***************************************************************************
 //
 // Functions to get at VisIt data stored in the Windows registry.
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed May 21 08:12:16 PDT 2008
+//    Only malloc keyval if it hasn't already been done.
+// ***************************************************************************
 int
 ReadKeyFromRoot(HKEY which_root, const char *ver, const char *key,
     char **keyval)
@@ -997,7 +1002,8 @@ ReadKeyFromRoot(HKEY which_root, const char *ver, const char *key,
 
     /* Try and read the key from the system registry. */
     sprintf(regkey, "VISIT%s", ver);
-    *keyval = (char *)malloc(500);
+    if (*keyval == 0)
+        *keyval = (char *)malloc(500);
     if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
     {
         DWORD keyType, strSize = 500;
