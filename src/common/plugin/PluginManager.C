@@ -593,6 +593,9 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 //    Jeremy Meredith, Wed Dec 12 16:09:38 EST 2007
 //    Allow plugins to be compatible across point releases.
 //
+//    Kathleen Bonnell, Wed May 21 08:12:16 PDT 2008 
+//    Fix libs indexing when searching for match.
+//
 // ****************************************************************************
 
 void
@@ -635,7 +638,7 @@ PluginManager::ReadPluginInfo()
         bool match = false;
         for (size_t j=0; j<libs.size() && !match; j++)
         {
-            if (libs[i].first  == dirname &&
+            if (libs[j].first  == dirname &&
                 libs[j].second == str)
                 match = true;
         }
@@ -1411,6 +1414,10 @@ void *dlsym(void *handle, const char *symbol)
 //    Only fail the environment exception if the plugin directory hasn't been
 //    set in a prior call to SetPluginDir.
 //
+//    Kathleen Bonnell, Wed May 21 08:12:16 PDT 2008 
+//    Modified path-parsing for Windows.  ';' is the only valid separator
+//    between paths since ':' could indicate a drive.
+//
 // ****************************************************************************
 
 void
@@ -1470,7 +1477,11 @@ PluginManager::SetPluginDir(const char *PluginDir)
     while (*c)
     {
         string dir;
+#ifndef _WIN32
         while (*c && *c!=':' && *c!=';')
+#else
+        while (*c && *c!=';')
+#endif
         {
             dir += *c;
             c++;

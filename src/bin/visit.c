@@ -602,6 +602,9 @@ ReadKey(const char *key, char **keyval)
  *   Use "Application Data" path for private plugins, as users have write-
  *   privileges there (and it better supports roaming profiles).
  *
+ *   Kathleen Bonnell, Wed May 21 08:12:16 PDT 2008 
+ *   Use ';' to separate different paths for VISITPLUGINDIR. 
+ *
  *****************************************************************************/
 
 char *
@@ -710,7 +713,7 @@ AddEnvironment(int useShortFileName)
         {
             PathAppend(appData, "LLNL");
             PathAppend(appData, "VisIt");
-            sprintf(tmp, "VISITPLUGINDIR=%s:%s", appData, visitpath);
+            sprintf(tmp, "VISITPLUGINDIR=%s;%s", appData, visitpath);
         }
         else
         {
