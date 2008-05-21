@@ -63,6 +63,9 @@ class     vtkCell;
 //    Kathleen Bonnell, Fri Feb  3 11:24:40 PST 2006
 //    Added revolveAboutX, GetTriangleVolume2. 
 //
+//    Hank Childs, Wed May 21 15:55:53 PDT 2008
+//    Re-define GetVariableDimension.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtRevolvedVolume : public avtSingleInputExpressionFilter
@@ -82,6 +85,7 @@ class EXPRESSION_API avtRevolvedVolume : public avtSingleInputExpressionFilter
     virtual void                PreExecute(void);
 
     virtual bool                IsPointVariable(void)  { return false; };
+    virtual int                 GetVariableDimension()   { return 1; };
 
     double                      GetZoneVolume(vtkCell *);
     double                      GetTriangleVolume(double [3], double [3]);

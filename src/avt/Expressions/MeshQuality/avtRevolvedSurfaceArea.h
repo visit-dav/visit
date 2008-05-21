@@ -64,6 +64,9 @@ class     vtkCell;
 //    Added revolveAboutX. Changed args of GetLineArea from vtkCell, to double.
 //    Added GetCellArea.
 //
+//    Hank Childs, Wed May 21 15:55:53 PDT 2008
+//    Re-define GetVariableDimension.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtRevolvedSurfaceArea 
@@ -85,6 +88,7 @@ class EXPRESSION_API avtRevolvedSurfaceArea
     virtual void                PreExecute(void);
 
     virtual bool                IsPointVariable(void)  { return false; };
+    virtual int                 GetVariableDimension()   { return 1; };
 
     double                      GetCellArea(vtkCell*);
     double                      GetLineArea(double[2], double[2]);

@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtNodeDegreeExpression.h                         //
+//                          avtNodeDegreeExpression.h                        //
 // ************************************************************************* //
 
 #ifndef AVT_NODE_DEGREE_FILTER_H
@@ -66,6 +66,9 @@ class     vtkDataArray;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Wed May 21 15:55:53 PDT 2008
+//    Re-define GetVariableDimension.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtNodeDegreeExpression : public avtSingleInputExpressionFilter
@@ -80,6 +83,7 @@ class EXPRESSION_API avtNodeDegreeExpression : public avtSingleInputExpressionFi
 
   protected:
     virtual bool              IsPointVariable(void) { return true; };
+    virtual int               GetVariableDimension()   { return 1; };
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
 };
 

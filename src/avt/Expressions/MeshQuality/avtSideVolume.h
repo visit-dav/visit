@@ -84,6 +84,9 @@ class     vtkCell;
 //    Hank Childs, Thu Sep 22 15:39:11 PDT 2005
 //    Add min and max variants.
 //
+//    Hank Childs, Wed May 21 15:55:53 PDT 2008
+//    Re-define GetVariableDimension.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtSideVolume : public avtSingleInputExpressionFilter
@@ -105,6 +108,7 @@ class EXPRESSION_API avtSideVolume : public avtSingleInputExpressionFilter
     virtual void                PreExecute(void);
 
     virtual bool                IsPointVariable(void)  { return false; };
+    virtual int                 GetVariableDimension()   { return 1; };
 
     double                      GetZoneVolume(vtkCell *);
 };
