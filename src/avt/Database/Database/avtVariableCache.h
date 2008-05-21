@@ -113,6 +113,11 @@ class   vtkObject;
 //    for key information by searching over all domains ... it leads to
 //    big performance problems for high domain counts.
 //
+//    Mark C. Miller, Tue May 20 22:08:49 PDT 2008
+//    Added Hash support functions. Removed formal arg 'int dom' from 
+//    OneDomain's GetItem method. Const qualified some methods that it made
+//    sense to.
+//
 // ****************************************************************************
 
 class DATABASE_API avtVariableCache
@@ -185,7 +190,7 @@ class DATABASE_API avtVariableCache
         void              CacheItem(avtCachableItem *);
         int               GetDomain(void) const  { return domain; };
         avtCachableItem  *GetItem(void)     { return item; };
-        bool              GetItem(int dom, avtCachableItem *) const;
+        bool              GetItem(avtCachableItem *) const;
     
         void              Print(ostream &, int);
 
@@ -212,6 +217,8 @@ class DATABASE_API avtVariableCache
         // Note that we have three levels of points to make indexing efficient
         // and searches over all entries also efficient.
         std::vector<OneDomain *> ****domains;
+        std::vector<OneDomain *>   *GetHashedDomainsVector(int domain) const;
+        void                        GetHashIndices(int domain, int *L0, int *L1, int *L2) const;
     };
 
     class OneMat
@@ -289,7 +296,7 @@ class DATABASE_API  avtCachedVTKObject : public avtCachableItem
   public:
                           avtCachedVTKObject(vtkObject *);
     virtual              ~avtCachedVTKObject();
-    vtkObject            *GetVTKObject(void)  { return obj; };
+    vtkObject            *GetVTKObject(void)  const { return obj; };
 
   protected:
     vtkObject            *obj;
@@ -301,7 +308,7 @@ class DATABASE_API  avtCachedVoidRef : public avtCachableItem
   public:
                          avtCachedVoidRef(void_ref_ptr);
     virtual             ~avtCachedVoidRef();
-    void_ref_ptr         GetVoidRef(void)  { return voidRef; };
+    void_ref_ptr         GetVoidRef(void)  const { return voidRef; };
 
   protected:
     void_ref_ptr         voidRef;
