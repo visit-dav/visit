@@ -289,10 +289,12 @@ avtVariableCache::CacheVTKObject(const char *name, const char *type,
 //    method, since searching through all of the domains was causing delays
 //    of upwards of 300 seconds in the transform manager.
 //
+//    Mark C. Miller, Tue May 20 22:08:49 PDT 2008
+//    Removed formal arg 'int dom' because the function no longer uses it.
+//
 // ****************************************************************************
 
-bool avtVariableCache::OneDomain::GetItem(int dom,
-                                          avtCachableItem *theItem) const
+bool avtVariableCache::OneDomain::GetItem(avtCachableItem *theItem) const
 {
     if ((item->GetItemType() == theItem->GetItemType()) &&
         (item->GetItemType() == avtCachableItem::VTKObject))
@@ -334,32 +336,58 @@ bool avtVariableCache::OneDomain::GetItem(int dom,
 //    Hank Childs, Fri May  9 13:48:07 PDT 2008
 //    Add support for hashing the domains.
 //
+//    Mark C. Miller, Tue May 20 22:04:53 PDT 2008
+//    Fixed to handle the case where caller doesn't care about domain and
+//    has no specific one to input.
+//
 // ****************************************************************************
 
 bool
 avtVariableCache::OneTimestep::GetItem(int *ts, int domain,
                                        avtCachableItem *theItem) const
 {
-    int L0 = domain % HASH_SIZE;
-    int L1 = (domain / HASH_SIZE) % HASH_SIZE;
-    int L2 = (domain / (HASH_SIZE*HASH_SIZE)) % HASH_SIZE;
-    if (domain < 0) // work around negative modulos.
-        L0 = L1 = L2 = 0;
-
-    if (domains[L0] == NULL)
-        return false;
-    if (domains[L0][L1] == NULL)
-        return false;
-    if (domains[L0][L1][L2] == NULL)
-        return false;
-    std::vector<OneDomain *>::const_iterator it;
-    for (it = domains[L0][L1][L2]->begin() ; it != domains[L0][L1][L2]->end() 
-                                                                       ; it++)
+    if (domain >= 0) // care about specific domain case
     {
-        if ((*it)->GetItem(domain, theItem))
+        std::vector<OneDomain *> *hdv = GetHashedDomainsVector(domain);
+        if (0 == hdv)
+            return false;
+
+        std::vector<OneDomain *>::const_iterator it;
+        for (it = hdv->begin(); it != hdv->end(); it++)
         {
-            if (ts) *ts = GetTimestep();
-            return true;
+            if ((*it)->GetItem(theItem))
+            {
+                if (ts) *ts = GetTimestep();
+                return true;
+            }
+        }
+    }
+    else // don't care about domain case 
+    {
+        for (int i = 0 ; i < HASH_SIZE ; i++)
+        {
+            if (domains[i] == NULL)
+                continue;
+            for (int j = 0 ; j < HASH_SIZE ; j++)
+            {
+                if (domains[i][j] == NULL)
+                    continue;
+                for (int k = 0 ; k < HASH_SIZE ; k++)
+                {
+                    if (domains[i][j][k] == NULL)
+                        continue;
+                    std::vector<OneDomain *>::iterator it;
+                    for (it = domains[i][j][k]->begin() ; 
+                             it != domains[i][j][k]->end() ; it++)
+                    {
+                        if ((*it)->GetItem(theItem))
+                        {
+                            if (ts) *ts = GetTimestep();
+                            return true;
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -671,21 +699,27 @@ avtVariableCache::CacheVoidRef(const char *name, const char *type,
 //    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
 //    Fixed UMR 
 //
+//    Mark C. Miller, Tue May 20 22:08:49 PDT 2008
+//    Fixed risky code that stored iterators to objectPointerMap in
+//    itemsToRemove to just store keys. After an operation modifies the map
+//    object the iterators point at, there is no guarentee the stored
+//    iterators will still be valid.
 // ****************************************************************************
 
 void
 avtVariableCache::ClearTimestep(int ts)
 {
     // clear out objectPointerMap items *before* vtkVars and voidRefVars
-    std::vector<std::map<vtkObject*,vtkObject*>::iterator> itemsToRemove;
+    std::vector<vtkObject*> itemsToRemove;
     std::map<vtkObject*,vtkObject*>::iterator it;
     for (it = objectPointerMap.begin(); it != objectPointerMap.end(); it++)
     {
         int objts = -1;
+        const int allDomains = -1;
 
-        if (GetVTKObjectKey(0, 0, &objts, 0, 0, it->second) && objts == ts)
+        if (GetVTKObjectKey(0, 0, &objts, allDomains, 0, it->second) && objts == ts)
         {
-            itemsToRemove.push_back(it);
+            itemsToRemove.push_back(it->first);
         }
     }
     for (size_t i = 0 ; i < itemsToRemove.size() ; i++)
@@ -833,6 +867,47 @@ avtVariableCache::OneTimestep::~OneTimestep()
     }
 }
 
+// ****************************************************************************
+//  Method: avtVariableCache::OneTimestep::GetHashIndices
+//
+//  Purpose: Compute hash indices.
+//
+//  Programmer: Mark C. Miller (refactored from orig. code by Hank Childs)
+//  Created:    May 20, 2008
+//
+// ****************************************************************************
+
+void
+avtVariableCache::OneTimestep::GetHashIndices(int domain, int *L0, int *L1, int *L2) const
+{
+    *L0 = domain % HASH_SIZE;
+    *L1 = (domain / HASH_SIZE) % HASH_SIZE;
+    *L2 = (domain / (HASH_SIZE*HASH_SIZE)) % HASH_SIZE;
+    if (domain < 0) // work around negative modulos.
+        *L0 = *L1 = *L2 = 0;
+}
+
+// ****************************************************************************
+//  Method: avtVariableCache::OneTimestep::GetHashedDomainsVector
+//
+//  Purpose: Return hashed vector of OneDomain objects. 
+//
+//  Programmer: Mark C. Miller (refactored from orig. code by Hank Childs)
+//  Created:    May 20, 2008
+//
+// ****************************************************************************
+
+std::vector<avtVariableCache::OneDomain *>*
+avtVariableCache::OneTimestep::GetHashedDomainsVector(int domain) const
+{
+    int L0, L1, L2;
+    GetHashIndices(domain, &L0, &L1, &L2);
+
+    if (0 == domains[L0] || 0 == domains[L0][L1] || 0 == domains[L0][L1][L2])
+        return 0;
+
+    return domains[L0][L1][L2];
+}
 
 // ****************************************************************************
 //  Method: OneTimestep::CacheItem
@@ -852,19 +927,19 @@ avtVariableCache::OneTimestep::~OneTimestep()
 //    Hank Childs, Fri May  9 14:16:23 PDT 2008
 //    Add support for hashing.
 //
+//    Mark C. Miller, Tue May 20 22:08:49 PDT 2008
+//    Modified to use GetHashIndices routine.
+//
 // ****************************************************************************
 
 void
 avtVariableCache::OneTimestep::CacheItem(int domain, avtCachableItem *im)
 {
     int  i;
-
+    int L0, L1, L2;
+    GetHashIndices(domain, &L0, &L1, &L2);
     std::vector<OneDomain *>::iterator it;
-    int L0 = domain % HASH_SIZE;
-    int L1 = (domain / HASH_SIZE) % HASH_SIZE;
-    int L2 = (domain / (HASH_SIZE*HASH_SIZE)) % HASH_SIZE;
-    if (domain < 0) // work around negative modulos.
-        L0 = L1 = L2 = 0;
+
     if (domains[L0] == NULL)
     {
         domains[L0] = new std::vector<OneDomain *>**[HASH_SIZE];
@@ -919,35 +994,24 @@ avtVariableCache::OneTimestep::CacheItem(int domain, avtCachableItem *im)
 //    Hank Childs, Fri May  9 14:16:23 PDT 2008
 //    Add support for hashing.
 //
+//    Mark C. Miller, Tue May 20 22:08:49 PDT 2008
+//    Modified to use GetHashedDomainsVector() routine
 // ****************************************************************************
 
 avtCachableItem *
 avtVariableCache::OneTimestep::GetItem(int domain)
 {
-    int L0 = domain % HASH_SIZE;
-    int L1 = (domain / HASH_SIZE) % HASH_SIZE;
-    int L2 = (domain / (HASH_SIZE*HASH_SIZE)) % HASH_SIZE;
-//cerr << "L0 = " << L0 << ", L2 = " << L2 << endl;
-    if (domain < 0) // work around negative modulos.
-        L0 = L1 = L2 = 0;
-    if (domains[L0] == NULL)
-        return NULL;
-    if (domains[L0][L1] == NULL)
-        return NULL;
-    if (domains[L0][L1][L2] == NULL)
-        return NULL;
+    std::vector<OneDomain *> *hdv = GetHashedDomainsVector(domain);
+    if (0 == hdv) return 0;
 
     std::vector<OneDomain *>::iterator it;
-    for (it = domains[L0][L1][L2]->begin() ; it != domains[L0][L1][L2]->end() 
-                                                                        ; it++)
+    for (it = hdv->begin(); it != hdv->end(); it++)
     {
         if ((*it)->GetDomain() == domain)
-        {
             return (*it)->GetItem();
-        }
     }
 
-    return NULL;
+    return 0;
 }
 
 
@@ -1385,27 +1449,38 @@ avtVariableCache::OneMat::Print(ostream &out, int indent)
 //    Hank Childs, Fri May  9 15:04:35 PDT 2008
 //    Add support for hashing.
 //
+//    Mark C. Miller, Tue May 20 22:08:49 PDT 2008
+//    Re-organized to read like similar routines above and to have bracketed
+//    scopes for clearer reading.
+//
 // ****************************************************************************
 
 void
 avtVariableCache::OneTimestep::Print(ostream &out, int indent)
 {
     for (int i = 0 ; i < HASH_SIZE ; i++)
-        if (domains[i] != NULL)
-            for (int j = 0 ; j < HASH_SIZE ; j++)
-                if (domains[i][j] != NULL)
-                    for (int k = 0 ; k < HASH_SIZE ; k++)
-                        if (domains[i][j][k] != NULL)
-                        {
-                            Indent(out, indent);
-                            out << "Timestep = " << timestep << endl;
-                            std::vector<OneDomain *>::iterator it;
-                            for (it = domains[i][j][k]->begin() ;
+    {
+        if (domains[i] == NULL)
+            continue;
+        for (int j = 0 ; j < HASH_SIZE ; j++)
+        {
+            if (domains[i][j] == NULL)
+                continue;
+            for (int k = 0 ; k < HASH_SIZE ; k++)
+            {
+                if (domains[i][j][k] == NULL)
+                    continue;
+                Indent(out, indent);
+                out << "Timestep = " << timestep << endl;
+                std::vector<OneDomain *>::iterator it;
+                for (it = domains[i][j][k]->begin() ;
                                           it != domains[i][j][k]->end() ; it++)
-                            {
-                                (*it)->Print(out, indent+1);
-                            }
-                        }
+                {
+                    (*it)->Print(out, indent+1);
+                }
+            }
+        }
+    }
 }
 
 
