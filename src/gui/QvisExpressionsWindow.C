@@ -133,6 +133,9 @@
 //    Cyrus Harrison, Thu Jan 31 09:45:30 PST 2008
 //    Added value_for_material
 //
+//    Hank Childs, Thu Feb 21 15:50:36 PST 2008
+//    Added transpose.
+//
 //    Brad Whitlock, Tue Apr  8 12:17:11 PDT 2008
 //    Added support for internalization of the expression category names.
 //
@@ -252,6 +255,7 @@ const char *expr_tensor[] = {
     "principal_tensor",
     "tensor_maximum_shear",
     "trace",
+    "transpose",
     "viscous_stress",
     NULL
 };
