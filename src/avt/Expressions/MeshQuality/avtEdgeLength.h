@@ -59,6 +59,11 @@ class     vtkCell;
 //  Programmer: Hank Childs
 //  Creation:   September 22, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Wed May 21 15:55:53 PDT 2008
+//    Re-define GetVariableDimension.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtEdgeLength : public avtSingleInputExpressionFilter
@@ -77,6 +82,7 @@ class EXPRESSION_API avtEdgeLength : public avtSingleInputExpressionFilter
 
     virtual vtkDataArray       *DeriveVariable(vtkDataSet *);
     virtual bool                IsPointVariable(void)  { return false; };
+    virtual int                 GetVariableDimension()   { return 1; };
 
     double                      GetEdgeLength(vtkCell *);
 };

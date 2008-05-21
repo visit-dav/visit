@@ -58,6 +58,11 @@ class     vtkCell;
 //  Programmer: Hank Childs
 //  Creation:   May 19, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Wed May 21 15:55:32 PDT 2008
+//    Re-define GetVariableDimension.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtCornerAngle : public avtSingleInputExpressionFilter
@@ -76,6 +81,7 @@ class EXPRESSION_API avtCornerAngle : public avtSingleInputExpressionFilter
 
     virtual vtkDataArray       *DeriveVariable(vtkDataSet *);
     virtual bool                IsPointVariable(void)  { return false; };
+    virtual int                 GetVariableDimension()   { return 1; };
 
     double                      GetCornerAngle(vtkCell *);
 };
