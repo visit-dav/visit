@@ -205,6 +205,9 @@
 #   Jeremy Meredith, Tue Feb 19 14:18:03 EST 2008
 #   Added constant creation function.
 #
+#   Hank Childs, Thu Feb 21 15:46:32 PST 2008
+#   Added transpose expression.
+#
 #   Cyrus Harrison, Wed Apr  2 15:08:59 PDT 2008
 #   Added cylindrical radius expression.
 #
@@ -317,6 +320,7 @@ General_src= \
   General/avtSpecMFExpression.C \
   General/avtSurfaceNormalExpression.C \
   General/avtTensorContractionExpression.C \
+  General/avtTransposeExpression.C \
   General/avtVariableSkewExpression.C \
   General/avtVectorComposeExpression.C \
   General/avtVectorDecomposeExpression.C \

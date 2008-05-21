@@ -69,6 +69,7 @@
 #include <avtInverseExpression.h>
 #include <avtTraceExpression.h>
 #include <avtTensorMaximumShearExpression.h>
+#include <avtTransposeExpression.h>
 #include <avtPrincipalDeviatoricTensorExpression.h>
 #include <avtPrincipalTensorExpression.h>
 #include <avtEffectiveTensorExpression.h>
@@ -487,6 +488,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Jeremy Meredith, Wed Feb 20 10:01:27 EST 2008
 //    Split "constant" into point_constant and cell_constant.
 //
+//    Hank Childs, Thu Feb 21 15:48:42 PST 2008
+//    Added transpose expression.
+//
 //    Cyrus Harrison, Wed Apr  2 15:34:20 PDT 2008
 //    Added new cylindrical_radius implementation.
 //
@@ -599,6 +603,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtStrainRateExpression();
     if (functionName == "contraction")
         return new avtTensorContractionExpression();
+    if (functionName == "transpose")
+        return new avtTransposeExpression();
     if (functionName == "viscous_stress")
         return new avtViscousStressExpression();
     if (functionName == "displacement")
