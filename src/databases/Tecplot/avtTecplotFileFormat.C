@@ -117,6 +117,10 @@ avtTecplotFileFormat::PushBackToken(const string &tok)
 //  Programmer:  Jeremy Meredith
 //  Creation:    December 10, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Thu May 22 10:25:12 EDT 2008
+//    Support DOS format text files.
+//
 // ****************************************************************************
 string
 avtTecplotFileFormat::GetNextToken()
@@ -151,13 +155,14 @@ avtTecplotFileFormat::GetNextToken()
     while (!next_char_eof   &&
            (next_char == ' '  ||
             next_char == '\n' ||
+            next_char == '\r' ||
             next_char == '\t' ||
             next_char == '='  ||
             next_char == '('  ||
             next_char == ')'  ||
             next_char == ','))
     {
-        if (next_char == '\n')
+        if (next_char == '\n' || next_char == '\r')
         {
             next_char_eol = true;
         }
@@ -204,6 +209,7 @@ avtTecplotFileFormat::GetNextToken()
         while (!next_char_eof   &&
                (next_char != ' '  &&
                 next_char != '\n' &&
+                next_char != '\r' &&
                 next_char != '\t' &&
                 next_char != '='  &&
                 next_char != '('  &&
@@ -225,13 +231,14 @@ avtTecplotFileFormat::GetNextToken()
     while (!next_char_eof   &&
            (next_char == ' '  ||
             next_char == '\n' ||
+            next_char == '\r' ||
             next_char == '\t' ||
             next_char == '='  ||
             next_char == '('  ||
             next_char == ')'  ||
             next_char == ','))
     {
-        if (next_char == '\n')
+        if (next_char == '\n' || next_char == '\r')
         {
             next_char_eol = true;
         }
