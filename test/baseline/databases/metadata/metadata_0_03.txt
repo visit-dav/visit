@@ -143,6 +143,8 @@ GetMeshes(0).unitCellVectors = (1, 0, 0, 0, 1, 0, 0, 0, 1)
 GetMeshes(0).rectilinearGridHasTransform = 0
 GetMeshes(0).rectilinearGridTransform = (1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
 GetMeshes(0).nodeOrigin = 0
+GetMeshes(0).containsExteriorBoundaryGhosts = 0
+GetMeshes(0).hideFromGUI = 0
 GetScalars(0).name = "Density"
 GetScalars(0).originalName = "Density"
 GetScalars(0).validVariable = 1
@@ -217,6 +219,7 @@ GetVectors(0).hasDataExtents = 0
 GetVectors(0).minDataExtents = 0
 GetVectors(0).maxDataExtents = 0
 GetVectors(0).varDim = 3
+GetVectors(0).hideFromGUI = 0
 GetVectors(1).name = "Velocity"
 GetVectors(1).originalName = "Velocity"
 GetVectors(1).validVariable = 1
@@ -228,6 +231,7 @@ GetVectors(1).hasDataExtents = 0
 GetVectors(1).minDataExtents = 0
 GetVectors(1).maxDataExtents = 0
 GetVectors(1).varDim = 3
+GetVectors(1).hideFromGUI = 0
 #tensors does not contain any avtTensorMetaData objects.
 #symmTensors does not contain any avtSymmetricTensorMetaData objects.
 #arrays does not contain any avtArrayMetaData objects.
