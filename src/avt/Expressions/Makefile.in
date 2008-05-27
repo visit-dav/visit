@@ -219,6 +219,9 @@
 #
 #   Hank Childs, Mon May 19 10:54:22 PDT 2008
 #   Added avtCornerAngle.C
+#   
+#   Sean Ahern Tue May 27 15:17:08 EDT 2008
+#   Added avtExpFunction.C
 #
 ##############################################################################
 
@@ -364,6 +367,7 @@ Math_src= \
   Math/avtDeterminantExpression.C \
   Math/avtEigenvalueExpression.C \
   Math/avtEigenvectorExpression.C \
+  Math/avtExpExpression.C \
   Math/avtFloorExpression.C \
   Math/avtIdentityExpression.C \
   Math/avtModuloExpression.C \
