@@ -97,6 +97,9 @@ graphicalGetPassword(const char *host, int *okay)
 //   as '-l username' here.  Surround 'RunRemoteCommand' in try-catch block
 //   in order to allow user to change the Username..
 // 
+//   Kathleen Bonnell, Tue May 27 15:50:02 PDT 2008 
+//   If user changes Username, ensure we copy the correct length string. 
+//
 // ****************************************************************************
 
 int
@@ -275,6 +278,7 @@ main(int argc, char *argv[])
         catch(DoUsernameWindow)
         {
             const char *n = graphicalGetUsername(host);
+            namlen = strlen(n) +1;
             if (n != NULL)
             {
                 if (!shouldDeleteUsername)
