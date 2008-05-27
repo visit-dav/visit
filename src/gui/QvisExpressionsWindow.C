@@ -180,6 +180,7 @@ const char *expr_math[] = {
     "abs",
     "ceil",
     "floor",
+    "exp",
     "ln",
     "log10",
     "max",

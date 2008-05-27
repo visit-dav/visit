@@ -55,6 +55,7 @@
 #include <avtRoundExpression.h>
 #include <avtSinExpression.h>
 #include <avtCosExpression.h>
+#include <avtExpExpression.h>
 #include <avtDistanceToBestFitLineExpression.h>
 #include <avtRandomExpression.h>
 #include <avtArctanExpression.h>
@@ -500,6 +501,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Hank Childs, Mon May 19 10:57:10 PDT 2008
 //    Added [min|max]_corner_angle.
 //
+//    Sean Ahern, Tue May 27 15:22:47 EDT 2008
+//    Added "exp" function.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -527,6 +531,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtAbsValExpression();
     if (functionName == "ln")
         return new avtNaturalLogExpression();
+    if (functionName == "exp")
+        return new avtExpExpression();
     if ((functionName == "log") || (functionName == "log10"))
         return new avtBase10LogExpression();
     if (functionName == "sqrt")
