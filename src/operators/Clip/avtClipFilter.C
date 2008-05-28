@@ -380,6 +380,15 @@ avtClipFilter::ExecuteDataTree(vtkDataSet *inDS, int domain, std::string label)
     return outDT;
 }
 
+
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Tue May 27 17:15:43 PDT 2008
+//    Fixed memory issue that was causing crash.
+//
+// ****************************************************************************
+
 int
 avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
                                    ClipAttributes &atts, int domain, std::string label)
@@ -451,6 +460,7 @@ avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
         {
             // Nothing to do!  Just return an avtDataTree of our input.
             outDS[nDataSets++] = inDS;
+            inDS->Register(NULL); // Someone will call delete on this later.
             return 1;
         }
 
@@ -548,6 +558,14 @@ avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
     return nDataSets;
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Tue May 27 17:15:43 PDT 2008
+//    Fixed memory issue that was causing crash.
+//
+// ****************************************************************************
+
 int
 avtClipFilter::ComputeFastClip(vtkDataSet *inDS, vtkDataSet **outDS,
                                ClipAttributes &atts, int domain, std::string label)
@@ -566,6 +584,7 @@ avtClipFilter::ComputeFastClip(vtkDataSet *inDS, vtkDataSet **outDS,
         ifuncs->Delete();
 
         outDS[0] = inDS;
+        outDS[0]->Register(NULL); // this will be deleted later.
         return 1;
     }
 
