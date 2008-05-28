@@ -294,6 +294,9 @@ ColorTableManager::ImportHelper(void *data, const std::string &ctFileName,
 //   I added code to prevent the file path from being added to the color
 //   table name.
 //
+//   Brad Whitlock, Wed May 28 15:22:57 PDT 2008
+//   Fixed reading of color tables.
+//
 // ****************************************************************************
 
 void
@@ -316,10 +319,13 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
             else
                 ctName = ctFileName.substr(pos + 1, ctFileName.size() - pos - 1 - 3);
             
-            debug4 << "Imported color table " << ctFileName.c_str() << " as "
-                   << ctName.c_str() << endl;
+            // Look for the ColorTable node.           
+            DataNode *node2 = node->SearchForNode("ColorTable");
+            if(node2 == 0)
+                return;
+
             ColorControlPointList ccpl2;
-            ccpl2.SetFromNode(node);
+            ccpl2.SetFromNode(node2);
             ccpl2.SetExternalFlag(true);
             
             // Check for errors that would break code down the line
@@ -350,6 +356,9 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
             else
             {
                 ctAtts->AddColorTable(ctName, ccpl2);
+            
+                debug4 << "Imported color table " << ctFileName.c_str()
+                       << " as " << ctName.c_str() << endl;
             }
             delete node;
         }
