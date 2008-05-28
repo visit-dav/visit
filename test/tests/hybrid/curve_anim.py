@@ -22,8 +22,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/curve.visit")
 curv_atts = CurveAttributes()

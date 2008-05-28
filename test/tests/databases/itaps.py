@@ -42,8 +42,6 @@ def RestrictSetsInCategory(silr, className, setIds):
             silr.TurnOffSet(set)
         
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 # test the main mesh
 OpenDatabase("../data/iTaps_test_data/mbtest1", 0, "ITAPS_C_1.0")

@@ -12,8 +12,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 # test a 2D pixie database
 OpenDatabase("../data/pixie_test_data/pixie3d3.h5")

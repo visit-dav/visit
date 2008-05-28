@@ -16,8 +16,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotations
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/multi_ucd3d.silo")
 

@@ -14,8 +14,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/thinplane.silo")
 atts = PseudocolorAttributes()

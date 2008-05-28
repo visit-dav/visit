@@ -26,8 +26,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 #
 # Trying out collections of scalars as a source

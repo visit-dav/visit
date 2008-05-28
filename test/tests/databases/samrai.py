@@ -46,8 +46,6 @@
 
 LevelZero = 4 # set id for level 0
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/samrai_test_data/sil_changes/dumps.visit")
 

@@ -17,8 +17,6 @@
 
 import visit_writer
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 # BEGIN USER MODIFIABLE SECTION
 

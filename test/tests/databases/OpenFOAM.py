@@ -8,7 +8,6 @@
 #
 # ----------------------------------------------------------------------------
 
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/OpenFOAM_test_data/bubbleColumn/system/controlDict")
 

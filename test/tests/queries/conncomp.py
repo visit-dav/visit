@@ -13,7 +13,6 @@
 #
 # ----------------------------------------------------------------------------
 
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/multi_rect2d.silo", 0)
 DefineScalarExpression("_rand_test_2d", "rand(mesh1)")

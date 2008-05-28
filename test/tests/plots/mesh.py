@@ -34,7 +34,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
 
 def TestCurve():
     TestSection("Mesh plot of a 3D curvilinear mesh")

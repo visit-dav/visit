@@ -13,8 +13,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/boxlib_test_data/2D/plt0822/Header")
 AddPlot("Pseudocolor", "density")

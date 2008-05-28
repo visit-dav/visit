@@ -13,8 +13,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 view = View3DAttributes()
 view.viewNormal = (0.557976, 0.651128, 0.514485)

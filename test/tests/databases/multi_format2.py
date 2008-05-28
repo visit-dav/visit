@@ -14,8 +14,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 db = ("../data/rect2d.silo",
       "../data/allinone00.pdb")

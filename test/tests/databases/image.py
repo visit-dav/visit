@@ -17,8 +17,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 #
 # we'll make all the pc plots gray scale

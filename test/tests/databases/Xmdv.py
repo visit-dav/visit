@@ -19,8 +19,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 # First test that we can open a Xmdv file.
 OpenDatabase("../data/astronomy.okc")

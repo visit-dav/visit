@@ -8,8 +8,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/overlink_test_data/regrovl_qh_1000_10001_4/OvlTop.silo")
 

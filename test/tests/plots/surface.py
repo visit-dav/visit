@@ -17,8 +17,6 @@
 #    Add tests 4-10, testing more options of the Surface plot. 
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 
 

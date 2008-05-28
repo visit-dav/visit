@@ -8,8 +8,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/multi_ucd3d.silo")
 AddPlot("Pseudocolor", "d")

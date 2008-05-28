@@ -11,8 +11,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/rect3d.silo")
 DefineScalarExpression("curvature", "mean_curvature(quadmesh3d)") 

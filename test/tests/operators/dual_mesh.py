@@ -16,8 +16,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotations
-TurnOffAllAnnotations() # defines global object 'a'
 
 # Test 2D Case
 

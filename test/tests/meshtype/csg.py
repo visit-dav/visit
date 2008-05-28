@@ -16,7 +16,6 @@
 #    Added tests for materials, variables and Matt's csg data
 # ----------------------------------------------------------------------------
 
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/csg.silo")
 
