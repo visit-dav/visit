@@ -34,6 +34,7 @@ def TestWindowInformation(testname):
             s = s + "\n"
     TestText(testname, s)
 
+TurnOnAllAnnotations()
 SetCloneWindowOnFirstRef(1)
 SetWindowLayout(2)
 SetActiveWindow(2)

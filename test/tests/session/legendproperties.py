@@ -15,6 +15,7 @@
 #
 # ----------------------------------------------------------------------------
 
+TurnOnAllAnnotations()
 RestoreSession("tests/session/legendproperties.session", 0)
 Test("legendproperties00")
 

@@ -16,7 +16,7 @@
 # ----------------------------------------------------------------------------
 import os, string
 
-TurnOffAllAnnotations()
+TurnOffAllAnnotations() # defines global object 'a'
 
 SetTryHarderCyclesTimes(1)
 # the following open command doesn't work (#7873)

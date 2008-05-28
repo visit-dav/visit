@@ -57,12 +57,13 @@ def test0(datapath):
     DeleteActivePlots()
 
 def main():
-    a = GetAnnotationAttributes()
+    TurnOnAllAnnotations()
+    a = AnnotationAttributes()
     a.databaseInfoFlag = 0
-    a. userInfoFlag = 0
-    a.xAxisLabels = 0
-    a.yAxisLabels = 0
-    a.zAxisLabels = 0
+    a.userInfoFlag = 0
+    a.axes3D.xAxis.label.visible = 0
+    a.axes3D.yAxis.label.visible = 0
+    a.axes3D.zAxis.label.visible = 0
     SetAnnotationAttributes(a)
 
     datapath = "../data/Cale_test_data/"

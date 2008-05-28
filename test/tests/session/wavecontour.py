@@ -19,6 +19,7 @@
 #
 # ----------------------------------------------------------------------------
 
+TurnOnAllAnnotations()
 RestoreSession("tests/session/wavecontour.session", 0)
 Test("wavecontour00")
 Exit()

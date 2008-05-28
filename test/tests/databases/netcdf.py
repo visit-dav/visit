@@ -333,12 +333,15 @@ def test4(datapath):
     CloseDatabase(datapath + db)
 
 def main():
-    a = GetAnnotationAttributes()
+    a = AnnotationAttributes()
     a.databaseInfoFlag = 0
-    a. userInfoFlag = 0
-    a.xAxisLabels = 0
-    a.yAxisLabels = 0
-    a.zAxisLabels = 0
+    a.userInfoFlag = 0
+    a.axes3D.xAxis.title.visible = 0
+    a.axes3D.xAxis.label.visible = 0
+    a.axes3D.yAxis.title.visible = 0
+    a.axes3D.yAxis.label.visible = 0
+    a.axes3D.zAxis.title.visible = 0
+    a.axes3D.zAxis.label.visible = 0
     SetAnnotationAttributes(a)
 
     datapath = "../data/netcdf_test_data/"

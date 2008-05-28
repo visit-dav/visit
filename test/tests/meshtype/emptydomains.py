@@ -14,7 +14,7 @@
 #
 # ----------------------------------------------------------------------------
 
-TurnOffAllAnnotations()
+TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/emptydomains.silo")
 

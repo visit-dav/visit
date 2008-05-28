@@ -20,6 +20,7 @@
 
 
 # Test for topological dimension 2.
+TurnOnAllAnnotations()
 OpenDatabase("../data/rect2d.silo")
 AddPlot("Pseudocolor", "d")
 DrawPlots()

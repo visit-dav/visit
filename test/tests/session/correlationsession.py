@@ -37,6 +37,8 @@ def TestLength(testname):
     testString = testString + GetTruncatedWindowInformationString()
     TestText(testname, testString)
 
+TurnOnAllAnnotations()
+
 #
 # Restore the session file and make sure that it at the right time step
 # and has the right time slider.

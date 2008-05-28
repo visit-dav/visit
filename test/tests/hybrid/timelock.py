@@ -361,6 +361,7 @@ def test3(testindex):
 # Run the tests
 #
 try:
+    TurnOnAllAnnotations()
     testindex = 0
     testindex = test1(testindex)
     testindex = test2(testindex)

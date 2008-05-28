@@ -18,6 +18,7 @@
 #
 # ----------------------------------------------------------------------------
 
+TurnOnAllAnnotations()
 RestoreSession("tests/session/sessionexpression.session", 0)
 Test("sessionexpression00")
 Exit()

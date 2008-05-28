@@ -21,6 +21,7 @@
 #
 # ----------------------------------------------------------------------------
 
+TurnOnAllAnnotations()
 OpenDatabase("../data/multi_ucd3d.silo")
 AddPlot("Mesh", "mesh1")
 AddPlot("Pseudocolor", "d")

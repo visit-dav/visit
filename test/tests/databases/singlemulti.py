@@ -38,6 +38,8 @@ def TestWindowInformation(testname):
             s = s + "\n"
     TestText(testname, s)
 
+TurnOnAllAnnotations()
+
 # Create a Pseudocolor plot of wave by opening it up at a late time state.
 OpenDatabase("../data/wave*.silo database", 20)
 AddPlot("Pseudocolor", "pressure")

@@ -41,13 +41,12 @@ def InitializeView():
 
 # Turn the annotations that we don't want.
 a = AnnotationAttributes()
-a.axesFlag = 0
-a.bboxFlag = 0
-a.userInfoFlag = 0
-a.backgroundMode = 0
-a.foregroundColor = (0, 0, 0, 255)
-a.backgroundColor = (255, 255, 255, 255)
+TurnOffAllAnnotations(a)
+a.axes3D.triadFlag = 1
+a.databaseInfoFlag = 1
+a.legendInfoFlag = 1
 SetAnnotationAttributes(a)
+
 
 # Open the database.
 OpenDatabase("../data/rect3d.silo")

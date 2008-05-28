@@ -208,8 +208,10 @@ def test5():
 
 def main():
     # Turn off 3D axes
+    TurnOnAllAnnotations()
     a = GetAnnotationAttributes()
-    a.axesFlag = 0
+    a.axes3D.visible = 0
+    a.userInfoFlag = 0
     SetAnnotationAttributes(a)
 
     test1()

@@ -18,6 +18,8 @@
 #
 # ----------------------------------------------------------------------------
 
+TurnOnAllAnnotations()
+
 # Set up the visualization by restoring a session file.
 RestoreSession("tests/session/textannot.session", 0)
 

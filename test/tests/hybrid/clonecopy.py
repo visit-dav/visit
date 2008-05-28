@@ -21,21 +21,7 @@
 
 # Turn off annotation
 a = AnnotationAttributes()
-a.axesFlag2D = 1
-a.xAxisLabels2D = 0
-a.yAxisLabels2D = 0
-a.xAxisTitle2D = 0
-a.yAxisTitle2D = 0
-a.axesFlag = 0
-a.triadFlag = 0
-a.bboxFlag = 0
-a.userInfoFlag = 0
-a.databaseInfoFlag = 0
-a.legendInfoFlag = 0
-a.backgroundMode = 0
-a.foregroundColor = (0, 0, 0, 255)
-a.backgroundColor = (255, 255, 255, 255)
-SetAnnotationAttributes(a)
+TurnOffAllAnnotations(a)
 SetDefaultAnnotationAttributes(a)
 
 # Set up a non-default annotation object.

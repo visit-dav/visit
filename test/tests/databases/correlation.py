@@ -84,6 +84,8 @@ def TestLengthAndCorrelationList(testname):
     TestText(testname, s)
 
 
+TurnOnAllAnnotations()
+
 #
 # The databases that we'll use for most tests.
 #

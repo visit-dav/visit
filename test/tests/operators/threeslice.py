@@ -10,21 +10,6 @@
 #
 # ----------------------------------------------------------------------------
 
-def InitAnnotation():
-    # Turn off all annotation
-    a = AnnotationAttributes()
-    a.axesFlag2D = 0
-    a.axesFlag = 0
-    a.triadFlag = 0
-    a.bboxFlag = 0
-    a.userInfoFlag = 0
-    a.databaseInfoFlag = 0
-    a.legendInfoFlag = 0
-    a.backgroundMode = 0
-    a.foregroundColor = (0, 0, 0, 255)
-    a.backgroundColor = (255, 255, 255, 255)
-    SetAnnotationAttributes(a)
-
 def Test1():
     OpenDatabase("../data/noise.silo")
     AddPlot("Pseudocolor", "hardyglobal")
@@ -56,6 +41,6 @@ def Test1():
     Test("ThreeSlice_03")
 
 
-InitAnnotation()
+TurnOffAllAnnotations() # defines global object 'a'
 Test1()
 Exit()

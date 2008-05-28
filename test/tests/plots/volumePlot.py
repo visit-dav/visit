@@ -25,32 +25,13 @@
 
 def InitAnnotations():
     # Turn off all annotation
-    a = AnnotationAttributes()
-    a.axesFlag2D = 0
-    a.axesFlag = 0
-    a.triadFlag = 0
-    a.bboxFlag = 0
-    a.userInfoFlag = 0
-    a.databaseInfoFlag = 0
-    a.legendInfoFlag = 0
-    a.backgroundMode = 0
-    a.foregroundColor = (0, 0, 0, 255)
-    a.backgroundColor = (255, 255, 255, 255)
-    SetAnnotationAttributes(a)
+    TurnOffAllAnnotations()
 
 def InitAnnotationsLegendOn():
     # Turn off all annotation
     a = AnnotationAttributes()
-    a.axesFlag2D = 0
-    a.axesFlag = 0
-    a.triadFlag = 0
-    a.bboxFlag = 0
-    a.userInfoFlag = 0
-    a.databaseInfoFlag = 0
+    TurnOffAllAnnotations(a)
     a.legendInfoFlag = 1
-    a.backgroundMode = 0
-    a.foregroundColor = (0, 0, 0, 255)
-    a.backgroundColor = (255, 255, 255, 255)
     SetAnnotationAttributes(a)
 
 def TestVolumeScaling():

@@ -12,21 +12,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-
-a = AnnotationAttributes()
-a.axesFlag2D = 0
-a.axesFlag = 0
-a.triadFlag = 0
-a.bboxFlag = 0
-a.userInfoFlag = 0
-a.databaseInfoFlag = 0
-a.legendInfoFlag = 0
-a.backgroundMode = 0
-a.foregroundColor = (0, 0, 0, 255)
-a.backgroundColor = (255, 255, 255, 255)
-SetAnnotationAttributes(a)
-
 # First test that we can open a Dune file.
 OpenDatabase("../data/dune_test_data/Dune_6_species_1K_FS.Dat")
 AddPlot("Pseudocolor", "mass")
@@ -62,7 +47,7 @@ DrawPlots()
 Test("Dune_07")
 QueryOverTime("Max")
 SetActiveWindow(2)
-SetAnnotationAttributes(a)
+TurnOffAllAnnotations()
 Test("Dune_08")
 
 Exit()

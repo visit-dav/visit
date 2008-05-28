@@ -47,6 +47,8 @@ def TestLengthAndCorrelationList(testname):
         s = s + str(c) + "\n"
     TestText(testname, s)
 
+TurnOnAllAnnotations()
+
 # Create a plot of DB A.
 OpenDatabase("../data/dbA00.pdb")
 AddPlot("FilledBoundary", "material(mesh)")
