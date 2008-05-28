@@ -15,8 +15,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/noise.silo")
 AddPlot("Pseudocolor", "hardyglobal")

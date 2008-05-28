@@ -10,8 +10,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 ca = CurveAttributes()
 ca.showPoints = 1

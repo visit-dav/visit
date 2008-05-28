@@ -19,8 +19,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/mili_test_data/m_plot.mili")
 AddPlot("FilledBoundary", "materials1_no_free_nodes(mesh1_no_free_nodes)")

@@ -41,6 +41,5 @@ def Test1():
     Test("ThreeSlice_03")
 
 
-TurnOffAllAnnotations() # defines global object 'a'
 Test1()
 Exit()

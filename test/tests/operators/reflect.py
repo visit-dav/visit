@@ -34,8 +34,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 # 3D, rectilinear.  Multi-block  Tests ghost zones as well.
 OpenDatabase("../data/rect2d.silo")

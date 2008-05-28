@@ -26,8 +26,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 disp = DisplaceAttributes()
 disp.variable = "vel"

@@ -10,8 +10,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 
 OpenDatabase("../data/old_silo_data/pion0244.silo")

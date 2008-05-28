@@ -14,8 +14,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 db = ("../data/wave*.silo database",      "../data/allinone00.pdb")
 

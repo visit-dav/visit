@@ -8,7 +8,6 @@
 #
 # ----------------------------------------------------------------------------
 
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/Fluent_test_data/Gas2OxyEntSlurry3d30m_MSmods_Ar_Wen_Moist_CO2_WGS_HCl_COdevol.cas")
 AddPlot("Pseudocolor", "TEMPERATURE")

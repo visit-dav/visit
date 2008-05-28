@@ -7,8 +7,6 @@
 #  Date:       June 29, 2005 
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 
 OpenDatabase("../data/Image_test_data/manhattan.jpg")

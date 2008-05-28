@@ -12,8 +12,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotations
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/CHGCAR", 0, "VASP_1.0")
 AddPlot("Pseudocolor", "charge")

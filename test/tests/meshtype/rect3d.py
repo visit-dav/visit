@@ -30,7 +30,6 @@
 #
 # ----------------------------------------------------------------------------
 
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/rect3d.silo")
 

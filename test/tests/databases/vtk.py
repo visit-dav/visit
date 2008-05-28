@@ -182,7 +182,6 @@ def TestHigherOrder():
     Test("vtk_29")
     DeleteAllPlots()
 
-TurnOffAllAnnotations() # defines global object 'a'
 TestMaterials()
 TestXML()
 TestHigherOrder()

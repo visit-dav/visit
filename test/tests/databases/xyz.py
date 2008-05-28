@@ -13,8 +13,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotations
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/nanowireTB23K298.xyz", 0, "XYZ_1.0")
 AddPlot("Molecule", "element")

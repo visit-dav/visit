@@ -21,8 +21,6 @@
 
 import os
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 ca=CurveAttributes()
 ca.cycleColors = 0

@@ -29,8 +29,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 
 OpenDatabase("../data/globe.silo")

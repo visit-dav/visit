@@ -14,7 +14,6 @@
 #  Date:       August 7, 2007 
 #
 # ----------------------------------------------------------------------------
-TurnOffAllAnnotations() # defines global object 'a'
 
 #
 # Create a database of compressed VTK files in a .visit file

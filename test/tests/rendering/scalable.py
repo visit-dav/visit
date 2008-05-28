@@ -34,8 +34,6 @@
 import time
 sleepTime=1
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 # Turn on scalable rendering
 ra = GetRenderingAttributes()

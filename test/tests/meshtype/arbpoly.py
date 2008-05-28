@@ -15,7 +15,6 @@
 #
 # ----------------------------------------------------------------------------
 
-TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/poly3d.silo")
 

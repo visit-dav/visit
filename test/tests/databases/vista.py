@@ -15,8 +15,6 @@
 #    Changed '-default_format' to '-assume_format'
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 #
 # We need to force VisIt to use Vista

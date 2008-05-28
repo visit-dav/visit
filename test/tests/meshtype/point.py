@@ -29,7 +29,6 @@
 #
 # ----------------------------------------------------------------------------
 
-TurnOffAllAnnotations() # defines global object 'a'
 
 v = GetView3D()
 v.viewNormal = (0.3, 0.5, 0.8)

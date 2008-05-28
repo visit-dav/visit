@@ -21,8 +21,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 # Open a database.
 OpenDatabase("../data/wave.visit")

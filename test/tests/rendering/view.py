@@ -42,8 +42,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation except the legend.
-TurnOffAllAnnotations() # defines global object 'a'
 
 # Test setting the 3d view before creating the first plot.
 v = View3DAttributes()

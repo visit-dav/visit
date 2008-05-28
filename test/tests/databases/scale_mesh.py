@@ -11,8 +11,6 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-TurnOffAllAnnotations() # defines global object 'a'
 
 # Create a Pseudocolor plot of wave by opening it up at a late time state.
 OpenDatabase("../data/near_planar.vtk")
