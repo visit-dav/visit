@@ -12,6 +12,7 @@
 # ----------------------------------------------------------------------------
 
 # Test that we can do an l2norm of a degenerate ultra file.
+TurnOnAllAnnotations()
 OpenDatabase("../data/degenerate.ultra")
 AddPlot("Curve", "This is a degenerate ultra file.")
 DrawPlots()

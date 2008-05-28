@@ -348,15 +348,8 @@ def TestLegendCopying(a):
 def main():
     # Turn off all annotation except the legend.
     a = AnnotationAttributes()
-    a.axesFlag2D = 0
-    a.axesFlag = 0
-    a.triadFlag = 0
-    a.bboxFlag = 0
-    a.userInfoFlag = 0
-    a.databaseInfoFlag = 0
-    a.backgroundMode = 0
-    a.foregroundColor = (0, 0, 0, 255)
-    a.backgroundColor = (255, 255, 255, 255)
+    TurnOffAllAnnotations(a)
+    a.legendInfoFlag = 1
     SetAnnotationAttributes(a)
 
     TestLevelsLegend(a)

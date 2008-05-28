@@ -252,8 +252,9 @@ cleanTmpFiles () {
     rm -f *.curve 1>/dev/null 2>&1
     rm -f *.env 1>/dev/null 2>&1
     rm -f *.ult 1>/dev/null 2>&1
-    rm -f core* 1>/dev/null 2>&1
+    rm -rf core* 1>/dev/null 2>&1
     rm -f *_purify.txt 1>/dev/null 2>&1
+    rm -f *.vlog 1>/dev/null 2>&1
 }
 
 #
@@ -910,8 +911,7 @@ for t in $testcases; do
     fi
 
     #
-    # See if any core files were produced. If so, set error appropriately
-    # (error is return result from viewer and other components may have cored)
+    # See if any core files were produced. If so, set error appropriately.
     # Move core files to core dir.
     #
     coreFileNames=`ls -1d *core* 2>/dev/null | grep -v -x cores`
@@ -920,21 +920,21 @@ for t in $testcases; do
         if test ! -d cores; then
             mkdir cores
         fi
-        # only do this work if cores dir is less than 100 Megs
-        if test `du -sk cores | cut -f1` -lt 100000; then
+        # only do this work if cores dir is less than 250 Megs
+        if test `du -sk cores | cut -f1` -lt 250000; then
             modesnm="`echo $modes | sed s/,/_/`"
-            unki=0
+            coreFileNum=0
             for fname in $coreFileNames; do
                 fileType=`file $fname | cut -d':' -f2 | grep core`
                 if test "$fileType" != ""; then
                     error=1 
                     coreName=`echo $fileType | cut -d',' -f4 | cut -d' ' -f3 | sed s/\'//g`
                     #cp ../src/exe/$coreName cores/.
-                    mv $fname cores/core.${coreName}_${category}_${base}_${modesnm}
+                    mv $fname cores/core.${coreName}_${category}_${base}_${modesnm}.${coreFileNum}
                 else
-                    mv $fname cores/${fname}.unknown.${unki}
-                    unki=`expr $unki + 1`
+                    mv $fname cores/${fname}.unknown.${coreFileNum}
                 fi
+                coreFileNum=`expr $coreFileNum + 1`
             done
         else
             error=1 
@@ -1345,11 +1345,6 @@ if test "$post" = "1"; then
     ssh visit@${postToHost} -x "chmod -R go+rX public_html/$curdate"
 
 fi
-
-#
-# Cleanup temporary files
-#
-cleanTmpFiles
 
 #
 #  exit with the right exit status

@@ -301,11 +301,11 @@ def test2(datapath):
 
 
 def main():
-    a = GetAnnotationAttributes()
+    a = AnnotationAttributes()
+    a.axes3D.visible = 0
+    a.axes3D.bboxFlag = 0
+    a.userInfoFlag = 0
     a.databaseInfoFlag = 0
-    a. userInfoFlag = 0
-    a.axesFlag = 0
-    a.bboxFlag = 0
     SetAnnotationAttributes(a)
 
     # Draw antialiased lines

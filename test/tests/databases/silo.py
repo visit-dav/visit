@@ -37,7 +37,7 @@
 #    of the file structure. Added test for multivar that spans multiple
 #    multimeshes; it should fail.
 # ----------------------------------------------------------------------------
-TurnOffAllAnnotations()
+TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/multipart_multi_ucd3d.silo")
 

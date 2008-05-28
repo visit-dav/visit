@@ -50,14 +50,7 @@ def test0(datapath):
     CloseDatabase(db)
 
 def main():
-    a = GetAnnotationAttributes()
-    a.databaseInfoFlag = 0
-    a.userInfoFlag = 0
-    a.axesFlag2D = 0
-    a.bboxFlag = 0
-    a.legendInfoFlag = 0
-    a.triadFlag = 0
-    SetAnnotationAttributes(a)
+    TurnOffAllAnnotations() # defines global object 'a'
 
     InvertBackgroundColor()
 

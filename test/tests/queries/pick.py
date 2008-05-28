@@ -2611,6 +2611,7 @@ def PickMain():
     PickBox()
 
 # Call the main function
+TurnOnAllAnnotations()
 PickMain()
 Exit()
 

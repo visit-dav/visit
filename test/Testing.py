@@ -1361,9 +1361,25 @@ def Exit():
         sys.exit(114)
 
 
-def TurnOffAllAnnotations():
-    global a
-    a = AnnotationAttributes()
+def TurnOnAllAnnotations(givenAtts=0):
+    if (givenAtts == 0):
+        a = AnnotationAttributes()
+    else:
+        a = givenAtts
+    a.axes2D.visible = 1
+    a.axes3D.visible = 1
+    a.axes3D.triadFlag = 1
+    a.axes3D.bboxFlag = 1
+    a.userInfoFlag = 0
+    a.databaseInfoFlag = 1
+    a.legendInfoFlag = 1
+    SetAnnotationAttributes(a)
+
+def TurnOffAllAnnotations(givenAtts=0):
+    if (givenAtts == 0):
+        a = AnnotationAttributes()
+    else:
+        a = givenAtts
     a.axes2D.visible = 0
     a.axes3D.visible = 0
     a.axes3D.triadFlag = 0
@@ -1371,10 +1387,6 @@ def TurnOffAllAnnotations():
     a.userInfoFlag = 0
     a.databaseInfoFlag = 0
     a.legendInfoFlag = 0
-    a.backgroundColor = (255, 255, 255, 255)
-    a.foregroundColor = (0, 0, 0, 255)
-    a.backgroundMode = a.Solid  # Solid, Gradient, Image, ImageSphere
-    a.backgroundImage = ""
     SetAnnotationAttributes(a)
 
 # ----------------------------------------------------------------------------
@@ -1590,10 +1602,6 @@ annot.userInfoFlag = 0
 SetDefaultAnnotationAttributes(annot)
 SetAnnotationAttributes(annot)
 
-# create global 'a' symbol for annotation attributes so tests re-coded to
-# use TurnOffAllAnnotations behave as expected 
-a = AnnotationAttributes()
-
 # set scalable rendering mode if desired
 if scalable:
    ra = GetRenderingAttributes()
@@ -1621,6 +1629,11 @@ epids = open("engine_pids.txt", 'wt')
 for p in engineProcAtts.pids:
     epids.write("%d\n"%int(p))
 epids.close()
+
+# Automatically turn off all annotations
+# This is to prevent new tests getting committed that
+# are unnecessarily dependent on annotations.
+TurnOffAllAnnotations()
 
 # set up our html output
 html = open("html/%s_%s.html" % (category, pyfilebase), 'wt')

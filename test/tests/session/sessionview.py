@@ -17,6 +17,8 @@
 #
 # ----------------------------------------------------------------------------
 
+TurnOnAllAnnotations()
+
 # Open the first session file
 RestoreSession("tests/session/sessionview1.session", 0)
 Test("sessionview00")

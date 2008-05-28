@@ -12,7 +12,7 @@
 # ----------------------------------------------------------------------------
 import os, string
 
-TurnOffAllAnnotations()
+TurnOffAllAnnotations() # defines global object 'a'
 
 atts = IndexSelectAttributes()
 # Dim is an enumerated type.  0 -> 1D, 1 -> 2D, 2 -> 3D.

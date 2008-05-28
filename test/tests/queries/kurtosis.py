@@ -11,6 +11,7 @@
 #
 # ----------------------------------------------------------------------------
 
+TurnOnAllAnnotations()
 OpenDatabase("../data/distribution.ultra")
 AddPlot("Curve", "Laplace Distribution")
 DrawPlots()

@@ -37,6 +37,8 @@ def TestWindowInformation(testname):
             s = s + "\n"
     TestText(testname, s)
 
+TurnOnAllAnnotations()
+
 # Create a plot of dbA00.pdb.
 OpenDatabase("../data/dbA00.pdb")
 AddPlot("FilledBoundary", "material(mesh)")

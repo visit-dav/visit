@@ -17,6 +17,7 @@
 #
 # ----------------------------------------------------------------------------
 
+TurnOnAllAnnotations()
 RestoreSession("tests/session/selection-pre1.3.session", 0)
 Test("selection_00")
 

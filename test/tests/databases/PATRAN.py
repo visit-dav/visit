@@ -19,8 +19,8 @@
 # Set up the annotations
 a = AnnotationAttributes()
 a.userInfoFlag = 0
-a.axesFlag = 0
-a.bboxFlag = 0
+a.axes3D.visible = 0
+a.axes3D.bboxFlag = 0
 a.backgroundMode = a.Solid
 a.backgroundColor = (180, 180, 180, 255)
 a.foregroundColor = (255, 255, 255, 255)

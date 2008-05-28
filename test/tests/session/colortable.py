@@ -17,6 +17,7 @@
 #
 # ----------------------------------------------------------------------------
 
+TurnOnAllAnnotations()
 RestoreSession("tests/session/colortable.session", 0)
 Test("colortable00")
 Exit()

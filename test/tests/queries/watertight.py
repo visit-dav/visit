@@ -11,6 +11,7 @@
 #
 # ----------------------------------------------------------------------------
 
+TurnOnAllAnnotations()
 OpenDatabase("../data/rect3d.silo")
 AddPlot("Pseudocolor", "d")
 AddOperator("Isosurface")

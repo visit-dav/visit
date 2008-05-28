@@ -17,6 +17,7 @@
 # ----------------------------------------------------------------------------
 
 # Test that we can do an l2norm of a degenerate ultra file.
+TurnOnAllAnnotations()
 OpenDatabase("../data/globe.silo")
 AddPlot("Mesh", "mesh1")
 DrawPlots()

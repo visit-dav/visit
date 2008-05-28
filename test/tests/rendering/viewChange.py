@@ -33,14 +33,14 @@
 def InitAnnotation():
     # Turn off most annotation
     a = AnnotationAttributes()
-    a.axesFlag2D = 1
-    a.xAxisLabels2D = 1
-    a.yAxisLabels2D = 1
-    a.xAxisTitle2D = 0
-    a.yAxisTitle2D = 0
-    a.axesFlag = 0
-    a.triadFlag = 0
-    a.bboxFlag = 0
+    a.axes2D.visible = 1
+    a.axes2D.xAxis.label.visible = 1
+    a.axes2D.yAxis.label.visible = 1
+    a.axes2D.xAxis.title.visible = 0
+    a.axes2D.yAxis.title.visible = 0
+    a.axes3D.visible = 0
+    a.axes3D.triadFlag = 0
+    a.axes3D.bboxFlag = 0
     a.userInfoFlag = 0
     a.databaseInfoFlag = 0
     a.legendInfoFlag = 0

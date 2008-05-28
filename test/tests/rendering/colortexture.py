@@ -15,27 +15,12 @@
 #
 # ----------------------------------------------------------------------------
 
-def InitAnnotations():
-    # Turn off annotations
+def main():
     a = AnnotationAttributes()
-    a.axesFlag2D = 0
-    a.xAxisLabels2D = 0
-    a.yAxisLabels2D = 0
-    a.xAxisTitle2D = 0
-    a.yAxisTitle2D = 0
-    a.axesFlag = 0
-    a.triadFlag = 0
-    a.bboxFlag = 0
-    a.userInfoFlag = 0
-    a.databaseInfoFlag = 0
-    a.legendInfoFlag = 0
-    a.backgroundMode = 0
+    TurnOffAllAnnotations(a)
     a.foregroundColor = (255, 255, 255, 255)
     a.backgroundColor = (0, 0, 0, 255)
     SetAnnotationAttributes(a)
-
-def main():
-    InitAnnotations()
 
     OpenDatabase("../data/ucd2d.silo")
     AddPlot("Pseudocolor", "d")

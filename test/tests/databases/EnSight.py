@@ -71,14 +71,7 @@ def test1(datapath):
     DeleteAllPlots()
 
 def main():
-    a = GetAnnotationAttributes()
-    a.databaseInfoFlag = 0
-    a. userInfoFlag = 0
-    a.axesFlag = 0
-    a.bboxFlag = 0
-    a.legendInfoFlag = 0
-    a.triadFlag = 0
-    SetAnnotationAttributes(a)
+    TurnOffAllAnnotations()
 
     datapath = "../data/EnSight_test_data/"
     test0(datapath)

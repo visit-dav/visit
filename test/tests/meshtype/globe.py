@@ -30,7 +30,7 @@
 #
 # ----------------------------------------------------------------------------
 
-TurnOffAllAnnotations()
+TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/globe.silo")
 

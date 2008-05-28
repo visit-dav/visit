@@ -139,6 +139,7 @@ def QueryMultiWindow():
     DeleteAllPlots() 
 
 # Call the main function
+TurnOnAllAnnotations()
 QueryMultiWindow()
 Exit()
 

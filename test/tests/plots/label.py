@@ -929,6 +929,7 @@ def TestRectilinearLogicalDisplay():
 
 
 def main():
+    TurnOnAllAnnotations()
     TestGeneralFeatures()
     TestCurvilinear2D()
     TestRectilinear2D()

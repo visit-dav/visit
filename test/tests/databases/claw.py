@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
-TurnOffAllAnnotations()
+TurnOffAllAnnotations() # defines global object 'a'
 
 # test the mesh
 OpenDatabase("../data/claw_test_data/2d/fort.claw")

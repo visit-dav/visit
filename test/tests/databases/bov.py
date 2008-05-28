@@ -182,17 +182,9 @@ def TestBOVType(bovtype, prefixes):
 
 
 def main():
-    # Turn off some annotation
     a = AnnotationAttributes()
-    a.axesFlag = 0
-    a.triadFlag = 0
-    a.bboxFlag = 0
-    a.userInfoFlag = 0
-    a.databaseInfoFlag = 0
-    a.legendInfoFlag = 0
-    a.backgroundMode = 0
-    a.foregroundColor = (0, 0, 0, 255)
-    a.backgroundColor = (255, 255, 255, 255)
+    TurnOffAllAnnotations(a)
+    a.axes2D.visible = 1
     SetAnnotationAttributes(a)
 
     # Define some expressions

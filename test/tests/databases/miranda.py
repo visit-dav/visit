@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 import os, string
 
-TurnOffAllAnnotations()
+TurnOffAllAnnotations() # defines global object 'a'
 
 
 OpenDatabase("../data/miranda_raw/TG_vortex/plot.raw")

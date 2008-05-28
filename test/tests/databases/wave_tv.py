@@ -20,7 +20,7 @@
 #
 # ----------------------------------------------------------------------------
 
-TurnOffAllAnnotations()
+TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/wave_tv*.silo database", 9)
 

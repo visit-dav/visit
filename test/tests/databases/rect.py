@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
-TurnOffAllAnnotations()
+TurnOffAllAnnotations() # defines global object 'a'
 
 # test the main mesh
 OpenDatabase("../src/databases/Rect/data/datafile.rect")

@@ -41,6 +41,8 @@ def TestSetup(testName):
     s = s + str(GetKeyframeAttributes())
     TestText(testName, s)
 
+TurnOnAllAnnotations()
+
 # Set up the visualization by restoring a session file.
 RestoreSession("tests/session/simplekeyframe.session", 0)
 

@@ -11,6 +11,8 @@
 
 import os
 
+TurnOnAllAnnotations()
+
 # Make zero-length Silo file.  The Silo reader is smart enough to not
 # crash, which means we can test the normal error message.
 f = open("junk.silo", "w")

@@ -42,6 +42,7 @@
 #
 # ----------------------------------------------------------------------------
 
+TurnOnAllAnnotations()
 OpenDatabase("../data/globe.silo")
 AddPlot("Pseudocolor", "u")
 AddOperator("Slice")
@@ -309,8 +310,9 @@ v.perspective = 1
 SetView3D(v)
 
 # Turn off the triad.
-a.axesFlag = 1
-a.triadFlag = 0
+a.axes3D.visible = 1
+a.axes3D.bboxFlag = 1
+a.axes3D.triadFlag = 0
 SetAnnotationAttributes(a)
 Test("annot3d_01")
 

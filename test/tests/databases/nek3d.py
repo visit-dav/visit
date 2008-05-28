@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------
 import os, string
 
-TurnOffAllAnnotations()
+TurnOffAllAnnotations() # defines global object 'a'
 OpenDatabase("../data/nek3d_test_data/7Pin/7Pin.100blocks.nek3d")
 
 AddPlot("Mesh", "mesh")

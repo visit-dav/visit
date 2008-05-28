@@ -104,13 +104,9 @@ def test2(datapath):
     CloseDatabase(db)
 
 def main():
-    a = GetAnnotationAttributes()
-    a.databaseInfoFlag = 0
-    a. userInfoFlag = 0
-    a.axesFlag = 0
-    a.bboxFlag = 0
-    a.legendInfoFlag = 0
-    a.triadFlag = 0
+    a = AnnotationAttributes()
+    TurnOffAllAnnotations(a)
+    a.axes2D.visible = 1
     SetAnnotationAttributes(a)
 
     InvertBackgroundColor()

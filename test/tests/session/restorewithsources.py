@@ -12,6 +12,8 @@
 #
 # ----------------------------------------------------------------------------
 
+TurnOnAllAnnotations()
+
 RestoreSession("tests/session/restorewithsources.session", 0)
 Test("restorewithsources00")
 

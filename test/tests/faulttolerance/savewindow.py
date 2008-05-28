@@ -10,6 +10,8 @@
 
 import os
 
+TurnOnAllAnnotations()
+
 swa = SaveWindowAttributes()
 swa.outputToCurrentDirectory = 0
 swa.outputDirectory = "current"

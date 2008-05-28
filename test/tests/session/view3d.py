@@ -17,6 +17,8 @@
 #
 # ----------------------------------------------------------------------------
 
+TurnOnAllAnnotations()
+
 # Open the session file
 RestoreSession("tests/session/view3d.session", 0)
 Test("view3d00")

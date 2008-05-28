@@ -8,14 +8,7 @@
 #
 # ----------------------------------------------------------------------------
 
-a = GetAnnotationAttributes()
-a.databaseInfoFlag = 0
-a. userInfoFlag = 0
-a.axesFlag = 0
-a.bboxFlag = 0
-a.legendInfoFlag = 0
-a.triadFlag = 0
-SetAnnotationAttributes(a)
+TurnOffAllAnnotations() # defines global object 'a'
 
 OpenDatabase("../data/Fluent_test_data/Gas2OxyEntSlurry3d30m_MSmods_Ar_Wen_Moist_CO2_WGS_HCl_COdevol.cas")
 AddPlot("Pseudocolor", "TEMPERATURE")

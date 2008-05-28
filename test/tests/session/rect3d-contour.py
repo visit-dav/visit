@@ -17,6 +17,7 @@
 #
 # ----------------------------------------------------------------------------
 
+TurnOnAllAnnotations()
 RestoreSession("tests/session/rect3d-contour.session", 0)
 Test("rect3d-contour00")
 Exit()

@@ -34,6 +34,8 @@ def GetCloseString(db):
         testString = GetLastError()
     return testString
 
+TurnOnAllAnnotations()
+
 # Open a database and create a plot
 db = "../data/wave*.silo database"
 OpenDatabase(db, 32)

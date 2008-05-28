@@ -965,6 +965,7 @@ def QueryMain():
     QueryZR_RZ()
 
 # Call the main function
+TurnOnAllAnnotations()
 QueryMain()
 Exit()
 

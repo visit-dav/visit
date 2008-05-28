@@ -15,7 +15,7 @@
 #
 # ----------------------------------------------------------------------------
 
-TurnOffAllAnnotations()
+TurnOffAllAnnotations() # defines global object 'a'
 
 # Define some expressions that will be handy for later.
 DefineVectorExpression("coords_plus1", "coords(mesh)")
