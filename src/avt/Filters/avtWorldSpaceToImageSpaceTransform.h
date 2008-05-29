@@ -78,6 +78,9 @@ class   avtIntervalTree;
 //    Jeremy Meredith, Wed Jan 17 11:39:01 EST 2007
 //    Added support for transformed rectilinear grids.
 //
+//    Hank Childs, Thu May 29 10:23:39 PDT 2008
+//    Added argument to method for culling domains for the aspect ratio.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtWorldSpaceToImageSpaceTransform : public avtTransform
@@ -95,7 +98,7 @@ class AVTFILTERS_API avtWorldSpaceToImageSpaceTransform : public avtTransform
                               { return "Transforming data to image cube"; };
 
     static void        GetDomainsList(const avtViewInfo &, std::vector<int> &,
-                                      const avtIntervalTree *);
+                                      const avtIntervalTree *, double aspect);
 
     void               TightenClippingPlanes(bool t)
                               { tightenClippingPlanes = t; };

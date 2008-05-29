@@ -464,11 +464,14 @@ avtWorldSpaceToImageSpaceTransform::CalculateOrthographicTransform(
 //    Hank Childs, Fri Jan 13 09:52:24 PST 2006
 //    Don't use the interval tree if spatial meta-data has been invalidated.
 //
+//    Hank Childs, Thu May 29 10:15:23 PDT 2008
+//    Use the aspect ratio of the screen, as we will cull away domains 
+//    incorrectly if we don't.
+//
 // ****************************************************************************
 
 avtContract_p
-avtWorldSpaceToImageSpaceTransform::ModifyContract(
-                                               avtContract_p spec)
+avtWorldSpaceToImageSpaceTransform::ModifyContract(avtContract_p spec)
 {
     avtContract_p rv = spec;
     if (GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
@@ -477,11 +480,10 @@ avtWorldSpaceToImageSpaceTransform::ModifyContract(
         if (tree != NULL)
         {
             vector<int> domains;
-            GetDomainsList(view, domains, tree);
+            GetDomainsList(view, domains, tree, aspect);
     
             rv = new avtContract(spec);
-            rv->GetDataRequest()->GetRestriction()
-                                                    ->RestrictDomains(domains);
+            rv->GetDataRequest()->GetRestriction()->RestrictDomains(domains);
         }
     }
 
@@ -500,6 +502,7 @@ avtWorldSpaceToImageSpaceTransform::ModifyContract(
 //      view      The current view.
 //      domains   The object to place the domains into.
 //      tree      The spatial extents interval tree.
+//      aspect    The aspect ratio of the window.
 //
 //  Programmer:   Hank Childs
 //  Creation:     December 15, 2000
@@ -509,18 +512,17 @@ avtWorldSpaceToImageSpaceTransform::ModifyContract(
 //    Hank Childs, Mon Nov 26 18:56:05 PST 2001
 //    Account for transform code now taking an aspect ratio.
 //
+//    Hank Childs, Thu May 29 10:20:13 PDT 2008
+//    Add an argument for the aspect ratio, as the wrong domains can be culled
+//    out without it.
+//
 // ****************************************************************************
 
 void
 avtWorldSpaceToImageSpaceTransform::GetDomainsList(const avtViewInfo &view,
-                          vector<int> &domains, const avtIntervalTree *tree)
+                          vector<int> &domains, const avtIntervalTree *tree, 
+                          double aspect)
 {
-    //
-    // Assuming the aspect ratio is 1 will not affect which domains are and
-    // are not in our view frustum.
-    //
-    double aspect = 1.;
-
     //
     // Find the world space to image space transform for this view.
     //

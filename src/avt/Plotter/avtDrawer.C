@@ -269,6 +269,12 @@ avtDrawer::SetViewInfo(vtkCamera *vtkcam)
 //  Programmer: Hank Childs
 //  Creation:   June 6, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Thu May 29 10:00:27 PDT 2008
+//    Calculate aspect ratio and send in as an argument to domain culling
+//    subroutine.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -279,8 +285,13 @@ avtDrawer::ModifyContract(avtContract_p spec)
     {
         vector<int> domains;
         avtIntervalTree *tree = GetMetaData()->GetSpatialExtents();
+        double aspect = 1.;
+        if (windowSize[1] > 0)
+        {
+            aspect = (double)windowSize[0] / (double)windowSize[1];
+        }
         avtWorldSpaceToImageSpaceTransform::GetDomainsList(viewInfo,
-                                                           domains, tree);
+                                                        domains, tree, aspect);
         rv = new avtContract(spec);
         rv->GetDataRequest()->GetRestriction()->RestrictDomains(domains);
     }

@@ -681,26 +681,17 @@ avtRayTracer::ReleaseData(void)
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Thu May 29 09:44:17 PDT 2008
+//    No longer remove domains that cannot contribute to final picture, 
+//    because that decision is made here one time for many renders.  If you
+//    choose one set, it may change later for a different render.
+//
 // ****************************************************************************
 
 avtContract_p
 avtRayTracer::ModifyContract(avtContract_p spec)
 {
-    avtContract_p rv = spec;
-    if (GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
-    {
-        vector<int> domains;
-        avtIntervalTree *tree = GetMetaData()->GetSpatialExtents();
-        if (tree != NULL)
-        {
-            avtWorldSpaceToImageSpaceTransform::GetDomainsList(view,
-                                                               domains, tree);
-            rv = new avtContract(spec);
-            rv->GetDataRequest()->GetRestriction()
-                                                    ->RestrictDomains(domains);
-        }
-    }
-
+    avtContract_p rv = new avtContract(spec);
     rv->NoStreaming();
     return rv;
 }
