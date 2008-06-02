@@ -73,6 +73,12 @@ for f in ${files} ; do
         *windowsbuild/projects*/*/*)
             continue
             ;;
+        *windowsbuild/include/VTK/*
+            continue
+            ;;
+        *windowsbuild/include/*
+            continue
+            ;;
     esac
 
     # check if the file we're trying to commit is empty (a deletion?) 
