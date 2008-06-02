@@ -174,6 +174,10 @@ static int GetCycleFromRootPath(const std::string &rpath)
 //
 //    Mark C. Miller, Wed Nov  9 12:35:15 PST 2005
 //    Moved code to parse cycle to GetCycleFromRootPath
+//
+//    Hank Childs, Tue Feb 19 14:20:22 PST 2008
+//    Initialize nMaterials.
+//
 // ****************************************************************************
 
 avtBoxlib3DFileFormat::avtBoxlib3DFileFormat(const char *fname)
@@ -191,6 +195,7 @@ avtBoxlib3DFileFormat::avtBoxlib3DFileFormat(const char *fname)
     vf_names_for_materials = false;
     time = 0.;
     haveReadTimeAndCycle = false;
+    nMaterials = 0;
 }
 
 
@@ -651,6 +656,9 @@ avtBoxlib3DFileFormat::GetMesh(int patch, const char *mesh_name)
 //    Brad Whitlock, Thu Sep 22 13:34:14 PST 2005
 //    Fixed on win32.
 //
+//    Hank Childs, Thu Feb 21 16:17:07 PST 2008
+//    Initialize variables in case parsing fails (Klocwork).
+//
 // ****************************************************************************
 
 void
@@ -680,7 +688,7 @@ avtBoxlib3DFileFormat::ReadHeader(void)
     if (status == failure)
         EXCEPTION1(InvalidFilesException, headerFilename.c_str());
 
-    int integer;
+    int integer=0;
     char buf[1024];
     if (iDoReading)
     {
@@ -845,11 +853,11 @@ avtBoxlib3DFileFormat::ReadHeader(void)
         for (levI = 0; levI < nLevels; levI++)
         {
             // Read in which level
-            int myLevel;
+            int myLevel=0;
             in >> myLevel;
     
             // Read in the number of patches
-            int myNPatch;
+            int myNPatch=0;
             in >> myNPatch;
             patchesPerLevel[levI] = myNPatch;
     

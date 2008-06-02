@@ -524,6 +524,9 @@ avtCellList::ConstructMessages(avtImagePartition *part, char **msgs, int *lens)
 //    Make sure that we only extract the parts of the cells that are actually
 //    within our partition of the volume.
 //
+//    Hank Childs, Thu Feb 21 16:22:05 PST 2008
+//    Initialize npts in case extraction fails.
+//
 // ****************************************************************************
 
 void
@@ -566,7 +569,7 @@ avtCellList::ExtractCells(const char * const *msgs, const int *lens, int np,
         const char *tmpmsg = msgs[i];
         while (tmpmsg < msgs[i] + lens[i])
         {
-            int npts;
+            int npts = 0;
             InlineExtract((char *)&npts, tmpmsg, sizeof(int));
            
             switch (npts)
