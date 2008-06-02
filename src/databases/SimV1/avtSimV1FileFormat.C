@@ -1196,6 +1196,9 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
 //    Brad Whitlock, Thu Apr 10 11:18:11 PDT 2008
 //    Added mixvar support.
 //
+//    Brad Whitlock, Mon Jun  2 14:12:46 PDT 2008
+//    Check that cb.GetMixedScalar != NULL.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1245,8 +1248,10 @@ avtSimV1FileFormat::GetVar(int domain, const char *varname)
     FreeDataArray(sd->data);
 
     // Try and read mixed scalar data.
-    VisIt_MixedScalarData *mixed_sd = cb.GetMixedScalar(domain,varname);
-    if (mixed_sd  != NULL)
+    VisIt_MixedScalarData *mixed_sd = NULL;
+    if(cb.GetMixedScalar != NULL)
+         mixed_sd = cb.GetMixedScalar(domain,varname);
+    if (mixed_sd != NULL)
     {
         if(mixed_sd->len > 0 &&
            (mixed_sd->data.dataType == VISIT_DATATYPE_FLOAT ||
