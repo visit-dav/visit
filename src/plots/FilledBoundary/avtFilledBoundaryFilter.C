@@ -113,6 +113,9 @@ avtFilledBoundaryFilter::SetPlotAtts(const FilledBoundaryAttributes *atts)
 //    Kathleen Bonnell, Mon Sep  8 13:22:14 PDT 2003
 //    Added test for NO cells for early return. 
 //
+//    Hank Childs, Thu Feb 21 16:38:36 PST 2008
+//    Initialize nSelectedBoundaries, in case there is a parsing problem.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -174,7 +177,7 @@ avtFilledBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
         strcpy(cLabelStorage, label.c_str());
         char *cLabel = cLabelStorage;
 
-        int nSelectedBoundaries;
+        int nSelectedBoundaries = 0;
         sscanf(cLabel, "%d", &nSelectedBoundaries);
         cLabel = strchr(cLabel, ';') + 1;
 

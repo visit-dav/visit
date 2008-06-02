@@ -493,6 +493,9 @@ avtCHGCARFileFormat::ReadValues(int timestep)
 //    Save file positions for time steps, assuming 10 values per line
 //    and an overall file structure matching the examples I've seen so far.
 //
+//    Hank Childs, Thu Feb 21 16:18:28 PST 2008
+//    Initialize variable for the case where parsing fails. (Klocwork)
+//
 // ****************************************************************************
 void
 avtCHGCARFileFormat::ReadAllMetaData()
@@ -505,7 +508,7 @@ avtCHGCARFileFormat::ReadAllMetaData()
     char line[132];
     in.getline(line, 132);
 
-    double scale;
+    double scale = 0.;
     double lat[3][3];
     in >> scale;
     in >> lat[0][0] >> lat[0][1] >> lat[0][2];
@@ -535,7 +538,7 @@ avtCHGCARFileFormat::ReadAllMetaData()
     string atomcountline(line);
 
     natoms = 0;
-    int tmp;
+    int tmp = 0;
     std::istringstream count_in(atomcountline);
     while (count_in >> tmp)
     {

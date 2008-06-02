@@ -3369,6 +3369,9 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    If the material object has been reordered (due to simplifying heavily
 //    mixed zones), then reorder the mixed variable as well ['8082].
 //
+//    Hank Childs, Thu Feb 21 16:50:18 PST 2008
+//    Fix problem where object could be deleted multiple times.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -3512,13 +3515,6 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             for (int i = 0 ; i < mvl2.size() ; i++)
                 delete mvl2[i];
         }
-        if (material_used != mat)
-        {
-            // The GetMIR applied SimplifyHeavilyMixed and gave us this
-            // object to deal with.  Clean it up.
-            delete material_used;
-        }
-
         if (out_ds[d] != NULL && out_ds[d]->GetNumberOfCells() == 0)
         {
             out_ds[d]->Delete();
@@ -3563,6 +3559,12 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             out_ds[d]->GetFieldData()->AddArray(origDims);
             out_ds[d]->GetFieldData()->CopyFieldOn("vtkOriginalDimensions");
         }
+    }
+    if (material_used != mat)
+    {
+        // The GetMIR applied SimplifyHeavilyMixed and gave us this
+        // object to deal with.  Clean it up.
+        delete material_used;
     }
     if (origDims)
         origDims->Delete();
@@ -4222,6 +4224,9 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
 //    Do not delete the new material if we do "simplify heavily mixed",
 //    since it might be used later.
 //
+//    Hank Childs, Thu Feb 21 16:41:25 PST 2008
+//    Throw an exception if we get a bad MIR type value.
+//
 // ****************************************************************************
 
 void_ref_ptr
@@ -4290,6 +4295,9 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
             // use the Zoo clipping MIR
             mir = new ZooMIR;
             break;
+ 
+          default:
+            EXCEPTION0(ImproperUseException);
         }
 
         mir->SetAlgorithm(mirAlgorithm);

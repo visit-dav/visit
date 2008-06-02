@@ -109,6 +109,9 @@ avtBoundaryFilter::SetPlotAtts(const BoundaryAttributes *atts)
 //    Kathleen Bonnell, Mon Sep  8 13:43:30 PDT 2003 
 //    Add test for NO cells for early termination.
 //
+//    Hank Childs, Thu Feb 21 16:13:14 PST 2008
+//    Initialize variable, in case scanf fails.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -170,7 +173,7 @@ avtBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
         strcpy(cLabelStorage, label.c_str());
         char *cLabel = cLabelStorage;
 
-        int nSelectedBoundaries;
+        int nSelectedBoundaries = 0;
         sscanf(cLabel, "%d", &nSelectedBoundaries);
         cLabel = strchr(cLabel, ';') + 1;
 
