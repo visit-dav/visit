@@ -73,10 +73,10 @@ for f in ${files} ; do
         *windowsbuild/projects*/*/*)
             continue
             ;;
-        *windowsbuild/include/VTK/*
+        *windowsbuild/include/VTK/*)
             continue
             ;;
-        *windowsbuild/include/*
+        *windowsbuild/include/*)
             continue
             ;;
     esac
