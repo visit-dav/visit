@@ -429,6 +429,10 @@ avtFacelistFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 //    In the case of transformed rectilinear grids, even allow little 
 //    rectilinear grids to be made into 6 2D rectilinear grids.
 //
+//    Paul Selby, Tue May 20 14:58:22 BST 2008
+//    Use extents instead of dims for VOI when creating 6 2D rectilinear grids
+//    - fixes bug with Pseudocolor plot and Box Operator 
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -469,57 +473,57 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
         else
         {
             int voi[6];
+            int extents[6];
+            rgrid->GetExtent(extents);
 
             vtkVisItExtractRectilinearGrid *imin = 
                                          vtkVisItExtractRectilinearGrid::New();
-            voi[0] = voi[1] = 0;
-            voi[2] = 0; 
-            voi[3] = dims[1];
-            voi[4] = 0; 
-            voi[5] = dims[2];
+            voi[0] = voi[1] = extents[0];
+            voi[2] = extents[2]; 
+            voi[3] = extents[3];
+            voi[4] = extents[4]; 
+            voi[5] = extents[5];
             imin->SetVOI(voi);
             imin->SetInput(rgrid);
             imin->Update();
             vtkVisItExtractRectilinearGrid *imax = 
                                          vtkVisItExtractRectilinearGrid::New();
-            voi[0] = voi[1] = dims[0]-1;
+            voi[0] = voi[1] = extents[1];
             imax->SetVOI(voi);
             imax->SetInput(rgrid);
             imax->Update();
 
             vtkVisItExtractRectilinearGrid *jmin = 
                                          vtkVisItExtractRectilinearGrid::New();
-            voi[0] = 0;
-            voi[1] = dims[0];
-            voi[2] = 0; 
-            voi[3] = 0;
-            voi[4] = 0; 
-            voi[5] = dims[2];
+            voi[0] = extents[0];
+            voi[1] = extents[1];
+            voi[2] = voi[3] = extents[2]; 
+            voi[4] = extents[4]; 
+            voi[5] = extents[5];
             jmin->SetVOI(voi);
             jmin->SetInput(rgrid);
             jmin->Update();
 
             vtkVisItExtractRectilinearGrid *jmax = 
                                          vtkVisItExtractRectilinearGrid::New();
-            voi[2] = voi[3] = dims[1]-1;
+            voi[2] = voi[3] = extents[3];
             jmax->SetVOI(voi);
             jmax->SetInput(rgrid);
             jmax->Update();
 
             vtkVisItExtractRectilinearGrid *kmin = 
                                          vtkVisItExtractRectilinearGrid::New();
-            voi[0] = 0;
-            voi[1] = dims[0];
-            voi[2] = 0; 
-            voi[3] = dims[1];
-            voi[4] = 0; 
-            voi[5] = 0;
+            voi[0] = extents[0];
+            voi[1] = extents[1];
+            voi[2] = extents[2]; 
+            voi[3] = extents[3];
+            voi[4] = voi[5] = extents[4]; 
             kmin->SetVOI(voi);
             kmin->SetInput(rgrid);
             kmin->Update();
             vtkVisItExtractRectilinearGrid *kmax = 
                                          vtkVisItExtractRectilinearGrid::New();
-            voi[4] = voi[5] = dims[2]-1;
+            voi[4] = voi[5] = extents[5];
             kmax->SetVOI(voi);
             kmax->SetInput(rgrid);
             kmax->Update();
