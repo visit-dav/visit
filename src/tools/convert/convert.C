@@ -348,8 +348,8 @@ int main(int argc, char *argv[])
     }
 
     //
-    // Set the write options as the default.  If we were clever, we would
-    // walk through the write options and have the user iterate over them
+    // Set the write options as the default.
+    // Walk through the write options and have the user iterate over them
     // from the command line.
     //
     DBOptionsAttributes *opts = edpi->GetWriteOptions();

@@ -1711,6 +1711,11 @@ RemoteProcess::SecureShellArgs() const
 //    flag is given, and this is the most direct place to correctly add
 //    that flag.
 //
+//    Jeremy Meredith, Tue Jun  3 16:16:16 EDT 2008
+//    Increased the number of local ports for tunneling from 5 to either
+//    7 (on UNIX) or 10 (on Windows).  Particularly on Windows, users were
+//    still having problems.
+//
 // ****************************************************************************
 
 void
@@ -1772,7 +1777,11 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
         if (useTunneling)
         {
             int numRemotePortsPerLocalPort = 1;
-            int numLocalPorts              = 5;
+#if defined(_WIN32)
+            int numLocalPorts              = 10;
+#else
+            int numLocalPorts              = 7;
+#endif
             int firstLocalPort             = INITIAL_PORT_NUMBER;
             int lowerRemotePort            = 10000;
             int upperRemotePort            = 40000;
