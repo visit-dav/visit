@@ -54,10 +54,100 @@
 #include <avtDatabaseWriter.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <avtExprNodeFactory.h>
+#include <DBOptionsAttributes.h>
 
 #include <VisItException.h>
+#include <visitstream.h>
+using std::cin;
 
 static void UsageAndExit(const char *);
+
+// ****************************************************************************
+//  Method:  FillOptionsFromCommandline
+//
+//  Purpose:
+//    Fill database writer options from the user interactively.
+//
+//  Arguments:
+//    opts       the options to fill
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    June  3, 2008
+//
+// ****************************************************************************
+void
+FillOptionsFromCommandline(DBOptionsAttributes *opts)
+{
+    if (!opts)
+        return;
+
+    for (int j=0; j<opts->GetNumberOfOptions(); j++)
+    {
+        const std::string &name = opts->GetName(j);
+        cerr << endl << "Enter value for option '"<<name<<"'";
+        switch (opts->GetType(j))
+        {
+          case DBOptionsAttributes::Bool:
+            cerr << " (boolean, default="<<opts->GetBool(name)<<"):\n";
+            break;
+          case DBOptionsAttributes::Int:
+            cerr << " (integer, default="<<opts->GetInt(name)<<"):\n";
+            break;
+          case DBOptionsAttributes::Float:
+            cerr << " (float, default="<<opts->GetFloat(name)<<"):\n";
+            break;
+          case DBOptionsAttributes::Double:
+            cerr << " (double, default="<<opts->GetDouble(name)<<"):\n";
+            break;
+          case DBOptionsAttributes::String:
+            cerr << " (string, default='"<<opts->GetString(name)<<"'):\n";
+            break;
+          case DBOptionsAttributes::Enum:
+            {
+            cerr << endl;
+            stringVector enumValues = opts->GetEnumStrings(name);
+            for (int k=0; k<enumValues.size(); k++)
+                cerr << "    ("<<k<<" = "<<enumValues[k]<<")\n";
+            cerr << " (integer, default="<<opts->GetEnum(name)<<"):\n";
+            }
+            break;
+        }
+        char buff[1024];
+        cin.getline(buff,1024);
+        if (strlen(buff) == 0)
+        {
+            cerr << "Accepted default value for '"<<name<<"'\n";
+            continue;
+        }
+        switch (opts->GetType(j))
+        {
+          case DBOptionsAttributes::Bool:
+            opts->SetBool(name, strtol(buff, NULL, 10));
+            cerr << "Set to new value "<<opts->GetBool(name) << endl;
+            break;
+          case DBOptionsAttributes::Int:
+            opts->SetInt(name, strtol(buff, NULL, 10));
+            cerr << "Set to new value "<<opts->GetInt(name) << endl;
+            break;
+          case DBOptionsAttributes::Float:
+            opts->SetFloat(name, strtof(buff, NULL));
+            cerr << "Set to new value "<<opts->GetFloat(name) << endl;
+            break;
+          case DBOptionsAttributes::Double:
+            opts->SetDouble(name, strtod(buff, NULL));
+            cerr << "Set to new value "<<opts->GetDouble(name) << endl;
+            break;
+          case DBOptionsAttributes::String:
+            opts->SetString(name, buff);            
+            cerr << "Set to new value "<<opts->GetString(name) << endl;
+            break;
+          case DBOptionsAttributes::Enum:
+            opts->SetEnum(name, strtol(buff, NULL, 10));
+            cerr << "Set to new value "<<opts->GetEnum(name) << endl;
+            break;
+        }
+    }
+}
 
 
 // ****************************************************************************
@@ -101,6 +191,11 @@ static void UsageAndExit(const char *);
 //    Add support for logging which plugins were attempted when a database
 //    open fails.
 //
+//    Jeremy Meredith, Tue Jun  3 14:12:23 EDT 2008
+//    Added support for fallback_format and default_format.  Added
+//    writer options input.  Put attempt to create a writer after the
+//    attempt to open the input file.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -118,12 +213,14 @@ int main(int argc, char *argv[])
 #endif
     DatabasePluginManager::Initialize(DatabasePluginManager::Engine, parallel);
     DatabasePluginManager::Instance()->LoadPluginsNow();
+    cerr << endl; // whitespace after some expected plugin loading errors
 
     if (argc < 4)
     {
         UsageAndExit(argv[0]);
     }
 
+    bool noOptions = false;
     bool doClean = false;
     bool disableMIR = false;
     bool disableExpressions = false;
@@ -172,6 +269,24 @@ int main(int argc, char *argv[])
                     }
                 }
             }
+            else if (strcmp(argv[i], "-fallback_format") == 0)
+            {
+                if ((i+1) >= argc)
+                    UsageAndExit(argv[0]);
+                i++;
+
+                avtDatabaseFactory::SetFallbackFormat(argv[i]);
+            }
+            else if (strcmp(argv[i], "-assume_format") == 0)
+            {
+                if ((i+1) >= argc)
+                    UsageAndExit(argv[0]);
+                i++;
+
+                avtDatabaseFactory::SetFormatToTryFirst(argv[i]);
+            }
+            else if (strcmp(argv[i], "-no_options") == 0)
+                noOptions = true;
             else
                 UsageAndExit(argv[0]);
         }
@@ -195,8 +310,41 @@ int main(int argc, char *argv[])
 
     if (edpi == NULL)
     {
-        cerr << "Was not able to load file type " << argv[3]<<"\n\n"<<endl;
+        cerr << "Was not able to create file type " << argv[3]<<"\n\n"<<endl;
         UsageAndExit(argv[0]);
+    }
+
+    //
+    // Instantiate the database.
+    //
+    avtDatabase *db = NULL;
+    std::vector<std::string> pluginList;
+    TRY
+    {
+        if (strstr(argv[1], ".visit") != NULL)
+            db = avtDatabaseFactory::VisitFile(argv[1], 0, pluginList);
+        else
+            db = avtDatabaseFactory::FileList(argv+1, 1, 0, pluginList);
+    }
+    CATCH(...)
+    {
+        cerr << "The file " << argv[1] << " does not exist or could "
+             << "not be opened." << endl;
+        exit(EXIT_FAILURE);
+    }
+    ENDTRY
+
+    if (db == NULL)
+    {
+        cerr << "Could not open file " << argv[1] << ".  Tried using plugins ";
+        for (int i = 0 ; i < pluginList.size() ; i++)
+        {
+            cerr << pluginList[i];
+            if (i != pluginList.size()-1)
+                cerr << ", ";
+            else
+                cerr << endl;
+        }
     }
 
     //
@@ -204,7 +352,10 @@ int main(int argc, char *argv[])
     // walk through the write options and have the user iterate over them
     // from the command line.
     //
-    edpi->SetWriteOptions(edpi->GetWriteOptions());
+    DBOptionsAttributes *opts = edpi->GetWriteOptions();
+    if (!noOptions)
+        FillOptionsFromCommandline(opts);
+    edpi->SetWriteOptions(opts);
 
     //
     // Make sure this format has a writer.
@@ -240,38 +391,6 @@ int main(int argc, char *argv[])
             cerr << "This writer does not support the \"-target_chunks\" "
                  << "option" << endl;
             UsageAndExit(argv[0]);
-        }
-    }
-
-    //
-    // Instantiate the database.
-    //
-    avtDatabase *db = NULL;
-    std::vector<std::string> pluginList;
-    TRY
-    {
-        if (strstr(argv[1], ".visit") != NULL)
-            db = avtDatabaseFactory::VisitFile(argv[1], 0, pluginList);
-        else
-            db = avtDatabaseFactory::FileList(argv+1, 1, 0, pluginList);
-    }
-    CATCH(...)
-    {
-        cerr << "The file " << argv[1] << " does not exist." << endl;
-        exit(EXIT_FAILURE);
-    }
-    ENDTRY
-
-    if (db == NULL)
-    {
-        cerr << "Could not open file " << argv[1] << ".  Tried using plugins ";
-        for (int i = 0 ; i < pluginList.size() ; i++)
-        {
-            cerr << pluginList[i];
-            if (i != pluginList.size()-1)
-                cerr << ", ";
-            else
-                cerr << endl;
         }
     }
 
@@ -381,31 +500,58 @@ int main(int argc, char *argv[])
 //    Changed it to loop over all the plugins, because the test for
 //    having a writer is in the general plugin info.
 //
+//    Jeremy Meredith, Tue Jun  3 14:27:23 EDT 2008
+//    Cleaned up greatly.  Added help for input formats and options.
+//
 // ****************************************************************************
 
 static void
-UsageAndExit(const char *progname)
+UsageAndExit(const char *argv0)
 {
-    cerr << "Usage: " << progname << " <input-file-name> "
-         << "<output-file-name>\\\n\t\t <output-file-type> [-clean] "
-         << "[-target_chunks #] \\\n\t\t[-target_zones #] "
-         << "[-variable var]" << endl;
-    cerr << "\t-clean should be specified when all clean zones are desired.\n"
-         << "\tIn this case material interface reconstruction will be "
-         << "performed." << endl;
-    cerr << "\t-target_zones specifies what the total number of zones in the "
-         << "output \n\tshould be.\n";
-    cerr << "\t-target_chunks should be specified when the chunks should "
-         << "be \n\trepartitioned.  This is often used in conjunction with "
-         << "-target_zones.\n";
-    cerr << "\t-variable specifies which variable should be processed.\n";
-    cerr << "Example (one timestep):\n " << progname 
-         << " run1.exodus run1.silo Silo" << endl;
-    cerr << "Example (multi-timestep):\n " << progname
-         << " run1.exodus run%04d.silo Silo" << endl;
-    cerr << "Example (scaling study):\n " << progname
-         << " rect.silo rect BOV -target_chunks 512 \\\n\t\t -target_zones "
-         << "512000000 -variable var1" << endl;
+    const char *progname = argv0 + strlen(argv0)-1;
+    while (progname > argv0 && *(progname-1) != '/')
+        progname--;
+
+    cerr << "Usage: " << progname
+         << " <input-file> <output-file> <output-type> [OPTIONS]\n";
+
+    cerr << endl;
+    cerr << "Available options:" << endl;
+    cerr << "\t-clean" << endl;
+    cerr << "\t-target_chunks   <number>" << endl;
+    cerr << "\t-target_zones    <number>" << endl;
+    cerr << "\t-variable        <variable>" << endl;
+    cerr << "\t-no_options" << endl;
+    cerr << "\t-assume_format   <input_format>" << endl;
+    cerr << "\t-fallback_format <input_format>" << endl;
+    cerr << endl;
+    cerr << "Option descriptions:" << endl;
+    cerr << "  -clean should be specified when all clean zones are desired." << endl;
+    cerr << "   In this case material interface reconstruction will be performed." << endl;
+    cerr << endl;
+    cerr << "  -target_zones specifies what the total number of zones in the output" << endl;
+    cerr << "   should be." << endl;
+    cerr << endl;
+    cerr << "  -target_chunks should be specified when the chunks should be" << endl;
+    cerr << "   repartitioned.  This is often used in conjunction with -target_zones." << endl;
+    cerr << endl;
+    cerr << "  -variable specifies which variable should be processed." << endl;
+    cerr << endl;
+    cerr << "  -assume_format specifies the plugin format type to try first" << endl;
+    cerr << endl;
+    cerr << "  -fallback_format specifies a plugin format type to try if the" << endl;
+    cerr << "   guessing based on file extension failes" << endl;
+    cerr << endl;
+    cerr << "  -no_options skips option entry, instead using only default values." << endl;
+    cerr << endl;
+    cerr << "Example (one timestep):" << endl;
+    cerr << "  visitconvert_ser run1.exodus run1.silo Silo" << endl;
+    cerr << "Example (multi-timestep):" << endl;
+    cerr << "  visitconvert_ser run1.exodus run%04d.silo Silo" << endl;
+    cerr << "Example (scaling study):" << endl;
+    cerr << "  visitconvert_ser rect.silo rect BOV -target_chunks 512  \\" << endl;
+    cerr << "                 -target_zones 512000000 -variable var1" << endl;
+    cerr << endl;
     cerr << "Acceptable output types are: " << endl;
     DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
     for (int i = 0 ; i < dbmgr->GetNAllPlugins() ; i++)
