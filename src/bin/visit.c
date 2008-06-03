@@ -111,7 +111,7 @@ static const char usage[] =
  * Prototypes
  */
 char *AddEnvironment(int);
-void AddPath(char *, const char *);
+void AddPath(char *, const char *, const char*);
 int ReadKey(const char *key, char **keyval);
 
 /******************************************************************************
@@ -605,12 +605,16 @@ ReadKey(const char *key, char **keyval)
  *   Kathleen Bonnell, Wed May 21 08:12:16 PDT 2008 
  *   Use ';' to separate different paths for VISITPLUGINDIR. 
  *
+ *   Kathleen Bonnell, Mon Jun 2 18:08:32 PDT 2008
+ *   Change how VisItDevDir is retrieved and stored.
+ *
  *****************************************************************************/
 
 char *
 AddEnvironment(int useShortFileName)
 {
     char *tmp, *visitpath = 0, *ssh = 0, *sshargs = 0, *visitsystemconfig = 0;
+    char *visitdevdir;
     char visituserpath[512], expvisituserpath[512], tmpdir[512];
     int haveVISITHOME = 0, haveSSH = 0, haveSSHARGS = 0;
     int haveVISITSYSTEMCONFIG = 0, haveVISITUSERHOME=0, haveVISITDEVDIR=0;
@@ -635,35 +639,55 @@ AddEnvironment(int useShortFileName)
      */
     if(!haveVISITHOME)
     {
-        char *visitdevdir = 0;
+        char *tempvisitdev = 0;
+        int freetempvisitdev = 1;
         haveVISITDEVDIR = 0;
-        haveVISITDEVDIR = ReadKey("VISITDEVDIR", &visitdevdir);
+        haveVISITDEVDIR = ReadKey("VISITDEVDIR", &tempvisitdev);
+
+        if (!haveVISITDEVDIR)
+        {
+            freetempvisitdev = 0;
+            if((tempvisitdev = getenv("VISITDEVDIR")) != NULL)
+            {
+                haveVISITDEVDIR = 1;
+            }
+        }
 
         if(haveVISITDEVDIR)
         {
             char configDir[512];
+            char thirdPartyDir[512];
 #if defined(_DEBUG)
-            sprintf(configDir, "\\bin\\%s\\Debug", _VISIT_MSVC);
+            sprintf(configDir, "\\windowsbuild\\bin\\%s\\Debug", _VISIT_MSVC);
 #else
-            sprintf(configDir, "\\bin\\%s\\Release", _VISIT_MSVC);
+            sprintf(configDir, "\\windowsbuild\\bin\\%s\\Release", _VISIT_MSVC);
 #endif
-            visitpath = (char *)malloc(strlen(visitdevdir) + strlen(configDir) + 1);
-            sprintf(visitpath, "%s%s", visitdevdir, configDir);
+            sprintf(thirdPartyDir, "\\windowsbuild\\bin\\%s\\ThirdParty", _VISIT_MSVC);
+            visitpath = (char *)malloc(strlen(tempvisitdev) + strlen(configDir) + 1);
+            visitdevdir = (char *)malloc(strlen(tempvisitdev) + strlen(thirdPartyDir) + 1);
+            sprintf(visitpath, "%s%s", tempvisitdev, configDir);
+            sprintf(visitdevdir, "%s%s", tempvisitdev, thirdPartyDir);
         }
         else
         {
             char tmpdir[512];
+            char tmpdir2[512];
 #if defined(_DEBUG)
-            sprintf(tmpdir, "C:\\VisItDev%s\\bin\\%s\\Debug", VERSION, 
-                    _VISIT_MSVC);
+            sprintf(tmpdir, "C:\\VisItDev\\windowsbuild\\bin\\%s\\Debug", 
+                    VERSION, _VISIT_MSVC);
 #else
-            sprintf(tmpdir, "C:\\VisItDev%s\\bin\\%s\\Release", VERSION, 
-                     _VISIT_MSVC);
+            sprintf(tmpdir, "C:\\VisItDev\\windowsbuild\\bin\\%s\\Release", 
+                    VERSION, _VISIT_MSVC);
 #endif
+            sprintf(tmpdir2, "C:\\VisItDev\\windowsbuild\\bin\\%s\\ThirdParty",
+                    VERSION, _VISIT_MSVC);
             visitpath = (char *)malloc(strlen(tmpdir) + 1);
+            visitdevdir = (char *)malloc(strlen(tmpdir2) + 1);
             strcpy(visitpath, tmpdir);
+            strcpy(visitdevdir, tmpdir2);
         }
-        free(visitdevdir);
+        if (tempvisitdev != 0 && freetempvisitdev)
+            free(tempvisitdev);
     }
 
     if (haveVISITUSERHOME)
@@ -757,6 +781,8 @@ AddEnvironment(int useShortFileName)
     free(ssh);
     free(sshargs);
     free(visitsystemconfig);
+    if (visitdevdir != 0)
+        free(visitdevdir);
 
     return visitpath;
 }
@@ -774,11 +800,13 @@ AddEnvironment(int useShortFileName)
  *   visitpath : The path to the current version of VisIt.
  *
  * Modifications:
+ *   Kathleen Bonnell, Mon Jun 2 18:11:01 PDT 2008
+ *   Add 'visitdev' argument. Add it to the path if not null.
  *
  *****************************************************************************/
 
 void
-AddPath(char *tmp, const char *visitpath)
+AddPath(char *tmp, const char *visitpath, const char *visitdev)
 {
     char *env = 0, *path, *start = tmp;
 
@@ -822,6 +850,9 @@ AddPath(char *tmp, const char *visitpath)
         sprintf(path, "%s", visitpath);
     else
         sprintf(path, ";%s", visitpath);
+
+    if (visitdev != 0)
+        sprintf(path, ";%s", visitdev);
 
     putenv(tmp);
 }
