@@ -17,6 +17,9 @@
 #    Kathleen Bonnell, Thu Aug 28 14:34:57 PDT 2003
 #    Remove compound var name from subset plots.
 #
+#    Hank Childs, Wed Jun  4 08:56:08 PDT 2008
+#    Test facelist filter after applying a box.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -121,5 +124,21 @@ atts.minx = -30
 atts.maxx = -20
 SetOperatorOptions(atts)
 Test("ops_box07")
+
+# If we apply the box operator to a rectilinear grid, it can change
+# the "Extents", which can screw up the facelist filter.  Test that
+# no one has undone the fix from Paul Selby.
+DeleteAllPlots()
+OpenDatabase("../data/rect3d.silo")
+AddPlot("Pseudocolor", "d")
+AddOperator("Box")
+atts.minx = 0.2
+atts.maxx = 1.0
+SetOperatorOptions(atts)
+DrawPlots()
+view.focus = (0.5, 0.5, 0.5)
+view.parallelScale = 1.4
+SetView3D(view)
+Test("ops_box08")
 
 Exit()
