@@ -1639,7 +1639,12 @@ avtCGNSFileFormat::GetCurvilinearMesh(int base, int zone, const char *meshname,
 // Modifications:
 //   Kathleen Bonnell, Wed Feb  8 09:41:45 PST 2006
 //   Don't retrieve zcoords if ncoords != 3.
-//   
+//
+//   Brad Whitlock, Wed Jun  4 14:34:17 PDT 2008
+//   Iterate over all of the sections but skip those that set parent_flag>0
+//   since they are probably boundary conditions or things we don't really
+//   care about.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1697,9 +1702,6 @@ avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
             bool higherOrderWarning = false;
 
             // Iterate over each of the sections.
-#if 1
-            nsections = 1;
-#endif
             for(int sec = 1; sec <= nsections; ++sec)
             {
                 char sectionname[33];
@@ -1709,6 +1711,12 @@ avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
                     &start, &end, &bound, &parent_flag) != CG_OK)
                 {
                     debug4 << mName << cg_get_error() << endl;
+                    continue;
+                }
+
+                if(parent_flag > 0)
+                {
+                    debug4 << mName << "parent_flag = " << parent_flag << endl;
                     continue;
                 }
 
@@ -1726,21 +1734,12 @@ avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
                     debug4 << mName << "Could not allocate memory for connectivity\n";
                     continue;
                 }
-                int *pdata = new int[eDataSize];
-                if(pdata == 0)
-                { 
-                    delete [] elements; elements = 0;
-                    debug4 << mName << "Could not allocate memory for pdata\n";
-                    continue;
-                }
                 
-                if(cg_elements_read(GetFileHandle(), base, zone, sec, elements, pdata)
+                if(cg_elements_read(GetFileHandle(), base, zone, sec, elements, NULL)
                    != CG_OK)
                 {
                     delete [] elements;
                     elements = 0;
-                    delete [] pdata;
-                    pdata = 0;
                     debug4 << mName << cg_get_error() << endl;
                     continue;
                 }
@@ -1947,8 +1946,6 @@ avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
                         delete [] coords[2];
                         delete [] elements;
                         elements = 0;
-                        delete [] pdata;
-                        pdata = 0;
                         ugrid->Delete();
                         EXCEPTION1(InvalidVariableException, meshname);
                         break;
@@ -1957,7 +1954,6 @@ avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
 
                 debug4 << mName << "Done reading cell connectivity." << endl;
                 delete [] elements;
-                delete [] pdata;
             }
 
             // Tell the user if we found any higher order elements.
