@@ -50,7 +50,6 @@
 #include <vtkPointData.h>
 
 #include <avtDatabaseMetaData.h>
-#include <avtVariableCache.h>
 
 #include <BadIndexException.h>
 #include <DebugStream.h>
@@ -71,6 +70,11 @@ using     std::sort;
 //  Programmer: Hank Childs
 //  Creation:   February 15, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jun  4 12:01:43 PDT 2008
+//    No longer use a cache.
+//
 // ****************************************************************************
 
 avtTimeVaryingExodusFileFormat::avtTimeVaryingExodusFileFormat(
@@ -78,17 +82,11 @@ avtTimeVaryingExodusFileFormat::avtTimeVaryingExodusFileFormat(
    : avtSTSDFileFormat(name)
 {
     //
-    // Out GetReader routine will be lots happier if this is initialized.
+    // Our GetReader routine will be lots happier if this is initialized.
     //
     reader = NULL;
 
     readInDataset = false;
-
-    //
-    // We need to maintain our own cache, since meshes do not change over
-    // timesteps (but the exodus format is the only thing that knows that).
-    //
-    cache = new avtVariableCache;
 }
 
 
@@ -173,6 +171,11 @@ avtTimeVaryingExodusFileFormat::~avtTimeVaryingExodusFileFormat()
 //  Programmer: Hank Childs
 //  Creation:   February 15, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jun  4 12:02:04 PDT 2008
+//    No longer use a cache.
+//
 // ****************************************************************************
 
 void
@@ -182,11 +185,6 @@ avtTimeVaryingExodusFileFormat::FreeUpResources(void)
     {
         reader->Delete();
         reader = NULL;
-    }
-    if (cache != NULL)
-    {
-        delete cache;
-        cache = NULL;
     }
 }
 
@@ -365,6 +363,10 @@ avtTimeVaryingExodusFileFormat::PopulateDatabaseMetaData(
 //    Hank Childs, Mon Apr  7 18:10:10 PDT 2003
 //    Do not assume that the dataset has already been read in.
 //
+//    Hank Childs, Wed Jun  4 12:00:06 PDT 2008
+//    Do not rely on the cache.  Caching the mesh from time slice to time slice
+//    assumes too much.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -380,30 +382,6 @@ avtTimeVaryingExodusFileFormat::GetMesh(const char *mesh)
         EXCEPTION1(InvalidVariableException, mesh);
     }
 
-    //
-    // See if we have this cached.
-    //
-    const char *matname = NULL;
-    if (doMaterialSelection)
-    {
-        matname = materialName;
-    }
-    else
-    {
-        matname = "_all";
-    }
-    int fts = 0;
-    int dom = 0;
-    vtkDataSet *cmesh = (vtkDataSet *) cache->GetVTKObject(mesh,
-                            avtVariableCache::DATASET_NAME, fts, dom, matname);
-    if (cmesh != NULL)
-    {
-        // The reference count will be decremented by the generic database,
-        // because it will assume it owns it.
-        cmesh->Register(NULL);
-        return cmesh;
-    }
-
     vtkDataSet *ds = ForceRead("_none");
 
     vtkDataSet *rv = NULL;
@@ -412,12 +390,6 @@ avtTimeVaryingExodusFileFormat::GetMesh(const char *mesh)
     {
         rv = (vtkDataSet *) ds->NewInstance();
         rv->ShallowCopy(ds);
-
-        //
-        // Cache the mesh back.
-        //
-        cache->CacheVTKObject(mesh, avtVariableCache::DATASET_NAME, fts, dom,
-                              matname, rv);
     }
 
     return rv;

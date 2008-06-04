@@ -48,8 +48,6 @@
 
 class     vtkExodusReader;
 
-class     avtVariableCache;
-
 
 // ****************************************************************************
 //  Class: avtTimeVaryingExodusFileFormat
@@ -64,6 +62,9 @@ class     avtVariableCache;
 //    Kathleen Bonnell, Wed Mar  6 08:20:17 PST 2002 
 //    vtkScalars and vtkVectors have been deprecated in VTK 4.0, 
 //    use vtkDataArray instead.
+//
+//    Hank Childs, Wed Jun  4 12:02:32 PDT 2008
+//    No longer use a cache.
 //
 // ****************************************************************************
 
@@ -91,7 +92,6 @@ class avtTimeVaryingExodusFileFormat : public avtSTSDFileFormat
     std::vector<int>            blockId;
     std::vector<std::string>    pointVars;
     std::vector<std::string>    cellVars;
-    avtVariableCache           *cache;
 
     vtkExodusReader            *GetReader(void);
     bool                        GetBlockInformation(int &);
