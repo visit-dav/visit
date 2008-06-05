@@ -56,6 +56,7 @@
 #include <vtkEnumThreshold.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
+#include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
@@ -65,6 +66,7 @@
 #include <vtkPolyDataRelevantPointsFilter.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkTrivialProducer.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -2767,6 +2769,10 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
 //    Kathleen Bonnell, Wed Oct  3 11:28:11 PDT 2007 
 //    Keep avtOriginalCellNumbers if present.
 // 
+//    Hank Childs, Thu Jun  5 08:20:51 PDT 2008
+//    Disconnect the data set source, so we have less VTK objects lying
+//    around, waiting for garbage collection.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -2827,6 +2833,16 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         // read it in, then it guarantees it only happens once.
         //
         mesh->Update();
+
+        //
+        // VTK creates a trivial producer for each data set.  It later does
+        // garbage collection and that takes a long time if we have a lot
+        // of trivial producers.  Make one trivial producer for all
+        // data sets here.
+        //
+        static vtkTrivialProducer *tp = vtkTrivialProducer::New();
+        tp->SetOutput(mesh);
+        tp->SetOutput(NULL);
 
         AssociateBounds(mesh);
 

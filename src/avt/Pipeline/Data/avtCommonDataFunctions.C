@@ -64,6 +64,7 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkTrivialProducer.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -467,6 +468,11 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
 //    Cyrus Harrison, Sat Aug 11 19:44:59 PDT 2007
 //    Add support for vtk-debug mode.
 //
+//    Hank Childs, Thu Jun  5 08:25:55 PDT 2008
+//    Break the data sets by using a single, static trivial producer.
+//    This will reduce the amount of VTK overhead/bloat, especially
+//    in terms of garbage collection.
+//
 // ****************************************************************************
 
 void
@@ -477,33 +483,11 @@ CBreakVTKPipelineConnections(avtDataRepresentation &data, void *arg, bool &)
         return; // This is a problem, but no need to flag it for this...
     }
 
-    // loop index
-    int i;
-
     vtkDataSet *ds = data.GetDataVTK();
-    vtkDataSet *newDS = (vtkDataSet *) ds->NewInstance();
-    newDS->ShallowCopy(ds);
-    avtDataRepresentation new_data(newDS, data.GetDomain(),
-                                   data.GetLabel());
 
-    // If vtk-debug turn on debug for the new dataset and its vars
-    if(arg != NULL &&  *((bool*)arg))
-    {
-        newDS->DebugOn();
-        vtkCellData  *cell_data  = newDS->GetCellData();
-        vtkPointData *point_data = newDS->GetPointData();
-
-        int ncell_arrays = cell_data->GetNumberOfArrays();
-        for( i=0; i < ncell_arrays; i++)
-            cell_data->GetArray(i)->DebugOn();
-
-        int npoint_arrays = point_data->GetNumberOfArrays();
-        for( i=0; i < npoint_arrays; i++)
-            point_data->GetArray(i)->DebugOn();
-    }
-    
-    data = new_data;
-    newDS->Delete();
+    static vtkTrivialProducer *producer = vtkTrivialProducer::New();
+    producer->SetOutput(ds);
+    producer->SetOutput(NULL);
 }
 
 
