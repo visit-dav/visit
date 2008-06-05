@@ -5851,6 +5851,9 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
 //    Add logic for case where there really is one real zone and the rest
 //    are ghost ['7279].
 //
+//    Hank Childs, Thu Jun  5 09:53:39 PDT 2008
+//    Add support for polygons that store the shapesize as 0.
+//
 // ****************************************************************************
 
 void
@@ -5865,13 +5868,28 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     //
     int  numCells = 0;
     int  totalSize = 0;
+    const int *tmp = zl->nodelist;
     for (i = 0 ; i < zl->nshapes ; i++)
     {
         int vtk_zonetype = SiloZoneTypeToVTKZoneType(zl->shapetype[i]);
         if (vtk_zonetype != -2) // don't include arb. polyhedra
         {
             numCells += zl->shapecnt[i];
-            totalSize += zl->shapecnt[i] * (zl->shapesize[i]+1);
+            if (zl->shapesize[i] > 0)
+            {
+                totalSize += zl->shapecnt[i] * (zl->shapesize[i]+1);
+                tmp += zl->shapecnt[i] * zl->shapesize[i];
+            }
+            else
+            {
+                // Some polygons representations have the shapesize be 0 and 
+                // each polygons # of nodes encoded as the first point ID.
+                for (j = 0 ; j < zl->shapecnt[i] ; j++)
+                {
+                    totalSize += *tmp + 1;
+                    tmp += *tmp+1;
+                }
+            }
         }
     }
 
@@ -5982,11 +6000,35 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                 if (vtk_zonetype != VTK_WEDGE &&
                     vtk_zonetype != VTK_PYRAMID &&
                     vtk_zonetype != VTK_TETRA &&
+                    vtk_zonetype != VTK_POLYGON &&
                     vtk_zonetype != -1)
                 {
                     *nl++ = shapesize;
                     for (k = 0 ; k < shapesize ; k++)
                         *nl++ = *(nodelist+k) - origin;
+                }
+                else if (vtk_zonetype == VTK_POLYGON)
+                {
+                    // Handle both forms of storing polygons:
+                    //  1) having all of the polygons with the same # of nodes
+                    //     in a group with a valid shapesize.
+                    //  2) having the shapesize be 0 and each polygons # of nodes
+                    //     encoded as the first point ID.
+                    if (shapesize > 0)
+                    {
+                        *nl++ = shapesize;
+                        for (k = 0 ; k < shapesize ; k++)
+                            *nl++ = *(nodelist+k) - origin;
+                    }
+                    else
+                    {
+                        int ss = *nodelist;
+                        *nl++ = ss;
+                        for (k = 0 ; k < ss; k++)
+                            *nl++ = *(nodelist+k+1) - origin;
+                        nodelist += ss+1;
+                        effective_shapesize = ss;
+                    }
                 }
                 else if (vtk_zonetype == VTK_WEDGE)
                 {
