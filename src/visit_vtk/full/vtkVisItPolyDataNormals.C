@@ -155,6 +155,9 @@ vtkVisItPolyDataNormals::RequestData(vtkInformation *vtkNotUsed(request),
 //    Hank Childs, Wed May 17 09:07:21 PDT 2006
 //    Fix uninitialized memory read.
 //
+//    Hank Childs, Thu Jun  5 15:00:05 PDT 2008
+//    Call ShallowCopy, not SetFieldData.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
@@ -179,7 +182,7 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
     vtkCellData  *outCD = output->GetCellData();
 
     // Pass through things which will be unchanged
-    output->SetFieldData(input->GetFieldData());
+    output->GetFieldData()->ShallowCopy(input->GetFieldData());
 
     // Allocate and copy the output points; there will be no extras
     vtkPoints *outPts = vtkPoints::New();
@@ -454,6 +457,9 @@ protected:
 //    Kathleen Bonnell, Fri Feb 24 09:43:20 PST 2006 
 //    Avoid divide-by-zero errors.
 //
+//    Hank Childs, Thu Jun  5 15:00:05 PDT 2008
+//    Call ShallowCopy, not SetFieldData.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
@@ -478,7 +484,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
     vtkCellData  *outCD = output->GetCellData();
 
     // Pass through things which will be unchanged
-    output->SetFieldData(input->GetFieldData());
+    output->GetFieldData()->ShallowCopy(input->GetFieldData());
 
     // Precalculate the cosine of the feature angle
     float cosAngle = cos(FeatureAngle * 3.1415926536 / 180.);

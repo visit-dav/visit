@@ -153,59 +153,90 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 vtkDataSet *
 avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    int i;
+    int i, j;
 
     //
-    // Remove any variable that has "VTK" or "AVT" in its name.
+    // Remove any variable that has "VTK" or "AVT" in its name.  Make a for
+    // loop with two iterations.  Iteration #1 is to determine if we have
+    // to strip out arrays.  Iteration #2 is to strip out the arrays.  The
+    // purpose for putting this in a for loop is reduce duplicate code.
+    // The reason not to just always strip the arrays is that it all of the
+    // copies of the data can really slow things down.
     //
-    vtkDataSet *no_vars = (vtkDataSet *) in_ds->NewInstance();
-    no_vars->ShallowCopy(in_ds);
-    if (!keepAVTandVTK)
+    vtkDataSet *no_vars = in_ds;
+    bool needToDelete = false;
+    bool needToRemoveAVar = true;
+    for (int j = 0 ; (j < 2) && needToRemoveAVar ; j++)
     {
-        bool keepNodeZone = 
-            GetInput()->GetInfo().GetAttributes().GetKeepNodeZoneArrays();
-        for (i = no_vars->GetPointData()->GetNumberOfArrays()-1 ; i >= 0 ; i--)
+        if (j == 0)
+            needToRemoveAVar = false; // The purpose of this iteration
+                                      // is to set this variable.
+        else if (j == 1)
         {
-            vtkDataArray *arr = no_vars->GetPointData()->GetArray(i);
-            const char *name = arr->GetName();
-            if (name == NULL)
-                continue;
-            if (strstr(name, "vtk") != NULL)
-                no_vars->GetPointData()->RemoveArray(name);
-            else if (strstr(name, "avt") != NULL)
-            {
-                if (keepNodeZone && 
-                    ((strcmp(name, "avtOriginalNodeNumbers") == 0) ||
-                     (strcmp(name, "avtOriginalCellNumbers") == 0)))
-                    continue;
-                else if (strcmp(name, "avtGhostNodes") == 0 &&
-                     (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
-                      in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID))
-                    continue;
-                else
-                    no_vars->GetPointData()->RemoveArray(name);
-            }
+            // We're still here, so that means we do need to strip out
+            // the arrays.
+            no_vars = (vtkDataSet *) in_ds->NewInstance();
+            no_vars->ShallowCopy(in_ds);
+            needToDelete = true;
         }
-        for (i = no_vars->GetCellData()->GetNumberOfArrays()-1 ; i >= 0 ; i--)
+
+        if (!keepAVTandVTK)
         {
-            vtkDataArray *arr = no_vars->GetCellData()->GetArray(i);
-            const char *name = arr->GetName();
-            if (name == NULL)
-                continue;
-            if (strstr(name, "vtk") != NULL)
-                no_vars->GetCellData()->RemoveArray(name);
-            else if (strstr(name, "avt") != NULL)
+            bool keepNodeZone = 
+            GetInput()->GetInfo().GetAttributes().GetKeepNodeZoneArrays();
+            for (i = no_vars->GetPointData()->GetNumberOfArrays()-1 ; i >= 0 ; i--)
             {
-                if (keepNodeZone && 
-                    ((strcmp(name, "avtOriginalNodeNumbers") == 0) ||
-                     (strcmp(name, "avtOriginalCellNumbers") == 0)))
+                vtkDataArray *arr = no_vars->GetPointData()->GetArray(i);
+                const char *name = arr->GetName();
+                if (name == NULL)
                     continue;
-                else if (strcmp(name, "avtGhostZones") == 0 &&
-                     (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
-                      in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID))
+                if (strstr(name, "vtk") != NULL)
+                    no_vars->GetPointData()->RemoveArray(name);
+                else if (strstr(name, "avt") != NULL)
+                {
+                    if (keepNodeZone && 
+                        ((strcmp(name, "avtOriginalNodeNumbers") == 0) ||
+                         (strcmp(name, "avtOriginalCellNumbers") == 0)))
+                        continue;
+                    else if (strcmp(name, "avtGhostNodes") == 0 &&
+                         (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
+                          in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID))
+                        continue;
+                    else
+                    {
+                        if (j == 0)
+                            needToRemoveAVar = true;
+                        else
+                            no_vars->GetPointData()->RemoveArray(name);
+                    }
+                }
+            }
+            for (i = no_vars->GetCellData()->GetNumberOfArrays()-1 ; i >= 0 ; i--)
+            {
+                vtkDataArray *arr = no_vars->GetCellData()->GetArray(i);
+                const char *name = arr->GetName();
+                if (name == NULL)
                     continue;
-                else
+                if (strstr(name, "vtk") != NULL)
                     no_vars->GetCellData()->RemoveArray(name);
+                else if (strstr(name, "avt") != NULL)
+                {
+                    if (keepNodeZone && 
+                        ((strcmp(name, "avtOriginalNodeNumbers") == 0) ||
+                         (strcmp(name, "avtOriginalCellNumbers") == 0)))
+                        continue;
+                    else if (strcmp(name, "avtGhostZones") == 0 &&
+                         (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
+                          in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID))
+                        continue;
+                    else
+                    {
+                        if (j == 0)
+                            needToRemoveAVar = true;
+                        else
+                            no_vars->GetCellData()->RemoveArray(name);
+                    }
+                }
             }
         }
     }
@@ -301,8 +332,10 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         out_ds = no_vars;
     }
 
-    ManageMemory(out_ds);
-    no_vars->Delete();
+    if (out_ds != in_ds)
+        ManageMemory(out_ds);
+    if (needToDelete)
+        no_vars->Delete();
 
     return out_ds;
 }
