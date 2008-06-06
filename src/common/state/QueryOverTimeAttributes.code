@@ -105,7 +105,6 @@ Definition:
 void
 QueryOverTimeAttributes::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 

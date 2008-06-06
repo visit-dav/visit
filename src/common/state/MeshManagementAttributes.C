@@ -466,7 +466,6 @@ MeshManagementAttributes::CreateNode(DataNode *parentNode, bool completeSave, bo
 void
 MeshManagementAttributes::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 

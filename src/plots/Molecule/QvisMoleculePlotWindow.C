@@ -384,14 +384,15 @@ QvisMoleculePlotWindow::CreateWindowContents()
 // Creation:   March 23, 2006
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Wed Jun 4 07:59:02 PDT 2008
+//   Removed unused varaibles.
+//
 // ****************************************************************************
 
 void
 QvisMoleculePlotWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -403,12 +404,6 @@ QvisMoleculePlotWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
         QColor                tempcolor;
         switch(i)
         {

@@ -153,7 +153,7 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 vtkDataSet *
 avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    int i, j;
+    int i;
 
     //
     // Remove any variable that has "VTK" or "AVT" in its name.  Make a for

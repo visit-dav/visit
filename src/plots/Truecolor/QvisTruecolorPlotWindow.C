@@ -184,13 +184,15 @@ QvisTruecolorPlotWindow::UpdateWindow(bool doAll)
 // Creation:   Tue Jun 15 11:10:32 PDT 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Jun 4 07:57:23 PDT 2008
+//   Removed unused variable.
 //   
 // ****************************************************************************
 
 void
 QvisTruecolorPlotWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
+    bool doAll = (which_widget == -1);
     QString msg, temp;
 
     // Do opacity
