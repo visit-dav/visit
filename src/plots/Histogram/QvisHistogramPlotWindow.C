@@ -371,13 +371,15 @@ QvisHistogramPlotWindow::CreateWindowContents()
 //    Hank Childs, Tue Dec 11 20:01:14 PST 2007
 //    Add support for scaling by an arbitrary variable.
 //
+//    Kathleen Bonnell, Wed Jun 4 07:58:17 PDT 2008
+//    Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisHistogramPlotWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -389,12 +391,6 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
         QColor                tempcolor;
         switch(i)
         {

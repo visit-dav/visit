@@ -127,12 +127,15 @@ avtPerMaterialValueExpression::~avtPerMaterialValueExpression()
 //    Cyrus Harrison, Wed Apr  9 11:11:40 PDT 2008
 //    Make sure to only do post ghost case if VisIt created the ghost zones.
 //
+//    Kathleen Bonnell, Tue Jun  3 08:09:52 PDT 2008
+//    Remove unreferenced variable.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtPerMaterialValueExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int    i, j;
+    int    i;
 
     int ncells = in_ds->GetNumberOfCells();
     

@@ -1122,6 +1122,9 @@ ParallelCoordinatesAttributes::InsertAxis(const std::string &axisName_)
 //    as names of actual scalars instead of just display names.  Added
 //    visualAxisNames.
 //
+//    Kathleen Bonnell, Wed Jun 4 07:54:16 PDT 2008 
+//    Removed unused variables leftSelectedAxisID, rightSelectedAxisID.
+//
 // ****************************************************************************
 
 void
@@ -1133,7 +1136,6 @@ ParallelCoordinatesAttributes::DeleteAxis(const std::string &axisName_,
     std::string newAxisName = axisName_;
 
     int curAxisCount = scalarAxisNames.size();
-    int leftSelectedAxisID, rightSelectedAxisID;
     int axisOrdinal;
 
     for (axisOrdinal = 0; axisOrdinal < curAxisCount; axisOrdinal++)

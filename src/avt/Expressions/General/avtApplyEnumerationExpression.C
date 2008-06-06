@@ -106,13 +106,17 @@ avtApplyEnumerationExpression::~avtApplyEnumerationExpression()
 //
 //  Programmer:   Jeremy Meredith
 //  Creation:     February 13, 2008
+//  
+//  Modification:
+//    Kathleen Bonnell, Tue Jun  3 08:11:22 PDT 2008
+//    Remove unreferenced variable.
 //
 // ****************************************************************************
 
 vtkDataArray *
 avtApplyEnumerationExpression::DeriveVariable(vtkDataSet *in_ds)
 {
-    int    i, j;
+    int    i;
 
     if (varnames.size() == 0)
         EXCEPTION0(ImproperUseException);

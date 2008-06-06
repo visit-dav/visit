@@ -336,13 +336,15 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Brad Whitlock, Wed Apr 23 10:09:42 PDT 2008
 //    Added tr()
 //
+//    Kathleen Bonnel, Wed Jun 4 07:58:48 PDT 2008
+//    Removed unused variables.
+//
 // ****************************************************************************
 
 void
 QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     QString oldAxis = axisList->currentItem() ? 
         axisList->currentItem()->text(0) : QString("");
@@ -358,12 +360,6 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
         }
 
         int   sliderpos;
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
         QColor                tempcolor;
         switch(i)
         {

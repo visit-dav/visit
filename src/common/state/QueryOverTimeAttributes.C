@@ -482,7 +482,6 @@ QueryOverTimeAttributes::CreateNode(DataNode *parentNode, bool completeSave, boo
 void
 QueryOverTimeAttributes::SetFromNode(DataNode *parentNode)
 {
-    int i;
     if(parentNode == 0)
         return;
 

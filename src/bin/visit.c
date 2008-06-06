@@ -720,7 +720,7 @@ AddEnvironment(int useShortFileName)
     tmp = (char *)malloc(10000);
 
     /* Add VisIt's home directory to the path */
-    AddPath(tmp, visitpath);
+    AddPath(tmp, visitpath, visitdevdir);
 
     /* Set the VisIt home dir. */
     sprintf(tmp, "VISITHOME=%s", visitpath);

@@ -1090,6 +1090,10 @@ avtSIL::GetCollectionIndex(std::string name, int superset) const
 //  Modifications:
 //    Dave Bremer, Tue Apr  1 15:13:05 PDT 2008
 //    Rewrote to use FindColl
+//
+//    Kathleen Bonnell, Tue Jun  3 08:13:27 PDT 2008
+//    Remove unreferenced variable.
+//
 // ****************************************************************************
 
 avtSIL::EntryType
@@ -1105,7 +1109,7 @@ avtSIL::GetCollectionSource(int index,
         EXCEPTION2(BadIndexException, index, GetNumCollections());
 
     EntryType t;
-    int iLocalIndex, iLocalSubIndex, jj;
+    int iLocalIndex, iLocalSubIndex;
 
     if (!FindColl(index, t, iLocalIndex, iLocalSubIndex))
     {
