@@ -100,6 +100,9 @@ graphicalGetPassword(const char *host, int *okay)
 //   Kathleen Bonnell, Tue May 27 15:50:02 PDT 2008 
 //   If user changes Username, ensure we copy the correct length string. 
 //
+//   Kathleen Bonnell, Thu Jun  5 13:51:20 PDT 2008 
+//   Fixed typo causing compiler failure.
+//
 // ****************************************************************************
 
 int
@@ -278,7 +281,7 @@ main(int argc, char *argv[])
         catch(DoUsernameWindow)
         {
             const char *n = graphicalGetUsername(host);
-            namlen = strlen(n) +1;
+            namelen = strlen(n) +1;
             if (n != NULL)
             {
                 if (!shouldDeleteUsername)
