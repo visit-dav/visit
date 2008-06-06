@@ -206,6 +206,10 @@ using     std::string;
 //    broadcast it out, thinking it would help with performance.  It doesn't 
 //    make much difference in practice, so the code could be changed to follow 
 //    the serial path in all cases.
+//
+//    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
+//    Added the bParFormat flag allowing the parallel format to be used
+//    by a serial code, in which there is only one output dir.
 // ****************************************************************************
 
 avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
@@ -220,6 +224,7 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
     iNumTimesteps = 1;
     bBinary = true;
     iNumOutputDirs = 1;
+    bParFormat = false;
 
     iNumBlocks = 1;
     iBlockSize[0] = 1;
@@ -340,6 +345,10 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
 //  Modifications:
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
 //    Changed sprintf to SNPRINTF.
+//
+//    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
+//    Added the bParFormat flag allowing the parallel format to be used
+//    by a serial code, in which there is only one output dir.
 // ****************************************************************************
 
 void           
@@ -435,6 +444,11 @@ avtNek3DFileFormat::ParseMetaDataFile(const char *filename)
             {
                 bBinary = true;
             }
+            else if (STREQUAL("binary6", t.c_str())==0)
+            {
+                bBinary = true;
+                bParFormat = true;
+            }
             else if (STREQUAL("ascii", t.c_str())==0)
             {
                 bBinary = false;
@@ -448,6 +462,8 @@ avtNek3DFileFormat::ParseMetaDataFile(const char *filename)
         else if (STREQUAL("numoutputdirs:", tag.c_str())==0)
         {
             f >> iNumOutputDirs;
+            if (iNumOutputDirs > 1)
+                bParFormat = true;
         }
         else
         {
@@ -514,6 +530,10 @@ avtNek3DFileFormat::ParseMetaDataFile(const char *filename)
 //  Modified:
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
 //    Use the GetFileName method.
+//
+//    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
+//    Added the bParFormat flag allowing the parallel format to be used
+//    by a serial code, in which there is only one output dir.
 // ****************************************************************************
 
 void
@@ -528,7 +548,7 @@ avtNek3DFileFormat::ParseNekFileHeader()
     GetFileName(iFirstTimestep, 0, blockfilename, fileTemplate.size() + 64);
     ifstream  f(blockfilename);
 
-    if (iNumOutputDirs == 1)
+    if (!bParFormat)
     {
         f >> iNumBlocks;
         f >> iBlockSize[0];
@@ -613,13 +633,22 @@ avtNek3DFileFormat::ParseNekFileHeader()
             bHasPressure = true;
         if (f.get() == 'T')
             bHasTemperature = true;
-        while ((f.get()-'0') == (iNumSFields+1))
-            iNumSFields++;
+        char c = f.get();
+        if (c == 'S')
+        {
+            iNumSFields = 10*(f.get()-'0') + (f.get()-'0');
+        }
+        else if (c == '1')
+        {
+            iNumSFields = 1;
+            while ((f.get()-'0') == (iNumSFields+1))
+                iNumSFields++;
+        }
     }
     if (iBlockSize[2] == 1)
         iDim = 2;
     
-    if (iNumOutputDirs > 1  &&  iNumBlocks%iNumOutputDirs != 0)
+    if (bParFormat  &&  iNumBlocks%iNumOutputDirs != 0)
     {
         EXCEPTION1(InvalidDBTypeException, 
             "Parallel Nek reader requires an equal number of blocks per file." );
@@ -628,10 +657,10 @@ avtNek3DFileFormat::ParseNekFileHeader()
 
     if (bBinary)
     {
-        if (iNumOutputDirs == 1)
-            iHeaderSize = 84;
-        else
+        if (bParFormat)
             iHeaderSize = 132+4+iBlocksPerFile*sizeof(int);
+        else
+            iHeaderSize = 84;
     }
     else
     {
@@ -644,7 +673,7 @@ avtNek3DFileFormat::ParseNekFileHeader()
         // If this machine's endian matches the file's, the read will 
         // put 6.54321 into this float.
         float test;  
-        if (iNumOutputDirs == 1)
+        if (!bParFormat)
         {
             f.seekg( 80, std::ios_base::beg );
             f.read((char *)(&test), 4);
@@ -691,6 +720,10 @@ avtNek3DFileFormat::ParseNekFileHeader()
 //    Dave Bremer, Tue May 13 19:51:04 CDT 2008
 //    Use a simpler block numbering scheme, to provide faster I/O because of
 //    more coherent file access.
+//
+//    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
+//    Added the bParFormat flag allowing the parallel format to be used
+//    by a serial code, in which there is only one output dir.
 // ****************************************************************************
 
 void
@@ -700,7 +733,7 @@ avtNek3DFileFormat::ReadBlockLocations()
     // each local block to a global id which starts at 1.  Here, I make 
     // an inverse map, from a zero-based global id to a proc num and local
     // offset.
-    if (!bBinary || iNumOutputDirs == 1 || aBlockLocs != NULL)
+    if (!bBinary || !bParFormat || aBlockLocs != NULL)
         return;
 
     int ii, jj;
@@ -916,7 +949,6 @@ avtNek3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*time
         SNPRINTF(scalarVarName, 32, "s%d", ii+1);
         AddScalarVarToMetaData(md, scalarVarName, meshname, AVT_NODECENT);
     }
-
     if (!avtDatabase::OnlyServeUpMetaData())
     {
         avtNekDomainBoundaries *db = new avtNekDomainBoundaries;
@@ -972,6 +1004,10 @@ avtNek3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*time
 // 
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
 //    Use the GetFileName method.
+//
+//    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
+//    Added the bParFormat flag allowing the parallel format to be used
+//    by a serial code, in which there is only one output dir.
 // ****************************************************************************
 
 vtkDataSet *
@@ -992,8 +1028,7 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshna
     UpdateCyclesAndTimes();   //This call also finds which timesteps have a mesh.
     ReadBlockLocations();
 
-    if (fdMesh == NULL || 
-        (iNumOutputDirs > 1 && aBlockLocs[domain*2] != iCurrMeshProc))
+    if (fdMesh == NULL || (bParFormat && aBlockLocs[domain*2] != iCurrMeshProc))
     {
         if (fdMesh)
             fclose(fdMesh);
@@ -1001,7 +1036,7 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshna
         char *meshfilename = new char[ fileTemplate.size() + 64 ];
 
         iCurrMeshProc = 0;
-        if (iNumOutputDirs > 1)
+        if (bParFormat)
             iCurrMeshProc = aBlockLocs[domain*2];
 
         GetFileName(iTimestepsWithMesh[0], iCurrMeshProc, 
@@ -1016,7 +1051,7 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshna
             FindAsciiDataStart(fdMesh, iAsciiMeshFileStart, iAsciiMeshFileLineLen);
     }
 
-    if (iNumOutputDirs > 1)
+    if (bParFormat)
         domain = aBlockLocs[domain*2 + 1];
 
     int nFloatsInDomain = 0, d1, d2, d3;
@@ -1026,7 +1061,7 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshna
     if (bBinary)
     {
         //In the parallel format, the whole mesh comes before all the vars.
-        if (iNumOutputDirs > 1)
+        if (bParFormat)
             nFloatsInDomain = iDim*iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
 
         if (iPrecision == 4)
@@ -1140,6 +1175,10 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshna
 //
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
 //    Use the GetFileName method.
+//
+//    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
+//    Added the bParFormat flag allowing the parallel format to be used
+//    by a serial code, in which there is only one output dir.
 // ****************************************************************************
 
 vtkDataArray *
@@ -1150,8 +1189,7 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
     int ii;
     ReadBlockLocations();
 
-    if (iTimestep != iCurrTimestep || 
-        (iNumOutputDirs > 1 && aBlockLocs[domain*2] != iCurrVarProc))
+    if (iTimestep != iCurrTimestep || (bParFormat && aBlockLocs[domain*2] != iCurrVarProc))
     {
         if (fdVar)
             fclose(fdVar);
@@ -1159,7 +1197,7 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
         char *filename = new char[ fileTemplate.size() + 64 ];
 
         iCurrVarProc = 0;
-        if (iNumOutputDirs > 1)
+        if (bParFormat)
             iCurrVarProc = aBlockLocs[domain*2];
 
         GetFileName(iTimestep, iCurrVarProc, 
@@ -1184,13 +1222,13 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
     GetDomainSizeAndVarOffset(iTimestep, varname, nFloatsInDomain, 
                               iBinaryOffset, iAsciiOffset, iHasMesh);
 
-    if (iNumOutputDirs > 1)
+    if (bParFormat)
         domain = aBlockLocs[domain*2 + 1];
 
     if (bBinary)
     {
         int filepos;
-        if (iNumOutputDirs == 1)
+        if (!bParFormat)
             filepos = iHeaderSize + (nFloatsInDomain*domain + iBinaryOffset)*sizeof(float);
         else
         {
@@ -1283,6 +1321,10 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
 //
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
 //    Use the GetFileName method.
+//
+//    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
+//    Added the bParFormat flag allowing the parallel format to be used
+//    by a serial code, in which there is only one output dir.
 // ****************************************************************************
 
 vtkDataArray *
@@ -1293,15 +1335,14 @@ avtNek3DFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
     int ii;
     ReadBlockLocations();
 
-    if (iTimestep != iCurrTimestep || 
-        (iNumOutputDirs > 1 && aBlockLocs[domain*2] != iCurrVarProc))
+    if (iTimestep != iCurrTimestep || (bParFormat && aBlockLocs[domain*2] != iCurrVarProc))
     {
         if (fdVar)
             fclose(fdVar);
 
         char *filename = new char[ fileTemplate.size() + 64 ];
         iCurrVarProc = 0;
-        if (iNumOutputDirs > 1)
+        if (bParFormat)
             iCurrVarProc = aBlockLocs[domain*2];
 
         GetFileName(iTimestep, iCurrVarProc, 
@@ -1326,13 +1367,13 @@ avtNek3DFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 
     GetDomainSizeAndVarOffset(iTimestep, varname, nFloatsInDomain, 
                               iBinaryOffset, iAsciiOffset, dummy);
-    if (iNumOutputDirs > 1)
+    if (bParFormat)
         domain = aBlockLocs[domain*2 + 1];
 
     if (bBinary)
     {
         int filepos;
-        if (iNumOutputDirs == 1)
+        if (!bParFormat)
             filepos = iHeaderSize + (nFloatsInDomain*domain + iBinaryOffset)*sizeof(float);
         else
         {
@@ -1466,6 +1507,10 @@ avtNek3DFileFormat::GetTimes(std::vector<double> &outTimes)
 //  Programmer: Dave Bremer
 //  Creation:   March 19, 2008
 //
+//  Modifications:
+//    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
+//    Added the bParFormat flag allowing the parallel format to be used
+//    by a serial code, in which there is only one output dir.
 // ****************************************************************************
 
 void
@@ -1480,18 +1525,18 @@ avtNek3DFileFormat::GetFileName(int timestep, int pardir, char *outFileName, int
             nPrintfTokens++;
     }
 
-    if (iNumOutputDirs == 1 && nPrintfTokens != 1)
+    if (!bParFormat && nPrintfTokens != 1)
     {
         EXCEPTION1(ImproperUseException, 
             "The filetemplate tag must receive only one printf token for serial Nek files.");
     }
-    else if (iNumOutputDirs > 1 && (nPrintfTokens < 2 || nPrintfTokens > 3))
+    else if (bParFormat && (nPrintfTokens < 2 || nPrintfTokens > 3))
     {
         EXCEPTION1(ImproperUseException, 
             "The filetemplate tag must receive either 2 or 3 printf tokens for parallel Nek files.");
     }
     int len;
-    if (iNumOutputDirs == 1)
+    if (!bParFormat)
         len = SNPRINTF(outFileName, bufSize, fileTemplate.c_str(), timestep);
     else if (nPrintfTokens == 2)
         len = SNPRINTF(outFileName, bufSize, fileTemplate.c_str(), pardir, timestep);
@@ -1524,6 +1569,10 @@ avtNek3DFileFormat::GetFileName(int timestep, int pardir, char *outFileName, int
 //
 //    Dave Bremer, Thu Mar 20 11:28:05 PDT 2008
 //    Use the GetFileName method.
+//
+//    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
+//    Added the bParFormat flag allowing the parallel format to be used
+//    by a serial code, in which there is only one output dir.
 // ****************************************************************************
 
 void
@@ -1551,7 +1600,7 @@ avtNek3DFileFormat::UpdateCyclesAndTimes()
         GetFileName(iFirstTimestep+ii, 0, meshfilename, fileTemplate.size() + 64);
         f.open(meshfilename);
 
-        if (iNumOutputDirs == 1)
+        if (!bParFormat)
         {
             f >> dummy >> dummy >> dummy >> dummy >> t >> c >> v;  //skip #blocks and block size
         }
@@ -1793,6 +1842,9 @@ avtNek3DFileFormat::FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLine
 //  Creation:   Wed Apr 23 18:12:50 PDT 2008
 //
 //  Modifications:
+//    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
+//    Added the bParFormat flag allowing the parallel format to be used
+//    by a serial code, in which there is only one output dir.
 //
 // ****************************************************************************
 
@@ -1810,7 +1862,7 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/,
             EXCEPTION1(InvalidVariableException, var);
         }
 
-        if (!bBinary || iNumOutputDirs == 1)
+        if (!bBinary || !bParFormat)
             return NULL;
 
         int nFloatsPerDomain = 0, d1, d2, d3;
@@ -1936,6 +1988,9 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/,
 //  Creation:   Thu May  1 19:33:44 PDT 2008
 //
 //  Modifications:
+//    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
+//    Added the bParFormat flag allowing the parallel format to be used
+//    by a serial code, in which there is only one output dir.
 //
 // ****************************************************************************
 
@@ -1947,7 +2002,7 @@ avtNek3DFileFormat::PopulateIOInformation(int /*ts*/, avtIOInformation &ioInfo)
         return;
 
     //Not applicable unless it is a parallel file.
-    if (iNumOutputDirs == 1)
+    if (!bParFormat)
         return;
 
     //Make sure these are up to date.  Exits early if they've been read.

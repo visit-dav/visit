@@ -78,6 +78,10 @@
 //    Dave Bremer, Tue May 13 19:51:04 CDT 2008
 //    Added PopulateIOInformation to give hints to improve IO patterns,
 //    but the info is currently not used.
+//
+//    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
+//    Added the bParFormat flag allowing the parallel format to be used
+//    by a serial code, in which there is only one output dir.
 // ****************************************************************************
 
 class avtNek3DFileFormat : public avtMTMDFileFormat
@@ -120,7 +124,8 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
     int                  iFirstTimestep;
     int                  iNumTimesteps;
     bool                 bBinary;         //binary or ascii
-    int                  iNumOutputDirs;  //denotes serial or parallel format
+    int                  iNumOutputDirs;  //used in parallel format
+    bool                 bParFormat;
 
     // This info is embedded in, or derived from, the file header
     bool                 bSwapEndian;
