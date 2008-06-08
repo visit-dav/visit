@@ -48,9 +48,17 @@ distclean: clean
 ## 
 ## Jeremy Meredith, Tue Jun  5 17:30:37 EDT 2007
 ## Added .d suffixes to match all the .o targets.
+##
+## Tom Fogal, Sun Jun  8 16:44:22 EDT 2008
+## Added a couple rules for IceT objects.
+##    "_icet.o": link with IceT
+##    "_mesa_icet.o" link with IceT AND mesa.
+## Reformatted to fit within 80 columns.
 
-.SUFFIXES: .C _eng.o _mds.o _par.o _ogl.o _mesa.o _par_eng.o _par_ogl.o _par_mesa.o _moc.C \
-           .d _eng.d _mds.d _par.d _ogl.d _mesa.d _par_eng.d _par_ogl.d _par_mesa.d 
+.SUFFIXES: .C _eng.o _mds.o _par.o _ogl.o _moc.C _mesa.o          \
+           _par_eng.o _par_ogl.o _par_mesa.o _icet.o _mesa_icet.o \
+           .d _eng.d _mds.d _par.d _ogl.d _mesa.d                 \
+           _par_eng.d _par_ogl.d _par_mesa.d _icet.d _mesa_icet.d
 
 ##
 ## We separate C compiler flags from C preprocessor flags and most
@@ -72,11 +80,11 @@ distclean: clean
 ## Added a "_mds.o" build line to reduce the number of libraries
 ## needed by the mdserver by using preprocessor wrappers in plugins.
 ##
-## 
 ## Cyrus Harrison, Fri Mar  9 08:38:37 PST 2007
 ## Added engine specific targets: "_eng.o", "_par_eng.o"
 ## 
-
+## Tom Fogal, Sun Jun  8 18:00:05 EDT 2008
+## Added IceT specific targets.  Wrapped long lines.
 
 .C.a:
 	false
@@ -125,8 +133,23 @@ distclean: clean
 @OS_RULE@
 
 .C_par_mesa.o:
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ $(MESA_INCLUDE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ $(MESA_INCLUDE) \
+	-c $< -o $@
 @OS_RULE@
+
+# _icet implies parallel; the PARALLEL_CPPFLAGS are there on purpose.
+.C_icet.o:
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS)      \
+	@PARALLEL_CPPFLAGS@ @ICET_CXXFLAGS@ \
+	-c $< -o $@
+@OS_RULE@
+
+.C_mesa_icet.o:
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS)                      \
+	@PARALLEL_CPPFLAGS@ @ICET_CXXFLAGS@ $(MESA_INCLUDE) \
+	-c $< -o $@
+@OS_RULE@
+
 
 .f.o:
 	$(F77) $(F77FLAGS) -c $<
@@ -181,7 +204,8 @@ $(IDSO) noidso: $(IOBJ)
 	@SHLIB_POSTPROCESS_ILIBS@
 
 $(GDSO) nogdso: $(GOBJ) $(MOCOBJ)
-	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(GOBJ) $(MOCOBJ) $(SHLIB_FORCED) @SHLIB_GLIBS@
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(GOBJ) $(MOCOBJ) $(SHLIB_FORCED) \
+		@SHLIB_GLIBS@
 	@SHLIB_POSTPROCESS_GLIBS@
 
 $(MDSO) nomdso: $(MOBJ)
@@ -193,15 +217,18 @@ $(SDSO) nosdso: $(SOBJ)
 	@SHLIB_POSTPROCESS_SLIBS@
 
 $(VDSO) novdso: $(VOBJ) $(VIEWERMOCOBJ)
-	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(VOBJ) $(VIEWERMOCOBJ) $(SHLIB_FORCED) @SHLIB_VLIBS@
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(VOBJ) $(VIEWERMOCOBJ) $(SHLIB_FORCED) \
+		@SHLIB_VLIBS@
 	@SHLIB_POSTPROCESS_VLIBS@
 
 $(ESERDSO) noedso_ser: $(ESEROBJ)
-	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(ESEROBJ) $(SHLIB_FORCED) @SHLIB_ESERLIBS@
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(ESEROBJ) $(SHLIB_FORCED) \
+		@SHLIB_ESERLIBS@
 	@SHLIB_POSTPROCESS_ESERLIBS@
 
 $(EPARDSO) noedso_par: $(EPAROBJ)
-	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(EPAROBJ) $(SHLIB_FORCED) @SHLIB_MPI_LIBS@ @SHLIB_EPARLIBS@ 
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(EPAROBJ) $(SHLIB_FORCED) \
+		@SHLIB_MPI_LIBS@ @SHLIB_EPARLIBS@ 
 	@SHLIB_POSTPROCESS_EPARLIBS@
 
 ## Brad Whitlock, Wed Aug 14 16:26:55 PST 2002

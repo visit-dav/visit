@@ -781,7 +781,12 @@ dnl
 dnl    Eric Brugger, Fri Apr 18 13:13:11 PDT 2008
 dnl    Added HDF5_EXEC to allow the data directory to conditionally run
 dnl    HDF5 based programs that create HDF5 data files.
+dnl
+dnl    Tom Fogal, Sun Jun  8 14:56:22 EDT 2008
+dnl    Added macro to check for ICE-T.
+dnl
 dnl --------------------------------------------------------------------------
+m4_include([icet.m4])
 
 dnl
 dnl Configuration header stuff...
@@ -1090,6 +1095,15 @@ fi
 AC_SUBST(VIEWER_MESA_STUB_CPPFLAGS)
 AC_SUBST(VIEWER_MESA_LIBS)
 AC_SUBST(BUILD_MESA_STUB)
+
+AX_ICET_OPTIONS
+if test "x$UseParallel" == "xno" -a "x$enable_icet" == "xyes" ; then
+	AC_MSG_ERROR([
+IceT usage requested, but you're not doing a parallel build.  IceT requires
+`--enable-parallel' to be specified.])
+elif test "x$UseParallel" == "xyes" -a "x$enable_icet" == "xyes" ; then
+	AX_CHECK_ICET
+fi
 
 #
 # The check for OpenGL can be disabled with `--disable-ogl'.
