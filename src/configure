@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPDIR PLATFORM_CPPFLAGS CMAKE CXXFLAGS CXX LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PARALLEL PARALLEL_CPPFLAGS MPI_LIBS MPI_CC MPI_CXX LIBSTATICPAR LIBSHAREDPAR LIBSHAREDPAR_UPDATEONLY PARDEP MESA_DIR MESA_INCLUDE MESA_LIBS VIEWER_MESA_STUB_CPPFLAGS VIEWER_MESA_LIBS BUILD_MESA_STUB CC CFLAGS ac_ct_CC GL_LIBS VTK_DIR VTK_INCLUDES VTK_LIBS VTK_LIGHTWEIGHT_LIBS AVTPREP_SER AVTPREP_PAR CONVERT_SER CONVERT_PAR MAKEMILI_SER MAKEMILI_PAR ENGINE_SER ENGINE_PAR ENGINELIBSER ENGINELIBPAR METADATA_SERVER MDSERVERLIB MDSERVEROBJ VISITPY SCRIPTINGLIB SCRIPTINGOBJ PY_BUILD_VISITMODULE GUI GUILIB GUIOBJ GUIFRAMEWORKS VIEWER VISWINDOW VIEWERLIB VIEWEROBJ VIEWERLIB_SRC VIEWEREXE_SRC ENGINEPROXYDIR ANNOTATION_FLAGS JAVAC JAVA_TARGET JAR JAVAFLAGS JAVAPLUGINFLAGS BUILD_SLIVR SLIVR_INCLUDE SLIVR_LIBS TEEM_CMAKE_C_FLAGS SLIVR_CMAKE_SHARED_LINKER_FLAGS HELP PLOT_BUILD_DIRS OPERATOR_BUILD_DIRS DB_BUILD_DIRS BUILD_BZIP2 BZIP2_LIBS BUILD_GLEW GLEW_INCLUDE GLEW_LIBS BUILD_BILIB CXXCPP CPP F77 FFLAGS ac_ct_F77 SET_MAKE RANLIB ac_ct_RANLIB MAKEDEPEND BUILD_FORTRAN OS_RULE EGREP ZLIB_INCLUDE ZLIB_LIB SZIP SZIP_INCLUDE SZIP_LIB SZIP_LIBDIR HDF5 HDF5_INCLUDE HDF5_LIB HDF5_LIBDIR HDF5_EXEC SILO_INCLUDE LIBSILO SILO_LIB SILO_LIBDIR EXODUS EXODUS_LIB EXODUS_LIBS EXODUS_FLAGS PDB PDB_FLAGS PDB_LIBS PDB_EXEC MILI MILI_FLAGS MILI_LIBS MILI_DIR HDF4 HDF4_FLAGS HDF4_LIBS HDF4_LIBDIR BOXLIB2D BOXLIB2D_INCLUDE BOXLIB2D_LIBS BOXLIB2D_LIBDIR BOXLIB3D BOXLIB3D_INCLUDE BOXLIB3D_LIBS BOXLIB3D_LIBDIR H5PART H5PART_INCLUDE H5PART_LIB H5PART_LIBDIR VISUS VISUS_INCLUDE VISUS_LIB NETCDF NETCDF_INCLUDE NETCDF_LIB NETCDF_CXX_LIB CGNS CGNS_INCLUDE CGNS_LIB GDAL GDAL_INCLUDE GDAL_LIB GDAL_LIBS CFITSIO CFITSIO_INCLUDE CFITSIO_LIB CFITSIO_LIBDIR ITAPS_C ITAPS_C_INCLUDE ITAPS_C_LIB ITAPS_S ITAPS_S_INCLUDE ITAPS_S_LIB ITAPS_INCLUDE ITAPS_LIB CREATE_ITAPS_LINK CCMIO CCMIO_INCLUDE CCMIO_LIBS CCMIO_LIBDIR SIMULATION EXPORT_DYNAMIC ENGINE_CPPFLAGS SILOOBJVTK_CPPFLAGS PREPROCESSOR_CPPFLAGS PREPROCESSOR_PARALLEL_SRC COMPONENT_CPPFLAGS VISIT_VTK_CPPFLAGS VISIT_VTK_LDFLAGS VIEWER_CPPFLAGS QT_BIN QT_INCLUDE QT_LIB LIBQT QT_LIBS QUI_LIBS QT_LDFLAGS QT_STATICLDFLAGS QT_CXXFLAGS QT_MOC X_LIBS VTKQT_CPPFLAGS VTKQT VTKQT_LIBS PTHREAD_LIB PTHREAD_CXXFLAGS PYDIR PYVERSION PY_INCLUDEDIR PY_CXXFLAGS PY_LDFLAGS PY_LIB PY_CLI_LIB SHLIB_CREATEPROG SHLIB_LIBS SHLIB_SERLIBS SHLIB_PARLIBS SHLIB_MPI_LIBS SHLIB_ILIBS SHLIB_GLIBS SHLIB_VLIBS SHLIB_MLIBS SHLIB_ESERLIBS SHLIB_EPARLIBS SHLIB_SLIBS SHLIB_POSTPROCESS_ILIBS SHLIB_POSTPROCESS_GLIBS SHLIB_POSTPROCESS_VLIBS SHLIB_POSTPROCESS_MLIBS SHLIB_POSTPROCESS_ESERLIBS SHLIB_POSTPROCESS_EPARLIBS SHLIB_POSTPROCESS_SLIBS SHLIB_SOEXT SHLIB_LIBEXT SHLIB_POSTPROCESS SHLIB_POSTPROCESS_SER SHLIB_POSTPROCESS_PAR SHLIB_TMPDIR PREBIND_LIBS ENGINEWRAPSER ENGINEWRAPPAR CREATE_SILO_LINK CREATE_MILI_LINK CREATE_SZIP_LINK CREATE_HDF4_LINK CREATE_HDF5_LINK CREATE_NETCDF_LINK CREATE_CGNS_LINK CREATE_GDAL_LINK CREATE_EXODUS_LINK CREATE_BOXLIB2D_LINK CREATE_BOXLIB3D_LINK CREATE_CFITSIO_LINK CREATE_H5PART_LINK CREATE_CCMIO_LINK MG tmpbin tmpinc tmplib plotplugindir operatorplugindir databaseplugindir DATA_REL_VISIT_PATH LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPDIR PLATFORM_CPPFLAGS CMAKE CXXFLAGS CXX LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PARALLEL PARALLEL_CPPFLAGS MPI_LIBS MPI_CC MPI_CXX LIBSTATICPAR LIBSHAREDPAR LIBSHAREDPAR_UPDATEONLY PARDEP MESA_DIR MESA_INCLUDE MESA_LIBS VIEWER_MESA_STUB_CPPFLAGS VIEWER_MESA_LIBS BUILD_MESA_STUB ICET_CXXFLAGS ICET_LDFLAGS ICET_LIBS ICET_ENGINE_MAIN_OBJ CC CFLAGS ac_ct_CC GL_LIBS VTK_DIR VTK_INCLUDES VTK_LIBS VTK_LIGHTWEIGHT_LIBS AVTPREP_SER AVTPREP_PAR CONVERT_SER CONVERT_PAR MAKEMILI_SER MAKEMILI_PAR ENGINE_SER ENGINE_PAR ENGINELIBSER ENGINELIBPAR METADATA_SERVER MDSERVERLIB MDSERVEROBJ VISITPY SCRIPTINGLIB SCRIPTINGOBJ PY_BUILD_VISITMODULE GUI GUILIB GUIOBJ GUIFRAMEWORKS VIEWER VISWINDOW VIEWERLIB VIEWEROBJ VIEWERLIB_SRC VIEWEREXE_SRC ENGINEPROXYDIR ANNOTATION_FLAGS JAVAC JAVA_TARGET JAR JAVAFLAGS JAVAPLUGINFLAGS BUILD_SLIVR SLIVR_INCLUDE SLIVR_LIBS TEEM_CMAKE_C_FLAGS SLIVR_CMAKE_SHARED_LINKER_FLAGS HELP PLOT_BUILD_DIRS OPERATOR_BUILD_DIRS DB_BUILD_DIRS BUILD_BZIP2 BZIP2_LIBS BUILD_GLEW GLEW_INCLUDE GLEW_LIBS BUILD_BILIB CXXCPP CPP F77 FFLAGS ac_ct_F77 SET_MAKE RANLIB ac_ct_RANLIB MAKEDEPEND BUILD_FORTRAN OS_RULE EGREP ZLIB_INCLUDE ZLIB_LIB SZIP SZIP_INCLUDE SZIP_LIB SZIP_LIBDIR HDF5 HDF5_INCLUDE HDF5_LIB HDF5_LIBDIR HDF5_EXEC SILO_INCLUDE LIBSILO SILO_LIB SILO_LIBDIR EXODUS EXODUS_LIB EXODUS_LIBS EXODUS_FLAGS PDB PDB_FLAGS PDB_LIBS PDB_EXEC MILI MILI_FLAGS MILI_LIBS MILI_DIR HDF4 HDF4_FLAGS HDF4_LIBS HDF4_LIBDIR BOXLIB2D BOXLIB2D_INCLUDE BOXLIB2D_LIBS BOXLIB2D_LIBDIR BOXLIB3D BOXLIB3D_INCLUDE BOXLIB3D_LIBS BOXLIB3D_LIBDIR H5PART H5PART_INCLUDE H5PART_LIB H5PART_LIBDIR VISUS VISUS_INCLUDE VISUS_LIB NETCDF NETCDF_INCLUDE NETCDF_LIB NETCDF_CXX_LIB CGNS CGNS_INCLUDE CGNS_LIB GDAL GDAL_INCLUDE GDAL_LIB GDAL_LIBS CFITSIO CFITSIO_INCLUDE CFITSIO_LIB CFITSIO_LIBDIR ITAPS_C ITAPS_C_INCLUDE ITAPS_C_LIB ITAPS_S ITAPS_S_INCLUDE ITAPS_S_LIB ITAPS_INCLUDE ITAPS_LIB CREATE_ITAPS_LINK CCMIO CCMIO_INCLUDE CCMIO_LIBS CCMIO_LIBDIR SIMULATION EXPORT_DYNAMIC ENGINE_CPPFLAGS SILOOBJVTK_CPPFLAGS PREPROCESSOR_CPPFLAGS PREPROCESSOR_PARALLEL_SRC COMPONENT_CPPFLAGS VISIT_VTK_CPPFLAGS VISIT_VTK_LDFLAGS VIEWER_CPPFLAGS QT_BIN QT_INCLUDE QT_LIB LIBQT QT_LIBS QUI_LIBS QT_LDFLAGS QT_STATICLDFLAGS QT_CXXFLAGS QT_MOC X_LIBS VTKQT_CPPFLAGS VTKQT VTKQT_LIBS PTHREAD_LIB PTHREAD_CXXFLAGS PYDIR PYVERSION PY_INCLUDEDIR PY_CXXFLAGS PY_LDFLAGS PY_LIB PY_CLI_LIB SHLIB_CREATEPROG SHLIB_LIBS SHLIB_SERLIBS SHLIB_PARLIBS SHLIB_MPI_LIBS SHLIB_ILIBS SHLIB_GLIBS SHLIB_VLIBS SHLIB_MLIBS SHLIB_ESERLIBS SHLIB_EPARLIBS SHLIB_SLIBS SHLIB_POSTPROCESS_ILIBS SHLIB_POSTPROCESS_GLIBS SHLIB_POSTPROCESS_VLIBS SHLIB_POSTPROCESS_MLIBS SHLIB_POSTPROCESS_ESERLIBS SHLIB_POSTPROCESS_EPARLIBS SHLIB_POSTPROCESS_SLIBS SHLIB_SOEXT SHLIB_LIBEXT SHLIB_POSTPROCESS SHLIB_POSTPROCESS_SER SHLIB_POSTPROCESS_PAR SHLIB_TMPDIR PREBIND_LIBS ENGINEWRAPSER ENGINEWRAPPAR CREATE_SILO_LINK CREATE_MILI_LINK CREATE_SZIP_LINK CREATE_HDF4_LINK CREATE_HDF5_LINK CREATE_NETCDF_LINK CREATE_CGNS_LINK CREATE_GDAL_LINK CREATE_EXODUS_LINK CREATE_BOXLIB2D_LINK CREATE_BOXLIB3D_LINK CREATE_CFITSIO_LINK CREATE_H5PART_LINK CREATE_CCMIO_LINK MG tmpbin tmpinc tmplib plotplugindir operatorplugindir databaseplugindir DATA_REL_VISIT_PATH LIBOBJS LTLIBOBJS'
 ac_subst_files='VARIABLES TARGETS DIRTARGETS LIBTARGETS PARLIBTARGETS SOURCE_DEPENDENCIES'
 
 # Initialize some variables set by options.
@@ -869,6 +869,7 @@ Optional Features:
   --enable-ignore-hangups        ignore hangup signals (this avoids RHEL3 bug)
   --enable-parallel       make the parallel version
   --enable-viewer-mesa-stub     use the mesa stub library in the viewer
+  --enable-icet           Use the ICE-T parallel image compositor
   --disable-ogl           do not check for the SGI ogl library
   --disable-mdserver      build without mdserver
   --disable-scripting     build without CLI Python scripting capability
@@ -890,6 +891,10 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-config=file      Specify a configuration file to execute
   --with-cmake=path to cmake     Location of cmake utility.
+  --with-icet-includedir=/path
+                          Directory where ICE-T include files can be found.
+  --with-icet-libdir=/path
+                          Directory where ICE-T libraries can be found.
   --with-plots=all,base   What plot plugins to build (overrides --enable-buildall)
   --with-operators=all,base What operator plugins to build (overrides --enable-buildall)
   --with-dbs=all,base     What database plugins to build (overrides --enable-buildall)
@@ -2430,6 +2435,384 @@ fi
 
 
 
+
+
+# Check whether --enable-icet or --disable-icet was given.
+if test "${enable_icet+set}" = set; then
+  enableval="$enable_icet"
+  enable_icet=yes
+else
+  enable_icet=no
+
+fi;
+
+
+# Check whether --with-icet-includedir or --without-icet-includedir was given.
+if test "${with_icet_includedir+set}" = set; then
+  withval="$with_icet_includedir"
+  with_icet_includedir=$withval
+else
+  with_icet_includedir=no
+
+fi;
+
+# Check whether --with-icet-libdir or --without-icet-libdir was given.
+if test "${with_icet_libdir+set}" = set; then
+  withval="$with_icet_libdir"
+  with_icet_libdir=$withval
+else
+  with_icet_libdir=no
+
+fi;
+
+ICET_LIBS=
+ICET_ENGINE_MAIN_OBJ=
+ax_ICET_LIB=
+ax_ICET_LIB_MPI=
+ax_ICET_LIB_STRATEGIES=
+
+
+if test "x$UseParallel" == "xno" -a "x$enable_icet" == "xyes" ; then
+	{ { echo "$as_me:$LINENO: error:
+IceT usage requested, but you're not doing a parallel build.  IceT requires
+\`--enable-parallel' to be specified." >&5
+echo "$as_me: error:
+IceT usage requested, but you're not doing a parallel build.  IceT requires
+\`--enable-parallel' to be specified." >&2;}
+   { (exit 1); exit 1; }; }
+elif test "x$UseParallel" == "xyes" -a "x$enable_icet" == "xyes" ; then
+
+
+if test "x$enable_icet" != xno; then
+
+                        ac_ext=cc
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+        ax_save_LDFLAGS="${LDFLAGS}"
+        ax_save_CXXFLAGS="${CXXFLAGS}"
+
+                        if test "x$with_icet_includedir" != xno; then
+  ICET_INCLUDEDIR="${with_icet_includedir}"
+
+fi
+
+        if test "x$with_icet_libdir" != xno; then
+  ICET_LIBDIR="${with_icet_libdir}"
+
+fi
+
+
+                                        ICET_CXXFLAGS="-DUSE_MGL_NAMESPACE"
+        ICET_LDFLAGS=
+        if test -n "${ICET_INCLUDEDIR}"; then
+
+                ICET_CXXFLAGS="${ICET_CXXFLAGS} -I${ICET_INCLUDEDIR}"
+
+
+fi
+
+        CXXFLAGS="${CXXFLAGS} ${ICET_CXXFLAGS}"
+        if test -n "${ICET_LIBDIR}"; then
+
+            ICET_LDFLAGS="-L${ICET_LIBDIR}"
+            LDFLAGS="${LDFLAGS} ${ICET_LDFLAGS}"
+
+fi
+
+
+                                        echo "$as_me:$LINENO: checking for icetGetColorBuffer in -licet" >&5
+echo $ECHO_N "checking for icetGetColorBuffer in -licet... $ECHO_C" >&6
+if test "${ac_cv_lib_icet_icetGetColorBuffer+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-licet                                                                                                 -L$MESA_DIR/lib $MESA_LIBS -lm
+         $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char icetGetColorBuffer ();
+int
+main ()
+{
+icetGetColorBuffer ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_icet_icetGetColorBuffer=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_icet_icetGetColorBuffer=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_icet_icetGetColorBuffer" >&5
+echo "${ECHO_T}$ac_cv_lib_icet_icetGetColorBuffer" >&6
+if test $ac_cv_lib_icet_icetGetColorBuffer = yes; then
+  ax_ICET_LIB="-licet"
+else
+  { { echo "$as_me:$LINENO: error:
+--enable-icet was given, but I could not use IceT.  Perhaps you need to set
+some custom LDFLAGS?
+See \`config.log' for more details." >&5
+echo "$as_me: error:
+--enable-icet was given, but I could not use IceT.  Perhaps you need to set
+some custom LDFLAGS?
+See \`config.log' for more details." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+        echo "$as_me:$LINENO: checking for icetCreateMPICommunicator in -licet_mpi" >&5
+echo $ECHO_N "checking for icetCreateMPICommunicator in -licet_mpi... $ECHO_C" >&6
+if test "${ac_cv_lib_icet_mpi_icetCreateMPICommunicator+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-licet_mpi -L$MESA_DIR/lib $MESA_LIBS -lm -licet -lmpi
+         $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char icetCreateMPICommunicator ();
+int
+main ()
+{
+icetCreateMPICommunicator ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_icet_mpi_icetCreateMPICommunicator=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_icet_mpi_icetCreateMPICommunicator=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_icet_mpi_icetCreateMPICommunicator" >&5
+echo "${ECHO_T}$ac_cv_lib_icet_mpi_icetCreateMPICommunicator" >&6
+if test $ac_cv_lib_icet_mpi_icetCreateMPICommunicator = yes; then
+  ax_ICET_LIB_MPI="-licet_mpi"
+else
+  { { echo "$as_me:$LINENO: error:
+--enable-icet was given, but I could not use IceT's MPI wrappers.  Perhaps you
+need to set some custom LDFLAGS?
+See \`config.log' for more details." >&5
+echo "$as_me: error:
+--enable-icet was given, but I could not use IceT's MPI wrappers.  Perhaps you
+need to set some custom LDFLAGS?
+See \`config.log' for more details." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+                                        echo "$as_me:$LINENO: checking for icetTreeCompose in -licet_strategies" >&5
+echo $ECHO_N "checking for icetTreeCompose in -licet_strategies... $ECHO_C" >&6
+if test "${ac_cv_lib_icet_strategies_icetTreeCompose+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-licet_strategies -L$MESA_DIR/lib $MESA_LIBS -lm -licet -lmpi
+         $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char icetTreeCompose ();
+int
+main ()
+{
+icetTreeCompose ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_icet_strategies_icetTreeCompose=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_icet_strategies_icetTreeCompose=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_icet_strategies_icetTreeCompose" >&5
+echo "${ECHO_T}$ac_cv_lib_icet_strategies_icetTreeCompose" >&6
+if test $ac_cv_lib_icet_strategies_icetTreeCompose = yes; then
+  ax_ICET_LIB_STRATEGIES="-licet_strategies"
+else
+  { { echo "$as_me:$LINENO: error:
+--enable-icet was given, but I could not make use of it's strategies!  This
+might mean the library was updated and VisIt's test simply needs to be updated,
+or it might mean your IceT install is not quite right.  You may need to set
+some custom LDFLAGS.
+See \`config.log' for more details." >&5
+echo "$as_me: error:
+--enable-icet was given, but I could not make use of it's strategies!  This
+might mean the library was updated and VisIt's test simply needs to be updated,
+or it might mean your IceT install is not quite right.  You may need to set
+some custom LDFLAGS.
+See \`config.log' for more details." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+        ICET_LIBS="${ax_ICET_LIB} ${ax_ICET_LIB_MPI} ${ax_ICET_LIB_STRATEGIES}"
+        ICET_ENGINE_MAIN_OBJ='$(ICET_PAROBJ)'
+
+
+
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_ICET 1
+_ACEOF
+
+        LDFLAGS=${ax_save_LDFLAGS}
+        CXXFLAGS=${ax_save_CXXFLAGS}
+        ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+else
+
+        ICET_ENGINE_MAIN_OBJ='$(NO_ICET_PAROBJ)'
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_ICET 0
+_ACEOF
+
+
+                        if test "x$with_icet_includedir" != xno -o \
+                    "x$with_icet_libdir" != xno; then
+
+            { echo "$as_me:$LINENO: WARNING:
+--with-icet-... options specified without --enable-icet.  Did you mean to
+enable IceT?" >&5
+echo "$as_me: WARNING:
+--with-icet-... options specified without --enable-icet.  Did you mean to
+enable IceT?" >&2;}
+
+fi
+
+
+
+fi
+
+
+
+
+
+fi
 
 #
 # The check for OpenGL can be disabled with `--disable-ogl'.
@@ -5598,7 +5981,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5601:" \
+echo "$as_me:5984:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -19313,6 +19696,10 @@ s,@MESA_LIBS@,$MESA_LIBS,;t t
 s,@VIEWER_MESA_STUB_CPPFLAGS@,$VIEWER_MESA_STUB_CPPFLAGS,;t t
 s,@VIEWER_MESA_LIBS@,$VIEWER_MESA_LIBS,;t t
 s,@BUILD_MESA_STUB@,$BUILD_MESA_STUB,;t t
+s,@ICET_CXXFLAGS@,$ICET_CXXFLAGS,;t t
+s,@ICET_LDFLAGS@,$ICET_LDFLAGS,;t t
+s,@ICET_LIBS@,$ICET_LIBS,;t t
+s,@ICET_ENGINE_MAIN_OBJ@,$ICET_ENGINE_MAIN_OBJ,;t t
 s,@CC@,$CC,;t t
 s,@CFLAGS@,$CFLAGS,;t t
 s,@ac_ct_CC@,$ac_ct_CC,;t t
