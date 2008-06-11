@@ -1626,6 +1626,9 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 //
 //    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //    Obtained treatAllDBsAsTimeVarying from VWM instead of VFS
+//
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added support for ignoring bad extents from dbs.
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1674,9 +1677,12 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
             }
 
             // Tell the engine to generate the plot
-	    bool treatAllDBsAsTimeVarying =
-	        ViewerWindowManager::Instance()->GetClientAtts()->
-		    GetTreatAllDBsAsTimeVarying();
+            bool treatAllDBsAsTimeVarying =
+                ViewerWindowManager::Instance()->GetClientAtts()->
+                    GetTreatAllDBsAsTimeVarying();
+            bool ignoreExtents =
+                ViewerWindowManager::Instance()->GetClientAtts()->
+                    GetIgnoreExtentsFromDbs();
             engine->ReadDataObject(defaultFormat, 
                                    plot->GetDatabaseName(),
                                    plot->GetVariableName(),
@@ -1684,7 +1690,8 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
                                    *GetMaterialClientAtts(),
                                    plot->GetExpressions(),
                                    *GetMeshManagementClientAtts(),
-				   treatAllDBsAsTimeVarying);
+                                   treatAllDBsAsTimeVarying,
+                                   ignoreExtents);
         }
 
         //
@@ -1951,6 +1958,8 @@ ViewerEngineManager::EndEngineExecute()
 //    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
 //    Added meshquality/timederivative creation flags.
 //
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added support for ignoring bad extents from dbs.
 // ****************************************************************************
 
 bool
@@ -1959,10 +1968,12 @@ ViewerEngineManager::OpenDatabase(const EngineKey &ek, const char *format,
 {
     ENGINE_PROXY_RPC_BEGIN("OpenDatabase");
     bool cmq = ViewerWindowManager::Instance()->GetClientAtts()->
-		    GetCreateMeshQualityExpressions();
+                    GetCreateMeshQualityExpressions();
     bool ctd = ViewerWindowManager::Instance()->GetClientAtts()->
-		    GetCreateTimeDerivativeExpressions();
-    engine->OpenDatabase(format, filename, time, cmq, ctd);
+                    GetCreateTimeDerivativeExpressions();
+    bool ie = ViewerWindowManager::Instance()->GetClientAtts()->
+                    GetIgnoreExtentsFromDbs();
+    engine->OpenDatabase(format, filename, time, cmq, ctd, ie);
     ENGINE_PROXY_RPC_END;
 }
 
@@ -1994,9 +2005,9 @@ ViewerEngineManager::DefineVirtualDatabase(const EngineKey &ek,
 {
     ENGINE_PROXY_RPC_BEGIN("DefineVirtualDatabase");
     bool cmq = ViewerWindowManager::Instance()->GetClientAtts()->
-		    GetCreateMeshQualityExpressions();
+                    GetCreateMeshQualityExpressions();
     bool ctd = ViewerWindowManager::Instance()->GetClientAtts()->
-		    GetCreateTimeDerivativeExpressions();
+                    GetCreateTimeDerivativeExpressions();
     engine->DefineVirtualDatabase(format, dbName, path, files, time, cmq, ctd);
     ENGINE_PROXY_RPC_END;
 }

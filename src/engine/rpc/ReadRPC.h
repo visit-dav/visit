@@ -68,6 +68,9 @@
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Mark C. Miller, Tue Jun 10 15:57:15 PDT 2008
+//    Added ignoreExtents
 // ****************************************************************************
 
 class ENGINE_RPC_API ReadRPC : public BlockingRPC
@@ -84,7 +87,7 @@ public:
                     const CompactSILRestrictionAttributes &,
                     const MaterialAttributes &,
                     const MeshManagementAttributes &,
-		    bool);
+                    bool, bool);
 
     // Property selection methods
     virtual void SelectAll();
@@ -98,6 +101,7 @@ public:
     void SetMaterialAttributes(const MaterialAttributes &);
     void SetMeshManagementAttributes(const MeshManagementAttributes &);
     void SetTreatAllDBsAsTimeVarying(bool);
+    void SetIgnoreExtents(bool);
 
     // Property getting methods
     std::string GetVar()  const;
@@ -107,7 +111,8 @@ public:
     const CompactSILRestrictionAttributes &GetCSRAttributes() const;
     const MaterialAttributes &GetMaterialAttributes() const;
     const MeshManagementAttributes &GetMeshManagementAttributes() const;
-    bool        GetTreatAllDBsAsTimeVarying() const;
+    bool  GetTreatAllDBsAsTimeVarying() const;
+    bool  GetIgnoreExtents() const;
 
 private:
     std::string file;
@@ -118,6 +123,7 @@ private:
     MaterialAttributes materialAtts;
     MeshManagementAttributes meshManagementAtts;
     bool treatAllDBsAsTimeVarying;
+    bool ignoreExtents;
 };
 
 #endif

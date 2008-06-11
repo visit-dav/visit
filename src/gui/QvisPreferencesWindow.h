@@ -98,6 +98,8 @@ class QSpinBox;
 //   Brad Whitlock, Wed Apr  9 11:52:15 PDT 2008
 //   QString for caption, shortName.
 //
+//   Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//   Added preference to ignore extents.
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -138,6 +140,7 @@ private slots:
     void newPlotsInheritSILRestrictionToggled(bool);
     void userDirForSessionFilesToggled(bool);
     void saveCrashRecoveryFileToggled(bool);
+    void ignoreDbExtentsToggled(bool val);
 private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
     QCheckBox        *postWindowsWhenShownToggle;
@@ -155,6 +158,7 @@ private:
     QCheckBox        *newPlotsInheritSILRestrictionToggle;
     QCheckBox        *userDirForSessionFilesToggle;
     QCheckBox        *saveCrashRecoveryFileToggle;
+    QCheckBox        *ignoreDbExtentsToggle;
     GlobalAttributes *atts;
 
     TimeFormat        tsFormat;

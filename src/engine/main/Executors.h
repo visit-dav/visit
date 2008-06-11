@@ -199,6 +199,9 @@ RPCExecutor<KeepAliveRPC>::Execute(KeepAliveRPC *rpc)
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Mark C. Miller, Tue Jun 10 15:57:15 PDT 2008
+//    Added support for ignoring extents
 // ****************************************************************************
 
 template<>
@@ -220,7 +223,8 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
                              rpc->GetCSRAttributes(),
                              rpc->GetMaterialAttributes(),
                              rpc->GetMeshManagementAttributes(),
-			     rpc->GetTreatAllDBsAsTimeVarying());
+                             rpc->GetTreatAllDBsAsTimeVarying(),
+                             rpc->GetIgnoreExtents());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)
@@ -1239,8 +1243,13 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
         avtDatabaseFactory::SetCreateTimeDerivativeExpressions(
                             rpc->GetCreateTimeDerivativeExpressions()); 
 
+        bool treatAllDBsAsTimeVarying = false;
+        bool fileMayHaveUnloadedPlugin = false;
         netmgr->GetDBFromCache(rpc->GetDatabaseName(), rpc->GetTime(),
-                               rpc->GetFileFormat().c_str());
+                               rpc->GetFileFormat().c_str(),
+                               treatAllDBsAsTimeVarying,
+                               fileMayHaveUnloadedPlugin,
+                               rpc->GetIgnoreExtents());
 
         engine->PopulateSimulationMetaData(rpc->GetDatabaseName(),
                                            rpc->GetFileFormat());

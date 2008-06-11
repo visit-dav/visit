@@ -60,7 +60,7 @@ public class GlobalAttributes extends AttributeSubject
 {
     public GlobalAttributes()
     {
-        super(23);
+        super(24);
 
         sources = new Vector();
         windows = new Vector();
@@ -85,11 +85,12 @@ public class GlobalAttributes extends AttributeSubject
         userDirForSessionFiles = false;
         saveCrashRecoveryFile = true;
         applySelection = true;
+        ignoreExtentsFromDbs = false;
     }
 
     public GlobalAttributes(GlobalAttributes obj)
     {
-        super(23);
+        super(24);
 
         int i;
 
@@ -124,6 +125,7 @@ public class GlobalAttributes extends AttributeSubject
         userDirForSessionFiles = obj.userDirForSessionFiles;
         saveCrashRecoveryFile = obj.saveCrashRecoveryFile;
         applySelection = obj.applySelection;
+        ignoreExtentsFromDbs = obj.ignoreExtentsFromDbs;
 
         SelectAll();
     }
@@ -173,7 +175,8 @@ public class GlobalAttributes extends AttributeSubject
                 (newPlotsInheritSILRestriction == obj.newPlotsInheritSILRestriction) &&
                 (userDirForSessionFiles == obj.userDirForSessionFiles) &&
                 (saveCrashRecoveryFile == obj.saveCrashRecoveryFile) &&
-                (applySelection == obj.applySelection));
+                (applySelection == obj.applySelection) &&
+                (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs));
     }
 
     // Property setting methods
@@ -315,6 +318,12 @@ public class GlobalAttributes extends AttributeSubject
         Select(22);
     }
 
+    public void SetIgnoreExtentsFromDbs(boolean ignoreExtentsFromDbs_)
+    {
+        ignoreExtentsFromDbs = ignoreExtentsFromDbs_;
+        Select(23);
+    }
+
     // Property getting methods
     public Vector  GetSources() { return sources; }
     public Vector  GetWindows() { return windows; }
@@ -339,6 +348,7 @@ public class GlobalAttributes extends AttributeSubject
     public boolean GetUserDirForSessionFiles() { return userDirForSessionFiles; }
     public boolean GetSaveCrashRecoveryFile() { return saveCrashRecoveryFile; }
     public boolean GetApplySelection() { return applySelection; }
+    public boolean GetIgnoreExtentsFromDbs() { return ignoreExtentsFromDbs; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -389,6 +399,8 @@ public class GlobalAttributes extends AttributeSubject
             buf.WriteBool(saveCrashRecoveryFile);
         if(WriteSelect(22, buf))
             buf.WriteBool(applySelection);
+        if(WriteSelect(23, buf))
+            buf.WriteBool(ignoreExtentsFromDbs);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -467,6 +479,9 @@ public class GlobalAttributes extends AttributeSubject
             case 22:
                 SetApplySelection(buf.ReadBool());
                 break;
+            case 23:
+                SetIgnoreExtentsFromDbs(buf.ReadBool());
+                break;
             }
         }
     }
@@ -497,6 +512,7 @@ public class GlobalAttributes extends AttributeSubject
         str = str + boolToString("userDirForSessionFiles", userDirForSessionFiles, indent) + "\n";
         str = str + boolToString("saveCrashRecoveryFile", saveCrashRecoveryFile, indent) + "\n";
         str = str + boolToString("applySelection", applySelection, indent) + "\n";
+        str = str + boolToString("ignoreExtentsFromDbs", ignoreExtentsFromDbs, indent) + "\n";
         return str;
     }
 
@@ -525,5 +541,6 @@ public class GlobalAttributes extends AttributeSubject
     private boolean userDirForSessionFiles;
     private boolean saveCrashRecoveryFile;
     private boolean applySelection;
+    private boolean ignoreExtentsFromDbs;
 }
 

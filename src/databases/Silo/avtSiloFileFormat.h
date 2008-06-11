@@ -196,6 +196,9 @@ typedef struct
 //    Added 'using' statements (above) and removed all 'std::' where
 //    appropriate. Added GetNodelistVars, AddNodelistEnumerations
 //
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added bools to control ignoring of extents.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -232,6 +235,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     DBfile              **dbfiles;
     int                   tocIndex;
     int                   dontForceSingle; // used primarily for testing
+    bool                  ignoreSpatialExtents;
+    bool                  ignoreDataExtents;
     bool                  readGlobalInfo;
     bool                  connectivityIsTimeVarying;
     bool                  hasDisjointElements;

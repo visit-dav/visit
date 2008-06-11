@@ -67,7 +67,7 @@ using std::string;
 //    Added bool to support to treat all databases as time varying
 // ****************************************************************************
 
-ReadRPC::ReadRPC() : BlockingRPC("ssiaasab")
+ReadRPC::ReadRPC() : BlockingRPC("ssiaasabb")
 {
 }
 
@@ -128,7 +128,8 @@ ReadRPC::operator()(const string &ft, const string &f, const string &v, int t,
                     const CompactSILRestrictionAttributes &s,
                     const MaterialAttributes &m,
                     const MeshManagementAttributes &mm,
-		    bool treatAllDBsAsTimeVarying)
+                    bool treatAllDBsAsTimeVarying,
+                    bool ignoreExtents)
 {
     debug3 << "Executing read RPC" 
            << "\n\t file format='" << ft.c_str() << "'"
@@ -136,6 +137,7 @@ ReadRPC::operator()(const string &ft, const string &f, const string &v, int t,
            << "\n\t var ='" << v.c_str() << "'"
            << "\n\t time='" << t << "'"
            << "\n\t treatAllDBsAsTimeVarying ='" << treatAllDBsAsTimeVarying << "'"
+           << "\n\t ignoreExtents ='" << ignoreExtents << "'"
            << endl;
 
     SetFormat(ft);
@@ -146,6 +148,7 @@ ReadRPC::operator()(const string &ft, const string &f, const string &v, int t,
     SetMaterialAttributes(m);
     SetMeshManagementAttributes(mm);
     SetTreatAllDBsAsTimeVarying(treatAllDBsAsTimeVarying);
+    SetIgnoreExtents(ignoreExtents);
 
     Execute();
 }
@@ -186,6 +189,7 @@ ReadRPC::SelectAll()
     Select(5, (void*)&format);
     Select(6, (void*)&meshManagementAtts);
     Select(7, (void*)&treatAllDBsAsTimeVarying);
+    Select(8, (void*)&ignoreExtents);
 }
 
 
@@ -347,6 +351,13 @@ ReadRPC::SetTreatAllDBsAsTimeVarying(bool set)
     Select(7, (void*)&treatAllDBsAsTimeVarying);
 }
 
+void
+ReadRPC::SetIgnoreExtents(bool set)
+{
+    ignoreExtents = set;
+    Select(8, (void*)&ignoreExtents);
+}
+
 // ****************************************************************************
 //  Method: ReadRPC::GetFile
 //
@@ -490,4 +501,10 @@ bool
 ReadRPC::GetTreatAllDBsAsTimeVarying() const
 {
     return treatAllDBsAsTimeVarying;
+}
+
+bool
+ReadRPC::GetIgnoreExtents() const
+{
+    return ignoreExtents;
 }

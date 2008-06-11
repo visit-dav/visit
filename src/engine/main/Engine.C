@@ -1610,6 +1610,9 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Mark C. Miller, Tue Jun 10 15:57:15 PDT 2008
+//    Cast first arg of SendStatus to int explicitly
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
@@ -1748,7 +1751,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
                     delete avtreader;
                 }
 
-                rpc->SendStatus(100. * float(i)/float(PAR_Size()),
+                rpc->SendStatus((int) (100. * float(i)/float(PAR_Size())),
                                 rpc->GetCurStageNum(),
                                 "Synchronizing",
                                 rpc->GetMaxStageNum());

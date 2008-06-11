@@ -169,6 +169,8 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
 //
+//   Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//   Added support for ignoring bad extents from dbs. 
 // ****************************************************************************
 
 void
@@ -228,6 +230,13 @@ QvisPreferencesWindow::CreateWindowContents()
     connect(tryHarderCyclesTimesToggle, SIGNAL(toggled(bool)),
             this, SLOT(tryHarderCyclesTimesToggled(bool)));
     dbOptionsLayout->addWidget(tryHarderCyclesTimesToggle);
+
+    ignoreDbExtentsToggle =
+        new QCheckBox(tr("Ignore database extents (may degrade performance)"),
+                      dbControlsGroup, "ignoreDbExtentsToggle");
+    connect(ignoreDbExtentsToggle, SIGNAL(toggled(bool)),
+            this, SLOT(ignoreDbExtentsToggled(bool)));
+    dbOptionsLayout->addWidget(ignoreDbExtentsToggle);
 
     treatAllDBsAsTimeVaryingToggle =
         new QCheckBox(tr("Treat all databases as time-varying"),
@@ -440,6 +449,8 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 //   Brad Whitlock, Thu Jan 31 10:35:13 PST 2008
 //   Added userDirForSessionFiles, saveCrashRecoveryFile.
 //
+//   Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//   Added logic for ignoring bad extents from dbs.
 // ****************************************************************************
 
 void
@@ -498,6 +509,17 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         tryHarderCyclesTimesToggle->setChecked(
             atts->GetTryHarderCyclesTimes());
         tryHarderCyclesTimesToggle->blockSignals(false);
+    }
+
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_ignoreExtentsFromDbs))
+    {
+        //
+        // Try harder to get accurate cycles and times 
+        //
+        ignoreDbExtentsToggle->blockSignals(true);
+        ignoreDbExtentsToggle->setChecked(
+            atts->GetIgnoreExtentsFromDbs());
+        ignoreDbExtentsToggle->blockSignals(false);
     }
 
     if (doAll || atts->IsSelected(GlobalAttributes::ID_treatAllDBsAsTimeVarying))
@@ -887,6 +909,25 @@ QvisPreferencesWindow::tryHarderCyclesTimesToggled(bool val)
 {
     atts->SetTryHarderCyclesTimes(val);
     fileServer->SetForceReadAllCyclesTimes(val);
+    atts->Notify();
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::ignoreDbExtentsToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the
+//   ignoreDbExtentsToggle is clicked.
+//
+// Programmer: Mark C. Miller 
+// Creation:   May 27, 2008 
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::ignoreDbExtentsToggled(bool val)
+{
+    atts->SetIgnoreExtentsFromDbs(val);
     atts->Notify();
 }
 

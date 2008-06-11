@@ -72,6 +72,8 @@ GetSiloReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
     rv->SetBool("Force Single", true);
+    rv->SetBool("Ignore Spatial Extents", false);
+    rv->SetBool("Ignore Data Extents", false);
     return rv;
 }
 

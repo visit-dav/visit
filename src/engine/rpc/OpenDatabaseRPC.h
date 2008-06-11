@@ -73,7 +73,7 @@ public:
     virtual const std::string TypeName() const { return "OpenDatabaseRPC"; }
 
     void operator()(const std::string &, const std::string &, int, 
-                    bool, bool);
+                    bool, bool, bool);
 
     virtual void SelectAll();
 
@@ -84,12 +84,15 @@ public:
                            { return createMeshQualityExpressions; };
     bool               GetCreateTimeDerivativeExpressions() const 
                            { return createTimeDerivativeExpressions; };
+    bool               GetIgnoreExtents() const
+                           { return ignoreExtents; };
 private:
     std::string fileFormat;
     std::string databaseName;
     int         time;
     bool        createMeshQualityExpressions;
     bool        createTimeDerivativeExpressions;
+    bool        ignoreExtents;
 };
 
 #endif

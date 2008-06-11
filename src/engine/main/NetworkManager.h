@@ -312,6 +312,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Cyrus Harrison, Tue Feb 19 08:42:51 PST 2008
 //    Removed dumpRenders (now controled by avtDebugDumpOptions)
 //
+//    Mark C. Miller, Tue Jun 10 15:57:15 PDT 2008
+//    Added bool for ignoring extents to StartNetwork / GetDBFromCache
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -326,13 +329,13 @@ class NetworkManager
 
     NetnodeDB*    GetDBFromCache(const string &filename, int time,
                                  const char * = NULL, bool=false,
-                                 bool=false);
+                                 bool=false, bool=false);
     void          StartNetwork(const std::string&, const std::string &,
                                const std::string &, int,
                                const CompactSILRestrictionAttributes &,
                                const MaterialAttributes &,
                                const MeshManagementAttributes &,
-                               bool);
+                               bool, bool);
     void          DefineDB(const std::string &, const std::string &,
                            const stringVector &, int, const std::string &);
     void          AddFilter(const std::string&,

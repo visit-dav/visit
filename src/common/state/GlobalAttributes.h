@@ -102,6 +102,7 @@ public:
     void SetUserDirForSessionFiles(bool userDirForSessionFiles_);
     void SetSaveCrashRecoveryFile(bool saveCrashRecoveryFile_);
     void SetApplySelection(bool applySelection_);
+    void SetIgnoreExtentsFromDbs(bool ignoreExtentsFromDbs_);
 
     // Property getting methods
     const stringVector &GetSources() const;
@@ -129,6 +130,7 @@ public:
     bool               GetUserDirForSessionFiles() const;
     bool               GetSaveCrashRecoveryFile() const;
     bool               GetApplySelection() const;
+    bool               GetIgnoreExtentsFromDbs() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -166,7 +168,8 @@ public:
         ID_newPlotsInheritSILRestriction,
         ID_userDirForSessionFiles,
         ID_saveCrashRecoveryFile,
-        ID_applySelection
+        ID_applySelection,
+        ID_ignoreExtentsFromDbs
     };
 
 private:
@@ -193,6 +196,7 @@ private:
     bool         userDirForSessionFiles;
     bool         saveCrashRecoveryFile;
     bool         applySelection;
+    bool         ignoreExtentsFromDbs;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
