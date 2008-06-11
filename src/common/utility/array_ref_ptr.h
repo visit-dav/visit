@@ -53,6 +53,11 @@
 //  Programmer: Hank Childs
 //  Creation:   September 17, 2001
 //
+//  Modifications:
+//
+//    Tom Fogal, Mon Jun  9 14:30:36 EDT 2008
+//    Added [] operator, for direct array access.
+//
 // ****************************************************************************
 
 template <class T>
@@ -69,6 +74,8 @@ class array_ref_ptr
     const T *operator*() const;
     T *operator->();
     const T *operator->() const;
+    T &operator[](size_t idx);
+    const T &operator[](size_t idx) const;
     template <class S>  void CopyTo(array_ref_ptr<S> &);
     void Print(ostream&);
  private:
@@ -154,6 +161,20 @@ inline const T *
 array_ref_ptr<T>::operator->() const
 {
     return p;
+}
+
+template <class T>
+inline T &
+array_ref_ptr<T>::operator[](size_t idx)
+{
+    return p[idx];
+}
+
+template <class T>
+const T &
+array_ref_ptr<T>::operator[](size_t idx) const
+{
+    return p[idx];
 }
 
 template <class T>

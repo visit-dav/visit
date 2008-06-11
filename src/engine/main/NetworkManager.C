@@ -111,6 +111,7 @@
 #include <DatabasePluginInfo.h>
 #include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
+#include <StackTimer.h>
 #ifdef PARALLEL
 #include <mpi.h>
 #include <parallel.h>
@@ -122,6 +123,7 @@
 #include <set>
 #include <map>
 
+#include <cassert>
 #include <climits>
 
 using std::set;
@@ -1996,6 +1998,9 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Changed to use avtDebugDumpOptions::DumpEnabled to determine if
 //    debug sr images should be created.
 //
+//    Tom Fogal, Tue Jun 10 14:51:51 EDT 2008
+//    Use RenderSetup to greatly shorten this method.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -2004,13 +2009,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 {
     int i;
     DataNetwork *origWorkingNet = workingNet;
-
-    if (viswinMap.find(windowID) == viswinMap.end())
-    {
-        char tmpStr[256];
-        SNPRINTF(tmpStr, sizeof(tmpStr), "Attempt to render on invalid window id=%d", windowID);
-        EXCEPTION1(ImproperUseException, tmpStr);
-    }
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     viswinInfo.markedForDeletion = false;
@@ -2025,241 +2023,31 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
     std::vector<avtPlot_p>& imageBasedPlots = viswinMap[windowID].imageBasedPlots;
 
     bool dump_renders = avtDebugDumpOptions::DumpEnabled();
-    
+
+    this->RenderSetup(plotIds, getZBuffer, annotMode, windowID, leftEye);
+
     TRY
     {
-        int t1 = visitTimer->StartTimer();
+        StackTimer t_total("Total time for NetworkManager::Render");
+
         avtDataObjectWriter_p writer;
+#if 0
         bool needToSetUpWindowContents = false;
         bool forceViewerExecute = false;
         int *cellCounts = new int[2 * plotIds.size()];
         bool handledAnnotations = false;
         bool handledCues = false;
         int stereoType = -1;
-
-        ViewCurveAttributes vca = windowAttributes.GetViewCurve();
-        View2DAttributes v2a = windowAttributes.GetView2D();
-        ScaleMode ds = (ScaleMode)vca.GetDomainScale();
-        ScaleMode rs = (ScaleMode)vca.GetRangeScale();
-        ScaleMode xs = (ScaleMode)v2a.GetXScale();
-        ScaleMode ys = (ScaleMode)v2a.GetYScale();
-
-        //
-        // Explicitly specify left or right eye for stereo 
-        //
-        if (viswin->GetStereo())
-        {
-            stereoType = viswin->GetStereoType();
-            viswin->SetStereoRendering(true, leftEye ? 4 : 5);
-        }
-
-        // put all the plot objects into the VisWindow
-        viswin->SetScalableRendering(false);
-
-        //
-        // Determine if the plots currently in the window are the same as
-        // those we were asked to render.
-        //
-        if (plotIds.size() != plotsCurrentlyInWindow.size())
-            needToSetUpWindowContents = true;
-        else
-        {
-            DataNetwork *wm = workingNet;
-            for (int p = 0 ; p < plotIds.size() ; p++)
-            {
-                if (plotIds[p] != plotsCurrentlyInWindow[p])
-                    needToSetUpWindowContents = true;
-
-                if (viswin->GetWindowMode() == WINMODE_2D)
-                {
-                    workingNet = NULL;
-                    UseNetwork(plotIds[p]);
-                    if (workingNet->GetPlot()->ScaleModeRequiresUpdate(
-                        WINMODE_2D, xs, ys))
-                    {
-                        needToSetUpWindowContents = true;
-                        forceViewerExecute = true;
-                    }
-                }
-                else if (viswin->GetWindowMode() == WINMODE_CURVE)
-                {
-                    workingNet = NULL;
-                    UseNetwork(plotIds[p]);
-                    if (workingNet->GetPlot()->ScaleModeRequiresUpdate(
-                        WINMODE_CURVE, ds, rs))
-                    {
-                        needToSetUpWindowContents = true;
-                        forceViewerExecute = true;
-                    }
-                }
-            }
-            workingNet = wm;
-        }
-
-        if (needToSetUpWindowContents)
-        {
-            int t2 = visitTimer->StartTimer();
-            int t3 = visitTimer->StartTimer();
-            viswin->ClearPlots();
-            imageBasedPlots.clear();
-            visitTimer->StopTimer(t3, "Clearing plots out of vis window");
-
-            //
-            // If we're doing all annotations on the engine then we need to add
-            // the annotations to the window before we add plots so the 
-            // annotations that depend on the plot list being updated in order 
-            // to change their text with respect to time can update.
-            //
-            // However: visual cues (i.e. reflines) need to be added after the 
-            // plots are added.
-            //
-            if(annotMode == 2)
-            {
-                SetAnnotationAttributes(annotationAttributes,
-                                        annotationObjectList, visualCueList,
-                                        frameAndState, windowID, annotMode);
-                handledAnnotations = true;
-            }
-
-            // see if there are any non-mesh plots in the list
-            bool hasNonMeshPlots = HasNonMeshPlots(plotIds);
-
-            // Fullframe scale.
-            double FFScale[] = {1., 1., 1.};
-            bool setFFScale = false;
-            bool useFFScale = false;
-            bool determinedFFScale = false;
-
-            for (i = 0; i < plotIds.size(); i++)
-            {
-                int t7 = visitTimer->StartTimer();
-                // get the network output as we would normally
-                workingNet = NULL;
-                UseNetwork(plotIds[i]);
-                float cellCountMultiplier;
-
-                DataNetwork *workingNetSaved = workingNet;
-                int t4 = visitTimer->StartTimer();
-                avtDataObjectWriter_p tmpWriter = GetOutput(false, true,
-                                                            &cellCountMultiplier);
-                avtDataObject_p dob = tmpWriter->GetInput();
-
-                // merge polygon info output across processors 
-                dob->GetInfo().ParallelMerge(tmpWriter);
-                visitTimer->StopTimer(t4, "Merging data info in parallel");
-
-                if (hasNonMeshPlots &&
-                    string(workingNetSaved->GetPlot()->GetName()) == "MeshPlot")
-                {
-                   const AttributeSubject *meshAtts = workingNetSaved->
-                         GetPlot()->SetOpaqueMeshIsAppropriate(false);
-                   if (meshAtts != 0)
-                       workingNetSaved->GetPlot()->SetAtts(meshAtts);
-                }
-
-                workingNetSaved->GetPlot()->SetScaleMode(ds,rs,WINMODE_CURVE);
-                workingNetSaved->GetPlot()->SetScaleMode(xs,ys,WINMODE_2D);
-
-                int t5 = visitTimer->StartTimer();
-                avtActor_p anActor = workingNetSaved->GetActor(dob, 
-                                     forceViewerExecute);
-                visitTimer->StopTimer(t5, "Calling GetActor for DOB");
-
-                // Make sure that the actor's name is set to the plot's name so
-                // the legend annotation objects in the annotation object list
-                // will be able to set the plot's legend attributes.
-                anActor->SetActorName(workingNetSaved->GetPlotName().c_str());
-
-                // record cell counts including and not including polys
-                if (cellCountMultiplier > INT_MAX/2.)
-                {
-                    cellCounts[i] = INT_MAX;
-                    cellCounts[i+plotIds.size()] = INT_MAX;
-                }
-                else
-                {
-                    cellCounts[i] =
-                    (int) (anActor->GetDataObject()->GetNumberOfCells(false) *
-                                                     cellCountMultiplier);
-                    cellCounts[i+plotIds.size()] =
-                             anActor->GetDataObject()->GetNumberOfCells(true);
-                }
-
-                int t6 = visitTimer->StartTimer();
-                viswin->AddPlot(anActor);
-                avtPlot_p plot = workingNetSaved->GetPlot();
-                if (plot->PlotIsImageBased())
-                    imageBasedPlots.push_back(plot);
-                visitTimer->StopTimer(t6, "Adding plot to the vis window");
-
-                // Now that a plot has been added to the viswindow, we know
-                // if the window is 2D or curve.
-                if(!determinedFFScale)
-                {
-                    determinedFFScale = true;
-                    setFFScale = viswin->GetWindowMode() == WINMODE_2D ||
-                                 viswin->GetWindowMode() == WINMODE_CURVE ||
-                                 viswin->GetWindowMode() == WINMODE_AXISARRAY;
-                    useFFScale = viswin->GetFullFrameMode();
-                    if(setFFScale)
-                    {
-                        int fft = 0;
-                        double ffs = 1.;
-                        viswin->GetScaleFactorAndType(ffs, fft);
-                        if(fft == 0)
-                            FFScale[0] = ffs;
-                        else if(fft == 1)
-                            FFScale[1] = ffs;
-                    }
-                }
-
-                // If we need to set the fullframe scale, set it now.
-                if(setFFScale)
-                {
-                    workingNetSaved->GetPlot()->GetMapper()->
-                        SetFullFrameScaling(useFFScale, FFScale);
-                }
-
-                visitTimer->StopTimer(t7, "Setting up one plot");
-            }
-
-            if (annotMode == 2)
-            {
-                UpdateVisualCues(windowID);
-                handledCues = true;
-            }
-
-            //
-            // Update any cell counts for the associated networks.
-            // This involves global communication. Since we're going to
-            // get sync'd up for the composite below, this
-            // additional MPI_Allreduce is not so bad.
-            // While we're at it, we'll issue any warning message for
-            // plots with no data, too.
-            //
-#ifdef PARALLEL
-            int *reducedCounts = new int[2 * plotIds.size()];
-            MPI_Allreduce(cellCounts, reducedCounts, 2 * plotIds.size(),
-                MPI_INT, MPI_SUM, VISIT_MPI_COMM);
-            for (i = 0; i < 2 * plotIds.size(); i++)
-                if (cellCounts[i] != INT_MAX) // if accounts for overflow
-                    cellCounts[i] = reducedCounts[i];
-            delete [] reducedCounts;
 #endif
-
-            // update the global cell counts for each network
-            for (i = 0; i < plotIds.size(); i++)
-                SetGlobalCellCount(plotIds[i], cellCounts[i]);
-
-            plotsCurrentlyInWindow = plotIds;
-            visitTimer->StopTimer(t2, "Setting up window contents");
-        }
-
-        int  scalableThreshold = GetScalableThreshold(windowID); 
         // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
         // the misfortune of oscillating switching of modes around the threshold)
+        int scalableThreshold = GetScalableThreshold(windowID);
         if (GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
         {
+            // Sending back a null result from the render process is used as a
+            // special case to indicate that the viewer should re-request
+            // set the rendering mode to scalable rendering and then send back
+            // another render request RPC.
             debug5 << "Cell count has fallen below SR threshold. Sending the "
                       "AVT_NULL_IMAGE_MSG data object to viewer" << endl;
 
@@ -2268,79 +2056,11 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             CopyTo(dummyDob, nullData);
             writer = dummyDob->InstantiateWriter();
             writer->SetInput(dummyDob);
+            this->RenderCleanup(windowID);
+            CATCH_RETURN2(1, writer);
         }
-        else
+
         {
-            if (needToSetUpWindowContents)
-            {
-                // determine any networks with no data 
-                vector<int> networksWithNoData;
-                for (i = 0; i < plotIds.size(); i++)
-                {
-                    if (cellCounts[i] == 0)
-                        networksWithNoData.push_back(i);
-                }
-
-                // issue warning messages for plots with no data
-                if (networksWithNoData.size() > 0)
-                {
-                    string msg = "The plot(s) with id(s) = ";
-                    for (i = 0; i < networksWithNoData.size(); i++)
-                    {
-                        char tmpStr[32];
-                        SNPRINTF(tmpStr, sizeof(tmpStr), "%d", networksWithNoData[i]);
-                        msg += tmpStr;
-                        if (i < networksWithNoData.size() - 1)
-                            msg += ", ";
-                    }
-                    msg += " yielded no data";
-#ifdef PARALLEL
-                    if (PAR_Rank() == 0)
-#endif
-                    {
-                        avtCallback::IssueWarning(msg.c_str());
-                    }
-                }
-            }
-
-            //
-            // Update plot's bg/fg colors. Ignored by avtPlot objects if colors
-            // are unchanged
-            //
-            {
-                double bg[4] = {1.,0.,0.,0.};
-                double fg[4] = {0.,0.,1.,0.};
-
-                annotationAttributes.GetForegroundColor().GetRgba(fg);
-                annotationAttributes.GetDiscernibleBackgroundColor().GetRgba(bg);
-                for (int i = 0; i < plotIds.size(); i++)
-                {
-                    workingNet = NULL;
-                    UseNetwork(plotIds[i]);
-                    workingNet->GetPlot()->SetBackgroundColor(bg);
-                    workingNet->GetPlot()->SetForegroundColor(fg);
-                    if (changedCtName != "")
-                        workingNet->GetPlot()->SetColorTable(changedCtName.c_str());
-                    workingNet = NULL;
-                }
-            }
-
-            //
-            // Add annotations if necessary 
-            //
-            if (!handledAnnotations)
-            {
-                SetAnnotationAttributes(annotationAttributes,
-                                        annotationObjectList, visualCueList,
-                                        frameAndState, windowID, annotMode);
-                handledAnnotations = true;
-            }
-            if (!handledCues)
-            {
-                UpdateVisualCues(windowID);
-                handledCues = true;
-            }
-
             debug5 << "Rendering " << viswin->GetNumPrimitives() 
                    << " primitives.  Balanced speedup = " 
                    << RenderBalance(viswin->GetNumPrimitives()) << "x" << endl;
@@ -2674,16 +2394,10 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             delete imageCompositer;
         }
         
-        delete [] cellCounts;
-
-        // return viswindow to its true stereo mode
-        if (stereoType != -1)
-            viswin->SetStereoRendering(true, stereoType);
+        this->RenderCleanup(windowID);
 
         // return it
-        visitTimer->StopTimer(t1, "Total time for NetworkManager::Render");
         CATCH_RETURN2(1, writer);
-
     }
     CATCHALL(...)
     {
@@ -4653,4 +4367,488 @@ void
 NetworkManager::SetStereoEnabled()
 {
     VisWinRendering::SetStereoEnabled();
+}
+
+// ****************************************************************************
+//  Method: PlotsNeedUpdating
+//
+//  Purpose: Determine if any of the plots we currently have differ from those
+//           in the window, which necessitates a plot update.
+//
+//  Arguments:
+//    plots          plots to render
+//    plotsInWindow  plots already in the window
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 9, 2008
+//
+// ****************************************************************************
+bool
+NetworkManager::PlotsNeedUpdating(const intVector &plots,
+                                  const intVector &plotsInWindow) const
+{
+    // They should really be the same size, but at least it won't be a UMR if
+    // there are more plotsInWindow -- though I think that would be another bug
+    // altogether.
+    assert(plotsInWindow.size() >= plots.size());
+
+    for(size_t p = 0; p < plots.size(); ++p)
+    {
+        if(plots[p] != plotsInWindow[p])
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+// ****************************************************************************
+//  Method: ViewerExecute
+//
+//  Purpose: Determine if we should force the viewer to re-execute.
+//
+//  Arguments:
+//    viswin            which window we are dealing with
+//    plots             the plots to test for re-rendering
+//    windowAttributes  used to look up scale modes
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 9, 2008
+//
+// ****************************************************************************
+
+bool
+NetworkManager::ViewerExecute(const VisWindow * const viswin,
+                              const intVector &plots,
+                              const WindowAttributes &windowAttributes)
+{
+    DataNetwork *wm = this->workingNet;
+    bool retval = false;
+
+    ViewCurveAttributes vca = windowAttributes.GetViewCurve();
+    View2DAttributes v2a = windowAttributes.GetView2D();
+    ScaleMode ds = (ScaleMode)vca.GetDomainScale();
+    ScaleMode rs = (ScaleMode)vca.GetRangeScale();
+    ScaleMode xs = (ScaleMode)v2a.GetXScale();
+    ScaleMode ys = (ScaleMode)v2a.GetYScale();
+
+    // Scan through all the plots looking for a scaling mode which forces an
+    // update.
+    // TODO: Is ScaleModeRequiresUpdate const/read-only?  If so, we can
+    // exit early, returning true instead of setting retval.
+    for(size_t p = 0; p < plots.size(); ++p)
+    {
+        if(viswin->GetWindowMode() == WINMODE_2D)
+        {
+            this->workingNet = NULL;
+            UseNetwork(plots[p]);
+            if(this->workingNet->GetPlot()->
+               ScaleModeRequiresUpdate(WINMODE_2D, xs, ys))
+            {
+                retval = true;
+            }
+        }
+        else if(viswin->GetWindowMode() == WINMODE_CURVE)
+        {
+            this->workingNet = NULL;
+            UseNetwork(plots[p]);
+            if(this->workingNet->GetPlot()->
+               ScaleModeRequiresUpdate(WINMODE_CURVE, ds, rs))
+            {
+                retval = true;
+            }
+        }
+    }
+    this->workingNet = wm;
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: SetUpWindowContents
+//
+//  Purpose: Pre-rendering content setup.
+//
+//  Arguments:
+//    windowID            window to render in
+//    plotIds             the plots to test for re-rendering
+//    forceViewerExecute  make the viewer regenerate actors
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 9, 2008
+//
+// ****************************************************************************
+
+void
+NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
+                                    bool forceViewerExecute)
+{
+    EngineVisWinInfo &viswinInfo = viswinMap.find(windowID)->second;
+    WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
+    std::vector<avtPlot_p>& imageBasedPlots =
+        viswinMap.find(windowID)->second.imageBasedPlots;
+    VisWindow *viswin = viswinInfo.viswin;
+
+    // Doesn't make sense to use this unless we need to set the contents up
+    assert(this->r_mgmt.needToSetUpWindowContents);
+
+    StackTimer setup("Setting up window contents");
+    TimedCodeBlock("Clearing plots out of vis window",
+        viswin->ClearPlots();
+        imageBasedPlots.clear();
+    );
+
+    //
+    // If we're doing all annotations on the engine then we need to add
+    // the annotations to the window before we add plots so the 
+    // annotations that depend on the plot list being updated in order 
+    // to change their text with respect to time can update.
+    //
+    // However: visual cues (i.e. reflines) need to be added after the 
+    // plots are added.
+    //
+    if(this->r_mgmt.annotMode == 2)
+    {
+        SetAnnotationAttributes(viswinInfo.annotationAttributes,
+                                viswinInfo.annotationObjectList,
+                                viswinInfo.visualCueList,
+                                viswinInfo.frameAndState,
+                                windowID,
+                                this->r_mgmt.annotMode);
+        this->r_mgmt.handledAnnotations = true;
+    }
+
+    // see if there are any non-mesh plots in the list
+    bool hasNonMeshPlots = HasNonMeshPlots(plotIds);
+
+    // Fullframe scale.
+    double FFScale[] = {1., 1., 1.};
+    bool setFFScale = false;
+    bool useFFScale = false;
+    bool determinedFFScale = false;
+
+    for (size_t i = 0; i < plotIds.size(); i++)
+    {
+        StackTimer one_plot("Setting up one plot");
+        float cellCountMultiplier;
+        avtDataObjectWriter_p tmpWriter;
+        // get the network output as we would normally
+        this->workingNet = NULL;
+        UseNetwork(plotIds[i]);
+
+        DataNetwork *workingNetSaved = workingNet;
+
+        int t_merge = visitTimer->StartTimer();
+            tmpWriter = GetOutput(false, true, &cellCountMultiplier);
+            avtDataObject_p dob = tmpWriter->GetInput();
+
+            // merge polygon info output across processors 
+            dob->GetInfo().ParallelMerge(tmpWriter);
+        visitTimer->StopTimer(t_merge, "Merging data info in parallel");
+
+        if(hasNonMeshPlots &&
+           string(workingNetSaved->GetPlot()->GetName()) == "MeshPlot")
+        {
+           const AttributeSubject *meshAtts = workingNetSaved->
+                 GetPlot()->SetOpaqueMeshIsAppropriate(false);
+           if (meshAtts != 0)
+               workingNetSaved->GetPlot()->SetAtts(meshAtts);
+        }
+
+        {
+            ViewCurveAttributes vca = windowAttributes.GetViewCurve();
+            View2DAttributes v2a = windowAttributes.GetView2D();
+            ScaleMode ds = (ScaleMode)vca.GetDomainScale();
+            ScaleMode rs = (ScaleMode)vca.GetRangeScale();
+            ScaleMode xs = (ScaleMode)v2a.GetXScale();
+            ScaleMode ys = (ScaleMode)v2a.GetYScale();
+
+            workingNetSaved->GetPlot()->SetScaleMode(ds,rs,WINMODE_CURVE);
+            workingNetSaved->GetPlot()->SetScaleMode(xs,ys,WINMODE_2D);
+        }
+
+        avtActor_p anActor;
+        TimedCodeBlock("Calling GetActor for DOB",
+            anActor = workingNetSaved->GetActor(dob,
+                                                forceViewerExecute);
+        );
+
+        // Make sure that the actor's name is set to the plot's name so
+        // the legend annotation objects in the annotation object list
+        // will be able to set the plot's legend attributes.
+        anActor->SetActorName(workingNetSaved->GetPlotName().c_str());
+
+        // record cell counts including and not including polys
+        if (cellCountMultiplier > INT_MAX/2.)
+        {
+            this->r_mgmt.cellCounts[i] = INT_MAX;
+            this->r_mgmt.cellCounts[i+plotIds.size()] = INT_MAX;
+        }
+        else
+        {
+            this->r_mgmt.cellCounts[i] =
+            (int) (anActor->GetDataObject()->GetNumberOfCells(false) *
+                                             cellCountMultiplier);
+            this->r_mgmt.cellCounts[i+plotIds.size()] =
+                     anActor->GetDataObject()->GetNumberOfCells(true);
+        }
+
+        TimedCodeBlock("Adding plot to the vis window",
+            viswin->AddPlot(anActor);
+            avtPlot_p plot = workingNetSaved->GetPlot();
+            if(plot->PlotIsImageBased()) {
+                imageBasedPlots.push_back(plot);
+            }
+        );
+
+        // Now that a plot has been added to the viswindow, we know
+        // if the window is 2D or curve.
+        if(!determinedFFScale)
+        {
+            determinedFFScale = true;
+            setFFScale = viswin->GetWindowMode() == WINMODE_2D ||
+                         viswin->GetWindowMode() == WINMODE_CURVE ||
+                         viswin->GetWindowMode() == WINMODE_AXISARRAY;
+            useFFScale = viswin->GetFullFrameMode();
+            if(setFFScale)
+            {
+                int fft = 0;
+                double ffs = 1.;
+                viswin->GetScaleFactorAndType(ffs, fft);
+                if(fft == 0)
+                    FFScale[0] = ffs;
+                else if(fft == 1)
+                    FFScale[1] = ffs;
+            }
+        }
+
+        // If we need to set the fullframe scale, set it now.
+        if(setFFScale)
+        {
+            workingNetSaved->GetPlot()->GetMapper()->
+                SetFullFrameScaling(useFFScale, FFScale);
+        }
+    } /* end foreach plot */
+}
+
+// ****************************************************************************
+//  Method: RenderSetup
+//
+//  Purpose: Everything we need to do for a render before actually rendering
+//           anything; making sure networks are up to date, etc.
+//
+//  Arguments:
+//    plotIds    plots to render
+//    getZBuffer whether or not to render the Z buffer
+//    annotMode  annotation mode
+//    windowID   window identifier for window we'll render in
+//    leftEye    in stereo mode, if this is the left eye
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 9, 2008
+//
+// ****************************************************************************
+
+void
+NetworkManager::RenderSetup(intVector plotIds, bool getZBuffer,
+                            int annotMode, int windowID, bool leftEye)
+{
+    this->r_mgmt.origWorkingNet = workingNet;
+
+    this->r_mgmt.annotMode = annotMode;
+    this->r_mgmt.getZBuffer = getZBuffer;
+
+    if(viswinMap.find(windowID) == viswinMap.end())
+    {
+        char invalid[256];
+        SNPRINTF(invalid, sizeof(invalid),
+                 "Attempt to render on invalid window id=%d", windowID);
+        EXCEPTION1(ImproperUseException, invalid);
+    }
+
+    EngineVisWinInfo &viswinInfo = viswinMap.find(windowID)->second;
+    viswinInfo.markedForDeletion = false;
+    std::string &changedCtName = viswinInfo.changedCtName;
+    WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
+    std::vector<int>& plotsCurrentlyInWindow =
+        viswinMap.find(windowID)->second.plotsCurrentlyInWindow;
+    std::vector<avtPlot_p>& imageBasedPlots =
+        viswinMap.find(windowID)->second.imageBasedPlots;
+    VisWindow *viswin = viswinInfo.viswin;
+
+    TRY
+    {
+        this->r_mgmt.timer = visitTimer->StartTimer();
+        this->r_mgmt.needToSetUpWindowContents = false;
+        this->r_mgmt.cellCounts = new int[2 * plotIds.size()];
+        this->r_mgmt.handledAnnotations = false;
+        this->r_mgmt.handledCues = false;
+        this->r_mgmt.stereoType = -1;
+        bool forceViewerExecute = false;
+
+        ViewCurveAttributes vca = windowAttributes.GetViewCurve();
+        View2DAttributes v2a = windowAttributes.GetView2D();
+        ScaleMode ds = (ScaleMode)vca.GetDomainScale();
+        ScaleMode rs = (ScaleMode)vca.GetRangeScale();
+        ScaleMode xs = (ScaleMode)v2a.GetXScale();
+        ScaleMode ys = (ScaleMode)v2a.GetYScale();
+
+        // Explicitly specify left / right eye, for stereo rendering.
+        if(viswin->GetStereo())
+        {
+            this->r_mgmt.stereoType = viswin->GetStereoType();
+            viswin->SetStereoRendering(true, leftEye ? 4 :5);
+        }
+
+        // put all plots objects into the VisWindow
+        viswin->SetScalableRendering(false);
+
+        //
+        // Determine if the plots currently in the window are the same as those
+        // we were asked to render.
+        //
+        if(plotIds.size() != plotsCurrentlyInWindow.size())
+        {
+            this->r_mgmt.needToSetUpWindowContents = true;
+        }
+        else
+        {
+            forceViewerExecute = this->ViewerExecute(viswin, plotIds,
+                                                     windowAttributes);
+            this->r_mgmt.needToSetUpWindowContents =
+                this->PlotsNeedUpdating(plotIds, plotsCurrentlyInWindow) ||
+                forceViewerExecute;
+        }
+
+        if(this->r_mgmt.needToSetUpWindowContents)
+        {
+            this->SetUpWindowContents(windowID, plotIds, forceViewerExecute);
+        }
+
+        // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
+        // the misfortune of oscillating switching of modes around the threshold)
+        int scalableThreshold = GetScalableThreshold(windowID);
+        if (GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
+        {
+            // We need to give a null result back to the component which
+            // requested the render, but we can't do that here because our
+            // caller is controlling the render process.  We'll just bail out
+            // early, and require our caller to duplicate our check.
+            return;
+        }
+        else
+        {
+        // TODO/FIXME: since we changed the if to bail out early, we no longer
+        // need the else can unindent this whole block ...
+            if (this->r_mgmt.needToSetUpWindowContents)
+            {
+                // determine any networks with no data 
+                vector<int> networksWithNoData;
+                for (size_t i = 0; i < plotIds.size(); i++)
+                {
+                    if (this->r_mgmt.cellCounts[i] == 0)
+                        networksWithNoData.push_back(i);
+                }
+                // issue warning messages for plots with no data
+                if (networksWithNoData.size() > 0)
+                {
+                    string msg = "The plot(s) with id(s) = ";
+                    for (size_t i = 0; i < networksWithNoData.size(); i++)
+                    {
+                        char tmpStr[32];
+                        SNPRINTF(tmpStr, sizeof(tmpStr), "%d", networksWithNoData[i]);
+                        msg += tmpStr;
+                        if (i < networksWithNoData.size() - 1)
+                            msg += ", ";
+                    }
+                    msg += " yielded no data";
+#ifdef PARALLEL
+                    if (PAR_Rank() == 0)
+#endif
+                    {
+                        avtCallback::IssueWarning(msg.c_str());
+                    }
+                }
+            }
+
+            //
+            // Update plot's bg/fg colors. Ignored by avtPlot objects if colors
+            // are unchanged
+            //
+            {
+                double bg[4] = {1.,0.,0.,0.};
+                double fg[4] = {0.,0.,1.,0.};
+                AnnotationAttributes &annotationAttributes =
+                    viswinInfo.annotationAttributes;
+
+                annotationAttributes.GetForegroundColor().GetRgba(fg);
+                annotationAttributes.GetDiscernibleBackgroundColor().GetRgba(bg);
+                for (int i = 0; i < plotIds.size(); i++)
+                {
+                    workingNet = NULL;
+                    UseNetwork(plotIds[i]);
+                    workingNet->GetPlot()->SetBackgroundColor(bg);
+                    workingNet->GetPlot()->SetForegroundColor(fg);
+                    if (changedCtName != "")
+                        workingNet->GetPlot()->SetColorTable(changedCtName.c_str());
+                    workingNet = NULL;
+                }
+            }
+
+            //
+            // Add annotations if necessary 
+            //
+            if (!this->r_mgmt.handledAnnotations)
+            {
+                SetAnnotationAttributes(viswinInfo.annotationAttributes,
+                                        viswinInfo.annotationObjectList,
+                                        viswinInfo.visualCueList,
+                                        viswinInfo.frameAndState,
+                                        windowID, this->r_mgmt.annotMode);
+                this->r_mgmt.handledAnnotations = true;
+            }
+            if (!this->r_mgmt.handledCues)
+            {
+                UpdateVisualCues(windowID);
+                this->r_mgmt.handledCues = true;
+            }
+
+            debug5 << "Rendering " << viswin->GetNumPrimitives() 
+                   << " primitives.  Balanced speedup = " 
+                   << RenderBalance(viswin->GetNumPrimitives()) << "x" << endl;
+        }
+    }
+    CATCHALL(...)
+    {
+        RETHROW;
+    }
+    ENDTRY
+}
+
+// ****************************************************************************
+//  Method: RenderCleanup
+//
+//  Purpose: Events which occur after a rendering.
+//
+//  Arguments:
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 10, 2008
+//
+// ****************************************************************************
+
+void
+NetworkManager::RenderCleanup(int windowID)
+{
+    assert(viswinMap.find(windowID) != viswinMap.end());
+
+    EngineVisWinInfo &viswinInfo = viswinMap[windowID];
+    VisWindow *viswin = viswinInfo.viswin;
+
+    // return viswindow to its true stereo mode
+    if(this->r_mgmt.stereoType != -1)
+    {
+        viswin->SetStereoRendering(true, this->r_mgmt.stereoType);
+    }
+    visitTimer->StopTimer(this->r_mgmt.timer,
+                          "Total time for NetworkManager::Render");
 }
