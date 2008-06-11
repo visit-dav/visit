@@ -152,6 +152,9 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Hank Childs, Fri Feb 15 15:52:46 PST 2008
 //    Throw an exception in an error condition.
 //
+//    Mark C. Miller, Wed Jun 11 12:09:30 PDT 2008
+//    Replaced Exception with continue
+//
 // ****************************************************************************
 
 void avtCurveConstructorFilter::Execute()
