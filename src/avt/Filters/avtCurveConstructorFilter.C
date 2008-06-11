@@ -291,7 +291,7 @@ void avtCurveConstructorFilter::Execute()
         }
         else
         {
-            EXCEPTION0(ImproperUseException);
+            continue;
         }
         npts = data->GetNumberOfTuples();
         x = data->GetComponent(0, 0);
