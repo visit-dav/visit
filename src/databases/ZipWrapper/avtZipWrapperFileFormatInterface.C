@@ -288,6 +288,9 @@ avtZipWrapperFileFormatInterface::CleanUpAtExit()
 //    Added read options. Replaced most getenv calls with read options.
 //    Added broadcasting of env. results when necessary. Re-organized the
 //    routine a bit too.
+//
+//    Mark C. Miller, Wed Jun 11 12:02:52 PDT 2008
+//    Removed 'should broadcast env' logic -- it was bogus anyways.
 // ****************************************************************************
 void
 avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
@@ -314,15 +317,12 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
             debug1 << "Ignoring unknown option \"" << rdopts->GetName(i) << "\"" << endl;
     }
 
-    bool shouldBroadcastEnv = false;
-
     // Decide on root temporary directory
     if (tmpDir == "$TMPDIR" && procNum == 0)
     {
         if (getenv("TMPDIR"))
         {
             tmpDir = getenv("TMPDIR");
-            shouldBroadcastEnv = true;
         }
         else
         {
@@ -336,12 +336,10 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
         if (getenv("USER"))
         {
             userName = getenv("USER");
-            shouldBroadcastEnv = true;
         }
         else if (getenv("USERNAME"))
         {
             userName = getenv("USERNAME");
-            shouldBroadcastEnv = true;
         }
         else
         {
@@ -355,11 +353,8 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     // do a good job of ensuring that all procs get same env.
     //
 #ifdef PARALLEL
-    if (shouldBroadcastEnv)
-    {
-        BroadcastString(tmpDir, procNum);
-        BroadcastString(userName, procNum);
-    }
+    BroadcastString(tmpDir, procNum);
+    BroadcastString(userName, procNum);
 #endif
 
     // Set maximum file count
