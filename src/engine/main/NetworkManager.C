@@ -2031,16 +2031,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         StackTimer t_total("Total time for NetworkManager::Render");
 
         avtDataObjectWriter_p writer;
-#if 0
-        bool needToSetUpWindowContents = false;
-        bool forceViewerExecute = false;
-        int *cellCounts = new int[2 * plotIds.size()];
-        bool handledAnnotations = false;
-        bool handledCues = false;
-        int stereoType = -1;
-#endif
         // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
-        // the misfortune of oscillating switching of modes around the threshold)
+        // the misfortune of oscillating switching of modes around the
+        // threshold)
         int scalableThreshold = GetScalableThreshold(windowID);
         if (GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
         {
@@ -2099,11 +2092,10 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 
             // render the image and capture it. Relies upon explicit render
             int t3 = visitTimer->StartTimer();
-            bool viewportedMode = (annotMode != 1) || 
-                                  (viswin->GetWindowMode() == WINMODE_2D) ||
-                                  (viswin->GetWindowMode() == WINMODE_CURVE) ||
-                                  (viswin->GetWindowMode() == WINMODE_AXISARRAY);
-
+            bool viewportedMode =(annotMode != 1) || 
+                                 (viswin->GetWindowMode() == WINMODE_2D) ||
+                                 (viswin->GetWindowMode() == WINMODE_CURVE) ||
+                                 (viswin->GetWindowMode() == WINMODE_AXISARRAY);
 
             // ************************************************************
             // FIRST PASS - Opaque only
@@ -2136,7 +2128,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             }
             else
             {
-                // we have to use z-buffer in 2D windows with gradient background
+                // we have to use z-buffer in 2D windows with gradient
+                // background
                 if (viswin->GetBackgroundMode() == 0)
                     imageCompositer = new avtWholeImageCompositerNoZ();
                 else
@@ -2170,7 +2163,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             // Do the parallel composite using a 1 stage pipeline
             //
             imageCompositer->Execute();
-            avtDataObject_p compositedImageAsDataObject = imageCompositer->GetOutput();
+            avtDataObject_p compositedImageAsDataObject =
+                imageCompositer->GetOutput();
 
             // Dump the composited image when debugging.  Note that we only
             // want all processors to dump it if we have done an Allreduce
@@ -2298,7 +2292,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                     wic->Execute();
                     avtImage_p lightImage = wic->GetTypedOutput();
                     viswin->SetView3D(cur_view);
-    
 
 #ifdef PARALLEL
                     if (PAR_Rank() == 0)
@@ -2324,7 +2317,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             //
             if (doDepthCueing)
             {
-                CallProgressCallback("NetworkManager", "Applying depth cueing",0,1);
+                CallProgressCallback("NetworkManager", "Applying depth cueing",
+                                     0,1);
                 avtView3D cur_view = viswin->GetView3D();
 
                 //
@@ -2351,7 +2345,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                     avtSoftwareShader::AddDepthCueing(compositedImage,cur_view,
                                                       start, end, color);
                 }
-                CallProgressCallback("NetworkManager", "Applying depth cueing",1,1);
+                CallProgressCallback("NetworkManager", "Applying depth cueing",
+                                     1,1);
             }
 
             //
