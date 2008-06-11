@@ -21,3 +21,4 @@ newPlotsInheritSILRestriction = 1
 userDirForSessionFiles = 0
 saveCrashRecoveryFile = 1
 applySelection = 1
+ignoreExtentsFromDbs = 0
