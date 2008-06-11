@@ -460,6 +460,8 @@ avtDatabase::ComputeDomainSpatialBounds(double globalWidth, int domCount, int do
 //    Jeremy Meredith/Hank Childs, Tue Mar 23 12:26:55 PST 2004
 //    Initialize file format type.
 //
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added support for ignoring bad extents from dbs.
 // ****************************************************************************
 
 avtDatabase::avtDatabase()
@@ -468,6 +470,7 @@ avtDatabase::avtDatabase()
     invariantMetaData = NULL;
     invariantSIL      = NULL;
     fileFormat        = "<unknown>";
+    ignoreExtents     = false;
 }
 
 

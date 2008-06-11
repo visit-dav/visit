@@ -40,7 +40,7 @@
 #include <DataNode.h>
 
 // Type map format string
-const char *GlobalAttributes::TypeMapFormatString = "s*i*ibbbbbibbbbbbbbbbbbbb";
+const char *GlobalAttributes::TypeMapFormatString = "s*i*ibbbbbibbbbbbbbbbbbbbb";
 
 // ****************************************************************************
 // Method: GlobalAttributes::GlobalAttributes
@@ -81,6 +81,7 @@ GlobalAttributes::GlobalAttributes() :
     userDirForSessionFiles = false;
     saveCrashRecoveryFile = true;
     applySelection = true;
+    ignoreExtentsFromDbs = false;
 }
 
 // ****************************************************************************
@@ -124,6 +125,7 @@ GlobalAttributes::GlobalAttributes(const GlobalAttributes &obj) :
     userDirForSessionFiles = obj.userDirForSessionFiles;
     saveCrashRecoveryFile = obj.saveCrashRecoveryFile;
     applySelection = obj.applySelection;
+    ignoreExtentsFromDbs = obj.ignoreExtentsFromDbs;
 
     SelectAll();
 }
@@ -190,6 +192,7 @@ GlobalAttributes::operator = (const GlobalAttributes &obj)
     userDirForSessionFiles = obj.userDirForSessionFiles;
     saveCrashRecoveryFile = obj.saveCrashRecoveryFile;
     applySelection = obj.applySelection;
+    ignoreExtentsFromDbs = obj.ignoreExtentsFromDbs;
 
     SelectAll();
     return *this;
@@ -236,7 +239,8 @@ GlobalAttributes::operator == (const GlobalAttributes &obj) const
             (newPlotsInheritSILRestriction == obj.newPlotsInheritSILRestriction) &&
             (userDirForSessionFiles == obj.userDirForSessionFiles) &&
             (saveCrashRecoveryFile == obj.saveCrashRecoveryFile) &&
-            (applySelection == obj.applySelection));
+            (applySelection == obj.applySelection) &&
+            (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs));
 }
 
 // ****************************************************************************
@@ -403,6 +407,7 @@ GlobalAttributes::SelectAll()
     Select(ID_userDirForSessionFiles,           (void *)&userDirForSessionFiles);
     Select(ID_saveCrashRecoveryFile,            (void *)&saveCrashRecoveryFile);
     Select(ID_applySelection,                   (void *)&applySelection);
+    Select(ID_ignoreExtentsFromDbs,             (void *)&ignoreExtentsFromDbs);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -905,6 +910,13 @@ GlobalAttributes::SetApplySelection(bool applySelection_)
     Select(ID_applySelection, (void *)&applySelection);
 }
 
+void
+GlobalAttributes::SetIgnoreExtentsFromDbs(bool ignoreExtentsFromDbs_)
+{
+    ignoreExtentsFromDbs = ignoreExtentsFromDbs_;
+    Select(ID_ignoreExtentsFromDbs, (void *)&ignoreExtentsFromDbs);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1059,6 +1071,12 @@ GlobalAttributes::GetApplySelection() const
     return applySelection;
 }
 
+bool
+GlobalAttributes::GetIgnoreExtentsFromDbs() const
+{
+    return ignoreExtentsFromDbs;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1122,6 +1140,7 @@ GlobalAttributes::GetFieldName(int index) const
     case ID_userDirForSessionFiles:           return "userDirForSessionFiles";
     case ID_saveCrashRecoveryFile:            return "saveCrashRecoveryFile";
     case ID_applySelection:                   return "applySelection";
+    case ID_ignoreExtentsFromDbs:             return "ignoreExtentsFromDbs";
     default:  return "invalid index";
     }
 }
@@ -1169,6 +1188,7 @@ GlobalAttributes::GetFieldType(int index) const
     case ID_userDirForSessionFiles:           return FieldType_bool;
     case ID_saveCrashRecoveryFile:            return FieldType_bool;
     case ID_applySelection:                   return FieldType_bool;
+    case ID_ignoreExtentsFromDbs:             return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1216,6 +1236,7 @@ GlobalAttributes::GetFieldTypeName(int index) const
     case ID_userDirForSessionFiles:           return "bool";
     case ID_saveCrashRecoveryFile:            return "bool";
     case ID_applySelection:                   return "bool";
+    case ID_ignoreExtentsFromDbs:             return "bool";
     default:  return "invalid index";
     }
 }
@@ -1355,6 +1376,11 @@ GlobalAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_applySelection:
         {  // new scope
         retval = (applySelection == obj.applySelection);
+        }
+        break;
+    case ID_ignoreExtentsFromDbs:
+        {  // new scope
+        retval = (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs);
         }
         break;
     default: retval = false;

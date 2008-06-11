@@ -2952,6 +2952,8 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //    Added support for passing variable name to a post ghost mixed variable 
 //    request. 
 //
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added support for ignoring bad extents from dbs.
 // ****************************************************************************
 
 void
@@ -2959,6 +2961,16 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
                                      VoidRefList &rv, const char *type, 
                                      void *args)
 {
+    //
+    // Don't do extents queries if we've been told to ignore 'em.
+    //
+    if (ignoreExtents)
+    {
+        if ((strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0) ||
+            (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0))
+            return;
+    }
+
     //
     // Get the fields out of the database specification.  Use the SIL
     // specification since it captures the concept of a SIL restriction as well

@@ -457,12 +457,14 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //    Hank Childs, Fri Feb  1 15:45:28 PST 2008
 //    Added argument for loading database plugins.
 //
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added support for ignoring bad extents from dbs.
 // ****************************************************************************
 
 NetnodeDB *
 NetworkManager::GetDBFromCache(const string &filename, int time,
     const char *format, bool treatAllDBsAsTimeVarying, 
-    bool fileMayHaveUnloadedPlugin)
+    bool fileMayHaveUnloadedPlugin, bool ignoreExtents)
 {
     // If we don't have a load balancer, we're dead.
     if (loadBalancer == NULL)
@@ -495,13 +497,13 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
         // even if we found the DB in the cache,
         // we need to update the metadata if its time-varying
         if (treatAllDBsAsTimeVarying ||
-	    !cachedDB->GetDB()->MetaDataIsInvariant() ||
+            !cachedDB->GetDB()->MetaDataIsInvariant() ||
             !cachedDB->GetDB()->SILIsInvariant())
         {
             cachedDB->GetDB()->GetMetaData(time,
-	                                   forceReadAllCyclesAndTimes,
-					   forceReadThisCycleAndTime,
-	                                   treatAllDBsAsTimeVarying);
+                                           forceReadAllCyclesAndTimes,
+                                           forceReadThisCycleAndTime,
+                                           treatAllDBsAsTimeVarying);
             cachedDB->GetDB()->GetSIL(time, treatAllDBsAsTimeVarying);
         }
 
@@ -525,11 +527,12 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
             db = avtDatabaseFactory::FileList(&filename_c, 1, time, plugins, 
                                               format);
         db->SetFullDBName(filename);
+        db->SetIgnoreExtents(ignoreExtents);
 
         // If we want to open the file at a later timestep, get the
         // SIL so that it contains the right data.
         if ((time > 0) ||
-	    treatAllDBsAsTimeVarying ||
+            treatAllDBsAsTimeVarying ||
             (!db->MetaDataIsInvariant()) ||
             (!db->SILIsInvariant()))
         {
@@ -538,9 +541,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
                    << " so we're reading the SIL early."
                    << endl;
             db->GetMetaData(time,
-	                    forceReadAllCyclesAndTimes,
-			    forceReadThisCycleAndTime,
-			    treatAllDBsAsTimeVarying);
+                            forceReadAllCyclesAndTimes,
+                            forceReadThisCycleAndTime,
+                            treatAllDBsAsTimeVarying);
             db->GetSIL(time, treatAllDBsAsTimeVarying);
         }
 
@@ -713,6 +716,8 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //    Hank Childs, Fri Feb  1 15:48:01 PST 2008
 //    Add new Boolean argument to GetDBFromCache. 
 //
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added support for ignoring bad extents from dbs.
 // ****************************************************************************
 
 void
@@ -723,7 +728,8 @@ NetworkManager::StartNetwork(const string &format,
                              const CompactSILRestrictionAttributes &atts,
                              const MaterialAttributes &matopts,
                              const MeshManagementAttributes &meshopts,
-			     bool treatAllDBsAsTimeVarying)
+                             bool treatAllDBsAsTimeVarying,
+                             bool ignoreExtents)
 {
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
@@ -739,7 +745,8 @@ NetworkManager::StartNetwork(const string &format,
     bool fileMayHaveUnloadedPlugin = false;
     NetnodeDB *netDB = GetDBFromCache(filename, time, defaultFormat,
                                       treatAllDBsAsTimeVarying, 
-                                      fileMayHaveUnloadedPlugin);
+                                      fileMayHaveUnloadedPlugin,
+                                      ignoreExtents);
     workingNet->SetNetDB(netDB);
     netDB->SetDBInfo(filename, leaf, time);
 
@@ -762,7 +769,7 @@ NetworkManager::StartNetwork(const string &format,
     // Set up the data spec.
     avtSILRestriction_p silr =
         new avtSILRestriction(workingNet->GetNetDB()->GetDB()->
-	    GetSIL(time, treatAllDBsAsTimeVarying), atts);
+            GetSIL(time, treatAllDBsAsTimeVarying), atts);
     avtDataRequest *dataRequest = new avtDataRequest(var.c_str(), time, silr);
 
     // Set up some options from the data specification
@@ -1118,23 +1125,23 @@ NetworkManager::MakePlot(const string &plotName, const string &pluginID,
     // Check, whether plot wants to place a filter at the beginning of
     // the pipeline
     if (avtFilter *f = p->GetFilterForTopOfPipeline()) {
-	debug5 << "NetworkManager::MakePlot(): Inserting filter on top of pipeline." << std::endl;
-	NetnodeFilter *filt = new NetnodeFilter(f, "InsertedPlotFilter");
-	//f->GetOutput()->SetTransientStatus(true);
+        debug5 << "NetworkManager::MakePlot(): Inserting filter on top of pipeline." << std::endl;
+        NetnodeFilter *filt = new NetnodeFilter(f, "InsertedPlotFilter");
+        //f->GetOutput()->SetTransientStatus(true);
 
-	if (workingNet->GetNodeList().size() > 1)
-	    workingNet->AddFilterNodeAfterExpressionEvaluator(filt);
-	else
-	{
-	    std::vector<Netnode*> &filtInputs = filt->GetInputNodes();
-	    Netnode *n = workingNetnodeList.back();
-	    workingNetnodeList.pop_back();
-	    filtInputs.push_back(n);
-	    // Push the filter onto the working list.
-	    workingNetnodeList.push_back(filt);
-	    workingNet->AddNode(filt);
-	}
-	debug5 << "NetworkManager::MakePlot(): Added filter after expression evaluator." << std::endl;
+        if (workingNet->GetNodeList().size() > 1)
+            workingNet->AddFilterNodeAfterExpressionEvaluator(filt);
+        else
+        {
+            std::vector<Netnode*> &filtInputs = filt->GetInputNodes();
+            Netnode *n = workingNetnodeList.back();
+            workingNetnodeList.pop_back();
+            filtInputs.push_back(n);
+            // Push the filter onto the working list.
+            workingNetnodeList.push_back(filt);
+            workingNet->AddNode(filt);
+        }
+        debug5 << "NetworkManager::MakePlot(): Added filter after expression evaluator." << std::endl;
     }
 
     p->SetDataExtents(dataExtents);
@@ -4509,8 +4516,10 @@ GetDatabase(void *nm, const std::string &filename, int time,const char *format)
     // This database is being requested by an AVT filter (likely a CMFE 
     // expression), so we have no idea if the right plugin has been loaded.
     bool fileMayHaveUnloadedPlugin = true;
+    bool ignoreExtents = false;
     NetnodeDB *db = nm2->GetDBFromCache(filename, time, format,
-                          treatAllDBsAsTimeVarying, fileMayHaveUnloadedPlugin);
+                          treatAllDBsAsTimeVarying, fileMayHaveUnloadedPlugin,
+                          ignoreExtents);
     return db->GetDB();
 }
 

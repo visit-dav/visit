@@ -189,6 +189,9 @@ static const int maxCoincidentNodelists = 12;
 //    Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
 //    Added read options, re-organized the routine a bit. Fixed some
 //    seriously bogus code I had added for controlling force single behavior.
+//
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added logic to ignore spatial/data extents.
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -201,6 +204,8 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     dontForceSingle = 0;
     numNodeLists = 0;
     tocIndex = 0; 
+    ignoreSpatialExtents = false;
+    ignoreDataExtents = false;
     readGlobalInfo = false;
     connectivityIsTimeVarying = false;
     groupInfo.haveGroups = false;
@@ -219,6 +224,10 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     {
         if (rdatts->GetName(i) == "Force Single")
             dontForceSingle = rdatts->GetBool("Force Single") ? 0 : 1;
+        else if (rdatts->GetName(i) == "Ignore Spatial Extents")
+            ignoreSpatialExtents = rdatts->GetBool("Ignore Spatial Extents");
+        else if (rdatts->GetName(i) == "Ignore Data Extents")
+            ignoreDataExtents = rdatts->GetBool("Ignore Data Extents");
         else
             debug1 << "Ignoring unknown option \"" << rdatts->GetName(i) << "\"" << endl;
     }
@@ -1129,6 +1138,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Wed Apr 23 12:08:56 PDT 2008
 //    Made material name parsing handle material names that point to NULL.
+//
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added logic to ignore data extents for block structured code
 // ****************************************************************************
 
 void
@@ -1290,6 +1302,10 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     if (strcmp(dirname, topDir.c_str()) == 0)
     {
         codeNameGuess = GuessCodeNameFromTopLevelVars(dbfile);
+
+        // summarily ignore extents for block structured code
+        if (codeNameGuess == "BlockStructured")
+            ignoreDataExtents = true;
 
         if (DBInqVarExists(dbfile, "ConnectivityIsTimeVarying"))
         {
@@ -3019,6 +3035,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 //    Mark C. Miller, Tue Apr 15 10:24:59 PDT 2008
 //    Added missing call to broadcast the code name guess
 //
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added logic to pass along ignore extents bools.
 // ****************************************************************************
 void
 avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
@@ -3109,6 +3127,13 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
     BroadcastInt(groupInfo.ndomains);
     BroadcastInt(groupInfo.numgroups);
     BroadcastIntVector(groupInfo.ids,  rank);
+
+    int ignore_extents = ignoreSpatialExtents;
+    BroadcastInt(ignore_extents);
+    ignoreSpatialExtents = ignore_extents;
+    ignore_extents = ignoreDataExtents;
+    BroadcastInt(ignore_extents);
+    ignoreDataExtents = ignore_extents;
 #endif
 }
 
@@ -7785,6 +7810,9 @@ avtSiloFileFormat::GetComponent(DBfile *dbfile, char *var, char *compname)
 //
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Removed disablement of spatial and data extents (for Ale3d)
+//
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added logic to ignore extents
 // ****************************************************************************
 
 void *
@@ -7823,11 +7851,21 @@ avtSiloFileFormat::GetAuxiliaryData(const char *var, int domain,
     }
     else if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
     {
+        if (ignoreSpatialExtents)
+        {
+            debug1 << "Read options ignore request for spatial extents" << endl;
+            return 0;
+        }
         rv = (void *) GetSpatialExtents(var);
         df = avtIntervalTree::Destruct;
     }
     else if (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0)
     {
+        if (ignoreDataExtents)
+        {
+            debug1 << "Read options ignore request for data extents" << endl;
+            return 0;
+        }
         rv = (void *) GetDataExtents(var);
         df = avtIntervalTree::Destruct;
     }

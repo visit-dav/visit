@@ -67,6 +67,9 @@
     <Field name="applySelection" label="applySelection" type="bool">
       true
     </Field>
+    <Field name="ignoreExtentsFromDbs" label="ignoreExtentsFromDbs" type="bool">
+      false
+    </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="SetFromNode" user="false" member="true">

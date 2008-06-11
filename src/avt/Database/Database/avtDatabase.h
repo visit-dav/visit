@@ -285,6 +285,8 @@ typedef struct {
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added support for ignoring bad extents from dbs.
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -352,6 +354,11 @@ class DATABASE_API avtDatabase
 
     void                        ClearMetaDataAndSILCache();
 
+    void                        SetIgnoreExtents(bool set)
+                                    { ignoreExtents = set; };
+    bool                        GetIgnoreExtents() const
+                                    { return ignoreExtents; };
+
     // methods useful for decomposing rectlinear data on the fly during read
     static double               RectilinearDecompCost(int i, int j, int k,
                                     int nx, int ny, int nz);
@@ -384,6 +391,8 @@ class DATABASE_API avtDatabase
 
     bool                                  *invariantMetaData;
     bool                                  *invariantSIL;
+
+    bool                                   ignoreExtents;
 
     void                        GetNewMetaData(int stateIndex,
                                     bool forceReadAllCyclesTimes = false);

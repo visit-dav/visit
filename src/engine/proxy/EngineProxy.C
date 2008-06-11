@@ -408,6 +408,9 @@ EngineProxy::SendKeepAlive()
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Mark C. Miller, Tue Jun 10 15:57:15 PDT 2008
+//    Added support for ignoring extents
 // ****************************************************************************
 
 void
@@ -417,7 +420,8 @@ EngineProxy::ReadDataObject(const string &format, const string &file,
                             const MaterialAttributes &matopts,
                             const ExpressionList &expressions,
                             const MeshManagementAttributes &meshopts,
-			    bool treatAllDBsAsTimeVarying)
+                            bool treatAllDBsAsTimeVarying,
+                            bool ignoreExtents)
 {
     // Make sure the engine knows about our current expression list.
     if (exprList != expressions)
@@ -428,7 +432,7 @@ EngineProxy::ReadDataObject(const string &format, const string &file,
 
     CompactSILRestrictionAttributes *atts = silr->MakeCompactAttributes();
     readRPC(format, file, var, time, *atts, matopts, meshopts,
-        treatAllDBsAsTimeVarying);
+        treatAllDBsAsTimeVarying, ignoreExtents);
     if (readRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(readRPC.GetExceptionType(),
@@ -821,15 +825,18 @@ EngineProxy::ClearCache(const std::string &filename)
 //    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007 
 //    Added createMeshQualityExpressions, createTimeDerivativeExpressions.
 //
+//    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
+//    Added support for ignoring bad extents from dbs.
 // ****************************************************************************
 
 void
 EngineProxy::OpenDatabase(const std::string &format, const std::string &file,
                           int time, bool createMeshQualityExpressions,
-                          bool createTimeDerivativeExpressions)
+                          bool createTimeDerivativeExpressions,
+                          bool ignoreExtents)
 {
     openDatabaseRPC(format, file, time, createMeshQualityExpressions,
-                    createTimeDerivativeExpressions);
+                    createTimeDerivativeExpressions, ignoreExtents);
 }
 
 // ****************************************************************************

@@ -60,11 +60,12 @@
 //
 // ****************************************************************************
 
-OpenDatabaseRPC::OpenDatabaseRPC() : NonBlockingRPC("ssibb"), databaseName("")
+OpenDatabaseRPC::OpenDatabaseRPC() : NonBlockingRPC("ssibbb"), databaseName("")
 {
     time = 0;
     createMeshQualityExpressions = true;
     createTimeDerivativeExpressions = true;
+    ignoreExtents = false;
 }
 
 // ****************************************************************************
@@ -107,13 +108,14 @@ OpenDatabaseRPC::~OpenDatabaseRPC()
 void
 OpenDatabaseRPC::operator()(const std::string &f,
                             const std::string &dbName, int timestep,
-                            bool cmqe, bool ctde)
+                            bool cmqe, bool ctde, bool ie)
 {
     fileFormat = f;
     databaseName = dbName;
     time = timestep;
     createMeshQualityExpressions = cmqe;
     createTimeDerivativeExpressions = ctde;
+    ignoreExtents = ie;
     
     SelectAll();
     Execute();
@@ -143,5 +145,6 @@ OpenDatabaseRPC::SelectAll()
     Select(2, (void*)&time);
     Select(3, (void*)&createMeshQualityExpressions);
     Select(4, (void*)&createTimeDerivativeExpressions);
+    Select(5, (void*)&ignoreExtents);
 }
 

@@ -301,6 +301,8 @@ class ExportDBAttributes;
 //    Added ability to notify engines of the file opening options for the
 //    database reader plugins.
 //
+//    Mark C. Miller, Tue Jun 10 15:57:15 PDT 2008
+//    Added support for ignoring extents during ReadDataObject/OpenDatabase
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -334,7 +336,7 @@ public:
     // RPCs to access functionality on the engine.
     void                     OpenDatabase(const std::string &, 
                                           const std::string &, int = 0,
-                                          bool=true, bool=true);
+                                          bool=true, bool=true, bool=false);
     void                     DefineVirtualDatabase(const std::string &,
                                                    const std::string &,
                                                    const std::string &,
@@ -348,7 +350,7 @@ public:
                                             const MaterialAttributes&,
                                             const ExpressionList &,
                                             const MeshManagementAttributes &,
-					    bool);
+                                            bool, bool);
     void                     ApplyOperator(const std::string&, 
                                            const AttributeSubject*);
     void                     ApplyNamedFunction(const std::string &name,
