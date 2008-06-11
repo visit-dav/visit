@@ -312,6 +312,13 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Cyrus Harrison, Tue Feb 19 08:42:51 PST 2008
 //    Removed dumpRenders (now controled by avtDebugDumpOptions)
 //
+//    Tom Fogal, Mon Jun  9 09:34:09 EDT 2008
+//    Added methods to start splitting up Render().  This works by adding some
+//    additional state to the object, via the render_state struct.
+//
+//    Tom Fogal, Tue Jun 10 15:50:19 EDT 2008
+//    More of the above; `RenderCleanup' today.
+//
 //    Mark C. Miller, Tue Jun 10 15:57:15 PDT 2008
 //    Added bool for ignoring extents to StartNetwork / GetDBFromCache
 //
@@ -319,7 +326,21 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 
 class NetworkManager
 {
-   typedef std::map<std::string, stringVector> StringVectorMap;
+    typedef std::map<std::string, stringVector> StringVectorMap;
+    struct render_state {
+        DataNetwork *origWorkingNet;   /* saves this->workingNet */
+        array_ref_ptr<int> cellCounts; /* # of cells, per network */
+        int stereoType;                /* for push/popping stereo rendering */
+        int annotMode;
+        int timer;                     /* handle for overall render time */
+        bool getZBuffer;               /* should we readback Z too? */
+        bool handledAnnotations;       /* annotations already done? */
+        bool handledCues;
+        bool haveImagePlots;           /* image based plots? (2d rendering) */
+        bool needToSetUpWindowContents;
+        bool viewportedMode;
+    };
+
  public:
                   NetworkManager(void);
                  ~NetworkManager(void);
@@ -402,10 +423,24 @@ class NetworkManager
 
     static void   SetStereoEnabled();
 
+protected:
+
+    void          RenderSetup(intVector networkIds, bool getZBuffer,
+                              int annotMode, int windowID, bool leftEye);
+    void          RenderCleanup(int windowID);
+
  private:
 
-    void                        UpdateVisualCues(int winID);
-    void                        NewVisWindow(int winID);
+    void          UpdateVisualCues(int winID);
+    void          NewVisWindow(int winID);
+    bool          PlotsNeedUpdating(const intVector &plots,
+                                    const intVector &plotsInWindow) const;
+    bool          ViewerExecute(const VisWindow * const viswin,
+                                const intVector &plots,
+                                const WindowAttributes &windowAttributes);
+    void          SetUpWindowContents(int windowID, const intVector &plotIds,
+                                      bool forceViewerExecute);
+   
 
     std::vector<DataNetwork*>   networkCache;
     std::vector<int>            globalCellCounts;
@@ -438,6 +473,8 @@ class NetworkManager
     static void                 CallInitializeProgressCallback(int);
     static void                 CallProgressCallback(const char *, const char*,
                                                      int, int);
+
+    struct render_state r_mgmt;
 };
 
 #endif
