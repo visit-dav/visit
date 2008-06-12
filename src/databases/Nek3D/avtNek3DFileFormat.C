@@ -76,6 +76,8 @@
 #include <avtParallel.h>
 #endif
 
+#define USE_SIMPLE_BLOCK_NUMBERING 1
+
 using     std::string;
 #ifndef STREQUAL
 #if defined(_WIN32) 
@@ -210,6 +212,11 @@ using     std::string;
 //    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
 //    Added the bParFormat flag allowing the parallel format to be used
 //    by a serial code, in which there is only one output dir.
+//
+//    Dave Bremer, Thu Jun 12 12:59:23 PDT 2008
+//    Support varying numbers of blocks per file in the parallel format.
+//    Removed the code to read on one proc and broadcast the header, rather
+//    than having all procs read it, because it made no performance difference.
 // ****************************************************************************
 
 avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
@@ -247,83 +254,10 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
     iDim = 3;
     iPrecision = 4;
     aBlockLocs = NULL;
+    aBlocksPerFile = NULL;
 
-
-#ifndef PARALLEL
     ParseMetaDataFile(filename);
     ParseNekFileHeader();
-#else
-    int nProcs, iRank, err;
-    MPI_Comm_rank(VISIT_MPI_COMM, &iRank);
-    MPI_Comm_size(VISIT_MPI_COMM, &nProcs);
-
-    int iBufSize = 0;
-    char *mpiBuf = NULL;
-    int iLenInternalMembers = (char *)(&aCycles) - (char *)(&iFirstTimestep);
-    if (iRank == 0)
-    {
-        int t1 = visitTimer->StartTimer();
-        ParseMetaDataFile(filename);
-        visitTimer->StopTimer(t1, "avtNek3DFileFormat constructor, parse md file");
-
-        int t2 = visitTimer->StartTimer();
-        ParseNekFileHeader();
-        visitTimer->StopTimer(t2, "avtNek3DFileFormat constructor, parse header");
-
-        iBufSize += version.size() + sizeof(int);
-        iBufSize += fileTemplate.size() + sizeof(int);
-        iBufSize += iLenInternalMembers;
-    }
-    int t3 = visitTimer->StartTimer();
-    err = MPI_Bcast( &iBufSize, 1, MPI_INT, 0, VISIT_MPI_COMM );
-    if (err != MPI_SUCCESS)
-        EXCEPTION1(ImproperUseException, 
-            "Error in MPI_Bcast, in avtNek3DFileFormat constructor");
-
-    mpiBuf = new char[iBufSize];
-
-    if (iRank == 0)
-    {
-        char *currPos = mpiBuf;
-        int len0 = version.length();
-        int len1 = fileTemplate.length();
-
-        memcpy(currPos, &len0, sizeof(int));
-        memcpy(currPos+sizeof(int), version.data(), len0);
-        currPos += sizeof(int)+len0;
-
-        memcpy(currPos, &len1, sizeof(int));
-        memcpy(currPos+sizeof(int), fileTemplate.data(), len1);
-        currPos += sizeof(int)+len1;
-
-        memcpy(currPos, &iFirstTimestep, iLenInternalMembers);
-        currPos += iLenInternalMembers;
-    }
-
-    err = MPI_Bcast( mpiBuf, iBufSize, MPI_CHAR, 0, VISIT_MPI_COMM );
-    if (err != MPI_SUCCESS)
-        EXCEPTION1(ImproperUseException, 
-            "Error in MPI_Bcast, in avtNek3DFileFormat constructor");
-
-    if (iRank != 0)
-    {
-        int len0=0, len1=0;
-        char *currPos = mpiBuf;
-
-        memcpy(&len0, currPos, sizeof(int));
-        version.append(currPos+sizeof(int), len0);
-        currPos += sizeof(int)+len0;
-
-        memcpy(&len1, currPos, sizeof(int));
-        fileTemplate.append(currPos+sizeof(int), len1);
-        currPos += sizeof(int)+len1;
-
-        memcpy(&iFirstTimestep, currPos, iLenInternalMembers);
-        currPos += iLenInternalMembers;
-    }
-    delete[] mpiBuf;
-    visitTimer->StopTimer(t3, "avtNek3DFileFormat constructor, broadcast data");
-#endif
 
     visitTimer->StopTimer(t0, "avtNek3DFileFormat constructor");
 }
@@ -534,6 +468,10 @@ avtNek3DFileFormat::ParseMetaDataFile(const char *filename)
 //    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
 //    Added the bParFormat flag allowing the parallel format to be used
 //    by a serial code, in which there is only one output dir.
+//
+//    Dave Bremer, Thu Jun 12 12:59:23 PDT 2008
+//    Support varying numbers of blocks per file in the parallel format, and
+//    support a new format for the field tags.
 // ****************************************************************************
 
 void
@@ -603,13 +541,20 @@ avtNek3DFileFormat::ParseNekFileHeader()
     }
     else
     {
-        //Here's are two examples of what I'm parsing:
+        //Here's are some examples of what I'm parsing:
         //#std 4  6  6  6   120  240  0.1500E+01  300  1  2XUPT
         //#std 4  6  6  6   120  240  0.1500E+01  300  1  2 U T123
-        //This example means:  #std is for versioning, 4 bytes per sample, 6x6x6 blocks, 
-        //  120 of 240 blocks are in this file, time=1.5, cycle=300, 
-        //  this output dir=1, num output dirs=2, XUPT123 are tags that this file has a mesh, 
-        //  velocity, pressure, temperature, and 3 misc scalars.
+        //This example means:  #std is for versioning, 4 bytes per sample,  
+        //  6x6x6 blocks, 120 of 240 blocks are in this file, time=1.5, 
+        //  cycle=300, this output dir=1, num output dirs=2, XUPT123 are 
+        //  tags that this file has a mesh, velocity, pressure, temperature, 
+        //  and 3 misc scalars.
+        //
+        //A new revision of the binary header changes the way tags are
+        //represented.  Line 2 above would be represented as
+        //#std 4  6  6  6   120  240  0.1500E+01  300  1  2UTS03
+        //The spaces between tags are removed, and instead of representing
+        //scalars as 123, they use S03, allowing more than 9 total.
         f >> tag;
         if (tag != "#std")
         {
@@ -627,45 +572,52 @@ avtNek3DFileFormat::ParseNekFileHeader()
         //I already have.
         f.seekg(77, std::ios_base::beg);
 
-        if (f.get() == 'U')
+        
+        char tmpTags[32];
+        f.read(tmpTags, 32);
+        tmpTags[31] = '\0';
+        string fieldTags(tmpTags);
+
+        if (fieldTags.find("U") != std::string::npos)
             bHasVelocity = true;
-        if (f.get() == 'P')
+        if (fieldTags.find("P") != std::string::npos)
             bHasPressure = true;
-        if (f.get() == 'T')
+        if (fieldTags.find("T") != std::string::npos)
             bHasTemperature = true;
-        char c = f.get();
-        if (c == 'S')
+
+        //The first if branch looks for additional scalar fields 
+        //specified the 'binary6' way--e.g. 4 fields specified as S04.
+        //The other branch looks for them as a sequence like 1234.
+        int indexS;
+        indexS = fieldTags.find("S");
+        if (indexS != std::string::npos)
         {
-            iNumSFields = 10*(f.get()-'0') + (f.get()-'0');
+            iNumSFields = 10*((int)fieldTags[indexS+1]-'0')
+                            +((int)fieldTags[indexS+2]-'0');
         }
-        else if (c == '1')
+        else
         {
-            iNumSFields = 1;
-            while ((f.get()-'0') == (iNumSFields+1))
-                iNumSFields++;
+            indexS = fieldTags.find("1");
+            if (indexS != std::string::npos)
+            {
+                iNumSFields = 1;
+                while ((fieldTags[indexS+iNumSFields]-'0') == (iNumSFields+1))
+                    iNumSFields++;
+
+            }
         }
     }
     if (iBlockSize[2] == 1)
         iDim = 2;
     
-    if (bParFormat  &&  iNumBlocks%iNumOutputDirs != 0)
-    {
-        EXCEPTION1(InvalidDBTypeException, 
-            "Parallel Nek reader requires an equal number of blocks per file." );
-    }
-    iBlocksPerFile = iNumBlocks/iNumOutputDirs;
-
-    if (bBinary)
-    {
-        if (bParFormat)
-            iHeaderSize = 132+4+iBlocksPerFile*sizeof(int);
-        else
-            iHeaderSize = 84;
-    }
+    //iHeaderSize no longer includes the size of the block index metadata, for the 
+    //parallel format, since this now can vary per file.
+    if (bBinary && bParFormat)
+        iHeaderSize = 136;
+    else if (bBinary && !bParFormat)
+        iHeaderSize = 84;
     else
-    {
         iHeaderSize = 80;
-    }
 
     if (bBinary)
     {
@@ -724,8 +676,10 @@ avtNek3DFileFormat::ParseNekFileHeader()
 //    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
 //    Added the bParFormat flag allowing the parallel format to be used
 //    by a serial code, in which there is only one output dir.
+//
+//    Dave Bremer, Thu Jun 12 12:59:23 PDT 2008
+//    Support varying numbers of blocks per file in the parallel format.
 // ****************************************************************************
-
 void
 avtNek3DFileFormat::ReadBlockLocations()
 {
@@ -737,17 +691,9 @@ avtNek3DFileFormat::ReadBlockLocations()
         return;
 
     int ii, jj;
-#define USE_SIMPLE_BLOCK_NUMBERING 1
-#ifdef USE_SIMPLE_BLOCK_NUMBERING
-    //Temporary code that makes block reads as coherent as possible.
     aBlockLocs = new int[2*iNumBlocks];
-    for (ii = 0; ii < iNumBlocks; ii++)
-    {
-        aBlockLocs[ii*2]   = ii / iBlocksPerFile;
-        aBlockLocs[ii*2+1] = ii % iBlocksPerFile;
-    }
-    return;
-#else
+    aBlocksPerFile = new int[iNumOutputDirs];
+
     int t0 = visitTimer->StartTimer();
 
     int iRank = 0, nProcs = 1;
@@ -757,13 +703,17 @@ avtNek3DFileFormat::ReadBlockLocations()
 #endif
 
     ifstream f;
-    aBlockLocs = new int[2*iNumBlocks];
     for (ii = 0; ii < 2*iNumBlocks; ii++)
     {
         aBlockLocs[ii] = 0;
     }
+    for (ii = 0; ii < iNumOutputDirs; ii++)
+    {
+        aBlocksPerFile[ii] = 0;
+    }
     char *blockfilename = new char[ fileTemplate.size() + 64 ];
-    int *tmpBlocks = new int[iBlocksPerFile];
+    int *tmpBlocks = new int[iNumBlocks];
+
     for (ii = iRank; ii < iNumOutputDirs; ii+=nProcs)
     {
         int t0 = visitTimer->StartTimer();
@@ -776,13 +726,18 @@ avtNek3DFileFormat::ReadBlockLocations()
             SNPRINTF(msg, 1024, "Could not open file %s.", filename);
             EXCEPTION1(InvalidDBTypeException, msg);
         }
-        f.seekg( 136, std::ios_base::beg );
-        f.read( (char *)tmpBlocks, iBlocksPerFile*sizeof(int) );
-        f.close();
-        if (bSwapEndian)
-            ByteSwap32(tmpBlocks, iBlocksPerFile);
 
-        for (jj = 0; jj < iBlocksPerFile; jj++)
+        int tmp1, tmp2, tmp3, tmp4, currNumBlocks;
+        f.seekg( 5, std::ios_base::beg );  //seek past the #std
+        f >> tmp1 >> tmp2 >> tmp3 >> tmp4 >> aBlocksPerFile[ii];
+
+#ifndef USE_SIMPLE_BLOCK_NUMBERING
+        f.seekg( 136, std::ios_base::beg );
+        f.read( (char *)tmpBlocks, aBlocksPerFile[ii]*sizeof(int) );
+        if (bSwapEndian)
+            ByteSwap32(tmpBlocks, aBlocksPerFile[ii]);
+
+        for (jj = 0; jj < aBlocksPerFile[ii]; jj++)
         {
             int iBlockID = tmpBlocks[jj]-1;
 
@@ -797,9 +752,44 @@ avtNek3DFileFormat::ReadBlockLocations()
             aBlockLocs[iBlockID*2  ] = ii;
             aBlockLocs[iBlockID*2+1] = jj;
         }
+#endif
+        f.close();
     }
     delete[] blockfilename;
     delete[] tmpBlocks;
+
+#ifdef PARALLEL
+    int *aTmpBlocksPerFile = new int[iNumOutputDirs];
+
+    MPI_Allreduce(aBlocksPerFile, aTmpBlocksPerFile, iNumOutputDirs, 
+                  MPI_INT, MPI_BOR, VISIT_MPI_COMM);
+    delete[] aBlocksPerFile;
+    aBlocksPerFile = aTmpBlocksPerFile;
+#endif
+
+    //Do a sanity check
+    int sum = 0;
+    for (ii = 0; ii < iNumOutputDirs; ii++)
+        sum += aBlocksPerFile[ii];
+
+    if (sum != iNumBlocks)
+    {
+        EXCEPTION1(InvalidDBTypeException, 
+                   "Sum of blocks per file does not equal total number of blocks");
+    }
+
+#ifdef USE_SIMPLE_BLOCK_NUMBERING
+    //fill in aBlockLocs ...
+    int *p = aBlockLocs;
+    for (jj = 0; jj < iNumOutputDirs; jj++)
+    {
+        for (ii = 0; ii < aBlocksPerFile[jj]; ii++)
+        {
+            *p++ = jj;
+            *p++ = ii;
+        }
+    }
+#else
 #ifdef PARALLEL
     int *aTmpBlockLocs = new int[2*iNumBlocks];
 
@@ -808,13 +798,10 @@ avtNek3DFileFormat::ReadBlockLocations()
     delete[] aBlockLocs;
     aBlockLocs = aTmpBlockLocs;
 #endif
+#endif
 
     visitTimer->StopTimer(t0, "avtNek3DFileFormat  reading block locations");
-#endif
 }
-
-
-
 
 
 
@@ -824,6 +811,9 @@ avtNek3DFileFormat::ReadBlockLocations()
 //  Programmer: David Bremer
 //  Creation:   Wed Nov 14 11:35:30 PST 2007
 //
+//  Modifications:
+//    Dave Bremer, Thu Jun 12 12:59:23 PDT 2008
+//    Delete the array specifying the number of blocks per file.
 // ****************************************************************************
 
 avtNek3DFileFormat::~avtNek3DFileFormat()
@@ -833,6 +823,11 @@ avtNek3DFileFormat::~avtNek3DFileFormat()
     {
         delete[] aBlockLocs;
         aBlockLocs = NULL;
+    }
+    if (aBlocksPerFile)
+    {
+        delete[] aBlocksPerFile;
+        aBlocksPerFile = NULL;
     }
 }
 
@@ -1008,6 +1003,9 @@ avtNek3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*time
 //    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
 //    Added the bParFormat flag allowing the parallel format to be used
 //    by a serial code, in which there is only one output dir.
+//
+//    Dave Bremer, Thu Jun 12 12:59:23 PDT 2008
+//    Fix a bug reading files larger than 2Gb
 // ****************************************************************************
 
 vtkDataSet *
@@ -1058,6 +1056,8 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshna
     GetDomainSizeAndVarOffset(iTimestepsWithMesh[0], NULL, nFloatsInDomain, 
                               d1, d2, d3);
 
+    int64_t iRealHeaderSize = iHeaderSize + (bParFormat ? aBlocksPerFile[iCurrMeshProc]*sizeof(int) : 0);
+
     if (bBinary)
     {
         //In the parallel format, the whole mesh comes before all the vars.
@@ -1067,7 +1067,7 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshna
         if (iPrecision == 4)
         {
             float *tmppts = new float[nPts*iDim];
-            fseek(fdMesh, iHeaderSize + nFloatsInDomain*sizeof(float)*domain, SEEK_SET);
+            fseek(fdMesh, iRealHeaderSize + (int64_t)nFloatsInDomain*sizeof(float)*domain, SEEK_SET);
             fread(tmppts, sizeof(float), nPts*iDim, fdMesh);
             if (bSwapEndian)
                 ByteSwap32(tmppts, nPts*iDim);
@@ -1092,7 +1092,7 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshna
         else
         {
             double *tmppts = new double[nPts*iDim];
-            fseek(fdMesh, iHeaderSize + nFloatsInDomain*sizeof(double)*domain, SEEK_SET);
+            fseek(fdMesh, iRealHeaderSize + (int64_t)nFloatsInDomain*sizeof(double)*domain, SEEK_SET);
             fread(tmppts, sizeof(double), nPts*iDim, fdMesh);
             if (bSwapEndian)
                 ByteSwap64(tmppts, nPts*iDim);
@@ -1119,9 +1119,9 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshna
     {
         for (ii = 0 ; ii < nPts ; ii++)
         {
-            fseek(fdMesh, iAsciiMeshFileStart + 
-                          domain*iAsciiMeshFileLineLen*nPts + 
-                          ii*iAsciiMeshFileLineLen, SEEK_SET);
+            fseek(fdMesh, (int64_t)iAsciiMeshFileStart + 
+                          (int64_t)domain*iAsciiMeshFileLineLen*nPts + 
+                          (int64_t)ii*iAsciiMeshFileLineLen, SEEK_SET);
             if (iDim == 3)
             {
                 fscanf(fdMesh, " %f %f %f", pts, pts+1, pts+2);
@@ -1179,6 +1179,9 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshna
 //    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
 //    Added the bParFormat flag allowing the parallel format to be used
 //    by a serial code, in which there is only one output dir.
+//
+//    Dave Bremer, Thu Jun 12 12:59:23 PDT 2008
+//    Fix a bug reading files larger than 2Gb
 // ****************************************************************************
 
 vtkDataArray *
@@ -1225,25 +1228,28 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
     if (bParFormat)
         domain = aBlockLocs[domain*2 + 1];
 
+    int iRealHeaderSize = iHeaderSize + (bParFormat ? aBlocksPerFile[iCurrVarProc]*sizeof(int) : 0);
+
     if (bBinary)
     {
-        int filepos;
+        int64_t filepos;
         if (!bParFormat)
-            filepos = iHeaderSize + (nFloatsInDomain*domain + iBinaryOffset)*sizeof(float);
+            filepos = (int64_t)iRealHeaderSize + ((int64_t)nFloatsInDomain*domain + iBinaryOffset)*sizeof(float);
         else
         {
             // This assumes uvw for all fields comes after the mesh as [block0: 216u 216v 216w]...
             // then p or t as   [block0: 216p][block1: 216p][block2: 216p]...
             if (strcmp(varname+2, "velocity") == 0)
             {
-                filepos  = iHeaderSize;                                  //header
-                filepos += iHasMesh*iBlocksPerFile*nPts*iDim*iPrecision; //mesh
-                filepos += domain*nPts*iDim*iPrecision;                  //start of block
-                filepos += (varname[0] - 'x')*nPts*iPrecision;           //position within block
+                filepos  = (int64_t)iRealHeaderSize +                              //header
+                           (int64_t)iHasMesh*aBlocksPerFile[iCurrVarProc]*nPts*iDim*iPrecision + //mesh
+                           (int64_t)domain*nPts*iDim*iPrecision +                  //start of block
+                           (int64_t)(varname[0] - 'x')*nPts*iPrecision;            //position within block
             }
             else
-                filepos = iHeaderSize + iBlocksPerFile*iBinaryOffset*iPrecision + //the header, mesh, vel if present,
-                          domain*nPts*iPrecision;
+                filepos = (int64_t)iRealHeaderSize + 
+                          (int64_t)aBlocksPerFile[iCurrVarProc]*iBinaryOffset*iPrecision + //the header, mesh, vel if present,
+                          (int64_t)domain*nPts*iPrecision;
         }
         if (iPrecision==4)
         {
@@ -1271,10 +1277,10 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
     {
         for (ii = 0 ; ii < nPts ; ii++)
         {
-            fseek(fdVar, iAsciiCurrFileStart + 
-                         domain*iAsciiCurrFileLineLen*nPts + 
-                         ii*iAsciiCurrFileLineLen + 
-                         iAsciiOffset, SEEK_SET);
+            fseek(fdVar, (int64_t)iAsciiCurrFileStart + 
+                         (int64_t)domain*iAsciiCurrFileLineLen*nPts + 
+                         (int64_t)ii*iAsciiCurrFileLineLen + 
+                         (int64_t)iAsciiOffset, SEEK_SET);
             fscanf(fdVar, " %f", var);
             var++;
         }
@@ -1325,6 +1331,9 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
 //    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
 //    Added the bParFormat flag allowing the parallel format to be used
 //    by a serial code, in which there is only one output dir.
+//
+//    Dave Bremer, Thu Jun 12 12:59:23 PDT 2008
+//    Fix a bug reading files larger than 2Gb
 // ****************************************************************************
 
 vtkDataArray *
@@ -1370,17 +1379,18 @@ avtNek3DFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
     if (bParFormat)
         domain = aBlockLocs[domain*2 + 1];
 
+    int iRealHeaderSize = iHeaderSize + (bParFormat ? aBlocksPerFile[iCurrVarProc]*sizeof(int) : 0);
+
     if (bBinary)
     {
-        int filepos;
+        int64_t filepos;
         if (!bParFormat)
-            filepos = iHeaderSize + (nFloatsInDomain*domain + iBinaryOffset)*sizeof(float);
+            filepos = (int64_t)iRealHeaderSize + (int64_t)(nFloatsInDomain*domain + iBinaryOffset)*sizeof(float);
         else
-        {
             //This assumes [block 0: 216u 216v 216w][block 1: 216u 216v 216w]...[block n: 216u 216v 216w]
-            filepos = iHeaderSize + iBlocksPerFile*iBinaryOffset*iPrecision + //the header and mesh if one exists
-                      domain*nPts*iDim*iPrecision;
-        }
+            filepos = (int64_t)iRealHeaderSize + 
+                      (int64_t)aBlocksPerFile[iCurrVarProc]*iBinaryOffset*iPrecision + //the header and mesh if one exists
+                      (int64_t)domain*nPts*iDim*iPrecision;
         if (iPrecision == 4)
         {
             float *tmppts = new float[nPts*iDim];
@@ -1439,10 +1449,10 @@ avtNek3DFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
     {
         for (ii = 0 ; ii < nPts ; ii++)
         {
-            fseek(fdVar, iAsciiCurrFileStart + 
-                         domain*iAsciiCurrFileLineLen*nPts + 
-                         ii*iAsciiCurrFileLineLen + 
-                         iAsciiOffset, SEEK_SET);
+            fseek(fdVar, (int64_t)iAsciiCurrFileStart + 
+                         (int64_t)domain*iAsciiCurrFileLineLen*nPts + 
+                         (int64_t)ii*iAsciiCurrFileLineLen + 
+                         (int64_t)iAsciiOffset, SEEK_SET);
             if (iDim == 3)
             {
                 fscanf(fdVar, " %f %f %f", pts, pts+1, pts+2);
@@ -1846,6 +1856,11 @@ avtNek3DFileFormat::FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLine
 //    Added the bParFormat flag allowing the parallel format to be used
 //    by a serial code, in which there is only one output dir.
 //
+//    Dave Bremer, Thu Jun 12 12:59:23 PDT 2008
+//    Support varying numbers of blocks per file in the parallel format.
+//    Fixed a bug with block numbering.  When USE_SIMPLE_BLOCK_NUMBERING
+//    was on, the spatial bounds were matched to the wrong blocks.
+//
 // ****************************************************************************
 
 void *
@@ -1868,12 +1883,6 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/,
         int nFloatsPerDomain = 0, d1, d2, d3;
         GetDomainSizeAndVarOffset(iTimestepsWithMesh[0], NULL, 
                                   nFloatsPerDomain, d1, d2, d3 );
-
-        int iFileSizeWithoutMetaData = 136 + sizeof(int)*iBlocksPerFile + 
-                                       nFloatsPerDomain*sizeof(float)*iBlocksPerFile;
-
-        int iMDSize = (nFloatsPerDomain * 2 * sizeof(float) * iBlocksPerFile) / 
-                      (iBlockSize[0]*iBlockSize[1]*iBlockSize[2]);
     
         int iRank = 0, nProcs = 1;
 #ifdef PARALLEL
@@ -1887,8 +1896,6 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/,
         int errorReadingData = 0;
 
         char  *blockfilename = new char[ fileTemplate.size() + 64 ];
-        int   *tmpBlocks = new int[iBlocksPerFile];
-        float *tmpBounds = new float[iBlocksPerFile*6];
 
         float *bounds = new float[iNumBlocks*6];
         for (ii = 0; ii < iNumBlocks*6; ii++)
@@ -1897,6 +1904,13 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/,
 
         for (ii = iRank; ii < iNumOutputDirs; ii+=nProcs)
         {
+
+            int iFileSizeWithoutMetaData = 136 + sizeof(int)*aBlocksPerFile[ii] + 
+                                        nFloatsPerDomain*sizeof(float)*aBlocksPerFile[ii];
+    
+            int iMDSize = (nFloatsPerDomain * 2 * sizeof(float) * aBlocksPerFile[ii]) / 
+                        (iBlockSize[0]*iBlockSize[1]*iBlockSize[2]);
+
             GetFileName(iTimestepsWithMesh[0], ii, blockfilename, fileTemplate.size() + 64);
             f.open(blockfilename);
             if (!f.is_open())
@@ -1912,26 +1926,41 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/,
                 break;
             }
 
-            f.seekg( 136, std::ios_base::beg );
-            f.read( (char *)tmpBlocks, iBlocksPerFile*sizeof(int) );
-            if (bSwapEndian)
-                ByteSwap32(tmpBlocks, iBlocksPerFile);
-    
-            for (jj = 0; jj < iBlocksPerFile; jj++)
-                tmpBlocks[jj]--;
+#ifdef USE_SIMPLE_BLOCK_NUMBERING
+            int nPrecedingBlocks = 0;
+            for (jj = 0; jj < ii; jj++)
+                nPrecedingBlocks += aBlocksPerFile[jj];
 
             f.seekg( iFileSizeWithoutMetaData, std::ios_base::beg );
-            f.read( (char *)tmpBounds, iBlocksPerFile*6*sizeof(float) );
-            if (bSwapEndian)
-                ByteSwap32(tmpBounds, iBlocksPerFile*6);
 
-            for (jj = 0; jj < iBlocksPerFile; jj++)
+            f.read( (char *)(bounds + nPrecedingBlocks*6), aBlocksPerFile[ii]*6*sizeof(float) );
+            if (bSwapEndian)
+                ByteSwap32(bounds + nPrecedingBlocks*6, aBlocksPerFile[ii]*6);
+#else
+            int   *tmpBlocks = new int[aBlocksPerFile[ii]];
+            float *tmpBounds = new float[aBlocksPerFile[ii]*6];
+
+            f.seekg( 136, std::ios_base::beg );
+            f.read( (char *)tmpBlocks, aBlocksPerFile[ii]*sizeof(int) );
+            if (bSwapEndian)
+                ByteSwap32(tmpBlocks, aBlocksPerFile[ii]);
+    
+            for (jj = 0; jj < aBlocksPerFile[ii]; jj++)
+                tmpBlocks[jj]--;
+            f.seekg( iFileSizeWithoutMetaData, std::ios_base::beg );
+            f.read( (char *)tmpBounds, aBlocksPerFile[ii]*6*sizeof(float) );
+            if (bSwapEndian)
+                ByteSwap32(tmpBounds, aBlocksPerFile[ii]*6);
+
+            for (jj = 0; jj < aBlocksPerFile[ii]; jj++)
                 memcpy(bounds + tmpBlocks[jj]*6, tmpBounds+jj*6, 6*sizeof(float));
 
+            delete[] tmpBlocks;
+            delete[] tmpBounds;
+#endif
             f.close();
         }
         delete[] blockfilename;
-        delete[] tmpBlocks;
 
 #ifdef PARALLEL
         //See if any proc had a read error.
@@ -1951,7 +1980,6 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/,
         delete[] bounds;
         bounds = mergedBounds;
 #endif
-
         avtIntervalTree *itree = new avtIntervalTree(iNumBlocks, 3);
 
         for (ii = 0; ii < iNumBlocks; ii++)
@@ -1992,6 +2020,9 @@ avtNek3DFileFormat::GetAuxiliaryData(const char *var, int /*timestep*/,
 //    Added the bParFormat flag allowing the parallel format to be used
 //    by a serial code, in which there is only one output dir.
 //
+//    Dave Bremer, Thu Jun 12 12:59:23 PDT 2008
+//    Support varying numbers of blocks per file in the parallel format.
+//
 // ****************************************************************************
 
 void
@@ -2013,7 +2044,7 @@ avtNek3DFileFormat::PopulateIOInformation(int /*ts*/, avtIOInformation &ioInfo)
 
     for (ii = 0; ii < groups.size(); ii++)
     {
-        groups[ii].resize(iBlocksPerFile);
+        groups[ii].resize(aBlocksPerFile[ii]);
     }
 
     //aBlockLocs contains pairs of ints that map the zero-based block index
