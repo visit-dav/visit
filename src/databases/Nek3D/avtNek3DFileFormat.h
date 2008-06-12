@@ -82,6 +82,10 @@
 //    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
 //    Added the bParFormat flag allowing the parallel format to be used
 //    by a serial code, in which there is only one output dir.
+//
+//    Dave Bremer, Thu Jun 12 12:59:23 PDT 2008
+//    Support varying numbers of blocks per file in the parallel format.
+//    The distribution of blocks is assumed to be constant over time.
 // ****************************************************************************
 
 class avtNek3DFileFormat : public avtMTMDFileFormat
@@ -139,7 +143,7 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
     int                  iDim;
     int                  iPrecision; //4 or 8 for float or double
                                      //only used in parallel binary
-    int                  iBlocksPerFile;
+    int *                aBlocksPerFile;
 
     // This info is distributed through all the dumps, and only
     // computed on demand
