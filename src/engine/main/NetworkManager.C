@@ -2001,6 +2001,12 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Tom Fogal, Tue Jun 10 14:51:51 EDT 2008
 //    Use RenderSetup to greatly shorten this method.
 //
+//    Tom Fogal, Thu Jun 12 14:57:29 EDT 2008
+//    RenderSetup should be in the TRY block.
+//    When splitting the function, we turned a conditional block into an
+//    unconditional block.  This removes the block structure, unindenting a
+//    large block.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -2024,13 +2030,13 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 
     bool dump_renders = avtDebugDumpOptions::DumpEnabled();
 
-    this->RenderSetup(plotIds, getZBuffer, annotMode, windowID, leftEye);
-
     TRY
     {
+        avtDataObjectWriter_p writer;
         StackTimer t_total("Total time for NetworkManager::Render");
 
-        avtDataObjectWriter_p writer;
+        this->RenderSetup(plotIds, getZBuffer, annotMode, windowID, leftEye);
+
         // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
         // the misfortune of oscillating switching of modes around the
         // threshold)
@@ -2053,274 +2059,202 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             CATCH_RETURN2(1, writer);
         }
 
+        debug5 << "Rendering " << viswin->GetNumPrimitives()
+               << " primitives.  BALANCED speedup = "
+               << RenderBalance(viswin->GetNumPrimitives()) << "x" << endl;
+
+        //
+        // Determine if we need to go for two passes
+        //
+        bool doShadows = windowAttributes.GetRenderAtts().GetDoShadowing();
+        bool doDepthCueing =
+            windowAttributes.GetRenderAtts().GetDoDepthCueing();
+        bool two_pass_mode = false;
+        if (viswin->GetWindowMode() == WINMODE_3D)
         {
-            debug5 << "Rendering " << viswin->GetNumPrimitives() 
-                   << " primitives.  Balanced speedup = " 
-                   << RenderBalance(viswin->GetNumPrimitives()) << "x" << endl;
-
-            //
-            // Determine if we need to go for two passes
-            //
-            bool doShadows = windowAttributes.GetRenderAtts().GetDoShadowing();
-            bool doDepthCueing =
-                windowAttributes.GetRenderAtts().GetDoDepthCueing();
-            bool two_pass_mode = false;
-            if (viswin->GetWindowMode() == WINMODE_3D)
-            {
 #ifdef PARALLEL
-                two_pass_mode = viswin->TransparenciesExist();
-                two_pass_mode = UnifyMaximumValue(two_pass_mode);
+            two_pass_mode = viswin->TransparenciesExist();
+            two_pass_mode = UnifyMaximumValue(two_pass_mode);
 #endif
-            }
+        }
+        else
+        {
+            doShadows = false;
+            doDepthCueing = false;
+        }
+
+        int nstages = 3;  // Rendering + Two for Compositing
+        nstages += (doShadows ? 2 : 0);
+        nstages += (doDepthCueing ? 1 : 0);
+        nstages += (two_pass_mode ? 1 : 0);
+        for (int ss = 0 ; ss < imageBasedPlots.size() ; ss++)
+        {
+            nstages += imageBasedPlots[ss]
+                   ->GetNumberOfStagesForImageBasedPlot(windowAttributes);
+        }
+
+        CallInitializeProgressCallback(nstages);
+
+        // render the image and capture it. Relies upon explicit render
+        int t3 = visitTimer->StartTimer();
+        bool viewportedMode = (annotMode != 1) ||
+                              (viswin->GetWindowMode() == WINMODE_2D) ||
+                              (viswin->GetWindowMode() == WINMODE_CURVE) ||
+                              (viswin->GetWindowMode() == WINMODE_AXISARRAY);
+
+        // ************************************************************
+        // FIRST PASS - Opaque only
+        // ************************************************************
+
+        CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
+        avtImage_p theImage;
+        if (two_pass_mode)
+            theImage=viswin->ScreenCapture(viewportedMode,true,true,false);
+        else
+            theImage=viswin->ScreenCapture(viewportedMode,true);
+        CallProgressCallback("NetworkManager", "Render geometry", 1, 1);
+        CallProgressCallback("NetworkManager", "Compositing", 0, 1);
+
+
+        visitTimer->StopTimer(t3, "Screen capture for SR");
+
+        if (dump_renders)
+            DumpImage(theImage, "before_OpaqueComposite");
+
+        avtWholeImageCompositer *imageCompositer;
+        bool haveImagePlots = imageBasedPlots.size();
+        if (viswin->GetWindowMode() == WINMODE_3D)
+        {
+            imageCompositer = new avtWholeImageCompositerWithZ();
+            imageCompositer->SetShouldOutputZBuffer(getZBuffer ||
+                                                    two_pass_mode ||
+                                                    doShadows ||
+                                                    doDepthCueing ||
+                                                    haveImagePlots);
+        }
+        else
+        {
+            // we have to use z-buffer in 2D windows with gradient
+            // background
+            if (viswin->GetBackgroundMode() == 0)
+                imageCompositer = new avtWholeImageCompositerNoZ();
             else
-            {
-                doShadows = false;
-                doDepthCueing = false;
-            }
+                imageCompositer = new avtWholeImageCompositerWithZ();
+            imageCompositer->SetShouldOutputZBuffer(two_pass_mode);
+        }
 
-            int nstages = 3;  // Rendering + Two for Compositing
-            nstages += (doShadows ? 2 : 0);
-            nstages += (doDepthCueing ? 1 : 0);
-            nstages += (two_pass_mode ? 1 : 0);
-            for (int ss = 0 ; ss < imageBasedPlots.size() ; ss++)
-            {
-                nstages += imageBasedPlots[ss]
-                       ->GetNumberOfStagesForImageBasedPlot(windowAttributes);
-            }
-            
-            CallInitializeProgressCallback(nstages);
+        //
+        // Set the compositer's background color
+        //
+        const double *fbg = viswin->GetBackgroundColor();
+        unsigned char bg_r = (unsigned char) ((float)fbg[0] * 255.f);
+        unsigned char bg_g = (unsigned char) ((float)fbg[1] * 255.f);
+        unsigned char bg_b = (unsigned char) ((float)fbg[2] * 255.f);
 
-            // render the image and capture it. Relies upon explicit render
-            int t3 = visitTimer->StartTimer();
-            bool viewportedMode =(annotMode != 1) || 
-                                 (viswin->GetWindowMode() == WINMODE_2D) ||
-                                 (viswin->GetWindowMode() == WINMODE_CURVE) ||
-                                 (viswin->GetWindowMode() == WINMODE_AXISARRAY);
+        imageCompositer->SetBackground(bg_r, bg_g, bg_b);
 
-            // ************************************************************
-            // FIRST PASS - Opaque only
-            // ************************************************************
+        //
+        // Set up the input image size and add it to compositer's input
+        //
+        int imageRows, imageCols;
+        theImage->GetSize(&imageCols, &imageRows);
+        imageCompositer->SetOutputImageSize(imageRows, imageCols);
+        imageCompositer->AddImageInput(theImage, 0, 0);
+        imageCompositer->SetAllProcessorsNeedResult(two_pass_mode ||
+                                                    doShadows ||
+                                                    doDepthCueing ||
+                                                    haveImagePlots);
 
-            CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
-            avtImage_p theImage;
-            if (two_pass_mode)
-                theImage=viswin->ScreenCapture(viewportedMode,true,true,false);
-            else
-                theImage=viswin->ScreenCapture(viewportedMode,true);
-            CallProgressCallback("NetworkManager", "Render geometry", 1, 1);
-            CallProgressCallback("NetworkManager", "Compositing", 0, 1);
-            
-            visitTimer->StopTimer(t3, "Screen capture for SR");
+        //
+        // Do the parallel composite using a 1 stage pipeline
+        //
+        imageCompositer->Execute();
+        avtDataObject_p compositedImageAsDataObject =
+            imageCompositer->GetOutput();
+
+        // Dump the composited image when debugging.  Note that we only
+        // want all processors to dump it if we have done an Allreduce
+        // in the compositor, and this only happens in two pass mode.
+        if (dump_renders)
+            DumpImage(compositedImageAsDataObject,
+                      "after_OpaqueComposite", two_pass_mode);
+        CallProgressCallback("NetworkManager", "Compositing", 1, 1);
+
+
+        // ************************************************************
+        // SECOND PASS - Translucent only
+        // ************************************************************
+
+        if (two_pass_mode)
+        {
+            CallProgressCallback("NetworkManager", "Transparent rendering",
+                                 0, 1);
+            int t1 = visitTimer->StartTimer();
+
+            //
+            // We have to disable any gradient background before
+            // rendering, as those will overwrite the first pass
+            //
+            int bm = viswin->GetBackgroundMode();
+            viswin->SetBackgroundMode(0);
+
+            //
+            // Do the screen capture
+            //
+            avtImage_p theImage2;
+            theImage2=viswin->ScreenCapture(viewportedMode,true,false,true,
+                                        imageCompositer->GetTypedOutput());
+
+            // Restore the background mode for next time
+            viswin->SetBackgroundMode(bm);
+
+            visitTimer->StopTimer(t1, "Second-pass screen capture for SR");
 
             if (dump_renders)
-                DumpImage(theImage, "before_OpaqueComposite");
+                DumpImage(theImage2, "before_TranslucentComposite");
 
-            avtWholeImageCompositer *imageCompositer;
-            bool haveImagePlots = imageBasedPlots.size();
-            if (viswin->GetWindowMode() == WINMODE_3D)
-            {
-                imageCompositer = new avtWholeImageCompositerWithZ();
-                imageCompositer->SetShouldOutputZBuffer(getZBuffer ||
-                                                        two_pass_mode ||
-                                                        doShadows || 
-                                                        doDepthCueing ||
-                                                        haveImagePlots);
-            }
-            else
-            {
-                // we have to use z-buffer in 2D windows with gradient
-                // background
-                if (viswin->GetBackgroundMode() == 0)
-                    imageCompositer = new avtWholeImageCompositerNoZ();
-                else
-                    imageCompositer = new avtWholeImageCompositerWithZ();
-                imageCompositer->SetShouldOutputZBuffer(two_pass_mode);
-            }
-
-            //
-            // Set the compositer's background color
-            //
-            const double *fbg = viswin->GetBackgroundColor();
-            unsigned char bg_r = (unsigned char) ((float)fbg[0] * 255.f);
-            unsigned char bg_g = (unsigned char) ((float)fbg[1] * 255.f);
-            unsigned char bg_b = (unsigned char) ((float)fbg[2] * 255.f);
-
-            imageCompositer->SetBackground(bg_r, bg_g, bg_b);
+            avtTiledImageCompositor imageCompositer2;
 
             //
             // Set up the input image size and add it to compositer's input
             //
-            int imageRows, imageCols;
-            theImage->GetSize(&imageCols, &imageRows);
-            imageCompositer->SetOutputImageSize(imageRows, imageCols);
-            imageCompositer->AddImageInput(theImage, 0, 0);
-            imageCompositer->SetAllProcessorsNeedResult(two_pass_mode || 
-                                                        doShadows ||
-                                                        doDepthCueing ||
-                                                        haveImagePlots);
+            theImage2->GetSize(&imageCols, &imageRows);
+            imageCompositer2.SetOutputImageSize(imageRows, imageCols);
+            imageCompositer2.AddImageInput(theImage2, 0, 0);
 
             //
             // Do the parallel composite using a 1 stage pipeline
             //
-            imageCompositer->Execute();
-            avtDataObject_p compositedImageAsDataObject =
-                imageCompositer->GetOutput();
+            int t2 = visitTimer->StartTimer();
+            imageCompositer2.Execute();
+            compositedImageAsDataObject = imageCompositer2.GetOutput();
+            visitTimer->StopTimer(t2, "tiled image compositor execute");
+            CallProgressCallback("NetworkManager", "Transparent rendering",
+                                 1, 1);
+        }
 
-            // Dump the composited image when debugging.  Note that we only
-            // want all processors to dump it if we have done an Allreduce
-            // in the compositor, and this only happens in two pass mode.
-            if (dump_renders)
-                DumpImage(compositedImageAsDataObject,
-                          "after_OpaqueComposite", two_pass_mode);
-            CallProgressCallback("NetworkManager", "Compositing", 1, 1);
+        //
+        // Do shadows if appropriate.
+        //
+        if (doShadows)
+        {
+            CallProgressCallback("NetworkManager", "Creating shadows",0,1);
+            avtView3D cur_view = viswin->GetView3D();
 
+            //
+            // Figure out which direction the light is pointing.
+            //
+            const LightList *light_list = viswin->GetLightList();
+            const LightAttributes &la = light_list->GetLight0();
+            double light_dir[3];
+            bool canShade = avtSoftwareShader::GetLightDirection(la,
+                                                      cur_view, light_dir);
 
-            // ************************************************************
-            // SECOND PASS - Translucent only
-            // ************************************************************
+            double strength =
+                windowAttributes.GetRenderAtts().GetShadowStrength();
 
-            if (two_pass_mode)
+            if (canShade)
             {
-                CallProgressCallback("NetworkManager", "Transparent rendering",
-                                     0, 1);
-                int t1 = visitTimer->StartTimer();
-
-                //
-                // We have to disable any gradient background before
-                // rendering, as those will overwrite the first pass
-                //
-                int bm = viswin->GetBackgroundMode();
-                viswin->SetBackgroundMode(0);
-
-                //
-                // Do the screen capture
-                //
-                avtImage_p theImage2;
-                theImage2=viswin->ScreenCapture(viewportedMode,true,false,true,
-                                            imageCompositer->GetTypedOutput());
-
-                // Restore the background mode for next time
-                viswin->SetBackgroundMode(bm);
-            
-                visitTimer->StopTimer(t1, "Second-pass screen capture for SR");
-
-                if (dump_renders)
-                    DumpImage(theImage2, "before_TranslucentComposite");
-
-                avtTiledImageCompositor imageCompositer2;
-
-                //
-                // Set up the input image size and add it to compositer's input
-                //
-                theImage2->GetSize(&imageCols, &imageRows);
-                imageCompositer2.SetOutputImageSize(imageRows, imageCols);
-                imageCompositer2.AddImageInput(theImage2, 0, 0);
-
-                //
-                // Do the parallel composite using a 1 stage pipeline
-                //
-                int t2 = visitTimer->StartTimer();
-                imageCompositer2.Execute();
-                compositedImageAsDataObject = imageCompositer2.GetOutput();
-                visitTimer->StopTimer(t2, "tiled image compositor execute");
-                CallProgressCallback("NetworkManager", "Transparent rendering",
-                                     1, 1);
-            }
-
-            //
-            // Do shadows if appropriate.
-            //
-            if (doShadows)
-            {
-                CallProgressCallback("NetworkManager", "Creating shadows",0,1);
-                avtView3D cur_view = viswin->GetView3D();
-
-                //
-                // Figure out which direction the light is pointing.
-                //
-                const LightList *light_list = viswin->GetLightList();
-                const LightAttributes &la = light_list->GetLight0();
-                double light_dir[3];
-                bool canShade = avtSoftwareShader::GetLightDirection(la,
-                                                          cur_view, light_dir);
-
-                double strength = 
-                    windowAttributes.GetRenderAtts().GetShadowStrength();
-
-                if (canShade)
-                {
-                    //
-                    // Get the image attributes
-                    //
-                    avtImage_p compositedImage;
-                    CopyTo(compositedImage, compositedImageAsDataObject);
-
-                    int width, height;
-                    viswin->GetSize(width, height);
-
-                    //
-                    // Create a light source view
-                    //
-                    int light_width = (width > 2048) ? 4096 : width*2;
-                    int light_height = (height > 2048) ? 4096 : height*2;
-                    avtView3D light_view;
-                    light_view = avtSoftwareShader::FindLightView(
-                                 compositedImage, cur_view, light_dir, 
-                                 double(light_width)/double(light_height));
-
-                    //
-                    // Now create a new image from the light source.
-                    //
-                    viswin->SetSize(light_width,light_height);
-                    viswin->SetView3D(light_view);
-                    avtImage_p myLightImage =
-                                    viswin->ScreenCapture(viewportedMode,true);
-                    viswin->SetSize(width,height);
-                    avtWholeImageCompositer *wic =
-                                            new avtWholeImageCompositerWithZ();
-                    wic->SetShouldOutputZBuffer(true);
-                    int imageRows, imageCols;
-                    myLightImage->GetSize(&imageCols, &imageRows);
-                    wic->SetOutputImageSize(imageRows, imageCols);
-                    wic->AddImageInput(myLightImage, 0, 0);
-                    wic->SetShouldOutputZBuffer(1);
-                    wic->SetAllProcessorsNeedResult(false);
-
-                    //
-                    // Do the parallel composite using a 1 stage pipeline
-                    //
-                    wic->Execute();
-                    avtImage_p lightImage = wic->GetTypedOutput();
-                    viswin->SetView3D(cur_view);
-
-#ifdef PARALLEL
-                    if (PAR_Rank() == 0)
-#endif
-                    {
-                        CallProgressCallback("NetworkManager",
-                                             "Synch'ing up shadows", 0, 1);
-                        avtSoftwareShader::AddShadows(lightImage, 
-                                                      compositedImage,
-                                                      light_view,
-                                                      cur_view,
-                                                      strength);
-                        CallProgressCallback("NetworkManager",
-                                             "Synch'ing up shadows", 1, 1);
-                    }
-                    delete wic;
-                }
-                CallProgressCallback("NetworkManager", "Creating shadows",1,1);
-            }
-
-            //
-            // Do depth cueing if appropriate.
-            //
-            if (doDepthCueing)
-            {
-                CallProgressCallback("NetworkManager", "Applying depth cueing",
-                                     0,1);
-                avtView3D cur_view = viswin->GetView3D();
-
                 //
                 // Get the image attributes
                 //
@@ -2330,64 +2264,135 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 int width, height;
                 viswin->GetSize(width, height);
 
+                //
+                // Create a light source view
+                //
+                int light_width = (width > 2048) ? 4096 : width*2;
+                int light_height = (height > 2048) ? 4096 : height*2;
+                avtView3D light_view;
+                light_view = avtSoftwareShader::FindLightView(
+                             compositedImage, cur_view, light_dir,
+                             double(light_width)/double(light_height));
+
+                //
+                // Now create a new image from the light source.
+                //
+                viswin->SetSize(light_width,light_height);
+                viswin->SetView3D(light_view);
+                avtImage_p myLightImage =
+                                viswin->ScreenCapture(viewportedMode,true);
+                viswin->SetSize(width,height);
+                avtWholeImageCompositer *wic =
+                                        new avtWholeImageCompositerWithZ();
+                wic->SetShouldOutputZBuffer(true);
+                int imageRows, imageCols;
+                myLightImage->GetSize(&imageCols, &imageRows);
+                wic->SetOutputImageSize(imageRows, imageCols);
+                wic->AddImageInput(myLightImage, 0, 0);
+                wic->SetShouldOutputZBuffer(1);
+                wic->SetAllProcessorsNeedResult(false);
+
+                //
+                // Do the parallel composite using a 1 stage pipeline
+                //
+                wic->Execute();
+                avtImage_p lightImage = wic->GetTypedOutput();
+                viswin->SetView3D(cur_view);
+
 #ifdef PARALLEL
                 if (PAR_Rank() == 0)
 #endif
                 {
-                    const double *start =
-                        windowAttributes.GetRenderAtts().GetStartCuePoint();
-                    const double *end   =
-                        windowAttributes.GetRenderAtts().GetEndCuePoint();
-                    unsigned char color[] =
-                        {annotationAttributes.GetBackgroundColor().Red(),
-                         annotationAttributes.GetBackgroundColor().Green(),
-                         annotationAttributes.GetBackgroundColor().Blue()};
-                    avtSoftwareShader::AddDepthCueing(compositedImage,cur_view,
-                                                      start, end, color);
+                    CallProgressCallback("NetworkManager",
+                                         "Synch'ing up shadows", 0, 1);
+                    avtSoftwareShader::AddShadows(lightImage,
+                                                  compositedImage,
+                                                  light_view,
+                                                  cur_view,
+                                                  strength);
+                    CallProgressCallback("NetworkManager",
+                                         "Synch'ing up shadows", 1, 1);
                 }
-                CallProgressCallback("NetworkManager", "Applying depth cueing",
-                                     1,1);
+                delete wic;
             }
+            CallProgressCallback("NetworkManager", "Creating shadows",1,1);
+        }
+
+        //
+        // Do depth cueing if appropriate.
+        //
+        if (doDepthCueing)
+        {
+            CallProgressCallback("NetworkManager", "Applying depth cueing",
+                                 0,1);
+            avtView3D cur_view = viswin->GetView3D();
 
             //
-            // If the engine is doing more than just 3D annotations,
-            // post-process the composited image.
+            // Get the image attributes
             //
-            if (imageBasedPlots.size() > 0)
-            {
-                avtImage_p compositedImage;
-                CopyTo(compositedImage, compositedImageAsDataObject);
-                for (int kk = 0 ; kk < imageBasedPlots.size() ; kk++)
-                {
-                    avtImage_p newImage = 
-                           imageBasedPlots[kk]->ImageExecute(compositedImage, 
-                                                             windowAttributes);
-                    compositedImage = newImage;
-                }
-                CopyTo(compositedImageAsDataObject, compositedImage);
-            }
+            avtImage_p compositedImage;
+            CopyTo(compositedImage, compositedImageAsDataObject);
+
+            int width, height;
+            viswin->GetSize(width, height);
+
 #ifdef PARALLEL
-            if ((annotMode==2) && ((PAR_Rank() == 0) || getZBuffer))
-#else
-            if (annotMode==2)
+            if (PAR_Rank() == 0)
 #endif
             {
-                avtImage_p compositedImage;
-                CopyTo(compositedImage, compositedImageAsDataObject);
-                avtImage_p postProcessedImage = 
-                    viswin->PostProcessScreenCapture(compositedImage,
-                                                     viewportedMode,
-                                                     getZBuffer);
-                CopyTo(compositedImageAsDataObject, postProcessedImage);
+                const double *start =
+                    windowAttributes.GetRenderAtts().GetStartCuePoint();
+                const double *end   =
+                    windowAttributes.GetRenderAtts().GetEndCuePoint();
+                unsigned char color[] =
+                    {annotationAttributes.GetBackgroundColor().Red(),
+                     annotationAttributes.GetBackgroundColor().Green(),
+                     annotationAttributes.GetBackgroundColor().Blue()};
+                avtSoftwareShader::AddDepthCueing(compositedImage,cur_view,
+                                                  start, end, color);
             }
-            writer = compositedImageAsDataObject->InstantiateWriter();
-            writer->SetInput(compositedImageAsDataObject);
-
-            if (dump_renders)
-                DumpImage(compositedImageAsDataObject,
-                          "after_AllComposites", false);
-            delete imageCompositer;
+            CallProgressCallback("NetworkManager", "Applying depth cueing",
+                                 1,1);
         }
+
+        //
+        // If the engine is doing more than just 3D annotations,
+        // post-process the composited image.
+        //
+        if (imageBasedPlots.size() > 0)
+        {
+            avtImage_p compositedImage;
+            CopyTo(compositedImage, compositedImageAsDataObject);
+            for (int kk = 0 ; kk < imageBasedPlots.size() ; kk++)
+            {
+                avtImage_p newImage =
+                       imageBasedPlots[kk]->ImageExecute(compositedImage,
+                                                         windowAttributes);
+                compositedImage = newImage;
+            }
+            CopyTo(compositedImageAsDataObject, compositedImage);
+        }
+#ifdef PARALLEL
+        if ((annotMode==2) && ((PAR_Rank() == 0) || getZBuffer))
+#else
+        if (annotMode==2)
+#endif
+        {
+            avtImage_p compositedImage;
+            CopyTo(compositedImage, compositedImageAsDataObject);
+            avtImage_p postProcessedImage =
+                viswin->PostProcessScreenCapture(compositedImage,
+                                                 viewportedMode,
+                                                 getZBuffer);
+            CopyTo(compositedImageAsDataObject, postProcessedImage);
+        }
+        writer = compositedImageAsDataObject->InstantiateWriter();
+        writer->SetInput(compositedImageAsDataObject);
+
+        if (dump_renders)
+            DumpImage(compositedImageAsDataObject,
+                      "after_AllComposites", false);
+        delete imageCompositer;
         
         this->RenderCleanup(windowID);
 
@@ -4471,6 +4476,12 @@ NetworkManager::ViewerExecute(const VisWindow * const viswin,
 //  Programmer: Tom Fogal
 //  Creation:   June 9, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Thu Jun 12 14:48:41 EDT 2008
+//    Added in logic to UpdateVisualCues and set cell counts, which I
+//    apparently forgot to copy when splitting the code up!
+//
 // ****************************************************************************
 
 void
@@ -4623,6 +4634,40 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
                 SetFullFrameScaling(useFFScale, FFScale);
         }
     } /* end foreach plot */
+
+    if (this->r_mgmt.annotMode == 2)
+    {
+        UpdateVisualCues(windowID);
+        this->r_mgmt.handledCues = true;
+    }
+
+    //
+    // Update any cell counts for the associated networks.
+    // This involves global communication. Since we're going to
+    // get sync'd up for the composite below, this
+    // additional MPI_Allreduce is not so bad.
+    // While we're at it, we'll issue any warning message for
+    // plots with no data, too.
+    //
+#ifdef PARALLEL
+    int *reducedCounts = new int[2 * plotIds.size()];
+    MPI_Allreduce(cellCounts, reducedCounts, 2 * plotIds.size(),
+        MPI_INT, MPI_SUM, VISIT_MPI_COMM);
+    for (size_t i = 0; i < 2 * plotIds.size(); i++)
+    {
+        if (cellCounts[i] != INT_MAX) // accounts for overflow
+        {
+            cellCounts[i] = reducedCounts[i];
+        }
+    }
+    delete [] reducedCounts;
+#endif
+
+    // update the global cell counts for each network
+    for (size_t i = 0; i < plotIds.size(); i++)
+    {
+        SetGlobalCellCount(plotIds[i], this->r_mgmt.cellCounts[i]);
+    }
 }
 
 // ****************************************************************************
@@ -4640,6 +4685,11 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 //
 //  Programmer: Tom Fogal
 //  Creation:   June 9, 2008
+//
+//  Modifications:
+//
+//    Tom Fogal, Thu Jun 12 15:10:03 EDT 2008
+//    Removed the TRY block from this code; our caller should have one for us.
 //
 // ****************************************************************************
 
@@ -4670,153 +4720,143 @@ NetworkManager::RenderSetup(intVector plotIds, bool getZBuffer,
         viswinMap.find(windowID)->second.imageBasedPlots;
     VisWindow *viswin = viswinInfo.viswin;
 
-    TRY
+    this->r_mgmt.timer = visitTimer->StartTimer();
+    this->r_mgmt.needToSetUpWindowContents = false;
+    this->r_mgmt.cellCounts = new int[2 * plotIds.size()];
+    this->r_mgmt.handledAnnotations = false;
+    this->r_mgmt.handledCues = false;
+    this->r_mgmt.stereoType = -1;
+    bool forceViewerExecute = false;
+
+    ViewCurveAttributes vca = windowAttributes.GetViewCurve();
+    View2DAttributes v2a = windowAttributes.GetView2D();
+    ScaleMode ds = (ScaleMode)vca.GetDomainScale();
+    ScaleMode rs = (ScaleMode)vca.GetRangeScale();
+    ScaleMode xs = (ScaleMode)v2a.GetXScale();
+    ScaleMode ys = (ScaleMode)v2a.GetYScale();
+
+    // Explicitly specify left / right eye, for stereo rendering.
+    if(viswin->GetStereo())
     {
-        this->r_mgmt.timer = visitTimer->StartTimer();
-        this->r_mgmt.needToSetUpWindowContents = false;
-        this->r_mgmt.cellCounts = new int[2 * plotIds.size()];
-        this->r_mgmt.handledAnnotations = false;
-        this->r_mgmt.handledCues = false;
-        this->r_mgmt.stereoType = -1;
-        bool forceViewerExecute = false;
+        this->r_mgmt.stereoType = viswin->GetStereoType();
+        viswin->SetStereoRendering(true, leftEye ? 4 :5);
+    }
 
-        ViewCurveAttributes vca = windowAttributes.GetViewCurve();
-        View2DAttributes v2a = windowAttributes.GetView2D();
-        ScaleMode ds = (ScaleMode)vca.GetDomainScale();
-        ScaleMode rs = (ScaleMode)vca.GetRangeScale();
-        ScaleMode xs = (ScaleMode)v2a.GetXScale();
-        ScaleMode ys = (ScaleMode)v2a.GetYScale();
+    // put all plots objects into the VisWindow
+    viswin->SetScalableRendering(false);
 
-        // Explicitly specify left / right eye, for stereo rendering.
-        if(viswin->GetStereo())
-        {
-            this->r_mgmt.stereoType = viswin->GetStereoType();
-            viswin->SetStereoRendering(true, leftEye ? 4 :5);
-        }
+    //
+    // Determine if the plots currently in the window are the same as those
+    // we were asked to render.
+    //
+    if(plotIds.size() != plotsCurrentlyInWindow.size())
+    {
+        this->r_mgmt.needToSetUpWindowContents = true;
+    }
+    else
+    {
+        forceViewerExecute = this->ViewerExecute(viswin, plotIds,
+                                                 windowAttributes);
+        this->r_mgmt.needToSetUpWindowContents =
+            this->PlotsNeedUpdating(plotIds, plotsCurrentlyInWindow) ||
+            forceViewerExecute;
+    }
 
-        // put all plots objects into the VisWindow
-        viswin->SetScalableRendering(false);
+    if(this->r_mgmt.needToSetUpWindowContents)
+    {
+        this->SetUpWindowContents(windowID, plotIds, forceViewerExecute);
+        plotsCurrentlyInWindow = plotIds;
+    }
 
-        //
-        // Determine if the plots currently in the window are the same as those
-        // we were asked to render.
-        //
-        if(plotIds.size() != plotsCurrentlyInWindow.size())
+    // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
+    // the misfortune of oscillating switching of modes around the threshold)
+    int scalableThreshold = GetScalableThreshold(windowID);
+    if (GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
+    {
+        // We need to give a null result back to the component which
+        // requested the render, but we can't do that here because our
+        // caller is controlling the render process.  We'll just bail out
+        // early, and require our caller to duplicate our check.
+        return;
+    }
+    else
+    {
+    // TODO/FIXME: since we changed the if to bail out early, we no longer
+    // need the else and can thus unindent this whole block ...
+        if (this->r_mgmt.needToSetUpWindowContents)
         {
-            this->r_mgmt.needToSetUpWindowContents = true;
-        }
-        else
-        {
-            forceViewerExecute = this->ViewerExecute(viswin, plotIds,
-                                                     windowAttributes);
-            this->r_mgmt.needToSetUpWindowContents =
-                this->PlotsNeedUpdating(plotIds, plotsCurrentlyInWindow) ||
-                forceViewerExecute;
-        }
+            // determine any networks with no data 
+            vector<int> networksWithNoData;
 
-        if(this->r_mgmt.needToSetUpWindowContents)
-        {
-            this->SetUpWindowContents(windowID, plotIds, forceViewerExecute);
-        }
-
-        // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
-        // the misfortune of oscillating switching of modes around the threshold)
-        int scalableThreshold = GetScalableThreshold(windowID);
-        if (GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
-        {
-            // We need to give a null result back to the component which
-            // requested the render, but we can't do that here because our
-            // caller is controlling the render process.  We'll just bail out
-            // early, and require our caller to duplicate our check.
-            return;
-        }
-        else
-        {
-        // TODO/FIXME: since we changed the if to bail out early, we no longer
-        // need the else can unindent this whole block ...
-            if (this->r_mgmt.needToSetUpWindowContents)
+            for (size_t i = 0; i < plotIds.size(); i++)
             {
-                // determine any networks with no data 
-                vector<int> networksWithNoData;
-                for (size_t i = 0; i < plotIds.size(); i++)
+                if (this->r_mgmt.cellCounts[i] == 0)
+                    networksWithNoData.push_back(i);
+            }
+            // issue warning messages for plots with no data
+            if (networksWithNoData.size() > 0)
+            {
+                string msg = "The plot(s) with id(s) = ";
+                for (size_t i = 0; i < networksWithNoData.size(); i++)
                 {
-                    if (this->r_mgmt.cellCounts[i] == 0)
-                        networksWithNoData.push_back(i);
+                    char tmpStr[32];
+                    SNPRINTF(tmpStr, sizeof(tmpStr), "%d", networksWithNoData[i]);
+                    msg += tmpStr;
+                    if (i < networksWithNoData.size() - 1)
+                        msg += ", ";
                 }
-                // issue warning messages for plots with no data
-                if (networksWithNoData.size() > 0)
-                {
-                    string msg = "The plot(s) with id(s) = ";
-                    for (size_t i = 0; i < networksWithNoData.size(); i++)
-                    {
-                        char tmpStr[32];
-                        SNPRINTF(tmpStr, sizeof(tmpStr), "%d", networksWithNoData[i]);
-                        msg += tmpStr;
-                        if (i < networksWithNoData.size() - 1)
-                            msg += ", ";
-                    }
-                    msg += " yielded no data";
+                msg += " yielded no data";
 #ifdef PARALLEL
-                    if (PAR_Rank() == 0)
+                if (PAR_Rank() == 0)
 #endif
-                    {
-                        avtCallback::IssueWarning(msg.c_str());
-                    }
-                }
-            }
-
-            //
-            // Update plot's bg/fg colors. Ignored by avtPlot objects if colors
-            // are unchanged
-            //
-            {
-                double bg[4] = {1.,0.,0.,0.};
-                double fg[4] = {0.,0.,1.,0.};
-                AnnotationAttributes &annotationAttributes =
-                    viswinInfo.annotationAttributes;
-
-                annotationAttributes.GetForegroundColor().GetRgba(fg);
-                annotationAttributes.GetDiscernibleBackgroundColor().GetRgba(bg);
-                for (int i = 0; i < plotIds.size(); i++)
                 {
-                    workingNet = NULL;
-                    UseNetwork(plotIds[i]);
-                    workingNet->GetPlot()->SetBackgroundColor(bg);
-                    workingNet->GetPlot()->SetForegroundColor(fg);
-                    if (changedCtName != "")
-                        workingNet->GetPlot()->SetColorTable(changedCtName.c_str());
-                    workingNet = NULL;
+                    avtCallback::IssueWarning(msg.c_str());
                 }
             }
+        }
 
-            //
-            // Add annotations if necessary 
-            //
-            if (!this->r_mgmt.handledAnnotations)
-            {
-                SetAnnotationAttributes(viswinInfo.annotationAttributes,
-                                        viswinInfo.annotationObjectList,
-                                        viswinInfo.visualCueList,
-                                        viswinInfo.frameAndState,
-                                        windowID, this->r_mgmt.annotMode);
-                this->r_mgmt.handledAnnotations = true;
-            }
-            if (!this->r_mgmt.handledCues)
-            {
-                UpdateVisualCues(windowID);
-                this->r_mgmt.handledCues = true;
-            }
+        //
+        // Update plot's bg/fg colors. Ignored by avtPlot objects if colors
+        // are unchanged
+        //
+        {
+            double bg[4] = {1.,0.,0.,0.};
+            double fg[4] = {0.,0.,1.,0.};
+            AnnotationAttributes &annotationAttributes =
+                viswinInfo.annotationAttributes;
 
-            debug5 << "Rendering " << viswin->GetNumPrimitives() 
-                   << " primitives.  Balanced speedup = " 
-                   << RenderBalance(viswin->GetNumPrimitives()) << "x" << endl;
+            annotationAttributes.GetForegroundColor().GetRgba(fg);
+            annotationAttributes.GetDiscernibleBackgroundColor().GetRgba(bg);
+            for (int i = 0; i < plotIds.size(); i++)
+            {
+                workingNet = NULL;
+                UseNetwork(plotIds[i]);
+                workingNet->GetPlot()->SetBackgroundColor(bg);
+                workingNet->GetPlot()->SetForegroundColor(fg);
+                if (changedCtName != "")
+                    workingNet->GetPlot()->SetColorTable(changedCtName.c_str());
+                workingNet = NULL;
+            }
+        }
+
+        //
+        // Add annotations if necessary
+        //
+        if (!this->r_mgmt.handledAnnotations)
+        {
+            SetAnnotationAttributes(viswinInfo.annotationAttributes,
+                                    viswinInfo.annotationObjectList,
+                                    viswinInfo.visualCueList,
+                                    viswinInfo.frameAndState,
+                                    windowID, this->r_mgmt.annotMode);
+            this->r_mgmt.handledAnnotations = true;
+        }
+        if (!this->r_mgmt.handledCues)
+        {
+            UpdateVisualCues(windowID);
+            this->r_mgmt.handledCues = true;
         }
     }
-    CATCHALL(...)
-    {
-        RETHROW;
-    }
-    ENDTRY
 }
 
 // ****************************************************************************
