@@ -1216,6 +1216,9 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 //    If something goes wrong during expression calculation, then some of
 //    the assumptions in this routine are wrong.  Fix them so we don't crash.
 //
+//    Kathleen Bonnell, Wed Jun 11 16:59:22 PDT 2008 
+//    Add support for AVT_CURVE. 
+//
 // ****************************************************************************
 
 void
@@ -1341,6 +1344,20 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
             atts = ds->GetCellData();
             break;
 
+          case AVT_CURVE:
+            {
+                const avtCurveMetaData *cmd=GetMetaData(ts)->GetCurve(varName);
+                if (cmd->centering == AVT_NODECENT)
+                {
+                    atts = ds->GetPointData();
+                }
+                else
+                {
+                    atts = ds->GetCellData();
+                }
+            }
+            break;
+
           default:
             EXCEPTION1(InvalidVariableException, varName);
         }
@@ -1349,6 +1366,7 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
         // Okay, now get the variable and add them to the dataset.
         //
         vtkDataArray *dat = NULL;
+        vtkDataSet *mesh = NULL;
         switch (vt)
         {
           case AVT_SCALAR_VAR:
@@ -1371,6 +1389,12 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
             break;
           case AVT_MATSPECIES:
             dat = GetSpeciesVariable(varName, ts, domain, material, nzones);
+            break;
+          case AVT_CURVE:
+            mesh = GetMesh(varName, ts, domain, material, dataRequest);
+            dat = mesh->GetPointData()->GetArray(varName);
+            if (dat == NULL)
+                dat = mesh->GetCellData()->GetArray(varName);
             break;
           default:
             EXCEPTION1(InvalidVariableException, varName);
