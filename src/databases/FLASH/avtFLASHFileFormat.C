@@ -54,6 +54,9 @@
 #include <vtkPolyData.h>
 #include <vtkCellArray.h>
 
+#include <vtkPointData.h>
+#include <vtkVisItUtility.h>
+
 #include <float.h>
 #include <algorithm>
 
@@ -122,7 +125,7 @@ static string GetNiceParticleName(const string &varname)
 //  Creation:    September 27, 2005
 //
 //  Changes:
-//    Randy HUDSON, June 12, 2007
+//    Randy Hudson, June 12, 2007
 //    Added printing of node type, block-center coordinates and processor number.
 //
 // ****************************************************************************
@@ -208,13 +211,13 @@ avtFLASHFileFormat::FinalizeHDF5(void)
 //    Mark C. Miller, Mon Mar  5 22:04:50 PST 2007
 //    Added initialization of HDF5, simParamsHaveBeenRead
 //
-//    Randy HUDSON, July 5, 2007
+//    Randy Hudson, July 5, 2007
 //    Moved initialization of numProcessors here from ReadProcessorNumbers()
 //
-//    Randy HUDSON, July 10, 2007
+//    Randy Hudson, July 10, 2007
 //    Added initialization of file_has_procnum
 //
-//    Randy HUDSON, January 30, 2008
+//    Randy Hudson, January 30, 2008
 //    Added initialization of fileFormatVersion
 //
 // ****************************************************************************
@@ -352,7 +355,7 @@ avtFLASHFileFormat::GetTime()
 //    Jeremy Meredith, Thu Aug 25 15:07:36 PDT 2005
 //    Added particle support.
 //
-//    Randy HUDSON, June 23, 2007
+//    Randy Hudson, June 23, 2007
 //    Added code for vector of leaf blocks for morton curve.
 //
 // ****************************************************************************
@@ -398,16 +401,16 @@ avtFLASHFileFormat::FreeUpResources(void)
 //    Hank Childs, Wed Jan 11 09:40:17 PST 2006
 //    Change mesh type to AMR.
 //
-//    Randy HUDSON, Apr 3, 2007
+//    Randy Hudson, Apr 3, 2007
 //    Added support for Morton curve.
 //
-//    Randy HUDSON, June 12, 2007
+//    Randy Hudson, June 12, 2007
 //    Added support for subsets by processor number.
 //
-//    Randy HUDSON, June 18, 2007
+//    Randy Hudson, June 18, 2007
 //    Added support for creating subsets of Morton curve.
 //
-//    Randy HUDSON, July 19, 2007
+//    Randy Hudson, July 19, 2007
 //    Added support for concurrent block-level and block-processor subset pairs
 //      for both domain and morton curve meshes
 //
@@ -706,15 +709,19 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Kathleen Bonnell, Thu Jul 20 11:22:13 PDT 2006
 //    Added support for FLASH3 formats.
 //
-//    Randy HUDSON, Apr 3, 2007
+//    Randy Hudson, Apr 3, 2007
 //    Added support for Morton curve.
 //
-//    Randy HUDSON, June 18, 2007
+//    Randy Hudson, June 18, 2007
 //    Added support for creating subsets of Morton curve.
 //
-//    Randy HUDSON, July 19, 2007
+//    Randy Hudson, July 19, 2007
 //    Added support for concurrent block-level and block-processor subset pairs
 //      for both domain and morton curve meshes
+//
+//    Randy Hudson, June 10, 2008
+//    Replaced the representation of curves as vtkPolyData with that as 
+//      vtkRectilinearGrid, to support expressions
 //
 // ****************************************************************************
 
@@ -983,39 +990,37 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
         }
 
         //
-        // Create the polydata
+        // Create the rectilinear grid
+        //   (Lifted from avtCurve2DFileFormat::ReadFile())
         //
-        vtkPolyData *pd  = vtkPolyData::New();
-        vtkPoints   *pts = vtkPoints::New();
-        pd->SetPoints(pts);
 
-        pts->SetNumberOfPoints(nsteps);
-        for (int j = 0 ; j < nsteps ; j++)
-        {
-            pts->SetPoint(j, x[j], y[j], 0.);
-        }
- 
         //
-        // Connect the points up with line segments.
+        // Add all of the points to an array.
         //
-        vtkCellArray *line = vtkCellArray::New();
-        pd->SetLines(line);
-        for (int k = 1 ; k < nsteps ; k++)
+        int nPts = nsteps;
+        vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
+        vtkFloatArray    *valarray = vtkFloatArray::New();
+        valarray->SetNumberOfComponents(1);
+        valarray->SetNumberOfTuples(nPts);
+        valarray->SetName(meshname);
+        rg->GetPointData()->SetScalars(valarray);
+        vtkDataArray *xc = rg->GetXCoordinates();
+        for (int j = 0 ; j < nPts ; j++)
         {
-            line->InsertNextCell(2);
-            line->InsertCellPoint(k-1);
-            line->InsertCellPoint(k);
+            //  NODE CENTERED:
+            xc->SetComponent(j,  0, x[j]);
+            
+            valarray->SetValue(j, y[j]);
         }
-
-        pts->Delete();
-        line->Delete();
+        valarray->Delete();    
 
         delete[] vals;
         delete[] x;
         delete[] y;
         delete[] l;
 
-        return pd;
+        return rg;
+
     }
     else if (string(meshname) == "morton_blockandlevel")
     {
@@ -1040,7 +1045,7 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
 //      The morton curve connects leaf blocks.
 //      The two segments of the curve that enter and leave block "domain" are built.
 //
-//  Programmer: Randy HUDSON
+//  Programmer: Randy Hudson
 //  Creation:   June 15, 2007
 //
 // ****************************************************************************
@@ -1110,7 +1115,7 @@ avtFLASHFileFormat::GetMortonCurveSubset(int domain)
 //  Purpose:
 //      Build and return the Morton space-filling curve as a vtkPolyData object.
 //
-//  Programmer: Randy HUDSON
+//  Programmer: Randy Hudson
 //  Creation:   April 3, 2007
 //
 // ****************************************************************************
@@ -1192,7 +1197,7 @@ avtFLASHFileFormat::GetMortonCurve()
 //    Mark C. Miller, Thu Apr  6 17:06:33 PDT 2006
 //    Added conditional compilation for hssize_t type
 //
-//    Randy HUDSON, July 19, 2007
+//    Randy Hudson, July 19, 2007
 //    Added support for concurrent block-level and block-processor subset pairs
 //      for both domain and morton curve meshes
 //
@@ -1442,11 +1447,11 @@ avtFLASHFileFormat::GetVectorVar(int domain, const char *varname)
 //    Jeremy Meredith, Tue Sep 27 14:24:45 PDT 2005
 //    Added support for files containing only particles, and no grids.
 //
-//    Randy HUDSON, Apr 4, 2007
+//    Randy Hudson, Apr 4, 2007
 //    Added call to ReadNodeTypes.
 //    Added call to ReadCoordinates.
 //
-//    Randy HUDSON, June 12, 2007
+//    Randy Hudson, June 12, 2007
 //    Added call to ReadProcessorNumbers.
 //
 // ****************************************************************************
@@ -1503,11 +1508,11 @@ avtFLASHFileFormat::ReadAllMetaData()
 //  Purpose:
 //      Read the ID's of the processors the blocks were processed on
 //
-//  Programmer: Randy HUDSON
+//  Programmer: Randy Hudson
 //  Creation:   June 12, 2007
 //
 //  Modifications:
-//    Randy HUDSON, Apr 4, 2007
+//    Randy Hudson, Apr 4, 2007
 //    Added support for (old) files w/o "processor number".
 //
 // ****************************************************************************
@@ -1622,7 +1627,7 @@ void avtFLASHFileFormat::ReadProcessorNumbers()
 //  Purpose:
 //      Read coordinates of centers of blocks.
 //
-//  Programmer: Randy HUDSON
+//  Programmer: Randy Hudson
 //  Creation:   April 4, 2007
 //
 //  Changes:
@@ -1720,11 +1725,11 @@ void avtFLASHFileFormat::ReadCoordinates()
 //  Purpose:
 //      Read node types of blocks and count the leaf blocks ( of node type '1')
 //
-//  Programmer: Randy HUDSON
+//  Programmer: Randy Hudson
 //  Creation:   April 4, 2007
 //
 //  Changes:
-//    Randy HUDSON, June 23, 2007
+//    Randy Hudson, June 23, 2007
 //    Added code to build the vector of leaf blocks for subsets of the Morton curve.
 //
 // ****************************************************************************
