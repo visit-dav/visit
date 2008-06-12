@@ -1837,11 +1837,6 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //
 //  Modifications:
 //
-//    Hank Childs, Thu Mar 18 16:06:56 PST 2004
-//    Do some bookkeeping for which plots are stored in the vis window already.
-//    This allows us to not have to remove the plots and re-add them for each
-//    render.
-//
 //    Mark C. Miller, Tue Mar 30 10:58:01 PST 2004
 //    Added code to set image compositor's background color
 //
@@ -1849,17 +1844,8 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Removed call to AdjustWindowAttributes
 //    Added use of viewported screen capture
 //    
-//    Mark C. Miller, Fri Apr  2 11:06:09 PST 2004
-//    Removed call to FullFrameOff
-//
-//    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
-//    Added code to issue a warning if a plot's actor has no data
-//
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Added call to local GetScalableThreshold method
-//
-//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
-//    Added code to pass annotationObjectList in SetAnnotationAttributes
 //
 //    Mark C. Miller, Thu May 27 11:05:15 PDT 2004
 //    Removed window attributes arg from GetActor method
@@ -1868,11 +1854,6 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added visualCueList arg to SetAnnotationAttributes
-//
-//    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
-//    Totally re-organized. Added calls to reduce cell counts for newly
-//    added plots. Moved test for exceeding scalable threshold to after point
-//    where each plot's network output is actually computed.
 //
 //    Mark C. Miller, Mon Jul 26 15:08:39 PDT 2004
 //    Added code to post process the composited image when the engine
@@ -1883,9 +1864,6 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Mark C. Miller, Wed Aug 11 23:42:18 PDT 2004
 //    Added code to get cell count multiplier for SR mode and adjust
 //    cell counts for SR threshold
-//
-//    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
-//    Added arg to GetOutput call
 //
 //    Chris Wojtan, Fri Jul 30 10:32:02 PDT 2004
 //    Switched from single pass rendering to 2 pass randering, in order to
@@ -1926,18 +1904,8 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Hank Childs, Wed Nov 24 17:28:07 PST 2004
 //    Added imageBasedPlots.
 //
-//    Mark C. Miller, Wed Dec  8 19:42:02 PST 2004
-//    Fixed problem where wrong cell-count (un multiplied one) was being used
-//    to update global cell counts on the networks
-//
-//    Mark C. Miller, Tue Jan  4 10:23:19 PST 200
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Modified to use viswinMap
-//
-//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
-//    Added call to UpdateVisualCues
-//
-//    Mark C. Miller, Mon Jan 24 19:25:44 PST 2005
-//    Made all procs render 3D visual cues not just proc 0
 //
 //    Mark C. Miller, Mon Mar  7 12:06:08 PST 2005
 //    Changed calls from GetNumTriangles to GetNumPrimitives.
@@ -1954,27 +1922,12 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Hank Childs, Fri Mar  3 08:32:02 PST 2006
 //    Do not do shadowing in 2D.
 //
-//    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
-//    Fixed bug in selecting which cellCounts entries to store as global
-//    cell counts for the whole network
-//
-//    Brad Whitlock, Tue May 30 14:01:56 PST 2006
-//    Added code to set up annotations before adding plots in some cases so
-//    annotations that depend on plots being added in order to update 
-//    themselves get the opportunity to do so.
-//
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added leftEye arg as well as logic to force rendering for one or the
 //    other eye.
 //
-//    Brad Whitlock, Wed Jul 26 13:16:06 PST 2006
-//    Added code to set the fullframe scale into the plot's mappers.
-//
 //    Mark C. Miller, Mon Aug 14 12:26:18 PDT 2006
 //    Added code to return viswin to its true stereo type upon completion
-//
-//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
-//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 //
 //    Brad Whitlock, Wed Mar 21 23:06:04 PST 2007
 //    Set the actor's name to that of the plot so legend attributes can be
@@ -1982,14 +1935,6 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //
 //    Jeremy Meredith, Wed Aug 29 15:24:13 EDT 2007
 //    Added depth cueing.
-//
-//    Hank Childs, Wed Sep 19 16:41:53 PDT 2007
-//    Have visual cues be added after adding the plots.  Otherwise, they won't
-//    know if the window is 2D or 3D and whether they should offset themselves.
-//
-//    Kathleen Bonnell, Tue Sep 25 10:38:27 PDT 2007 
-//    Retrieve scaling modes from 2d and curve view atts and set them in the
-//    plot before it executes so the plot will be created with correct scaling. 
 //
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
@@ -2732,9 +2677,6 @@ NetworkManager::UpdateVisualCues(int windowID)
 //    Mark C. Miller, Wed Jan  5 10:14:21 PST 2005
 //    Fixed loop termination variable for setting frameAndState at end
 //    of routine.
-//
-//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
-//    Moved code to modify visual cues to UpdateVisualCues
 //
 //    Mark C. Miller, Mon Jan 24 19:25:44 PST 2005
 //    Made all procs render 3D visual cues not just proc 0
@@ -4415,6 +4357,12 @@ NetworkManager::PlotsNeedUpdating(const intVector &plots,
 //  Programmer: Tom Fogal
 //  Creation:   June 9, 2008
 //
+//  Modifications:
+//
+//    Kathleen Bonnell, Tue Sep 25 10:38:27 PDT 2007 
+//    Retrieve scaling modes from 2d and curve view atts and set them in the
+//    plot before it executes so the plot will be created with correct scaling. 
+//
 // ****************************************************************************
 
 bool
@@ -4477,6 +4425,46 @@ NetworkManager::ViewerExecute(const VisWindow * const viswin,
 //  Creation:   June 9, 2008
 //
 //  Modifications:
+//
+//    Hank Childs, Thu Mar 18 16:06:56 PST 2004
+//    Do some bookkeeping for which plots are stored in the vis window already.
+//    This allows us to not have to remove the plots and re-add them for each
+//    render.
+//
+//    Mark C. Miller, Fri Apr  2 11:06:09 PST 2004
+//    Removed call to FullFrameOff
+//
+//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//    Added code to pass annotationObjectList in SetAnnotationAttributes
+//
+//    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
+//    Totally re-organized. Added calls to reduce cell counts for newly
+//    added plots. Moved test for exceeding scalable threshold to after point
+//    where each plot's network output is actually computed.
+//
+//    Mark C. Miller, Wed Dec  8 19:42:02 PST 2004
+//    Fixed problem where wrong cell-count (un multiplied one) was being used
+//    to update global cell counts on the networks
+//
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Moved code to modify visual cues to UpdateVisualCues
+//
+//    Mark C. Miller, Mon Jan 24 19:25:44 PST 2005
+//    Made all procs render 3D visual cues not just proc 0
+//
+//    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
+//    Fixed bug in selecting which cellCounts entries to store as global
+//    cell counts for the whole network
+//
+//    Brad Whitlock, Wed Jul 26 13:16:06 PST 2006
+//    Added code to set the fullframe scale into the plot's mappers.
+//
+//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
+//    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Hank Childs, Wed Sep 19 16:41:53 PDT 2007
+//    Have visual cues be added after adding the plots.  Otherwise, they won't
+//    know if the window is 2D or 3D and whether they should offset themselves.
 //
 //    Tom Fogal, Thu Jun 12 14:48:41 EDT 2008
 //    Added in logic to UpdateVisualCues and set cell counts, which I
@@ -4687,6 +4675,23 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 //  Creation:   June 9, 2008
 //
 //  Modifications:
+//
+//    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
+//    Added code to issue a warning if a plot's actor has no data
+//
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Added call to local GetScalableThreshold method
+//
+//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//    Added code to pass annotationObjectList in SetAnnotationAttributes
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Modified to use viswinMap
+//
+//    Brad Whitlock, Tue May 30 14:01:56 PST 2006
+//    Added code to set up annotations before adding plots in some cases so
+//    annotations that depend on plots being added in order to update 
+//    themselves get the opportunity to do so.
 //
 //    Tom Fogal, Thu Jun 12 15:10:03 EDT 2008
 //    Removed the TRY block from this code; our caller should have one for us.
