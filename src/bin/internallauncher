@@ -326,6 +326,13 @@ $0 = shift @ARGV;
 #    Sean Ahern, Mon May 12 14:47:11 EDT 2008
 #    Put back use_vis logic that got accidentally blown away.
 #
+#    Jeremy Meredith, Thu Jun 12 14:52:56 EDT 2008
+#    Need to check for parallel arguments here to disable loopback.
+#    Previously I was checking when adding profile arguments inside
+#    the proxy code, but you can add parallel arguments either on
+#    the command line, or through the CLI, without going through that
+#    code.  So the only truly safe place to check is here.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1086,6 +1093,12 @@ if ((($parallel) or ($launchengine)) and
 # with -ssh, or another remote process launched through vcl).  A
 # parallel engine also needs to add the flag since even "local"
 # parallel jobs may run on compute nodes.
+if ($parallel && !$noloopback)
+{
+    $noloopback = 1;
+    push @visitargs, "-noloopback";
+}
+
 if (!$noloopback)
 {
     $remotehost = "127.0.0.1";
