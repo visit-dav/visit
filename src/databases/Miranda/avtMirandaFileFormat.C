@@ -86,6 +86,48 @@ typedef int int32_t;
 #endif
 
 
+// ****************************************************************************
+//  Method: Fix2DFileOrder
+//
+//  Purpose:
+//      Modifies iFileOrder for 2D datasets.  fileOrder will come in as a 3 
+//      element array holding a permutation of 0,1,2.  a and b each hold 0, 1, 
+//      or 2, where a != b.  This function figures out whether a or b occurs
+//      first, and sets the first two elements of fileOrder to be 0,1  or 1,0
+//      accordingly.  Also, I wrote this on Friday the 13th, so this function
+//      could be cursed...
+//
+//  Programmer: Dave Bremer
+//  Creation:   Fri Jun 13 15:54:11 PDT 2008
+//
+// ****************************************************************************
+
+static void Fix2DFileOrder(int a, int b, int *fileOrder)
+{
+    int posA, posB;
+    int ii;
+    for (ii = 0; ii < 3; ii++)
+    {
+        if (fileOrder[ii] == a)
+            posA = ii;
+        if (fileOrder[ii] == b)
+            posB = ii;
+    }
+    if (posA < posB)
+    {
+        fileOrder[0] = 0;
+        fileOrder[1] = 1;
+    }
+    else
+    {
+        fileOrder[0] = 1;
+        fileOrder[1] = 0;
+    }
+}
+
+
+
+
 
 // ****************************************************************************
 //  Method: avtMiranda constructor
@@ -101,6 +143,9 @@ typedef int int32_t;
 //    Added support for version 1.2 of the .raw files, which specifies block
 //    ordering using a tag of the form "fileorder: ZYX", rather than using a
 //    separate grid file per process.  Also allow comments that use a full line.
+//
+//    Dave Bremer, Fri Jun 13 15:54:11 PDT 2008
+//    Fix a bug in the use of the fileorder tag that comes up with some 2D data.
 // ****************************************************************************
 
 avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttributes *readOpts)
@@ -312,6 +357,8 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
     {
         dim = 2;
         flatDim = 2;
+
+        Fix2DFileOrder(0, 1, iFileOrder);
     }
     else if (iGlobalDim[1] == 1)
     {
@@ -331,10 +378,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         iNumBlocks[2] = 1;
         iBlockSize[2] = 1;
 
-        if (iFileOrder[0] == 2)
-            iFileOrder[0] = 1;
-        else if (iFileOrder[1] == 2)
-            iFileOrder[1] = 1;
+        Fix2DFileOrder(0, 2, iFileOrder);
     }
     else if (iGlobalDim[0] == 1)
     {
@@ -359,8 +403,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         iNumBlocks[2] = 1;
         iBlockSize[2] = 1;
 
-        iFileOrder[0]--;
-        iFileOrder[1]--;
+        Fix2DFileOrder(1, 2, iFileOrder);
     }
 
 }
