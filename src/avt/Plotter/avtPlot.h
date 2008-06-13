@@ -237,6 +237,10 @@ class     WindowAttributes;
 //    Hank Childs, Fri Feb  1 13:14:21 PST 2008
 //    Add new virtual method "UtilizeRenderingFilters".
 //
+//    Tom Fogal, Fri Jun 13 11:19:01 EDT 2008
+//    I made GetNumberOfStagesForImageBasedPlot a const method, to allow
+//    calling it from a const method in NetworkManager.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -258,7 +262,8 @@ class PLOTTER_API avtPlot
 
     virtual bool               PlotIsImageBased(void) { return false; };
     virtual int                GetNumberOfStagesForImageBasedPlot(
-                                       const WindowAttributes &) { return 0; };
+                                       const WindowAttributes &) const
+                                       { return 0; };
     virtual avtImage_p         ImageExecute(avtImage_p img,
                                             const WindowAttributes &) 
                                     { return img; };

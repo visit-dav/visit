@@ -322,6 +322,16 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Mark C. Miller, Tue Jun 10 15:57:15 PDT 2008
 //    Added bool for ignoring extents to StartNetwork / GetDBFromCache
 //
+//    Tom Fogal,  Fri Jun 13 11:58:15 EDT 2008
+//    Splitting up Render():
+//       Added RenderGeometry
+//       Added MultipassRendering
+//       Added RenderingStages
+//       Added RenderTranslucent (required vertical align fixes)
+//    Moved methods I'm adding from protected to private.  They won't all stay
+//    there, but it's better they are private by default and moved
+//    intentionally.
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -423,24 +433,28 @@ class NetworkManager
 
     static void   SetStereoEnabled();
 
-protected:
-
-    void          RenderSetup(intVector networkIds, bool getZBuffer,
-                              int annotMode, int windowID, bool leftEye);
-    void          RenderCleanup(int windowID);
+ protected:
 
  private:
 
-    void          UpdateVisualCues(int winID);
-    void          NewVisWindow(int winID);
-    bool          PlotsNeedUpdating(const intVector &plots,
-                                    const intVector &plotsInWindow) const;
-    bool          ViewerExecute(const VisWindow * const viswin,
-                                const intVector &plots,
-                                const WindowAttributes &windowAttributes);
-    void          SetUpWindowContents(int windowID, const intVector &plotIds,
-                                      bool forceViewerExecute);
-   
+    void            UpdateVisualCues(int winID);
+    void            NewVisWindow(int winID);
+    void            RenderSetup(intVector networkIds, bool getZBuffer,
+                                int annotMode, int windowID, bool leftEye);
+    void            RenderCleanup(int windowID);
+    bool            PlotsNeedUpdating(const intVector &plots,
+                                      const intVector &plotsInWindow) const;
+    bool            ViewerExecute(const VisWindow * const viswin,
+                                  const intVector &plots,
+                                  const WindowAttributes &windowAttributes);
+    void            SetUpWindowContents(int windowID, const intVector &plotIds,
+                                        bool forceViewerExecute);
+    size_t          RenderingStages(int windowID) const;
+    avtImage_p      RenderGeometry(int windowID);
+    bool            MultipassRendering(const VisWindow *viswin) const;
+    avtDataObject_p RenderTranslucent(int windowID, avtImage_p input);
+    void            RenderShadows(int windowID,
+                                  avtDataObject_p input_as_dob) const;
 
     std::vector<DataNetwork*>   networkCache;
     std::vector<int>            globalCellCounts;
