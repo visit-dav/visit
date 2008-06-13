@@ -1875,24 +1875,6 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Added code to push color table name to plots
 //    Added code to use correct whole image compositor based upon window mode
 //
-//    Jeremy Meredith, Thu Oct 21 17:33:09 PDT 2004
-//    Finished the two-pass mode.  Cleaned things up a bit.
-//    Refactored image writing to new functions.  Wrote the tiled
-//    image compositor.
-//
-//    Jeremy Meredith, Fri Oct 22 13:55:47 PDT 2004
-//    Forced the second pass to turn off gradient backgrounds before rendering.
-//    It was causing erasing of the first-pass results.
-//
-//    Hank Childs, Sat Oct 23 14:06:21 PDT 2004
-//    Added support for shadows.  Also cleaned up memory leak.
-//
-//    Jeremy Meredith, Fri Oct 29 16:41:59 PDT 2004
-//    Refactored the code to find the shadow light's view into a method
-//    of avtSoftwareShader, since it needs to do a lot of work related to
-//    shadowing to even figure out what the view should be.  Separated out
-//    the light-view image size from the normal camera one.
-//
 //    Hank Childs, Wed Nov  3 14:12:29 PST 2004
 //    Fix typo and fix problem with shadows in parallel.
 //
@@ -1946,6 +1928,11 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    When splitting the function, we turned a conditional block into an
 //    unconditional block.  This removes the block structure, unindenting a
 //    large block.
+//
+//    Tom Fogal, Fri Jun 13 13:23:00 EDT 2008
+//    Utilize RenderGeometry for initial rendering.
+//    Utilize RenderTranslucent for second pass rendering.
+//    Utilize RenderShadows.
 //
 // ****************************************************************************
 
@@ -2004,31 +1991,15 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         bool doShadows = windowAttributes.GetRenderAtts().GetDoShadowing();
         bool doDepthCueing =
             windowAttributes.GetRenderAtts().GetDoDepthCueing();
-        bool two_pass_mode = false;
-        if (viswin->GetWindowMode() == WINMODE_3D)
-        {
-#ifdef PARALLEL
-            two_pass_mode = viswin->TransparenciesExist();
-            two_pass_mode = UnifyMaximumValue(two_pass_mode);
-#endif
-        }
-        else
+
+        // Shadows and depth cueing don't make sense in a non-3D render anyway.
+        if(viswin->GetWindowMode() != WINMODE_3D)
         {
             doShadows = false;
             doDepthCueing = false;
         }
 
-        int nstages = 3;  // Rendering + Two for Compositing
-        nstages += (doShadows ? 2 : 0);
-        nstages += (doDepthCueing ? 1 : 0);
-        nstages += (two_pass_mode ? 1 : 0);
-        for (size_t ss = 0 ; ss < imageBasedPlots.size() ; ss++)
-        {
-            nstages += imageBasedPlots[ss]
-                   ->GetNumberOfStagesForImageBasedPlot(windowAttributes);
-        }
-
-        CallInitializeProgressCallback(nstages);
+        CallInitializeProgressCallback(this->RenderingStages(windowID));
 
         // render the image and capture it. Relies upon explicit render
         int t3 = visitTimer->StartTimer();
@@ -2041,15 +2012,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         // FIRST PASS - Opaque only
         // ************************************************************
 
-        CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
-        avtImage_p theImage;
-        if (two_pass_mode)
-            theImage=viswin->ScreenCapture(viewportedMode,true,true,false);
-        else
-            theImage=viswin->ScreenCapture(viewportedMode,true);
-        CallProgressCallback("NetworkManager", "Render geometry", 1, 1);
-        CallProgressCallback("NetworkManager", "Compositing", 0, 1);
+        avtImage_p theImage = this->RenderGeometry(windowID);
 
+        CallProgressCallback("NetworkManager", "Compositing", 0, 1);
 
         visitTimer->StopTimer(t3, "Screen capture for SR");
 
@@ -2061,11 +2026,13 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         if (viswin->GetWindowMode() == WINMODE_3D)
         {
             imageCompositer = new avtWholeImageCompositerWithZ();
-            imageCompositer->SetShouldOutputZBuffer(getZBuffer ||
-                                                    two_pass_mode ||
-                                                    doShadows ||
-                                                    doDepthCueing ||
-                                                    haveImagePlots);
+            imageCompositer->SetShouldOutputZBuffer(
+                                    getZBuffer ||
+                                    this->MultipassRendering(viswin) ||
+                                    doShadows ||
+                                    doDepthCueing ||
+                                    haveImagePlots
+                             );
         }
         else
         {
@@ -2075,7 +2042,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 imageCompositer = new avtWholeImageCompositerNoZ();
             else
                 imageCompositer = new avtWholeImageCompositerWithZ();
-            imageCompositer->SetShouldOutputZBuffer(two_pass_mode);
+            imageCompositer->SetShouldOutputZBuffer(
+                                    this->MultipassRendering(viswin)
+                             );
         }
 
         //
@@ -2095,10 +2064,12 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         theImage->GetSize(&imageCols, &imageRows);
         imageCompositer->SetOutputImageSize(imageRows, imageCols);
         imageCompositer->AddImageInput(theImage, 0, 0);
-        imageCompositer->SetAllProcessorsNeedResult(two_pass_mode ||
-                                                    doShadows ||
-                                                    doDepthCueing ||
-                                                    haveImagePlots);
+        imageCompositer->SetAllProcessorsNeedResult(
+                                this->MultipassRendering(viswin) ||
+                                doShadows ||
+                                doDepthCueing ||
+                                haveImagePlots
+                         );
 
         //
         // Do the parallel composite using a 1 stage pipeline
@@ -2112,60 +2083,20 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         // in the compositor, and this only happens in two pass mode.
         if (dump_renders)
             DumpImage(compositedImageAsDataObject,
-                      "after_OpaqueComposite", two_pass_mode);
+                      "after_OpaqueComposite",
+                      this->MultipassRendering(viswin));
         CallProgressCallback("NetworkManager", "Compositing", 1, 1);
-
 
         // ************************************************************
         // SECOND PASS - Translucent only
         // ************************************************************
 
-        if (two_pass_mode)
+        if (this->MultipassRendering(viswin))
         {
-            CallProgressCallback("NetworkManager", "Transparent rendering",
-                                 0, 1);
-            int t1 = visitTimer->StartTimer();
-
-            //
-            // We have to disable any gradient background before
-            // rendering, as those will overwrite the first pass
-            //
-            int bm = viswin->GetBackgroundMode();
-            viswin->SetBackgroundMode(0);
-
-            //
-            // Do the screen capture
-            //
-            avtImage_p theImage2;
-            theImage2=viswin->ScreenCapture(viewportedMode,true,false,true,
-                                        imageCompositer->GetTypedOutput());
-
-            // Restore the background mode for next time
-            viswin->SetBackgroundMode(bm);
-
-            visitTimer->StopTimer(t1, "Second-pass screen capture for SR");
-
-            if (dump_renders)
-                DumpImage(theImage2, "before_TranslucentComposite");
-
-            avtTiledImageCompositor imageCompositer2;
-
-            //
-            // Set up the input image size and add it to compositer's input
-            //
-            theImage2->GetSize(&imageCols, &imageRows);
-            imageCompositer2.SetOutputImageSize(imageRows, imageCols);
-            imageCompositer2.AddImageInput(theImage2, 0, 0);
-
-            //
-            // Do the parallel composite using a 1 stage pipeline
-            //
-            int t2 = visitTimer->StartTimer();
-            imageCompositer2.Execute();
-            compositedImageAsDataObject = imageCompositer2.GetOutput();
-            visitTimer->StopTimer(t2, "tiled image compositor execute");
-            CallProgressCallback("NetworkManager", "Transparent rendering",
-                                 1, 1);
+            compositedImageAsDataObject =
+                this->RenderTranslucent(windowID,
+                                        imageCompositer->GetTypedOutput()
+                                       ); 
         }
 
         //
@@ -2173,84 +2104,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         //
         if (doShadows)
         {
-            CallProgressCallback("NetworkManager", "Creating shadows",0,1);
-            avtView3D cur_view = viswin->GetView3D();
-
-            //
-            // Figure out which direction the light is pointing.
-            //
-            const LightList *light_list = viswin->GetLightList();
-            const LightAttributes &la = light_list->GetLight0();
-            double light_dir[3];
-            bool canShade = avtSoftwareShader::GetLightDirection(la,
-                                                      cur_view, light_dir);
-
-            double strength =
-                windowAttributes.GetRenderAtts().GetShadowStrength();
-
-            if (canShade)
-            {
-                //
-                // Get the image attributes
-                //
-                avtImage_p compositedImage;
-                CopyTo(compositedImage, compositedImageAsDataObject);
-
-                int width, height;
-                viswin->GetSize(width, height);
-
-                //
-                // Create a light source view
-                //
-                int light_width = (width > 2048) ? 4096 : width*2;
-                int light_height = (height > 2048) ? 4096 : height*2;
-                avtView3D light_view;
-                light_view = avtSoftwareShader::FindLightView(
-                             compositedImage, cur_view, light_dir,
-                             double(light_width)/double(light_height));
-
-                //
-                // Now create a new image from the light source.
-                //
-                viswin->SetSize(light_width,light_height);
-                viswin->SetView3D(light_view);
-                avtImage_p myLightImage =
-                                viswin->ScreenCapture(viewportedMode,true);
-                viswin->SetSize(width,height);
-                avtWholeImageCompositer *wic =
-                                        new avtWholeImageCompositerWithZ();
-                wic->SetShouldOutputZBuffer(true);
-                int imageRows, imageCols;
-                myLightImage->GetSize(&imageCols, &imageRows);
-                wic->SetOutputImageSize(imageRows, imageCols);
-                wic->AddImageInput(myLightImage, 0, 0);
-                wic->SetShouldOutputZBuffer(1);
-                wic->SetAllProcessorsNeedResult(false);
-
-                //
-                // Do the parallel composite using a 1 stage pipeline
-                //
-                wic->Execute();
-                avtImage_p lightImage = wic->GetTypedOutput();
-                viswin->SetView3D(cur_view);
-
-#ifdef PARALLEL
-                if (PAR_Rank() == 0)
-#endif
-                {
-                    CallProgressCallback("NetworkManager",
-                                         "Synch'ing up shadows", 0, 1);
-                    avtSoftwareShader::AddShadows(lightImage,
-                                                  compositedImage,
-                                                  light_view,
-                                                  cur_view,
-                                                  strength);
-                    CallProgressCallback("NetworkManager",
-                                         "Synch'ing up shadows", 1, 1);
-                }
-                delete wic;
-            }
-            CallProgressCallback("NetworkManager", "Creating shadows",1,1);
+            this->RenderShadows(windowID, compositedImageAsDataObject);
         }
 
         //
@@ -4634,7 +4488,7 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 #ifdef PARALLEL
     int *reducedCounts = new int[2 * plotIds.size()];
     MPI_Allreduce(*(this->r_mgmt.cellCounts), reducedCounts, 2 * plotIds.size(),
-        MPI_INT, MPI_SUM, VISIT_MPI_COMM);
+                  MPI_INT, MPI_SUM, VISIT_MPI_COMM);
     for (size_t i = 0; i < 2 * plotIds.size(); i++)
     {
         if (this->r_mgmt.cellCounts[i] != INT_MAX) // accounts for overflow
@@ -4879,4 +4733,337 @@ NetworkManager::RenderCleanup(int windowID)
     }
     visitTimer->StopTimer(this->r_mgmt.timer,
                           "Total time for NetworkManager::Render");
+}
+
+// ****************************************************************************
+//  Method: RenderingStages
+//
+//  Purpose: Computes the number of stages a Render will require.
+//
+//  Arguments:
+//    windowID  which window rendering will occur in
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 13, 2008
+//
+// ****************************************************************************
+
+size_t
+NetworkManager::RenderingStages(int windowID) const
+{
+    const EngineVisWinInfo& viswinInfo = viswinMap.find(windowID)->second;
+    const WindowAttributes& winAtts = viswinInfo.windowAttributes;
+    const std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
+    const VisWindow *viswin = viswinInfo.viswin;
+
+    bool shadows = winAtts.GetRenderAtts().GetDoShadowing();
+    bool depth_cueing = winAtts.GetRenderAtts().GetDoDepthCueing();
+    bool two_pass_mode = false;
+
+    // If we're not doing 3D rendering in this window, then shadows and depth
+    // cueing are worthless anyway.
+    if(viswin->GetWindowMode() != WINMODE_3D)
+    {
+        shadows = false;
+        depth_cueing = false;
+    }
+    else
+    {
+        // If we are doing 3D rendering, it might be relevant to do multipass
+        // rendering.
+#ifdef PARALLEL
+        two_pass_mode = viswin->TransparenciesExist();
+        two_pass_mode = UnifyMaximumValue(two_pass_mode);
+#endif
+    }
+
+    // There is always one stage for rendering and two for composition.
+    size_t stages = 3;
+
+    stages += (shadows ? 2 : 0);
+    stages += (depth_cueing ? 1 : 0);
+    stages += (two_pass_mode ? 1 : 0);
+
+    std::vector<avtPlot_p>::const_iterator iter;
+    for(iter = imageBasedPlots.begin();
+        iter != imageBasedPlots.end();
+        iter++)
+    {
+        stages += (*(*iter))->GetNumberOfStagesForImageBasedPlot(winAtts);
+    }
+
+    return stages;
+}
+
+// ****************************************************************************
+//  Method: RenderGeometry
+//
+//  Purpose: Renders the geometry for a scene; this is always the opaque
+//           objects, and may or may not include translucent objects (depending
+//           on the current multipass rendering settings).
+//
+//  Arguments:
+//    windowID  which window rendering will occur in
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 13, 2008
+//
+// ****************************************************************************
+
+avtImage_p
+NetworkManager::RenderGeometry(int windowID)
+{
+    VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
+    bool viewportedMode = (this->r_mgmt.annotMode != 1) ||
+                          (viswin->GetWindowMode() == WINMODE_2D) ||
+                          (viswin->GetWindowMode() == WINMODE_CURVE) ||
+                          (viswin->GetWindowMode() == WINMODE_AXISARRAY);
+
+    CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
+    avtImage_p geometry;
+    if (this->MultipassRendering(viswin))
+    {
+        geometry = viswin->ScreenCapture(viewportedMode,true,true,false);
+    }
+    else
+    {
+        geometry = viswin->ScreenCapture(viewportedMode,true);
+    }
+
+    CallProgressCallback("NetworkManager", "Render geometry", 1, 1);
+    return geometry;
+}
+
+// ****************************************************************************
+//  Method: MultipassRendering
+//
+//  Purpose: Predicate which determines whetehr or not we should do render in
+//           two passes -- once for opaque and then again for translucent
+//           geometry.
+//
+//  Arguments:
+//    viswin    window to query
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 13, 2008
+//
+// ****************************************************************************
+
+bool
+NetworkManager::MultipassRendering(const VisWindow *viswin) const
+{
+    bool multipass = false;
+
+    // If we're not doing 3D rendering in this window, then we'll never need
+    // multipass rendering.
+#ifdef PARALLEL
+    if(viswin->GetWindowMode() == WINMODE_3D)
+    {
+        multipass = viswin->TransparenciesExist();
+        multipass = UnifyMaximumValue(multipass);
+    }
+#endif
+
+    return multipass;
+}
+
+// ****************************************************************************
+//  Method: RenderTranslucent
+//
+//  Purpose: Renders the translucent parts of a scene, and composites it within
+//           an existing rendering.
+//
+//  Arguments:
+//    windowID  window we should render into
+//    input     An existing image which translucent geometry should be
+//              composited with.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 13, 2008
+//
+//  Modifications:
+//
+//    Jeremy Meredith, Fri Oct 22 13:55:47 PDT 2004
+//    Forced the second pass to turn off gradient backgrounds before rendering.
+//    It was causing erasing of the first-pass results.
+//
+// ****************************************************************************
+
+avtDataObject_p
+NetworkManager::RenderTranslucent(int windowID, avtImage_p input)
+{
+    VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
+    bool viewportedMode = (this->r_mgmt.annotMode != 1) ||
+                          (viswin->GetWindowMode() == WINMODE_2D) ||
+                          (viswin->GetWindowMode() == WINMODE_CURVE) ||
+                          (viswin->GetWindowMode() == WINMODE_AXISARRAY);
+    avtImage_p translucent;
+    CallProgressCallback("NetworkManager", "Transparent rendering", 0, 1);
+
+    {
+        StackTimer second_pass("Second-pass screen capture for SR");
+
+        //
+        // We have to disable any gradient background before
+        // rendering, as those will overwrite the first pass
+        //
+        int bm = viswin->GetBackgroundMode();
+        viswin->SetBackgroundMode(0);
+
+        //
+        // Do the screen capture
+        //
+        translucent = viswin->ScreenCapture(
+                                    viewportedMode,
+                                    true,   // Z buffer
+                                    false,  // opaque geometry
+                                    true,   // translucent geometry
+                                    input   // image to composite with
+                              );
+
+        // Restore the background mode for next time
+        viswin->SetBackgroundMode(bm);
+    }
+
+    avtTiledImageCompositor compositor;
+
+    //
+    // Set up the input image size and add it to compositer's input
+    //
+    int imageCols, imageRows;
+    translucent->GetSize(&imageCols, &imageRows);
+    compositor.SetOutputImageSize(imageRows, imageCols);
+    compositor.AddImageInput(translucent, 0, 0);
+
+    //
+    // Do the parallel composite using a 1 stage pipeline
+    //
+    avtDataObject_p compositedImageAsDOB;
+    TimedCodeBlock("tiled image compositor execute",
+        compositor.Execute();
+        compositedImageAsDOB = compositor.GetOutput();
+    );
+    CallProgressCallback("NetworkManager", "Transparent rendering", 1, 1);
+
+    return compositedImageAsDOB;
+}
+
+// ****************************************************************************
+//  Method: RenderShadows
+//
+//  Purpose: Add shadows to the scene.
+//
+//  Arguments:
+//    windowID      the window we're rendering now, to add shadows to.
+//    input_as_dob  input image to put shadows on, cast as a DataObject.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 13, 2008
+//
+//  Modifications:
+//
+//    Hank Childs, Sat Oct 23 14:06:21 PDT 2004
+//    Added support for shadows.  Also cleaned up memory leak.
+//
+//    Jeremy Meredith, Thu Oct 21 17:33:09 PDT 2004
+//    Finished the two-pass mode.  Cleaned things up a bit.
+//    Refactored image writing to new functions.  Wrote the tiled
+//    image compositor.
+//
+//    Jeremy Meredith, Fri Oct 29 16:41:59 PDT 2004
+//    Refactored the code to find the shadow light's view into a method
+//    of avtSoftwareShader, since it needs to do a lot of work related to
+//    shadowing to even figure out what the view should be.  Separated out
+//    the light-view image size from the normal camera one.
+//
+// ****************************************************************************
+
+void
+NetworkManager::RenderShadows(int windowID,
+                              avtDataObject_p input_as_dob) const
+{
+    VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
+    bool viewportedMode = (this->r_mgmt.annotMode != 1) ||
+                          (viswin->GetWindowMode() == WINMODE_2D) ||
+                          (viswin->GetWindowMode() == WINMODE_CURVE) ||
+                          (viswin->GetWindowMode() == WINMODE_AXISARRAY);
+
+    CallProgressCallback("NetworkManager", "Creating shadows",0,1);
+    avtView3D cur_view = viswin->GetView3D();
+
+    //
+    // Figure out which direction the light is pointing.
+    //
+    const LightList *light_list = viswin->GetLightList();
+    const LightAttributes &la = light_list->GetLight0();
+    double light_dir[3];
+    bool canShade = avtSoftwareShader::GetLightDirection(la, cur_view,
+                                                         light_dir);
+
+    if(canShade)
+    {
+        //
+        // Get the image attributes
+        //
+        avtImage_p compositedImage;
+        CopyTo(compositedImage, input_as_dob);
+
+        int width, height;
+        viswin->GetSize(width, height);
+
+        //
+        // Create a light source view
+        //
+        int light_width = (width > 2048) ? 4096 : width*2;
+        int light_height = (height > 2048) ? 4096 : height*2;
+        avtView3D light_view;
+        light_view = avtSoftwareShader::FindLightView(
+                            compositedImage, cur_view, light_dir,
+                            double(light_width)/double(light_height)
+                     );
+        //
+        // Now create a new image from the light source.
+        //
+        viswin->SetSize(light_width,light_height);
+        viswin->SetView3D(light_view);
+        avtImage_p myLightImage = viswin->ScreenCapture(viewportedMode,true);
+
+        viswin->SetSize(width,height);
+        avtWholeImageCompositer *wic = new avtWholeImageCompositerWithZ();
+        wic->SetShouldOutputZBuffer(true);
+        int imageRows, imageCols;
+        myLightImage->GetSize(&imageCols, &imageRows);
+        wic->SetOutputImageSize(imageRows, imageCols);
+        wic->AddImageInput(myLightImage, 0, 0);
+        wic->SetShouldOutputZBuffer(1);
+        wic->SetAllProcessorsNeedResult(false);
+
+        //
+        // Do the parallel composite using a 1 stage pipeline
+        //
+        wic->Execute();
+        avtImage_p lightImage = wic->GetTypedOutput();
+        viswin->SetView3D(cur_view);
+
+#ifdef PARALLEL
+        if (PAR_Rank() == 0)
+#endif
+        {
+            WindowAttributes winAtts =
+                viswinMap.find(windowID)->second.windowAttributes;
+            double shadow_strength =
+                winAtts.GetRenderAtts().GetShadowStrength();
+            CallProgressCallback("NetworkManager",
+                                 "Synch'ing up shadows", 0, 1);
+            avtSoftwareShader::AddShadows(lightImage,
+                                          compositedImage,
+                                          light_view,
+                                          cur_view,
+                                          shadow_strength);
+            CallProgressCallback("NetworkManager",
+                                 "Synch'ing up shadows", 1, 1);
+        }
+        delete wic;
+    }
+    CallProgressCallback("NetworkManager", "Creating shadows",1,1);
 }
