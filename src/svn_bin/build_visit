@@ -29,10 +29,10 @@
 #       MacOSX  ppc,		GCC 4.0.1	snailbait.llnl.gov
 #
 #   It is believed that this script will also work with other Linux variations.
-#   Please send feedback to visit-help@llnl.gov if you run into problems 
+#   Please send feedback to visit-users@ornl.gov if you run into problems 
 #   so that this script can be improved in the future.  If you have built
 #   VisIt using this script on an OS/hardware/compiler combination not listed
-#   above, please send a note to visit-help@llnl.gov, so we can add that
+#   above, please send a note to visit-users@ornl.gov, so we can add that
 #   information to the script.
 #
 #   Setup:
@@ -95,6 +95,7 @@
 #     Function 8.9, build_cfitsio:  build CFITSIO
 #     Function 8.10, build_h5part:  build H5Part
 #     Function 8.11, build_ccmio:   build CCMIO
+#     Function 8.12, build_tcmalloc: build google-perftools/tcmalloc
 #     Function 8, build_silo:       build Silo
 #     Function 9, build_hostconf:   build the config-site/host.conf file
 #     Function 9.1, build_visit:    build the VisIt source code
@@ -374,6 +375,9 @@
 #     Thomas R. Treadway, Wed May 21 15:51:51 PDT 2008
 #     Version changed to 1.9.1
 #
+#     Hank Childs, Fri Jun 13 14:22:30 PDT 2008
+#     Add support for libtcmalloc.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -569,6 +573,8 @@ export DO_SLIVR="no"
 export ON_SLIVR="off"
 export DO_VISUS="no"
 export ON_VISUS="off"
+export DO_TCMALLOC="no"
+export ON_TCMALLOC="off"
 GRAPHICAL="yes"
 ON_GRAPHICAL="on"
 verify="no"
@@ -723,6 +729,11 @@ export VISUS_FILE=${VISUS_FILE-"visus_26Feb07.tar.gz"}
 export VISUS_VERSION=${VISUS_VERSION-"1.0.0"}
 export VISUS_COMPATIBILITY_VERSION=${VISUS_COMPATIBILITY_VERSION-"1.0"}
 export VISUS_DIR=${VISUS_DIR-"visus"}
+
+export TCMALLOC_FILE=${TCMALLOC_FILE-"google-perftools-0.97.tar.gz"}
+export TCMALLOC_VERSION=${TCMALLOC_VERSION-"0.97"}
+export TCMALLOC_COMPATIBILITY_VERSION=${TCMALLOC_COMPATIBILITY_VERSION-"0.97"}
+export TCMALLOC_DIR=${TCMALLOC_DIR-"google-perftools-0.97"}
 
 # Dialog-related variables.
 DLG="dialog"
@@ -1135,6 +1146,9 @@ function check_visit_source_code
 #    Thomas R. Treadway, Fri Feb  1 15:14:10 PST 2008
 #    Check if the directory has already be untarred.
 #
+#    Hank Childs, Fri Jun 13 14:31:47 PDT 2008
+#    Add support for tcmalloc / google perftools.
+#
 # *************************************************************************** #
 
 function check_optional_3rdparty
@@ -1455,6 +1469,33 @@ function check_optional_3rdparty
         fi
     fi
     #
+    # TCMALLOC / google perftools
+    #
+    if [[ "$DO_TCMALLOC" == "yes" ]] ; then
+        HAVE_TCMALLOC_ALREADY="NO"
+        HAVE_TCMALLOC_TARBALL="NO"
+        if [[ -d "$VISITDIR/google-perftools/$TCMALLOC_VERSION/$VISITARCH" || \
+           -d $TCMALLOC_DIR ]] ; then
+           HAVE_TCMALLOC_ALREADY="YES"
+        fi
+        if [[ -e ${TCMALLOC_FILE%.gz} || -e ${TCMALLOC_FILE} ]] ; then
+           HAVE_TCMALLOC_TARBALL="YES"
+        fi
+        if [[ "$HAVE_TCMALLOC_ALREADY" = "NO" && \
+              "$HAVE_TCMALLOC_TARBALL" = "NO" ]] ; then
+            if [[ "$DO_SVN" != "yes" ]] ; then
+                echo "You have requested to build the google perftools library."
+                echo "This is not currently available for download from the VisIt website and "
+                echo "is only available through Subversion access."
+                exit 1
+            fi
+            download_3rdparty ${TCMALLOC_FILE}
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build google perftools.  ${TCMALLOC_FILE} not found."
+                DO_TCMALLOC="no"
+            fi
+        fi
+    fi
     return 0
 }
   
@@ -6399,6 +6440,56 @@ EOF
 }
 
 # *************************************************************************** #
+#                         Function 8.12, build_tcmalloc                       #
+# *************************************************************************** #
+
+function build_tcmalloc
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -d ${TCMALLOC_DIR} ]] ; then
+       info_box "Found ${TCMALLOC_DIR} . . ." 1>&3
+    elif [[ -f ${TCMALLOC_FILE} ]] ; then
+       info_box "Unzipping/Tarring ${TCMALLOC_FILE} . . ." 1>&3
+       uncompress_untar ${TCMALLOC_FILE}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${TCMALLOC_FILE}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${TCMALLOC_FILE%.*} ]] ; then
+       info_box "Tarring ${TCMALLOC_FILE%.*} . . ." 1>&3
+       tar xf ${TCMALLOC_FILE%.*}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${TCMALLOC_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    info_box "Configuring google-perftools . . ." 1>&3
+    cd ${TCMALLOC_DIR}
+
+    #
+    # Build TCMALLOC
+    #
+    info_box "Building google-perftools . . . (~1 minutes)" 1>&3
+    echo "Building google-perftools"
+    ./configure
+    make
+
+    info_box "Installing google-perftools . . ." 1>&3
+    echo "Installing google-perftools"
+    mkdir $VISITDIR/google-perftools
+    mkdir $VISITDIR/google-perftools/${TCMALLOC_VERSION}
+    mkdir $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH
+    mkdir $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH/lib
+    cp .libs/libtcmalloc.so* $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH/lib
+}
+
+
+# *************************************************************************** #
 #                          Function 9, build_hostconf                         #
 # *************************************************************************** #
 
@@ -6641,6 +6732,11 @@ function build_hostconf
         >> $HOSTCONF
         echo \
 "DEFAULT_VISUS_LIB=\$VISITHOME/visus/$VISUS_VERSION/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    if [[ "$DO_TCMALLOC" == "yes" ]] ; then
+        echo \
+"DEFAULT_TCMALLOC_DIR=\$VISITHOME/google-perftools/$TCMALLOC_VERSION/$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     if [[ "$DO_ITAPS" == "yes" ]] ; then
@@ -6944,6 +7040,11 @@ printvariables () {
   printf "%s%s\n" "VISUS_VERSION=" "${VISUS_VERSION}"
   printf "%s%s\n" "VISUS_COMPATIBILITY_VERSION=" "${VISUS_COMPATIBILITY_VERSION}"
   printf "%s%s\n" "VISUS_DIR=" "${VISUS_DIR}"
+
+  printf "%s%s\n" "TCMALLOC_FILE=" "${TCMALLOC_FILE}"
+  printf "%s%s\n" "TCMALLOC_VERSION=" "${TCMALLOC_VERSION}"
+  printf "%s%s\n" "TCMALLOC_COMPATIBILITY_VERSION=" "${TCMALLOC_COMPATIBILITY_VERSION}"
+  printf "%s%s\n" "TCMALLOC_DIR=" "${TCMALLOC_DIR}"
 }
 usage () {
   printf "Usage: %s [-45bCcdEefghIijkmnoprSsVwxyz] [-a opt] [-l opt]\n" $0
@@ -6978,6 +7079,8 @@ usage () {
   printf "%s\n" "-k     Do not build required 3rd party libraries"
   printf "%s %s %s\n" "-l opt Group name of installed libraries ["$GROUP"]"
   printf "%s %s %s\n" "-m     Build Mili from:["$MILI_FILE"]."
+  printf "%s\n" "       NOTE: not available for download from web"
+  printf "%s %s %s\n" "-M     Build tcmalloc from Google's perftools from:["$TCMALLOC_FILE"]."
   printf "%s\n" "       NOTE: not available for download from web"
   printf "%s %s %s\n" "-n     Build NetCDF from ["$NETCDF_FILE"]"
   printf "%s\n" "-o     Write build log to stdout not to build_visit_log file"
@@ -7058,8 +7161,10 @@ do
       l|L) DO_GROUP="yes"
            GROUP="$OPTARG"
            ON_GROUP="on";;
-      m|M) DO_MILI="yes"
+      m)   DO_MILI="yes"
            ON_MILI="on";;
+      M)   DO_TCMALLOC="yes"
+           ON_TCMALLOC="on";;
       n|N) DO_NETCDF="yes"
            ON_NETCDF="on";;
       o|O) LOG_FILE="/dev/tty";;
@@ -7219,6 +7324,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
            "HDF4"     "2.4.1  $HDF4_FILE"      $ON_HDF4 \
            "HDF5"     "1.6.5  $HDF5_FILE"      $ON_HDF5 \
            "Mili"     "1.10   $MILI_FILE (not available from the web)"      $ON_MILI \
+           "TCMALLOC" "0.97   $TCMALLOC_FILE (not available from the web)"      $ON_TCMALLOC \
            "NetCDF"   "3.6.0  $NETCDF_FILE"    $ON_NETCDF 2> tmp$$
     retval=$?
 
@@ -7688,6 +7794,24 @@ if [[ "$DO_EXODUS" == "yes" ]] ; then
    fi
 fi
 cd "$START_DIR"
+if [[ "$DO_TCMALLOC" == "yes" ]] ; then
+   if [[ -d "$VISITDIR/google-perftools/$VISITARCH" ]] ; then
+      echo "Skipping google-perftools build.  google-perftools is already installed."
+   else
+      echo "Building google-perftools (~2 minutes)"
+      build_tcmalloc 3>&1 >> ${LOG_FILE} 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install google-perftools.  Bailing out."
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
+"More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
+         exit 1
+      fi
+      echo "Done building google-perftools"
+   fi
+fi
+cd "$START_DIR"
 if [[ "$DO_BOXLIB" == "yes" ]] ; then
    if [[ -d "$VISITDIR/boxlib/$VISITARCH" ]] ; then
       echo "Skipping Boxlib build.  Boxlib is already installed."
@@ -7828,7 +7952,7 @@ if [[ "$DO_VISIT" == "yes" ]] ; then
    echo "To install the above tarball in a directory called "INSTALL_DIR_PATH","
    echo "enter: svn_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
    echo 
-   echo "If you run into problems, contact visit-help@llnl.gov"
+   echo "If you run into problems, contact visit-users@ornl.gov"
 else
    echo "Done"
 fi

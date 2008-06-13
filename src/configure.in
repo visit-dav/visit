@@ -785,6 +785,9 @@ dnl
 dnl    Tom Fogal, Sun Jun  8 14:56:22 EDT 2008
 dnl    Added macro to check for ICE-T.
 dnl
+dnl    Hank Childs, Fri Jun 13 15:05:02 PDT 2008
+dnl    Add support for tcmalloc from google-perftools.
+dnl
 dnl --------------------------------------------------------------------------
 m4_include([icet.m4])
 
@@ -2440,6 +2443,38 @@ AC_SUBST(MILI)
 AC_SUBST(MILI_FLAGS)
 AC_SUBST(MILI_LIBS)
 AC_SUBST(MILI_DIR)
+
+#
+# Look for google-perftools's tcmalloc.
+#
+AC_MSG_CHECKING(for google_perftools)
+TCMALLOC_LIB=""
+CREATE_TCMALLOC_LINK=""
+AC_ARG_WITH(google_perftools,
+	    [  --with-google-perftools=DIR      Location of tc-malloc from google-perftools],
+           google_perftools_specified="yes",
+           google_perftools_specified="no"
+           )
+if test "$google_perftools_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      TCMALLOC_DIR=`echo $withval | cut -f1 -d' '`
+      TCMALLOC_LIB="-ltcmalloc"
+   fi
+else
+   if test "$DEFAULT_TCMALLOC_DIR" != "" ; then
+      TCMALLOC_DIR=$DEFAULT_TCMALLOC_DIR
+      TCMALLOC_LIB="-ltcmalloc"
+   fi
+fi
+if test "$TCMALLOC_LIB" != "" ; then
+   AC_MSG_RESULT(yes)
+   CREATE_TCMALLOC_LINK="create_tcmalloc_link"
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(TCMALLOC_LIB)
+AC_SUBST(TCMALLOC_DIR)
+AC_SUBST(CREATE_TCMALLOC_LINK)
 
 #
 # Look for HDF4.
