@@ -235,7 +235,7 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
 // ****************************************************************************
 NetworkManager::~NetworkManager(void)
 {
-    for (int i = 0; i < networkCache.size(); i++)
+    for (size_t i = 0; i < networkCache.size(); i++)
         if (networkCache[i] != NULL)
             delete networkCache[i];
 
@@ -243,7 +243,7 @@ NetworkManager::~NetworkManager(void)
     for (it = viswinMap.begin(); it != viswinMap.end(); it++)
         delete it->second.viswin;
 
-    for (int d = 0 ; d < ddf.size() ; d++)
+    for (size_t d = 0 ; d < ddf.size() ; d++)
         delete ddf[d];
 }
 
@@ -294,23 +294,22 @@ void
 NetworkManager::ClearAllNetworks(void)
 {
     debug3 << "NetworkManager::ClearAllNetworks(void)" << endl;
-    int i;
 
-    for (i = 0; i < networkCache.size(); i++)
+    for (size_t i = 0; i < networkCache.size(); i++)
     {
         if (networkCache[i] != NULL)
             delete networkCache[i];
         networkCache[i] = NULL;
     }
 
-    for (i = 0; i < databaseCache.size(); i++)
+    for (size_t i = 0; i < databaseCache.size(); i++)
     {
         if (databaseCache[i] != NULL)
             delete databaseCache[i];
         databaseCache[i] = NULL;
     }
 
-    for (i = 0 ; i < globalCellCounts.size() ; i++)
+    for (size_t i = 0 ; i < globalCellCounts.size() ; i++)
     {
         globalCellCounts[i] = -1;
     }
@@ -358,13 +357,12 @@ void
 NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 {
     debug3 << "NetworkManager::ClearNetworksWithDatabase()" << endl;
-    int i;
 
     //
     // Clear out the networks before the databases.  This is because if we
     // delete the databases first, the networks will have dangling pointers.
     //
-    for (i = 0; i < networkCache.size(); i++)
+    for (size_t i = 0; i < networkCache.size(); i++)
     {
         if (networkCache[i] != NULL)
         {
@@ -379,7 +377,7 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
         }
     }
 
-    for (i = 0; i < databaseCache.size(); i++)
+    for (size_t i = 0; i < databaseCache.size(); i++)
     {
         if (databaseCache[i] != NULL)
         {
@@ -478,7 +476,7 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 
     // Find a matching database 
     NetnodeDB* cachedDB = NULL;
-    for (int i = 0; i < databaseCache.size(); i++)
+    for (size_t i = 0; i < databaseCache.size(); i++)
     {
         if (databaseCache[i] == NULL)
             continue;
@@ -863,8 +861,7 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
     // Prepend the path to the files.
     stringVector filesWithPath;
     filesWithPath.reserve(files.size());
-    int i;
-    for(i = 0; i < files.size(); ++i)
+    for(size_t i = 0; i < files.size(); ++i)
         filesWithPath.push_back(dbPath + files[i]);
 
     //
@@ -889,7 +886,7 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
             // a clear cache rpc could have purged it from the database
             // cache.
             bool found = false;
-            for(i = 0; i < databaseCache.size() && !found; ++i)
+            for(size_t i = 0; i < databaseCache.size() && !found; ++i)
             {
                 if (databaseCache[i] == NULL)
                     continue;
@@ -913,7 +910,7 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
     // Remove from the database cache databases that have the same name.
     //
     std::vector<NetnodeDB*> databaseBadMatches;
-    for (i = 0; i < databaseCache.size(); i++)
+    for (size_t i = 0; i < databaseCache.size(); i++)
     {
         if (databaseCache[i] == NULL)
             continue;
@@ -1385,9 +1382,9 @@ NetworkManager::GetCurrentWindowId(void) const
 int
 NetworkManager::GetTotalGlobalCellCounts(int winID) const
 {
-   int i, sum = 0;
+    int sum = 0;
 
-    for (i = 0; i < networkCache.size(); i++)
+    for (size_t i = 0; i < networkCache.size(); i++)
     {
         if (networkCache[i] == NULL ||
             networkCache[i]->GetWinID() != winID)
@@ -1533,8 +1530,6 @@ NetworkManager::GetShouldUseCompression(int windowID) const
 void
 NetworkManager::DoneWithNetwork(int id)
 {
-    int i;
-
     if (id >= networkCache.size())
     {
         debug1 << "Internal error: Done with network ID (" << id
@@ -1556,7 +1551,7 @@ NetworkManager::DoneWithNetwork(int id)
         // references it
         //
         bool otherNetsUseThisWindow = false;
-        for (i = 0; i < networkCache.size(); i++)
+        for (size_t i = 0; i < networkCache.size(); i++)
         {
             if (i == id)
                 continue;
@@ -1813,7 +1808,7 @@ bool
 NetworkManager::HasNonMeshPlots(const intVector plotIds)
 {
     bool hasNonMeshPlots = false;
-    for (int i = 0; i < plotIds.size(); i++)
+    for (size_t i = 0; i < plotIds.size(); i++)
     {
         workingNet = NULL;
         UseNetwork(plotIds[i]);
@@ -1958,19 +1953,14 @@ avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
     int windowID, bool leftEye)
 {
-    int i;
     DataNetwork *origWorkingNet = workingNet;
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     viswinInfo.markedForDeletion = false;
-    VisWindow *viswin = viswinInfo.viswin;
-    WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
-    std::string &changedCtName = viswinInfo.changedCtName;
     AnnotationAttributes &annotationAttributes = viswinInfo.annotationAttributes;
-    AnnotationObjectList &annotationObjectList = viswinInfo.annotationObjectList;
-    VisualCueList &visualCueList = viswinInfo.visualCueList;
-    int *const &frameAndState = viswinInfo.frameAndState;
-    std::vector<int>& plotsCurrentlyInWindow = viswinMap[windowID].plotsCurrentlyInWindow;
+    VisWindow *viswin = viswinInfo.viswin;
+
+    WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
     std::vector<avtPlot_p>& imageBasedPlots = viswinMap[windowID].imageBasedPlots;
 
     bool dump_renders = avtDebugDumpOptions::DumpEnabled();
@@ -2032,7 +2022,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         nstages += (doShadows ? 2 : 0);
         nstages += (doDepthCueing ? 1 : 0);
         nstages += (two_pass_mode ? 1 : 0);
-        for (int ss = 0 ; ss < imageBasedPlots.size() ; ss++)
+        for (size_t ss = 0 ; ss < imageBasedPlots.size() ; ss++)
         {
             nstages += imageBasedPlots[ss]
                    ->GetNumberOfStagesForImageBasedPlot(windowAttributes);
@@ -2304,11 +2294,11 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         // If the engine is doing more than just 3D annotations,
         // post-process the composited image.
         //
-        if (imageBasedPlots.size() > 0)
+        if (!imageBasedPlots.empty())
         {
             avtImage_p compositedImage;
             CopyTo(compositedImage, compositedImageAsDataObject);
-            for (int kk = 0 ; kk < imageBasedPlots.size() ; kk++)
+            for (size_t kk = 0 ; kk < imageBasedPlots.size() ; kk++)
             {
                 avtImage_p newImage =
                        imageBasedPlots[kk]->ImageExecute(compositedImage,
@@ -3348,7 +3338,7 @@ void
 NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 {
     std::vector<avtDataObject_p> queryInputs;
-    for (int i = 0 ; i < ids.size() ; i++)
+    for (size_t i = 0 ; i < ids.size() ; i++)
     {
         int id = ids[i];
         if (id >= networkCache.size())
@@ -3525,7 +3515,7 @@ NetworkManager::ConstructDDF(int id, ConstructDDFAttributes *atts)
     {
         d->OutputDDF(atts->GetDdfName());
         bool foundMatch = false;
-        for (int i = 0 ; i < ddf_names.size() ; i++)
+        for (size_t i = 0 ; i < ddf_names.size() ; i++)
             if (ddf_names[i] == atts->GetDdfName())
             {
                 foundMatch = true;
@@ -3554,7 +3544,7 @@ NetworkManager::ConstructDDF(int id, ConstructDDFAttributes *atts)
 avtDDF *
 NetworkManager::GetDDF(const char *name)
 {
-    for (int i = 0 ; i < ddf_names.size() ; i++)
+    for (size_t i = 0 ; i < ddf_names.size() ; i++)
     {
         if (ddf_names[i] == name)
             return ddf[i];
@@ -3941,7 +3931,7 @@ NetworkManager::NewVisWindow(int winID)
         if (it->second.markedForDeletion)
             idsToDelete.push_back(it->first);
     }
-    for (int i = 0; i < idsToDelete.size(); i++)
+    for (size_t i = 0; i < idsToDelete.size(); i++)
     {
         debug1 << "Deleting VisWindow for id=" << idsToDelete[i] << endl;
         delete viswinMap[idsToDelete[i]].viswin;
@@ -4226,7 +4216,7 @@ NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
     intVector ids = pa->GetIncidentElements();
     intVector validIds;
     bool needRender = false;
-    for (int i = 0; i < ids.size(); i++)
+    for (size_t i = 0; i < ids.size(); i++)
     {
         if (ids[i] >= networkCache.size())
         {
@@ -4470,6 +4460,10 @@ NetworkManager::ViewerExecute(const VisWindow * const viswin,
 //    Added in logic to UpdateVisualCues and set cell counts, which I
 //    apparently forgot to copy when splitting the code up!
 //
+//    Tom Fogal, Fri Jun 13 09:40:03 EDT 2008
+//    Added member qualification to cellCounts, fixing a parallel-only compile
+//    error.
+//
 // ****************************************************************************
 
 void
@@ -4639,13 +4633,13 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
     //
 #ifdef PARALLEL
     int *reducedCounts = new int[2 * plotIds.size()];
-    MPI_Allreduce(cellCounts, reducedCounts, 2 * plotIds.size(),
+    MPI_Allreduce(this->r_mgmt.cellCounts, reducedCounts, 2 * plotIds.size(),
         MPI_INT, MPI_SUM, VISIT_MPI_COMM);
     for (size_t i = 0; i < 2 * plotIds.size(); i++)
     {
-        if (cellCounts[i] != INT_MAX) // accounts for overflow
+        if (this->r_mgmt.cellCounts[i] != INT_MAX) // accounts for overflow
         {
-            cellCounts[i] = reducedCounts[i];
+            this->r_mgmt.cellCounts[i] = reducedCounts[i];
         }
     }
     delete [] reducedCounts;
@@ -4721,8 +4715,6 @@ NetworkManager::RenderSetup(intVector plotIds, bool getZBuffer,
     WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
     std::vector<int>& plotsCurrentlyInWindow =
         viswinMap.find(windowID)->second.plotsCurrentlyInWindow;
-    std::vector<avtPlot_p>& imageBasedPlots =
-        viswinMap.find(windowID)->second.imageBasedPlots;
     VisWindow *viswin = viswinInfo.viswin;
 
     this->r_mgmt.timer = visitTimer->StartTimer();
@@ -4735,10 +4727,6 @@ NetworkManager::RenderSetup(intVector plotIds, bool getZBuffer,
 
     ViewCurveAttributes vca = windowAttributes.GetViewCurve();
     View2DAttributes v2a = windowAttributes.GetView2D();
-    ScaleMode ds = (ScaleMode)vca.GetDomainScale();
-    ScaleMode rs = (ScaleMode)vca.GetRangeScale();
-    ScaleMode xs = (ScaleMode)v2a.GetXScale();
-    ScaleMode ys = (ScaleMode)v2a.GetYScale();
 
     // Explicitly specify left / right eye, for stereo rendering.
     if(viswin->GetStereo())
@@ -4832,7 +4820,7 @@ NetworkManager::RenderSetup(intVector plotIds, bool getZBuffer,
 
             annotationAttributes.GetForegroundColor().GetRgba(fg);
             annotationAttributes.GetDiscernibleBackgroundColor().GetRgba(bg);
-            for (int i = 0; i < plotIds.size(); i++)
+            for (size_t i = 0; i < plotIds.size(); i++)
             {
                 workingNet = NULL;
                 UseNetwork(plotIds[i]);
