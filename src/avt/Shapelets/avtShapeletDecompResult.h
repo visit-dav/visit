@@ -52,6 +52,8 @@
 //  Creation:    December 12, 2007
 //
 //  Modifications:
+//    Cyrus Harrison, Wed Jun 11 15:29:15 PDT 2008
+//    Added support to retain the original data extents.
 //
 // ****************************************************************************
 
@@ -62,18 +64,21 @@ class AVTSHAPELETS_API avtShapeletDecompResult
                             int nmax, 
                             int width, 
                             int height,
+                            const doubleVector& extents,
                             const doubleVector& coeffs);
 
     avtShapeletDecompResult(const avtShapeletDecompResult&);
     avtShapeletDecompResult &operator=(const avtShapeletDecompResult&);
     virtual ~avtShapeletDecompResult();
 
-    double              Beta()   const        { return beta;} 
-    int                 NMax()   const        { return  nmax;}
-    int                 Width()  const        { return width;}
-    int                 Height() const        { return height;}
+    double              Beta()    const       { return beta;} 
+    int                 NMax()    const       { return  nmax;}
+    int                 Width()   const       { return width;}
+    int                 Height()  const       { return height;}
+    const doubleVector &Extents() const       { return extents;}
     const doubleVector &Coefficients() const  { return coeffs;}
     double              Coefficient(int,int) const;
+    
 
     // pretty print 
     std::string         ToString() const;
@@ -83,6 +88,7 @@ class AVTSHAPELETS_API avtShapeletDecompResult
     int          nmax;
     int          width;
     int          height;
+    doubleVector extents;
     doubleVector coeffs;
 };
 

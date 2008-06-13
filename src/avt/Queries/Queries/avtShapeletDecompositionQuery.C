@@ -120,6 +120,10 @@ avtShapeletDecompositionQuery::PreExecute(void)
 //  Programmer: Cyrus Harrison
 //  Creation:   December 14, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Wed Jun 11 15:29:15 PDT 2008
+//    Added original data extents to the MapNode for GetQueryOutputObject().
+//
 // ****************************************************************************
 
 void
@@ -149,12 +153,13 @@ avtShapeletDecompositionQuery::PostExecute(void)
     
         // return more info using QueryXmlResult
         MapNode result_node;
-        result_node["beta"]   = decompResult->Beta();
-        result_node["nmax"]   = decompResult->NMax();
-        result_node["width"]  = decompResult->Width();
-        result_node["height"] = decompResult->Height();
-        result_node["coeffs"] = decompResult->Coefficients();
-        result_node["error"]  = recompError;
+        result_node["beta"]    = decompResult->Beta();
+        result_node["nmax"]    = decompResult->NMax();
+        result_node["width"]   = decompResult->Width();
+        result_node["height"]  = decompResult->Height();
+        result_node["extents"] = decompResult->Extents();
+        result_node["coeffs"]  = decompResult->Coefficients();
+        result_node["error"]   = recompError;
         SetXmlResult(result_node.ToXML());
         
         if(decompOutputFileName!="")
