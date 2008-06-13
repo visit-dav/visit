@@ -81,6 +81,10 @@ avtShapeletReconstruct::~avtShapeletReconstruct()
 //  Programmer:  Cyrus Harrison
 //  Creation:    December 13, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Wed Jun 11 15:29:15 PDT 2008
+//    Added support to retain the original data extents.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -88,19 +92,34 @@ avtShapeletReconstruct::Execute(avtShapeletDecompResult *decomp,
                                 const string &var_name,
                                 avtShapeletBasisSet *basis_set)
 {
-    int nmax        = decomp->NMax();
-    int width       = decomp->Width();  
-    int height      = decomp->Height();
+    int nmax             = decomp->NMax();
+    int width            = decomp->Width();  
+    int height           = decomp->Height();
+    doubleVector extents = decomp->Extents();
+    
     int data_length = width * height;
     // create a rectlinear grid to hold the result
     vtkDoubleArray *x_coords = vtkDoubleArray::New();
     vtkDoubleArray *y_coords = vtkDoubleArray::New();
     vtkDoubleArray *z_coords = vtkDoubleArray::New();
     
+    double sx = extents[0];
+    double sy = extents[2];
+    double dx = (extents[1] - extents[0])/((float)width);
+    double dy = (extents[3] - extents[2])/((float)height);
+    
+    double curr = sx;
     for(int i=0; i<=width; i++) 
-        x_coords->InsertNextValue(i);
+    {
+        x_coords->InsertNextValue(curr);
+        curr +=dx;
+    }
+    curr = sy;
     for(int i=0; i<=height; i++) 
-        y_coords->InsertNextValue(i);
+    {
+        y_coords->InsertNextValue(curr);
+        curr +=dy;
+    }
     
     z_coords->InsertNextValue(0.0);
              

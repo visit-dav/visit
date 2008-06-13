@@ -50,16 +50,22 @@ using namespace std;
 //  Programmer:  Cyrus Harrison
 //  Creation:    December 12, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Wed Jun 11 15:29:15 PDT 2008
+//    Added support to retain the original data extents.
+//
 // ****************************************************************************
 
 avtShapeletDecompResult::avtShapeletDecompResult(double beta,
                                                  int nmax, 
                                                  int width,
                                                  int height,
+                                                 const doubleVector &extents,
                                                  const doubleVector &coeffs)
 : beta(beta),
   nmax(nmax),
   width(width), height(height),
+  extents(extents),
   coeffs(coeffs)
 {;}
 

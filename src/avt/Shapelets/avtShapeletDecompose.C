@@ -80,6 +80,10 @@ avtShapeletDecompose::~avtShapeletDecompose()
 //  Programmer:  Cyrus Harrison
 //  Creation:    December 6, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Wed Jun 11 15:29:15 PDT 2008
+//    Added support to retain the original data extents.
+//
 // ****************************************************************************
 
 avtShapeletDecompResult * 
@@ -92,8 +96,18 @@ avtShapeletDecompose::Execute(vtkRectilinearGrid *rgrid,
     int width       = basis_set->Width();   
     int height      = basis_set->Height();
     int data_length = width * height;
+    doubleVector extents;
     doubleVector coeffs;
     
+    // get original data extents
+    double gbounds[6];
+    rgrid->GetBounds(gbounds);
+    extents.resize(4);
+    extents[0] = gbounds[0];
+    extents[1] = gbounds[1];
+    extents[2] = gbounds[2];
+    extents[3] = gbounds[3];
+        
     vtkDataArray *var_arr = rgrid->GetCellData()->GetArray(var_name.c_str());
 
     if(!var_arr)
@@ -123,6 +137,7 @@ avtShapeletDecompose::Execute(vtkRectilinearGrid *rgrid,
                                                                   nmax,
                                                                   width,
                                                                   height,
+                                                                  extents,
                                                                   coeffs);
     return decomp;
 }
