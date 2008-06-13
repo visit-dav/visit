@@ -4633,7 +4633,7 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
     //
 #ifdef PARALLEL
     int *reducedCounts = new int[2 * plotIds.size()];
-    MPI_Allreduce(this->r_mgmt.cellCounts, reducedCounts, 2 * plotIds.size(),
+    MPI_Allreduce(*(this->r_mgmt.cellCounts), reducedCounts, 2 * plotIds.size(),
         MPI_INT, MPI_SUM, VISIT_MPI_COMM);
     for (size_t i = 0; i < 2 * plotIds.size(); i++)
     {
