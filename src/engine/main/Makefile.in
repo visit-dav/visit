@@ -251,6 +251,9 @@
 #    Cyrus Harrison, Tue Dec 18 14:22:04 PST 2007
 #    Added libavtshapelets.
 #
+#    Hank Childs, Fri Jun 13 15:14:45 PDT 2008
+#    Add @TCMALLOC_LIB@, which were added to improve new/delete performance.
+#
 ##############################################################################
 
 ##
@@ -277,14 +280,14 @@ SERLIBS=$(COMMONLIBS) -lviswindow_ser -lplotter_ser -lmir_ser -lavtwriter_ser \
         -lexpressions_ser -lavtfilters_ser -lpipeline_ser  \
         -lengineparstate_ser -lparallel_visit_vtk_ser \
         $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(BZIP2_LIBS) \
-	$(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@
+	$(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
 
 PARLIBS=$(COMMONLIBS) -lviswindow_par -lplotter_par -lmir_par -lavtwriter_par \
         -lavtddf_par -lavtmath_par -lavtshapelets_par -ldatabase_par -lquery_par\
         -lexpressions_par -lavtfilters_par -lpipeline_par \
         -lengineparstate_par -lparallel_visit_vtk_par \
         $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) \
-	$(BZIP2_LIBS) $(FILIB_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+	$(BZIP2_LIBS) $(FILIB_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
 
 SERLIBDEP=../../lib/libplugin.@SHLIB_LIBEXT@ ../../lib/libplotter_ser.@SHLIB_LIBEXT@ \
           ../../lib/libdatabase_ser.@SHLIB_LIBEXT@ ../../lib/libpipeline_ser.@SHLIB_LIBEXT@ \

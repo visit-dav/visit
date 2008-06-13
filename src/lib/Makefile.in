@@ -159,6 +159,9 @@
 #    Make LIBSILO get set by configure so we can create links to libsilo.dylib
 #    or to libsiloh5.dylib on the Mac, depending on how Silo was built.
 #
+#    Hank Childs, Fri Jun 13 15:36:21 PDT 2008
+#    Add support for google-perftools' tcmalloc.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -200,7 +203,7 @@ all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@ \
      @CREATE_BOXLIB2D_LINK@ @CREATE_BOXLIB3D_LINK@ \
      @CREATE_CFITSIO_LINK@ @CREATE_ITAPS_LINK@ @CREATE_H5PART_LINK@ \
-     @CREATE_CCMIO_LINK@
+     @CREATE_CCMIO_LINK@ @CREATE_TCMALLOC_LINK@
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)*
@@ -356,6 +359,10 @@ create_gdal_link:
 	$(RM) libgdal.@SHLIB_LIBEXT@
 	ln -s @GDAL_LIB@ .
 
+create_tcmalloc_link:
+	$(RM) libtcmalloc.@SHLIB_LIBEXT@*
+	ln -s @TCMALLOC_DIR@/libtcmalloc.@SHLIB_LIBEXT@* .
+
 create_exodus_link:
 	$(RM) libexoIIv2c.@SHLIB_LIBEXT@
 	ln -s @EXODUS_LIB@ .
@@ -429,12 +436,4 @@ install:
 install_bin:
 install_lib:
 install_dirs:
-
-# for clearcase:
-.NO_WINK_IN: $(LIBVTKCOMMON) $(LIBVTKDICOM) $(LIBVTKFILTERING) \
-   $(LIBVTKGRAPHICS) $(LIBVTKHYBRID) $(LIBVTKIO) $(LIBVTKIMAGING) \
-   $(LIBVTKRENDERING) $(LIBVTKZLIB) $(LIBVTKPNG) $(LIBVTKJPEG) $(LIBVTKEXPAT) \
-   $(LIBVTKTIFF) $(LIBVTKFREETYPE) $(LIBVTKFTGL) $(LIBVTKSYS) \
-   $(LIBVTKMPEG2ENCODE) $(LIBOSMESA) $(LIBMESAGL) $(LIBGLU) \
-   $(LIBQT) $(LIBQUI) $(LIBPYTHON) $(LIBSILO)
 
