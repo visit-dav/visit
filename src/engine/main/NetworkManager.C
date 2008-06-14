@@ -4746,15 +4746,21 @@ NetworkManager::RenderCleanup(int windowID)
 //  Programmer: Tom Fogal
 //  Creation:   June 13, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Sat Jun 14 14:57:45 EDT 2008
+//    Removed const qualification, which isn't fixable because way down the
+//    call chain we hit VTK, which isn't const-correct.
+//
 // ****************************************************************************
 
 size_t
-NetworkManager::RenderingStages(int windowID) const
+NetworkManager::RenderingStages(int windowID)
 {
-    const EngineVisWinInfo& viswinInfo = viswinMap.find(windowID)->second;
+    EngineVisWinInfo& viswinInfo = viswinMap.find(windowID)->second;
     const WindowAttributes& winAtts = viswinInfo.windowAttributes;
     const std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
-    const VisWindow *viswin = viswinInfo.viswin;
+    VisWindow *viswin = viswinInfo.viswin;
 
     bool shadows = winAtts.GetRenderAtts().GetDoShadowing();
     bool depth_cueing = winAtts.GetRenderAtts().GetDoDepthCueing();
@@ -4847,10 +4853,16 @@ NetworkManager::RenderGeometry(int windowID)
 //  Programmer: Tom Fogal
 //  Creation:   June 13, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal,  Sat Jun 14 15:01:09 EDT 2008
+//    Removed const qualification from argument, as our dependencies aren't
+//    const-correct.
+//
 // ****************************************************************************
 
 bool
-NetworkManager::MultipassRendering(const VisWindow *viswin) const
+NetworkManager::MultipassRendering(VisWindow *viswin) const
 {
     bool multipass = false;
 

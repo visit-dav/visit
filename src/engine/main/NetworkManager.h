@@ -332,6 +332,10 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    there, but it's better they are private by default and moved
 //    intentionally.
 //
+//    Tom Fogal, Sat Jun 14 14:59:46 EDT 2008
+//    Removed const from RenderingStages and the argument of
+//    MultipassRendering, to fix an otherwise-unsolvable compile error.
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -449,9 +453,9 @@ class NetworkManager
                                   const WindowAttributes &windowAttributes);
     void            SetUpWindowContents(int windowID, const intVector &plotIds,
                                         bool forceViewerExecute);
-    size_t          RenderingStages(int windowID) const;
+    size_t          RenderingStages(int windowID);
     avtImage_p      RenderGeometry(int windowID);
-    bool            MultipassRendering(const VisWindow *viswin) const;
+    bool            MultipassRendering(VisWindow *viswin) const;
     avtDataObject_p RenderTranslucent(int windowID, avtImage_p input);
     void            RenderShadows(int windowID,
                                   avtDataObject_p input_as_dob) const;
