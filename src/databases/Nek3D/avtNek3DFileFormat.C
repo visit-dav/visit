@@ -87,6 +87,13 @@ using     std::string;
 #endif
 #endif
 
+#ifdef WIN32
+typedef __int64 int64_t;
+#else
+#include <inttypes.h>
+#endif
+
+
 // ****************************************************************************
 // Notes on the format of each Nek variant--binary/ascii, 3D/2D, serial/parallel
 //
@@ -472,6 +479,9 @@ avtNek3DFileFormat::ParseMetaDataFile(const char *filename)
 //    Dave Bremer, Thu Jun 12 12:59:23 PDT 2008
 //    Support varying numbers of blocks per file in the parallel format, and
 //    support a new format for the field tags.
+//
+//    Dave Bremer, Fri Jun 13 18:10:46 PDT 2008
+//    Small change to be more robust about finding the location of the field tags.
 // ****************************************************************************
 
 void
@@ -565,13 +575,23 @@ avtNek3DFileFormat::ParseNekFileHeader()
         f >> iBlockSize[0];
         f >> iBlockSize[1];
         f >> iBlockSize[2];
-        f >> buf2;        //blocks per file
+        f >> buf2;  //blocks per file
         f >> iNumBlocks;
 
         //This bypasses some tricky and unnecessary parsing of data
-        //I already have.
-        f.seekg(77, std::ios_base::beg);
+        //I already have.  
+        //6.13.08  No longer works...
+        //f.seekg(77, std::ios_base::beg);
+        f >> buf2;  //time
+        f >> buf2;  //cycle
+        f >> buf2;  //directory num of this file
 
+        //I do this to skip the num directories token, because it may abut 
+        //the field tags without a whitespace separator.
+        while (f.peek() == ' ')
+            f.get();
+        while (f.peek() >= '0' && f.peek() <= '9')
+            f.get();
         
         char tmpTags[32];
         f.read(tmpTags, 32);
