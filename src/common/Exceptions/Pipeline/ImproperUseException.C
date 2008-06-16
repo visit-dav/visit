@@ -51,9 +51,15 @@ using std::string;
 //  Programmer: Hank Childs
 //  Creation:   July 24, 2000
 //
+//  Modifications:
+//
+//    Tom Fogal, Sat Jun 14 20:22:32 EDT 2008
+//    Changed the argument to be a constant reference.  It needs to be const to
+//    be usable with string constants.
+//
 // ****************************************************************************
 
-ImproperUseException::ImproperUseException(std::string reason)
+ImproperUseException::ImproperUseException(const std::string & reason)
 {
     if (reason == "")
         msg = "The pipeline object is being used improperly.";

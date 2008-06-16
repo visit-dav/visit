@@ -60,16 +60,19 @@
 //  Programmer: Hank Childs
 //  Creation:   July 24, 2000
 //
+//  Modifications:
+//
+//    Tom Fogal, Sat Jun 14 18:48:35 EDT 2008
+//    Constant constructor argument avoids implicit conversion issues; made it
+//    a reference too, to avoid copying strings frequently.
+//
 // **************************************************************************** 
 
 class AVTEXCEPTION_API ImproperUseException : public PipelineException
 {
   public:
-                          ImproperUseException(std::string = "");
+                          ImproperUseException(const std::string & = "");
     virtual              ~ImproperUseException() VISIT_THROW_NOTHING {;};
 };
 
-
 #endif
-
-
