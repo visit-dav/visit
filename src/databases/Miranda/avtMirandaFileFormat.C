@@ -358,7 +358,8 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         dim = 2;
         flatDim = 2;
 
-        Fix2DFileOrder(0, 1, iFileOrder);
+        if (iFileOrder[0] != -1)
+            Fix2DFileOrder(0, 1, iFileOrder);
     }
     else if (iGlobalDim[1] == 1)
     {
@@ -378,7 +379,8 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         iNumBlocks[2] = 1;
         iBlockSize[2] = 1;
 
-        Fix2DFileOrder(0, 2, iFileOrder);
+        if (iFileOrder[0] != -1)
+            Fix2DFileOrder(0, 2, iFileOrder);
     }
     else if (iGlobalDim[0] == 1)
     {
@@ -403,7 +405,8 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         iNumBlocks[2] = 1;
         iBlockSize[2] = 1;
 
-        Fix2DFileOrder(1, 2, iFileOrder);
+        if (iFileOrder[0] != -1)
+            Fix2DFileOrder(1, 2, iFileOrder);
     }
 
 }
