@@ -95,10 +95,10 @@ VisItException::VisItException(const std::string &m)
         if (mtmp.find("avtprep:") == 0 ||
             mtmp.find("cli:") == 0 ||
             mtmp.find("engine:") == 0 ||
-	    mtmp.find("gui:") == 0 ||
+            mtmp.find("gui:") == 0 ||
             mtmp.find("launcher:") == 0 ||
             mtmp.find("mdserver:") == 0 ||
-	    mtmp.find("viewer:") == 0)
+            mtmp.find("viewer:") == 0)
             msg = m;
         else
             msg = std::string(Init::GetComponentName()) + ": " + m;
@@ -107,7 +107,6 @@ VisItException::VisItException(const std::string &m)
     line     = -1;
     log      = &debug1_real;
 }
-
 
 // ****************************************************************************
 //  Method: VisItException::SetThrowLocation
@@ -123,10 +122,15 @@ VisItException::VisItException(const std::string &m)
 //  Programmer: Hank Childs
 //  Creation:   May 16, 2000
 //
+//  Modifications:
+//
+//    Tom Fogal, Sat Jun 14 19:05:32 EDT 2008
+//    Add const to string argument.
+//
 // ****************************************************************************
 
 void
-VisItException::SetThrowLocation(int l, char *f)
+VisItException::SetThrowLocation(int l, const char *f)
 {
     line     = l;
     filename = f;

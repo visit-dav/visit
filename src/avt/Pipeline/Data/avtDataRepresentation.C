@@ -930,6 +930,10 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    Cyrus Harrison, Tue Feb 19 11:41:18 PST 2008
 //    Fixed a bug with naming -dump vtk output files in the parallel case. 
 //
+//    Tom Fogal, Sat Jun 14 21:59:58 EDT 2008
+//    Made an array `static const' to avoid a warning and allow it to be put in
+//    a RO section of the object.
+//
 // **************************************************************************** 
 
 const char *
@@ -1071,10 +1075,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
     data[0] = asVTK->GetFieldData();
     data[1] = asVTK->GetPointData();
     data[2] = asVTK->GetCellData();
-    char *names[3];
-    names[0] = "field";
-    names[1] = "point";
-    names[2] = "cell";
+    static const char *names[3] = { "field", "point", "cell" };
 
     for (int fd = 0 ; fd < 3 ; fd++)
     {

@@ -104,6 +104,9 @@
 //    Removed GetMessage method once and for all. Too many times has it
 //    been confused with GetMessageA on Windows.
 //
+//    Tom Fogal, Sat Jun 14 18:44:35 EDT 2008
+//    Added const qualifications to avoid warnings (and bugs too I guess :)
+//
 // ****************************************************************************
 
 class MISC_API VisItException
@@ -115,11 +118,11 @@ class MISC_API VisItException
 
     void               Log(void);
   
-    void               SetThrowLocation(int, char *);
-    void               SetType(char *t) { type = t; };
+    void               SetThrowLocation(int, const char *);
+    void               SetType(const char *t) { type = t; };
     void               SetType(const std::string &t) { type = t; };
-    const std::string &Message() { return msg; };
-    const std::string &GetExceptionType() { return type; };
+    const std::string &Message() const { return msg; };
+    const std::string &GetExceptionType() const { return type; };
 
     int                GetLine() const { return line; };
     const std::string &GetFilename() const  { return filename; }; 
