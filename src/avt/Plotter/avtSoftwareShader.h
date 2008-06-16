@@ -68,6 +68,9 @@ struct  avtView3D;
 //    Jeremy Meredith, Wed Aug 29 13:11:37 EDT 2007
 //    Added depth cueing.
 //
+//    Tom Fogal, Mon Jun 16 11:17:53 EDT 2008
+//    Added some const qualifications.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtSoftwareShader
@@ -75,14 +78,15 @@ class PLOTTER_API avtSoftwareShader
   public:
     static bool  GetLightDirection(const LightAttributes &, const avtView3D &,
                                    double *);
-    static void  AddShadows(avtImage_p, avtImage_p, avtView3D &, avtView3D &,
-                            double);
+    static void  AddShadows(avtImage_p, avtImage_p, const avtView3D &,
+                            const avtView3D &, double);
     static void  AddDepthCueing(avtImage_p current_image,
-                                avtView3D &current_view, 
+                                const avtView3D &current_view,
                                 const double startPoint[3],
                                 const double endPoint[3],
                                 unsigned char cuecolor[3]);
-    static avtView3D  FindLightView(avtImage_p,avtView3D &,double*,double);
+    static avtView3D  FindLightView(avtImage_p, const avtView3D &,
+                                    const double*,double);
 };
 
 #endif

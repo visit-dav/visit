@@ -65,6 +65,7 @@ class MaterialAttributes;
 class MeshManagementAttributes;
 class VisWindow;
 class avtDDF;
+class avtWholeImageCompositer;
 
 typedef struct _EngineVisWinInfo
 {
@@ -84,7 +85,6 @@ typedef struct _EngineVisWinInfo
 
 typedef void   (*InitializeProgressCallback)(void *, int);
 typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
-
 
 // ****************************************************************************
 //  Class: NetworkManager
@@ -336,6 +336,11 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Removed const from RenderingStages and the argument of
 //    MultipassRendering, to fix an otherwise-unsolvable compile error.
 //
+//    Tom Fogal, Mon Jun 16 11:20:52 EDT 2008
+//    Splitting up Render():
+//       Added RenderDepthCues
+//       Added RenderPostProcess
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -459,6 +464,21 @@ class NetworkManager
     avtDataObject_p RenderTranslucent(int windowID, avtImage_p input);
     void            RenderShadows(int windowID,
                                   avtDataObject_p input_as_dob) const;
+    void            RenderDepthCues(int windowID,
+                                    avtDataObject_p input_as_dob) const;
+    void            RenderPostProcess(std::vector<avtPlot_p>& image_plots,
+                                      avtDataObject_p input_as_dob,
+                                      int windowID) const;
+
+    static avtWholeImageCompositer *MakeCompositer(bool threeD,
+                                                   bool gradientBG,
+                                                   bool needZ, bool multipass,
+                                                   bool shadows,
+                                                   bool depthCueing,
+                                                   bool image_plots);
+    static void                     SetCompositerBackground(
+                                        avtWholeImageCompositer * const,
+                                        const VisWindow * const);
 
     std::vector<DataNetwork*>   networkCache;
     std::vector<int>            globalCellCounts;

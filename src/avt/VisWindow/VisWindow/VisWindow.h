@@ -386,6 +386,10 @@ class VisitInteractor;
 //    plot, and the functionality has been accomodated in a new window
 //    modality supporting the correct style annotations.
 //
+//    Tom Fogal, Mon Jun 16 10:50:09 EDT 2008
+//    I added const to some methods which were already returning const objects
+//    anyway.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -474,13 +478,13 @@ public:
 
     void                 ResetView(void);
     void                 SetView2D(const avtView2D &);
-    const avtView2D     &GetView2D();
+    const avtView2D     &GetView2D() const;
     void                 SetView3D(const avtView3D &);
-    const avtView3D     &GetView3D(void);
+    const avtView3D     &GetView3D(void) const;
     void                 SetViewCurve(const avtViewCurve &);
-    const avtViewCurve  &GetViewCurve();
+    const avtViewCurve  &GetViewCurve() const;
     void                 SetViewAxisArray(const avtViewAxisArray &);
-    const avtViewAxisArray &GetViewAxisArray();
+    const avtViewAxisArray &GetViewAxisArray() const;
 
     WINDOW_MODE          GetWindowMode() const;
     void                 GetScaleFactorAndType(double &s, int &t);
