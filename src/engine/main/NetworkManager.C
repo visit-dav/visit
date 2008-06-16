@@ -1044,7 +1044,7 @@ NetworkManager::AddFilter(const string &filtertype,
 
     NetnodeFilter *filt = new NetnodeFilter(f, filtertype);
     std::vector<Netnode*> &filtInputs = filt->GetInputNodes();
-    for (int i = 0; i < nInputs; i++)
+    for (unsigned int i = 0; i < nInputs; i++)
     {
         // Pull a node off the working list and push it onto the filter
         // inputs.
@@ -1832,9 +1832,6 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //
 //  Modifications:
 //
-//    Mark C. Miller, Tue Mar 30 10:58:01 PST 2004
-//    Added code to set image compositor's background color
-//
 //    Mark C. Miller, Thu Apr  1 11:06:09 PST 2004
 //    Removed call to AdjustWindowAttributes
 //    Added use of viewported screen capture
@@ -1850,12 +1847,6 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added visualCueList arg to SetAnnotationAttributes
 //
-//    Mark C. Miller, Mon Jul 26 15:08:39 PDT 2004
-//    Added code to post process the composited image when the engine
-//    is doing more than just 3D annotations. Fixed bug in determination of
-//    viewportedMode bool. Added code to pass frame and state info to
-//    set Win/Annot atts.
-//
 //    Mark C. Miller, Wed Aug 11 23:42:18 PDT 2004
 //    Added code to get cell count multiplier for SR mode and adjust
 //    cell counts for SR threshold
@@ -1870,10 +1861,6 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Changed bool arg for 3D annots to an integer mode
-//
-//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
-//    Added code to push color table name to plots
-//    Added code to use correct whole image compositor based upon window mode
 //
 //    Hank Childs, Wed Nov  3 14:12:29 PST 2004
 //    Fix typo and fix problem with shadows in parallel.
@@ -1892,9 +1879,6 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //
 //    Hank Childs, Sun Dec  4 16:58:32 PST 2005
 //    Added progress to scalable renderings.
-//
-//    Hank Childs, Thu Mar  2 10:06:33 PST 2006
-//    Add support for image based plots.
 //
 //    Hank Childs, Fri Mar  3 08:32:02 PST 2006
 //    Do not do shadowing in 2D.
@@ -1934,6 +1918,12 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Utilize RenderTranslucent for second pass rendering.
 //    Utilize RenderShadows.
 //
+//    Tom Fogal, Mon Jun 16 09:55:02 EDT 2008
+//    Add/Use SetCompositerBackground
+//    Add/Use MakeCompositer
+//    Utilize RenderDepthCues.
+//    Utilize RenderPostProcess.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -1944,7 +1934,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     viswinInfo.markedForDeletion = false;
-    AnnotationAttributes &annotationAttributes = viswinInfo.annotationAttributes;
     VisWindow *viswin = viswinInfo.viswin;
 
     WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
@@ -2003,10 +1992,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 
         // render the image and capture it. Relies upon explicit render
         int t3 = visitTimer->StartTimer();
-        bool viewportedMode = (annotMode != 1) ||
-                              (viswin->GetWindowMode() == WINMODE_2D) ||
-                              (viswin->GetWindowMode() == WINMODE_CURVE) ||
-                              (viswin->GetWindowMode() == WINMODE_AXISARRAY);
 
         // ************************************************************
         // FIRST PASS - Opaque only
@@ -2022,40 +2007,18 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             DumpImage(theImage, "before_OpaqueComposite");
 
         avtWholeImageCompositer *imageCompositer;
-        bool haveImagePlots = imageBasedPlots.size();
-        if (viswin->GetWindowMode() == WINMODE_3D)
-        {
-            imageCompositer = new avtWholeImageCompositerWithZ();
-            imageCompositer->SetShouldOutputZBuffer(
-                                    getZBuffer ||
-                                    this->MultipassRendering(viswin) ||
-                                    doShadows ||
-                                    doDepthCueing ||
-                                    haveImagePlots
-                             );
-        }
-        else
-        {
-            // we have to use z-buffer in 2D windows with gradient
-            // background
-            if (viswin->GetBackgroundMode() == 0)
-                imageCompositer = new avtWholeImageCompositerNoZ();
-            else
-                imageCompositer = new avtWholeImageCompositerWithZ();
-            imageCompositer->SetShouldOutputZBuffer(
-                                    this->MultipassRendering(viswin)
-                             );
-        }
 
-        //
-        // Set the compositer's background color
-        //
-        const double *fbg = viswin->GetBackgroundColor();
-        unsigned char bg_r = (unsigned char) ((float)fbg[0] * 255.f);
-        unsigned char bg_g = (unsigned char) ((float)fbg[1] * 255.f);
-        unsigned char bg_b = (unsigned char) ((float)fbg[2] * 255.f);
+        imageCompositer = MakeCompositer(
+                            viswin->GetWindowMode() == WINMODE_3D,
+                            viswin->GetBackgroundMode() == 0, // == gradient
+                            getZBuffer,
+                            this->MultipassRendering(viswin),
+                            doShadows, doDepthCueing,
+                            !imageBasedPlots.empty()
+                          );
 
-        imageCompositer->SetBackground(bg_r, bg_g, bg_b);
+        assert(NULL != imageCompositer);
+        SetCompositerBackground(imageCompositer, viswin);
 
         //
         // Set up the input image size and add it to compositer's input
@@ -2064,12 +2027,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         theImage->GetSize(&imageCols, &imageRows);
         imageCompositer->SetOutputImageSize(imageRows, imageCols);
         imageCompositer->AddImageInput(theImage, 0, 0);
-        imageCompositer->SetAllProcessorsNeedResult(
-                                this->MultipassRendering(viswin) ||
-                                doShadows ||
-                                doDepthCueing ||
-                                haveImagePlots
-                         );
 
         //
         // Do the parallel composite using a 1 stage pipeline
@@ -2112,69 +2069,16 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         //
         if (doDepthCueing)
         {
-            CallProgressCallback("NetworkManager", "Applying depth cueing",
-                                 0,1);
-            avtView3D cur_view = viswin->GetView3D();
-
-            //
-            // Get the image attributes
-            //
-            avtImage_p compositedImage;
-            CopyTo(compositedImage, compositedImageAsDataObject);
-
-            int width, height;
-            viswin->GetSize(width, height);
-
-#ifdef PARALLEL
-            if (PAR_Rank() == 0)
-#endif
-            {
-                const double *start =
-                    windowAttributes.GetRenderAtts().GetStartCuePoint();
-                const double *end   =
-                    windowAttributes.GetRenderAtts().GetEndCuePoint();
-                unsigned char color[] =
-                    {annotationAttributes.GetBackgroundColor().Red(),
-                     annotationAttributes.GetBackgroundColor().Green(),
-                     annotationAttributes.GetBackgroundColor().Blue()};
-                avtSoftwareShader::AddDepthCueing(compositedImage,cur_view,
-                                                  start, end, color);
-            }
-            CallProgressCallback("NetworkManager", "Applying depth cueing",
-                                 1,1);
+            this->RenderDepthCues(windowID, compositedImageAsDataObject);
         }
 
         //
         // If the engine is doing more than just 3D annotations,
         // post-process the composited image.
         //
-        if (!imageBasedPlots.empty())
-        {
-            avtImage_p compositedImage;
-            CopyTo(compositedImage, compositedImageAsDataObject);
-            for (size_t kk = 0 ; kk < imageBasedPlots.size() ; kk++)
-            {
-                avtImage_p newImage =
-                       imageBasedPlots[kk]->ImageExecute(compositedImage,
-                                                         windowAttributes);
-                compositedImage = newImage;
-            }
-            CopyTo(compositedImageAsDataObject, compositedImage);
-        }
-#ifdef PARALLEL
-        if ((annotMode==2) && ((PAR_Rank() == 0) || getZBuffer))
-#else
-        if (annotMode==2)
-#endif
-        {
-            avtImage_p compositedImage;
-            CopyTo(compositedImage, compositedImageAsDataObject);
-            avtImage_p postProcessedImage =
-                viswin->PostProcessScreenCapture(compositedImage,
-                                                 viewportedMode,
-                                                 getZBuffer);
-            CopyTo(compositedImageAsDataObject, postProcessedImage);
-        }
+        this->RenderPostProcess(imageBasedPlots, compositedImageAsDataObject,
+                                windowID);
+
         writer = compositedImageAsDataObject->InstantiateWriter();
         writer->SetInput(compositedImageAsDataObject);
 
@@ -4042,6 +3946,82 @@ GetDDFCallbackBridge(void *arg, const char *name)
     return nm->GetDDF(name);
 }
 
+// ****************************************************************************
+//  Function: SetCompositerBackground
+//
+//  Purpose: Sets the default background for an image compositer based on the
+//           background used in a VisWindow.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 16, 2008
+//
+//  Modifications:
+//
+//    Mark C. Miller, Tue Mar 30 10:58:01 PST 2004
+//    Added code to set image compositor's background color
+//
+// ****************************************************************************
+
+void
+NetworkManager::SetCompositerBackground(
+                    avtWholeImageCompositer * const compositer,
+                    const VisWindow * const viswin)
+{
+    const double * const fbg = viswin->GetBackgroundColor();
+    unsigned char bg_r = (unsigned char) ((float)fbg[0] * 255.f);
+    unsigned char bg_g = (unsigned char) ((float)fbg[1] * 255.f);
+    unsigned char bg_b = (unsigned char) ((float)fbg[2] * 255.f);
+
+    compositer->SetBackground(bg_r, bg_g, bg_b);
+}
+
+// ****************************************************************************
+//  Function: MakeCompositer
+//
+//  Purpose: Encodes the logic for creating the appropriate kind of image
+//           compositer, based on characteristics of the VisWindow / rendering
+//           request.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 16, 2008
+//
+//  Modifications:
+//
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Added code to push color table name to plots
+//    Added code to use correct whole image compositor based upon window mode
+//
+// ****************************************************************************
+
+avtWholeImageCompositer *
+NetworkManager::MakeCompositer(bool threeD, bool gradientBG, bool needZ, bool multipass,
+                               bool shadows, bool depth_cueing, bool image_plots)
+{
+    avtWholeImageCompositer *compositer;
+    if(!threeD && !gradientBG)
+    {
+        compositer = new avtWholeImageCompositerNoZ();
+    }
+    else
+    {
+        compositer = new avtWholeImageCompositerWithZ();
+        // Even though it's not 3D, we need z-buffer if there is a gradient
+        // background (which would cause multipass rendering).
+        compositer->SetShouldOutputZBuffer(multipass);
+
+        // If it *is* 3D though, we need Z in many more cases.
+        if(threeD)
+        {
+            compositer->SetShouldOutputZBuffer(
+                needZ || multipass || shadows || depth_cueing || image_plots
+            );
+        }
+    }
+    compositer->SetAllProcessorsNeedResult(
+                    multipass || shadows || depth_cueing || image_plots
+                );
+    return compositer;
+}
 
 // ****************************************************************************
 //  Method:  Network::PickForIntersection
@@ -4609,6 +4589,12 @@ NetworkManager::RenderSetup(intVector plotIds, bool getZBuffer,
             forceViewerExecute;
     }
 
+    this->r_mgmt.viewportedMode =
+        (this->r_mgmt.annotMode != 1) ||
+        (viswin->GetWindowMode() == WINMODE_2D) ||
+        (viswin->GetWindowMode() == WINMODE_CURVE) ||
+        (viswin->GetWindowMode() == WINMODE_AXISARRAY);
+
     if(this->r_mgmt.needToSetUpWindowContents)
     {
         this->SetUpWindowContents(windowID, plotIds, forceViewerExecute);
@@ -4820,20 +4806,17 @@ avtImage_p
 NetworkManager::RenderGeometry(int windowID)
 {
     VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
-    bool viewportedMode = (this->r_mgmt.annotMode != 1) ||
-                          (viswin->GetWindowMode() == WINMODE_2D) ||
-                          (viswin->GetWindowMode() == WINMODE_CURVE) ||
-                          (viswin->GetWindowMode() == WINMODE_AXISARRAY);
 
     CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
     avtImage_p geometry;
     if (this->MultipassRendering(viswin))
     {
-        geometry = viswin->ScreenCapture(viewportedMode,true,true,false);
+        geometry = viswin->ScreenCapture(this->r_mgmt.viewportedMode,
+                                         true,true,false);
     }
     else
     {
-        geometry = viswin->ScreenCapture(viewportedMode,true);
+        geometry = viswin->ScreenCapture(this->r_mgmt.viewportedMode,true);
     }
 
     CallProgressCallback("NetworkManager", "Render geometry", 1, 1);
@@ -4905,10 +4888,6 @@ avtDataObject_p
 NetworkManager::RenderTranslucent(int windowID, avtImage_p input)
 {
     VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
-    bool viewportedMode = (this->r_mgmt.annotMode != 1) ||
-                          (viswin->GetWindowMode() == WINMODE_2D) ||
-                          (viswin->GetWindowMode() == WINMODE_CURVE) ||
-                          (viswin->GetWindowMode() == WINMODE_AXISARRAY);
     avtImage_p translucent;
     CallProgressCallback("NetworkManager", "Transparent rendering", 0, 1);
 
@@ -4926,7 +4905,7 @@ NetworkManager::RenderTranslucent(int windowID, avtImage_p input)
         // Do the screen capture
         //
         translucent = viswin->ScreenCapture(
-                                    viewportedMode,
+                                    this->r_mgmt.viewportedMode,
                                     true,   // Z buffer
                                     false,  // opaque geometry
                                     true,   // translucent geometry
@@ -4995,10 +4974,6 @@ NetworkManager::RenderShadows(int windowID,
                               avtDataObject_p input_as_dob) const
 {
     VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
-    bool viewportedMode = (this->r_mgmt.annotMode != 1) ||
-                          (viswin->GetWindowMode() == WINMODE_2D) ||
-                          (viswin->GetWindowMode() == WINMODE_CURVE) ||
-                          (viswin->GetWindowMode() == WINMODE_AXISARRAY);
 
     CallProgressCallback("NetworkManager", "Creating shadows",0,1);
     avtView3D cur_view = viswin->GetView3D();
@@ -5038,7 +5013,9 @@ NetworkManager::RenderShadows(int windowID,
         //
         viswin->SetSize(light_width,light_height);
         viswin->SetView3D(light_view);
-        avtImage_p myLightImage = viswin->ScreenCapture(viewportedMode,true);
+        avtImage_p myLightImage = viswin->ScreenCapture(
+                                    this->r_mgmt.viewportedMode,true
+                                  );
 
         viswin->SetSize(width,height);
         avtWholeImageCompositer *wic = new avtWholeImageCompositerWithZ();
@@ -5078,4 +5055,126 @@ NetworkManager::RenderShadows(int windowID,
         delete wic;
     }
     CallProgressCallback("NetworkManager", "Creating shadows",1,1);
+}
+
+// ****************************************************************************
+//  Method: RenderDepthCues
+//
+//  Purpose: Adds depth cueing (fog) to a scene.
+//
+//  Arguments:
+//    windowID      the window we're rendering now, to add shadows to.
+//    input_as_dob  input image to add depth cueing to, cast as DataObject.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 16, 2008
+//
+// ****************************************************************************
+
+void
+NetworkManager::RenderDepthCues(int windowID,
+                                avtDataObject_p input_as_dob) const
+{
+    const VisWindow * const viswin = viswinMap.find(windowID)->second.viswin;
+
+    CallProgressCallback("NetworkManager", "Applying depth cueing", 0,1);
+    const avtView3D &cur_view = viswin->GetView3D();
+
+    //
+    // Get the image attributes
+    //
+    avtImage_p compositedImage;
+    CopyTo(compositedImage, input_as_dob);
+
+    int width, height;
+    viswin->GetSize(width, height);
+
+#ifdef PARALLEL
+    if (PAR_Rank() == 0)
+#endif
+    {
+        const WindowAttributes & winAtts =
+            viswinMap.find(windowID)->second.windowAttributes;
+        const AnnotationAttributes annotationAttributes =
+            viswinMap.find(windowID)->second.annotationAttributes;
+        const double *start = winAtts.GetRenderAtts().GetStartCuePoint();
+        const double *end   = winAtts.GetRenderAtts().GetEndCuePoint();
+        unsigned char color[] =
+            {annotationAttributes.GetBackgroundColor().Red(),
+             annotationAttributes.GetBackgroundColor().Green(),
+             annotationAttributes.GetBackgroundColor().Blue()};
+        avtSoftwareShader::AddDepthCueing(compositedImage, cur_view,
+                                          start, end, color);
+    }
+    CallProgressCallback("NetworkManager", "Applying depth cueing", 1,1);
+}
+
+// ****************************************************************************
+//  Method: RenderPostProcess
+//
+//  Purpose: Post-Rendering plots to apply.  These are typically 2D overlays.
+//
+//  Arguments:
+//    image_plots   the set of plots to apply
+//    input_as_dob  input image to apply these plots to, cast as DataObject.
+//    windowID      the window we're rendering now
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 16, 2008
+//
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jul 26 15:08:39 PDT 2004
+//    Added code to post process the composited image when the engine
+//    is doing more than just 3D annotations. Fixed bug in determination of
+//    viewportedMode bool. Added code to pass frame and state info to
+//    set Win/Annot atts.
+//
+//    Hank Childs, Wed Nov 24 17:28:07 PST 2004
+//    Added imageBasedPlots.
+//
+//    Hank Childs, Thu Mar  2 10:06:33 PST 2006
+//    Add support for image based plots.
+//
+// ****************************************************************************
+
+void
+NetworkManager::RenderPostProcess(std::vector<avtPlot_p>& image_plots,
+                                  avtDataObject_p input_as_dob,
+                                  int windowID) const
+{
+    const WindowAttributes & windowAttributes =
+        viswinMap.find(windowID)->second.windowAttributes;
+    VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
+
+    if(!image_plots.empty())
+    {
+        avtImage_p compositedImage;
+        CopyTo(compositedImage, input_as_dob);
+
+        for(std::vector<avtPlot_p>::iterator plot = image_plots.begin();
+            plot != image_plots.end();
+            ++plot)
+        {
+            avtImage_p newImage = (*plot)->ImageExecute(compositedImage,
+                                                        windowAttributes);
+            compositedImage = newImage;
+        }
+        CopyTo(input_as_dob, compositedImage);
+    }
+#ifdef PARALLEL
+    if ((this->r_mgmt.annotMode==2) &&
+        ((PAR_Rank() == 0) || this->r_mgmt.getZBuffer))
+#else
+    if (this->r_mgmt.annotMode==2)
+#endif
+    {
+        avtImage_p compositedImage;
+        CopyTo(compositedImage, input_as_dob);
+        avtImage_p postProcessedImage =
+            viswin->PostProcessScreenCapture(compositedImage,
+                                             this->r_mgmt.viewportedMode,
+                                             this->r_mgmt.getZBuffer);
+        CopyTo(input_as_dob, postProcessedImage);
+    }
 }

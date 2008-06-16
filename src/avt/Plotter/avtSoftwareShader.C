@@ -386,12 +386,15 @@ avtSoftwareShader::GetLightDirection(const LightAttributes &la,
 //    this method instead of passing in.  It is not obvious in this
 //    method, but we are now using an orthographic view for the light.
 //
+//    Tom Fogal, Mon Jun 16 11:15:21 EDT 2008
+//    Made the avtView3D arguments constant.
+//
 // ****************************************************************************
 
 void
 avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
-                              avtView3D &light_dir, avtView3D &current_view, 
-                              double strength)
+                              const avtView3D &light_dir,
+                              const avtView3D &current_view, double strength)
 {
     //
     // Set up the buffers we will be reading from and writing to.
@@ -582,10 +585,15 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 29, 2007
 //
+//  Modifications:
+//
+//    Tom Fogal, Mon Jun 16 11:13:34 EDT 2008
+//    Made current_view constant.
+//
 // ****************************************************************************
 void
 avtSoftwareShader::AddDepthCueing(avtImage_p current_image,
-                                  avtView3D &current_view, 
+                                  const avtView3D &current_view,
                                   const double start[3],
                                   const double end[3],
                                   unsigned char cuecolor[3])
@@ -720,12 +728,15 @@ avtSoftwareShader::AddDepthCueing(avtImage_p current_image,
 //    Hank Childs, Fri Jun  9 14:43:27 PDT 2006
 //    Removed unused variable.
 //
+//    Tom Fogal, Mon Jun 16 11:16:46 EDT 2008
+//    Added const qualifier to view and light direction.
+//
 // ****************************************************************************
 
 avtView3D
 avtSoftwareShader::FindLightView(avtImage_p current_image,
-                                 avtView3D &current_view,
-                                 double *light_dir,
+                                 const avtView3D &current_view,
+                                 const double *light_dir,
                                  double light_aspect)
 {
     avtView3D light_view = current_view;

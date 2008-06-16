@@ -2468,10 +2468,13 @@ VisWindow::SetView2D(const avtView2D &v)
 //    Modified to match changes in avtView2D made to handle full frame
 //    mode properly.
 //
+//    Tom Fogal, Mon Jun 16 10:48:33 EDT 2008
+//    Made the method const.
+//
 // ****************************************************************************
 
 const avtView2D &
-VisWindow::GetView2D(void)
+VisWindow::GetView2D(void) const
 {
     return view2D;
 }
@@ -2529,10 +2532,13 @@ VisWindow::SetView3D(const avtView3D &v)
 //    Modify the method to just return the internally stored avtView3D 
 //    without first updating it from the vtk view state.
 //
+//    Tom Fogal, Mon Jun 16 10:47:02 EDT 2008
+//    Made the method const.
+//
 // ****************************************************************************
 
 const avtView3D &
-VisWindow::GetView3D(void)
+VisWindow::GetView3D(void) const
 {
     return view3D;
 }
@@ -2593,10 +2599,13 @@ VisWindow::SetViewCurve(const avtViewCurve &v)
 //    Modify the method to just return the internally stored avtViewCurve
 //    without first updating it from the vtk view state.
 //
+//    Tom Fogal, Mon Jun 16 10:49:18 EDT 2008
+//    Made the method const.
+//
 // ****************************************************************************
 
 const avtViewCurve &
-VisWindow::GetViewCurve(void)
+VisWindow::GetViewCurve(void) const
 {
     return viewCurve;
 }
@@ -2643,9 +2652,14 @@ VisWindow::SetViewAxisArray(const avtViewAxisArray &v)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Mon Jun 16 10:49:40 EDT 2008
+//    Made the method const.
+//
 // ****************************************************************************
 const avtViewAxisArray &
-VisWindow::GetViewAxisArray(void)
+VisWindow::GetViewAxisArray(void) const
 {
     return viewAxisArray;
 }
