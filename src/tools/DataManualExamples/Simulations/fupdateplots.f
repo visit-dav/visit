@@ -43,8 +43,6 @@ c Programmer: Brad Whitlock
 c Date:       Fri Jan 26 15:24:35 PST 2007
 c
 c Modifications:
-c    Shelly Prevost,Thu Jul 26 16:34:40 PDT 2007
-c    Added a absolute filename argument to VisItInitializeSocketAndDumpSimFile.
 c
 c-----------------------------------------------------------------
       program main
@@ -352,11 +350,11 @@ c Calculate a zonal variable that depends on the simulation time.
           ypos = 2.5 * sin(angle)
           do 5010 J=1,NY-1
               ty = float(J-1) / float(NY-2)
-              cellY = (1.-ty)*-2.5 + 2.5*ty
+              cellY = (1.-ty)*(-2.5) + 2.5*ty
               dY = cellY - ypos
               do 5000 I=1,NX-1
                   tx = float(I-1) / float(NX-2)
-                  cellX = (1.-tx)*-2.5 + 2.5*tx
+                  cellX = (1.-tx)*(-2.5) + 2.5*tx
                   dX = cellX - xpos
                   zonal(I,J) = sqrt(dX * dX + dY * dY)
 5000          continue

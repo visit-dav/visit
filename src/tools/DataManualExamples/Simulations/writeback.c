@@ -318,7 +318,7 @@ MeshMetaData_Copy(const VisIt_MeshMetaData *mmd)
 void
 MeshMetaData_Free(VisIt_MeshMetaData *mmd)
 {
-    // Free the mesh metadata.
+    /* Free the mesh metadata.*/
     free((void*)mmd->name);
     free((void*)mmd->blockTitle);
     free((void*)mmd->blockPieceName);
@@ -345,7 +345,7 @@ ScalarMetaData_Copy(const VisIt_ScalarMetaData *smd)
 void
 ScalarMetaData_Free(VisIt_ScalarMetaData *smd)
 {
-    // Free the scalar metadata.
+    /* Free the scalar metadata.*/
     free((void*)smd->name);
     free((void*)smd->meshName);
     free(smd);
@@ -1536,8 +1536,6 @@ void mainloop(void)
  * Date:       Thu Nov 2 17:27:14 PST 2006
  *
  * Modifications:
- *    Shelly Prevost,Thu Jul 26 16:34:40 PDT 2007
- *    Added a absolute filename argument to VisItInitializeSocketAndDumpSimFile.
  *
  *****************************************************************************/
 
