@@ -1603,6 +1603,9 @@ avtNek3DFileFormat::GetFileName(int timestep, int pardir, char *outFileName, int
 //    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
 //    Added the bParFormat flag allowing the parallel format to be used
 //    by a serial code, in which there is only one output dir.
+//
+//    Dave Bremer, Mon Jun 16 18:22:43 PDT 2008
+//    Small change to be more robust about finding the location of the field tags.
 // ****************************************************************************
 
 void
@@ -1638,13 +1641,19 @@ avtNek3DFileFormat::UpdateCyclesAndTimes()
         {
             f >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy;
             f >> t >> c >> dummy;
-            //while (f.get() == ' ')  //read past the first char of the next tag
-            //    ;
 
-            //I have to seek to a specific position, because in the header for parallel
-            //files, sometimes the tags aren't separated by white space.
-            f.seekg(76, std::ios_base::beg);
-            v = f.get();
+            //I do this to skip the num directories token, because it may abut 
+            //the field tags without a whitespace separator.
+            while (f.peek() == ' ')
+                f.get();
+            while (f.peek() >= '0' && f.peek() <= '9')
+                f.get();
+            
+            char tmpTags[32];
+            f.read(tmpTags, 32);
+            tmpTags[31] = '\0';
+
+            v = tmpTags;
         }
         f.close();
 
@@ -1653,7 +1662,7 @@ avtNek3DFileFormat::UpdateCyclesAndTimes()
 
         // If this file contains a mesh, the first variable codes after the 
         // cycle number will be X Y
-        if (v == "X")
+        if (v.find("X") != std::string::npos)
             iTimestepsWithMesh.push_back(iFirstTimestep+ii);
     }
     delete[] meshfilename;
