@@ -1,10 +1,21 @@
 <?xml version="1.0"?>
-  <Plugin name="Tecplot" type="database" label="Tecplot" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true">
+  <Plugin name="Tecplot" type="database" label="Tecplot" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="false" specifiedFilenames="false">
     <Extensions>
       tp
       plt
       tec
     </Extensions>
-    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    <Files components="M">
+      avtTecplotFileFormat.C
+      avtTecplotBinaryFileFormat.C
+      TecplotFile.C
+    </Files>
+    <Files components="E">
+      avtTecplotFileFormat.C
+      avtTecplotBinaryFileFormat.C
+      avtTecplotWriter.C
+      TecplotFile.C
+    </Files>
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>
