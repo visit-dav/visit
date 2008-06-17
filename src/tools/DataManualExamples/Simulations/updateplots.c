@@ -305,8 +305,6 @@ void mainloop(void)
  *   argv : The command line arguments.
  *
  * Modifications:
- *    Shelly Prevost,Thu Jul 26 16:34:40 PDT 2007
- *    Added a absolute filename argument to VisItInitializeSocketAndDumpSimFile.
  *
  *****************************************************************************/
 
@@ -336,7 +334,12 @@ int main(int argc, char **argv)
     if(par_rank == 0)
     {
         /* Write out .sim file that VisIt uses to connect. */
-        VisItInitializeSocketAndDumpSimFile("updateplots",
+        VisItInitializeSocketAndDumpSimFile(
+#ifdef PARALLEL
+            "updateplots_par",
+#else
+            "updateplots",
+#endif
             "Demonstrates VisItUpdatePlots function",
             "/path/to/where/sim/was/started",
             NULL, NULL, NULL);
@@ -355,22 +358,35 @@ int main(int argc, char **argv)
     return 0;
 }
 
-/* SIMULATE ONE TIME STEP */
+/******************************************************************************
+ *
+ * Purpose: This function simulates one time step
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Jan 12 13:37:17 PST 2007
+ *
+ * Modifications:
+ *   Brad Whitlock, Tue Jun 17 16:09:51 PDT 2008
+ *   Call VisItTimeStepChanged on all processors to prevent a "merge"
+ *   exception in the engine.
+ *
+ *****************************************************************************/
 void simulate_one_timestep(void)
 {
     ++simcycle;
     simtime += (M_PI / 10.);
 
     if(par_rank == 0)
-    {
         printf("Simulating time step: cycle=%d, time=%lg\n", simcycle, simtime);
 
-        if(simUpdatePlots == 1)
-        {
-            /* Tell VisIt that the timestep changed. */
-            VisItTimeStepChanged();
+    if(simUpdatePlots == 1)
+    {
+        /* Tell VisIt that the timestep changed. */
+        VisItTimeStepChanged();
 
-            /* Tell VisIt that we should update the plots. */
+        /* Tell VisIt that we should update the plots. */
+        if(par_rank == 0)
+        {
             VisItUpdatePlots();
         }
     }
@@ -699,5 +715,5 @@ VisIt_SimulationCallback visitCallbacks =
     &VisItGetScalar, /* GetScalar */
     &VisItGetCurve, /* GetCurve */
     NULL, /* GetMixedScalar */
-    NULL /* GetDomainList */
+    &VisItGetDomainList
 };

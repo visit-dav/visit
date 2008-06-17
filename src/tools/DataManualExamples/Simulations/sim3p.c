@@ -41,6 +41,9 @@
 #include <stdio.h>
 #include <mpi.h>
 
+static int par_rank = 0;
+static int par_size = 1;
+
 #include <stubs.c>
 
 /* CHANGE 1 */
@@ -55,9 +58,6 @@ static int visit_broadcast_string_callback(char *str, int len, int sender)
     return MPI_Bcast(str, len, MPI_CHAR, sender, MPI_COMM_WORLD);
 }
 #endif
-
-static int par_rank = 0;
-static int par_size = 1;
 
 /******************************************************************************
  *

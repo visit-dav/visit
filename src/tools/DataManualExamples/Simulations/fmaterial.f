@@ -346,7 +346,7 @@ c would have one linear index in its first element.
       integer dims(3), err, I, J, cellid(2), nmats, m
       integer matno(3), cellmat(3)
       real cellmatvf(3)
-      data dims/NX-1, NY-1,1/
+      data dims/4, 3,1/
       err = visitmaterialsetdims(handle, dims, 2)
       matno(1) = visitmaterialadd(handle, "Water", 5)
       matno(2) = visitmaterialadd(handle, "Membrane", 8)
