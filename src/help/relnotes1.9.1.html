@@ -14,27 +14,24 @@
 <p>Welcome to VisIt's release notes page. Release 1.9.1 is primarily a bug fix release to release 1.9.  Look <a href="relnotes1.9.0.html">here</a> to see a complete list of bugs fixed in release 1.9.</p>
 <p><b><font size="4">Bugs fixed in version 1.9.1</font></b></p>
 <ul>
-<li>Added support for Curve plots of expressions derived from 1d flash data.</li>
-<li>Fixed path-parsing problem on Windows systems that prevented plugins from loading on diskless configurations.
-</li>
-<li>VisIt fails to locate and use movie templates when using the Save Movie Wizard.</li>
-<li>The Spreadsheet plot is missing its top level menu in the MacOS X of VisIt.</li>
-<li>The XDMF reader crashes the compute engine when reading data that uses the VxVyVz coordinate format.</li>
-<li>VisIt does not use the compute engine configuration saved a session file when using a session file to generate a movie with <i>"visit -movie"</i>.</li>
-<li>Clicking on an imported color table in the <b>Color Table</b> window causes VisIt's GUI to crash.</li>
-<li>VisIt truncates the username on Windows platform when 'Change username' option is chosen while connecting to remote machine.</li>
-<li>VisIt's SimV1 reader required the GetMixedScalar callback function to be defined in a simulation in order for GetScalar to work. If the GetMixedScalar function is not defined then the SimV1 reader would crash.</li>
-<li>A bug was fixed with Pseudocolor plot's of rectilinear grids with the Box operator applied.</li>
+<li>Curve plots now work with expressions derived from 1D flash data.</li>
+<li>Plugins now load on diskless Windows systems.</li>
+<li>VisIt no longer fails to locate and use movie templates when using the Save Movie Wizard.</li>
+<li>The Spreadsheet plot is no longer missing its top level menu in the MacOS X version of VisIt.</li>
+<li>The XDMF reader no longer crashes the compute engine when reading data that uses the VxVyVz coordinate format.</li>
+<li>VisIt now uses the the compute engine configuration saved with the sessionfile when using a session file to generate a movie with <i>"visit -movie"</i>.</li>
+<li>Clicking on an imported color table in the <b>Color Table</b> window no longer causes VisIt's GUI to crash.</li>
+<li>VisIt no longer truncates the username on Windows platforms when the 'Change username' option is chosen while connecting to a remote machine.</li>
+<li>VisIt's SimV1 reader no longer crashes when reading a scalar variable and the GetMixedScalar callback function is not defined in the simulation.</li>
+<li>A bug was fixed with Pseudocolor plots of rectilinear grids with the Box operator applied.</li>
 <li>The time varying Exodus file format reader no longer crashes when revisiting earlier time slices.</li>
-<li>VisIt's CGNS reader now retrieves all relevant sections of an unstructured mesh instead of just returning the first section.</li>
+<li>VisIt's CGNS reader now retrieves all relevant sections of an unstructuredmesh instead of just returning the first section.</li>
 <li>The Silo reader can now support more storage mechanisms for arbitrary polygons, specifically those that set the shapesize field to 0 and encode each polygon's number of nodes in the nodelist.</li>
-<li>When existing path size was greater than 1024, the Windows installer overwrote the PATH with VisIt's install directory, instead of prepending to the PATH.</li>
-<li>Allow multi-variable expressions to work with curves.</li>
-<li>The Miranda reader had a problem reading some 2D data in the new format.</li>
+<li>The Windows installer no longer overwrites the PATH with VisIt's install directory when the path size is greater than 1024, instead it prependes it to the PATH as it should.</li>
+<li>Multi-variable expressions now work with curves.</li>
+<li>The Miranda reader no longer has a problem reading some 2D data in the newformat.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.9.0.html">VisIt 1.9.0 Release Notes</a>.</p>
-<p>Click the following link to view the release notes for the next version
-of VisIt: <a href="relnotes1.10.0.html">VisIt 1.10.0 Release Notes</a>.</p>
 </body>
 </html>
