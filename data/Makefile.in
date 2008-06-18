@@ -276,6 +276,9 @@
 #   that generates XDMF files.  I added an infrastructure to optionally build
 #   source code that depends on HDF5 (which the XDMF source code does).
 #
+#   Mark C. Miller, Tue Jun 17 18:16:45 PDT 2008
+#   Added '-no_options' to visitconvert invokations
+#
 ##############################################################################
 
 ##
@@ -350,7 +353,7 @@ test: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./mu
 	./globe
 	./multi_test
 	-@if test -x ../src/exe/visitconvert_ser; then \
-	    ../src/bin/visitconvert multi_ucd3d.silo multipart_multi_ucd3d Silo ; \
+	    ../src/bin/visitconvert multi_ucd3d.silo multipart_multi_ucd3d Silo -no_options; \
 	fi
 	./noise
 	./noise2d
@@ -404,7 +407,7 @@ testh5: ./bigsil ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./
 	   ./globe -driver DB_HDF5;\
 	   ./multi_test -driver DB_HDF5;\
 	   if test -x ../src/exe/visitconvert_ser; then \
-	      ../src/bin/visitconvert multi_ucd3d.silo multipart_multi_ucd3d Silo;\
+	      ../src/bin/visitconvert multi_ucd3d.silo multipart_multi_ucd3d Silo -no_options; \
 	   fi;\
 	   ./noise -driver DB_HDF5;\
 	   ./noise2d -driver DB_HDF5;\
