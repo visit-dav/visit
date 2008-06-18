@@ -4351,21 +4351,23 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
     for (size_t i = 0; i < plotIds.size(); i++)
     {
         StackTimer one_plot("Setting up one plot");
-        float cellCountMultiplier;
         avtDataObjectWriter_p tmpWriter;
+        avtDataObject_p dob;
         // get the network output as we would normally
         this->workingNet = NULL;
         UseNetwork(plotIds[i]);
+        float cellCountMultiplier;
 
         DataNetwork *workingNetSaved = workingNet;
 
-        int t_merge = visitTimer->StartTimer();
+        {
+            StackTimer t_merge("Merging data info in parallel");
             tmpWriter = GetOutput(false, true, &cellCountMultiplier);
-            avtDataObject_p dob = tmpWriter->GetInput();
+            dob = tmpWriter->GetInput();
 
             // merge polygon info output across processors 
             dob->GetInfo().ParallelMerge(tmpWriter);
-        visitTimer->StopTimer(t_merge, "Merging data info in parallel");
+        }
 
         if(hasNonMeshPlots &&
            string(workingNetSaved->GetPlot()->GetName()) == "MeshPlot")
@@ -4524,10 +4526,13 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 //    Tom Fogal, Thu Jun 12 15:10:03 EDT 2008
 //    Removed the TRY block from this code; our caller should have one for us.
 //
+//    Tom Fogal, Wed Jun 18 15:31:59 EDT 2008
+//    Made `plotIds' a reference; this fixes an SR mode bug.
+//
 // ****************************************************************************
 
 void
-NetworkManager::RenderSetup(intVector plotIds, bool getZBuffer,
+NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
                             int annotMode, int windowID, bool leftEye)
 {
     this->r_mgmt.origWorkingNet = workingNet;
@@ -4548,7 +4553,7 @@ NetworkManager::RenderSetup(intVector plotIds, bool getZBuffer,
     std::string &changedCtName = viswinInfo.changedCtName;
     WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
     std::vector<int>& plotsCurrentlyInWindow =
-        viswinMap.find(windowID)->second.plotsCurrentlyInWindow;
+        viswinInfo.plotsCurrentlyInWindow;
     VisWindow *viswin = viswinInfo.viswin;
 
     this->r_mgmt.timer = visitTimer->StartTimer();
@@ -4719,6 +4724,16 @@ NetworkManager::RenderCleanup(int windowID)
     }
     visitTimer->StopTimer(this->r_mgmt.timer,
                           "Total time for NetworkManager::Render");
+
+    // Ensure render state values get default/invalid values.
+    this->r_mgmt.origWorkingNet = NULL;
+    this->r_mgmt.annotMode = 0;
+    this->r_mgmt.timer = -1;
+    this->r_mgmt.getZBuffer = false;
+    this->r_mgmt.handledAnnotations = false;
+    this->r_mgmt.handledCues = false;
+    this->r_mgmt.needToSetUpWindowContents = false;
+    this->r_mgmt.viewportedMode = false;
 }
 
 // ****************************************************************************
@@ -4882,10 +4897,13 @@ NetworkManager::MultipassRendering(VisWindow *viswin) const
 //    Forced the second pass to turn off gradient backgrounds before rendering.
 //    It was causing erasing of the first-pass results.
 //
+//    Tom Fogal, Wed Jun 18 16:00:05 EDT 2008
+//    Made the input image a constant reference.
+//
 // ****************************************************************************
 
 avtDataObject_p
-NetworkManager::RenderTranslucent(int windowID, avtImage_p input)
+NetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
 {
     VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
     avtImage_p translucent;
@@ -4967,11 +4985,14 @@ NetworkManager::RenderTranslucent(int windowID, avtImage_p input)
 //    shadowing to even figure out what the view should be.  Separated out
 //    the light-view image size from the normal camera one.
 //
+//    Tom Fogal, Wed Jun 18 16:01:06 EDT 2008
+//    Made the input image a reference.
+//
 // ****************************************************************************
 
 void
 NetworkManager::RenderShadows(int windowID,
-                              avtDataObject_p input_as_dob) const
+                              avtDataObject_p& input_as_dob) const
 {
     VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
 
@@ -5069,11 +5090,16 @@ NetworkManager::RenderShadows(int windowID,
 //  Programmer: Tom Fogal
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Wed Jun 18 16:00:29 EDT 2008
+//    Made the input image a reference.
+//
 // ****************************************************************************
 
 void
 NetworkManager::RenderDepthCues(int windowID,
-                                avtDataObject_p input_as_dob) const
+                                avtDataObject_p& input_as_dob) const
 {
     const VisWindow * const viswin = viswinMap.find(windowID)->second.viswin;
 
@@ -5136,11 +5162,14 @@ NetworkManager::RenderDepthCues(int windowID,
 //    Hank Childs, Thu Mar  2 10:06:33 PST 2006
 //    Add support for image based plots.
 //
+//    Tom Fogal, Wed Jun 18 16:04:03 EDT 2008
+//    Made the input image a reference.
+//
 // ****************************************************************************
 
 void
 NetworkManager::RenderPostProcess(std::vector<avtPlot_p>& image_plots,
-                                  avtDataObject_p input_as_dob,
+                                  avtDataObject_p& input_as_dob,
                                   int windowID) const
 {
     const WindowAttributes & windowAttributes =
@@ -5162,6 +5191,7 @@ NetworkManager::RenderPostProcess(std::vector<avtPlot_p>& image_plots,
         }
         CopyTo(input_as_dob, compositedImage);
     }
+
 #ifdef PARALLEL
     if ((this->r_mgmt.annotMode==2) &&
         ((PAR_Rank() == 0) || this->r_mgmt.getZBuffer))
