@@ -1264,50 +1264,34 @@ if test "$post" = "1"; then
                 continue
             fi
 
-            if test -f $d/index.html; then
-                # if its an old style test dir, assume serial
-                oldMode=`grep -m 1 'Results of VisIt Regression Test' $d/index.html | cut -d'(' -f2 | cut -d')' -f1`
-                if test -z "$oldMode"; then
-                    oldMode="serial"
-                fi
-                hasFailed=`grep -m 1 Failed $d/index.html`
-                if test "$hasFailed" = ""; then
-                    hasFailed=`grep -m 1 Unacceptable $d/index.html`
-                fi
-                if test "$hasFailed" = ""; then
-                    echo "<tr><td>$dir</td><td bgcolor="#00ff00"><b><a href=\"$dir\">$oldMode</a></b></td></tr>" >> index.html
-                else
-                    echo "<tr><td>$dir</td><td bgcolor="#ff0000"><b><a href=\"$dir\">$oldMode</a></b></td></tr>" >> index.html
-                fi
-            else
-                # create a link for each mode that was tested
-                modedirs=`find $d -type d -maxdepth 1 -print`
-                if test ! "$modedirs" = "$d"; then
-                    echo "<tr>" >> index.html
-                    echo "<td>$dir</td>" >> index.html
-                    for mdir in $modedirs; do
-                        bmdir=`basename $mdir`
-                        if test "$bmdir" = "$dir"; then
-                            continue
-                        fi
-                        hasFailed=`grep -m 1 Failed /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
-                        if test "$hasFailed" = ""; then
-                            hasFailed=`grep -m 1 Unacceptable /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
-                        fi
-                        hasSkips=`grep -m 1 Skipped /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
-                        if test "$hasFailed" = ""; then
-                            if test "$hasSkips" = ""; then
-                                echo "<td bgcolor="#00ff00"><b><a href=\"$dir/$bmdir\">$bmdir</a></b></td>" >> index.html
-                            else
-                                echo "<td bgcolor="#0000ff"><b><a href=\"$dir/$bmdir\">$bmdir</a></b></td>" >> index.html
-                            fi
+            # create a link for each mode that was tested
+            modedirs=`find $d -type d -maxdepth 1 -print`
+            if test ! "$modedirs" = "$d"; then
+                echo "<tr>" >> index.html
+                echo "<td>$dir</td>" >> index.html
+                for mdir in $modedirs; do
+                    bmdir=`basename $mdir`
+                    if test "$bmdir" = "$dir"; then
+                        continue
+                    fi
+                    hasFailed=`grep -m 1 "\<Failed\|Killed\>" /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
+                    if test "$hasFailed" = ""; then
+                        hasFailed=`grep -m 1 Unacceptable /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
+                    fi
+                    hasSkips=`grep -m 1 Skipped /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
+                    if test "$hasFailed" = ""; then
+                        if test "$hasSkips" = ""; then
+                            echo "<td bgcolor="#00ff00"><b><a href=\"$dir/$bmdir\">$bmdir</a></b></td>" >> index.html
                         else
-                            echo "<td bgcolor="#ff0000"><b><a href=\"$dir/$bmdir\">$bmdir</a></b></td>" >> index.html
+                            echo "<td bgcolor="#0000ff"><b><a href=\"$dir/$bmdir\">$bmdir</a></b></td>" >> index.html
                         fi
-                    done
-                    echo "</tr>" >> index.html
-                fi
+                    else
+                        echo "<td bgcolor="#ff0000"><b><a href=\"$dir/$bmdir\">$bmdir</a></b></td>" >> index.html
+                    fi
+                done
+                echo "</tr>" >> index.html
             fi
+
         done
         echo "</table>" >> index.html
     fi
