@@ -341,6 +341,14 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //       Added RenderDepthCues
 //       Added RenderPostProcess
 //
+//    Tom Fogal, Wed Jun 18 11:31:09 EDT 2008
+//    Removed haveImagePlots; done locally.
+//
+//    Tom Fogal, Wed Jun 18 15:32:51 EDT 2008
+//    Changed some arguments to be references in the new methods I added; they
+//    used to be all one method, so changes in one place should be visible in
+//    all of them (and should aviod copying of large images).
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -355,7 +363,6 @@ class NetworkManager
         bool getZBuffer;               /* should we readback Z too? */
         bool handledAnnotations;       /* annotations already done? */
         bool handledCues;
-        bool haveImagePlots;           /* image based plots? (2d rendering) */
         bool needToSetUpWindowContents;
         bool viewportedMode;
     };
@@ -448,7 +455,7 @@ class NetworkManager
 
     void            UpdateVisualCues(int winID);
     void            NewVisWindow(int winID);
-    void            RenderSetup(intVector networkIds, bool getZBuffer,
+    void            RenderSetup(intVector& networkIds, bool getZBuffer,
                                 int annotMode, int windowID, bool leftEye);
     void            RenderCleanup(int windowID);
     bool            PlotsNeedUpdating(const intVector &plots,
@@ -461,13 +468,13 @@ class NetworkManager
     size_t          RenderingStages(int windowID);
     avtImage_p      RenderGeometry(int windowID);
     bool            MultipassRendering(VisWindow *viswin) const;
-    avtDataObject_p RenderTranslucent(int windowID, avtImage_p input);
+    avtDataObject_p RenderTranslucent(int windowID, const avtImage_p& input);
     void            RenderShadows(int windowID,
-                                  avtDataObject_p input_as_dob) const;
+                                  avtDataObject_p& input_as_dob) const;
     void            RenderDepthCues(int windowID,
-                                    avtDataObject_p input_as_dob) const;
+                                    avtDataObject_p& input_as_dob) const;
     void            RenderPostProcess(std::vector<avtPlot_p>& image_plots,
-                                      avtDataObject_p input_as_dob,
+                                      avtDataObject_p& input_as_dob,
                                       int windowID) const;
 
     static avtWholeImageCompositer *MakeCompositer(bool threeD,
