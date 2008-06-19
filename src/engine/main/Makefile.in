@@ -321,7 +321,7 @@ MAINSRC=main.C
 LIBRARYSRC=VisItEngineV1.C
 
 SEROBJ=$(SRC:.C=.o)
-PAROBJ=$(SRC:.C=_par.o)
+PAROBJ=$(SRC:.C=_par.o) IceTNetworkManager_icet.o
 
 MAINSEROBJ=$(MAINSRC:.C=.o)
 MAINPAROBJ=$(MAINSRC:.C=_par.o)
@@ -345,13 +345,15 @@ clean:
 	$(CXX) -o $@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)
 
 @ENGINE_PAR@ or_no_par: $(PARLIBDEP) $(PAROBJ) $(MAINPAROBJ) $(LIBSHAREDPAR)
-	$(CXX) -o $@ $(LDFLAGS) $(MAINPAROBJ) -lengine_par $(PARLIBS)
+	$(CXX) -o $@ $(LDFLAGS) $(MAINPAROBJ) -lengine_par $(PARLIBS) \
+	@ICET_LDFLAGS@ @ICET_LIBS@
 
 $(ENGINEWRAPSER) or_no_ser_wrapper: $(SERLIBDEP) $(SEROBJ) $(LIBRARYSEROBJ) $(LIBSHAREDSER)
 	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(LIBRARYSEROBJ) -lengine_ser $(SERLIBS)
 
 $(ENGINEWRAPPAR) or_no_par_wrapper: $(PARLIBDEP) $(PAROBJ) $(LIBRARYPAROBJ) $(LIBSHAREDPAR)
-	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(LIBRARYPAROBJ) -lengine_par $(PARLIBS)
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(LIBRARYPAROBJ) -lengine_par $(PARLIBS) \
+	@ICET_LDFLAGS@ @ICET_LIBS@
 
 purify: $(SERLIBDEP) $(SEROBJ) $(MAINSEROBJ) $(LIBSHAREDSER) $(MAINPAROBJ) $(LIBSHAREDPAR)
 	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir -chain-length=64	$(CXX) -o @ENGINE_SER@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)

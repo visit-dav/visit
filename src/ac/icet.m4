@@ -154,9 +154,9 @@ need to set some custom LDFLAGS?])],
             [ax_ICET_LIB_STRATEGIES="-licet_strategies"],
             [AC_MSG_FAILURE([
 --enable-icet was given, but I could not make use of it's strategies!  This
-might mean the library was updated and VisIt's test simply needs to be updated,
-or it might mean your IceT install is not quite right.  You may need to set
-some custom LDFLAGS.])],
+might mean the library was updated and VisIt's IceT test simply needs to be
+updated, or it might mean your IceT install is not quite right.  You may need
+to set some custom LDFLAGS.])],
             [-L$MESA_DIR/lib $MESA_LIBS -lm -licet -lmpi]
         )
         ICET_LIBS="${ax_ICET_LIB} ${ax_ICET_LIB_MPI} ${ax_ICET_LIB_STRATEGIES}"
