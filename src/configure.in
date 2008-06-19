@@ -788,8 +788,11 @@ dnl
 dnl    Hank Childs, Fri Jun 13 15:05:02 PDT 2008
 dnl    Add support for tcmalloc from google-perftools.
 dnl
+dnl    Tom Fogal, Thu Jun 19 13:46:15 EDT 2008
+dnl    Moved ac macro file to its own subdirectory, and appropriately use
+dnl    aclocal.m4 to include it (instead of here).
+dnl
 dnl --------------------------------------------------------------------------
-m4_include([icet.m4])
 
 dnl
 dnl Configuration header stuff...

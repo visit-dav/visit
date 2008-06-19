@@ -2752,15 +2752,15 @@ if test $ac_cv_lib_icet_strategies_icetTreeCompose = yes; then
 else
   { { echo "$as_me:$LINENO: error:
 --enable-icet was given, but I could not make use of it's strategies!  This
-might mean the library was updated and VisIt's test simply needs to be updated,
-or it might mean your IceT install is not quite right.  You may need to set
-some custom LDFLAGS.
+might mean the library was updated and VisIt's IceT test simply needs to be
+updated, or it might mean your IceT install is not quite right.  You may need
+to set some custom LDFLAGS.
 See \`config.log' for more details." >&5
 echo "$as_me: error:
 --enable-icet was given, but I could not make use of it's strategies!  This
-might mean the library was updated and VisIt's test simply needs to be updated,
-or it might mean your IceT install is not quite right.  You may need to set
-some custom LDFLAGS.
+might mean the library was updated and VisIt's IceT test simply needs to be
+updated, or it might mean your IceT install is not quite right.  You may need
+to set some custom LDFLAGS.
 See \`config.log' for more details." >&2;}
    { (exit 1); exit 1; }; }
 fi
