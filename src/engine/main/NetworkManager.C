@@ -1924,6 +1924,11 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Utilize RenderDepthCues.
 //    Utilize RenderPostProcess.
 //
+//    Tom Fogal, Thu Jun 19 10:38:32 EDT 2008
+//    Moved this->r_mgmt.viewportedMode calculation into here, because we
+//    shouldn't try to query properties of the viswindow until we've set it up
+//    (in RenderSetup)!  This fixes a lot of SR mode bugs.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -1989,6 +1994,12 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         }
 
         CallInitializeProgressCallback(this->RenderingStages(windowID));
+
+        this->r_mgmt.viewportedMode =
+            (this->r_mgmt.annotMode != 1) ||
+            (viswin->GetWindowMode() == WINMODE_2D) ||
+            (viswin->GetWindowMode() == WINMODE_CURVE) ||
+            (viswin->GetWindowMode() == WINMODE_AXISARRAY);
 
         // render the image and capture it. Relies upon explicit render
         int t3 = visitTimer->StartTimer();
@@ -4593,12 +4604,6 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
             this->PlotsNeedUpdating(plotIds, plotsCurrentlyInWindow) ||
             forceViewerExecute;
     }
-
-    this->r_mgmt.viewportedMode =
-        (this->r_mgmt.annotMode != 1) ||
-        (viswin->GetWindowMode() == WINMODE_2D) ||
-        (viswin->GetWindowMode() == WINMODE_CURVE) ||
-        (viswin->GetWindowMode() == WINMODE_AXISARRAY);
 
     if(this->r_mgmt.needToSetUpWindowContents)
     {
