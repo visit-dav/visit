@@ -73,6 +73,9 @@ for f in ${files} ; do
         *windowsbuild/projects*/*/*)
             continue
             ;;
+        *windowsbuild/projects*/*)
+            continue
+            ;;
         *windowsbuild/include/VTK/*)
             continue
             ;;
