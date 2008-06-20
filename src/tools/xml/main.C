@@ -532,7 +532,6 @@ int main(int argc, char *argv[])
                 argv[j] = argv[j+1];
             i--;
         }
-#if 0
         else if (strcmp(argv[i], "-version8") == 0)
         {
             generateVersion7Projects = false;
@@ -541,7 +540,6 @@ int main(int argc, char *argv[])
                 argv[j] = argv[j+1];
             i--;
         }
-#endif
 #endif
         else if (strcmp(argv[i], "-outputtoinputdir") == 0)
         {

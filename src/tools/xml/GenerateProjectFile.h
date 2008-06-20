@@ -121,6 +121,9 @@
 //    directories.  Added ability to set third party information from
 //    xml file. 
 //
+//    Kathleen Bonnell, Fri Jun 20 08:18:07 PDT 2008 
+//    Allow creation of projects for MSVC8.
+//
 // ****************************************************************************
 
 class ProjectFileGeneratorPlugin : public Plugin
@@ -155,6 +158,25 @@ protected:
     QString tpLibDir;
     bool withinDevDir;
     bool publicVisIt;
+
+    QString CreateKey() const
+    {
+        const char *digits = "0123456789ABCDEF";
+        QString s("------------------------------------");
+        for(int i = 0; i < (int)s.length(); ++i)
+        {
+            if(i == 8 || i == 13 || i == 18 || i == 23)
+                continue;
+            else
+            {
+                int v = rand() % 16;
+                s[i] = digits[v];
+            }
+        }
+
+        return QString("{") + s + QString("}");
+    }
+
 
 #if defined(_WIN32)
     bool ReadKey(const char *key, unsigned char **keyval) const
@@ -388,6 +410,11 @@ protected:
                 binBase += "\\MSVC7.Net";
                 libBase += "\\MSVC7.Net";
             }
+            else 
+            {
+                binBase += "\\MSVC8.Net";
+                libBase += "\\MSVC8.Net";
+            }
         }
         else
         {
@@ -414,6 +441,8 @@ protected:
                 libBase     = projectDir + "\\lib";
                 if (version7)
                     libBase     += "\\MSVC7.Net";
+                else 
+                    libBase     += "\\MSVC8.Net";
             }
             else
             {
@@ -434,6 +463,11 @@ protected:
         {
             binBase += "\\MSVC7.Net";
             libBase += "\\MSVC7.Net";
+        }
+        else
+        {
+            binBase += "\\MSVC8.Net";
+            libBase += "\\MSVC8.Net";
         }
 #endif
     }
@@ -500,19 +534,15 @@ protected:
     }
 
 #include <GenerateVC7.h>
-#if 0
 #include <GenerateVC8.h>
-#endif
 
 
     void WriteProject_TOP_LEVEL(ostream &out, bool version7)
     {
         if(version7)
             WriteProject_TOP_LEVEL_Version7(out);
-#if 0
         else
             WriteProject_TOP_LEVEL_Version8(out);
-#endif
     }
 
     void WriteProjectSolution(ostream &out, const vector<QString> &projects, 
@@ -520,10 +550,8 @@ protected:
     {
         if(version7)
             WriteProjectSolution_Version7(out, projects);
-#if 0
         else
             WriteProjectSolution_Version8(out, projects);
-#endif
     }
 
     void WriteProjectHelper(ostream &out, const QString &pluginType, 
@@ -533,11 +561,9 @@ protected:
         if(version7)
             WriteProjectHelper_Version7(out, pluginType, pluginComponent, 
                                         exports, libs, srcFiles);
-#if 0
         else
             WriteProjectHelper_Version8(out, pluginType, pluginComponent, 
                                         exports, libs, srcFiles);
-#endif
     }
 
     /***************************************************************************
@@ -678,13 +704,13 @@ protected:
         QString baseLibs("");
 
 #if defined(_WIN32)
-        if(version7)
+        if (withinDevDir)
         {
-            if (withinDevDir)
+            if(version7)
                 projectDir += QString("windowsbuild\\projects-MSVC7.Net\\plots\\");
+            else
+                projectDir += QString("windowsbuild\\projects-MSVC8.Net\\plots\\");
         }
-        else
-            projectDir += QString("projects\\plots\\");
 #endif
         QString IProject(projectDir + (name + "I") + projectExtension);
         QString EProject(projectDir + (name + "E") + projectExtension);
@@ -996,13 +1022,13 @@ protected:
         QString projectDir(ProjectDir(version7));
 
 #if defined(_WIN32)
-        if(version7)
+        if (withinDevDir)
         {
-            if (withinDevDir)
+            if(version7)
                 projectDir += "windowsbuild\\projects-MSVC7.Net\\operators\\";
+            else 
+                projectDir += "windowsbuild\\projects-MSVC8.Net\\operators\\";
         }
-        else
-            projectDir += "projects\\operators\\";
 #endif
         QString IProject(projectDir + (name + "I") + projectExtension);
         QString EProject(projectDir + (name + "E") + projectExtension);
@@ -1255,11 +1281,9 @@ protected:
             WriteDatabaseProject_Version7(out, pluginComponent, srcFiles, libs,
                     tplibs, tpincs, tppreproc);
         }
-#if 0
         else
             WriteDatabaseProject_Version8(out, pluginComponent, srcFiles,
                     libs, tplibs, tpincs, tppreproc);
-#endif
     }
 
     void WriteDatabaseProjects(bool (*openCB)(ofstream &, const QString &), 
@@ -1272,13 +1296,13 @@ protected:
                          "dbatts.lib database_ser.lib avtexceptions.lib");
 
 #if defined(_WIN32)
-        if(version7)
+        if (withinDevDir)
         {
-            if (withinDevDir)
+            if(version7)
                 projectDir += "windowsbuild\\projects-MSVC7.Net\\databases\\";
+            else 
+                projectDir += "windowsbuild\\projects-MSVC8.Net\\databases\\";
         }
-        else
-            projectDir += "projects\\databases\\";
 #endif
         QString IProject(projectDir + (name + "I") + projectExtension);
         QString EProject(projectDir + (name + "E") + projectExtension);
