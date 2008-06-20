@@ -78,8 +78,8 @@ CPPFLAGS=-I. @CPPFLAGS@
 ##
 ## Files...
 ##
-SRC=DebugStream.C Init.C VisItException.C TimingsManager.C PTY.C
-HDR=DebugStream.h Init.h VisItException.h TimingsManager.h PTY.h
+SRC=DebugStream.C Init.C VisItException.C TimingsManager.C PTY.C StackTimer.C
+HDR=DebugStream.h Init.h VisItException.h TimingsManager.h PTY.h StackTimer.h
 OBJ=$(SRC:.C=.o)
 LIB=libmisc
 
