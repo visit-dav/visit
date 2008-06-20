@@ -43,6 +43,8 @@
 #include "IceTNetworkManager.h"
 #include <avtParallel.h>
 #include <DebugStream.h>
+#include <Engine.h>
+
 #include <mpi.h>
 #include <GL/ice-t_mpi.h>
 
@@ -96,8 +98,10 @@
 // IceT render callback.
 // IceT needs to control the render; it calls the user render function as
 // needed (and multiple times, potentially) -- much like GLUT does rendering.
-// This is the callback function we'll pass into IceT.
-extern "C" void visit_render();
+// So we define a callback function which perform the rendering by grabbing
+// our instance (we're a singleton!) and calling the appropriate rendering
+// method there (``RealRender'').
+extern "C" void render();
 
 // ****************************************************************************
 //  Method: IceTNetworkManager default constructor
@@ -120,7 +124,7 @@ IceTNetworkManager::IceTNetworkManager(void): NetworkManager()
     DEBUG_ONLY(ICET(icetDiagnostics(ICET_DIAG_FULL)));
 
     ICET(icetStrategy(ICET_STRATEGY_REDUCE));
-    ICET(icetDrawFunc(visit_render));
+    ICET(icetDrawFunc(render));
 
     ICET(icetDisable(ICET_DISPLAY));
     ICET(icetInputOutputBuffers(
@@ -166,18 +170,72 @@ IceTNetworkManager::TileLayout(size_t width, size_t height) const
 }
 
 // ****************************************************************************
-//  Method: visit_render
+//  Method: Render
+//
+//  Purpose: `Faux' render, or render entry point.  We can't do a real render
+//           here because IceT wants to manage our render process, but we do
+//           all the setup and then tell IceT to get started.
+//           This is required to maintain API compatibility with our parent.
+//
+//  Arguments:
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 20, 2008
+//
+// ****************************************************************************
+avtDataObjectWriter_p
+IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
+                           int annotMode, int windowID, bool leftEye)
+{
+    this->RenderSetup(networkIds, getZBuffer, annotMode, windowID, leftEye);
+
+    ICET(icetDrawFunc(render));
+    ICET(icetDrawFrame());
+
+    // now readback.
+
+    // various components which are the same as our base:
+    //  shadows
+    //  depth cueing
+    //  post processing
+    //  creating a D.Obj.writer out of all this
+}
+
+// ****************************************************************************
+//  Method: RealRender
+//
+//  Purpose: Code which manages the `in OpenGL' portions of the render.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 20, 2008
+//
+// ****************************************************************************
+void
+IceTNetworkManager::RealRender()
+{
+    this->RenderGeometry();
+    // and translucent ..
+}
+
+// ****************************************************************************
+//  Method: render
 //
 //  Purpose: IceT render callback.  IceT operates like GLUT: it controls the
-//           rendering process.  It will call this method as appropriate.
+//           rendering process.  This is the method we'll give to IceT which
+//           tells it to render.
 //           Note this function MUST have C linkage!
 //
 //  Programmer: Tom Fogal
 //  Creation:   June 19, 2008
 //
 // ****************************************************************************
-extern "C"
-void visit_render()
+extern "C" void
+render()
 {
-    debug1 << "woo icet asked us to render!" << std::endl;
+    debug1 << "woo icet asked us to render opaque geometry!" << std::endl;
+    Engine *engy = Engine::Instance();
+    IceTNetworkManager *net_mgr;
+
+    net_mgr = dynamic_cast<IceTNetworkManager*>(engy->GetNetMgr());
+    net_mgr->RealRender();
 }

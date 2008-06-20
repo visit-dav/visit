@@ -38,15 +38,17 @@ dnl    Split up into AX_ICET_OPTIONS and AX_CHECK_ICET.  This allows a user to
 dnl    check whether or not the enable option was specified without doing the
 dnl    full check for IceT.
 dnl
+dnl    Tom Fogal, Fri Jun 20 13:43:48 EDT 2008
+dnl    Added an include path option for IceT to parallel c-pre-processor flags.
+dnl    Was also using AC_ARG_ENABLE incorrectly.
+dnl
 
 dnl provide --enable-icet and --with-icet-(include|lib)dir=... options.  These
 dnl values will be picked up later by the AX_CHECK_ICET macro.
 AC_DEFUN([AX_ICET_OPTIONS], [
 AC_ARG_ENABLE([icet],
     [AS_HELP_STRING([--enable-icet],
-        [Use the ICE-T parallel image compositor])],
-    [enable_icet=yes],
-    [enable_icet=no]
+        [Use the ICE-T parallel image compositor])]
 )
 
 dnl `with' options to specify header/library locations.
@@ -85,7 +87,7 @@ dnl Otherwise:
 dnl    define ICET_ENGINE_MAIN_OBJ to be `'
 AC_DEFUN([AX_CHECK_ICET], [
 
-AS_IF([test "x$enable_icet" != xno],
+AS_IF([test "x$enable_icet" != "xno"],
     [
         dnl IceT is really a C library, but we do our checks with C++ because
         dnl that's how we'll use it in VisIt
@@ -161,6 +163,7 @@ to set some custom LDFLAGS.])],
         )
         ICET_LIBS="${ax_ICET_LIB} ${ax_ICET_LIB_MPI} ${ax_ICET_LIB_STRATEGIES}"
         ICET_ENGINE_MAIN_OBJ='$(ICET_PAROBJ)'
+        PARALLEL_CPPFLAGS="${PARALLEL_CPPFLAGS} -I${ICET_INCLUDEDIR}"
         AC_SUBST(ICET_CXXFLAGS)
         AC_SUBST(ICET_LDFLAGS)
         AC_SUBST(ICET_LIBS)

@@ -349,6 +349,11 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    used to be all one method, so changes in one place should be visible in
 //    all of them (and should aviod copying of large images).
 //
+//    Tom Fogal, Fri Jun 20 17:21:35 EDT 2008
+//    Save windowID in state (needed for IceT child); remove arguments where
+//    possible; move methods from private -> protected; made some functions
+//    virtual.
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -359,6 +364,7 @@ class NetworkManager
         array_ref_ptr<int> cellCounts; /* # of cells, per network */
         int stereoType;                /* for push/popping stereo rendering */
         int annotMode;
+        int windowID;                  /* window we're rendering. */
         int timer;                     /* handle for overall render time */
         bool getZBuffer;               /* should we readback Z too? */
         bool handledAnnotations;       /* annotations already done? */
@@ -425,8 +431,9 @@ class NetworkManager
     avtDataObjectWriter_p GetOutput(bool respondWithNullData,
                                     bool calledForRender,
                                     float *cellCountMultiplier);
-    avtDataObjectWriter_p Render(intVector networkIds, bool getZBuffer,
-                                 int annotMode, int windowID, bool leftEye);
+    virtual avtDataObjectWriter_p
+                  Render(intVector networkIds, bool getZBuffer, int annotMode,
+                         int windowID, bool leftEye);
  
     void          StartPickMode(const bool);
     void          StopPickMode(void);
@@ -451,12 +458,14 @@ class NetworkManager
 
  protected:
 
+    virtual avtImage_p RenderGeometry();
+    void               RenderSetup(intVector& networkIds, bool getZBuffer,
+                                   int annotMode, int windowID, bool leftEye);
+
  private:
 
     void            UpdateVisualCues(int winID);
     void            NewVisWindow(int winID);
-    void            RenderSetup(intVector& networkIds, bool getZBuffer,
-                                int annotMode, int windowID, bool leftEye);
     void            RenderCleanup(int windowID);
     bool            PlotsNeedUpdating(const intVector &plots,
                                       const intVector &plotsInWindow) const;
@@ -466,7 +475,6 @@ class NetworkManager
     void            SetUpWindowContents(int windowID, const intVector &plotIds,
                                         bool forceViewerExecute);
     size_t          RenderingStages(int windowID);
-    avtImage_p      RenderGeometry(int windowID);
     bool            MultipassRendering(VisWindow *viswin) const;
     avtDataObject_p RenderTranslucent(int windowID, const avtImage_p& input);
     void            RenderShadows(int windowID,
@@ -476,6 +484,7 @@ class NetworkManager
     void            RenderPostProcess(std::vector<avtPlot_p>& image_plots,
                                       avtDataObject_p& input_as_dob,
                                       int windowID) const;
+
 
     static avtWholeImageCompositer *MakeCompositer(bool threeD,
                                                    bool gradientBG,

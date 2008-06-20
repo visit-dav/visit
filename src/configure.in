@@ -1106,7 +1106,7 @@ AX_ICET_OPTIONS
 if test "x$UseParallel" == "xno" -a "x$enable_icet" == "xyes" ; then
 	AC_MSG_ERROR([
 IceT usage requested, but you're not doing a parallel build.  IceT requires
-`--enable-parallel' to be specified.])
+'--enable-parallel' to be specified.])
 elif test "x$UseParallel" == "xyes" -a "x$enable_icet" == "xyes" ; then
 	AX_CHECK_ICET
 fi

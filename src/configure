@@ -870,6 +870,7 @@ Optional Features:
   --enable-parallel       make the parallel version
   --enable-viewer-mesa-stub     use the mesa stub library in the viewer
   --enable-icet           Use the ICE-T parallel image compositor
+
   --disable-ogl           do not check for the SGI ogl library
   --disable-mdserver      build without mdserver
   --disable-scripting     build without CLI Python scripting capability
@@ -2441,9 +2442,6 @@ fi
 # Check whether --enable-icet or --disable-icet was given.
 if test "${enable_icet+set}" = set; then
   enableval="$enable_icet"
-  enable_icet=yes
-else
-  enable_icet=no
 
 fi;
 
@@ -2484,7 +2482,7 @@ IceT usage requested, but you're not doing a parallel build.  IceT requires
 elif test "x$UseParallel" == "xyes" -a "x$enable_icet" == "xyes" ; then
 
 
-if test "x$enable_icet" != xno; then
+if test "x$enable_icet" != "xno"; then
 
                         ac_ext=cc
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -2767,6 +2765,7 @@ fi
 
         ICET_LIBS="${ax_ICET_LIB} ${ax_ICET_LIB_MPI} ${ax_ICET_LIB_STRATEGIES}"
         ICET_ENGINE_MAIN_OBJ='$(ICET_PAROBJ)'
+        PARALLEL_CPPFLAGS="${PARALLEL_CPPFLAGS} -I${ICET_INCLUDEDIR}"
 
 
 
@@ -5982,7 +5981,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5985:" \
+echo "$as_me:5984:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5

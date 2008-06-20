@@ -10,6 +10,10 @@
 ##    Added -MT to avoid basename target problem and add .o and .d 
 ##    targets in the first pass, avoiding the need for sed.  Also added a
 ##    fail command that aborts the make, since with no -MG errors can occur.
+##
+##    Tom Fogal, Fri Jun 20 09:46:17 EDT 2008
+##    I changed hardcoded -DPARALLEL values to PARALLEL_CPPFLAGS, to pick up on
+##    the include dir additions I made for IceT.
 
 ## Notes:
 ##  -MG is avoided, since when used with -MP it appears to sometimes create
@@ -42,7 +46,7 @@ FAILCMD=(echo "error resolving dependencies; removing $@ and exiting" && rm -f $
 
 .c_par.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CC) $(CDEPFLAGS) $(CFLAGS) $(CPPFLAGS) -DPARALLEL   $<  ||  $(FAILCMD)
+	$(CC) $(CDEPFLAGS) $(CFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ $<  ||  $(FAILCMD)
 
 .C.d:
 	@echo "updating $@"; rm -f $@; \
@@ -58,7 +62,7 @@ FAILCMD=(echo "error resolving dependencies; removing $@ and exiting" && rm -f $
 
 .C_par.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DPARALLEL   $<  ||  $(FAILCMD)
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ $<  ||  $(FAILCMD)
 
 .C_ogl.d:
 	@echo "updating $@"; rm -f $@; \
@@ -70,15 +74,15 @@ FAILCMD=(echo "error resolving dependencies; removing $@ and exiting" && rm -f $
 
 .C_par_eng.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DENGINE -DPARALLEL   $<  ||  $(FAILCMD)
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DENGINE @PARALLEL_CPPFLAGS@ $<  ||  $(FAILCMD)
 
 .C_par_ogl.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DPARALLEL   $<  ||  $(FAILCMD)
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ $<  ||  $(FAILCMD)
 
 .C_par_mesa.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DPARALLEL $(MESA_INCLUDE)   $<  ||  $(FAILCMD)
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ $(MESA_INCLUDE)   $<  ||  $(FAILCMD)
 
 .f.d:
 	@echo "can't create fortran dependencies; creating empty $@"; rm -f $@ ; touch $@

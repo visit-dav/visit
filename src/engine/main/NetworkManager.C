@@ -2008,7 +2008,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         // FIRST PASS - Opaque only
         // ************************************************************
 
-        avtImage_p theImage = this->RenderGeometry(windowID);
+        avtImage_p theImage = this->RenderGeometry();
 
         CallProgressCallback("NetworkManager", "Compositing", 0, 1);
 
@@ -4550,6 +4550,7 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
 
     this->r_mgmt.annotMode = annotMode;
     this->r_mgmt.getZBuffer = getZBuffer;
+    this->r_mgmt.windowID = windowID;
 
     if(viswinMap.find(windowID) == viswinMap.end())
     {
@@ -4734,6 +4735,7 @@ NetworkManager::RenderCleanup(int windowID)
     this->r_mgmt.origWorkingNet = NULL;
     this->r_mgmt.annotMode = 0;
     this->r_mgmt.timer = -1;
+    this->r_mgmt.windowID = -1;
     this->r_mgmt.getZBuffer = false;
     this->r_mgmt.handledAnnotations = false;
     this->r_mgmt.handledCues = false;
@@ -4823,9 +4825,9 @@ NetworkManager::RenderingStages(int windowID)
 // ****************************************************************************
 
 avtImage_p
-NetworkManager::RenderGeometry(int windowID)
+NetworkManager::RenderGeometry()
 {
-    VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
+    VisWindow *viswin = viswinMap.find(this->r_mgmt.windowID)->second.viswin;
 
     CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
     avtImage_p geometry;
