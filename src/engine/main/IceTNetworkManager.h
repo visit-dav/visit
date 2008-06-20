@@ -63,6 +63,16 @@ class IceTNetworkManager: public NetworkManager
 
     void       TileLayout(size_t width, size_t height) const;
 
+    /// faux render; required to maintain API compatibility with parent.
+    virtual avtDataObjectWriter_p
+               Render(intVector networkIds, bool getZBuffer, int annotMode,
+                      int windowID, bool leftEye);
+    void       RealRender(); /// most rendering work happens here.
+
+ protected:
+
+    //virtual avtImage_p RenderGeometry();
+
  private:
     IceTCommunicator comm;
     IceTContext context;
