@@ -254,6 +254,10 @@
 #    Hank Childs, Fri Jun 13 15:14:45 PDT 2008
 #    Add @TCMALLOC_LIB@, which were added to improve new/delete performance.
 #
+#    Tom Fogal, Fri Jun 20 09:20:16 EDT 2008
+#    Added code to build IceT yesterday, but forgot a comment.  Today removed
+#    the IceT obejct from the targets, since I haven't set up the dependencies.
+#
 ##############################################################################
 
 ##
@@ -321,7 +325,7 @@ MAINSRC=main.C
 LIBRARYSRC=VisItEngineV1.C
 
 SEROBJ=$(SRC:.C=.o)
-PAROBJ=$(SRC:.C=_par.o) IceTNetworkManager_icet.o
+PAROBJ=$(SRC:.C=_par.o)
 
 MAINSEROBJ=$(MAINSRC:.C=.o)
 MAINPAROBJ=$(MAINSRC:.C=_par.o)
