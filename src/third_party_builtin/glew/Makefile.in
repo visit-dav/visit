@@ -41,6 +41,10 @@
 #    Only remove files needed to generate dependencies when we execute
 #    the 'distclean' target, not the 'clean' target.
 #
+#    Tom Fogal, Sat Jun 21 16:18:24 EDT 2008
+#    Made the glew include directory a symlink instead of a copy, preventing
+#    it from ever being partially copied.
+#
 ##############################################################################
 
 ##
@@ -75,7 +79,9 @@ DISTCLEAN_FILES=-rf glew ../../include/glew
 credits.html:
 	gunzip < glew-1.3.4-src.tgz | tar xvf - > /dev/null
 	cp glew/doc/credits.html .
-	cp -R glew/include ../../include/glew
+	cd ../../include/ && \
+	ln -s ../../third_party_builtin/glew/glew/include glew
+	cd ../../third_party_builtin/glew/
 
 glew/src/glew.c: credits.html
 
