@@ -45,6 +45,9 @@
 #    Made the glew include directory a symlink instead of a copy, preventing
 #    it from ever being partially copied.
 #
+#    Tom Fogal, Sun Jun 22 10:50:21 EDT 2008
+#    Oops, path was wrong.  Also removed a useless `cd'.
+#
 ##############################################################################
 
 ##
@@ -80,8 +83,7 @@ credits.html:
 	gunzip < glew-1.3.4-src.tgz | tar xvf - > /dev/null
 	cp glew/doc/credits.html .
 	cd ../../include/ && \
-	ln -s ../../third_party_builtin/glew/glew/include glew
-	cd ../../third_party_builtin/glew/
+	ln -s ../third_party_builtin/glew/glew/include glew
 
 glew/src/glew.c: credits.html
 
