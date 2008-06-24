@@ -3133,6 +3133,10 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //   Cyrus Harrison, Mon Sep 17 10:41:25 PDT 200
 //   Added support for user settable floating point format string
 //
+//   Kathleen Bonnell, Tue Jun 24 09:04:23 PDT 2008 
+//   Minor format change: ensure newline prints after domain (or lack thereof).
+//   Change 'preserved' to 'preserve'.
+//
 // ****************************************************************************
 void
 PickAttributes::PrintSelf(ostream &os)
@@ -3157,7 +3161,8 @@ PickAttributes::PrintSelf(ostream &os)
     if (meshInfo.empty())
     {
         if (domain != -1)
-            os << "domain " << domain << "\n";
+            os << "domain " << domain ;
+        os << "\n";
     }
     else
     {
@@ -3325,7 +3330,7 @@ PickAttributes::PrintSelf(ostream &os)
         os << "Set up to create a time-curve.\n";
 
     if (timePreserveCoord)
-        os << "Set up for time-curve to preserved picked coord.\n";
+        os << "Set up for time-curve to preserve picked coord.\n";
 
     if (createSpreadsheet)
         os << "Create a spreadsheet with this pick.\n";

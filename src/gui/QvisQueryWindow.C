@@ -59,6 +59,7 @@
 #include <QueryList.h>
 #include <StringHelpers.h>
 #include <DebugStream.h>
+#include <QvisVariableButton.h>
 
 #include <ViewerProxy.h>
 
@@ -91,17 +92,30 @@ using std::string;
 //   Brad Whitlock, Wed Apr  9 11:46:37 PDT 2008
 //   QString for caption, shortName.
 //
+//   Kathleen Bonnell, Tue Jun 24 11:18:13 PDT 2008
+//   Added queryVarTypes, the default types of vars for queries.
+//
 // ****************************************************************************
 
-QvisQueryWindow::QvisQueryWindow(const QString &caption, const QString &shortName,
-    QvisNotepadArea *n) : QvisPostableWindowSimpleObserver(
-    caption, shortName, n, NoExtraButtons, false)
+QvisQueryWindow::QvisQueryWindow(const QString &caption, 
+    const QString &shortName, QvisNotepadArea *n) : 
+    QvisPostableWindowSimpleObserver(caption, shortName, n, NoExtraButtons, 
+                                     false)
 {
     queries = 0;
     queryAtts = 0;
     pickAtts = 0;
     plotList = 0;
     saveCount = 0;
+    queryVarTypes = QvisVariableButton::Scalars |
+                    QvisVariableButton::Vectors |
+                    QvisVariableButton::Meshes |
+                    QvisVariableButton::Materials |
+                    QvisVariableButton::Species |
+                    QvisVariableButton::Tensors |
+                    QvisVariableButton::SymmetricTensors |
+                    QvisVariableButton::Labels |
+                    QvisVariableButton::Arrays;
 }
 
 // ****************************************************************************
@@ -182,6 +196,9 @@ QvisQueryWindow::~QvisQueryWindow()
 //   Brad Whitlock, Tue Apr  8 15:44:16 PDT 2008
 //   Support for internationalization.
 //
+//   Kathleen Bonnell, Tue Jun 24 11:18:13 PDT 2008
+//   Added varsButton, varsLineEdit.
+//
 // ****************************************************************************
 
 void
@@ -195,7 +212,7 @@ QvisQueryWindow::CreateWindowContents()
     displayMode->insertItem(tr("All"), 0);
     for (int i = 0 ; i < QueryList::NumGroups ; i++)
     {
-        std::string groupName = QueryList::Groups_ToString((QueryList::Groups) i);
+        string groupName = QueryList::Groups_ToString((QueryList::Groups) i);
         const char *str = groupName.c_str();
         int len = strlen(str);
         int related_len = strlen("Related");
@@ -215,11 +232,13 @@ QvisQueryWindow::CreateWindowContents()
             }
         }
     }
-    displayMode->insertItem(tr("All queries-over-time"), QueryList::NumGroups+1);
+    displayMode->insertItem(tr("All queries-over-time"), 
+                            QueryList::NumGroups+1);
     connect(displayMode, SIGNAL(activated(int)),
             this, SLOT(displayModeChanged(int)));
     
-    vLayout->addWidget(new QLabel(displayMode, tr("Display "), central, "displayLabel"));
+    vLayout->addWidget(new QLabel(displayMode, tr("Display "), central, 
+                       "displayLabel"));
     vLayout->addWidget(displayMode);
 
 
@@ -229,7 +248,7 @@ QvisQueryWindow::CreateWindowContents()
     connect(queryList, SIGNAL(selectionChanged()),
             this, SLOT(selectQuery()));
     QLabel *queryLabel = new QLabel(queryList, tr("Queries"), central,
-        "queryLabel");
+                                    "queryLabel");
     vLayout->addWidget(queryLabel);
     vLayout->addWidget(queryList);
 
@@ -258,21 +277,39 @@ QvisQueryWindow::CreateWindowContents()
         labels[i]->hide();
         sLayout->addWidget(labels[i], i+1, 0);
     }
-   
+    varsButton = new QvisVariableButton(true, false, true, queryVarTypes,
+                                        argPanel, "varsButton");
+    varsButton->setText(tr("Variables"));
+    varsButton->setChangeTextOnVariableChange(false);
+    varsButton->hide();
+    connect(varsButton, SIGNAL(activated(const QString &)),
+            this, SLOT(addVariable(const QString &)));
+    sLayout->addWidget(varsButton, 4, 0);
+
+    varsLineEdit = new QLineEdit(argPanel, "varsLineEdit");
+    varsLineEdit->setText("default"); 
+    varsLineEdit->hide();
+    connect(varsLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(handleText()));
+    sLayout->addMultiCellWidget(varsLineEdit, 4, 4, 1, 3);
+  
     useGlobal = new QCheckBox(tr("Use Global Id"), argPanel, "useGlobal");
-    connect(useGlobal, SIGNAL(toggled(bool)), this, SLOT(useGlobalToggled(bool)));
+    connect(useGlobal, SIGNAL(toggled(bool)), this, 
+            SLOT(useGlobalToggled(bool)));
     useGlobal->hide();
-    sLayout->addMultiCellWidget(useGlobal, 4, 4, 0, 1);
+    sLayout->addMultiCellWidget(useGlobal, 5, 5, 0, 1);
   
     // Add the data options radio button group to the argument panel.
     dataOpts = new QButtonGroup(0, "dataOpts");
-    QRadioButton *origData = new QRadioButton(tr("Original Data"), argPanel, "origData");
+    QRadioButton *origData = new QRadioButton(tr("Original Data"), 
+                                              argPanel, "origData");
     dataOpts->insert(origData);
-    sLayout->addWidget(origData, 5, 0);
-    QRadioButton *actualData = new QRadioButton(tr("Actual Data"), argPanel, "actualData");
+    sLayout->addWidget(origData, 6, 0);
+    QRadioButton *actualData = new QRadioButton(tr("Actual Data"), 
+                                                argPanel, "actualData");
     dataOpts->insert(actualData);
     dataOpts->setButton(0);
-    sLayout->addWidget(actualData, 6, 0);
+    sLayout->addWidget(actualData, 7, 0);
 
     // Add the time button to the argument panel.
     gLayout->addStretch(10);
@@ -360,22 +397,21 @@ QvisQueryWindow::CreateEntireWindow()
     // Create a button layout and the buttons.
     topLayout->addSpacing(10);
     QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
-    QPushButton *clearResultsButton = new QPushButton(tr("Clear results"), central,
-            "clearResultsButton");
+    QPushButton *clearResultsButton = new QPushButton(tr("Clear results"), 
+            central, "clearResultsButton");
     connect(clearResultsButton, SIGNAL(clicked()),
             this, SLOT(clearResultText()));
     buttonLayout->addWidget(clearResultsButton);
 
-    QPushButton *saveResultsButton = new QPushButton(tr("Save results as") + QString("..."), central,
-            "saveResultsButton");
+    QPushButton *saveResultsButton = new QPushButton(tr("Save results as") + 
+            QString("..."), central, "saveResultsButton");
     connect(saveResultsButton, SIGNAL(clicked()),
             this, SLOT(saveResultText()));
     buttonLayout->addWidget(saveResultsButton);
     
     buttonLayout->addStretch();
 
-    postButton = new QPushButton(tr("Post"), central,
-        "postButton");
+    postButton = new QPushButton(tr("Post"), central, "postButton");
     buttonLayout->addWidget(postButton);
     QPushButton *dismissButton = new QPushButton(tr("Dismiss"), central,
         "dismissButton");
@@ -593,14 +629,14 @@ QvisQueryWindow::UpdateResults(bool)
 {
     if (SelectedSubject() == pickAtts && pickAtts->GetFulfilled())
     {
-        std::string str;
+        string str;
         pickAtts->CreateOutputString(str);
         resultText->insertLine(str.c_str());
         resultText->setCursorPosition(resultText->numLines() - 1, 0);
     }
     else if (SelectedSubject() == queryAtts)
     {
-        std::string str;
+        string str;
         str = queryAtts->GetResultsMessage();
         resultText->insertLine(str.c_str());
         resultText->setCursorPosition(resultText->numLines() - 1, 0);
@@ -688,6 +724,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
 //
+//   Kathleen Bonnell, Tue Jun 24 11:18:13 PDT 2008
+//   Queries that require variables now use varsButton and varsLineEdit.
+//
 // ****************************************************************************
 
 void
@@ -720,18 +759,16 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         QueryList::WindowType winT = (QueryList::WindowType)winType[index];
         bool showTime = queryMode[index] != QueryList::QueryOnly;
         bool showQuery = queryMode[index] != QueryList::TimeOnly;
-
-        labels[0]->setText(tr("Variables"));
-        textFields[0]->setText("default");
+        bool showVars = false;
+        varsLineEdit->setText("default");
+        varsButton->setVarTypes(queryVarTypes);
 
         if (winT == QueryList::SinglePoint)
         {
             labels[0]->setText(tr("Query point"));
             textFields[0]->setText("0 0 0");
-            labels[1]->setText(tr("Variables"));
-            textFields[1]->setText("default");
             showWidgets[0] = true;
-            showWidgets[1] = true;
+            showVars = true;
         }
         else if (winT == QueryList::DoublePoint)
         {
@@ -739,11 +776,10 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             textFields[0]->setText("0 0 0");
             labels[1]->setText(tr("End point"));
             textFields[1]->setText("1 0 0");
-            labels[2]->setText(tr("Variables"));
-            textFields[2]->setText("default");
             showWidgets[0] = true;
             showWidgets[1] = true;
-            showWidgets[2] = true;
+            showVars = true;
+            varsButton->setVarTypes(QvisVariableButton::Scalars);
         }
         else if (winT == QueryList::DomainZone)
         {
@@ -762,11 +798,9 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             textFields[0]->setText("0");
             labels[1]->setText(tr("Zone"));
             textFields[1]->setText("0");
-            labels[2]->setText(tr("Variables"));
-            textFields[2]->setText("default");
             showWidgets[0] = true;
             showWidgets[1] = true;
-            showWidgets[2] = true;
+            showVars = true;
             useGlobal->setText("Use Global Zone");
             showGlobal = true;
         }
@@ -787,11 +821,9 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             textFields[0]->setText("0");
             labels[1]->setText(tr("Node"));
             textFields[1]->setText("0");
-            labels[2]->setText(tr("Variables"));
-            textFields[2]->setText("default");
             showWidgets[0] = true;
             showWidgets[1] = true;
-            showWidgets[2] = true;
+            showVars = true;
             useGlobal->setText("Use Global Node");
             showGlobal = true;
         }
@@ -801,9 +833,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         }
         else if (winT == QueryList::ActualDataVars)
         {
-            labels[0]->setText(tr("Variables"));
-            textFields[0]->setText("default");
-            showWidgets[0] = true;
+            showVars = true;
             showDataOptions = true;
         }
         else if (winT == QueryList::LineDistribution)
@@ -823,21 +853,20 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         }
         else if (winT == QueryList::HohlraumFlux)
         {
-            labels[0]->setText(tr("Variable Names"));
-            textFields[0]->setText("absorbtivity emissivity");
+            varsLineEdit->setText("absorbtivity emissivity");
+            showVars = true;
+
+            labels[0]->setText(tr("Number of Lines"));
+            textFields[0]->setText("100");
             showWidgets[0] = true;
 
-            labels[1]->setText(tr("Number of Lines"));
-            textFields[1]->setText("100");
+            labels[1]->setText(tr("Ray Center"));
+            textFields[1]->setText("0 0 0");
             showWidgets[1] = true;
 
-            labels[2]->setText(tr("Ray Center"));
-            textFields[2]->setText("0 0 0");
+            labels[2]->setText(tr("Radius, Theta, Phi"));
+            textFields[2]->setText("1 0 0");
             showWidgets[2] = true;
-
-            labels[3]->setText(tr("Radius, Theta, Phi"));
-            textFields[3]->setText("1 0 0");
-            showWidgets[3] = true;
         }
         else if (winT == QueryList::ConnCompSummary)
         {
@@ -871,6 +900,16 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
                 labels[i]->hide();
                 textFields[i]->hide();
             }
+        }
+        if (showVars)
+        {
+            varsButton->show();
+            varsLineEdit->show();
+        }
+        else
+        {
+            varsButton->hide();
+            varsLineEdit->hide();
         }
         if (showGlobal)
         {
@@ -1084,7 +1123,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
             // window we're using.
             if(winT == QueryList::Basic)
             {
-                if(!GetVars(0, vars))
+                if(!GetVars(vars))
                     noErrors = false;
 
                 if(noErrors)
@@ -1127,7 +1166,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                 if (winT == QueryList::DomainZoneVars ||
                     winT == QueryList::DomainNodeVars )
                 {
-                    if(!GetVars(2, vars))
+                    if(!GetVars(vars))
                         noErrors = false;
                 }
 
@@ -1145,8 +1184,9 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                     }
                     else 
                     {
-                        debug5 << "QueryWindow -- Attempted use DomainWindow "
-                               << "with non Database or non Point Query." << endl;
+                        debug5 << "QueryWindow -- Attempted to use "
+                               << "DomainWindow with non Database or non "
+                               << "Point Query." << endl;
                     }
                 }
             }
@@ -1154,7 +1194,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
             {
                 if(!GetPoint(0, tr("query point"), p0))
                     noErrors = false;
-                if(!GetVars(1, vars))
+                if(!GetVars(vars))
                     noErrors = false;
 
                 if(noErrors)
@@ -1166,8 +1206,9 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                     }
                     else 
                     {
-                        debug5 << "QueryWindow -- Attempted use SinglePointWindow "
-                               << "with non PointQuery." << endl;
+                        debug5 << "QueryWindow -- Attempted to use "
+                               << "SinglePointWindow with non PointQuery." 
+                               << endl;
                     }
                 }
             }
@@ -1177,7 +1218,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                     noErrors = false;
                 if(!GetPoint(1, tr("end point"), p1))
                     noErrors = false;
-                if(!GetVars(2, vars))
+                if(!GetVars(vars))
                     noErrors = false;
 
                 if(noErrors)
@@ -1189,15 +1230,16 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                     }
                     else 
                     {
-                        debug5 << "QueryWindow -- Attempted use DoublePointWindow "
-                               << "with non LineQuery." << endl;
+                        debug5 << "QueryWindow -- Attempted to use "
+                               << "DoublePointWindow with non LineQuery." 
+                               << endl;
                     }
                 }
             }
             else if ((winT == QueryList::ActualData) ||
                      (winT == QueryList::ActualDataVars))
             {
-                if(!GetVars(0, vars))
+                if(!GetVars(vars))
                     noErrors = false;
                 if (noErrors)
                 {
@@ -1208,8 +1250,9 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                     }
                     else 
                     {
-                        debug5 << "QueryWindow -- Attempted use ActualDataWindow "
-                               << "with non DatabaseQuery." << endl;
+                        debug5 << "QueryWindow -- Attempted to use "
+                               << "ActualDataWindow with non DatabaseQuery." 
+                               << endl;
                     }
                 }
             }
@@ -1240,7 +1283,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
             {
                 stringVector v;
 
-                if (!GetVars(0, vars))
+                if (!GetVars(vars))
                     noErrors = false;
 
                 if (vars.size() != 2)
@@ -1251,7 +1294,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                     noErrors = false;
 
                 doubleVector pos(3);
-                if (!GetVars(2, v))
+                if (!GetVars(v))
                     noErrors = false;
                 if (v.size() != 3)
                     noErrors = false;
@@ -1264,7 +1307,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
 
                 doubleVector radiusThetaPhi(3);
                 v.resize(0);
-                if (!GetVars(3, v))
+                if (!GetVars(v))
                     noErrors = false;
 
                 if (v.size() != 3)
@@ -1282,7 +1325,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
             else if (winT == QueryList::ConnCompSummary)
             {
                 stringVector v;
-                if (!GetVars(0, vars))
+                if (!GetVars(vars))
                     noErrors = false;
 
                 if (vars.size() != 1)
@@ -1294,7 +1337,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
             }
             else if (winT == QueryList::ShapeletsDecomp)
             {
-                std::string ofile = "";
+                string ofile = "";
                 QString ofqs;
                 vars.push_back("default");
                 
@@ -1483,28 +1526,28 @@ QvisQueryWindow::GetFloatingPointNumber(int index, double *num)
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
 //
+//   Kathleen Bonnell, Tue Jun 24 11:18:13 PDT 2008
+//   Reworked to retrieve vars from varsLineEdit. Removed 'index' arg.
+//
 // ****************************************************************************
 
 bool
-QvisQueryWindow::GetVars(int index, stringVector &vars)
+QvisQueryWindow::GetVars(stringVector &vars)
 {
     bool okay = false;
 
-    if(index >= 0 && index < 4)
+    QString temp(varsLineEdit->displayText().simplifyWhiteSpace());
+
+    // Split the variable list using the spaces.
+    QStringList sList(QStringList::split(" ", temp));
+
+    QStringList::Iterator it;
+ 
+    for (it = sList.begin(); it != sList.end(); ++it)
     {
-        QString temp(textFields[index]->displayText().simplifyWhiteSpace());
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            // Split the variable list using the spaces.
-            QStringList sList(QStringList::split(" ", temp));
-
-            // Copy the list into the string vector.
-            for(int i = 0; i < sList.count(); ++i)
-                vars.push_back(std::string(sList[i].latin1()));
-        }
+        vars.push_back((*it).latin1());
     }
-
+    okay = !vars.empty();
     if(!okay)
         Error(tr("The list of variables contains an error."));
 
@@ -1716,3 +1759,34 @@ QvisQueryWindow::saveResultText()
         
     }
 }
+
+
+// ****************************************************************************
+// Method: QvisQueryWindow::addVariable
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user selects a new
+//   variable.
+//
+// Arguments:
+//   var : The variable to add.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   June 24, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisQueryWindow::addVariable(const QString &var)
+{
+    // Add the new variable to the variable line edit.
+    QString varString(varsLineEdit->displayText());
+    if(varString.length() > 0)
+        varString += " ";
+    varString += var;
+    varsLineEdit->setText(varString);
+}
+
+

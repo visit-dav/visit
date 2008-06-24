@@ -2269,7 +2269,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 {
                     static bool issuedWarning = false;
                     Error(tr("Could not create a spreadsheet with the pick, "
-                             "because the spreadsheet plugin is not available."));
+                          "because the spreadsheet plugin is not available."));
                     issuedWarning = true;
                     return retval;
                 }
@@ -2450,8 +2450,9 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                                                               "Histogram_1.0"))
                 {
                     static bool issuedWarning = false;
-                    Error(tr("Could not create a histogram of the array variable,"
-                              " because the Histogram plugin is not available."));
+                    Error(tr("Could not create a histogram of the array "
+                             "variable, because the Histogram plugin is not "
+                             "available."));
                     issuedWarning = true;
                     return retval;
                 }
@@ -3174,6 +3175,10 @@ ViewerQueryManager::HandlePickCache()
 //    Brad Whitlock, Tue Apr 29 16:43:32 PDT 2008
 //    Support for internationalization.
 //
+//    Kathleen Bonnell, Tue Jun 24 09:04:23 PDT 2008 
+//    Reset the vars in pickAtts at the end of this method, to prevent
+//    query-set-vars to be applied to picks.
+//
 // ****************************************************************************
 
 void         
@@ -3282,6 +3287,9 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
         win->SetInteractionMode(imode);
     }
     pickAtts->SetElementIsGlobal(false);
+    stringVector emptyVars;
+    emptyVars.push_back("default");
+    pickAtts->SetVariables(emptyVars);
 }
 
 
@@ -4169,6 +4177,10 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    Brad Whitlock, Tue Apr 29 16:47:37 PDT 2008
 //    Support for internationalization.
 //
+//    Kathleen Bonnell, Tue Jun 24 09:04:23 PDT 2008 
+//    Use the query var name when creating the results plot, not the 
+//    originating plot's var name. 
+//
 // ***********************************************************************
 
 void
@@ -4325,7 +4337,9 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     plotList->SetHostDatabaseName(hdbName);
     plotList->SetEngineKey(origPlot->GetEngineKey());
 
-    int pid = plotList->AddPlot(plotType, vName, replacePlots, false, false);
+    if (qvarName == "default")
+        qvarName = vName;
+    int pid = plotList->AddPlot(plotType, qvarName, replacePlots, false,false);
     ViewerPlot *resultsPlot = plotList->GetPlot(pid);
 
     timeQueryAtts->SetQueryAtts(*qA);
