@@ -232,3 +232,6 @@
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef uid_t
+
+/* OSMesa Window Size Limit */
+#undef OSMESA_SIZE_LIMIT

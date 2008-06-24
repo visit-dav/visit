@@ -378,6 +378,9 @@
 #     Hank Childs, Fri Jun 13 14:22:30 PDT 2008
 #     Add support for libtcmalloc.
 #
+#     Jeremy Meredith, Tue Jun 24 14:34:38 EDT 2008
+#     Patch Mesa 6.4.2 to use a larger offscreen window size limit.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -1989,6 +1992,31 @@ diff -c Mesa-6.4.2.orig/configs/default Mesa-6.4.2/configs/default
   GL_LIB_DEPS = $(EXTRA_LIB_PATH) -lX11 -lXext -lm -lpthread
   OSMESA_LIB_DEPS = -L$(LIB_DIR) -l$(GL_LIB)
   GLU_LIB_DEPS = -L$(LIB_DIR) -l$(GL_LIB) -lm
+
+diff -c Mesa-6.4.2.orig/src/mesa/main/config.h Mesa-6.4.2/src/mesa/main/config.h
+*** Mesa-6.4.2.orig/src/mesa/main/config.h      2005-07-15 20:56:20.000000000 -0400
+--- Mesa-6.4.2/src/mesa/main/config.h   2008-06-24 13:45:21.000000000 -0400
+***************
+*** 129,137 ****
+  /**
+   * Maximum viewport/image width. Must accomodate all texture sizes too.
+   */
+! #define MAX_WIDTH 4096
+  /** Maximum viewport/image height */
+! #define MAX_HEIGHT 4096
+
+  /** Maxmimum size for CVA.  May be overridden by the drivers.  */
+  #define MAX_ARRAY_LOCK_SIZE 3000
+--- 129,137 ----
+  /**
+   * Maximum viewport/image width. Must accomodate all texture sizes too.
+   */
+! #define MAX_WIDTH 16384
+  /** Maximum viewport/image height */
+! #define MAX_HEIGHT 16384
+
+  /** Maxmimum size for CVA.  May be overridden by the drivers.  */
+  #define MAX_ARRAY_LOCK_SIZE 3000
 EOF
        if [[ $? != 0 ]] ; then
            echo "Unable to patch Mesa. Wrong version?"
