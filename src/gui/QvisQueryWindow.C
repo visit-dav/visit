@@ -727,6 +727,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Kathleen Bonnell, Tue Jun 24 11:18:13 PDT 2008
 //   Queries that require variables now use varsButton and varsLineEdit.
 //
+//   Kathleen Bonnell, Tue Jun 24 13:38:45 PDT 2008 
+//   Limit the variables for Hohlraum Flux to Scalars and Arrays.
+//
 // ****************************************************************************
 
 void
@@ -854,6 +857,8 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         else if (winT == QueryList::HohlraumFlux)
         {
             varsLineEdit->setText("absorbtivity emissivity");
+            varsButton->setVarTypes(QvisVariableButton::Scalars |
+                                    QvisVariableButton::Arrays);
             showVars = true;
 
             labels[0]->setText(tr("Number of Lines"));
