@@ -4318,6 +4318,9 @@ vtkVisItOpenGLPolyDataMapper::UsesPointData(vtkDataSet *input, int scalarMode,
 //   That probably means that something bad happened.  Regardless, this routine
 //   was crashing with divide-by-zeros. (# / (sizeof(LUT)-1 --> sizeof(LUT)==1)
 //
+//   Jeremy Meredith, Tue Jun 24 17:40:19 EDT 2008
+//   Check for NULL version string before scanf.
+//
 // ****************************************************************************
 
 bool
@@ -4460,7 +4463,7 @@ vtkVisItOpenGLPolyDataMapper::MapScalarsWithTextureSupport(double opacity)
         // Figure out the OpenGL version.
         const char *gl_ver = (const char *)glGetString(GL_VERSION);
         int major, minor;
-        if(sscanf(gl_ver, "%d.%d", &major, &minor) == 2)
+        if(gl_ver && sscanf(gl_ver, "%d.%d", &major, &minor) == 2)
         {
             if(major == 1)
                 this->OpenGLSupportsVersion1_2 = minor >= 2;
