@@ -3,12 +3,12 @@
 <HEAD>
 <TITLE>VisIt What's New</TITLE>
 <meta http-equiv="content-type" content="text/html;charset=ISO-8859-1">
-<meta name="LLNLRandR" content="LLNL-WEB-403083">
+<meta name="LLNLRandR" content="LLNL-WEB-404839">
 <meta name="distribution" content="global">
 <meta name="description" content="Developed by the Lawrence Livermore National Laboratory, VisIt contains a rich set of visualization methods--such as contour plots, pesudocolor plots, volume plots, vector plots, and boundary plots--for visualizing scientific data. VisIt allows the ability to provide quantitative as well as qualitative information from a scientific data set.">
 <meta name="language" content="English">
 <meta name="rating" content="general">
-<meta name="review" content="April 2008">
+<meta name="review" content="June 2008">
 <meta name="keywords" content="visualization, qualitative, quantitative, analysis, distributed, parallel, tera-scale, rectilinear, curvilinear, structured, unstructured, mesh, grid, finite element, hydrodynamics, python, java, unix, irix, tru64, aix, linux, solaris, windows 98, windows xp, open source contour, vector, volume visualization, streamlines">
 <meta name="copyright" content="This document is copyrighted U.S. Department of Energy under Contract W-7405-Eng-48">
 <meta name="Author" content="Eric Brugger">
@@ -226,6 +226,7 @@ function MM_initTimelines() { //v4.0
 <h1>What's New</h1>
 <p>This page provides information about what's new with VisIt, including general news about the tool as well as new features that have been recently added.</p>
 <ol>
+  <li><a href="#June2008">June, 2008</a></li>
   <li><a href="#April2008">April, 2008</a></li>
   <li><a href="#March2008">March, 2008</a></li>
   <li><a href="#January2008">January, 2008</a></li>
@@ -241,6 +242,27 @@ function MM_initTimelines() { //v4.0
   <li><a href="#Dec2005">December, 2005</a></li>
   <li><a href="#Oct2005">October, 2005</a></li>
 </ol>
+<h1><a name="June2008"></a>June, 2008 - VisIt 1.9.1 released</h1>
+<p>VisIt 1.9.1 was primarily a bug-fix release that resolved the following 16 important issues.</p>
+<ul>
+<li>Curve plots now work with expressions derived from 1D flash data.</li>
+<li>Plugins now load on diskless Windows systems.</li>
+<li>VisIt no longer fails to locate and use movie templates when using the Save Movie Wizard.</li>
+<li>The Spreadsheet plot is no longer missing its top level menu in the MacOS X version of VisIt.</li>
+<li>The XDMF reader no longer crashes the compute engine when reading data that uses the VxVyVz coordinate format.</li>
+<li>VisIt now uses the the compute engine configuration saved with the session file when using a session file to generate a movie with <i>"visit -movie"</i>.</li>
+<li>Clicking on an imported color table in the <b>Color Table</b> window no longer causes VisIt's GUI to crash.</li>
+<li>VisIt no longer truncates the username on Windows platforms when the 'Change username' option is chosen while connecting to a remote machine.</li>
+<li>VisIt's SimV1 reader no longer crashes when reading a scalar variable and the GetMixedScalar callback function is not defined in the simulation.</li>
+<li>A bug was fixed with Pseudocolor plots of rectilinear grids with the Box operator applied.</li>
+<li>The time varying Exodus file format reader no longer crashes when revisiting earlier time slices.</li>
+<li>VisIt's CGNS reader now retrieves all relevant sections of an unstructured mesh instead of just returning the first section.</li>
+<li>The Silo reader can now support more storage mechanisms for arbitrary polygons, specifically those that set the shapesize field to 0 and encode each polygon's number of nodes in the nodelist.</li>
+<li>The Windows installer no longer overwrites the PATH with VisIt's install directory when the path size is greater than 1024, instead it prependes it to the PATH as it should.</li>
+<li>Multi-variable expressions now work with curves.</li>
+<li>The Miranda reader no longer has a problem reading some 2D data in the new format.</li>
+</ul>
+<p class="small">[<a href="#top">Top</a>]</p>
 <h1><a name="April2008"></a>April, 2008 - VisIt 1.9.0 released</h1>
 <p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 1.9.0, which can be <a href="download.html">downloaded from this site</a>, contains many bug-fixes and new features. <!-- is primarily a bug-fix release. --></p>
 <h2>1. VisIt has new mailing lists for customer support.</h2>
@@ -632,11 +654,11 @@ to produce characteristic functions describing a data set's shape. VisIt's expre
     | <a href="manuals.html">Manuals</a> | What's New | <a href="sitemap.html">Index</a></span></p>
   <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>
     <span class="body_text">Updated: 
-    <!-- #BeginDate format:Am1 -->April 21, 2008<!-- #EndDate -->
+    <!-- #BeginDate format:Am1 -->June 23, 2008<!-- #EndDate -->
     </span></p>
   <table width="100%" border="0" cellspacing="0" cellpadding="0" height="18">
     <tr> 
-      <td height="18" background="media/bottom_band.jpg">&copy;<span class="body_text">LLNL-WEB-403083, 
+      <td height="18" background="media/bottom_band.jpg">&copy;<span class="body_text">LLNL-WEB-404839, 
         <a href="http://www.llnl.gov/disclaimer.html" target="_parent" class="links">privacy 
         and legal notice</a></span></td>
       <td width="5">&nbsp;</td>
