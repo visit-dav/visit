@@ -695,6 +695,9 @@ ParentProcess::GetWriteConnection(int i) const
 //   Kathleen Bonnell, Thu Mar 20 08:02:44 PDT 2008 
 //   Added possbile IP resolution failure to the error message for non-windows.
 //
+//   Jeremy Meredith, Tue Jun 24 11:09:25 EDT 2008
+//   Added error text to connect failure message via strerror.
+//
 // ****************************************************************************
 
 int
@@ -767,7 +770,8 @@ ParentProcess::GetClientSocketDescriptor(int port)
 
     if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
     {
-        debug5 << mName << "Could not connect! (error="<<errno<<")" << endl;
+        debug5 << mName << "Could not connect! "
+               << "(error="<<errno<<": "<<strerror(errno)<<")" << endl;
         close(s);
         return -1;
     }
