@@ -7,6 +7,9 @@
 # Programmer: Mark C. Miller
 # Created:    April 30, 2008
 #
+#      Mark Miller, Mon Jun 23 17:07:38 PDT 2008
+#      Added docs/website to skip
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -89,6 +92,9 @@ for f in ${files} ; do
             continue
             ;;
         *.bat)
+            continue
+            ;;
+        *docs/WebSite/*)
             continue
             ;;
     esac
