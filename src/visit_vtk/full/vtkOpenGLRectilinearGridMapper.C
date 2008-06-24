@@ -702,6 +702,8 @@ void vtkOpenGLRectilinearGridMapper::PrintSelf(ostream& os, vtkIndent indent)
 // Creation:   December 19, 2006
 //
 // Modifications:
+//    Jeremy Meredith, Tue Jun 24 17:40:19 EDT 2008
+//    Check for NULL version string before scanf.
 //
 // ****************************************************************************
 
@@ -825,7 +827,7 @@ vtkOpenGLRectilinearGridMapper::MapScalarsWithTextureSupport(double opacity)
         // Figure out the OpenGL version.
         const char *gl_ver = (const char *)glGetString(GL_VERSION);
         int major, minor;
-        if(sscanf(gl_ver, "%d.%d", &major, &minor) == 2)
+        if(gl_ver && sscanf(gl_ver, "%d.%d", &major, &minor) == 2)
         {
             if(major == 1)
                 this->OpenGLSupportsVersion1_2 = minor >= 2;
