@@ -7343,6 +7343,8 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
 // Creation:   Wed Jun 22 12:11:07 PDT 2005
 //
 // Modifications:
+//    Jeremy Meredith, Tue Jun 24 12:27:54 EDT 2008
+//    Use the actual OSMesa size limit for the window limit.
 //   
 // ****************************************************************************
 
@@ -7362,7 +7364,7 @@ UpdateCurrentWindowSizes(MovieAttributes *movieAtts, int currentWidth,
     {
         if(useCurrentSize[i] == 1)
         {
-            const int MAX_WINDOW_SIZE = 4096;
+            const int MAX_WINDOW_SIZE = OSMESA_SIZE_LIMIT;
             int w = int(scales[i] * double(currentWidth));
             widths[i] = (w > MAX_WINDOW_SIZE) ? MAX_WINDOW_SIZE : w;
             int h = int(scales[i] * double(currentHeight));

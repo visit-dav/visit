@@ -141,8 +141,6 @@ RenderingAttributes *ViewerWindowManager::renderAtts=0;
 AnnotationObjectList *ViewerWindowManager::annotationObjectList = 0;
 AnnotationObjectList *ViewerWindowManager::defaultAnnotationObjectList = 0;
 
-//Max size window Mesa 5.0 can handle
-#define MAX_WINDOW_SIZE 4096
 
 
 //
@@ -1628,6 +1626,9 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Brad Whitlock, Wed Apr 30 09:46:59 PDT 2008
 //    Support for internationalization.
 //
+//    Jeremy Meredith, Tue Jun 24 12:27:54 EDT 2008
+//    Use the actual OSMesa size limit for the window limit.
+//
 // ****************************************************************************
 
 void
@@ -1815,17 +1816,17 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 
             // if w or h are greated than the max window size, 
             // reduce them proportionally
-            if (w >= h && w > MAX_WINDOW_SIZE)
+            if (w >= h && w > OSMESA_SIZE_LIMIT)
             {
-                h = (int)((double)h * (double)MAX_WINDOW_SIZE / (double)w);
-                w = MAX_WINDOW_SIZE;
+                h = (int)((double)h * (double)OSMESA_SIZE_LIMIT / (double)w);
+                w = OSMESA_SIZE_LIMIT;
                 Message(tr("The window was too large to save at the requested resolution.  "
                            "The resolution has been automatically reduced."));
             }
-            else if (h >= w && h > MAX_WINDOW_SIZE)
+            else if (h >= w && h > OSMESA_SIZE_LIMIT)
             {
-                w = (int)((double)w * (double)MAX_WINDOW_SIZE / (double)h);
-                h = MAX_WINDOW_SIZE;
+                w = (int)((double)w * (double)OSMESA_SIZE_LIMIT / (double)h);
+                h = OSMESA_SIZE_LIMIT;
                 Message(tr("The window was too large to save at the requested resolution.  "
                            "The resolution has been automatically reduced."));
             }

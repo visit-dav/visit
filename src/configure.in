@@ -792,6 +792,11 @@ dnl    Tom Fogal, Thu Jun 19 13:46:15 EDT 2008
 dnl    Moved ac macro file to its own subdirectory, and appropriately use
 dnl    aclocal.m4 to include it (instead of here).
 dnl
+dnl    Jeremy Meredith, Tue Jun 24 14:42:58 EDT 2008
+dnl    Added runtime check for OSMesa's offscreen window size limit.
+dnl    (Couple other cleanups, like duplicate messages for pthreads and
+dnl    not removing temporary files.)
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1102,6 +1107,10 @@ AC_SUBST(VIEWER_MESA_STUB_CPPFLAGS)
 AC_SUBST(VIEWER_MESA_LIBS)
 AC_SUBST(BUILD_MESA_STUB)
 
+#
+# IceT check.
+#
+sinclude([ac/icet.m4])
 AX_ICET_OPTIONS
 if test "x$UseParallel" == "xno" -a "x$enable_icet" == "xyes" ; then
 	AC_MSG_ERROR([
@@ -2232,6 +2241,7 @@ if test -n "$HDF5_LIB"; then
 	    ,  have_libsiloh=yes
 	    ,  have_libsiloh=no 
         )
+        rm -f junk.silo
 
 	if test "$have_libsiloh" = "yes"; then
             AC_MSG_RESULT(libsiloh5.a)
@@ -2272,6 +2282,7 @@ if test -n "$HDF5_LIB"; then
 	    ,  silo_depends_on_hdf5=yes
 	    ,  silo_depends_on_hdf5=no 
         )
+        rm -f junk.silo
 
 	if test "$silo_depends_on_hdf5" = "yes"; then
             AC_MSG_RESULT(yes)
@@ -3250,9 +3261,7 @@ AC_MSG_CHECKING(for pthread library)
 if test -z "$PTHREAD_LIB"; then
    AC_TRY_LINK([#include <pthread.h>],[pthread_attr_t attr;
                 pthread_attr_init(&attr)],
-               AC_MSG_RESULT(yes)
                HAVE_PTHREADS="Yes",
-               AC_MSG_RESULT(no)
                HAVE_PTHREADS="No")
    if test "$HAVE_PTHREADS" = "Yes" ; then
        ENGINE_CPPFLAGS="$ENGINE_CPPFLAGS"
@@ -3276,6 +3285,52 @@ else
 fi
 AC_SUBST(PTHREAD_LIB)
 AC_SUBST(PTHREAD_CXXFLAGS)
+
+
+#
+# Do a check to determine the actual limit of an OSMesa
+# window size.  Unfortunately, this must be done using
+# the C API and is thus a runtim check.
+#
+AC_MSG_CHECKING(for OSMesa offscreen window size limit)
+AC_LANG_PUSH(C++)
+oldcxxflags="$CXXFLAGS"
+oldldflags="$LDFLAGS"
+oldlibs="$LIBS"
+CXXFLAGS="-I$MESA/include"
+LDFLAGS="-L$MESA/lib -Wl,-rpath=$MESA/lib $LDFLAGS"
+LIBS="-lOSMesa -lMesaGL $GL_LIBS $X_LIBS $PTHREAD_LIB"
+OSMESA_SIZE_LIMIT="4096"
+AC_TRY_RUN([
+        #include <fstream>
+        #include <GL/osmesa.h>
+        using namespace std;
+        int main()
+        {
+            int w,h;    
+            OSMesaGetIntegerv(OSMESA_MAX_WIDTH, &w);
+            OSMesaGetIntegerv(OSMESA_MAX_HEIGHT, &h);
+            ofstream out("junk.txt");
+            out << ((w < h) ? w : h) << endl;
+            out.close();
+            return 0;
+        }
+        ]
+        ,
+        OSMESA_SIZE_LIMIT=`cat junk.txt`
+        AC_MSG_RESULT($OSMESA_SIZE_LIMIT)
+        ,
+        AC_MSG_RESULT(Test failed... assuming $OSMESA_SIZE_LIMIT)
+        ,
+        AC_MSG_RESULT(Cross-compiling... assuming $OSMESA_SIZE_LIMIT)
+)
+rm -f junk.txt
+AC_DEFINE_UNQUOTED(OSMESA_SIZE_LIMIT, $OSMESA_SIZE_LIMIT)
+CXXFLAGS="$oldcxxflags"
+LDFLAGS="$oldldflags"
+LIBS="$oldlibs"
+AC_LANG_POP()
+
 
 #
 # Look for the python include files if scripting is enabled.

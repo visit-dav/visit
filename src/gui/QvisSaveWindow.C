@@ -55,9 +55,7 @@
 #include <SaveWindowAttributes.h>
 #include <ViewerProxy.h>
 
-//Max size window Mesa 5.0 can handle
-#define MAX_WINDOW_SIZE 4096
-
+#include <visit-config.h>
 
 
 // ****************************************************************************
@@ -648,6 +646,9 @@ QvisSaveWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Jeremy Meredith, Tue Jun 24 12:27:54 EDT 2008
+//   Use the actual OSMesa size limit for the window limit.
+//
 // ****************************************************************************
 
 void
@@ -706,7 +707,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
             okay = (sscanf(temp.latin1(), "%d", &w) == 1);
             if(okay)
             {
-                okay = (w <= MAX_WINDOW_SIZE);
+                okay = (w <= OSMESA_SIZE_LIMIT);
                 
                 if(okay)
                 {
@@ -738,7 +739,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
             okay = (sscanf(temp.latin1(), "%d", &h) == 1);
             if(okay)
             {
-                okay = (h <= MAX_WINDOW_SIZE);
+                okay = (h <= OSMESA_SIZE_LIMIT);
                 
                 if(okay)
                 {
