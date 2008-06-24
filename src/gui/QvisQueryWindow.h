@@ -56,6 +56,7 @@ class QListBox;
 class QMultiLineEdit;
 class QPushButton;
 class QueryList;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisQueryWindow
@@ -111,6 +112,9 @@ class QueryList;
 //   Brad Whitlock, Wed Apr  9 11:46:13 PDT 2008
 //   QString for caption, shortName.
 //
+//   Kathleen Bonnell, Tue Jun 24 11:18:13 PDT 2008
+//   Added QvisVariableButton for queries that need variables. 
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
@@ -142,7 +146,7 @@ private:
     bool GetPoint(int index, const QString &pname, double pt[3]);
     bool GetNumber(int index, int *num);
     bool GetFloatingPointNumber(int index, double *num);
-    bool GetVars(int index, stringVector &vars);
+    bool GetVars(stringVector &vars);
 private slots:
     void apply();
     void timeApply();
@@ -152,6 +156,7 @@ private slots:
     void displayModeChanged(int);
     void useGlobalToggled(bool);
     void saveResultText();
+    void addVariable(const QString &);
 
 private:
     QueryList       *queries;
@@ -172,8 +177,12 @@ private:
     QLineEdit       *floatFormatText;
     
     QButtonGroup    *dataOpts;
+
+    QvisVariableButton *varsButton;
+    QLineEdit          *varsLineEdit;
     
-    int		    saveCount;
+    int              saveCount;
+    int              queryVarTypes;
 };
 
 #endif

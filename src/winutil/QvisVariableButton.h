@@ -77,6 +77,9 @@ class VariableMenuPopulator;
 //   Brad Whitlock, Thu Dec 20 12:42:30 PST 2007
 //   Added methods to delete menu items.
 //
+//   Kathleen Bonnell, Tue Jun 24 11:18:13 PDT 2008 
+//   Move setVarTypes implementation to C file. 
+//
 // ****************************************************************************
 
 class WINUTIL_API QvisVariableButton : public QPushButton
@@ -96,7 +99,7 @@ public:
     virtual void setDefaultVariable(const QString &);
     QString getDefaultVariable() const { return defaultVariable; }
     int  getVarTypes() const { return varTypes; }
-    void setVarTypes(int t) { varTypes = t; }
+    void setVarTypes(int t);
 
     const QString &getVariable() const;
     void setVariable(const QString &t);

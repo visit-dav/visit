@@ -677,6 +677,34 @@ QvisVariableButton::setDefaultVariable(const QString &var)
 }
 
 // ****************************************************************************
+// Method: QvisVariableButton::setVarTypes
+//
+// Purpose: 
+//   Sets the varTypes.
+//
+// Arguments:
+//   t : The var types.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 9 16:50:40 PST 2004
+//
+// Modifications:
+//   Kathleen Bonnell, Tue Jun 24 11:38:02 PDT 2008
+//   Moved from header file, added call to UpdateMenu.
+//   
+// ****************************************************************************
+
+void
+QvisVariableButton::setVarTypes(int t)
+{
+    if (varTypes != t)
+    {
+        varTypes = t;
+        UpdateMenu();
+    }
+}
+
+// ****************************************************************************
 // Method: QvisVariableButton::UpdateActiveSourceButtons
 //
 // Purpose: 
