@@ -99,17 +99,20 @@ class ScriptingOperatorPluginInfo;
 //    purpose (which really is unrelated to FreeCommonPluginInfo and 
 //    GetCommonPluginInfo).
 //
+//    Brad Whitlock, Tue Jun 24 10:48:11 PDT 2008
+//    Removed singleton characteristics.
+//
 // ****************************************************************************
 
 class PLUGIN_API OperatorPluginManager : public PluginManager
 {
   public:
+                                    OperatorPluginManager();
     virtual                        ~OperatorPluginManager();
 
-    static void                     Initialize(const PluginCategory pluginCategory,
+    void                            Initialize(const PluginCategory pluginCategory,
                                                bool parallel=false,
                                                const char *pluginDir = 0);
-    static OperatorPluginManager   *Instance();
 
     virtual void                    ReloadPlugins();
 
@@ -120,8 +123,6 @@ class PLUGIN_API OperatorPluginManager : public PluginManager
     ScriptingOperatorPluginInfo    *GetScriptingPluginInfo(const std::string&);
 
   private:
-                                    OperatorPluginManager();
-
     virtual bool                    LoadGeneralPluginInfo();
     virtual void                    LoadGUIPluginInfo();
     virtual void                    LoadViewerPluginInfo();
@@ -133,9 +134,6 @@ class PLUGIN_API OperatorPluginManager : public PluginManager
     virtual void                    FreeViewerPluginInfo();
     virtual void                    FreeEnginePluginInfo();
     virtual void                    FreeScriptingPluginInfo();
-
-    // the plugin manager instance
-    static OperatorPluginManager               *instance;
 
     // arrays containing enabled plugins
     std::vector<CommonOperatorPluginInfo*>      commonPluginInfo;

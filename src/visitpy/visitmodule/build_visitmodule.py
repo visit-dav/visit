@@ -22,7 +22,11 @@
 #   Hank Childs, Mon Feb 11 17:13:30 PST 2008
 #   Renamed components directory to be avt.
 #
+#   Brad Whitlock, Wed Jun 25 13:39:45 PST 2008
+#   Remove proxyexample from the build.
+#
 ###############################################################################
+
 from distutils.core import setup, Extension
 import os, string
 
@@ -79,7 +83,8 @@ rmlist = ("../../common/comm/PipeConnection.C",
 "../../common/state/test3.C",
 "../../common/state/SimulationCommand.C",
 "../../common/utility/MRUCache_test.C",
-"../../common/utility/StringHelpers_test.C")
+"../../common/utility/StringHelpers_test.C",
+"../../viewer/proxy/proxyexample.C")
 
 for rm in rmlist:
    visitmod_sources = RemoveFileFromList(visitmod_sources, os.path.realpath(rm))

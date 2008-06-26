@@ -42,6 +42,7 @@
 #include <string>
 
 class MDServerConnection;
+class DatabasePluginManager;
 
 // ****************************************************************************
 // Class: MDServerApplication
@@ -68,6 +69,10 @@ class MDServerConnection;
 //
 //   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //   Added method to set cycle number regular expression
+//
+//   Brad Whitlock, Tue Jun 24 14:58:19 PDT 2008
+//   Made a DatabasePluginManager member.
+//
 // ****************************************************************************
 
 class MDServerApplication
@@ -81,6 +86,12 @@ public:
     void SetTimeout(long t) {timeout = t;}
     void SetCycleFromFilenameRegex(const char *cfnre);
 
+    // Methods for accessing the plugin manager.
+    void                   InitializePlugins();
+    void                   LoadPlugins();
+    std::string            GetPluginInitializationErrors();
+    DatabasePluginManager *GetDatabasePluginManager();
+
     static MDServerApplication *Instance();
     static void AlarmHandler(int signal);
 private:
@@ -92,6 +103,8 @@ private:
     MDServerConnectionVector    clients;
     bool                        keepGoing;
     long                        timeout;
+    bool                        pluginsLoaded;
+    DatabasePluginManager      *databasePlugins;
 };
 
 #endif

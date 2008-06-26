@@ -45,6 +45,7 @@
 
 #include <viewer_exports.h>
 #include <SimpleObserver.h>
+#include <ViewerBase.h>
 #include <ref_ptr.h>
 
 // Forward declarations.
@@ -99,17 +100,20 @@ class avtToolInterface;
 //    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007 
 //    Added optional bool arg to constructor, CreateLineout. 
 //
+//    Brad Whitlock, Tue Jun 24 14:51:09 PDT 2008
+//    Inherit ViewerBase.
+//
 // ****************************************************************************
 
 
-class VIEWER_API ViewerQuery : public SimpleObserver
+class VIEWER_API ViewerQuery : public SimpleObserver, private ViewerBase
 {
   public:
                      ViewerQuery(ViewerWindow *, ViewerWindow *, Line *,
                                  const bool fromDefault = true,
                                  const bool forceSampling = false);
                      ViewerQuery(const ViewerQuery *obj, int ts); 
-                    ~ViewerQuery();
+    virtual         ~ViewerQuery();
 
     bool             MatchResultsPlot(ViewerPlot *vp) const; 
     bool             MatchOriginatingPlot(ViewerPlot *vp) const; 

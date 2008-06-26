@@ -72,6 +72,7 @@ class KeepAliveRPC;
 class KeepAliveRPCExecutor;
 class LoadPluginsRPC;
 class LoadPluginsRPCExecutor;
+class MDServerApplication;
 class CreateGroupListRPC;
 class CreateGroupListRPCExecutor;
 class Observer;
@@ -236,7 +237,7 @@ class MDServerConnection
     const VirtualFileInformationMap::iterator
         GetVirtualFileDefinition(const std::string &file);
 public:
-    MDServerConnection(int *argc, char **argv[]);
+    MDServerConnection(MDServerApplication *, int *argc, char **argv[]);
     ~MDServerConnection();
 
     bool KeepGoing() const;
@@ -293,6 +294,7 @@ private:
     void ReadFileListAttributes(GetFileListRPC::FileList &, bool);
 
 private:
+    MDServerApplication        *app;
     ParentProcess              *parent;    
     Xfer                       *xfer;
 

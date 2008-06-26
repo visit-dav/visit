@@ -62,11 +62,14 @@
 //    Removed the general plugin info since the viewer info is derived
 //    from it now.
 //
+//    Brad Whitlock, Tue Jun 24 14:48:01 PDT 2008
+//    Inherit from ViewerBase.
+//
 // ****************************************************************************
 
-ViewerOperatorFactory::ViewerOperatorFactory()
+ViewerOperatorFactory::ViewerOperatorFactory() : ViewerBase()
 {
-    OperatorPluginManager *operatorPluginMgr = OperatorPluginManager::Instance();
+    OperatorPluginManager *operatorPluginMgr = GetOperatorPluginManager();
 
     nTypes = operatorPluginMgr->GetNEnabledPlugins();
 

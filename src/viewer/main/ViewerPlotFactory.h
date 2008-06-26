@@ -43,6 +43,7 @@
 #ifndef VIEWER_PLOT_FACTORY_H
 #define VIEWER_PLOT_FACTORY_H
 #include <viewer_exports.h>
+#include <ViewerBase.h>
 #include <avtSILRestriction.h>
 #include <EngineKey.h>
 
@@ -96,9 +97,12 @@ class ViewerPlotPluginInfo;
 //    Brad Whitlock, Fri Apr 2 16:05:29 PST 2004
 //    I added a couple more arguments to the CreatePlot method.
 //
+//    Brad Whitlock, Tue Jun 24 14:48:45 PDT 2008
+//    Inherit ViewerBase.
+//
 // ****************************************************************************
 
-class VIEWER_API ViewerPlotFactory
+class VIEWER_API ViewerPlotFactory : private ViewerBase
 {
   public:
     ViewerPlotFactory();

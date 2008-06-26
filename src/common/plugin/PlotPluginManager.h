@@ -102,16 +102,19 @@ class ScriptingPlotPluginInfo;
 //    Brad Whitlock, Wed Nov 22 16:30:48 PST 2006
 //    Added const char * argument to Initialize function.
 //
+//    Brad Whitlock, Tue Jun 24 10:48:11 PDT 2008
+//    Removed singleton characteristics.
+//
 // ****************************************************************************
 
 class PLUGIN_API PlotPluginManager : public PluginManager
 {
   public:
+                                    PlotPluginManager();
     virtual                        ~PlotPluginManager();
 
-    static void                     Initialize(const PluginCategory,
+    void                            Initialize(const PluginCategory,
                                                bool=false, const char * = 0);
-    static PlotPluginManager       *Instance();
 
     virtual void                    ReloadPlugins();
 
@@ -122,8 +125,6 @@ class PLUGIN_API PlotPluginManager : public PluginManager
     ScriptingPlotPluginInfo        *GetScriptingPluginInfo(const std::string&);
 
   private:
-                                    PlotPluginManager();
-
     virtual bool                    LoadGeneralPluginInfo();
     virtual void                    LoadGUIPluginInfo();
     virtual void                    LoadViewerPluginInfo();
@@ -135,9 +136,6 @@ class PLUGIN_API PlotPluginManager : public PluginManager
     virtual void                    FreeViewerPluginInfo();
     virtual void                    FreeEnginePluginInfo();
     virtual void                    FreeScriptingPluginInfo();
-
-    // the plugin manager instance
-    static PlotPluginManager               *instance;
 
     // arrays containing enabled plugins
     std::vector<CommonPlotPluginInfo*>      commonPluginInfo;

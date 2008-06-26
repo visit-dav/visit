@@ -277,7 +277,8 @@ CreateMetaDataObjects(StateObjectMap &attributes)
 //   Creates the plot state objects whose definitions we'll print.
 //
 // Arguments:
-//   attributes : The map that will contain the state objects.
+//   plotPlugins : The plot plugin manager.
+//   attributes  : The map that will contain the state objects.
 //
 // Returns:    
 //
@@ -287,29 +288,30 @@ CreateMetaDataObjects(StateObjectMap &attributes)
 // Creation:   Mon Dec 10 13:52:02 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jun 25 09:55:13 PDT 2008
+//   Pass in the plugin manager.
+//
 // ****************************************************************************
 
 void
-CreatePlotStateObjects(StateObjectMap &attributes)
+CreatePlotStateObjects(PlotPluginManager &plotPlugins, StateObjectMap &attributes)
 {
     // Enable all plugins
-    for(int i = 0; i < PlotPluginManager::Instance()->GetNAllPlugins(); ++i)
+    for(int i = 0; i < plotPlugins.GetNAllPlugins(); ++i)
     {
         // Get a pointer to the GUI portion of the plot plugin information.
-        PlotPluginManager::Instance()->EnablePlugin(
-            PlotPluginManager::Instance()->GetAllID(i));
+        plotPlugins.EnablePlugin(plotPlugins.GetAllID(i));
     }
 
     // Load the plugins
-    PlotPluginManager::Instance()->LoadPluginsNow();
+    plotPlugins.LoadPluginsNow();
 
     // Create a state object for each plugin.
-    for(int i = 0; i < PlotPluginManager::Instance()->GetNAllPlugins(); ++i)
+    for(int i = 0; i < plotPlugins.GetNAllPlugins(); ++i)
     {
         // Get a pointer to the GUI portion of the plot plugin information.
-        EnginePlotPluginInfo *info = PlotPluginManager::Instance()->
-            GetEnginePluginInfo(PlotPluginManager::Instance()->GetAllID(i));
+        EnginePlotPluginInfo *info = plotPlugins.
+            GetEnginePluginInfo(plotPlugins.GetAllID(i));
         if(info != 0)
         {
             AttributeSubject *atts = info->AllocAttributes();
@@ -325,7 +327,8 @@ CreatePlotStateObjects(StateObjectMap &attributes)
 //   Creates the operator state objects whose definitions we'll print.
 //
 // Arguments:
-//   attributes : The map that will contain the state objects.
+//   operatorPlugins : The operator plugin manager.
+//   attributes      : The map that will contain the state objects.
 //
 // Returns:    
 //
@@ -335,29 +338,31 @@ CreatePlotStateObjects(StateObjectMap &attributes)
 // Creation:   Mon Dec 10 13:52:02 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Wed Jun 25 09:55:13 PDT 2008
+//   Pass in the plugin manager.
 //   
 // ****************************************************************************
 
 void
-CreateOperatorStateObjects(StateObjectMap &attributes)
+CreateOperatorStateObjects(OperatorPluginManager &operatorPlugins, 
+    StateObjectMap &attributes)
 {
     // Enable all plugins
-    for(int i = 0; i < OperatorPluginManager::Instance()->GetNAllPlugins(); ++i)
+    for(int i = 0; i < operatorPlugins.GetNAllPlugins(); ++i)
     {
         // Get a pointer to the GUI portion of the Operator plugin information.
-        OperatorPluginManager::Instance()->EnablePlugin(
-            OperatorPluginManager::Instance()->GetAllID(i));
+        operatorPlugins.EnablePlugin(operatorPlugins.GetAllID(i));
     }
 
     // Load the plugins
-    OperatorPluginManager::Instance()->LoadPluginsNow();
+    operatorPlugins.LoadPluginsNow();
 
     // Create a state object for each plugin.
-    for(int i = 0; i < OperatorPluginManager::Instance()->GetNAllPlugins(); ++i)
+    for(int i = 0; i < operatorPlugins.GetNAllPlugins(); ++i)
     {
         // Get a pointer to the GUI portion of the Operator plugin information.
-        EngineOperatorPluginInfo *info = OperatorPluginManager::Instance()->
-            GetEnginePluginInfo(OperatorPluginManager::Instance()->GetAllID(i));
+        EngineOperatorPluginInfo *info = operatorPlugins.
+            GetEnginePluginInfo(operatorPlugins.GetAllID(i));
         if(info != 0)
         {
             AttributeSubject *atts = info->AllocAttributes();
@@ -552,9 +557,12 @@ PrintHeader(FILE *f, const char *header)
 // Creation:   Mon Dec 10 13:48:17 PST 2007
 //
 // Modifications:
-//   
 //    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
 //    Moved setting of component name to before Initialize
+//
+//    Brad Whitlock, Wed Jun 25 09:52:50 PDT 2008
+//    Changed how plugin managers are accessed.
+//
 // ****************************************************************************
 
 int
@@ -568,8 +576,10 @@ main(int argc, char *argv[])
     Init::Initialize(argc, argv, 0, 1, true, true);
 
     // Initialize the plugin managers and load the info plugins.
-    PlotPluginManager::Initialize(PlotPluginManager::Engine, false);
-    OperatorPluginManager::Initialize(OperatorPluginManager::Engine, false);
+    PlotPluginManager     plotPlugins;
+    OperatorPluginManager operatorPlugins;
+    plotPlugins.Initialize(PlotPluginManager::Engine, false);
+    operatorPlugins.Initialize(OperatorPluginManager::Engine, false);
 
     // Print out header and program description.
     PrintHeader(f, "VisIt protocol report");
@@ -617,12 +627,12 @@ main(int argc, char *argv[])
     WriteObjectDefinitions(f, engine);
 
     PrintHeader(f, "Plot plugin state objects");
-    CreatePlotStateObjects(plots);
+    CreatePlotStateObjects(plotPlugins, plots);
     WriteObjectDefinitions(f, plots);
     DeleteStateObjects(plots);
 
     PrintHeader(f, "Operator plugin state objects");
-    CreateOperatorStateObjects(operators);
+    CreateOperatorStateObjects(operatorPlugins, operators);
     WriteObjectDefinitions(f, operators);
     DeleteStateObjects(operators);
 

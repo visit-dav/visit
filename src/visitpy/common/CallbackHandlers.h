@@ -38,13 +38,13 @@
 #ifndef CALLBACK_HANDLERS_H
 #define CALLBACK_HANDLERS_H
 #include <CallbackManager.h>
-#include <ViewerState.h>
+#include <ViewerProxy.h>
 #include <ViewerRPCCallbacks.h>
 
 //
 // This function registers callback handlers for the supported state objects.
 //
-void RegisterCallbackHandlers(CallbackManager *cb, ViewerState *vs, ViewerRPCCallbacks *rpcCB);
-PyObject *GetPyObjectPluginAttributes(AttributeSubject *subj, bool useCurrent);
+void RegisterCallbackHandlers(CallbackManager *cb, ViewerProxy *viewer, ViewerRPCCallbacks *rpcCB);
+PyObject *GetPyObjectPluginAttributes(AttributeSubject *subj, bool useCurrent, ViewerProxy *);
 
 #endif

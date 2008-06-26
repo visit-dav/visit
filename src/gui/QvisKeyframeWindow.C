@@ -783,6 +783,9 @@ QvisKeyframeWindow::UpdateWindowInformation()
 //    Fixed logic to see if all db state keyframes were the same across all
 //    plots.  Added code to set the plotid for the list view items.
 //
+//    Brad Whitlock, Tue Jun 24 12:04:28 PDT 2008
+//    I changed how we access the plugin manager.
+//
 // ****************************************************************************
 void
 QvisKeyframeWindow::UpdatePlotList()
@@ -893,7 +896,7 @@ QvisKeyframeWindow::UpdatePlotList()
             }
         }
 
-        PlotPluginManager *pmgr = PlotPluginManager::Instance();
+        PlotPluginManager *pmgr = GetViewerProxy()->GetPlotPluginManager();
         int type = current.GetPlotType();
         std::string id = pmgr->GetEnabledID(type);
 

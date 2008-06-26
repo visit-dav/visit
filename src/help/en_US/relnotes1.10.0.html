@@ -54,7 +54,13 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>&nbsp;</li>
     <li>&nbsp;</li>
     <li>&nbsp;</li>
-    <li>&nbsp;</li>
+    <li>VisIt's plugin managers have been reworked so that multiple instances
+        can coexist in the same process. This enables simulations that are
+        instrumented with libsim (and are thus VisIt compute engines) to include
+        other VisIt components such as the VisIt Python interface. A simulation
+        that is both a VisIt CLI and a VisIt compute engine can create plots
+        using VisIt's normal Python scripting but also generate the plotted data 
+        as a simulation.</li>
 </ul>
 
 <a name="File_format"></a>

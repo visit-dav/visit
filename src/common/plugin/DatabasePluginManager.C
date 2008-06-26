@@ -54,11 +54,6 @@
 using std::string;
 using std::vector;
 
-//
-// Storage for static data elements.
-//
-DatabasePluginManager *DatabasePluginManager::instance=0;
-
 // ****************************************************************************
 //  Method: DatabasePluginManager constructor
 //
@@ -87,11 +82,14 @@ DatabasePluginManager::DatabasePluginManager() : PluginManager("database")
 //  Creation:   August 22, 2002
 //
 //  Modifications:
+//    Brad Whitlock, Wed Jun 25 10:27:17 PDT 2008
+//    Call UnloadPlugins here since it calls virtual methods for this class.
 //
 // ****************************************************************************
 
 DatabasePluginManager::~DatabasePluginManager()
 {
+    UnloadPlugins();
 }
 
 // ****************************************************************************
@@ -108,51 +106,24 @@ DatabasePluginManager::~DatabasePluginManager()
 //  Creation:    August 22, 2002
 //
 //  Modifications:
-//      Sean Ahern, Thu Jan 17 16:10:00 EST 2008
-//      Added SetPluginDir so that we can find plugins correctly.  Arguably,
-//      this is better here than the constructor.
+//    Sean Ahern, Thu Jan 17 16:10:00 EST 2008
+//    Added SetPluginDir so that we can find plugins correctly.  Arguably,
+//    this is better here than the constructor.
+//
+//    Brad Whitlock, Tue Jun 24 11:13:19 PDT 2008
+//    Removed plugin characteristics.
 //
 // ****************************************************************************
 
 void
 DatabasePluginManager::Initialize(const PluginCategory pluginCategory,
-                                  bool                 parallel,
+                                  bool                 par,
                                   const char *         pluginDir)
 {
-    Instance();
-    instance->category = pluginCategory;
-    instance->parallel = parallel;
-    instance->SetPluginDir(pluginDir);
-    instance->ReadPluginInfo();
-}
-
-// ****************************************************************************
-//  Method: DatabasePluginManager::Instance
-//
-//  Purpose:
-//    Return a pointer to the sole instance of the DatabasePluginManager
-//    class.
-//
-//  Returns:    A pointer to the sole instance of the DatabasePluginManager
-//              class.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   August 22, 2002
-//
-// ****************************************************************************
-
-DatabasePluginManager *
-DatabasePluginManager::Instance()
-{
-    //
-    // If the sole instance hasn't been instantiated, then instantiate it.
-    //
-    if (instance == 0)
-    {
-        instance = new DatabasePluginManager;
-    }
-
-    return instance;
+    category = pluginCategory;
+    parallel = par;
+    SetPluginDir(pluginDir);
+    ReadPluginInfo();
 }
 
 // ****************************************************************************
@@ -171,11 +142,14 @@ DatabasePluginManager::Instance()
 //  Creation:   February 22, 2005
 //
 //  Modifications:
-//
 //    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
 //    Fixed problem where calling this method in a situation where the given
 //    plugin had not already been loaded would result in defining it in
 //    loadedindexmap with an index of 0.
+//
+//    Brad Whitlock, Tue Jun 24 16:24:25 PDT 2008
+//    Added a pointer to this in the info.
+//
 // ****************************************************************************
 
 EngineDatabasePluginInfo *
@@ -183,7 +157,9 @@ DatabasePluginManager::GetEnginePluginInfo(const string &id)
 {
     if (!PluginLoaded(id))
         return 0;
-    return enginePluginInfo[loadedindexmap[id]];
+    EngineDatabasePluginInfo *info = enginePluginInfo[loadedindexmap[id]];
+    info->SetPluginManager(this);
+    return info;
 }
 
 // ****************************************************************************
@@ -202,11 +178,14 @@ DatabasePluginManager::GetEnginePluginInfo(const string &id)
 //  Creation:   August 22, 2002
 //
 //  Modifications:
-//
 //    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
 //    Fixed problem where calling this method in a situation where the given
 //    plugin had not already been loaded would result in defining it in
 //    loadedindexmap with an index of 0.
+//
+//    Brad Whitlock, Tue Jun 24 16:24:25 PDT 2008
+//    Added a pointer to this in the info.
+//
 // ****************************************************************************
 
 CommonDatabasePluginInfo *
@@ -214,7 +193,9 @@ DatabasePluginManager::GetCommonPluginInfo(const string &id)
 {
     if (!PluginLoaded(id))
         return 0;
-    return commonPluginInfo[loadedindexmap[id]];
+    CommonDatabasePluginInfo *info = commonPluginInfo[loadedindexmap[id]];
+    info->SetPluginManager(this);
+    return info;
 }
 
 // ****************************************************************************

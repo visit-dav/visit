@@ -260,10 +260,14 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    Jeremy Meredith, Wed Apr  2 12:46:52 EDT 2008
 //    Adding a little debug info for watching format attempts.
 //
+//    Brad Whitlock, Tue Jun 24 15:33:58 PDT 2008
+//    Pass in the database plugin manager since it's no longer a singleton.
+//
 // ****************************************************************************
 
 avtDatabase *
-avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
+avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
+                             const char * const * filelist, int filelistN,
                              int timestep, vector<string> &plugins,
                              const char *format,
                              bool forceReadAllCyclesAndTimes,
@@ -295,8 +299,6 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     // Make sure we can read the file before we proceed.
     //
     CheckPermissions(filelist[fileIndex]);
-
-    DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
 
     //
     // If we were specifically told which format to use, then try that now.
@@ -608,10 +610,15 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Brad Whitlock, Tue Jun 24 15:33:58 PDT 2008
+//    Pass in the database plugin manager since it's no longer a singleton.
+//
 // ****************************************************************************
 
 avtDatabase *
-avtDatabaseFactory::VisitFile(const char *visitFile, int timestep,
+avtDatabaseFactory::VisitFile(DatabasePluginManager *dbmgr,
+                              const char *visitFile, int timestep,
                               vector<string> &plugins,
                               const char *format, 
                               bool forceReadAllCyclesAndTimes,
@@ -670,7 +677,7 @@ avtDatabaseFactory::VisitFile(const char *visitFile, int timestep,
     //
     // Create a database using the list of files.
     //
-    avtDatabase *rv = FileList(reallist, listcount, timestep, plugins, format,
+    avtDatabase *rv = FileList(dbmgr, reallist, listcount, timestep, plugins, format,
                                forceReadAllCyclesAndTimes, treatAllDBsAsTimeVarying);
 
     //

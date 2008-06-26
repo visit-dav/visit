@@ -47,6 +47,8 @@
 #include <ViewerState.h>
 #include <SimpleObserver.h>
 #include <avtSILRestriction.h>
+#include <PlotPluginManager.h>
+#include <OperatorPluginManager.h>
 #include <vectortypes.h>
 
 class Connection;
@@ -70,6 +72,9 @@ class Xfer;
 //    I moved a lot of code to the ViewerState and ViewerInterface classes and
 //    I removed old modification comments.
 //
+//    Brad Whitlock, Tue Jun 24 11:21:40 PDT 2008
+//    Added plugin managers since they are no longer singletons.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -89,7 +94,11 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void Create(const char *, int *argc = 0, char ***argv = 0);
     void Close();
     void Detach();
+
+    void InitializePlugins(PluginManager::PluginCategory t, const char *pluginDir=0);
     void LoadPlugins();
+    PlotPluginManager     *GetPlotPluginManager() const;
+    OperatorPluginManager *GetOperatorPluginManager() const;
 
     // Get the proxy's ViewerState object which contains the state objects
     // used in the viewer/client communication interface.
@@ -126,6 +135,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     Xfer                       *xfer;
     ViewerMethods              *methods;
     ViewerState                *state;
+    PlotPluginManager          *plotPlugins;
+    OperatorPluginManager      *operatorPlugins;
 
     int                        animationStopOpcode;
     int                        iconifyOpcode;

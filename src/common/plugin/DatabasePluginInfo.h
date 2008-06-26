@@ -61,6 +61,7 @@ enum DatabaseType
 class avtDatabase;
 class avtDatabaseWriter;
 class DBOptionsAttributes;
+class DatabasePluginManager;
 
 // ****************************************************************************
 //  Class: *DatabasePluginInfo
@@ -100,6 +101,13 @@ class DBOptionsAttributes;
 //    obtain this information instead of GetDefaultExtensions and GetFilenames
 //    on CommonDatabasePluginInfo. Note, however, we will leave the older
 //    methods around for backward compatibility for plugins VisIt does not own.
+//
+//    Brad Whitlock, Tue Jun 24 16:22:13 PDT 2008
+//    Added a pointer back to the plugin manager in the common info because
+//    certain database readers need to access the plugin manager and it's
+//    no longer a singleton. The plugin manager will add a pointer to itself
+//    into the common info when it reads the info.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralDatabasePluginInfo
@@ -136,9 +144,12 @@ class PLUGIN_API CommonDatabasePluginInfo : public virtual GeneralDatabasePlugin
     virtual void                      SetReadOptions(DBOptionsAttributes *);
     virtual void                      SetWriteOptions(DBOptionsAttributes *);
 
+    void SetPluginManager(DatabasePluginManager *ptr);
+    DatabasePluginManager *GetPluginManager() const;
   protected:
     DBOptionsAttributes              *readOptions;
     DBOptionsAttributes              *writeOptions;
+    DatabasePluginManager            *pluginManager;
 };
 
 class PLUGIN_API MDServerDatabasePluginInfo : public virtual CommonDatabasePluginInfo

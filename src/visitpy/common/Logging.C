@@ -438,7 +438,7 @@ static void log_SetActiveTimeSliderRPC(ViewerRPC *rpc, char *str)
 static void log_AddPlotRPC(ViewerRPC *rpc, char *str)
 {
     std::string plotName("?");
-    PlotPluginManager *pluginManager = PlotPluginManager::Instance();
+    PlotPluginManager *pluginManager = viewer->GetPlotPluginManager();
     std::string id(pluginManager->GetEnabledID(rpc->GetPlotType()));
     ScriptingPlotPluginInfo *info = pluginManager->
         GetScriptingPluginInfo(id);
@@ -537,7 +537,7 @@ static void log_ChangeActivePlotsVarRPC(ViewerRPC *rpc, char *str)
 static void log_AddOperatorRPC(ViewerRPC *rpc, char *str)
 {
     std::string operatorName("?");
-    OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
+    OperatorPluginManager *pluginManager = viewer->GetOperatorPluginManager();
     std::string id(pluginManager->GetEnabledID(rpc->GetOperatorType()));
     ScriptingOperatorPluginInfo *info = pluginManager->
         GetScriptingPluginInfo(id);
@@ -593,7 +593,7 @@ static void log_SaveWindowRPC(ViewerRPC *rpc, char *str)
 static void log_SetPlotOptionsHelper(ViewerRPC *rpc, std::string &atts, 
     std::string &plotName)
 {
-    PlotPluginManager *pluginManager = PlotPluginManager::Instance();
+    PlotPluginManager *pluginManager = viewer->GetPlotPluginManager();
     std::string id(pluginManager->GetEnabledID(rpc->GetPlotType()));
     ScriptingPlotPluginInfo *info = pluginManager->
         GetScriptingPluginInfo(id);
@@ -630,7 +630,7 @@ static void log_SetPlotOptionsRPC(ViewerRPC *rpc, char *str)
 static void log_SetOperatorOptionsHelper(ViewerRPC *rpc, std::string &atts, 
     std::string &operatorName)
 {
-    OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
+    OperatorPluginManager *pluginManager = viewer->GetOperatorPluginManager();
     std::string id(pluginManager->GetEnabledID(rpc->GetOperatorType()));
     ScriptingOperatorPluginInfo *info = pluginManager->
         GetScriptingPluginInfo(id);
@@ -877,7 +877,7 @@ static void log_SetView3DRPC(ViewerRPC *rpc, char *str)
 static void log_ResetPlotOptionsRPC(ViewerRPC *rpc, char *str)
 {
     std::string plotName("?");
-    PlotPluginManager *pluginManager = PlotPluginManager::Instance();
+    PlotPluginManager *pluginManager = viewer->GetPlotPluginManager();
     std::string id(pluginManager->GetEnabledID(rpc->GetPlotType()));
     ScriptingPlotPluginInfo *info = pluginManager->
         GetScriptingPluginInfo(id);
@@ -891,7 +891,7 @@ static void log_ResetPlotOptionsRPC(ViewerRPC *rpc, char *str)
 static void log_ResetOperatorOptionsRPC(ViewerRPC *rpc, char *str)
 {
     std::string operatorName("?");
-    OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
+    OperatorPluginManager *pluginManager = viewer->GetOperatorPluginManager();
     std::string id(pluginManager->GetEnabledID(rpc->GetOperatorType()));
     ScriptingOperatorPluginInfo *info = pluginManager->
         GetScriptingPluginInfo(id);

@@ -56,6 +56,8 @@ using std::vector;
 
 class avtZipWrapperFileFormat;
 class DBOptionsAttributes;
+class CommonDatabasePluginInfo;
+class DatabasePluginManager;
 
 // ****************************************************************************
 //  Class: avtZipWrapperFileFormatInterface
@@ -126,13 +128,19 @@ class DBOptionsAttributes;
 //
 //    Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
 //    Added read options to constructor and Initialize
+//
+//    Brad Whitlock, Tue Jun 24 16:43:17 PDT 2008
+//    Added common database info to the constructor so the constructor can
+//    call the plugin manager.
+//
 // ****************************************************************************
 
 class avtZipWrapperFileFormatInterface : public avtFileFormatInterface 
 {
   public:
                        avtZipWrapperFileFormatInterface(const char *const *list, int nList, int nBlock,
-                           const DBOptionsAttributes *readOpts);
+                           const DBOptionsAttributes *readOpts,
+                           CommonDatabasePluginInfo *);
     virtual           ~avtZipWrapperFileFormatInterface();
 
     virtual vtkDataSet     *GetMesh(int, int, const char *);
@@ -179,6 +187,7 @@ class avtZipWrapperFileFormatInterface : public avtFileFormatInterface
       avtZipWrapperFileFormat     *dummyFileFormat;
       avtFileFormatInterface      *dummyInterface;
 
+      DatabasePluginManager       *pluginManager;
       vector<vector<string> >      inputFileList;
       int                          inputFileListSize;
       int                          inputFileBlockCount;

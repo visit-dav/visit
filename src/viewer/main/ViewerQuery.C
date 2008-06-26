@@ -121,11 +121,14 @@ void CreateBasis(const avtVector &N, const avtVector &UP,
 //    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007 
 //    Added optional bool arg, forceSampling. 
 //
+//    Brad Whitlock, Tue Jun 24 14:51:56 PDT 2008
+//    Inherit ViewerBase.
+//
 // ***********************************************************************
 
 ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin, 
                          Line *lA, const bool fromDefault,
-                         const bool forceSampling) : SimpleObserver()
+                         const bool forceSampling) : SimpleObserver(), ViewerBase()
 {
     resPlotQueryInfo = 0;
     planeAtts = 0;
@@ -172,9 +175,13 @@ ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin,
 //    Brad Whitlock, Thu Jan 24 11:55:42 PDT 2008
 //    Added new argument to AddPlot.
 //
+//    Brad Whitlock, Tue Jun 24 14:52:33 PDT 2008
+//    Inherit ViewerBase.
+//
 // ***********************************************************************
 
-ViewerQuery::ViewerQuery(const ViewerQuery *obj, int ts) : SimpleObserver()
+ViewerQuery::ViewerQuery(const ViewerQuery *obj, int ts) : SimpleObserver(), 
+    ViewerBase()
 {
     resPlotQueryInfo = 0;
     planeAtts = 0;
@@ -203,7 +210,7 @@ ViewerQuery::ViewerQuery(const ViewerQuery *obj, int ts) : SimpleObserver()
 
     ViewerPlotList *plotList = resultsWindow->GetPlotList();
 
-    int plotType = PlotPluginManager::Instance()->GetEnabledIndex("Curve_1.0");
+    int plotType = GetPlotPluginManager()->GetEnabledIndex("Curve_1.0");
 
     int pid = plotList->AddPlot(plotType, vName, replacePlots, false, false);
     resultsPlot = plotList->GetPlot(pid);
@@ -232,7 +239,7 @@ ViewerQuery::ViewerQuery(const ViewerQuery *obj, int ts) : SimpleObserver()
     //
     // Add the lineout operator.
     //
-    int operatorType = OperatorPluginManager::Instance()->GetEnabledIndex("Lineout_1.0");
+    int operatorType = GetOperatorPluginManager()->GetEnabledIndex("Lineout_1.0");
     resultsPlot->AddOperator(operatorType, false);
 
     //
@@ -432,7 +439,7 @@ ViewerQuery::CreateLineout(const bool fromDefault, const bool forceSampling)
     bool replacePlots = ViewerWindowManager::Instance()->
                         GetClientAtts()->GetReplacePlots();
  
-    int plotType = PlotPluginManager::Instance()->GetEnabledIndex("Curve_1.0");
+    int plotType = GetPlotPluginManager()->GetEnabledIndex("Curve_1.0");
     ViewerPlotList *plotList = resultsWindow->GetPlotList();
 
     // If the original plot list has a time slider corresponding to the
@@ -476,7 +483,7 @@ ViewerQuery::CreateLineout(const bool fromDefault, const bool forceSampling)
     //
     // Add the lineout operator.
     //
-    int operatorType = OperatorPluginManager::Instance()->GetEnabledIndex("Lineout_1.0");
+    int operatorType = GetOperatorPluginManager()->GetEnabledIndex("Lineout_1.0");
     resultsPlot->AddOperator(operatorType, fromDefault);
 
     //

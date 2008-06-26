@@ -52,13 +52,16 @@
 
 class AttributeGroup;
 class CompactSILRestrictionAttributes;
+class DatabasePluginManager;
 class LoadBalancer;
 class DataNetwork;
 class Netnode;
 class NetnodeDB;
 class ConstructDDFAttributes;
 class ExportDBAttributes;
+class OperatorPluginManager;
 class PickAttributes;
+class PlotPluginManager;
 class QueryAttributes;
 class QueryOverTimeAttributes;
 class MaterialAttributes;
@@ -66,6 +69,7 @@ class MeshManagementAttributes;
 class VisWindow;
 class avtDDF;
 class avtWholeImageCompositer;
+
 
 typedef struct _EngineVisWinInfo
 {
@@ -354,6 +358,10 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    possible; move methods from private -> protected; made some functions
 //    virtual.
 //
+//    Brad Whitlock, Tue Jun 24 15:38:19 PDT 2008
+//    Made the plugin managers belong to the Network manager so they are no
+//    longer singletons.
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -376,6 +384,11 @@ class NetworkManager
  public:
                   NetworkManager(void);
                  ~NetworkManager(void);
+
+    // Get the plugin managers
+    DatabasePluginManager *GetDatabasePluginManager() const;
+    OperatorPluginManager *GetOperatorPluginManager() const;
+    PlotPluginManager     *GetPlotPluginManager() const;
 
     void          ClearAllNetworks(void);
     void          ClearNetworksWithDatabase(const std::string &);
@@ -495,6 +508,10 @@ class NetworkManager
     static void                     SetCompositerBackground(
                                         avtWholeImageCompositer * const,
                                         const VisWindow * const);
+    // The plugin managers
+    DatabasePluginManager      *databasePlugins;
+    OperatorPluginManager      *operatorPlugins;
+    PlotPluginManager          *plotPlugins;
 
     std::vector<DataNetwork*>   networkCache;
     std::vector<int>            globalCellCounts;

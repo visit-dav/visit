@@ -4743,7 +4743,7 @@ ViewerPlot::SetFromNode(DataNode *parentNode, const std::string &configVersion)
                 //
                 if((node = opNode->GetNode("operatorType")) != 0) 
                 {
-                    int type = OperatorPluginManager::Instance()->
+                    int type = GetOperatorPluginManager()->
                         GetEnabledIndex(node->AsString());
                     if(type != -1)
                     {
@@ -4844,7 +4844,7 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
         // Use the plot plugin manager to get the plot type index from
         // the plugin id.
         //
-        int type = PlotPluginManager::Instance()->GetEnabledIndex(pluginID);
+        int type = GetPlotPluginManager()->GetEnabledIndex(pluginID);
         if(type == -1)
         {
             msg = tr("The session file wanted VisIt to "
@@ -4876,7 +4876,7 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
                         if((node = opNode->GetNode("operatorType")) != 0) 
                         {
                             std::string operatorID(node->AsString());
-                            int type = OperatorPluginManager::Instance()->
+                            int type = GetOperatorPluginManager()->
                                 GetEnabledIndex(operatorID);
                             if(type == -1)
                             {

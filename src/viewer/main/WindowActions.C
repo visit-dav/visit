@@ -1134,6 +1134,9 @@ SetWindowModeAction::Enabled() const
 //   Gunther H. Weber, Wed Mar 19 18:47:34 PDT 2008
 //   Added logic for spreadsheet pick 
 //
+//   Brad Whitlock, Tue Jun 24 14:53:49 PDT 2008
+//   Changed how the plugin managers are accessed.
+//
 // ****************************************************************************
 
 bool
@@ -1158,8 +1161,8 @@ SetWindowModeAction::ChoiceEnabled(int i) const
     else if(i == 4)
     {
         retval = (window->GetWindowMode() == WINMODE_2D) &&
-                 PlotPluginManager::Instance()->PluginAvailable("Curve_1.0") &&
-                 OperatorPluginManager::Instance()->PluginAvailable("Lineout_1.0");
+                 GetPlotPluginManager()->PluginAvailable("Curve_1.0") &&
+                 GetOperatorPluginManager()->PluginAvailable("Lineout_1.0");
     }
     else if(i == 5) // spreadsheet pick
     {

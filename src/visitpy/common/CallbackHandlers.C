@@ -37,10 +37,9 @@
 *****************************************************************************/
 #include <CallbackHandlers.h>
 #include <PlotPluginInfo.h>
-#include <PlotPluginManager.h>
 #include <OperatorPluginInfo.h>
-#include <OperatorPluginManager.h>
 #include <ViewerRPCCallbacks.h>
+#include <ViewerProxy.h>
 
 extern PyObject *args_ViewerRPC(ViewerRPC *rpc);
 
@@ -158,14 +157,17 @@ SUPPORTED_STATE_OBJECTS
 // Modifications:
 //   Brad Whitlock, Fri Feb 15 11:42:55 PST 2008
 //   I changed the plugin name matching scheme.
-//   
+//
+//   Brad Whitlock, Tue Jun 24 14:09:24 PDT 2008
+//   Get the plugin manager from the viewer proxy.
+//
 // ****************************************************************************
 
 static PyObject *
-GetPlotConstructorFunction(AttributeSubject *subj)
+GetPlotConstructorFunction(AttributeSubject *subj, ViewerProxy *viewer)
 {
     PyObject *retval = 0;
-    PlotPluginManager *pluginManager = PlotPluginManager::Instance();
+    PlotPluginManager *pluginManager = viewer->GetPlotPluginManager();
 
     int pluginIndex = -1;
     for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
@@ -227,13 +229,16 @@ GetPlotConstructorFunction(AttributeSubject *subj)
 //   Brad Whitlock, Fri Feb 15 11:42:55 PST 2008
 //   I changed the plugin name matching scheme.
 //
+//   Brad Whitlock, Tue Jun 24 14:09:24 PDT 2008
+//   Get the plugin manager from the viewer proxy.
+//
 // ****************************************************************************
 
 static PyObject *
-GetOperatorConstructorFunction(AttributeSubject *subj)
+GetOperatorConstructorFunction(AttributeSubject *subj, ViewerProxy *viewer)
 {
     PyObject *retval = 0;
-    OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
+    OperatorPluginManager *pluginManager = viewer->GetOperatorPluginManager();
 
     int pluginIndex = -1;
     for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
@@ -253,7 +258,7 @@ GetOperatorConstructorFunction(AttributeSubject *subj)
 
     if(pluginIndex != -1)
     {
-        OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
+        OperatorPluginManager *pluginManager = viewer->GetOperatorPluginManager();
         // Get a pointer to the scripting portion of the Operator plugin information.
         std::string id(pluginManager->GetEnabledID(pluginIndex));
         ScriptingOperatorPluginInfo *info = pluginManager->GetScriptingPluginInfo(id);
@@ -293,15 +298,17 @@ GetOperatorConstructorFunction(AttributeSubject *subj)
 // Creation:   Thu Feb 14 16:44:50 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 24 14:10:48 PDT 2008
+//   Pass in the viewer proxy.
+//
 // ****************************************************************************
 
 PyObject *
-GetPyObjectPluginAttributes(AttributeSubject *subj, bool useCurrent)
+GetPyObjectPluginAttributes(AttributeSubject *subj, bool useCurrent, ViewerProxy *viewer)
 {
-    PyObject *ctor = GetPlotConstructorFunction(subj);
+    PyObject *ctor = GetPlotConstructorFunction(subj, viewer);
     if(ctor == 0)
-        ctor = GetOperatorConstructorFunction(subj);
+        ctor = GetOperatorConstructorFunction(subj, viewer);
     if(ctor == 0)
         return 0;
 
@@ -343,6 +350,9 @@ GetPyObjectPluginAttributes(AttributeSubject *subj, bool useCurrent)
 //   Brad Whitlock, Thu Feb 14 16:47:01 PST 2008
 //   Moved code to GetPyObjectPluginAttributes.
 //
+//   Brad Whitlock, Tue Jun 24 14:12:14 PDT 2008
+//   Add viewer proxy to the callback handler data.
+//
 // ****************************************************************************
 
 //
@@ -364,7 +374,7 @@ plugin_state_callback_handler(Subject *s, void *data)
     if(cbData->pycb != 0)
     {
         // Instantiate the Python wrapped version of the plugin attributes.
-        PyObject *state = GetPyObjectPluginAttributes(subj, false);
+        PyObject *state = GetPyObjectPluginAttributes(subj, false, cbData->viewer);
         if(state == 0)
             return;
 
@@ -567,9 +577,9 @@ StateObject_addwork_callback(Subject *subj, void *ptr)
 //   state objects.
 //
 // Arguments:
-//   cb    : The callback manager.
-//   vs    : The viewer state.
-//   rpcCB : The ViewerRPC callback object.
+//   cb     : The callback manager.
+//   viewer : The viewer proxy.
+//   rpcCB  : The ViewerRPC callback object.
 //
 // Returns:    
 //
@@ -579,23 +589,25 @@ StateObject_addwork_callback(Subject *subj, void *ptr)
 // Creation:   Tue Feb  5 11:25:43 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 24 14:14:18 PDT 2008
+//   Pass in the viewer proxy instead of the viewer state.
+//
 // ****************************************************************************
 
 void
-RegisterCallbackHandlers(CallbackManager *cb, ViewerState *vs, ViewerRPCCallbacks *rpcCB)
+RegisterCallbackHandlers(CallbackManager *cb, ViewerProxy *viewer, ViewerRPCCallbacks *rpcCB)
 {
     // Register a special handler for ViewerRPC since it will dispatch to 
     // further Python callbacks. We don't give it a name so the user can't
     // register a handler to override the one that we provide.
-    cb->RegisterHandler((Subject*)vs->GetLogRPC(), 
+    cb->RegisterHandler((Subject*)viewer->GetViewerState()->GetLogRPC(), 
                          "",
                          ViewerRPC_callback, (void*)rpcCB, 
                          ViewerRPC_addwork_callback, (void*)rpcCB);
 
     // Register handlers for the supported state objects.
 #define CALLBACK_ACTION(Obj, T, PyWrap) \
-    cb->RegisterHandler((Subject *)vs->Get##Obj(), \
+    cb->RegisterHandler((Subject *)viewer->GetViewerState()->Get##Obj(), \
                         #Obj, \
                         default_handler_##Obj, NULL, \
                         StateObject_addwork_callback, (void*)cb);
@@ -603,19 +615,19 @@ SUPPORTED_STATE_OBJECTS
 #undef CALLBACK_ACTION
 
     // Register a handler for the plot state objects.
-    for(int i = 0; i < vs->GetNumPlotStateObjects(); ++i)
+    for(int i = 0; i < viewer->GetViewerState()->GetNumPlotStateObjects(); ++i)
     {
-        cb->RegisterHandler((Subject*)vs->GetPlotAttributes(i),
-                            vs->GetPlotAttributes(i)->TypeName(),
+        cb->RegisterHandler((Subject*)viewer->GetViewerState()->GetPlotAttributes(i),
+                            viewer->GetViewerState()->GetPlotAttributes(i)->TypeName(),
                             plugin_state_callback_handler, NULL,
                             StateObject_addwork_callback, (void*)cb);
     }
 
     // Register a handler for the operator state objects.
-    for(int i = 0; i < vs->GetNumOperatorStateObjects(); ++i)
+    for(int i = 0; i < viewer->GetViewerState()->GetNumOperatorStateObjects(); ++i)
     {
-        cb->RegisterHandler((Subject*)vs->GetOperatorAttributes(i),
-                            vs->GetOperatorAttributes(i)->TypeName(),
+        cb->RegisterHandler((Subject*)viewer->GetViewerState()->GetOperatorAttributes(i),
+                            viewer->GetViewerState()->GetOperatorAttributes(i)->TypeName(),
                             plugin_state_callback_handler, NULL,
                             StateObject_addwork_callback, (void*)cb);
     }

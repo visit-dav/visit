@@ -3343,6 +3343,9 @@ visit_InvertBackgroundColor(PyObject *self, PyObject *args)
 //   applied to the new plot. By default, do not apply operators of existing
 //   plots to the new plot, even if the global option applyOperator is set.
 //
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3368,7 +3371,7 @@ visit_AddPlot(PyObject *self, PyObject *args)
 
     // Find the plot index from the name. Throw a python exception if we are
     // allowing python exceptions and the plot index is -1.
-    PlotPluginManager *pluginManager = PlotPluginManager::Instance();
+    PlotPluginManager *pluginManager = GetViewerProxy()->GetPlotPluginManager();
     int plotTypeIndex = -1;
     for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
     {
@@ -3447,6 +3450,9 @@ visit_AddPlot(PyObject *self, PyObject *args)
 //   Gunther H. Weber, Tue Apr  1 16:42:15 PDT 2008
 //   Save state of "apply operator toggle"
 //
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3466,7 +3472,7 @@ visit_AddOperator(PyObject *self, PyObject *args)
 
     // Find the oper index from the name. Throw a python exception if we are
     // allowing python exceptions and the operator index is -1.
-    OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
+    OperatorPluginManager *pluginManager = GetViewerProxy()->GetOperatorPluginManager();
     int operTypeIndex = -1;
     for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
     {
@@ -6707,6 +6713,9 @@ visit_EnableTool(PyObject *self, PyObject *args)
 //   Mark C. Miller, Tue May 10 19:53:08 PDT 2005
 //   Made it return its results as a python string that is easily parsable
 //
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6723,7 +6732,7 @@ visit_ListPlots(PyObject *self, PyObject *args)
     // Print out the plot list.
     //
     PlotList *pl = GetViewerState()->GetPlotList();
-    PlotPluginManager *plugins = PlotPluginManager::Instance();
+    PlotPluginManager *plugins = GetViewerProxy()->GetPlotPluginManager();
     std::string outStr;
 
     for(int i = 0; i < pl->GetNumPlots(); ++i)
@@ -6783,7 +6792,7 @@ visit_ListPlots(PyObject *self, PyObject *args)
              {
                  int op = plot.GetOperator(j);
                  SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, "\"%s\"",
-                     OperatorPluginManager::Instance()->GetEnabledID(op).c_str());
+                     GetViewerProxy()->GetOperatorPluginManager()->GetEnabledID(op).c_str());
                  strLen = strlen(tmpStr);
                  if(j < plot.GetNumOperators() - 1)
                      SNPRINTF(&tmpStr[strLen], sizeof(tmpStr)-strLen, ", ");
@@ -6905,6 +6914,9 @@ visit_Expressions(PyObject *self, PyObject *args)
 //   Gunther H. Weber, Tue Apr  1 16:42:15 PDT 2008
 //   Save state of "apply operator toggle"
 //
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6922,7 +6934,7 @@ visit_ResetOperatorOptions(PyObject *self, PyObject *args)
 
     // Find the plot index from the name. Throw a python exception if we are
     // allowing python exceptions and the plot index is -1.
-    OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
+    OperatorPluginManager *pluginManager = GetViewerProxy()->GetOperatorPluginManager();
     int operatorTypeIndex = -1;
     for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
     {
@@ -6985,6 +6997,9 @@ visit_ResetOperatorOptions(PyObject *self, PyObject *args)
 //   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
 //   Made it use the "enabled" plugin index instead the "all" index.
 //
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6996,7 +7011,7 @@ visit_ResetPlotOptions(PyObject *self, PyObject *args)
 
     // Find the plot index from the name. Throw a python exception if we are
     // allowing python exceptions and the plot index is -1.
-    PlotPluginManager *pluginManager = PlotPluginManager::Instance();
+    PlotPluginManager *pluginManager = GetViewerProxy()->GetPlotPluginManager();
     int plotTypeIndex = -1;
     for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
     {
@@ -7145,6 +7160,9 @@ visit_SetActivePlots(PyObject *self, PyObject *args)
 //   Gunther H. Weber, Tue Apr  1 16:42:15 PDT 2008
 //   Save state of "apply operator toggle"
 //
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7188,7 +7206,7 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
     // Make sure that the object is a operator plugin attributes object.
     //
     int objPluginIndex = -1;
-    OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
+    OperatorPluginManager *pluginManager = GetViewerProxy()->GetOperatorPluginManager();
     for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
     {
         // Get a pointer to the scripting portion of the plot plugin information.
@@ -7423,6 +7441,9 @@ visit_RemoveOperator(PyObject *self, PyObject *args)
 //   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
 //   Made it use the "enabled" plugin index instead the "all" index.
 //
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7445,7 +7466,7 @@ visit_SetDefaultOperatorOptions(PyObject *self, PyObject *args)
     // Make sure that the object is a operator plugin attributes object.
     //
     int objPluginIndex = -1;
-    OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
+    OperatorPluginManager *pluginManager = GetViewerProxy()->GetOperatorPluginManager();
     for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
     {
         // Get a pointer to the scripting portion of the plot plugin information.
@@ -7509,6 +7530,9 @@ visit_SetDefaultOperatorOptions(PyObject *self, PyObject *args)
 //   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
 //   Made it use the "enabled" plugin index instead the "all" index.
 //
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7531,7 +7555,7 @@ visit_SetDefaultPlotOptions(PyObject *self, PyObject *args)
     // Make sure that the object is a plot plugin attributes object.
     //
     int objPluginIndex = -1;
-    PlotPluginManager *pluginManager = PlotPluginManager::Instance();
+    PlotPluginManager *pluginManager = GetViewerProxy()->GetPlotPluginManager();
     for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
     {
         // Get a pointer to the scripting portion of the plot plugin information.
@@ -7592,6 +7616,9 @@ visit_SetDefaultPlotOptions(PyObject *self, PyObject *args)
 //   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
 //   Made it use the "enabled" plugin index instead the "all" index.
 //
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7614,7 +7641,7 @@ visit_SetPlotOptions(PyObject *self, PyObject *args)
     // Make sure that the object is a plot plugin attributes object.
     //
     int objPluginIndex = -1;
-    PlotPluginManager *pluginManager = PlotPluginManager::Instance();
+    PlotPluginManager *pluginManager = GetViewerProxy()->GetPlotPluginManager();
     for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
     {
         // Get a pointer to the scripting portion of the plot plugin information.
@@ -7671,7 +7698,9 @@ visit_SetPlotOptions(PyObject *self, PyObject *args)
 // Creation:   Fri Feb 15 10:09:18 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jun 25 09:00:30 PDT 2008
+//   Added an argument to GetPyObjectPluginAttributes.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7696,7 +7725,7 @@ visit_GetPlotOptions(PyObject *self, PyObject *args)
             }
 
             AttributeSubject *plotAtts = GetViewerState()->GetPlotAttributes(plotType);
-            retval = GetPyObjectPluginAttributes(plotAtts, true);
+            retval = GetPyObjectPluginAttributes(plotAtts, true, GetViewerProxy());
         }
         else
         {
@@ -7725,7 +7754,9 @@ visit_GetPlotOptions(PyObject *self, PyObject *args)
 // Creation:   Fri Feb 15 10:09:18 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jun 25 09:00:51 PDT 2008
+//   Added an argument to GetPyObjectPluginAttributes
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7778,7 +7809,7 @@ visit_GetOperatorOptions(PyObject *self, PyObject *args)
                 {
                     AttributeSubject *opAtts = GetViewerState()->
                         GetOperatorAttributes(operatorType);
-                    retval = GetPyObjectPluginAttributes(opAtts, true);
+                    retval = GetPyObjectPluginAttributes(opAtts, true, GetViewerProxy());
                 }
                 else
                 {
@@ -7811,7 +7842,7 @@ visit_GetOperatorOptions(PyObject *self, PyObject *args)
                     // come back for the selected operator
                     AttributeSubject *opAtts = GetViewerState()->
                         GetOperatorAttributes(operatorType);
-                    retval = GetPyObjectPluginAttributes(opAtts, true);
+                    retval = GetPyObjectPluginAttributes(opAtts, true, GetViewerProxy());
 
                     // Restore the active operator and plot expansion for the 
                     // affected plot.
@@ -9046,6 +9077,8 @@ visit_GetNumPlots(PyObject *self, PyObject *args)
 // Creation:   Mon Nov 12 12:15:53 PDT 2001
 //
 // Modifications:
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
 //   
 // ****************************************************************************
 
@@ -9054,7 +9087,7 @@ visit_PlotPlugins(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
 
-    PlotPluginManager *plugins = PlotPluginManager::Instance();
+    PlotPluginManager *plugins = GetViewerProxy()->GetPlotPluginManager();
 
     // Allocate a tuple the with enough entries to hold the plugin name list.
     PyObject *retval = PyTuple_New(plugins->GetNEnabledPlugins());
@@ -9084,6 +9117,8 @@ visit_PlotPlugins(PyObject *self, PyObject *args)
 // Creation:   Mon Nov 12 12:15:53 PDT 2001
 //
 // Modifications:
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
 //   
 // ****************************************************************************
 
@@ -9092,7 +9127,7 @@ visit_NumPlotPlugins(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
 
-    PlotPluginManager *plugins = PlotPluginManager::Instance();
+    PlotPluginManager *plugins = GetViewerProxy()->GetPlotPluginManager();
 
     // Allocate a tuple the with enough entries to hold the plugin name list.
     PyObject *retval = PyLong_FromLong((long)plugins->GetNEnabledPlugins());
@@ -9116,6 +9151,9 @@ visit_NumPlotPlugins(PyObject *self, PyObject *args)
 //   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
 //   Made it use the "enabled" plugin index instead the "all" index.
 //
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -9123,7 +9161,7 @@ visit_OperatorPlugins(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
 
-    OperatorPluginManager *plugins = OperatorPluginManager::Instance();
+    OperatorPluginManager *plugins = GetViewerProxy()->GetOperatorPluginManager();
 
     // Allocate a tuple the with enough entries to hold the plugin name list.
     PyObject *retval = PyTuple_New(plugins->GetNEnabledPlugins());
@@ -9261,6 +9299,8 @@ visit_QueriesOverTime(PyObject *self, PyObject *args)
 // Creation:   Mon Nov 12 12:15:53 PDT 2001
 //
 // Modifications:
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
 //   
 // ****************************************************************************
 
@@ -9268,7 +9308,7 @@ STATIC PyObject *
 visit_NumOperatorPlugins(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
-    OperatorPluginManager *plugins = OperatorPluginManager::Instance();
+    OperatorPluginManager *plugins = GetViewerProxy()->GetOperatorPluginManager();
 
     // Allocate a tuple the with enough entries to hold the plugin name list.
     PyObject *retval = PyLong_FromLong((long)plugins->GetNEnabledPlugins());
@@ -12452,7 +12492,9 @@ visit_SuppressMessages(PyObject *self, PyObject *args)
 // Creation:   Tue Feb  5 16:23:56 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 24 14:21:42 PDT 2008
+//   Pass the viewer proxy into the callback manager.
+//
 // ****************************************************************************
 
 static void
@@ -12464,9 +12506,9 @@ ENSURE_CALLBACK_MANAGER_EXISTS()
     if(callbackMgr == 0)
     {
         MUTEX_LOCK();
-        callbackMgr = new CallbackManager;
+        callbackMgr = new CallbackManager(GetViewerProxy());
         rpcCallbacks = new ViewerRPCCallbacks;
-        RegisterCallbackHandlers(callbackMgr, GetViewerState(), rpcCallbacks);
+        RegisterCallbackHandlers(callbackMgr, GetViewerProxy(), rpcCallbacks);
         MUTEX_UNLOCK();
     }
 }
@@ -13928,6 +13970,9 @@ CloseExtensions()
 //   they are queried when writing log for SetPlotOptions, which ensures that
 //   we only write them out when needed.
 //
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
+//
 // ****************************************************************************
 
 static void
@@ -13936,7 +13981,7 @@ PlotPluginAddInterface()
     MUTEX_LOCK();
 
     // Get a pointer to the plot plugin manager.
-    PlotPluginManager *pluginManager = PlotPluginManager::Instance();
+    PlotPluginManager *pluginManager = GetViewerProxy()->GetPlotPluginManager();
 
     // Create the window and populate the menu for each plot plugin.
     for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
@@ -13999,6 +14044,9 @@ PlotPluginAddInterface()
 //   Brad Whitlock, Fri Jan 6 18:00:07 PST 2006
 //   I changed the 2nd argument to InitializePlugin.
 //
+//   Brad Whitlock, Tue Jun 24 12:20:37 PDT 2008
+//   Get the plugin manager via the viewer proxy.
+//
 // ****************************************************************************
 
 static void
@@ -14007,7 +14055,7 @@ OperatorPluginAddInterface()
     MUTEX_LOCK();
 
     // Get a pointer to the plot plugin manager.
-    OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
+    OperatorPluginManager *pluginManager = GetViewerProxy()->GetOperatorPluginManager();
 
     // Create the window and populate the menu for each plot plugin.
     for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
@@ -14167,6 +14215,10 @@ NeedToLoadPlugins(Subject *, void *)
 //
 //   Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
 //   Moved setting of component name to before Initialize
+//
+//   Brad Whitlock, Tue Jun 24 13:51:41 PDT 2008
+//   Pass the viewer proxy to the log callback function.
+//
 // ****************************************************************************
 
 static int
@@ -14381,6 +14433,9 @@ ReadVisItPluginDir(const char *visitProgram)
 //   Added visitProgram argument and code to try and set VISITPLUGINDIR if
 //   it has not been set already.
 //
+//   Brad Whitlock, Tue Jun 24 12:19:57 PDT 2008
+//   Initialize the plugin managers via the viewer proxy.
+//
 // ****************************************************************************
 
 static void
@@ -14406,11 +14461,9 @@ LaunchViewer(const char *visitProgram)
 
     TRY
     {
-        // Read the plugins.
-        PlotPluginManager::Initialize(PlotPluginManager::Scripting, 
-                                      false, VISITPLUGINDIR);
-        OperatorPluginManager::Initialize(OperatorPluginManager::Scripting,
-                                      false, VISITPLUGINDIR);
+        // Read the plugin info
+        GetViewerProxy()->InitializePlugins(PlotPluginManager::Scripting, 
+                                            VISITPLUGINDIR);
     }
     CATCH(VisItException)
     {

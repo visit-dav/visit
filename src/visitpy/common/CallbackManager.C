@@ -128,8 +128,8 @@ public:
 //   
 // ****************************************************************************
 
-CallbackManager::CallbackManager() : SimpleObserver(), 
-    nameToSubject(), callbacks(), work()
+CallbackManager::CallbackManager(ViewerProxy *p) : SimpleObserver(), 
+    viewer(p), nameToSubject(), callbacks(), work()
 {
     working = false;
     workAllowed = false;
@@ -374,6 +374,9 @@ CallbackManager::StartWork()
 //   Brad Whitlock, Wed Feb  6 10:30:04 PST 2008
 //   Added support for callback data.
 //
+//   Brad Whitlock, Tue Jun 24 14:20:53 PDT 2008
+//   Pass the viewer proxy pointer to the callback.
+//
 // ****************************************************************************
 
 void
@@ -413,6 +416,7 @@ CallbackManager::Work()
                 cbData.pycb_data = cb.pycb_data;
                 cbData.data = w.data;
                 cbData.userdata = cb.handler_data;
+                cbData.viewer = viewer;
                 (*cb.handler)(key, (void *)&cbData);
             }
 

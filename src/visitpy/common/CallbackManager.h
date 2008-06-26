@@ -49,6 +49,7 @@
 
 class AttributeSubject;
 class Threading;
+class ViewerProxy;
 
 typedef bool (AddWorkCallback)(Subject *, void *data);
 
@@ -109,9 +110,11 @@ public:
         AttributeSubject *data;
         // User-defined data.
         void             *userdata;
+        // Pointer to the viewer proxy
+        ViewerProxy      *viewer;
     };
 
-    CallbackManager();
+    CallbackManager(ViewerProxy *);
     ~CallbackManager();
     virtual void SubjectRemoved(Subject *);
     virtual void Update(Subject *);
@@ -129,6 +132,7 @@ private:
     bool RegisterCallback(Subject *, PyObject *, PyObject *);
     void StartWork();
 
+    ViewerProxy           *viewer;
     StringSubjectMap       nameToSubject;
     SubjectCallbackDataMap callbacks;
     std::deque<WorkItem>   work;

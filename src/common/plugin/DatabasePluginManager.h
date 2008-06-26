@@ -82,17 +82,19 @@ class EngineDatabasePluginInfo;
 //    Added a pluginDir argument to Initialize to make it conform to the other
 //    plugin managers.
 //
+//    Brad Whitlock, Tue Jun 24 11:11:24 PDT 2008
+//    Removed singleton characteristics.
+//
 // ****************************************************************************
 
 class PLUGIN_API DatabasePluginManager : public PluginManager
 {
   public:
+                                    DatabasePluginManager();
     virtual                        ~DatabasePluginManager();
 
-    static void                     Initialize(const PluginCategory, bool parallel=false,
+    void                            Initialize(const PluginCategory, bool parallel=false,
                                                const char *pluginDir=0);
-
-    static DatabasePluginManager   *Instance();
 
     virtual void                    ReloadPlugins();
 
@@ -106,16 +108,11 @@ class PLUGIN_API DatabasePluginManager : public PluginManager
                                         bool searchAll = false);
 
   private:
-                                    DatabasePluginManager();
-
     virtual bool                    LoadGeneralPluginInfo();
     virtual void                    LoadMDServerPluginInfo();
     virtual void                    LoadEnginePluginInfo();
 
     virtual void                    FreeCommonPluginInfo();
-
-    // the plugin manager instance
-    static DatabasePluginManager               *instance;
 
     // arrays containing all plugins (appends the ones in PluginManager.C)
     std::vector<bool>                       haswriter;

@@ -40,6 +40,7 @@
 #define QVIS_PLOT_LISTBOX_ITEM_H
 #include <gui_exports.h>
 #include <qlistbox.h>
+#include <GUIBase.h>
 #include <Plot.h>
 #include <vector>
 
@@ -66,9 +67,12 @@
 //   Brad Whitlock, Fri Feb 23 14:15:12 PST 2007
 //   Added non const GetPlot method.
 //
+//   Brad Whitlock, Tue Jun 24 12:13:41 PDT 2008
+//   Added GUIBase as a private base class so we can access the plugin managers.
+//
 // ****************************************************************************
     
-class GUI_API QvisPlotListBoxItem : public QListBoxItem
+class GUI_API QvisPlotListBoxItem : public QListBoxItem, private GUIBase
 {
 public:
     typedef enum {

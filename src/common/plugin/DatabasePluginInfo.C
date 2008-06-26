@@ -43,7 +43,7 @@
 #include <DatabasePluginInfo.h>
 
 #include <DBOptionsAttributes.h>
-
+#include <DatabasePluginManager.h>
 
 // ****************************************************************************
 //  Method: CommonDatabasePluginInfo constructor
@@ -57,6 +57,7 @@ CommonDatabasePluginInfo::CommonDatabasePluginInfo()
 {
     readOptions = NULL;
     writeOptions = NULL;
+    pluginManager = 0;
 }
 
 
@@ -149,4 +150,53 @@ CommonDatabasePluginInfo::SetWriteOptions(DBOptionsAttributes *wo)
     writeOptions = wo;
 }
 
+// ****************************************************************************
+// Method: CommonDatabasePluginInfo::SetPluginManager
+//
+// Purpose: 
+//   Set the database plugin manager that is associated with this info.
+//
+// Arguments:
+//   ptr : The database plugin manager that read the info.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 16:29:03 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+void
+CommonDatabasePluginInfo::SetPluginManager(DatabasePluginManager *ptr)
+{
+    pluginManager = ptr;
+}
+
+// ****************************************************************************
+// Method: CommonDatabasePluginInfo::GetPluginManager
+//
+// Purpose: 
+//   Get the plugin manager that read this info.
+//
+// Arguments:
+//
+// Returns:    The plugin manager that read this info.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 16:29:38 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+DatabasePluginManager *
+CommonDatabasePluginInfo::GetPluginManager() const
+{
+    return pluginManager;
+}

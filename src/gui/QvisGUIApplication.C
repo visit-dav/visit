@@ -1021,6 +1021,9 @@ QvisGUIApplication::~QvisGUIApplication()
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Tue Jun 24 11:46:31 PDT 2008
+//   Change how the plugin managers get initialized.
+//
 // ****************************************************************************
 
 void
@@ -1128,8 +1131,7 @@ QvisGUIApplication::HeavyInitialization()
         break;
     case 12:
         // Load plugin info
-        PlotPluginManager::Initialize(PlotPluginManager::GUI);
-        OperatorPluginManager::Initialize(OperatorPluginManager::GUI);
+        GetViewerProxy()->InitializePlugins(PluginManager::GUI);
         visitTimer->StopTimer(timeid, "stage 12 - Loading plugin info");
         break;
     case 13:
@@ -3652,6 +3654,9 @@ QvisGUIApplication::LoadPlugins()
 //   Brad Whitlock, Fri Apr 25 10:42:46 PDT 2008
 //   Support for internationalization of plot and operator names.
 //
+//   Brad Whitlock, Tue Jun 24 11:44:57 PDT 2008
+//   Get the plugin managers from the viewer proxy.
+//
 // ****************************************************************************
 
 void
@@ -3660,7 +3665,7 @@ QvisGUIApplication::CreatePluginWindows()
     int i;
 
     // Get a pointer to the plot plugin manager.
-    PlotPluginManager *plotPluginManager = PlotPluginManager::Instance();
+    PlotPluginManager *plotPluginManager = GetViewerProxy()->GetPlotPluginManager();
 
     // Create the window and populate the menu for each plot plugin.
     for(i = 0; i < plotPluginManager->GetNEnabledPlugins(); ++i)
@@ -3688,7 +3693,7 @@ QvisGUIApplication::CreatePluginWindows()
     }
 
     // Get a pointer to the operator plugin manager.
-    OperatorPluginManager *operatorPluginManager = OperatorPluginManager::Instance();
+    OperatorPluginManager *operatorPluginManager = GetViewerProxy()->GetOperatorPluginManager();
 
     // Create the window and populate the menu for each operator plugin.
     for(i = 0; i < operatorPluginManager->GetNEnabledPlugins(); ++i)
@@ -3728,6 +3733,9 @@ QvisGUIApplication::CreatePluginWindows()
 //   Brad Whitlock, Fri Apr 25 10:35:45 PDT 2008
 //   Pass caption and shortName into the plugin window creation method.
 //
+//   Brad Whitlock, Tue Jun 24 11:52:48 PDT 2008
+//   Get the plugin manager from the viewer proxy.
+//
 // ****************************************************************************
 
 void
@@ -3735,10 +3743,8 @@ QvisGUIApplication::EnsurePlotWindowIsCreated(int i)
 {
     if(plotWindows[i] == 0)
     {
-        // Get a pointer to the plot plugin manager.
-        PlotPluginManager *plotPluginManager = PlotPluginManager::Instance();
-
         // Get a pointer to the GUI portion of the plot plugin information.
+        PlotPluginManager *plotPluginManager = GetViewerProxy()->GetPlotPluginManager();
         GUIPlotPluginInfo *GUIInfo = plotPluginManager->GetGUIPluginInfo(
             plotPluginManager->GetEnabledID(i));
 
@@ -3772,7 +3778,10 @@ QvisGUIApplication::EnsurePlotWindowIsCreated(int i)
 // Modifications:
 //   Brad Whitlock, Fri Apr 25 10:35:45 PDT 2008
 //   Pass caption and shortName into the plugin window creation method.
-//   
+//
+//   Brad Whitlock, Tue Jun 24 11:52:48 PDT 2008
+//   Get the plugin manager from the viewer proxy.
+//
 // ****************************************************************************
 
 void
@@ -3780,10 +3789,8 @@ QvisGUIApplication::EnsureOperatorWindowIsCreated(int i)
 {
     if(operatorWindows[i] == 0)
     {
-        // Get a pointer to the operator plugin manager.
-        OperatorPluginManager *operatorPluginManager = OperatorPluginManager::Instance();
-
         // Get a pointer to the GUI portion of the operator plugin information.
+        OperatorPluginManager *operatorPluginManager = GetViewerProxy()->GetOperatorPluginManager();
         GUIOperatorPluginInfo *GUIInfo = operatorPluginManager->GetGUIPluginInfo(
             operatorPluginManager->GetEnabledID(i));
 
@@ -4849,6 +4856,9 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
 //   Use the GetName method instead of GetMenuName for the key that we use
 //   to read plugin settings.
 //
+//   Brad Whitlock, Tue Jun 24 11:53:56 PDT 2008
+//   Get the plugin manager from the viewer proxy.
+//
 // ****************************************************************************
 
 void
@@ -4858,7 +4868,7 @@ QvisGUIApplication::ReadPluginWindowConfigs(DataNode *parentNode,
     int i;
 
     // Get a pointer to the plot plugin manager.
-    PlotPluginManager *plotPluginManager = PlotPluginManager::Instance();
+    PlotPluginManager *plotPluginManager = GetViewerProxy()->GetPlotPluginManager();
 
     // Create the window and populate the menu for each plot plugin.
     for(i = 0; i < plotPluginManager->GetNEnabledPlugins(); ++i)
@@ -4889,7 +4899,7 @@ QvisGUIApplication::ReadPluginWindowConfigs(DataNode *parentNode,
     }
 
     // Get a pointer to the operator plugin manager.
-    OperatorPluginManager *operatorPluginManager = OperatorPluginManager::Instance();
+    OperatorPluginManager *operatorPluginManager = GetViewerProxy()->GetOperatorPluginManager();
 
     // Create the window and populate the menu for each operator plugin.
     for(i = 0; i < operatorPluginManager->GetNEnabledPlugins(); ++i)
@@ -6576,13 +6586,16 @@ QvisGUIApplication::HandleMetaDataUpdate()
 //   Mark Blair, Tue Aug 22 16:12:00 PDT 2006
 //   Changed interface to GetMetaData.
 //   
+//   Brad Whitlock, Tue Jun 24 11:53:56 PDT 2008
+//   Get the plugin manager from the viewer proxy.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::AddPlot(int plotType, const QString &varName)
 {
     // Get a pointer to the GUI portion of the plot plugin information.
-    PlotPluginManager *plotPluginManager = PlotPluginManager::Instance();
+    PlotPluginManager *plotPluginManager = GetViewerProxy()->GetPlotPluginManager();
     GUIPlotPluginInfo *GUIInfo = plotPluginManager->GetGUIPluginInfo(
         plotPluginManager->GetEnabledID(plotType));
 
@@ -6654,6 +6667,8 @@ QvisGUIApplication::AddPlot(int plotType, const QString &varName)
 // Creation:   Tue Dec 14 09:30:36 PDT 2004
 //
 // Modifications:
+//   Brad Whitlock, Tue Jun 24 11:53:56 PDT 2008
+//   Get the plugin manager from the viewer proxy.
 //   
 // ****************************************************************************
 
@@ -6661,7 +6676,7 @@ void
 QvisGUIApplication::AddOperator(int operatorType)
 {
     // Get a pointer to the GUI portion of the operator plugin information.
-    OperatorPluginManager *operatorPluginManager = OperatorPluginManager::Instance();
+    OperatorPluginManager *operatorPluginManager = GetViewerProxy()->GetOperatorPluginManager();
     GUIOperatorPluginInfo *GUIInfo = operatorPluginManager->GetGUIPluginInfo(
         operatorPluginManager->GetEnabledID(operatorType));
 

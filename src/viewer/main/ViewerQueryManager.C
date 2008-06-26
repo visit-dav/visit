@@ -2264,7 +2264,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             {
                 int  i;
 
-                if (!PlotPluginManager::Instance()->PluginAvailable(
+                if (!GetPlotPluginManager()->PluginAvailable(
                                                             "Spreadsheet_1.0"))
                 {
                     static bool issuedWarning = false;
@@ -2364,7 +2364,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 ViewerPlotList *plotList =  win->GetPlotList();
                 if (spreadsheet == NULL)
                 {
-                    int plotType = PlotPluginManager::Instance()
+                    int plotType = GetPlotPluginManager()
                                           ->GetEnabledIndex("Spreadsheet_1.0");
                     bool replacePlots = false;
                     int pid = plotList->AddPlot(plotType, varname,
@@ -2446,7 +2446,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                     return retval;
                 }
         
-                if (!PlotPluginManager::Instance()->PluginAvailable(
+                if (!GetPlotPluginManager()->PluginAvailable(
                                                               "Histogram_1.0"))
                 {
                     static bool issuedWarning = false;
@@ -2457,7 +2457,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                     return retval;
                 }
     
-                int plotType = PlotPluginManager::Instance()
+                int plotType = GetPlotPluginManager()
                                             ->GetEnabledIndex("Histogram_1.0");
                 ViewerPlotList *plotList =  resWin->GetPlotList();
         
@@ -2794,7 +2794,7 @@ ViewerQueryManager::StartLineout(ViewerWindow *win, bool fromDefault)
         return;
     }
 
-    int type = OperatorPluginManager::Instance()->GetEnabledIndex("Lineout_1.0"); 
+    int type = GetOperatorPluginManager()->GetEnabledIndex("Lineout_1.0"); 
     AttributeSubject *atts;
     if (fromDefault)
         atts = operatorFactory->GetDefaultAtts(type);
@@ -3740,8 +3740,8 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::QueryMode qt = QueryList::QueryAndTime;
     QueryList::QueryMode to = QueryList::TimeOnly;
 
-    if (PlotPluginManager::Instance()->PluginAvailable("Curve_1.0") &&
-        OperatorPluginManager::Instance()->PluginAvailable("Lineout_1.0"))
+    if (GetPlotPluginManager()->PluginAvailable("Curve_1.0") &&
+        GetOperatorPluginManager()->PluginAvailable("Lineout_1.0"))
     {
         queryTypes->AddQuery("Lineout", lq, vr, dp, 1, 0, qo);
     }
@@ -4331,7 +4331,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
         return;
     }
 
-    int plotType = PlotPluginManager::Instance()->GetEnabledIndex("Curve_1.0");
+    int plotType = GetPlotPluginManager()->GetEnabledIndex("Curve_1.0");
     ViewerPlotList *plotList =  resWin->GetPlotList();
 
     plotList->SetHostDatabaseName(hdbName);

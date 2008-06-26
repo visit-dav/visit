@@ -43,6 +43,7 @@
 #ifndef VIEWER_OPERATOR_FACTORY_H
 #define VIEWER_OPERATOR_FACTORY_H
 #include <viewer_exports.h>
+#include <ViewerBase.h>
 
 class AttributeSubject;
 class ViewerOperator;
@@ -84,9 +85,12 @@ class ViewerOperatorPluginInfo;
 //    Kathleen Bonnell, Thu Sep 11 11:37:51 PDT 2003
 //    Added 'fromDefault' to CreateOperator method. 
 //
+//    Brad Whitlock, Tue Jun 24 14:47:35 PDT 2008
+//    Inherit from ViewerBase.
+//
 // ****************************************************************************
 
-class VIEWER_API ViewerOperatorFactory
+class VIEWER_API ViewerOperatorFactory : private ViewerBase
 {
   public:
     ViewerOperatorFactory();

@@ -56,9 +56,8 @@
 #include <PlotList.h>
 #include <ViewerState.h>
 #include <PlotPluginInfo.h>
-#include <PlotPluginManager.h>
 #include <OperatorPluginInfo.h>
-#include <OperatorPluginManager.h>
+#include <ViewerProxy.h>
 
 #define WIDTH_HEIGHT_PRECISION 100.
 
@@ -283,7 +282,9 @@ QvisLegendAttributesInterface::~QvisLegendAttributesInterface()
 // Creation:   Tue Mar 20 14:16:31 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 24 12:05:53 PDT 2008
+//   Get the plugin managers from the viewer proxy.
+//
 // ****************************************************************************
 
 QString
@@ -294,8 +295,8 @@ QvisLegendAttributesInterface::GetMenuText(const AnnotationObject &annot) const
     // created.
     QString retval;
     bool match = false;
-    PlotPluginManager *pMgr = PlotPluginManager::Instance();
-    OperatorPluginManager *oMgr = OperatorPluginManager::Instance();
+    PlotPluginManager *pMgr = GetViewerProxy()->GetPlotPluginManager();
+    OperatorPluginManager *oMgr = GetViewerProxy()->GetOperatorPluginManager();
     for(int i = 0; i < GetViewerState()->GetPlotList()->GetNumPlots(); ++i)
     {
         const Plot &plot = GetViewerState()->GetPlotList()->GetPlots(i);

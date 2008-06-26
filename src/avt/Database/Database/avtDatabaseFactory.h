@@ -54,7 +54,7 @@
 
 class avtDatabase;
 class CommonDatabasePluginInfo;
-
+class DatabasePluginManager;
 
 // ****************************************************************************
 //  Class: avtDatabaseFactory
@@ -108,16 +108,21 @@ class CommonDatabasePluginInfo;
 //    Jeremy Meredith, Wed Mar 19 14:06:16 EDT 2008
 //    Renamed default format to fallback format for clarity.
 //
+//    Brad Whitlock, Tue Jun 24 15:49:33 PDT 2008
+//    Pass the database plugin manager in because it's no longer a singleton.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
 {
   public:
-    static avtDatabase          *FileList(const char * const *, int, int,
+    static avtDatabase          *FileList(DatabasePluginManager *,
+                                          const char * const *, int, int,
                                           std::vector<std::string> &,
                                           const char * = NULL, bool = false,
                                           bool = false);
-    static avtDatabase          *VisitFile(const char *, int,
+    static avtDatabase          *VisitFile(DatabasePluginManager *,
+                                           const char *, int,
                                            std::vector<std::string> &,
                                            const char * = NULL, bool = false,
                                            bool = false);
