@@ -42,7 +42,6 @@
 
 #include <GlobalAttributes.h>
 #include <OperatorPluginInfo.h>
-#include <OperatorPluginManager.h>
 #include <Plot.h>
 #include <PlotList.h>
 #include <ViewerProxy.h>
@@ -230,7 +229,7 @@ QvisOperatorWindow::SetOperatorOptions()
             // operator.
             if(!GetViewerState()->GetGlobalAttributes()->GetAutomaticallyAddOperator())
             {
-                OperatorPluginManager *opMgr = OperatorPluginManager::Instance();
+                OperatorPluginManager *opMgr = GetViewerProxy()->GetOperatorPluginManager();
 
                 // Create a prompt for the user.
                 GUIOperatorPluginInfo *info = opMgr->GetGUIPluginInfo(

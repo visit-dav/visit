@@ -84,12 +84,15 @@
 //    Removed the general plugin info since the viewer info is derived
 //    from it now.
 //
+//    Brad Whitlock, Tue Jun 24 14:48:45 PDT 2008
+//    Inherit ViewerBase.
+//
 // ****************************************************************************
 
-ViewerPlotFactory::ViewerPlotFactory()
+ViewerPlotFactory::ViewerPlotFactory() : ViewerBase()
 {
 
-    PlotPluginManager *plotPluginMgr = PlotPluginManager::Instance();
+    PlotPluginManager *plotPluginMgr = GetPlotPluginManager();
 
     nTypes = plotPluginMgr->GetNEnabledPlugins();
     viewerPluginInfo  = new ViewerPlotPluginInfo*[nTypes];

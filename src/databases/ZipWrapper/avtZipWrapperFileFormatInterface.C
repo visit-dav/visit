@@ -60,6 +60,7 @@
 #include <avtMTMDFileFormat.h>
 #include <avtParallel.h>
 
+#include <Utility.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -291,7 +292,12 @@ avtZipWrapperFileFormatInterface::CleanUpAtExit()
 //
 //    Mark C. Miller, Wed Jun 11 12:02:52 PDT 2008
 //    Removed 'should broadcast env' logic -- it was bogus anyways.
+//
+//    Brad Whitlock, Wed Jun 25 11:12:50 PDT 2008
+//    Check a few places for a good place to make a temp dir.
+//
 // ****************************************************************************
+
 void
 avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     const DBOptionsAttributes *rdopts)
@@ -326,7 +332,26 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
         }
         else
         {
-            tmpDir = "/usr/tmp";
+            // Check a few places. /usr/tmp does not exist on Mac.
+            VisItStat_t s;
+            static const char *possibleDirs[] = {"/usr/tmp", "/var/tmp"};
+            bool foundDir = false;
+            for(int i = 0; i < 2; ++i)
+            {
+                if(VisItStat(possibleDirs[i], &s) == 0)
+                {
+                    bool isDir = S_ISDIR(s.st_mode);
+                    if(isDir)
+                    {
+                        tmpDir = possibleDirs[i];
+                        foundDir = true;
+                        break;
+                    }
+                }
+            }
+            // Last resort, use HOME.
+            if(!foundDir)
+                tmpDir = getenv("HOME");
         }
     }
 
@@ -428,9 +453,15 @@ avtZipWrapperFileFormatInterface::Finalize()
 //
 //    Mark C. Miller, Mon Aug 20 12:48:37 PDT 2007
 //    Initialized dummyFileFormat to 0 before calling GetRealInterface
+//
+//    Brad Whitlock, Tue Jun 24 16:44:49 PDT 2008
+//    Pass in the zipwrapper info so we can access the plugin manager.
+//
 // ****************************************************************************
+
 avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
-    const char *const *list, int nl, int nb, const DBOptionsAttributes *rdopts) : 
+    const char *const *list, int nl, int nb, const DBOptionsAttributes *rdopts,
+    CommonDatabasePluginInfo *zwinfo) : 
     inputFileListSize(nl), inputFileBlockCount(nb),
     decompressedFilesCache(FreeUpCacheSlot)
 {
@@ -462,7 +493,9 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     string ext = StringHelpers::ExtractRESubstr(inputFileList[0][0].c_str(), "<\\.gz$|\\.bz$|\\.bz2$|\\.zip$>");
     const char *bname = StringHelpers::Basename(inputFileList[0][0].c_str());
     string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.gz$|\\.bz$|\\.bz2$|\\.zip$> \\1");
-    DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
+
+    // Save the pointer to the plugin manager.
+    pluginManager = zwinfo->GetPluginManager();
 
     dummyFileFormat = 0;
 
@@ -474,10 +507,10 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     pluginId = "";
     dummyInterface = 0;
     const bool searchAllPlugins = true;
-    vector<string> ids = dbmgr->GetMatchingPluginIds(dcname.c_str(), searchAllPlugins);
+    vector<string> ids = pluginManager->GetMatchingPluginIds(dcname.c_str(), searchAllPlugins);
     for (int i = 0; i < ids.size() && dummyInterface == 0; i++)
     {
-        realPluginWasLoadedByMe = dbmgr->LoadSinglePluginNow(ids[i]);
+        realPluginWasLoadedByMe = pluginManager->LoadSinglePluginNow(ids[i]);
         TRY
         {
             pluginId = ids[i];
@@ -495,7 +528,7 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     debug5 << "Determined file \"" << dcname << "\" requires plugin id=\"" << pluginId << "\"" << endl;
 
     // get the database type from the info
-    CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(pluginId);
+    CommonDatabasePluginInfo *info = pluginManager->GetCommonPluginInfo(pluginId);
     if (info == 0)
     {
         char errMsg[1024];
@@ -641,6 +674,10 @@ avtZipWrapperFileFormatInterface::UpdateRealFileFormatInterface(
 //    metadata. Set timestep to construct database for real format at to
 //    '-2' telling VisIt not to make any calls on the interface during its
 //    construction.
+//
+//    Brad Whitlock, Tue Jun 24 16:46:55 PDT 2008
+//    Pass the plugin manager to the database factory.
+//
 // ****************************************************************************
 avtFileFormatInterface *
 avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCache)
@@ -709,8 +746,8 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     bool forceReadAllCyclesAndTimes = false;
     bool treatAllDBsAsTimeVarying = false;
     int  timeStepToConstructAt = -2;
-    avtDatabase *dummyDatabaseWithRealInterface = avtDatabaseFactory::FileList(&tmpstr,
-        1, timeStepToConstructAt, dummyPlugins, pluginId.c_str(),
+    avtDatabase *dummyDatabaseWithRealInterface = avtDatabaseFactory::FileList(
+        pluginManager, &tmpstr, 1, timeStepToConstructAt, dummyPlugins, pluginId.c_str(),
         forceReadAllCyclesAndTimes, treatAllDBsAsTimeVarying);
     avtZWGenericDatabase *dummyDatabaseWithRealInterface_tmp =
         (avtZWGenericDatabase *) dummyDatabaseWithRealInterface;

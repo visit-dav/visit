@@ -60,7 +60,7 @@
 #include <visitstream.h>
 using std::cin;
 
-static void UsageAndExit(const char *);
+static void UsageAndExit(DatabasePluginManager *, const char *);
 
 // ****************************************************************************
 //  Method:  FillOptionsFromCommandline
@@ -196,6 +196,9 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
 //    writer options input.  Put attempt to create a writer after the
 //    attempt to open the input file.
 //
+//    Brad Whitlock, Tue Jun 24 16:58:35 PDT 2008
+//    The plugin manager is no longer a singleton.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -211,13 +214,14 @@ int main(int argc, char *argv[])
 #ifdef PARALLEL
     parallel = true;
 #endif
-    DatabasePluginManager::Initialize(DatabasePluginManager::Engine, parallel);
-    DatabasePluginManager::Instance()->LoadPluginsNow();
+    DatabasePluginManager *dbmgr = new DatabasePluginManager;
+    dbmgr->Initialize(DatabasePluginManager::Engine, parallel);
+    dbmgr->LoadPluginsNow();
     cerr << endl; // whitespace after some expected plugin loading errors
 
     if (argc < 4)
     {
-        UsageAndExit(argv[0]);
+        UsageAndExit(dbmgr, argv[0]);
     }
 
     bool noOptions = false;
@@ -241,7 +245,7 @@ int main(int argc, char *argv[])
             else if (strcmp(argv[i], "-variable") == 0)
             {
                 if ((i+1) >= argc)
-                    UsageAndExit(argv[0]);
+                    UsageAndExit(dbmgr, argv[0]);
                 doSpecificVariable = true;
                 i++;
                 var = argv[i];
@@ -249,14 +253,14 @@ int main(int argc, char *argv[])
             else if (strcmp(argv[i], "-target_chunks") == 0)
             {
                 if ((i+1) >= argc)
-                    UsageAndExit(argv[0]);
+                    UsageAndExit(dbmgr, argv[0]);
                 i++;
                 target_chunks = atoi(argv[i]);
             }
             else if (strcmp(argv[i], "-target_zones") == 0)
             {
                 if ((i+1) >= argc)
-                    UsageAndExit(argv[0]);
+                    UsageAndExit(dbmgr, argv[0]);
                 i++;
                 target_zones = 0;
                 int nchars = strlen(argv[i]);
@@ -272,7 +276,7 @@ int main(int argc, char *argv[])
             else if (strcmp(argv[i], "-fallback_format") == 0)
             {
                 if ((i+1) >= argc)
-                    UsageAndExit(argv[0]);
+                    UsageAndExit(dbmgr, argv[0]);
                 i++;
 
                 avtDatabaseFactory::SetFallbackFormat(argv[i]);
@@ -280,7 +284,7 @@ int main(int argc, char *argv[])
             else if (strcmp(argv[i], "-assume_format") == 0)
             {
                 if ((i+1) >= argc)
-                    UsageAndExit(argv[0]);
+                    UsageAndExit(dbmgr, argv[0]);
                 i++;
 
                 avtDatabaseFactory::SetFormatToTryFirst(argv[i]);
@@ -288,7 +292,7 @@ int main(int argc, char *argv[])
             else if (strcmp(argv[i], "-no_options") == 0)
                 noOptions = true;
             else
-                UsageAndExit(argv[0]);
+                UsageAndExit(dbmgr, argv[0]);
         }
     }
 
@@ -296,7 +300,6 @@ int main(int argc, char *argv[])
     // Users want to enter formats like "Silo", not "Silo_1.0".  Make that
     // conversion for them now.
     //
-    DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
     EngineDatabasePluginInfo *edpi = NULL;
     int index = dbmgr->GetAllIndexFromName(argv[3]);
     if (index >= 0)
@@ -311,7 +314,7 @@ int main(int argc, char *argv[])
     if (edpi == NULL)
     {
         cerr << "Was not able to create file type " << argv[3]<<"\n\n"<<endl;
-        UsageAndExit(argv[0]);
+        UsageAndExit(dbmgr, argv[0]);
     }
 
     //
@@ -322,9 +325,9 @@ int main(int argc, char *argv[])
     TRY
     {
         if (strstr(argv[1], ".visit") != NULL)
-            db = avtDatabaseFactory::VisitFile(argv[1], 0, pluginList);
+            db = avtDatabaseFactory::VisitFile(dbmgr, argv[1], 0, pluginList);
         else
-            db = avtDatabaseFactory::FileList(argv+1, 1, 0, pluginList);
+            db = avtDatabaseFactory::FileList(dbmgr, argv+1, 1, 0, pluginList);
     }
     CATCH(...)
     {
@@ -365,7 +368,7 @@ int main(int argc, char *argv[])
     {
         cerr << "No writer defined for file type " << argv[3] << ".\n"
              << "Please see a VisIt developer." << endl;
-        UsageAndExit(argv[0]);
+        UsageAndExit(dbmgr, argv[0]);
     }
     if (doClean)
         wrtr->SetShouldAlwaysDoMIR(doClean);
@@ -380,7 +383,7 @@ int main(int argc, char *argv[])
         {
             cerr << "This writer does not support the \"-target_zones\" option"
                  << endl;
-            UsageAndExit(argv[0]);
+            UsageAndExit(dbmgr, argv[0]);
         }
     }
     if (target_chunks > 0)
@@ -390,7 +393,7 @@ int main(int argc, char *argv[])
         {
             cerr << "This writer does not support the \"-target_chunks\" "
                  << "option" << endl;
-            UsageAndExit(argv[0]);
+            UsageAndExit(dbmgr, argv[0]);
         }
     }
 
@@ -478,6 +481,9 @@ int main(int argc, char *argv[])
          }
          ENDTRY
     }
+
+    delete dbmgr;
+
     return 0;
 }
 
@@ -503,10 +509,13 @@ int main(int argc, char *argv[])
 //    Jeremy Meredith, Tue Jun  3 14:27:23 EDT 2008
 //    Cleaned up greatly.  Added help for input formats and options.
 //
+//    Brad Whitlock, Tue Jun 24 16:57:45 PDT 2008
+//    Pass in the DatabasePluginManager pointer.
+//
 // ****************************************************************************
 
 static void
-UsageAndExit(const char *argv0)
+UsageAndExit(DatabasePluginManager *dbmgr, const char *argv0)
 {
     const char *progname = argv0 + strlen(argv0)-1;
     while (progname > argv0 && *(progname-1) != '/')
@@ -553,13 +562,13 @@ UsageAndExit(const char *argv0)
     cerr << "                 -target_zones 512000000 -variable var1" << endl;
     cerr << endl;
     cerr << "Acceptable output types are: " << endl;
-    DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
     for (int i = 0 ; i < dbmgr->GetNAllPlugins() ; i++)
     {
         string plugin = dbmgr->GetAllID(i);
         if (dbmgr->PluginHasWriter(plugin))
             cerr << "\t" << dbmgr->GetPluginName(plugin) << endl;
     }
+    delete dbmgr;
 
     exit(EXIT_FAILURE);
 }

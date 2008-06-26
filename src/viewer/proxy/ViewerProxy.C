@@ -48,6 +48,7 @@
 #include <OperatorPluginManager.h>
 
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 #include <ParentProcess.h>
 #include <RemoteProcess.h>
 #include <SocketConnection.h>
@@ -68,15 +69,18 @@
 #include <cstring>
 
 // ****************************************************************************
-//  Method: ViewerProxy constructor
+// Method: ViewerProxy constructor
 //
-//  Programmer: Eric Brugger
-//  Creation:   August 4, 2000
+// Programmer: Eric Brugger
+// Creation:   August 4, 2000
 //
-//  Modifications:
+// Modifications:
 //   Brad Whitlock, Fri Feb 9 18:15:39 PST 2007
 //   I rewrote the method so it uses ViewerState and ViewerMethods and I
 //   removed old modification comments.
+//
+//   Brad Whitlock, Tue Jun 24 11:23:36 PDT 2008
+//   Added plot and operator plugin managers.
 //
 // ****************************************************************************
 
@@ -89,6 +93,9 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     state = new ViewerState;
     methods = new ViewerMethods(state);
 
+    plotPlugins = 0;
+    operatorPlugins = 0;
+
     // Make the proxy observe the SIL restriction attributes.
     state->GetSILRestrictionAttributes()->Attach(this);
 
@@ -97,15 +104,18 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 }
 
 // ****************************************************************************
-//  Method: ViewerProxy destructor
+// Method: ViewerProxy destructor
 //
-//  Programmer: Eric Brugger
-//  Creation:   August 4, 2000
+// Programmer: Eric Brugger
+// Creation:   August 4, 2000
 //
-//  Modifications:
-//    Brad Whitlock, Fri Feb 9 18:18:36 PST 2007
-//    I rewrote the method so it uses ViewerState and I removed old modification
-//    comments.
+// Modifications:
+//   Brad Whitlock, Fri Feb 9 18:18:36 PST 2007
+//   I rewrote the method so it uses ViewerState and I removed old modification
+//   comments.
+//
+//   Brad Whitlock, Tue Jun 24 11:23:36 PDT 2008
+//   Added plot and operator plugin managers.
 //
 // ****************************************************************************
 
@@ -116,6 +126,8 @@ ViewerProxy::~ViewerProxy()
     delete xfer;
     delete state;
     delete methods;
+    delete plotPlugins;
+    delete operatorPlugins;
 }
 
 // ****************************************************************************
@@ -497,6 +509,105 @@ ViewerProxy::Create(const char *visitProgram, int *inputArgc, char ***inputArgv)
 }
 
 // ****************************************************************************
+// Method: ViewerProxy::GetPlotPluginManager
+//
+// Purpose: 
+//   Returns a pointer to the plot plugin manager.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 11:36:05 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PlotPluginManager *
+ViewerProxy::GetPlotPluginManager() const
+{
+    if(plotPlugins == 0)
+    {
+        EXCEPTION1(ImproperUseException, "ViewerProxy::InitializePlugins "
+            "must be called before ViewerProxy::GetPlotPluginManager");
+    }
+
+    return plotPlugins;
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::GetOperatorPluginManager
+//
+// Purpose: 
+//   Returns a pointer to the operator plugin manager.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 11:36:27 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+OperatorPluginManager *
+ViewerProxy::GetOperatorPluginManager() const
+{
+    if(operatorPlugins == 0)
+    {
+        EXCEPTION1(ImproperUseException, "ViewerProxy::InitializePlugins "
+            "must be called before ViewerProxy::GetOperatorPluginManager");
+    }
+
+    return operatorPlugins;
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::InitializePlugins
+//
+// Purpose: 
+//   Creates and initializes the plugin managers.
+//
+// Arguments:
+//   t         : The plugin type, which should be GUI or Scripting.
+//   pluginDir : The plugin directory to use or NULL for the default.
+//
+// Returns:    
+//
+// Note:       The plugin managers are created if they do not yet exist.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 11:29:07 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::InitializePlugins(PluginManager::PluginCategory t, const char *pluginDir)
+{
+    if(plotPlugins == 0)
+    {
+        plotPlugins = new PlotPluginManager;
+        plotPlugins->Initialize(t, false, pluginDir);
+    }
+
+    if(operatorPlugins == 0)
+    {
+        operatorPlugins = new OperatorPluginManager;
+        operatorPlugins->Initialize(t, false, pluginDir);
+    }
+}
+
+// ****************************************************************************
 //  Method:  ViewerProxy::LoadPlugins
 //
 //  Purpose:
@@ -519,21 +630,27 @@ ViewerProxy::Create(const char *visitProgram, int *inputArgc, char ***inputArgv)
 //    Brad Whitlock, Fri Feb 9 18:22:54 PST 2007
 //    I made it use ViewerState and I improved the exception error message.
 //
+//    Brad Whitlock, Tue Jun 24 11:29:29 PDT 2008
+//    Use the new member plugin managers.
+//
 // ****************************************************************************
 
 void
 ViewerProxy::LoadPlugins()
 {
     int i;
-    PlotPluginManager     *pMgr = PlotPluginManager::Instance();
-    OperatorPluginManager *oMgr = OperatorPluginManager::Instance();
-
     int nPlots = state->GetNumPlotStateObjects();
     int nOperators = state->GetNumOperatorStateObjects();
     if (nPlots > 0 || nOperators > 0)
     {
         debug1 << "Reloading plugins at runtime not supported\n";
         return;
+    }
+
+    if(plotPlugins == 0 || operatorPlugins == 0)
+    {
+        EXCEPTION1(ImproperUseException, "ViewerProxy::InitializePlugins "
+            "must be called before ViewerProxy::LoadPlugins");
     }
 
     //
@@ -548,13 +665,13 @@ ViewerProxy::LoadPlugins()
             std::string id = pluginManagerAttributes->GetId()[i];
             if (pluginManagerAttributes->GetType()[i] == "plot")
             {
-                if (pMgr->PluginExists(id))
-                    pMgr->DisablePlugin(id);
+                if (plotPlugins->PluginExists(id))
+                    plotPlugins->DisablePlugin(id);
             }
             else if (pluginManagerAttributes->GetType()[i] == "operator")
             {
-                if (oMgr->PluginExists(id))
-                    oMgr->DisablePlugin(id);
+                if (operatorPlugins->PluginExists(id))
+                    operatorPlugins->DisablePlugin(id);
             }
         }
         else // is enabled -- it had better be available
@@ -562,8 +679,8 @@ ViewerProxy::LoadPlugins()
             std::string id = pluginManagerAttributes->GetId()[i];
             if (pluginManagerAttributes->GetType()[i] == "plot")
             {
-                if (pMgr->PluginExists(id))
-                    pMgr->EnablePlugin(id);
+                if (plotPlugins->PluginExists(id))
+                    plotPlugins->EnablePlugin(id);
                 else
                 {
                     std::string msg(std::string("The ") + id + 
@@ -574,8 +691,8 @@ ViewerProxy::LoadPlugins()
             }
             else if (pluginManagerAttributes->GetType()[i] == "operator")
             {
-                if (oMgr->PluginExists(id))
-                    oMgr->EnablePlugin(id);
+                if (operatorPlugins->PluginExists(id))
+                    operatorPlugins->EnablePlugin(id);
                 else
                 {
                     std::string msg(std::string("The ") + id + 
@@ -590,17 +707,17 @@ ViewerProxy::LoadPlugins()
     //
     // Now load dynamic libraries
     //
-    pMgr->LoadPluginsNow();
-    oMgr->LoadPluginsNow();
+    plotPlugins->LoadPluginsNow();
+    operatorPlugins->LoadPluginsNow();
 
     //
     // Initialize the plot attribute state objects.
     //
-    nPlots = pMgr->GetNEnabledPlugins();
+    nPlots = plotPlugins->GetNEnabledPlugins();
     for (i = 0; i < nPlots; ++i)
     {
         CommonPlotPluginInfo *info =
-            pMgr->GetCommonPluginInfo(pMgr->GetEnabledID(i));
+            plotPlugins->GetCommonPluginInfo(plotPlugins->GetEnabledID(i));
         AttributeSubject *obj = info->AllocAttributes();
         state->RegisterPlotAttributes(obj);
         xfer->Add(obj);
@@ -609,11 +726,11 @@ ViewerProxy::LoadPlugins()
     //
     // Initialize the operator attribute state objects.
     //
-    nOperators = oMgr->GetNEnabledPlugins();
+    nOperators = operatorPlugins->GetNEnabledPlugins();
     for (i = 0; i < nOperators; ++i)
     {
         CommonOperatorPluginInfo *info = 
-            oMgr->GetCommonPluginInfo(oMgr->GetEnabledID(i));
+            operatorPlugins->GetCommonPluginInfo(operatorPlugins->GetEnabledID(i));
         AttributeSubject *obj = info->AllocAttributes();
         state->RegisterOperatorAttributes(obj);
         xfer->Add(obj);

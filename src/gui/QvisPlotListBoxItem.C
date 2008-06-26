@@ -37,11 +37,10 @@
 *****************************************************************************/
 
 #include <QvisPlotListBoxItem.h>
-#include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
-#include <OperatorPluginManager.h>
 #include <OperatorPluginInfo.h>
 #include <QualifiedFilename.h>
+#include <ViewerProxy.h>
 
 #include <qiconset.h>
 #include <qpainter.h>
@@ -76,6 +75,9 @@ QPixmap *QvisPlotListBoxItem::subsetIcon = 0;
 //   Brad Whitlock, Wed Apr 30 14:09:34 PDT 2008
 //   Use GetMenuName from the plugin info.
 //
+//   Brad Whitlock, Tue Jun 24 12:14:48 PDT 2008
+//   Get the plugin managers from the viewer proxy.
+//
 // ****************************************************************************
 
 QvisPlotListBoxItem::QvisPlotListBoxItem(const QString &prefix_, const Plot &p)
@@ -94,7 +96,7 @@ QvisPlotListBoxItem::QvisPlotListBoxItem(const QString &prefix_, const Plot &p)
     // need to paint them.
     //
     QString key;
-    PlotPluginManager *pMgr = PlotPluginManager::Instance();
+    PlotPluginManager *pMgr = GetViewerProxy()->GetPlotPluginManager();
     GUIPlotPluginInfo *plotInfo = pMgr->GetGUIPluginInfo(
         pMgr->GetEnabledID(plot.GetPlotType()));
     // Store the plot name
@@ -116,7 +118,7 @@ QvisPlotListBoxItem::QvisPlotListBoxItem(const QString &prefix_, const Plot &p)
         operatorNames = new QString[plot.GetNumOperators()];
 
         // Get the pixmaps out of the pixmap cache.
-        OperatorPluginManager *oMgr = OperatorPluginManager::Instance();
+        OperatorPluginManager *oMgr = GetViewerProxy()->GetOperatorPluginManager();
         for(int i = 0; i < plot.GetNumOperators(); ++i)
         {
             int operatorIndex = plot.GetOperator(i);
@@ -893,13 +895,15 @@ QvisPlotListBoxItem::AddClickableRectangle(int id, const QRect &r,
 // Creation:   Thu Apr 10 15:33:37 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 24 12:15:26 PDT 2008
+//   Get the plugin manager from the viewer proxy.
+//
 // ****************************************************************************
 
 void
 QvisPlotListBoxItem::GetOperatorPixmap(int operatorType, QPixmap &pm)
 {
-    OperatorPluginManager *oMgr = OperatorPluginManager::Instance();
+    OperatorPluginManager *oMgr = GetViewerProxy()->GetOperatorPluginManager();
     GUIOperatorPluginInfo *info = oMgr->GetGUIPluginInfo(
         oMgr->GetEnabledID(operatorType));
 
@@ -929,13 +933,15 @@ QvisPlotListBoxItem::GetOperatorPixmap(int operatorType, QPixmap &pm)
 // Creation:   Thu Apr 10 15:33:37 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 24 12:15:26 PDT 2008
+//   Get the plugin manager from the viewer proxy.
+//  
 // ****************************************************************************
 
 void
 QvisPlotListBoxItem::GetPlotPixmap(int plotType, QPixmap &pm)
 {
-    PlotPluginManager *pMgr = PlotPluginManager::Instance();
+    PlotPluginManager *pMgr = GetViewerProxy()->GetPlotPluginManager();
     GUIPlotPluginInfo *info = pMgr->GetGUIPluginInfo(
         pMgr->GetEnabledID(plotType));
 
@@ -982,13 +988,16 @@ QvisPlotListBoxItem::GetPlotPixmap(int plotType, QPixmap &pm)
 //    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //    Support for internationalization.
 //
+//    Brad Whitlock, Tue Jun 24 12:16:24 PDT 2008
+//    Get the plugin managers from the viewer proxy.
+//
 // ****************************************************************************
 
 QString
 QvisPlotListBoxItem::GetDisplayString(const Plot &plot, const QString &prefix)
 {
     // Get a pointer to the plot plugin manager.
-    PlotPluginManager *plotPluginManager = PlotPluginManager::Instance();
+    PlotPluginManager *plotPluginManager = GetViewerProxy()->GetPlotPluginManager();
     GUIPlotPluginInfo *plotInfo = NULL;
     plotInfo = plotPluginManager->GetGUIPluginInfo(
                   plotPluginManager->GetEnabledID(plot.GetPlotType()));
@@ -997,7 +1006,8 @@ QvisPlotListBoxItem::GetDisplayString(const Plot &plot, const QString &prefix)
     delete s;
 
     // Get a pointer to the operator plugin manager.
-    OperatorPluginManager *operatorPluginManager = OperatorPluginManager::Instance();
+    OperatorPluginManager *operatorPluginManager = GetViewerProxy()->
+        GetOperatorPluginManager();
 
     // Create the plot variable.
     int i;

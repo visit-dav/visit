@@ -158,6 +158,9 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //    Cyrus Harrison, Tue Feb 19 08:42:51 PST 2008
 //    Removed shouldDoDashDump (flag now contained in avtDebugDumpOptions)
 //
+//    Brad Whitlock, Tue Jun 24 16:07:10 PDT 2008
+//    Added pluginDir.
+//
 // ****************************************************************************
 
 Engine::Engine()
@@ -176,7 +179,8 @@ Engine::Engine()
     metaData = NULL;
     silAtts = NULL;
     commandFromSim = NULL;
-    
+    pluginDir = "";
+
     quitRPC = NULL;
     keepAliveRPC = NULL;
     readRPC = NULL;
@@ -327,7 +331,9 @@ Engine *Engine::Instance()
 //  
 //    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
 //    Moved setting of component name to before Initialize
+//
 // ****************************************************************************
+
 void
 Engine::Initialize(int *argc, char **argv[], bool sigs)
 {
@@ -484,6 +490,9 @@ Engine::Finalize(void)
 //    Cyrus Harrison, Tue Feb 19 08:42:51 PST 2008
 //    Removed shouldDoDashDump (flag now contained in avtDebugDumpOptions)
 //
+//    Brad Whitlock, Tue Jun 24 15:18:44 PDT 2008
+//    Changed how plugin managers are called.
+//
 // ****************************************************************************
 
 void
@@ -495,26 +504,6 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
 
     // Parse the command line.
     ProcessCommandLine(*argc, *argv);
-
-    //
-    // Initialize the plugin managers.
-    //
-#ifdef PARALLEL
-    PlotPluginManager::Initialize(PlotPluginManager::Engine, true);
-    OperatorPluginManager::Initialize(OperatorPluginManager::Engine, true);
-    DatabasePluginManager::Initialize(DatabasePluginManager::Engine, true);
-#else
-    PlotPluginManager::Initialize(PlotPluginManager::Engine, false);
-    OperatorPluginManager::Initialize(OperatorPluginManager::Engine, false);
-    DatabasePluginManager::Initialize(DatabasePluginManager::Engine, false);
-#endif    
-    //
-    // Load plugins
-    //
-    PlotPluginManager::Instance()->LoadPluginsOnDemand();
-    OperatorPluginManager::Instance()->LoadPluginsOnDemand();
-    DatabasePluginManager::Instance()->LoadPluginsOnDemand();
-    
 
     InitVTK::Initialize();
     if (avtCallback::GetSoftwareRendering())
@@ -528,6 +517,31 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     // code to set the display and decide if we are using Mesa.
     //
     netmgr = new NetworkManager;
+
+    //
+    // Initialize the plugin managers.
+    //
+    if(pluginDir.size() > 0)
+    {
+        netmgr->GetPlotPluginManager()->SetPluginDir(pluginDir.c_str());
+        netmgr->GetOperatorPluginManager()->SetPluginDir(pluginDir.c_str());
+        netmgr->GetDatabasePluginManager()->SetPluginDir(pluginDir.c_str());
+    }
+#ifdef PARALLEL
+    netmgr->GetPlotPluginManager()->Initialize(PlotPluginManager::Engine, true);
+    netmgr->GetOperatorPluginManager()->Initialize(OperatorPluginManager::Engine, true);
+    netmgr->GetDatabasePluginManager()->Initialize(DatabasePluginManager::Engine, true);
+#else
+    netmgr->GetPlotPluginManager()->Initialize(PlotPluginManager::Engine, false);
+    netmgr->GetOperatorPluginManager()->Initialize(OperatorPluginManager::Engine, false);
+    netmgr->GetDatabasePluginManager()->Initialize(DatabasePluginManager::Engine, false);
+#endif    
+    //
+    // Load plugins
+    //
+    netmgr->GetPlotPluginManager()->LoadPluginsOnDemand();
+    netmgr->GetOperatorPluginManager()->LoadPluginsOnDemand();
+    netmgr->GetDatabasePluginManager()->LoadPluginsOnDemand();
 
 #if !defined(_WIN32)
     // Set up the alarm signal handler.
@@ -1133,6 +1147,9 @@ Engine::ProcessInput()
 //    Cyrus Harrison, Tue Feb 19 08:42:51 PST 2008
 //    Removed shouldDoDashDump (flag now contained in avtDebugDumpOptions)
 //
+//    Brad Whitlock, Tue Jun 24 15:27:45 PDT 2008
+//    Changed how the plugin managers are accessed.
+//
 // ****************************************************************************
 
 void
@@ -1301,9 +1318,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-plugindir") == 0  && (i+1) < argc )
         {
-            PlotPluginManager::Instance()->SetPluginDir(argv[i+1]);
-            OperatorPluginManager::Instance()->SetPluginDir(argv[i+1]);
-            DatabasePluginManager::Instance()->SetPluginDir(argv[i+1]);
+            pluginDir = argv[i+1];
             ++i;
         }
         

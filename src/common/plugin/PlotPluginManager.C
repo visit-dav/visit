@@ -51,11 +51,6 @@
 using std::string;
 using std::vector;
 
-//
-// Storage for static data elements.
-//
-PlotPluginManager *PlotPluginManager::instance=0;
-
 // ****************************************************************************
 //  Method: PlotPluginManager constructor
 //
@@ -77,11 +72,14 @@ PlotPluginManager::PlotPluginManager() : PluginManager("plot")
 //  Creation:   August 20, 2002
 //
 //  Modifications:
+//    Brad Whitlock, Wed Jun 25 10:27:17 PDT 2008
+//    Call UnloadPlugins here since it calls virtual methods for this class.
 //
 // ****************************************************************************
 
 PlotPluginManager::~PlotPluginManager()
 {
+    UnloadPlugins();
 }
 
 // ****************************************************************************
@@ -105,46 +103,19 @@ PlotPluginManager::~PlotPluginManager()
 //    Brad Whitlock, Wed Nov 22 16:29:46 PST 2006
 //    Added pluginDir.
 //
+//    Brad Whitlock, Tue Jun 24 11:10:16 PDT 2008
+//    Removed singleton characteristics.
+//
 // ****************************************************************************
 
 void
 PlotPluginManager::Initialize(const PluginCategory pluginCategory,
-                              bool parallel, const char *pluginDir)
+                              bool par, const char *pluginDir)
 {
-    Instance();
-    instance->category = pluginCategory;
-    instance->parallel = parallel;
-    instance->SetPluginDir(pluginDir);
-    instance->ReadPluginInfo();
-}
-
-// ****************************************************************************
-//  Method: PlotPluginManager::Instance
-//
-//  Purpose:
-//    Return a pointer to the sole instance of the PlotPluginManager
-//    class.
-//
-//  Returns:    A pointer to the sole instance of the PlotPluginManager
-//              class.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   September 26, 2001
-//
-// ****************************************************************************
-
-PlotPluginManager *
-PlotPluginManager::Instance()
-{
-    //
-    // If the sole instance hasn't been instantiated, then instantiate it.
-    //
-    if (instance == 0)
-    {
-        instance = new PlotPluginManager;
-    }
-
-    return instance;
+    category = pluginCategory;
+    parallel = par;
+    SetPluginDir(pluginDir);
+    ReadPluginInfo();
 }
 
 // ****************************************************************************

@@ -202,6 +202,10 @@ RPCExecutor<KeepAliveRPC>::Execute(KeepAliveRPC *rpc)
 //
 //    Mark C. Miller, Tue Jun 10 15:57:15 PDT 2008
 //    Added support for ignoring extents
+//
+//    Brad Whitlock, Tue Jun 24 15:57:34 PDT 2008
+//    Changed how the database plugin manager is accessed.
+//
 // ****************************************************************************
 
 template<>
@@ -214,7 +218,7 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
     debug2 << "Executing ReadRPC" << endl;
     TRY
     {
-        DatabasePluginManager::Instance()->PluginAvailable(rpc->GetFormat());
+        netmgr->GetDatabasePluginManager()->PluginAvailable(rpc->GetFormat());
 
         netmgr->StartNetwork(rpc->GetFormat(),
                              rpc->GetFile(), 
@@ -272,6 +276,9 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
 //    Added a call to cancel the current network in case of an error.
 //    That way future calls do not fail due to a failed pre-existing network.
 //
+//    Brad Whitlock, Tue Jun 24 15:58:13 PDT 2008
+//    Changed how the operator plugin manager is accessed.
+//
 // ****************************************************************************
 template<>
 void
@@ -285,7 +292,7 @@ RPCExecutor<PrepareOperatorRPC>::Execute(PrepareOperatorRPC *rpc)
     {
         string id = rpc->GetID().c_str();
 
-        if (!OperatorPluginManager::Instance()->PluginAvailable(id))
+        if (!netmgr->GetOperatorPluginManager()->PluginAvailable(id))
         {
             netmgr->CancelNetwork();
             rpc->SendError("Requested operator does not exist for the engine",
@@ -293,8 +300,9 @@ RPCExecutor<PrepareOperatorRPC>::Execute(PrepareOperatorRPC *rpc)
             CATCH_RETURN(1);
         }
 
-        rpc->GetApplyOperatorRPC()->SetAtts(OperatorPluginManager::Instance()->
-            GetEnginePluginInfo(id)->AllocAttributes());
+        rpc->GetApplyOperatorRPC()->SetAtts(
+            netmgr->GetOperatorPluginManager()->GetEnginePluginInfo(id)->
+                AllocAttributes());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)
@@ -386,6 +394,9 @@ RPCExecutor<ApplyOperatorRPC>::Execute(ApplyOperatorRPC *rpc)
 //    Added a call to cancel the current network in case of an error.
 //    That way future calls do not fail due to a failed pre-existing network.
 //
+//    Brad Whitlock, Tue Jun 24 15:59:35 PDT 2008
+//    Changed how the plot plugin manager is accessed.
+//
 // ****************************************************************************
 template<>
 void
@@ -399,7 +410,7 @@ RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
     {
         string id = rpc->GetID().c_str();
 
-        if (!PlotPluginManager::Instance()->PluginAvailable(id))
+        if (!netmgr->GetPlotPluginManager()->PluginAvailable(id))
         {
             rpc->SendError("Requested plot does not exist for the engine",
                            "VisItException");
@@ -407,7 +418,7 @@ RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
             CATCH_RETURN(1);
         }
 
-        rpc->GetMakePlotRPC()->SetAtts(PlotPluginManager::Instance()->
+        rpc->GetMakePlotRPC()->SetAtts(netmgr->GetPlotPluginManager()->
             GetEnginePluginInfo(id)->AllocAttributes());
         rpc->SendReply();
     }
@@ -525,6 +536,9 @@ RPCExecutor<UseNetworkRPC>::Execute(UseNetworkRPC *rpc)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Brad Whitlock, Tue Jun 24 16:00:58 PDT 2008
+//    Changed how the plugin manager is accessed.
+//
 // ****************************************************************************
 template<>
 void
@@ -533,16 +547,18 @@ RPCExecutor<PrepareUpdatePlotAttsRPC>::Execute(PrepareUpdatePlotAttsRPC *rpc)
     debug2 << "Executing PrepareUpdatePlotAttsRPC: " << rpc->GetID().c_str() << endl;
     TRY
     {
+        Engine         *engine = Engine::Instance();
+        NetworkManager *netmgr = engine->GetNetMgr();
         string id = rpc->GetID().c_str();
 
-        if (!PlotPluginManager::Instance()->PluginAvailable(id))
+        if (!netmgr->GetPlotPluginManager()->PluginAvailable(id))
         {
             rpc->SendError("Requested plot does not exist for the engine",
                            "VisItException");
             CATCH_RETURN(1);
         }
 
-        AttributeSubject *atts = PlotPluginManager::Instance()->
+        AttributeSubject *atts = netmgr->GetPlotPluginManager()->
                                  GetEnginePluginInfo(id)->AllocAttributes();
         rpc->GetUpdatePlotAttsRPC()->SetAtts(atts);
         rpc->SendReply();
@@ -1222,6 +1238,9 @@ RPCExecutor<ReleaseDataRPC>::Execute(ReleaseDataRPC *rpc)
 //    Use rpc flags for creation of MeshQuality and TimeDerivative 
 //    expressions to set same flags in the DatabaseFactory. 
 //
+//    Brad Whitlock, Tue Jun 24 16:02:10 PDT 2008
+//    Changed how the database plugin manager is accessed.
+//
 // ****************************************************************************
 template<>
 void
@@ -1235,8 +1254,7 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
         debug2 << "Executing OpenDatabaseRPC: db=" 
                << rpc->GetDatabaseName().c_str()
                << ", time=" << rpc->GetTime() << endl;
-        DatabasePluginManager::Instance()
-                                       ->PluginAvailable(rpc->GetFileFormat());
+        netmgr->GetDatabasePluginManager()->PluginAvailable(rpc->GetFileFormat());
    
         avtDatabaseFactory::SetCreateMeshQualityExpressions(
                             rpc->GetCreateMeshQualityExpressions()); 
@@ -1285,6 +1303,9 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
 //    Use rpc flags for creation of MeshQuality and TimeDerivative 
 //    expressions to set same flags in the DatabaseFactory. 
 //
+//    Brad Whitlock, Tue Jun 24 16:02:35 PDT 2008
+//    Changed how the database plugin manager is accessed.
+//
 // ****************************************************************************
 template<>
 void
@@ -1301,7 +1322,7 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
            << endl;
     for (int i = 0; i < rpc->GetDatabaseFiles().size(); ++i)
         debug5 << "file["<<i<<"]="<<rpc->GetDatabaseFiles()[i].c_str() << endl;
-    DatabasePluginManager::Instance()->PluginAvailable(rpc->GetFileFormat());
+    netmgr->GetDatabasePluginManager()->PluginAvailable(rpc->GetFileFormat());
 
     avtDatabaseFactory::SetCreateMeshQualityExpressions(
                             rpc->GetCreateMeshQualityExpressions()); 

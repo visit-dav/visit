@@ -73,7 +73,8 @@ static const char *const allComponentNames[] = {
 };
 static ErrorFunction errorFunction = NULL;
 static void *errorFunctionArgs = NULL;
-
+static bool initializeCalled = false;
+static bool finalizeCalled = false;
 
 // ****************************************************************************
 //  Function: striparg
@@ -198,11 +199,22 @@ NewHandler(void)
 //    Cyrus Harrison, Wed Jan 23 09:23:19 PST 2008
 //    Changed set_new_handler to std::set_new_handler b/c of change from 
 //    deprecated <new.h> to <new>
+//
+//    Brad Whitlock, Wed Jun 25 10:42:58 PDT 2008
+//    Added check to return early in case this function gets called multiple
+//    times as when you include multiple VisIt components in a single
+//    executable.
+//
 // ****************************************************************************
 
 void
 Init::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
 {
+    // Return if Initialize has already been called.
+    if(initializeCalled)
+         return;
+    initializeCalled = true;
+
     int i, debuglevel = 0;
 #if defined(_WIN32)
     bool usePid = true;
@@ -506,11 +518,20 @@ Init::ComponentIssueError(const char *msg)
 //   Mark C. Miller, Tue Jul 25 18:26:10 PDT 2006
 //   Pushed timer dump and finalization down into TimingsManager::Finalize 
 //
+//   Brad Whitlock, Wed Jun 25 10:44:24 PDT 2008
+//   Added check to return early if Finalize has already been called, which
+//   can happen when multiple VisIt components are part of the same executable.
+//
 // ****************************************************************************
 
 void
 Init::Finalize(void)
 {
+    // Return if Finalize has already been called.
+    if(finalizeCalled)
+         return;
+    finalizeCalled = true;
+
     TimingsManager::Finalize();
 
 #if defined(_WIN32)

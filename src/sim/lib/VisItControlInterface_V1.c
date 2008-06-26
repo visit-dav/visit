@@ -1033,6 +1033,9 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
 * Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
 *
 * Modifications:
+*   Brad Whitlock, Wed Jun 25 16:28:02 PDT 2008
+*   Change 500000us (1/2 second) timeout to zero. The 500000 must have been
+*   left in during an old debugging exercise.
 *
 *******************************************************************************/
 int  VisItDetectInput(int blocking, int consoleFileDescriptor)
@@ -1054,7 +1057,7 @@ int  VisItDetectInput(int blocking, int consoleFileDescriptor)
 
    fd_set readSet;
    int status = 0;
-   struct timeval ZeroTimeout = {0,500000};
+   struct timeval ZeroTimeout = {0,0};
    struct timeval *timeout = (blocking ? NULL : &ZeroTimeout);
 
    if (consoleFileDescriptor < 0 &&

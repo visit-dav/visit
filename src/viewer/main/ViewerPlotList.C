@@ -63,7 +63,6 @@
 #include <PlotList.h>
 #include <PlotPluginInfo.h>
 #include <PlotPluginManager.h>
-#include <OperatorPluginManager.h>
 #include <RecursiveExpressionException.h>
 #include <SILRestrictionAttributes.h>
 #include <GlobalAttributes.h>
@@ -4171,7 +4170,7 @@ ViewerPlotList::SetPlotAtts(const int plotType)
     }
     else
     {
-        PlotPluginManager *pMgr = PlotPluginManager::Instance();
+        PlotPluginManager *pMgr = GetPlotPluginManager();
         ViewerPlotPluginInfo *info = pMgr->GetViewerPluginInfo(pMgr->GetEnabledID(plotType));
         QString plotName;
         if(info)
@@ -8445,7 +8444,7 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
             // Use the plot plugin manager to get the plot type index from
             // the plugin id.
             //
-            int type = PlotPluginManager::Instance()->GetEnabledIndex(pluginID);
+            int type = GetPlotPluginManager()->GetEnabledIndex(pluginID);
             if(type != -1)
             {
                 // Expand the plot's DB in case it contains ".."

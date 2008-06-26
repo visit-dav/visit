@@ -74,8 +74,8 @@ class MPIXfer;
 class NetworkManager;
 class NonBlockingRPC;
 class Observer;
-class Xfer;
 class ProcessAttributes;
+class Xfer;
 
 #include <vector>
 #include <avtDataObjectWriter.h>
@@ -166,6 +166,9 @@ class ProcessAttributes;
 //    Cyrus Harrison, Tue Feb 19 08:42:51 PST 2008
 //    Removed shouldDoDashDump (flag now contained in avtDebugDumpOptions)
 //
+//    Brad Whitlock, Tue Jun 24 15:20:05 PDT 2008
+//    Made plugin managers be members of the class instead of singletons.
+//
 // ****************************************************************************
 
 class Engine
@@ -254,6 +257,7 @@ class Engine
 
     // Here's the network manager!
     NetworkManager    *netmgr;
+    std::string        pluginDir;
 
     // The connection
     Connection        *vtkConnection;

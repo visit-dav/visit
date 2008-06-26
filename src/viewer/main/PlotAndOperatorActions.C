@@ -108,7 +108,7 @@ AddOperatorAction::AddOperatorAction(ViewerWindow *win) :
     // choice for all of the ones that have icons.
     //
     ViewerOperatorPluginInfo *info = 0;
-    OperatorPluginManager *pluginMgr = OperatorPluginManager::Instance();
+    OperatorPluginManager *pluginMgr = GetOperatorPluginManager();
     int nTypes = pluginMgr->GetNEnabledPlugins();
     for (int i = 0; i < nTypes; ++i)
     {
@@ -221,7 +221,7 @@ AddOperatorAction::Execute(int)
     int type = args.GetOperatorType();
     bool fromDefault = args.GetBoolFlag();
 
-    OperatorPluginManager *opMgr = OperatorPluginManager::Instance();
+    OperatorPluginManager *opMgr = GetOperatorPluginManager();
     std::string name(opMgr->GetPluginName(opMgr->GetEnabledID(type)));
     if (name == "Lineout") // PLUGIN SIN!!!
     {
@@ -800,7 +800,7 @@ AddPlotAction::AddPlotAction(ViewerWindow *win) : ViewerMultipleAction(win,
     // choice for all of the ones that have icons.
     //
     ViewerPlotPluginInfo *info = 0;
-    PlotPluginManager *pluginMgr = PlotPluginManager::Instance();
+    PlotPluginManager *pluginMgr = GetPlotPluginManager();
     for(int i = 0; i < pluginMgr->GetNEnabledPlugins(); ++i)
     {
         info = pluginMgr->GetViewerPluginInfo(pluginMgr->GetEnabledID(i));

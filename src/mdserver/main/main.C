@@ -140,6 +140,10 @@ void foobz2(void)
 //
 //    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
 //    Moved setting of component name to before Initialize
+//
+//    Brad Whitlock, Tue Jun 24 15:15:39 PDT 2008
+//    I changed how the plugin info gets read.
+//
 // ****************************************************************************
 
 int
@@ -152,7 +156,6 @@ main(int argc, char *argv[])
     Init::Initialize(argc, argv);
     InitVTKNoGraphics::Initialize();
     avtDatabase::SetOnlyServeUpMetaData(true);
-    DatabasePluginManager::Initialize(DatabasePluginManager::MDServer, false);
 
     bool runApp = ProcessCommandLine(argc, argv);
 
@@ -160,6 +163,9 @@ main(int argc, char *argv[])
 
     TRY
     {
+        // Read the plugin info.
+        MDServerApplication::Instance()->InitializePlugins();
+
         // Connect back to the process that launched the MDServer.
         MDServerApplication::Instance()->AddConnection(&argc, &argv);
 

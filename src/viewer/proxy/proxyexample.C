@@ -80,7 +80,9 @@
 // Creation:   Thu Mar 13 11:21:35 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 24 14:30:50 PDT 2008
+//   Get the plugin managers from the viewer proxy. Load the plugin info.
+//
 // ****************************************************************************
 
 class VisItClient
@@ -110,6 +112,7 @@ public:
 
         // Create the viewer proxy and launch the viewer.
         viewer = new ViewerProxy;
+        viewer->InitializePlugins(PluginManager::Scripting);
         viewer->Create(argc, argv);
 
         // Set up an observer that will call our LoadPlugins method
@@ -186,14 +189,14 @@ protected:
     // functions such as AddPlot
     int PlotIndex(const std::string &name) const
     {
-        return PluginIndex(PlotPluginManager::Instance(), name);
+        return PluginIndex(viewer->GetPlotPluginManager(), name);
     }
 
     // Converts an operator plugin name to an index that you can pass to
     // functions such as AddOperator.
     int OperatorIndex(const std::string &name) const
     {
-        return PluginIndex(OperatorPluginManager::Instance(), name);
+        return PluginIndex(viewer->GetOperatorPluginManager(), name);
     }
 
     // The viewer proxy object that you use to control the viewer.
@@ -496,8 +499,6 @@ protected:
 ///////////////////////////////////////////////////////////////////////////////
 #include <Init.h>
 #include <VisItException.h>
-#include <PlotPluginManager.h>
-#include <OperatorPluginManager.h>
 
 // ****************************************************************************
 // Method: main
@@ -509,9 +510,12 @@ protected:
 // Creation:   Thu Mar 13 11:27:19 PDT 2008
 //
 // Modifications:
-//   
 //    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
 //    Moved setting of component name to before Initialize
+//
+//    Brad Whitlock, Wed Jun 25 13:37:20 PST 2008
+//    Plugin managers are now part of ViewerProxy.
+//
 // ****************************************************************************
 
 int
@@ -521,11 +525,7 @@ main(int argc, char *argv[])
     Init::SetComponentName("proxyexample");
     Init::Initialize(argc, argv, 0, 1, false);
 
-    // Step 2: Initialize the plugin managers. (use scripting plugins for now)
-    PlotPluginManager::Initialize(PlotPluginManager::Scripting);
-    OperatorPluginManager::Initialize(OperatorPluginManager::Scripting);
-
-    // Step 3: Create the object and enter its Execute method.
+    // Step 2: Create the object and enter its Execute method.
     PseudocolorVis vis;
     TRY
     {
@@ -536,7 +536,7 @@ main(int argc, char *argv[])
     }
     ENDTRY
 
-    // Step 4: Finalize to close error logging, etc.
+    // Step 3: Finalize to close error logging, etc.
     Init::Finalize();
 }
 

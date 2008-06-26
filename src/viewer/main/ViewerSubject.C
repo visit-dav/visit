@@ -403,6 +403,9 @@ ViewerSubject::ViewerSubject() : ViewerBase(0, "ViewerSubject"),
 //    Brad Whitlock, Mon Feb 12 10:33:39 PDT 2007
 //    Delete the ViewerState and ViewerMethods objects.
 //
+//    Brad Whitlock, Wed Jun 25 10:35:51 PDT 2008
+//    Delete the plugin managers.
+//
 // ****************************************************************************
 
 ViewerSubject::~ViewerSubject()
@@ -420,6 +423,8 @@ ViewerSubject::~ViewerSubject()
     delete syncObserver;
     delete [] configFileName;
 
+    delete GetPlotPluginManager();
+    delete GetOperatorPluginManager();
     delete GetViewerState();
     delete GetViewerMethods();
     delete inputConnection;
@@ -1151,8 +1156,8 @@ ViewerSubject::HeavyInitialization()
         // errors are found when starting a new mdserver or opening a file.
         //
         string ep, eo;
-        ep = PlotPluginManager::Instance()->GetPluginInitializationErrors();
-        eo = OperatorPluginManager::Instance()->GetPluginInitializationErrors();
+        ep = GetPlotPluginManager()->GetPluginInitializationErrors();
+        eo = GetOperatorPluginManager()->GetPluginInitializationErrors();
         string error = ep + eo;
         if (!error.empty())
         {
@@ -1408,6 +1413,9 @@ ViewerSubject::Execute()
 //    Brad Whitlock, Mon Feb 12 12:03:10 PDT 2007
 //    I made it use ViewerState.
 //
+//    Brad Whitlock, Tue Jun 24 14:46:18 PDT 2008
+//    I changed how the plugin managers are accessed.
+//
 // ****************************************************************************
 
 void
@@ -1417,12 +1425,12 @@ ViewerSubject::InitializePluginManagers()
     // Load the plugin info.
     //
     int timeid = visitTimer->StartTimer();
-    PlotPluginManager::Initialize(PlotPluginManager::Viewer);
-    OperatorPluginManager::Initialize(OperatorPluginManager::Viewer);
+    GetPlotPluginManager()->Initialize(PlotPluginManager::Viewer);
+    GetOperatorPluginManager()->Initialize(OperatorPluginManager::Viewer);
     visitTimer->StopTimer(timeid, "Loading plugin info.");
 
-    PlotPluginManager     *pmgr = PlotPluginManager::Instance();
-    OperatorPluginManager *omgr = OperatorPluginManager::Instance();
+    PlotPluginManager     *pmgr = GetPlotPluginManager();
+    OperatorPluginManager *omgr = GetOperatorPluginManager();
     PluginManagerAttributes *pluginAtts = GetViewerState()->GetPluginManagerAttributes();
 
     //
@@ -1548,7 +1556,7 @@ ViewerSubject::LoadPlotPlugins()
     //
     TRY
     {
-        PlotPluginManager::Instance()->LoadPluginsNow();
+        GetPlotPluginManager()->LoadPluginsNow();
     }
     CATCH2(VisItException, e)
     {
@@ -1619,7 +1627,7 @@ ViewerSubject::LoadOperatorPlugins()
     //
     TRY
     {
-        OperatorPluginManager::Instance()->LoadPluginsNow();
+        GetOperatorPluginManager()->LoadPluginsNow();
     }
     CATCH2(VisItException, e)
     {
@@ -4092,7 +4100,7 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
                 // Use the plot plugin manager to get the plot type index from
                 // the plugin id.
                 //
-                int type = PlotPluginManager::Instance()->GetEnabledIndex(dp->pluginID);
+                int type = GetPlotPluginManager()->GetEnabledIndex(dp->pluginID);
 
                 if(type != -1)
                 {
@@ -5274,7 +5282,7 @@ ViewerSubject::AddInitializedOperator()
     //
     int type = GetViewerState()->GetViewerRPC()->GetOperatorType();
 
-    OperatorPluginManager *opMgr = OperatorPluginManager::Instance();
+    OperatorPluginManager *opMgr = GetOperatorPluginManager();
     bool lineout = (opMgr->GetPluginName(opMgr->GetEnabledID(type))
                     == "Lineout");
 

@@ -45,6 +45,7 @@
 #endif
 
 #include <ConnectionGroup.h>
+#include <DatabasePluginManager.h>
 #include <DebugStream.h>
 #include <MDServerApplication.h>
 #include <MDServerConnection.h>
@@ -72,8 +73,10 @@ MDServerApplication *MDServerApplication::instance = NULL;
 
 MDServerApplication::MDServerApplication() : clients()
 {
+    pluginsLoaded = false;
     keepGoing = true;
     timeout = 0;
+    databasePlugins = new DatabasePluginManager;
 
 #if !defined(_WIN32)
     // Set up an alarm signal handler to exit gracefully.
@@ -94,11 +97,15 @@ MDServerApplication::MDServerApplication() : clients()
 //   Brad Whitlock, Fri Apr 18 14:58:09 PST 2003
 //   I added code to delete the connections.
 //
+//   Brad Whitlock, Wed Jun 25 10:37:44 PDT 2008
+//   Delete the plugin manager.
+//
 // ****************************************************************************
 
 MDServerApplication::~MDServerApplication()
 {
     instance = NULL;
+    delete databasePlugins;
 
     for(size_t i = 0; i < clients.size(); ++i)
         delete clients[i];
@@ -166,6 +173,9 @@ MDServerApplication::AlarmHandler(int signal)
 //    fix issues with -guesshost when running through a NAT firewall.
 //    See '4287 and '4288 for more details.
 //
+//    Brad Whitlock, Tue Jun 24 15:08:11 PDT 2008
+//    Pass this to the MDServer connection.
+//
 // ****************************************************************************
 
 void
@@ -194,7 +204,7 @@ MDServerApplication::AddConnection(int *argc, char **argv[])
         }
     }
 
-    MDServerConnection *newConnection = new MDServerConnection(argc, argv);
+    MDServerConnection *newConnection = new MDServerConnection(this, argc, argv);
     clients.push_back(newConnection);
 
 #ifdef DEBUG
@@ -398,4 +408,91 @@ MDServerApplication::DisconnectDeadConnections(const std::vector<int> &deadList)
         // Copy the modified list into the real list.
         clients = newClientList;
     }
+}
+
+// ****************************************************************************
+// Method: MDServerApplication::InitializePlugins
+//
+// Purpose: 
+//   Initialize the plugins by reading the plugin info.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 15:15:05 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+MDServerApplication::InitializePlugins()
+{
+    databasePlugins->Initialize(DatabasePluginManager::MDServer, false);
+}
+
+// ****************************************************************************
+// Method: MDServerApplication::LoadPlugins
+//
+// Purpose: 
+//   Loads the database plugins.
+//
+// Note:       Moved from MDServerConnection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 14:57:07 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+MDServerApplication::LoadPlugins()
+{
+    if(!pluginsLoaded)
+    {
+        debug2 << "Loading plugins!" << endl;
+        databasePlugins->LoadPluginsNow();
+        pluginsLoaded = true;
+    }
+}
+
+// ****************************************************************************
+// Method: MDServerApplication::GetPluginInitializationErrors
+//
+// Purpose: 
+//   Return the plugin initialization errors.
+//
+// Returns:    The plugin initialization error string.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 15:04:56 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+MDServerApplication::GetPluginInitializationErrors()
+{
+    return databasePlugins->GetPluginInitializationErrors();
+}
+
+// ****************************************************************************
+// Method: MDServerApplication::GetDatabasePluginManager
+//
+// Purpose: 
+//   Return the database plugin manager.
+//
+// Returns:    The database plugin manager.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 15:05:18 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+DatabasePluginManager *
+MDServerApplication::GetDatabasePluginManager()
+{
+    return databasePlugins;
 }

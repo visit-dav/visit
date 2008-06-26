@@ -193,6 +193,9 @@ void                      *NetworkManager::progressCallbackArgs = NULL;
 //    Cyrus Harrison, Tue Feb 19 08:42:51 PST 2008
 //    Removed dumpRenders (now controled by avtDebugDumpOptions)
 //
+//    Brad Whitlock, Tue Jun 24 15:40:29 PDT 2008
+//    Added plugin managers.
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
@@ -210,6 +213,10 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
     avtApplyDDFExpression::RegisterGetDDFCallback(GetDDFCallbackBridge, this);
     avtExpressionEvaluatorFilter::RegisterGetDDFCallback(
                                                   GetDDFCallbackBridge, this);
+
+    databasePlugins = new DatabasePluginManager;
+    operatorPlugins = new OperatorPluginManager;
+    plotPlugins = new PlotPluginManager;
 }
 
 // ****************************************************************************
@@ -232,7 +239,11 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
 //    Hank Childs, Mon Feb 13 23:14:23 PST 2006
 //    Delete the DDFs.
 //
+//    Brad Whitlock, Tue Jun 24 15:41:08 PDT 2008
+//    Added plugin managers.
+//
 // ****************************************************************************
+
 NetworkManager::~NetworkManager(void)
 {
     for (size_t i = 0; i < networkCache.size(); i++)
@@ -245,6 +256,73 @@ NetworkManager::~NetworkManager(void)
 
     for (size_t d = 0 ; d < ddf.size() ; d++)
         delete ddf[d];
+
+    delete databasePlugins;
+    delete operatorPlugins;
+    delete plotPlugins;
+}
+
+// ****************************************************************************
+// Method: NetworkManager::GetDatabasePluginManager
+//
+// Purpose: 
+//   Return the database plugin manager.
+//
+// Returns:    the database plugin manager.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 15:25:41 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+DatabasePluginManager *
+NetworkManager::GetDatabasePluginManager() const
+{
+    return databasePlugins;
+}
+
+// ****************************************************************************
+// Method: NetworkManager::GetOperatorPluginManager
+//
+// Purpose: 
+//   Return the operator plugin manager.
+//
+// Returns:    the operator plugin manager.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 15:26:07 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+OperatorPluginManager *
+NetworkManager::GetOperatorPluginManager() const
+{
+    return operatorPlugins;
+}
+
+// ****************************************************************************
+// Method: NetworkManager::GetPlotPluginManager
+//
+// Purpose: 
+//   Return the plot plugin manager.
+//
+// Returns:    the plot plugin manager.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 15:26:28 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PlotPluginManager *
+NetworkManager::GetPlotPluginManager() const
+{
+    return plotPlugins;
 }
 
 // ****************************************************************************
@@ -459,6 +537,10 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //
 //    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
 //    Added support for ignoring bad extents from dbs.
+//
+//    Brad Whitlock, Tue Jun 24 15:45:43 PDT 2008
+//    Pass the database plugin manager to the factory.
+//
 // ****************************************************************************
 
 NetnodeDB *
@@ -515,17 +597,33 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
     TRY
     {
         if (fileMayHaveUnloadedPlugin)
-             DatabasePluginManager::Instance()->LoadPluginsNow();
+             GetDatabasePluginManager()->LoadPluginsNow();
+
         avtDatabase *db = NULL;
         NetnodeDB *netDB = NULL;
         const char *filename_c = filename.c_str();
         std::vector<std::string> plugins;  // unused
         if (filename.length() >= 6 &&
             filename.substr(filename.length() - 6) == ".visit")
-            db = avtDatabaseFactory::VisitFile(filename_c, time, plugins, format);
+        {
+            db = avtDatabaseFactory::VisitFile(
+                GetDatabasePluginManager(),
+                filename_c,
+                time,
+                plugins,
+                format);
+        }
         else
-            db = avtDatabaseFactory::FileList(&filename_c, 1, time, plugins, 
-                                              format);
+        {
+            db = avtDatabaseFactory::FileList(
+                GetDatabasePluginManager(),
+                &filename_c,
+                1,
+                time,
+                plugins, 
+                format);
+        }
+
         db->SetFullDBName(filename);
         db->SetIgnoreExtents(ignoreExtents);
 
@@ -842,6 +940,9 @@ NetworkManager::StartNetwork(const string &format,
 //   Hank Childs, Thu Jan 11 16:10:12 PST 2007
 //   Added argument to DatabaseFactory calls.
 //
+//   Brad Whitlock, Tue Jun 24 15:48:27 PDT 2008
+//   Pass the database plugin manager to the database factory.
+//
 // ****************************************************************************
 
 void
@@ -940,8 +1041,8 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
             names = new const char *[filesWithPath.size()];
             for(int i = 0; i < filesWithPath.size(); ++i)
                 names[i] = filesWithPath[i].c_str();
-            db = avtDatabaseFactory::FileList(names, filesWithPath.size(),
-                                              time, plugins, defaultFormat);
+            db = avtDatabaseFactory::FileList(GetDatabasePluginManager(),
+                  names, filesWithPath.size(), time, plugins, defaultFormat);
             delete [] names;
             names = 0;
 
@@ -951,11 +1052,15 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
                    << "definition for " << dbName.c_str() << endl;
         }
         else if (dbName.substr(dbName.length() - 6) == ".visit")
-            db = avtDatabaseFactory::VisitFile(dbName_c, time, plugins,
-                                               defaultFormat);
+        {
+            db = avtDatabaseFactory::VisitFile(GetDatabasePluginManager(),
+                dbName_c, time, plugins, defaultFormat);
+        }
         else
-            db = avtDatabaseFactory::FileList(&dbName_c, 1, time, plugins,
-                                              defaultFormat);
+        {
+            db = avtDatabaseFactory::FileList(GetDatabasePluginManager(),
+                &dbName_c, 1, time, plugins, defaultFormat);
+        }
         db->SetFullDBName(dbName);
 
         // If we want to open the file at a later timestep, get the
@@ -1019,6 +1124,9 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
 //    Sean Ahern, Tue May 28 08:52:48 PDT 2002
 //    Added binary operators.
 //
+//    Brad Whitlock, Tue Jun 24 16:08:45 PDT 2008
+//    Changed how the operator plugin manager is accessed.
+//
 // ****************************************************************************
 void
 NetworkManager::AddFilter(const string &filtertype,
@@ -1032,7 +1140,7 @@ NetworkManager::AddFilter(const string &filtertype,
         EXCEPTION0(ImproperUseException);
     }
 
-    avtPluginFilter *f = OperatorPluginManager::Instance()->
+    avtPluginFilter *f = GetOperatorPluginManager()->
         GetEnginePluginInfo(filtertype)->AllocAvtPluginFilter();
     f->SetAtts(atts);
     if (nInputs != 1)
@@ -1093,7 +1201,11 @@ NetworkManager::AddFilter(const string &filtertype,
 //    Gunther H. Weber, Thu Apr 12 10:52:36 PDT 2007
 //    Add filter to beginning of pipeline if necessary
 //
+//    Brad Whitlock, Tue Jun 24 16:09:19 PDT 2008
+//    Changed how the plot plugin manager is accessed.
+//
 // ****************************************************************************
+
 void
 NetworkManager::MakePlot(const string &plotName, const string &pluginID, 
     const AttributeGroup *atts, const vector<double> &dataExtents)
@@ -1118,8 +1230,8 @@ NetworkManager::MakePlot(const string &plotName, const string &pluginID,
         EXCEPTION0(ImproperUseException);
     }
 
-    avtPlot *p = PlotPluginManager::Instance()->
-                                GetEnginePluginInfo(pluginID)->AllocAvtPlot();
+    avtPlot *p = GetPlotPluginManager()->
+        GetEnginePluginInfo(pluginID)->AllocAvtPlot();
 
     // Check, whether plot wants to place a filter at the beginning of
     // the pipeline
@@ -3347,6 +3459,10 @@ NetworkManager::GetDDF(const char *name)
 //
 //    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
 //    Accounted for possible null return from GetEnginePluginInfo
+//
+//    Brad Whitlock, Tue Jun 24 16:10:41 PDT 2008
+//    Changed how the database plugin manager is accessed.
+//
 // ****************************************************************************
 
 void
@@ -3388,15 +3504,15 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
     }
 
     const std::string &db_type = atts->GetDb_type_fullname();
-    DatabasePluginManager *manager = DatabasePluginManager::Instance();
-    if (!manager->PluginAvailable(db_type))
+    if (!GetDatabasePluginManager()->PluginAvailable(db_type))
     {
         char msg[1024];
         SNPRINTF(msg, 1024, "Unable to load plugin \"%s\" for exporting.", 
                  db_type.c_str());
         EXCEPTION1(ImproperUseException, msg);
     }
-    EngineDatabasePluginInfo *info = manager->GetEnginePluginInfo(db_type);
+    EngineDatabasePluginInfo *info = GetDatabasePluginManager()->
+        GetEnginePluginInfo(db_type);
     if (info == NULL)
     {
         char msg[1024];

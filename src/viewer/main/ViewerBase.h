@@ -5,6 +5,8 @@
 
 class ViewerMethods;
 class ViewerState;
+class PlotPluginManager;
+class OperatorPluginManager;
 
 // ****************************************************************************
 // Class: ViewerBase
@@ -18,11 +20,14 @@ class ViewerState;
 // Creation:   Mon Feb 12 09:25:39 PDT 2007
 //
 // Modifications:   
-//    Cyrus Harrison, Thu Feb 21 15:04:14 PST 2008
-//    Added control to suppress messages. 
+//   Cyrus Harrison, Thu Feb 21 15:04:14 PST 2008
+//   Added control to suppress messages. 
 //
-//    Brad Whitlock, Tue Apr 29 11:11:04 PDT 2008
-//    Converted most messaging to QString.
+//   Brad Whitlock, Tue Apr 29 11:11:04 PDT 2008
+//   Converted most messaging to QString.
+//
+//   Brad Whitlock, Tue Jun 24 14:33:17 PDT 2008
+//   Added methods to return the plugin managers.
 //
 // ****************************************************************************
 
@@ -33,8 +38,10 @@ public:
     virtual ~ViewerBase();
 
     // Methods to get pointers to the client state and the methods.
-    static ViewerState   *GetViewerState();
-    static ViewerMethods *GetViewerMethods();
+    static ViewerState           *GetViewerState();
+    static ViewerMethods         *GetViewerMethods();
+    static PlotPluginManager     *GetPlotPluginManager();
+    static OperatorPluginManager *GetOperatorPluginManager();
 
     // Methods to send messages
     static void Error(const QString &message, bool = true);
@@ -56,9 +63,11 @@ public:
     static bool SuppressMessages()          { return suppressMessages;}
     
 private:
-    static ViewerState   *base_viewerState;
-    static ViewerMethods *base_viewerMethods;
-    static bool           suppressMessages;
+    static ViewerState           *base_viewerState;
+    static ViewerMethods         *base_viewerMethods;
+    static PlotPluginManager     *base_plotPlugins;
+    static OperatorPluginManager *base_operatorPlugins;
+    static bool                   suppressMessages;
 };
 
 #endif

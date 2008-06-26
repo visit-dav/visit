@@ -40,6 +40,8 @@
 
 #include <ViewerState.h>
 #include <ViewerMethods.h>
+#include <OperatorPluginManager.h>
+#include <PlotPluginManager.h>
 
 #include <MessageAttributes.h>
 #include <StatusAttributes.h>
@@ -47,9 +49,11 @@
 
 #include <DebugStream.h>
 
-ViewerState   *ViewerBase::base_viewerState = 0;
-ViewerMethods *ViewerBase::base_viewerMethods = 0;
-bool           ViewerBase::suppressMessages = false;
+ViewerState           *ViewerBase::base_viewerState = 0;
+ViewerMethods         *ViewerBase::base_viewerMethods = 0;
+PlotPluginManager     *ViewerBase::base_plotPlugins = 0;
+OperatorPluginManager *ViewerBase::base_operatorPlugins = 0;
+bool                   ViewerBase::suppressMessages = false;
 
 // ****************************************************************************
 // Method: ViewerBase::ViewerBase
@@ -136,6 +140,58 @@ ViewerBase::GetViewerMethods()
         base_viewerMethods = new ViewerMethods(GetViewerState());
 
     return base_viewerMethods;
+}
+
+// ****************************************************************************
+// Method: ViewerBase::GetPlotPluginManager
+//
+// Purpose: 
+//   Return the plot plugin manager.
+//
+// Returns:    The plot plugin manager.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 14:37:20 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PlotPluginManager *
+ViewerBase::GetPlotPluginManager()
+{
+    if(base_plotPlugins == 0)
+        base_plotPlugins = new PlotPluginManager;
+
+    return base_plotPlugins;
+}
+
+// ****************************************************************************
+// Method: ViewerBase::GetOperatorPluginManager
+//
+// Purpose: 
+//   Return the operator plugin manager.
+//
+// Returns:    The operator plugin manager.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 14:37:20 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+OperatorPluginManager *
+ViewerBase::GetOperatorPluginManager()
+{
+    if(base_operatorPlugins == 0)
+        base_operatorPlugins = new OperatorPluginManager;
+
+    return base_operatorPlugins;
 }
 
 // ****************************************************************************

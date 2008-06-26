@@ -52,6 +52,7 @@
 #include <visit-config.h> // To get the version number
 #include <snprintf.h>
 
+#include <MDServerApplication.h>
 #include <MDServerConnection.h>
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
@@ -251,10 +252,16 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 //    Jeremy Meredith, Wed Jan 23 16:18:17 EST 2008
 //    Added SetMFileOpenOptionsRPC and its Executor.
 //
+//    Brad Whitlock, Tue Jun 24 15:10:12 PDT 2008
+//    Pass in the MDServerApplication that owns this object.
+//
 // ****************************************************************************
 
-MDServerConnection::MDServerConnection(int *argc, char **argv[])
+MDServerConnection::MDServerConnection(MDServerApplication *a, int *argc, 
+    char **argv[])
 {
+    app = a;
+
     int total = visitTimer->StartTimer();
     int timeid = visitTimer->StartTimer();
     string connectStr("Connecting to client");
@@ -567,17 +574,15 @@ MDServerConnection::GetWriteConnection() const
 //    It is the cheaper of the operations and guarantees that we can later
 //    query for their initialization errors and have a meaningful answer.
 //
+//    Brad Whitlock, Tue Jun 24 14:59:32 PDT 2008
+//    Load plugins in the parent.
+//
 // ****************************************************************************
 
 void
 MDServerConnection::LoadPlugins()
 {
-    if(!pluginsLoaded)
-    {
-        debug2 << "Loading plugins!" << endl;
-        DatabasePluginManager::Instance()->LoadPluginsNow();
-        pluginsLoaded = true;
-    }
+    app->LoadPlugins();
 }
 
 
@@ -593,11 +598,16 @@ MDServerConnection::LoadPlugins()
 //  Programmer:  Jeremy Meredith
 //  Creation:    February  7, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jun 24 15:02:03 PDT 2008
+//    Moved the code into the parent.
+//
 // ****************************************************************************
+
 std::string
 MDServerConnection::GetPluginErrors()
 {
-    return DatabasePluginManager::Instance()->GetPluginInitializationErrors();
+    return app->GetPluginInitializationErrors();
 }
 
 
@@ -929,6 +939,9 @@ MDServerConnection::GetCurrentSIL() const
 //   Brad Whitlock, Fri Feb 15 15:23:49 PST 2008
 //   Protect a with NULL test.
 //
+//   Brad Whitlock, Tue Jun 24 15:03:32 PDT 2008
+//   Get the database plugin manager from the parent app.
+//
 // ****************************************************************************
 
 DBPluginInfoAttributes *
@@ -938,7 +951,7 @@ MDServerConnection::GetDBPluginInfo()
 
     DBPluginInfoAttributes *rv = new DBPluginInfoAttributes;
 
-    DatabasePluginManager *manager = DatabasePluginManager::Instance();
+    DatabasePluginManager *manager = app->GetDatabasePluginManager();
     int nPlugins = manager->GetNEnabledPlugins();
     std::vector<std::string> types(nPlugins);
     std::vector<std::string> fullnames(nPlugins);
@@ -2674,6 +2687,10 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Brad Whitlock, Tue Jun 24 16:12:31 PDT 2008
+//    Pass the database plugin manager to the avtDatabaseFactory.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -2770,7 +2787,9 @@ MDServerConnection::GetDatabase(string file, int timeState,
                 }
 
                 // Try and make a database out of the filenames.
-                currentDatabase = avtDatabaseFactory::FileList(names,
+                currentDatabase = avtDatabaseFactory::FileList(
+                    app->GetDatabasePluginManager(),
+                    names,
                     fileNames.size(), timeState, plugins,
                     forcedFileType=="" ? NULL : forcedFileType.c_str(),
                     forceReadAllCyclesAndTimes,
@@ -2814,7 +2833,8 @@ MDServerConnection::GetDatabase(string file, int timeState,
         else if (FileHasVisItExtension(file))
         {
             currentDatabase =
-                avtDatabaseFactory::VisitFile(fn, timeState, plugins,
+                avtDatabaseFactory::VisitFile(app->GetDatabasePluginManager(),
+                                              fn, timeState, plugins,
                                               forcedFileType=="" ? NULL : forcedFileType.c_str(),
                                               forceReadAllCyclesAndTimes,
                                               treatAllDBsAsTimeVarying);
@@ -2822,7 +2842,8 @@ MDServerConnection::GetDatabase(string file, int timeState,
         else
         {
             currentDatabase =
-                avtDatabaseFactory::FileList(&fn, 1, timeState, plugins,
+                avtDatabaseFactory::FileList(app->GetDatabasePluginManager(),
+                                             &fn, 1, timeState, plugins,
                                              forcedFileType=="" ? NULL : forcedFileType.c_str(),
                                              forceReadAllCyclesAndTimes,
                                              treatAllDBsAsTimeVarying);

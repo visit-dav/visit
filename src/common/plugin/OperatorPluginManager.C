@@ -51,11 +51,6 @@
 using std::string;
 using std::vector;
 
-//
-// Storage for static data elements.
-//
-OperatorPluginManager *OperatorPluginManager::instance=0;
-
 // ****************************************************************************
 //  Method: OperatorPluginManager constructor
 //
@@ -77,11 +72,14 @@ OperatorPluginManager::OperatorPluginManager() : PluginManager("operator")
 //  Creation:   August 20, 2002
 //
 //  Modifications:
+//    Brad Whitlock, Wed Jun 25 10:27:17 PDT 2008
+//    Call UnloadPlugins here since it calls virtual methods for this class.
 //
 // ****************************************************************************
 
 OperatorPluginManager::~OperatorPluginManager()
 {
+    UnloadPlugins();
 }
 
 // ****************************************************************************
@@ -105,46 +103,19 @@ OperatorPluginManager::~OperatorPluginManager()
 //    I added the pluginDir flag so applications can tell the plugin 
 //    manager where to look directly without environment vars.
 //
+//    Brad Whitlock, Tue Jun 24 11:08:52 PDT 2008
+//    Removed singleton characteristics.
+//
 // ****************************************************************************
 
 void
 OperatorPluginManager::Initialize(const PluginCategory pluginCategory,
-                                  bool parallel, const char *pluginDir)
+                                  bool par, const char *pluginDir)
 {
-    Instance();
-    instance->category = pluginCategory;
-    instance->parallel = parallel;
-    instance->SetPluginDir(pluginDir);
-    instance->ReadPluginInfo();
-}
-
-// ****************************************************************************
-//  Method: OperatorPluginManager::Instance
-//
-//  Purpose:
-//    Return a pointer to the sole instance of the OperatorPluginManager
-//    class.
-//
-//  Returns:    A pointer to the sole instance of the OperatorPluginManager
-//              class.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   September 26, 2001
-//
-// ****************************************************************************
-
-OperatorPluginManager *
-OperatorPluginManager::Instance()
-{
-    //
-    // If the sole instance hasn't been instantiated, then instantiate it.
-    //
-    if (instance == 0)
-    {
-        instance = new OperatorPluginManager;
-    }
-
-    return instance;
+    category = pluginCategory;
+    parallel = par;
+    SetPluginDir(pluginDir);
+    ReadPluginInfo();
 }
 
 // ****************************************************************************
