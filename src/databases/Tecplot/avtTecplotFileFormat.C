@@ -44,6 +44,7 @@
 
 #include <string>
 
+#include <vtkPointData.h>
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -53,6 +54,7 @@
 #include <vtkCellArray.h>
 #include <avtDatabaseMetaData.h>
 #include <vtkPolyData.h>
+#include <vtkVisItUtility.h>
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
@@ -601,13 +603,16 @@ avtTecplotFileFormat::ParseFEPOINT(int numNodes, int numElements,
 //    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
 //    Added support for point meshes where topo dim is zero but spatial dim>1
 //
+//    Jeremy Meredith, Thu Jun 26 17:28:16 EDT 2008
+//    Only assume it's a 1D mesh if *both* J and K dims are 1.
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
 {
     int numNodes = numI * numJ * numK;
 
-    if (numJ==1)
+    if (numJ==1 && numK==1)
         topologicalDimension = MAX(topologicalDimension, 1);
     else if (numK==1)
         topologicalDimension = MAX(topologicalDimension, 2);
@@ -654,13 +659,16 @@ avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
 //    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
 //    Added support for point meshes where topo dim is zero but spatial dim>1
 //
+//    Jeremy Meredith, Thu Jun 26 17:28:16 EDT 2008
+//    Only assume it's a 1D mesh if *both* J and K dims are 1.
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 {
     int numNodes = numI * numJ * numK;
 
-    if (numJ==1)
+    if (numJ==1 && numK==1)
         topologicalDimension = MAX(topologicalDimension, 1);
     else if (numK==1)
         topologicalDimension = MAX(topologicalDimension, 2);
@@ -710,6 +718,10 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //    If no format is given, assume POINT.  Also, allow for whitespace in
 //    the given names of the X/Y/Z variables; apparently this occurs in real
 //    life due to having to play nice with FORTRAN.
+//
+//    Jeremy Meredith, Thu Jun 26 17:22:18 EDT 2008
+//    Allow "DATAPACKING" as an alias for "F" in zone record header.
+//    Add smarter X/Y/Z coordinate guessing.
 //
 // ****************************************************************************
 
@@ -784,17 +796,23 @@ avtTecplotFileFormat::ReadFile()
 
                 string tok_nw = SimplifyWhitespace(tok);
 
-                if (tok_nw == "X" || tok_nw == "x" || tok_nw == "I")
+                if (tok_nw == "X" || tok_nw == "x" || tok_nw == "I" ||
+                    (tok_nw.length()>1 && (tok_nw[0]=='X'||tok_nw[0]=='x') && !isalnum(tok_nw[1])))
                 {
+                    debug4 << "Assuming variable '"<<tok_nw<<"' is X coord.\n";
                     Xindex = numTotalVars;
                 }
-                else if (tok_nw == "Y" || tok_nw == "y" || tok_nw == "J")
+                else if (tok_nw == "Y" || tok_nw == "y" || tok_nw == "J" ||
+                         (tok_nw.length()>1 && (tok_nw[0]=='Y'||tok_nw[0]=='y') && !isalnum(tok_nw[1])))
                 {
+                    debug4 << "Assuming variable '"<<tok_nw<<"' is Y coord.\n";
                     Yindex = numTotalVars;
                     spatialDimension = (spatialDimension < 2) ? 2 : spatialDimension;
                 }
-                else if (tok_nw == "Z" || tok_nw == "z")
+                else if (tok_nw == "Z" || tok_nw == "z" ||
+                         (tok_nw.length()>1 && (tok_nw[0]=='Z'||tok_nw[0]=='z') && !isalnum(tok_nw[1])))
                 {
+                    debug4 << "Assuming variable '"<<tok_nw<<"' is Z coord.\n";
                     Zindex = numTotalVars;
                     spatialDimension = (spatialDimension < 3) ? 3 : spatialDimension;
                 }
@@ -821,17 +839,23 @@ avtTecplotFileFormat::ReadFile()
                 {
                     string tok_nw = SimplifyWhitespace(tok);
 
-                    if (tok_nw == "X" || tok_nw == "x" || tok_nw == "I")
+                    if (tok_nw == "X" || tok_nw == "x" || tok_nw == "I" ||
+                        (tok_nw.length()>1 && (tok_nw[0]=='X'||tok_nw[0]=='x') && !isalnum(tok_nw[1])))
                     {
+                        debug4 << "Assuming variable '"<<tok_nw<<"' is X coord.\n";
                         Xindex = numTotalVars;
                     }
-                    else if (tok_nw == "Y" || tok_nw == "y" || tok_nw == "J")
+                    else if (tok_nw == "Y" || tok_nw == "y" || tok_nw == "J" ||
+                             (tok_nw.length()>1 && (tok_nw[0]=='Y'||tok_nw[0]=='y') && !isalnum(tok_nw[1])))
                     {
+                        debug4 << "Assuming variable '"<<tok_nw<<"' is Y coord.\n";
                         Yindex = numTotalVars;
                         spatialDimension = (spatialDimension < 2) ? 2 : spatialDimension;
                     }
-                    else if (tok_nw == "Z" || tok_nw == "z")
+                    else if (tok_nw == "Z" || tok_nw == "z" ||
+                             (tok_nw.length()>1 && (tok_nw[0]=='Z'||tok_nw[0]=='z') && !isalnum(tok_nw[1])))
                     {
+                        debug4 << "Assuming variable '"<<tok_nw<<"' is Z coord.\n";
                         Zindex = numTotalVars;
                         spatialDimension = (spatialDimension < 3) ? 3 : spatialDimension;
                     }
@@ -874,6 +898,7 @@ avtTecplotFileFormat::ReadFile()
                      tok != "E"  &&
                      tok != "ET" &&
                      tok != "F"  &&
+                     tok != "DATAPACKING"  &&
                      tok != "DT" &&
                      tok != "D"))
             {
@@ -910,7 +935,7 @@ avtTecplotFileFormat::ReadFile()
                 {
                     elemType = GetNextToken();
                 }
-                else if (tok == "F")
+                else if (tok == "F" || tok == "DATAPACKING")
                 {
                     format = GetNextToken();
                 }
@@ -1336,6 +1361,10 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
 //    Added support for point meshes where topo dim is zero but spatial dim>1
 //
+//    Jeremy Meredith, Thu Jun 26 17:26:22 EDT 2008
+//    Changed curves to be created as rectilinear grids instead of polydata
+//    (so that they work with expressions).
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1375,32 +1404,24 @@ avtTecplotFileFormat::GetMesh(int domain, const char *meshname)
         vtkFloatArray *var2 = vars[allVariableNames[index2]][curveDomain];
         int nPts = var1->GetNumberOfTuples();
 
-        vtkPolyData *pd  = vtkPolyData::New();
-        vtkPoints   *pts = vtkPoints::New();
-        pd->SetPoints(pts);
+        vtkFloatArray *vals = vtkFloatArray::New();
+        vals->SetNumberOfComponents(1);
+        vals->SetNumberOfTuples(nPts);
+        vals->SetName(meshname);
 
-        pts->SetNumberOfPoints(nPts);
+        vtkRectilinearGrid *rg =
+            vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
+        rg->GetPointData()->SetScalars(vals);
+
+        vtkDataArray *xc = rg->GetXCoordinates();
         for (int j = 0 ; j < nPts ; j++)
         {
-            pts->SetPoint(j, var2->GetValue(j), var1->GetValue(j), 0.);
+            xc->SetComponent(j, 0, var2->GetValue(j));
+            vals->SetValue(j, var1->GetValue(j));
         }
- 
-        //
-        // Connect the points up with line segments.
-        //
-        vtkCellArray *line = vtkCellArray::New();
-        pd->SetLines(line);
-        for (int k = 1 ; k < nPts ; k++)
-        {
-            line->InsertNextCell(2);
-            line->InsertCellPoint(k-1);
-            line->InsertCellPoint(k);
-        }
+        vals->Delete();
 
-        pts->Delete();
-        line->Delete();
-
-        return pd;
+        return rg;
     }
 }
 

@@ -44,12 +44,14 @@
 
 #include <string>
 
+#include <vtkPointData.h>
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkPolyData.h>
 #include <vtkCellArray.h>
+#include <vtkVisItUtility.h>
 
 #include <avtDatabaseMetaData.h>
 
@@ -218,6 +220,11 @@ avtPlainTextFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Programmer: Jeremy Meredith
 //  Creation:   January 24, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jun 26 17:26:22 EDT 2008
+//    Changed curves to be created as rectilinear grids instead of polydata
+//    (so that they work with expressions).
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -265,29 +272,25 @@ avtPlainTextFileFormat::GetMesh(const char *meshname)
             if (index < 0)
                 EXCEPTION1(InvalidVariableException, meshname);
 
-            vtkPolyData *pd  = vtkPolyData::New();
-            vtkPoints   *pts = vtkPoints::New();
-            pd->SetPoints(pts);
 
-            pts->SetNumberOfPoints(nrows);
+            vtkFloatArray *vals = vtkFloatArray::New();
+            vals->SetNumberOfComponents(1);
+            vals->SetNumberOfTuples(nrows);
+            vals->SetName(meshname);
+
+            vtkRectilinearGrid *rg =
+                vtkVisItUtility::Create1DRGrid(nrows,VTK_FLOAT);
+            rg->GetPointData()->SetScalars(vals);
+
+            vtkDataArray *xc = rg->GetXCoordinates();
             for (int j = 0 ; j < nrows ; j++)
             {
-                pts->SetPoint(j, j, data[j][index], 0.);
+                xc->SetComponent(j, 0, j);
+                vals->SetValue(j, data[j][index]);
             }
- 
-            vtkCellArray *line = vtkCellArray::New();
-            pd->SetLines(line);
-            for (int k = 1 ; k < nrows ; k++)
-            {
-                line->InsertNextCell(2);
-                line->InsertCellPoint(k-1);
-                line->InsertCellPoint(k);
-            }
+            vals->Delete();
 
-            pts->Delete();
-            line->Delete();
-
-            return pd;
+            return rg;
         }
         else
         {
