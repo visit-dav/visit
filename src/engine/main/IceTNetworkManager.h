@@ -53,6 +53,9 @@
 //
 //  Modifications:
 //
+//    Tom Fogal, Tue Jun 24 13:27:48 EDT 2008
+//    Defined `Readback' function.
+//
 // ****************************************************************************
 
 class IceTNetworkManager: public NetworkManager
@@ -63,7 +66,6 @@ class IceTNetworkManager: public NetworkManager
 
     void       TileLayout(size_t width, size_t height) const;
 
-    /// faux render; required to maintain API compatibility with parent.
     virtual avtDataObjectWriter_p
                Render(intVector networkIds, bool getZBuffer, int annotMode,
                       int windowID, bool leftEye);
@@ -71,7 +73,12 @@ class IceTNetworkManager: public NetworkManager
 
  protected:
 
-    //virtual avtImage_p RenderGeometry();
+    virtual avtImage_p Readback(const VisWindow *, bool) const;
+    void               RenderShadows(int windowID,
+                                     avtDataObject_p& input_as_dob) const;
+    void               RenderPostProcess(std::vector<avtPlot_p>& image_plots,
+                                         avtDataObject_p& input_as_dob,
+                                         int windowID) const;
 
  private:
     IceTCommunicator comm;

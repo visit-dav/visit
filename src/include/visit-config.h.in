@@ -21,13 +21,16 @@
 /* Define if you have the <hdf5.h> header file. */
 #undef HAVE_HDF5_H
 
+/* Define if you have the IceT library */
+#undef HAVE_ICET
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
 /* Define if you have ios::noreplace. */
 #undef HAVE_IOS_NOREPLACE
 
-/* Define to 1 if you have the `isfinite' function. */
+/* Define if you have isfinite. */
 #undef HAVE_ISFINITE
 
 /* Define if you have the bz2 library. */
@@ -42,14 +45,14 @@
 /* Define if you have the GLEW library. */
 #undef HAVE_LIBGLEW
 
-/* Define if you have the slivr library. */
-#undef HAVE_LIBSLIVR
-
 /* Define if you have the hdf5 library. */
 #undef HAVE_LIBHDF5
 
 /* Define if you have the netcdf library. */
 #undef HAVE_LIBNETCDF
+
+/* Define if you have the SLIVR library. */
+#undef HAVE_LIBSLIVR
 
 /* Define if you have the sz library. */
 #undef HAVE_LIBSZ
@@ -125,6 +128,9 @@
 
 /* Define NO_SETBUF if streambuf::setbuf is not public. */
 #undef NO_SETBUF
+
+/* OSMesa Window Size Limit. */
+#undef OSMESA_SIZE_LIMIT
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -211,6 +217,9 @@
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
+/* Subversion revision */
+#undef SVN_REVISION
+
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
@@ -219,9 +228,6 @@
 
 /* VisIt version */
 #undef VERSION
-
-/* Subversion revision */
-#undef SVN_REVISION
 
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
@@ -232,6 +238,3 @@
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef uid_t
-
-/* OSMesa Window Size Limit */
-#undef OSMESA_SIZE_LIMIT

@@ -131,7 +131,6 @@ using std::set;
 //
 // Static functions.
 //
-static double RenderBalance(int numTrianglesIHave);
 static void   DumpImage(avtDataObject_p, const char *fmt, bool allprocs=true);
 static void   DumpImage(avtImage_p, const char *fmt, bool allprocs=true);
 static ref_ptr<avtDatabase> GetDatabase(void *, const std::string &,
@@ -2041,6 +2040,14 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    shouldn't try to query properties of the viswindow until we've set it up
 //    (in RenderSetup)!  This fixes a lot of SR mode bugs.
 //
+//    Tom Fogal, Mon Jun 23 11:01:15 EDT 2008
+//    Use the new CreateNullDataWriter when switching to SR mode.
+//
+//    Tom Fogal, Fri Jun 27 11:14:25 EDT 2008
+//    Reverse the boolean for detailing gradient background to MakeCompositer;
+//    had interpreted it wrong in the original implementation (a background
+//    mode of 0 is /not/ a gradient BG).
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -2071,24 +2078,12 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         int scalableThreshold = GetScalableThreshold(windowID);
         if (GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
         {
-            // Sending back a null result from the render process is used as a
-            // special case to indicate that the viewer should re-request
-            // set the rendering mode to scalable rendering and then send back
-            // another render request RPC.
-            debug5 << "Cell count has fallen below SR threshold. Sending the "
-                      "AVT_NULL_IMAGE_MSG data object to viewer" << endl;
-
-            avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_IMAGE_MSG);
-            avtDataObject_p dummyDob;
-            CopyTo(dummyDob, nullData);
-            writer = dummyDob->InstantiateWriter();
-            writer->SetInput(dummyDob);
             this->RenderCleanup(windowID);
-            CATCH_RETURN2(1, writer);
+            CATCH_RETURN2(1, this->CreateNullDataWriter(windowID));
         }
 
         debug5 << "Rendering " << viswin->GetNumPrimitives()
-               << " primitives.  BALANCED speedup = "
+               << " primitives.  Balanced speedup = "
                << RenderBalance(viswin->GetNumPrimitives()) << "x" << endl;
 
         //
@@ -2133,7 +2128,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 
         imageCompositer = MakeCompositer(
                             viswin->GetWindowMode() == WINMODE_3D,
-                            viswin->GetBackgroundMode() == 0, // == gradient
+                            viswin->GetBackgroundMode() != 0, // == gradient
                             getZBuffer,
                             this->MultipassRendering(viswin),
                             doShadows, doDepthCueing,
@@ -3580,9 +3575,14 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Tom Fogal, Mon Jun 23 10:50:18 EDT 2008
+//    Changed from an internal method to a class method, so children can use
+//    it.
+//
 // ****************************************************************************
-static double
-RenderBalance(int numTrianglesIHave)
+double
+NetworkManager::RenderBalance(int numTrianglesIHave)
 {
    double balance = 1.0;
 
@@ -4118,6 +4118,12 @@ NetworkManager::SetCompositerBackground(
 //    Added code to push color table name to plots
 //    Added code to use correct whole image compositor based upon window mode
 //
+//    Tom Fogal, Thu Jun 26 12:12:52 EDT 2008
+//    I had messed up the ZBuffer logic when converting this to a function.
+//    This prevented the compositer from knowing if it should output a Z buffer
+//    in some cases, causing the compositer to blend with the background image
+//    instead of overwriting it.
+//
 // ****************************************************************************
 
 avtWholeImageCompositer *
@@ -4125,24 +4131,25 @@ NetworkManager::MakeCompositer(bool threeD, bool gradientBG, bool needZ, bool mu
                                bool shadows, bool depth_cueing, bool image_plots)
 {
     avtWholeImageCompositer *compositer;
-    if(!threeD && !gradientBG)
+    // Even if it's not a 3D render, we'll need Z if there is a gradient
+    // background.
+    if(threeD || gradientBG)
     {
-        compositer = new avtWholeImageCompositerNoZ();
+        compositer = new avtWholeImageCompositerWithZ();
     }
     else
     {
-        compositer = new avtWholeImageCompositerWithZ();
-        // Even though it's not 3D, we need z-buffer if there is a gradient
-        // background (which would cause multipass rendering).
-        compositer->SetShouldOutputZBuffer(multipass);
+        compositer = new avtWholeImageCompositerNoZ();
+    }
 
-        // If it *is* 3D though, we need Z in many more cases.
-        if(threeD)
-        {
-            compositer->SetShouldOutputZBuffer(
-                needZ || multipass || shadows || depth_cueing || image_plots
-            );
-        }
+    compositer->SetShouldOutputZBuffer(multipass);
+
+    // If it *is* 3D though, we need Z in many more cases.
+    if(threeD)
+    {
+        compositer->SetShouldOutputZBuffer(
+            needZ || multipass || shadows || depth_cueing || image_plots
+        );
     }
     compositer->SetAllProcessorsNeedResult(
                     multipass || shadows || depth_cueing || image_plots
@@ -4860,6 +4867,38 @@ NetworkManager::RenderCleanup(int windowID)
 }
 
 // ****************************************************************************
+//  Method: CreateNullDataWriter
+//
+//  Purpose: Creates the appropriate null object to give back when indicating
+//           that a render should be re-requested in SR mode.
+//
+//  Arguments:
+//    windowID  which window rendering will occur in
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 23, 2008
+//
+// ****************************************************************************
+avtDataObjectWriter_p
+NetworkManager::CreateNullDataWriter(int windowID) const
+{
+    // Sending back a null result from the render process is used as a
+    // special case to indicate that the viewer should set the rendering
+    // mode to scalable rendering and then send back another render request
+    // RPC.
+    debug5 << "Cell count has fallen below SR threshold. Sending the "
+              "AVT_NULL_IMAGE_MSG data object to viewer" << endl;
+
+    avtDataObjectWriter_p writer;
+    avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_IMAGE_MSG);
+    avtDataObject_p dummyDob;
+    CopyTo(dummyDob, nullData);
+    writer = dummyDob->InstantiateWriter();
+    writer->SetInput(dummyDob);
+    return writer;
+}
+
+// ****************************************************************************
 //  Method: RenderingStages
 //
 //  Purpose: Computes the number of stages a Render will require.
@@ -4996,6 +5035,9 @@ NetworkManager::MultipassRendering(VisWindow *viswin) const
         multipass = UnifyMaximumValue(multipass);
     }
 #endif
+
+    std::string status = (multipass) ? "enabled" : "disabled";
+    debug5 << "Multipass rendering is " << status << std::endl;
 
     return multipass;
 }
