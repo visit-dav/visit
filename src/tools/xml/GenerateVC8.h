@@ -51,14 +51,13 @@
     void WriteProject_TOP_LEVEL_Version8(ostream &out)
     {
         QString configs[] = {"Release", "Debug", "Purify"};
-        QString gui_id = CreateKey();
 
         out << "<?xml version=\"1.0\" encoding=\"Windows-1252\"?>" << endl;
         out << "<VisualStudioProject" << endl;
         out << "\tProjectType=\"Visual C++\"" << endl;
         out << "\tVersion=\"8.00\"" << endl;
         out << "\tName=\"" << name << "\"" << endl;
-        out << "\tProjectGUID=\"" << gui_id << "\"" << endl;
+        out << "\tProjectGUID=\"\"" << endl;
         out << "\tKeyword=\"MakeFileProj\">" << endl;
         out << "\t<Platforms>" << endl;
         out << "\t\t<Platform" << endl;
@@ -75,7 +74,7 @@
             out << "\t\t\tIntermediateDirectory=\".\\" << configs[i] 
                 << "\"" << endl;
             out << "\t\t\tConfigurationType=\"10\"" << endl;
-            out << "\t\t\tInheritedPropertySheets=\"\"" << endl;
+            out << "\t\t\tInheritedPropertySheets=\"..\\NO_SEC_DEP.vsprops\"" << endl;
             out << "\t\t\tUseOfMFC=\"0\"" << endl;
             out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"false\">" << endl;
             out << "\t\t\t<Tool" << endl;
@@ -204,7 +203,7 @@
             out << "\t\t\tIntermediateDirectory=\".\\" << configs[j] << "\\" 
                 << name << pluginComponent << "\\\"" << endl;
             out << "\t\t\tConfigurationType=\"2\"" << endl;
-            out << "\t\t\tInheritedPropertySheets=\"..\\NO_SEC_DEP.vsprops;\"" << endl;
+            out << "\t\t\tInheritedPropertySheets=\"..\\NO_SEC_DEP.vsprops\"" << endl;
             out << "\t\t\tUseOfMFC=\"0\"" << endl;
             out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"false\"" << endl;
             out << "\t\t\tCharacterSet=\"2\">" << endl;
@@ -261,7 +260,7 @@
             out << "\t\t\t\tName=\"VCXMLDataGeneratorTool\"" << endl;
             out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCWebSeriveProxyGeneratorTool\"" << endl;
+            out << "\t\t\t\tName=\"VCWebServiceProxyGeneratorTool\"" << endl;
             out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCMIDLTool\"" << endl;
@@ -274,7 +273,7 @@
                 << name << pluginComponent << "\\" 
                 << name << pluginComponent << ".tlb\"" << endl;
             out << "\t\t\t\tHeaderFileName=\"\"/>" << endl;
-
+            out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
             out << "\t\t\t\tOptimization=\"" << optims[j] << "\"" << endl;
             if (configs[j] == "Release")
@@ -324,7 +323,7 @@
                     << "\"/>" << endl;
             }
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCManagedREsourceCompilerTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCManagedResourceCompilerTool\"/>" << endl;
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCResourceCompilerTool\"" << endl;
             out << "\t\t\t\tPreprocessorDefinitions=\"" << debug[j] << "\"" 
@@ -359,12 +358,19 @@
             out << "\t\t\t\tTargetMachine=\"1\"/>" << endl;
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCALinkTool\"/>" << endl;
+            out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCManifestTool\"/>" << endl;
+            out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCXDCMakeTool\"/>" << endl;
+            out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCBscMakeTool\"/>" << endl;
+            out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCFxCopTool\"/>" << endl;
+            out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCAppVerifierTool\"/>" << endl;
+            out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCWebDeploymentTool\"/>" << endl;
+            out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCPostBuildEventTool\"/>" << endl;
             out << "\t\t</Configuration>" << endl;
         }

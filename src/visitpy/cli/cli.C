@@ -52,9 +52,15 @@
 #include <Utility.h>
 #include <VisItException.h>
 #ifdef WIN32
-#define VISITCLI_API __declspec(dllimport)
+  #define VISITCLI_API __declspec(dllimport)
+
+  #define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
+
+  #define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
+
+  #define HASSPACE(A) (strstr(A, " ") != NULL)
 #else
-#define VISITCLI_API
+  #define VISITCLI_API
 #endif
 // For the VisIt module.
 extern "C" void cli_initvisit(int, bool, int, char **, int, char **);
@@ -116,6 +122,10 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //   Check for visitrc in golobal .visit directory to enable site-wide
 //   macros.
 //
+//   Kathleen Bonnell, Thu Jun 26 17:22:55 PDT 2008 
+//   Add special handling of '-s' and '-o' args on Windows, to ensure proper
+//   parsing of paths-with-spaces. 
+//
 // ****************************************************************************
 
 int
@@ -124,10 +134,10 @@ main(int argc, char *argv[])
     int  retval = 0;
     int  debugLevel = 0;
     bool verbose = false, s_found = false;
-    char *runFile = 0, *loadFile = 0;
+    char *runFile = 0, *loadFile = 0, tmpArg[512];
     char **argv2 = new char *[argc];
     char **argv_after_s = new char *[argc];
-    int  argc2 = 0, argc_after_s = 0;
+    int  argc2 = 0, argc_after_s = 0; 
 
 #ifdef IGNORE_HUPS
     signal(SIGHUP, SIG_IGN);
@@ -142,7 +152,8 @@ main(int argc, char *argv[])
             if (i+1 < argc && isdigit(*(argv[i+1])))
                debugLevel = atoi(argv[++i]);
             else
-               fprintf(stderr,"Warning: debug level not specified, assuming 1\n");
+               fprintf(stderr,"Warning: debug level not specified, "
+                              "assuming 1\n");
             if (debugLevel < 0)
             {
                 debugLevel = 0;
@@ -154,6 +165,48 @@ main(int argc, char *argv[])
                 fprintf(stderr,"Warning: clamping debug level to 5\n");
             }
         }
+#ifdef WIN32
+        else if((strcmp(argv[i], "-s") == 0 && (i+1 < argc)) ||
+                (strcmp(argv[i], "-o") == 0 && (i+1 < argc)))
+        {
+            bool runF = (strcmp(argv[i], "-s") == 0);
+            ++i;
+            // append all parts of this arg back into one string
+            if (BEGINSWITHQUOTE(argv[i]) && !ENDSWITHQUOTE(argv[i]))
+            {
+                strcpy(tmpArg, argv[i]);
+                int nArgsSkip = 1;
+                int tmplen = strlen(argv[i]);
+                for (int j = i+1; j < argc; j++)
+                {
+                    nArgsSkip++;
+                    strcat(tmpArg, " ");
+                    strcat(tmpArg, argv[j]);
+                    tmplen += (strlen(argv[j]) +1);
+                    if (ENDSWITHQUOTE(argv[j]))
+                        break;
+                }
+                i += (nArgsSkip -1);
+                // We want to remove the beginning and ending quotes, to ensure proper
+                // operation further on.
+                strncpy(tmpArg, tmpArg+1, tmplen-2);
+                tmpArg[tmplen-2] = '\0';
+            }
+            else 
+            {
+                sprintf(tmpArg, "%s", argv[i]);
+            }
+            if (runF)
+            {
+                runFile = tmpArg;
+                s_found = true;
+            }
+            else
+            {
+                loadFile = tmpArg;
+            }
+        }
+#else
         else if(strcmp(argv[i], "-s") == 0 && (i+1 < argc))
         {
             runFile = argv[i+1];
@@ -166,6 +219,7 @@ main(int argc, char *argv[])
             loadFile = argv[i+1];
             ++i;
         }
+#endif
         else if(strcmp(argv[i], "-verbose") == 0)
         {
             verbose = true;

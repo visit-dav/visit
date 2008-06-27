@@ -59,6 +59,8 @@
 // Creation:   Thu Jun 12 11:12:35 PDT 2008
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jun 26 10:29:17 PDT 2008
+//   Change arg in WriteFloat from 'float f' to 'float fv'.
 //   
 // ****************************************************************************
 
@@ -74,7 +76,7 @@ public:
     int         ReadInt(FILE *);
     void        WriteInt(FILE *f, int i);
     float       ReadFloat(FILE *);
-    void        WriteFloat(FILE *f, float f);
+    void        WriteFloat(FILE *f, float fv);
     double      ReadDouble(FILE *);
     void        WriteDouble(FILE *f, double d);
     std::string ReadString(FILE *);
@@ -887,6 +889,8 @@ private:
 // Creation:   Thu Jun 12 11:13:44 PDT 2008
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jun 26 10:29:17 PDT 2008
+//   Changed return type of DisableReadingDataInformation from bool to void.
 //   
 // ****************************************************************************
 
@@ -914,7 +918,7 @@ public:
     bool Read();
     bool Write();
 
-    bool DisableReadingDataInformation();
+    void DisableReadingDataInformation();
     std::string CoordinateVariable(int axis) const;
     int ZoneNameToIndex(const std::string &) const;
     int VarNameToIndex(const std::string &) const;
