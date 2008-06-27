@@ -358,9 +358,17 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    possible; move methods from private -> protected; made some functions
 //    virtual.
 //
+//    Tom Fogal, Mon Jun 23 10:18:50 EDT 2008
+//    Moved some methods + instance variables from private to protected.
+//    Made RenderBalance a static method of the class, instead of internal.
+//    Add a method to construct the appropriate null DOB to switch to SR.
+//
 //    Brad Whitlock, Tue Jun 24 15:38:19 PDT 2008
 //    Made the plugin managers belong to the Network manager so they are no
 //    longer singletons.
+//
+//    Tom Fogal, Wed Jun 25 17:26:41 EDT 2008
+//    Moved CallProgressCallback from private to protected.
 //
 // ****************************************************************************
 
@@ -474,12 +482,32 @@ class NetworkManager
     virtual avtImage_p RenderGeometry();
     void               RenderSetup(intVector& networkIds, bool getZBuffer,
                                    int annotMode, int windowID, bool leftEye);
+    void               RenderCleanup(int windowID);
+    avtDataObjectWriter_p CreateNullDataWriter(int windowID) const;
+    size_t             RenderingStages(int windowID);
+    void               RenderShadows(int windowID,
+                                     avtDataObject_p& input_as_dob) const;
+    void               RenderDepthCues(int windowID,
+                                       avtDataObject_p& input_as_dob) const;
+    void               RenderPostProcess(std::vector<avtPlot_p>& image_plots,
+                                         avtDataObject_p& input_as_dob,
+                                         int windowID) const;
+
+    static double      RenderBalance(int numTrianglesIHave);
+    static void        CallInitializeProgressCallback(int);
+
+    static void        CallProgressCallback(const char *, const char*,
+                                            int, int);
+ protected:
+
+    DataNetwork                      *workingNet;
+    std::map<int, EngineVisWinInfo>   viswinMap;
+    struct render_state               r_mgmt;
 
  private:
 
     void            UpdateVisualCues(int winID);
     void            NewVisWindow(int winID);
-    void            RenderCleanup(int windowID);
     bool            PlotsNeedUpdating(const intVector &plots,
                                       const intVector &plotsInWindow) const;
     bool            ViewerExecute(const VisWindow * const viswin,
@@ -487,17 +515,8 @@ class NetworkManager
                                   const WindowAttributes &windowAttributes);
     void            SetUpWindowContents(int windowID, const intVector &plotIds,
                                         bool forceViewerExecute);
-    size_t          RenderingStages(int windowID);
     bool            MultipassRendering(VisWindow *viswin) const;
     avtDataObject_p RenderTranslucent(int windowID, const avtImage_p& input);
-    void            RenderShadows(int windowID,
-                                  avtDataObject_p& input_as_dob) const;
-    void            RenderDepthCues(int windowID,
-                                    avtDataObject_p& input_as_dob) const;
-    void            RenderPostProcess(std::vector<avtPlot_p>& image_plots,
-                                      avtDataObject_p& input_as_dob,
-                                      int windowID) const;
-
 
     static avtWholeImageCompositer *MakeCompositer(bool threeD,
                                                    bool gradientBG,
@@ -520,7 +539,6 @@ class NetworkManager
     StringVectorMap             virtualDatabases;
 
     std::vector<Netnode*>       workingNetnodeList;
-    DataNetwork                *workingNet;
     std::vector<std::string>    nameStack;
 
     int                         uniqueNetworkId;
@@ -528,9 +546,6 @@ class NetworkManager
     bool                        requireOriginalNodes;
     bool                        inQueryMode;
     LoadBalancer               *loadBalancer;
-
-    std::map<int, EngineVisWinInfo>   viswinMap;
-
 
     std::vector<avtDDF *>       ddf;
     std::vector<std::string>    ddf_names;
@@ -541,11 +556,6 @@ class NetworkManager
     static ProgressCallback     progressCallback;
     static void                *progressCallbackArgs;
 
-    static void                 CallInitializeProgressCallback(int);
-    static void                 CallProgressCallback(const char *, const char*,
-                                                     int, int);
-
-    struct render_state r_mgmt;
 };
 
 #endif

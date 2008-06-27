@@ -797,6 +797,12 @@ dnl    Added runtime check for OSMesa's offscreen window size limit.
 dnl    (Couple other cleanups, like duplicate messages for pthreads and
 dnl    not removing temporary files.)
 dnl
+dnl    Tom Fogal, Fri Jun 27 13:21:10 EDT 2008
+dnl    Removed the sinclude, as we do that in acinclude.m4 now (more
+dnl    appropriately).
+dnl    Added a description for the define of OSMESA_SIZE_LIMIT; autoheader
+dnl    complains as is.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1110,7 +1116,6 @@ AC_SUBST(BUILD_MESA_STUB)
 #
 # IceT check.
 #
-sinclude([ac/icet.m4])
 AX_ICET_OPTIONS
 if test "x$UseParallel" == "xno" -a "x$enable_icet" == "xyes" ; then
 	AC_MSG_ERROR([
@@ -3290,7 +3295,7 @@ AC_SUBST(PTHREAD_CXXFLAGS)
 #
 # Do a check to determine the actual limit of an OSMesa
 # window size.  Unfortunately, this must be done using
-# the C API and is thus a runtim check.
+# the C API and is thus a runtime check.
 #
 AC_MSG_CHECKING(for OSMesa offscreen window size limit)
 AC_LANG_PUSH(C++)
@@ -3325,7 +3330,8 @@ AC_TRY_RUN([
         AC_MSG_RESULT(Cross-compiling... assuming $OSMESA_SIZE_LIMIT)
 )
 rm -f junk.txt
-AC_DEFINE_UNQUOTED(OSMESA_SIZE_LIMIT, $OSMESA_SIZE_LIMIT)
+AC_DEFINE_UNQUOTED(OSMESA_SIZE_LIMIT, $OSMESA_SIZE_LIMIT,
+                   [OSMesa Window Size Limit.])
 CXXFLAGS="$oldcxxflags"
 LDFLAGS="$oldldflags"
 LIBS="$oldlibs"

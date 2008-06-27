@@ -2442,10 +2442,6 @@ fi
 # IceT check.
 #
 
-
-
-
-
 # Check whether --enable-icet or --disable-icet was given.
 if test "${enable_icet+set}" = set; then
   enableval="$enable_icet"
@@ -2489,6 +2485,7 @@ IceT usage requested, but you're not doing a parallel build.  IceT requires
 elif test "x$UseParallel" == "xyes" -a "x$enable_icet" == "xyes" ; then
 
 
+ax_have_icet=0
 if test "x$enable_icet" != "xno"; then
 
                         ac_ext=cc
@@ -2776,11 +2773,6 @@ fi
 
 
 
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_ICET 1
-_ACEOF
-
         LDFLAGS=${ax_save_LDFLAGS}
         CXXFLAGS=${ax_save_CXXFLAGS}
         ac_ext=c
@@ -2789,15 +2781,11 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
+        ax_have_icet=1
 
 else
 
         ICET_ENGINE_MAIN_OBJ='$(NO_ICET_PAROBJ)'
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_ICET 0
-_ACEOF
-
 
                         if test "x$with_icet_includedir" != xno -o \
                     "x$with_icet_libdir" != xno; then
@@ -2814,6 +2802,11 @@ fi
 
 
 fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_ICET "$ax_have_icet"
+_ACEOF
 
 
 
@@ -5988,7 +5981,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5991:" \
+echo "$as_me:5984:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -9828,7 +9821,7 @@ ac_x_header_dirs='
 /usr/openwin/share/include'
 
 if test "$ac_x_includes" = no; then
-  # Guess where to find include files, by looking for Intrinsic.h.
+  # Guess where to find include files, by looking for Xlib.h.
   # First, try using that file with no special directory specified.
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
@@ -9836,7 +9829,7 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <X11/Intrinsic.h>
+#include <X11/Xlib.h>
 _ACEOF
 if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
   (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
@@ -9863,7 +9856,7 @@ else
 sed 's/^/| /' conftest.$ac_ext >&5
 
   for ac_dir in $ac_x_header_dirs; do
-  if test -r "$ac_dir/X11/Intrinsic.h"; then
+  if test -r "$ac_dir/X11/Xlib.h"; then
     ac_x_includes=$ac_dir
     break
   fi
@@ -9877,18 +9870,18 @@ if test "$ac_x_libraries" = no; then
   # See if we find them without any special options.
   # Don't add to $LIBS permanently.
   ac_save_LIBS=$LIBS
-  LIBS="-lXt $LIBS"
+  LIBS="-lX11 $LIBS"
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <X11/Intrinsic.h>
+#include <X11/Xlib.h>
 int
 main ()
 {
-XtMalloc (0)
+XrmInitialize ()
   ;
   return 0;
 }
@@ -10250,7 +10243,7 @@ fi
 #
 # Do a check to determine the actual limit of an OSMesa
 # window size.  Unfortunately, this must be done using
-# the C API and is thus a runtim check.
+# the C API and is thus a runtime check.
 #
 echo "$as_me:$LINENO: checking for OSMesa offscreen window size limit" >&5
 echo $ECHO_N "checking for OSMesa offscreen window size limit... $ECHO_C" >&6
@@ -10323,6 +10316,7 @@ fi
 rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 rm -f junk.txt
+
 cat >>confdefs.h <<_ACEOF
 #define OSMESA_SIZE_LIMIT $OSMESA_SIZE_LIMIT
 _ACEOF

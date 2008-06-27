@@ -42,6 +42,10 @@ dnl    Tom Fogal, Fri Jun 20 13:43:48 EDT 2008
 dnl    Added an include path option for IceT to parallel c-pre-processor flags.
 dnl    Was also using AC_ARG_ENABLE incorrectly.
 dnl
+dnl    Tom Fogal, Wed Jun 25 11:49:27 EDT 2008
+dnl    AC_DEFINE should only be used once per variable, else it will just
+dnl    use the last one!  Used a variable to define HAVE_ICET at the end of the
+dnl    macro, instead of embedded in an AS_IF.
 
 dnl provide --enable-icet and --with-icet-(include|lib)dir=... options.  These
 dnl values will be picked up later by the AX_CHECK_ICET macro.
@@ -87,6 +91,7 @@ dnl Otherwise:
 dnl    define ICET_ENGINE_MAIN_OBJ to be `'
 AC_DEFUN([AX_CHECK_ICET], [
 
+ax_have_icet=0
 AS_IF([test "x$enable_icet" != "xno"],
     [
         dnl IceT is really a C library, but we do our checks with C++ because
@@ -167,14 +172,13 @@ to set some custom LDFLAGS.])],
         AC_SUBST(ICET_CXXFLAGS)
         AC_SUBST(ICET_LDFLAGS)
         AC_SUBST(ICET_LIBS)
-        AC_DEFINE([HAVE_ICET], [1], [Define if you have the IceT library])
         LDFLAGS=${ax_save_LDFLAGS}
         CXXFLAGS=${ax_save_CXXFLAGS}
         AC_LANG_POP([C++])
+        ax_have_icet=1
     ],
     [
         ICET_ENGINE_MAIN_OBJ='$(NO_ICET_PAROBJ)'
-        AC_DEFINE([HAVE_ICET], [0], [Define if you have the IceT library])
 
         dnl If they gave us options to say where IceT is, but did not say they
         dnl wanted IceT... why did they bother?  Yell at them.
@@ -186,6 +190,8 @@ enable IceT?])
         ])
     ]
 )
+AC_DEFINE_UNQUOTED([HAVE_ICET], ["$ax_have_icet"],
+                   [Define if you have the IceT library])
 
 AC_SUBST(ICET_ENGINE_MAIN_OBJ)
 

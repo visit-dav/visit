@@ -52,6 +52,7 @@
 #include <new>
 
 #include <visitstream.h>
+#include <visit-config.h>
 #include <snprintf.h>
 
 #include <BufferConnection.h>
@@ -62,6 +63,9 @@
 #include <ExprParser.h>
 #include <ParsingExprList.h>
 #include <avtExprNodeFactory.h>
+#if defined(PARALLEL) && defined(HAVE_ICET)
+#   include <IceTNetworkManager.h>
+#endif
 #include <Init.h>
 #include <InitVTK.h>
 #include <LoadBalancer.h>
