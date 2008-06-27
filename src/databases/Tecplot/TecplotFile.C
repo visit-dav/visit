@@ -1078,13 +1078,13 @@ TecplotZone::IsBoundaryZone()
 int
 TecplotZone::GetNumSpatialDimensions() const
 {
-    zoneData->GetNumSpatialDimensions();
+    return zoneData->GetNumSpatialDimensions();
 }
 
 int
 TecplotZone::GetNumTopologicalDimensions() const
 {
-    zoneData->GetNumTopologicalDimensions();
+    return zoneData->GetNumTopologicalDimensions();
 }
 
 ostream &
@@ -2968,10 +2968,12 @@ TecplotFile::CoordinateVariable(int axis) const
 // Creation:   Fri Jun 13 14:29:59 PDT 2008
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jun 26 10:27:12 PDT 2008
+//   Change return type to void.
 //   
 // ****************************************************************************
 
-bool
+void
 TecplotFile::DisableReadingDataInformation()
 {
     readDataInformation = false;
