@@ -2439,6 +2439,9 @@ ViewerWindowManager::SetInteractionMode(INTERACTION_MODE m,
 //    Brad Whitlock, Wed Apr 30 09:54:48 PDT 2008
 //    Support for internationalization.
 //
+//    Mark Miller, Mon Jun 30 14:42:47 PDT 2008
+//    Made the log scale error more GUI-centric and less code-centric.
+//
 // ****************************************************************************
 
 void
@@ -2475,7 +2478,8 @@ ViewerWindowManager::SetViewCurveFromClient()
                       "curve, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
                       "e.g. via Transform or Box operators and/or\n"
-                      "setting view extents type to 'actual'"));
+                      "setting 'view based on' 'Original spatial extents'\n"
+                      "in Controls->View->Advanced"));
                 return;
             }
         }
@@ -2488,7 +2492,8 @@ ViewerWindowManager::SetViewCurveFromClient()
                       "curve, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
                       "e.g. via Transform or Box operators and/or\n"
-                      "setting view extents type to 'actual'"));
+                      "setting 'view based on' 'Original spatial extents'\n"
+                      "in Controls->View->Advanced"));
                 return;
             }
         }
@@ -2598,6 +2603,9 @@ ViewerWindowManager::SetViewCurveFromClient()
 //    Brad Whitlock, Wed Apr 30 09:55:23 PDT 2008
 //    Support for internationalization.
 //
+//    Mark Miller, Mon Jun 30 14:42:01 PDT 2008
+//    Made the log scale error more GUI-centric and less code-centric.
+//
 // ****************************************************************************
 
 void
@@ -2636,7 +2644,8 @@ ViewerWindowManager::SetView2DFromClient()
                       "the mesh, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
                       "e.g. via Transform or Box operators and/or\n"
-                      "setting view extents type to 'actual'"));
+                      "setting 'view based on' 'Original spatial extents'\n"
+                      "in Controls->View->Advanced"));
                 return;
             }
         }
@@ -2649,7 +2658,8 @@ ViewerWindowManager::SetView2DFromClient()
                       "the mesh, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
                       "e.g. via Transform or Box operators and/or\n"
-                      "setting view extents type to 'actual'"));
+                      "setting 'view based on' 'Original spatial extents'\n"
+                      "in Controls->View->Advanced"));
                 return;
             }
         }
