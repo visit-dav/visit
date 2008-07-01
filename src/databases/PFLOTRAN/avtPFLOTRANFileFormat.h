@@ -88,6 +88,7 @@ class avtPFLOTRANFileFormat : public avtMTMDFileFormat
     virtual const char    *GetType(void)   { return "PFLOTRAN"; };
     virtual void           FreeUpResources(void); 
 
+
     virtual vtkDataSet    *GetMesh(int, int, const char *);
     virtual vtkDataArray  *GetVar(int, int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
@@ -98,11 +99,19 @@ class avtPFLOTRANFileFormat : public avtMTMDFileFormat
 
     int nTime;
     std::vector< std::pair<float,std::string> > times;
-    int meshDims[3];
+    int domainCount[3];
+    int domainIndex[3];
+    int globalDims[3];
+    int domainGlobalStart[3];
+    int domainGlobalCount[3];
+    int localRealStart[3];
+    int localRealCount[3];
     hid_t fileID;
     hid_t dimID[3];
 
     void LoadFile(void);
+    void AddGhostCellInfo(vtkDataSet *ds);
+    void DoDomainDecomposition();
 
     //HDF5 helper functions.
     bool ReadAttribute( hid_t parentID, const char *attr, void *value );
