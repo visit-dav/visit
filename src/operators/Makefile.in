@@ -217,7 +217,7 @@ all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
 OPTIONAL=Context ConnCompReduce MetricThreshold RemoveCells SiloDump \
-         SubdivideQuads SurfCompPrep TraceHistory
+         SubdivideQuads SurfCompPrep 
 
 REQUIRED=BoundaryOp Box Clip Cone CoordSwap CracksClipper CreateBonds Cylinder \
          Decimate DeferExpression Displace DualMesh Elevate ExternalSurface \
