@@ -1769,8 +1769,6 @@ void vtkVisItEnSightReader::ReplaceWildcards(char* filename, int num)
 {
   int wildcardPos, numWildcards, numDigits = 1, i, j;
   int tmpNum = num, multTen = 1;
-  char newChar;
-  int newNum;
   char pattern[32];
   char numStr[32];
   char filenameTmp[2048];

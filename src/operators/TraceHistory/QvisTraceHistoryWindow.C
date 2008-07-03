@@ -172,14 +172,15 @@ QvisTraceHistoryWindow::CreateWindowContents()
 // Creation:   Sun Apr 8 17:04:23 PST 2007
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Mon Jun 30 15:16:12 PDT 2008
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisTraceHistoryWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
     char str[1024];
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
@@ -192,13 +193,6 @@ QvisTraceHistoryWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case 0: //vars

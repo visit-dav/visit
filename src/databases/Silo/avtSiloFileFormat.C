@@ -4315,6 +4315,10 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname, int which_mm,
 //    Mark C. Miller, Thu Apr 17 10:30:54 PDT 2008
 //    With help from Cyrus, fixed some indexing errors between domain-local
 //    and group-global indexing.
+//
+//    Kathleen Bonnell, Wed Jul 2 14:43:22 PDT 2008
+//    Removed unreferenced variables.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -4322,7 +4326,6 @@ avtSiloFileFormat::GetNodelistsVar(int domain)
 {
     int i;
     vtkDataArray *nlvar = 0;
-    int domExtents[6];
     string meshName = metadata->MeshForVar("Nodelists");
     const avtMeshMetaData *mmd = metadata->GetMesh(meshName);
 
@@ -7367,6 +7370,9 @@ avtSiloFileFormat::DetermineFilenameAndDirectory(char *input,
 //    dir in the file. In this case, the location return had to be constructed
 //    and allocated. So, needed to add bool indicating that.
 //
+//    Kathleen Bonnell, Wed Jul 2 14:43:22 PDT 2008
+//    Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
@@ -7374,7 +7380,6 @@ avtSiloFileFormat::DetermineFileAndDirectory(char *input, DBfile *&cFile,
     const char *meshDirname, char *&location, bool *allocated_location)
 {
     char filename[1024];
-    char cwd[1024];
     DetermineFilenameAndDirectory(input, meshDirname, filename, location,
         allocated_location);
     if (strcmp(filename, ".") != 0)

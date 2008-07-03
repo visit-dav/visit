@@ -156,14 +156,15 @@ QvisDeferExpressionWindow::CreateWindowContents()
 // Creation:   Tue Sep 20 13:25:13 PST 2005
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Tue Jul 1 11:41:00 PDT 2008
+//   Removed unreferenced variable.
+//
 // ****************************************************************************
 
 void
 QvisDeferExpressionWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
     char str[1024];
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
@@ -203,14 +204,16 @@ QvisDeferExpressionWindow::UpdateWindow(bool doAll)
 // Creation:   Tue Sep 20 13:25:13 PST 2005
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Tue Jul 1 11:42:31 PDT 2008
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisDeferExpressionWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
+    bool doAll = (which_widget == -1);
+    QString temp;
 
     // Do exprs
     if(which_widget == 0 || doAll)

@@ -125,7 +125,8 @@ vtkCracksClipper::~vtkCracksClipper()
 //  Creation:   Thu Oct 13 08:17:36 PDT 2005
 //
 //  Modifications:
-//
+//    Kathleen Bonnell, Tue Jul 1 15:08:17 PDT 2008
+//    Removed unreferenced variables.
 // ---------------------------------------------------------------------------
 
 void 
@@ -175,7 +176,7 @@ vtkCracksClipper::SetUpClipFunction(int cellId)
     plane->SetNormal(dir);
     }
 
-  double po[3], tmp1[3], tmp2[3];
+  double po[3];
   for (int i = 0; i < 3; i++)
     {
     po[i] = center[i] +  multiplier*crackWidth*dir[i]; 

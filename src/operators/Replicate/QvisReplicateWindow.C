@@ -205,14 +205,15 @@ QvisReplicateWindow::CreateWindowContents()
 // Creation:   Thu Mar 22 12:57:41 PDT 2007
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Tue Jul 1 11:38:02 PDT 2008
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisReplicateWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -225,12 +226,6 @@ QvisReplicateWindow::UpdateWindow(bool doAll)
         }
 
         const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case 0: //useUnitCellVectors

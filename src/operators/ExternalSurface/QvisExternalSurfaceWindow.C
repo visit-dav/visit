@@ -153,9 +153,6 @@ QvisExternalSurfaceWindow::CreateWindowContents()
 void
 QvisExternalSurfaceWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-    double r;
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -166,13 +163,6 @@ QvisExternalSurfaceWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case 0: //removeGhosts
@@ -196,14 +186,15 @@ QvisExternalSurfaceWindow::UpdateWindow(bool doAll)
 // Creation:   Mon Sep 26 09:31:48 PDT 2005
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Tue Jul 1 11:47:15 PDT 2008
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisExternalSurfaceWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
+    bool doAll = (which_widget == -1);
 
     // Do removeGhosts
     if(which_widget == 0 || doAll)

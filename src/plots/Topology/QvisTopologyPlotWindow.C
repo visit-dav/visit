@@ -220,13 +220,15 @@ QvisTopologyPlotWindow::CreateWindowContents()
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Kathleen Bonnell, Tue Jul  1 08:47:52 PDT 2008 
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisTopologyPlotWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -238,13 +240,6 @@ QvisTopologyPlotWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         int                   r,g,b;
         ColorAttributeList    mc;
         switch(i)

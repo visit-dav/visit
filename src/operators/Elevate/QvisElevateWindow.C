@@ -224,14 +224,15 @@ QvisElevateWindow::CreateWindowContents()
 // Creation:   Tue Aug 14 12:09:26 PDT 2007
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Tue Jul 1 11:51:37 PDT 2008
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisElevateWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -243,13 +244,6 @@ QvisElevateWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case 0: //useXYLimits

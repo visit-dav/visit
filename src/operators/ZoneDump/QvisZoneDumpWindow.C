@@ -181,13 +181,15 @@ QvisZoneDumpWindow::CreateWindowContents()
 //    Cyrus Harrison, Wed Apr  4 08:15:28 PDT 2007
 //    Added support for min and max options
 //
+//    Kathleen Bonnell, Tue Jul 1 12:00:05 PDT 2008
+//    Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisZoneDumpWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -199,13 +201,6 @@ QvisZoneDumpWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case 0: //variable

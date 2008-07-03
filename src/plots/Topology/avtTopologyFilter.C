@@ -196,7 +196,7 @@ avtTopologyFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::string)
         // Get the gradients around this point. Also find if the sides or
         // vertical points are invalid.
         //
-        double up, down, right, left, in, out;
+        double up, down, right, left;
         double leftBlock[3], rightBlock[3], upBlock[3], downBlock[3];
 
         if (jump == -1)

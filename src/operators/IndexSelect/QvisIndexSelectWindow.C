@@ -317,13 +317,14 @@ QvisIndexSelectWindow::CreateWindowContents()
 //   Added QvisSILSetSelector to replace domainIndex and groupIndex. 
 //   Changed whichData button group to useWholeCollection checkbox.
 //
+//   Kathleen Bonnell,  Tue Jul 1 11:47:51 PDT 2008
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisIndexSelectWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -441,13 +442,15 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
 //   Added QvisSILSetSelector to replace domainIndex and groupIndex. 
 //   Changed whichData button group to useWholeCollection checkbox.
 //
+//   Kathleen Bonnell,  Tue Jul 1 11:47:51 PDT 2008
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisIndexSelectWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
+    bool doAll = (which_widget == -1);
 
     // Do dim
     if(which_widget == 0 || doAll)

@@ -350,14 +350,15 @@ QvisCreateBondsWindow::UpdateWindow(bool doAll)
 // Creation:   August 29, 2006
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Tue Jul 1 11:39:22 PDT 2008
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisCreateBondsWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
+    bool doAll = (which_widget == -1);
 
     // Do elementVariable
     if(which_widget == 0 || doAll)

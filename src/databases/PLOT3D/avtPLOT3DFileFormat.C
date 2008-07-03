@@ -2532,7 +2532,7 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
         }
 
         //  convert the doubles to floats. 
-        for (int i = 0; i< numbersToRead; i++)
+        for (unsigned int i = 0; i< numbersToRead; i++)
         {
           output[i] = (float)doubleOutput[i];
         }

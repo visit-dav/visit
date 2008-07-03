@@ -803,6 +803,9 @@ avtClipFilter::ModifyContract(avtContract_p spec)
 //      Hank Childs, Fri Feb 15 14:45:45 PST 2008
 //      Initialize some variables to make Klockwork happy.
 //
+//      Kathleen Bonnell, Tue Jul 1 11:37:15 PDT 2008 
+//      Remove unreferenced variable.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -828,7 +831,7 @@ avtClipFilter::Clip1DRGrid(vtkImplicitBoolean *ifuncs, bool inv,
         outVal->InsertNextTuple1(lastVal);
     }
 
-    int i, nPts = inXC->GetNumberOfTuples();
+    int nPts = inXC->GetNumberOfTuples();
 
     for (int i = 1; i < nPts; i++)
     {

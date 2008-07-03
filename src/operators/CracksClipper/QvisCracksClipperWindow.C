@@ -209,13 +209,15 @@ QvisCracksClipperWindow::CreateWindowContents()
 //   Kathleen Bonnell, Mon May  7 15:48:42 PDT 2007
 //   Added calculateDensity, inMarVar, outDenVar.
 //   
+//   Kathleen Bonnell, Tue Jul 1 15:10:55 PDT 2008 
+//   Removed unreferenced variable.
+//   
 // ****************************************************************************
 
 void
 QvisCracksClipperWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -283,14 +285,15 @@ QvisCracksClipperWindow::UpdateWindow(bool doAll)
 // Creation:   Mon Aug 22 09:10:02 PDT 2005
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Jul 1 15:10:55 PDT 2008 
+//   Removed unreferenced variables.
 //   
 // ****************************************************************************
 
 void
 QvisCracksClipperWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
+    bool doAll = (which_widget == -1);
 
     // Do crack1Var
     if(which_widget == 0 || doAll)
@@ -333,7 +336,6 @@ QvisCracksClipperWindow::GetCurrentValues(int which_widget)
     {
         // Nothing for showCrack3
     }
-
 }
 
 
