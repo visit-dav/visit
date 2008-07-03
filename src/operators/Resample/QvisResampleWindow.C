@@ -247,14 +247,15 @@ QvisResampleWindow::CreateWindowContents()
 // Creation:   Wed Jan 2 13:43:29 PST 2008
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Tue Jul 1 11:44:57 PDT 2008 
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisResampleWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -266,13 +267,6 @@ QvisResampleWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case ResamplePluginAttributes::ID_useExtents:

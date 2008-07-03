@@ -160,13 +160,15 @@ QvisCylinderWindow::CreateWindowContents()
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Kathleen Bonnell, Tue Jul 1 11:54:17 PDT 2008 
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisCylinderWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -179,12 +181,6 @@ QvisCylinderWindow::UpdateWindow(bool doAll)
         }
 
         const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case 0: //point1

@@ -301,6 +301,8 @@ QvisSurfCompPrepWindow::CreateWindowContents()
 // Creation:   omitted
 //
 // Modifications:
+//   Kathleen Bonnell, Mon Jun 30 15:12:27 PDT 2008
+//   Removed unreferenced variables.
 //   
 // ****************************************************************************
 
@@ -308,7 +310,6 @@ void
 QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -320,13 +321,6 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case SurfCompPrepAttributes::ID_surfaceType:
@@ -335,7 +329,8 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
             surfaceType->blockSignals(false);
             break;
           case SurfCompPrepAttributes::ID_coordSystem:
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical || atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical || 
+                atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
             {
                 thetaStart->setEnabled(true);
                 if(thetaStartLabel)
@@ -347,7 +342,8 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(thetaStartLabel)
                     thetaStartLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical || atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical || 
+                atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
             {
                 thetaStop->setEnabled(true);
                 if(thetaStopLabel)
@@ -359,7 +355,8 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(thetaStopLabel)
                     thetaStopLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical || atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical || 
+                atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
             {
                 thetaSteps->setEnabled(true);
                 if(thetaStepsLabel)
@@ -407,7 +404,8 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(phiStepsLabel)
                     phiStepsLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical || atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical 
+                || atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical)
             {
                 startRadius->setEnabled(true);
                 if(startRadiusLabel)
@@ -419,7 +417,8 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(startRadiusLabel)
                     startRadiusLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical || atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical 
+                || atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical)
             {
                 endRadius->setEnabled(true);
                 if(endRadiusLabel)
@@ -431,7 +430,8 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(endRadiusLabel)
                     endRadiusLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical || atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical 
+               || atts->GetCoordSystem() == SurfCompPrepAttributes::Spherical)
             {
                 radiusSteps->setEnabled(true);
                 if(radiusStepsLabel)
@@ -515,7 +515,8 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(yStepsLabel)
                     yStepsLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cartesian || atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cartesian || 
+                atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
             {
                 zStart->setEnabled(true);
                 if(zStartLabel)
@@ -527,7 +528,8 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(zStartLabel)
                     zStartLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cartesian || atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cartesian || 
+                atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
             {
                 zStop->setEnabled(true);
                 if(zStopLabel)
@@ -539,7 +541,8 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
                 if(zStopLabel)
                     zStopLabel->setEnabled(false);
             }
-            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cartesian || atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
+            if (atts->GetCoordSystem() == SurfCompPrepAttributes::Cartesian || 
+                atts->GetCoordSystem() == SurfCompPrepAttributes::Cylindrical)
             {
                 zSteps->setEnabled(true);
                 if(zStepsLabel)

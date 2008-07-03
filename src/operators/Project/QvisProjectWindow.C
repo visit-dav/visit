@@ -149,15 +149,14 @@ QvisProjectWindow::CreateWindowContents()
 // Creation:   Tue May 18 14:35:37 PST 2004
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Tue Jul 1 11:55:55 PDT 2008
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisProjectWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-    double r;
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -168,13 +167,6 @@ QvisProjectWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case 0: //projectionType
@@ -195,14 +187,15 @@ QvisProjectWindow::UpdateWindow(bool doAll)
 // Creation:   Tue May 18 14:35:37 PST 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Jul 1 11:55:55 PDT 2008
+//   Removed unreferenced variables.
 //   
 // ****************************************************************************
 
 void
 QvisProjectWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
+    bool doAll = (which_widget == -1);
 
     // Do projectionType
     if(which_widget == 0 || doAll)

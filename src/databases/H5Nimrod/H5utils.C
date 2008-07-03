@@ -126,8 +126,7 @@ H5NIMROD_read_string_attrib (hid_t parent_id,
 {
     herr_t herr;
     hid_t attrib_id;
-    hid_t type_id;
-    hid_t mytype, type;
+    hid_t mytype;
     hsize_t nelem;
     char *string_value;
     *attrib_value = NULL;
@@ -192,7 +191,7 @@ H5NIMROD_read_float32_array (hid_t parent_id,
 	hsize_t * offset,
 	int ndims, hsize_t * dims, float *array)
 {
-    hid_t dataspace, dataset, memspace, datatype;
+    hid_t dataspace, dataset, memspace;
     dataset = H5Dopen (parent_id, dataset_name);
     if (dataset < 0)
     {
@@ -215,7 +214,7 @@ H5NIMROD_read_float32_array (hid_t parent_id,
 		dims, NULL);
     }
 
-    /*  datatype=H5Dget_type(dataset); */
+    /*  hid_t datatype=H5Dget_type(dataset); */
     H5Dread (dataset,		/* handle for the dataset */
 	    H5T_NATIVE_FLOAT,	/* the datatype we use in memory
 				   you can change it to FLOAT if you want */

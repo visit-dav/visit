@@ -290,6 +290,10 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
 //    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
 //    Added the bParFormat flag allowing the parallel format to be used
 //    by a serial code, in which there is only one output dir.
+//
+//    Kathleen Bonnell, Wed Jul 2 09:44:44 PDT 2008 
+//    Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void           
@@ -298,7 +302,7 @@ avtNek3DFileFormat::ParseMetaDataFile(const char *filename)
     string tag;
     char buf[2048];
     ifstream  f(filename);
-    int ii, jj;
+    int ii;
 
     // Verify that the 'magic' and version number are right
     f >> tag;
@@ -482,13 +486,16 @@ avtNek3DFileFormat::ParseMetaDataFile(const char *filename)
 //
 //    Dave Bremer, Fri Jun 13 18:10:46 PDT 2008
 //    Small change to be more robust about finding the location of the field tags.
+//
+//    Kathleen Bonnell, Wed Jul 2 09:44:44 PDT 2008 
+//    Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 avtNek3DFileFormat::ParseNekFileHeader()
 {
     string buf2, tag;
-    int ii, jj;
 
     //Now read the header out of one the files to get block and variable info
     char *blockfilename = new char[ fileTemplate.size() + 64 ];
@@ -699,6 +706,10 @@ avtNek3DFileFormat::ParseNekFileHeader()
 //
 //    Dave Bremer, Thu Jun 12 12:59:23 PDT 2008
 //    Support varying numbers of blocks per file in the parallel format.
+// 
+//    Kathleen Bonnell, Wed Jul 2 09:44:44 PDT 2008 
+//    Removed unreferenced variables.
+//
 // ****************************************************************************
 void
 avtNek3DFileFormat::ReadBlockLocations()
@@ -747,7 +758,7 @@ avtNek3DFileFormat::ReadBlockLocations()
             EXCEPTION1(InvalidDBTypeException, msg);
         }
 
-        int tmp1, tmp2, tmp3, tmp4, currNumBlocks;
+        int tmp1, tmp2, tmp3, tmp4;
         f.seekg( 5, std::ios_base::beg );  //seek past the #std
         f >> tmp1 >> tmp2 >> tmp3 >> tmp4 >> aBlocksPerFile[ii];
 

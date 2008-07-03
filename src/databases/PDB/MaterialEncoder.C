@@ -278,7 +278,7 @@ MaterialEncoder::CreateMaterial(const int *dims, int ndims) const
 {
     int *matnos = new int[matNames.size()];
     char **names = new char *[matNames.size()];
-    for(int i = 0; i < matNames.size(); ++i)
+    for(unsigned int i = 0; i < matNames.size(); ++i)
     {
         matnos[i] = i + 1;
         names[i] = (char *)matNames[i].c_str();

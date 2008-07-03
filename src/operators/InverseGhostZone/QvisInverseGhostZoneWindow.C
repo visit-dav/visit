@@ -149,15 +149,14 @@ QvisInverseGhostZoneWindow::CreateWindowContents()
 // Creation:   Thu Jan 8 09:57:12 PDT 2004
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Tue Jul 1 11:56:22 PDT 2008
+//   Remove unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisInverseGhostZoneWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-    double r;
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -168,13 +167,6 @@ QvisInverseGhostZoneWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case 0: //showType
@@ -195,21 +187,21 @@ QvisInverseGhostZoneWindow::UpdateWindow(bool doAll)
 // Creation:   Thu Jan 8 09:57:12 PDT 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Jul 1 11:56:22 PDT 2008
+//   Remove unreferenced variables.
 //   
 // ****************************************************************************
 
 void
 QvisInverseGhostZoneWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
+    bool doAll = (which_widget == -1);
 
     // Do showType
     if(which_widget == 0 || doAll)
     {
         // Nothing for showType
     }
-
 }
 
 

@@ -184,12 +184,14 @@ avtZoneDumpFilter::PreExecute()
 //    Pass correct zone id to GetOriginalLogicalIndices and ignore ghost 
 //    zones
 //
+//    Kathleen Bonnell, Tue Jul 1 11:59:46 PDT 2008 
+//    Removed unreferenced variables.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtZoneDumpFilter::ExecuteData(vtkDataSet *in_ds, int chunk, std::string)
 {
-    int i;
     if(atts.GetEnabled())
     {
         // Get the original cell number, the group_id, and value arrays.
@@ -218,7 +220,6 @@ avtZoneDumpFilter::ExecuteData(vtkDataSet *in_ds, int chunk, std::string)
         // find out the how the original zone #'s are stored
         bool  comps = zone_ids->GetNumberOfComponents() >1;
         int   zid;
-        float val;
 
         int ijk[3];
 

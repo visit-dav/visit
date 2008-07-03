@@ -879,7 +879,7 @@ void vtkCEAucdReader::ReadBinaryCellTopology(const int * ctype)
 {
    vtkIdType pts[8];
    vtkIdType i, j, k;
-   unsigned int t, np, rnp;
+   unsigned int t, np;
    int m, nmat = this->NumberOfMaterials;
    int* mat = this->CellMaterialId->GetPointer(0);
    int mask = (nmat>1) ? -1 : 0; // direct all cells to output 0 if not using multiple materials

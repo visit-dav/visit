@@ -700,6 +700,9 @@ avtS3DFileFormat::GetMesh(int timeState, int domain, const char *meshname)
 //    To get around WIN32 issues, call parse_dirname instead of dirname, and
 //    CreateStringFromDouble instead of SNPRINTF.  
 //
+//    Kathleen Bonnell, Wed Jul 2 14:44:11 PDT 2008
+//    Removed unreferenced variables.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -721,7 +724,6 @@ avtS3DFileFormat::GetVar(int timeState, int domain, const char *varname)
     char path[256];
     SNPRINTF(path,256,"%s%s%s%sfield.%05d",dir.c_str(),SLASH_STRING, timestepDir.c_str(), SLASH_STRING, domain);
     debug5 << "avtS3DFileFormat::GetVar: Full path to data file is " << path << endl;
-    int handle;
 
     NcFile nf(path);
     if (!nf.is_valid())

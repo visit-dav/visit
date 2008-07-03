@@ -95,8 +95,6 @@ avtAugDecompFileFormat::avtAugDecompFileFormat(const char *augd_filename,
     CommonDatabasePluginInfo *info)
     : avtMTMDFileFormat(augd_filename)
 {
-    int  i, j;
-
     ifstream ifile(augd_filename);
     ifile >> filename;
     if (filename[0] != SLASH_CHAR)
@@ -123,20 +121,20 @@ avtAugDecompFileFormat::avtAugDecompFileFormat(const char *augd_filename,
     int numSubsets;
     ifile >> numSubsets;
     subset_names.resize(numSubsets);
-    for (i = 0 ; i < numSubsets ; i++)
+    for (int i = 0 ; i < numSubsets ; i++)
         ifile >> subset_names[i];
 #ifdef ENGINE
     int numDomains;
     ifile >>  numDomains;
     zone_counts.resize(numDomains);
     subset_vals.resize(numDomains);
-    for (i = 0 ; i < numDomains ; i++)
+    for (int i = 0 ; i < numDomains ; i++)
     {
         ifile >> zone_counts[i];
         subset_vals[i].resize(zone_counts[i]);
     }
-    for (i = 0 ; i < numDomains ; i++)
-        for (j = 0 ; j < zone_counts[i] ; j++)
+    for (int i = 0 ; i < numDomains ; i++)
+        for (int j = 0 ; j < zone_counts[i] ; j++)
             ifile >> subset_vals[i][j];
 #endif
 

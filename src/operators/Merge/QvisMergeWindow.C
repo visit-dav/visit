@@ -149,14 +149,15 @@ QvisMergeWindow::CreateWindowContents()
 // Creation:   Mon Dec 17 11:54:23 PDT 2007
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Tue Jul 1 11:45:27 PDT 2008
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisMergeWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -168,13 +169,6 @@ QvisMergeWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case MergeOperatorAttributes::ID_parallelMerge:

@@ -415,6 +415,9 @@ avtRemoveCracksFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
 //    Kathleen Bonnell, Fri Oct 13 11:05:01 PDT 2006
 //    Reflect atts api change.
 //
+//    Kathleen Bonnell, Tue Jul 1 15:09:54 PDT 2008 
+//    Removed unreferenced variable.
+//
 // ****************************************************************************
 
 bool
@@ -479,7 +482,6 @@ avtRemoveCracksFilter::NeedsProcessing(vtkDataSet *ds, bool *np)
     int nc = strain->GetNumberOfTuples();
     int idx[3] = {0, 4, 8};
     float *s = (float*)strain->GetVoidPointer(0);
-    float *c;
     for (i = 0; i < 3; i++)
     {
         if (!np[i]) // this crack direction is not needed

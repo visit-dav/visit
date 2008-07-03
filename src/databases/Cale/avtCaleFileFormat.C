@@ -333,6 +333,10 @@ avtCaleFileFormat::GetPDBFile()
 //  Programmer: Rob Managan
 //  Creation:   Wed Sep 19 13:30:36 PST 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jul 1 16:00:00 PDT 2008
+//    Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
@@ -370,7 +374,7 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Now walk the fpa arrays and put them all out like wsilo.
     // access this list in teh dump through the fpalist structure
     //
-    int i, nd, ne, nfpa, nipa, nnalls, namix, pdberr ;
+    int i, nfpa, nnalls, namix, pdberr ;
     int npbin, ngrps, rdifmix ;
     typedef struct {
        char name[8] ;
@@ -1281,7 +1285,7 @@ avtCaleFileFormat::GetAuxiliaryData(const char *var,
    debug4 << mName << "type "<<type<<" var "<<var<<endl ;
    if(strcmp(type, AUXILIARY_DATA_MATERIAL) == 0) 
       {
-      int i, kmax, lmax, lp, nnalls, namix, nvals, pdberr ;
+      int i, kmax, lmax, lp, nnalls, namix, pdberr ;
       int nreg, nregx, nk, nl, mixmax ;
       int dims[3] = {1,1,1}, ndims = 2 ; 
 

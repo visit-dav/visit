@@ -179,14 +179,15 @@ QvisRemoveCellsWindow::CreateWindowContents()
 // Creation:   Thu Jul 17 15:33:35 PST 2003
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Mon Jun 30 15:15:02 PDT 2008
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisRemoveCellsWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -200,13 +201,6 @@ QvisRemoveCellsWindow::UpdateWindow(bool doAll)
         else if (i == 3) // skip domainList if we've done cellList
             continue;
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case 0: //cell

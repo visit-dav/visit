@@ -189,14 +189,15 @@ QvisRevolveWindow::CreateWindowContents()
 // Creation:   Sun Mar 18 10:37:59 PDT 2007
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Tue Jul 1 11:52:41 PDT 2008
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisRevolveWindow::UpdateWindow(bool doAll)
 {
     QString temp;
-    double r;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -209,12 +210,6 @@ QvisRevolveWindow::UpdateWindow(bool doAll)
         }
 
         const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
         {
           case 0: //meshType

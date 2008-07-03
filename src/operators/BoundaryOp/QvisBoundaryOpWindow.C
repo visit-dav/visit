@@ -151,15 +151,14 @@ QvisBoundaryOpWindow::CreateWindowContents()
 // Creation:   Tue Aug 14 10:29:40 PDT 2007
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Tue Jul 1 15:11:27 PDT 2008
+//   Removed unreferenced variables.
+//
 // ****************************************************************************
 
 void
 QvisBoundaryOpWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-    double r;
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -170,13 +169,6 @@ QvisBoundaryOpWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
-        QColor                tempcolor;
         switch(i)
 	{
 	    case BoundaryOpAttributes::ID_smoothingLevel:
