@@ -1511,24 +1511,24 @@ def PickBoundary():
     DrawPlots()
     ResetView()
 
-    Pick(83, 223)
+    Pick(83, 223, vars)
     s = s + GetPickOutput()
-    PickByZone(26670)
-    s = s + GetPickOutput()
-
-    NodePick(83, 223)
-    s = s + GetPickOutput()
-    PickByNode(28272)
+    PickByZone(26670, vars)
     s = s + GetPickOutput()
 
-    Pick(127, 84)
+    NodePick(83, 223, vars)
     s = s + GetPickOutput()
-    PickByZone(5399)
+    PickByNode(28272, vars)
     s = s + GetPickOutput()
 
-    NodePick(127, 84)
+    Pick(127, 84, vars)
     s = s + GetPickOutput()
-    PickByNode(7005)
+    PickByZone(5399, vars)
+    s = s + GetPickOutput()
+
+    NodePick(127, 84, vars)
+    s = s + GetPickOutput()
+    PickByNode(7005, vars)
     s = s + GetPickOutput()
 
     DeleteAllPlots()
