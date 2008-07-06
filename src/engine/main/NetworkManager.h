@@ -370,6 +370,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Tom Fogal, Wed Jun 25 17:26:41 EDT 2008
 //    Moved CallProgressCallback from private to protected.
 //
+//    Tom Fogal, Mon Jun 30 15:49:00 EDT 2008
+//    private -> protected: MultipassRendering, RenderTranslucent
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -492,10 +495,12 @@ class NetworkManager
     void               RenderPostProcess(std::vector<avtPlot_p>& image_plots,
                                          avtDataObject_p& input_as_dob,
                                          int windowID) const;
+    bool               MultipassRendering(VisWindow *viswin) const;
+    avtDataObject_p    RenderTranslucent(int windowID,
+                                         const avtImage_p& input);
 
     static double      RenderBalance(int numTrianglesIHave);
     static void        CallInitializeProgressCallback(int);
-
     static void        CallProgressCallback(const char *, const char*,
                                             int, int);
  protected:
@@ -515,8 +520,6 @@ class NetworkManager
                                   const WindowAttributes &windowAttributes);
     void            SetUpWindowContents(int windowID, const intVector &plotIds,
                                         bool forceViewerExecute);
-    bool            MultipassRendering(VisWindow *viswin) const;
-    avtDataObject_p RenderTranslucent(int windowID, const avtImage_p& input);
 
     static avtWholeImageCompositer *MakeCompositer(bool threeD,
                                                    bool gradientBG,

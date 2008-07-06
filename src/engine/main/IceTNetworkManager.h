@@ -69,21 +69,19 @@ class IceTNetworkManager: public NetworkManager
     virtual avtDataObjectWriter_p
                Render(intVector networkIds, bool getZBuffer, int annotMode,
                       int windowID, bool leftEye);
-    void       RealRender(); /// most rendering work happens here.
+    void       RealRender(); /// OpenGL calls sourced from here
 
  protected:
 
-    virtual avtImage_p Readback(const VisWindow *, bool) const;
-    void               RenderShadows(int windowID,
-                                     avtDataObject_p& input_as_dob) const;
-    void               RenderPostProcess(std::vector<avtPlot_p>& image_plots,
-                                         avtDataObject_p& input_as_dob,
-                                         int windowID) const;
+    virtual avtImage_p Readback(const VisWindow * const, bool) const;
+
+ private:
+
+    void  VerifyColorFormat() const;
 
  private:
     IceTCommunicator comm;
     IceTContext context;
-
 };
 
 #endif /* ICET_NETWORK_MANAGER_H */

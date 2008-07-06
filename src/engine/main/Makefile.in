@@ -258,6 +258,9 @@
 #    Added code to build IceT yesterday, but forgot a comment.  Today removed
 #    the IceT obejct from the targets, since I haven't set up the dependencies.
 #
+#    Tom Fogal, Mon Jun 30 16:45:28 EDT 2008
+#    Use ICET_ENG_MAIN_OBJ to conditionally compile IceT.
+#
 ##############################################################################
 
 ##
@@ -325,7 +328,7 @@ MAINSRC=main.C
 LIBRARYSRC=VisItEngineV1.C
 
 SEROBJ=$(SRC:.C=.o)
-PAROBJ=$(SRC:.C=_par.o)
+PAROBJ=$(SRC:.C=_par.o) @ICET_ENG_MAIN_OBJ@
 
 MAINSEROBJ=$(MAINSRC:.C=.o)
 MAINPAROBJ=$(MAINSRC:.C=_par.o)
