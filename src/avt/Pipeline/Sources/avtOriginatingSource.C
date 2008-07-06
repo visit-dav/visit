@@ -483,8 +483,7 @@ avtOriginatingSource::FetchSpeciesAuxiliaryData(const char *,void *,
 avtDataRequest_p
 avtOriginatingSource::BalanceLoad(avtContract_p spec)
 {
-    bool usesAllDomains = spec->GetDataRequest()
-                                                   ->GetSIL().UsesAllDomains();
+    bool usesAllDomains = spec->GetDataRequest()->GetSIL().UsesAllDomains();
 
     //
     // If it shouldn't use load balancing, then it has to do with auxiliary

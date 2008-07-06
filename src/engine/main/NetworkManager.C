@@ -2059,9 +2059,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     viswinInfo.markedForDeletion = false;
     VisWindow *viswin = viswinInfo.viswin;
-
     WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
-    std::vector<avtPlot_p>& imageBasedPlots = viswinMap[windowID].imageBasedPlots;
+    std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
 
     bool dump_renders = avtDebugDumpOptions::DumpEnabled();
 
@@ -5330,6 +5329,9 @@ NetworkManager::RenderDepthCues(int windowID,
 //    Tom Fogal, Wed Jun 18 16:04:03 EDT 2008
 //    Made the input image a reference.
 //
+//    Tom Fogal, Wed Jul  2 15:09:47 EDT 2008
+//    Avoid VisWindow lookup if not in `2'nd annotation mode.
+//
 // ****************************************************************************
 
 void
@@ -5339,7 +5341,6 @@ NetworkManager::RenderPostProcess(std::vector<avtPlot_p>& image_plots,
 {
     const WindowAttributes & windowAttributes =
         viswinMap.find(windowID)->second.windowAttributes;
-    VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
 
     if(!image_plots.empty())
     {
@@ -5364,6 +5365,7 @@ NetworkManager::RenderPostProcess(std::vector<avtPlot_p>& image_plots,
     if (this->r_mgmt.annotMode==2)
 #endif
     {
+        VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
         avtImage_p compositedImage;
         CopyTo(compositedImage, input_as_dob);
         avtImage_p postProcessedImage =

@@ -497,6 +497,9 @@ Engine::Finalize(void)
 //    Brad Whitlock, Tue Jun 24 15:18:44 PDT 2008
 //    Changed how plugin managers are called.
 //
+//    Tom Fogal, Sun Jul  6 16:55:05 EDT 2008
+//    Use the IceT manager if enabled at compile time.
+//
 // ****************************************************************************
 
 void
@@ -520,7 +523,11 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     // Create the network manager.  Note that this must be done *after* the
     // code to set the display and decide if we are using Mesa.
     //
+#if defined(PARALLEL) && defined(HAVE_ICET)
+    netmgr = new IceTNetworkManager;
+#else
     netmgr = new NetworkManager;
+#endif
 
     //
     // Initialize the plugin managers.

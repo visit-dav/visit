@@ -46,6 +46,16 @@ dnl    Tom Fogal, Wed Jun 25 11:49:27 EDT 2008
 dnl    AC_DEFINE should only be used once per variable, else it will just
 dnl    use the last one!  Used a variable to define HAVE_ICET at the end of the
 dnl    macro, instead of embedded in an AS_IF.
+dnl
+dnl    Tom Fogal, Mon Jun 30 16:39:14 EDT 2008
+dnl    Set ICET_ENG_MAIN_OBJ to the list of object files in `engine/main/'
+dnl    which should be built when IceT is enabled.  Did this in a new macro;
+dnl    everything not in AX_VISIT_ICET should be non-VisIt-specific, I hope.
+dnl
+dnl    Tom Fogal, Tue Jul  1 13:33:34 EDT 2008
+dnl    Fixed a `test' conditional which would produce a warning when not using
+dnl    IceT.
+dnl
 
 dnl provide --enable-icet and --with-icet-(include|lib)dir=... options.  These
 dnl values will be picked up later by the AX_CHECK_ICET macro.
@@ -70,7 +80,6 @@ AC_ARG_WITH([icet-libdir],
 )
 
 ICET_LIBS=
-ICET_ENGINE_MAIN_OBJ=
 ax_ICET_LIB=
 ax_ICET_LIB_MPI=
 ax_ICET_LIB_STRATEGIES=
@@ -86,9 +95,6 @@ dnl    define HAVE_ICET in the preprocessor.
 dnl    substitute ICET_LIBS to be available to makefiles as the `-l' options
 dnl       needed to link in IceT.
 dnl    substitute ICET_CXXFLAGS to be available to makefiles
-dnl    define ICET_ENGINE_MAIN_OBJ to be `$(ICET_PAROBJ)'
-dnl Otherwise:
-dnl    define ICET_ENGINE_MAIN_OBJ to be `'
 AC_DEFUN([AX_CHECK_ICET], [
 
 ax_have_icet=0
@@ -167,7 +173,6 @@ to set some custom LDFLAGS.])],
             [-L$MESA_DIR/lib $MESA_LIBS -lm -licet -lmpi]
         )
         ICET_LIBS="${ax_ICET_LIB} ${ax_ICET_LIB_MPI} ${ax_ICET_LIB_STRATEGIES}"
-        ICET_ENGINE_MAIN_OBJ='$(ICET_PAROBJ)'
         PARALLEL_CPPFLAGS="${PARALLEL_CPPFLAGS} -I${ICET_INCLUDEDIR}"
         AC_SUBST(ICET_CXXFLAGS)
         AC_SUBST(ICET_LDFLAGS)
@@ -178,8 +183,6 @@ to set some custom LDFLAGS.])],
         ax_have_icet=1
     ],
     [
-        ICET_ENGINE_MAIN_OBJ='$(NO_ICET_PAROBJ)'
-
         dnl If they gave us options to say where IceT is, but did not say they
         dnl wanted IceT... why did they bother?  Yell at them.
         AS_IF([test "x$with_icet_includedir" != xno -o \
@@ -193,6 +196,27 @@ enable IceT?])
 AC_DEFINE_UNQUOTED([HAVE_ICET], ["$ax_have_icet"],
                    [Define if you have the IceT library])
 
-AC_SUBST(ICET_ENGINE_MAIN_OBJ)
-
 ]) dnl end AC_DEFUN for AX_CHECK_ICET
+
+dnl This doesn't really deserve its own macro, but it's VisIt-specific code.
+dnl It substitutes the ICET_ENG_MAIN_OBJ variable, for use in Makefile.in's.
+dnl This will expand to all of the IceT object files if IceT is enabled, or
+dnl nothing if IceT is not enabled.
+AC_DEFUN([AX_VISIT_ICET], [
+    AC_REQUIRE([AX_CHECK_ICET])
+    dnl The `0' looks strange there, but is important; if the variable is unset
+    dnl then we would otherwise expand to an empty string, which the shell
+    dnl would warn about.  `test' does not seem to use short-circuit
+    dnl evaluation (or at least does semantic analysis before any evaluation),
+    dnl we can't just throw in an earlier clause which requires ax_have_icet to
+    dnl be nonempty.
+    AS_IF([test "0$ax_have_icet" -eq "1"],
+        [
+            ax_it_obj="IceTNetworkManager_icet.o"
+        ],
+        [
+            ax_it_obj=""
+        ]
+    )
+    AC_SUBST(ICET_ENG_MAIN_OBJ, $ax_it_obj)
+])

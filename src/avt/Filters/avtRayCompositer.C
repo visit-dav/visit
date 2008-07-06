@@ -178,6 +178,11 @@ avtRayCompositer::SetGradientBackgroundColors(const double bg1[3], const double 
 //  Programmer: Hank Childs
 //  Creation:   February 13, 2001
 //
+//  Modifications:
+//
+//    Tom Fogal, Wed Jul  2 10:49:31 EDT 2008
+//    I added a message detailing why the exception was thrown.
+//
 // ****************************************************************************
 
 void
@@ -189,7 +194,7 @@ avtRayCompositer::InsertOpaqueImage(avtImage_p img)
         //
         // How can we incorporate an image if it has no zbuffer?
         //
-        EXCEPTION0(ImproperUseException);
+        EXCEPTION1(ImproperUseException, "Need Z buffer.");
     }
 
     opaqueImage = img;
@@ -432,6 +437,9 @@ avtRayCompositer::DrawRadialGradient(unsigned char *data, int w, int h)
 //    Hank Childs, Wed Jan 25 12:23:59 PST 2006
 //    Add error checking.
 //
+//    Tom Fogal, Wed Jul  2 16:32:30 EDT 2008
+//    Don't assume our BG image is 3 components.
+//
 // ****************************************************************************
 
 void
@@ -533,20 +541,21 @@ avtRayCompositer::Execute(void)
         float         *opaqueImageZB  = opaqueImage->GetImage().GetZBuffer();
         unsigned char *opaqueImageData =
                     (unsigned char *)opaqueImageVTK->GetScalarPointer(0, 0, 0);
+        int n_comp = opaqueImageVTK->GetNumberOfScalarComponents();
 
         for (int i = 0 ; i < width ; i++)
         {
             for (int j = 0 ; j < height ; j++)
             {
-                 int index = j*width + i;
-                 int opaqueImageIndex = (j+minH)*fullWidth + (i+minW);
-                 zbuffer[index] = opaqueImageZB[opaqueImageIndex];
-                 if (zbuffer[index] != 1.)
-                 {
-                     data[3*index    ] = opaqueImageData[3*opaqueImageIndex];
-                     data[3*index + 1] = opaqueImageData[3*opaqueImageIndex+1];
-                     data[3*index + 2] = opaqueImageData[3*opaqueImageIndex+2];
-                 }
+                int index = j*width + i;
+                int opaqueImageIndex = (j+minH)*fullWidth + (i+minW);
+                zbuffer[index] = opaqueImageZB[opaqueImageIndex];
+                if (zbuffer[index] != 1.)
+                {
+                    data[3*index    ] = opaqueImageData[n_comp*opaqueImageIndex];
+                    data[3*index + 1] = opaqueImageData[n_comp*opaqueImageIndex+1];
+                    data[3*index + 2] = opaqueImageData[n_comp*opaqueImageIndex+2];
+                }
             }
         }
     }

@@ -47,6 +47,7 @@
 #include <avtSourceFromImage.h>
 #include <DebugStream.h>
 #include <Engine.h>
+#include <StackTimer.h>
 #include <UnexpectedValueException.h>
 #include <VisWindow.h>
 
@@ -103,30 +104,25 @@
 #endif
 
 // ****************************************************************************
-//  Method: gl_rgba_to_gl_rgb
+//  Method: utofv
 //
-//  Purpose: converts GL_RGBA format data to GL_RGB data.  IceT gives us the
-//           former; VisIt expects the latter.
+//  Purpose: Converts a vector of unsigned integers to a vector of floats.  The
+//           returned buffer is dynamically allocated, and should be delete[]d
+//           by the caller.
 //
 //  Programmer: Tom Fogal
-//  Creation:   June, 2007
+//  Creation:   July 2, 2008
 //
 // ****************************************************************************
-static void
-gl_rgba_to_gl_rgb(const GLubyte *src, GLubyte *dest, int width, int height)
+static float *
+utofv(const unsigned int * const src, size_t n_elem)
 {
-    debug1 << "GL_RGBA (" << width*height*4 << " bytes) -> GL_RGB ("
-           << width*height*3 << " bytes)" << std::endl;
-
-    DEBUG_ONLY(bzero(dest, width * height * 3)); /* clear it. */
-    for(int i=0; i < width*height; i++)
-    {
-        memcpy(dest, src, 3);
-        dest += 3;
-        src += 4;
+    size_t i;
+    float *res = new float[n_elem];
+    for(i=0; i < n_elem; ++i) {
+        res[i] = static_cast<float>(src[i]);
     }
-    /* move the pointer back to its base. */
-    dest -= width * height * 3;
+    return res;
 }
 
 // IceT render callback.
@@ -250,6 +246,12 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
                << " primitives.  Balanced speedup = "
                << RenderBalance(viswin->GetNumPrimitives()) << "x" << endl;
 
+        this->r_mgmt.viewportedMode =
+            (this->r_mgmt.annotMode != 1) ||
+            (viswin->GetWindowMode() == WINMODE_2D) ||
+            (viswin->GetWindowMode() == WINMODE_CURVE) ||
+            (viswin->GetWindowMode() == WINMODE_AXISARRAY);
+
         int width, height;
         viswin->GetSize(width, height);
         this->TileLayout(width, height);
@@ -270,12 +272,6 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
 
         CallInitializeProgressCallback(this->RenderingStages(windowID));
 
-        this->r_mgmt.viewportedMode =
-            (this->r_mgmt.annotMode != 1) ||
-            (viswin->GetWindowMode() == WINMODE_2D) ||
-            (viswin->GetWindowMode() == WINMODE_CURVE) ||
-            (viswin->GetWindowMode() == WINMODE_AXISARRAY);
-
         // IceT mode is different from the standard network manager; we don't
         // need to create any compositor or anything: it's all done under the
         // hood.
@@ -283,6 +279,7 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
         // second) is all handled in the callback; from our perspective, we
         // just say draw, read back the image, and post-process it.
 
+        ICET(icetEnable(ICET_CORRECT_COLORED_BACKGROUND));
         ICET(icetDrawFunc(render));
         ICET(icetDrawFrame());
         // The IceT documentation recommends synchronization after rendering.
@@ -293,63 +290,39 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
         // Make sure we don't try to grab it on other processors.
         GLint rank;
         ICET(icetGetIntegerv(ICET_RANK, &rank));
-        avtDataObjectWriter_p writer;  // where the PPing output goes.
-        if (0 == rank)
+
+        debug3 << "IceTNM: Starting readback." << std::endl;
+        avtDataObject_p dob;
         {
-            debug3 << "IceTNM: Starting a readback because I am processor 0."
-                   << std::endl;
             avtImage_p img = this->Readback(viswin, this->r_mgmt.viewportedMode);
-
-            // Now its essentially back to the same behavior as our parent:
-            //  shadows
-            //  depth cueing
-            //  post processing
-            //  creating a D.Obj.writer out of all this
-
-            if (doShadows)
-            {
-                avtDataObject_p dob;
-                CopyTo(dob, img);
-                this->RenderShadows(windowID, dob);
-                CopyTo(img, dob);
-            }
-
-            if (doDepthCueing)
-            {
-                avtDataObject_p dob;
-                CopyTo(dob, img);
-                this->RenderDepthCues(windowID, dob);
-                CopyTo(img, dob);
-            }
-
-            //
-            // If the engine is doing more than just 3D annotations,
-            // post-process the composited image.
-            //
-            avtDataObject_p dob;
             CopyTo(dob, img);
-
-            this->RenderPostProcess(imageBasedPlots, dob, windowID);
-            CopyTo(img, dob);
-
-            writer = img->InstantiateWriter();
-            writer->SetInput(dob);
         }
-        else
+
+        // Now its essentially back to the same behavior as our parent:
+        //  shadows
+        //  depth cueing
+        //  post processing
+        //  creating a D.Obj.writer out of all this
+
+        if (doShadows)
         {
-            // We're not being inaccurate here; we really don't have any
-            // relevant data at this point.  IceT only leaves final composited
-            // images on tile nodes; the buffers on non-display nodes are
-            // invalid.
-            debug3 << "IceTNM: telling VisIt I have no data because I "
-                   << "am not processor 0." << std::endl;
-            avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_IMAGE_MSG);
-            avtDataObject_p dummyDob;
-            CopyTo(dummyDob, nullData);
-            writer = dummyDob->InstantiateWriter();
-            writer->SetInput(dummyDob);
-            return writer;
+            this->RenderShadows(windowID, dob);
         }
+
+        if (doDepthCueing)
+        {
+            this->RenderDepthCues(windowID, dob);
+        }
+
+        //
+        // If the engine is doing more than just 3D annotations,
+        // post-process the composited image.
+        //
+        this->RenderPostProcess(imageBasedPlots, dob, windowID);
+
+        avtDataObjectWriter_p writer;  // where the PPing output goes.
+        writer = dob->InstantiateWriter();
+        writer->SetInput(dob);
 
         this->RenderCleanup(windowID);
 
@@ -361,6 +334,8 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
         RETHROW;
     }
     ENDTRY
+
+    workingNet = origWorkingNet;
 }
 
 // ****************************************************************************
@@ -371,142 +346,177 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
 //  Programmer: Tom Fogal
 //  Creation:   June 20, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Mon Jun 30 16:17:43 EDT 2008
+//    Support multipass rendering.
+//
 // ****************************************************************************
+
 void
 IceTNetworkManager::RealRender()
 {
-    this->RenderGeometry();
-    // and translucent ..
+    avtImage_p dob = this->RenderGeometry();
+    VisWindow *viswin =
+        this->viswinMap.find(this->r_mgmt.windowID)->second.viswin;
+    if(this->MultipassRendering(viswin)) {
+        avtDataObject_p i_as_dob;
+        i_as_dob = this->RenderTranslucent(this->r_mgmt.windowID, dob);
+        CopyTo(dob, i_as_dob);
+    }
 }
 
 // ****************************************************************************
 //  Method: Readback
 //
 //  Purpose: Reads back the image buffer from IceT.
+//           Unfortunately for us, many post processing algorithms in VisIt
+//           assume they'll have an image available.  In IceT, this is only
+//           true if the node is also a tile node.  Most of the complication
+//           (and the MPI calls) in this method comes from making sure *all*
+//           nodes have images, whether or not they are driving a tile.
 //
 //  Programmer: Tom Fogal
 //  Creation:   June 20, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Tue Jul  1 11:06:55 EDT 2008
+//    Hack the number of scalars in the vtkImageData we create to be 4, to
+//    match the kind of buffer IceT gives us.  This allows us to skip an
+//    expensive GL_RGBA -> GL_RGB conversion.
+//    Also, use a void*; don't know why it was a uchar* before ...
+//
+//    Tom Fogal, Wed Jul  2 11:05:07 EDT 2008
+//    Readback and send/recv the Z buffer (unconditionally...).
+//
 // ****************************************************************************
 avtImage_p
-IceTNetworkManager::Readback(const VisWindow *viswin, bool viewported) const
+IceTNetworkManager::Readback(const VisWindow * const viswin,
+                             bool viewported) const
 {
     assert(viswin);
 
-    {
-        GLboolean cbuf;
-        ICET(icetGetBooleanv(ICET_COLOR_BUFFER_VALID, &cbuf));
-        if(GL_FALSE == cbuf)
-        {
-            debug1 << "IceTNM: Readback of empty color buffer!" << std::endl;
-            return NULL;
-        }
-    }
+    GLboolean have_image;
+    GLint n_tiles, n_procs, rank;
+
+    ICET(icetGetBooleanv(ICET_COLOR_BUFFER_VALID, &have_image));
+    ICET(icetGetIntegerv(ICET_NUM_TILES, &n_tiles));
+    ICET(icetGetIntegerv(ICET_NUM_PROCESSES, &n_procs));
+    ICET(icetGetIntegerv(ICET_RANK, &rank));
 
     int width=-42, height=-42;
     viswin->GetSize(width, height);
     assert(width > 0 && height > 0);
 
-    GLubyte *pixels = icetGetColorBuffer();
-    DEBUG_ONLY(ICET_CHECK_ERROR);
+    GLubyte *pixels = NULL;
+    GLuint *depth = NULL;
 
+    // We can't delete pointers IceT gives us.  However if we're a receiving
+    // node, we'll dynamically allocate our buffers and thus need to deallocate
+    // them.
+    bool dynamic = false;
+
+    if(GL_TRUE == have_image)
     {
-        GLint color_format;
-        ICET(icetGetIntegerv(ICET_COLOR_FORMAT, &color_format));
-        if(color_format != GL_RGBA) {
-            const char *str;
-            switch(color_format) {
-                case GL_RGB: str = "GL_RGB"; break;
-                case GL_BGR: str = "GL_BGR"; break;
-                case GL_BGRA: str = "GL_BGRA"; break;
-                default: str = "unexpected error case"; break;
+        // We have an image.  First read it back from IceT.
+        pixels = icetGetColorBuffer();
+        DEBUG_ONLY(ICET_CHECK_ERROR);
+        depth = icetGetDepthBuffer();
+        DEBUG_ONLY(ICET_CHECK_ERROR);
+
+        this->VerifyColorFormat(); // Bail out if we don't get GL_RGBA data.
+        assert(NULL != depth);
+
+        for(GLint buddy=rank+1; buddy < n_procs; ++buddy)
+        {
+            // Send to machines with ranks a multiple of my own
+            if((buddy % n_tiles) == rank)
+            {
+                // 4: assuming GL_RGBA.
+                debug1 << "Processor " << rank << " sending to " << buddy
+                       << std::endl;
+                MPI_Send(pixels, 4*width*height, MPI_BYTE, buddy, 1,
+                         VISIT_MPI_COMM);
+                MPI_Send(depth, width*height, MPI_UNSIGNED, buddy, 2,
+                         VISIT_MPI_COMM);
             }
-            EXCEPTION2(UnexpectedValueException, "GL_RGBA", std::string(str));
         }
     }
+    else
+    {
+        // We don't have an image -- we need to receive it from our buddy.
+        GLint source = (rank % n_tiles);
+        debug1 << "Processor " << rank << " waiting for data from " << source
+               << std::endl;
+        pixels = new GLubyte[4*width*height];
+        depth = new GLuint[width*height];
+        dynamic = true;
+        MPI_Recv(pixels, 4*width*height, MPI_BYTE, source, 1, VISIT_MPI_COMM,
+                 MPI_STATUS_IGNORE);
+        debug1 << "Received image!" << std::endl;
+        MPI_Recv(depth, width*height, MPI_UNSIGNED, source, 2, VISIT_MPI_COMM,
+                 MPI_STATUS_IGNORE);
+        debug1 << "Received depth buffer!" << std::endl;
+    }
+    debug1 << "Finished pushing images out." << std::endl;
 
     vtkImageData *image = avtImageRepresentation::NewImage(width, height);
+    // NewImage assumes we want a 3-component ("GL_RGB") image, but IceT gives
+    // us back data in a GL_RGBA format.  So we just reset the number of
+    // components and reallocate the data; unfortunately this means we do an
+    // allocate in NewImage and then immediately throw it away when doing an
+    // allocate here.
+    image->SetNumberOfScalarComponents(4);
+    image->AllocateScalars();
     {
-        // We have the pixel data, but it's GL_RGBA!  Our caller is expecting
-        // GL_RGB, so we need to convert the data.
-        unsigned char *img_pix = static_cast<unsigned char *>
-                                            (image->GetScalarPointer(0,0,0));
-        gl_rgba_to_gl_rgb(pixels, img_pix, width, height);
+        void *img_pix = image->GetScalarPointer();
+        memcpy(img_pix, pixels, width*height*4);
     }
 
-    avtSourceFromImage screenCapSrc(image, NULL);
-    avtImage_p visit_img = screenCapSrc.GetTypedOutput();
+    float *visit_depth_buffer = utofv(depth, width*height);
+    avtSourceFromImage screenCapSrc(image, visit_depth_buffer);
+    avtImage_p visit_img;
+    visit_img = screenCapSrc.GetTypedOutput();
     visit_img->Update(screenCapSrc.GetGeneralContract());
     visit_img->SetSource(NULL);
     image->Delete();
+    delete[] visit_depth_buffer;
+    if(dynamic)
+    {
+        delete[] pixels;
+        delete[] depth;
+    }
 
     return visit_img;
 }
 
 // ****************************************************************************
-//  Method: Shadows
+//  Method: VerifyColorFormat
 //
-//  Purpose: Adds shadows to a scene.  Only meant to be called by a tile node.
+//  Purpose: We currently expect GL_RGBA from IceT.  If it gives us something
+//           different, we should bail out.
 //
 //  Programmer: Tom Fogal
-//  Creation:   June 25, 2008
+//  Creation:   July 1, 2008
 //
 // ****************************************************************************
 void
-IceTNetworkManager::RenderShadows(int windowID,
-                                  avtDataObject_p& input_as_dob) const
+IceTNetworkManager::VerifyColorFormat() const
 {
-    VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
-
-    CallProgressCallback("NetworkManager", "Creating shadows",0,1);
-    avtView3D cur_view = viswin->GetView3D();
-
-    //
-    // Figure out which direction the light is pointing.
-    //
-    const LightList *light_list = viswin->GetLightList();
-    const LightAttributes &la = light_list->GetLight0();
-    double light_dir[3];
-    bool canShade = avtSoftwareShader::GetLightDirection(la, cur_view,
-                                                         light_dir);
-
-    /// TJF -- note to self -- need to find another way to do shadows!
-    debug1 << "Shadowing with the IceT renderer is not currently supported!"
-           << std::endl;
-}
-
-// ****************************************************************************
-//  Method: RenderPostProcess
-//
-//  Purpose: Post-Rendering plots to apply.  These are typically 2D overlays.
-//
-//  Programmer: Tom Fogal
-//  Creation:   June 25, 2008
-//
-// ****************************************************************************
-void
-IceTNetworkManager::RenderPostProcess(std::vector<avtPlot_p>& image_plots,
-                                      avtDataObject_p& input_as_dob,
-                                      int windowID) const
-{
-    const WindowAttributes &windowAttributes =
-        viswinMap.find(windowID)->second.windowAttributes;
-    VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
-
-    if(!image_plots.empty())
+    GLint color_format;
+    ICET(icetGetIntegerv(ICET_COLOR_FORMAT, &color_format));
+    if(color_format != GL_RGBA)
     {
-        avtImage_p compositedImage;
-        CopyTo(compositedImage, input_as_dob);
-
-        for(std::vector<avtPlot_p>::iterator plot = image_plots.begin();
-            plot != image_plots.end();
-            ++plot)
+        const char *str;
+        switch(color_format)
         {
-            avtImage_p newImage = (*plot)->ImageExecute(compositedImage,
-                                                        windowAttributes);
-            compositedImage = newImage;
+            case GL_RGB: str = "GL_RGB"; break;
+            case GL_BGR: str = "GL_BGR"; break;
+            case GL_BGRA: str = "GL_BGRA"; break;
+            default: str = "unexpected error case"; break;
         }
-        CopyTo(input_as_dob, compositedImage);
+        EXCEPTION2(UnexpectedValueException, "GL_RGBA", std::string(str));
     }
 }
 

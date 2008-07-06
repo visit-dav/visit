@@ -803,6 +803,9 @@ dnl    appropriately).
 dnl    Added a description for the define of OSMESA_SIZE_LIMIT; autoheader
 dnl    complains as is.
 dnl
+dnl    Tom Fogal, Mon Jun 30 16:54:33 EDT 2008
+dnl    Added a call to the macro I added in ac/icet.m4.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1113,9 +1116,9 @@ AC_SUBST(VIEWER_MESA_STUB_CPPFLAGS)
 AC_SUBST(VIEWER_MESA_LIBS)
 AC_SUBST(BUILD_MESA_STUB)
 
-#
-# IceT check.
-#
+dnl
+dnl IceT check.
+dnl
 AX_ICET_OPTIONS
 if test "x$UseParallel" == "xno" -a "x$enable_icet" == "xyes" ; then
 	AC_MSG_ERROR([
@@ -1124,6 +1127,10 @@ IceT usage requested, but you're not doing a parallel build.  IceT requires
 elif test "x$UseParallel" == "xyes" -a "x$enable_icet" == "xyes" ; then
 	AX_CHECK_ICET
 fi
+dnl Always needed: this sets up the object files we'll build, and should
+dnl therefore be called even if IceT is disabled! (to explicitly set it to
+dnl nothing).
+AX_VISIT_ICET
 
 #
 # The check for OpenGL can be disabled with `--disable-ogl'.
