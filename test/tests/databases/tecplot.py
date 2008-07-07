@@ -22,6 +22,11 @@
 #    Jeremy Meredith, Wed Sep  7 12:06:04 PDT 2005
 #    Allowed spaces in variable names.
 #
+#    Jeremy Meredith, Mon Jul  7 14:20:12 EDT 2008
+#    The tecplot reader now successfully parses x/y/z coordinate variables
+#    from the simpscat.tec file, so I changed the plot to be a pseudocolor
+#    plot instead of a curve plot.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -197,9 +202,16 @@ Test("tecplot_19")
 DeleteAllPlots();
 
 OpenDatabase("../data/tecplot_test_data/simpscat.tec")
-AddPlot("Curve","X[M] vs/Y[M]")
+AddPlot("Pseudocolor","T_K_")
+p = PseudocolorAttributes()
+p.pointSizePixels = 6
+SetPlotOptions(p)
+AddOperator("Threshold")
+t = ThresholdAttributes()
+t.outputMeshType = 1
+SetOperatorOptions(t)
 DrawPlots()
-SetTheView()
+ResetView()
 Test("tecplot_20")
 DeleteAllPlots();
 
