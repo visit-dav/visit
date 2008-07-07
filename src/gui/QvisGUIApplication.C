@@ -5705,6 +5705,9 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
 //   Brad Whitlock, Thu Jul 31 15:15:38 PST 2003
 //   Fixed a bug that prevented full initialization of the GUI on Windows.
 //
+//   Tom Fogal, Mon Jul  7 10:34:04 EDT 2008
+//   Updated message on how to get help.
+//
 // ****************************************************************************
 
 void
@@ -5720,8 +5723,9 @@ QvisGUIApplication::ReadFromViewer(int)
         CATCH(LostConnectionException)
         {
             cerr << "VisIt's viewer exited abnormally! Aborting the Graphical "
-                 << "User Interface. VisIt's developers may be reached at "
-                 << "\"visit-help@llnl.gov\"."
+                 << "User Interface. VisIt's developers may be reached via "
+                 << "the visit-users mailing list.  Please see:" << std::endl
+                 << "        https://wci.llnl.gov/codes/visit/FAQ.html#1"
                  << endl;
             viewerIsAlive = false;
 
