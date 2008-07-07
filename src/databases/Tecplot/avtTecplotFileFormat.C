@@ -68,6 +68,50 @@ using std::vector;
 #endif
 
 // ****************************************************************************
+//  Method:  GetCoord/GuessCoord
+//
+//  Purpose:
+//    Turns a variable name into an axis number (x=0,y=1,z=2, none=-1).
+//    GetCoord only returns exact matches.
+//    GuessCoord will also try non-exact maches (e.g. "X [m]" includes units).
+//
+//  Arguments:
+//    tok        the token to convert into an axis number
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July  7, 2008
+//
+// ****************************************************************************
+static int GetCoord(const string &tok)
+{
+    if (tok=="X" || tok=="x" || tok=="I")
+        return 0;
+    if (tok=="Y" || tok=="y" || tok=="J")
+        return 1;
+    if (tok=="Z" || tok=="z" || tok=="K")
+        return 2;
+    return -1;
+}
+
+static int GuessCoord(const string &tok)
+{
+    int guessed = GetCoord(tok);
+
+    if (tok.length() >= 3)
+    {
+        // do match: "x[m]" or "x (m)", etc.
+        // don't match: "x velocity"
+        if ((!isspace(tok[1]) && !isalnum(tok[1])) ||
+            (isspace(tok[1] && !isalnum(tok[2]))))
+        {
+            guessed = GetCoord(tok.substr(0,1));
+        }
+    }
+
+    return guessed;
+}
+
+// ****************************************************************************
 //  Method:  SimplifyWhitespace
 //
 //  Purpose:
@@ -270,6 +314,12 @@ avtTecplotFileFormat::GetNextToken()
 //  Programmer:  Jeremy Meredith
 //  Creation:    December 10, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Jul  7 14:09:28 EDT 2008
+//    Allow X/Y/Z coordinate arrays to show up as normal variables.  This is
+//    because we now have improved axis-variable guessing, and so if we guess
+//    wrong we want to avoid hiding what might be a normal scalar variable.
+//
 // ****************************************************************************
 vtkPoints*
 avtTecplotFileFormat::ParseNodesPoint(int numNodes)
@@ -289,21 +339,13 @@ avtTecplotFileFormat::ParseNodesPoint(int numNodes)
 
     for (int v=0; v<numTotalVars; v++)
     {
-        if (v==Xindex || v==Yindex || v==Zindex)
-        {
-            allScalars.push_back(NULL);
-            allptr.push_back(NULL);
-        }
-        else
-        {
-            vtkFloatArray *scalars = vtkFloatArray::New();
-            scalars->SetNumberOfTuples(numNodes);
-            float *ptr = (float *) scalars->GetVoidPointer(0);
-            vars[allVariableNames[v]].push_back(scalars);
+        vtkFloatArray *scalars = vtkFloatArray::New();
+        scalars->SetNumberOfTuples(numNodes);
+        float *ptr = (float *) scalars->GetVoidPointer(0);
+        vars[allVariableNames[v]].push_back(scalars);
 
-            allScalars.push_back(scalars);
-            allptr.push_back(ptr);
-        }
+        allScalars.push_back(scalars);
+        allptr.push_back(ptr);
     }
 
     for (i=0; i<numNodes; i++)
@@ -323,10 +365,8 @@ avtTecplotFileFormat::ParseNodesPoint(int numNodes)
             {
                 pts[3*i + 2] = val;
             }
-            else
-            {
-                allptr[v][i] = val;
-            }
+
+            allptr[v][i] = val;
         }
     }
 
@@ -345,6 +385,12 @@ avtTecplotFileFormat::ParseNodesPoint(int numNodes)
 //  Programmer:  Jeremy Meredith
 //  Creation:    December 10, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Jul  7 14:09:28 EDT 2008
+//    Allow X/Y/Z coordinate arrays to show up as normal variables.  This is
+//    because we now have improved axis-variable guessing, and so if we guess
+//    wrong we want to avoid hiding what might be a normal scalar variable.
+//
 // ****************************************************************************
 vtkPoints*
 avtTecplotFileFormat::ParseNodesBlock(int numNodes)
@@ -360,31 +406,27 @@ avtTecplotFileFormat::ParseNodesBlock(int numNodes)
 
     for (int v = 0; v < numTotalVars; v++)
     {
+        vtkFloatArray *scalars = vtkFloatArray::New();
+        scalars->SetNumberOfTuples(numNodes);
+        float *ptr = (float *) scalars->GetVoidPointer(0);
+        for (int i=0; i<numNodes; i++)
+            ptr[i] = atof(GetNextToken().c_str());
+        vars[allVariableNames[v]].push_back(scalars);
+
         if (v==Xindex)
         {
             for (int i=0; i<numNodes; i++)
-                pts[3*i + 0] = atof(GetNextToken().c_str());
+                pts[3*i + 0] = ptr[i];
         }
         else if (v==Yindex)
         {
             for (int i=0; i<numNodes; i++)
-                pts[3*i + 1] = atof(GetNextToken().c_str());
+                pts[3*i + 1] = ptr[i];
         }
         else if (v==Zindex)
         {
             for (int i=0; i<numNodes; i++)
-            {
-                pts[3*i + 2] = atof(GetNextToken().c_str());
-            }
-        }
-        else
-        {
-            vtkFloatArray *scalars = vtkFloatArray::New();
-            scalars->SetNumberOfTuples(numNodes);
-            float *ptr = (float *) scalars->GetVoidPointer(0);
-            for (int i=0; i<numNodes; i++)
-                ptr[i] = atof(GetNextToken().c_str());
-            vars[allVariableNames[v]].push_back(scalars);
+                pts[3*i + 2] = ptr[i];
         }
     }
 
@@ -723,6 +765,13 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //    Allow "DATAPACKING" as an alias for "F" in zone record header.
 //    Add smarter X/Y/Z coordinate guessing.
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Jul  7 14:09:28 EDT 2008
+//    Add two-stage guessing for axis variables, and make the guessing smarter.
+//    Also, allow X/Y/Z coordinate arrays to show up as normal variables just
+//    in case we still guessed wrong.
+//    
+//
 // ****************************************************************************
 
 void
@@ -779,6 +828,10 @@ avtTecplotFileFormat::ReadFile()
         }
         else if (tok == "VARIABLES")
         {
+            int guessedXindex = -1;
+            int guessedYindex = -1;
+            int guessedZindex = -1;
+
             // variable lists
             tok = GetNextToken();
             while (token_was_string)
@@ -796,29 +849,22 @@ avtTecplotFileFormat::ReadFile()
 
                 string tok_nw = SimplifyWhitespace(tok);
 
-                if (tok_nw == "X" || tok_nw == "x" || tok_nw == "I" ||
-                    (tok_nw.length()>1 && (tok_nw[0]=='X'||tok_nw[0]=='x') && !isalnum(tok_nw[1])))
+                switch (GetCoord(tok_nw))
                 {
-                    debug4 << "Assuming variable '"<<tok_nw<<"' is X coord.\n";
-                    Xindex = numTotalVars;
+                  case 0: Xindex = numTotalVars; break;
+                  case 1: Yindex = numTotalVars; break;
+                  case 2: Zindex = numTotalVars; break;
+                  default: break;
                 }
-                else if (tok_nw == "Y" || tok_nw == "y" || tok_nw == "J" ||
-                         (tok_nw.length()>1 && (tok_nw[0]=='Y'||tok_nw[0]=='y') && !isalnum(tok_nw[1])))
+                switch (GuessCoord(tok_nw))
                 {
-                    debug4 << "Assuming variable '"<<tok_nw<<"' is Y coord.\n";
-                    Yindex = numTotalVars;
-                    spatialDimension = (spatialDimension < 2) ? 2 : spatialDimension;
+                  case 0: guessedXindex = numTotalVars; break;
+                  case 1: guessedYindex = numTotalVars; break;
+                  case 2: guessedZindex = numTotalVars; break;
+                  default: break;
                 }
-                else if (tok_nw == "Z" || tok_nw == "z" ||
-                         (tok_nw.length()>1 && (tok_nw[0]=='Z'||tok_nw[0]=='z') && !isalnum(tok_nw[1])))
-                {
-                    debug4 << "Assuming variable '"<<tok_nw<<"' is Z coord.\n";
-                    Zindex = numTotalVars;
-                    spatialDimension = (spatialDimension < 3) ? 3 : spatialDimension;
-                }
-                else
-                    variableNames.push_back(tok);
 
+                variableNames.push_back(tok);
                 allVariableNames.push_back(tok);
                 numTotalVars++;
                 numVars = variableNames.size();
@@ -839,29 +885,22 @@ avtTecplotFileFormat::ReadFile()
                 {
                     string tok_nw = SimplifyWhitespace(tok);
 
-                    if (tok_nw == "X" || tok_nw == "x" || tok_nw == "I" ||
-                        (tok_nw.length()>1 && (tok_nw[0]=='X'||tok_nw[0]=='x') && !isalnum(tok_nw[1])))
+                    switch (GetCoord(tok_nw))
                     {
-                        debug4 << "Assuming variable '"<<tok_nw<<"' is X coord.\n";
-                        Xindex = numTotalVars;
+                      case 0: Xindex = numTotalVars; break;
+                      case 1: Yindex = numTotalVars; break;
+                      case 2: Zindex = numTotalVars; break;
+                      default: break;
                     }
-                    else if (tok_nw == "Y" || tok_nw == "y" || tok_nw == "J" ||
-                             (tok_nw.length()>1 && (tok_nw[0]=='Y'||tok_nw[0]=='y') && !isalnum(tok_nw[1])))
+                    switch (GuessCoord(tok_nw))
                     {
-                        debug4 << "Assuming variable '"<<tok_nw<<"' is Y coord.\n";
-                        Yindex = numTotalVars;
-                        spatialDimension = (spatialDimension < 2) ? 2 : spatialDimension;
+                      case 0: guessedXindex = numTotalVars; break;
+                      case 1: guessedYindex = numTotalVars; break;
+                      case 2: guessedZindex = numTotalVars; break;
+                      default: break;
                     }
-                    else if (tok_nw == "Z" || tok_nw == "z" ||
-                             (tok_nw.length()>1 && (tok_nw[0]=='Z'||tok_nw[0]=='z') && !isalnum(tok_nw[1])))
-                    {
-                        debug4 << "Assuming variable '"<<tok_nw<<"' is Z coord.\n";
-                        Zindex = numTotalVars;
-                        spatialDimension = (spatialDimension < 3) ? 3 : spatialDimension;
-                    }
-                    else
-                        variableNames.push_back(tok);
 
+                    variableNames.push_back(tok);
                     allVariableNames.push_back(tok);
                     numTotalVars++;
                     numVars = variableNames.size();
@@ -874,6 +913,26 @@ avtTecplotFileFormat::ReadFile()
                         tok = GetNextToken();
                 }
             }
+
+            // If we didn't find an exact match for coordinate axis vars, guess
+            if (Xindex < 0) Xindex = guessedXindex;
+            if (Yindex < 0) Yindex = guessedYindex;
+            if (Zindex < 0) Zindex = guessedZindex;
+
+            // Based on how many spatial coords we got, guess the spatial dim
+            if (Xindex >= 0)
+            {
+                spatialDimension = 1;
+                if (Yindex >= 0)
+                {
+                    spatialDimension = 2;
+                    if (Zindex >= 0)
+                    {
+                        spatialDimension = 3;
+                    }
+                }
+            }
+
             got_next_token_already = true;
         }
         else if (tok == "ZONE")
