@@ -5298,6 +5298,9 @@ avtDatabaseMetaData::GetNumberOfExpressions(void) const
 //    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
 //    Fixed possible reference through 0
 //
+//    Mark Miller, Tue Jul  8 14:44:05 PDT 2008
+//    Fixed indexing error for region specification.
+//
 // ****************************************************************************
 bool
 avtDatabaseMetaData::ConvertCSGDomainToBlockAndRegion(const char *const var,
@@ -5315,7 +5318,7 @@ avtDatabaseMetaData::ConvertCSGDomainToBlockAndRegion(const char *const var,
             for (i = domainAsVisItSeesIt; i >= 0 && groupIds[i] == j; i--)
                 ; // no-op
             *domain = j;
-            if (region) *region = domainAsVisItSeesIt - i + 1;
+            if (region) *region = domainAsVisItSeesIt - i - 1;
         }
         else
         {
