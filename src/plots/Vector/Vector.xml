@@ -83,7 +83,7 @@
         0.080000
       </Field>
       <Field name="origOnly" label="Limit to original node/cell" type="bool">
-        false
+        true
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

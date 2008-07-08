@@ -96,7 +96,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         lineStem = true;
         highQuality = false;
         stemWidth = 0.08;
-        origOnly = false;
+        origOnly = true;
     }
 
     public VectorAttributes(VectorAttributes obj)
