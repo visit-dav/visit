@@ -157,7 +157,7 @@ VectorAttributes::VectorAttributes() :
     lineStem = true;
     highQuality = false;
     stemWidth = 0.08;
-    origOnly = false;
+    origOnly = true;
 }
 
 // ****************************************************************************

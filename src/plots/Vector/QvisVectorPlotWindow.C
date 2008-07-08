@@ -161,6 +161,9 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 //   Added ability to limit vectors to come from original cell only
 //   (useful for material-selected vector plots).
 //
+//   Jeremy Meredith, Tue Jul  8 16:56:25 EDT 2008
+//   Changed the phrasing for the "limit to original" toggle.
+//
 // ****************************************************************************
 #define TABS
 void
@@ -218,7 +221,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     rgLayout->addWidget(strideLineEdit, 1, 1);
 
     // Add the toggle to limit to one vector per original cell/node
-    limitToOrigToggle = new QCheckBox(tr("Limit to original node/cell"),
+    limitToOrigToggle = new QCheckBox(tr("Only show vectors on original nodes/cells"),
                                       reduceGroupBox, "limitToOrigToggle");
     connect(limitToOrigToggle, SIGNAL(toggled(bool)),
             this, SLOT(limitToOrigToggled(bool)));
