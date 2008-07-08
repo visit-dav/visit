@@ -86,6 +86,10 @@ class VectorAttributes;
 //   Added controls for lineStem, stemWidth, and highQuality.
 //   Reorganized the window a bit.
 //
+//   Jeremy Meredith, Tue Jul  8 15:11:19 EDT 2008
+//   Added ability to limit vectors to come from original cell only
+//   (useful for material-selected vector plots).
+//
 // ****************************************************************************
 
 class QvisVectorPlotWindow : public QvisPostableWindowObserver
@@ -133,6 +137,8 @@ private slots:
     void highQualityToggled(bool);
     void processStemWidthText();
 
+    void limitToOrigToggled(bool);
+
 private:
     int                  plotType;
     VectorAttributes     *vectorAtts;
@@ -170,6 +176,7 @@ private:
     QComboBox             *limitsSelect;
     QLineEdit             *maxLineEdit;
     QLineEdit             *minLineEdit;
+    QCheckBox             *limitToOrigToggle;
 };
 
 #endif

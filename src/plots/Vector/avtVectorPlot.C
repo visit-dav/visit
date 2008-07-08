@@ -415,6 +415,10 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    instead of a line, capping the ends of the head and stem, and
 //    setting the width of the stem if it's not drawn as a line.
 //
+//    Jeremy Meredith, Tue Jul  8 15:12:15 EDT 2008
+//    Added ability to limit vectors to come from original cell only
+//    (useful for material-selected vector plots).
+//
 // ****************************************************************************
 
 void
@@ -441,6 +445,7 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
     {
         vectorFilter->SetNVectors(atts.GetNVectors());
     }
+    vectorFilter->SetLimitToOriginal(atts.GetOrigOnly());
 
     glyph->SetMakeHead(atts.GetHeadOn());
     glyph->SetHeadSize(atts.GetHeadSize());

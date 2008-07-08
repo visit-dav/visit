@@ -52,6 +52,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //  many total elements you want (SetNumberOfElements) or by specifying how
 //  many to process for every one saved (SetStride).
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Jul  8 11:07:57 EDT 2008
+//    Added ability to limit to only one output vector per original
+//    cell/point.  Also, fixed cell-based vector algorithm bugs.
+
 
 #ifndef __vtkVectorReduceFilter_h
 #define __vtkVectorReduceFilter_h
@@ -71,6 +76,7 @@ public:
 
   void SetStride(int);
   void SetNumberOfElements(int);
+  void SetLimitToOriginal(bool);
 
 protected:
   vtkVectorReduceFilter();
@@ -80,6 +86,7 @@ protected:
 
   int stride;
   int numEls;
+  bool origOnly;
 
 private:
   vtkVectorReduceFilter(const vtkVectorReduceFilter&);

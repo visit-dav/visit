@@ -157,6 +157,10 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 //   Brad Whitlock, Wed Apr 23 12:09:56 PDT 2008
 //   Added tr()'s
 //
+//   Jeremy Meredith, Tue Jul  8 15:15:18 EDT 2008
+//   Added ability to limit vectors to come from original cell only
+//   (useful for material-selected vector plots).
+//
 // ****************************************************************************
 #define TABS
 void
@@ -185,7 +189,7 @@ QvisVectorPlotWindow::CreateWindowContents()
     QVBoxLayout *rgTopLayout = new QVBoxLayout(reduceGroupBox);
     rgTopLayout->setMargin(10);
     rgTopLayout->addSpacing(15);
-    QGridLayout *rgLayout = new QGridLayout(rgTopLayout, 3, 2);
+    QGridLayout *rgLayout = new QGridLayout(rgTopLayout, 4, 2);
     rgLayout->setSpacing(10);
     rgLayout->setColStretch(1, 10);
 
@@ -213,6 +217,12 @@ QvisVectorPlotWindow::CreateWindowContents()
             this, SLOT(processStrideText()));
     rgLayout->addWidget(strideLineEdit, 1, 1);
 
+    // Add the toggle to limit to one vector per original cell/node
+    limitToOrigToggle = new QCheckBox(tr("Limit to original node/cell"),
+                                      reduceGroupBox, "limitToOrigToggle");
+    connect(limitToOrigToggle, SIGNAL(toggled(bool)),
+            this, SLOT(limitToOrigToggled(bool)));
+    rgLayout->addMultiCellWidget(limitToOrigToggle, 2,2, 0,1);
 
     //
     // Create the style-related widgets
@@ -491,6 +501,10 @@ QvisVectorPlotWindow::CreateWindowContents()
 //   Jeremy Meredith, Mon Mar 19 16:24:08 EDT 2007
 //   Added controls for lineStem, stemWidth, and highQuality.
 //
+//   Jeremy Meredith, Tue Jul  8 15:15:18 EDT 2008
+//   Added ability to limit vectors to come from original cell only
+//   (useful for material-selected vector plots).
+//
 // ****************************************************************************
 
 void
@@ -511,7 +525,7 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case 0: // useStride
+          case VectorAttributes::ID_useStride:
             reduceButtonGroup->blockSignals(true);
             reduceButtonGroup->setButton(vectorAtts->GetUseStride()?1:0);
             reduceButtonGroup->blockSignals(false);
@@ -519,59 +533,59 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             nVectorsLineEdit->setEnabled(!vectorAtts->GetUseStride());
             strideLineEdit->setEnabled(vectorAtts->GetUseStride());
             break;
-        case 1: // stride
+          case VectorAttributes::ID_stride:
             temp.sprintf("%d", vectorAtts->GetStride());
             strideLineEdit->setText(temp);
             break;
-        case 2: // nVectors
+          case VectorAttributes::ID_nVectors:
             temp.sprintf("%d", vectorAtts->GetNVectors());
             nVectorsLineEdit->setText(temp);
             break;
-        case 3: // lineStyle
+          case VectorAttributes::ID_lineStyle:
             lineStyle->blockSignals(true);
             lineStyle->SetLineStyle(vectorAtts->GetLineStyle());
             lineStyle->blockSignals(false);
             break;
-        case 4: // lineWidth
+          case VectorAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
             lineWidth->SetLineWidth(vectorAtts->GetLineWidth());
             lineWidth->blockSignals(false);
             break;
-        case 5: // scale
+          case VectorAttributes::ID_scale:
             temp.setNum(vectorAtts->GetScale());
             scaleLineEdit->setText(temp);
             break;
-        case 6: // scaleByMagnitude
+          case VectorAttributes::ID_scaleByMagnitude:
             scaleByMagnitudeToggle->blockSignals(true);
             scaleByMagnitudeToggle->setChecked(vectorAtts->GetScaleByMagnitude());
             scaleByMagnitudeToggle->blockSignals(false);
             break;
-        case 7: // autoScale
+          case VectorAttributes::ID_autoScale:
             autoScaleToggle->blockSignals(true);
             autoScaleToggle->setChecked(vectorAtts->GetAutoScale());
             autoScaleToggle->blockSignals(false);
             break;
-        case 8: // headSize
+          case VectorAttributes::ID_headSize:
             temp.setNum(vectorAtts->GetHeadSize());
             headSizeLineEdit->setText(temp);
             break;
-        case 9: // headOn
+          case VectorAttributes::ID_headOn:
             drawHeadToggle->blockSignals(true);
             drawHeadToggle->setChecked(vectorAtts->GetHeadOn());
             drawHeadToggle->blockSignals(false);
             break;
-        case 10: // colorByMag
+          case VectorAttributes::ID_colorByMag:
             colorButtonGroup->blockSignals(true);
             colorButtonGroup->setButton(vectorAtts->GetColorByMag() ? 0 : 1);
             colorButtonGroup->blockSignals(false);
             limitsGroupBox->setEnabled(vectorAtts->GetColorByMag());
             break;
-        case 11: // useLegend
+          case VectorAttributes::ID_useLegend:
             legendToggle->blockSignals(true);
             legendToggle->setChecked(vectorAtts->GetUseLegend());
             legendToggle->blockSignals(false);
             break;
-        case 12: // vectorColor
+          case VectorAttributes::ID_vectorColor:
             { // new scope
             QColor temp(vectorAtts->GetVectorColor().Red(),
                         vectorAtts->GetVectorColor().Green(),
@@ -580,10 +594,10 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             vectorColor->setButtonColor(temp);
             vectorColor->blockSignals(false);
             }
-        case 13: // colorTableName
+          case VectorAttributes::ID_colorTableName:
             colorTableButton->setColorTable(vectorAtts->GetColorTableName().c_str());
             break;
-        case 14: // vectorOrigin
+          case VectorAttributes::ID_vectorOrigin:
             originButtonGroup->blockSignals(true);
             switch (vectorAtts->GetVectorOrigin())
             {
@@ -599,7 +613,7 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             }
             originButtonGroup->blockSignals(false);
           break;
-        case 15: // minFlag
+          case VectorAttributes::ID_minFlag:
             // Disconnect the slot before setting the toggle and
             // reconnect it after. This prevents multiple updates.
             disconnect(minToggle, SIGNAL(toggled(bool)),
@@ -609,7 +623,7 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             connect(minToggle, SIGNAL(toggled(bool)),
                     this, SLOT(minToggled(bool)));
             break;
-        case 16: // maxFlag
+          case VectorAttributes::ID_maxFlag:
             // Disconnect the slot before setting the toggle and
             // reconnect it after. This prevents multiple updates.
             disconnect(maxToggle, SIGNAL(toggled(bool)),
@@ -619,20 +633,20 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             connect(maxToggle, SIGNAL(toggled(bool)),
                     this, SLOT(maxToggled(bool)));
            break;
-        case 17: // limitsMode
+          case VectorAttributes::ID_limitsMode:
             limitsSelect->blockSignals(true);
             limitsSelect->setCurrentItem(vectorAtts->GetLimitsMode());
             limitsSelect->blockSignals(false);
             break;
-        case 18: // min
+          case VectorAttributes::ID_min:
             temp.setNum(vectorAtts->GetMin());
             minLineEdit->setText(temp);
             break;
-        case 19: // max
+          case VectorAttributes::ID_max:
             temp.setNum(vectorAtts->GetMax());
             maxLineEdit->setText(temp);
             break;
-        case 20: // lineStem
+          case VectorAttributes::ID_lineStem:
             lineStemButtonGroup->blockSignals(true);
             lineStemButtonGroup->setButton(vectorAtts->GetLineStem()?0:1);
             lineStemButtonGroup->blockSignals(false);
@@ -643,14 +657,19 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             stemWidthEdit->setEnabled(!vectorAtts->GetLineStem());
             stemWidthLabel->setEnabled(!vectorAtts->GetLineStem());
             break;
-        case 21: // highQuality
+          case VectorAttributes::ID_highQuality:
             highQualityToggle->blockSignals(true);
             highQualityToggle->setChecked(vectorAtts->GetHighQuality());
             highQualityToggle->blockSignals(false);
             break;
-        case 22: // stemWidth
+          case VectorAttributes::ID_stemWidth:
             temp.setNum(vectorAtts->GetStemWidth());
             stemWidthEdit->setText(temp);
+            break;
+          case VectorAttributes::ID_origOnly:
+            limitToOrigToggle->blockSignals(true);
+            limitToOrigToggle->setChecked(vectorAtts->GetOrigOnly());
+            limitToOrigToggle->blockSignals(false);
             break;
         }
     } // end for
@@ -1425,6 +1444,26 @@ void
 QvisVectorPlotWindow::processStemWidthText()
 {
     GetCurrentValues(22);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVectorPlotWindow::limitToOrigToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user toggles the
+//   window's limit to original node/cell toggle button.
+//
+// Programmer: Jeremy Meredith
+// Creation:   July  8, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisVectorPlotWindow::limitToOrigToggled(bool val)
+{
+    vectorAtts->SetOrigOnly(val);
     Apply();
 }
 

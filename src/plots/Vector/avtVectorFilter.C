@@ -78,6 +78,10 @@ using std::string;
 //    Hank Childs, Fri Mar 11 15:01:22 PST 2005
 //    Instantiate VTK filters on the fly.  Makes memory issues easier.
 //
+//    Jeremy Meredith, Tue Jul  8 11:11:59 EDT 2008
+//    Added ability to limit vectors to come from original cell only
+//    (useful for material-selected vector plots).
+//
 // ****************************************************************************
 
 avtVectorFilter::avtVectorFilter(bool us, int red)
@@ -92,6 +96,7 @@ avtVectorFilter::avtVectorFilter(bool us, int red)
     }
 
     keepNodeZone = false;
+    origOnly = false;
 }
 
 
@@ -168,6 +173,28 @@ avtVectorFilter::SetNVectors(int n)
 
 
 // ****************************************************************************
+//  Method:  avtVectorFilter::SetLimitToOriginal
+//
+//  Purpose:
+//    when set to true, this will only draw one vector per original
+//    cell/node.
+//
+//  Arguments:
+//    orig       true to enable this reduction
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July  8, 2008
+//
+// ****************************************************************************
+
+void
+avtVectorFilter::SetLimitToOriginal(bool orig)
+{
+    origOnly = orig;
+}
+
+
+// ****************************************************************************
 //  Method: avtVectorFilter::Equivalent
 //
 //  Purpose:
@@ -184,10 +211,15 @@ avtVectorFilter::SetNVectors(int n)
 //  Programmer:  Hank Childs
 //  Creation:    March 21, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Jul  8 11:12:38 EDT 2008
+//    Added ability to limit vectors to come from original cell only
+//    (useful for material-selected vector plots).
+//
 // ****************************************************************************
 
 bool
-avtVectorFilter::Equivalent(bool us, int red)
+avtVectorFilter::Equivalent(bool us, int red, bool orig)
 {
     if (us != useStride)
     {
@@ -207,6 +239,9 @@ avtVectorFilter::Equivalent(bool us, int red)
             return false;
         }
     }
+
+    if (orig != origOnly)
+        return false;
 
     return true;
 }
@@ -242,6 +277,10 @@ avtVectorFilter::Equivalent(bool us, int red)
 //    Hank Childs, Fri Mar 11 15:01:22 PST 2005
 //    Instantiate VTK filters on the fly.  Makes memory issues easier.
 //
+//    Jeremy Meredith, Tue Jul  8 15:16:05 EDT 2008
+//    Added ability to limit vectors to come from original cell only
+//    (useful for material-selected vector plots).
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -262,6 +301,7 @@ avtVectorFilter::ExecuteData(vtkDataSet *inDS, int, string)
     {
         vertex->VertexAtPointsOff();
     }
+    reduce->SetLimitToOriginal(origOnly);
 
     vertex->SetInput(inDS);
     reduce->SetInput(vertex->GetOutput());
@@ -355,6 +395,10 @@ avtVectorFilter::SetMagVarName(const string &mname)
 //    Surround the variable with <> in defining the magnitude expression,
 //    to account for variables stored in subdirs.
 // 
+//    Jeremy Meredith, Tue Jul  8 11:10:58 EDT 2008
+//    If we're asked to limit the vectors to one per original node/zone,
+//    also add the original node/zone arrays.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -387,7 +431,8 @@ avtVectorFilter::ModifyContract(avtContract_p contract)
 
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
     if (contract->GetDataRequest()->MayRequireZones() || 
-        contract->GetDataRequest()->MayRequireNodes())
+        contract->GetDataRequest()->MayRequireNodes() ||
+        origOnly)
     {
         keepNodeZone = true;
         if (data.ValidActiveVariable())

@@ -77,23 +77,28 @@ class  vtkVertexFilter;
 //    Hank Childs, Fri Mar 11 15:00:05 PST 2005
 //    Instantiate VTK filters on the fly.
 //
+//    Jeremy Meredith, Tue Jul  8 15:15:24 EDT 2008
+//    Added ability to limit vectors to come from original cell only
+//    (useful for material-selected vector plots).
+//
 // ****************************************************************************
 
 class avtVectorFilter : public avtDataTreeIterator
 {
   public:
-                              avtVectorFilter(bool, int);
+                              avtVectorFilter(bool us, int red);
     virtual                  ~avtVectorFilter();
 
     virtual const char       *GetType(void)   { return "avtVectorFilter"; };
     virtual const char       *GetDescription(void)
                                   { return "Creating vectors"; };
 
-    bool                      Equivalent(bool, int);
+    bool                      Equivalent(bool us, int red, bool orig);
 
     void                      SetStride(int);
     void                      SetNVectors(int);
     void                      SetMagVarName(const std::string &);
+    void                      SetLimitToOriginal(bool);
 
   protected:
     bool                      useStride;
@@ -101,6 +106,7 @@ class avtVectorFilter : public avtDataTreeIterator
     int                       nVectors;
     std::string               magVarName;
     bool                      keepNodeZone;
+    bool                      origOnly;
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
     virtual void              UpdateDataObjectInfo(void);
