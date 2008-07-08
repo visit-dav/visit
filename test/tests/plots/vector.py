@@ -16,6 +16,10 @@
 #    Set the vector origin explicitly for some cases because I changed the
 #    default to Tail.
 #
+#    Jeremy Meredith, Tue Jul  8 12:54:58 EDT 2008
+#    Added test for new "limit to 
+#
+#
 # ----------------------------------------------------------------------------
 
 
@@ -181,5 +185,45 @@ v.centerOfRotation = (0, 0, 0)
 SetView3D(v)
 
 Test("vector_15")
+
+#
+# Test the "limit vectors to original node/cell" option
+#
+DeleteAllPlots()
+OpenDatabase("../data/rect2d.silo")
+DefineVectorExpression("cvel","recenter(vel)")
+AddPlot("Vector", "vel", 1, 0)
+AddPlot("Boundary", "mat1", 1, 0)
+AddPlot("Mesh", "quadmesh2d", 1, 0)
+SetActivePlots(0)
+vec=VectorAttributes()
+vec.useStride=1
+vec.stride=1
+vec.scale=0.1
+v = GetView2D()
+v.windowCoords=(0,.3,1,1.3)
+SetView2D(v)
+SetPlotOptions(vec)
+TurnMaterialsOff(("3","7","8"))
+DrawPlots()
+
+vec.origOnly = 0
+SetPlotOptions(vec)
+Test("vector_16")
+
+vec.origOnly = 1
+SetPlotOptions(vec)
+Test("vector_17")
+
+ChangeActivePlotsVar("cvel")
+
+vec.origOnly = 0
+SetPlotOptions(vec)
+Test("vector_18")
+
+vec.origOnly = 1
+SetPlotOptions(vec)
+Test("vector_19")
+
 
 Exit()
