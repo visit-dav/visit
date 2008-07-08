@@ -71,7 +71,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
 
     public VectorAttributes()
     {
-        super(23);
+        super(24);
 
         useStride = false;
         stride = 1;
@@ -96,11 +96,12 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         lineStem = true;
         highQuality = false;
         stemWidth = 0.08;
+        origOnly = false;
     }
 
     public VectorAttributes(VectorAttributes obj)
     {
-        super(23);
+        super(24);
 
         useStride = obj.useStride;
         stride = obj.stride;
@@ -125,6 +126,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         lineStem = obj.lineStem;
         highQuality = obj.highQuality;
         stemWidth = obj.stemWidth;
+        origOnly = obj.origOnly;
 
         SelectAll();
     }
@@ -154,7 +156,8 @@ public class VectorAttributes extends AttributeSubject implements Plugin
                 (max == obj.max) &&
                 (lineStem == obj.lineStem) &&
                 (highQuality == obj.highQuality) &&
-                (stemWidth == obj.stemWidth));
+                (stemWidth == obj.stemWidth) &&
+                (origOnly == obj.origOnly));
     }
 
     public String GetName() { return "Vector"; }
@@ -299,6 +302,12 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         Select(22);
     }
 
+    public void SetOrigOnly(boolean origOnly_)
+    {
+        origOnly = origOnly_;
+        Select(23);
+    }
+
     // Property getting methods
     public boolean        GetUseStride() { return useStride; }
     public int            GetStride() { return stride; }
@@ -323,6 +332,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public boolean        GetLineStem() { return lineStem; }
     public boolean        GetHighQuality() { return highQuality; }
     public double         GetStemWidth() { return stemWidth; }
+    public boolean        GetOrigOnly() { return origOnly; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -373,6 +383,8 @@ public class VectorAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(highQuality);
         if(WriteSelect(22, buf))
             buf.WriteDouble(stemWidth);
+        if(WriteSelect(23, buf))
+            buf.WriteBool(origOnly);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -452,6 +464,9 @@ public class VectorAttributes extends AttributeSubject implements Plugin
             case 22:
                 SetStemWidth(buf.ReadDouble());
                 break;
+            case 23:
+                SetOrigOnly(buf.ReadBool());
+                break;
             }
         }
     }
@@ -494,6 +509,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("lineStem", lineStem, indent) + "\n";
         str = str + boolToString("highQuality", highQuality, indent) + "\n";
         str = str + doubleToString("stemWidth", stemWidth, indent) + "\n";
+        str = str + boolToString("origOnly", origOnly, indent) + "\n";
         return str;
     }
 
@@ -522,5 +538,6 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     private boolean        lineStem;
     private boolean        highQuality;
     private double         stemWidth;
+    private boolean        origOnly;
 }
 

@@ -115,7 +115,7 @@ VectorAttributes::LimitsMode_FromString(const std::string &s, VectorAttributes::
 }
 
 // Type map format string
-const char *VectorAttributes::TypeMapFormatString = "biiiidbbdbbbasibbiddbbd";
+const char *VectorAttributes::TypeMapFormatString = "biiiidbbdbbbasibbiddbbdb";
 
 // ****************************************************************************
 // Method: VectorAttributes::VectorAttributes
@@ -157,6 +157,7 @@ VectorAttributes::VectorAttributes() :
     lineStem = true;
     highQuality = false;
     stemWidth = 0.08;
+    origOnly = false;
 }
 
 // ****************************************************************************
@@ -200,6 +201,7 @@ VectorAttributes::VectorAttributes(const VectorAttributes &obj) :
     lineStem = obj.lineStem;
     highQuality = obj.highQuality;
     stemWidth = obj.stemWidth;
+    origOnly = obj.origOnly;
 
     SelectAll();
 }
@@ -266,6 +268,7 @@ VectorAttributes::operator = (const VectorAttributes &obj)
     lineStem = obj.lineStem;
     highQuality = obj.highQuality;
     stemWidth = obj.stemWidth;
+    origOnly = obj.origOnly;
 
     SelectAll();
     return *this;
@@ -312,7 +315,8 @@ VectorAttributes::operator == (const VectorAttributes &obj) const
             (max == obj.max) &&
             (lineStem == obj.lineStem) &&
             (highQuality == obj.highQuality) &&
-            (stemWidth == obj.stemWidth));
+            (stemWidth == obj.stemWidth) &&
+            (origOnly == obj.origOnly));
 }
 
 // ****************************************************************************
@@ -479,6 +483,7 @@ VectorAttributes::SelectAll()
     Select(ID_lineStem,         (void *)&lineStem);
     Select(ID_highQuality,      (void *)&highQuality);
     Select(ID_stemWidth,        (void *)&stemWidth);
+    Select(ID_origOnly,         (void *)&origOnly);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -651,6 +656,12 @@ VectorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("stemWidth", stemWidth));
     }
 
+    if(completeSave || !FieldsEqual(ID_origOnly, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("origOnly", origOnly));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -761,6 +772,8 @@ VectorAttributes::SetFromNode(DataNode *parentNode)
         SetHighQuality(node->AsBool());
     if((node = searchNode->GetNode("stemWidth")) != 0)
         SetStemWidth(node->AsDouble());
+    if((node = searchNode->GetNode("origOnly")) != 0)
+        SetOrigOnly(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -928,6 +941,13 @@ VectorAttributes::SetStemWidth(double stemWidth_)
     Select(ID_stemWidth, (void *)&stemWidth);
 }
 
+void
+VectorAttributes::SetOrigOnly(bool origOnly_)
+{
+    origOnly = origOnly_;
+    Select(ID_origOnly, (void *)&origOnly);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1082,6 +1102,12 @@ VectorAttributes::GetStemWidth() const
     return stemWidth;
 }
 
+bool
+VectorAttributes::GetOrigOnly() const
+{
+    return origOnly;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1145,6 +1171,7 @@ VectorAttributes::GetFieldName(int index) const
     case ID_lineStem:         return "lineStem";
     case ID_highQuality:      return "highQuality";
     case ID_stemWidth:        return "stemWidth";
+    case ID_origOnly:         return "origOnly";
     default:  return "invalid index";
     }
 }
@@ -1192,6 +1219,7 @@ VectorAttributes::GetFieldType(int index) const
     case ID_lineStem:         return FieldType_bool;
     case ID_highQuality:      return FieldType_bool;
     case ID_stemWidth:        return FieldType_double;
+    case ID_origOnly:         return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1239,6 +1267,7 @@ VectorAttributes::GetFieldTypeName(int index) const
     case ID_lineStem:         return "bool";
     case ID_highQuality:      return "bool";
     case ID_stemWidth:        return "double";
+    case ID_origOnly:         return "bool";
     default:  return "invalid index";
     }
 }
@@ -1380,6 +1409,11 @@ VectorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (stemWidth == obj.stemWidth);
         }
         break;
+    case ID_origOnly:
+        {  // new scope
+        retval = (origOnly == obj.origOnly);
+        }
+        break;
     default: retval = false;
     }
 
@@ -1395,6 +1429,7 @@ VectorAttributes::ChangesRequireRecalculation(const VectorAttributes &obj)
 {
     return ((useStride != obj.useStride) ||
             (stride != obj.stride) ||
-            (nVectors != obj.nVectors));
+            (nVectors != obj.nVectors) ||
+            (origOnly != obj.origOnly));
 }
 

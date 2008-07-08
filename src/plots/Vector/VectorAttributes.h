@@ -114,6 +114,7 @@ public:
     void SetLineStem(bool lineStem_);
     void SetHighQuality(bool highQuality_);
     void SetStemWidth(double stemWidth_);
+    void SetOrigOnly(bool origOnly_);
 
     // Property getting methods
     bool                 GetUseStride() const;
@@ -141,6 +142,7 @@ public:
     bool                 GetLineStem() const;
     bool                 GetHighQuality() const;
     double               GetStemWidth() const;
+    bool                 GetOrigOnly() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -191,7 +193,8 @@ public:
         ID_max,
         ID_lineStem,
         ID_highQuality,
-        ID_stemWidth
+        ID_stemWidth,
+        ID_origOnly
     };
 
 private:
@@ -218,6 +221,7 @@ private:
     bool           lineStem;
     bool           highQuality;
     double         stemWidth;
+    bool           origOnly;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

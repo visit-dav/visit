@@ -51,7 +51,6 @@
 #include <string>
 
 class  vtkMoleculeReduceFilter;
-class  vtkVertexFilter;
 
 
 // ****************************************************************************

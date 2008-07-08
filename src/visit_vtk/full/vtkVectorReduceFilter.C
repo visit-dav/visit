@@ -48,6 +48,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkVisItUtility.h>
 
 // **************************************************************************
 //  Modifications:
@@ -62,6 +63,7 @@ vtkVectorReduceFilter::vtkVectorReduceFilter()
 {
   stride = 10;
   numEls = -1;
+  origOnly = true;
 }
 
 
@@ -76,6 +78,11 @@ void vtkVectorReduceFilter::SetNumberOfElements(int n)
 {
   stride = -1;
   numEls = n;
+}
+
+void vtkVectorReduceFilter::SetLimitToOriginal(bool lto)
+{
+  origOnly = lto;
 }
 
 // ****************************************************************************
@@ -93,6 +100,10 @@ void vtkVectorReduceFilter::SetNumberOfElements(int n)
 //
 //    Kathleen Bonnell, Thu Aug 12 19:19:28 PDT 2004 
 //    Copy other Point and Cell data. 
+//
+//    Jeremy Meredith, Tue Jul  8 11:07:57 EDT 2008
+//    Added ability to limit to only one output vector per original
+//    cell/point.  Also, fixed cell-based vector algorithm bugs.
 //
 // ****************************************************************************
 
@@ -148,11 +159,45 @@ void vtkVectorReduceFilter::Execute(void)
   int count = 0;
   if (inPvecs != NULL)
     {
+    bool *foundcell = NULL;
+    vtkDataArray *origCellArr =
+      input->GetPointData()->GetArray("avtOriginalCellNumbers");
+    vtkDataArray *origNodeArr =
+      input->GetPointData()->GetArray("avtOriginalNodeNumbers");
+    int ccmp = origCellArr ? origCellArr->GetNumberOfComponents() - 1 : -1;
+    int ncmp = origNodeArr ? origNodeArr->GetNumberOfComponents() - 1 : -1;
+
+    if (origOnly && origCellArr)
+      {
+      // Find needed size, allocate, and initialize the "found" array
+      int max = 0;
+      for (int i=0; i<npts; i++)
+        if ((int)origCellArr->GetComponent(i,ccmp) > max)
+          max = (int)origCellArr->GetComponent(i,ccmp);
+      foundcell = new bool[max+1];
+      for (int i=0; i<max+1; i++)
+        foundcell[i] = false;
+      }
+
     outPd->CopyAllocate(inPd, npts);
     outVecs->SetName(inPvecs->GetName());
+    int index = 0;
     for (int i = 0 ; i < npts ; i++)
       {
-      if (i >= nextToTake)
+      int orignode = i;
+      int origcell = -1;
+      if (origNodeArr)
+        orignode = (int)origNodeArr->GetComponent(i,ncmp);
+      if (origCellArr)
+        origcell = (int)origCellArr->GetComponent(i,ccmp);
+
+      if (origOnly && orignode<0)
+        continue;
+
+      if (foundcell && (origcell<0 || foundcell[origcell]))
+        continue;
+
+      if (index >= nextToTake)
         {
         nextToTake += actingStride;
 
@@ -165,25 +210,55 @@ void vtkVectorReduceFilter::Execute(void)
         outVecs->InsertNextTuple(v);
         outPd->CopyData(inPd, i, count++);
         }
+
+      if (foundcell)
+        foundcell[origcell] = true;
+
+      index++;
       }
       outPd->Squeeze();
     }
 
   nextToTake = 0.;
   count = 0;
-  if (inCvecs != NULL)
+  if (inCvecs != NULL && inPvecs == NULL)
     {
+    bool *foundcell = NULL;
+    vtkDataArray *origCellArr =
+      input->GetCellData()->GetArray("avtOriginalCellNumbers");
+    int ccmp = origCellArr ? origCellArr->GetNumberOfComponents() - 1 : -1;
+
+    if (origOnly && origCellArr)
+    {
+      // Find needed size, allocate, and initialize the "found" array
+      int max = 0;
+      for (int i=0; i<npts; i++)
+        if ((int)origCellArr->GetComponent(i,ccmp) > max)
+          max = (int)origCellArr->GetComponent(i,ccmp);
+      foundcell = new bool[max+1];
+      for (int i=0; i<max+1; i++)
+        foundcell[i] = false;
+    }
+
     outCd->CopyAllocate(inCd, ncells);
     outVecs->SetName(inCvecs->GetName());
+    int index = 0;
     for (int i = 0 ; i < ncells ; i++)
       {
-      if (i >= nextToTake)
+      int origcell = i;
+      if (origCellArr)
+        origcell = (int)origCellArr->GetComponent(i,ccmp);
+
+      if (foundcell && (origcell<0 || foundcell[origcell]))
+        continue;
+
+      if (index >= nextToTake)
         {
         nextToTake += actingStride;
 
         vtkCell *cell = input->GetCell(i);
         double pt[3];
-        cell->GetParametricCenter(pt);
+        vtkVisItUtility::GetCellCenter(cell,pt);
         outpts->InsertNextPoint(pt);
 
         double v[3];
@@ -191,14 +266,25 @@ void vtkVectorReduceFilter::Execute(void)
         outVecs->InsertNextTuple(v);
         outCd->CopyData(inCd, i, count++);
         }
+
+      if (foundcell)
+        foundcell[origcell] = true;
+
+      index++;
       }
       outCd->Squeeze();
+
+    if (foundcell)
+      delete[] foundcell;
     }
 
   int nOutPts = outpts->GetNumberOfPoints();
   output->SetPoints(outpts);
   outpts->Delete();
-  output->GetPointData()->SetVectors(outVecs);
+  if (inPvecs)
+    output->GetPointData()->SetVectors(outVecs);
+  else
+    output->GetCellData()->SetVectors(outVecs);
   outVecs->Delete();
 
   output->Allocate(nOutPts);
@@ -216,5 +302,6 @@ void vtkVectorReduceFilter::PrintSelf(ostream &os, vtkIndent indent)
    this->Superclass::PrintSelf(os, indent);
    os << indent << "Stride: " << this->stride << "\n";
    os << indent << "Target number of vectors: " << this->numEls << "\n";
+   os << indent << "Limit to original cell/point: " << this->origOnly << "\n";
 }
 

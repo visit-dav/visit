@@ -6,6 +6,7 @@ VectorAttributes::ChangesRequireRecalculation(const VectorAttributes &obj)
 {
     return ((useStride != obj.useStride) ||
             (stride != obj.stride) ||
-            (nVectors != obj.nVectors));
+            (nVectors != obj.nVectors) ||
+            (origOnly != obj.origOnly));
 }
 
