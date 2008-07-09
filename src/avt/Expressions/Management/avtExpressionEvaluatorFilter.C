@@ -411,7 +411,7 @@ avtExpressionEvaluatorFilter::ModifyContract(
     // list and the expression list.  When the variables are found, turn the
     // parsed expression into a list of filters.  These filters are hooked
     // together, then put on a list in pipelineState for use in Execute().
-    debug5 << "EEF::ModifyContract: Checking candidates" << endl;
+    debug4 << "EEF::ModifyContract: Checking candidates" << endl;
 
     if (createFilters)
         pipelineState.SetDataObject(NULL);
@@ -422,7 +422,7 @@ avtExpressionEvaluatorFilter::ModifyContract(
         std::set<string>::iterator front = candidates.begin();
         string var = *front;
         candidates.erase(front);
-        debug5 << "EEF::ModifyContract:     candidate: " << var.c_str() 
+        debug4 << "EEF::ModifyContract:     candidate: " << var.c_str() 
                << endl;
 
         // Have we seen this before?
@@ -455,28 +455,28 @@ avtExpressionEvaluatorFilter::ModifyContract(
 
         if (exp == NULL && ddf == NULL)
         {
-            debug5 << "EEF::ModifyContract:     not an expression" << endl;
+            debug4 << "EEF::ModifyContract:     not an expression" << endl;
             // Not an expression.  Put the name on the real list.
             real_list.insert(var);
         } 
         else if (ddf != NULL)
         {
-            debug5 << "EEF::ModifyContract:     DDF.  Roots:" << endl;
+            debug4 << "EEF::ModifyContract:     DDF.  Roots:" << endl;
             avtDDFFunctionInfo *info = ddf->GetFunctionInfo();
             int nVars = info->GetDomainNumberOfTuples();
             for (int i = 0 ; i < nVars ; i++)
             {
                 std::string name = info->GetDomainTupleName(i);
-                debug5 << "EEF::ModifyContract:         " << name.c_str() << endl;
+                debug4 << "EEF::ModifyContract:         " << name.c_str() << endl;
                 candidates.insert(name);
             }
             std::string name = info->GetCodomainName();
-            debug5 << "EEF::ModifyContract:         " << name.c_str() << endl;
+            debug4 << "EEF::ModifyContract:         " << name.c_str() << endl;
             candidates.insert(name);
         }
         else  // (expr != NULL)
         {
-            debug5 << "EEF::ModifyContract:     expression.  Roots:" 
+            debug4 << "EEF::ModifyContract:     expression.  Roots:" 
                    << endl;
             // Expression.  Put the name on the expr list.  Find the base
             // variables of the expression and put them on the candidate
@@ -490,7 +490,7 @@ avtExpressionEvaluatorFilter::ModifyContract(
             std::vector<string>::iterator itr = roots.begin();
             for ( itr = roots.begin(); itr != roots.end(); ++itr)
             {
-                debug5 << "EEF::ModifyContract:         " << itr->c_str()
+                debug4 << "EEF::ModifyContract:         " << itr->c_str()
                        << endl;
                 candidates.insert(*itr);
             }

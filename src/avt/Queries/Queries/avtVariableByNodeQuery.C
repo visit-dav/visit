@@ -172,3 +172,23 @@ avtVariableByNodeQuery::PostExecute(void)
     pickAtts.PrepareForNewPick();
 }
 
+
+// ****************************************************************************
+//  Method: avtVariableByNodeQuery::GetTimeCurveSpecs
+//
+//  Purpose:
+//    Override default TimeCurveSpecs 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    July 8, 2008 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const MapNode&
+avtVariableByNodeQuery::GetTimeCurveSpecs()
+{
+    timeCurveSpecs["useVarForYAxis"] = true;
+    return timeCurveSpecs;
+}

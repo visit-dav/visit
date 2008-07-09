@@ -2847,7 +2847,7 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         mesh = Interface->GetMesh(ts, domain, real_meshname);
         if (mesh == NULL)
         {
-            debug5 << "Mesh returned by file format is NULL for domain "
+            debug4 << "Mesh returned by file format is NULL for domain "
                    << domain << ", material = " << material << endl;
             return NULL;
         }
@@ -4776,7 +4776,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         if (!doSelect || !Interface->PerformsMaterialSelection())
         {
             // We know we want the dataset as a whole
-            debug5 << "Generic database instructing get for var = " 
+            debug4 << "Generic database instructing get for var = " 
                    << var << ", timestep = " << ts << " domain = "
                    << domains[i] << endl;
             single_ds = GetDataset(var, ts, domains[i], "_all", vars2nd, 
@@ -4860,7 +4860,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
                 //
                 for (int j = 0 ; j < nmats ; j++)
                 {
-                    debug5 << "Generic database instructing get for var = " 
+                    debug4 << "Generic database instructing get for var = " 
                            << var << ", timestep = " << ts << " domain = "
                            << domains[i] << ", material = " 
                            << matnames[j].c_str() << endl;
@@ -5856,7 +5856,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
             {
                 void_ref_ptr vr = void_ref_ptr(newMatList[i],
                                                avtMaterial::Destruct);
-                debug5 << "avtGenericDatabase - Caching:"
+                debug4 << "avtGenericDatabase - Caching:"
                        << matonmesh  << " ("
                        << AUXILIARY_DATA_POST_GHOST_MATERIAL 
                        << ") for timestep, domain =  " 
@@ -5910,7 +5910,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                         // cache post ghost mixed var object if requested 
                         if(post_ghost)
                         {
-                            debug5 << "avtGenericDatabase - Caching:"
+                            debug4 << "avtGenericDatabase - Caching:"
                                    << mixv_name  << " ("
                                    << AUXILIARY_DATA_POST_GHOST_MIXED_VARIABLE
                                    << ") for timestep, domain = " 
@@ -8341,7 +8341,7 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
         const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(varName);
         if (!smd)
         {
-             debug5 << "Querying scalar var, but could not retrieve"
+             debug4 << "Querying scalar var, but could not retrieve"
                     << " meta data!" << endl;
              return false;
         }
@@ -8430,7 +8430,7 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
             // material var info
             if (element < 0 || element >= mat->GetNZones())
             {
-                debug5 << "CANNOT QUERY MATFRACS, ZONE IS OUT OF RANGE" << endl;
+                debug4 << "CANNOT QUERY MATFRACS, ZONE IS OUT OF RANGE" << endl;
                 return rv;
             }
             matInfo = mat->ExtractCellMatInfo(element);
@@ -8463,7 +8463,7 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
             }
             if (!zonesInRange)
             {
-                debug5 << "CANNOT QUERY MATFRACS ZONE IS OUT OF RANGE" << endl;
+                debug4 << "CANNOT QUERY MATFRACS ZONE IS OUT OF RANGE" << endl;
                 return rv;
             }
             for (j = 0; j < incidentElements.size(); j++)
@@ -8554,7 +8554,7 @@ avtGenericDatabase::QueryVectors(const string &varName, const int dom,
         const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(varName);
         if (!vmd)
         {
-            debug5 << "Querying vector var, but could not retrieve"
+            debug4 << "Querying vector var, but could not retrieve"
                    << " meta data!" << endl;
             return false;
         }
@@ -8697,7 +8697,7 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
         const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(varName);
         if (!tmd)
         {
-            debug5 << "Querying tensor var, but could not retrieve"
+            debug4 << "Querying tensor var, but could not retrieve"
                    << " meta data!" << endl;
             return false;
         }
@@ -8817,7 +8817,7 @@ avtGenericDatabase::QueryArrays(const string &varName, const int dom,
         const avtArrayMetaData *tmd = GetMetaData(ts)->GetArray(varName);
         if (!tmd)
         {
-            debug5 << "Querying array var, but could not retrieve"
+            debug4 << "Querying array var, but could not retrieve"
                    << " meta data!" << endl;
             return false;
         }
@@ -8946,7 +8946,7 @@ avtGenericDatabase::QuerySymmetricTensors(const string &varName,
                                      = GetMetaData(ts)->GetSymmTensor(varName);
         if (!tmd)
         {
-            debug5 << "Querying tensor var, but could not retrieve"
+            debug4 << "Querying tensor var, but could not retrieve"
                    << " meta data!" << endl;
             return false;
         }
@@ -9062,7 +9062,7 @@ avtGenericDatabase::QueryLabels(const string &varName, const int dom,
         const avtLabelMetaData *lmd = GetMetaData(ts)->GetLabel(varName);
         if (!lmd)
         {
-            debug5 << "Querying label var, but could not retrieve"
+            debug4 << "Querying label var, but could not retrieve"
                    << " meta data!" << endl;
             return false;
         }
@@ -9196,7 +9196,7 @@ avtGenericDatabase::QueryMaterial(const string &varName, const int dom,
     {
         if (element < 0 || element >= mat->GetNZones())
         {
-            debug5 << "CANNOT QUERY MATERIALS ZONE IS OUT OF RANGE" << endl;
+            debug4 << "CANNOT QUERY MATERIALS ZONE IS OUT OF RANGE" << endl;
             return false;
         }
         numMatsThisZone = 0;
@@ -9226,7 +9226,7 @@ avtGenericDatabase::QueryMaterial(const string &varName, const int dom,
         }
         if (!zonesInRange)
         {
-            debug5 << "CANNOT QUERY MATERIALS ZONE IS OUT OF RANGE" << endl;
+            debug4 << "CANNOT QUERY MATERIALS ZONE IS OUT OF RANGE" << endl;
             return false;
         }
         for (j = 0; j < incidentElements.size(); j++)
@@ -9559,7 +9559,7 @@ avtGenericDatabase::QueryMesh(const string &varName, const int ts,
     char temp[256];
     if (!mmd)
     {
-         debug5 << "Querying mesh, but could not retrieve"
+         debug4 << "Querying mesh, but could not retrieve"
                 << " meta data!" << endl;
          return false;
     }
@@ -10137,7 +10137,7 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
     const avtSpeciesMetaData *smd = GetMetaData(ts)->GetSpecies(varName);
     if (!smd)
     {
-        debug5 << "Querying species var, but could not retrieve"
+        debug4 << "Querying species var, but could not retrieve"
                << " meta data!" << endl;
         return false;
     }
@@ -10159,19 +10159,19 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
 
     if (species == NULL)
     {
-        debug5 << "Querying species var, but could not retrieve"
+        debug4 << "Querying species var, but could not retrieve"
                << " data array!" << endl;
         return false;
     }
     if (mat == NULL)
     {
-        debug5 << "Querying species var, but could not retrieve"
+        debug4 << "Querying species var, but could not retrieve"
                << " avtMaterial!" << endl;
         return false;
     }
     if (spec == NULL)
     {
-        debug5 << "Querying species var, but could not retrieve"
+        debug4 << "Querying species var, but could not retrieve"
                << " avtSpecies!" << endl;
         return false;
     }
@@ -10222,7 +10222,7 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
     {
         if (element < 0 || element >= mat->GetNZones())
         {
-            debug5 << "CANNOT QUERY SPECIES ZONE IS OUT OF RANGE" << endl;
+            debug4 << "CANNOT QUERY SPECIES ZONE IS OUT OF RANGE" << endl;
             return false;
         }
         matInfo = mat->ExtractCellMatInfo(element);
@@ -10260,7 +10260,7 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
         }
         if (!zonesInRange)
         {
-            debug5 << "CANNOT QUERY MATERIALS ZONE IS OUT OF RANGE" << endl;
+            debug4 << "CANNOT QUERY MATERIALS ZONE IS OUT OF RANGE" << endl;
             return false;
         }
         for (j = 0; j < incidentElements.size(); j++)

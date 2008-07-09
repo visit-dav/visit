@@ -71,12 +71,20 @@ void                *avtDataObjectQuery::initializeProgressCallbackArgs=NULL;
 //    Kathleen Bonnell, Tue May  4 14:18:26 PDT 2004 
 //    Initialize new member querySILR.
 //
+//    Kathleen Bonnell, Tue Jul  8 18:03:40 PDT 2008
+//    Set default values for timeCurveSpecs.
+//
 // ****************************************************************************
 
 avtDataObjectQuery::avtDataObjectQuery()
 {
     timeVarying = false;
     querySILR = NULL;
+
+    // derived classes should overide these as necessary 
+    timeCurveSpecs["useTimeForXAxis"] = true;
+    timeCurveSpecs["useVarForYAxis"] = false;
+    timeCurveSpecs["nResultsToStore"] = 1;
 }
 
 
@@ -175,7 +183,8 @@ avtDataObjectQuery::UpdateProgress(int current, int total)
 {
     if (progressCallback != NULL)
     {
-        progressCallback(progressCallbackArgs, GetType(), GetDescription(), current, total);
+        progressCallback(progressCallbackArgs, GetType(), GetDescription(), 
+                         current, total);
     }
 }
 
@@ -336,31 +345,41 @@ avtDataObjectQuery::SetSILRestriction(const avtSILRestriction_p silr)
 //
 //  Purpose:
 //    Sets some flags used by QueryOverTime.
-//    Defined here so derived types don't have to.  The default type
-//    of time curve is a Single curve using Time for the X-axis. 
-//
-//  Arguments:
-//    timeForX   Is time used for the x-axis in the time curve?
-//    nRes       The number of results to use in creation of the time curve.
+//    Defined here so derived types don't have to.  
+//    The default type of time curve is a Single curve using Time for 
+//    the X-axis.
 //
 //  Notes:
-//    If timeForX is true, then nRes should be 1 unless multiple curves
-//    are desired (not yet implemented by QOT).
+//    If useTimeForXAxis is true, then nResultsToStore should be 1 unless 
+//    multiple curves are desired (not yet implemented by QOT).
 //
-//    If timeForX is false, then nRes should be 2^n where n is the number 
-//    of curves desired. Odd-indexed results will be used for X-axis, 
-//    even-indexed results will be used for Y Axis.
+//    If useTimeForXAxis is false, then nResultsToStore should be 2^n where 
+//    n is the number of curves desired. Odd-indexed results will be used 
+//    for X-axis, even-indexed results will be used for Y Axis.
+//
+//    If useVarForYAxis is true, then the query variable and its units will
+//    be used to set the Y-axis label.
+//
+//    If useVarForYAxis is false, then the Y-axis label is the query name 
+//    or short description. 
 //
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    January 3, 2005 
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Jul  8 15:39:30 PDT 2008
+//    Modified to use a MapNode and added 'useVarForYAxis' element.
 //
 // ****************************************************************************
 
-void
-avtDataObjectQuery::GetTimeCurveSpecs(bool &timeForX, int &nRes)
+const MapNode&
+avtDataObjectQuery::GetTimeCurveSpecs() 
 {
-    timeForX = true; 
-    nRes = 1; 
+    // The defaults are listed below, derived classes should overide 
+    // whichever of these as necessary 
+    //
+    // timeCurveSpecs["useTimeForXAxis"] = true;
+    // timeCurveSpecs["useVarForYAxis"] = false;
+    // timeCurveSpecs["nResultsToStore"] = 1;
+    return timeCurveSpecs;
 }

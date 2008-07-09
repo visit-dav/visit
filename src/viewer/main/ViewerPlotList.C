@@ -6249,7 +6249,7 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
         if (plots[i].plot->GetErrorFlag())
         {
             // Don't draw bad plots.
-            debug5 << "\tplot " << i << " was not added to the window "
+            debug4 << "\tplot " << i << " was not added to the window "
                    << "because it had an error" << endl;
             continue;
         }
@@ -6262,7 +6262,7 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
         if (*(plots[i].plot->GetReader()) == 0 ||
             plots[i].plot->NoActorExists())
         {
-            debug5 << "\tplot " << i << " was not added to the window "
+            debug4 << "\tplot " << i << " was not added to the window "
                    << "because it has no actor for cache index "
                    << plots[i].plot->GetCacheIndex()
                    << ", which is the index that should be shown "
@@ -6342,7 +6342,7 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
                 delete [] plotExtents;
                 plots[i].plot->UpdateDataExtents();
 
-                debug5 << "\t plot " << i << " was added to the window." << endl;
+                debug4 << "\t plot " << i << " was added to the window." << endl;
                 window->AddPlot(actor);
 
                 //

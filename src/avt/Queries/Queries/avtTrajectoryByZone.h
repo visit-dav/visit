@@ -58,6 +58,8 @@
 //  Creation:   November 8, 2005 
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Jul  8 15:41:59 PDT 2008
+//    Changed GetTimeCurveSpecs signature.
 //
 // ****************************************************************************
 
@@ -68,12 +70,12 @@ class QUERY_API avtTrajectoryByZone : public avtVariableByZoneQuery
     virtual                  ~avtTrajectoryByZone();
 
 
-    virtual const char       *GetType(void)   { return "avtTrajectoryByZone"; };
+    virtual const char       *GetType(void)   { return "avtTrajectoryByZone"; }
     virtual const char       *GetDescription(void)
-                                 { return "Retrieving var information on mesh."; };
+                              { return "Retrieving var information on mesh."; }
 
-    virtual void              GetTimeCurveSpecs(bool &timeForX, int &nRes)
-                                 { timeForX = false; nRes = 2; }
+    virtual const MapNode    &GetTimeCurveSpecs(); 
+
   protected:
     virtual void                    Preparation(const avtDataAttributes &);
     virtual void                    PostExecute(void);

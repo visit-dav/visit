@@ -384,6 +384,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     }
 
     bool requiresUpdate = false;
+
     dataRequest = new avtDataRequest(pickAtts.GetActiveVariable().c_str(),
                                      pickAtts.GetTimeStep(), querySILR);
     //  
@@ -1070,7 +1071,7 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
     if (ptIds->GetNumberOfIds() == 0)
     {
         ptIds->Delete();
-        debug5 << "FoundZone contained no points!" << endl;
+        debug4 << "FoundZone contained no points!" << endl;
         success = false;
     }
     else
@@ -1287,7 +1288,7 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
     unsigned char *ghosts = NULL;
     if (nCells == 0)
     {
-        debug5 << "FoundNode has no incident cells!" << endl;
+        debug4 << "FoundNode has no incident cells!" << endl;
         success = false;
     }
     else

@@ -67,6 +67,7 @@
 
 #include <VisItException.h>
 #include <DebugStream.h>
+#include <MapNode.h>
 
 using std::string;
 
@@ -96,6 +97,10 @@ using std::string;
 //    Set label from query's ShortDescription if available, otherwise use
 //    query name.
 //
+//    Kathleen Bonnell, Tue Jul  8 15:48:38 PDT 2008
+//    Added 'useVarForYAxis'.  Retrieve time curve specs here rather than
+//    in Execute method at every timestep.
+//
 // ****************************************************************************
 
 avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
@@ -104,6 +109,7 @@ avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
     SetTimeLoop(atts.GetStartTime(), atts.GetEndTime(), atts.GetStride());
     finalOutputCreated = false;
     useTimeForXAxis = true;
+    useVarForYAxis = false;
     nResultsToStore = 1;
 
     TRY
@@ -117,6 +123,11 @@ avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
             label = query->GetShortDescription();
         else
             label = qatts.GetName();
+
+        const MapNode &tqs = query->GetTimeCurveSpecs();
+        useTimeForXAxis = tqs.GetEntry("useTimeForXAxis")->AsBool(); 
+        useVarForYAxis  = tqs.GetEntry("useVarForYAxis")->AsBool(); 
+        nResultsToStore = tqs.GetEntry("nResultsToStore")->AsInt(); 
         delete query;
     }
     CATCHALL(...)
@@ -202,6 +213,9 @@ avtQueryOverTimeFilter::Create(const AttributeGroup *atts)
 //    Kathleen Bonnell, Tue Nov 20 10:33:49 PST 2007 
 //    Added call to query->SetPickAttsForTimeQuery for LocateAndPickZone.
 //
+//    Kathleen Bonnell, Tue Jul  8 18:10:34 PDT 2008
+//    Removed call to query.GetTimeCurveSpecs.  Now handled in constructor.
+//
 // ****************************************************************************
 
 void
@@ -261,7 +275,6 @@ avtQueryOverTimeFilter::Execute(void)
         PickAttributes patts = atts.GetPickAtts();
         ((avtLocateAndPickNodeQuery*)query)->SetPickAttsForTimeQuery(&patts);
     }
-    query->GetTimeCurveSpecs(useTimeForXAxis, nResultsToStore);
     query->SetTimeVarying(true);
     query->SetSILRestriction(currentSILR);
 
@@ -351,6 +364,9 @@ avtQueryOverTimeFilter::Execute(void)
 //    Kathleen Bonnell, Wed Nov 28 16:33:22 PST 2007 
 //    Use new 'label' member for Y axis label. 
 //
+//    Kathleen Bonnell, Tue Jul  8 15:48:38 PDT 2008
+//    Set y-axis labels and units from query var if useVarForYAxis is true.
+//
 // ****************************************************************************
 
 void
@@ -384,6 +400,12 @@ avtQueryOverTimeFilter::UpdateDataObjectInfo(void)
             else 
             {
                 outAtts.SetXUnits("");
+            }
+            if (useVarForYAxis)
+            {
+                string yl = outAtts.GetVariableName();
+                outAtts.SetYLabel(yl);
+                outAtts.SetYUnits(outAtts.GetVariableUnits(yl.c_str()));
             }
         }
         else 

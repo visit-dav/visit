@@ -169,14 +169,15 @@ avtWarpFilter::ExecuteData(vtkDataSet *inDS, int, string)
 //  Creation:   July 12, 2006
 //
 //  Modifications:
-//
+//    Kathleen Bonnell, Tue Jul  8 13:54:38 PDT 2008
+//    Changed topological dimension to 1.
 // ****************************************************************************
 
 void
 avtWarpFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
-    GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
+    GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(1);
     GetOutput()->GetInfo().GetAttributes().SetSpatialDimension(2);
     GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();

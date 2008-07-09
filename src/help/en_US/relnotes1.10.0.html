@@ -39,21 +39,14 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 1.10.0</font></b></p>
 <ul>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
     <li>Initial support for internationalization has been added. This allows the GUI to be translated
         into languages other than English, following standard Qt internationalization procedures.</li>
+    <li>Queries that accept variables for input now have a variable widget for ease of entry. </li>
 </ul>
 
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 1.10.0</font></b></p>
 <ul>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
     <li>VisIt's plugin managers have been reworked so that multiple instances
         can coexist in the same process. This enables simulations that are
         instrumented with libsim (and are thus VisIt compute engines) to include
@@ -67,8 +60,6 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">File format reader changes in version 1.10.0</font></b></p>
 <ul>
     <li>The Tecplot reader has been enhanced so it can read binary Tecplot files.</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
     <li>The XDMF reader has been fixed so it no longer causes memory problems when
         reading meshes of type VxVyVz, which are curvilinear meshes where the coordinates
         exist in separate HDF5 arrays.</li>
@@ -81,10 +72,6 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 1.10.0</font></b></p>
 <ul>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
     <li>The Spreadsheet plot's data window has been fixed on the MacOS X platform so 
         the File, Edit, and Operations menu are once again available as they are on
         other platforms.</li>
@@ -123,13 +110,14 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Bugs fixed in version 1.10.0</font></b></p>
 <ul>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
     <li>The "visit -movie" movie generation script once again can detect the engine configuration 
         used to generate the plots in a session file and can reuse that configuration when 
         generating a movie.</li>
+    <li>Query-over-time of a non-default variable now uses the correct variable name and units in the legend.</li>
+    <li>Pick-through-time now uses the variable name and units for the y-axis labels.</li>
+    <li>Pick no longer confused on variable to use when selected after a Query on a non-default variable has been performed.</li>
+    <li>For windows platforms, running 'visit -cli -o', 'visit -cli -s', or double-clicking a python now correctly parses paths and works correctly.</li>
+    <li>Pick now works on time-curves.</li>
 </ul>
 
 <a name="Config_changes"></a>
@@ -145,11 +133,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 1.10.0</font></b></p>
 <ul>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
+    <li>Development on Windows can now be done directly from the SVN repository, as the build process has been modified to use native source tree instead of a modified one.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

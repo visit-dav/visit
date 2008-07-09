@@ -7542,7 +7542,7 @@ ViewerSubject::HandleViewerRPC()
     GetViewerState()->GetLogRPC()->CopyAttributes(GetViewerState()->GetViewerRPC());
     BroadcastToAllClients((void*)this, GetViewerState()->GetLogRPC());
 
-    debug5 << "Handling "
+    debug4 << "Handling "
            << ViewerRPC::ViewerRPCType_ToString(GetViewerState()->GetViewerRPC()->GetRPCType()).c_str()
            << " RPC." << endl;
 
@@ -7919,7 +7919,7 @@ ViewerSubject::HandleViewerRPC()
     GetViewerState()->GetLogRPC()->SetBoolFlag(true);
     BroadcastToAllClients((void*)this, GetViewerState()->GetLogRPC());
 
-    debug5 << "Done handling "
+    debug4 << "Done handling "
            << ViewerRPC::ViewerRPCType_ToString(GetViewerState()->GetViewerRPC()->GetRPCType()).c_str()
            << " RPC." << endl;
 }

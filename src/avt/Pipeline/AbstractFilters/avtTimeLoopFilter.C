@@ -160,7 +160,7 @@ avtTimeLoopFilter::Update(avtContract_p spec)
            currentTime = i; 
         else 
            currentTime = endTime; 
-        debug5 << "Time loop filter updating with time slice #" 
+        debug4 << "Time loop filter updating with time slice #" 
                << currentTime << endl;
 
         avtSIL *sil = GetInput()->GetOriginatingSource()->GetSIL(currentTime);
