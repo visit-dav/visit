@@ -403,9 +403,6 @@ ViewerSubject::ViewerSubject() : ViewerBase(0, "ViewerSubject"),
 //    Brad Whitlock, Mon Feb 12 10:33:39 PDT 2007
 //    Delete the ViewerState and ViewerMethods objects.
 //
-//    Brad Whitlock, Wed Jun 25 10:35:51 PDT 2008
-//    Delete the plugin managers.
-//
 // ****************************************************************************
 
 ViewerSubject::~ViewerSubject()
@@ -423,8 +420,6 @@ ViewerSubject::~ViewerSubject()
     delete syncObserver;
     delete [] configFileName;
 
-    delete GetPlotPluginManager();
-    delete GetOperatorPluginManager();
     delete GetViewerState();
     delete GetViewerMethods();
     delete inputConnection;
