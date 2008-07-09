@@ -53,6 +53,9 @@
 #include <ViewerPasswordWindow.h>
 #include <avtCallback.h>
 
+#include <PlotPluginManager.h>
+#include <OperatorPluginManager.h>
+
 using namespace StringHelpers;
 
 static void ErrorCallback(void *, const char *);
@@ -210,6 +213,13 @@ LogGlxAndXdpyInfo()
 //
 //    Mark C. Miller, Thu Apr 10 08:16:51 PDT 2008
 //    Added logging of info from X display and glx 
+//
+//    Brad Whitlock, Wed Jul 9 09:59:31 PDT 2008
+//    Delete the plugin managers afer the ViewerSubject destructor to avoid
+//    crashes on Linux. I suspect when the plugins were unloaded in the 
+//    ViewerSubject destructor, that prevented the code from being available
+//    when the ViewerSubject's xfer destructor was called.
+//
 // ****************************************************************************
 
 int
@@ -270,6 +280,10 @@ main(int argc, char *argv[])
         retval = -1;
     }
     ENDTRY
+
+    // Unload plugins.
+    delete ViewerBase::GetPlotPluginManager();
+    delete ViewerBase::GetOperatorPluginManager();
 
     Init::Finalize();
 
