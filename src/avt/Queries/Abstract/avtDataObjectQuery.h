@@ -47,6 +47,7 @@
 
 #include <avtDataObjectSink.h>
 #include <vectortypes.h>
+#include <MapNode.h>
 
 
 class QueryAttributes;
@@ -111,6 +112,11 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    whereby queries-through-time can specify a short label for y-axis than
 //    their query name.
 //
+//    Kathleen Bonnell, Tue Jul  8 15:40:45 PDT 2008
+//    Added timeCurveSpecs MapNode, changed TetTimecurveSpecs signature
+//    to return this map node.
+//
+//
 // ****************************************************************************
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
@@ -134,7 +140,7 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     virtual int             GetNFilters();
 
     virtual void            SetTimeVarying(bool val) { timeVarying = val;}
-    virtual void            GetTimeCurveSpecs(bool &timeForX, int &nRes);
+    virtual const MapNode  &GetTimeCurveSpecs(); 
 
     void                    SetSILRestriction(const SILRestrictionAttributes *);
     void                    SetSILRestriction(const avtSILRestriction_p);
@@ -159,6 +165,7 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     std::string                   units;
     bool                          timeVarying;
     avtSILRestriction_p           querySILR;
+    MapNode                       timeCurveSpecs;
 };
 
 

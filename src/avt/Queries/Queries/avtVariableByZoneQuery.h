@@ -66,6 +66,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Added avtDataAttributes arg to Preparation.
 //
+//    Kathleen Bonnell, Tue Jul  8 15:40:45 PDT 2008
+//    Added GetTimeCurveSpecs method.
+//
 // ****************************************************************************
 
 class QUERY_API avtVariableByZoneQuery : public avtPickByZoneQuery
@@ -75,9 +78,12 @@ class QUERY_API avtVariableByZoneQuery : public avtPickByZoneQuery
     virtual                  ~avtVariableByZoneQuery();
 
 
-    virtual const char       *GetType(void)   { return "avtVariableByZoneQuery"; };
+    virtual const char       *GetType(void)   
+                              { return "avtVariableByZoneQuery"; };
     virtual const char       *GetDescription(void)
-                                 { return "Retrieving var information on mesh."; };
+                              { return "Retrieving var information on mesh."; }
+
+    virtual const MapNode  &GetTimeCurveSpecs(); 
 
   protected:
     virtual void                    Preparation(const avtDataAttributes &);

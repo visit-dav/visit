@@ -153,10 +153,32 @@ avtTrajectoryByZone::PostExecute(void)
         {
             char msg[120]; 
             SNPRINTF(msg, 120, "Could not retrieve information from domain "
-                     " %d element %d.", queryAtts.GetDomain(), queryAtts.GetElement());
+                     " %d element %d.", queryAtts.GetDomain(), 
+                     queryAtts.GetElement());
             SetResultMessage(msg);
         }
     }
     pickAtts.PrepareForNewPick();
 }
 
+
+// ****************************************************************************
+//  Method: avtTrajectoryByZone::GetTimeCurveSpecs
+//
+//  Purpose:
+//    Override default TimeCurveSpecs 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    July 8, 2008 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const MapNode&
+avtTrajectoryByZone::GetTimeCurveSpecs() 
+{
+    timeCurveSpecs["useTimeForXAxis"] = false;
+    timeCurveSpecs["nResultsToStore"] = 2;
+    return timeCurveSpecs;
+}

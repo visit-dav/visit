@@ -860,7 +860,7 @@ NetworkManager::StartNetwork(const string &format,
     workingNet->AddNode(filt);
     // Push the variable name onto the name stack.
     nameStack.push_back(var);
-    debug5 << "NetworkManager::AddDB: Adding " << var.c_str()
+    debug4 << "NetworkManager::AddDB: Adding " << var.c_str()
            << " to the name stack" << endl;
 
     // Set up the data spec.
@@ -1234,8 +1234,10 @@ NetworkManager::MakePlot(const string &plotName, const string &pluginID,
 
     // Check, whether plot wants to place a filter at the beginning of
     // the pipeline
-    if (avtFilter *f = p->GetFilterForTopOfPipeline()) {
-        debug5 << "NetworkManager::MakePlot(): Inserting filter on top of pipeline." << std::endl;
+    if (avtFilter *f = p->GetFilterForTopOfPipeline()) 
+    {
+        debug4 << "NetworkManager::MakePlot(): Inserting filter on top of "
+               << "pipeline." << endl;
         NetnodeFilter *filt = new NetnodeFilter(f, "InsertedPlotFilter");
         //f->GetOutput()->SetTransientStatus(true);
 
@@ -1251,7 +1253,8 @@ NetworkManager::MakePlot(const string &plotName, const string &pluginID,
             workingNetnodeList.push_back(filt);
             workingNet->AddNode(filt);
         }
-        debug5 << "NetworkManager::MakePlot(): Added filter after expression evaluator." << std::endl;
+        debug4 << "NetworkManager::MakePlot(): Added filter after expression "
+               << "evaluator." << endl;
     }
 
     p->SetDataExtents(dataExtents);
@@ -1260,7 +1263,8 @@ NetworkManager::MakePlot(const string &plotName, const string &pluginID,
     workingNet->SetPlottype(pluginID);
     workingNet->SetPlotName(plotName);
 
-    debug5 << "NetworkManager::MakePlot(): Leaving NetworkManager::MakePlot()." << std::endl;
+    debug4 << "NetworkManager::MakePlot(): Leaving NetworkManager::MakePlot()." 
+           << endl;
 }
 
 // ****************************************************************************
@@ -3712,6 +3716,10 @@ NetworkManager::CloneNetwork(const int id)
 //    Fix memory leak associated with silr->MakeAttributes(), add support for
 //    "Locate and Pick Zone/Node" queries.
 //
+//    Kathleen Bonnell, Tue Jul  8 14:25:25 PDT 2008 
+//    Change the DataRequest variable if the var being queried is different
+//    than what is in the cloned pipeline. 
+//
 // ****************************************************************************
 
 void
@@ -3745,6 +3753,15 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     }
     qA->GetQueryAtts().SetPipeIndex(networkCache[clonedFromId]->
         GetContract()->GetPipelineIndex());
+
+    if (strcmp(workingNet->GetDataSpec()->GetVariable(), 
+               qA->GetQueryAtts().GetVariables()[0].c_str()) != 0)
+    {
+        avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(), 
+            qA->GetQueryAtts().GetVariables()[0].c_str());
+   
+        workingNet->SetDataSpec(dr);
+    }
 
     //    
     // Pass down the current SILRestriction (via UseSet) in case the query 

@@ -91,6 +91,9 @@ class vtkRectilinearGrid;
 //    Added member 'label', to store a shorter y-axis label than the query
 //    name if desired. 
 //
+//    Kathleen Bonnell, Tue Jul  8 15:48:11 PDT 2008
+//    Add useVarForYAxis.
+//
 // ****************************************************************************
 
 class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
@@ -117,6 +120,7 @@ class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
     string                label;
 
     bool                  useTimeForXAxis;
+    bool                  useVarForYAxis;
     int                   nResultsToStore;
     int                   numAdditionalFilters;
 

@@ -1900,7 +1900,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
     PICK_POINT_INFO pd = *ppi;
     if (preparingPick)
     {
-        debug5 << "Caching pick point info." << endl;
+        debug4 << "Caching pick point info." << endl;
         pickCache.push_back(pd);
         return retval;
     }
@@ -1959,11 +1959,11 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         int plotId = plotIDs[0];
         ViewerPlot *plot = plist->GetPlot(plotId);
         const EngineKey   &engineKey = plot->GetEngineKey();
-        const std::string &db = plot->GetDatabaseName();
-        const std::string &activeVar = plot->GetVariableName();
+        const string &db = plot->GetDatabaseName();
+        const string &activeVar = plot->GetVariableName();
         pickAtts->SetActiveVariable(activeVar);
         const avtDatabaseMetaData *md = plot->GetMetaData();
-        std::string meshForVar = md->MeshForVar(activeVar);
+        string meshForVar = md->MeshForVar(activeVar);
         const avtMeshMetaData *mmd = md->GetMesh(meshForVar);
         if (mmd != NULL)
         {
@@ -2279,7 +2279,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 plist->GetActivePlotIDs(plotIds);
                 ViewerPlot *plotWePicked = plist->GetPlot(plotIds[0]);
 
-                std::string varname = plotWePicked->GetVariableName();
+                string varname = plotWePicked->GetVariableName();
                 bool useAnyVar = false;
                 if (plotWePicked->IsMesh() || plotWePicked->IsLabel())
                 {
@@ -2424,7 +2424,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             //
             int np = pickAtts->GetNumVarInfos();
             bool haveArray = false;
-            std::string arrayname;
+            string arrayname;
             for (int i = 0 ; i < np ; i++)
             {
                 PickVarInfo &info = pickAtts->GetVarInfo(i);
@@ -3209,20 +3209,26 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
     if (qName == "ScreenZonePick")
     {
         if (!vars.empty())
+        {
             pickAtts->SetVariables(vars);
+        }
         win->Pick((int)pt[0], (int)pt[1], ZONE_PICK);
     }
     else if (qName == "ScreenNodePick") 
     {
         if (!vars.empty())
+        {
             pickAtts->SetVariables(vars);
+        }
         win->Pick((int)pt[0], (int)pt[1], NODE_PICK);
     }
     else if (qName == "Pick" || qName == "ZonePick (aka Pick)" || 
              qName == "NodePick" || qName == "PointPick (aka NodePick)")
     {
         if (!vars.empty())
+        {
             pickAtts->SetVariables(vars);
+        }
 
         INTERACTION_MODE imode  = win->GetInteractionMode();
         if (qName == "Pick" || qName == "ZonePick (aka Pick)")
@@ -3254,7 +3260,9 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
     else if (qName == "PickByZone"  || qName == "PickByNode") 
     {
         if (!vars.empty())
+        {
             pickAtts->SetVariables(vars);
+        }
 
         INTERACTION_MODE imode  = win->GetInteractionMode();
         if (qName == "PickByZone") 
@@ -3279,9 +3287,12 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
         else
         {
             bool tpc = pickAtts->GetTimePreserveCoord();
+            bool tc = pickAtts->GetDoTimeCurve();
             pickAtts->SetTimePreserveCoord(false);
+            pickAtts->SetDoTimeCurve(true);
             PickThroughTime(&ppi, arg2, arg1);
             pickAtts->SetTimePreserveCoord(tpc);
+            pickAtts->SetDoTimeCurve(tc);
         }
 
         win->SetInteractionMode(imode);
@@ -3468,7 +3479,7 @@ ViewerQueryManager::CreateNode(DataNode *parentNode)
 
 void
 ViewerQueryManager::SetFromNode(DataNode *parentNode, 
-    const std::string &configVersion)
+    const string &configVersion)
 {
     if(parentNode == 0)
         return;
@@ -3698,7 +3709,7 @@ ViewerQueryManager::InitializeQueryList()
 {
     //
     // Args, in order, for QueryList::AddQuery:
-    //    std::string                            queryName
+    //    string                                 queryName
     //    QueryList::QueryType                   queryType
     //    QueryList::Groups                      group
     //    QueryList::WindowType                  winType
@@ -4254,7 +4265,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
             }
             CATCHALL( ...)
             {
-                debug5 << "ViewerQueryManager::DoTimeQuery could not perform "
+                debug4 << "ViewerQueryManager::DoTimeQuery could not perform "
                        << "centering consistency check." << endl;
             }
             ENDTRY
@@ -4494,7 +4505,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
 
     // 
     //  We can only do one variable (for now) for a time query,
-    //  so make sure we have the right now.
+    //  so make sure we have the right one.
     // 
     string pvarName = pickAtts->GetVariables()[0];
     if (pvarName == "default")
@@ -4537,7 +4548,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
         }
         CATCHALL( ... )
         {
-            debug5 << "ViewerQueryManager::PickThroughTime could not perform "
+            debug4 << "ViewerQueryManager::PickThroughTime could not perform "
                    << " centering consistency check." << endl;
         }
         ENDTRY
