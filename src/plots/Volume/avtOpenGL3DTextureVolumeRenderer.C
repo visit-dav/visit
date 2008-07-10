@@ -562,8 +562,17 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
                     maxz = dist;
 
                 bbox_index++;
+
+                if (nx == 1)
+                    break;
             }
+
+            if (ny == 1)
+                break;
         }
+
+        if (nz == 1)
+            break;
     }
 
     // Determine the depth values we need
