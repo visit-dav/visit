@@ -85,6 +85,9 @@ class DBOptionsAttributes;
 //    Hank Childs, Tue Sep 26 14:09:18 PDT 2006
 //    Remove class qualification of method definition, which xlC dislikes.
 //
+//    Kathleen Bonnell, Wed Jul  9 18:13:50 PDT 2008
+//    Added GetCycle method.
+//
 // ****************************************************************************
 
 class avtVTKFileFormat : public avtSTSDFileFormat
@@ -107,6 +110,7 @@ class avtVTKFileFormat : public avtSTSDFileFormat
 
     int                   GetCycleFromFilename(const char *f) const;
     virtual double        GetTime(void);
+    virtual int           GetCycle(void);
 
   protected:
     vtkDataSet           *dataset;
@@ -118,6 +122,7 @@ class avtVTKFileFormat : public avtSTSDFileFormat
     std::vector<int>      matnos;
     std::vector<std::string> matnames;
     double                vtk_time;
+    int                   vtk_cycle;
 
     std::string           extension;
 

@@ -108,6 +108,9 @@ static void GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug,
 //     Hank Childs, Mon Jun 11 21:27:04 PDT 2007
 //     Do not assume there is an extension.
 //
+//     Kathleen Bonnell, Wed Jul  9 17:48:21 PDT 2008
+//     Add vtk_cycle, to store cycle from the VTK file if it is available.
+//
 // ****************************************************************************
 
 avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *) 
@@ -130,6 +133,7 @@ avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *)
         extension = "none";
 
     vtk_time = INVALID_TIME;
+    vtk_cycle = INVALID_CYCLE;
 }
 
 
@@ -197,6 +201,9 @@ avtVTKFileFormat::~avtVTKFileFormat()
 //
 //    Sean Ahern, Mon Mar 24 17:19:56 EDT 2008
 //    Added better error checking to detect badly formatted VTK files.
+//
+//    Kathleen Bonnell, Wed Jul  9 18:13:20 PDT 2008
+//    Retrieve CYCLE from FieldData if available.
 //
 // ****************************************************************************
 
@@ -327,6 +334,11 @@ avtVTKFileFormat::ReadInDataset(void)
     if (dataset->GetFieldData()->GetArray("TIME") != 0)
     {
         vtk_time = dataset->GetFieldData()->GetArray("TIME")->GetTuple1(0);
+    }
+    vtk_cycle = INVALID_CYCLE;
+    if (dataset->GetFieldData()->GetArray("CYCLE") != 0)
+    {
+        vtk_cycle = (int)dataset->GetFieldData()->GetArray("CYCLE")->GetTuple1(0);
     }
 
     if (dataset->GetDataObjectType() == VTK_STRUCTURED_POINTS ||
@@ -681,7 +693,7 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     int  i;
 
-    if (! readInDataset)
+    if (!readInDataset)
     {
         ReadInDataset();
     }
@@ -1027,15 +1039,41 @@ avtVTKFileFormat::GetCycleFromFilename(const char *f) const
 // ****************************************************************************
 //  Method: avtVTKFileFormat::GetTime
 //
-//  Purpose: Return the time associated with this curve file
+//  Purpose: Return the time associated with this file
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   Jun 29, 2006 
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Jul  9 18:14:24 PDT 2008
+//    Call ReadInDataset if not done already.
 //
 // ****************************************************************************
 
 double
 avtVTKFileFormat::GetTime()
 {
+    if (INVALID_TIME == vtk_time && !readInDataset)
+        ReadInDataset();
     return vtk_time;
+}
+
+// ****************************************************************************
+//  Method: avtVTKFileFormat::GetCycle
+//
+//  Purpose: Return the cycle associated with this file
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 9, 2008 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtVTKFileFormat::GetCycle()
+{
+    if (INVALID_CYCLE == vtk_cycle && !readInDataset)
+        ReadInDataset();
+    return vtk_cycle;
 }
