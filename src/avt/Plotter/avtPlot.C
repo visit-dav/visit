@@ -634,6 +634,9 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    Added separate calls to SetScaleMode, based on spatial/topo dims, so
 //    that correct scale modes get used.
 //
+//    Kathleen Bonnell, Thu Jul 10 16:22:11 PDT 2008
+//    Test for Curve plots should test for topo dim 1, not 2.
+//
 // ****************************************************************************
 
 avtActor_p
@@ -683,7 +686,7 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
               new avtContract(src->GetFullDataRequest(), 0);
 
         avtDataObject_p sd;
-        if (spatialDim == 2 && topologicalDim == 0)  
+        if (spatialDim == 2 && topologicalDim == 1)  
             sd = SetScaleMode(geo, xScaleModeCurve, yScaleModeCurve,
                               havePerformedLogXCurve, havePerformedLogYCurve);
         else 

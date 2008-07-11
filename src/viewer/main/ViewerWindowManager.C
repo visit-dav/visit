@@ -2442,6 +2442,11 @@ ViewerWindowManager::SetInteractionMode(INTERACTION_MODE m,
 //    Mark Miller, Mon Jun 30 14:42:47 PDT 2008
 //    Made the log scale error more GUI-centric and less code-centric.
 //
+//    Kathleen Bonnell, Thu Jul 10 16:51:12 PDT 2008
+//    Allow the view to be reset to the plot limits before log scaling,
+//    in case the view has inadvertently been changed to include non-positive
+//    values.  Only do the non-postive test if log scaling is being turned on.
+//
 // ****************************************************************************
 
 void
@@ -2450,9 +2455,8 @@ ViewerWindowManager::SetViewCurveFromClient()
     avtViewCurve viewCurve = windows[activeWindow]->GetViewCurve();
 
     const double *viewport=viewCurveClientAtts->GetViewportCoords();
-    const double *domain=viewCurveClientAtts->GetDomainCoords();
-    const double *range=viewCurveClientAtts->GetRangeCoords();
-
+    double *domain=viewCurveClientAtts->GetDomainCoords();
+    double *range=viewCurveClientAtts->GetRangeCoords();
     ScaleMode newDomainScale = (ScaleMode)viewCurveClientAtts->GetDomainScale();
     ScaleMode newRangeScale = (ScaleMode)viewCurveClientAtts->GetRangeScale();
     bool updateScaleMode = ((viewCurve.domainScale != newDomainScale) ||
@@ -2469,32 +2473,54 @@ ViewerWindowManager::SetViewCurveFromClient()
                      "support log-scaling.  It will not be done."));
             return;
         }
-        if (updateScaleMode && newDomainScale == LOG)
+        if (updateScaleMode && newDomainScale == LOG && 
+            newDomainScale != viewCurve.domainScale)
         {
             if (domain[0] <= 0 || domain[1] <= 0) 
             {
-                UpdateViewAtts(activeWindow, true, false, false, false);
-                Error(tr("There are non-positive values in the domain of the\n"
-                      "curve, so log scaling cannot be done. You must\n"
+                double lims[4];
+                vpl->GetPlotLimits(2, lims);
+                if (lims[0] <= 0 || lims[1] <= 0)
+                {
+                    UpdateViewAtts(activeWindow, true, false, false, false);
+                    Error(tr("There are non-positive values in the domain of \n"
+                      "the curve, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
                       "e.g. via Transform or Box operators and/or\n"
                       "setting 'view based on' 'Original spatial extents'\n"
                       "in Controls->View->Advanced"));
-                return;
+                    return;
+                }
+                else
+                {
+                    domain[0] = lims[0];
+                    domain[1] = lims[1];
+                }
             }
         }
-        if (updateScaleMode && newRangeScale == LOG)
+        if (updateScaleMode && newRangeScale == LOG && 
+            newRangeScale != viewCurve.rangeScale)
         {
             if (range[0] <= 0 || range[1] <= 0) 
             {
-                UpdateViewAtts(activeWindow, true, false, false, false);
-                Error(tr("There are non-positive values in the range of the\n"
-                      "curve, so log scaling cannot be done. You must\n"
+                double lims[4];
+                vpl->GetPlotLimits(2, lims);
+                if (lims[2] <= 0 || lims[3] <= 0)
+                {
+                    UpdateViewAtts(activeWindow, true, false, false, false);
+                    Error(tr("There are non-positive values in the range of \n"
+                      "the curve, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
                       "e.g. via Transform or Box operators and/or\n"
                       "setting 'view based on' 'Original spatial extents'\n"
                       "in Controls->View->Advanced"));
-                return;
+                    return;
+                }
+                else
+                {
+                    range[0] = lims[2];
+                    range[1] = lims[3];
+                }
             }
         }
     }
@@ -2606,6 +2632,11 @@ ViewerWindowManager::SetViewCurveFromClient()
 //    Mark Miller, Mon Jun 30 14:42:01 PDT 2008
 //    Made the log scale error more GUI-centric and less code-centric.
 //
+//    Kathleen Bonnell, Thu Jul 10 16:51:12 PDT 2008
+//    Allow the view to be reset to the plot limits before log scaling,
+//    in case the view has inadvertently been changed to include non-positive
+//    values.  Only do the non-postive test if log scaling is being turned on.
+//
 // ****************************************************************************
 
 void
@@ -2635,32 +2666,55 @@ ViewerWindowManager::SetView2DFromClient()
                      "support log-scaling.  It will not be done."));
             return;
         }
-        if (updateScaleMode && newXScale == LOG)
+        if (updateScaleMode && newXScale == LOG &&
+            newXScale != view2d.xScale)
         {
             if (view2d.window[0] <= 0 || view2d.window[1] <= 0) 
             {
-                UpdateViewAtts(activeWindow, false, true, false, false);
-                Error(tr("There are non-positive values in the x-coords of\n"
-                      "the mesh, so log scaling cannot be done. You must\n"
+                double lims[4];
+                vpl->GetPlotLimits(2, lims);
+                if (lims[0] <= 0 || lims[1] <= 0)
+                {
+                    UpdateViewAtts(activeWindow, false, true, false, false);
+                    Error(tr("There are non-positive values in the x-coords \n"
+                      "of the mesh, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
                       "e.g. via Transform or Box operators and/or\n"
                       "setting 'view based on' 'Original spatial extents'\n"
                       "in Controls->View->Advanced"));
-                return;
+                    return;
+                }
+                else
+                {
+                    view2d.window[0] = lims[0];
+                    view2d.window[1] = lims[1];
+                }
+ 
             }
         }
-        if (updateScaleMode && newYScale == LOG)
+        if (updateScaleMode && newYScale == LOG &&
+            newYScale != view2d.yScale)
         {
             if (view2d.window[2] <= 0 || view2d.window[3] <= 0) 
             {
-                UpdateViewAtts(activeWindow, false, true, false, false);
-                Error(tr("There are non-positive values in the y-coords of\n"
-                      "the mesh, so log scaling cannot be done. You must\n"
-                      "limit the spatial extents to positive values.\n"
+                double lims[4];
+                vpl->GetPlotLimits(2, lims);
+                if (lims[2] <= 0 || lims[3] <= 0)
+                {
+                    UpdateViewAtts(activeWindow, false, true, false, false);
+                    Error(tr("There are non-positive values in the y-coords\n"
+                      "of the mesh, so log scaling cannot be done. You\n"
+                      "must limit the spatial extents to positive values.\n"
                       "e.g. via Transform or Box operators and/or\n"
                       "setting 'view based on' 'Original spatial extents'\n"
                       "in Controls->View->Advanced"));
-                return;
+                    return;
+                }
+                else
+                {
+                    view2d.window[2] = lims[2];
+                    view2d.window[3] = lims[3];
+                }
             }
         }
     }
