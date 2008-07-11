@@ -246,6 +246,10 @@
 #
 #    Mark C. Miller, Fri May 16 08:39:57 PDT 2008
 #    Fixed problems with detecting and saving cores.
+#
+#    Tom Fogal, Fri Jul 11 14:05:08 EDT 2008
+#    I added a mode for IceT rendering.
+#
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -280,6 +284,7 @@ interactive=""
 noPIL=""
 nowin="-nowin"
 dlb=""
+icet=""
 pixdiff="-pixdiff=0"
 avgdiff="-avgdiff=0"
 numdiff="-numdiff=0"
@@ -460,8 +465,11 @@ if test "$opterror" = "1"; then
     echo "        -w  | -width     <width>      set image width"
     echo "        -h  | -height    <height>     set image height"
     echo "        -m  | -modes     <mode>       specify mode in which to run tests"
-    echo "                                      [choose from 'parallel','serial','scalable','dlb',"
-    echo "                                       'hdf5','purify', and combinations such as 'scalable,parallel']"
+    echo "                                      [choose from 'parallel',"
+    echo "                                       'serial', 'scalable', 'dlb',"
+    echo "                                       'hdf5', 'purify', 'icet', and"
+    echo "                                       combinations such as"
+    echo "                                       'scalable,parallel']"
     echo "        -c  | -classes   <class1>,... list of classes"
     echo "                                      [choose from 'nightly']"
     echo "        -d  | -date <YYYY-MM-DD-XMHHMM> set date to use for dir copies for post"
@@ -497,6 +505,10 @@ if test -z "$modes"; then
    modes="serial"
 elif test -n "`echo $modes | grep dlb`"; then
    dlb="-allowdynamic"
+fi
+
+if test -n "`echo $modes | grep icet`" ; then
+    icet="-icet"
 fi
 
 #
@@ -781,7 +793,7 @@ for t in $testcases; do
     # If we have special args for this test, we're going to assume
     # we can't start VisIt 'normally' and that the test has specified
     # all the 'essential' args to start it from runtest including
-    # possibility of its own '-s' option. So, to accomdate that
+    # possibility of its own '-s' option. So, to accommodate that
     # possibility, we modify the test script that gets run to
     # include the contents of $testpyfile by cat'ing them together
     torig=$t
@@ -818,25 +830,25 @@ for t in $testcases; do
         starttime=`date +%s`
         if test "$interactive" = "-interactive"; then
             if test -n "$theArgs"; then
-                env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb -verbose -numrestarts 0 $timeLimit $notrackMem $interactive $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry
+                env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb $icet -verbose -numrestarts 0 $timeLimit $notrackMem $interactive $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry
             else
-                env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb -verbose -numrestarts 0 $timeLimit $notrackMem $interactive $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile
+                env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb $icet -verbose -numrestarts 0 $timeLimit $notrackMem $interactive $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile
             fi
         else
             if test -n "$verbose"; then
                 if test -n "$theArgs"; then
-                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing $configoptions < $t &
+                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb $icet $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing $configoptions < $t &
                     testProcId=$!
                 else
-                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t &
+                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb $icet $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t &
                     testProcId=$!
                 fi
             else
                 if test -n "$theArgs"; then
-                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing $configoptions < $t 2> /dev/null & 
+                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb $icet $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing $configoptions < $t 2> /dev/null &
                     testProcId=$!
                 else
-                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t 2> /dev/null &
+                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb $icet $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t 2> /dev/null &
                     testProcId=$!
                 fi
             fi

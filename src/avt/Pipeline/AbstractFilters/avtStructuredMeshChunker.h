@@ -62,7 +62,7 @@ class vtkUnstructuredGrid;
 //  Class: avtStructuredMeshChunker
 //
 //  Purpose:
-//      This will take a structured mesh (vtkRectilinearGrid or 
+//      This will take a structured mesh (vtkRectilinearGrid or
 //      vtkStructuredGrid) and an array declaring the designation of each zone
 //      in the mesh.  Each zone either should be "retained", "discarded",
 //      or "to be processed".  For example, with an isovolume operation, many
@@ -126,41 +126,37 @@ class PIPELINE_API avtStructuredMeshChunker
         bool hiKIsGhost;
         int  NumPoints(void) { return index_size[0]*index_size[1]*
                                       index_size[2]; };
-        int  NumCells(void)  { int nI = (index_size[0] > 1 
-                                            ? index_size[0]-1 
+        int  NumCells(void)  { int nI = (index_size[0] > 1
+                                            ? index_size[0]-1
                                             : 1);
-                               int nJ = (index_size[1] > 1 
-                                            ? index_size[1]-1 
+                               int nJ = (index_size[1] > 1
+                                            ? index_size[1]-1
                                             : 1);
-                               int nK = (index_size[2] > 1 
-                                            ? index_size[2]-1 
+                               int nK = (index_size[2] > 1
+                                            ? index_size[2]-1
                                             : 1);
                                return nI*nJ*nK; };
     };
 
-    static ZoneDesignation *SplitIntoSubgrids(const int *dims, 
+    static ZoneDesignation *SplitIntoSubgrids(const int *dims,
                                               vtkDataSet *in_ds,
                                               std::vector<ZoneDesignation> &,
                                               avtGhostDataType,
-                                              std::vector<MeshDescription> 
-                                                                     &outGrids, 
+                                              std::vector<MeshDescription>
+                                                                     &outGrids,
                                               vtkUnstructuredGrid *&, bool);
-    static void CreateUnstructuredGrid(vtkDataSet *in_ds, 
+    static void CreateUnstructuredGrid(vtkDataSet *in_ds,
                                        ZoneDesignation *, avtGhostDataType,
                                        vtkUnstructuredGrid *&,const int *dims);
 
-    static void CreateGhostData(MeshDescription &, const int *, 
+    static void CreateGhostData(MeshDescription &, const int *,
                                 avtGhostDataType, ZoneDesignation *,
                                 vtkPointData *, vtkCellData *);
-    static void ModifyGridsForGhostZones(std::vector<MeshDescription> &, 
+    static void ModifyGridsForGhostZones(std::vector<MeshDescription> &,
                                          const int *, ZoneDesignation *);
     static void GetUnstructuredCellList(ZoneDesignation *,
-                                        const int *, avtGhostDataType ,
+                                        const int *, avtGhostDataType,
                                         std::vector<int> &,std::vector<int> &);
     static bool NodeIsGhost(int, int, int, const int *, ZoneDesignation*,bool);
 };
-
-
 #endif
-
-

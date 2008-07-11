@@ -8408,7 +8408,7 @@ avtSiloFileFormat::GetGlobalZoneIds(int dom, const char *mesh)
 //  Method: avtSiloFileFormat::GetSpatialExtents
 //
 //  Purpose:
-//      Gets the sptial extents from a multimesh, if they exist in the file 
+//      Gets the spatial extents from a multimesh, if they exist in the file
 //
 //  Programmer: Mark C. Miller
 //  Creation:   October 14, 2004 

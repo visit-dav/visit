@@ -10773,7 +10773,7 @@ GetOriginalVariableName(const avtDatabaseMetaData *md, const char *varname)
 //  Method: avtGenericDatabase::CreateAMRIndices
 //
 //  Purpose:
-//    Create an array containing ARM indexing information that allow
+//    Create an array containing AMR indexing information that allow
 //    translation between the requested level and the level of each dataset.
 //
 //  Arguments:

@@ -169,6 +169,11 @@ class Xfer;
 //    Brad Whitlock, Tue Jun 24 15:20:05 PDT 2008
 //    Made plugin managers be members of the class instead of singletons.
 //
+//    Tom Fogal, Fri Jul 11 12:00:29 EDT 2008
+//    Added a flag to determine whether or not we should use the IceT network
+//    manager.  This should be set if we're given the `-icet' command line
+//    parameter.
+//
 // ****************************************************************************
 
 class Engine
@@ -325,6 +330,9 @@ class Engine
 
     // unix process attributes
     ProcessAttributes        *procAtts;
+
+ private:
+    bool                      useIceT;
 };
 
 #endif

@@ -286,8 +286,6 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
         MPI_Barrier(VISIT_MPI_COMM);
 
         // Now we're done rendering, we need to post process the image.
-        // However, the image is only there / valid on processor/rank 0!
-        // Make sure we don't try to grab it on other processors.
         GLint rank;
         ICET(icetGetIntegerv(ICET_RANK, &rank));
 
@@ -434,7 +432,7 @@ IceTNetworkManager::Readback(const VisWindow * const viswin,
             if((buddy % n_tiles) == rank)
             {
                 // 4: assuming GL_RGBA.
-                debug1 << "Processor " << rank << " sending to " << buddy
+                debug2 << "Processor " << rank << " sending to " << buddy
                        << std::endl;
                 MPI_Send(pixels, 4*width*height, MPI_BYTE, buddy, 1,
                          VISIT_MPI_COMM);
@@ -447,19 +445,18 @@ IceTNetworkManager::Readback(const VisWindow * const viswin,
     {
         // We don't have an image -- we need to receive it from our buddy.
         GLint source = (rank % n_tiles);
-        debug1 << "Processor " << rank << " waiting for data from " << source
+        debug2 << "Processor " << rank << " waiting for data from " << source
                << std::endl;
         pixels = new GLubyte[4*width*height];
         depth = new GLuint[width*height];
         dynamic = true;
         MPI_Recv(pixels, 4*width*height, MPI_BYTE, source, 1, VISIT_MPI_COMM,
                  MPI_STATUS_IGNORE);
-        debug1 << "Received image!" << std::endl;
+        debug2 << "Received image!" << std::endl;
         MPI_Recv(depth, width*height, MPI_UNSIGNED, source, 2, VISIT_MPI_COMM,
                  MPI_STATUS_IGNORE);
-        debug1 << "Received depth buffer!" << std::endl;
     }
-    debug1 << "Finished pushing images out." << std::endl;
+    debug2 << "Finished pushing buffers out." << std::endl;
 
     vtkImageData *image = avtImageRepresentation::NewImage(width, height);
     // NewImage assumes we want a 3-component ("GL_RGB") image, but IceT gives

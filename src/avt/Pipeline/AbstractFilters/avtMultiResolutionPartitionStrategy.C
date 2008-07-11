@@ -645,5 +645,3 @@ avtMultiResolutionPartitionStrategy::FinalInitialize(void)
          }
     }
 }
-
-
