@@ -381,6 +381,9 @@
 #     Jeremy Meredith, Tue Jun 24 14:34:38 EDT 2008
 #     Patch Mesa 6.4.2 to use a larger offscreen window size limit.
 #
+#     Tom Fogal, Fri Jul 11 10:47:31 EDT 2008
+#     Added PIL to build_python.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -643,6 +646,9 @@ export PYTHON_VERSION=${PYTHON_VERSION-"2.5"}
 export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION-"2.5"}
 export PYTHON_FILE=${PYTHON_FILE-"Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"}
 export PYTHON_DIR=${PYTHON_DIR-"Python-$PYTHON_VERSION"}
+
+export PIL_URL=${PIL_URL-"http://effbot.org/downloads/Imaging-1.1.6.tar.gz"}
+export PIL_FILE=${PIL_FILE-"Imaging-1.1.6.tar.gz"}
 
 if [[ "$OPSYS" == "Darwin" ]] ; then
    export QT_FILE=${QT_FILE-"qt-mac-free-3.3.8.tar.gz"}
@@ -3494,6 +3500,24 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
     fi
     cd "$START_DIR"
     echo "Done with Python"
+
+    if ! test -f ${PIL_FILE} ; then
+        info_box "Downloading PIL ..." 1>&3
+        download_file ${PIL_URL}
+        if test $? -ne 0 ; then
+            return 1
+        fi
+    fi
+    info_box "Extracting PIL ..." 1>&3
+    uncompress_untar ${PIL_FILE}
+    info_box "Installing PIL ..." 1>&3
+    pushd Imaging-1.1.6
+        # convenience variable.
+        PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
+        ${PYHOME}/bin/python ./setup.py build
+        ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    popd
+
     return 0
 }
 
