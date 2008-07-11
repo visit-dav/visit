@@ -165,6 +165,9 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //    Brad Whitlock, Tue Jun 24 16:07:10 PDT 2008
 //    Added pluginDir.
 //
+//    Tom Fogal, Fri Jul 11 13:53:23 EDT 2008
+//    Default IceT to false.
+//
 // ****************************************************************************
 
 Engine::Engine()
@@ -207,6 +210,8 @@ Engine::Engine()
     procInfoRPC = NULL;
     simulationCommandRPC = NULL;
     setEFileOpenOptionsRPC = NULL;
+
+    useIceT = false;
 }
 
 // ****************************************************************************
@@ -500,6 +505,15 @@ Engine::Finalize(void)
 //    Tom Fogal, Sun Jul  6 16:55:05 EDT 2008
 //    Use the IceT manager if enabled at compile time.
 //
+//    Tom Fogal, Thu Jul 10 10:09:50 EDT 2008
+//    Use a static variable for putenv's argument.  According to the
+//    documentation, the argument is used directly -- so if an automatic
+//    variable is used in putenv, Bad Things can happen if the method returns
+//    and we try to use that memory address again.
+//
+//    Tom Fogal, Fri Jul 11 12:01:34 EDT 2008
+//    Use the IceT flag to figure out which NetworkManager to instantiate.
+//
 // ****************************************************************************
 
 void
@@ -516,7 +530,10 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     if (avtCallback::GetSoftwareRendering())
         InitVTK::ForceMesa();
     else
-        putenv("DISPLAY=:0");
+    {
+        static char *display = "DISPLAY:0";
+        putenv(display);
+    }
     avtCallback::SetNowinMode(true);
 
     //
@@ -524,8 +541,22 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     // code to set the display and decide if we are using Mesa.
     //
 #if defined(PARALLEL) && defined(HAVE_ICET)
-    netmgr = new IceTNetworkManager;
+    if(this->useIceT)
+    {
+        debug2 << "Using IceT network manager." << std::endl;
+        netmgr = new IceTNetworkManager;
+    }
+    else
+    {
+        debug2 << "Using standard network manager." << std::endl;
+        netmgr = new NetworkManager;
+    }
 #else
+    if(this->useIceT)
+    {
+        debug1 << "Error; IceT not enabled at compile time. "
+               << "Ignoring ..." << std::endl;
+    }
     netmgr = new NetworkManager;
 #endif
 
@@ -1161,6 +1192,9 @@ Engine::ProcessInput()
 //    Brad Whitlock, Tue Jun 24 15:27:45 PDT 2008
 //    Changed how the plugin managers are accessed.
 //
+//    Tom Fogal, Fri Jul 11 11:55:43 EDT 2008
+//    Added `icet' command line parameter.
+//
 // ****************************************************************************
 
 void
@@ -1332,7 +1366,10 @@ Engine::ProcessCommandLine(int argc, char **argv)
             pluginDir = argv[i+1];
             ++i;
         }
-        
+        else if (strcmp(argv[i], "-icet") == 0)
+        {
+            this->useIceT = true;
+        }
     }
     avtCallback::SetSoftwareRendering(!haveHWAccel);
 }
