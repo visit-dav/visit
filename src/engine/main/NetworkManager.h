@@ -373,6 +373,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Tom Fogal, Mon Jun 30 15:49:00 EDT 2008
 //    private -> protected: MultipassRendering, RenderTranslucent
 //
+//    Tom Fogal, Fri Jul 11 19:47:03 PDT 2008
+//    Removed render_state.timer; use a StackTimer in its stead.
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -384,7 +387,6 @@ class NetworkManager
         int stereoType;                /* for push/popping stereo rendering */
         int annotMode;
         int windowID;                  /* window we're rendering. */
-        int timer;                     /* handle for overall render time */
         bool getZBuffer;               /* should we readback Z too? */
         bool handledAnnotations;       /* annotations already done? */
         bool handledCues;

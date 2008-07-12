@@ -214,6 +214,9 @@ IceTNetworkManager::TileLayout(size_t width, size_t height) const
 //    Tom Fogal, Tue Jun 24 14:32:17 EDT 2008
 //    Added depth cueing back in.
 //
+//    Tom Fogal, Fri Jul 11 19:53:03 PDT 2008
+//    Added timer analogous to parent's overall render timer.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
@@ -230,6 +233,7 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
 
     TRY
     {
+        StackTimer t_total("Total time for IceTNetworkManager::Render");
         this->RenderSetup(networkIds, getZBuffer, annotMode, windowID, leftEye);
 
         // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
