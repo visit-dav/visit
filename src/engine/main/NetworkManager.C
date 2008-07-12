@@ -4679,6 +4679,9 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 //    Tom Fogal, Wed Jun 18 15:31:59 EDT 2008
 //    Made `plotIds' a reference; this fixes an SR mode bug.
 //
+//    Tom Fogal, Fri Jul 11 19:46:18 PDT 2008
+//    Removed duplicate timer.
+//
 // ****************************************************************************
 
 void
@@ -4707,7 +4710,6 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
         viswinInfo.plotsCurrentlyInWindow;
     VisWindow *viswin = viswinInfo.viswin;
 
-    this->r_mgmt.timer = visitTimer->StartTimer();
     this->r_mgmt.needToSetUpWindowContents = false;
     this->r_mgmt.cellCounts = new int[2 * plotIds.size()];
     this->r_mgmt.handledAnnotations = false;
@@ -4852,6 +4854,11 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
 //  Programmer: Tom Fogal
 //  Creation:   June 10, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Fri Jul 11 19:46:18 PDT 2008
+//    Removed duplicate timer.
+//
 // ****************************************************************************
 
 void
@@ -4867,13 +4874,10 @@ NetworkManager::RenderCleanup(int windowID)
     {
         viswin->SetStereoRendering(true, this->r_mgmt.stereoType);
     }
-    visitTimer->StopTimer(this->r_mgmt.timer,
-                          "Total time for NetworkManager::Render");
 
     // Ensure render state values get default/invalid values.
     this->r_mgmt.origWorkingNet = NULL;
     this->r_mgmt.annotMode = 0;
-    this->r_mgmt.timer = -1;
     this->r_mgmt.windowID = -1;
     this->r_mgmt.getZBuffer = false;
     this->r_mgmt.handledAnnotations = false;
