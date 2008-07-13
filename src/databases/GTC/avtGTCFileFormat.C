@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtGTCFileFormat.C                           //
+//                             avtGTCFileFormat.C                            //
 // ************************************************************************* //
 
 #include <avtGTCFileFormat.h>
@@ -127,6 +127,9 @@ avtGTCFileFormat::FreeUpResources(void)
 //
 // Modifications:
 //   
+//    Hank Childs, Wed Jul  9 06:34:05 PDT 2008
+//    Uncomment code disabling error printing.
+//
 // ****************************************************************************
 
 bool
@@ -138,7 +141,7 @@ avtGTCFileFormat::Initialize()
         return true;
 
     // Turn off error message printing.
-    //H5Eset_auto(0,0);
+    H5Eset_auto(0,0);
     debug4 << mName << "Opening " << GetFilename() << endl;
     bool err = false;
     fileHandle = H5Fopen(GetFilename(), H5F_ACC_RDONLY, H5P_DEFAULT);
