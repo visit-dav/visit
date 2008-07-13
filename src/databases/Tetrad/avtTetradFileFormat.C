@@ -84,6 +84,9 @@ static int          TimeIndexPairSorter(const void *, const void *);
 //    Hank Childs, Wed Oct 16 10:18:38 PDT 200
 //    Add a check to make sure that this is really the right kind of HDF5 file.
 //
+//    Hank Childs, Wed Jul  9 06:29:53 PDT 2008
+//    Don't print out a lot of error statements.
+//
 // ****************************************************************************
 
 avtTetradFileFormat::avtTetradFileFormat(const char *fname)
@@ -95,6 +98,8 @@ avtTetradFileFormat::avtTetradFileFormat(const char *fname)
         EXCEPTION1(InvalidDBTypeException, "Cannot be a Tetrad file, since "
                                            "it is not even an HDF5 file.");
     }
+    // Turn off error statements in case the array doesn't exist.
+    H5Eset_auto(NULL, NULL);
     int cell_array = H5Dopen(file_handle, "CellArray");
     if (cell_array < 0)
     {

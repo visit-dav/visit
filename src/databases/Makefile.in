@@ -313,6 +313,9 @@
 #   Sean Ahern, Thu May 15 13:13:25 EDT 2008
 #   Added initial version of PFLOTRAN reader.
 #
+#   Hank Childs, Mon Jul  7 07:00:47 PDT 2008
+#   Added UNIC.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -338,6 +341,7 @@ HDF5= \
 	Pixie \
 	SAMRAI \
 	Tetrad \
+	UNIC \
 	XDMF
 
 MILI=Mili

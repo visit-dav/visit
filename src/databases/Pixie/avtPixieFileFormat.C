@@ -69,7 +69,7 @@
 #include <visit-hdf5.h>
 
 
-#define MAKE_SURE_THE_FILE_IS_NOT_TETRAD
+#define MAKE_SURE_THE_FILE_IS_NOT_OTHER_FORMAT
 
 // ****************************************************************************
 //  Method: avtPixie constructor
@@ -87,7 +87,7 @@ avtPixieFileFormat::avtPixieFileFormat(const char *filename)
      nTimeStates = 0;
      haveMeshCoords = false;
 
-#ifdef MAKE_SURE_THE_FILE_IS_NOT_TETRAD
+#ifdef MAKE_SURE_THE_FILE_IS_NOT_OTHER_FORMAT
      // This sucks to have to call this here but it's the only way to
      // make sure that this file format does not suck up other file formats'
      // data. This is primarily a check to make sure that the Tetrad
@@ -255,6 +255,9 @@ avtPixieFileFormat::FreeUpResources(void)
 //   Mark C. Miller, Mon Apr  4 14:55:14 PDT 2005
 //   Added expressions
 //
+//   Hank Childs, Wed Jul  9 06:02:00 PDT 2008
+//   Added test for UNIC.
+//
 // ****************************************************************************
     
 void
@@ -272,7 +275,7 @@ avtPixieFileFormat::Initialize()
             EXCEPTION1(InvalidFilesException, (const char *)filenames[0]);
         }
 
-#ifdef MAKE_SURE_THE_FILE_IS_NOT_TETRAD
+#ifdef MAKE_SURE_THE_FILE_IS_NOT_OTHER_FORMAT
         // Turn off error message printing.
         H5Eset_auto(0,0);
 
@@ -288,6 +291,13 @@ avtPixieFileFormat::Initialize()
             H5Dclose(cell_array);
             EXCEPTION1(InvalidDBTypeException,
                "Cannot be a Pixie file because it looks like a Tetrad file.");
+        }
+        hid_t control = H5Dopen(fileId, "CONTROL");
+        if (control >= 0)
+        {
+            H5Dclose(control);
+            EXCEPTION1(InvalidDBTypeException,
+               "Cannot be a Pixie file because it looks like an UNIC file.");
         }
 #endif
         // Populate the scalar variable list
