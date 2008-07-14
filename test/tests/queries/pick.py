@@ -173,6 +173,10 @@
 #    Kathleen Bonnell, Thu Oct 26 14:24:45 PDT 2006 
 #    Added PickBox ('7566).
 #
+#    Jeremy Meredith, Mon Jul 14 11:17:29 EDT 2008
+#    Allow the sliced vector plot to show all vectors (even ones not from
+#    from original cells/nodes) to match the old behavior.
+#
 # ----------------------------------------------------------------------------
 
 def Pick3DTo2D():
@@ -1677,6 +1681,7 @@ def PickVectorPlots():
     vector = VectorAttributes()
     vector.autoScale = 0
     vector.scale = 1.
+    vector.origOnly = 0
     SetPlotOptions(vector)
 
     v.viewNormal = (-0.8775, 0.112599, 0.46617)

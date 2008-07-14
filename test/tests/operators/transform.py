@@ -34,6 +34,10 @@
 #    Jeremy Meredith
 #    Added test for linear transforms.
 #
+#    Jeremy Meredith, Mon Jul 14 11:17:29 EDT 2008
+#    Allow the clipped vector plot to show all vectors (even ones not from
+#    from original cells/nodes) to match the old behavior.
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -59,6 +63,9 @@ AddOperator("Transform")
 DrawPlots()
 
 AddPlot("Vector", "vel")
+vec = VectorAttributes()
+vec.origOnly = 0
+SetPlotOptions(vec)
 
 clip.SetPlane1Normal(1,-1,0)
 SetDefaultOperatorOptions(clip)

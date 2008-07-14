@@ -21,6 +21,10 @@
 #    directory that collides with the normal default ("hot").  So we're 
 #    skirting that issue by explicitly specifying the color table.
 #
+#    Jeremy Meredith, Mon Jul 14 12:28:50 EDT 2008
+#    Allow the vector plot to show all vectors (even ones not from
+#    from original cells/nodes) to match the old behavior.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -126,6 +130,7 @@ DeleteAllPlots()
 DefineVectorExpression("normals", "surface_normal(mesh1)")
 AddPlot("Vector", "normals")
 v = VectorAttributes()
+#v.origOnly = 0
 v.min = 0.5
 v.max = 1.5
 v.minFlag = 1
@@ -148,6 +153,7 @@ c.contourValue = (500)
 SetPlotOptions(c)
 AddPlot("Vector", "normals")
 v = VectorAttributes()
+#v.origOnly = 0
 v.colorTableName = "hot"
 SetPlotOptions(v)
 AddOperator("Isosurface")
@@ -205,6 +211,7 @@ DeleteAllPlots()
 DefineVectorExpression("sn", "recenter(-surface_normal(mesh1))")
 AddPlot("Vector", "sn")
 v = VectorAttributes()
+#v.origOnly = 0
 v.colorTableName = "hot"
 SetPlotOptions(v)
 AddOperator("ExternalSurface")
