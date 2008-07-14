@@ -46,6 +46,7 @@
 #include <vtkPolyData.h>
 #include <vtkVectorReduceFilter.h>
 #include <vtkVertexFilter.h>
+#include <avtParallel.h>
 
 #include <Expression.h>
 #include <ExpressionList.h>
@@ -82,6 +83,11 @@ using std::string;
 //    Added ability to limit vectors to come from original cell only
 //    (useful for material-selected vector plots).
 //
+//    Jeremy Meredith, Mon Jul 14 12:40:41 EDT 2008
+//    Keep track of the approximate number of domains to be plotted.
+//    This will let us calculate a much closer stride value if the
+//    user requests a particular number of vectors to be plotted.
+//
 // ****************************************************************************
 
 avtVectorFilter::avtVectorFilter(bool us, int red)
@@ -97,6 +103,7 @@ avtVectorFilter::avtVectorFilter(bool us, int red)
 
     keepNodeZone = false;
     origOnly = false;
+    approxDomains = 1;
 }
 
 
@@ -193,6 +200,40 @@ avtVectorFilter::SetLimitToOriginal(bool orig)
     origOnly = orig;
 }
 
+// ****************************************************************************
+//  Method:  avtVectorFilter::PreExecute
+//
+//  Purpose:
+//    Executes before the main execute loop.  In this case, we
+//    just want to get a rough count of the number of domains
+//    so that we can divide the requested number of vectors
+//    by the number of domains.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 14, 2008
+//
+// ****************************************************************************
+
+void
+avtVectorFilter::PreExecute()
+{
+    avtDataTreeIterator::PreExecute();
+
+    // Just in case there's something fishy about this technique,
+    // skip the logic when we don't need it (i.e. if the stride was
+    // specified directly).
+    approxDomains = 1;
+    if (!useStride)
+    {
+        GetInputDataTree()->GetNumberOfLeaves();
+        SumIntAcrossAllProcessors(approxDomains);
+        if (approxDomains < 1)
+            approxDomains = 1;
+    }
+}
 
 // ****************************************************************************
 //  Method: avtVectorFilter::Equivalent
@@ -281,6 +322,11 @@ avtVectorFilter::Equivalent(bool us, int red, bool orig)
 //    Added ability to limit vectors to come from original cell only
 //    (useful for material-selected vector plots).
 //
+//    Jeremy Meredith, Mon Jul 14 12:39:40 EDT 2008
+//    Divide the requested number of vectors by the calculated number
+//    of domains.  It's not perfect, but it should hopefully get us
+//    close to the requested number.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -291,7 +337,7 @@ avtVectorFilter::ExecuteData(vtkDataSet *inDS, int, string)
     if (useStride)
         reduce->SetStride(stride);
     else
-        reduce->SetNumberOfElements(nVectors);
+        reduce->SetNumberOfElements(nVectors / approxDomains);
 
     if (inDS->GetPointData()->GetVectors() != NULL)
     {
