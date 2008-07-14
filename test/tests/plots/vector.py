@@ -17,8 +17,7 @@
 #    default to Tail.
 #
 #    Jeremy Meredith, Tue Jul  8 12:54:58 EDT 2008
-#    Added test for new "limit to 
-#
+#    Added test for new limit to original cells/nodes only.
 #
 # ----------------------------------------------------------------------------
 
