@@ -228,7 +228,7 @@ avtVectorFilter::PreExecute()
     approxDomains = 1;
     if (!useStride)
     {
-        GetInputDataTree()->GetNumberOfLeaves();
+        approxDomains = GetInputDataTree()->GetNumberOfLeaves();
         SumIntAcrossAllProcessors(approxDomains);
         if (approxDomains < 1)
             approxDomains = 1;
