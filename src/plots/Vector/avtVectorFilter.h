@@ -81,6 +81,11 @@ class  vtkVertexFilter;
 //    Added ability to limit vectors to come from original cell only
 //    (useful for material-selected vector plots).
 //
+//    Jeremy Meredith, Mon Jul 14 12:40:41 EDT 2008
+//    Keep track of the approximate number of domains to be plotted.
+//    This will let us calculate a much closer stride value if the
+//    user requests a particular number of vectors to be plotted.
+//
 // ****************************************************************************
 
 class avtVectorFilter : public avtDataTreeIterator
@@ -107,7 +112,9 @@ class avtVectorFilter : public avtDataTreeIterator
     std::string               magVarName;
     bool                      keepNodeZone;
     bool                      origOnly;
+    int                       approxDomains;
 
+    virtual void              PreExecute(void);
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
     virtual void              UpdateDataObjectInfo(void);
     virtual avtContract_p
