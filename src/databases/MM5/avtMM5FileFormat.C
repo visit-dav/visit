@@ -46,8 +46,10 @@
 
 #include <vtkCellArray.h>
 #include <vtkFloatArray.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkVisItUtility.h>
 #include <snprintf.h>
 
 #include <avtDatabaseMetaData.h>
@@ -342,6 +344,8 @@ avtMM5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
 //  Creation:   Tue Jul 11 16:39:09 PST 2006
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Jul 14 13:57:25 PDT 2008
+//    Specify curves as 1D rectilinear grids with yvalues stored in point data.
 //
 // ****************************************************************************
 
@@ -417,30 +421,22 @@ avtMM5FileFormat::GetMesh(int timestate, const char *meshname)
         }
 
         // Make a new curve.
-        vtkPolyData *pd = vtkPolyData::New();
-        vtkPoints   *pts = vtkPoints::New();
-        pd->SetPoints(pts);
-        pts->SetNumberOfPoints(nPts);
+        vtkRectilinearGrid *rg =vtkVisItUtility::Create1DRGrid(nPts, VTK_FLOAT);
+        vtkFloatArray *xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
+        vtkFloatArray *yv = vtkFloatArray::New();
+        yv->SetNumberOfComponents(1);
+        yv->SetNumberOfTuples(nPts);
+        yv->SetName(meshname);
+
         for (int j = 0 ; j < nPts ; j++)
         {
-            pts->SetPoint(j, float(j), yValues[j], 0.f);
+            xc->SetValue(j, float(j));
+            yv->SetValue(j, yValues[j]);
         }
  
-        //
-        // Connect the points up with line segments.
-        //
-        vtkCellArray *line = vtkCellArray::New();
-        pd->SetLines(line);
-        for (int k = 1 ; k < nPts ; k++)
-        {
-            line->InsertNextCell(2);
-            line->InsertCellPoint(k-1);
-            line->InsertCellPoint(k);
-        }
-
-        pts->Delete();
-        line->Delete();
-        retval = pd;
+        rg->GetPointData()->SetScalars(yv);
+        yv->Delete();
+        retval = rg;
 
         delete [] yValues;
     }

@@ -46,8 +46,10 @@
 
 #include <vtkCellArray.h>
 #include <vtkFloatArray.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkVisItUtility.h>
 
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
@@ -502,6 +504,8 @@ avtFITSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Creation:   Wed Jul 19 09:54:58 PDT 2006
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Jul 14 13:33:34 PDT 2008
+//    Specify curves as 1D rectilinear grids with yvalues stored as point data.
 //
 // ****************************************************************************
 
@@ -521,33 +525,19 @@ avtFITSFileFormat::GetMesh(const char *meshname)
 
             // Try and read the variable making up the curve.
             int nPts = pos->second[0];
-            float *yValues = (float *)cdata->GetVoidPointer(0);
-            vtkPolyData *pd = vtkPolyData::New();
-            vtkPoints   *pts = vtkPoints::New();
-            pd->SetPoints(pts);
-            pts->SetNumberOfPoints(nPts);
+            vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts, 
+                                                                   VTK_FLOAT);
+            vtkFloatArray *xc = 
+                 vtkFloatArray::SafeDownCast(rg->GetXCoordinates()); 
             for (int j = 0 ; j < nPts ; j++)
             {
-                pts->SetPoint(j, float(j), yValues[j], 0.f);
+                xc->SetValue(j, (float)j);
             }
+            rg->GetPointData()->SetScalars(cdata);
  
-            //
-            // Connect the points up with line segments.
-            //
-            vtkCellArray *line = vtkCellArray::New();
-            pd->SetLines(line);
-            for (int k = 1 ; k < nPts ; k++)
-            {
-                line->InsertNextCell(2);
-                line->InsertCellPoint(k-1);
-                line->InsertCellPoint(k);
-            }
-
-            pts->Delete();
-            line->Delete();
             cdata->Delete();
 
-            retval = pd;
+            retval = rg;
         }
         else
         {

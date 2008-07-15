@@ -5,12 +5,14 @@
 
 #include <string>
 
+#include <vtkCellArray.h>
 #include <vtkFloatArray.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkPolyData.h>
-#include <vtkCellArray.h>
+#include <vtkVisItUtility.h>
 
 #include <avtDatabaseMetaData.h>
 #include <AtomicProperties.h>
@@ -214,6 +216,10 @@ avtOUTCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
 //  Programmer: Jeremy Meredith
 //  Creation:   August 29, 2006
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jul 14 16:01:32 PDT 2008
+//    Specify curves as 1D rectilinear grids with y values stored in point data.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -295,31 +301,25 @@ avtOUTCARFileFormat::GetMesh(int ts, const char *name)
         {
             bool partial = meshname.substr(0,15)=="curves/partial/";
 
-            vtkPolyData *pd  = vtkPolyData::New();
-            vtkPoints   *pts = vtkPoints::New();
 
             int npts = partial ? ts+1 : ntimesteps;
+            vtkRectilinearGrid *rg = 
+                vtkVisItUtility::Create1DRGrid(npts, VTK_FLOAT);
 
-            pts->SetNumberOfPoints(npts);
-            pd->SetPoints(pts);
-            pts->Delete();
+            vtkFloatArray *xc = 
+                vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
+            vtkFloatArray *yv = vtkFloatArray::New();
+            yv->SetNumberOfComponents(1);
+            yv->SetNumberOfTuples(npts);
+            yv->SetName(meshname.c_str());
             for (int j = 0 ; j < npts ; j++)
             {
-                pts->SetPoint(j,
-                              j, free_energy[j], 0);
+                xc->SetValue(j, (float) j);
+                yv->SetValue(j, free_energy[j]);
             }
- 
-            vtkCellArray *verts = vtkCellArray::New();
-            pd->SetVerts(verts);
-            verts->Delete();
-            for (int k = 1 ; k < npts ; k++)
-            {
-                verts->InsertNextCell(2);
-                verts->InsertCellPoint(k-1);
-                verts->InsertCellPoint(k);
-            }
-
-            return pd;
+            rg->GetPointData()->SetScalars(yv);
+            yv->Delete(); 
+            return rg;
         }
     }
 

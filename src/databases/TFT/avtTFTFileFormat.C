@@ -45,8 +45,10 @@
 #include <string>
 #include <string.h> // for strlen
 
-#include <vtkCellArray.h>
-#include <vtkPolyData.h>
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkVisItUtility.h>
 
 #include <avtDatabaseMetaData.h>
 
@@ -243,6 +245,8 @@ avtTFTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Creation:   Tue Feb 22 16:04:16 PST 2005
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Jul 14 15:48:07 PDT 2008
+//    Specify curves as 1D rectilinear grids with y values stored in point data.
 //
 // ****************************************************************************
 
@@ -254,32 +258,25 @@ avtTFTFileFormat::GetMesh(const char *name)
     {
         EXCEPTION1(InvalidVariableException, name);
     }
+    int nPts = it->second->nPoints;
 
-    vtkPolyData *pd  = vtkPolyData::New();
-    vtkPoints   *pts = vtkPoints::New();
-    pd->SetPoints(pts);
-    int i, nPts = it->second->nPoints;
-    pts->SetNumberOfPoints(nPts);
+    vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts, VTK_FLOAT);
+    vtkFloatArray *xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
+    vtkFloatArray *yv = vtkFloatArray::New();
+    yv->SetNumberOfComponents(1);
+    yv->SetNumberOfTuples(nPts);
+    yv->SetName(name);
     const float *pdata = it->second->data;
-    for(i = 0; i < nPts; ++i, pdata += 2)
-        pts->SetPoint(i, pdata[0], pdata[1], 0.f);
- 
-    //
-    // Connect the points up with line segments.
-    //
-    vtkCellArray *line = vtkCellArray::New();
-    pd->SetLines(line);
-    for(int k = 1 ; k < nPts ; k++)
+    for(int i = 0; i < nPts; ++i, pdata += 2)
     {
-        line->InsertNextCell(2);
-        line->InsertCellPoint(k-1);
-        line->InsertCellPoint(k);
+        xc->SetValue(i, pdata[0]);
+        yv->SetValue(i, pdata[1]);
     }
 
-    pts->Delete();
-    line->Delete();
+    rg->GetPointData()->SetScalars(yv);
+    yv->Delete(); 
 
-    return pd;
+    return rg;
 }
 
 // ****************************************************************************

@@ -49,6 +49,7 @@
 
 #include <vtkCellArray.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPoints.h>
 
@@ -58,6 +59,7 @@
 #include <vtkLongArray.h>
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
+#include <vtkVisItUtility.h>
 
 #include <InvalidVariableException.h>
 
@@ -611,6 +613,9 @@ avtBasicNETCDFFileFormat::ReturnValidDimensions(const intVector &dims, int valid
 //   Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
 //   Added code to support on-the-fly domain decomp
 //
+//   Kathleen Bonnell, Mon Jul 14 14:07:39 PDT 2008
+//   Specify curves as 1D rectilinear grids with yvalues stored in point data.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -633,30 +638,24 @@ avtBasicNETCDFFileFormat::GetMesh(const char *var)
             float *yValues = new float[nPts];
             if(fileObject->ReadVariableIntoAsFloat(var, yValues))
             {
-                vtkPolyData *pd = vtkPolyData::New();
-                vtkPoints   *pts = vtkPoints::New();
-                pd->SetPoints(pts);
-                pts->SetNumberOfPoints(nPts);
+                vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(
+                                         nPts, VTK_FLOAT);
+                vtkFloatArray *xc = vtkFloatArray::SafeDownCast(
+                                        rg->GetXCoordinates());
+                vtkFloatArray *yv = vtkFloatArray::New();
+                yv->SetNumberOfComponents(1); 
+                yv->SetNumberOfTuples(nPts); 
+                yv->SetName(var);
                 for (int j = 0 ; j < nPts ; j++)
                 {
-                    pts->SetPoint(j, float(j), yValues[j], 0.f);
+                    xc->SetValue(j, (float)j); 
+                    yv->SetValue(j, yValues[j]);
                 }
  
-                //
-                // Connect the points up with line segments.
-                //
-                vtkCellArray *line = vtkCellArray::New();
-                pd->SetLines(line);
-                for (int k = 1 ; k < nPts ; k++)
-                {
-                    line->InsertNextCell(2);
-                    line->InsertCellPoint(k-1);
-                    line->InsertCellPoint(k);
-                }
 
-                pts->Delete();
-                line->Delete();
-                retval = pd;
+                rg->GetPointData()->SetScalars(yv);
+                yv->Delete();
+                retval = rg;
             }
 
             delete [] yValues;
