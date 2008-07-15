@@ -42,6 +42,9 @@
 #    Mark C. Miller, Mon Nov  5 20:15:05 PST 2007
 #    Added tests for sparse materials, expressions
 #
+#    Jeremy Meredith, Tue Jul 15 10:43:58 EDT 2008
+#    Changed number of vectors in vector plot to match the old behavior.
+#    (We now account for how many domains there are.)
 # ----------------------------------------------------------------------------
 
 LevelZero = 4 # set id for level 0
@@ -159,6 +162,7 @@ AddPlot("Vector", "Velocity")
 vectorAtts=VectorAttributes()
 vectorAtts.scale = 0.02
 vectorAtts.vectorOrigin = vectorAtts.Middle
+vectorAtts.nVectors = 400*47
 SetPlotOptions(vectorAtts)
 DrawPlots()
 

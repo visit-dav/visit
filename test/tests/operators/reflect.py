@@ -32,6 +32,10 @@
 #    Test that reflected plots are not degenerate by using the volume plot
 #    ['6321].
 #
+#    Jeremy Meredith, Tue Jul 15 10:43:58 EDT 2008
+#    Changed number of vectors in vector plot to match the old behavior.
+#    (We now account for how many domains there are.)
+#
 # ----------------------------------------------------------------------------
 
 
@@ -85,6 +89,7 @@ OpenDatabase("../data/globe.silo")
 AddPlot("Vector", "vel")
 v = VectorAttributes()
 v.vectorOrigin = v.Head
+v.nVectors = 400*4
 SetPlotOptions(v)
 
 AddOperator("Reflect")

@@ -8,6 +8,11 @@
 #  Programmer: David Bremer
 #  Date:       Feb 20, 2007
 #
+#  Modifications:
+#    Jeremy Meredith, Tue Jul 15 10:43:58 EDT 2008
+#    Changed number of vectors in vector plot to match the old behavior.
+#    (We now account for how many domains there are.)
+#
 # ----------------------------------------------------------------------------
 import os, string
 
@@ -29,6 +34,9 @@ Test("miranda_raw_reader3")
 SetTimeSliderState(2)
 DeleteAllPlots()
 AddPlot("Vector", "velocity")
+vec = VectorAttributes()
+vec.nVectors = 400*64
+SetPlotOptions(vec)
 DrawPlots()
 Test("miranda_raw_reader4")
 
@@ -50,6 +58,9 @@ Test("miranda_raw_reader6")
 SetTimeSliderState(1)
 DeleteAllPlots()
 AddPlot("Vector", "velocity")
+vec = VectorAttributes()
+vec.nVectors = 400*128
+SetPlotOptions(vec)
 DrawPlots()
 vv=GetView2D()
 vv.viewportCoords=(0.2, 0.95, 0.15, 0.95)
