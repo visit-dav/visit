@@ -317,6 +317,11 @@ avtVistaDiabloFileFormat::GetFileNameForRead(int dom, char *fileName, int size)
 //    Kathleen Bonnell, Mon May 23 16:55:35 PDT 2005 
 //    Fixed memory leaks.
 //
+//    Jeremy Meredith, Tue Jul 15 11:32:03 EDT 2008
+//    Replaced "0" pointer with NULL.  This fixes a bug where a varargs
+//    function assumes it's a signed int 0 instead of a void* 0, which
+//    the gets converted to a non-NULL pointer.
+//
 // ****************************************************************************
 
 void
@@ -473,7 +478,7 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 bool eraseEntriesIfFound = true;
                 if (HasAllComponents(fieldGroups[j], eraseEntriesIfFound,
                     "CauchyStress_sig11", "CauchyStress_sig12", "CauchyStress_sig22",
-                    "CauchyStress_sig23", "CauchyStress_sig31", "CauchyStress_sig33", 0))
+                    "CauchyStress_sig23", "CauchyStress_sig31", "CauchyStress_sig33", NULL))
                 {
                     FieldInfo_t fieldInfo;
                     fieldInfo.visitVarName = string(groupNames[j],1,string::npos);
@@ -488,7 +493,7 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     fieldsOnThisPiece.push_back(fieldInfo);
                 }
                 if (HasAllComponents(fieldGroups[j], eraseEntriesIfFound,
-                    "disp_incx", "disp_incy", "disp_incz", 0))
+                    "disp_incx", "disp_incy", "disp_incz", NULL))
                 {
                     FieldInfo_t fieldInfo;
                     fieldInfo.visitVarName = "disp_inc"; 
@@ -500,7 +505,7 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     fieldsOnThisPiece.push_back(fieldInfo);
                 }
                 if (HasAllComponents(fieldGroups[j], eraseEntriesIfFound,
-                    "disp_np1x", "disp_np1y", "disp_np1z", 0))
+                    "disp_np1x", "disp_np1y", "disp_np1z", NULL))
                 {
                     FieldInfo_t fieldInfo;
                     fieldInfo.visitVarName = "disp_np1"; 
@@ -512,7 +517,7 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     fieldsOnThisPiece.push_back(fieldInfo);
                 }
                 if (HasAllComponents(fieldGroups[j], eraseEntriesIfFound,
-                    "coord_nx", "coord_ny", "coord_nz", 0))
+                    "coord_nx", "coord_ny", "coord_nz", NULL))
                 {
                     FieldInfo_t fieldInfo;
                     fieldInfo.visitVarName = "coord_n"; 
@@ -524,7 +529,7 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     fieldsOnThisPiece.push_back(fieldInfo);
                 }
                 if (HasAllComponents(fieldGroups[j], eraseEntriesIfFound,
-                    "coord_np1x", "coord_np1y", "coord_np1z", 0))
+                    "coord_np1x", "coord_np1y", "coord_np1z", NULL))
                 {
                     FieldInfo_t fieldInfo;
                     fieldInfo.visitVarName = "coord_np1"; 
