@@ -33,6 +33,10 @@
 #    Add test for dot of curl with a vector.  This is really testing the
 #    ability of macro expressions to maintain secondary variables. '8025
 #
+#    Jeremy Meredith, Tue Jul 15 10:43:58 EDT 2008
+#    Changed number of vectors in vector plot to match the old behavior.
+#    (We now account for how many domains there are.)
+#
 # ----------------------------------------------------------------------------
 
 
@@ -126,6 +130,7 @@ DeleteAllPlots()
 AddPlot("Vector", "grad_u")
 v = VectorAttributes()
 v.vectorOrigin = v.Middle
+v.nVectors = 400*3
 SetPlotOptions(v)
 DefineScalarExpression("u_mag", "magnitude(grad_u)")
 AddOperator("Isosurface")

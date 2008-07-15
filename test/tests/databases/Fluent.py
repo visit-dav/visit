@@ -6,6 +6,11 @@
 #  Programmer: Hank Childs
 #  Date:       September 8, 2006
 #
+#  Modifications:
+#    Jeremy Meredith, Tue Jul 15 10:43:58 EDT 2008
+#    Changed number of vectors in vector plot to match the old behavior.
+#    (We now account for how many domains there are.)
+#
 # ----------------------------------------------------------------------------
 
 
@@ -21,6 +26,9 @@ Test("Fluent_02")
 DeleteAllPlots()
 
 AddPlot("Vector", "DPMS_MOM")
+v = VectorAttributes()
+v.nVectors = 400*5
+SetPlotOptions(v)
 DrawPlots()
 Test("Fluent_03")
 

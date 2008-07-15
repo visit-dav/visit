@@ -13,6 +13,10 @@
 #  Modifications:
 #    Mark C. Miller, Thu Apr 17 12:05:19 PDT 2008
 #    Changed '-default_format' to '-assume_format'
+#
+#    Jeremy Meredith, Tue Jul 15 10:43:58 EDT 2008
+#    Changed number of vectors in vector plot to match the old behavior.
+#    (We now account for how many domains there are.)
 # ----------------------------------------------------------------------------
 
 
@@ -41,6 +45,9 @@ DeleteAllPlots()
 
 AddPlot("Mesh","AAAA")
 AddPlot("Vector","coord_n")
+vec = VectorAttributes()
+vec.nVectors = 400*4
+SetPlotOptions(vec)
 DrawPlots()
 Test("vista_diablo_02")
 

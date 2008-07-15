@@ -36,6 +36,11 @@
 #    Modified code to set SIL Restriction for mesh1_dup to be independent 
 #    of the file structure. Added test for multivar that spans multiple
 #    multimeshes; it should fail.
+#
+#    Jeremy Meredith, Tue Jul 15 10:43:58 EDT 2008
+#    Changed number of vectors in vector plot to match the old behavior.
+#    (We now account for how many domains there are.)
+#
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
@@ -189,6 +194,9 @@ Test("silo_20")
 
 DeleteActivePlots()
 AddPlot("Vector","vec")
+vec = VectorAttributes()
+vec.nVectors = 400 * 36
+SetPlotOptions(vec)
 DrawPlots()
 Test("silo_21")
 

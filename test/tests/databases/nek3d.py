@@ -8,6 +8,11 @@
 #  Programmer: David Bremer
 #  Date:       June 12, 2007
 #
+#  Modifications:
+#    Jeremy Meredith, Tue Jul 15 10:43:58 EDT 2008
+#    Changed number of vectors in vector plot to match the old behavior.
+#    (We now account for how many domains there are.)
+#
 # ----------------------------------------------------------------------------
 import os, string
 
@@ -28,7 +33,7 @@ Test("nek3d_reader2")
 DeleteAllPlots()
 AddPlot("Vector", "velocity")
 v = VectorAttributes()
-v.nVectors = 10
+v.nVectors = 10*100
 SetPlotOptions(v)
 DrawPlots()
 Test("nek3d_reader3")
@@ -67,6 +72,9 @@ DeleteAllPlots()
 OpenDatabase("../data/nek3d_test_data/2dascii/couette.nek2d")
 ResetView()
 AddPlot("Vector", "velocity")
+v = VectorAttributes()
+v.nVectors = 400*16
+SetPlotOptions(v)
 DrawPlots()
 Test("nek3d_reader8")
 
@@ -88,6 +96,9 @@ DeleteAllPlots()
 OpenDatabase("../data/nek3d_test_data/parallel_nek_output_example/par_test.nek3d")
 ResetView()
 AddPlot("Vector", "velocity")
+v = VectorAttributes()
+v.nVectors = 400*240
+SetPlotOptions(v)
 DrawPlots()
 Test("nek3d_reader11")
 

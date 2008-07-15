@@ -8,6 +8,11 @@
 #  Programmer: Hank Childs
 #  Date:       January 9, 2006
 #
+#  Modifications:
+#    Jeremy Meredith, Tue Jul 15 10:43:58 EDT 2008
+#    Changed number of vectors in vector plot to match the old behavior.
+#    (We now account for how many domains there are.)
+#
 # ----------------------------------------------------------------------------
 
 
@@ -120,6 +125,9 @@ DeleteAllPlots()
 OpenDatabase("../data/multi_ucd3d.silo")
 DefineVectorExpression("cmfe10", "pos_cmfe(gradient(<../data/curv3d.silo:d>), mesh1, {0,0,0})")
 AddPlot("Vector", "cmfe10")
+vec = VectorAttributes()
+vec.nVectors = 400*36
+SetPlotOptions(vec)
 DrawPlots()
 Test("pos_cmfe_14")
 
