@@ -51,19 +51,20 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkCellType.h>
+#include <vtkCharArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkIdTypeArray.h>
-#include <vtkCharArray.h>
-#include <vtkShortArray.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkShortArray.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVisItUtility.h>
 
 #include <avtCallback.h>
 #include <avtDatabase.h>
@@ -6607,6 +6608,8 @@ avtSiloFileFormat::VerifyQuadmesh(DBquadmesh *qm, const char *meshname)
 //  Creation:    March 1, 2006 
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Jul 14 14:55:48 PDT 2008
+//    Specify curves as 1D rectilinear grids with yvalues stored in point data.
 //
 // ****************************************************************************
 
@@ -6629,82 +6632,100 @@ avtSiloFileFormat::GetCurve(DBfile *dbfile, const char *cn)
     {
         EXCEPTION1(InvalidVariableException, curvename);
     }
-
-    //
-    // Add all of the points to an array.
-    //
-    vtkPolyData *pd  = vtkPolyData::New();
-    vtkPoints   *pts = vtkPoints::New();
-    pd->SetPoints(pts);
+    vtkRectilinearGrid *rg;
 
     // DBForceSingle assures that all double data is converted to float
     // So, both are handled as float, here
-    if (cur->datatype == DB_FLOAT ||
-        cur->datatype == DB_DOUBLE)
+    if (cur->datatype == DB_FLOAT)
     {
-        vtkFloatArray *farr= vtkFloatArray::New();
-        farr->SetNumberOfComponents(3);
-        farr->SetNumberOfTuples(cur->npts);
+        rg = vtkVisItUtility::Create1DRGrid(cur->npts, VTK_FLOAT);
+        vtkFloatArray *xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
+        vtkFloatArray *yv= vtkFloatArray::New();
+        yv->SetNumberOfComponents(1);
+        yv->SetNumberOfTuples(cur->npts);
+        yv->SetName(curvename);
         for (i = 0 ; i < cur->npts; i++)
-            farr->SetTuple3(i, cur->x[i], cur->y[i], 0.0);
-        pts->SetData(farr);
-        farr->Delete();
+        {
+            xc->SetValue(i, cur->x[i]);
+            yv->SetValue(i, cur->y[i]);
+        }
+        rg->GetPointData()->SetScalars(yv);
+        yv->Delete();
+    }
+    else if (cur->datatype == DB_DOUBLE)
+    {
+        rg = vtkVisItUtility::Create1DRGrid(cur->npts, VTK_DOUBLE);
+        vtkDoubleArray *xc =vtkDoubleArray::SafeDownCast(rg->GetXCoordinates());
+        vtkDoubleArray *yv =vtkDoubleArray::New();
+        yv->SetNumberOfComponents(1);
+        yv->SetNumberOfTuples(cur->npts);
+        yv->SetName(curvename);
+        for (i = 0 ; i < cur->npts; i++)
+        {
+            xc->SetValue(i, cur->x[i]);
+            yv->SetValue(i, cur->y[i]);
+        }
+        rg->GetPointData()->SetScalars(yv);
+        yv->Delete();
     }
     else if (cur->datatype == DB_INT)
     {
         int *px = (int *) cur->x;
         int *py = (int *) cur->y;
-        vtkIntArray *iarr= vtkIntArray::New();
-        iarr->SetNumberOfComponents(3);
-        iarr->SetNumberOfTuples(cur->npts);
+        rg = vtkVisItUtility::Create1DRGrid(cur->npts, VTK_INT);
+        vtkIntArray *xc = vtkIntArray::SafeDownCast(rg->GetXCoordinates());
+        vtkIntArray *yv = vtkIntArray::New();
+        yv->SetNumberOfComponents(1);
+        yv->SetNumberOfTuples(cur->npts);
+        yv->SetName(curvename);
         for (i = 0 ; i < cur->npts; i++)
-            iarr->SetTuple3(i, px[i], py[i], 0);
-        pts->SetData(iarr);
-        iarr->Delete();
+        {
+            xc->SetValue(i, px[i]);
+            yv->SetValue(i, py[i]);
+        }
+        rg->GetPointData()->SetScalars(yv);
+        yv->Delete();
     }
     else if (cur->datatype == DB_SHORT)
     {
         short *px = (short *) cur->x;
         short *py = (short *) cur->y;
-        vtkShortArray *sarr= vtkShortArray::New();
-        sarr->SetNumberOfComponents(3);
-        sarr->SetNumberOfTuples(cur->npts);
+        rg = vtkVisItUtility::Create1DRGrid(cur->npts, VTK_SHORT);
+        vtkShortArray *xc = vtkShortArray::SafeDownCast(rg->GetXCoordinates());
+        vtkShortArray *yv = vtkShortArray::New();
+        yv->SetNumberOfComponents(1);
+        yv->SetNumberOfTuples(cur->npts);
+        yv->SetName(curvename);
         for (i = 0 ; i < cur->npts; i++)
-            sarr->SetTuple3(i, px[i], py[i], 0);
-        pts->SetData(sarr);
-        sarr->Delete();
+        {
+            xc->SetValue(i, px[i]);
+            yv->SetValue(i, py[i]);
+        }
+        rg->GetPointData()->SetScalars(yv);
+        yv->Delete();
     }
     else if (cur->datatype == DB_CHAR)
     {
         char *px = (char *) cur->x;
         char *py = (char *) cur->y;
-        vtkCharArray *carr= vtkCharArray::New();
-        carr->SetNumberOfComponents(3);
-        carr->SetNumberOfTuples(cur->npts);
+        rg = vtkVisItUtility::Create1DRGrid(cur->npts, VTK_CHAR);
+        vtkCharArray *xc = vtkCharArray::SafeDownCast(rg->GetXCoordinates());
+        vtkCharArray *yv = vtkCharArray::New();
+        yv->SetNumberOfComponents(1);
+        yv->SetNumberOfTuples(cur->npts);
+        yv->SetName(curvename);
         for (i = 0 ; i < cur->npts; i++)
-            carr->SetTuple3(i, px[i], py[i], 0);
-        pts->SetData(carr);
-        carr->Delete();
+        {
+            xc->SetValue(i, px[i]);
+            yv->SetValue(i, py[i]);
+        }
+        rg->GetPointData()->SetScalars(yv);
+        yv->Delete();
     }
-
-    //
-    // Connect the points up with line segments.
-    //
-    vtkCellArray *line = vtkCellArray::New();
-    pd->SetLines(line);
-    for (i = 1 ; i < cur->npts; i++)
-    {
-        line->InsertNextCell(2);
-        line->InsertCellPoint(i-1);
-        line->InsertCellPoint(i);
-    }
-
-    pts->Delete();
-    line->Delete();
 
     DBFreeCurve(cur);
 
-    return pd;
+    return rg;
 }
 
 // ****************************************************************************

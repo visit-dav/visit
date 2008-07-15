@@ -45,17 +45,20 @@
 #include <string>
 #include <vector>
 
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkPointData.h> 
+#include <vtkPoints.h> 
+#include <vtkPolyData.h> 
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkPoints.h> 
-#include <avtGhostData.h> 
 #include <vtkUnsignedCharArray.h> 
-#include <vtkPolyData.h> 
-#include <vtkCellArray.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkVisItUtility.h>
 
+#include <avtGhostData.h> 
 #include <avtDatabaseMetaData.h>
 #include <avtMixedVariable.h>
 #include <avtVariableCache.h>
@@ -150,7 +153,8 @@ SymbolInformation(PDBfile *pdb, const char *name, TypeEnum *t,
         }
 
         // Print the dimensions to the debug log.
-        debug4 << "PDBFileObject::SymbolExists: name=" << name << ", dimensions={";
+        debug4 << "PDBFileObject::SymbolExists: name=" << name 
+               << ", dimensions={";
         for(i = 0; i < nd; ++i)
             debug4 << dims[i] << ", ";
         debug4 << "}" << endl;
@@ -223,36 +227,32 @@ SymbolInformation(PDBfile *pdb, const char *name, TypeEnum *t,
 void
 avtCaleFileFormat::Identify(const char *filename)
 {
-   const char *mName = "avtCaleFileFormat::Identify: ";
-   PDBfile *pdb = PD_open((char *)filename,"r") ;
+    const char *mName = "avtCaleFileFormat::Identify: ";
+    PDBfile *pdb = PD_open((char *)filename,"r") ;
    
-   if (pdb == NULL)
-      {
-      EXCEPTION1(InvalidDBTypeException,
-         "The file could not be opened") ;
-      }
-   else
-      {
-      int nnalls = 0, kmax = 0, lmax = 0;
-      int pdberr ;
-      pdberr  = PD_read(pdb,"/parameters/nnalls",&nnalls) ;
-      pdberr |= PD_read(pdb,"/parameters/kmax",&kmax) ;
-      pdberr |= PD_read(pdb,"/parameters/lmax",&lmax) ;
+    if (pdb == NULL)
+    {
+        EXCEPTION1(InvalidDBTypeException, "The file could not be opened") ;
+    }
+    else
+    {
+        int nnalls = 0, kmax = 0, lmax = 0;
+        int pdberr ;
+        pdberr  = PD_read(pdb,"/parameters/nnalls",&nnalls) ;
+        pdberr |= PD_read(pdb,"/parameters/kmax",&kmax) ;
+        pdberr |= PD_read(pdb,"/parameters/lmax",&lmax) ;
 
-      debug5 << mName << "nnalls = " << nnalls << endl;
-      debug5 << mName << "kmax = " << kmax << endl;
-      debug5 << mName << "lmax = " << lmax << endl;
+        debug5 << mName << "nnalls = " << nnalls << endl;
+        debug5 << mName << "kmax = " << kmax << endl;
+        debug5 << mName << "lmax = " << lmax << endl;
 
-      if ((!pdberr) || (nnalls != (kmax + 2)*(lmax + 2)))
-         {
-         PD_close(pdb);
-
-         EXCEPTION1(InvalidDBTypeException,
-         "The file is not a Cale dump") ;
-         }
-
-      }
-   PD_close(pdb);
+        if ((!pdberr) || (nnalls != (kmax + 2)*(lmax + 2)))
+        {
+            PD_close(pdb);
+            EXCEPTION1(InvalidDBTypeException, "The file is not a Cale dump") ;
+        }
+    }
+    PD_close(pdb);
 }
 
 // ****************************************************************************
@@ -342,198 +342,204 @@ avtCaleFileFormat::GetPDBFile()
 void
 avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-   const char *mName = "avtCaleFileFormat::PopulateDatabaseMetaData: ";
+    const char *mName = "avtCaleFileFormat::PopulateDatabaseMetaData: ";
     //
     // CODE TO ADD A MESH
     //
-    std::string meshname = "hydro" ;
+    std::string meshname = "hydro";
     //
     // Add the mesh to the metadata. Note that this example will 
     // always expose a mesh called "hydro" to VisIt. A real 
     // plug-in may want to read a list of meshes from the data 
     // file. 
     avtMeshMetaData *mmd = new avtMeshMetaData; 
-    mmd->name = meshname ; 
-    mmd->spatialDimension = 2 ; 
-    mmd->topologicalDimension = 2 ; 
-    mmd->meshType = AVT_CURVILINEAR_MESH ; 
-    mmd->numBlocks = 1 ; 
-    mmd->xLabel = "z-axis" ;
-    mmd->yLabel = "r-axis" ;
-//    mmd->cellOrigin = 1 ;
-//    mmd->nodeOrigin = 1 ;
-//    mmd->blockOrigin = 1 ;
-    md->Add(mmd) ; 
+    mmd->name = meshname; 
+    mmd->spatialDimension = 2; 
+    mmd->topologicalDimension = 2; 
+    mmd->meshType = AVT_CURVILINEAR_MESH; 
+    mmd->numBlocks = 1; 
+    mmd->xLabel = "z-axis";
+    mmd->yLabel = "r-axis";
+    // mmd->cellOrigin = 1;
+    // mmd->nodeOrigin = 1;
+    // mmd->blockOrigin = 1;
+    md->Add(mmd); 
 
     //
     // find portion of mesh used in this dump
-    if (kminmesh == -1) GetUsedMeshLimits() ;
+    if (kminmesh == -1)
+        GetUsedMeshLimits();
 
     //
     // CODE TO ADD A SCALAR VARIABLE
     // Now walk the fpa arrays and put them all out like wsilo.
     // access this list in teh dump through the fpalist structure
     //
-    int i, nfpa, nnalls, namix, pdberr ;
-    int npbin, ngrps, rdifmix ;
-    typedef struct {
-       char name[8] ;
-       int len ;
-       }  parec ;
+    int i, nfpa, nnalls, namix, pdberr;
+    int npbin, ngrps, rdifmix;
+    typedef struct 
+    {
+        char name[8];
+        int len;
+    }  parec;
     
-    pdberr =           PD_read(GetPDBFile(),"/parameters/nfpa",&nfpa) ;
+    pdberr =           PD_read(GetPDBFile(),"/parameters/nfpa",&nfpa);
     parec *palist = new parec[nfpa];
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/nnalls",&nnalls) ;
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/namix",&namix) ;
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/npbin",&npbin) ;
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/rdifmix",&rdifmix) ;
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ngrps",&ngrps) ;
-    pdberr = pdberr && PD_read(GetPDBFile(),"fpalist",palist) ;
+    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/nnalls",&nnalls);
+    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/namix",&namix);
+    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/npbin",&npbin);
+    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/rdifmix",&rdifmix);
+    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ngrps",&ngrps);
+    pdberr = pdberr && PD_read(GetPDBFile(),"fpalist",palist);
     if (!pdberr)
-      {
-      EXCEPTION1(InvalidDBTypeException,
-      "Corrupt dump; error reading array related variables.") ;
-      }
+    {
+        EXCEPTION1(InvalidDBTypeException,
+            "Corrupt dump; error reading array related variables.");
+    }
 
-    std::string mesh_for_this_var = meshname ; // ??? -- could be multiple meshes
-    avtCentering cent = AVT_ZONECENT ;
+    std::string mesh_for_this_var = meshname; // ??? -- could be multiple meshes
+    avtCentering cent = AVT_ZONECENT;
 
     for ( i = 0 ; i < nfpa ; i++ )
-       {
-       char  varname[10] ;
-       char *name = palist[i].name ;
+    {
+        char  varname[10];
+        char *name = palist[i].name;
 
-//       debug4 << " i " << i << " name " << palist[i].name << " len " << palist[i].len << endl ;
-// z & r go into the mesh data structure 
-       if (!strcmp(name, "z") || !strcmp(name, "r"))
-         continue ;
+        // debug4 << " i " << i << " name " << palist[i].name << " len " 
+        //        << palist[i].len << endl;
 
-       if ((palist[i].len == nnalls) | (palist[i].len == namix))
-          {
-          debug4 << " adding scalar variable " << palist[i].name << " len " << palist[i].len << endl ;
-          strncpy(varname,palist[i].name,8) ;
-          if (!strcmp(name, "rvel")   ||
-              !strcmp(name, "zvel")   ||
-              !strcmp(name, "vr")     ||
-              !strcmp(name, "vt")     ||
-              !strcmp(name, "rad")    ||
-              !strcmp(name, "theta")  ||
-              !strcmp(name, "vtheta") ||
-              !strcmp(name, "vmag")   ||
-              !strcmp(name, "bmhdr")  ||
-              !strcmp(name, "bmhdz")  ||
-              !strcmp(name, "jmhdr")  ||
-              !strcmp(name, "jmhdz")  ||
-              !strcmp(name, "omega")  ||
-              !strcmp(name, "r2w")    ||
-              !strcmp(name, "lt")      )
-             {
-             cent = AVT_NODECENT ;
-             }
-          else
-             {
-             cent = AVT_ZONECENT ;
-             } 
-//          AddScalarVarToMetaData(md, varname, mesh_for_this_var, cent) ;
-          // Add a scalar to the metadata. 
-          avtScalarMetaData *smd = new avtScalarMetaData ; 
-          smd->name = varname ; 
-          smd->meshName = mesh_for_this_var ; 
-          smd->centering = cent ;
-          if (!strcmp(name, "rvel")   ||
-              !strcmp(name, "zvel")   ||
-              !strcmp(name, "vr")     ||
-              !strcmp(name, "vt")     ||
-              !strcmp(name, "vmag"))
-             {
-             smd->hasUnits = true ; 
-             smd->units = "cm/microsecond" ; 
-             }
-          else
-             {
-             smd->hasUnits = false ; 
-             }
-          md->Add(smd) ; 
-          }
-       else if (palist[i].len == npbin*namix)
-          {
-          cent = AVT_ZONECENT ;
-          for (int g = 0 ; g < npbin ; g++ )
-             {
-             sprintf(varname,"%s_%02d",palist[i].name,g) ;
-             debug4 << " adding scalar variable " << varname << " len " << palist[i].len << endl ;
-             // Add a scalar to the metadata. 
-             avtScalarMetaData *smd = new avtScalarMetaData ; 
-             smd->name = varname ; 
-             smd->meshName = mesh_for_this_var ; 
-             smd->centering = cent ;
-             md->Add(smd) ;
-             }
-          }
-       else if (palist[i].len == ngrps*nnalls)
-          {
-          cent = AVT_ZONECENT ;
-          for (int g = 0 ; g < ngrps ; g++ )
-             {
-             sprintf(varname,"%s_%02d",palist[i].name,g) ;
-             debug4 << " adding scalar variable " << varname << " len " << palist[i].len << endl ;
-             // Add a scalar to the metadata. 
-             avtScalarMetaData *smd = new avtScalarMetaData ; 
-             smd->name = varname ; 
-             smd->meshName = mesh_for_this_var ; 
-             smd->centering = cent ;
-             md->Add(smd) ;
-             }
-          }
-       else
-          {
-          debug4 << " ignoring scalar variable " << palist[i].name << " len " << palist[i].len << endl ;
-          }
-       }
-    delete [] palist ;
+        // z & r go into the mesh data structure 
+        if (!strcmp(name, "z") || !strcmp(name, "r"))
+            continue;
+
+        if ((palist[i].len == nnalls) | (palist[i].len == namix))
+        {
+            debug4 << " adding scalar variable " << palist[i].name << " len " 
+                   << palist[i].len << endl;
+            strncpy(varname,palist[i].name,8);
+            if (!strcmp(name, "rvel")   ||
+                !strcmp(name, "zvel")   ||
+                !strcmp(name, "vr")     ||
+                !strcmp(name, "vt")     ||
+                !strcmp(name, "rad")    ||
+                !strcmp(name, "theta")  ||
+                !strcmp(name, "vtheta") ||
+                !strcmp(name, "vmag")   ||
+                !strcmp(name, "bmhdr")  ||
+                !strcmp(name, "bmhdz")  ||
+                !strcmp(name, "jmhdr")  ||
+                !strcmp(name, "jmhdz")  ||
+                !strcmp(name, "omega")  ||
+                !strcmp(name, "r2w")    ||
+                !strcmp(name, "lt")      )
+            {
+                cent = AVT_NODECENT;
+            }
+            else
+            {
+                cent = AVT_ZONECENT;
+            } 
+            // Add a scalar to the metadata. 
+            avtScalarMetaData *smd = new avtScalarMetaData; 
+            smd->name = varname; 
+            smd->meshName = mesh_for_this_var; 
+            smd->centering = cent;
+            if (!strcmp(name, "rvel")   ||
+                !strcmp(name, "zvel")   ||
+                !strcmp(name, "vr")     ||
+                !strcmp(name, "vt")     ||
+                !strcmp(name, "vmag"))
+            {
+                smd->hasUnits = true; 
+                smd->units = "cm/microsecond";
+            }
+            else
+            {
+                smd->hasUnits = false; 
+            }
+            md->Add(smd); 
+        }
+        else if (palist[i].len == npbin*namix)
+        {
+            cent = AVT_ZONECENT;
+            for (int g = 0 ; g < npbin ; g++ )
+            {
+                sprintf(varname,"%s_%02d",palist[i].name,g);
+                debug4 << " adding scalar variable " << varname << " len " 
+                       << palist[i].len << endl;
+                // Add a scalar to the metadata. 
+                avtScalarMetaData *smd = new avtScalarMetaData; 
+                smd->name = varname; 
+                smd->meshName = mesh_for_this_var; 
+                smd->centering = cent;
+                md->Add(smd);
+            }
+        }
+        else if (palist[i].len == ngrps*nnalls)
+        {
+            cent = AVT_ZONECENT;
+            for (int g = 0 ; g < ngrps ; g++ )
+            {
+                sprintf(varname,"%s_%02d",palist[i].name,g);
+                debug4 << " adding scalar variable " << varname << " len " 
+                       << palist[i].len << endl;
+                // Add a scalar to the metadata. 
+                avtScalarMetaData *smd = new avtScalarMetaData; 
+                smd->name = varname; 
+                smd->meshName = mesh_for_this_var; 
+                smd->centering = cent;
+                md->Add(smd);
+            }
+        }
+        else
+        {
+            debug4 << " ignoring scalar variable " << palist[i].name << " len " 
+                   << palist[i].len << endl;
+        }
+    }
+    delete [] palist;
 
     //
     // CODE TO ADD A MATERIAL
     //
-    int nreg ;
-    typedef struct  {
-      char name[33] ;
-      }  trcname_str ;
+    int nreg;
+    typedef struct
+    {
+        char name[33];
+    }  trcname_str;
 
-    pdberr = PD_read(GetPDBFile(),"/parameters/nreg",&nreg) ;
+    pdberr = PD_read(GetPDBFile(),"/parameters/nreg",&nreg);
     if (!pdberr)
-      {
-      EXCEPTION1(InvalidDBTypeException,
-      "Corrupt dump; error reading # of materials.") ;
-      }
+    {
+        EXCEPTION1(InvalidDBTypeException,
+            "Corrupt dump; error reading # of materials.");
+    }
     
     if (nreg >= 1)
-       {
-    
-       trcname_str *rname = new trcname_str[nreg+1] ;
-       
-       pdberr = PD_read(GetPDBFile(),"/ppa/rname",rname) ;
-       if (!pdberr)
-         {
-         EXCEPTION1(InvalidDBTypeException,
-         "Corrupt dump; error reading material names.") ;
-         }
-       strcpy(rname[0].name,"Phony") ;
-       
-       int nmats = nreg + 1 ;
-       avtMaterialMetaData *matmd = new avtMaterialMetaData;
-       matmd->name = "Materials" ;
-       matmd->meshName = meshname; 
-       matmd->numMaterials = nmats; 
+    {
+        trcname_str *rname = new trcname_str[nreg+1];
 
-       for ( i = 0 ; i <= nreg ; i++ )
-          {
-          matmd->materialNames.push_back(rname[i].name) ;
+        pdberr = PD_read(GetPDBFile(),"/ppa/rname",rname);
+        if (!pdberr)
+        {
+            EXCEPTION1(InvalidDBTypeException,
+                "Corrupt dump; error reading material names.");
+        }
+        strcpy(rname[0].name,"Phony");
+       
+        int nmats = nreg + 1;
+        avtMaterialMetaData *matmd = new avtMaterialMetaData;
+        matmd->name = "Materials";
+        matmd->meshName = meshname; 
+        matmd->numMaterials = nmats; 
 
-          debug4 << " region " << i << " is named " << rname[i].name << endl ;
-          }
-       md->Add(matmd);
-       }
+        for ( i = 0 ; i <= nreg ; i++ )
+        {
+            matmd->materialNames.push_back(rname[i].name);
+            debug4 << " region " << i << " is named " << rname[i].name << endl;
+        }
+        md->Add(matmd);
+    }
 
     // Here's the way to add expressions:
     Expression velocity_expr;
@@ -548,189 +554,197 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     vel_expr.SetType(Expression::VectorMeshVar);
     md->AddExpression(&vel_expr);
 
-    int ifstr, ifstrain, iftpstr, ifmhda, ifmhdb ;
-    pdberr =           PD_read(GetPDBFile(),"/parameters/ifstr",&ifstr) ;
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ifstrain",&ifstrain) ;
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/iftpstr",&iftpstr) ;
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ifmhda",&ifmhda) ;
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ifmhdb",&ifmhdb) ;
+    int ifstr, ifstrain, iftpstr, ifmhda, ifmhdb;
+    pdberr =           PD_read(GetPDBFile(),"/parameters/ifstr",&ifstr);
+    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ifstrain",&ifstrain);
+    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/iftpstr",&iftpstr);
+    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ifmhda",&ifmhda);
+    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ifmhdb",&ifmhdb);
     if (!pdberr)
-      {
-      EXCEPTION1(InvalidDBTypeException,
-      "Corrupt dump; error reading memory layout parameters.") ;
-      }
+    {
+        EXCEPTION1(InvalidDBTypeException,
+            "Corrupt dump; error reading memory layout parameters.");
+    }
 
     if (ifstr == 1)
-       {
-       Expression stress_expr;
-       stress_expr.SetName("stress");
-       stress_expr.SetDefinition("{ { szz, srz }, { srz, srr } }");
-       stress_expr.SetType(Expression::TensorMeshVar);
-       md->AddExpression(&stress_expr);
-       }
+    {
+        Expression stress_expr;
+        stress_expr.SetName("stress");
+        stress_expr.SetDefinition("{ { szz, srz }, { srz, srr } }");
+        stress_expr.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&stress_expr);
+    }
     
     if (ifstrain == 1)
-       {
-       Expression strain_dev_expr;
-       strain_dev_expr.SetName("strain_dev");
-       strain_dev_expr.SetDefinition("{ { strndzz, strndrz }, { strndrz, strndrr } }");
-       strain_dev_expr.SetType(Expression::TensorMeshVar);
-       md->AddExpression(&strain_dev_expr);
+    {
+        Expression strain_dev_expr;
+        strain_dev_expr.SetName("strain_dev");
+        strain_dev_expr.SetDefinition("{ { strndzz, strndrz }, "
+                                      "{ strndrz, strndrr } }");
+        strain_dev_expr.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strain_dev_expr);
 
-       Expression strain_tot_expr;
-       strain_tot_expr.SetName("strain_tot");
-       strain_tot_expr.SetDefinition("{ { strntzz, strntrz }, { strntrz, strntrr } }");
-       strain_tot_expr.SetType(Expression::TensorMeshVar);
-       md->AddExpression(&strain_tot_expr);
-       }
+        Expression strain_tot_expr;
+        strain_tot_expr.SetName("strain_tot");
+        strain_tot_expr.SetDefinition("{ { strntzz, strntrz }, "
+                                      "{ strntrz, strntrr } }");
+        strain_tot_expr.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strain_tot_expr);
+    }
     
     if (iftpstr == 1)
-       {
-       Expression stress_tot_expr;
-       stress_tot_expr.SetName("stress_tot");
-       stress_tot_expr.SetDefinition("{ { tszz, tsrz }, { tsrz, tsrr } }");
-       stress_tot_expr.SetType(Expression::TensorMeshVar);
-       md->AddExpression(&stress_tot_expr);
-       }
+    {
+        Expression stress_tot_expr;
+        stress_tot_expr.SetName("stress_tot");
+        stress_tot_expr.SetDefinition("{ { tszz, tsrz }, { tsrz, tsrr } }");
+        stress_tot_expr.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&stress_tot_expr);
+    }
     
     if (ifmhda == 1)
-       {
-       Expression B_field_expr;
-       B_field_expr.SetName("B_field");
-       B_field_expr.SetDefinition("{ bmhdz, bmhdr }");
-       B_field_expr.SetType(Expression::VectorMeshVar);
-       md->AddExpression(&B_field_expr);
-       }
+    {
+        Expression B_field_expr;
+        B_field_expr.SetName("B_field");
+        B_field_expr.SetDefinition("{ bmhdz, bmhdr }");
+        B_field_expr.SetType(Expression::VectorMeshVar);
+        md->AddExpression(&B_field_expr);
+    }
     
     if (ifmhdb == 1)
-       {
-       Expression current_expr;
-       current_expr.SetName("current");
-       current_expr.SetDefinition("{ jmhdz, jmhdr }");
-       current_expr.SetType(Expression::VectorMeshVar);
-       md->AddExpression(&current_expr);
-       }
-// Use array_compose to group the different energy groups together
+    {
+        Expression current_expr;
+        current_expr.SetName("current");
+        current_expr.SetDefinition("{ jmhdz, jmhdr }");
+        current_expr.SetType(Expression::VectorMeshVar);
+        md->AddExpression(&current_expr);
+    }
+    // Use array_compose to group the different energy groups together
     if (npbin > 1)
-       {
-       Expression pbin_array_expr;
-       pbin_array_expr.SetName("pbin_array");
-//       std::string expr = "array_compose(expr1, expr2, ..., exprN)"
-       std::string expr = "array_compose(" ;
-       char sub_expr[33] ;
-       for ( int g = 0 ; g < npbin ; g++ )
-          {
-          sprintf(sub_expr,"pbin_%02d",g) ;
-          if (g < npbin-1) strcat(sub_expr,", ") ;
-          expr += sub_expr ;
-          }
-       strcpy(sub_expr,")") ;
-       expr += sub_expr ;
-       pbin_array_expr.SetDefinition(expr);
-       pbin_array_expr.SetType(Expression::ArrayMeshVar);
-       md->AddExpression(&pbin_array_expr);
+    {
+        Expression pbin_array_expr;
+        pbin_array_expr.SetName("pbin_array");
+        // std::string expr = "array_compose(expr1, expr2, ..., exprN)"
+        std::string expr = "array_compose(";
+        char sub_expr[33];
+        for ( int g = 0 ; g < npbin ; g++ )
+        {
+            sprintf(sub_expr,"pbin_%02d",g);
+            if (g < npbin-1)
+                strcat(sub_expr,", ");
+            expr += sub_expr;
+        }
+        strcpy(sub_expr,")");
+        expr += sub_expr;
+        pbin_array_expr.SetDefinition(expr);
+        pbin_array_expr.SetType(Expression::ArrayMeshVar);
+        md->AddExpression(&pbin_array_expr);
 
-       Expression kbin_array_expr;
-       kbin_array_expr.SetName("kbin_array");
-//       std::string expr = "array_compose(expr1, expr2, ..., exprN)"
-       expr = "array_compose(" ;
-       for ( int g = 0 ; g < npbin ; g++ )
-          {
-          sprintf(sub_expr,"kbin_%02d",g) ;
-          if (g < npbin-1) strcat(sub_expr,", ") ;
-          expr += sub_expr ;
-          }
-       strcpy(sub_expr,")") ;
-       expr += sub_expr ;
-       kbin_array_expr.SetDefinition(expr);
-       kbin_array_expr.SetType(Expression::ArrayMeshVar);
-       md->AddExpression(&kbin_array_expr);
-       }
+        Expression kbin_array_expr;
+        kbin_array_expr.SetName("kbin_array");
+        // std::string expr = "array_compose(expr1, expr2, ..., exprN)"
+        expr = "array_compose(";
+        for ( int g = 0 ; g < npbin ; g++ )
+        {
+            sprintf(sub_expr,"kbin_%02d",g);
+            if (g < npbin-1)
+                strcat(sub_expr,", ");
+            expr += sub_expr;
+        }
+        strcpy(sub_expr,")");
+        expr += sub_expr;
+        kbin_array_expr.SetDefinition(expr);
+        kbin_array_expr.SetType(Expression::ArrayMeshVar);
+        md->AddExpression(&kbin_array_expr);
+    }
     if (ngrps > 1)
-       {
-       Expression flux_array_expr;
-       flux_array_expr.SetName("nflux_array");
-//       std::string expr = "array_compose(expr1, expr2, ..., exprN)"
-       std::string expr = "array_compose(" ;
-       char sub_expr[33] ;
-       for ( int g = 0 ; g < ngrps ; g++ )
-          {
-          sprintf(sub_expr,"nflux_%02d",g) ;
-          if (g < ngrps-1) strcat(sub_expr,", ") ;
-          expr += sub_expr ;
-          }
-       strcpy(sub_expr,")") ;
-       expr += sub_expr ;
-       flux_array_expr.SetDefinition(expr);
-       flux_array_expr.SetType(Expression::ArrayMeshVar);
-       md->AddExpression(&flux_array_expr);
-       }
-// 
-// Add time history curve data
-//
+    {
+        Expression flux_array_expr;
+        flux_array_expr.SetName("nflux_array");
+        // std::string expr = "array_compose(expr1, expr2, ..., exprN)"
+        std::string expr = "array_compose(";
+        char sub_expr[33] ;
+        for ( int g = 0 ; g < ngrps ; g++ )
+        {
+            sprintf(sub_expr,"nflux_%02d",g);
+            if (g < ngrps-1)
+                strcat(sub_expr,", ");
+            expr += sub_expr;
+        }
+        strcpy(sub_expr,")");
+        expr += sub_expr;
+        flux_array_expr.SetDefinition(expr);
+        flux_array_expr.SetType(Expression::ArrayMeshVar);
+        md->AddExpression(&flux_array_expr);
+    }
+    // 
+    // Add time history curve data
+    //
 
     int ntp, ncp, ncurves, ntimes, tplen ;
-    pdberr =           PD_read(GetPDBFile(),"/parameters/ntp",&ntp) ;
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ncp",&ncp) ;
+    pdberr =           PD_read(GetPDBFile(),"/parameters/ntp",&ntp);
+    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ncp",&ncp);
     if (!pdberr)
-      {
-      ntp = ncp = 0 ;
-      }
+    {
+        ntp = ncp = 0;
+    }
     
-    debug4 << ntp << " time plot sections" << endl ;
+    debug4 << ntp << " time plot sections" << endl;
     for ( int i = 1 ; i <= ntp ; i++ )
-       {
-       char vname[128], label[128] ;
-       sprintf(vname, "/ppa/tpdata_%d/ncurs",i) ;
-       pdberr = PD_read(GetPDBFile(),vname,&ncurves) ;
-       debug4 << "section " << i << " has " << ncurves << " curves " << endl ;
+    {
+        char vname[128], label[128];
+        sprintf(vname, "/ppa/tpdata_%d/ncurs",i);
+        pdberr = PD_read(GetPDBFile(),vname,&ncurves);
+        debug4 << "section " << i << " has " << ncurves << " curves " << endl;
 
-       for ( int icur = 1 ; icur < ncurves ; icur++ )
-          {
-          sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tplab",i,icur) ;
-          pdberr = PD_read(GetPDBFile(),vname,label) ;
-          debug4 << "label '" << label << "'" << endl ;
-          sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tplen",i,icur) ;
-          pdberr = PD_read(GetPDBFile(),vname,&tplen) ;
-          if (tplen == 0) break ;
-          avtCurveMetaData *cmd = new avtCurveMetaData;
-          cmd->name = label;
-          cmd->yLabel = "y-axis"; // Labels and units are strings so use whatever you want.
-//          cmd->yUnits = "cm"
-          cmd->xLabel = "time";
-          cmd->xUnits = "microseconds";
-          md->Add(cmd);
-          }
-       }
+        for ( int icur = 1 ; icur < ncurves ; icur++ )
+        {
+            sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tplab",i,icur);
+            pdberr = PD_read(GetPDBFile(),vname,label);
+            debug4 << "label '" << label << "'" << endl;
+            sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tplen",i,icur);
+            pdberr = PD_read(GetPDBFile(),vname,&tplen);
+            if (tplen == 0)
+                break;
+            avtCurveMetaData *cmd = new avtCurveMetaData;
+            cmd->name = label;
+            // Labels and units are strings so use whatever you want.
+            cmd->yLabel = "y-axis"; 
+            // cmd->yUnits = "cm"
+            cmd->xLabel = "time";
+            cmd->xUnits = "microseconds";
+            md->Add(cmd);
+        }
+    }
 
-    debug4 << ncp << " cycle plot sections" << endl ;
+    debug4 << ncp << " cycle plot sections" << endl;
     for ( int i = 1 ; i <= ncp ; i++ )
-       {
-       char vname[128], label[128] ;
-       sprintf(vname, "/ppa/cpdata_%d/ncurs",i) ;
-       pdberr = PD_read(GetPDBFile(),vname,&ncurves) ;
-       sprintf(vname, "/ppa/cpdata_%d/ntimes",i) ;
-       pdberr = PD_read(GetPDBFile(),vname,&ntimes) ;
-       debug4 << "section " << i << " has " << ncurves << " curves " << endl ;
+    {
+        char vname[128], label[128];
+        sprintf(vname, "/ppa/cpdata_%d/ncurs",i);
+        pdberr = PD_read(GetPDBFile(),vname,&ncurves);
+        sprintf(vname, "/ppa/cpdata_%d/ntimes",i);
+        pdberr = PD_read(GetPDBFile(),vname,&ntimes);
+        debug4 << "section " << i << " has " << ncurves << " curves " << endl;
 
-       for ( int icur = 1 ; icur < ncurves ; icur++ )
-          {
-          sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tplab",i,icur) ;
-          pdberr = PD_read(GetPDBFile(),vname,label) ;
-          debug4 << "label '" << label << "'" << endl ;
-          sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tplen",i,icur) ;
-          pdberr = PD_read(GetPDBFile(),vname,&tplen) ;
-          if (tplen == 0) break ;
-          avtCurveMetaData *cmd = new avtCurveMetaData;
-          cmd->name = label;
-          cmd->yLabel = "y-axis"; // Labels and units are strings so use whatever you want.
-//          cmd->yUnits = "cm"
-          cmd->xLabel = "time";
-          cmd->xUnits = "microseconds";
-          md->Add(cmd);
-          }
-       }
-
+        for ( int icur = 1 ; icur < ncurves ; icur++ )
+        {
+            sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tplab",i,icur);
+            pdberr = PD_read(GetPDBFile(),vname,label);
+            debug4 << "label '" << label << "'" << endl;
+            sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tplen",i,icur);
+            pdberr = PD_read(GetPDBFile(),vname,&tplen);
+            if (tplen == 0)
+                break;
+            avtCurveMetaData *cmd = new avtCurveMetaData;
+            cmd->name = label;
+            // Labels and units are strings so use whatever you want.
+            cmd->yLabel = "y-axis"; 
+            // cmd->yUnits = "cm"
+            cmd->xLabel = "time";
+            cmd->xUnits = "microseconds";
+            md->Add(cmd);
+        }
+    }
 }
 
 
@@ -749,246 +763,254 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Programmer: Rob Managan
 //  Creation:   Wed Sep 19 13:30:36 PST 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jul 14 13:34:37 PDT 2008
+//    Specify curves as 1D rectilinear grids with yvalues stored in point data.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtCaleFileFormat::GetMesh(const char *meshname)
-   {
-   const char *mName = "avtCaleFileFormat::GetMesh: ";
-// Determine which mesh to return. 
-   if (strcmp(meshname, "hydro") == 0) 
-      {
-// Create a VTK object for "hydro" mesh
-      int ndims = 2; 
-      int dims[3] = {1,1,1};
-      int kmax, lmax, lp, nnalls = 0, namix ;
-      int nk, nl, pdberr ;
+{
+    const char *mName = "avtCaleFileFormat::GetMesh: ";
+    // Determine which mesh to return. 
+    if (strcmp(meshname, "hydro") == 0) 
+    {
+        // Create a VTK object for "hydro" mesh
+        int ndims = 2; 
+        int dims[3] = {1,1,1};
+        int kmax, lmax, lp, nnalls = 0, namix;
+        int nk, nl, pdberr;
           
-      if (kminmesh == -1) GetUsedMeshLimits() ;
-      // Read the ndims and number of X,Y,Z nodes from file. 
-      pdberr =           PD_read(GetPDBFile(),"/parameters/kmax",&kmax) ;
-      pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/lmax",&lmax) ;
-      pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/lp",&lp) ;
-      pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/nnalls",&nnalls) ;
-      pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/namix",&namix) ;
-      double *z = new double[nnalls] ;
-      double *r = new double[nnalls] ;
-      pdberr = pdberr && PD_read(GetPDBFile(),"/arrays/z",z) ;
-      pdberr = pdberr && PD_read(GetPDBFile(),"/arrays/r",r) ;
-      if (!pdberr)
-         {
-         EXCEPTION1(InvalidDBTypeException,
-         "Corrupt dump; error reading mesh related parameters.") ;
-         }
+        if (kminmesh == -1) 
+            GetUsedMeshLimits();
+        // Read the ndims and number of X,Y,Z nodes from file. 
+        pdberr =           PD_read(GetPDBFile(),"/parameters/kmax",&kmax);
+        pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/lmax",&lmax);
+        pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/lp",&lp);
+        pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/nnalls",&nnalls);
+        pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/namix",&namix);
+        double *z = new double[nnalls];
+        double *r = new double[nnalls];
+        pdberr = pdberr && PD_read(GetPDBFile(),"/arrays/z",z);
+        pdberr = pdberr && PD_read(GetPDBFile(),"/arrays/r",r);
+        if (!pdberr)
+        {
+            EXCEPTION1(InvalidDBTypeException,
+                       "Corrupt dump; error reading mesh related parameters.");
+        }
 
-      nk = kmaxmesh - kminmesh + 1 ; 
-      nl = lmaxmesh - lminmesh + 1 ; 
-      dims[0] = nk ; 
-      dims[1] = nl ; 
-      dims[2] = 1 ; 
-      int nnodes = dims[0]*dims[1]*dims[2]; 
-      // Read the X coordinates from the file. 
-      double *xarray = new double[nnodes]; 
+        nk = kmaxmesh - kminmesh + 1 ; 
+        nl = lmaxmesh - lminmesh + 1 ; 
+        dims[0] = nk ; 
+        dims[1] = nl ; 
+        dims[2] = 1 ; 
+        int nnodes = dims[0]*dims[1]*dims[2]; 
+        // Read the X coordinates from the file. 
+        double *xarray = new double[nnodes]; 
 
-      // Read the Y coordinates from the file. 
-      double *yarray = new double[nnodes]; 
+        // Read the Y coordinates from the file. 
+        double *yarray = new double[nnodes]; 
+
+        // debug4 << "nnalls " << nnalls << " nnodes " << nnodes 
+        //        << " kmax,lmax " << kmax <<","<< lmax << " lp "<< lp << endl;
+        // debug4 << "kminmesh " << kminmesh << " kmaxmesh " << kmaxmesh 
+        //        << " lminmesh " << lminmesh <<" lmaxmesh "<< lmaxmesh << endl;
       
-//      debug4 << "nnalls " << nnalls << " nnodes " << nnodes << " kmax,lmax " << kmax <<","<< lmax << " lp "<< lp<<endl ;
-//      debug4 << "kminmesh " << kminmesh << " kmaxmesh " << kmaxmesh << " lminmesh " << lminmesh <<" lmaxmesh "<< lmaxmesh << endl ;
-      
-      for ( int l = 0 ; l < nl ; l++ )
-         {
-         for ( int k = 0 ; k < nk ; k++ )
+        for ( int l = 0 ; l < nl ; l++ )
+        {
+            for ( int k = 0 ; k < nk ; k++ )
             {
-            xarray[l*nk + k] = z[(l+lminmesh)*lp + k+kminmesh] ;
-            yarray[l*nk + k] = r[(l+lminmesh)*lp + k+kminmesh] ;
+                xarray[l*nk + k] = z[(l+lminmesh)*lp + k+kminmesh];
+                yarray[l*nk + k] = r[(l+lminmesh)*lp + k+kminmesh];
             }
-         }
-      // 
-      // Create the vtkStructuredGrid and vtkPoints objects. 
-      // 
-      vtkStructuredGrid *sgrid  = vtkStructuredGrid::New(); 
-      vtkPoints         *points = vtkPoints::New(); 
-      sgrid->SetPoints(points); 
-      sgrid->SetDimensions(dims); 
-      points->Delete(); 
-      points->SetNumberOfPoints(nnodes); 
-      // 
-      // Copy the coordinate values into the vtkPoints object.
-      // 
-      float *pts = (float *) points->GetVoidPointer(0) ; 
-      double *xc = xarray ; 
-      double *yc = yarray ; 
-      for(int j = 0; j < dims[1]; ++j) 
-      for(int i = 0; i < dims[0]; ++i) 
-         { 
-         *pts++ = *xc++ ; 
-         *pts++ = *yc++ ; 
-         *pts++ = 0. ; 
-         } 
- 
-      // Delete temporary arrays
-      delete [] xarray ; 
-      delete [] yarray ; 
-      delete [] z ; 
-      delete [] r ; 
-
-      // Now that you have your mesh, figure out which cells need 
-      // to be removed. 
-
-      int nCells = sgrid->GetNumberOfCells(); 
-      int *blanks = new int[namix]; 
-      pdberr = PD_read(GetPDBFile(),"/arrays/ireg",blanks) ;
-      
-      debug4 << mName <<"nCells " << nCells << " nnalls " << nnalls << " k " << kminmesh <<":" << kmaxmesh << " l " << lminmesh <<":" << lmaxmesh << endl ;
-      // Now that we have the blanks array, create avtGhostZones. 
-      unsigned char realVal = 0, ghost = 0; 
-      avtGhostData::AddGhostZoneType(ghost, ZONE_NOT_APPLICABLE_TO_PROBLEM); 
-      vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New(); 
-      ghostCells->SetName("avtGhostZones"); 
-      ghostCells->Allocate(nCells); 
-      for(int i = 0; i < nCells; ++i) 
-         {
-         int k, l ;
-         l = i/(nk-1) ;
-         k = i - l*(nk-1) ;
-         debug4 << mName << " i " << i << " nk " << nk << " k,l " << k+kminmesh << "," << l+lminmesh << endl ;
-         if(blanks[(l+lminmesh)*lp + k+kminmesh]) 
-            {
-            ghostCells->InsertNextValue(realVal);
-            debug4 << mName << "real zone at i " << i << endl ;
-            }
-         else
+        }
+        // 
+        // Create the vtkStructuredGrid and vtkPoints objects. 
+        // 
+        vtkStructuredGrid *sgrid  = vtkStructuredGrid::New(); 
+        vtkPoints         *points = vtkPoints::New(); 
+        sgrid->SetPoints(points); 
+        sgrid->SetDimensions(dims); 
+        points->Delete(); 
+        points->SetNumberOfPoints(nnodes); 
+        // 
+        // Copy the coordinate values into the vtkPoints object.
+        // 
+        float *pts = (float *) points->GetVoidPointer(0); 
+        double *xc = xarray; 
+        double *yc = yarray; 
+        for(int j = 0; j < dims[1]; ++j) 
+            for(int i = 0; i < dims[0]; ++i) 
             { 
-            ghostCells->InsertNextValue(ghost); 
-            debug4 << mName << "Ghost zone at i " << i << endl ;
-            }
-         } 
-      sgrid->GetCellData()->AddArray(ghostCells); 
-      sgrid->SetUpdateGhostLevel(0); 
-      ghostCells->Delete(); 
-      // Clean up 
-      delete [] blanks; 
+                *pts++ = *xc++; 
+                *pts++ = *yc++; 
+                *pts++ = 0.; 
+            } 
+ 
+        // Delete temporary arrays
+        delete [] xarray; 
+        delete [] yarray; 
+        delete [] z; 
+        delete [] r; 
 
-      return sgrid; 
-      }
-   else if (strcmp(meshname, "mesh2") == 0) 
-      { 
-// Create a VTK object for "mesh2" 
-      return 0; 
-      } 
-   else // check for time or cycle plot
-      {
-      int ntp, ncp, ncurves, ntimes, tplen, foundit=0 ;
-      int pdberr ;
-      pdberr = PD_read(GetPDBFile(),"/parameters/ntp",&ntp) ;
-      pdberr = PD_read(GetPDBFile(),"/parameters/ncp",&ncp) ;
-      double *ttime, *data ;
-    
-      for ( int i = 1 ; i <= ntp ; i++ )
-         {
-         char vname[128], label[128] ;
-         sprintf(vname, "/ppa/tpdata_%d/ncurs",i) ;
-         pdberr = PD_read(GetPDBFile(),vname,&ncurves) ;
-         sprintf(vname, "/ppa/tpdata_%d/ntimes",i) ;
-         pdberr = PD_read(GetPDBFile(),vname,&ntimes) ;
-         debug4 << "section " << i << " has " << ncurves << " curves " << endl ;
+        // Now that you have your mesh, figure out which cells need 
+        // to be removed. 
 
-         for ( int icur = 1 ; icur < ncurves ; icur++ )
+        int nCells = sgrid->GetNumberOfCells(); 
+        int *blanks = new int[namix]; 
+        pdberr = PD_read(GetPDBFile(),"/arrays/ireg",blanks);
+      
+        debug4 << mName <<"nCells " << nCells << " nnalls " << nnalls 
+               << " k " << kminmesh << ":" << kmaxmesh << " l " << lminmesh 
+               << ":" << lmaxmesh << endl;
+        // Now that we have the blanks array, create avtGhostZones. 
+        unsigned char realVal = 0, ghost = 0; 
+        avtGhostData::AddGhostZoneType(ghost, ZONE_NOT_APPLICABLE_TO_PROBLEM); 
+        vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New(); 
+        ghostCells->SetName("avtGhostZones"); 
+        ghostCells->Allocate(nCells); 
+        for(int i = 0; i < nCells; ++i) 
+        {
+            int k, l;
+            l = i/(nk-1);
+            k = i - l*(nk-1);
+            debug4 << mName << " i " << i << " nk " << nk << " k,l " 
+                   << k+kminmesh << "," << l+lminmesh << endl;
+            if(blanks[(l+lminmesh)*lp + k+kminmesh]) 
             {
-            sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tplab",i,icur) ;
-            pdberr = PD_read(GetPDBFile(),vname,label) ;
-            if (strcmp(meshname,label) == 0)
-               {
-               debug4 << "matched label '" << label << "'" << endl ;
-               sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tplen",i,icur) ;
-               pdberr = PD_read(GetPDBFile(),vname,&tplen) ;
-               if (tplen == 0) break ;
-               ttime = new double[tplen] ;
-               data  = new double[tplen] ;
-               sprintf(vname, "/ppa/tpdata_%d/tpcur_0/tpdat",i,icur) ;
-               pdberr = PD_read(GetPDBFile(),vname,ttime) ;
-               sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tpdat",i,icur) ;
-               pdberr = PD_read(GetPDBFile(),vname,data) ;
-               foundit = 1 ;
-               break ;
-               }
+                ghostCells->InsertNextValue(realVal);
+                debug4 << mName << "real zone at i " << i << endl;
             }
-         if (foundit == 1) break ;
-         }
-    
-      if (foundit == 0)
-         {
-         for ( int i = 1 ; i <= ncp ; i++ )
-            {
-            char vname[128], label[128] ;
-            sprintf(vname, "/ppa/cpdata_%d/ncurs",i) ;
-            pdberr = PD_read(GetPDBFile(),vname,&ncurves) ;
-            sprintf(vname, "/ppa/cpdata_%d/ntimes",i) ;
-            pdberr = PD_read(GetPDBFile(),vname,&ntimes) ;
-            debug4 << "section " << i << " has " << ncurves << " curves " << endl ;
+            else
+            { 
+                ghostCells->InsertNextValue(ghost); 
+                debug4 << mName << "Ghost zone at i " << i << endl;
+            }
+        } 
+        sgrid->GetCellData()->AddArray(ghostCells); 
+        sgrid->SetUpdateGhostLevel(0); 
+        ghostCells->Delete(); 
+        // Clean up 
+        delete [] blanks; 
+        return sgrid; 
+    }
+    else if (strcmp(meshname, "mesh2") == 0) 
+    { 
+        // Create a VTK object for "mesh2" 
+        return 0; 
+    } 
+    else // check for time or cycle plot
+    {
+        int ntp, ncp, ncurves, ntimes, tplen, foundit=0;
+        int pdberr;
+        pdberr = PD_read(GetPDBFile(),"/parameters/ntp",&ntp);
+        pdberr = PD_read(GetPDBFile(),"/parameters/ncp",&ncp);
+        double *ttime, *data;
+
+        for ( int i = 1 ; i <= ntp ; i++ )
+        {
+            char vname[128], label[128];
+            sprintf(vname, "/ppa/tpdata_%d/ncurs",i);
+            pdberr = PD_read(GetPDBFile(),vname,&ncurves);
+            sprintf(vname, "/ppa/tpdata_%d/ntimes",i);
+            pdberr = PD_read(GetPDBFile(),vname,&ntimes);
+            debug4 << "section " << i << " has " << ncurves 
+                   << " curves " << endl;
 
             for ( int icur = 1 ; icur < ncurves ; icur++ )
-               {
-               sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tplab",i,icur) ;
-               pdberr = PD_read(GetPDBFile(),vname,label) ;
-               if (strcmp(meshname,label) == 0)
-                  {
-                  debug4 << "matched label '" << label << "'" << endl ;
-                  sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tplen",i,icur) ;
-                  pdberr = PD_read(GetPDBFile(),vname,&tplen) ;
-                  if (tplen == 0) break ;
-                  ttime = new double[tplen] ;
-                  data  = new double[tplen] ;
-                  sprintf(vname, "/ppa/cpdata_%d/cpcur_0/tpdat",i,icur) ;
-                  pdberr = PD_read(GetPDBFile(),vname,ttime) ;
-                  sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tpdat",i,icur) ;
-                  pdberr = PD_read(GetPDBFile(),vname,data) ;
-                  foundit = 1 ;
-                  break ;
-                  }
-               }
-            if (foundit == 1) break ;
-            }
-         }
-      if (foundit == 1)
-         {
-         // Assumes float xValues[nPts], yValues[nPts] arrays hold the coordinates
-
-         vtkPolyData *pd = vtkPolyData::New() ;
-         vtkPoints   *pts = vtkPoints::New() ;
-         pd->SetPoints(pts) ;
-         pts->SetNumberOfPoints(tplen) ;
-         for (int j = 0 ; j < tplen ; j++)
             {
-            pts->SetPoint(j, ttime[j], data[j], 0.f) ;
+                sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tplab",i,icur);
+                pdberr = PD_read(GetPDBFile(),vname,label);
+                if (strcmp(meshname,label) == 0)
+                {
+                    debug4 << "matched label '" << label << "'" << endl;
+                    sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tplen",i,icur);
+                    pdberr = PD_read(GetPDBFile(),vname,&tplen);
+                    if (tplen == 0) 
+                        break;
+                    ttime = new double[tplen];
+                    data  = new double[tplen];
+                    sprintf(vname, "/ppa/tpdata_%d/tpcur_0/tpdat",i,icur);
+                    pdberr = PD_read(GetPDBFile(),vname,ttime);
+                    sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tpdat",i,icur);
+                    pdberr = PD_read(GetPDBFile(),vname,data);
+                    foundit = 1;
+                    break;
+                }
+            }
+            if (foundit == 1) 
+                break;
+        }
+
+        if (foundit == 0)
+        {
+            for ( int i = 1 ; i <= ncp ; i++ )
+            {
+                char vname[128], label[128];
+                sprintf(vname, "/ppa/cpdata_%d/ncurs",i);
+                pdberr = PD_read(GetPDBFile(),vname,&ncurves);
+                sprintf(vname, "/ppa/cpdata_%d/ntimes",i);
+                pdberr = PD_read(GetPDBFile(),vname,&ntimes);
+                debug4 << "section " << i << " has " << ncurves 
+                       << " curves " << endl;
+
+                for ( int icur = 1 ; icur < ncurves ; icur++ )
+                {
+                    sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tplab",i,icur);
+                    pdberr = PD_read(GetPDBFile(),vname,label);
+                    if (strcmp(meshname,label) == 0)
+                    {
+                        debug4 << "matched label '" << label << "'" << endl;
+                        sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tplen",i,icur);
+                        pdberr = PD_read(GetPDBFile(),vname,&tplen);
+                        if (tplen == 0)
+                            break;
+                        ttime = new double[tplen];
+                        data  = new double[tplen];
+                        sprintf(vname, "/ppa/cpdata_%d/cpcur_0/tpdat",i,icur);
+                        pdberr = PD_read(GetPDBFile(),vname,ttime);
+                        sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tpdat",i,icur);
+                        pdberr = PD_read(GetPDBFile(),vname,data);
+                        foundit = 1;
+                        break;
+                    }
+                }
+                if (foundit == 1)
+                    break ;
+            }
+        }
+        if (foundit == 1)
+        {
+            vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(tplen, 
+                                                                 VTK_DOUBLE);
+            vtkDoubleArray *vals = vtkDoubleArray::New();
+            vals->SetNumberOfComponents(1);
+            vals->SetNumberOfTuples(tplen);
+            vals->SetName(meshname);
+            rg->GetPointData()->SetScalars(vals);
+            vtkDoubleArray *xc = vtkDoubleArray::SafeDownCast(
+                                      rg->GetXCoordinates());
+
+            for (int j = 0 ; j < tplen ; j++)
+            {
+                xc->SetValue(j, ttime[j]);
+                vals->SetValue(j, data[j]);
             }
 
-         //
-         // Connect the points up with line segments.
-         //
-         vtkCellArray *line = vtkCellArray::New() ;
-         pd->SetLines(line) ;
-         for (int k = 1 ; k < tplen ; k++)
-            {
-            line->InsertNextCell(2) ;
-            line->InsertCellPoint(k-1) ;
-            line->InsertCellPoint(k) ;
-            }
-         pts->Delete() ;
-         line->Delete() ;
-         delete [] ttime ;
-         delete [] data ;
-         return pd ;
-         }
-      else
-         {
-// No mesh name that we recognize. 
-         EXCEPTION1(InvalidVariableException, "no data for this curve"); 
-         }
-      }
-   return 0; 
-   }
+            delete [] ttime;
+            delete [] data;
+            vals->Delete();
+            return rg;
+        }
+        else
+        {
+            // No mesh name that we recognize. 
+            EXCEPTION1(InvalidVariableException, "no data for this curve"); 
+        }
+    }
+    return 0; 
+}
 
 
 // ****************************************************************************
@@ -1018,67 +1040,57 @@ avtCaleFileFormat::GetVar(const char *varname)
 
     debug4 << mName << varname << endl;
 
-    //
-    // If you have a file format where variables don't apply (for example a
-    // strictly polygonal format like the STL (Stereo Lithography) format,
-    // then uncomment the code below.
-    //
-    // EXCEPTION1(InvalidVariableException, varname);
-    //
-
-    //
-    // If you do have a scalar variable, here is some code that may be helpful.
-    //
-    int kmax, lmax, lp, nnalls, namix, nvals, pdberr, nk, nl ;
-    int npbin, ngrps, rdifmix ;
-    int length, group, grplen ;
-    pdberr = PD_read(GetPDBFile(),"/parameters/kmax",&kmax) ;
-    pdberr = PD_read(GetPDBFile(),"/parameters/lmax",&lmax) ;
-    pdberr = PD_read(GetPDBFile(),"/parameters/lp",&lp) ;
-    pdberr = PD_read(GetPDBFile(),"/parameters/nnalls",&nnalls) ;
-    pdberr = PD_read(GetPDBFile(),"/parameters/namix",&namix) ;
-    pdberr = PD_read(GetPDBFile(),"/parameters/npbin",&npbin) ;
-    pdberr = PD_read(GetPDBFile(),"/parameters/rdifmix",&rdifmix) ;
-    pdberr = PD_read(GetPDBFile(),"/parameters/ngrps",&ngrps) ;
-    length = namix ;
-    char    vstring[33] ;
+    int kmax, lmax, lp, nnalls, namix, nvals, pdberr, nk, nl;
+    int npbin, ngrps, rdifmix;
+    int length, group, grplen;
+    pdberr = PD_read(GetPDBFile(),"/parameters/kmax",&kmax);
+    pdberr = PD_read(GetPDBFile(),"/parameters/lmax",&lmax);
+    pdberr = PD_read(GetPDBFile(),"/parameters/lp",&lp);
+    pdberr = PD_read(GetPDBFile(),"/parameters/nnalls",&nnalls);
+    pdberr = PD_read(GetPDBFile(),"/parameters/namix",&namix);
+    pdberr = PD_read(GetPDBFile(),"/parameters/npbin",&npbin);
+    pdberr = PD_read(GetPDBFile(),"/parameters/rdifmix",&rdifmix);
+    pdberr = PD_read(GetPDBFile(),"/parameters/ngrps",&ngrps);
+    length = namix;
+    char    vstring[33];
 
     if (strncmp(varname,"pbin",4) == 0)
-       {
-       strcpy(vstring,"/arrays/pbin") ;
-       grplen = namix ;
-       length = npbin*grplen ;
-       sscanf(varname,"pbin_%d",&group) ;
-       }
+    {
+        strcpy(vstring,"/arrays/pbin");
+        grplen = namix;
+        length = npbin*grplen;
+        sscanf(varname,"pbin_%d",&group);
+    }
     else if (strncmp(varname,"kbin",4) == 0)
-       {
-       strcpy(vstring,"/arrays/kbin") ;
-       grplen = namix ;
-       length = npbin*grplen ;
-       sscanf(varname,"kbin_%d",&group) ;
-       }
+    {
+        strcpy(vstring,"/arrays/kbin");
+        grplen = namix;
+        length = npbin*grplen;
+        sscanf(varname,"kbin_%d",&group);
+    }
     else if (strncmp(varname,"nflux",5) == 0)
-       {
-       strcpy(vstring,"/arrays/nflux") ;
-       grplen = nnalls ;
-       length = ngrps*grplen ;
-       sscanf(varname,"nflux_%d",&group) ;
-       }
+    {
+        strcpy(vstring,"/arrays/nflux");
+        grplen = nnalls;
+        length = ngrps*grplen;
+        sscanf(varname,"nflux_%d",&group);
+    }
     else
-       {
-       sprintf(vstring,"/arrays/%s",varname) ;
-       grplen = 1 ;
-       length = namix ;
-       group = 0 ;
-       }
+    {
+        sprintf(vstring,"/arrays/%s",varname);
+        grplen = 1;
+        length = namix;
+        group = 0;
+    }
 
-    double *vararray = new double[length] ;
-    pdberr = PD_read(GetPDBFile(),vstring,vararray) ;
-    double *varray = vararray + group*grplen ;
+    double *vararray = new double[length];
+    pdberr = PD_read(GetPDBFile(),vstring,vararray);
+    double *varray = vararray + group*grplen;
 
-    if (kminmesh == -1) GetUsedMeshLimits() ;
-    nk = kmaxmesh - kminmesh + 1 ; 
-    nl = lmaxmesh - lminmesh + 1 ; 
+    if (kminmesh == -1)
+        GetUsedMeshLimits();
+    nk = kmaxmesh - kminmesh + 1; 
+    nl = lmaxmesh - lminmesh + 1; 
       
     if (!strcmp(varname, "r")      ||
         !strcmp(varname, "z")      ||
@@ -1097,100 +1109,104 @@ avtCaleFileFormat::GetVar(const char *varname)
         !strcmp(varname, "omega")  ||
         !strcmp(varname, "r2w")    ||
         !strcmp(varname, "lt")      )
-       {
-       int i = 0 ;
-       /* node centered */
-       nvals = nk*nl ;
-//       debug4 << "getvar zc: nk "<<nk<<" nl "<<nl<<" nvals "<<nvals<<endl;
-       vtkFloatArray *rv = vtkFloatArray::New() ;
-       rv->SetNumberOfTuples(nvals) ;
-       for ( int l = 0 ; l < nl ; l++ )
-          {
-          for (int k = 0 ; k < nk ; k++ )
-             {
-             rv->SetTuple1(i++, varray[(l+lminmesh)*lp + k+kminmesh]);  // you must determine value for ith entry.
-             }
-          }
-       return rv ;
-       }
+    {
+        int i = 0;
+        // node centered 
+        nvals = nk*nl;
+        // debug4 << "getvar zc: nk " << nk << " nl " << nl << " nvals " 
+        //        << nvals << endl;
+        vtkFloatArray *rv = vtkFloatArray::New();
+        rv->SetNumberOfTuples(nvals);
+        for ( int l = 0 ; l < nl ; l++ )
+        {
+            for (int k = 0 ; k < nk ; k++ )
+            {
+                rv->SetTuple1(i++, varray[(l+lminmesh)*lp + k+kminmesh]);  
+            }
+        }
+        return rv;
+    }
     else
-       {
-       int i = 0 ;
-       /* zone centered */
-       nvals = (nk-1)*(nl-1) ;
-//       debug4 << "getvar zc: nk "<<nk<<" nl "<<nl<<" nvals "<<nvals<<endl;
-       vtkFloatArray *rv = vtkFloatArray::New() ;
-       rv->SetNumberOfTuples(nvals) ;
-       for ( int l = 0 ; l < nl-1 ; l++ )
-          {
-          for ( int k = 0 ; k < nk-1 ; k++ )
-             {
-             rv->SetTuple1(i++, varray[(l+lminmesh)*lp + k+kminmesh]);  // you must determine value for ith entry.
-             }
-          }
+    {
+        int i = 0;
+        // zone centered 
+        nvals = (nk-1)*(nl-1);
+        // debug4 << "getvar zc: nk " << nk << " nl " << nl << " nvals " 
+        //        << nvals << endl;
+        vtkFloatArray *rv = vtkFloatArray::New();
+        rv->SetNumberOfTuples(nvals);
+        for ( int l = 0 ; l < nl-1 ; l++ )
+        {
+            for ( int k = 0 ; k < nk-1 ; k++ )
+            {
+                rv->SetTuple1(i++, varray[(l+lminmesh)*lp + k+kminmesh]); 
+            }
+        }
 
 #ifdef TRY_MIXED_SCALARS
-       TypeEnum t = NO_TYPE;
-       std::string typeString;
-       int nTotalElements, *dims = 0, ndims = 0;
-       if(SymbolInformation(GetPDBFile(), vstring, &t,
-          typeString, &nTotalElements, &dims, &ndims))
-          {
-           debug4 << mName << "nTotalElements = " << nTotalElements << endl;
-           debug4 << mName << "nnalls = " << nnalls << endl;
-// truncate zmass to nnalls since the mixslots hold volume fractions
-           if (strcmp(varname,"zmass") == 0)
-              {
-              nTotalElements = nnalls ;
-              }
-// for spectral variable set nTotalElements for the group.
-           else if ((strncmp(varname,"kbin",4) == 0) | (strncmp(varname,"pbin",4) == 0))
-              {
-              if (rdifmix == 0)
-                 {
-                 nTotalElements = nnalls ;
-                 }
-              else
-                 {
-                 nTotalElements = namix ;
-                 }
-              }
-           else if (strncmp(varname,"nflux",5) == 0)
-              {
-              nTotalElements = nnalls ;
-              }
+        TypeEnum t = NO_TYPE;
+        std::string typeString;
+        int nTotalElements, *dims = 0, ndims = 0;
+        if(SymbolInformation(GetPDBFile(), vstring, &t,
+                             typeString, &nTotalElements, &dims, &ndims))
+        {
+            debug4 << mName << "nTotalElements = " << nTotalElements << endl;
+            debug4 << mName << "nnalls = " << nnalls << endl;
+            // truncate zmass to nnalls since the mixslots hold volume fractions
+            if (strcmp(varname,"zmass") == 0)
+            {
+                nTotalElements = nnalls;
+            }
+            // for spectral variable set nTotalElements for the group.
+            else if ((strncmp(varname,"kbin",4) == 0) | 
+                     (strncmp(varname,"pbin",4) == 0))
+            {
+                if (rdifmix == 0)
+                {
+                    nTotalElements = nnalls;
+                }
+                else
+                {
+                    nTotalElements = namix;
+                }
+            }
+            else if (strncmp(varname,"nflux",5) == 0)
+            {
+                nTotalElements = nnalls;
+            }
 
-           if (nTotalElements > nnalls)
-              {
-              debug4 << mName << "Variable is mixed. Creating mixvar" << endl;
+            if (nTotalElements > nnalls)
+            {
+                debug4 << mName << "Variable is mixed. Creating mixvar" << endl;
 
-              // Convert the doubles to floats.
-              int mixlen = nTotalElements - nnalls;
-              debug4 << mName << "mixlen = " << mixlen << endl;
-              float *mixvar = new float[mixlen];
-              for(int i = 0; i < mixlen; ++i)
-                  mixvar[i] = (float)varray[nnalls + i];
+                // Convert the doubles to floats.
+                int mixlen = nTotalElements - nnalls;
+                debug4 << mName << "mixlen = " << mixlen << endl;
+                float *mixvar = new float[mixlen];
+                for(int i = 0; i < mixlen; ++i)
+                    mixvar[i] = (float)varray[nnalls + i];
 
-              avtMixedVariable *mv = new avtMixedVariable(mixvar,
-                       mixlen, varname);
-              void_ref_ptr vr = void_ref_ptr(mv,
-                       avtMixedVariable::Destruct);
-              cache->CacheVoidRef(varname,
-                       AUXILIARY_DATA_MIXED_VARIABLE, 0, 0, vr);
-              delete [] mixvar;
-              }
-          else
-              debug4 << mName << "Variable is not mixed." << endl;
+                avtMixedVariable *mv = new avtMixedVariable(mixvar,
+                                                            mixlen, varname);
+                void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
+                cache->CacheVoidRef(varname, AUXILIARY_DATA_MIXED_VARIABLE, 
+                                    0, 0, vr);
+                delete [] mixvar;
+            }
+            else
+                debug4 << mName << "Variable is not mixed." << endl;
 
-          delete [] dims;
-          }
-       else
-           debug4 << mName << "Could not get information for " << varname << endl;
+            delete [] dims;
+        }
+        else
+        {
+            debug4 << mName << "Could not get information for " 
+                   << varname << endl;
+        }
 #endif
 
-       return rv ;
-       }
-    
+        return rv;
+    }
 }
 
 
@@ -1216,6 +1232,12 @@ avtCaleFileFormat::GetVectorVar(const char *varname)
     return 0;
 }
 
+// ***************************************************************************
+//  Method: avtCaleFileFormat::GetCycle
+//
+//  Purpose: Return the cycle associated with this file
+//
+// ***************************************************************************
 int 
 avtCaleFileFormat::GetCycle(void) 
 {
@@ -1227,41 +1249,56 @@ avtCaleFileFormat::GetCycle(void)
     return cycle; 
 }
 
+// ***************************************************************************
+//  Method: avtCaleFileFormat::GetCycleFromFilename
+//
+//  Purpose: Return the cycle associated with this file
+//
+// ***************************************************************************
+
 int 
 avtCaleFileFormat::GetCycleFromFilename(const char *f) const 
 { 
-   int i,j,n,c ;
-   char cycstr[10] ;
+    int i,j,n,c;
+    char cycstr[10];
 
-   n = strlen(f) - 4 ; // To get here there had to be a ".pdb" on the file
+    n = strlen(f) - 4; // To get here there had to be a ".pdb" on the file
 
-   j = 0 ;
+    j = 0;
 
-   for ( i = n-1 ; i  >= 0 ; i-- )
-      {
-      if ((f[i] >= '0') && (f[i] <= '9'))
-         {
-         j++ ;
-         }
-      else
-         {
-         break ;
-         }
-      }
+    for ( i = n-1 ; i  >= 0 ; i-- )
+    {
+        if ((f[i] >= '0') && (f[i] <= '9'))
+        {
+            j++;
+        }
+        else
+        {
+            break;
+        }
+    }
 
-   if (j > 0)
-      {
-      strncpy(cycstr,f+i+1,j) ;
-      c = atoi(cycstr) ;
-      }
-   else
-      {
-      c = -1 ;
-      }
+    if (j > 0)
+    {
+        strncpy(cycstr,f+i+1,j);
+        c = atoi(cycstr);
+    }
+    else
+    {
+        c = -1;
+    }
 
-   debug4 << " cycle from name " << cycstr << endl ;
-   return(c) ;
+    debug4 << " cycle from name " << cycstr << endl;
+    return(c);
 }
+
+
+// ***************************************************************************
+//  Method: avtCaleFileFormat::GetTime
+//
+//  Purpose: Return the time associated with this file
+//
+// ***************************************************************************
 
 double 
 avtCaleFileFormat::GetTime(void) 
@@ -1275,372 +1312,390 @@ avtCaleFileFormat::GetTime(void)
 }
 
 #include <avtMaterial.h> 
-// STMD version of GetAuxiliaryData. 
+// ***************************************************************************
+//  Method: avtCaleFileFormat::GetAuxiliarData
+//
+//  Purpose: STMD version of GetAuxiliaryData. 
+//
+// ***************************************************************************
+
 void * 
 avtCaleFileFormat::GetAuxiliaryData(const char *var, 
     const char *type, void *, DestructorFunction &df) 
-   {
-   const char *mName = "avtCaleFileFormat::GetAuxiliaryData: ";
-   void *retval = 0 ; 
-   debug4 << mName << "type "<<type<<" var "<<var<<endl ;
-   if(strcmp(type, AUXILIARY_DATA_MATERIAL) == 0) 
-      {
-      int i, kmax, lmax, lp, nnalls, namix, pdberr ;
-      int nreg, nregx, nk, nl, mixmax ;
-      int dims[3] = {1,1,1}, ndims = 2 ; 
+{
+    const char *mName = "avtCaleFileFormat::GetAuxiliaryData: ";
+    void *retval = 0; 
+    debug4 << mName << "type " << type << " var " << var << endl;
+    if(strcmp(type, AUXILIARY_DATA_MATERIAL) == 0) 
+    {
+        int i, kmax, lmax, lp, nnalls, namix, pdberr;
+        int nreg, nregx, nk, nl, mixmax;
+        int dims[3] = {1,1,1}, ndims = 2; 
 
-      debug4 << mName << "Asked to read material information." << endl;
-      pdberr = PD_read(GetPDBFile(),"/parameters/kmax",&kmax) ;
-      pdberr = PD_read(GetPDBFile(),"/parameters/lmax",&lmax) ;
-      pdberr = PD_read(GetPDBFile(),"/parameters/lp",&lp) ;
-      pdberr = PD_read(GetPDBFile(),"/parameters/nnalls",&nnalls) ;
-      pdberr = PD_read(GetPDBFile(),"/parameters/namix",&namix) ;
-      pdberr = PD_read(GetPDBFile(),"/parameters/mixmax",&mixmax) ;
-      pdberr = PD_read(GetPDBFile(),"/parameters/nregx",&nregx) ;
-      pdberr = PD_read(GetPDBFile(),"/parameters/nreg",&nreg) ;
+        debug4 << mName << "Asked to read material information." << endl;
+        pdberr = PD_read(GetPDBFile(),"/parameters/kmax",&kmax);
+        pdberr = PD_read(GetPDBFile(),"/parameters/lmax",&lmax);
+        pdberr = PD_read(GetPDBFile(),"/parameters/lp",&lp);
+        pdberr = PD_read(GetPDBFile(),"/parameters/nnalls",&nnalls);
+        pdberr = PD_read(GetPDBFile(),"/parameters/namix",&namix);
+        pdberr = PD_read(GetPDBFile(),"/parameters/mixmax",&mixmax);
+        pdberr = PD_read(GetPDBFile(),"/parameters/nregx",&nregx);
+        pdberr = PD_read(GetPDBFile(),"/parameters/nreg",&nreg);
 
-      if (kminmesh == -1) GetUsedMeshLimits() ;
-      nk = kmaxmesh - kminmesh + 1 ; 
-      nl = lmaxmesh - lminmesh + 1 ; 
+        if (kminmesh == -1)
+            GetUsedMeshLimits();
+        nk = kmaxmesh - kminmesh + 1; 
+        nl = lmaxmesh - lminmesh + 1; 
 
-      debug4 << mName << "kmax = " << kmax << endl;
-      debug4 << mName << "lmax = " << lmax << endl;
-      debug4 << mName << "lp = " << lp << endl;
-      debug4 << mName << "nnalls = " << nnalls << endl;
-      debug4 << mName << "namix = " << namix << endl;
-      debug4 << mName << "nreg = " << nreg << endl;
+        debug4 << mName << "kmax = " << kmax << endl;
+        debug4 << mName << "lmax = " << lmax << endl;
+        debug4 << mName << "lp = " << lp << endl;
+        debug4 << mName << "nnalls = " << nnalls << endl;
+        debug4 << mName << "namix = " << namix << endl;
+        debug4 << mName << "nreg = " << nreg << endl;
 
-      // Structured mesh case 
-      ndims = 2 ; 
-      dims[0] = nk-1 ; 
-      dims[1] = nl-1 ; 
-      dims[2] = 1 ; 
-      // Read the number of materials from the file. This 
-      // must have already been read from the file when 
-      // PopulateDatabaseMetaData was called. 
-      int nmats = nreg+1 ; 
-      // The matnos array contains the list of numbers that 
-      // are associated with particular materials. For example, 
-      // matnos[0] is the number that will be associated with 
-      // the first material and any time it is seen in the 
-      // matlist array, that number should be taken to mean 
-      // material 1. The numbers in the matnos array must 
-      // all be greater than or equal to 1. 
-      int *matnos = new int[nmats]; 
-      // READ nmats INTEGER VALUES INTO THE matnos ARRAY. 
-      // Read the material names from your file format or 
-      // make up names for the materials. Use the same 
-      // approach as when you created material names in 
-      // the PopulateDatabaseMetaData method. 
-      char **names = new char *[nmats]; 
-//      READ MATERIAL NAMES FROM YOUR FILE FORMAT UNTIL EACH 
-//      ELEMENT OF THE names ARRAY POINTS TO ITS OWN STRING. 
-      typedef struct  {
-        char name[33] ;
-        }  trcname_str ;
+        // Structured mesh case 
+        ndims = 2; 
+        dims[0] = nk-1; 
+        dims[1] = nl-1; 
+        dims[2] = 1; 
+        // Read the number of materials from the file. This 
+        // must have already been read from the file when 
+        // PopulateDatabaseMetaData was called. 
+        int nmats = nreg+1; 
+        // The matnos array contains the list of numbers that 
+        // are associated with particular materials. For example, 
+        // matnos[0] is the number that will be associated with 
+        // the first material and any time it is seen in the 
+        // matlist array, that number should be taken to mean 
+        // material 1. The numbers in the matnos array must 
+        // all be greater than or equal to 1. 
+        int *matnos = new int[nmats]; 
+        // READ nmats INTEGER VALUES INTO THE matnos ARRAY. 
+        // Read the material names from your file format or 
+        // make up names for the materials. Use the same 
+        // approach as when you created material names in 
+        // the PopulateDatabaseMetaData method. 
+        char **names = new char *[nmats]; 
+        //      READ MATERIAL NAMES FROM YOUR FILE FORMAT UNTIL EACH 
+        //      ELEMENT OF THE names ARRAY POINTS TO ITS OWN STRING. 
+        typedef struct  
+        {
+            char name[33];
+        }  trcname_str;
 
-      if (nreg >= 1)
-         {
-         debug4 << mName << "nreg>=1, we have a material." << endl;    
-         trcname_str *rname = new trcname_str[nreg+1] ;
+        if (nreg >= 1)
+        {
+            debug4 << mName << "nreg>=1, we have a material." << endl;    
+            trcname_str *rname = new trcname_str[nreg+1];
        
-         pdberr = PD_read(GetPDBFile(),"/ppa/rname",rname) ;
-         strcpy(rname[0].name,"Phony") ;
+            pdberr = PD_read(GetPDBFile(),"/ppa/rname",rname);
+            strcpy(rname[0].name,"Phony");
          
-         for ( i = 0 ; i < nmats ; i++ )
+            for ( i = 0 ; i < nmats ; i++ )
             {
-            matnos[i] = i ;
-            names[i] = rname[i].name ;
+                matnos[i] = i;
+                names[i] = rname[i].name;
             }
-         matnos[0] = nmats ; // can't have a zero material number
+            matnos[0] = nmats; // can't have a zero material number
        
-         // Read the matlist array, which tells what the material 
-         // is for each zone in the mesh. 
-         int nzones = dims[0] * dims[1] * dims[2]; 
-         int *matlist = new int[nnalls]; 
-         int *ireg    = new int[namix]; 
-         int *mix_mat  = new int[mixmax];
-         int *mix_next = new int[mixmax];
-         int *mix_zone = new int[mixmax];
-         double *zmass = new double[namix]; /* volume fractions are in this */
+            // Read the matlist array, which tells what the material 
+            // is for each zone in the mesh. 
+            int nzones = dims[0] * dims[1] * dims[2]; 
+            int *matlist = new int[nnalls]; 
+            int *ireg    = new int[namix]; 
+            int *mix_mat  = new int[mixmax];
+            int *mix_next = new int[mixmax];
+            int *mix_zone = new int[mixmax];
+            double *zmass = new double[namix]; // volume fractions are in this 
 
-         int maxmixindx, ir, j ;
-         pdberr = PD_read(GetPDBFile(),"/arrays/ireg",ireg) ;
-         pdberr = PD_read(GetPDBFile(),"/arrays/zmass",zmass) ;
+            int maxmixindx, ir, j;
+            pdberr = PD_read(GetPDBFile(),"/arrays/ireg",ireg);
+            pdberr = PD_read(GetPDBFile(),"/arrays/zmass",zmass);
          
-         for ( i = 0 ; i < nnalls ; i++ )
+            for ( i = 0 ; i < nnalls ; i++ )
             {
-            matlist[i] = 0 ;
+                matlist[i] = 0;
             }
-         for ( i = 0 ; i < mixmax ; i++ )
+            for ( i = 0 ; i < mixmax ; i++ )
             {
-            mix_mat[i] = 0 ;
-            mix_next[i] = 0 ;
-            mix_zone[i] = 0 ;
+                mix_mat[i] = 0;
+                mix_next[i] = 0;
+                mix_zone[i] = 0;
             }
-         debug4 << mName << "zeroed out arrays." << endl;    
-/*
-replace this with how we set things up for SILO files
-         for ( int l = 0 ; l < nl-1 ; l++ )
-            {
-            for (int k = 0 ; k < nk-1 ; k++ )
-               {
-               matlist[i++] = ireg[(l+lminmesh)*lp + k+kminmesh] ;  // you must determine value for ith entry.
-               }
-            }
-            debug4 << "material: i "<< i<< " nzones " << nzones << endl ;
-*/
-         int *nmatlst = new int[namix] ;
-         int *grdlst  = new int[mixmax] ;
-         pdberr = PD_read(GetPDBFile(),"/arrays/nmatlst",nmatlst) ;
-         pdberr = PD_read(GetPDBFile(),"/arrays/grdlst",grdlst) ;
-         
-         int *rlen  = new int[nregx] ;
-         int *rlencln  = new int[nregx] ;
-         int *rlenmix  = new int[nregx] ;
-         pdberr = PD_read(GetPDBFile(),"/arrays/rlen",rlen) ;
-         pdberr = PD_read(GetPDBFile(),"/arrays/rlencln",rlencln) ;
-         pdberr = PD_read(GetPDBFile(),"/arrays/rlenmix",rlenmix) ;
-         
-         int **rndx = new int*[nreg+1] ;
-         int **rndxmix = new int*[nreg+1] ;
-         int **rgrdmix = new int*[nreg+1] ;
-         /*
-            set regional index pointers
-         */
-         rlen[0] = rlencln[0] ;
-         rlenmix[0] = 0 ;
-         
-         i = 0 ;
-         for ( ir = 0 ; ir <= nreg ; ir++ )
-            {
-            rndx[ir] = nmatlst + i ;
-            rndxmix[ir] = rndx[ir] + rlencln[ir] ;
-            i = i + rlen[ir] ;
-//         debug4 << mName << "ir " << ir << " rlen " << rlen[ir] <<  " rlenmix " << rlenmix[ir] << " rndx " << rndx[ir]-nmatlst << endl;    
-            }
-         
-         i = 0 ;
-         for ( ir = 0 ; ir <= nreg ; ir++ )
-            {
-            rgrdmix[ir] = grdlst + i ;
-            i = i + rlenmix[ir] ;
-//         debug4 << mName << "ir " << ir << " rgrdmix " << rgrdmix[ir]-grdlst << endl;    
-            }
-/* 
- *  By setting up the mixed material arrays correctly, we
- *  don't have to reorder the mixed volume fractions or the
- *  mixed values of the zonal variables.  It's more work now,
- *  but it saves time when writing every zonal variable.
- */
-         maxmixindx = 0 ;
-         for ( ir = 0; ir <= nreg; ir++)
-            {
-            matnos[ir]=ir;
-//         debug4 << mName << " start region " << ir << endl;    
+            debug4 << mName << "zeroed out arrays." << endl;    
 
-            /* Do clean zones... */
-            for (i = 0 ; i < rlencln[ir] ; i++)
-               {
-               matlist[rndx[ir][i]] = ir;
-               }
+            int *nmatlst = new int[namix];
+            int *grdlst  = new int[mixmax];
+            pdberr = PD_read(GetPDBFile(),"/arrays/nmatlst",nmatlst);
+            pdberr = PD_read(GetPDBFile(),"/arrays/grdlst",grdlst);
+         
+            int *rlen  = new int[nregx];
+            int *rlencln  = new int[nregx];
+            int *rlenmix  = new int[nregx];
+            pdberr = PD_read(GetPDBFile(),"/arrays/rlen",rlen);
+            pdberr = PD_read(GetPDBFile(),"/arrays/rlencln",rlencln);
+            pdberr = PD_read(GetPDBFile(),"/arrays/rlenmix",rlenmix);
+         
+            int **rndx = new int*[nreg+1];
+            int **rndxmix = new int*[nreg+1];
+            int **rgrdmix = new int*[nreg+1];
+            //
+            // set regional index pointers
+            //
+            rlen[0] = rlencln[0];
+            rlenmix[0] = 0;
+         
+            i = 0;
+            for ( ir = 0 ; ir <= nreg ; ir++ )
+            {
+                rndx[ir] = nmatlst + i;
+                rndxmix[ir] = rndx[ir] + rlencln[ir];
+                i = i + rlen[ir];
+                //debug4 << mName << "ir " << ir << " rlen " << rlen[ir] 
+                //       <<  " rlenmix " << rlenmix[ir] << " rndx " 
+                //       << rndx[ir]-nmatlst << endl;    
+            }
+         
+            i = 0;
+            for ( ir = 0 ; ir <= nreg ; ir++ )
+            {
+                rgrdmix[ir] = grdlst + i;
+                i = i + rlenmix[ir];
+                // debug4 << mName << "ir " << ir << " rgrdmix " 
+                //        << rgrdmix[ir]-grdlst << endl;    
+            }
+            // 
+            //  By setting up the mixed material arrays correctly, we
+            //  don't have to reorder the mixed volume fractions or the
+            //  mixed values of the zonal variables.  It's more work now,
+            //  but it saves time when writing every zonal variable.
+            //
+            maxmixindx = 0;
+            for ( ir = 0; ir <= nreg; ir++)
+            {
+                matnos[ir]=ir;
+                // debug4 << mName << " start region " << ir << endl;    
 
-             /* Do mixed zones... */
-             for (i = 0 ; i < rlenmix[ir] ; i++)
+                // Do clean zones... 
+                for (i = 0 ; i < rlencln[ir] ; i++)
                 {
-                int done  = 0;
-                int izone = rgrdmix[ir][i];
-                int indx  = rndxmix[ir][i]-nnalls;
-//         debug4 << mName << " ir " << ir << " i " << i << " indx " <<indx << " izone " << izone << endl;    
+                    matlist[rndx[ir][i]] = ir;
+                }
 
-                /* Find the next mixed index for this same zone */
-                for (int jr = ir+1; jr <= nreg && !done; jr++)
-                   {
-//         debug4 << mName << " check region " << jr << endl;    
-                    for (j = 0 ; j < rlenmix[jr] && !done ; j++)
-                       {
-                        int jzone = rgrdmix[jr][j];
-                        int jndx  = rndxmix[jr][j]-nnalls;
-//         debug4 << mName << " jzone " << jzone << " jndx " << jndx << endl;    
+                // Do mixed zones... 
+                for (i = 0 ; i < rlenmix[ir] ; i++)
+                {
+                    int done  = 0;
+                    int izone = rgrdmix[ir][i];
+                    int indx  = rndxmix[ir][i]-nnalls;
+                    // debug4 << mName << " ir " << ir << " i " << i 
+                    //        << " indx " <<indx << " izone " << izone << endl;
+
+                    // Find the next mixed index for this same zone 
+                    for (int jr = ir+1; jr <= nreg && !done; jr++)
+                    {
+                        // debug4 << mName << " check region " << jr << endl;
+                        for (j = 0 ; j < rlenmix[jr] && !done ; j++)
+                        {
+                            int jzone = rgrdmix[jr][j];
+                            int jndx  = rndxmix[jr][j]-nnalls;
+                            // debug4 << mName << " jzone " << jzone 
+                            //        << " jndx " << jndx << endl;    
                         
-                        if (izone == jzone)
-                           {
-                           /* found it -- set it and stop looking */
-                           mix_next[indx] = jndx + 1;
-                           done=1;
-                           }
-                       }
-                   }
+                            if (izone == jzone)
+                            {
+                                // found it -- set it and stop looking 
+                                mix_next[indx] = jndx + 1;
+                                done=1;
+                            }
+                        }
+                    }
                 
-                mix_mat [indx] = ir;
-/*      removezoneghost_index converts a CALE zone index into one without ghost zones */
-                mix_zone[indx] = removezoneghost_index(izone,dims[0],dims[1],lp)+1;
-//         debug4 << mName << " izone " << izone << " ->  " << mix_zone[indx] << endl;    
-//         debug4 << mName << " matlist[izone]  " << matlist[izone] << endl;    
+                    mix_mat [indx] = ir;
+                    // removezoneghost_index converts a CALE zone index into 
+                    // one without ghost zones 
+                    mix_zone[indx] = 
+                            removezoneghost_index(izone,dims[0],dims[1],lp)+1;
+                    // debug4 << mName << " izone " << izone << " ->  " 
+                    //        << mix_zone[indx] << endl;    
+                    // debug4 << mName << " matlist[izone]  " 
+                    //        << matlist[izone] << endl;    
 
-                /* If we're the first mixed mat in this zone, set the matlist ptr */
-                if (matlist[izone] == 0)
-                   matlist[izone] = -indx-1;
-//         debug4 << mName << " matlist[izone]  " << matlist[izone] << endl;    
-                if (indx>maxmixindx)
-                   maxmixindx=indx;
-//         debug4 << mName << " maxmixindx " << maxmixindx << endl;    
+                    // If we're the first mixed mat in this zone, 
+                    // set the matlist ptr 
+                    if (matlist[izone] == 0)
+                        matlist[izone] = -indx-1;
+                    // debug4 << mName << " matlist[izone]  " 
+                    //        << matlist[izone] << endl;    
+                    if (indx>maxmixindx)
+                        maxmixindx=indx;
+                    // debug4 << mName << " maxmixindx " << maxmixindx << endl;    
                 }
             }
-//            matnos[0] = nmats ;
+            // matnos[0] = nmats;
 
-         int *matlistnp=new int[nzones];
-/* copy matlist into array matlistnp without ghost zones */
-         for (int l = 0 ; l < nl-1 ; l++ )
+            int *matlistnp=new int[nzones];
+            // copy matlist into array matlistnp without ghost zones 
+            for (int l = 0 ; l < nl-1 ; l++ )
             {
-            for (int k = 0 ; k < nk-1 ; k++ )
-               {
-               matlistnp[l*(nk-1) + k] = matlist[(l + lminmesh)*lp + (k + kminmesh)];
-               }
+                for (int k = 0 ; k < nk-1 ; k++ )
+                {
+                    matlistnp[l*(nk-1) + k] =
+                             matlist[(l + lminmesh)*lp + (k + kminmesh)];
+                }
             }
-/*
-   convert volume fractions to float
-*/
-         float *matvf = new float[maxmixindx+1] ;
-         for ( i = 0 ; i < maxmixindx+1 ; i++ )
+            //
+            // convert volume fractions to float
+            //
+            float *matvf = new float[maxmixindx+1];
+            for ( i = 0 ; i < maxmixindx+1 ; i++ )
             {
-            matvf[i] = zmass[nnalls+i] ;
+                matvf[i] = zmass[nnalls+i];
             }
 
-//         READ nzones INTEGERS INTO THE matlist array. 
-         // Optionally create mix_mat, mix_next, mix_zone, mix_vf 
-         // arrays and read their contents from the file format. 
-         // Use the information to create an avtMaterial object. 
-         avtMaterial *mat = new avtMaterial( 
-            nmats, 
-            matnos, 
-            names, 
-            ndims, 
-            dims, 
-            0, 
-            matlistnp, 
-            maxmixindx+1, // length of mix arrays 
-            mix_mat, // mix_mat array 
-            mix_next, // mix_next array 
-            mix_zone, // mix_zone array 
-            matvf  // mix_vf array 
-            ); 
-         // Clean up. 
-         delete [] matnos ;
-         delete [] rname ;
-         delete [] names ; // top
-         delete [] matlist ;
-         delete [] ireg ; // bottom 
-         delete [] mix_mat ;
-         delete [] mix_next ;
-         delete [] mix_zone ;
-         delete [] zmass ;
-         delete [] nmatlst ;
-         delete [] grdlst ;
-         delete [] rlen ;
-         delete [] rlencln ;
-         delete [] rlenmix ;
-         delete [] rndx ;
-         delete [] rndxmix ;
-         delete [] rgrdmix ;
-         delete [] matlistnp ;
-         delete [] matvf ;
-         debug4 << "Returning mat: " << ((void*)mat) << endl;
-         // Set the return values. 
-         retval = (void *)mat ; 
-         }
-      else
-         {
-             debug4 << "nreg < 1. No material information" << endl;
-         }
-      df = avtMaterial::Destruct ; 
-      } 
-   return retval ; 
-   }
-/*
-   GetUsedMeshLimits()
-   
-   find largest k,l used in mesh
-*/
+            // READ nzones INTEGERS INTO THE matlist array. 
+            // Optionally create mix_mat, mix_next, mix_zone, mix_vf 
+            // arrays and read their contents from the file format. 
+            // Use the information to create an avtMaterial object. 
+            avtMaterial *mat = new avtMaterial( 
+                                nmats, 
+                                matnos, 
+                                names, 
+                                ndims, 
+                                dims, 
+                                0, 
+                                matlistnp, 
+                                maxmixindx+1, // length of mix arrays 
+                                mix_mat, // mix_mat array 
+                                mix_next, // mix_next array 
+                                mix_zone, // mix_zone array 
+                                matvf  // mix_vf array 
+                                ); 
+            // Clean up. 
+            delete [] matnos;
+            delete [] rname;
+            delete [] names; // top
+            delete [] matlist;
+            delete [] ireg; // bottom 
+            delete [] mix_mat;
+            delete [] mix_next;
+            delete [] mix_zone;
+            delete [] zmass;
+            delete [] nmatlst;
+            delete [] grdlst;
+            delete [] rlen;
+            delete [] rlencln;
+            delete [] rlenmix;
+            delete [] rndx;
+            delete [] rndxmix;
+            delete [] rgrdmix;
+            delete [] matlistnp;
+            delete [] matvf;
+            debug4 << "Returning mat: " << ((void*)mat) << endl;
+            // Set the return values. 
+            retval = (void *)mat; 
+        }
+        else
+        {
+            debug4 << "nreg < 1. No material information" << endl;
+        }
+        df = avtMaterial::Destruct; 
+    } 
+    return retval; 
+}
+
+// ***************************************************************************
+//  Method: avtCaleFileFormat::GetUsedMeshLimits
+//
+//  Purpose:    find largest k,l used in mesh
+//
+// ***************************************************************************
+
 void 
 avtCaleFileFormat::GetUsedMeshLimits (void)
-   {
-   int ibc, pdberr ;
-   int kmax, lmax, nbc, nbcx ;
+{
+    int ibc, pdberr;
+    int kmax, lmax, nbc, nbcx;
    
-   pdberr = PD_read(GetPDBFile(),"/parameters/kmax",&kmax) ;
-   pdberr = PD_read(GetPDBFile(),"/parameters/lmax",&lmax) ;
-   pdberr = PD_read(GetPDBFile(),"/parameters/nbc",&nbc) ;
-   pdberr = PD_read(GetPDBFile(),"/parameters/nbcx",&nbcx) ;
+    pdberr = PD_read(GetPDBFile(),"/parameters/kmax",&kmax);
+    pdberr = PD_read(GetPDBFile(),"/parameters/lmax",&lmax);
+    pdberr = PD_read(GetPDBFile(),"/parameters/nbc",&nbc);
+    pdberr = PD_read(GetPDBFile(),"/parameters/nbcx",&nbcx);
    
-   int *bck1 = new int[nbcx] ;
-   int *bck2 = new int[nbcx] ;
-   int *bcl1 = new int[nbcx] ;
-   int *bcl2 = new int[nbcx] ;
-   pdberr = PD_read(GetPDBFile(),"/arrays/bck1",bck1) ;
-   pdberr = PD_read(GetPDBFile(),"/arrays/bck2",bck2) ;
-   pdberr = PD_read(GetPDBFile(),"/arrays/bcl1",bcl1) ;
-   pdberr = PD_read(GetPDBFile(),"/arrays/bcl2",bcl2) ;
+    int *bck1 = new int[nbcx];
+    int *bck2 = new int[nbcx];
+    int *bcl1 = new int[nbcx];
+    int *bcl2 = new int[nbcx];
+    pdberr = PD_read(GetPDBFile(),"/arrays/bck1",bck1);
+    pdberr = PD_read(GetPDBFile(),"/arrays/bck2",bck2);
+    pdberr = PD_read(GetPDBFile(),"/arrays/bcl1",bcl1);
+    pdberr = PD_read(GetPDBFile(),"/arrays/bcl2",bcl2);
 
-   kminmesh = kmax;
-   lminmesh = lmax;
+    kminmesh = kmax;
+    lminmesh = lmax;
    
-   kmaxmesh = 1;
-   lmaxmesh = 1;
-//   debug4 << "GetUsedMeshLimits: nbc "<<nbc<<" nbcx "<<nbcx<<endl;
+    kmaxmesh = 1;
+    lmaxmesh = 1;
+    // debug4 << "GetUsedMeshLimits: nbc "<< nbc << " nbcx " << nbcx << endl;
       
-   for ( ibc = 1 ; ibc <= nbc ; ibc++ )
-      {
-//      debug4 <<" ibc "<<ibc<<" k1 "<<bck1[ibc]<<" l1 "<<bcl1[ibc]<<" k2 "<<bck2[ibc]<<" l2 "<<bcl2[ibc]<<endl ;
-      kminmesh = (bck1[ibc] < kminmesh) ? bck1[ibc] : kminmesh ;
-      kminmesh = (bck2[ibc] < kminmesh) ? bck2[ibc] : kminmesh ;
+    for ( ibc = 1 ; ibc <= nbc ; ibc++ )
+    {
+        //debug4 << " ibc " << ibc << " k1 " << bck1[ibc] << " l1 " << bcl1[ibc]
+        //       << " k2 " << bck2[ibc] << " l2 " << bcl2[ibc] << endl;
 
-      lminmesh = (bcl1[ibc] < lminmesh) ? bcl1[ibc] : lminmesh ;
-      lminmesh = (bcl2[ibc] < lminmesh) ? bcl2[ibc] : lminmesh ;
+        kminmesh = (bck1[ibc] < kminmesh) ? bck1[ibc] : kminmesh;
+        kminmesh = (bck2[ibc] < kminmesh) ? bck2[ibc] : kminmesh;
 
-      kmaxmesh = (bck1[ibc] > kmaxmesh) ? bck1[ibc] : kmaxmesh ;
-      kmaxmesh = (bck2[ibc] > kmaxmesh) ? bck2[ibc] : kmaxmesh ;
+        lminmesh = (bcl1[ibc] < lminmesh) ? bcl1[ibc] : lminmesh;
+        lminmesh = (bcl2[ibc] < lminmesh) ? bcl2[ibc] : lminmesh;
 
-      lmaxmesh = (bcl1[ibc] > lmaxmesh) ? bcl1[ibc] : lmaxmesh ;
-      lmaxmesh = (bcl2[ibc] > lmaxmesh) ? bcl2[ibc] : lmaxmesh ;
-      }
+        kmaxmesh = (bck1[ibc] > kmaxmesh) ? bck1[ibc] : kmaxmesh;
+        kmaxmesh = (bck2[ibc] > kmaxmesh) ? bck2[ibc] : kmaxmesh;
+
+        lmaxmesh = (bcl1[ibc] > lmaxmesh) ? bcl1[ibc] : lmaxmesh;
+        lmaxmesh = (bcl2[ibc] > lmaxmesh) ? bcl2[ibc] : lmaxmesh;
+    }
    
-   nnallsmesh = (kmaxmesh - kminmesh + 1)*(lmaxmesh - lminmesh + 1) ;
+    nnallsmesh = (kmaxmesh - kminmesh + 1)*(lmaxmesh - lminmesh + 1);
    
-   delete [] bck1 ;
-   delete [] bck2 ;
-   delete [] bcl1 ;
-   delete [] bcl2 ;
-   }
+    delete [] bck1;
+    delete [] bck2;
+    delete [] bcl1;
+    delete [] bcl2;
+}
 
-/*---------------------------------------------------------------------------*
- *   Function:  removezoneghost_index()
- *
- *   Inputs  :  in (int): the index to convert
- *              zk, zl (int): the new dimensions of the array
- *              mode : 0 one row of phony zones, 1 none
- *
- *   Returns :  (int): the converted index
- *
- *   Abstract:  Transform a 2D index into an array with an extra row of ghost
- *              zones around the max k & l edges into a 2D index into an array
- *              without them.
- *---------------------------------------------------------------------------*/
+
+// ***************************************************************************
+//  Function:  removezoneghost_index()
+//
+//  Inputs  :  in (int): the index to convert
+//              zk, zl (int): the new dimensions of the array
+//              mode : 0 one row of phony zones, 1 none
+//
+//  Returns :  (int): the converted index
+//
+//  Abstract:  Transform a 2D index into an array with an extra row of ghost
+//             zones around the max k & l edges into a 2D index into an array
+//             without them.
+// ***************************************************************************
+
 int 
 avtCaleFileFormat::removezoneghost_index(int in,int zk,int zl, int lp)
-   {
-   int k,l;
+{
+    int k,l;
 
-   l=in/lp;    /* calculate Cale's (k,l) values */
-   k=in-(l*lp);
+    l=in/lp;    /* calculate Cale's (k,l) values */
+    k=in-(l*lp);
    
-   if (kminmesh == -1) GetUsedMeshLimits() ;
-   l -= lminmesh; /* remove unused zones at origin of mesh */
-   k -= kminmesh;
+    if (kminmesh == -1)
+        GetUsedMeshLimits() ;
+    l -= lminmesh; /* remove unused zones at origin of mesh */
+    k -= kminmesh;
 
-   if (k >= zk  ||  l >= zl)
-       return (-1);
-   else
-       return (l*zk + k);
-   }
+    if (k >= zk  ||  l >= zl)
+        return (-1);
+    else
+        return (l*zk + k);
+}
 

@@ -64,11 +64,14 @@
 #include <vtkCellData.h>
 #include <vtkFieldData.h>
 #include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkIdTypeArray.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVisItUtility.h>
 
 #ifdef __APPLE__
 #include <dlfcn.h>
@@ -1507,6 +1510,9 @@ avtSimV1FileFormat::GetMaterial(int domain, const char *varname)
 //    Added ability to have separate types for x/y values.  Added support
 //    for integer X's.
 //
+//    Kathleen Bonnell, Mon Jul 14 15:43:23 PDT 2008
+//    Specify curves as 1D rectilinear grids with yvalues stored in point data.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1519,27 +1525,24 @@ avtSimV1FileFormat::GetCurve(const char *name)
     if (!cd)
         return NULL;
 
-    vtkPolyData *pd  = vtkPolyData::New();
-    vtkPoints   *pts = vtkPoints::New();
-    pd->SetPoints(pts);
     int npts = cd->len;
-    pts->SetNumberOfPoints(npts);
 
-    float *xpts = new float[npts];
+    vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(npts, VTK_FLOAT);
+    vtkFloatArray *xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
     if (cd->x.dataType == VISIT_DATATYPE_INT)
     {
         for (int j=0; j<npts; j++)
-            xpts[j] = cd->x.iArray[j];
+            xc->SetValue(j, cd->x.iArray[j]);
     }
     else if (cd->x.dataType == VISIT_DATATYPE_FLOAT)
     {
         for (int j=0; j<npts; j++)
-            xpts[j] = cd->x.fArray[j];
+            xc->SetValue(j, cd->x.fArray[j]);
     }
     else if (cd->x.dataType == VISIT_DATATYPE_DOUBLE)
     {
         for (int j=0; j<npts; j++)
-            xpts[j] = cd->x.dArray[j];
+            xc->SetValue(j, cd->x.dArray[j]);
     }
     else
     {
@@ -1547,18 +1550,25 @@ avtSimV1FileFormat::GetCurve(const char *name)
                    "must be float, double, or int in X.\n");
     }
 
+    vtkFloatArray *yv = vtkFloatArray::New();
+    yv->SetNumberOfComponents(1);
+    yv->SetNumberOfTuples(npts);
+    yv->SetName(name);
+    rg->GetPointData()->SetScalars(yv);
+    yv->Delete();
+
     if (cd->y.dataType == VISIT_DATATYPE_FLOAT)
     {
         for (int j=0; j<npts; j++)
         {
-            pts->SetPoint(j, xpts[j], cd->y.fArray[j], 0);
+            yv->SetValue(j, cd->y.fArray[j]);
         }
     }
     else if (cd->y.dataType == VISIT_DATATYPE_DOUBLE)
     {
         for (int j=0; j<npts; j++)
         {
-            pts->SetPoint(j, xpts[j], cd->y.dArray[j], 0);
+            yv->SetValue(j, cd->y.dArray[j]);
         }
     }
     else
@@ -1567,24 +1577,10 @@ avtSimV1FileFormat::GetCurve(const char *name)
                    "Curve coordinate arrays must be float or double in Y.\n");
     }
 
-    delete[] xpts;
-
     FreeDataArray(cd->x);
     FreeDataArray(cd->y);
 
-    vtkCellArray *line = vtkCellArray::New();
-    pd->SetLines(line);
-    for (int k = 1 ; k < npts ; k++)
-    {
-        line->InsertNextCell(2);
-        line->InsertCellPoint(k-1);
-        line->InsertCellPoint(k);
-    }
-
-    pts->Delete();
-    line->Delete();
-
-    return pd;
+    return rg;
 }
 
 // ****************************************************************************

@@ -518,16 +518,16 @@ avtCurve2DFileFormat::ReadFile(void)
             vals->SetName("curve");
 
         rg->GetPointData()->SetScalars(vals);
-        vtkDataArray *xc = rg->GetXCoordinates();
+        vtkFloatArray *xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
 
         double dmin = FLT_MAX;
         double dmax = -FLT_MAX;
         for (int j = 0 ; j < nPts ; j++)
         {
             if (centering[i] == AVT_NODECENT)
-                xc->SetComponent(j,  0, xl[start+j]);
+                xc->SetValue(j, xl[start+j]);
             else
-                xc->SetComponent(j,  0, (xl[start+j]+xl[start+j+1])/2.0);
+                xc->SetValue(j, (xl[start+j]+xl[start+j+1])/2.0);
             vals->SetValue(j, yl[start+j]);
             if (yl[start+j] < dmin)
                 dmin = yl[start+j];

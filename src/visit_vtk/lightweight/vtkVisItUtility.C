@@ -45,6 +45,7 @@
 #include <float.h>
 #include <vtkCell.h>
 #include <vtkCellData.h>
+#include <vtkCharArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkGenericCell.h>
@@ -53,6 +54,7 @@
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkShortArray.h>
 #include <vtkStructuredGrid.h>
 #include <vtkVisItPointLocator.h>
 #include <vtkDataSetWriter.h>
@@ -1009,6 +1011,10 @@ vtkVisItUtility::WriteDataSet(vtkDataSet *ds, const char *fname)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   July 12, 2006
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jul 14 15:02:11 PDT 2008
+//    Expanded the data types supported.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid * 
@@ -1023,10 +1029,25 @@ vtkVisItUtility::Create1DRGrid(int nXCoords, int type)
         xc = vtkFloatArray::New();
         yz = vtkFloatArray::New();
     }
-    else 
+    else if (type == VTK_DOUBLE)
     {
         xc = vtkDoubleArray::New();
         yz = vtkDoubleArray::New();
+    }
+    else if (type == VTK_INT)
+    {
+        xc = vtkIntArray::New();
+        yz = vtkIntArray::New();
+    }
+    else if (type == VTK_SHORT)
+    {
+        xc = vtkShortArray::New();
+        yz = vtkShortArray::New();
+    }
+    else if (type == VTK_CHAR)
+    {
+        xc = vtkCharArray::New();
+        yz = vtkCharArray::New();
     }
     yz->SetNumberOfComponents(1);
     yz->SetNumberOfTuples(1);
