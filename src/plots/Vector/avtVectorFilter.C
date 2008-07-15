@@ -445,6 +445,10 @@ avtVectorFilter::SetMagVarName(const string &mname)
 //    If we're asked to limit the vectors to one per original node/zone,
 //    also add the original node/zone arrays.
 //
+//    Jeremy Meredith, Tue Jul 15 10:47:51 EDT 2008
+//    Disable streaming if we need to calculate a stride based on the
+//    number of requested vectors and the number of domains.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -474,6 +478,11 @@ avtVectorFilter::ModifyContract(avtContract_p contract)
     nds->AddSecondaryVariable(magVarName.c_str());
     rv = new avtContract(contract, nds);
     
+    // If we're not using the stride, then we have to calculate
+    // the per-domain vectorc count by dividing by the number of
+    // domains, which we can't calculate if we're streaming.
+    if (!useStride)
+        rv->NoStreaming();
 
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
     if (contract->GetDataRequest()->MayRequireZones() || 
