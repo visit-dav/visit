@@ -924,6 +924,9 @@ ViewerWindowManagerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs
 //   Brad Whitlock, Wed Jan 23 10:58:27 PST 2008
 //   Added "Copy active plots", "Disconnect from time slider".
 //
+//   Jeremy Meredith, Fri Feb 15 15:01:48 EST 2008
+//   Added lock tools.
+//
 // ****************************************************************************
 
 void
@@ -1094,6 +1097,7 @@ ViewerWindowManagerAttributes::ProcessOldVersions(DataNode *parentNode,
     if(VersionLessThan(configVersion, "1.9.0"))
     {
         AddAction(actionNode, "Plots", ViewerRPC::SetPlotFollowsTimeRPC);
+        AddAction(actionNode, "Lock", ViewerRPC::ToggleLockToolsRPC);
         AddAction(actionNode, "Lock", ViewerRPC::TurnOffAllLocksRPC);
     }
 
