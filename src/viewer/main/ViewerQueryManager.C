@@ -3702,6 +3702,12 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Cyrus Harrison, Wed Mar  5 16:07:09 PST 2008
 //    Added Memory Usage Query.
 //
+//    Cyrus Harrison, Wed Mar  5 16:07:09 PST 2008
+//    Added Memory Usage Query.
+//
+//    Cyrus Harrison, Wed Jul 16 12:05:54 PDT 2008
+//    Moved the Shapelet Decomposition Query into the Shape-Related category.
+//
 // ****************************************************************************
 
 void
@@ -3806,7 +3812,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Connected Component Weighted Variable Sum", dq, ccl_r, basic, 1, 0, qo);
     queryTypes->AddQuery("Connected Components Summary", dq, ccl_r, ccls_wt, 1, 0, qo);
     
-    queryTypes->AddQuery("Shapelet Decomposition", dq, vr, shp_wt, 1, 0, qo);
+    queryTypes->AddQuery("Shapelet Decomposition", dq, sr, shp_wt, 1, 0, qo);
 
 
     int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR |
