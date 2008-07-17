@@ -187,6 +187,10 @@ int ReadKey(const char *key, char **keyval);
  *   Kathleen Bonnell, Fri Feb 29 16:43:46 PST 2008 
  *   Added call to free printCommand. 
  *
+ *   Kathleen Bonnell, Thu Jul 17 4:16:22 PDT 2008 
+ *   Added call to free visitargs if not found, because ReadKey does the
+ *   allocation regardless.
+ *
  *****************************************************************************/
 
 int
@@ -349,6 +353,7 @@ main(int argc, char *argv[])
         if(ReadKey("VISITARGS", &visitargs) == 0)
         {
             addVISITARGS = 0;
+            free(visitargs);
             visitargs = 0;
         }
     }
@@ -499,7 +504,7 @@ ReadKeyFromRoot(HKEY which_root, const char *key, char **keyval)
     if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
     {
         DWORD keyType, strSize = 500;
-        if(RegQueryValueEx(hkey, key, NULL, &keyType, *keyval, &strSize) == ERROR_SUCCESS)
+        if(RegQueryValueEx(hkey, key, NULL, &keyType, (LPBYTE)*keyval, &strSize) == ERROR_SUCCESS)
         {
             readSuccess = 1;
         }
@@ -544,6 +549,7 @@ ReadKey(const char *key, char **keyval)
     
     return retval;     
 }
+
 
 /******************************************************************************
  *
@@ -608,6 +614,12 @@ ReadKey(const char *key, char **keyval)
  *   Kathleen Bonnell, Mon Jun 2 18:08:32 PDT 2008
  *   Change how VisItDevDir is retrieved and stored.
  *
+ *   Kathleen Bonnell, Thu July 17 16:20:22 PDT 2008 
+ *   Free visitpath if we didn't find VISITHOME, because ReadKey mallocs
+ *   regardless.  Same for tempvisitdev.  If VISITDEVDIR not defined, then
+ *   find the full path to this executable and use it for visitpath and
+ *   visitdevdir instead.
+ *
  *****************************************************************************/
 
 char *
@@ -641,11 +653,13 @@ AddEnvironment(int useShortFileName)
     {
         char *tempvisitdev = 0;
         int freetempvisitdev = 1;
+        free(visitpath);
         haveVISITDEVDIR = 0;
         haveVISITDEVDIR = ReadKey("VISITDEVDIR", &tempvisitdev);
 
         if (!haveVISITDEVDIR)
         {
+            free(tempvisitdev);
             freetempvisitdev = 0;
             if((tempvisitdev = getenv("VISITDEVDIR")) != NULL)
             {
@@ -670,21 +684,34 @@ AddEnvironment(int useShortFileName)
         }
         else
         {
-            char tmpdir[512];
-            char tmpdir2[512];
-#if defined(_DEBUG)
-            sprintf(tmpdir, "C:\\VisItDev\\windowsbuild\\bin\\%s\\Debug", 
-                    VERSION, _VISIT_MSVC);
-#else
-            sprintf(tmpdir, "C:\\VisItDev\\windowsbuild\\bin\\%s\\Release", 
-                    VERSION, _VISIT_MSVC);
-#endif
-            sprintf(tmpdir2, "C:\\VisItDev\\windowsbuild\\bin\\%s\\ThirdParty",
-                    VERSION, _VISIT_MSVC);
-            visitpath = (char *)malloc(strlen(tmpdir) + 1);
-            visitdevdir = (char *)malloc(strlen(tmpdir2) + 1);
-            strcpy(visitpath, tmpdir);
-            strcpy(visitdevdir, tmpdir2);
+            char tmpdir[MAX_PATH];
+            if (GetModuleFileName(NULL, tmpdir, MAX_PATH) != 0)
+            {
+                int pos = 0;
+                int len = strlen(tmpdir);
+                for (pos = len; tmpdir[pos] != '\\' && pos >=0; pos--)
+                {
+                    continue;
+                }
+                if (pos <= 0)
+                    pos = len;
+
+                visitpath = (char*)malloc(pos +1);
+                strncpy(visitpath, tmpdir, pos);
+                visitpath[pos] = '\0';
+                len = strlen(visitpath);
+                for (pos = len; visitpath[pos] != '\\' && pos >=0; pos--)
+                {
+                    continue;
+                }
+                if (pos <= 0)
+                    pos = len;
+
+                visitdevdir = (char*)malloc(pos +12);
+                strncpy(visitdevdir, visitpath, pos);
+                visitdevdir[pos] = '\0';
+                sprintf(visitdevdir,"%s\\ThirdParty", visitdevdir);
+            }
         }
         if (tempvisitdev != 0 && freetempvisitdev)
             free(tempvisitdev);

@@ -177,7 +177,7 @@
         int rtl[] = {2, 3, 3};
         int brc[] = {0, 3, 0};
         int dif[] = {0, 4, 3};
-        int li[] = {1, 2, 0};
+        int li[] = {1, 2, 1};
         QString pType("Operator");
         if(pluginType == "plots")
             pType = "Plot";
@@ -458,7 +458,7 @@
         {
         QString debug[] = {"NDEBUG", "_DEBUG", "_DEBUG"};
         int rtl[] = {2, 3, 3};
-        int li[] = {1, 2, 0};
+        int li[] = {1, 2, 1};
         int dif[] = {0, 4, 3};
         for (int i = 0; i < 3; ++i)
         {
