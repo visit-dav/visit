@@ -806,6 +806,12 @@ dnl
 dnl    Tom Fogal, Mon Jun 30 16:54:33 EDT 2008
 dnl    Added a call to the macro I added in ac/icet.m4.
 dnl
+dnl    Gunther H. Weber Thu Jul 17 14:21:40 PDT 2008
+dnl    Add --rpath relative to $ORIGIN enabling visit to run on some MPI
+dnl    implementations (e.g., MPICH with p4 davice) that do pass environment
+dnl    variables and where the -setupenv option does not work since command
+dnl    line option are not available prior to calling MPI_Init.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3530,6 +3536,9 @@ case $SHORT_UNAME in
     if test -z "$SHLIB_CREATEPROG"; then
         SHLIB_CREATEPROG="$""(CXX) -shared -o"
     fi
+
+    # Set RPATH relative to executable
+    LDFLAGS="$LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../lib"
     ;;
 
   darwin)

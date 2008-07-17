@@ -333,6 +333,10 @@ $0 = shift @ARGV;
 #    the command line, or through the CLI, without going through that
 #    code.  So the only truly safe place to check is here.
 #
+#    Gunther H. Weber, Tue Jul  1 11:03:51 PDT 2008
+#    Added -pluginpath option when launching via mpirun since not all
+#    mpi variants will propagate environment variables.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1797,6 +1801,8 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, "-p",  $part  if $part_set;
         push @parcmd, "-machinefile", $machinefile if $machinefile_set;
         push @parcmd, @visitcmd;
+        push @parcmd, "-plugindir";
+        push @parcmd, "$ENV{VISITPLUGINDIR}";
 
         @printcmd = @parcmd;
         if ($security_key_set) { push @parcmd, "-key", $security_key; }
