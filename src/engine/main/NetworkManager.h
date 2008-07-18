@@ -373,8 +373,15 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Tom Fogal, Mon Jun 30 15:49:00 EDT 2008
 //    private -> protected: MultipassRendering, RenderTranslucent
 //
-//    Tom Fogal, Fri Jul 11 19:47:03 PDT 2008
-//    Removed render_state.timer; use a StackTimer in its stead.
+//    Tom Fogal, Mon Jul 14 08:38:58 PDT 2008
+//    Use methods to implement the timing infrastructure, so the child can
+//    override them.
+//
+//    Tom Fogal, Wed Jul 16 13:00:14 EDT 2008
+//    Made destructor virtual; should've done this earlier.
+//
+//    Tom Fogal, Fri Jul 18 14:24:35 EDT 2008
+//    Methods for determining if rendering effects are enabled.
 //
 // ****************************************************************************
 
@@ -385,6 +392,7 @@ class NetworkManager
         DataNetwork *origWorkingNet;   /* saves this->workingNet */
         array_ref_ptr<int> cellCounts; /* # of cells, per network */
         int stereoType;                /* for push/popping stereo rendering */
+        int timer;                     /* overall render time */
         int annotMode;
         int windowID;                  /* window we're rendering. */
         bool getZBuffer;               /* should we readback Z too? */
@@ -396,7 +404,7 @@ class NetworkManager
 
  public:
                   NetworkManager(void);
-                 ~NetworkManager(void);
+    virtual      ~NetworkManager(void);
 
     // Get the plugin managers
     DatabasePluginManager *GetDatabasePluginManager() const;
@@ -500,6 +508,10 @@ class NetworkManager
     bool               MultipassRendering(VisWindow *viswin) const;
     avtDataObject_p    RenderTranslucent(int windowID,
                                          const avtImage_p& input);
+    bool               Shadowing(int windowID) const;
+    bool               DepthCueing(int windowID) const;
+    virtual void       StartTimer();
+    virtual void       StopTimer(int windowID);
 
     static double      RenderBalance(int numTrianglesIHave);
     static void        CallInitializeProgressCallback(int);
@@ -560,7 +572,6 @@ class NetworkManager
     static void                *initializeProgressCallbackArgs;
     static ProgressCallback     progressCallback;
     static void                *progressCallbackArgs;
-
 };
 
 #endif

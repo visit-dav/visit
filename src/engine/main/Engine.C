@@ -341,6 +341,9 @@ Engine *Engine::Instance()
 //    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
 //    Moved setting of component name to before Initialize
 //
+//    Tom Fogal, Tue Jul 15 10:02:27 EDT 2008
+//    Include the # of processors we're running on in the timing message.
+//
 // ****************************************************************************
 
 void
@@ -390,7 +393,12 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
 
     debug1 << "ENGINE started\n";
 #ifdef PARALLEL
-    visitTimer->StopTimer(initTimer, "Initializing the engine (including MPI_Init())");
+    {
+        char msg[1024];
+        SNPRINTF(msg, 1024, "Initializing a %d processor engine "
+                 "(including MPI_Init())", PAR_Size());
+        visitTimer->StopTimer(initTimer, msg);
+    }
 #else
     visitTimer->StopTimer(initTimer, "Initializing the engine");
 #endif
@@ -413,11 +421,16 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
 //    Eliminated out call to StopTimer. That call cannot be made after
 //    Finalize has been called. However, TimingsManager can still log the
 //    timer as "unknown" when writing timings to files
+//
+//    Tom Fogal, Fri Jul 18 15:09:51 EDT 2008
+//    Remove the variable which captures the return value of StartTimer.  It
+//    can't be used, and the compiler complains about it.
+//
 // ****************************************************************************
 void
 Engine::Finalize(void)
 {
-    int finalizeTimer = visitTimer->StartTimer();
+    visitTimer->StartTimer();
     Init::Finalize();
 }
 

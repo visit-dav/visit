@@ -62,6 +62,7 @@
 #include <OperatorPluginManager.h>
 #include <OperatorPluginInfo.h>
 #include <AnnotationObjectList.h>
+#include <AnnotationAttributes.h>
 #include <PickAttributes.h>
 #include <VisualCueInfo.h>
 #include <VisualCueList.h>
@@ -2052,6 +2053,13 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    had interpreted it wrong in the original implementation (a background
 //    mode of 0 is /not/ a gradient BG).
 //
+//    Tom Fogal, Mon Jul 14 09:03:18 PDT 2008
+//    Use StartTimer instead of a StackTimer.
+//
+//    Tom Fogal, Fri Jul 18 15:15:37 EDT 2008
+//    Use Shadowing and DepthCueing methods instead of querying those modes
+//    inline.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -2063,7 +2071,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     viswinInfo.markedForDeletion = false;
     VisWindow *viswin = viswinInfo.viswin;
-    WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
     std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
 
     bool dump_renders = avtDebugDumpOptions::DumpEnabled();
@@ -2071,7 +2078,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
     TRY
     {
         avtDataObjectWriter_p writer;
-        StackTimer t_total("Total time for NetworkManager::Render");
+        this->StartTimer(); /* stopped in RenderCleanup */
 
         this->RenderSetup(plotIds, getZBuffer, annotMode, windowID, leftEye);
 
@@ -2089,27 +2096,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                << " primitives.  Balanced speedup = "
                << RenderBalance(viswin->GetNumPrimitives()) << "x" << endl;
 
-        //
-        // Determine if we need to go for two passes
-        //
-        bool doShadows = windowAttributes.GetRenderAtts().GetDoShadowing();
-        bool doDepthCueing =
-            windowAttributes.GetRenderAtts().GetDoDepthCueing();
-
-        // Shadows and depth cueing don't make sense in a non-3D render anyway.
-        if(viswin->GetWindowMode() != WINMODE_3D)
-        {
-            doShadows = false;
-            doDepthCueing = false;
-        }
-
         CallInitializeProgressCallback(this->RenderingStages(windowID));
-
-        this->r_mgmt.viewportedMode =
-            (this->r_mgmt.annotMode != 1) ||
-            (viswin->GetWindowMode() == WINMODE_2D) ||
-            (viswin->GetWindowMode() == WINMODE_CURVE) ||
-            (viswin->GetWindowMode() == WINMODE_AXISARRAY);
 
         // render the image and capture it. Relies upon explicit render
         int t3 = visitTimer->StartTimer();
@@ -2130,13 +2117,14 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         avtWholeImageCompositer *imageCompositer;
 
         imageCompositer = MakeCompositer(
-                            viswin->GetWindowMode() == WINMODE_3D,
-                            viswin->GetBackgroundMode() != 0, // == gradient
-                            getZBuffer,
-                            this->MultipassRendering(viswin),
-                            doShadows, doDepthCueing,
-                            !imageBasedPlots.empty()
-                          );
+                 viswin->GetWindowMode() == WINMODE_3D,
+                 viswin->GetBackgroundMode() == AnnotationAttributes::Gradient,
+                 getZBuffer,
+                 this->MultipassRendering(viswin),
+                 this->Shadowing(windowID),
+                 this->DepthCueing(windowID),
+                 !imageBasedPlots.empty()
+        );
 
         assert(NULL != imageCompositer);
         SetCompositerBackground(imageCompositer, viswin);
@@ -2180,7 +2168,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         //
         // Do shadows if appropriate.
         //
-        if (doShadows)
+        if (this->Shadowing(windowID))
         {
             this->RenderShadows(windowID, compositedImageAsDataObject);
         }
@@ -2188,7 +2176,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         //
         // Do depth cueing if appropriate.
         //
-        if (doDepthCueing)
+        if (this->DepthCueing(windowID))
         {
             this->RenderDepthCues(windowID, compositedImageAsDataObject);
         }
@@ -2291,6 +2279,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 //
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
+//
+//    Tom Fogal, Fri Jul 18 19:10:06 EDT 2008
+//    Use enum definitions instead of int.
 //
 // ****************************************************************************
 void
@@ -2410,11 +2401,16 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
                                atts.GetForeground()[2]/255.0);
 
     //
-    // Set the bacbround mode and gradient colors if necessary
+    // Set the background mode and gradient colors if necessary
     //
-    int bgMode = atts.GetBackgroundMode();
+    // Yes, these are WindowAttributes, but this particular attribute should
+    // match the annotation attribute values; it is hard to make the types
+    // agree as the classes are autogenerated.
+    int bgm = atts.GetBackgroundMode();
+    AnnotationAttributes::BackgroundMode bgMode =
+        static_cast<AnnotationAttributes::BackgroundMode>(bgm);
     viswin->SetBackgroundMode(bgMode);
-    if (bgMode == 1)
+    if (bgMode == AnnotationAttributes::Gradient)
     {
        viswin->SetGradientBackgroundColors(atts.GetGradientBackgroundStyle(),
            atts.GetGradBG1()[0],
@@ -2424,7 +2420,7 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
            atts.GetGradBG2()[1],
            atts.GetGradBG2()[2]);
     }
-    else if(bgMode >= 2)
+    else if(bgm >= AnnotationAttributes::Image)
     {
        viswin->SetBackgroundImage(atts.GetBackgroundImage(), 
            atts.GetImageRepeatX(), atts.GetImageRepeatY());
@@ -4456,8 +4452,7 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 {
     EngineVisWinInfo &viswinInfo = viswinMap.find(windowID)->second;
     WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
-    std::vector<avtPlot_p>& imageBasedPlots =
-        viswinMap.find(windowID)->second.imageBasedPlots;
+    std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
     VisWindow *viswin = viswinInfo.viswin;
 
     // Doesn't make sense to use this unless we need to set the contents up
@@ -4682,6 +4677,9 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 //    Tom Fogal, Fri Jul 11 19:46:18 PDT 2008
 //    Removed duplicate timer.
 //
+//    Tom Fogal, Fri Jul 18 17:29:53 EDT 2008
+//    Move viewportedMode calculation into here, where it belongs anyway...
+//
 // ****************************************************************************
 
 void
@@ -4764,84 +4762,86 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
         // early, and require our caller to duplicate our check.
         return;
     }
-    else
+
+    if (this->r_mgmt.needToSetUpWindowContents)
     {
-    // TODO/FIXME: since we changed the if to bail out early, we no longer
-    // need the else and can thus unindent this whole block ...
-        if (this->r_mgmt.needToSetUpWindowContents)
-        {
-            // determine any networks with no data 
-            vector<int> networksWithNoData;
+        // determine any networks with no data
+        vector<int> networksWithNoData;
 
-            for (size_t i = 0; i < plotIds.size(); i++)
+        for (size_t i = 0; i < plotIds.size(); i++)
+        {
+            if (this->r_mgmt.cellCounts[i] == 0)
+                networksWithNoData.push_back(i);
+        }
+        // issue warning messages for plots with no data
+        if (networksWithNoData.size() > 0)
+        {
+            string msg = "The plot(s) with id(s) = ";
+            for (size_t i = 0; i < networksWithNoData.size(); i++)
             {
-                if (this->r_mgmt.cellCounts[i] == 0)
-                    networksWithNoData.push_back(i);
+                char tmpStr[32];
+                SNPRINTF(tmpStr, sizeof(tmpStr), "%d", networksWithNoData[i]);
+                msg += tmpStr;
+                if (i < networksWithNoData.size() - 1)
+                    msg += ", ";
             }
-            // issue warning messages for plots with no data
-            if (networksWithNoData.size() > 0)
-            {
-                string msg = "The plot(s) with id(s) = ";
-                for (size_t i = 0; i < networksWithNoData.size(); i++)
-                {
-                    char tmpStr[32];
-                    SNPRINTF(tmpStr, sizeof(tmpStr), "%d", networksWithNoData[i]);
-                    msg += tmpStr;
-                    if (i < networksWithNoData.size() - 1)
-                        msg += ", ";
-                }
-                msg += " yielded no data";
+            msg += " yielded no data";
 #ifdef PARALLEL
-                if (PAR_Rank() == 0)
+            if (PAR_Rank() == 0)
 #endif
-                {
-                    avtCallback::IssueWarning(msg.c_str());
-                }
-            }
-        }
-
-        //
-        // Update plot's bg/fg colors. Ignored by avtPlot objects if colors
-        // are unchanged
-        //
-        {
-            double bg[4] = {1.,0.,0.,0.};
-            double fg[4] = {0.,0.,1.,0.};
-            AnnotationAttributes &annotationAttributes =
-                viswinInfo.annotationAttributes;
-
-            annotationAttributes.GetForegroundColor().GetRgba(fg);
-            annotationAttributes.GetDiscernibleBackgroundColor().GetRgba(bg);
-            for (size_t i = 0; i < plotIds.size(); i++)
             {
-                workingNet = NULL;
-                UseNetwork(plotIds[i]);
-                workingNet->GetPlot()->SetBackgroundColor(bg);
-                workingNet->GetPlot()->SetForegroundColor(fg);
-                if (changedCtName != "")
-                    workingNet->GetPlot()->SetColorTable(changedCtName.c_str());
-                workingNet = NULL;
+                avtCallback::IssueWarning(msg.c_str());
             }
-        }
-
-        //
-        // Add annotations if necessary
-        //
-        if (!this->r_mgmt.handledAnnotations)
-        {
-            SetAnnotationAttributes(viswinInfo.annotationAttributes,
-                                    viswinInfo.annotationObjectList,
-                                    viswinInfo.visualCueList,
-                                    viswinInfo.frameAndState,
-                                    windowID, this->r_mgmt.annotMode);
-            this->r_mgmt.handledAnnotations = true;
-        }
-        if (!this->r_mgmt.handledCues)
-        {
-            UpdateVisualCues(windowID);
-            this->r_mgmt.handledCues = true;
         }
     }
+
+    //
+    // Update plot's bg/fg colors. Ignored by avtPlot objects if colors
+    // are unchanged
+    //
+    {
+        double bg[4] = {1.,0.,0.,0.};
+        double fg[4] = {0.,0.,1.,0.};
+        AnnotationAttributes &annotationAttributes =
+            viswinInfo.annotationAttributes;
+
+        annotationAttributes.GetForegroundColor().GetRgba(fg);
+        annotationAttributes.GetDiscernibleBackgroundColor().GetRgba(bg);
+        for (size_t i = 0; i < plotIds.size(); i++)
+        {
+            workingNet = NULL;
+            UseNetwork(plotIds[i]);
+            workingNet->GetPlot()->SetBackgroundColor(bg);
+            workingNet->GetPlot()->SetForegroundColor(fg);
+            if (changedCtName != "")
+                workingNet->GetPlot()->SetColorTable(changedCtName.c_str());
+            workingNet = NULL;
+        }
+    }
+
+    //
+    // Add annotations if necessary
+    //
+    if (!this->r_mgmt.handledAnnotations)
+    {
+        SetAnnotationAttributes(viswinInfo.annotationAttributes,
+                                viswinInfo.annotationObjectList,
+                                viswinInfo.visualCueList,
+                                viswinInfo.frameAndState,
+                                windowID, this->r_mgmt.annotMode);
+        this->r_mgmt.handledAnnotations = true;
+    }
+    if (!this->r_mgmt.handledCues)
+    {
+        UpdateVisualCues(windowID);
+        this->r_mgmt.handledCues = true;
+    }
+
+    this->r_mgmt.viewportedMode =
+        (this->r_mgmt.annotMode != 1) ||
+        (viswin->GetWindowMode() == WINMODE_2D) ||
+        (viswin->GetWindowMode() == WINMODE_CURVE) ||
+        (viswin->GetWindowMode() == WINMODE_AXISARRAY);
 }
 
 // ****************************************************************************
@@ -4859,6 +4859,9 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
 //    Tom Fogal, Fri Jul 11 19:46:18 PDT 2008
 //    Removed duplicate timer.
 //
+//    Tom Fogal, Mon Jul 14 12:33:27 PDT 2008
+//    New timing scheme; call StopTimer.
+//
 // ****************************************************************************
 
 void
@@ -4868,6 +4871,8 @@ NetworkManager::RenderCleanup(int windowID)
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     VisWindow *viswin = viswinInfo.viswin;
+
+    this->StopTimer(windowID);
 
     // return viswindow to its true stereo mode
     if(this->r_mgmt.stereoType != -1)
@@ -4935,6 +4940,9 @@ NetworkManager::CreateNullDataWriter(int windowID) const
 //    Removed const qualification, which isn't fixable because way down the
 //    call chain we hit VTK, which isn't const-correct.
 //
+//    Tom Fogal, Fri Jul 18 15:19:42 EDT 2008
+//    Use Shadowing/DepthCueing methods.
+//
 // ****************************************************************************
 
 size_t
@@ -4945,21 +4953,11 @@ NetworkManager::RenderingStages(int windowID)
     const std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
     VisWindow *viswin = viswinInfo.viswin;
 
-    bool shadows = winAtts.GetRenderAtts().GetDoShadowing();
-    bool depth_cueing = winAtts.GetRenderAtts().GetDoDepthCueing();
     bool two_pass_mode = false;
 
-    // If we're not doing 3D rendering in this window, then shadows and depth
-    // cueing are worthless anyway.
-    if(viswin->GetWindowMode() != WINMODE_3D)
+    // Multipass rendering might be relevant, if we're doing a 3D rendering.
+    if(viswin->GetWindowMode() == WINMODE_3D)
     {
-        shadows = false;
-        depth_cueing = false;
-    }
-    else
-    {
-        // If we are doing 3D rendering, it might be relevant to do multipass
-        // rendering.
 #ifdef PARALLEL
         two_pass_mode = viswin->TransparenciesExist();
         two_pass_mode = UnifyMaximumValue(two_pass_mode);
@@ -4969,8 +4967,8 @@ NetworkManager::RenderingStages(int windowID)
     // There is always one stage for rendering and two for composition.
     size_t stages = 3;
 
-    stages += (shadows ? 2 : 0);
-    stages += (depth_cueing ? 1 : 0);
+    stages += (this->Shadowing(windowID) ? 2 : 0);
+    stages += (this->DepthCueing(windowID) ? 1 : 0);
     stages += (two_pass_mode ? 1 : 0);
 
     std::vector<avtPlot_p>::const_iterator iter;
@@ -5101,8 +5099,8 @@ NetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
         // We have to disable any gradient background before
         // rendering, as those will overwrite the first pass
         //
-        int bm = viswin->GetBackgroundMode();
-        viswin->SetBackgroundMode(0);
+        AnnotationAttributes::BackgroundMode bm = viswin->GetBackgroundMode();
+        viswin->SetBackgroundMode(AnnotationAttributes::Solid);
 
         //
         // Do the screen capture
@@ -5140,6 +5138,101 @@ NetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
     CallProgressCallback("NetworkManager", "Transparent rendering", 1, 1);
 
     return compositedImageAsDOB;
+}
+
+// ****************************************************************************
+//  Method: Shadowing
+//
+//  Purpose: Determines if we should render shadows.
+//
+//  Arguments:
+//    windowID -- identifier which tells us which window we're rendering in.
+//
+//  Programmer: Tom Fogal
+//  Creation:   July 18, 2008
+//
+// ****************************************************************************
+bool
+NetworkManager::Shadowing(int windowID) const
+{
+    const EngineVisWinInfo &vwInfo = this->viswinMap.find(windowID)->second;
+    const VisWindow *viswin = vwInfo.viswin;
+    // shadows don't make sense if we're not doing a 3D render.
+    if(viswin->GetWindowMode() != WINMODE_3D)
+    {
+        return false;
+    }
+    return vwInfo.windowAttributes.GetRenderAtts().GetDoShadowing();
+}
+
+// ****************************************************************************
+//  Method: DepthCueing
+//
+//  Purpose: Determines if we should add depth cueing, post-render.
+//
+//  Arguments:
+//    windowID -- identifier which tells us which window we're rendering in.
+//
+//  Programmer: Tom Fogal
+//  Creation:   July 18, 2008
+//
+// ****************************************************************************
+bool
+NetworkManager::DepthCueing(int windowID) const
+{
+    const EngineVisWinInfo &vwInfo = this->viswinMap.find(windowID)->second;
+    const VisWindow *viswin = vwInfo.viswin;
+    // shadows don't make sense if we're not doing a 3D render.
+    if(viswin->GetWindowMode() != WINMODE_3D)
+    {
+        return false;
+    }
+    return vwInfo.windowAttributes.GetRenderAtts().GetDoDepthCueing();
+}
+
+// ****************************************************************************
+//  Method: StartTimer
+//
+//  Purpose: Called at the beginning of the render process.  Use in conjunction
+//           with StopTimer to time the length of rendering.
+//
+//  Arguments:
+//
+//  Programmer: Tom Fogal
+//  Creation:   July 14, 2008
+//
+// ****************************************************************************
+void
+NetworkManager::StartTimer()
+{
+    this->r_mgmt.timer = visitTimer->StartTimer();
+}
+
+// ****************************************************************************
+//  Method: StopTimer
+//
+//  Purpose: Called at the end of the render process.  Use in conjunction
+//           with StartTimer to time the length of rendering.
+//
+//  Arguments:
+//    windowID   the window the rendering was performed in.
+//
+//  Programmer: Tom Fogal
+//  Creation:   July 14, 2008
+//
+// ****************************************************************************
+void
+NetworkManager::StopTimer(int windowID)
+{
+    char msg[1024];
+    const VisWindow *viswin = this->viswinMap.find(windowID)->second.viswin;
+    int rows,cols;
+    viswin->GetSize(rows, cols);
+
+    SNPRINTF(msg, 1023, "NM::Render %d cells %d pixels",
+             GetTotalGlobalCellCounts(windowID), rows*cols);
+    visitTimer->StopTimer(this->r_mgmt.timer, msg);
+    this->r_mgmt.timer = -1;
 }
 
 // ****************************************************************************

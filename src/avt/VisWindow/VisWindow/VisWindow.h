@@ -390,6 +390,9 @@ class VisitInteractor;
 //    I added const to some methods which were already returning const objects
 //    anyway.
 //
+//    Tom Fogal, Fri Jul 18 18:28:36 EDT 2008
+//    Use AnnotationAttributes::BackgroundMode instead of an int-equivalent.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -456,8 +459,10 @@ public:
     const double *       GetBackgroundColor() const;
     void                 SetGradientBackgroundColors(int,double,double,double,
                                                      double,double,double);
-    void                 SetBackgroundMode(int);
-    int                  GetBackgroundMode() const;
+    void                 SetBackgroundMode(
+                                    enum AnnotationAttributes::BackgroundMode);
+    enum AnnotationAttributes::BackgroundMode
+                         GetBackgroundMode() const;
     void                 SetForegroundColor(double, double, double);
     const double *       GetForegroundColor() const;
     void                 InvertBackgroundColor();
@@ -644,7 +649,8 @@ protected:
     double                             background[3];
     double                             gradientBackground[2][3];
     int                                gradientBackgroundStyle;
-    int                                backgroundMode;
+    enum AnnotationAttributes::BackgroundMode
+                                       backgroundMode;
     int                                backgroundNX;
     int                                backgroundNY;
     std::string                        backgroundImage;
