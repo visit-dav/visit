@@ -56,13 +56,19 @@
 //    Tom Fogal, Tue Jun 24 13:27:48 EDT 2008
 //    Defined `Readback' function.
 //
+//    Tom Fogal, Mon Jul 14 12:27:23 PDT 2008
+//    Override parent's timer information.
+//
+//    Tom Fogal, Wed Jul 16 12:59:37 EDT 2008
+//    Oops, destructor should be virtual.
+//
 // ****************************************************************************
 
 class IceTNetworkManager: public NetworkManager
 {
  public:
                IceTNetworkManager(void);
-               ~IceTNetworkManager(void);
+    virtual   ~IceTNetworkManager(void);
 
     void       TileLayout(size_t width, size_t height) const;
 
@@ -74,6 +80,7 @@ class IceTNetworkManager: public NetworkManager
  protected:
 
     virtual avtImage_p Readback(const VisWindow * const, bool) const;
+    virtual void       StopTimer(int windowID);
 
  private:
 

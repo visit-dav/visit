@@ -1,0 +1,4 @@
+These are a collection of scripts for benchmarking the SR mode renderers in
+VisIt.  The main and only interface is `extra-sr-data.sh'; simply run this
+script with a directory as argument.  The script will recursively identify any
+timing files, extract out timing data, and generate a `SR.eps' graph.

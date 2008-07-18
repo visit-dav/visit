@@ -47,6 +47,7 @@
 #include <avtSourceFromImage.h>
 #include <DebugStream.h>
 #include <Engine.h>
+#include <snprintf.h>
 #include <StackTimer.h>
 #include <UnexpectedValueException.h>
 #include <VisWindow.h>
@@ -89,7 +90,7 @@
         ICET(icetGetIntegerv(ICET_RANK, &rank));                           \
         ICET(icetGetIntegerv(ICET_NUM_PROCESSES, &nproc));                 \
         ICET(icetGetIntegerv(ICET_NUM_TILES, &ntiles));                    \
-        debug1 << "icet: (rank, procs, tiles): (" << rank << ", " << nproc \
+        debug1 << "IceT: (rank, procs, tiles): (" << rank << ", " << nproc \
                << ", " << ntiles << ")" << std::endl;                      \
     } while(0)
 
@@ -104,6 +105,22 @@
 #endif
 
 // ****************************************************************************
+//  Method: lerp
+//
+//  Purpose: Linearly interpolates a value from one range to another.
+//
+//  Programmer: Tom Fogal
+//  Creation:   July 17, 2008
+//
+// ****************************************************************************
+template <typename in, typename out>
+static inline out
+lerp(in value, in imin, in imax, out omin, out omax)
+{
+    return omin + (value-imin) * (static_cast<float>(omax-omin) / (imax-imin));
+}
+
+// ****************************************************************************
 //  Method: utofv
 //
 //  Purpose: Converts a vector of unsigned integers to a vector of floats.  The
@@ -113,14 +130,19 @@
 //  Programmer: Tom Fogal
 //  Creation:   July 2, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Thu Jul 17 10:27:43 EDT 2008
+//    lerp the IceT buffer onto the range [0,1] as we convert.  This seems to
+//    be what the rest of VisIt expects.
+//
 // ****************************************************************************
 static float *
 utofv(const unsigned int * const src, size_t n_elem)
 {
-    size_t i;
     float *res = new float[n_elem];
-    for(i=0; i < n_elem; ++i) {
-        res[i] = static_cast<float>(src[i]);
+    for(size_t i=0; i < n_elem; ++i) {
+        res[i] = lerp(src[i], 0U,UINT_MAX, 0.0f,1.0f);
     }
     return res;
 }
@@ -185,16 +207,27 @@ IceTNetworkManager::~IceTNetworkManager(void)
 //  Programmer: Tom Fogal
 //  Creation:   June 17, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Thu Jul 17 14:51:09 EDT 2008
+//    Configure every process to have a tile.  This lets us rely on every
+//    process having an image, later.
+//
 // ****************************************************************************
 void
 IceTNetworkManager::TileLayout(size_t width, size_t height) const
 {
+    GLint n_proc;
     debug2 << "IceTNM: configuring " << width << "x" << height
            << " single tile display." << std::endl;
 
     ICET(icetResetTiles());
-    static const int img_stored_on_this_mpi_proc = 0;
-    ICET(icetAddTile(0,0, width, height, img_stored_on_this_mpi_proc));
+    ICET(icetGetIntegerv(ICET_NUM_PROCESSES, &n_proc));
+
+    for(GLint proc=0; proc < n_proc; ++proc) {
+        debug3 << "IceTNM: adding " << proc << "/" << n_proc-1 << std::endl;
+        ICET(icetAddTile(0,0, width, height, proc));
+    }
 }
 
 // ****************************************************************************
@@ -217,6 +250,9 @@ IceTNetworkManager::TileLayout(size_t width, size_t height) const
 //    Tom Fogal, Fri Jul 11 19:53:03 PDT 2008
 //    Added timer analogous to parent's overall render timer.
 //
+//    Tom Fogal, Fri Jul 18 17:32:31 EDT 2008
+//    Query parent's implementation for rendering features.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
@@ -227,13 +263,11 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     viswinInfo.markedForDeletion = false;
     VisWindow *viswin = viswinInfo.viswin;
-    WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
-    std::vector<avtPlot_p>& imageBasedPlots =
-        viswinMap.find(windowID)->second.imageBasedPlots;
+    std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
 
     TRY
     {
-        StackTimer t_total("Total time for IceTNetworkManager::Render");
+        this->StartTimer();
         this->RenderSetup(networkIds, getZBuffer, annotMode, windowID, leftEye);
 
         // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
@@ -250,29 +284,9 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
                << " primitives.  Balanced speedup = "
                << RenderBalance(viswin->GetNumPrimitives()) << "x" << endl;
 
-        this->r_mgmt.viewportedMode =
-            (this->r_mgmt.annotMode != 1) ||
-            (viswin->GetWindowMode() == WINMODE_2D) ||
-            (viswin->GetWindowMode() == WINMODE_CURVE) ||
-            (viswin->GetWindowMode() == WINMODE_AXISARRAY);
-
         int width, height;
         viswin->GetSize(width, height);
         this->TileLayout(width, height);
-
-        //
-        // Determine if we need to go for two passes
-        //
-        bool doShadows = windowAttributes.GetRenderAtts().GetDoShadowing();
-        bool doDepthCueing =
-            windowAttributes.GetRenderAtts().GetDoDepthCueing();
-
-        // Shadows and depth cueing don't make sense in a non-3D render anyway.
-        if(viswin->GetWindowMode() != WINMODE_3D)
-        {
-            doShadows = false;
-            doDepthCueing = false;
-        }
 
         CallInitializeProgressCallback(this->RenderingStages(windowID));
 
@@ -289,14 +303,19 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
         // The IceT documentation recommends synchronization after rendering.
         MPI_Barrier(VISIT_MPI_COMM);
 
-        // Now we're done rendering, we need to post process the image.
-        GLint rank;
-        ICET(icetGetIntegerv(ICET_RANK, &rank));
-
+        // Now that we're done rendering, we need to post process the image.
         debug3 << "IceTNM: Starting readback." << std::endl;
         avtDataObject_p dob;
         {
-            avtImage_p img = this->Readback(viswin, this->r_mgmt.viewportedMode);
+            bool needZB;
+            needZB = (viswin->GetWindowMode() == WINMODE_3D ||
+                      viswin->GetBackgroundMode() != 0)     &&
+                      (this->r_mgmt.getZBuffer          ||
+                       this->MultipassRendering(viswin) ||
+                       this->Shadowing(windowID)        ||
+                       this->DepthCueing(windowID)      ||
+                       !(imageBasedPlots.empty()));
+            avtImage_p img = this->Readback(viswin, needZB);
             CopyTo(dob, img);
         }
 
@@ -306,12 +325,12 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
         //  post processing
         //  creating a D.Obj.writer out of all this
 
-        if (doShadows)
+        if (this->Shadowing(windowID))
         {
             this->RenderShadows(windowID, dob);
         }
 
-        if (doDepthCueing)
+        if (this->DepthCueing(windowID))
         {
             this->RenderDepthCues(windowID, dob);
         }
@@ -333,6 +352,7 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
     CATCHALL(...)
     {
         debug5 << "IceTNM::Render exception!" << std::endl;
+        assert("Exception thrown, bailing out" == (const char*)0x0fa1afe1);
         RETHROW;
     }
     ENDTRY
@@ -372,11 +392,6 @@ IceTNetworkManager::RealRender()
 //  Method: Readback
 //
 //  Purpose: Reads back the image buffer from IceT.
-//           Unfortunately for us, many post processing algorithms in VisIt
-//           assume they'll have an image available.  In IceT, this is only
-//           true if the node is also a tile node.  Most of the complication
-//           (and the MPI calls) in this method comes from making sure *all*
-//           nodes have images, whether or not they are driving a tile.
 //
 //  Programmer: Tom Fogal
 //  Creation:   June 20, 2008
@@ -392,20 +407,25 @@ IceTNetworkManager::RealRender()
 //    Tom Fogal, Wed Jul  2 11:05:07 EDT 2008
 //    Readback and send/recv the Z buffer (unconditionally...).
 //
+//    Tom Fogal, Thu Jul 17 14:49:35 EDT 2008
+//    Rely on the tiles being setup correctly; forget the whole `buddy' system.
+//
+//    Tom Fogal, Thu Jul 17 17:02:40 EDT 2008
+//    Repurposed viewported argument for a boolean to grab Z.
+//
 // ****************************************************************************
 avtImage_p
 IceTNetworkManager::Readback(const VisWindow * const viswin,
-                             bool viewported) const
+                             bool readZ) const
 {
     assert(viswin);
 
     GLboolean have_image;
-    GLint n_tiles, n_procs, rank;
 
-    ICET(icetGetBooleanv(ICET_COLOR_BUFFER_VALID, &have_image));
-    ICET(icetGetIntegerv(ICET_NUM_TILES, &n_tiles));
-    ICET(icetGetIntegerv(ICET_NUM_PROCESSES, &n_procs));
-    ICET(icetGetIntegerv(ICET_RANK, &rank));
+    DEBUG_ONLY(
+        ICET(icetGetBooleanv(ICET_COLOR_BUFFER_VALID, &have_image));
+        assert(GL_TRUE == have_image);
+    );
 
     int width=-42, height=-42;
     viswin->GetSize(width, height);
@@ -414,53 +434,15 @@ IceTNetworkManager::Readback(const VisWindow * const viswin,
     GLubyte *pixels = NULL;
     GLuint *depth = NULL;
 
-    // We can't delete pointers IceT gives us.  However if we're a receiving
-    // node, we'll dynamically allocate our buffers and thus need to deallocate
-    // them.
-    bool dynamic = false;
+    // We have an image.  First read it back from IceT.
+    pixels = icetGetColorBuffer();
+    DEBUG_ONLY(ICET_CHECK_ERROR);
+    depth = icetGetDepthBuffer();
+    DEBUG_ONLY(ICET_CHECK_ERROR);
 
-    if(GL_TRUE == have_image)
-    {
-        // We have an image.  First read it back from IceT.
-        pixels = icetGetColorBuffer();
-        DEBUG_ONLY(ICET_CHECK_ERROR);
-        depth = icetGetDepthBuffer();
-        DEBUG_ONLY(ICET_CHECK_ERROR);
-
-        this->VerifyColorFormat(); // Bail out if we don't get GL_RGBA data.
-        assert(NULL != depth);
-
-        for(GLint buddy=rank+1; buddy < n_procs; ++buddy)
-        {
-            // Send to machines with ranks a multiple of my own
-            if((buddy % n_tiles) == rank)
-            {
-                // 4: assuming GL_RGBA.
-                debug2 << "Processor " << rank << " sending to " << buddy
-                       << std::endl;
-                MPI_Send(pixels, 4*width*height, MPI_BYTE, buddy, 1,
-                         VISIT_MPI_COMM);
-                MPI_Send(depth, width*height, MPI_UNSIGNED, buddy, 2,
-                         VISIT_MPI_COMM);
-            }
-        }
-    }
-    else
-    {
-        // We don't have an image -- we need to receive it from our buddy.
-        GLint source = (rank % n_tiles);
-        debug2 << "Processor " << rank << " waiting for data from " << source
-               << std::endl;
-        pixels = new GLubyte[4*width*height];
-        depth = new GLuint[width*height];
-        dynamic = true;
-        MPI_Recv(pixels, 4*width*height, MPI_BYTE, source, 1, VISIT_MPI_COMM,
-                 MPI_STATUS_IGNORE);
-        debug2 << "Received image!" << std::endl;
-        MPI_Recv(depth, width*height, MPI_UNSIGNED, source, 2, VISIT_MPI_COMM,
-                 MPI_STATUS_IGNORE);
-    }
-    debug2 << "Finished pushing buffers out." << std::endl;
+    this->VerifyColorFormat(); // Bail out if we don't get GL_RGBA data.
+    assert(NULL != pixels);
+    assert(NULL != depth);
 
     vtkImageData *image = avtImageRepresentation::NewImage(width, height);
     // NewImage assumes we want a 3-component ("GL_RGB") image, but IceT gives
@@ -475,21 +457,46 @@ IceTNetworkManager::Readback(const VisWindow * const viswin,
         memcpy(img_pix, pixels, width*height*4);
     }
 
-    float *visit_depth_buffer = utofv(depth, width*height);
+    float *visit_depth_buffer = NULL;
+    if(readZ) {
+        debug1 << "converting depth values ..." << std::endl;
+        visit_depth_buffer = utofv(depth, width*height);
+    }
     avtSourceFromImage screenCapSrc(image, visit_depth_buffer);
-    avtImage_p visit_img;
-    visit_img = screenCapSrc.GetTypedOutput();
+    avtImage_p visit_img = screenCapSrc.GetTypedOutput();
     visit_img->Update(screenCapSrc.GetGeneralContract());
     visit_img->SetSource(NULL);
     image->Delete();
     delete[] visit_depth_buffer;
-    if(dynamic)
-    {
-        delete[] pixels;
-        delete[] depth;
-    }
+
+    debug3 << "Readback complete." << std::endl;
 
     return visit_img;
+}
+
+// ****************************************************************************
+//  Method: StopTimer
+//
+//  Purpose: Time the IceT rendering process.
+//           IceT includes its own timing code that we might consider using at
+//           some point ...
+//
+//  Programmer: Tom Fogal
+//  Creation:   July 14, 2008
+//
+// ****************************************************************************
+void
+IceTNetworkManager::StopTimer(int windowID)
+{
+    char msg[1024];
+    const VisWindow *viswin = this->viswinMap.find(windowID)->second.viswin;
+    int rows,cols;
+    viswin->GetSize(rows, cols);
+
+    SNPRINTF(msg, 1023, "IceTNM::Render %d cells %d pixels",
+             GetTotalGlobalCellCounts(windowID), rows*cols);
+    visitTimer->StopTimer(this->r_mgmt.timer, msg);
+    this->r_mgmt.timer = -1;
 }
 
 // ****************************************************************************

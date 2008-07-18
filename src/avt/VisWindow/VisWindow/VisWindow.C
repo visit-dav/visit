@@ -257,7 +257,7 @@ VisWindow::Initialize(VisWinRendering *ren)
     frameAndState[5] = 0;
     frameAndState[6] = 0;
     mode = WINMODE_NONE;
-    backgroundMode = 0;
+    backgroundMode = AnnotationAttributes::Solid;
     gradientBackground[0][0] = 0.;
     gradientBackground[0][1] = 0.;
     gradientBackground[0][2] = 1.;
@@ -661,11 +661,14 @@ VisWindow::SetGradientBackgroundColors(int gradStyle,
 // Creation:   Wed Aug 29 15:28:49 PST 2001
 //
 // Modifications:
+//
+//   Tom Fogal, Fri Jul 18 18:30:08 EDT 2008
+//   Change argument to use an enum.
 //   
 // ****************************************************************************
 
 void
-VisWindow::SetBackgroundMode(int mode)
+VisWindow::SetBackgroundMode(enum AnnotationAttributes::BackgroundMode mode)
 {
     backgroundMode = mode;
 
@@ -684,10 +687,15 @@ VisWindow::SetBackgroundMode(int mode)
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Aug 29 15:31:11 PST 2001
+//
+// Modifications:
+//
+//   Tom Fogal, Fri Jul 18 18:30:08 EDT 2008
+//   Change return value to be an enum.
 //   
 // ****************************************************************************
 
-int
+enum AnnotationAttributes::BackgroundMode
 VisWindow::GetBackgroundMode() const
 {
     return backgroundMode;
