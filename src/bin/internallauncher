@@ -337,6 +337,10 @@ $0 = shift @ARGV;
 #    Added -pluginpath option when launching via mpirun since not all
 #    mpi variants will propagate environment variables.
 #
+#    Tom Fogal, Mon Jul 21 10:54:22 EDT 2008
+#    I added a warning to IsAVisItComponent which is triggered if the user
+#    enters `engine' but screws up (or forgets) the suffix.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2463,11 +2467,18 @@ EOF
 }
 
 sub IsAVisItComponentName {
+    use warnings::register;
     my $theName = shift;
     if    ($theName eq "mdserver")   { return 1; }
     elsif ($theName eq "gui")        { return 1; }
     elsif ($theName eq "engine_ser") { return 1; }
     elsif ($theName eq "engine_par") { return 1; }
     elsif ($theName eq "viewer")     { return 1; }
+    elsif ($theName =~ m/engine*/i) {
+        warnings::warn("You passed in a string " . $theName . " which " .
+                       "you might have intended to be a VisIt component " .
+                       "name.  You probably meant 'engine_par' or " .
+                       "'engine_ser'!");
+    }
     return 0;
 }
