@@ -8,13 +8,6 @@ homedir=os.environ['HOME']
 datadir=homedir + "/visit/data"
 # needed for launching the compute engine
 host=os.environ['HOSTNAME']
-args=(
-    "-par",
-    "-dir",homedir,
-    "-nn","1",
-    "-np","16",
-    "-t","12m"
-)
 
 def SetSRMode():
     ra = GetRenderingAttributes()
@@ -22,7 +15,6 @@ def SetSRMode():
     SetRenderingAttributes(ra)
 
 def InitialSetup():
-    #OpenComputeEngine(host, args)
     SetSRMode()
     swa = GetSaveWindowAttributes()
     swa.format = swa.PNG
@@ -41,8 +33,6 @@ def MyRender(fn):
     DrawPlots()
     SaveWindow()
 
-# no width/height -- can't do this in screenCapture mode anyway (and I broke
-# non-screencap mode).
 def DeleteAddRender(p, v):
     print "Rendering ", p, ":", v
     DeleteAllPlots()
@@ -79,8 +69,6 @@ if False:
     RunTestsWithDB(host + ":" + datadir + "/hist_ucd3d_0000",
                    ["Vector"],
                    ["vec"])
-    #RunTestsWithDB(host + ":" + homedir + "tmp/noise.bov",
-    #               ["Contour", "Pseudocolor"], ["hardyglobal"])
     RunTestsWithDB(host + ":" + datadir + "/noise.silo",
                    ["Contour", "Pseudocolor"],
                    ["airVf", "chromeVf", "hardyglobal", "hgslice", "radial",
@@ -93,5 +81,4 @@ if False:
                    ["Contour", "Pseudocolor"],
                    ["revolved_mesh/a", "revolved_mesh/ireg"])
 
-#CloseComputeEngine()
 sys.exit(0)
