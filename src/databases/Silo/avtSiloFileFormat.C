@@ -447,7 +447,7 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
     const char *pColon = strrchr(baseFilename, ':');
     if (pColon != NULL)
     {
-        pColon++; // move one passed the ':' character
+        pColon++; // move one past the ':' character
         int triedDir = DBSetDir(dbfiles[f], pColon);
         if (triedDir == 0)
         {
@@ -9401,9 +9401,13 @@ ExceptionGenerator(char *msg)
 //    Do a better job of handling variables that have absolute paths.
 //
 //    Mark C. Miller, Wed Feb  6 12:23:56 PST 2008
-//    Made it handle the case where a single sile file contains multiple
+//    Made it handle the case where a single silo file contains multiple
 //    timesteps -- topDir is NOT "/". In this case, it has to filter everything
 //    out of either dirname or varname that is the top directory name.
+//
+//    Tom Fogal, Mon Jul 21 14:43:14 EDT 2008
+//    I added an early exit clause for the case where we lack a '/' in the
+//    directory name.  This fixes an invalid read.
 //
 // ****************************************************************************
 
@@ -9467,10 +9471,21 @@ GenerateName(const char *dirname, const char *varname, const char *topdirname)
 
     char *rv = new char[len];
 
+    // In the case that the string is `simple', then the calculation
+    // tdOffset2+1 actually points beyond the end of the string.  We need to
+    // make sure we don't deref the pointer we'll make with it, so check for
+    // that simple case and bail out here if possible.
+    if (strlen(dirname) < tdOffset2+1)
+    {
+        sprintf(rv, "%s", varname);
+        return rv;
+    }
+
     const char *dir_without_leading_slash = dirname+1+tdOffset2;
 
     bool needMiddleSlash = false;
-    if (strlen(dir_without_leading_slash) > 0)
+
+    if (*dir_without_leading_slash != '\0')
     {
         needMiddleSlash = true;
     }
