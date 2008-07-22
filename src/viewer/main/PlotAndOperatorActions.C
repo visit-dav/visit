@@ -67,6 +67,7 @@
 #include <QvisVariablePopupMenu.h>
 
 #include <DebugStream.h>
+#include <InvalidExpressionException.h>
 
 //
 // Include icons
@@ -1745,6 +1746,9 @@ ChangeActivePlotsVarAction::~ChangeActivePlotsVarAction()
 //
 // Modifications:
 //   
+//   Hank Childs, Tue Jul 22 11:50:12 PDT 2008
+//   Added explicit error handling.
+//
 // ****************************************************************************
 
 void
@@ -1753,8 +1757,18 @@ ChangeActivePlotsVarAction::Execute()
     //
     // Set the plot variable for the selected plots.
     //
-    const char *var = args.GetVariable().c_str();
-    window->GetPlotList()->SetPlotVar(var);
+    TRY
+    {
+        const char *var = args.GetVariable().c_str();
+        window->GetPlotList()->SetPlotVar(var);
+    }
+    CATCH2(InvalidExpressionException, ve)
+    {
+        QString msg = tr("VisIt was unable to change the active variable "
+                       "because: %1\n").arg(ve.Message().c_str());
+        Error(msg);
+    }
+    ENDTRY
 }
 
 ///////////////////////////////////////////////////////////////////////////////
