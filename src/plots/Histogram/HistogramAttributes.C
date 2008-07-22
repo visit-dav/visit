@@ -212,7 +212,7 @@ HistogramAttributes::HistogramAttributes() :
     weightVariable("default"), color(200, 80, 40)
 {
     basedOn = ManyZonesForSingleVar;
-    histogramType = Weighted;
+    histogramType = Frequency;
     specifyRange = false;
     min = 0;
     max = 1;
