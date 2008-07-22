@@ -45,6 +45,7 @@
 #include <string>
 
 #include <vtkCellArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
 #include <vtkRectilinearGrid.h>
@@ -399,9 +400,9 @@ avtUNICFileFormat::GetVar(int domain, const char *varname)
     int numVertices = numElements*verticesPerElement;
 
     int ntups = (isPtVar ? numVertices : numElements);
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkDoubleArray *rv = vtkDoubleArray::New();
     rv->SetNumberOfTuples(ntups);
-    float *vals = (float *) rv->GetVoidPointer(0);
+    double *vals = (double *) rv->GetVoidPointer(0);
 
 #if HDF5_VERSION_GE(1,6,4)
     hsize_t offsets[2];
