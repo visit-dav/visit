@@ -81,7 +81,7 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         super(16);
 
         basedOn = BASEDON_MANYZONESFORSINGLEVAR;
-        histogramType = BINCONTRIBUTION_WEIGHTED;
+        histogramType = BINCONTRIBUTION_FREQUENCY;
         weightVariable = new String("default");
         specifyRange = false;
         min = 0;

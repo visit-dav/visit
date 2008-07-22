@@ -23,7 +23,7 @@
         ManyZonesForSingleVar
       </Field>
       <Field name="histogramType" label="Histogram Method" type="enum" subtype="BinContribution" enabler="basedOn:ManyZonesForSingleVar">
-        Weighted
+        Frequency
       </Field>
       <Field name="weightVariable" label="Variable to Weight By" type="variablename" enabler="histogramType:Variable" vartypes="01000000000">
         default
