@@ -390,8 +390,8 @@ avtXDMFFileFormat::ReadXMLDataItem(DataItem *dataItem, void *buf, int lBuf,
     // Check that the size of the dataset and buffer match.
     //
     int ldataItem = 1;
-    for (int i = 0; i < dataItem->nDims; i++)
-        ldataItem *= dataItem->dims[i];
+    for (int j = 0; j < dataItem->nDims; j++)
+        ldataItem *= dataItem->dims[j];
     if (ldataItem != lBuf)
     {
         avtCallback::IssueWarning("Dimensions don't match buffer size.");
