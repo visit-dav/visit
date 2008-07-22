@@ -154,6 +154,9 @@ QvisCommandWindow::~QvisCommandWindow()
 //   Brad Whitlock, Fri Jun 15 13:37:48 PST 2007
 //   Added Macros tab and buttons to convert "code" to "macros".
 //
+//   Hank Childs, Tue Jul 22 12:22:38 PDT 2008
+//   Always have the Execute button enabled.
+//
 // ****************************************************************************
 
 void
@@ -256,7 +259,6 @@ QvisCommandWindow::CreateWindowContents()
         hb->setSpacing(5);
         executeButtons[i] = new QPushButton(QIconSet(QPixmap(macroexec_xpm)),
             tr("Execute"), hb, "executeButton");
-        executeButtons[i]->setEnabled(false);
         executeButtonsGroup->insert(executeButtons[i], i);
 
         clearButtons[i] = new QPushButton(tr("Clear"), hb,
@@ -689,11 +691,13 @@ QvisCommandWindow::clearClicked(int index)
 //   Brad Whitlock, Fri Jun 15 14:21:22 PST 2007
 //   Set addMacroButton enabled.
 //
+//   Hank Childs, Tue Jul 22 12:22:38 PDT 2008
+//   Always have the Execute button enabled.
+//
 // ****************************************************************************
 
 #define TEXT_CHANGED(I) void QvisCommandWindow::textChanged##I() { \
     bool e = lineEdits[I]->length() > 0; \
-    executeButtons[I]->setEnabled(e); \
     addMacroButtons[I]->setEnabled(e); \
     clearButtons[I]->setEnabled(e); \
 }
