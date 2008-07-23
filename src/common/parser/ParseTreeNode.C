@@ -53,6 +53,8 @@
 //  Creation:   November 11, 2004
 //
 //  Modifications:
+//    Jeremy Meredith, Wed Jul 23 13:15:15 EDT 2008
+//    Separate the parent printout from this one if necessary.
 //    
 // ****************************************************************************
 
@@ -62,7 +64,8 @@ ParseTreeNode::Print(ostream &o, std::string s)
     static int indent = 0;
     for (int i=0; i<indent; i++)
         o << "  ";
-    o << s.c_str();
+    if (!s.empty())
+        o << s.c_str() << ": "; 
     indent++;
     PrintNode(o);
     indent--;
