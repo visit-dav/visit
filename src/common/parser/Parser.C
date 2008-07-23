@@ -132,12 +132,16 @@ Parser::Shift(Token *t, int s)
 //    applying the reduction.  This fixes a number of memory leaks.
 //    I also ensured that pos was well populated in all cases.
 //
+//    Jeremy Meredith, Wed Jul 23 13:26:26 EDT 2008
+//    Add the rule index to the debug info.
+//
 // ****************************************************************************
 void
 Parser::Reduce(int r)
 {
 #ifdef MOREDEBUG
-    cerr << "Reducing using rule " << *(G->GetRule(r)) << endl;
+    cerr << "Reducing using rule " << G->GetRule(r)->GetIndex() << ": "
+         << *(G->GetRule(r)) << endl;
 #endif
     const Rule   *rule = G->GetRule(r);
     const Symbol *lhs = rule->GetLHS();
@@ -205,12 +209,18 @@ Parser::Reduce(int r)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jul 23 13:26:44 EDT 2008
+//    Uncomment the state debug info, but only print in MOREDEBUG.
+//
 // ****************************************************************************
 void
 Parser::PrintState(ostream &o)
 {
 #ifdef DEBUG
-    //o << "state= "; for (size_t i=0; i<states.size(); i++) o << states[i] << " "; o << endl;
+#ifdef MOREDEBUG
+    o << "state= "; for (size_t i=0; i<states.size(); i++) o << states[i] << " "; o << endl;
+#endif
     o << "stack= "; for (size_t i=0; i<elems.size(); i++) o << *(elems[i].sym) << " "; o << endl;
 #endif
 }

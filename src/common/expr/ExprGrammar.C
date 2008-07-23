@@ -64,6 +64,10 @@
 //    I made the symbols be static in the ExprGrammar class so there are no
 //    conflicts with Python 2.5.
 //
+//    Jeremy Meredith, Wed Jul 23 13:29:06 EDT 2008
+//    Added a backslash symbol.  We use it both for escaping and as
+//    a path separator.  Added two rules here for the latter use.
+//
 
 Dictionary D;
 
@@ -74,6 +78,7 @@ Symbol ExprGrammar::T_Plus          (D, '+');
 Symbol ExprGrammar::T_Mult          (D, '*');
 Symbol ExprGrammar::T_Minus         (D, '-');
 Symbol ExprGrammar::T_Slash         (D, '/');
+Symbol ExprGrammar::T_BackSlash     (D, '\\');
 Symbol ExprGrammar::T_Exp           (D, '^');
 Symbol ExprGrammar::T_Mod           (D, '%');
 Symbol ExprGrammar::T_LBracket      (D, '[');
@@ -196,6 +201,8 @@ ExprGrammar::ExprGrammar() : Grammar(D)
   // MultiSlash
   AddRule(Rule(0, MultiSlash) >> MultiSlash + T_Slash);
   AddRule(Rule(1, MultiSlash) >> T_Slash);
+  AddRule(Rule(2, MultiSlash) >> MultiSlash + T_BackSlash);
+  AddRule(Rule(3, MultiSlash) >> T_BackSlash);
 
   // Variable
   AddRule(Rule(0, Variable) >> T_Ident );

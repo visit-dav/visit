@@ -69,6 +69,9 @@ using std::deque;
 //    Major refactoring caused this class to be renamed to ExprScanner
 //    and Token to ExprToken.
 //
+//    Jeremy Meredith, Wed Jul 23 13:37:20 EDT 2008
+//    Allow the character type to take into account a backslash-escape.
+//
 // ****************************************************************************
 class EXPR_API ExprScanner : public Scanner
 {
@@ -111,7 +114,7 @@ class EXPR_API ExprScanner : public Scanner
     Token *ScanOneToken();
 
   private:
-    int    GetCharType(const char c);
+    int    GetCharType(const char c, bool escaped) const;
     Token *GetAcceptToken(const Pos&,const std::string&, int);
     void   UpdateScanState(const std::string &parsed);
 

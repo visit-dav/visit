@@ -59,6 +59,10 @@
 //    I made the symbols be static in the ExprGrammar class so there are no
 //    conflicts with Python 2.5.
 //
+//    Jeremy Meredith, Wed Jul 23 13:29:06 EDT 2008
+//    Added a backslash symbol.  We use it both for escaping and as
+//    a path separator.
+//
 // ****************************************************************************
 class EXPR_API ExprGrammar : public Grammar
 {
@@ -74,6 +78,7 @@ class EXPR_API ExprGrammar : public Grammar
     static Symbol T_Mult;
     static Symbol T_Minus;
     static Symbol T_Slash;
+    static Symbol T_BackSlash;
     static Symbol T_Exp;
     static Symbol T_Mod;
     static Symbol T_LBracket;

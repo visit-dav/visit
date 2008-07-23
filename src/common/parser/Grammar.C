@@ -109,13 +109,17 @@ Grammar::SetPrinter(ostream *o)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jul 23 13:15:57 EDT 2008
+//    Add the rule number when printing for easier cross-reference.
+//
 // ****************************************************************************
 void
 Grammar::Print(ostream &o)
 {
     o << endl << TermBold << TermBrown << "- - - ------------- rules ------------- - - -\n" << TermReset;
     for (size_t i=0; i<rules.size(); i++)
-        o << *(rules[i]) << endl;
+        o << i <<":" << *(rules[i]) << endl;
     o << endl << TermBold << TermBrown << "- - - ------------- states ------------- - - -\n" << TermReset;
     for (size_t i=0; i<sets.size(); i++)
     {
@@ -269,6 +273,17 @@ Grammar::GetDictionary()
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jul 23 13:23:14 EDT 2008
+//    Cleaned up the logic in the shift-reduce conflict resolution.
+//    Using the last terminal in the reduce rule to find precedence
+//    is a nice convenience, and it makes sense, but it was coded such
+//    that there was an assumption that there *was* a terminal in
+//    the reduce rule.  In fact, it's fine not to have one, it just
+//    means we can only use a precedence attached to the rule itself.
+//    Also, by cleaning it up, I was able to add extra info to the
+//    error messages.
+//
 // ****************************************************************************
 bool
 Grammar::Configure()
@@ -349,42 +364,61 @@ Grammar::Configure()
             if (!ssym || !reduce.set[i])
                 continue;
 
+            // We know there's only one reduce rule
             const Rule *reducerule = rules[sets[j].GetReduceRules(ssym)[0]];
-            const Symbol *rsym     = reducerule->GetRHS().GetLastTerminal();
-            bool   same = (ssym == rsym);
 
             int sprec = prec.count(ssym) ? prec[ssym] : -1;
             int rprec = reducerule->GetPrec();
-            if (rprec == -1)
-                rprec = prec.count(rsym) ? prec[rsym] : -1;
-
             bool haveprec  = (sprec >= 0 && rprec >= 0);
-            bool haveassoc = assoc.count(ssym);
 
-            // Try to resolve using precedence or associativity
-            if (!same && haveprec && sprec!=rprec)
+            // Check precedence against reduce rule first
+            if (haveprec && sprec!=rprec)
             {
                 if (sprec < rprec)
+                {
                     sets[j].RemoveShiftTransition(ssym);
+                    (*out) << TermGreen << "SR conflict in state " << j << " for " << *ssym << " and rule "<<reducerule->GetIndex()<<" resolved by higher precedence of "<< *ssym << TermReset << endl;
+                }
                 else
+                {
                     sets[j].RemoveReduceRule(ssym);
-                (*out) << TermGreen << "SR conflict in state " << j << " for " << *ssym << " and " << *rsym << " resolved by precedence" << TermReset << endl;
+                    (*out) << TermGreen << "SR conflict in state " << j << " for " << *ssym << " and rule "<<reducerule->GetIndex()<<" resolved by higher precedence of rule " << TermReset << endl;
+                }
+                continue;
             }
-            else if (haveassoc && (same || (haveprec && sprec==rprec)))
+
+            // Okay, no dice.  Try using the last terminal in the rule
+            const Symbol *rsym = reducerule->GetRHS().GetLastTerminal();
+            rprec = prec.count(rsym) ? prec[rsym] : -1;
+            haveprec  = (sprec >= 0 && rprec >= 0);
+
+            // Try associativity first.
+            bool same = (ssym == rsym);
+            if (assoc.count(ssym) && (same || (haveprec && sprec==rprec)))
             {
                 if (assoc[ssym] != Right)
                     sets[j].RemoveShiftTransition(ssym);
                 if (assoc[ssym] != Left)
                     sets[j].RemoveReduceRule(ssym);
-                (*out) << TermGreen << "SR conflict in state " << j  << " for " << *ssym << " and " << *rsym << " resolved by " << (assoc[ssym] == Left ? "left" : "right") << " assoc "<< TermReset << endl;
+                (*out) << TermGreen << "SR conflict in state " << j  << " for " << *ssym << " and rule " << reducerule->GetIndex() << " resolved by " << (assoc[ssym] == Left ? "left" : "right") << " assoc "<< TermReset << endl;
+                continue;
             }
-            else
+
+            // Nope, so now try using it for precedence.
+            if (haveprec && sprec!=rprec)
             {
-                // failed to resolve... set the error flag
-                sets[j].SetConflict(true);
-                okay = false;
-                (*out) << TermRed << "SR conflict in state " << j << " for " << *ssym << " and " << *rsym << TermReset << endl;
+                if (sprec < rprec)
+                    sets[j].RemoveShiftTransition(ssym);
+                else
+                    sets[j].RemoveReduceRule(ssym);
+                (*out) << TermGreen << "SR conflict in state " << j << " for " << *ssym << " and "<<*rsym<<" resolved by higher precedence of "<<(sprec < rprec ? *ssym : *rsym) << TermReset << endl;
+                continue;
             }
+
+            // failed to resolve... set the error flag
+            sets[j].SetConflict(true);
+            okay = false;
+            (*out) << TermRed << "SR conflict in state " << j << " for " << *ssym << " and rule " << reducerule->GetIndex() << TermReset << endl;
         }
     }
 
@@ -430,6 +464,10 @@ Grammar::Configure()
 //
 //    Jeremy Meredith, Tue Jun  5 13:29:33 EDT 2007
 //    Added copyright notice.  Added parentheses to function definition.
+//
+//    Jeremy Meredith, Wed Jul 23 13:25:32 EDT 2008
+//    Since we now have backslash as a symbol, escape it properly
+//    (with an extra backslash).
 //
 // ****************************************************************************
 
@@ -516,7 +554,9 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
             if (s->IsNonTerminal())
                 o << "\"" << s->GetDisplayString().c_str() << "\"";
             else
-                if (tt < 256)
+                if (tt == '\\')
+                    o << "'\\\\'";
+                else if (tt < 256)
                     o << "'" << char(tt) << "'";
                 else
                     o << tt;
@@ -557,7 +597,9 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
             if (s->IsNonTerminal())
                 o << "\"" << s->GetDisplayString().c_str() << "\"";
             else
-                if (tt < 256)
+                if (tt == '\\')
+                    o << "'\\\\'";
+                else if (tt < 256)
                     o << "'" << char(tt) << "'";
                 else
                     o << tt;

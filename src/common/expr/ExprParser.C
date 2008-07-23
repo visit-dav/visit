@@ -149,6 +149,9 @@ ExprParser::ExprParser(ExprNodeFactory *f) : Parser(), factory(f)
 //    Changed C-stype commented-out code block for case 14 to conditionally
 //    compiled code block.
 //
+//    Jeremy Meredith, Wed Jul 23 11:20:17 EDT 2008
+//    Allow backslashes in paths for better windows support.
+//
 // ****************************************************************************
 ParseTreeNode*
 ExprParser::ApplyRule(const Symbol           &sym,
@@ -393,6 +396,12 @@ ExprParser::ApplyRule(const Symbol           &sym,
             node = new DummyNode(p);
             break;
         case 1:
+            node = new DummyNode(p);
+            break;
+        case 2:
+            node = new DummyNode(p);
+            break;
+        case 3:
             node = new DummyNode(p);
             break;
         }

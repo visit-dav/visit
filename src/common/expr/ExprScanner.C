@@ -52,7 +52,7 @@ using     std::string;
 // ----------------------------------------------------------------------------
 //  Scanner modifications:
 //    Jeremy Meredith, Mon Jul 28 14:36:21 PDT 2003
-//    Allow dots in tokens that started with were clearly scanned as
+//    Allow dots in tokens that were starting to be clearly scanned as
 //    identifiers already.  For example, "alpha.1" will scan as a single
 //    identifier now, without the need for the "<>" notation.
 //
@@ -119,20 +119,30 @@ static const bool StateAcceptance[13] = {
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Added support for '&' binary, bitwise, and expression
 //
+//    Jeremy Meredith, Wed Jul 23 13:13:42 EDT 2008
+//    Allow backslashes.  Add quoting support.
+//
 // ****************************************************************************
 int
-ExprScanner::GetCharType(const char c)
+ExprScanner::GetCharType(const char c, bool escaped) const
 {
     ScanState s = scanstate.back();
     int type = Err;
 
-    if (c)
+    if (escaped)
+    {
+        if (c == '\\' || c == '/')
+            type = Sym;
+        else if (c)
+            type = Alp;
+    }
+    else if (c)
     {
         if (c == '\"')
             type = Quo;
         else if (c == '+' || c == '-')
             type = Sgn;
-        else if (strchr("*/+-[]{}()<>=,^%@:#&", c))
+        else if (strchr("*/+-[]{}()<>=,^%@:#&\\", c))
             type = Sym;
         else if (c == 'e' || c == 'E')
             type = Eee;
@@ -291,6 +301,10 @@ ExprScanner::UpdateScanState(const std::string &parsed)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jul 23 13:12:22 EDT 2008
+//    Add support for using a backslash as an escaping mechanism.
+//
 // ****************************************************************************
 Token*
 ExprScanner::ScanOneToken()
@@ -304,12 +318,21 @@ ExprScanner::ScanOneToken()
         if (pos < text.length())
             lookahead = text[pos];
 
+        // If it was a backslash, just use quoting
+        bool backslashEscape = lookahead == '\\';
+        if (backslashEscape)
+        {
+            lookahead = 0;
+            if (pos+1 < text.length())
+                lookahead = text[pos+1];
+        }
+
         // Nothing left to parse, and no unfinished token to accept
         if (state == 0 && lookahead == 0)
             return new EndOfInput(pos);
 
         // Get the character type, the next state, and an accept token
-        int  type   = GetCharType(lookahead);
+        int  type   = GetCharType(lookahead, backslashEscape);
         int  next   = (type == Err) ? -1 : StateTransition[state][type];
         bool accept = StateAcceptance[state];
 
@@ -345,6 +368,8 @@ ExprScanner::ScanOneToken()
         }
 
         // Push the lookahead and keep going
+        if (backslashEscape) // skip the backslash too if we got one
+            pos++;
         pos++;
         workstring += lookahead;
         state = next;
