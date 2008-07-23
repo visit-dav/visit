@@ -127,10 +127,10 @@ PyView2DAttributes_ToString(const View2DAttributes *atts, const char *prefix)
     SNPRINTF(tmpStr, 1000, "%sfullFrameAutoThreshold = %g\n", prefix, atts->GetFullFrameAutoThreshold());
     str += tmpStr;
     const char *xScale_values[] = {"LINEAR", "LOG"};
-    SNPRINTF(tmpStr, 1000, "%sxScale = %s  # LINEAR, LOG\n", prefix, xScale_values[atts->GetXScale()]);
+    SNPRINTF(tmpStr, 1000, "%sxScale = %s%s  # LINEAR, LOG\n", prefix, prefix, xScale_values[atts->GetXScale()]);
     str += tmpStr;
     const char *yScale_values[] = {"LINEAR", "LOG"};
-    SNPRINTF(tmpStr, 1000, "%syScale = %s  # LINEAR, LOG\n", prefix, yScale_values[atts->GetYScale()]);
+    SNPRINTF(tmpStr, 1000, "%syScale = %s%s  # LINEAR, LOG\n", prefix, prefix, yScale_values[atts->GetYScale()]);
     str += tmpStr;
     return str;
 }
