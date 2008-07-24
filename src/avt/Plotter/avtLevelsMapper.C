@@ -188,6 +188,9 @@ avtLevelsMapper::~avtLevelsMapper()
 //    Hank Childs, Fri Dec 29 14:42:42 PST 2006
 //    Tell the mapper whether or not we have a 3D scene.
 //
+//    Hank Childs, Thu Jul 24 09:52:33 PDT 2008
+//    Prevent dereference and add exception. ['8690]
+//
 // ****************************************************************************
 
 void
@@ -203,12 +206,19 @@ avtLevelsMapper::CustomizeMappers(void)
             if (strcmp(mappers[i]->GetClassName(), "vtkVisItDataSetMapper")==0)
             {                 
                 vtkVisItDataSetMapper *m = (vtkVisItDataSetMapper *)mappers[i];
-                m->SetSceneIs3D(GetInput()->GetInfo().GetAttributes().                                                    GetSpatialDimension() == 3);
+                m->SetSceneIs3D(GetInput()->GetInfo().GetAttributes().
+                                                    GetSpatialDimension() == 3);
             }
 
             //
             //  Use labels for mapping to a color.
             //
+            if (labelsForColorMapping.size() <= i)
+            {
+                EXCEPTION1(VisItException, "An internal error occurred.  One common "
+                           "way to get to this state is if you are resampling a "
+                           "filled boundary plot, which is not allowed.");
+            }
             GetLevelColor(labelsForColorMapping[i], col);
             vtkProperty* prop = actors[i]->GetProperty();
             double spec_color[4];
@@ -488,6 +498,9 @@ avtLevelsMapper::SetLabels(vector<string> &labels, bool fromTree)
 //    clobbers the specular light color, which in turn greatly diminishes
 //    the specular effect.  ['5636] ['5580]
 //
+//    Hank Childs, Thu Jul 24 09:52:33 PDT 2008
+//    Prevent dereference and add exception. ['8690]
+//
 // ****************************************************************************
 
 void
@@ -499,6 +512,12 @@ avtLevelsMapper::SetColors(const ColorAttributeList &c)
     {
         if (mappers[i] != NULL)
         {
+            if (labelsForColorMapping.size() <= i)
+            {
+                EXCEPTION1(VisItException, "An internal error occurred.  One common "
+                           "way to get to this state is if you are resampling a "
+                           "filled boundary plot, which is not allowed.");
+            }
             GetLevelColor(labelsForColorMapping[i], col);
             vtkProperty* prop = actors[i]->GetProperty();
             double spec_color[4];
