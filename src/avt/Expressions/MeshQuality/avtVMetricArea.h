@@ -62,6 +62,9 @@
 //    Hank Childs, Thu May 19 10:55:30 PDT 2005
 //    Added support for operating on rectilinear meshes directly.
 //
+//    Hank Childs, Thu Jul 24 12:48:13 PDT 2008
+//    Added support for polygonal areas.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtVMetricArea : public avtVerdictExpression
@@ -71,6 +74,7 @@ class EXPRESSION_API avtVMetricArea : public avtVerdictExpression
 
     virtual bool       OperateDirectlyOnMesh(vtkDataSet *);
     virtual void       MetricForWholeMesh(vtkDataSet *, vtkDataArray *);
+    virtual bool       SummationValidForOddShapes(void) { return true; };
 };
 
 #endif
