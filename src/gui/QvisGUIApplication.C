@@ -1876,6 +1876,9 @@ QvisGUIApplication::Quit()
 //    Brad Whitlock, Wed Apr  9 14:09:21 PDT 2008
 //    Added -locale argument.
 //
+//    Brad Whitlock, Thu Jul 24 12:06:57 PDT 2008
+//    Added support for the -launchengine argument.
+//
 // ****************************************************************************
 
 void
@@ -2158,6 +2161,18 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
         else if(current == "-nowindowmetrics")
         {
             useWindowMetrics = false;
+        }
+        else if(current == std::string("-launchengine"))
+        {
+            if(i + 1 < argc)
+            {
+                if(!localOnly)
+                {
+                    loadFile.host = argv[i+1];
+                    loadFile.path = "~";
+                }
+                ++i;
+            }
         }
     }
 }
@@ -5513,6 +5528,9 @@ QvisGUIApplication::RefreshFileListAndNextFrame()
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Thu Jul 24 12:05:14 PDT 2008
+//   Added support for setting just the host and applied file list.
+//
 // ****************************************************************************
 
 void
@@ -5548,69 +5566,83 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
             fileServer->SetPath(f.path);
             fileServer->Notify();
 
-            // Get the filtered file list and look to see if it contains the
-            // file that we want to load.
-            QualifiedFilenameVector files(fileServer->GetFilteredFileList());
-            bool fileInList = false;
             int  timeState  = 0;
-            QualifiedFilenameVector::const_iterator pos;
-            for(pos = files.begin(); pos != files.end() && !fileInList; ++pos)
+            if(loadFile.filename.size() > 0)
             {
-                bool sameHost = f.host == pos->host;
-                bool samePath = f.path == pos->path;
-
-                if(sameHost && samePath)
+                // Get the filtered file list and look to see if it contains the
+                // file that we want to load.
+                QualifiedFilenameVector files(fileServer->GetFilteredFileList());
+                bool fileInList = false;
+                QualifiedFilenameVector::const_iterator pos;
+                for(pos = files.begin(); pos != files.end() && !fileInList; ++pos)
                 {
-                    bool sameFile = f.filename == pos->filename;
-                    if(pos->IsVirtual())
-                    {
-                        // Get the list of files in the virtual file.
-                        stringVector def(fileServer->GetVirtualFileDefinition(*pos));
+                    bool sameHost = f.host == pos->host;
+                    bool samePath = f.path == pos->path;
 
-                        // See if the file that we want to open is in the virtual
-                        // file definition.                       
-                        for(int state = 0; state < def.size(); ++state)
+                    if(sameHost && samePath)
+                    {
+                        bool sameFile = f.filename == pos->filename;
+                        if(pos->IsVirtual())
                         {
-                            if(f.filename == def[state])
+                            // Get the list of files in the virtual file.
+                            stringVector def(fileServer->GetVirtualFileDefinition(*pos));
+
+                            // See if the file that we want to open is in the virtual
+                            // file definition.                       
+                            for(int state = 0; state < def.size(); ++state)
                             {
-                                fileInList = true;
-                                timeState = state;
-                                f.filename = pos->filename;
-                                break;
+                                if(f.filename == def[state])
+                                {
+                                    fileInList = true;
+                                    timeState = state;
+                                    f.filename = pos->filename;
+                                    break;
+                                }
                             }
                         }
+                        else if(sameFile)
+                            fileInList = true;
                     }
-                    else if(sameFile)
-                        fileInList = true;
                 }
+
+                // Make sure that we put our file in the applied files list if it
+                // is not already in the list.
+                if(!fileInList)
+                    files.push_back(f);
+
+                //
+                // Combine the files with the applied files so we can call this
+                // method repeatedly and have all of the files that we've opened 
+                // this way be in the applied file list.
+                //
+                fileServer->SetAppliedFileList(
+                    CombineQualifiedFilenameVectors(files,
+                        fileServer->GetAppliedFileList()));
+                fileServer->Notify();
             }
-
-            // Make sure that we put our file in the applied files list if it
-            // is not already in the list.
-            if(!fileInList)
-                files.push_back(f);
-
-            //
-            // Combine the files with the applied files so we can call this
-            // method repeatedly and have all of the files that we've opened 
-            // this way be in the applied file list.
-            //
-            fileServer->SetAppliedFileList(
-                CombineQualifiedFilenameVectors(files,
-                    fileServer->GetAppliedFileList()));
-            fileServer->Notify();
+            else
+            {
+                // In this case, the user only specified a host as with
+                // -launchengine. We just get the default filtered file
+                // list from the host and use that for the applied file list.
+                fileServer->SetAppliedFileList(fileServer->GetFilteredFileList());
+                fileServer->Notify();
+            }
 
             // Tell the viewer to show all of its windows since launching
             // an engine could take a while and we want the viewer window
             // to still pop up at roughly the same time as the gui.
             GetViewerMethods()->ShowAllWindows();
 
-            // Try and open the data file for plotting.
-            SetOpenDataFile(f, timeState);
+            if(loadFile.filename.size() > 0)
+            {
+                // Try and open the data file for plotting.
+                SetOpenDataFile(f, timeState);
 
-            // Tell the viewer to open the file too.
-            GetViewerMethods()->OpenDatabase(f.FullName().c_str(), timeState,
-                                 addDefaultPlots);
+                // Tell the viewer to open the file too.
+                GetViewerMethods()->OpenDatabase(f.FullName().c_str(), timeState,
+                                                 addDefaultPlots);
+            }
         }
         CATCH2(BadHostException, bhe)
         {
