@@ -51,6 +51,7 @@
 
 #include <visitstream.h>
 #include <snprintf.h>
+#include <iomanip.h>
 
 // ****************************************************************************
 //  Method: avtHohlraumFluxQuery::avtHohlraumFluxQuery
@@ -511,6 +512,9 @@ avtHohlraumFluxQuery::IntegrateLine(int oneSide, int otherSide,
 //    Hank Childs, Fri May  2 09:12:50 PDT 2008
 //    Prevent a crash if there was an error earlier.
 //
+//    Hank Childs, Thu Jul 24 13:00:40 PDT 2008
+//    Add to the output resolution.
+//
 // ****************************************************************************
 
 void
@@ -569,7 +573,7 @@ avtHohlraumFluxQuery::PostExecute(void)
                 
                 for (ii = 0 ; ii < numBins ; ii++)
                 {
-                    ofile << ii << " " << result[ii] << endl;
+                    ofile << ii << " " << setprecision(14) << result[ii] << endl;
                 }
                 ofile.close();
                 break;
