@@ -94,6 +94,8 @@ class DBOptionsAttributes;
 //    Added VTKZoneTypeToSiloZoneType helper method to help with 
 //    DBPutZoneList2 migration. 
 //
+//    Mark C. Miller, Wed Jul 23 17:49:39 PDT 2008
+//    Added bool to WriteUcdvars to handle point vars    
 // ****************************************************************************
 
 class
@@ -148,7 +150,7 @@ avtSiloWriter : public virtual avtDatabaseWriter
     void           WriteRectilinearMesh(DBfile *, vtkRectilinearGrid *, int);
     void           WriteUnstructuredMesh(DBfile *, vtkUnstructuredGrid *, int);
 
-    void           WriteUcdvars(DBfile *, vtkPointData *, vtkCellData *);
+    void           WriteUcdvars(DBfile *, vtkPointData *, vtkCellData *, bool=false);
     void           WriteQuadvars(DBfile *, vtkPointData *, vtkCellData *,
                                     int, int *);
     void           WriteMaterials(DBfile *, vtkCellData *, int);
