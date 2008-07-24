@@ -771,6 +771,8 @@ avtSiloWriter::CloseFile(void)
 //    Cyrus Harrison, Tue Feb 26 17:42:45 PST 2008
 //    Replaced deprecated DBPutZoneList call with  DBPutZoneList2 call
 //
+//    Mark C. Miller, Wed Jul 23 17:48:21 PDT 2008
+//    Added code to detect and output silo point meshes
 // ****************************************************************************
 
 void
@@ -814,6 +816,7 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
     vector<int> shapecnt;
     vector<int> shapesize;
     vector<int> zonelist;
+    int         npointcells = 0;
     for (i = 0 ; i < nzones ; i++)
     {
         //
@@ -842,6 +845,12 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
             shapesize.push_back(thisshapesize);
             shapecnt.push_back(1);  // 1 is the # of shapes we have seen with
                                     // this size ie the one we are processing.
+        }
+
+        // keep count to check if all cells are in fact point cells
+        if (cell->GetCellType() == VTK_VERTEX)
+        {
+            npointcells++;
         }
 
         //
@@ -890,26 +899,34 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
         }
     }
     
-    //
-    // Now write out the zonelist to the file.
-    //
-    int *zl = &(zonelist[0]);
-    int lzl = zonelist.size();
-    int *st = &(shapetype[0]);
-    int *ss = &(shapesize[0]);
-    int *sc = &(shapecnt[0]);
-    int nshapes = shapesize.size();
+    if (npointcells == nzones && npointcells == npts)
+    {
+        DBPutPointmesh(dbfile, meshname.c_str(), dim, coords,
+            npts, DB_FLOAT, optlist);
+    }
+    else
+    {
+        //
+        // Now write out the zonelist to the file.
+        //
+        int *zl = &(zonelist[0]);
+        int lzl = zonelist.size();
+        int *st = &(shapetype[0]);
+        int *ss = &(shapesize[0]);
+        int *sc = &(shapecnt[0]);
+        int nshapes = shapesize.size();
 
-    DBPutZonelist2(dbfile, "zonelist", nzones, dim, zl, lzl, 
-                   0, 0, 0, st, ss, sc,nshapes, NULL);
+        DBPutZonelist2(dbfile, "zonelist", nzones, dim, zl, lzl, 
+                       0, 0, 0, st, ss, sc,nshapes, NULL);
     
-    //
-    // Now write the actual mesh.
-    //
-    DBPutUcdmesh(dbfile, (char *) meshname.c_str(), dim, NULL, coords, npts,
-                 nzones, "zonelist", NULL, DB_FLOAT, optlist);
+        //
+        // Now write the actual mesh.
+        //
+        DBPutUcdmesh(dbfile, (char *) meshname.c_str(), dim, NULL, coords, npts,
+                     nzones, "zonelist", NULL, DB_FLOAT, optlist);
+    }
 
-    WriteUcdvars(dbfile, ug->GetPointData(), ug->GetCellData());
+    WriteUcdvars(dbfile, ug->GetPointData(), ug->GetCellData(), npointcells == nzones);
     WriteMaterials(dbfile, ug->GetCellData(), chunk);
 
     //
@@ -1112,6 +1129,8 @@ avtSiloWriter::WriteRectilinearMesh(DBfile *dbfile, vtkRectilinearGrid *rg,
 //    Cyrus Harrison, Tue Feb 26 17:42:45 PST 2008
 //    Replaced deprecated DBPutZoneList call with  DBPutZoneList2 call
 //
+//    Mark C. Miller, Wed Jul 23 17:48:21 PDT 2008
+//    Added code to detect and output silo point meshes
 // ****************************************************************************
 
 void
@@ -1156,6 +1175,7 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
     vector<int> shapecnt;
     vector<int> shapesize;
     vector<int> zonelist;
+    int         npointcells = 0;
     for (i = 0 ; i < nzones ; i++)
     {
         //
@@ -1185,27 +1205,42 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
             shapecnt.push_back(1);  // 1 is the # of shapes we have seen with
                                     // this size ie the one we are processing.
         }
+
+        // keep track to see if all cells are points
+        if (cell->GetCellType() == VTK_VERTEX)
+        {
+            npointcells++;
+        }
     }
 
-    //
-    // Now write out the zonelist to the file.
-    //
-    int *zl = &(zonelist[0]);
-    int lzl = zonelist.size();
-    int *st = &(shapetype[0]);
-    int *ss = &(shapesize[0]);
-    int *sc = &(shapecnt[0]);
-    int nshapes = shapesize.size();
+    if (npointcells == nzones && npointcells == npts)
+    {
+        DBPutPointmesh(dbfile, (char *) meshname.c_str(), ndims, coords,
+            npts, DB_FLOAT, optlist);
+    }
+    else
+    {
+        //
+        // Now write out the zonelist to the file.
+        //
+        int *zl = &(zonelist[0]);
+        int lzl = zonelist.size();
+        int *st = &(shapetype[0]);
+        int *ss = &(shapesize[0]);
+        int *sc = &(shapecnt[0]);
+        int nshapes = shapesize.size();
 
-    DBPutZonelist2(dbfile, "zonelist", nzones, ndims, zl, lzl, 
-                   0, 0, 0, st, ss, sc,nshapes, NULL);
-    //
-    // Now write the actual mesh.
-    //
-    DBPutUcdmesh(dbfile, (char *) meshname.c_str(), ndims, NULL, coords, npts,
-                 nzones, "zonelist", NULL, DB_FLOAT, optlist);
+        DBPutZonelist2(dbfile, "zonelist", nzones, ndims, zl, lzl, 
+                       0, 0, 0, st, ss, sc,nshapes, NULL);
+        //
+        // Now write the actual mesh.
+        //
+        DBPutUcdmesh(dbfile, (char *) meshname.c_str(), ndims, NULL, coords, npts,
+                     nzones, "zonelist", NULL, DB_FLOAT, optlist);
+    }
 
-    WriteUcdvars(dbfile, pd->GetPointData(), pd->GetCellData());
+    WriteUcdvars(dbfile, pd->GetPointData(), pd->GetCellData(),
+        npointcells == nzones);
     WriteMaterials(dbfile, pd->GetCellData(), chunk);
 
     //
@@ -1233,11 +1268,14 @@ avtSiloWriter::WritePolygonalMesh(DBfile *dbfile, vtkPolyData *pd,
 //    Mark C. Miller, Tue Mar  9 14:45:40 PST 2004
 //    Added code to compute and store data extents
 //
+//    Mark C. Miller, Wed Jul 23 17:49:12 PDT 2008
+//    Added code to handle point variables for point meshes
+//
 // ****************************************************************************
 
 void
 avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
-                               vtkCellData *cd)
+                               vtkCellData *cd, bool isPointMesh)
 {
     int   i, j, k;
 
@@ -1283,7 +1321,13 @@ avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
              varMins.push_back(dimMin);
              varMaxs.push_back(dimMax);
 
-             DBPutUcdvar1(dbfile, (char *) arr->GetName(),
+             if (isPointMesh)
+                 DBPutPointvar1(dbfile, (char *) arr->GetName(),
+                          (char *) meshname.c_str(),
+                          (float *) arr->GetVoidPointer(0),
+                          npts, DB_FLOAT, optlist); 
+             else
+                 DBPutUcdvar1(dbfile, (char *) arr->GetName(),
                           (char *) meshname.c_str(),
                           (float *) arr->GetVoidPointer(0), npts, NULL, 0,
                           DB_FLOAT, DB_NODECENT, optlist);
@@ -1314,10 +1358,16 @@ avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
                  varMaxs.push_back(dimMax);
              }
 
-             DBPutUcdvar(dbfile, (char *) arr->GetName(),
+             if (isPointMesh)
+                 DBPutPointvar(dbfile, (char *) arr->GetName(),
+                          (char *) meshname.c_str(),
+                          ncomps, vars, npts, DB_FLOAT, optlist);
+             else
+                 DBPutUcdvar(dbfile, (char *) arr->GetName(),
                          (char *) meshname.c_str(),
                          ncomps, varnames, vars, npts, NULL, 0, DB_FLOAT,
                          DB_NODECENT, optlist);
+
              for (j = 0 ; j < ncomps ; j++)
              {
                   delete [] vars[j];
