@@ -45,10 +45,12 @@
 #    Mark Miller, Tue Jun 17 23:18:51 PDT 2008
 #    Added --with-google-perftools=no configuration option
 #
+#    Mark C. Miller, Wed Jul 23 22:14:11 PDT 2008
+#    Modified to match repo dir structure
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
-rootTestDir=/gscratch/miller/nersc_repo_test
+rootTestDir=/gscratch/miller/nersc_repo_test/trunk
 errorLogFile=$rootTestDir/testLogFile_$dateTag
 modifiersFile=$rootTestDir/nersc_repo_modifiers_since_last_pass
 modifiersEmails=
@@ -236,7 +238,7 @@ rm -f nersc_repo_update_$dateTag
 rm -f nersc_repo_modifiers_$dateTag
 touch nersc_repo_update_$dateTag
 touch nersc_repo_modifiers_$dateTag
-for dir in src src/data src/test; do
+for dir in src data test; do
     pushd $dir 1> /dev/null 2>&1
 #    svn status -u -v >> $rootTestDir/svn_status.out 2> $rootTestDir/stderr.txt
 #    checkAndHandleError $? warning "svn status on $dir failed" $rootTestDir/stderr.txt
@@ -299,9 +301,9 @@ checkAndHandleError $? fatal "FIRST configure failed" config_log.txt
 
 # test 'make clean' acts as expected
 rm -f ./make_clean.out
-cd data
+cd ../data
 gmake clean 1> ../make_clean.out 2>&1
-cd ..
+cd ../src
 gmake clean 1>> ./make_clean.out 2>&1
 rm -f uncleaned_files_log.txt
 find . -name .svn -prune -false -o -name '*.so' -o -name '*.o' -o -name '*_moc.[Ch]' -o -name 'moc_*.[Ch]' 1> uncleaned_files_log.txt
@@ -313,9 +315,9 @@ fi
 
 # test 'make distclean' acts as expected
 rm -f ./make_distclean.out
-cd data
+cd ../data
 gmake distclean 1> ../make_distclean.out 2>&1
-cd ..
+cd ../src
 gmake distclean 1>> ./make_distclean.out 2>&1
 rm -f undistcleaned_files_log.txt
 find . -name .svn -prune -false -o -name '*.d' -o -name '.depend' -o -name '.pardepend' 1> undistcleaned_files_log.txt
@@ -336,16 +338,13 @@ checkAndHandleError $? fatal "SECOND configure failed" config_log.txt
 gmake -j 4 1>> make_log.txt 2>&1
 checkAndHandleError $? fatal "gmake -j 4 failed in src" make_log.txt
 
-# short term fix for repo src tree changes
-sed -i -e 's|../src/exe/visitconvert_ser|../exe/visitconvert_ser|' data/Makefile
-sed -i -e 's|../src/bin/visitconvert|../bin/visitconvert|' data/Makefile
 # build data
-cd data
+cd ../data
 rm -f make_log.txt
 gmake clean 1> /dev/null 2>&1
 gmake -j 4 test 1>> make_log.txt 2>&1
 checkAndHandleError $? fatal "gmake -j 4 failed in data" make_log.txt 
-cd ..
+cd ../src
 
 # set the datestamp used for all test modes
 curdate=`date +%Y-%m-%d-%p%I%M`
@@ -378,20 +377,14 @@ skipList="$skipList_dueTo_clientServer $skipList_dueTo_parallelRendering $skipLi
 #
 # Make directory for where to store core files
 #
-rm -rf test/cores
-mkdir test/cores
+rm -rf ../test/cores
+mkdir ../test/cores
 
 #
 # run the test(s)
 error=0
-cd test
+cd ../test
 
-#
-# Short term fixes for differences in old/new directory structure
-#
-sed -i -e 's|^exepath="../src/bin/visit"|exepath="../bin/visit"|' runtest
-sed -i -e 's|^#  CLARGS: -cli -s ../src/bin/visitdiff.py \(.*\)|#  CLARGS: -cli -s ../bin/visitdiff.py \1|' tests/databases/diff.py
-sed -i -e 's|"../src/databases/Rect/data/datafile.rect"|"../databases/Rect/data/datafile.rect"|' tests/databases/rect.py
 rm -f ~miller/.visit/linux-intel/plugins/databases/*.so
 
 for m in $modes; do
