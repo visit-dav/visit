@@ -235,6 +235,9 @@ avtBOVFileFormat::ActivateTimestep(void)
 //    Hank Childs, Mon Apr 24 09:33:21 PDT 2006
 //    Add support for 2D BOV files.
 //
+//    Jeremy Meredith, Thu Jul 24 14:55:41 EDT 2008
+//    Change most int's and long's to long longs to support >4GB files.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -250,22 +253,22 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
     //
     // Establish which domain we are at.
     //
-    int nx = full_size[0] / bricklet_size[0];
-    int ny = full_size[1] / bricklet_size[1];
-    int nz = full_size[2] / bricklet_size[2];
+    long long nx = full_size[0] / bricklet_size[0];
+    long long ny = full_size[1] / bricklet_size[1];
+    long long nz = full_size[2] / bricklet_size[2];
 
     //
     // Sanity check.
     //
-    int nbricks = nx*ny*nz;
+    long long nbricks = nx*ny*nz;
     if (dom < 0 || dom >= nbricks)
     {
         EXCEPTION2(BadDomainException, dom, nbricks);
     }
 
-    int z_off = dom / (nx*ny);
-    int y_off = (dom % (nx*ny)) / nx;
-    int x_off = dom % nx;
+    long long z_off = dom / (nx*ny);
+    long long y_off = (dom % (nx*ny)) / nx;
+    long long x_off = dom % nx;
 
     //
     // Establish what the range is of this dataset.
@@ -291,7 +294,7 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
     vtkRectilinearGrid *rv = vtkRectilinearGrid::New();
 
     vtkFloatArray *x = vtkFloatArray::New();
-    int dx = bricklet_size[0];
+    long long dx = bricklet_size[0];
     if (hasBoundaries)
     {
         dx = bricklet_size[0]+2;
@@ -312,7 +315,7 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
         x->SetTuple1(i, x_start + i * (x_stop-x_start) / (dx-1));
 
     vtkFloatArray *y = vtkFloatArray::New();
-    int dy = bricklet_size[1];
+    long long dy = bricklet_size[1];
     if (hasBoundaries)
     {
         dy = bricklet_size[1]+2;
@@ -333,7 +336,7 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
         y->SetTuple1(i, y_start + i * (y_stop-y_start) / (dy-1));
 
     vtkFloatArray *z = vtkFloatArray::New();
-    int dz = bricklet_size[2];
+    long long dz = bricklet_size[2];
     if (dz == 1)
     {
         z->SetNumberOfTuples(1);
@@ -401,35 +404,39 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
 //   Brad Whitlock, Fri May 5 13:20:41 PST 2006
 //   Modified it so it can read more than 1 component.
 //
+//   Jeremy Meredith, Thu Jul 24 14:55:41 EDT 2008
+//   Change most int's and long's to long longs to support >4GB files.
+//
 // ****************************************************************************
 
 template<class T>
 void
-ReadBricklet(FILE *fp, T *dest, const int *full_size, const int *start,
-    const int *end, int offset, int ncomp)
+ReadBricklet(FILE *fp, T *dest, const long long *full_size,
+             const long long *start, const long long *end, long long offset,
+             long long ncomp)
 {
     T *ptr = dest;
 
     // Seek to the right Z page
-    long zPage = start[2]*full_size[0]*full_size[1];
-    long seekOffset = zPage * sizeof(T) + offset;
+    long long zPage = start[2]*full_size[0]*full_size[1];
+    long long seekOffset = zPage * sizeof(T) + offset;
     if(seekOffset > 0)
         fseek(fp, seekOffset * ncomp, SEEK_SET);
 
     // Now start reading the data
-    int dx = end[0] - start[0];
-    int nxelem = dx * ncomp;
-    long extraseek = 0;
-    for(int z = start[2]; z < end[2]; ++z)
+    long long dx = end[0] - start[0];
+    long long nxelem = dx * ncomp;
+    long long extraseek = 0;
+    for(long long z = start[2]; z < end[2]; ++z)
     {
          // Get to the starting data location in the zPage.
-         long corner = start[1]*full_size[0] + start[0];
+         long long corner = start[1]*full_size[0] + start[0];
          seekOffset = (corner + extraseek) * sizeof(T);
          if(seekOffset > 0)
              fseek(fp, seekOffset * ncomp, SEEK_CUR);
          extraseek = 0;
 
-         for(int y = start[1]; y < end[1]; ++y)
+         for(long long y = start[1]; y < end[1]; ++y)
          {
              // Read in a line of data in x.
              fread((void *)ptr, sizeof(T), nxelem, fp);
@@ -438,8 +445,8 @@ ReadBricklet(FILE *fp, T *dest, const int *full_size, const int *start,
              // Seek to the next line
              if(y < end[1]-1)
              {
-                 long right = full_size[0] - end[0];
-                 long left = start[0];
+                 long long right = full_size[0] - end[0];
+                 long long left = start[0];
                  seekOffset = (right + left) * sizeof(T);
                  if(seekOffset > 0)
                      fseek(fp, seekOffset * ncomp, SEEK_CUR);
@@ -449,8 +456,8 @@ ReadBricklet(FILE *fp, T *dest, const int *full_size, const int *start,
          // Seek to the next page
          if(z < end[2]-1)
          {
-             long right = full_size[0] - end[0];
-             long bottom = (full_size[1] - end[1]) * full_size[0];
+             long long right = full_size[0] - end[0];
+             long long bottom = (full_size[1] - end[1]) * full_size[0];
              extraseek = right + bottom;
          }
     }
@@ -531,30 +538,32 @@ double64_Reverse_Endian(double val, unsigned char *outbuf)
 // Creation:   Fri May 5 09:57:18 PDT 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Jul 24 14:55:41 EDT 2008
+//    Change most int's and long's to long longs to support >4GB files.
 //   
 // ****************************************************************************
 
 template <class T>
 inline void
 ExtractBrick(T *dest, const T *src, 
-    unsigned int x_start, unsigned int x_stop, 
-    unsigned int y_start, unsigned int y_stop, 
-    unsigned int z_start, unsigned int z_stop, 
-    unsigned int dx, unsigned int dy, unsigned int ncomp)
+    unsigned long long x_start, unsigned long long x_stop, 
+    unsigned long long y_start, unsigned long long y_stop, 
+    unsigned long long z_start, unsigned long long z_stop, 
+    unsigned long long dx, unsigned long long dy, unsigned long long ncomp)
 {
     T *buff = dest;
 
     if(ncomp == 1)
     {
-        for (unsigned int i = z_start ; i < z_stop ; i++)
+        for (unsigned long long i = z_start ; i < z_stop ; i++)
         {
-            unsigned int Z = i*dx*dy;
-            for (unsigned int j = y_start ; j < y_stop ; j++)
+            unsigned long long Z = i*dx*dy;
+            for (unsigned long long j = y_start ; j < y_stop ; j++)
             {
-                unsigned int Y = j * dx;
-                for (unsigned int k = x_start ; k < x_stop ; k++)
+                unsigned long long Y = j * dx;
+                for (unsigned long long k = x_start ; k < x_stop ; k++)
                 {
-                    unsigned int index = Z + Y + k;
+                    unsigned long long index = Z + Y + k;
                     *buff++ = src[index];
                 }
             }
@@ -562,19 +571,19 @@ ExtractBrick(T *dest, const T *src,
     }
     else
     {
-        unsigned int dX = x_stop - x_start;
-        unsigned int nvals = dX * ncomp;
+        unsigned long long dX = x_stop - x_start;
+        unsigned long long nvals = dX * ncomp;
 
         // Extract N components
-        for (unsigned int i = z_start ; i < z_stop ; i++)
+        for (unsigned long long i = z_start ; i < z_stop ; i++)
         {
-            unsigned int Z = i*dx*dy;
-            for (unsigned int j = y_start ; j < y_stop ; j++)
+            unsigned long long Z = i*dx*dy;
+            for (unsigned long long j = y_start ; j < y_stop ; j++)
             {
-                unsigned int Y = j * dx;
-                unsigned int index = (Z + Y + x_start) * ncomp;
+                unsigned long long Y = j * dx;
+                unsigned long long index = (Z + Y + x_start) * ncomp;
                 const T *xdata = src + index;
-                for (unsigned int k = 0 ; k < nvals ; k++)
+                for (unsigned long long k = 0 ; k < nvals ; k++)
                     *buff++ = *xdata++;
             }
         }
@@ -636,23 +645,26 @@ ReArrangeTuple2ToTuple3(T *start, vtkIdType nTuples)
 //    Hank Childs, Fri Feb 15 16:37:42 PST 2008
 //    Throw an exception if assumptions are violated.
 //
+//    Jeremy Meredith, Thu Jul 24 14:55:41 EDT 2008
+//    Change most int's and long's to long longs to support >4GB files.
+//
 // ****************************************************************************
 
 void
 avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
     void *file_handle, void *gz_handle,
-    unsigned int unit_size,
-    unsigned int x_start, unsigned int x_stop, 
-    unsigned int y_start, unsigned int y_stop, 
-    unsigned int z_start, unsigned int z_stop, 
-    unsigned int dx, unsigned int dy,
-    unsigned int whole_size)
+    unsigned long long unit_size,
+    unsigned long long x_start, unsigned long long x_stop, 
+    unsigned long long y_start, unsigned long long y_stop, 
+    unsigned long long z_start, unsigned long long z_stop, 
+    unsigned long long dx, unsigned long long dy,
+    unsigned long long whole_size)
 {
     const char *mName = "avtBOVFileFormat::ReadWholeAndExtractBrick: ";
 
     // Allocate enough memory to read the whole brick.
     void *whole_buff = 0;
-    unsigned int whole_nelem = whole_size * dataNumComponents;
+    unsigned long long whole_nelem = whole_size * dataNumComponents;
     if(dataFormat == ByteData)
         whole_buff = (void *)(new unsigned char[whole_nelem]);
     else if(dataFormat == IntegerData)
@@ -764,6 +776,9 @@ avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
 //    Hank Childs, Thu Apr 24 13:26:21 PDT 2008
 //    Change references from char *'s to strings.
 //
+//    Jeremy Meredith, Thu Jul 24 14:55:41 EDT 2008
+//    Change most int's and long's to long longs to support >4GB files.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -775,15 +790,15 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         EXCEPTION1(InvalidVariableException, var);
     }
 
-    int nx = full_size[0] / bricklet_size[0];
-    int ny = full_size[1] / bricklet_size[1];
-    int nz = full_size[2] / bricklet_size[2];
+    long long nx = full_size[0] / bricklet_size[0];
+    long long ny = full_size[1] / bricklet_size[1];
+    long long nz = full_size[2] / bricklet_size[2];
 
-    int x_off = dom % nx;
-    int y_off = (dom % (nx*ny)) / nx;
-    int z_off = dom / (nx*ny);
+    long long x_off = dom % nx;
+    long long y_off = (dom % (nx*ny)) / nx;
+    long long z_off = dom / (nx*ny);
 
-    int nbricks = nx*ny*nz;
+    long long nbricks = nx*ny*nz;
 
     if (dom < 0 || dom >= nbricks)
     {
@@ -821,7 +836,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     // Determine the unit_size, which is the size of the data in the file,
     // and allocate the return VTK object.
     //
-    int unit_size;
+    long long unit_size;
     vtkDataArray *rv = 0;
     if(dataFormat == ByteData)
     {
@@ -847,7 +862,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         vtkDoubleArray *da = vtkDoubleArray::New();
         rv = da;
     }
-    int ncomp = (dataNumComponents==2)?3:dataNumComponents;
+    long long ncomp = (dataNumComponents==2)?3:dataNumComponents;
     rv->SetNumberOfComponents(ncomp);
 
     //
@@ -855,19 +870,19 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     //
     if(hasBoundaries)
     { 
-        int dx = bricklet_size[0] + 2;
-        int x_start = (x_off == 0 ? 1 : 0);
-        int x_stop  = (x_off >= nx-1 ? dx-1 : dx);
-        int dy = bricklet_size[1] + 2;
-        int y_start = (y_off == 0 ? 1 : 0);
-        int y_stop  = (y_off >= ny-1 ? dy-1 : dy);
-        int dz = bricklet_size[2] + 2;
-        int z_start = (z_off == 0 ? 1 : 0);
-        int z_stop  = (z_off >= nz-1 ? dz-1 : dz);
+        long long dx = bricklet_size[0] + 2;
+        long long x_start = (x_off == 0 ? 1 : 0);
+        long long x_stop  = (x_off >= nx-1 ? dx-1 : dx);
+        long long dy = bricklet_size[1] + 2;
+        long long y_start = (y_off == 0 ? 1 : 0);
+        long long y_stop  = (y_off >= ny-1 ? dy-1 : dy);
+        long long dz = bricklet_size[2] + 2;
+        long long z_start = (z_off == 0 ? 1 : 0);
+        long long z_stop  = (z_off >= nz-1 ? dz-1 : dz);
 
-        int n_real_vals = (x_stop-x_start)*(y_stop-y_start)*(z_stop-z_start);
+        long long n_real_vals = (x_stop-x_start)*(y_stop-y_start)*(z_stop-z_start);
         rv->SetNumberOfTuples(n_real_vals);
-        int total_vals = (dx*dy*dz);
+        long long total_vals = (dx*dy*dz);
 
         // Read the parts that we need of the brick and store it in the
         // return VTK array.
@@ -885,17 +900,17 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         debug4 << mName << "Dividing whole brick" << endl;
 
         // Allocate enough memory for 1 bricklet.
-        unsigned int nvals = bricklet_size[0] * 
+        unsigned long long nvals = bricklet_size[0] * 
                              bricklet_size[1] *
                              bricklet_size[2];
         rv->SetNumberOfTuples(nvals);
 
-        int x_start = x_off * bricklet_size[0];
-        int y_start = y_off * bricklet_size[1];
-        int z_start = z_off * bricklet_size[2];
-        int x_stop = x_start + bricklet_size[0];
-        int y_stop = y_start + bricklet_size[1];
-        int z_stop = z_start + bricklet_size[2];
+        long long x_start = x_off * bricklet_size[0];
+        long long y_start = y_off * bricklet_size[1];
+        long long z_start = z_off * bricklet_size[2];
+        long long x_stop = x_start + bricklet_size[0];
+        long long y_stop = y_start + bricklet_size[1];
+        long long z_stop = z_start + bricklet_size[2];
 
         debug4 << mName << "byteOffset: " << byteOffset << endl;
         debug4 << mName << "Full size: " << full_size[0] << ", "
@@ -910,8 +925,8 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         if(!gzipped)
         {
             debug4 << mName << "Reading bricklet directly from file" << endl;
-            int start[3] = {x_start, y_start, z_start};
-            int stop[3] = {x_stop, y_stop, z_stop};
+            long long start[3] = {x_start, y_start, z_start};
+            long long stop[3] = {x_stop, y_stop, z_stop};
 
             if(dataFormat == ByteData)
             {
@@ -954,7 +969,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
             // In this case, we have 1 big brick and we're going to chunk it
             // up into bricklets so we can do some parallel processing upstream.
             //
-            unsigned int whole_size = full_size[0] * full_size[1] *full_size[2];
+            unsigned long long whole_size = full_size[0] * full_size[1] *full_size[2];
             ReadWholeAndExtractBrick(rv->GetVoidPointer(0), gzipped,
                 (void*)file_handle, gz_handle,
                 unit_size,
@@ -967,7 +982,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     }
     else // read the whole BOV
     {
-        int nvals = bricklet_size[0] * bricklet_size[1] * bricklet_size[2];
+        long long nvals = bricklet_size[0] * bricklet_size[1] * bricklet_size[2];
         rv->SetNumberOfTuples(nvals);
 
         debug4 << mName << "Read whole brick" << endl;
@@ -1018,9 +1033,9 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         fa->SetNumberOfTuples(rv->GetNumberOfTuples());
         float *fptr = (float *)fa->GetVoidPointer(0);
         unsigned char *ucptr = (unsigned char *)rv->GetVoidPointer(0);
-        unsigned int nvals = rv->GetNumberOfTuples() * dataNumComponents;
+        unsigned long long nvals = rv->GetNumberOfTuples() * dataNumComponents;
         float d_range = (max - min);
-        for(unsigned int i = 0; i < nvals; ++i, ++ucptr)
+        for(unsigned long long i = 0; i < nvals; ++i, ++ucptr)
         {
             *fptr++ = min + d_range * (*ucptr / 255.f);
         }
@@ -1044,14 +1059,14 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
    
         if (littleEndian != machineEndianIsLittle)
         {
-            int nvals = rv->GetNumberOfTuples();
-            unsigned int ntotal = nvals * dataNumComponents;
+            long long nvals = rv->GetNumberOfTuples();
+            unsigned long long ntotal = nvals * dataNumComponents;
 
             if (dataFormat == IntegerData)
             {
                 debug4 << mName << "Reversing endian for ints" << endl;
                 int *buff = (int *) rv->GetVoidPointer(0);
-                for (int i = 0 ; i < ntotal ; i++)
+                for (long long i = 0 ; i < ntotal ; i++)
                 {
                     int tmp;
                     int32_Reverse_Endian(buff[i], (unsigned char *) &tmp);
@@ -1062,7 +1077,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
             {
                 debug4 << mName << "Reversing endian for floats" << endl;
                 float *buff = (float *) rv->GetVoidPointer(0);
-                for (int i = 0 ; i < ntotal ; i++)
+                for (long long i = 0 ; i < ntotal ; i++)
                 {
                     float tmp;
                     float32_Reverse_Endian(buff[i], (unsigned char *) &tmp);
@@ -1073,7 +1088,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
             {
                 debug4 << mName << "Reversing endian for doubles" << endl;
                 double *buff = (double *) rv->GetVoidPointer(0);
-                for (int i = 0 ; i < ntotal ; i++)
+                for (long long i = 0 ; i < ntotal ; i++)
                 {
                     double tmp;
                     double64_Reverse_Endian(buff[i], (unsigned char *) &tmp);
@@ -1172,6 +1187,9 @@ avtBOVFileFormat::GetVectorVar(int dom, const char *var)
 //    Hank Childs, Thu Apr 24 13:26:44 PDT 2008
 //    Change references from pointers to STL objects.
 //
+//    Jeremy Meredith, Thu Jul 24 14:55:41 EDT 2008
+//    Change most int's and long's to long longs to support >4GB files.
+//
 // ****************************************************************************
 
 void *
@@ -1181,10 +1199,10 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
 {
     void *rv = NULL;
 
-    int nx = full_size[0] / bricklet_size[0];
-    int ny = full_size[1] / bricklet_size[1];
-    int nz = full_size[2] / bricklet_size[2];
-    int nbricks = nx*ny*nz;
+    long long nx = full_size[0] / bricklet_size[0];
+    long long ny = full_size[1] / bricklet_size[1];
+    long long nz = full_size[2] / bricklet_size[2];
+    long long nbricks = nx*ny*nz;
 
     if (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0)
     {
@@ -1195,7 +1213,7 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
         if (var_brick_min.size() > 0 && var_brick_max.size() > 0)
         {
             avtIntervalTree *itree = new avtIntervalTree(nbricks, 1);
-            for (int i = 0 ; i < nbricks ; i++)
+            for (long long i = 0 ; i < nbricks ; i++)
             {
                 double range[2] = { var_brick_min[i], var_brick_max[i] };
                 itree->AddElement(i, range);
@@ -1215,9 +1233,9 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
         avtIntervalTree *itree = new avtIntervalTree(nbricks, 3);
         for (int i = 0 ; i < nbricks ; i++)
         {
-            int z_off = i / (nx*ny);
-            int y_off = (i % (nx*ny)) / nx;
-            int x_off = i % nx;
+            long long z_off = i / (nx*ny);
+            long long y_off = (i % (nx*ny)) / nx;
+            long long x_off = i % nx;
 
             //
             // Establish what the range is of this dataset.
@@ -1282,19 +1300,22 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Change references from char *'s to STL.  Also add support for
 //    the Isenburg streaming ghost module, although it is commented out.
 //
+//    Jeremy Meredith, Thu Jul 24 14:55:41 EDT 2008
+//    Change most int's and long's to long longs to support >4GB files.
+//
 // ****************************************************************************
 
 void
 avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     ReadTOC();
-    int nx = full_size[0] / bricklet_size[0];
-    int ny = full_size[1] / bricklet_size[1];
-    int nz = full_size[2] / bricklet_size[2];
+    long long nx = full_size[0] / bricklet_size[0];
+    long long ny = full_size[1] / bricklet_size[1];
+    long long nz = full_size[2] / bricklet_size[2];
 
-    int dim = (full_size[2] == 1 ? 2 : 3);
+    long long dim = (full_size[2] == 1 ? 2 : 3);
 
-    int nbricks = nx*ny*nz;
+    long long nbricks = nx*ny*nz;
  
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "mesh";
@@ -1372,16 +1393,16 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         avtRectilinearDomainBoundaries *rdb = 
                                       new avtRectilinearDomainBoundaries(true);
         rdb->SetNumDomains(nbricks);
-        for (int i = 0 ; i < nbricks ; i++)
+        for (long long i = 0 ; i < nbricks ; i++)
         {
-            int nx = full_size[0] / bricklet_size[0];
-            int ny = full_size[1] / bricklet_size[1];
-            int nz = full_size[2] / bricklet_size[2];
-            int z_off = i / (nx*ny);
-            int y_off = (i % (nx*ny)) / nx;
-            int x_off = i % nx;
+            long long nx = full_size[0] / bricklet_size[0];
+            long long ny = full_size[1] / bricklet_size[1];
+            long long nz = full_size[2] / bricklet_size[2];
+            long long z_off = i / (nx*ny);
+            long long y_off = (i % (nx*ny)) / nx;
+            long long x_off = i % nx;
             int extents[6];
-            int correction = (nodalCentering ? 1 : 0);
+            long long correction = (nodalCentering ? 1 : 0);
             extents[0] = x_off * (bricklet_size[0]-correction);
             extents[1]  = (x_off+1) * (bricklet_size[0]-correction);
             extents[2] = y_off * (bricklet_size[1]-correction);

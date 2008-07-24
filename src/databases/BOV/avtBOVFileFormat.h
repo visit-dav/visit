@@ -70,6 +70,9 @@
 //    Hank Childs, Thu Apr 24 13:29:41 PDT 2008
 //    Change char *'s to strings and float *'s to vector<double>.
 //
+//    Jeremy Meredith, Thu Jul 24 14:55:41 EDT 2008
+//    Convert most int's to long longs to support >4GB files.
+//
 // ****************************************************************************
 
 class avtBOVFileFormat : public avtSTMDFileFormat
@@ -99,20 +102,23 @@ class avtBOVFileFormat : public avtSTMDFileFormat
     void                       ReadTOC(void);
     void                       ReadWholeAndExtractBrick(void *dest, bool gzipped,
                                   void *file_handle, void *gz_handle,
-                                  unsigned int unit_size,
-                                  unsigned int x_start, unsigned int x_stop, 
-                                  unsigned int y_start, unsigned int y_stop, 
-                                  unsigned int z_start, unsigned int z_stop, 
-                                  unsigned int dx, unsigned int dy,
-                                  unsigned int whole_size);
+                                  unsigned long long unit_size,
+                                  unsigned long long x_start,
+                                  unsigned long long x_stop, 
+                                  unsigned long long y_start,
+                                  unsigned long long y_stop, 
+                                  unsigned long long z_start,
+                                  unsigned long long z_stop, 
+                                  unsigned long long dx, unsigned long long dy,
+                                  unsigned long long whole_size);
 
     bool                       haveReadTOC;
     char                      *path;
     std::string                file_pattern;
     int                        cycle;
-    int                        full_size[3];
-    int                        bricklet_size[3];
-    int                        byteOffset;
+    long long                  full_size[3];
+    long long                  bricklet_size[3];
+    long long                  byteOffset;
     std::string                varname;
     bool                       hasBoundaries;
     bool                       declaredEndianess;
@@ -121,7 +127,7 @@ class avtBOVFileFormat : public avtSTMDFileFormat
     bool                       divideBrick;
     bool                       byteToFloatTransform;
     DataFormatEnum             dataFormat;
-    int                        dataNumComponents;
+    long long                  dataNumComponents;
     double                     min, max;
     double                     origin[3];
     double                     dimensions[3];
