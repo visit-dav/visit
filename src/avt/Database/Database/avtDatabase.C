@@ -1261,6 +1261,10 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
 //
 //    Mark C. Miller, Tue Apr 15 15:12:26 PDT 2008
 //    Eliminated database objects for which hideFromGUI is true
+//
+//    Hank Childs, Thu Jul 24 13:40:46 PDT 2008
+//    Give priority to names with MESH in it.
+//
 // ****************************************************************************
 
 void
@@ -1275,12 +1279,17 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
     };
 
     int nmeshes = md->GetNumMeshes();
-    if (nmeshes > 10)
-        nmeshes = 10;
-    for (int i = 0 ; i < nmeshes ; i++)
+    int nmeshes_done = 0;
+    int numpasses = 2;
+    int total_iterations = numpasses*nmeshes;
+    for (int iter = 0 ; iter < total_iterations && nmeshes_done < 10 ; iter++)
     {
+        int i    = iter % nmeshes;
+        int pass = (iter < nmeshes ? 1 : 2);
+
         const avtMeshMetaData *mmd = md->GetMesh(i);
         avtMeshType mt = mmd->meshType;
+
         if (mt != AVT_CURVILINEAR_MESH && mt != AVT_UNSTRUCTURED_MESH &&
             mt != AVT_SURFACE_MESH)
         {
@@ -1294,6 +1303,17 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
         if (mmd->hideFromGUI)
             continue;
 
+        int pass_for_this_mesh = 2;
+        string name = mmd->name;
+        if (strstr(name.c_str(), "MESH") != NULL || (strstr(name.c_str(), "mesh") != NULL))
+        {
+            pass_for_this_mesh = 1;
+        }
+
+        if (pass != pass_for_this_mesh)
+            continue;
+
+        nmeshes_done++;
         const int nPairs = 24;
         MQExprTopoPair exprs[nPairs];
         exprs[0]  = MQExprTopoPair("area", 2);
@@ -1321,25 +1341,24 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
         exprs[22] = MQExprTopoPair("min_edge_length", -1);
         exprs[23] = MQExprTopoPair("max_edge_length", -1);
 
-        string name = mmd->name;
-        for (int i = 0 ; i < nPairs ; i++)
+        for (int j = 0 ; j < nPairs ; j++)
         {
-            if ((topoDim != exprs[i].topo) && (exprs[i].topo != -1))
+            if ((topoDim != exprs[j].topo) && (exprs[j].topo != -1))
                 continue;
 
             Expression new_expr;
             char buff[1024];
             if (nmeshes == 1)
-                sprintf(buff, "mesh_quality/%s", exprs[i].mq_expr.c_str());
+                sprintf(buff, "mesh_quality/%s", exprs[j].mq_expr.c_str());
             else
                 sprintf(buff, "mesh_quality/%s/%s", name.c_str(),
-                                                    exprs[i].mq_expr.c_str());
+                                                    exprs[j].mq_expr.c_str());
             new_expr.SetName(buff);
             bool hasSlash = (strstr(name.c_str(), "/") != NULL);
             if (hasSlash)
-                sprintf(buff,"%s(<%s>)",exprs[i].mq_expr.c_str(),name.c_str());
+                sprintf(buff,"%s(<%s>)",exprs[j].mq_expr.c_str(),name.c_str());
             else
-                sprintf(buff,"%s(%s)",exprs[i].mq_expr.c_str(),name.c_str());
+                sprintf(buff,"%s(%s)",exprs[j].mq_expr.c_str(),name.c_str());
             new_expr.SetDefinition(buff);
             new_expr.SetType(Expression::ScalarMeshVar);
             new_expr.SetAutoExpression(true);
