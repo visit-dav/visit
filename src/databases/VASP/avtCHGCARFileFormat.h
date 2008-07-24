@@ -66,6 +66,9 @@ class vtkDoubleArray;
 //    Jeremy Meredith, Wed Jan  2 14:09:05 EST 2008
 //    Support multiple concatenated CHGCAR's in a single file; now MTSD.
 //
+//    Jeremy Meredith, Tue Jul 15 15:41:07 EDT 2008
+//    Added support for automatic domain decomposition.
+//
 // ****************************************************************************
 
 class avtCHGCARFileFormat : public avtMTSDFileFormat
@@ -92,14 +95,22 @@ class avtCHGCARFileFormat : public avtMTSDFileFormat
 
     std::vector<istream::pos_type>   file_positions;
 
-    int origdims[3];
-    int meshdims[3];
+    int globalZDims[3];
+    int globalNDims[3];
+    int domainCount[3];
+    int domainIndex[3];
+    int domainGlobalStart[3];
+    int domainGlobalCount[3];
+    int localRealStart[3];
+    int localRealCount[3];
+
     double unitCell[3][3];
     bool is_rectilinear;
     ifstream in;
     std::string filename;
     bool metadata_read;
     int  values_read;
+    int  values_per_line;
     vtkDoubleArray *values;
     int ntimesteps;
     int natoms;
@@ -107,6 +118,8 @@ class avtCHGCARFileFormat : public avtMTSDFileFormat
     void OpenFileAtBeginning();
     void ReadAllMetaData();
     void ReadValues(int);
+    void AddGhostCellInfo(vtkDataSet *ds);
+    void DoDomainDecomposition();
 };
 
 
