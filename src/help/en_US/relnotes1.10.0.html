@@ -42,6 +42,11 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>Initial support for internationalization has been added. This allows the GUI to be translated
         into languages other than English, following standard Qt internationalization procedures.</li>
     <li>Queries that accept variables for input now have a variable widget for ease of entry. </li>
+    <li>The Overlay button has been changed so that it only creates new copies of the selected 
+        plots in the plot list instead of copying all plots in the plot list. The new behavior
+        results in far fewer unwanted plots when using overlay to create new plots with a
+        different database. Overlay was also changed so that it is possible to overlay plots
+        from a specific database time step.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -54,12 +59,10 @@ enhancements and bug-fixes that were added to this release.</p>
         that is both a VisIt CLI and a VisIt compute engine can create plots
         using VisIt's normal Python scripting but also generate the plotted data 
         as a simulation.</li>
-    <li>VisIt now supports the
-        <a HREF="http://cgibin.cs.unm.edu/kmorel-bin/wiki/IceT">IceT</a>
-        library for improved rendering times.  IceT requires a parallel version
-        of VisIt, and is only supported in scalable rendering mode.  Use the
-        <tt>-icet</tt> command line option to enable use of IceT for a
-        session.</li>
+    <li>VisIt now supports the IceT library for improved rendering times.  
+        IceT requires a parallel version of VisIt, and is only supported in 
+        scalable rendering mode.  Use the <tt>-icet</tt> command line option 
+        to enable use of IceT for a session.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -107,7 +110,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="CLI_changes"></a>
 <p><b><font size="4">Changes to VisIt's command-line interface in version 1.10.0</font></b></p>
 <ul>
-    <li>&nbsp;</li>
+    <li>The <i>OverlayDatabase</i> function now accepts an optional second argument for specifying a time state.</li>
     <li>&nbsp;</li>
     <li>&nbsp;</li>
     <li>&nbsp;</li>
@@ -126,6 +129,7 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>For windows platforms, running 'visit -cli -o', 'visit -cli -s', or double-clicking a python now correctly parses paths and works correctly.</li>
     <li>Pick now works on time-curves.</li>
     <li>Macro recording for 2D zooming produced invalid Python code for setting the 2D view attributes.</li>
+    <li>VisIt's libsim library used a non-zero idle timeout that slowed down polling simulations.</li>
 </ul>
 
 <a name="Config_changes"></a>

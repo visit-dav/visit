@@ -4632,15 +4632,23 @@ ViewerSubject::ReplaceDatabase()
 //   Brad Whitlock, Mon May 3 13:58:36 PST 2004
 //   I removed an argument from OverlayDatabase.
 //
+//   Brad Whitlock, Thu Jul 24 09:21:56 PDT 2008
+//   Made it possible to overlay at a particular time state.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::OverlayDatabase()
 {
+    int state = GetViewerState()->GetViewerRPC()->GetIntArg1();
+    debug4 << "OverlayDatabase: db=" << GetViewerState()->GetViewerRPC()->GetDatabase().c_str()
+           << ", time=" << state << endl;
+
     //
     // First open the database.
     //
-    OpenDatabaseHelper(GetViewerState()->GetViewerRPC()->GetDatabase(), 0, false, true);
+    OpenDatabaseHelper(GetViewerState()->GetViewerRPC()->GetDatabase(), 
+                       state, false, true);
 
     //
     // Now perform the database replacement.
@@ -4648,7 +4656,7 @@ ViewerSubject::OverlayDatabase()
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
     ViewerPlotList *plotList = wM->GetActiveWindow()->GetPlotList();
     plotList->OverlayDatabase(plotList->GetEngineKey(),
-                              plotList->GetDatabaseName());
+                              plotList->GetDatabaseName(), state);
 
     //
     // Recenter the active window's view and redraw.

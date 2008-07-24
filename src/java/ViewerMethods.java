@@ -432,12 +432,15 @@ public class ViewerMethods
      * @param database The name of the database to open -- a filename. If the
      *                 file exists on a remote computer, then you can supply a
      *                 name of the form:  host:/path/file.ext
+     * @param timeState The time state at which to open the database (>=0). Pass
+     *                  0 if you don't prefer a later time state.
      * @return true on success; false otherwise.
      */
-    public boolean OverlayDatabase(String database)
+    public boolean OverlayDatabase(String database, int timeState)
     {
         GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_OVERLAYDATABASERPC);
         GetViewerState().GetViewerRPC().SetDatabase(database);
+        GetViewerState().GetViewerRPC().SetIntArg1(timeState);
         GetViewerState().GetViewerRPC().Notify();
         return Synchronize();
     }

@@ -4668,25 +4668,113 @@ ViewerPlotList::ReplaceDatabase(const EngineKey &key,
 //   Brad Whitlock, Tue Apr 29 16:03:49 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Wed Jul 23 16:35:52 PDT 2008
+//   Made it take place on only the active plots. I also added code to update
+//   the SIL restriction. I also added a timeState argument so it's possible
+//   to overlay a database at a paricular time state.
+//
 // ****************************************************************************
 
 void
-ViewerPlotList::OverlayDatabase(const EngineKey &ek,
-                                const std::string &database)
+ViewerPlotList::OverlayDatabase(const EngineKey &key,
+                                const std::string &database, int timeState)
 {
+    const char *mName = "ViewerPlotList::OverlayDatabase: ";
+
     //
     // Loop over the initial list of plots and add new plots based on them
     // which use the new data files.
     //
-    int nInitialPlots = nPlots;
-    for (int i = 0; i < nInitialPlots; ++i)
+    int i, nInitialPlots = nPlots;
+    int nNewPlots = 0;
+    bool defaultChanged = false;
+    bool *active = new bool[nInitialPlots+1];
+    for (i = 0; i < nInitialPlots; ++i)
+        active[i] = plots[i].active;
+    for (i = 0; i < nInitialPlots; ++i)
     {
         ViewerPlot *newPlot = 0;
+        if(!active[i])
+            continue;
+
         TRY
         {
             newPlot = new ViewerPlot(*(plots[i].plot));
-            newPlot->SetHostDatabaseName(ek, database);
+            newPlot->SetHostDatabaseName(key, database);
             newPlot->UpdateCacheSize(GetKeyframeMode(), true);
+
+            //
+            // Get a new SIL restriction for the plot.
+            //
+            TRY
+            {
+                std::string host = key.OriginalHostName();
+                avtDatabaseMetaData *md = (avtDatabaseMetaData *)
+                                          ViewerFileServer::Instance()->
+                                          GetMetaData(host, database);
+                int nStates = md ? md->GetNumStates() : -1;
+                int ts = (timeState < nStates) ? timeState : 0;
+                avtSILRestriction_p silr = GetDefaultSILRestriction(
+                    key.OriginalHostName(),
+                    database, 
+                    newPlot->GetVariableName(), ts);
+                if (*silr != 0)
+                {
+                    //
+                    // First, adjust the plot's cache for new database
+                    //
+                    newPlot->PrepareCacheForReplace(ts, nStates,
+                                                    GetKeyframeMode());
+
+                    //
+                    // Try and set the new sil restriction from the old.
+                    // This is useful for related files that have not been
+                    // grouped.
+                    //
+                    if(silr->SetFromCompatibleRestriction(
+                        plots[i].plot->GetSILRestriction()))
+                    {
+                        //
+                        // If the default has not been changed then make the
+                        // default SIL restriction have the same settings as
+                        // the new SIL restriction.
+                        //
+                        if (!defaultChanged)
+                        {
+                            defaultChanged = true;
+                            std::string key(SILRestrictionKey(host, database, silr->GetTopSet()));
+                            SILRestrictions[key] = new avtSILRestriction(silr);
+                        }
+                    }
+                    //
+                    // Set the new host, database and SIL restriction.
+                    //
+                    newPlot->SetSILRestriction(silr);
+                    ++nNewPlots;
+
+                    debug4 << mName << "Created copy of plot " << i << " with database "
+                           << database.c_str() << endl;
+                }
+            }
+            CATCH(InvalidVariableException)
+            {
+                QString str = tr("The %1 plot of \"%2\" cannot be regenerated "
+                                 "using the database: %3 since the variable "
+                                 "is not contained in the new database.").
+                              arg(newPlot->GetMenuName()).
+                              arg(newPlot->GetVariableName().c_str()).
+                              arg(database.c_str());
+                Error(str);
+                delete newPlot;
+                newPlot = 0;
+            }
+            CATCH2(VisItException, e)
+            {
+                Error(e.Message().c_str());
+                delete newPlot;
+                newPlot = 0;
+            }
+            ENDTRY
         }
         CATCHALL(...)
         {
@@ -4715,6 +4803,13 @@ ViewerPlotList::OverlayDatabase(const EngineKey &ek,
                           arg(database.c_str());
             Error(str);
         }
+    }
+    delete [] active;
+
+    if(nNewPlots == 0)
+    {
+        Message(tr("No plots were created as a result of the overlay "
+                   "because no plots were selected in the plot list."));
     }
 
     //
