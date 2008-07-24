@@ -2368,6 +2368,9 @@ visit_ReOpenDatabase(PyObject *self, PyObject *args)
 //   Brad Whitlock, Tue Mar 2 10:30:38 PDT 2004
 //   I removed the code to set the time state.
 //
+//   Brad Whitlock, Thu Jul 24 09:35:32 PDT 2008
+//   Added optional timeState argument.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -2376,12 +2379,13 @@ visit_OverlayDatabase(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     char *fileName;
-    if (!PyArg_ParseTuple(args, "s", &fileName))
+    int timeState = 0;
+    if (!PyArg_ParseTuple(args, "s|i", &fileName, &timeState))
        return NULL;
 
     // Overlay the database.
     MUTEX_LOCK();
-        GetViewerMethods()->OverlayDatabase(fileName);
+        GetViewerMethods()->OverlayDatabase(fileName, timeState);
     MUTEX_UNLOCK();
 
     // Return the success value.

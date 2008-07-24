@@ -699,16 +699,21 @@ ViewerMethods::ReplaceDatabase(const std::string &database, int timeState)
 //  Programmer: Brad Whitlock
 //  Creation:   Wed Mar 6 16:08:26 PST 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Jul 24 09:19:07 PDT 2008
+//    Added time state argument.
+//
 // ****************************************************************************
 
 void
-ViewerMethods::OverlayDatabase(const std::string &database)
+ViewerMethods::OverlayDatabase(const std::string &database, int timeState)
 {
     //
     // Set the rpc type and arguments.
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::OverlayDatabaseRPC);
     state->GetViewerRPC()->SetDatabase(database);
+    state->GetViewerRPC()->SetIntArg1(timeState);
 
     //
     // Issue the RPC.

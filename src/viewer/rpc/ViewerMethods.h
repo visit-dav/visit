@@ -103,6 +103,9 @@ class ViewerState;
 //   Cyrus Harrision, Thu Feb 21 15:18:49 PST 2008
 //   Added SetSuppressMessages
 //
+//   Brad Whitlock, Thu Jul 24 09:18:11 PDT 2008
+//   Added time state argument to OverlayDatabase.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -146,7 +149,7 @@ public:
     void CheckForNewStates(const std::string &database);
     void ReOpenDatabase(const std::string &database, bool forceClose = true);
     void ReplaceDatabase(const std::string &database, int timeState = 0);
-    void OverlayDatabase(const std::string &database);
+    void OverlayDatabase(const std::string &database, int timeState = 0);
     void RequestMetaData(const std::string &database, int ts = -1);
     void ClearCache(const std::string &hostName, const std::string &simName);
     void ClearCacheForAllEngines();

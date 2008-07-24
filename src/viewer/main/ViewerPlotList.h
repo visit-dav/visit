@@ -392,7 +392,7 @@ public:
     void ReplaceDatabase(const EngineKey &ek, const std::string &database,
                          int timeState, bool setTimeState, bool onlyReplaceSame);
     void OverlayDatabase(const EngineKey &ek,
-                         const std::string &database);
+                         const std::string &database, int timeState);
 
     void SetActivePlots(const intVector &activePlots,
                         const intVector &activeOperators,

@@ -141,7 +141,11 @@ class ViewerProxy;
 //   I added UpdateReplaceButtonEnabledState
 //
 //   Brad Whitlock, Mon Jun 27 14:54:27 PST 2005
-//   Added updateOpenButtonState and 
+//   Added updateOpenButtonState
+//
+//   Brad Whitlock, Thu Jul 24 09:17:05 PDT 2008
+//   Made it possible to overlay a file at a given state.
+//
 // ****************************************************************************
 
 class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIBase
@@ -207,7 +211,7 @@ private:
     bool OpenFile(const QualifiedFilename &filename, int timeState,
                   bool reOpen);
     void ReplaceFile(const QualifiedFilename &filename, int timeState=0);
-    void OverlayFile(const QualifiedFilename &filename);
+    void OverlayFile(const QualifiedFilename &filename, int timeState=0);
 
     void ExpandDatabases();
     void ExpandDatabaseItem(QvisListViewFileItem *item);

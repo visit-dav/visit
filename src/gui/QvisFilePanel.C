@@ -2173,7 +2173,8 @@ QvisFilePanel::ReplaceFile(const QualifiedFilename &filename, int timeState)
 //   selected file and notify all observers that the file changed.
 //
 // Arguments:
-//   filename : The name of the new file.
+//   filename  : The name of the new file.
+//   timeState : The time state at which to overlay.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 31 11:01:32 PDT 2000
@@ -2195,16 +2196,19 @@ QvisFilePanel::ReplaceFile(const QualifiedFilename &filename, int timeState)
 //   Brad Whitlock, Mon Dec 20 16:22:19 PST 2004
 //   Changed how the enabled state for the Replace button is set.
 //
+//   Brad Whitlock, Thu Jul 24 09:17:54 PDT 2008
+//   Made it possible to overlay a file at a given time state.
+//
 // ****************************************************************************
 
 void
-QvisFilePanel::OverlayFile(const QualifiedFilename &filename)
+QvisFilePanel::OverlayFile(const QualifiedFilename &filename, int timeState)
 {
     // Try and set the open the data file.
-    SetOpenDataFile(filename, 0, this, false);
+    SetOpenDataFile(filename, timeState, this, false);
 
     // Tell the viewer to replace the database.
-    GetViewerMethods()->OverlayDatabase(filename.FullName().c_str());
+    GetViewerMethods()->OverlayDatabase(filename.FullName().c_str(), timeState);
 
     // Set the enabled state for the Replace and Overlay buttons.
     UpdateReplaceButtonEnabledState();
@@ -3177,6 +3181,9 @@ QvisFilePanel::replaceFile()
 //   Brad Whitlock, Wed Mar 21 00:38:22 PDT 2001
 //   Added a check to make sure it's a file.
 //
+//   Brad Whitlock, Thu Jul 24 09:16:23 PDT 2008
+//   Make it possible to overlay at a particular time step.
+//
 // ****************************************************************************
 
 void
@@ -3187,8 +3194,13 @@ QvisFilePanel::overlayFile()
 
     if((fileItem != 0) && fileItem->isFile() && (!fileItem->file.Empty()))
     {
+        // Make sure that we use a valid time state. Some file items
+        // have a time state of -1 if they are the parent item of several
+        // time step items.
+        int timeState = (fileItem->timeState < 0) ? 0 : fileItem->timeState;
+
         // Try and open the file.
-        OverlayFile(fileItem->file.FullName());
+        OverlayFile(fileItem->file.FullName(), timeState);
     }
 }
 
