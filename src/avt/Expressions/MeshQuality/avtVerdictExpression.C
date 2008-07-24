@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtVerdictExpression.C                            //
+//                           avtVerdictExpression.C                          //
 // ************************************************************************* //
 
 #include <avtVerdictExpression.h>
@@ -49,6 +49,7 @@
 #include <vtkFloatArray.h>
 #include <vtkPoints.h>
 
+#include <avtCallback.h>
 #include <avtDataTree.h>
 #include <avtDataRepresentation.h>
 
@@ -162,6 +163,9 @@ avtVerdictExpression::~avtVerdictExpression()
 //    Hank Childs, Sat Oct  6 15:10:10 PDT 2007
 //    Turn hex-20s into hex-8s.
 //
+//    Hank Childs, Thu Jul 24 12:38:34 PDT 2008
+//    Add support for polygons and polyhedrons.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -197,6 +201,40 @@ avtVerdictExpression::DeriveVariable(vtkDataSet *in_ds)
             // Grab a pointer to the cell's points' underlying data array
             vtkDataArray *pointData = cell->GetPoints()->GetData();
     
+            int cellType = cell->GetCellType();
+            if (cellType == VTK_POLYGON)
+            {
+                float total = 0.;
+                if (SummationValidForOddShapes())
+                {
+                    int numTris = numPointsForThisCell-2;
+                    pointData->GetTuple(0,coordinates[0]);
+                    for (j = 0 ; j < numTris ; j++)
+                    {
+                        pointData->GetTuple(j+1,coordinates[1]);
+                        pointData->GetTuple(j+2,coordinates[2]);
+                        total += Metric(coordinates, VTK_TRIANGLE);
+                    }
+                }
+                else
+                {
+                    static bool issuedWarning = false;
+                    if (!issuedWarning)
+                    {
+                        char *warning = "The mesh quality expression you "
+                            "asked for cannot be applied to polygons.  VisIt"
+                            " will assign to zero to all polygons for this "
+                            "metric.  This warning will not be issued again "
+                            "during this session, but keep in mind that "
+                            "zeros will be placed silently from here on out.";
+                        avtCallback::IssueWarning(warning);
+                        issuedWarning = true;
+                    }
+                }
+                dv->SetTuple1(i, total);
+                continue;
+            }
+            
             //
             // Since the Verdict functions make their own copy of the data
             // anyway it would be nice to get the coordinate data without
@@ -217,8 +255,6 @@ avtVerdictExpression::DeriveVariable(vtkDataSet *in_ds)
                 pointData->GetTuple(j,coordinates[j]);
             }
     
-            int cellType = cell->GetCellType();
-            
             // Convert Voxel format into hexahedron format.
             if (cellType == VTK_VOXEL)
             {

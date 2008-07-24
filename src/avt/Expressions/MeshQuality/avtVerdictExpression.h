@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtVerdictExpression.h                            //
+//                           avtVerdictExpression.h                          //
 // ************************************************************************* //
 
 // Caveat: Verdict filters currently support triangles, but not triangle strips
@@ -73,6 +73,10 @@ class     vtkDataArray;
 //    Hank Childs, Mon Aug 28 10:29:49 PDT 2006
 //    Declare the variable dimension.
 //
+//    Hank Childs, Thu Jul 24 12:49:19 PDT 2008
+//    Added a virtual method to help with supporting polygonal and polyhedral
+//    data.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtVerdictExpression : public avtSingleInputExpressionFilter
@@ -97,6 +101,7 @@ class EXPRESSION_API avtVerdictExpression : public avtSingleInputExpressionFilte
     virtual double            Metric(double coordinates[][3], int type) = 0;
 
     virtual bool              RequiresSizeCalculation() { return false; };
+    virtual bool              SummationValidForOddShapes(void) { return false; };
 
     virtual bool              IsPointVariable() {  return false; };
     virtual int               GetVariableDimension(void) { return 1; };

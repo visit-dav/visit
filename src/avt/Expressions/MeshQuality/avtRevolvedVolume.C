@@ -156,6 +156,11 @@ avtRevolvedVolume::DeriveVariable(vtkDataSet *in_ds)
 //  Programmer: Hank Childs
 //  Creation:   March 29, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Jul 24 13:07:06 PDT 2008
+//    Add support for polygons.
+//
 // ****************************************************************************
  
 double
@@ -163,7 +168,7 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
 {
     int cellType = cell->GetCellType();
     if (cellType != VTK_TRIANGLE && cellType != VTK_QUAD && 
-        cellType != VTK_PIXEL)
+        cellType != VTK_PIXEL && cellType != VTK_POLYGON)
     {
         if (!haveIssuedWarning)
         {
@@ -268,6 +273,27 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
         volume2 = GetTriangleVolume(x, y);
      
         rv = (volume1 + volume2);
+    }
+    else if (cellType == VTK_POLYGON)
+    {
+        vtkPoints *pts = cell->GetPoints();
+        int numPointsForThisCell = cell->GetNumberOfPoints();
+        int numTris = numPointsForThisCell-2;
+        double pt[3];
+        double  x[3], y[3];
+        pts->GetPoint(0,pt);
+        x[0] = pt[0];
+        y[0] = pt[1];
+        for (int j = 0 ; j < numTris ; j++)
+        {
+            pts->GetPoint(j+1,pt);
+            x[1] = pt[0];
+            y[1] = pt[1];
+            pts->GetPoint(j+2,pt);
+            x[2] = pt[0];
+            y[2] = pt[1];
+            rv += GetTriangleVolume(x, y);
+        }
     }
 
     return rv;
