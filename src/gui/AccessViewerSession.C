@@ -169,7 +169,9 @@ AccessViewerSession::WriteConfigFile(const char *filename)
 // Creation:   Mon Nov 13 15:45:59 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jul 24 17:01:29 PDT 2008
+//   Fixed a bug where we could not locate the VIEWER node.
+//
 // ****************************************************************************
 
 DataNode *
@@ -177,7 +179,7 @@ AccessViewerSession::GetRootNode() const
 {
     DataNode *ret = 0;
     if(root != 0)
-        ret = root->GetNode("VisIt");
+        ret = root->SearchForNode("VIEWER");
     return ret;
 }
 
@@ -201,7 +203,7 @@ AccessViewerSession::GetVSNode() const
 {
     DataNode *ret = 0;
     if(root != 0)
-        ret = root->GetNode("ViewerSubject");
+        ret = root->SearchForNode("ViewerSubject");
     return ret;
 }
 
@@ -257,6 +259,10 @@ AccessViewerSession::GetSourceMap(stringVector &keys, stringVector &values,
             }
 
             ret = keys.size() > 0;            
+        }
+        else
+        {
+            debug1 << mName << "Could not find SourceMap node." << endl;
         }
 
         // NOTE: This section knows a lot about viewer session files, which
