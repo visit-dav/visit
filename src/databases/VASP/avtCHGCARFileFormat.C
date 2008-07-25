@@ -726,6 +726,12 @@ avtCHGCARFileFormat::DoDomainDecomposition()
 //    Jeremy Meredith, Tue Jul 15 15:41:07 EDT 2008
 //    Added support for automatic domain decomposition.
 //
+//    Jeremy Meredith, Fri Jul 25 10:52:17 EDT 2008
+//    Allow for some blank lines before the data starts.  This shouldn't
+//    happen with a well-formed CHGCAR file, but the toy data file I
+//    created for testing did, and there's no reason not to make the reader
+//    more robust to account for it.  (It's an ASCII format, after all.)
+//
 // ****************************************************************************
 void
 avtCHGCARFileFormat::ReadAllMetaData()
@@ -792,12 +798,17 @@ avtCHGCARFileFormat::ReadAllMetaData()
 
     // count the number of values per line
     istream::pos_type start_of_data = in.tellg();
-    in.getline(line,2048); // skip blank line
-    std::istringstream count_values(line);
     string tmpbuff;
     values_per_line = 0;
-    while (count_values >> tmpbuff)
-        values_per_line++;
+    int attempts = 0;
+    while (values_per_line == 0 && attempts < 10)
+    {
+        in.getline(line,2048); // skip blank line
+        std::istringstream count_values(line);
+        while (count_values >> tmpbuff)
+            values_per_line++;
+        attempts++;
+    }
 
     // Mark the start of the volumetric grid data
     int values_per_vol = globalZDims[0]*globalZDims[1]*globalZDims[2];
