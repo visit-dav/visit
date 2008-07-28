@@ -2064,6 +2064,9 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Add some checks for combinations of transparent rendering and volume
 //    rendering and also for multiple volume renderings.
 //
+//    Tom Fogal, Sun Jul 27 01:09:11 EDT 2008
+//    Moved the multiple volume renderings check to RenderPostProcess.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -2174,7 +2177,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 {
                     // This message is based on how it can occur in VisIt right now.
                     // It may need to be generalized in the future.
-                    char *msg = "VisIt does not support the "
+                    const char *msg =
+                                "VisIt does not support the "
                                 "rendering of transparent "
                                 "geometry with ray-traced volume plots.  "
                                 "The volume plot is not being "
@@ -2207,24 +2211,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         // If the engine is doing more than just 3D annotations,
         // post-process the composited image.
         //
-        if (imageBasedPlots.size() > 1)
-        {
-            static bool issuedWarning = false;
-            if (!issuedWarning)
-            {
-                // This message is based on how it can occur in VisIt right now.
-                // It may need to be generalized in the future.
-                char *msg = "VisIt does not support multiple ray-traced volume "
-                            "renderings.  Only the first volume plot "
-                            " will be rendered.  (This message will only "
-                            "be issued once per session.)";
-                avtCallback::IssueWarning(msg);
-                issuedWarning = false;
-            }
-            vector<avtPlot_p> imageBasedPlots_tmp;
-            imageBasedPlots_tmp.push_back(imageBasedPlots[0]);
-            imageBasedPlots = imageBasedPlots_tmp;
-        }
         this->RenderPostProcess(imageBasedPlots, compositedImageAsDataObject,
                                 windowID);
 
@@ -5094,7 +5080,7 @@ NetworkManager::MultipassRendering(VisWindow *viswin) const
     }
 #endif
 
-    std::string status = (multipass) ? "enabled" : "disabled";
+    const std::string status = (multipass) ? "enabled" : "disabled";
     debug5 << "Multipass rendering is " << status << std::endl;
 
     return multipass;
@@ -5486,6 +5472,13 @@ NetworkManager::RenderDepthCues(int windowID,
 //    Tom Fogal, Wed Jul  2 15:09:47 EDT 2008
 //    Avoid VisWindow lookup if not in `2'nd annotation mode.
 //
+//    Hank Childs, Fri Jul 25 09:40:16 PDT 2008 (copied from Render)
+//    Add some checks for combinations of transparent rendering and volume
+//    rendering and also for multiple volume renderings.
+//
+//    Tom Fogal, Sun Jul 27 01:09:11 EDT 2008
+//    Moved the multiple volume renderings check to RenderPostProcess.
+//
 // ****************************************************************************
 
 void
@@ -5500,6 +5493,27 @@ NetworkManager::RenderPostProcess(std::vector<avtPlot_p>& image_plots,
     {
         avtImage_p compositedImage;
         CopyTo(compositedImage, input_as_dob);
+
+        // Test to make sure we don't have two RayCasted VRs.
+        if (image_plots.size() > 1)
+        {
+            static bool issuedWarning = false;
+            if (!issuedWarning)
+            {
+                // This message is based on how it can occur in VisIt right now.
+                // It may need to be generalized in the future.
+                const char *msg =
+                            "VisIt does not support multiple ray-traced volume "
+                            "renderings.  Only the first volume plot "
+                            " will be rendered.  (This message will only "
+                            "be issued once per session.)";
+                avtCallback::IssueWarning(msg);
+                issuedWarning = false;
+            }
+            vector<avtPlot_p> imageBasedPlots_tmp;
+            imageBasedPlots_tmp.push_back(image_plots[0]);
+            image_plots = imageBasedPlots_tmp;
+        }
 
         for(std::vector<avtPlot_p>::iterator plot = image_plots.begin();
             plot != image_plots.end();
