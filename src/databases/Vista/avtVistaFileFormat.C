@@ -49,7 +49,8 @@
 #define HAVE_HDF5 ((HAVE_HDF5_H==1) && (HAVE_LIBHDF5==1))
 
 #if HAVE_HDF5
-#include <hdf5.h>
+// Don't include hdf5.h directly. visit-hdf5.h ensures we get correct API 
+#include <visit-hdf5.h>
 #endif
 #include <silo.h>
 

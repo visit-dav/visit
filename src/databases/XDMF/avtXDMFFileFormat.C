@@ -66,7 +66,8 @@
 
 #include <XDMFParser.h>
 
-#include <hdf5.h>
+// Don't include hdf5.h directly. visit-hdf5.h ensures we get correct API 
+#include <visit-hdf5.h>
 
 #include <visit-config.h>
 

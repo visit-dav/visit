@@ -43,7 +43,8 @@
 #ifndef AVT_M3D_FILE_FORMAT_H
 #define AVT_M3D_FILE_FORMAT_H
 
-#include <hdf5.h>
+// Don't include hdf5.h directly. visit-hdf5.h ensures we get correct API 
+#include <visit-hdf5.h>
 #include <avtMTMDFileFormat.h>
 
 #include <vtkTransform.h>
