@@ -1795,13 +1795,33 @@ VisWindow::Realize(void)
     rendering->Realize();
 }
 
+// ****************************************************************************
+//  Method: VisWindow::ScreenRender
+//
+//  Purpose:
+//      Forces a render to the underlying renderer.
+//
+//  Programmer: Tom Fogal
+//  Creation:   July 26, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+VisWindow::ScreenRender(bool doViewportOnly, bool doZBufferToo,
+                        bool doOpaque, bool doTranslucent,
+                        avtImage_p input)
+{
+    rendering->ScreenRender(doViewportOnly, doZBufferToo,
+                            doOpaque, doTranslucent, input);
+}
 
 // ****************************************************************************
 //  Method: VisWindow::ScreenCapture
 //
 //  Purpose:
-//      Saves the window to the filename.  More arguments need to be added as
-//      more options are added.
+//      Forces a render to the underlying renderer.  Reads back the data and
+//      stuffs it into an in-memory image.
 //
 //  Returns:    The image from the screen capture.
 //
@@ -1822,6 +1842,10 @@ VisWindow::Realize(void)
 //    Removed the last boolean, as we really only needed to check if "input"
 //    was NULL.
 //
+//    Tom Fogal, Sat Jul 26 23:19:14 EDT 2008
+//    Implement Capture in terms of Render and Readback.
+//    Corrected the out of date `Purpose' comment.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -1829,8 +1853,9 @@ VisWindow::ScreenCapture(bool doViewportOnly, bool doZBufferToo,
                          bool doOpaque, bool doTranslucent,
                          avtImage_p input)
 {
-    return rendering->ScreenCapture(doViewportOnly, doZBufferToo,
-                                    doOpaque, doTranslucent, input);
+    rendering->ScreenRender(doViewportOnly, doZBufferToo,
+                            doOpaque, doTranslucent, input);
+    return rendering->ScreenReadback(doViewportOnly, doZBufferToo);
 }
 
 // ****************************************************************************
