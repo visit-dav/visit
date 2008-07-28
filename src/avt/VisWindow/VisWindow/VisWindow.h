@@ -393,6 +393,9 @@ class VisitInteractor;
 //    Tom Fogal, Fri Jul 18 18:28:36 EDT 2008
 //    Use AnnotationAttributes::BackgroundMode instead of an int-equivalent.
 //
+//    Tom Fogal, Sun Jul 27 01:21:06 EDT 2008
+//    Add interface for ScreenRender.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -413,6 +416,11 @@ public:
     void                 UnsetBounds(void);
 
     void                 Realize(void);
+    void                 ScreenRender(bool doViewportOnly = false,
+                                      bool doZBufferToo = false,
+                                      bool doOpaque = true,
+                                      bool doTranslucent = true,
+                                      avtImage_p input = NULL);
     avtImage_p           ScreenCapture(bool doViewportOnly = false,
                                        bool doZBufferToo = false,
                                        bool doOpaque = true,
