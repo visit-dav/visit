@@ -36,14 +36,16 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtH5NimrodFileFormat.h                           //
+//                            avtH5NimrodFileFormat.h                        //
 // ************************************************************************* //
 
 #ifndef AVT_H5Nimrod_FILE_FORMAT_H
 #define AVT_H5Nimrod_FILE_FORMAT_H
 
 #include <avtMTSDFileFormat.h>
-#include <hdf5.h>
+
+// Don't include hdf5.h directly. visit-hdf5.h ensures we get correct API 
+#include <visit-hdf5.h>
 #include "H5utils.h"
 
 #include <vector>

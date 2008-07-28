@@ -43,6 +43,12 @@
 #ifndef VISIT_HDF5_H 
 #define VISIT_HDF5_H 
 
+// Define this symbol BEFORE including hdf5.h to indicate we wan't the 
+// version 1.6 of the HDF5 API. This will permit correct compilation with
+// version 1.8 of HDF5
+#define H5_USE_16_API
+#include <hdf5.h>
+
 //
 // Useful macro for comparing HDF5 versions
 //

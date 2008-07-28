@@ -78,6 +78,7 @@
 #include <InvalidVariableException.h>
 #include <TimingsManager.h>
 
+// Don't include hdf5.h directly. visit-hdf5.h ensures we get correct API 
 #include <visit-hdf5.h>
 
 using     std::string;

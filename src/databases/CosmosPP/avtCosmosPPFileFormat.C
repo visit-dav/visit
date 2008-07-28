@@ -65,7 +65,8 @@
 #include <InvalidDBTypeException.h>
 #include <InvalidVariableException.h>
 
-#include <hdf5.h>
+// Don't include hdf5.h directly. visit-hdf5.h ensures we get correct API 
+#include <visit-hdf5.h>
 
 using std::vector;
 using std::string;
