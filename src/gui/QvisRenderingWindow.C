@@ -776,17 +776,25 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 29, 2007
 //
+// Modifications:
+//   Cyrus Harrison, Mon Jul 28 15:23:05 PDT 2008
+//   I added code to enable/disable the scalable auto threshold spin box based
+//   on the scalable rendering mode. 
+//
 // ****************************************************************************
 void
 QvisRenderingWindow::UpdateWindowSensitivity()
 {
     bool scalableAlways =
         renderAtts->GetScalableActivationMode() == RenderingAttributes::Always;
+    bool scalableAuto =
+        renderAtts->GetScalableActivationMode() == RenderingAttributes::Auto;
     bool shadowOn = renderAtts->GetDoShadowing();
     bool depthCueingOn = renderAtts->GetDoDepthCueing();
     bool stereoOn = renderAtts->GetStereoRendering();
     bool specularOn = renderAtts->GetSpecularFlag();
 
+    scalrenAutoThreshold->setEnabled(scalableAuto);
     shadowToggle->setEnabled(scalableAlways);
     shadowStrengthSlider->setEnabled(scalableAlways && shadowOn);
     shadowStrengthLabel->setEnabled(scalableAlways && shadowOn);
