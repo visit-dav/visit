@@ -196,6 +196,7 @@ class VisWindowColleagueProxy;
 //    Tom Fogal, Thu Jul 24 17:00:44 EDT 2008
 //    Add ScreenRender and ScreenReadback methods; the IceT path can avoid the
 //    latter in some cases.
+//    Remove ScreenCapture; it is not accessible anymore.
 //
 // ****************************************************************************
 
@@ -232,11 +233,6 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     void                     GetCaptureRegion(int& r0, int& c0, int& w, int& h,
                                  bool doViewportOnly);
-    avtImage_p               ScreenCapture(bool doViewportOnly = false,
-                                           bool doCanvasZBufferToo = false,
-                                           bool doOpaque = true,
-                                           bool doTranslucent = true,
-                                           avtImage_p input = NULL);
     void                     ScreenRender(bool doViewportOnly = false,
                                           bool doCanvasZBufferToo = false,
                                           bool doOpaque = true,
