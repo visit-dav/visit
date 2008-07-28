@@ -1,25 +1,36 @@
 # Awk script to get just the `meat' of renderer performance from lines in an
-# engine_par .timing file.
+# engine_par .timing file.  It outputs SQL for populating a database of data.
+# This requires a `pat' variable to set on startup!
 BEGIN {
-    printf "# %-20s %-8s %-10s %-10s\n", "Renderer", "Time", "cells", "pixels"
-    switch=0
-}
-
-/IceTNM::Render/ {
-    if(switch == 0) {
-        # `index' separator; see gnuplot `help datafile index'.
-        printf "\n\n"
-        switch = 1
-    }
-    # 0 test; some strange cases have render e.g. 0 cells.  These cases aren't
-    # really valid data, so we filter them out.
-    if($9 != 0 && $4 != 0 && $6 != 0) {
-        printf "%6u %21.4f %10d %10d\n", 1, $9, $4, $6
+    print "-- nproc   icet   ncells   npixels   rendering time"
+    n_proc=-1
+    if(pat == 0) {
+        print "'pat' variable not set!"
+        exit 0
     }
 }
 
-/for\W*NM::Render/ {
-    if($9 != 0 && $4 != 0 && $6 != 0) {
-        printf "%6u %21.4f %10d %10d\n", 0, $9, $4, $6
+/Initializing a [[:digit:]]+ processor engine/ {
+    n_proc=$5
+}
+
+# We match against everything and do a match on a variable, because we want
+# conditional matching based on a program argument.
+{
+    if(match($0, pat) != 0) {
+        icet=0
+        if(match($0, "IceT") != 0) {
+            icet=1
+        }
+        r_time=$9
+        n_cells=$4
+        n_pixels=$6
+        # 0 test; some strange cases render e.g. 0 cells.  These cases aren't
+        # really valid data, so we filter them out.
+        if($9 != 0 && $4 != 0 && $6 != 0) {
+            printf "INSERT INTO rendering VALUES ("       \
+                   "'%d', '%d', '%d', '%d', '%f');\n",    \
+                   n_proc, icet, n_cells, n_pixels, r_time
+        }
     }
 }

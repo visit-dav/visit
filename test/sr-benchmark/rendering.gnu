@@ -30,10 +30,10 @@ set output "SR-proc-pixels.eps"
 set xlabel "Processes"
 set ylabel "Pixels"
 set zlabel "Rendering\nTime\n(s)"
-set pm3d
-set dgrid3d 32,32,8
+set hidden3d
+set dgrid3d 32,24,8
 set isosample 100
-set style data linespoints
+set style data lines
 set ticslevel 0
 splot \
     "icet.data" using 1:3:4 title 'IceT', \
@@ -44,10 +44,11 @@ set output "SR-proc-cells.eps"
 set xlabel "Processes"
 set ylabel "Cells"
 set zlabel "Rendering\nTime\n(s)"
-set pm3d
-set dgrid3d 32,32,8
+set hidden3d
+set dgrid3d 32,24,8
 set isosample 100
-set style data linespoints
+set parametric
+set style data lines
 set ticslevel 0
 splot \
     "icet.data" using 1:2:4 title 'IceT', \

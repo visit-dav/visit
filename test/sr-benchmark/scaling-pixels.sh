@@ -17,7 +17,7 @@ function cleanUp()
 function doRun
 {
     host=`hostname`
-    ${VISIT} -host ${host} ${TIMING} $@ ${SCRIPT}
+    ${VISIT} -nowin -host ${host} ${TIMING} $@ ${SCRIPT}
 }
 
 extract_data()

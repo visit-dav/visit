@@ -343,6 +343,13 @@ $0 = shift @ARGV;
 #    I abstracted valgrind settings out to a method, and made launching a
 #    parallel engine under valgrind work for the straight `mpirun' case.
 #
+#    Tom Fogal, Tue Jul 22 16:02:22 EDT 2008
+#    Added help output for `-icet' flag.
+#
+#    Tom Fogal, Thu Jul 24 14:53:49 EDT 2008
+#    Remove unused arguments from generate_args_valgrind; they weren't passed
+#    as references and wouldn't be interpreted correctly anyway.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -482,6 +489,9 @@ $fullusage = "$usage
         -t    <time>         Maximum job run time.
         -machinefile <file>  Machine file.
         -expedite            Makes DPCS give priority scheduling.
+
+        -icet                In scalable rendering mode, use the IceT parallel
+                             image compositor.
 
     Hardware accelerated parallel (scalable) rendering options
     ---------------------------------------------------------------------------
@@ -1806,8 +1816,8 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, "-np", $procs if $procs_set;
         push @parcmd, "-p",  $part  if $part_set;
         push @parcmd, "-machinefile", $machinefile if $machinefile_set;
-        push @parcmd, generate_args_valgrind(@debug_valgrind_args,
-                                             @visitargs) if $debug_valgrind;
+        push @parcmd,
+             generate_args_valgrind(@debug_valgrind_args) if $debug_valgrind;
         push @parcmd, @visitcmd;
         push @parcmd, "-plugindir";
         push @parcmd, "$ENV{VISITPLUGINDIR}";
@@ -2123,8 +2133,7 @@ else
     elsif ($debug_valgrind eq $exe_name)
     {
         # Run valgrind
-        my @debugcmd = generate_args_valgrind(@debug_valgrind_args,
-                                              @visitargs);
+        my @debugcmd = generate_args_valgrind(@debug_valgrind_args);
         push @debugcmd, "$visitbindir/$exe_name", @visitargs;
         if ($security_key_set) { push @debugcmd, "-key", $security_key; }
         print STDERR "Running: @debugcmd\n" if (! $quiet);
@@ -2481,15 +2490,11 @@ sub IsAVisItComponentName {
 =over
 =item arg1
     Array which should contain the arguments to valgrind proper.
-=item arg2
-    Array which contains the VisIt arguments.
 =back
 =cut
 
 sub generate_args_valgrind {
-    my @args_vg = shift;
-    my @args_visit = shift;
-    my $security_key = shift;
+    my @args_vg = @_;
 
     my @cmd = ("valgrind");
     if(scalar(@args_vg) != 0) {

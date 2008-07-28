@@ -290,7 +290,7 @@ avtStructuredDomainNesting::GetSelectedDescendents(
 //    Clean up memory leak.
 //
 //    Mark C. Miller, Thu Jan  8 10:08:18 PST 2004
-//    Modified to account for fact that incomming meshes may already have ghost
+//    Modified to account for fact that incoming meshes may already have ghost
 //    zones from the file AND to accomodate possible avariation in number of
 //    ghost layers for different variables (SAMRAI does this). Also, I modifed
 //    it so that it will or the NESTING_GHOST_MASK value into the ghost data
@@ -303,7 +303,7 @@ avtStructuredDomainNesting::GetSelectedDescendents(
 //    a child is NOT present, ghost values are set to 0 indicating that
 //    the parent should not be ghosted. I also removed tests for index out
 //    of range from inner loops. Finally, I changed to the code to use straight
-//    assignment rather than bit operators for to avoid possible generation of
+//    assignment rather than bit operators to avoid possible generation of
 //    non-0/1 values.
 //
 //    Mark C. Miller, Wed Aug 18 18:20:27 PDT 2004

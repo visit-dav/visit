@@ -94,7 +94,6 @@ class PIPELINE_API avtIntervalTree
 {
   public:
                               avtIntervalTree(int, int, bool = true);
-                              //avtIntervalTree(const IntervalTree *);
     virtual                  ~avtIntervalTree();
 
     static void               Destruct(void *);

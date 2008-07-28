@@ -685,7 +685,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
     }
 
     //
-    // We make two passes here, the first to simply decide of any
+    // We make two passes here, the first to simply decide if any
     // conversion is actually needed and then the second to actually
     // do it.
     //
