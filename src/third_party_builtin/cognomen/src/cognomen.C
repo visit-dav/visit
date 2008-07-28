@@ -23,9 +23,7 @@
 #   define __USE_BSD
 #endif
 #include <assert.h>
-#include <err.h>
-#include <limits.h>
-#include <unistd.h>
+#include <stdlib.h>
 
 #include <mpi.h>
 
