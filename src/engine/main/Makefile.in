@@ -261,6 +261,9 @@
 #    Tom Fogal, Mon Jun 30 16:45:28 EDT 2008
 #    Use ICET_ENG_MAIN_OBJ to conditionally compile IceT.
 #
+#    Tom Fogal, Sun Jul 27 23:43:55 EDT 2008
+#    Add conditional linking of cognomen.
+#
 ##############################################################################
 
 ##
@@ -353,7 +356,7 @@ clean:
 
 @ENGINE_PAR@ or_no_par: $(PARLIBDEP) $(PAROBJ) $(MAINPAROBJ) $(LIBSHAREDPAR)
 	$(CXX) -o $@ $(LDFLAGS) $(MAINPAROBJ) -lengine_par $(PARLIBS) \
-	@ICET_LDFLAGS@ @ICET_LIBS@
+	@ICET_LDFLAGS@ @ICET_LIBS@ @LIBCOGNOMEN@
 
 $(ENGINEWRAPSER) or_no_ser_wrapper: $(SERLIBDEP) $(SEROBJ) $(LIBRARYSEROBJ) $(LIBSHAREDSER)
 	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(LIBRARYSEROBJ) -lengine_ser $(SERLIBS)

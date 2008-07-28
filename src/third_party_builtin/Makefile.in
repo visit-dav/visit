@@ -51,14 +51,18 @@
 #   Mark C. Miller, Tue Apr 29 23:32:25 PDT 2008
 #   Added bow (moved from PDB/BOW database plugins)
 #
+#   Tom Fogal, Sun Jul 27 13:33:23 EDT 2008
+#   Added cognomen.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=@BUILD_MESA_STUB@ @BUILD_BZIP2@ @BUILD_GLEW@ @BUILD_BILIB@ @BUILD_SLIVR@ bow
-ALLSUBDIRS=mesa_stub bzip2 glew bilib slivr bow
+SUBDIRS=@BUILD_MESA_STUB@ @BUILD_BZIP2@ @BUILD_GLEW@ @BUILD_BILIB@ \
+    @BUILD_SLIVR@ @BUILD_COGNOMEN@ bow
+ALLSUBDIRS=mesa_stub bzip2 glew bilib slivr bow cognomen
 
 message:
 	@echo
