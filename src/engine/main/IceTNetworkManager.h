@@ -62,6 +62,9 @@
 //    Tom Fogal, Wed Jul 16 12:59:37 EDT 2008
 //    Oops, destructor should be virtual.
 //
+//    Tom Fogal, Sat Jul 26 23:07:15 EDT 2008
+//    Override RenderGeometry for a potential IceT-only optimization.
+//
 // ****************************************************************************
 
 class IceTNetworkManager: public NetworkManager
@@ -79,6 +82,7 @@ class IceTNetworkManager: public NetworkManager
 
  protected:
 
+    virtual avtImage_p RenderGeometry();
     virtual avtImage_p Readback(const VisWindow * const, bool) const;
     virtual void       StopTimer(int windowID);
 
