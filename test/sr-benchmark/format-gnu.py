@@ -1,7 +1,7 @@
 #!python -tt
 # Tom Fogal, Tue Jul 15 15:52:27 EDT 2008
 #####
-# Generates gnuplot files from SQLite DB of render results.
+# Generates gnuplot files from an SQLite DB of render results.
 #####
 from __future__ import with_statement
 import sqlite3
@@ -22,9 +22,13 @@ class Options(Singleton):
     def __init__(self):
         Singleton.__init__(self)
         self._db = None
+        self._avg = None
 
     def db(self): return self._db
     def set_db(self, d): self._db = d
+
+    def average(self): return self._avg
+    def set_average(self, v): self._avg = v
 
 def OptHandle():
     try:
@@ -43,12 +47,15 @@ def usage():
 def parse_opt(argv):
     from getopt import getopt, GetoptError
     try:
-        opts, args = getopt(argv, "f:h")
+        opts, args = getopt(argv, "af:h")
     except GetoptError, e:
         usage()
         sys.exit(2)
 
+    OptHandle().set_average(False)
     for o,a in opts:
+        if o in ("-a"):
+            OptHandle().set_average(True)
         if o in ("-f"):
             OptHandle().set_db(a)
         if o in ("-h"):
@@ -72,16 +79,22 @@ if __name__ == "__main__":
     conn.row_factory = sqlite3.Row
 
     sr = conn.cursor()
-    sql = 'SELECT n_proc,n_cells,n_pixels,avg(r_time) ' \
-          'FROM rendering '                             \
-          'WHERE icet=? '                               \
-          'GROUP BY n_proc,n_cells,n_pixels '           \
-          'HAVING icet=? '                              \
-          'ORDER BY n_proc'
-    sr.execute(sql, (0,0))
+    if OptHandle().average():
+        select = 'n_proc, n_cells, n_pixels, avg(r_time)'
+        clause = 'GROUP BY n_proc,n_cells,n_pixels ' \
+                 'HAVING icet=:icet '
+    else:
+        select = 'n_proc, n_cells, n_pixels, r_time'
+        clause = ''
+    sql = ''.join([s for s in ('SELECT ', select, ' ',
+                               'FROM rendering ',
+                               'WHERE icet=:icet ', clause, ' ',
+                               'ORDER BY n_proc')])
+
+    sr.execute(sql, {"icet": 0})
     with open("sr.data", "w") as f:
         gnuplot_from_cursor(f, sr)
 
-    sr.execute(sql, (1,1))
+    sr.execute(sql, {"icet": 1})
     with open("icet.data", "w") as f:
         gnuplot_from_cursor(f, sr)

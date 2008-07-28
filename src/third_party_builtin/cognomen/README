@@ -1,0 +1,14 @@
+(This is a hacked up version specifically for VisIt.)
+
+Cognomen is a library for node identification.
+
+The ostensible purpose is to identify which processes are running on the same
+node in a distributed system.  This information might be useful for optimizing
+certain algorithms (e.g. doing local-group communication before remote
+communication), or for resource acquisition.
+
+Cognomen is released under the GNU Lesser General Public License.  The full
+text of this license should have been included in a file 'COPYING.LESSER'
+within the distribution medium.  Since this is given in terms of additional
+clauses on top of the GNU GPL, the full text of the GPL is given in the file
+'COPYING'.

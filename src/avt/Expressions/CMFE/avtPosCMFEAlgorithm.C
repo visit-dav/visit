@@ -2067,7 +2067,7 @@ Boundary::AddRGrid(const float *x, const float *y, const float *z, int nX,
 
 
 // ****************************************************************************
-//  Method: Boundary::PrepareSplitQuery
+//  Method: Boundary::AttemptSplit
 //
 //  Purpose:
 //      Sees if the boundary has found an acceptable pivot to split around.
