@@ -812,6 +812,9 @@ dnl    implementations (e.g., MPICH with p4 davice) that do pass environment
 dnl    variables and where the -setupenv option does not work since command
 dnl    line option are not available prior to calling MPI_Init.
 dnl
+dnl    Tom Fogal, Sun Jul 27 11:58:16 EDT 2008
+dnl    Configure cognomen if the user is doing a parallel build.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1032,6 +1035,8 @@ AC_ARG_ENABLE(parallel,
    [  --enable-parallel       make the parallel version],
    UseParallel=$enableval, UseParallel=no)
 
+ax_build_cog=""
+ax_lib_cog=""
 AC_MSG_CHECKING(for parallel features)
 if test "$UseParallel" = "yes"; then
    AC_MSG_RESULT(enabled)
@@ -1057,6 +1062,12 @@ if test "$UseParallel" = "yes"; then
    if test -n "$MPI_CXX"; then
        MPI_CXX="CXX=$MPI_CXX"
    fi
+
+   export MPI_LIBS
+   export MPI_CC
+   ax_build_cog="cognomen"
+   ax_lib_cog="-lcognomen"
+   CPPFLAGS="${CPPFLAGS} -I$""(TOPDIR)/include/cognomen"
 else
    AC_MSG_RESULT(disabled)
    PARALLEL=""
@@ -1079,6 +1090,8 @@ AC_SUBST(LIBSTATICPAR)
 AC_SUBST(LIBSHAREDPAR)
 AC_SUBST(LIBSHAREDPAR_UPDATEONLY)
 AC_SUBST(PARDEP)
+AC_SUBST(BUILD_COGNOMEN, $ax_build_cog)
+AC_SUBST(LIBCOGNOMEN, $ax_lib_cog)
 
 #
 # Set up some Mesa variables.
@@ -3817,7 +3830,6 @@ else
 fi
 AC_SUBST_FILE(SOURCE_DEPENDENCIES)
 
-
 # Temporary directories.
 dnl The makefiles build libraries, include files, and executables into
 dnl these temporary directories which should exist under the current
@@ -3997,7 +4009,8 @@ THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
                            third_party_builtin/slivr/Makefile
                            third_party_builtin/slivr/slivr/Makefile
                            third_party_builtin/slivr/teem/Makefile
-                           third_party_builtin/bow/Makefile"
+                           third_party_builtin/bow/Makefile
+                           third_party_builtin/cognomen/Makefile"
 
 if test "$enable_scripting" = "yes"; then
     VISITPY_FILES="visitpy/Makefile

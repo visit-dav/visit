@@ -39,6 +39,7 @@
 #include <Engine.h>
 #include <Executors.h>
 
+#include <cassert>
 #include <errno.h>
 #include <stdlib.h>
 #if !defined(_WIN32)
@@ -63,8 +64,11 @@
 #include <ExprParser.h>
 #include <ParsingExprList.h>
 #include <avtExprNodeFactory.h>
-#if defined(PARALLEL) && defined(HAVE_ICET)
-#   include <IceTNetworkManager.h>
+#ifdef PARALLEL
+#   include <cognomen.h>
+#   ifdef HAVE_ICET
+#      include <IceTNetworkManager.h>
+#   endif
 #endif
 #include <Init.h>
 #include <InitVTK.h>
@@ -118,6 +122,7 @@ Engine *Engine::instance = NULL;
 static void WriteByteStreamToSocket(NonBlockingRPC *, Connection *,
                                     avtDataObjectString &);
 static void ResetEngineTimeout(void *p, int secs);
+static void SetupDisplay(size_t n);
 
 // message tag for interrupt messages used in static abort callback function
 #ifdef PARALLEL
@@ -527,6 +532,10 @@ Engine::Finalize(void)
 //    Tom Fogal, Fri Jul 11 12:01:34 EDT 2008
 //    Use the IceT flag to figure out which NetworkManager to instantiate.
 //
+//    Tom Fogal, Sun Jul 27 17:44:32 EDT 2008
+//    Use a new method, SetupDisplay, for initializing the connection to the X
+//    server.
+//
 // ****************************************************************************
 
 void
@@ -541,11 +550,12 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
 
     InitVTK::Initialize();
     if (avtCallback::GetSoftwareRendering())
+    {
         InitVTK::ForceMesa();
+    }
     else
     {
-        static char *display = "DISPLAY:0";
-        putenv(display);
+        SetupDisplay(1);
     }
     avtCallback::SetNowinMode(true);
 
@@ -1877,7 +1887,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             rpc->SendError(v.GetErrorMessage());
         }
 
-        char *descStr = "Collecting data and writing it to viewer";
+        const char *descStr = "Collecting data and writing it to viewer";
         visitTimer->StopTimer(collectAndWriteData, descStr);
     }
     else // non-UI processes
@@ -2636,6 +2646,89 @@ Engine::GetProcessAttributes()
 
 }
 
+// ****************************************************************************
+//  Function: startx
+//
+//  Purpose: Fork-exec an X server.
+//
+//  Arguments:
+//    n   Display number to create.
+//
+//  Programmer: Tom Fogal
+//  Creation:   July 27, 2008
+//
+// ****************************************************************************
+static void
+startx(size_t display)
+{
+    // fork-exec X server ...
+    // reminder: InitVTK::UnforceMesa(), perhaps?
+}
+
+// ****************************************************************************
+//  Function: connectx
+//
+//  Purpose: Associate this process with an X server.
+//
+//  Arguments:
+//    display   display number we should connect to.
+//
+//  Programmer: Tom Fogal
+//  Creation:   July 27, 2008
+//
+// ****************************************************************************
+static void
+connectx(size_t display)
+{
+    static char env_display[1024];
+    SNPRINTF(env_display, 1024, "DISPLAY:%zu", display);
+    putenv(env_display);
+}
+
+// ****************************************************************************
+//  Function: SetupDisplay
+//
+//  Purpose:
+//    Initialize the display based on the number of displays we should start
+//    up; use a HW display if possible, else default to a Mesa (SW) based
+//    renderer.
+//
+//  Arguments:
+//    n   The number of HW-based display servers to start.
+//
+//  Programmer: Tom Fogal
+//  Creation:   July 27, 2008
+//
+// ****************************************************************************
+
+static void
+SetupDisplay(size_t n)
+{
+#ifdef PARALLEL
+    cog_set lnodes;
+
+    cog_identify();
+
+    cog_set_local(&lnodes, PAR_Rank());
+    int rank;
+    int min = cog_set_min(&lnodes);
+    int max = cog_set_min(&lnodes);
+    for(rank = min; rank <= max; ++rank)
+    {
+        if(cog_set_intersect(&lnodes, rank))
+        {
+            assert((rank-min) >= 0);
+            if((rank-min) < n)
+            {
+                startx(rank-min);
+                connectx(rank-min);
+            }
+        }
+    }
+#else
+    connectx(0);
+#endif
+}
 
 // ****************************************************************************
 //  Function: ResetEngineTimeout
