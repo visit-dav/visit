@@ -24,6 +24,8 @@
 #endif
 #include <assert.h>
 #include <stdlib.h>
+#include <limits.h>
+#include <unistd.h>
 
 #include <mpi.h>
 
