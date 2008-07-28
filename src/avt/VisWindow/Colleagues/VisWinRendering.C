@@ -880,35 +880,6 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
 }
 
 // ****************************************************************************
-//  Method: VisWinRendering::ScreenCapture
-//
-//  Purpose:
-//      Performs a screen capture and creates an image from the output image.
-//
-//  Returns:    The image on the screen.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 11, 2001
-//
-//  Modifications:
-//
-//    Tom Fogal, Thu Jul 24 16:46:29 EDT 2008
-//    Made this a frontend for two other methods, so we can avoid doing half
-//    the work in the IceT case.
-//
-// ****************************************************************************
-
-avtImage_p
-VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo,
-                               bool doOpaque, bool doTranslucent,
-                               avtImage_p input)
-{
-    this->ScreenRender(doViewportOnly, doCanvasZBufferToo,
-                       doOpaque, doTranslucent, input);
-    return this->ScreenReadback(doViewportOnly, doCanvasZBufferToo);
-}
-
-// ****************************************************************************
 //  Method: VisWinRendering::ScreenRender
 //
 //  Purpose:
