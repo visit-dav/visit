@@ -193,6 +193,10 @@ class VisWindowColleagueProxy;
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added new AxisArray window mode.
 //
+//    Tom Fogal, Thu Jul 24 17:00:44 EDT 2008
+//    Add ScreenRender and ScreenReadback methods; the IceT path can avoid the
+//    latter in some cases.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -233,6 +237,13 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                                            bool doOpaque = true,
                                            bool doTranslucent = true,
                                            avtImage_p input = NULL);
+    void                     ScreenRender(bool doViewportOnly = false,
+                                          bool doCanvasZBufferToo = false,
+                                          bool doOpaque = true,
+                                          bool doTranslucent = true,
+                                          avtImage_p input = NULL);
+    avtImage_p               ScreenReadback(bool doViewportOnly,
+                                            bool doCanvasZBufferToo);
     avtImage_p               PostProcessScreenCapture(avtImage_p capturedImage,
                                  bool doViewportOnly, bool keepZBuffer);
 
