@@ -892,25 +892,42 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
 //
 //  Modifications:
 //
-//    Hank Childs, Wed Jun  6 16:17:17 PDT 2001
-//    Used new specification in Update.
+//    Tom Fogal, Thu Jul 24 16:46:29 EDT 2008
+//    Made this a frontend for two other methods, so we can avoid doing half
+//    the work in the IceT case.
+//
+// ****************************************************************************
+
+avtImage_p
+VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo,
+                               bool doOpaque, bool doTranslucent,
+                               avtImage_p input)
+{
+    this->ScreenRender(doViewportOnly, doCanvasZBufferToo,
+                       doOpaque, doTranslucent, input);
+    return this->ScreenReadback(doViewportOnly, doCanvasZBufferToo);
+}
+
+// ****************************************************************************
+//  Method: VisWinRendering::ScreenRender
+//
+//  Purpose:
+//      Forces the render window to render something.
+//
+//  Programmer: Tom Fogal (modification of a method by Hank Childs)
+//  Creation:   July 24, 2008
+//
+//  Modifications:
 //
 //    Mark C. Miller, 06May03
 //    Added code to get zbuffer data including setting layers so that
 //    zbuffer data is obtained correctly
-//
-//    Hank Childs, Thu Jun 19 17:28:50 PDT 2003
-//    Stop using window-to-image filter, since it does not play well with
-//    the new camera modifications.
 //
 //    Hank Childs, Wed Jun 25 09:30:59 PDT 2003
 //    Fix memory leak.
 //
 //    Hank Childs, Sun Nov 16 16:04:52 PST 2003
 //    Fix (another) memory leak -- this time with zbuffer.
-//
-//    Mark C. Miller, Tue Feb  3 20:46:20 PST 2004
-//    Moved call to delete [] zb to after Update of SourceFromImage
 //
 //    Mark C. Miller, Wed Mar 31 17:47:20 PST 2004
 //    Added doViewportOnly arg and code to support getting only the viewport
@@ -921,7 +938,7 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
 //
 //    Mark C. Miller, Mon Jul 26 15:08:39 PDT 2004
 //    Moved code to compute size and origin of region to capture to
-//    GetCaptureRegion. Also, changed code to instead of swaping canvase
+//    GetCaptureRegion. Also, changed code to instead of swapping canvas
 //    and foreground layer order to just remove foreground layer and re-add
 //    it at the end.
 //
@@ -941,17 +958,14 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
 //    Add some exception handling.
 //
 // ****************************************************************************
-
-avtImage_p
-VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo, 
-                               bool doOpaque, bool doTranslucent,
-                               avtImage_p input)
+void
+VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
+                              bool doOpaque, bool doTranslucent,
+                              avtImage_p input)
 {
     bool second_pass = (*input != NULL);
 
-    float *zb = NULL;
     vtkRenderWindow *renWin = GetRenderWindow();
-    bool extRequestMode = false;
 
     if (doCanvasZBufferToo)
     {
@@ -1035,11 +1049,78 @@ VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo,
     }
 
     //
+    // If we removed the foreground layers to get the canvas' zbuffer,
+    // put it back before we leave
+    //
+    if (doCanvasZBufferToo)
+    {
+       renWin->AddRenderer(foreground);
+    }
+
+    // return geometry from hidden status
+    if(!doOpaque)
+        mediator.ResumeOpaqueGeometry();
+    if(!doTranslucent)
+        mediator.ResumeTranslucentGeometry();
+}
+
+// ****************************************************************************
+//  Method: VisWinRendering::ScreenReadback
+//
+//  Purpose:
+//      Reads back an image from our render window.
+//
+//  Returns:    The image on the screen.
+//
+//  Programmer: Tom Fogal (copy of a method by Hank Childs)
+//  Creation:   July 24, 2008
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Jun  6 16:17:17 PDT 2001
+//    Used new specification in Update.
+//
+//    Mark C. Miller, 06May03
+//    Added code to get zbuffer data including setting layers so that
+//    zbuffer data is obtained correctly
+//
+//    Hank Childs, Thu Jun 19 17:28:50 PDT 2003
+//    Stop using window-to-image filter, since it does not play well with
+//    the new camera modifications.
+//
+//    Hank Childs, Wed Jun 25 09:30:59 PDT 2003
+//    Fix memory leak.
+//
+//    Hank Childs, Sun Nov 16 16:04:52 PST 2003
+//    Fix (another) memory leak -- this time with zbuffer.
+//
+//    Mark C. Miller, Tue Feb  3 20:46:20 PST 2004
+//    Moved call to delete [] zb to after Update of SourceFromImage
+//
+//    Mark C. Miller, Wed Mar 31 17:47:20 PST 2004
+//    Added doViewportOnly arg and code to support getting only the viewport
+//
+//    Mark C. Miller, Fri Apr  2 09:54:10 PST 2004
+//    Fixed problem where used 2D view to control region selection for 
+//    window in CURVE mode
+//
+//    Mark C. Miller, Mon Jul 26 15:08:39 PDT 2004
+//    Moved code to compute size and origin of region to capture to
+//    GetCaptureRegion.
+//
+// ****************************************************************************
+avtImage_p
+VisWinRendering::ScreenReadback(bool doViewportOnly, bool doCanvasZBufferToo)
+{
+    //
     // Set region origin/size to be captured
     //
+    int r0, c0, w, h;
     GetCaptureRegion(r0, c0, w, h, doViewportOnly);
+    vtkRenderWindow *renWin = GetRenderWindow();
+    float *zb = NULL;
+    bool extRequestMode = false;
     
-
     if (doCanvasZBufferToo)
     {
         // get zbuffer data for the canvas
@@ -1053,7 +1134,7 @@ VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo,
     // Read the pixels from the window and copy them over.  Sadly, it wasn't
     // very easy to avoid copying the buffer.
     //
-    int readFrontBuffer = 1;
+    const int readFrontBuffer = 1;
     unsigned char *pixels = renWin->GetPixelData(c0,r0,c0+w-1,r0+h-1,readFrontBuffer);
 
     vtkImageData *image = avtImageRepresentation::NewImage(w, h);
@@ -1074,23 +1155,11 @@ VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo,
     delete [] zb;
     image->Delete();
 
-    //
-    // If we removed the foreground layers to get the canvas' zbuffer,
-    // put it back before we leave
-    //
-    if (doCanvasZBufferToo)
+    if(doCanvasZBufferToo)
     {
-       renWin->AddRenderer(foreground);
-       if (extRequestMode)
-          mediator.EnableExternalRenderRequests();
+        if (extRequestMode)
+            mediator.EnableExternalRenderRequests();
     }
-
-    // return geometry from hidden status
-    if(!doOpaque)
-        mediator.ResumeOpaqueGeometry();
-    if(!doTranslucent)
-        mediator.ResumeTranslucentGeometry();
-
     return img;
 }
 
