@@ -373,6 +373,11 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
 //    Tom Fogal, Mon Jun 30 16:17:43 EDT 2008
 //    Support multipass rendering.
 //
+//    Tom Fogal, Sat Jul 26 23:15:21 EDT 2008
+//    Don't bother copying back the image; there's no way to get that image
+//    anyway.  If it doesn't render into the framebuffer, it might as well not
+//    happen...
+//
 // ****************************************************************************
 
 void
@@ -381,11 +386,39 @@ IceTNetworkManager::RealRender()
     avtImage_p dob = this->RenderGeometry();
     VisWindow *viswin =
         this->viswinMap.find(this->r_mgmt.windowID)->second.viswin;
-    if(this->MultipassRendering(viswin)) {
+    if(this->MultipassRendering(viswin))
+    {
         avtDataObject_p i_as_dob;
         i_as_dob = this->RenderTranslucent(this->r_mgmt.windowID, dob);
-        CopyTo(dob, i_as_dob);
     }
+}
+
+// ****************************************************************************
+//  Method: RenderGeometry
+//
+//  Purpose: Renders the geometry for a scene; this is always the opaque
+//           objects, and may or may not include translucent objects (depending
+//           on the current multipass rendering settings).
+//           We override this method because we can avoid a readback in the
+//           one-pass case (we'll read it back from IceT later anyway).
+//
+//  Programmer: Tom Fogal
+//  Creation:   July 26, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+avtImage_p
+IceTNetworkManager::RenderGeometry()
+{
+    VisWindow *viswin = viswinMap.find(this->r_mgmt.windowID)->second.viswin;
+    if(this->MultipassRendering(viswin))
+    {
+        return NetworkManager::RenderGeometry();
+    }
+    CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
+        viswin->ScreenRender(this->r_mgmt.viewportedMode, true);
+    CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
 }
 
 // ****************************************************************************
