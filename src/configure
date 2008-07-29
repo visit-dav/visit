@@ -11053,8 +11053,8 @@ case $SHORT_UNAME in
         SHLIB_CREATEPROG="$""(CXX) -shared -o"
     fi
     # Set RPATH relative to executable
-    EXE_LDFLAGS="$LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../lib"
-    PLUGIN_LDFLAGS="$LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../../lib"
+    EXE_LDFLAGS="$EXE_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../lib"
+    PLUGIN_LDFLAGS="$PLUGIN_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../../lib"
     ;;
 
   darwin)
