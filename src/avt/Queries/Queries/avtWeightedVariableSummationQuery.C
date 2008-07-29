@@ -154,6 +154,10 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
 //    DataRequest may have the wrong value based on other pipelines sharing
 //    the same source. 
 //
+//    Kathleen Bonnell, Tue Jul 29 9:03:15 PDT 2008 
+//    For better error messages, check if there is an active variable in the
+//    data attributes, and if not then retrieve from data request.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -170,7 +174,12 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     //
     // Set up our base class so it is ready to sum.
     //
-    string varname = GetInput()->GetInfo().GetAttributes().GetVariableName();
+    string varname;
+    if (GetInput()->GetInfo().GetAttributes().ValidActiveVariable())
+        varname = GetInput()->GetInfo().GetAttributes().GetVariableName();
+    else 
+        varname = GetInput()->GetOriginatingSource()->GetFullDataRequest()->
+                  GetVariable();
     varname = GetVarname(varname);
     SetSumType(varname);
 

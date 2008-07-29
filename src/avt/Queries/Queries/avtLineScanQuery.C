@@ -585,6 +585,10 @@ avtLineScanQuery::Execute(vtkDataSet *ds, const int chunk)
 //    DataRequest may have the wrong value based on other pipelines sharing
 //    the same source. 
 //
+//    Kathleen Bonnell, Tue Jul 29 9:03:15 PDT 2008 
+//    For better error messages, check if there is an active variable in the
+//    data attributes, and if not then retrieve from data request.
+//
 // ****************************************************************************
 
 void
@@ -598,7 +602,10 @@ avtLineScanQuery::Execute(avtDataTree_p tree)
 
     avtContract_p contract =
         input->GetOriginatingSource()->GetGeneralContract();
-    varname = GetInput()->GetInfo().GetAttributes().GetVariableName();
+    if (GetInput()->GetInfo().GetAttributes().ValidActiveVariable())
+        varname = GetInput()->GetInfo().GetAttributes().GetVariableName();
+    else 
+        varname = contract->GetDataRequest()->GetVariable();
 
     for (int i = 0 ; i < numPasses ; i++)
     {

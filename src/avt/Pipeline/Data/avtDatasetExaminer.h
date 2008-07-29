@@ -78,6 +78,9 @@ class     vtkDataArray;
 //    Hank Childs, Mon Jan  9 09:54:53 PST 2006
 //    Added new form of GetSpatialExtents.
 //
+//    Kathleen Bonnell, Tue Jul 29 09:55:37 PDT 2008
+//    Added another form of GetNumberOfNodes.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetExaminer
@@ -86,6 +89,7 @@ class PIPELINE_API avtDatasetExaminer
     static int                GetNumberOfNodes(avtDataset_p &);
     static int                GetNumberOfZones(avtDataset_p &);
     static void               GetNumberOfZones(avtDataset_p &, int &, int &);
+    static void               GetNumberOfNodes(avtDataset_p &, int &, int &);
     static void               GetVariableList(avtDataset_p &, VarList &);
     static bool               GetSpatialExtents(avtDataset_p &, double *);
     static bool               GetSpatialExtents(std::vector<avtDataTree_p> &, 

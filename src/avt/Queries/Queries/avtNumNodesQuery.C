@@ -88,6 +88,10 @@ avtNumNodesQuery::~avtNumNodesQuery()
 //    Brad Whitlock, Mon Feb 23 12:11:02 PDT 2004
 //    I made it use SNPRINTF to get it to build on Linux.
 //
+//    Kathleen Bonnell, Tue Jul 29 10:01:29 PDT 2008
+//    Ensure ghost nodes aren't counted in the 'real' count by calling the
+//    appropriate avtDatasetExaminer method in the presence of ghost zones.
+//
 // ****************************************************************************
 
 void
@@ -102,19 +106,50 @@ avtNumNodesQuery::PerformQuery(QueryAttributes *qA)
 
     SetTypedInput(dob);
 
-    avtDataset_p input = GetTypedInput();
-    int totalNodes = 0;
+    int usedDomains = 
+        GetInput()->GetInfo().GetValidity().GetHasEverOwnedAnyDomain() ? 1 : 0;
+
+    avtGhostType gzt = 
+        GetInput()->GetInfo().GetAttributes().GetContainsGhostZones();
+
+    int totalNodes[2] = {0, 0};
+    int tn[2] = {0, 0};
     char msg[200];
+    if (usedDomains)
+    {
+        avtDataset_p input = GetTypedInput();
+        if (gzt != AVT_HAS_GHOSTS)
+        {
+            totalNodes[0] = avtDatasetExaminer::GetNumberOfNodes(input);
+        }
+        else 
+        {
+            avtDatasetExaminer::GetNumberOfNodes(input, totalNodes[0], 
+                                                 totalNodes[1]);
+        }
+    }
 
-    totalNodes = avtDatasetExaminer::GetNumberOfNodes(input);
-    SumIntAcrossAllProcessors(totalNodes);
+    SumIntArrayAcrossAllProcessors(totalNodes, tn, 2);
+
     if (OriginalData())
-        SNPRINTF(msg, 200, "The original number of nodes is %d.", totalNodes);
+        SNPRINTF(msg, 200, "The original number of nodes is %d.", tn[0]);
     else 
-        SNPRINTF(msg, 200, "The actual number of nodes is %d.", totalNodes);
+        SNPRINTF(msg, 200, "The actual number of nodes is %d.", tn[0]);
 
-    qA->SetResultsMessage(msg);
-    qA->SetResultsValue((double)totalNodes);
+
+    if (gzt != AVT_HAS_GHOSTS)
+    {
+        qA->SetResultsValue((double)tn[0]);
+        qA->SetResultsMessage(msg);
+    }
+    else
+    {
+        char msg2[200];
+        SNPRINTF(msg2, 200, "%s\nThe number of ghost nodes is %d.", msg, tn[1]);
+        double results[2] = {(double) tn[0], (double) tn[1]};
+        qA->SetResultsValues(results, 2);
+        qA->SetResultsMessage(msg2);
+    }
 
     UpdateProgress(1, 0);
 }
