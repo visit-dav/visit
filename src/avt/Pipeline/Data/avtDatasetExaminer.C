@@ -656,3 +656,34 @@ avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, int &nReal, int &nGhost)
     nGhost = numZones[1];
 }
 
+
+// ****************************************************************************
+//  Method: avtDatasetExaminer::GetNumberOfNodes
+//
+//  Purpose:
+//    Gets the number of nodes in the data tree.
+//    Counts 'real' and 'ghost' nodes separately.
+//
+//  Returns:
+//    The number of nodes (points) in the underlying vtk dataset of the
+//    avtDataTree.
+//
+//  Programmer:  Kathleen Bonnell
+//  Creation:    July 29, 2008 
+//
+// ****************************************************************************
+
+void
+avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds, int &nReal, int &nGhost)
+{
+    avtDataTree_p dataTree = ds->dataTree;
+
+    int numNodes[2] = {0, 0};
+    if (*dataTree != NULL)
+    {
+        bool dummy;
+        dataTree->Traverse(CGetNumberOfRealNodes, numNodes, dummy);
+    }
+    nReal = numNodes[0];
+    nGhost = numNodes[1];
+}

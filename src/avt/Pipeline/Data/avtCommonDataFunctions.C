@@ -2556,6 +2556,88 @@ CGetNumberOfRealZones(avtDataRepresentation &data, void *sum, bool &)
 
 
 // ****************************************************************************
+//  Method: CGetNumberOfRealNodes
+//
+//  Purpose:
+//    Adds the number of nodes in the vtk input to the passed sum argument. 
+//    Counts 'real' and 'ghost' separately.
+//
+//  Arguments:
+//    data      The data from which to calculate number of nodes.
+//    sum       A place to store the cumulative number of nodes.
+//    <unused> 
+//
+//  Notes:
+//      This method is designed to be used as the function parameter of
+//      avtDataTree::Iterate.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 29, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+CGetNumberOfRealNodes(avtDataRepresentation &data, void *sum, bool &)
+{
+    int *numNodes = (int*)sum;
+    //
+    // realNodes  stored in numNodes[0]
+    // ghostNodes stored in numNodes[1]
+    //
+    if (!data.Valid())
+    {
+        EXCEPTION0(NoInputException);
+    }
+    vtkDataSet *ds = data.GetDataVTK();
+    vtkUnsignedCharArray *ghostNodes = (vtkUnsignedCharArray*)
+        ds->GetPointData()->GetArray("avtGhostNodes");
+    vtkUnsignedCharArray *ghostZones = (vtkUnsignedCharArray*)
+        ds->GetCellData()->GetArray("avtGhostZones");
+
+    int nPoints = ds->GetNumberOfPoints();
+    if (ghostNodes != NULL)
+    {
+        unsigned char *gptr = ghostNodes->GetPointer(0);
+        for (int i = 0; i < nPoints; i++)
+        {
+           if (gptr[i])
+               numNodes[1]++;
+           else 
+               numNodes[0]++;
+        }
+    }
+    else if (ghostZones != NULL)
+    {
+        unsigned char *gptr = ghostZones->GetPointer(0);
+        vtkIdList *ids = vtkIdList::New();
+        for (int i = 0; i < nPoints; i++)
+        {
+           ds->GetPointCells(i, ids);    
+           int numGhostCells = 0;
+           if (ids->GetNumberOfIds() == 0)
+               continue;
+
+           for (int j = 0; j < ids->GetNumberOfIds(); j++)
+           {
+               numGhostCells += gptr[ids->GetId(j)] > 0 ? 1 : 0;
+           }
+           if (numGhostCells == ids->GetNumberOfIds())
+               numNodes[1]++;
+           else 
+               numNodes[0]++;
+        }
+        ids->Delete();
+    }
+    else
+    {
+        numNodes[0] += nPoints;
+    }
+}
+
+
+// ****************************************************************************
 //  Function: MajorEigenvalue
 //
 //  Purpose:

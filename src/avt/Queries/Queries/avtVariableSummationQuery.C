@@ -119,6 +119,10 @@ avtVariableSummationQuery::~avtVariableSummationQuery()
 //    DataRequest may have the wrong value based on other pipelines sharing
 //    the same source. 
 //
+//    Kathleen Bonnell, Tue Jul 29 10:05:39 PDT 2008
+//    Check for ValidActiveVariable before retrieving from DatAtts.  Revert
+//    back to using varname from DataRequest if no valid active variable.
+//
 // ****************************************************************************
 
 void
@@ -135,7 +139,16 @@ avtVariableSummationQuery::VerifyInput(void)
 
     avtDataAttributes &dataAtts = GetInput()->GetInfo().GetAttributes();
 
-    string varname = dataAtts.GetVariableName();
+
+    string varname;
+    if (dataAtts.ValidActiveVariable())
+    {
+        varname = dataAtts.GetVariableName();
+    }
+    else
+    {
+        varname = dataRequest->GetVariable();
+    }
     SetVariableName(varname);
     SumGhostValues(false);
     SetSumType(varname);

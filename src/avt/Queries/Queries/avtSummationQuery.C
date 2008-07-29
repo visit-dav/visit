@@ -382,6 +382,10 @@ avtSummationQuery::PostExecute(void)
 //    Hank Childs, Tue May 16 09:18:41 PDT 2006
 //    Add support for averaging.
 //
+//    Kathleen Bonnell, Tue Jul 29 10:08:41 PDT 2008
+//    If ghost-nodes unavailable, use ghost-zones to aid in determining if
+//    point data should be included in the sum.
+//
 // ****************************************************************************
 
 void
@@ -418,7 +422,7 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
 
 
     vtkUnsignedCharArray *ghost_zones = NULL;
-    if (!pointData && !sumGhostValues)
+    if (!sumGhostValues)
     {
         ghost_zones = (vtkUnsignedCharArray *)
                                   ds->GetCellData()->GetArray("avtGhostZones");
@@ -475,31 +479,40 @@ avtSummationQuery::Execute(vtkDataSet *ds, const int dom)
         {
             if (ghost_zones != NULL)
             {
-                unsigned char g = ghost_zones->GetValue(i);
-                if (g != 0)
+                if (ghost_zones->GetValue(i) != 0)
                     continue;
             }
             else if (ghost_nodes != NULL)
             {
                 bool allGhost = true;
                 ds->GetCellPoints(i, list);
-                vtkIdType npts = list->GetNumberOfIds();
-                for (int j = 0 ; j < npts ; j++)
+                for (int j = 0 ; j < list->GetNumberOfIds() ; j++)
                 {
-                    vtkIdType id = list->GetId(j);
-                    unsigned char g = ghost_nodes->GetValue(id);
-                    if (g == 0)
+                    if (ghost_nodes->GetValue(list->GetId(j)) == 0)
                         allGhost = false;
                 }
                 if (allGhost)
                     continue;
             }
         }
-        else if (ghost_nodes != NULL)
+        else 
         {
-            unsigned char g = ghost_nodes->GetValue(i);
-            if (g != 0)
-                continue;
+            if (ghost_nodes != NULL)
+            {
+                if (ghost_nodes->GetValue(i) != 0)
+                    continue;
+            }
+            else if (ghost_zones != NULL)
+            {
+                ds->GetPointCells(i, list);
+                int nghost = 0;
+                for (int j = 0 ; j < list->GetNumberOfIds(); j++)
+                {
+                    nghost += ghost_zones->GetValue(list->GetId(j)) > 0 ? 1 : 0;
+                }
+                if (nghost == list->GetNumberOfIds())
+                    continue;
+            }
         }
         if (sumOnlyPositiveValues && val < 0.)
             continue;

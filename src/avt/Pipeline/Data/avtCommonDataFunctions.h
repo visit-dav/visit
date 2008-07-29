@@ -122,6 +122,9 @@ class     vtkDataArray;
 //    Hank Childs, Mon May 12 09:12:36 PDT 2008
 //    Added CPruneByDomainList
 //
+//    Kathleen Bonnell, Tue Jul 29 09:50:17 PDT 2008
+//    Added CGetNumberOfRealNodes.
+//
 // ****************************************************************************
 
 //
@@ -150,6 +153,7 @@ PIPELINE_API void CGetArray(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetVariableCentering(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfNodes(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfRealZones(avtDataRepresentation &, void *, bool &);
+PIPELINE_API void CGetNumberOfRealNodes(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CExpandSingletonConstants(avtDataRepresentation &,
                                                      void *, bool &);
 PIPELINE_API void CConvertUnstructuredGridToPolyData(avtDataRepresentation &,
