@@ -231,8 +231,7 @@ VisIt_iMesh_getTagName(iMesh_Instance theMesh, iBase_TagHandle theTag)
 #ifdef ITAPS_MOAB
     iMesh_getTagName(theMesh, theTag, tmpName, &itapsError, sizeof(tmpName));
 #elif ITAPS_GRUMMP
-    iMesh_getTagName(theMesh, theTag, tmpName, &itapsError, sizeof(tmpName));
-    //iMesh_getTagName(theMesh, theTag, tmpName, sizeof(tmpName), &itapsError);
+    iMesh_getTagName(theMesh, theTag, tmpName, sizeof(tmpName), &itapsError);
 #endif
     return string(tmpName);
 }
@@ -868,9 +867,6 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         tmpFileName = string(vmeshFileName, 0, q-6);
     else if (vmeshFileName[q-6] == '.' && vmeshFileName[q-5] == 'c' &&
              vmeshFileName[q-4] == 'u' && vmeshFileName[q-3] == 'b')
-        tmpFileName = string(vmeshFileName, 0, q-4);
-    else if (vmeshFileName[q-6] == '.' && vmeshFileName[q-5] == 'v' &&
-             vmeshFileName[q-4] == 't' && vmeshFileName[q-3] == 'k')
         tmpFileName = string(vmeshFileName, 0, q-4);
 
     char dummyStr[32];
