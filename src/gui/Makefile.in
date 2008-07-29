@@ -400,7 +400,7 @@ LIBS=-lplugin $(QT_LIBS) $(QUI_LIBS) -L../lib -lviewerproxy -lviewerrpc \
      -lmisc -lstate -lcomm -lavtexceptions -lutility -lexpr -lparser \
      -lwinutil $(X_LIBS) @LIBS@ @PTHREAD_LIB@ @GUIFRAMEWORKS@
 
-LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@
+LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@ @EXE_LDFLAGS@
 LIBDEP=
 CXXFLAGS=-I. @CXXFLAGS@ @QT_CXXFLAGS@ -I../include/visit
 

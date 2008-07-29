@@ -66,7 +66,7 @@ SIMFLIBNAME=$(TOPDIR)/archives/$(SIMFLIB).a
 ##
 ## Override the certain variables with values from configure.
 ##
-LDFLAGS=-L../lib @PY_LDFLAGS@ @LDFLAGS@
+LDFLAGS=-L../lib @PY_LDFLAGS@ @LDFLAGS@ @EXE_LDFLAGS@
 LIBS=@LIBS@ 
 CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../../include/visit
 CFLAGS= -I. -I../../include/visit

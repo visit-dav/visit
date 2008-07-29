@@ -84,7 +84,7 @@ CLI=$(tmpbin)/cli
 ##
 ## Override the certain variables with values from configure.
 ##
-LDFLAGS=@PY_LDFLAGS@ @LDFLAGS@
+LDFLAGS=@PY_LDFLAGS@ @LDFLAGS@ @EXE_LDFLAGS@
 LIBS=@LIBS@ -lviewerproxy -lviewerrpc -lcomm -lmisc -lstate -lutility \
      -lplugin -ldbatts -lavtexceptions -lexpr -lparser -lvisitpy @PY_LIB@
 CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../common -I../visitpy -I../../include/visit
