@@ -29,12 +29,14 @@ typedef union {
     int id;
 } cog_id;
 
+struct _internal_set {
+    cog_id *v;
+    size_t size;
+};
+
 typedef union {
     char _sz[_SIZEOF_COG_SET];
-    struct {
-        cog_id *v;
-        size_t size;
-    } set;
+    struct _internal_set set;
 } cog_set;
 
 #endif /* COG_TYPES_H */
