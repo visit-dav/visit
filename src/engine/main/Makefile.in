@@ -352,10 +352,10 @@ clean:
 ## Other targets...
 ##
 @ENGINE_SER@ or_no_ser: $(SERLIBDEP) $(SEROBJ) $(MAINSEROBJ) $(LIBSHAREDSER)
-	$(CXX) -o $@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)
+	$(CXX) -o $@ $(LDFLAGS) @EXE_LDFLAGS@ $(MAINSEROBJ) -lengine_ser $(SERLIBS)
 
 @ENGINE_PAR@ or_no_par: $(PARLIBDEP) $(PAROBJ) $(MAINPAROBJ) $(LIBSHAREDPAR)
-	$(CXX) -o $@ $(LDFLAGS) $(MAINPAROBJ) -lengine_par $(PARLIBS) \
+	$(CXX) -o $@ $(LDFLAGS) @EXE_LDFLAGS@  $(MAINPAROBJ) -lengine_par $(PARLIBS) \
 	@ICET_LDFLAGS@ @ICET_LIBS@ @LIBCOGNOMEN@
 
 $(ENGINEWRAPSER) or_no_ser_wrapper: $(SERLIBDEP) $(SEROBJ) $(LIBRARYSEROBJ) $(LIBSHAREDSER)

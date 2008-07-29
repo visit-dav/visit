@@ -49,7 +49,7 @@
 # Override some make variables
 #
 CFLAGS=@CFLAGS@ -g -I. -I$(TOPDIR)/include -I$(TOPDIR)/include/visit
-LDFLAGS=@LDFLAGS@ @EXPORT_DYNAMIC@ -L$(TOPDIR)/archives
+LDFLAGS=@LDFLAGS@ @EXE_LDFLAGS@ @EXPORT_DYNAMIC@ -L$(TOPDIR)/archives
 LIBS=@LIBS@ -lsim
 F77FLAGS=-I$(TOPDIR)/include/visit
 FLIBS=@LIBS@ -lsimf -lsim

@@ -333,7 +333,7 @@ LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
      @QT_LIBS@ -lproxybase -lmisc -lcomm -lstate -lutility -lavtexceptions \
      $(VTK_LIBS) $(X_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS) $(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@
 
-LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@
+LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@ @EXE_LDFLAGS@
 LIBDEP=
 CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@ 
 CPPFLAGS=@PLATFORM_CPPFLAGS@ @CPPFLAGS@ @VIEWER_MESA_STUB_CPPFLAGS@ $(VTK_INCLUDE) -I../../vtkqt \

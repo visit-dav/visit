@@ -344,9 +344,9 @@ class MakefileGeneratorPlugin : public Plugin
         out << "CPPFLAGS=$(CPPFLAGSORIG) $(VTK_INCLUDE) -I. -I"<<visithome<<"/include -I"<<visithome<<"/include/mesa -I"<<visithome<<"/include/visit $(PY_CXXFLAGS)" << endl;
 #endif
         if(type == "database")
-            out << "LDFLAGS=$(LDFLAGSORIG) ";
+            out << "LDFLAGS=$(LDFLAGSORIG) $(PLUGIN_LDFLAGS)";
         else
-            out << "LDFLAGS=$(LDFLAGSORIG) $(PY_LDFLAGS) ";
+            out << "LDFLAGS=$(LDFLAGSORIG) $(PLUGIN_LDFLAGS) $(PY_LDFLAGS) ";
         for (size_t i=0; i<ldflags.size(); i++)
             out << " " << ldflags[i];
         out << " -L" << visitplugininstall << "/" << type << "s";

@@ -3453,6 +3453,11 @@ fi
 SHLIB_POSTPROCESS="mv $""(LIBSHAREDTEMP) $""@"
 SHLIB_POSTPROCESS_SER="mv $""(LIBSHAREDTEMPSER) $""@"
 SHLIB_POSTPROCESS_PAR="mv $""(LIBSHAREDTEMPPAR) $""@"
+EXE_LDFLAGS=${EXE_LDFLAGS-""}
+PLUGIN_LDFLAGS=${PLUGIN_LDFLAGS-""}
+AC_SUBST(EXE_LDFLAGS)
+AC_SUBST(PLUGIN_LDFLAGS)
+
 case $SHORT_UNAME in
   freebsd)
     # Expecting g++
@@ -3549,9 +3554,9 @@ case $SHORT_UNAME in
     if test -z "$SHLIB_CREATEPROG"; then
         SHLIB_CREATEPROG="$""(CXX) -shared -o"
     fi
-
     # Set RPATH relative to executable
-    LDFLAGS="$LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../lib"
+    EXE_LDFLAGS="$LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../lib"
+    PLUGIN_LDFLAGS="$LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../../lib"
     ;;
 
   darwin)

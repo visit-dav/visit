@@ -65,7 +65,7 @@ LIBNAME=$(LIB).@SHLIB_SOEXT@
 ##
 ## Override the certain variables with values from configure.
 ##
-LDFLAGS=-L../../lib @PY_LDFLAGS@ @LDFLAGS@
+LDFLAGS=-L../../lib @PY_LDFLAGS@ @LDFLAGS@ @EXE_LDFLAGS@
 LIBS=@LIBS@ -lviewerproxy -lviewerrpc -lcomm -lmisc -lstate -lutility \
      -lplugin -ldbatts -lavtexceptions -lexpr -lparser @PY_LIB@
 CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../../include/visit
