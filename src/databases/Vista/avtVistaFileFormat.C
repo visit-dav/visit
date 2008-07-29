@@ -49,8 +49,13 @@
 #define HAVE_HDF5 ((HAVE_HDF5_H==1) && (HAVE_LIBHDF5==1))
 
 #if HAVE_HDF5
-// Don't include hdf5.h directly. visit-hdf5.h ensures we get correct API 
-#include <visit-hdf5.h>
+// Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
+// in this file uses version 1.6 of the HDF5 API. This is harmless for
+// versions of HDF5 before 1.8 and ensures correct compilation with
+// version 1.8 and thereafter. When, and if, the HDF5 code in this file
+// is explicitly upgraded to the 1.8 API, this symbol should be removed.
+#define H5_USE_16_API
+#include <hdf5.h>
 #endif
 #include <silo.h>
 
