@@ -350,6 +350,9 @@ $0 = shift @ARGV;
 #    Remove unused arguments from generate_args_valgrind; they weren't passed
 #    as references and wouldn't be interpreted correctly anyway.
 #
+#    Sean Ahern, Wed Jul 30 11:46:45 EDT 2008
+#    Made the check for X11-based terminals in darwin a bit more robust.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2368,7 +2371,7 @@ else
 
                     $launched = 1;
                 }
-                elsif($ENV{TERM} eq "xterm")
+                elsif($ENV{TERM} eq "xterm" or $ENV{DISPLAY} ne undef)
                 {
                     @tmpcmd = @visitcmd;
                     @visitcmd = ("xterm", "-title", "VisIt $exe_name$ver", "-fn", "fixed", "-e");
