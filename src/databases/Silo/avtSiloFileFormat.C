@@ -1142,6 +1142,13 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
 //    Added logic to ignore data extents for block structured code
+//
+//    Mark C. Miller, Tue Jul 29 18:16:59 PDT 2008
+//    Added logic to ensure _meshtv_defvars and _visit_defvars are indeed
+//    simple silo variables before reading them as such. This is to prevent
+//    situations where users have switched to using DBPutDefvars to create
+//    the same information but wind up also calling it the same thing.
+//
 // ****************************************************************************
 
 void
@@ -1330,7 +1337,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         }
 
         bool hadVisitDefvars = false;
-        if (DBInqVarExists(dbfile, "_visit_defvars"))
+        if (DBInqVarExists(dbfile, "_visit_defvars") &&
+            DBInqVarType(dbfile, "_visit_defvars") == DB_VARIABLE)
         {
             int    ldefvars = DBGetVarLength(dbfile, "_visit_defvars");
             if (ldefvars > 0)
@@ -1347,7 +1355,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             hadVisitDefvars = true;
         }
 
-        if (!hadVisitDefvars && DBInqVarExists(dbfile, "_meshtv_defvars"))
+        if (!hadVisitDefvars && DBInqVarExists(dbfile, "_meshtv_defvars") &&
+            DBInqVarType(dbfile, "_meshtv_defvars") == DB_VARIABLE)
         {
             int    ldefvars = DBGetVarLength(dbfile, "_meshtv_defvars");
             if (ldefvars > 0)
