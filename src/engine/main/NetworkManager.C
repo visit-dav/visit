@@ -2060,13 +2060,6 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Use Shadowing and DepthCueing methods instead of querying those modes
 //    inline.
 //
-//    Hank Childs, Fri Jul 25 09:40:16 PDT 2008
-//    Add some checks for combinations of transparent rendering and volume
-//    rendering and also for multiple volume renderings.
-//
-//    Tom Fogal, Sun Jul 27 01:09:11 EDT 2008
-//    Moved the multiple volume renderings check to RenderPostProcess.
-//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -2170,25 +2163,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 this->RenderTranslucent(windowID,
                                         imageCompositer->GetTypedOutput()
                                        ); 
-            if (imageBasedPlots.size() > 0)
-            {
-                static bool issuedWarning = false;
-                if (!issuedWarning)
-                {
-                    // This message is based on how it can occur in VisIt right now.
-                    // It may need to be generalized in the future.
-                    const char *msg =
-                                "VisIt does not support the "
-                                "rendering of transparent "
-                                "geometry with ray-traced volume plots.  "
-                                "The volume plot is not being "
-                                "rendered.  (This message will only "
-                                "be issued once per session.)";
-                    avtCallback::IssueWarning(msg);
-                    issuedWarning = false;
-                }
-                imageBasedPlots.clear();
-            }
         }
 
         //
@@ -4706,6 +4680,13 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 //    Tom Fogal, Fri Jul 18 17:29:53 EDT 2008
 //    Move viewportedMode calculation into here, where it belongs anyway...
 //
+//    Hank Childs, Fri Jul 25 09:40:16 PDT 2008 (copied from Render)
+//    Add some checks for combinations of transparent rendering and volume
+//    rendering and also for multiple volume renderings.
+//
+//    Tom Fogal, Mon Jul 28 16:37:36 EDT 2008
+//    Moved tests for invalid rendering combinations to here.
+//
 // ****************************************************************************
 
 void
@@ -4861,6 +4842,50 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
     {
         UpdateVisualCues(windowID);
         this->r_mgmt.handledCues = true;
+    }
+
+    std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
+    // Two imageBasedPlots don't do the right thing currently, so put up a
+    // warning about it.
+    if (this->MultipassRendering(viswin) && imageBasedPlots.size() > 0)
+    {
+        static bool warnTransparentAndIBPs = false;
+        if (!warnTransparentAndIBPs)
+        {
+            // This message is based on how it can occur in VisIt right now.
+            // It may need to be generalized in the future.
+            const char msg[512] =
+                        "VisIt does not support the "
+                        "rendering of transparent "
+                        "geometry with ray-traced volume plots.  "
+                        "The volume plots are not being "
+                        "rendered.  (This message will only "
+                        "be issued once per session.)";
+            avtCallback::IssueWarning(msg);
+            warnTransparentAndIBPs = false;
+        }
+        imageBasedPlots.clear();
+    }
+
+    // Test to make sure we don't have two RayCasted VRs.
+    if (imageBasedPlots.size() > 1)
+    {
+        static bool issuedWarning = false;
+        if (!issuedWarning)
+        {
+            // This message is based on how it can occur in VisIt right now.
+            // It may need to be generalized in the future.
+            const char msg[256] =
+                        "VisIt does not support multiple ray-traced volume "
+                        "renderings.  Only the first volume plot "
+                        " will be rendered.  (This message will only "
+                        "be issued once per session.)";
+            avtCallback::IssueWarning(msg);
+            issuedWarning = false;
+        }
+        vector<avtPlot_p> imageBasedPlots_tmp;
+        imageBasedPlots_tmp.push_back(imageBasedPlots[0]);
+        imageBasedPlots = imageBasedPlots_tmp;
     }
 
     this->r_mgmt.viewportedMode =
@@ -5047,7 +5072,7 @@ NetworkManager::RenderGeometry()
 // ****************************************************************************
 //  Method: MultipassRendering
 //
-//  Purpose: Predicate which determines whetehr or not we should do render in
+//  Purpose: Predicate which determines whether or not we should do render in
 //           two passes -- once for opaque and then again for translucent
 //           geometry.
 //
@@ -5472,13 +5497,6 @@ NetworkManager::RenderDepthCues(int windowID,
 //    Tom Fogal, Wed Jul  2 15:09:47 EDT 2008
 //    Avoid VisWindow lookup if not in `2'nd annotation mode.
 //
-//    Hank Childs, Fri Jul 25 09:40:16 PDT 2008 (copied from Render)
-//    Add some checks for combinations of transparent rendering and volume
-//    rendering and also for multiple volume renderings.
-//
-//    Tom Fogal, Sun Jul 27 01:09:11 EDT 2008
-//    Moved the multiple volume renderings check to RenderPostProcess.
-//
 // ****************************************************************************
 
 void
@@ -5493,27 +5511,6 @@ NetworkManager::RenderPostProcess(std::vector<avtPlot_p>& image_plots,
     {
         avtImage_p compositedImage;
         CopyTo(compositedImage, input_as_dob);
-
-        // Test to make sure we don't have two RayCasted VRs.
-        if (image_plots.size() > 1)
-        {
-            static bool issuedWarning = false;
-            if (!issuedWarning)
-            {
-                // This message is based on how it can occur in VisIt right now.
-                // It may need to be generalized in the future.
-                const char *msg =
-                            "VisIt does not support multiple ray-traced volume "
-                            "renderings.  Only the first volume plot "
-                            " will be rendered.  (This message will only "
-                            "be issued once per session.)";
-                avtCallback::IssueWarning(msg);
-                issuedWarning = false;
-            }
-            vector<avtPlot_p> imageBasedPlots_tmp;
-            imageBasedPlots_tmp.push_back(image_plots[0]);
-            image_plots = imageBasedPlots_tmp;
-        }
 
         for(std::vector<avtPlot_p>::iterator plot = image_plots.begin();
             plot != image_plots.end();
