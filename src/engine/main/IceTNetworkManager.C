@@ -253,6 +253,9 @@ IceTNetworkManager::TileLayout(size_t width, size_t height) const
 //    Tom Fogal, Fri Jul 18 17:32:31 EDT 2008
 //    Query parent's implementation for rendering features.
 //
+//    Tom Fogal, Mon Jul 28 14:45:09 EDT 2008
+//    Do Z test earlier, and request IceT buffers based on Z test.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
@@ -269,6 +272,50 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
     {
         this->StartTimer();
         this->RenderSetup(networkIds, getZBuffer, annotMode, windowID, leftEye);
+        bool needZB = !imageBasedPlots.empty() ||
+                      this->Shadowing(windowID)  ||
+                      this->DepthCueing(windowID);
+
+        // Confusingly, we need to set the input to be *opposite* of what VisIt
+        // wants.  This is due to (IMHO) poor naming in the IceT case; on the
+        // input side:
+        //     ICET_DEPTH_BUFFER_BIT set:     do Z-testing
+        //     ICET_DEPTH_BUFFER_BIT not set: do Z-based compositing.
+        // On the output side:
+        //     ICET_DEPTH_BUFFER_BIT set:     readback of Z buffer is allowed
+        //     ICET_DEPTH_BUFFER_BIT not set: readback of Z does not work.
+        // In VisIt's case, we calculated a `need Z buffer' predicate based
+        // around the idea that we need the Z buffer to do Z-compositing.
+        // However, IceT \emph{always} needs the Z buffer internally -- the
+        // flag only differentiates between `compositing' methodologies
+        // (painter-style or `over' operator) on input.
+        GLenum inputs = ICET_COLOR_BUFFER_BIT;
+        GLenum outputs = ICET_COLOR_BUFFER_BIT;
+        // Scratch all that, I guess.  That might be the correct way to go
+        // about things in the long run, but IceT only gives us back half an
+        // if we don't set the depth buffer bit.  The compositing is a bit
+        // wrong, but there's not much else we can do..
+        // Consider removing the `hack' if a workaround is found.
+        if(/*hack*/true/*hack*/ || !this->MultipassRendering(viswin))
+        {
+            inputs |= ICET_DEPTH_BUFFER_BIT;
+        }
+        if(needZB)
+        {
+            outputs |= ICET_DEPTH_BUFFER_BIT;
+        }
+        ICET(icetInputOutputBuffers(inputs, outputs));
+
+        // If there is a backdrop image of sorts, we need to tell IceT so that
+        // it can composite correctly.
+        if(viswin->GetBackgroundMode() != AnnotationAttributes::Solid)
+        {
+            ICET(icetEnable(ICET_CORRECT_COLORED_BACKGROUND));
+        }
+        else
+        {
+            ICET(icetDisable(ICET_CORRECT_COLORED_BACKGROUND));
+        }
 
         // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
         // the misfortune of oscillating switching of modes around the
@@ -297,7 +344,6 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
         // second) is all handled in the callback; from our perspective, we
         // just say draw, read back the image, and post-process it.
 
-        ICET(icetEnable(ICET_CORRECT_COLORED_BACKGROUND));
         ICET(icetDrawFunc(render));
         ICET(icetDrawFrame());
         // The IceT documentation recommends synchronization after rendering.
@@ -307,14 +353,6 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
         debug3 << "IceTNM: Starting readback." << std::endl;
         avtDataObject_p dob;
         {
-            bool needZB;
-            needZB = (viswin->GetWindowMode() == WINMODE_3D ||
-                      viswin->GetBackgroundMode() != 0)     &&
-                      (this->r_mgmt.getZBuffer          ||
-                       this->MultipassRendering(viswin) ||
-                       this->Shadowing(windowID)        ||
-                       this->DepthCueing(windowID)      ||
-                       !(imageBasedPlots.empty()));
             avtImage_p img = this->Readback(viswin, needZB);
             CopyTo(dob, img);
         }
@@ -407,6 +445,9 @@ IceTNetworkManager::RealRender()
 //
 //  Modifications:
 //
+//    Tom Fogal, Mon Jul 28 14:57:01 EDT 2008
+//    Need to return NULL in the single-pass case!
+//
 // ****************************************************************************
 avtImage_p
 IceTNetworkManager::RenderGeometry()
@@ -419,6 +460,7 @@ IceTNetworkManager::RenderGeometry()
     CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
         viswin->ScreenRender(this->r_mgmt.viewportedMode, true);
     CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
+    return NULL;
 }
 
 // ****************************************************************************
@@ -446,6 +488,9 @@ IceTNetworkManager::RenderGeometry()
 //    Tom Fogal, Thu Jul 17 17:02:40 EDT 2008
 //    Repurposed viewported argument for a boolean to grab Z.
 //
+//    Tom Fogal, Mon Jul 28 14:44:28 EDT 2008
+//    Don't ask IceT for Z if we're not going to use it anyway.
+//
 // ****************************************************************************
 avtImage_p
 IceTNetworkManager::Readback(const VisWindow * const viswin,
@@ -470,12 +515,9 @@ IceTNetworkManager::Readback(const VisWindow * const viswin,
     // We have an image.  First read it back from IceT.
     pixels = icetGetColorBuffer();
     DEBUG_ONLY(ICET_CHECK_ERROR);
-    depth = icetGetDepthBuffer();
-    DEBUG_ONLY(ICET_CHECK_ERROR);
 
     this->VerifyColorFormat(); // Bail out if we don't get GL_RGBA data.
     assert(NULL != pixels);
-    assert(NULL != depth);
 
     vtkImageData *image = avtImageRepresentation::NewImage(width, height);
     // NewImage assumes we want a 3-component ("GL_RGB") image, but IceT gives
@@ -492,6 +534,10 @@ IceTNetworkManager::Readback(const VisWindow * const viswin,
 
     float *visit_depth_buffer = NULL;
     if(readZ) {
+        depth = icetGetDepthBuffer();
+        DEBUG_ONLY(ICET_CHECK_ERROR);
+        assert(NULL != depth);
+
         debug1 << "converting depth values ..." << std::endl;
         visit_depth_buffer = utofv(depth, width*height);
     }
