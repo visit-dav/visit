@@ -2027,6 +2027,10 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 @mpicmd = ("aprun");
                 push @mpicmd, @sublaunchargs if $sublaunchargs_set;
                 push @mpicmd, "-n",  $procs if $procs_set;
+                if ( $IsRunningOnFranklinNERSC || $IsRunningOnJaguarCNL_ORNL )
+                {
+                    push @mpicmd, "env LD_LIBRARY_PATH=$visitlibdir:$visitarchdir/system_libs";
+                }
                 push @mpicmd, "@visitcmd\n";
             }
 
@@ -2069,11 +2073,16 @@ if ($procs_set or ($parallel and $parlaunch_set))
             $ppn = ceil($procs / $nodes);
             $qsubNumNodeStr = "nodes";
             $qsubPPNStr = "ncpus";
+            $qsubSeparator = ":";
             if ( $IsRunningOnJaguarCNL_ORNL ) {$qsubNumNodeStr = "size";}
-            if ( $IsRunningOnFranklinNERSC ) {$qsubNumNodeStr = "mppwidth";}
+            if ( $IsRunningOnFranklinNERSC ) {
+                $qsubNumNodeStr = "mppwidth";
+                $qsubPPNStr = "mppnppn";
+                $qsubSeparator = ",";
+            }
             if ( $IsRunningOnLens_ORNL ) {$qsubPPNStr = "ppn";}
-            if ( $use_vis ) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes:$qsubPPNStr=$ppn:vis";}
-            else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes:$qsubPPNStr=$ppn"; }
+            if ( $use_vis ) { push @parcmd, "-l", "$qsubNumNodeStr=$nodes$qsubSeparator$qsubPPNStr=$ppn:vis";}
+            else { push @parcmd, "-l", "$qsubNumNodeStr=$nodes$qsubSeparator$qsubPPNStr=$ppn"; }
             push @parcmd, "-l", "walltime=$time" if $time_set;
             if ($UseTTC) { push @parcmd, "-l", "ttc=$procs"; }
             push @parcmd, "-q",  $part  if $part_set;
