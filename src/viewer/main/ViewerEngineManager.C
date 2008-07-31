@@ -394,6 +394,11 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 //    Brad Whitlock, Tue Apr 29 13:20:06 PDT 2008
 //    Support for internationalization.
 //
+//    Brad Whitlock, Thu Jul 31 08:59:27 PDT 2008
+//    Added code to send a keep alive after creation as a workaround to
+//    some firewalls that try to close sockets that don't send data within
+//    some short period of time.
+//
 // ****************************************************************************
 
 bool
@@ -496,6 +501,14 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
                                   manualSSHPort, sshPort, useTunneling,
                                   OpenWithLauncher, (void *)dialog, true);
             }
+
+            // Do a keep alive immediately to ensure that data is sent
+            // over the engine socket. The other 2 sockets share data when
+            // exchanging type representations on connect. This ensures that
+            // data has come through all sockets, thwarting some evil firewalls
+            // that try to close sockets that don't send data within some
+            // small amount of time.
+            newEngine.proxy->SendKeepAlive();
         }
         CATCHALL(...)
         {
