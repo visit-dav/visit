@@ -453,8 +453,8 @@ QvisFilePanel::SetTimeStateFormat(const TimeFormat &m)
                              it.current()->setText(0, CreateItemLabel(md, j,
                                  useVirtualDBInfo));
                         }
-			item->timeStateHasBeenForced =
-			    fileServer->GetForceReadAllCyclesTimes();
+                        item->timeStateHasBeenForced =
+                            fileServer->GetForceReadAllCyclesTimes();
                     }
                 }
             }
@@ -1054,6 +1054,10 @@ QvisFilePanel::UpdateAnimationControlsEnabledState()
 //   Brad Whitlock, Sat Jan 24 20:43:30 PST 2004
 //   Updated for the new time and file scheme.
 //
+//   Cyrus Harrison, Fri Aug  1 09:06:03 PDT 2008
+//   Changed set of time field text to use SetTimeFieldText to make sure
+//   long time values remain visible.
+//
 // ****************************************************************************
 
 void
@@ -1119,8 +1123,7 @@ QvisFilePanel::UpdateTimeFieldText(int timeState)
                         timeString = "?";
 #endif
                 }
-
-                timeField->setText(timeString);
+                SetTimeFieldText(timeString);
             }
             else
             {
@@ -1134,14 +1137,14 @@ QvisFilePanel::UpdateTimeFieldText(int timeState)
                         timeNeedsToBeSet = false;
                         timeString = FormattedTimeString(
                             correlation->GetCondensedTimeForState(timeState), true);
-                        timeField->setText(timeString);
+                        SetTimeFieldText(timeString);
                     }
                     else if(correlation->GetMethod() == DatabaseCorrelation::CycleCorrelation)
                     {
                         timeNeedsToBeSet = false;
                         timeString = FormattedCycleString(
                             correlation->GetCondensedCycleForState(timeState));
-                        timeField->setText(timeString);
+                        SetTimeFieldText(timeString);
                     }
                 }
 
@@ -1149,7 +1152,7 @@ QvisFilePanel::UpdateTimeFieldText(int timeState)
                 if(timeNeedsToBeSet)
                 {
                     timeString.sprintf("%d", timeState);
-                    timeField->setText(timeString);
+                    SetTimeFieldText(timeString);
                 }
             }
         }
@@ -1158,11 +1161,39 @@ QvisFilePanel::UpdateTimeFieldText(int timeState)
             // There was no correlation but we know the time state that we want to
             // display so let's show that in the time line edit.
             timeString.sprintf("%d", timeState);
-            timeField->setText(timeString);
+            SetTimeFieldText(timeString);
         }
     }
     else
-        timeField->setText("");
+        SetTimeFieldText("");
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::SetTimeFieldText
+//
+// Purpose: 
+//   Sets the text in the time/cycle text field, makes sure the text is 
+//   visible to the user. 
+//
+// Arguments:
+//   text: Text value to set.
+//
+// Programmer: Cyrus Harrison
+// Creation:   
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisFilePanel::SetTimeFieldText(const QString &text)
+{
+    int w  = timeField->width(); 
+    int nw = timeField->fontMetrics().width("  " + text);
+    if(w < nw)
+        timeField->setMinimumWidth(nw);
+    
+    timeField->setText(text);
 }
 
 // ****************************************************************************
@@ -3353,6 +3384,11 @@ QvisFilePanel::sliderChange(int val)
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interface to FileServerList::GetMetaData
+// 
+//   Cyrus Harrison, Fri Aug  1 09:06:03 PDT 2008
+//   Changed set of time field text to use SetTimeFieldText to make sure
+//   long time values remain visible.
+//
 // ****************************************************************************
 
 void
@@ -3380,7 +3416,7 @@ QvisFilePanel::processTimeText()
         double t = temp.toDouble(&okay);
         if(!okay)
         {
-            timeField->setText("");
+            SetTimeFieldText("");
             return;
         } 
 
@@ -3403,7 +3439,7 @@ QvisFilePanel::processTimeText()
         int cycle = temp.toInt(&okay);
         if(!okay)
         {
-            timeField->setText("");
+            SetTimeFieldText("");
             return;
         } 
 

@@ -146,6 +146,10 @@ class ViewerProxy;
 //   Brad Whitlock, Thu Jul 24 09:17:05 PDT 2008
 //   Made it possible to overlay a file at a given state.
 //
+//   Cyrus Harrison, Fri Aug  1 09:06:03 PDT 2008
+//   Added SetTimeFieldText() helper to make sure long time values remain 
+//   visible.
+//
 // ****************************************************************************
 
 class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIBase
@@ -204,6 +208,7 @@ private:
     void UpdateAnimationControls(bool doAll);
     void UpdateFileSelection();
     void UpdateTimeFieldText(int timeState);
+    void SetTimeFieldText(const QString &text);
     void UpdateAnimationControlsEnabledState();
     bool UpdateReplaceButtonEnabledState();
     void UpdateOpenButtonState(QvisListViewFileItem *fileItem);
