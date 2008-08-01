@@ -21,6 +21,9 @@
 #
 #    Mark C. Miller, Tue Apr 22 23:20:43 PDT 2008
 #    Modified to test new subsetting functionality.
+#
+#    Mark C. Miller, Thu Jul 31 17:06:06 PDT 2008
+#    Removed extraneous printf statements
 # ----------------------------------------------------------------------------
 
 def RestrictSetsInCategory(silr, className, setIds):
@@ -34,14 +37,10 @@ def RestrictSetsInCategory(silr, className, setIds):
             i = i + 1;
             silr.TurnOnSet(set)
         elif i < len(setIds) and silr.SetName(set) == "%s%d"%(className, setIds[i]):
-            print "Turning on set %s"%silr.SetName(set)
             i = i + 1;
             silr.TurnOnSet(set)
         else:
-            print "Turning OFF set %s"%silr.SetName(set)
             silr.TurnOffSet(set)
-        
-
 
 # test the main mesh
 OpenDatabase("../data/iTaps_test_data/mbtest1", 0, "ITAPS_C_1.0")
