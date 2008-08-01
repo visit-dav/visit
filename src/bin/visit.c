@@ -620,13 +620,16 @@ ReadKey(const char *key, char **keyval)
  *   find the full path to this executable and use it for visitpath and
  *   visitdevdir instead.
  *
+ *   Kathleen Bonnell, Thu July 31 16:55:43 PDT 2008 
+ *   Initialize visitdevdir.
+ *
  *****************************************************************************/
 
 char *
 AddEnvironment(int useShortFileName)
 {
     char *tmp, *visitpath = 0, *ssh = 0, *sshargs = 0, *visitsystemconfig = 0;
-    char *visitdevdir;
+    char *visitdevdir = 0;
     char visituserpath[512], expvisituserpath[512], tmpdir[512];
     int haveVISITHOME = 0, haveSSH = 0, haveSSHARGS = 0;
     int haveVISITSYSTEMCONFIG = 0, haveVISITUSERHOME=0, haveVISITDEVDIR=0;
