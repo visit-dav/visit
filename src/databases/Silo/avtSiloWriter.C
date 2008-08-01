@@ -87,6 +87,8 @@ using std::vector;
 //    Initialize nblocks and meshtype -- these were added because we
 //    cannot trust what was in the metadata.
 //
+//    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
+//    Added option to write all data to a single file 
 // ****************************************************************************
 
 avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
@@ -95,12 +97,35 @@ avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
     optlist = 0;
     nblocks = 0;
     driver = DB_PDB;
-    switch (dbopts->GetEnum("Driver"))
+    singleFile = false;
+
+    for (int i = 0; dbopts != 0 && i < dbopts->GetNumberOfOptions(); ++i)
     {
-        case 0: driver = DB_PDB; break;
-	case 1: driver = DB_HDF5; break;
+        if (dbopts->GetName(i) == "Driver")
+        {
+            switch (dbopts->GetEnum("Driver"))
+            {
+                case 0: driver = DB_PDB; break;
+	        case 1: driver = DB_HDF5; break;
+            }
+        }
+        else if (dbopts->GetName(i) == "Single File")
+        {
+            singleFile = dbopts->GetBool("Single File");
+#if defined(PARALLEL)
+            if (singleFile)
+            {
+                debug1 << "Cannot guarentee single file option from parallel engine. Ignoring." << endl;
+                singleFile = false;
+            }
+#endif
+        }
+        else
+            debug1 << "Ignoring unknown option \"" << dbopts->GetName(i) << "\"" << endl;
     }
+
     meshtype = AVT_UNKNOWN_MESH;
+
 }
 
 
@@ -228,6 +253,8 @@ avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Mark C. Miller, Mon Jun  4 17:29:11 PDT 2007
 //    Don't write extents if running in parallel. 
 //
+//    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
+//    Added option to write all data to a single file 
 // ****************************************************************************
 
 void
@@ -274,7 +301,10 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
     {
         meshtypes[i] = silo_mesh_type;
         char tmp[1024];
-        sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i, mmd->name.c_str());
+        if (singleFile)
+            sprintf(tmp, "domain_%d/%s", i, mmd->name.c_str());
+        else
+            sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i, mmd->name.c_str());
         mesh_names[i] = new char[strlen(tmp)+1];
         strcpy(mesh_names[i], tmp);
 
@@ -357,6 +387,8 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
 //    Mark C. Miller, Mon Jun  4 17:29:11 PDT 2007
 //    Don't write extents if running in parallel. 
 //
+//    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
+//    Added option to write all data to a single file 
 // ****************************************************************************
 
 void
@@ -417,7 +449,10 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
     {
         vartypes[i] = silo_var_type;
         char tmp[1024];
-        sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i, sname.c_str());
+        if (singleFile)
+            sprintf(tmp, "domain_%d/%s", i, sname.c_str());
+        else
+            sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i, sname.c_str());
         var_names[i] = new char[strlen(tmp)+1];
         strcpy(var_names[i], tmp);
 
@@ -491,6 +526,8 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
 //    Use the saved mesh type and number of blocks instead of assuming
 //    the metadata was correct.
 //
+//    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
+//    Added option to write all data to a single file 
 // ****************************************************************************
 
 void
@@ -506,7 +543,10 @@ avtSiloWriter::ConstructMultimat(DBfile *dbfile, const string &mname,
     for (i = 0 ; i < nblocks ; i++)
     {
         char tmp[1024];
-        sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i, mname.c_str());
+        if (singleFile)
+            sprintf(tmp, "domain_%d/%s", i, mname.c_str());
+        else
+            sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i, mname.c_str());
         mat_names[i] = new char[strlen(tmp)+1];
         strcpy(mat_names[i], tmp);
     }
@@ -591,6 +631,8 @@ avtSiloWriter::ConstructChunkOptlist(const avtDatabaseMetaData *md)
 //    Cyrus Harrison, Thu Aug 16 20:42:30 PDT 2007
 //    Use dir+stem to create filename.
 //
+//    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
+//    Added option to write all data to a single file 
 // ****************************************************************************
 
 void
@@ -602,16 +644,39 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
     //
     string fname = dir + stem;
     char filename[1024];
-    if (nblocks > 1)
-        sprintf(filename, "%s.%d.silo", fname.c_str(), chunk);
-    else
+    if (singleFile)
         sprintf(filename, "%s.silo", fname.c_str());
+    else
+        sprintf(filename, "%s.%d.silo", fname.c_str(), chunk);
 
 #ifdef E_CHECKSUM
     int oldEnable = DBSetEnableChecksums(0);
 #endif
-    DBfile *dbfile = DBCreate(filename, 0, DB_LOCAL, 
-                              "Silo file written by VisIt", driver);
+
+    DBfile *dbfile;
+    if (chunk > 0 && singleFile)
+    {
+        dbfile = DBOpen(filename, DB_UNKNOWN, DB_APPEND);
+
+        char dirname[32];
+        sprintf(dirname, "domain_%d", chunk);
+        DBMkDir(dbfile, dirname);
+        DBSetDir(dbfile, dirname);
+    }
+    else
+    {
+        dbfile = DBCreate(filename, 0, DB_LOCAL, 
+                     "Silo file written by VisIt", driver);
+
+        if (singleFile)
+        {
+            char dirname[32];
+            sprintf(dirname, "domain_%d", chunk);
+            DBMkDir(dbfile, dirname);
+            DBSetDir(dbfile, dirname);
+        }
+    }
+
 #ifdef E_CHECKSUM
     DBSetEnableChecksums(oldEnable);
 #endif
@@ -677,6 +742,8 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //    Use first processor with data to write the root file.
 //    (processor 0 may not contain data and b/c of this have invalid metadata)
 //
+//    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
+//    Added option to write all data to a single file 
 // ****************************************************************************
 
 void
@@ -723,8 +790,12 @@ avtSiloWriter::CloseFile(void)
 #ifdef E_CHECKSUM
         int oldEnable = DBSetEnableChecksums(0);
 #endif
-        DBfile *dbfile = DBCreate(filename, 0, DB_LOCAL, 
-                                  "Silo file written by VisIt", DB_PDB);
+        DBfile *dbfile;
+        if (singleFile)
+            dbfile = DBOpen(filename, DB_UNKNOWN, DB_APPEND);
+        else
+            dbfile = DBCreate(filename, 0, DB_LOCAL, 
+                         "Silo file written by VisIt", driver);
 #ifdef E_CHECKSUM
         DBSetEnableChecksums(oldEnable);
 #endif
