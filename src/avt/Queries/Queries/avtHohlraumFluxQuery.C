@@ -51,7 +51,9 @@
 
 #include <visitstream.h>
 #include <snprintf.h>
-#include <iomanip.h>
+#ifndef WIN32
+  #include <iomanip.h>
+#endif
 
 // ****************************************************************************
 //  Method: avtHohlraumFluxQuery::avtHohlraumFluxQuery
