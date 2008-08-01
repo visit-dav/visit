@@ -917,6 +917,11 @@ PP_ZFileReader::InitializeVarStorage()
 //
 //   Mark C. Miller, Tue Jun  5 18:07:16 PDT 2007
 //   Modified it to be more forgiving about existance of '@' in object name.
+//
+//   Brad Whitlock, Fri Aug  1 11:07:19 PDT 2008
+//   Don't create an array variable for scalars that have extra dimensions
+//   that are equal to 1. Create a scalar instead.
+//
 // ****************************************************************************
 
 void
@@ -1036,8 +1041,10 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
                 {
                     length *= dimptr->number;
 
-                    if ((dimNum != kmaxDim) && (dimNum != lmaxDim) &&
-                        (dimNum != cyclesDim))
+                    if ((dimNum != kmaxDim) &&
+                        (dimNum != lmaxDim) &&
+                        (dimNum != cyclesDim) &&
+                        (dimptr->number > 1))
                     {
                         freeDimNums[freeDimNum] = dimNum;
                         freeDimSizes[freeDimNum] = dimptr->number;
