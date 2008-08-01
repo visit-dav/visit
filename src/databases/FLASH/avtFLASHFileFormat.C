@@ -2479,6 +2479,13 @@ void avtFLASHFileFormat::DetermineGlobalLogicalExtentsForAllBlocks()
 //    Jeremy Meredith, Tue Sep 27 14:31:56 PDT 2005
 //    Made an indexing origin error for the domain boundaries.
 //
+//    Randy Hudson, Jul 29, 2008
+//    Changed the hard-coded mesh name in two cache calls from "mesh" to
+//    "mesh_blockandlevel" to match the new mesh name assigned in
+//    "PopulateDatabaseMetaData()", then duplicated the contents of 
+//    "BuildDomainNesting()" to process mesh "mesh_blockandproc", also assigned
+//    in "PopulateDatabaseMetaData()".
+//
 // ****************************************************************************
 void
 avtFLASHFileFormat::BuildDomainNesting()
@@ -2486,8 +2493,13 @@ avtFLASHFileFormat::BuildDomainNesting()
     if (numBlocks <= 1)
         return;
 
+
+    //  ***********************************************************************
+    //  PROCESS THE "mesh_blockandlevel" MESH
+    //  ***********************************************************************
+
     // first, look to see if we don't already have it cached
-    void_ref_ptr vrTmp = cache->GetVoidRef("mesh",
+    void_ref_ptr vrTmp = cache->GetVoidRef("mesh_blockandlevel",
                                    AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
                                    timestep, -1);
 
@@ -2582,7 +2594,115 @@ avtFLASHFileFormat::BuildDomainNesting()
             void_ref_ptr vr = void_ref_ptr(dn,
                                          avtStructuredDomainNesting::Destruct);
 
-            cache->CacheVoidRef("mesh",
+            cache->CacheVoidRef("mesh_blockandlevel",
+                                AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                timestep, -1, vr);
+
+        }
+    }
+
+
+    //  ***********************************************************************
+    //  PROCESS THE "mesh_blockandproc" MESH
+    //  ***********************************************************************
+
+    // first, look to see if we don't already have it cached
+    void_ref_ptr vrTmp2 = cache->GetVoidRef("mesh_blockandproc",
+                                   AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                   timestep, -1);
+
+    if ((*vrTmp2 == NULL))
+    {
+        int i;
+
+        avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries(true);
+        rdb->SetNumDomains(numBlocks);
+        for (i = 0; i < numBlocks; i++)
+        {
+            int logExts[6];
+            logExts[0] = blocks[i].minGlobalLogicalExtents[0];
+            logExts[1] = blocks[i].maxGlobalLogicalExtents[0];
+            logExts[2] = blocks[i].minGlobalLogicalExtents[1];
+            logExts[3] = blocks[i].maxGlobalLogicalExtents[1];
+            logExts[4] = blocks[i].minGlobalLogicalExtents[2];
+            logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
+            rdb->SetIndicesForAMRPatch(i, blocks[i].level - 1, logExts);
+        }
+        rdb->CalculateBoundaries();
+
+        void_ref_ptr vrdb = void_ref_ptr(rdb,
+                                         avtStructuredDomainBoundaries::Destruct);
+        cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                            timestep, -1, vrdb);
+
+        //
+        // build the avtDomainNesting object
+        //
+
+        if (numLevels > 0)
+        {
+            avtStructuredDomainNesting *dn =
+                new avtStructuredDomainNesting(numBlocks, numLevels);
+
+            dn->SetNumDimensions(dimension);
+
+            //
+            // Set refinement level ratio information
+            //
+
+            // NOTE: FLASH files always have a 2:1 ratio
+            vector<int> ratios(3);
+            ratios[0] = 1;
+            ratios[1] = 1;
+            ratios[2] = 1;
+            dn->SetLevelRefinementRatios(0, ratios);
+            for (i = 1; i < numLevels; i++)
+            {
+                vector<int> ratios(3);
+                ratios[0] = 2;
+                ratios[1] = 2;
+                ratios[2] = 2;
+                dn->SetLevelRefinementRatios(i, ratios);
+            }
+
+            //
+            // set each domain's level, children and logical extents
+            //
+            for (i = 0; i < numBlocks; i++)
+            {
+                vector<int> childBlocks;
+                for (int j = 0; j < numChildrenPerBlock; j++)
+                {
+                    // if this is allowed to be 1-origin, the "-1" here
+                    // needs to be removed
+                    if (blocks[i].childrenIDs[j] >= 0)
+                        childBlocks.push_back(blocks[i].childrenIDs[j] - 1);
+                }
+
+                vector<int> logExts(6);
+
+                logExts[0] = blocks[i].minGlobalLogicalExtents[0];
+                logExts[1] = blocks[i].minGlobalLogicalExtents[1];
+                logExts[2] = blocks[i].minGlobalLogicalExtents[2];
+
+                logExts[3] = blocks[i].maxGlobalLogicalExtents[0]-1;
+                if (dimension >= 2)
+                    logExts[4] = blocks[i].maxGlobalLogicalExtents[1]-1;
+                else
+                    logExts[4] = blocks[i].maxGlobalLogicalExtents[1];
+                if (dimension >= 3)
+                    logExts[5] = blocks[i].maxGlobalLogicalExtents[2]-1;
+                else
+                    logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
+
+                dn->SetNestingForDomain(i, blocks[i].level-1,
+                                        childBlocks, logExts);
+            }
+
+            void_ref_ptr vr = void_ref_ptr(dn,
+                                         avtStructuredDomainNesting::Destruct);
+
+            cache->CacheVoidRef("mesh_blockandproc",
                                 AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
                                 timestep, -1, vr);
         }
