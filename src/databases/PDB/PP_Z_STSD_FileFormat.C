@@ -42,6 +42,40 @@
 #include <DebugStream.h>
 
 // ****************************************************************************
+// Class: AlwaysReadCyclesAndTimes_STSD_FFI
+//
+// Purpose:
+//   A STSD file format interface that always reads cycles and times, 
+//   regardless of how the "try harder to read cycles and times" flag is set.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug  1 10:47:47 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class AlwaysReadCyclesAndTimes_STSD_FFI : public avtSTSDFileFormatInterface
+{
+public:
+    AlwaysReadCyclesAndTimes_STSD_FFI(avtSTSDFileFormat ***a, int b, int c) :
+        avtSTSDFileFormatInterface(a, b, c)
+    {
+    }
+
+    virtual ~AlwaysReadCyclesAndTimes_STSD_FFI() { }
+
+    virtual void SetDatabaseMetaData(avtDatabaseMetaData *md, 
+                                     int timeState = 0, bool = false)
+    {
+        // Always read cycles and times
+        avtSTSDFileFormatInterface::SetDatabaseMetaData(md, timeState, true);
+    }
+};
+
+// ****************************************************************************
 // Method: PP_Z_STSD_FileFormat::CreateInterface
 //
 // Purpose: 
@@ -63,7 +97,9 @@
 // Creation:   Mon Oct 13 15:03:57 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Aug  1 10:48:39 PDT 2008
+//   Made it use AlwaysReadCyclesAndTimes_STSD_FFI.
+//
 // ****************************************************************************
 
 avtFileFormatInterface *
@@ -107,7 +143,7 @@ PP_Z_STSD_FileFormat::CreateInterface(PDBFileObject *pdb,
             // Try to create a file format interface compatible with the PF3D
             // file format.
             //
-            inter = new avtSTSDFileFormatInterface(ffl, nTimestep, nBlock);
+            inter = new AlwaysReadCyclesAndTimes_STSD_FFI(ffl, nTimestep, nBlock);
         }
         CATCH(VisItException)
         {
