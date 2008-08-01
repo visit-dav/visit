@@ -60,6 +60,8 @@ class vtkFloatArray;
 //  Creation:   Mon Nov 27 14:00:02 PST 2006
 //
 //  Modifications:
+//    Brad Whitlock, Fri Aug  1 11:41:18 PDT 2008
+//    Added support for material strength.
 //
 // ****************************************************************************
 
@@ -120,6 +122,7 @@ protected:
         int         materialNumber;
         std::string materialName;
         double      density;
+        double      strength;
     } MaterialCard_t;
 
     typedef std::vector<MaterialCard_t> MaterialCardVector;
