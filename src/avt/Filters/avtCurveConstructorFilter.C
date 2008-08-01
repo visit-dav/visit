@@ -256,11 +256,26 @@ void avtCurveConstructorFilter::Execute()
     vtkDataSet **ds;
     ds = inTree->GetAllLeaves(nleaves);
 
+
+
     if (nleaves == 0)
     {
         // Kind of a bizarre error, since "IsEmpty" above should have returned
         // true.  This situation does occur, and it is a little dangerous to
         // change the behavior of IsEmpty, so just accomodate.
+        delete [] ds;
+        SetOutputDataTree(inTree);
+        return;
+    }
+
+    // Some operators (like Box) may split a curve into discontinuous
+    // pieces.  Those pieces will be specified by a label, thus if
+    // there is more than 1 unique label for this tree, don't process.
+
+    stringVector ul;
+    inTree->GetAllUniqueLabels(ul);
+    if (ul.size()  > 1)
+    {
         delete [] ds;
         SetOutputDataTree(inTree);
         return;
