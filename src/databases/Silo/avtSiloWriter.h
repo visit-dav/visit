@@ -96,6 +96,9 @@ class DBOptionsAttributes;
 //
 //    Mark C. Miller, Wed Jul 23 17:49:39 PDT 2008
 //    Added bool to WriteUcdvars to handle point vars    
+//
+//    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
+//    Added option to write all data to a single file 
 // ****************************************************************************
 
 class
@@ -114,6 +117,7 @@ avtSiloWriter : public virtual avtDatabaseWriter
     int            driver;
     avtMeshType    meshtype;
     DBoptlist     *optlist;
+    bool           singleFile;
 
     // places to hold args passed in WriteHeaders
     const avtDatabaseMetaData *headerDbMd;
