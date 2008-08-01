@@ -479,7 +479,9 @@ avtDyna3DFileFormat::ReadControlCard9(ifstream &ifile)
 // Creation:   Mon Nov 27 16:22:08 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Aug  1 11:49:57 PDT 2008
+//   Added code to read material strength.
+//
 // ****************************************************************************
 
 void
@@ -555,8 +557,13 @@ avtDyna3DFileFormat::ReadMaterialCards(ifstream &ifile)
         uniqueNames.insert(matName);
         mat.materialName = matName;
 
+        // Get the next line since it contains the strength
+        GetLine(ifile);
+        double tmp;
+        sscanf(line, "%lg %lg", &tmp, &mat.strength);
+
         // Read past the other material information.
-        for(int j = 0; j < 10; ++j)
+        for(int j = 0; j < 9; ++j)
             GetLine(ifile);
 
         // Add to the list of materials.
@@ -564,7 +571,7 @@ avtDyna3DFileFormat::ReadMaterialCards(ifstream &ifile)
 
         debug4 << "Added material (" << mat.materialNumber << "): "
                << mat.materialName.c_str() << ", density="
-               << mat.density << endl;
+               << mat.density << ", strength=" << mat.strength << endl;
     }    
 }
 
@@ -811,6 +818,10 @@ avtDyna3DFileFormat::ReadFile(const char *name, int nLines)
 //  Programmer: Brad Whitlock
 //  Creation:   Mon Nov 27 16:25:13 PST 2006
 //
+//  Modifications:
+//    Brad Whitlock, Fri Aug  1 11:44:37 PDT 2008
+//    Added strength.
+//
 // ****************************************************************************
 
 void
@@ -838,6 +849,11 @@ avtDyna3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 "density", "mesh", AVT_ZONECENT);
         smd->hasUnits = true;
         smd->units = "g/cc";
+        md->Add(smd);
+
+        // We had material names so advertise a strength field.
+        smd = new avtScalarMetaData(
+                "strength", "mesh", AVT_ZONECENT);
         md->Add(smd);
 
         // We had material names so advertise the material number.
@@ -914,6 +930,10 @@ avtDyna3DFileFormat::GetMesh(const char *meshname)
 //  Programmer: Brad Whitlock
 //  Creation:   Mon Nov 27 16:25:13 PST 2006
 //
+//  Modifications:
+//    Brad Whitlock, Fri Aug  1 14:10:33 PDT 2008
+//    Added support for strength.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -922,20 +942,29 @@ avtDyna3DFileFormat::GetVar(const char *varname)
     debug4 << "avtDyna3DFileFormat::GetVar" << endl;
     vtkDataArray *ret = 0;
 
-    if(strcmp(varname, "density") == 0 &&
+    if((strcmp(varname, "density") == 0 || strcmp(varname, "strength") == 0) &&
        matNumbers != 0 && 
        materialCards.size() > 0)
     {
-        std::map<int, double> matToDensity;
+        std::map<int, double> matToDensity, matToStrength;
         for(int i = 0; i < materialCards.size(); ++i)
+        {
             matToDensity[materialCards[i].materialNumber] = materialCards[i].density;
+            matToStrength[materialCards[i].materialNumber] = materialCards[i].strength;
+        }
 
         vtkFloatArray *arr = vtkFloatArray::New();
         arr->SetNumberOfTuples(meshDS->GetNumberOfCells());
-        float *fptr = (float *)arr->GetVoidPointer(0);
-        for(vtkIdType id = 0; id < meshDS->GetNumberOfCells(); ++id)
+        float *fptr = (float *)arr->GetVoidPointer(0); 
+        if(strcmp(varname, "density") == 0)
         {
-            *fptr++ = (float)matToDensity[matNumbers[id]];
+            for(vtkIdType id = 0; id < meshDS->GetNumberOfCells(); ++id)
+               *fptr++ = (float)matToDensity[matNumbers[id]];
+        }
+        else
+        {
+            for(vtkIdType id = 0; id < meshDS->GetNumberOfCells(); ++id)
+               *fptr++ = (float)matToStrength[matNumbers[id]];
         }
 
         ret = arr;
