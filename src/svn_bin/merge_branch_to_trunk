@@ -22,6 +22,9 @@
 #    Hank Childs, Thu Dec 20 09:21:03 PST 2007
 #    Renamed -allow_checkouts to -allow_local_mods
 #
+#    Hank Childs, Sun Aug  3 12:18:05 PDT 2008
+#    Allow merging from other developer's branches.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -37,7 +40,14 @@ CDPATH=""
 BRANCH=""
 BRANCHNAME=""
 
-if [[ $# == 2 ]] ; then
+user=$SVN_NERSC_NAME
+if [[ $# == 3 ]] ; then
+   if [[ "$2" == "-user" ]] ; then
+       user=$3
+   else
+       issueHelp="yes"
+   fi
+elif [[ $# == 2 ]] ; then
    if [[ "$2" != "-allow_local_mods" ]] ; then
        issueHelp="yes"
    else
@@ -102,7 +112,7 @@ if [[ "$issueHelp" != "yes" ]] ; then
    fi
 
    BRANCHNAME=$1
-   BRANCH=${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}${ROOTPATH}
+   BRANCH=${VISIT_SVN_BRANCHES}/${user}/${BRANCHNAME}${ROOTPATH}
    svn ls $BRANCH 2>/dev/null > /dev/null
    if [[ $? != 0 ]] ; then
       echo "The branch $1 does not appear to exist."
