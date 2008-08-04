@@ -1,25 +1,6 @@
-#!/bin/sh
-# Do a little magic to run perl from anywhere in your path.
-
-lines=`cat $0 | wc -l`
-lines=`expr $lines - 20`
-if (test -n "$TMPDIR") then
-    if (test ! -d "$TMPDIR") then
-        TMPDIR=$HOME
-    fi
-else
-    TMPDIR=$HOME
-fi
-tail -$lines $0 1> $TMPDIR/visitfelperl$$ 2>/dev/null
-if (test $? -ne 0) then
-    tail --lines=$lines $0 1>> $TMPDIR/visitfelperl$$
-fi
-echo "__END__" >> $TMPDIR/visitfelperl$$
-echo "$0 $*" >> $TMPDIR/visitfelperl$$
-exec perl $TMPDIR/visitfelperl$$ $0 ${1+"$@"}
-
-unlink $0;
-$0 = shift @ARGV;
+#! /bin/sh
+exec perl -x $0 ${1+"$@"};
+#!perl
 
 ###############################################################################
 #
@@ -80,6 +61,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Fri Dec 14 15:31:48 EST 2007
 #    Added a -forceversion command line option which can be used to
 #    intelligent override all version selection logic.
+#
+#    Sean Ahern, Mon Aug  4 10:55:39 EDT 2008
+#    Changed how we run perl.
 #
 ###############################################################################
 
