@@ -3843,6 +3843,10 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Hank Childs, Tue Feb 19 10:28:15 PST 2008
 //    Fix bug introduced by Klocwork fix.
 //
+//    Cyrus Harrison,  Mon Aug  4 16:21:04 PDT 2008
+//    Moved set of active host database until after we have obtained valid
+//    meta data. 
+//
 // ****************************************************************************
 
 int
@@ -3870,7 +3874,7 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
     std::string hdb(entireDBName), host, db;
     ViewerFileServer *fs = ViewerFileServer::Instance();
     fs->ExpandDatabaseName(hdb, host, db);
-    plotList->SetHostDatabaseName(hdb.c_str());
+    
 
     //
     // Get the number of time states and set that information into the
@@ -3882,6 +3886,9 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
                                                             forcedFileType);
     if (md != NULL)
     {
+        // set the active host database name now that we have valid metadata.
+        plotList->SetHostDatabaseName(hdb.c_str());
+        
         //
         // If the database has more than one time state then we should
         // add it to the list of database correlations so we have a trivial
