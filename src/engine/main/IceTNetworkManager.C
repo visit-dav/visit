@@ -256,6 +256,10 @@ IceTNetworkManager::TileLayout(size_t width, size_t height) const
 //    Tom Fogal, Mon Jul 28 14:45:09 EDT 2008
 //    Do Z test earlier, and request IceT buffers based on Z test.
 //
+//    Tom Fogal, Sun Aug  3 23:04:20 EDT 2008
+//    Use MemoMultipass; this fixes a bug which occurs when IceT calls our
+//    render function multiple times on a subset of nodes.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
@@ -296,7 +300,7 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
         // if we don't set the depth buffer bit.  The compositing is a bit
         // wrong, but there's not much else we can do..
         // Consider removing the `hack' if a workaround is found.
-        if(/*hack*/true/*hack*/ || !this->MultipassRendering(viswin))
+        if(/*hack*/true/*hack*/ || !this->MemoMultipass(viswin))
         {
             inputs |= ICET_DEPTH_BUFFER_BIT;
         }
@@ -424,7 +428,7 @@ IceTNetworkManager::RealRender()
     avtImage_p dob = this->RenderGeometry();
     VisWindow *viswin =
         this->viswinMap.find(this->r_mgmt.windowID)->second.viswin;
-    if(this->MultipassRendering(viswin))
+    if(this->MemoMultipass(viswin))
     {
         avtDataObject_p i_as_dob;
         i_as_dob = this->RenderTranslucent(this->r_mgmt.windowID, dob);
@@ -453,7 +457,7 @@ avtImage_p
 IceTNetworkManager::RenderGeometry()
 {
     VisWindow *viswin = viswinMap.find(this->r_mgmt.windowID)->second.viswin;
-    if(this->MultipassRendering(viswin))
+    if(this->MemoMultipass(viswin))
     {
         return NetworkManager::RenderGeometry();
     }
