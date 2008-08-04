@@ -1,25 +1,6 @@
-#!/bin/sh
-# Do a little magic to run perl from anywhere in your path.
-
-lines=`cat $0 | wc -l`
-lines=`expr $lines - 20`
-if (test -n "$TMPDIR") then
-    if (test ! -d "$TMPDIR") then
-        TMPDIR=$HOME
-    fi
-else
-    TMPDIR=$HOME
-fi
-tail -$lines $0 1> $TMPDIR/visitilperl$$ 2>/dev/null
-if (test $? -ne 0) then
-    tail --lines=$lines $0 1>> $TMPDIR/visitilperl$$
-fi
-echo "__END__" >> $TMPDIR/visitilperl$$
-echo "$0 $*" >> $TMPDIR/visitilperl$$
-exec perl $TMPDIR/visitilperl$$ $0 ${1+"$@"}
-
-unlink $0;
-$0 = shift @ARGV;
+#! /bin/sh
+exec perl -x $0 ${1+"$@"};
+#!perl
 
 ###############################################################################
 #
@@ -352,6 +333,9 @@ $0 = shift @ARGV;
 #
 #    Sean Ahern, Wed Jul 30 11:46:45 EDT 2008
 #    Made the check for X11-based terminals in darwin a bit more robust.
+#
+#    Sean Ahern, Mon Aug  4 10:54:52 EDT 2008
+#    Changed how we run perl.
 #
 ###############################################################################
 

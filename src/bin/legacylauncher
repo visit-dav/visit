@@ -1,21 +1,6 @@
-#!/bin/sh
-# Do a little magic to run perl from anywhere in your path.
-
-lines=`cat $0 | wc -l`
-lines=`expr $lines - 16`
-if (test -z "$TMPDIR") then
-    TMPDIR=$HOME
-fi
-tail -$lines $0 1> $TMPDIR/visitperl$$ 2>/dev/null
-if (test $? -ne 0) then
-    tail --lines=$lines $0 1>> $TMPDIR/visitperl$$
-fi
-echo "__END__" >> $TMPDIR/visitperl$$
-echo "$0 $*" >> $TMPDIR/visitperl$$
-exec perl $TMPDIR/visitperl$$ $0 ${1+"$@"}
-
-unlink $0;
-$0 = shift @ARGV;
+#! /bin/sh
+exec perl -x $0 ${1+"$@"};
+#!perl
 
 ###############################################################################
 #
@@ -360,6 +345,9 @@ $0 = shift @ARGV;
 #    Thomas R. Treadway, Wed Apr  4 18:02:52 PDT 2007
 #    Treat the platformDir like all of the others, allowing darwin-ppc,
 #    darwin-i386, [or darwin (universal) directory].
+#
+#    Sean Ahern, Mon Aug  4 10:56:19 EDT 2008
+#    Changed how we find and run perl.
 #
 ###############################################################################
 
