@@ -383,6 +383,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Tom Fogal, Fri Jul 18 14:24:35 EDT 2008
 //    Methods for determining if rendering effects are enabled.
 //
+//    Tom Fogal, Sun Aug  3 22:47:59 EDT 2008
+//    Added MemoMultipass and ForgetMultipass.
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -397,6 +400,7 @@ class NetworkManager
         int windowID;                  /* window we're rendering. */
         bool getZBuffer;               /* should we readback Z too? */
         bool handledAnnotations;       /* annotations already done? */
+        bool mpass_saved;              /* is multipass rendering memoized? */
         bool handledCues;
         bool needToSetUpWindowContents;
         bool viewportedMode;
@@ -505,7 +509,8 @@ class NetworkManager
     void               RenderPostProcess(std::vector<avtPlot_p>& image_plots,
                                          avtDataObject_p& input_as_dob,
                                          int windowID) const;
-    bool               MultipassRendering(VisWindow *viswin) const;
+    bool               MemoMultipass(VisWindow *viswin);
+    bool               ForgetMultipass();
     avtDataObject_p    RenderTranslucent(int windowID,
                                          const avtImage_p& input);
     bool               Shadowing(int windowID) const;
@@ -532,6 +537,7 @@ class NetworkManager
     bool            ViewerExecute(const VisWindow * const viswin,
                                   const intVector &plots,
                                   const WindowAttributes &windowAttributes);
+    bool            MultipassRendering(VisWindow *viswin) const;
     void            SetUpWindowContents(int windowID, const intVector &plotIds,
                                         bool forceViewerExecute);
 

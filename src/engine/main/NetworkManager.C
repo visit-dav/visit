@@ -2120,7 +2120,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                  viswin->GetWindowMode() == WINMODE_3D,
                  viswin->GetBackgroundMode() == AnnotationAttributes::Gradient,
                  getZBuffer,
-                 this->MultipassRendering(viswin),
+                 this->MemoMultipass(viswin),
                  this->Shadowing(windowID),
                  this->DepthCueing(windowID),
                  !imageBasedPlots.empty()
@@ -2150,14 +2150,14 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         if (dump_renders)
             DumpImage(compositedImageAsDataObject,
                       "after_OpaqueComposite",
-                      this->MultipassRendering(viswin));
+                      this->MemoMultipass(viswin));
         CallProgressCallback("NetworkManager", "Compositing", 1, 1);
 
         // ************************************************************
         // SECOND PASS - Translucent only
         // ************************************************************
 
-        if (this->MultipassRendering(viswin))
+        if (this->MemoMultipass(viswin))
         {
             compositedImageAsDataObject =
                 this->RenderTranslucent(windowID,
@@ -4687,6 +4687,10 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 //    Tom Fogal, Mon Jul 28 16:37:36 EDT 2008
 //    Moved tests for invalid rendering combinations to here.
 //
+//    Tom Fogal, Sun Aug  3 22:57:44 EDT 2008
+//    When initializing state, make sure to erase whatever memoization we had
+//    from the last frame.
+//
 // ****************************************************************************
 
 void
@@ -4721,6 +4725,7 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
     this->r_mgmt.handledCues = false;
     this->r_mgmt.stereoType = -1;
     bool forceViewerExecute = false;
+    this->ForgetMultipass();
 
     ViewCurveAttributes vca = windowAttributes.GetViewCurve();
     View2DAttributes v2a = windowAttributes.GetView2D();
@@ -4847,7 +4852,7 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
     std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
     // Two imageBasedPlots don't do the right thing currently, so put up a
     // warning about it.
-    if (this->MultipassRendering(viswin) && imageBasedPlots.size() > 0)
+    if (this->MemoMultipass(viswin) && imageBasedPlots.size() > 0)
     {
         static bool warnTransparentAndIBPs = false;
         if (!warnTransparentAndIBPs)
@@ -5055,7 +5060,7 @@ NetworkManager::RenderGeometry()
 
     CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
     avtImage_p geometry;
-    if (this->MultipassRendering(viswin))
+    if (this->MemoMultipass(viswin))
     {
         geometry = viswin->ScreenCapture(this->r_mgmt.viewportedMode,
                                          true,true,false);
@@ -5109,6 +5114,48 @@ NetworkManager::MultipassRendering(VisWindow *viswin) const
     debug5 << "Multipass rendering is " << status << std::endl;
 
     return multipass;
+}
+
+// ****************************************************************************
+//  Method: MemoMultipass
+//
+//  Purpose: Memoizes MultipassRendering
+//
+//  Arguments:
+//    viswin    window to query
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 2, 2008
+//
+// ****************************************************************************
+bool
+NetworkManager::MemoMultipass(VisWindow *viswin)
+{
+    static bool multipass;
+    static VisWindow *last_viswin = NULL;
+    if(!this->r_mgmt.mpass_saved ||
+       last_viswin != viswin)
+    {
+        multipass = this->MultipassRendering(viswin);
+        last_viswin = viswin;
+        this->r_mgmt.mpass_saved = true;
+    }
+    return multipass;
+}
+
+// ****************************************************************************
+//  Method: ForgetMultipass
+//
+//  Purpose: Forces the next call of MemoMultipass to recompute the result.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 2, 2008
+//
+// ****************************************************************************
+bool
+NetworkManager::ForgetMultipass()
+{
+    this->r_mgmt.mpass_saved = false;
 }
 
 // ****************************************************************************
