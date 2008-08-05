@@ -772,13 +772,13 @@ avtChomboFileFormat::InitializeReader(void)
             {
                 lowProbI[0] = probDomain_buff->b2.lo.i;
                 hiProbI[0] = probDomain_buff->b2.hi.i;
-                lowProbJ[0] = probDomain_buff->b2.lo.i;
+                lowProbJ[0] = probDomain_buff->b2.lo.j;
                 hiProbJ[0] = probDomain_buff->b2.hi.j;
             }
             else
             {
                 lowProbI[0] = probDomain_buff->b3.lo.i;
-                hiProbI[0] = probDomain_buff->b3.hi.j;
+                hiProbI[0] = probDomain_buff->b3.hi.i;
                 lowProbJ[0] = probDomain_buff->b3.lo.j;
                 hiProbJ[0] = probDomain_buff->b3.hi.j;
                 lowProbK[0] = probDomain_buff->b3.lo.k;
