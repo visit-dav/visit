@@ -249,7 +249,10 @@
 #
 #    Tom Fogal, Fri Jul 11 14:05:08 EDT 2008
 #    I added a mode for IceT rendering.
-#
+#    
+#    Mark C. Miller, Tue Aug  5 16:31:43 PDT 2008
+#    Increased default time limit for a given .py file test from 300 to
+#    600 seconds.
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -276,7 +279,7 @@ doFiltering=0
 width=300
 height=300
 testcases=""
-timeLimit="-timeout 300"
+timeLimit="-timeout 600"
 notrackMem=""
 skipList=""
 exepath="../src/bin/visit"
