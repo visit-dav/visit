@@ -1633,7 +1633,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     page9_sizeTypeButtonGroup->insert(rb, 1);
     f2layout->addMultiCellWidget(rb, 4, 4, 0, 2);
 
-    page9_widthSpinBox = new QSpinBox(32, 4086, 1, formatAndResolution,
+    page9_widthSpinBox = new QSpinBox(32, OSMESA_SIZE_LIMIT, 1, formatAndResolution,
         "page9_widthSpinBox");
     page9_widthSpinBox->setValue((int)(default_movie_size[0]));
     page9_widthSpinBox->setEnabled(false);
@@ -1645,7 +1645,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     f2layout->addWidget(page9_widthLabel, 5, 0);
     f2layout->addWidget(page9_widthSpinBox, 5, 1);
     
-    page9_heightSpinBox = new QSpinBox(32, 4086, 1, formatAndResolution,
+    page9_heightSpinBox = new QSpinBox(32, OSMESA_SIZE_LIMIT, 1, formatAndResolution,
         "page9_heightSpinBox");
     page9_heightSpinBox->setValue((int)(default_movie_size[1]));
     page9_heightSpinBox->setEnabled(false);
