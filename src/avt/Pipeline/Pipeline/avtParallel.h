@@ -74,6 +74,9 @@ PIPELINE_API bool    ThisProcessorHasMinimumValue(double);
 PIPELINE_API bool    ThisProcessorHasMaximumValue(double);
 PIPELINE_API void    UnifyMinMax(double *, int, int=0);
 PIPELINE_API int     UnifyMaximumValue(int);
+PIPELINE_API float   UnifyMaximumValue(float);
+PIPELINE_API int     UnifyMinimumValue(int);
+PIPELINE_API float   UnifyMinimumValue(float);
 PIPELINE_API void    UnifyMaximumValue(std::vector<int>&, std::vector<int>&);
 PIPELINE_API void    UnifyMinimumFloatArrayAcrossAllProcessors(float *, float *, int);
 PIPELINE_API void    UnifyMaximumFloatArrayAcrossAllProcessors(float *, float *, int);
@@ -96,7 +99,10 @@ PIPELINE_API int     GetUniqueStaticMessageTag();
 PIPELINE_API void    GetAttToRootProc(AttributeGroup &, int);
 PIPELINE_API void    GetFloatArrayToRootProc(float *, int, bool &);
 PIPELINE_API void    GetDoubleArrayToRootProc(double *, int, bool &);
+PIPELINE_API void    WaitAll(std::vector<int> &reqs, std::vector<int> &status );
+PIPELINE_API void    WaitSome(std::vector<int> &reqs, std::vector<int> &done, std::vector<int> &status );
+PIPELINE_API void    TestSome(std::vector<int> &reqs, std::vector<int> &done, std::vector<int> &status );
+PIPELINE_API void    CancelRequest( int &req );
 
 #endif
-
 

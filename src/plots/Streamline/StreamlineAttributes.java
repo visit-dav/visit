@@ -79,14 +79,23 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public final static int INTEGRATIONDIRECTION_BACKWARD = 1;
     public final static int INTEGRATIONDIRECTION_BOTH = 2;
 
+    public final static int TERMINATIONTYPE_DISTANCE = 0;
+    public final static int TERMINATIONTYPE_TIME = 1;
+
+    public final static int INTEGRATIONTYPE_DORMANDPRINCE = 0;
+    public final static int INTEGRATIONTYPE_ADAMSBASHFORTH = 1;
+
+    public final static int STREAMLINEALGORITHMTYPE_LOADONDEMAND = 0;
+    public final static int STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
+
 
     public StreamlineAttributes()
     {
-        super(25);
+        super(32);
 
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
-        stepLength = 1;
-        maxTime = 10;
+        maxStepLength = 0.1;
+        termination = 10;
         pointSource = new double[3];
         pointSource[0] = 0;
         pointSource[1] = 0;
@@ -136,17 +145,23 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         legendFlag = true;
         lightingFlag = true;
         StreamlineDirection = INTEGRATIONDIRECTION_FORWARD;
+        relTol = 1e-06;
+        absTol = 1e-06;
+        terminationType = TERMINATIONTYPE_DISTANCE;
+            streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS;
+        maxStreamlineProcessCount = 10;
+        maxDomainCacheSize = 3;
     }
 
     public StreamlineAttributes(StreamlineAttributes obj)
     {
-        super(25);
+        super(32);
 
         int i;
 
         sourceType = obj.sourceType;
-        stepLength = obj.stepLength;
-        maxTime = obj.maxTime;
+        maxStepLength = obj.maxStepLength;
+        termination = obj.termination;
         pointSource = new double[3];
         pointSource[0] = obj.pointSource[0];
         pointSource[1] = obj.pointSource[1];
@@ -200,6 +215,13 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;
         StreamlineDirection = obj.StreamlineDirection;
+        relTol = obj.relTol;
+        absTol = obj.absTol;
+        terminationType = obj.terminationType;
+        integrationType = obj.integrationType;
+        streamlineAlgorithmType = obj.streamlineAlgorithmType;
+        maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
+        maxDomainCacheSize = obj.maxDomainCacheSize;
 
         SelectAll();
     }
@@ -250,8 +272,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
         // Create the return value
         return ((sourceType == obj.sourceType) &&
-                (stepLength == obj.stepLength) &&
-                (maxTime == obj.maxTime) &&
+                (maxStepLength == obj.maxStepLength) &&
+                (termination == obj.termination) &&
                 pointSource_equal &&
                 lineStart_equal &&
                 lineEnd_equal &&
@@ -273,7 +295,14 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (singleColor == obj.singleColor) &&
                 (legendFlag == obj.legendFlag) &&
                 (lightingFlag == obj.lightingFlag) &&
-                (StreamlineDirection == obj.StreamlineDirection));
+                (StreamlineDirection == obj.StreamlineDirection) &&
+                (relTol == obj.relTol) &&
+                (absTol == obj.absTol) &&
+                (terminationType == obj.terminationType) &&
+                (integrationType == obj.integrationType) &&
+                (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
+                (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
+                (maxDomainCacheSize == obj.maxDomainCacheSize));
     }
 
     public String GetName() { return "Streamline"; }
@@ -286,15 +315,15 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(0);
     }
 
-    public void SetStepLength(double stepLength_)
+    public void SetMaxStepLength(double maxStepLength_)
     {
-        stepLength = stepLength_;
+        maxStepLength = maxStepLength_;
         Select(1);
     }
 
-    public void SetMaxTime(double maxTime_)
+    public void SetTermination(double termination_)
     {
-        maxTime = maxTime_;
+        termination = termination_;
         Select(2);
     }
 
@@ -501,10 +530,52 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(24);
     }
 
+    public void SetRelTol(double relTol_)
+    {
+        relTol = relTol_;
+        Select(25);
+    }
+
+    public void SetAbsTol(double absTol_)
+    {
+        absTol = absTol_;
+        Select(26);
+    }
+
+    public void SetTerminationType(int terminationType_)
+    {
+        terminationType = terminationType_;
+        Select(27);
+    }
+
+    public void SetIntegrationType(int integrationType_)
+    {
+        integrationType = integrationType_;
+        Select(28);
+    }
+
+    public void SetStreamlineAlgorithmType(int streamlineAlgorithmType_)
+    {
+        streamlineAlgorithmType = streamlineAlgorithmType_;
+        Select(29);
+    }
+
+    public void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
+    {
+        maxStreamlineProcessCount = maxStreamlineProcessCount_;
+        Select(30);
+    }
+
+    public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
+    {
+        maxDomainCacheSize = maxDomainCacheSize_;
+        Select(31);
+    }
+
     // Property getting methods
     public int            GetSourceType() { return sourceType; }
-    public double         GetStepLength() { return stepLength; }
-    public double         GetMaxTime() { return maxTime; }
+    public double         GetMaxStepLength() { return maxStepLength; }
+    public double         GetTermination() { return termination; }
     public double[]       GetPointSource() { return pointSource; }
     public double[]       GetLineStart() { return lineStart; }
     public double[]       GetLineEnd() { return lineEnd; }
@@ -527,6 +598,13 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public boolean        GetLegendFlag() { return legendFlag; }
     public boolean        GetLightingFlag() { return lightingFlag; }
     public int            GetStreamlineDirection() { return StreamlineDirection; }
+    public double         GetRelTol() { return relTol; }
+    public double         GetAbsTol() { return absTol; }
+    public int            GetTerminationType() { return terminationType; }
+    public int            GetIntegrationType() { return integrationType; }
+    public int            GetStreamlineAlgorithmType() { return streamlineAlgorithmType; }
+    public int            GetMaxStreamlineProcessCount() { return maxStreamlineProcessCount; }
+    public int            GetMaxDomainCacheSize() { return maxDomainCacheSize; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -534,9 +612,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(0, buf))
             buf.WriteInt(sourceType);
         if(WriteSelect(1, buf))
-            buf.WriteDouble(stepLength);
+            buf.WriteDouble(maxStepLength);
         if(WriteSelect(2, buf))
-            buf.WriteDouble(maxTime);
+            buf.WriteDouble(termination);
         if(WriteSelect(3, buf))
             buf.WriteDoubleArray(pointSource);
         if(WriteSelect(4, buf))
@@ -581,6 +659,20 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(lightingFlag);
         if(WriteSelect(24, buf))
             buf.WriteInt(StreamlineDirection);
+        if(WriteSelect(25, buf))
+            buf.WriteDouble(relTol);
+        if(WriteSelect(26, buf))
+            buf.WriteDouble(absTol);
+        if(WriteSelect(27, buf))
+            buf.WriteInt(terminationType);
+        if(WriteSelect(28, buf))
+            buf.WriteInt(integrationType);
+        if(WriteSelect(29, buf))
+            buf.WriteInt(streamlineAlgorithmType);
+        if(WriteSelect(30, buf))
+            buf.WriteInt(maxStreamlineProcessCount);
+        if(WriteSelect(31, buf))
+            buf.WriteInt(maxDomainCacheSize);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -594,10 +686,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 SetSourceType(buf.ReadInt());
                 break;
             case 1:
-                SetStepLength(buf.ReadDouble());
+                SetMaxStepLength(buf.ReadDouble());
                 break;
             case 2:
-                SetMaxTime(buf.ReadDouble());
+                SetTermination(buf.ReadDouble());
                 break;
             case 3:
                 SetPointSource(buf.ReadDoubleArray());
@@ -666,6 +758,27 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             case 24:
                 SetStreamlineDirection(buf.ReadInt());
                 break;
+            case 25:
+                SetRelTol(buf.ReadDouble());
+                break;
+            case 26:
+                SetAbsTol(buf.ReadDouble());
+                break;
+            case 27:
+                SetTerminationType(buf.ReadInt());
+                break;
+            case 28:
+                SetIntegrationType(buf.ReadInt());
+                break;
+            case 29:
+                SetStreamlineAlgorithmType(buf.ReadInt());
+                break;
+            case 30:
+                SetMaxStreamlineProcessCount(buf.ReadInt());
+                break;
+            case 31:
+                SetMaxDomainCacheSize(buf.ReadInt());
+                break;
             }
         }
     }
@@ -685,8 +798,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         if(sourceType == SOURCETYPE_SPECIFIEDBOX)
             str = str + "SOURCETYPE_SPECIFIEDBOX";
         str = str + "\n";
-        str = str + doubleToString("stepLength", stepLength, indent) + "\n";
-        str = str + doubleToString("maxTime", maxTime, indent) + "\n";
+        str = str + doubleToString("maxStepLength", maxStepLength, indent) + "\n";
+        str = str + doubleToString("termination", termination, indent) + "\n";
         str = str + doubleArrayToString("pointSource", pointSource, indent) + "\n";
         str = str + doubleArrayToString("lineStart", lineStart, indent) + "\n";
         str = str + doubleArrayToString("lineEnd", lineEnd, indent) + "\n";
@@ -730,14 +843,36 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         if(StreamlineDirection == INTEGRATIONDIRECTION_BOTH)
             str = str + "INTEGRATIONDIRECTION_BOTH";
         str = str + "\n";
+        str = str + doubleToString("relTol", relTol, indent) + "\n";
+        str = str + doubleToString("absTol", absTol, indent) + "\n";
+        str = str + indent + "terminationType = ";
+        if(terminationType == TERMINATIONTYPE_DISTANCE)
+            str = str + "TERMINATIONTYPE_DISTANCE";
+        if(terminationType == TERMINATIONTYPE_TIME)
+            str = str + "TERMINATIONTYPE_TIME";
+        str = str + "\n";
+        str = str + indent + "integrationType = ";
+        if(integrationType == INTEGRATIONTYPE_DORMANDPRINCE)
+            str = str + "INTEGRATIONTYPE_DORMANDPRINCE";
+        if(integrationType == INTEGRATIONTYPE_ADAMSBASHFORTH)
+            str = str + "INTEGRATIONTYPE_ADAMSBASHFORTH";
+        str = str + "\n";
+        str = str + indent + "streamlineAlgorithmType = ";
+        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_LOADONDEMAND)
+            str = str + "STREAMLINEALGORITHMTYPE_LOADONDEMAND";
+        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS)
+            str = str + "STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS";
+        str = str + "\n";
+        str = str + intToString("maxStreamlineProcessCount", maxStreamlineProcessCount, indent) + "\n";
+        str = str + intToString("maxDomainCacheSize", maxDomainCacheSize, indent) + "\n";
         return str;
     }
 
 
     // Attributes
     private int            sourceType;
-    private double         stepLength;
-    private double         maxTime;
+    private double         maxStepLength;
+    private double         termination;
     private double[]       pointSource;
     private double[]       lineStart;
     private double[]       lineEnd;
@@ -760,5 +895,12 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private boolean        legendFlag;
     private boolean        lightingFlag;
     private int            StreamlineDirection;
+    private double         relTol;
+    private double         absTol;
+    private int            terminationType;
+    private int            integrationType;
+    private int            streamlineAlgorithmType;
+    private int            maxStreamlineProcessCount;
+    private int            maxDomainCacheSize;
 }
 

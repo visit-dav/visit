@@ -65,6 +65,9 @@ class     avtVariableMapper;
 //
 //  Modifications:
 //
+//    Hank Childs, Mon Jul 21 14:11:33 PDT 2008
+//    Add method EnhanceSpecification.
+//
 // ****************************************************************************
 
 class avtStreamlinePlot : public avtLineDataPlot
@@ -97,6 +100,7 @@ class avtStreamlinePlot : public avtLineDataPlot
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
     virtual void                CustomizeBehavior(void);
+    virtual avtContract_p       EnhanceSpecification(avtContract_p);
 
     virtual avtLegend_p         GetLegend(void) { return varLegendRefPtr; };
 

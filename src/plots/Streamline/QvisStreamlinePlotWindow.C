@@ -122,46 +122,63 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Brad Whitlock, Wed Apr 23 11:46:59 PDT 2008
 //   Added tr()'s
 //
+//   Dave Pugmire, Mon Aug 4 2:49:38 EDT 2008
+//   Added termination, algorithm and integration options.
+//
 // ****************************************************************************
 
 void
 QvisStreamlinePlotWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 5, 2, 10, "mainLayout");
-
-    // Create the step length text field.
-    mainLayout->addWidget(new QLabel(tr("Step length"), central, "stepLengthLabel"),0,0);
-    stepLength = new QLineEdit(central, "stepLength");
-    connect(stepLength, SIGNAL(returnPressed()),
-            this, SLOT(stepLengthProcessText()));
-    mainLayout->addWidget(stepLength, 0,1);
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 6, 3, 10, "mainLayout");
 
     // Create the maximum time text field.
-    mainLayout->addWidget(new QLabel(tr("Maximum steps"), central, "maxTimeLabel"),1,0);
-    maxTime = new QLineEdit(central, "maxTime");
-    connect(maxTime, SIGNAL(returnPressed()),
-            this, SLOT(maxTimeProcessText()));
-    mainLayout->addWidget(maxTime, 1,1);
+    mainLayout->addWidget(new QLabel(tr("Termination Criteria"), central, "terminationLabel"),0,0);
+    termType = new QComboBox(central, "termType");
+    termType->insertItem(tr("Distance"));
+    termType->insertItem(tr("Time"));
+    connect(termType, SIGNAL(activated(int)),
+            this, SLOT(termTypeChanged(int)));
+    mainLayout->addWidget(termType, 1,0);
+
+    termination = new QLineEdit(central, "termination");
+    connect(termination, SIGNAL(returnPressed()),
+            this, SLOT(terminationProcessText()));
+    mainLayout->addWidget(termination, 1,1);
+
+    //Create the direction of integration.
+    mainLayout->addWidget(new QLabel(tr("Streamline direction"), central, "streamlineDirectionLabel"),3,0);
+    directionType = new QComboBox(central, "directionType");
+    directionType->insertItem(tr("Forward"));
+    directionType->insertItem(tr("Backward"));
+    directionType->insertItem(tr("Both"));
+    connect(directionType, SIGNAL(activated(int)),
+            this, SLOT(directionTypeChanged(int)));
+    mainLayout->addWidget(directionType, 3,1);
+
+    // Add some space....
+    mainLayout->addWidget(new QLabel(tr(""), central, "streamlineDirectionLabel"),4,0);
 
     //
     // Create a tab widget so we can split source type and appearance.
     //
     QTabWidget *tabs = new QTabWidget(central, "tabs");
-    mainLayout->addMultiCellWidget(tabs, 2,2,0,1);
+    mainLayout->addMultiCellWidget(tabs, 5,5,0,1);
 
     //
     // Create a tab for the streamline source widgets.
     //
     QGroupBox *topPageSource = new QGroupBox(central, "topPageSource");
     topPageSource->setFrameStyle(QFrame::NoFrame);
-    tabs->addTab(topPageSource, tr("Streamline source"));
+    tabs->addTab(topPageSource, tr("Source"));
     QVBoxLayout *topSourceLayout = new QVBoxLayout(topPageSource);
     topSourceLayout->setMargin(10);
     topSourceLayout->setSpacing(5);
 
+
     // Create the source type combo box.
-    QHBoxLayout *hLayout = new QHBoxLayout(topSourceLayout);
-    hLayout->addWidget(new QLabel(tr("Source type"), topPageSource, "sourceTypeLabel"));
+    QGridLayout *hLayout = new QGridLayout(topSourceLayout,2,2,10);
+    hLayout->addWidget(new QLabel(tr("Source type"), topPageSource, "sourceTypeLabel"), 0,0);
     sourceType = new QComboBox(topPageSource, "sourceType");
     sourceType->insertItem(tr("Point"));
     sourceType->insertItem(tr("Line"));
@@ -170,8 +187,17 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     sourceType->insertItem(tr("Box"));
     connect(sourceType, SIGNAL(activated(int)),
             this, SLOT(sourceTypeChanged(int)));
-    hLayout->addWidget(sourceType, 10);
+    hLayout->addWidget(sourceType, 0,1);
     topSourceLayout->addSpacing(5);
+
+    //
+    // Create the widget that lets the user set the point density.
+    //
+    hLayout->addWidget(new QLabel(tr("Point density"), topPageSource, "pointDensityLabel"), 1,0);
+    pointDensity = new QSpinBox(1, 1000, 1, topPageSource, "pointDensity");
+    connect(pointDensity, SIGNAL(valueChanged(int)), 
+            this, SLOT(pointDensityChanged(int)));
+    hLayout->addWidget(pointDensity,1,1);
 
     // Create a group box for the source attributes.
     QGroupBox *pageSource = new QGroupBox(topPageSource, "pageSource");
@@ -344,34 +370,103 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     aLayout->addWidget(singleColor, 6,1, Qt::AlignLeft);
 
     //
-    // Create the widget that lets the user set the point density.
+    // Create advanced widgets.
     //
-    mainLayout->addWidget(new QLabel(tr("Point density"), central, "pointDensityLabel"),3,0);
-    pointDensity = new QSpinBox(1, 30, 1, central, "pointDensity");
-    connect(pointDensity, SIGNAL(valueChanged(int)), 
-            this, SLOT(pointDensityChanged(int)));
-    mainLayout->addWidget(pointDensity, 3,1);
+    QGroupBox *pageAdvanced = new QGroupBox(central, "pageAdvanced");
+    pageAdvanced->setFrameStyle(QFrame::NoFrame);
+    tabs->addTab(pageAdvanced, tr("Advanced"));
+    QGridLayout *advGLayout = new QGridLayout(pageAdvanced, 4, 4);
+    advGLayout->setSpacing(5);
 
-    //Create the direction of integration.
-    mainLayout->addWidget(new QLabel(tr("Streamline direction"), central, "streamlineDirectionLabel"),4,0);
-    directionType = new QComboBox(central, "directionType");
-    directionType->insertItem(tr("Forward"));
-    directionType->insertItem(tr("Backward"));
-    directionType->insertItem(tr("Both"));
-    connect(directionType, SIGNAL(activated(int)),
-            this, SLOT(directionTypeChanged(int)));
-    mainLayout->addWidget(directionType, 4,1);
+    QGroupBox *algoGrp = new QGroupBox(pageAdvanced, "algoGrp");
+    algoGrp->setTitle(tr("Parallel streamline options") );
+    
+    // Algorithm group.
+    advGLayout->addMultiCellWidget( algoGrp, 0,0,0,3);
+    QVBoxLayout *algoAVLayout = new QVBoxLayout( algoGrp );
+    algoAVLayout->setMargin(10);
+    algoAVLayout->addSpacing(15);
+    QGridLayout *algoGLayout = new QGridLayout( algoAVLayout, 10, 2 );
+    algoGLayout->setSpacing(10);
+    algoGLayout->setColStretch(1,10);
+
+    slAlgoLabel = new QLabel(tr("Parallelize across:"), algoGrp, "slAlgoLabel");
+    slAlgo = new QComboBox(algoGrp, "slAlgo");
+    slAlgo->insertItem(tr("Streamlines"));
+    slAlgo->insertItem(tr("Domains"));
+    connect(slAlgo, SIGNAL(activated(int)),
+            this, SLOT(streamlineAlgorithmChanged(int)));
+    algoGLayout->addWidget( slAlgoLabel, 1,0);
+    algoGLayout->addWidget( slAlgo, 1,1);
+    
+    maxSLCountLabel = new QLabel(tr("Streamline process count"), algoGrp, "slMaxCountLabel");
+    maxSLCount = new QSpinBox(1, 100000, 1, algoGrp, "slMaxCount");
+    connect(maxSLCount, SIGNAL(valueChanged(int)), 
+            this, SLOT(maxSLCountChanged(int)));
+    algoGLayout->addWidget( maxSLCountLabel, 2,0);
+    algoGLayout->addWidget( maxSLCount,2,1);
+
+    maxDomainCacheLabel = new QLabel(tr("Domain cache size"), algoGrp, "maxDomainCacheLabel");
+    maxDomainCache = new QSpinBox(1, 100000, 1, algoGrp, "maxDomainCache");
+    connect(maxDomainCache, SIGNAL(valueChanged(int)),
+            this, SLOT(maxDomainCacheChanged(int)));
+    algoGLayout->addWidget( maxDomainCacheLabel, 3,0);
+    algoGLayout->addWidget( maxDomainCache, 3,1);
+
+    // Integrator group.
+    QGroupBox *intGrp = new QGroupBox(pageAdvanced, "intGrp");
+    intGrp->setTitle(tr("Integration method") );
+
+    advGLayout->addMultiCellWidget( intGrp, 1,1,0,3);
+    QVBoxLayout *intAVLayout = new QVBoxLayout( intGrp );
+    intAVLayout->setMargin(10);
+    intAVLayout->addSpacing(15);
+    QGridLayout *intGLayout = new QGridLayout( intAVLayout, 4, 2 );
+    intGLayout->setSpacing(10);
+    intGLayout->setColStretch(1,10);
+
+    intGLayout->addWidget( new QLabel(tr("Integrator"), intGrp, "integratorLabel"), 0,0);
+    integrationType = new QComboBox(intGrp, "integrationType");
+    integrationType->insertItem(tr("Dormand-Prince (Runge-Kutta)"));
+    integrationType->insertItem(tr("Adams-Bashforth (Multi-step)"));
+    connect(integrationType, SIGNAL(activated(int)),
+            this, SLOT(integrationTypeChanged(int)));
+    intGLayout->addWidget(integrationType, 0,1);
+    
+    // Create the step length text field.
+    maxStepLengthLabel = new QLabel(tr("Maximum step length"), intGrp, "maxStepLengthLabel");
+    maxStepLength = new QLineEdit(intGrp, "maxStepLength");
+    connect(maxStepLength, SIGNAL(returnPressed()),
+            this, SLOT(maxStepLengthProcessText()));
+    intGLayout->addWidget(maxStepLengthLabel, 1,0);
+    intGLayout->addWidget(maxStepLength, 1,1);
+
+    // Create the absolute tolerance text field.
+    absTolLabel = new QLabel(tr("Abs. tolerance"), intGrp, "absTolLabel");
+    absTol = new QLineEdit(intGrp, "absTol");
+    connect(absTol, SIGNAL(returnPressed()),
+            this, SLOT(absTolProcessText()));
+    intGLayout->addWidget(absTolLabel, 2,0);
+    intGLayout->addWidget(absTol, 2,1);
+
+    // Create the relative tolerance text field.
+    relTolLabel = new QLabel(tr("Rel. tolerance"), intGrp, "relTolLabel");
+    relTol = new QLineEdit(intGrp, "relTol");
+    connect(relTol, SIGNAL(returnPressed()),
+            this, SLOT(relTolProcessText()));
+    intGLayout->addWidget(relTolLabel, 3,0);
+    intGLayout->addWidget(relTol, 3,1);
+
 
     legendFlag = new QCheckBox(tr("Legend"), central, "legendFlag");
     connect(legendFlag, SIGNAL(toggled(bool)),
             this, SLOT(legendFlagChanged(bool)));
-    mainLayout->addWidget(legendFlag, 5,0);
+    mainLayout->addWidget(legendFlag, 6,0);
 
     lightingFlag = new QCheckBox(tr("Lighting"), central, "lightingFlag");
     connect(lightingFlag, SIGNAL(toggled(bool)),
             this, SLOT(lightingFlagChanged(bool)));
-    mainLayout->addWidget(lightingFlag, 5,1);
-
+    mainLayout->addWidget(lightingFlag, 6,1);
 }
 
 // ****************************************************************************
@@ -453,7 +548,6 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                 continue;
             }
         }
-
         switch(i)
         {
         case 0: // sourceType
@@ -465,12 +559,12 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             sourceType->blockSignals(false);
             break;
         case 1: // stepLength
-            temp.setNum(streamAtts->GetStepLength());
-            stepLength->setText(temp);
+            temp.setNum(streamAtts->GetMaxStepLength());
+            maxStepLength->setText(temp);
             break;
-        case 2: // maxTime
-            temp.setNum(streamAtts->GetMaxTime());
-            maxTime->setText(temp);
+        case 2: // termination
+            temp.setNum(streamAtts->GetTermination());
+            termination->setText(temp);
             break;
         case 3: // pointSource
             dptr = streamAtts->GetPointSource();
@@ -562,9 +656,8 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                 StreamlineAttributes::Tubes;
             bool showRibbons = streamAtts->GetDisplayMethod() == 
                 StreamlineAttributes::Ribbons;
-            showStart->setEnabled(showTubes);
-            radius->setEnabled(showTubes || showRibbons);
-            radiusLabel->setEnabled(showTubes || showRibbons);
+            radius->setEnabled(showTubes || showRibbons || showStart);
+            radiusLabel->setEnabled(showTubes || showRibbons || showStart);
             lineWidth->setEnabled(showLines);
             lineWidthLabel->setEnabled(showLines);
 
@@ -620,12 +713,46 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             lightingFlag->blockSignals(false);
             break;
         case 24: // streamline direction.
-
             directionType->blockSignals(true);
-	    directionType->setCurrentItem( int(streamAtts->GetStreamlineDirection()) );
-	    directionType->blockSignals(false);
+            directionType->setCurrentItem( int(streamAtts->GetStreamlineDirection()) );
+            directionType->blockSignals(false);
+            break;
+        case 25: // relTol
+            temp.setNum(streamAtts->GetRelTol());
+            relTol->setText(temp);
+            break;
+        case 26: // absTol
+            temp.setNum(streamAtts->GetAbsTol());
+            absTol->setText(temp);
+            break;
 
-	    break;
+          case 28: //integrationType
+            // Update lots of widget visibility and enabled states.
+            UpdateIntegrationAttributes();
+
+            integrationType->blockSignals(true);
+            integrationType->setCurrentItem(streamAtts->GetIntegrationType());
+            integrationType->blockSignals(false);
+            break;
+
+          case 29: //algorithmType
+            // Update lots of widget visibility and enabled states.
+            UpdateAlgorithmAttributes();
+
+            slAlgo->blockSignals(true);
+            slAlgo->setCurrentItem(streamAtts->GetStreamlineAlgorithmType());
+            slAlgo->blockSignals(false);
+            break;
+
+          case 30: //maxStreamlingProcessCount
+            maxSLCount->blockSignals(true);
+            maxSLCount->setValue(streamAtts->GetMaxStreamlineProcessCount());
+            maxSLCount->blockSignals(false);
+
+          case 31: //maxDomainCacheSize
+            maxDomainCache->blockSignals(true);
+            maxDomainCache->setValue(streamAtts->GetMaxDomainCacheSize());
+            maxDomainCache->blockSignals(false);
         }
     }
 }
@@ -788,6 +915,92 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
     }
 }
 
+// ****************************************************************************
+// Method: QvisStreamlinePlotWindow::UpdateIntegrationAttributes
+//
+// Purpose: 
+//   Updates the widgets for the various integration types.
+//
+// Programmer: Dave Pugmire
+// Creation:   Thu Jul 31 14:41:00 EDT 2008
+//
+// ****************************************************************************
+
+void
+QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
+{
+    bool useDormandPrince = streamAtts->GetIntegrationType() == StreamlineAttributes::DormandPrince;
+    bool useAdamsBashforth = streamAtts->GetIntegrationType() == StreamlineAttributes::AdamsBashforth;
+
+    //Turn off everything.
+    maxStepLength->hide();
+    maxStepLengthLabel->hide();
+    relTol->hide();
+    relTolLabel->hide();
+    absTol->hide();
+    absTolLabel->hide();
+
+    //both use a step length.
+    if ( useDormandPrince || useAdamsBashforth )
+    {
+        maxStepLength->show();
+        maxStepLengthLabel->show();
+    }
+    
+    if ( useDormandPrince )
+    {
+        maxStepLength->show();
+        maxStepLengthLabel->show();
+        relTol->show();
+        relTolLabel->show();
+        absTol->show();
+        absTolLabel->show();
+    }
+    else if ( useAdamsBashforth )
+    {
+        maxStepLength->show();
+        maxStepLengthLabel->show();
+        absTol->show();
+        absTolLabel->show();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisStreamlinePlotWindow::UpdateAlgorithmAttributes
+//
+// Purpose: 
+//   Updates the widgets for the various integration types.
+//
+// Programmer: Dave Pugmire
+// Creation:   Fri Aug 1 16:41:38 EDT 2008
+//
+// ****************************************************************************
+
+void
+QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
+{
+    bool useLoadOnDemand = streamAtts->GetStreamlineAlgorithmType() == StreamlineAttributes::LoadOnDemand;
+    bool useStaticDomains = streamAtts->GetStreamlineAlgorithmType() == StreamlineAttributes::ParallelStaticDomains;
+    
+    //Turn off everything.
+    maxDomainCacheLabel->hide();
+    maxDomainCache->hide();
+    maxSLCountLabel->hide();
+    maxSLCount->hide();
+
+    if ( useLoadOnDemand )
+    {
+        maxDomainCacheLabel->show();
+        maxDomainCache->show();
+    }
+    else if ( useStaticDomains )
+    {
+        maxSLCountLabel->show();
+        maxSLCount->show();
+    }
+}
+
+
 
 // ****************************************************************************
 // Method: QvisStreamlinePlotWindow::GetCurrentValues
@@ -810,6 +1023,9 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
 //   Brad Whitlock, Wed Apr 23 11:49:55 PDT 2008
 //   Support for internationalization.
 //
+//   Dave Pugmire, Mon Aug 4 2:49:38 EDT 2008
+//   Added termination, algorithm and integration options.
+//
 // ****************************************************************************
 
 void
@@ -821,44 +1037,86 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
     // Do stepLength
     if(which_widget == 1 || doAll)
     {
-        temp = stepLength->displayText().simplifyWhiteSpace();
+        temp = maxStepLength->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
         if(okay)
         {
             double val = temp.toDouble(&okay);
             if(okay)
-                streamAtts->SetStepLength(val);
+                streamAtts->SetMaxStepLength(val);
         }
 
         if(!okay)
         {
             msg = tr("The value of stepLength was invalid. "
                      "Resetting to the last good value of %1.").
-                  arg(streamAtts->GetStepLength());
+                  arg(streamAtts->GetMaxStepLength());
             Message(msg);
-            streamAtts->SetStepLength(streamAtts->GetStepLength());
+            streamAtts->SetMaxStepLength(streamAtts->GetMaxStepLength());
         }
     }
 
-    // Do maxTime
+    // Do termination
     if(which_widget == 2 || doAll)
     {
-        temp = maxTime->displayText().simplifyWhiteSpace();
+        temp = termination->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
         if(okay)
         {
             double val = temp.toDouble(&okay);
             if(okay)
-                streamAtts->SetMaxTime(val);
+                streamAtts->SetTermination(val);
         }
 
         if(!okay)
         {
-            msg = tr("The value of maxTime was invalid. "
+            msg = tr("The value of termination was invalid. "
                      "Resetting to the last good value of %1.").
-                  arg(streamAtts->GetMaxTime());
+                  arg(streamAtts->GetTermination());
             Message(msg);
-            streamAtts->SetMaxTime(streamAtts->GetMaxTime());
+            streamAtts->SetTermination(streamAtts->GetTermination());
+        }
+    }
+
+    // Do relTol
+    if(which_widget == 25 || doAll)
+    {
+        temp = relTol->displayText().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double val = temp.toDouble(&okay);
+            streamAtts->SetRelTol(val);
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The value of relTol was invalid. "
+                "Resetting to the last good value of %g.",
+                streamAtts->GetRelTol());
+            Message(msg);
+            streamAtts->SetRelTol(streamAtts->GetRelTol());
+        }
+    }
+
+    // Do absTol
+    if(which_widget == 26 || doAll)
+    {
+        temp = absTol->displayText().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double val = temp.toDouble(&okay);
+            streamAtts->SetAbsTol(val);
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The value of absTol was invalid. "
+                "Resetting to the last good value of %g.",
+                streamAtts->GetAbsTol());
+            Message(msg);
+            streamAtts->SetAbsTol(streamAtts->GetAbsTol());
         }
     }
 
@@ -1130,6 +1388,15 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             streamAtts->SetRadius(streamAtts->GetRadius());
         }
     }
+
+    // maxStreamlineProcessCount
+    if (which_widget == 30 || doAll)
+    {
+        // This can only be an integer, so no error checking is needed.
+        int val = maxSLCount->value();
+        if (val >= 1)
+            streamAtts->SetMaxStreamlineProcessCount(val);
+    }
 }
 
 
@@ -1248,23 +1515,53 @@ QvisStreamlinePlotWindow::directionTypeChanged(int val)
 }   
 
 void
-QvisStreamlinePlotWindow::stepLengthProcessText()
+QvisStreamlinePlotWindow::termTypeChanged(int val)
+ {
+    if(val != streamAtts->GetTerminationType())
+    {
+        streamAtts->SetTerminationType(StreamlineAttributes::TerminationType(val));
+        Apply();
+    }
+}   
+
+void
+QvisStreamlinePlotWindow::integrationTypeChanged(int val)
+ {
+    if(val != streamAtts->GetIntegrationType())
+    {
+        streamAtts->SetIntegrationType(StreamlineAttributes::IntegrationType(val));
+        Apply();
+    }
+}   
+
+void
+QvisStreamlinePlotWindow::streamlineAlgorithmChanged(int val)
+{
+    if(val != streamAtts->GetStreamlineAlgorithmType())
+    {
+        streamAtts->SetStreamlineAlgorithmType(StreamlineAttributes::StreamlineAlgorithmType(val));
+        Apply();
+    }
+}   
+
+void
+QvisStreamlinePlotWindow::maxStepLengthProcessText()
 {
     GetCurrentValues(1);
     Apply();
 }
 
 void
-QvisStreamlinePlotWindow::maxTimeProcessText()
+QvisStreamlinePlotWindow::terminationProcessText()
 {
     GetCurrentValues(2);
     Apply();
 }
 
 void
-QvisStreamlinePlotWindow::pointSourceProcessText()
+QvisStreamlinePlotWindow::relTolProcessText()
 {
-    GetCurrentValues(3);
+    GetCurrentValues(25);
     Apply();
 }
 
@@ -1332,6 +1629,20 @@ QvisStreamlinePlotWindow::pointDensityChanged(int val)
 }
 
 void
+QvisStreamlinePlotWindow::maxSLCountChanged(int val)
+{
+    streamAtts->SetMaxStreamlineProcessCount(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::maxDomainCacheChanged(int val)
+{
+    streamAtts->SetMaxDomainCacheSize(val);
+    Apply();
+}
+
+void
 QvisStreamlinePlotWindow::displayMethodChanged(int val)
 {
     streamAtts->SetDisplayMethod((StreamlineAttributes::DisplayMethod)val);
@@ -1349,7 +1660,7 @@ QvisStreamlinePlotWindow::showStartChanged(bool val)
 void
 QvisStreamlinePlotWindow::radiusProcessText()
 {
-    GetCurrentValues(16);
+    GetCurrentValues(17);
     Apply();
 }
 
@@ -1415,5 +1726,20 @@ QvisStreamlinePlotWindow::lightingFlagChanged(bool val)
     SetUpdate(false);
     Apply();
 }
+
+void
+QvisStreamlinePlotWindow::absTolProcessText()
+{
+    GetCurrentValues(26);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::pointSourceProcessText()
+{
+    GetCurrentValues(5);
+    Apply();
+}
+
 
 

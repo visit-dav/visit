@@ -123,6 +123,9 @@ class  PickAttributes;
 //    Removed method CanDoDynamicLoadBalancing.  Database is now asked
 //    directly.  Also added new ReleaseData method that is aware of DLB.
 //
+//    Hank Childs, Thu Jun 12 16:13:52 PDT 2008
+//    Added method CanDoStreaming.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
@@ -145,6 +148,8 @@ class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
 
     virtual avtDataRequest_p
                         GetFullDataRequest(void);
+
+    virtual bool        CanDoStreaming(avtContract_p);
 
     void                InvalidateZones(void);
     void                DatabaseProgress(int, int, const char *);

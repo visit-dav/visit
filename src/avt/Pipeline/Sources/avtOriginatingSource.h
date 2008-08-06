@@ -121,6 +121,9 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Thu Jun 12 16:12:38 PDT 2008
+//    Add method CanDoStreaming.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
@@ -148,6 +151,7 @@ class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
                                        VoidRefList &);
 
     virtual bool                   Update(avtContract_p);
+    virtual bool                   CanDoStreaming(avtContract_p) {return true;}
 
     static void                    SetLoadBalancer(LoadBalanceFunction,void *);
     static void                    SetStreamingChecker(StreamingCheckFunction,

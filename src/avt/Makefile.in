@@ -33,7 +33,6 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Modifications:
-#
 #   Hank Childs, Fri Aug 11 17:21:07 PDT 2000
 #   Add Database directory.
 #
@@ -87,13 +86,16 @@
 #   Cyrus Harrison, Tue Dec 11 15:41:01 PST 2007
 #   Added Shapelets directory.
 #
+#   Christoph Garth, Fri Feb 15 20:29:42 PST 2008
+#   Add IVP directory.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=DBAtts Math Pipeline DDF MIR Shapelets\
+SUBDIRS=DBAtts Math IVP Pipeline DDF MIR Shapelets\
         View Filters Database Expressions Queries Plotter FileWriter \
         @VISWINDOW@ QtVisWindow
 

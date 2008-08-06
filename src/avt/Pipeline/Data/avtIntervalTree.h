@@ -88,12 +88,16 @@
 //    Define private copy constructor and assignment operator to prevent
 //    accidental use of default, bitwise copy implementations.
 //
+//    Hank Childs, Thu Jun 12 11:32:45 PDT 2008
+//    Implement a copy constructor.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtIntervalTree
 {
   public:
                               avtIntervalTree(int, int, bool = true);
+                              avtIntervalTree(const avtIntervalTree *);
     virtual                  ~avtIntervalTree();
 
     static void               Destruct(void *);

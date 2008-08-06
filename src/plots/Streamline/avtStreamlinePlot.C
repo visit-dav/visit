@@ -65,7 +65,9 @@
 avtStreamlinePlot::avtStreamlinePlot()
 {
     colorsInitialized = false;
+#ifdef ENGINE
     streamlineFilter = new avtStreamlineFilter;
+#endif
     shiftCenteringFilter = NULL;
 
     avtLUT = new avtLookupTable; 
@@ -96,11 +98,13 @@ avtStreamlinePlot::avtStreamlinePlot()
 
 avtStreamlinePlot::~avtStreamlinePlot()
 {
+#ifdef ENGINE
     if (streamlineFilter != NULL)
     {
         delete streamlineFilter;
         streamlineFilter = NULL;
     }
+#endif
     if (shiftCenteringFilter != NULL)
     {
         delete shiftCenteringFilter;
@@ -187,6 +191,7 @@ avtStreamlinePlot::GetMapper(void)
 avtDataObject_p
 avtStreamlinePlot::ApplyOperators(avtDataObject_p input)
 {
+#ifdef ENGINE
     avtDataObject_p dob = input; 
 
     // Try to determine the centering.  If we have an expression, we won't
@@ -197,7 +202,8 @@ avtStreamlinePlot::ApplyOperators(avtDataObject_p input)
 
     // If the variable centering is zonal, convert it to nodal or the
     // streamline filter will not play with it.
-    if(centering == AVT_ZONECENT)
+    //if(centering == AVT_ZONECENT)
+    if (0)
     {
         if(shiftCenteringFilter != NULL)
             delete shiftCenteringFilter;
@@ -211,6 +217,9 @@ avtStreamlinePlot::ApplyOperators(avtDataObject_p input)
     dob = streamlineFilter->GetOutput();
 
     return dob;
+#else
+    return input;
+#endif
 }
 
 // ****************************************************************************
@@ -258,6 +267,35 @@ avtStreamlinePlot::CustomizeBehavior(void)
     behavior->SetLegend(varLegendRefPtr);
 }
 
+
+// ****************************************************************************
+//  Method: avtStreamlinePlot::EnhanceSpecification
+//
+//  Purpose:
+//      Modifies the contract to tell it we want the "colorVar" to be the 
+//      primary variable for the pipeline.  If we don't do that, the primary
+//      variable will be some vector variable and it will confuse our mapper.
+//      The only reason that this works is that the streamline filter 
+//      understands the colorVar trick and produces that variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 21, 2008
+//
+// ****************************************************************************
+
+avtContract_p
+avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
+{
+    avtDataRequest_p in_dr = in_contract->GetDataRequest();
+    const char *var = in_dr->GetVariable();
+    avtDataRequest_p out_dr = new avtDataRequest(in_dr, "colorVar");
+    out_dr->AddSecondaryVariable(var);
+    out_dr->SetOriginalVariable(var);
+    avtContract_p out_contract = new avtContract(in_contract, out_dr);
+    return out_contract;
+}
+
+
 // ****************************************************************************
 //  Method: avtStreamlinePlot::SetAtts
 //
@@ -298,12 +336,18 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     needsRecalculation = atts.ChangesRequireRecalculation(*newAtts);
     atts = *newAtts;
 
+#ifdef ENGINE
     //
     // Set the filter's attributes based on the plot attributes.
     //
     streamlineFilter->SetSourceType(atts.GetSourceType());
-    streamlineFilter->SetStepLength(atts.GetStepLength());
-    streamlineFilter->SetMaxTime(atts.GetMaxTime());
+    streamlineFilter->SetIntegrationType(atts.GetIntegrationType());
+    streamlineFilter->SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 
+                                             atts.GetMaxStreamlineProcessCount(),
+                                             atts.GetMaxDomainCacheSize());
+    streamlineFilter->SetMaxStepLength(atts.GetMaxStepLength());
+    streamlineFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
+    streamlineFilter->SetTermination(atts.GetTerminationType(), atts.GetTermination());
     streamlineFilter->SetDisplayMethod(atts.GetDisplayMethod());
     streamlineFilter->SetShowStart(atts.GetShowStart());
     streamlineFilter->SetRadius(atts.GetRadius());
@@ -322,6 +366,7 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     streamlineFilter->SetBoxSource(atts.GetBoxExtents());
     streamlineFilter->SetUseWholeBox(atts.GetUseWholeBox());
     streamlineFilter->SetColoringMethod(int(atts.GetColoringMethod()));
+#endif
 
     //
     // Set whether or not lighting is on.
@@ -525,8 +570,10 @@ avtStreamlinePlot::ReleaseData(void)
 {
     avtLineDataPlot::ReleaseData();
 
+#ifdef ENGINE
     if(streamlineFilter != NULL)
         streamlineFilter->ReleaseData();
+#endif
     if(shiftCenteringFilter != NULL)
         shiftCenteringFilter->ReleaseData();
 }

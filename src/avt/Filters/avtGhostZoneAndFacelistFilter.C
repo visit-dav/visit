@@ -295,6 +295,10 @@ avtGhostZoneAndFacelistFilter::MustCreatePolyData(void)
 //    Hank Childs, Fri Nov 30 16:14:48 PST 2007
 //    Fix problem where too much SIL work is being done.
 //
+//    Hank Childs, Thu Jun 12 15:37:43 PDT 2008
+//    Rename a couple of variables and fix up some whitespace that came about
+//    from earlier mass renamings of avtContract.
+//
 // ****************************************************************************
 
 void
@@ -315,17 +319,15 @@ avtGhostZoneAndFacelistFilter::Execute(void)
     avtSourceFromAVTDataset termsrc(ds);
     avtDataObject_p data = termsrc.GetOutput(); 
 
-    avtContract_p specForDB = GetGeneralContract();
-    avtDataRequest_p wrongVar = specForDB->GetDataRequest();
-    avtDataRequest_p correctVar = new avtDataRequest(wrongVar,
-                                                             pipelineVariable);
+    avtContract_p contractForDB = GetGeneralContract();
+    avtDataRequest_p wrongVar = contractForDB->GetDataRequest();
+    avtDataRequest_p correctVar = new avtDataRequest(wrongVar, pipelineVariable);
     // By copying the "correct var", our mechanism for telling the SIL to
     // not be used is ignored.  So turn it back on.
     correctVar->GetSIL().useRestriction = false;
     correctVar->GetSIL().dataChunk = -1;
 
-    avtContract_p goodSpec = new avtContract(
-                                                       specForDB, correctVar);
+    avtContract_p goodSpec = new avtContract(contractForDB, correctVar);
     
     if (useFaceFilter && !useGhostFilter)
     {
@@ -502,8 +504,7 @@ avtGhostZoneAndFacelistFilter::ChangedInput(void)
 // ****************************************************************************
 
 avtContract_p
-avtGhostZoneAndFacelistFilter::ModifyContract(
-                                            avtContract_p in_spec)
+avtGhostZoneAndFacelistFilter::ModifyContract(avtContract_p in_spec)
 {
     avtContract_p spec = in_spec;
 

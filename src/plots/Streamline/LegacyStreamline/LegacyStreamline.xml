@@ -1,0 +1,154 @@
+<?xml version="1.0"?>
+  <Plugin name="LegacyStreamline" type="plot" label="LegacyStreamline" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="vector" iconFile="LegacyStreamline.xpm">
+    <Files components="V">
+      avtLegacyStreamlineFilter.C
+    </Files>
+    <Files components="E">
+      avtLegacyStreamlineFilter.C
+    </Files>
+    <Attribute name="LegacyStreamlineAttributes" purpose="Attributes for the LegacyStreamline plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LegacyStreamline.code">
+      <Enum name="SourceType">
+        SpecifiedPoint
+        SpecifiedLine
+        SpecifiedPlane
+        SpecifiedSphere
+        SpecifiedBox
+      </Enum>
+      <Enum name="ColoringMethod">
+        Solid
+        ColorBySpeed
+        ColorByVorticity
+      </Enum>
+      <Enum name="DisplayMethod">
+        Lines
+        Tubes
+        Ribbons
+      </Enum>
+      <Enum name="IntegrationDirection">
+        Forward
+        Backward
+        Both
+      </Enum>
+      <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
+        SpecifiedPoint
+      </Field>
+      <Field name="stepLength" label="Step length" type="double">
+        1.000000
+      </Field>
+      <Field name="maxTime" label="Maximum time" type="double">
+        10.000000
+      </Field>
+      <Field name="pointSource" label="Starting point" type="doubleArray" length="3" enabler="sourceType:SpecifiedPoint">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="lineStart" label="Line start" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="lineEnd" label="Line end" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
+        1.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="planeOrigin" label="Plane origin" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="planeNormal" label="Plane normal" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
+        0.000000
+        0.000000
+        1.000000
+      </Field>
+      <Field name="planeUpAxis" label="Plane up axis" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
+        0.000000
+        1.000000
+        0.000000
+      </Field>
+      <Field name="planeRadius" label="Plane radius" type="double" enabler="sourceType:SpecifiedPlane">
+        1.000000
+      </Field>
+      <Field name="sphereOrigin" label="Sphere origin" type="doubleArray" length="3" enabler="sourceType:SpecifiedSphere">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="sphereRadius" label="Sphere radius" type="double" enabler="sourceType:SpecifiedSphere">
+        1.000000
+      </Field>
+      <Field name="boxExtents" label="Box extents" type="doubleArray" length="6" enabler="sourceType:SpecifiedBox">
+        0.000000
+        1.000000
+        0.000000
+        1.000000
+        0.000000
+        1.000000
+      </Field>
+      <Field name="useWholeBox" label="Use Whole Box" type="bool" enabler="sourceType:SpecifiedBox">
+        true
+      </Field>
+      <Field name="pointDensity" label="Point density" type="int">
+        2
+      </Field>
+      <Field name="displayMethod" label="Display method" type="enum" subtype="DisplayMethod">
+        Lines
+      </Field>
+      <Field name="showStart" label="Show tube start" type="bool">
+        true
+      </Field>
+      <Field name="radius" label="Radius" type="double">
+        0.125000
+      </Field>
+      <Field name="lineWidth" label="Line width" type="linewidth">
+        2
+      </Field>
+      <Field name="coloringMethod" label="Coloring method" type="enum" subtype="ColoringMethod">
+        ColorBySpeed
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable">
+        Default
+      </Field>
+      <Field name="singleColor" label="Single color" type="color" length="4">
+        0
+        0
+        0
+        255
+      </Field>
+      <Field name="legendFlag" label="Legend" type="bool">
+        true
+      </Field>
+      <Field name="lightingFlag" label="Lighting" type="bool">
+        true
+      </Field>
+      <Field name="StreamlineDirection" label="Streamline Direction" type="enum" subtype="IntegrationDirection">
+        Forward
+      </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Include file="source" quoted="false">
+        PointAttributes.h
+      </Include>
+      <Include file="source" quoted="false">
+        Line.h
+      </Include>
+      <Include file="source" quoted="false">
+        PlaneAttributes.h
+      </Include>
+      <Include file="source" quoted="false">
+        SphereAttributes.h
+      </Include>
+      <Include file="source" quoted="false">
+        PointAttributes.h
+      </Include>
+      <Include file="source" quoted="false">
+        BoxExtents.h
+      </Include>
+    </Attribute>
+  </Plugin>

@@ -164,7 +164,7 @@ echo ""
 echo "Getting record of last merge from this branch into the trunk..."
 mkdir tmp_forRev$$
 cd tmp_forRev$$
-svn co --quiet --non-interactive ${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}/svninfo
+svn co --quiet --non-interactive ${VISIT_SVN_BRANCHES}/${user}/${BRANCHNAME}/svninfo
 cd svninfo
 REV=$(cat Rev_toTrunk)
 isRC="no"
@@ -194,7 +194,7 @@ for i in src data docs test third_party windowsbuild ; do
       echo ""
       echo "Merging directory \"$i\""
       echo ""
-      svn merge -r ${REV}:HEAD ${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}/${ROOTPATH}/$i
+      svn merge -r ${REV}:HEAD ${VISIT_SVN_BRANCHES}/${user}/${BRANCHNAME}/${ROOTPATH}/$i
       cd ..
   fi
 done

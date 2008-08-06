@@ -164,7 +164,7 @@ avtDatasetToSamplePointsFilter::PreExecute(void)
         }
 
         // Some contortions here to use existing calls in avtParallel.
-        int nvars = UnifyMaximumValue(varnames.size());
+        int nvars = UnifyMaximumValue((int)varnames.size());
         GetListToRootProc(varnames, nvars);
         BroadcastStringVector(varnames, PAR_Rank());
 
