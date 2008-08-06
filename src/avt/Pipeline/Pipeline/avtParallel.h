@@ -102,7 +102,6 @@ PIPELINE_API void    GetDoubleArrayToRootProc(double *, int, bool &);
 PIPELINE_API void    WaitAll(std::vector<int> &reqs, std::vector<int> &status );
 PIPELINE_API void    WaitSome(std::vector<int> &reqs, std::vector<int> &done, std::vector<int> &status );
 PIPELINE_API void    TestSome(std::vector<int> &reqs, std::vector<int> &done, std::vector<int> &status );
-PIPELINE_API void    CancelRequest( int &req );
+PIPELINE_API void    CancelRequest(void *req);
 
 #endif
-

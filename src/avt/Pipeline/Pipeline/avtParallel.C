@@ -1609,7 +1609,7 @@ UnifyMaximumValue(vector<int> &mymax, vector<int> &results)
 //    Gets a double array to processor 0.  
 //
 //  Arguments:
-//    da        The doubee array.
+//    da        The double array.
 //    nd        The number of items in the array.
 //    success   Inidicates whether or not this processor has the double array. 
 //  
@@ -1755,17 +1755,21 @@ TestSome(std::vector<int> &reqs, std::vector<int> &done, std::vector<int> &statu
 //
 //  Arguments:
 //    req       The request.
-//  
-//  Programmer: Dave Pugmire
-//  Creation:   June 18, 2008 
 //
+//  Programmer: Dave Pugmire
+//  Creation:   June 18, 2008
+//
+//  Modifications:
+//
+//    Tom Fogal, Wed Aug  6 11:36:21 EDT 2008
+//    Changed the argument type and added a cast to avoid a type mismatch.
 //
 // ****************************************************************************
 
 void
-CancelRequest( int &req )
+CancelRequest(void *req)
 {
 #ifdef PARALLEL
-    MPI_Cancel(&req);
+    MPI_Cancel(static_cast<MPI_Request*>(req));
 #endif
 }
