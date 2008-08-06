@@ -294,6 +294,11 @@ avtCurvePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Mark C. Miller, Thu Jun 21 00:12:28 PDT 2007
 //    Added support to overlay curve plots on 2D plots.
 //    Ensure that curve plots are plotted on top of 2D plots
+//
+//    Sean Ahern, Wed Aug  6 16:50:41 EDT 2008
+//    If we have no designator, set the label from the varname.  This makes
+//    labeling of curves loaded from files work.
+//
 // ****************************************************************************
 
 void
@@ -302,6 +307,17 @@ avtCurvePlot::CustomizeBehavior(void)
     behavior->SetLegend(curveLegendRefPtr);
     behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_CURVE);
     behavior->SetRenderOrder(MUST_GO_LAST);
+
+    if (atts.GetDesignator() != "")
+    {
+        decoMapper->SetLabel(atts.GetDesignator());
+    }
+    else if (varname != NULL)
+    {
+        // No designator set, so set it to the varname.
+        string s(varname);
+        decoMapper->SetLabel(s);
+    }
 }
 
 
@@ -358,7 +374,6 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
     SetLineWidth(atts.GetLineWidth());
     SetLineStyle(atts.GetLineStyle());
 
-    decoMapper->SetLabel(atts.GetDesignator());
     decoMapper->SetLabelColor(rgba);
     decoMapper->SetLabelVisibility(atts.GetShowLabels());
 
@@ -444,5 +459,3 @@ avtCurvePlot::ReleaseData(void)
         WarpFilter->ReleaseData();
     }
 }
-
-

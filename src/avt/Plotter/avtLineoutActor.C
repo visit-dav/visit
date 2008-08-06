@@ -62,12 +62,16 @@
 //
 //    Kathleen Bonnell, Thu Oct  3 14:41:19 PDT 2002  
 //    Disable lighting by setting ambient/diffuse coefficients for the actors. 
+//
+//    Sean Ahern, Wed Aug  6 16:21:16 EDT 2008
+//    Changed the default designator to be the null string rather than
+//    a space.  Easier to check for and more indicative of "nothing" set.
 // 
 // ****************************************************************************
 
 avtLineoutActor:: avtLineoutActor()
 {
-    designator = " ";
+    designator = "";
     mode3D  = true;
     hidden  = false;
     attach[0] = attach[1] = attach[2] = 0.;
