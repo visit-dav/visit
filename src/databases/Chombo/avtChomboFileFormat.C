@@ -1394,14 +1394,28 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 debug5 << "Found mapping file " << mappingFilename << ". ";
                 debug5 << "Adding cmfe expression!" << std::endl;
 
-/*
-                std::string mappingVarPrefix(filenames[0]);
-                for (std::string::iterator it = mappingVarPrefix.begin();
-                        it != mappingVarPrefix.end(); ++it)
-                    if (!isalnum(*it))
-                        *it = '_';
-*/
-                
+#ifdef _WIN32
+                // Escape ":" and "\" in Windows filenames
+                int numCharactersToEscape = 0;
+                for (std::string::iterator it = mappingFilename.begin();
+                        it != mappingFilename.end(); ++it)
+                    if (*it == ':' || *it == '\\')
+                        ++numCharactersToEscape;
+
+                if (numCharactersToEscape)
+                {
+                    std::string escapedFilename;
+                    for (std::string::iterator it = mappingFilename.begin();
+                            it != mappingFilename.end(); ++it)
+                    {
+                        if (*it == ':' || *it == '\\')
+                            escapedFilename.push_back('\\');
+                        escapedFilename.push_back(*it);
+                    }
+                    mappingFilename = escapedFilename; 
+                }
+#endif
+
                 Expression *mappingExpression = new Expression;
                 //mappingExpression->SetName("_"+mappingVarPrefix+"_disp");
                 mappingExpression->SetName("_mapping_displacement");
