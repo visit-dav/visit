@@ -138,10 +138,10 @@
         Forward
       </Field>
       <Field name="relTol" label="rel. tolerance" type="double">
-        0.000001
+        0.000100
       </Field>
       <Field name="absTol" label="abs. tolerance" type="double">
-        0.000001
+        0.000010
       </Field>
       <Field name="terminationType" label="unnamed1" type="enum" subtype="TerminationType">
         Distance
@@ -156,6 +156,9 @@
       </Field>
       <Field name="maxDomainCacheSize" label="Max domain cache" type="int">
         3
+      </Field>
+      <Field name="accurateDistance" label="Accurate distance" type="bool">
+        false
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

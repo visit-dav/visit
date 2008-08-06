@@ -320,6 +320,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
 //   Add streamline direction option.
 //
+//   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
+//   Add accurate distance calculate option.
+//
 // ****************************************************************************
 
 void
@@ -347,7 +350,7 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
                                              atts.GetMaxDomainCacheSize());
     streamlineFilter->SetMaxStepLength(atts.GetMaxStepLength());
     streamlineFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
-    streamlineFilter->SetTermination(atts.GetTerminationType(), atts.GetTermination());
+    streamlineFilter->SetTermination(atts.GetTerminationType(), atts.GetTermination(), atts.GetAccurateDistance());
     streamlineFilter->SetDisplayMethod(atts.GetDisplayMethod());
     streamlineFilter->SetShowStart(atts.GetShowStart());
     streamlineFilter->SetRadius(atts.GetRadius());

@@ -309,7 +309,7 @@ StreamlineAttributes::StreamlineAlgorithmType_FromString(const std::string &s, S
 }
 
 // Type map format string
-const char *StreamlineAttributes::TypeMapFormatString = "iddDDDDDDdDdDbiibdiisabbiddiiiii";
+const char *StreamlineAttributes::TypeMapFormatString = "iddDDDDDDdDdDbiibdiisabbiddiiiiib";
 
 // ****************************************************************************
 // Method: StreamlineAttributes::StreamlineAttributes
@@ -372,12 +372,13 @@ StreamlineAttributes::StreamlineAttributes() :
     legendFlag = true;
     lightingFlag = true;
     StreamlineDirection = Forward;
-    relTol = 1e-06;
-    absTol = 1e-06;
+    relTol = 0.0001;
+    absTol = 1e-05;
     terminationType = Distance;
     streamlineAlgorithmType = ParallelStaticDomains;
     maxStreamlineProcessCount = 10;
     maxDomainCacheSize = 3;
+    accurateDistance = false;
 }
 
 // ****************************************************************************
@@ -454,6 +455,7 @@ StreamlineAttributes::StreamlineAttributes(const StreamlineAttributes &obj) :
     streamlineAlgorithmType = obj.streamlineAlgorithmType;
     maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
     maxDomainCacheSize = obj.maxDomainCacheSize;
+    accurateDistance = obj.accurateDistance;
 
     SelectAll();
 }
@@ -553,6 +555,7 @@ StreamlineAttributes::operator = (const StreamlineAttributes &obj)
     streamlineAlgorithmType = obj.streamlineAlgorithmType;
     maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
     maxDomainCacheSize = obj.maxDomainCacheSize;
+    accurateDistance = obj.accurateDistance;
 
     SelectAll();
     return *this;
@@ -648,7 +651,8 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (integrationType == obj.integrationType) &&
             (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
             (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
-            (maxDomainCacheSize == obj.maxDomainCacheSize));
+            (maxDomainCacheSize == obj.maxDomainCacheSize) &&
+            (accurateDistance == obj.accurateDistance));
 }
 
 // ****************************************************************************
@@ -923,6 +927,7 @@ StreamlineAttributes::SelectAll()
     Select(ID_streamlineAlgorithmType,   (void *)&streamlineAlgorithmType);
     Select(ID_maxStreamlineProcessCount, (void *)&maxStreamlineProcessCount);
     Select(ID_maxDomainCacheSize,        (void *)&maxDomainCacheSize);
+    Select(ID_accurateDistance,          (void *)&accurateDistance);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1149,6 +1154,12 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("maxDomainCacheSize", maxDomainCacheSize));
     }
 
+    if(completeSave || !FieldsEqual(ID_accurateDistance, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("accurateDistance", accurateDistance));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1347,6 +1358,8 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetMaxStreamlineProcessCount(node->AsInt());
     if((node = searchNode->GetNode("maxDomainCacheSize")) != 0)
         SetMaxDomainCacheSize(node->AsInt());
+    if((node = searchNode->GetNode("accurateDistance")) != 0)
+        SetAccurateDistance(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1590,6 +1603,13 @@ StreamlineAttributes::SetMaxDomainCacheSize(int maxDomainCacheSize_)
 {
     maxDomainCacheSize = maxDomainCacheSize_;
     Select(ID_maxDomainCacheSize, (void *)&maxDomainCacheSize);
+}
+
+void
+StreamlineAttributes::SetAccurateDistance(bool accurateDistance_)
+{
+    accurateDistance = accurateDistance_;
+    Select(ID_accurateDistance, (void *)&accurateDistance);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1848,6 +1868,12 @@ StreamlineAttributes::GetMaxDomainCacheSize() const
     return maxDomainCacheSize;
 }
 
+bool
+StreamlineAttributes::GetAccurateDistance() const
+{
+    return accurateDistance;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1968,6 +1994,7 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_streamlineAlgorithmType:   return "streamlineAlgorithmType";
     case ID_maxStreamlineProcessCount: return "maxStreamlineProcessCount";
     case ID_maxDomainCacheSize:        return "maxDomainCacheSize";
+    case ID_accurateDistance:          return "accurateDistance";
     default:  return "invalid index";
     }
 }
@@ -2024,6 +2051,7 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_streamlineAlgorithmType:   return FieldType_enum;
     case ID_maxStreamlineProcessCount: return FieldType_int;
     case ID_maxDomainCacheSize:        return FieldType_int;
+    case ID_accurateDistance:          return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -2080,6 +2108,7 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_streamlineAlgorithmType:   return "enum";
     case ID_maxStreamlineProcessCount: return "int";
     case ID_maxDomainCacheSize:        return "int";
+    case ID_accurateDistance:          return "bool";
     default:  return "invalid index";
     }
 }
@@ -2306,6 +2335,11 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (maxDomainCacheSize == obj.maxDomainCacheSize);
         }
         break;
+    case ID_accurateDistance:
+        {  // new scope
+        retval = (accurateDistance == obj.accurateDistance);
+        }
+        break;
     default: retval = false;
     }
 
@@ -2392,6 +2426,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
            (showStart != obj.showStart) ||
            (termination != obj.termination) ||
            (terminationType != obj.terminationType) ||
+           (accurateDistance != obj.accurateDistance) ||
            (integrationType != obj.integrationType) ||
            (maxStepLength != obj.maxStepLength) ||
            (relTol != obj.relTol) ||

@@ -161,6 +161,7 @@ public:
     void SetStreamlineAlgorithmType(StreamlineAlgorithmType streamlineAlgorithmType_);
     void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_);
     void SetMaxDomainCacheSize(int maxDomainCacheSize_);
+    void SetAccurateDistance(bool accurateDistance_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
@@ -205,6 +206,7 @@ public:
     StreamlineAlgorithmType GetStreamlineAlgorithmType() const;
     int                  GetMaxStreamlineProcessCount() const;
     int                  GetMaxDomainCacheSize() const;
+    bool                 GetAccurateDistance() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -289,7 +291,8 @@ public:
         ID_integrationType,
         ID_streamlineAlgorithmType,
         ID_maxStreamlineProcessCount,
-        ID_maxDomainCacheSize
+        ID_maxDomainCacheSize,
+        ID_accurateDistance
     };
 
 private:
@@ -325,6 +328,7 @@ private:
     int            streamlineAlgorithmType;
     int            maxStreamlineProcessCount;
     int            maxDomainCacheSize;
+    bool           accurateDistance;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

@@ -198,6 +198,9 @@ class avtStreamlineWrapper
 //   Hank Childs, Thu Jun 12 16:52:35 PDT 2008
 //   Define method ModifyContract.
 //
+//   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
+//   Add accurate distance calculate option.
+//
 // ****************************************************************************
 
 class avtStreamlineFilter : public avtDatasetOnDemandFilter
@@ -213,7 +216,7 @@ class avtStreamlineFilter : public avtDatasetOnDemandFilter
     // Methods to set the filter's attributes.
     void                      SetSourceType(int sourceType);
     void                      SetMaxStepLength(double len);
-    void                      SetTermination(int type, double term);
+    void                      SetTermination(int type, double term, bool accurateDistance);
     void                      SetIntegrationType(int algo);
     void                      SetStreamlineAlgorithm(int algo, int maxCnt, int domainCache);
     void                      SetTolerances(double reltol, double abstol);
@@ -240,6 +243,7 @@ class avtStreamlineFilter : public avtDatasetOnDemandFilter
     double absTol;
     int terminationType;
     int integrationType;
+    bool accurateDistance;
     double termination;
     double radius;
     int    displayMethod;
