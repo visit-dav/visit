@@ -300,7 +300,7 @@ PARLIBS=$(COMMONLIBS) -lviswindow_par -lplotter_par -lmir_par -lavtwriter_par \
         -lexpressions_par -lavtfilters_par -lpipeline_par \
         -lengineparstate_par -lparallel_visit_vtk_par \
         $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) \
-	$(BZIP2_LIBS) $(FILIB_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
+	$(BZIP2_LIBS) $(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
 
 SERLIBDEP=../../lib/libplugin.@SHLIB_LIBEXT@ ../../lib/libplotter_ser.@SHLIB_LIBEXT@ \
           ../../lib/libdatabase_ser.@SHLIB_LIBEXT@ ../../lib/libpipeline_ser.@SHLIB_LIBEXT@ \
@@ -359,7 +359,7 @@ clean:
 
 @ENGINE_PAR@ or_no_par: $(PARLIBDEP) $(PAROBJ) $(MAINPAROBJ) $(LIBSHAREDPAR)
 	$(CXX) -o $@ $(LDFLAGS) @EXE_LDFLAGS@  $(MAINPAROBJ) -lengine_par $(PARLIBS) \
-	@ICET_LDFLAGS@ @ICET_LIBS@ @LIBCOGNOMEN@
+	@MPI_LIBS@ @ICET_LDFLAGS@ @ICET_LIBS@ @LIBCOGNOMEN@
 
 $(ENGINEWRAPSER) or_no_ser_wrapper: $(SERLIBDEP) $(SEROBJ) $(LIBRARYSEROBJ) $(LIBSHAREDSER)
 	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(LIBRARYSEROBJ) -lengine_ser $(SERLIBS)
@@ -370,7 +370,7 @@ $(ENGINEWRAPPAR) or_no_par_wrapper: $(PARLIBDEP) $(PAROBJ) $(LIBRARYPAROBJ) $(LI
 
 purify: $(SERLIBDEP) $(SEROBJ) $(MAINSEROBJ) $(LIBSHAREDSER) $(MAINPAROBJ) $(LIBSHAREDPAR)
 	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir -chain-length=64	$(CXX) -o @ENGINE_SER@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)
-	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir -chain-length=64 -follow-child-processes=yes $(CXX) -o @ENGINE_PAR@ $(LDFLAGS) $(MAINPAROBJ) -lengine_par $(PARLIBS)
+	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir -chain-length=64 -follow-child-processes=yes $(CXX) -o @ENGINE_PAR@ $(LDFLAGS) $(MAINPAROBJ) -lengine_par $(PARLIBS) @MPI_LIBS@
 
 quantify: $(SERLIBDEP) $(SEROBJ)
 	quantify $(CXX) -o @ENGINE_SER@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)
