@@ -62,11 +62,15 @@
 //    Kathleen Bonnell, Tue Jul 23 15:01:55 PDT 2002 
 //    Initialize new member labelVis.
 //
+//    Sean Ahern, Wed Aug  6 16:33:59 EDT 2008
+//    Set the default label to "" instead of a space.  This is more in line
+//    with it being set to "nothing".
+//
 // ****************************************************************************
 
 avtLabeledCurveMapper::avtLabeledCurveMapper()
 {
-    label         = " ";
+    label         = "";
     labelVis      = true;
     scale         = 0.2;
     filter        = 0;
@@ -311,12 +315,21 @@ avtLabeledCurveMapper::SetLabelColor(double r, double g, double b)
 //  Programmer:   Kathleen Bonnell
 //  Creation:     July 12, 2002
 //
+//  Modifications:
+//      Sean Ahern, Wed Aug  6 16:53:49 EDT 2008
+//      Just as with SetLabelColor, SetScale, etc., update all of the actors
+//      to have the new label.
+//
 // ****************************************************************************
 
 void
 avtLabeledCurveMapper::SetLabel(std::string &l)
 {
     label = l;
+    for (int i = 0; i < actors.size(); i++)
+    {
+        actors[i]->SetDesignator(l.c_str());
+    }
 }
 
 
