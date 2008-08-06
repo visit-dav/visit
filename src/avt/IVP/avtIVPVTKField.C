@@ -61,6 +61,7 @@ avtIVPVTKField::avtIVPVTKField( vtkInterpolatedVelocityField* velocity )
     : iv(velocity)
 {
     iv->Register( NULL );
+    normalized = false;
 }
 
 
@@ -98,8 +99,13 @@ avtIVPVTKField::operator()(const double& t, const avtVecRef& x) const
     
     if( !result )
         throw Undefined();
-
-    //cout<<"Func( "<<param<<" ) = "<<y<<endl;
+    
+    if ( normalized )
+    {
+        double len = y.length();
+        if ( len > 0.0 )
+            y /= len;
+    }
     return y;
 }
 
@@ -204,3 +210,20 @@ avtIVPVTKField::GetDimension() const
 {
     return iv->GetNumberOfFunctions();
 }  
+
+// ****************************************************************************
+//  Method: avtIVPVTKField::SetNormalized
+//
+//  Purpose:
+//      Sets field normalization.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   August 6, 2008
+//
+// ****************************************************************************
+
+void
+avtIVPVTKField::SetNormalized( bool v )
+{
+    normalized = v;
+}

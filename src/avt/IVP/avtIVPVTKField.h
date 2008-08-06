@@ -77,9 +77,11 @@ class IVP_API avtIVPVTKField: public avtIVPField
     
     bool           IsInside( const double& t, const avtVecRef& x ) const;
     unsigned int   GetDimension() const;
+    void           SetNormalized( bool v );
 
   protected:
     vtkInterpolatedVelocityField   *iv;
+    bool           normalized;
     
 };
 
