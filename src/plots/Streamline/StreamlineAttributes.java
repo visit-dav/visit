@@ -91,7 +91,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
 
     public StreamlineAttributes()
     {
-        super(32);
+        super(33);
 
         sourceType = SOURCETYPE_SPECIFIEDPOINT;
         maxStepLength = 0.1;
@@ -145,17 +145,18 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         legendFlag = true;
         lightingFlag = true;
         StreamlineDirection = INTEGRATIONDIRECTION_FORWARD;
-        relTol = 1e-06;
-        absTol = 1e-06;
+        relTol = 0.0001;
+        absTol = 1e-05;
         terminationType = TERMINATIONTYPE_DISTANCE;
             streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS;
         maxStreamlineProcessCount = 10;
         maxDomainCacheSize = 3;
+        accurateDistance = false;
     }
 
     public StreamlineAttributes(StreamlineAttributes obj)
     {
-        super(32);
+        super(33);
 
         int i;
 
@@ -222,6 +223,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         streamlineAlgorithmType = obj.streamlineAlgorithmType;
         maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
         maxDomainCacheSize = obj.maxDomainCacheSize;
+        accurateDistance = obj.accurateDistance;
 
         SelectAll();
     }
@@ -302,7 +304,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (integrationType == obj.integrationType) &&
                 (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
                 (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
-                (maxDomainCacheSize == obj.maxDomainCacheSize));
+                (maxDomainCacheSize == obj.maxDomainCacheSize) &&
+                (accurateDistance == obj.accurateDistance));
     }
 
     public String GetName() { return "Streamline"; }
@@ -572,6 +575,12 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(31);
     }
 
+    public void SetAccurateDistance(boolean accurateDistance_)
+    {
+        accurateDistance = accurateDistance_;
+        Select(32);
+    }
+
     // Property getting methods
     public int            GetSourceType() { return sourceType; }
     public double         GetMaxStepLength() { return maxStepLength; }
@@ -605,6 +614,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public int            GetStreamlineAlgorithmType() { return streamlineAlgorithmType; }
     public int            GetMaxStreamlineProcessCount() { return maxStreamlineProcessCount; }
     public int            GetMaxDomainCacheSize() { return maxDomainCacheSize; }
+    public boolean        GetAccurateDistance() { return accurateDistance; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -673,6 +683,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(maxStreamlineProcessCount);
         if(WriteSelect(31, buf))
             buf.WriteInt(maxDomainCacheSize);
+        if(WriteSelect(32, buf))
+            buf.WriteBool(accurateDistance);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -779,6 +791,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             case 31:
                 SetMaxDomainCacheSize(buf.ReadInt());
                 break;
+            case 32:
+                SetAccurateDistance(buf.ReadBool());
+                break;
             }
         }
     }
@@ -865,6 +880,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + intToString("maxStreamlineProcessCount", maxStreamlineProcessCount, indent) + "\n";
         str = str + intToString("maxDomainCacheSize", maxDomainCacheSize, indent) + "\n";
+        str = str + boolToString("accurateDistance", accurateDistance, indent) + "\n";
         return str;
     }
 
@@ -902,5 +918,6 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private int            streamlineAlgorithmType;
     private int            maxStreamlineProcessCount;
     private int            maxDomainCacheSize;
+    private boolean        accurateDistance;
 }
 

@@ -125,6 +125,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Dave Pugmire, Mon Aug 4 2:49:38 EDT 2008
 //   Added termination, algorithm and integration options.
 //
+//   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
+//   Add accurate distance calculate option.
+//
 // ****************************************************************************
 
 void
@@ -145,6 +148,12 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     connect(termination, SIGNAL(returnPressed()),
             this, SLOT(terminationProcessText()));
     mainLayout->addWidget(termination, 1,1);
+
+    accurateDistance = new QCheckBox(tr("Accurate distance"), central, "accurateDistance");
+    connect(accurateDistance, SIGNAL(toggled(bool)),
+            this, SLOT(accurateDistanceChanged(bool)));
+    mainLayout->addWidget(accurateDistance, 2,1);
+
 
     //Create the direction of integration.
     mainLayout->addWidget(new QLabel(tr("Streamline direction"), central, "streamlineDirectionLabel"),3,0);
@@ -442,7 +451,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     intGLayout->addWidget(maxStepLength, 1,1);
 
     // Create the absolute tolerance text field.
-    absTolLabel = new QLabel(tr("Abs. tolerance"), intGrp, "absTolLabel");
+    absTolLabel = new QLabel(tr("Absolute tolerance"), intGrp, "absTolLabel");
     absTol = new QLineEdit(intGrp, "absTol");
     connect(absTol, SIGNAL(returnPressed()),
             this, SLOT(absTolProcessText()));
@@ -450,7 +459,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     intGLayout->addWidget(absTol, 2,1);
 
     // Create the relative tolerance text field.
-    relTolLabel = new QLabel(tr("Rel. tolerance"), intGrp, "relTolLabel");
+    relTolLabel = new QLabel(tr("Relative tolerance"), intGrp, "relTolLabel");
     relTol = new QLineEdit(intGrp, "relTol");
     connect(relTol, SIGNAL(returnPressed()),
             this, SLOT(relTolProcessText()));
@@ -529,6 +538,9 @@ QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
 //
 //   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
 //   Add streamline direction option.
+//
+//   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
+//   Add accurate distance calculate option.
 //
 // ****************************************************************************
 
@@ -725,6 +737,9 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             temp.setNum(streamAtts->GetAbsTol());
             absTol->setText(temp);
             break;
+          case 27: //terminationType
+            accurateDistance->setEnabled( (streamAtts->GetTerminationType() == StreamlineAttributes::Distance) );
+            break;
 
           case 28: //integrationType
             // Update lots of widget visibility and enabled states.
@@ -748,11 +763,19 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             maxSLCount->blockSignals(true);
             maxSLCount->setValue(streamAtts->GetMaxStreamlineProcessCount());
             maxSLCount->blockSignals(false);
+            break;
 
           case 31: //maxDomainCacheSize
             maxDomainCache->blockSignals(true);
             maxDomainCache->setValue(streamAtts->GetMaxDomainCacheSize());
             maxDomainCache->blockSignals(false);
+            break;
+
+          case 32: //accurateDistance
+            accurateDistance->blockSignals(true);
+            accurateDistance->setChecked(streamAtts->GetAccurateDistance());
+            accurateDistance->blockSignals(false);
+            break;
         }
     }
 }
@@ -1646,6 +1669,14 @@ void
 QvisStreamlinePlotWindow::displayMethodChanged(int val)
 {
     streamAtts->SetDisplayMethod((StreamlineAttributes::DisplayMethod)val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::accurateDistanceChanged(bool val)
+{
+    streamAtts->SetAccurateDistance(val);
+    SetUpdate(false);
     Apply();
 }
 

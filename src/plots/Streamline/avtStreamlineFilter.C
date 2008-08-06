@@ -84,6 +84,7 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <avtExtents.h>
 #include <avtIVPVTKField.h>
 #include <avtIVPDopri5.h>
+#include <avtIVPAdamsBashforth.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
@@ -426,6 +427,9 @@ avtStreamlineWrapper::ComputeStatistics()
 //    Christoph Garth, Mon Feb 25 17:12:49 PST 2008
 //    Port to new streamline infrastructure
 //
+//   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
+//   Add accurate distance calculate option.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
@@ -433,6 +437,7 @@ avtStreamlineFilter::avtStreamlineFilter()
     normalizedVecExprName = "";
     maxStepLength = 0.;
     terminationType = STREAMLINE_TERMINATE_DISTANCE;
+    accurateDistance = false;
     termination = 100.;
     showStart = true;
     radius = 0.125;
@@ -725,6 +730,7 @@ avtStreamlineFilter::SetIntegrationType(int type)
 // Arguments:
 //   type : Type of termination.
 //   term : When to terminate.
+//   accurateDist: Perform accurate distance calculations.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 6 12:57:25 PDT 2002
@@ -738,14 +744,18 @@ avtStreamlineFilter::SetIntegrationType(int type)
 //
 //   Dave Pugmire, Fri Jul 11 14:12:49 EST 2008
 //   Changed name to SetTermination and added the terminationType argument.
+//
+//   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
+//   Add accurate distance calculate option.
 //   
 // ****************************************************************************
 
 void
-avtStreamlineFilter::SetTermination(int type, double term)
+avtStreamlineFilter::SetTermination(int type, double term, bool accurateDist)
 {
     terminationType = type;
     termination = term;
+    accurateDistance = accurateDist;
 }
 
 
@@ -4742,6 +4752,9 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg)
 //    Hank Childs, Thu Jun 12 15:06:08 PDT 2008
 //    Detect whether or not we have ghost data.
 //
+//   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
+//   Add accurate distance calculate option.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -4771,10 +4784,12 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         velocity->AddDataSet(ds);
     
     velocity->CachingOn();
-    if (terminationType==STREAMLINE_TERMINATE_DISTANCE)
+    if (terminationType==STREAMLINE_TERMINATE_DISTANCE && !accurateDistance)
         velocity->SelectVectors(normalizedVecExprName.c_str());
 
     avtIVPVTKField field(velocity);
+    if (terminationType==STREAMLINE_TERMINATE_DISTANCE && accurateDistance)
+        field.SetNormalized(true);
     
     double t = (slSeg->dir == avtStreamlineWrapper::FWD 
                     ? termination : -termination);
@@ -4890,7 +4905,7 @@ avtStreamlineFilter::PreExecute(void)
     }
     else if (integrationType == STREAMLINE_INTEGRATE_ADAMS_BASHFORTH)
     {
-        solver = new avtIVPDopri5;
+        solver = new avtIVPAdamsBashforth;
         solver->SetMaximumStepSize(maxStepLength);
         solver->SetTolerances(relTol, absTol);
     }
@@ -5424,6 +5439,9 @@ avtStreamlineFilter::CreateStreamlineOutput(
 //    a trick because the streamline plot requested "colorVar", which is the
 //    variable it wants to color by.
 //
+//   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
+//   Add accurate distance calculate option.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -5440,7 +5458,7 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
     }
 
     // If we want distance termination, create a normalization expression.
-    if (terminationType==STREAMLINE_TERMINATE_DISTANCE)
+    if (terminationType==STREAMLINE_TERMINATE_DISTANCE && !accurateDistance)
     {
         string varName = in_dr->GetOriginalVariable();
 
