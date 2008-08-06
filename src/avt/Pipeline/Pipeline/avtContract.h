@@ -91,6 +91,9 @@ typedef ref_ptr<avtContract> avtContract_p;
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Sun Mar  9 06:36:49 PST 2008
+//    Add new data member for on demand streaming.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtContract
@@ -98,19 +101,16 @@ class PIPELINE_API avtContract
   public:
                         avtContract(avtDataRequest_p, int);
                         avtContract(avtContract_p);
-                        avtContract(avtContract_p,
-                                                 avtDataRequest_p);
+                        avtContract(avtContract_p, avtDataRequest_p);
     virtual            ~avtContract();
 
-    bool                ShouldUseStreaming(void)
-                               { return canDoStreaming; };
-    void                NoStreaming(void)
-                               { canDoStreaming = false; };
-    void                SetDataRequest(avtDataRequest_p ds)
-                               { data = ds; };
+    bool                ShouldUseStreaming(void) { return canDoStreaming; };
+    void                NoStreaming(void) { canDoStreaming = false; };
+    void                SetDataRequest(avtDataRequest_p ds) { data = ds; };
 
     bool                ShouldUseLoadBalancing(void)  
-                               { return useLoadBalancing; };
+                               { return  useLoadBalancing && 
+                                        !doingOnDemandStreaming; };
     void                UseLoadBalancing(bool);
 
     void                SetHaveRectilinearMeshOptimizations(bool b)
@@ -122,31 +122,35 @@ class PIPELINE_API avtContract
     bool                GetHaveCurvilinearMeshOptimizations(void)
                                { return haveCurvilinearMeshOptimizations; };
                   
-    avtDataRequest_p    GetDataRequest(void)
-                               { return data; };
-    int                       GetPipelineIndex(void) 
-                               { return pipelineIndex; };
+    bool                DoingOnDemandStreaming(void)
+                               { return doingOnDemandStreaming; };
+    void                SetOnDemandStreaming(bool b)
+                               { doingOnDemandStreaming = b; };
 
-    void                      AddFilter(void)  { nFilters++; };
-    int                       GetNFilters(void)  { return nFilters; };
+    avtDataRequest_p    GetDataRequest(void)   { return data; };
+    int                 GetPipelineIndex(void) { return pipelineIndex; };
 
-    avtContract &operator=(const avtContract &);
-    void                      DebugDump(avtWebpage *);
+    void                AddFilter(void)  { nFilters++; };
+    int                 GetNFilters(void)  { return nFilters; };
+
+    avtContract        &operator=(const avtContract &);
+    void                DebugDump(avtWebpage *);
 
   protected:
     avtDataRequest_p    data;
-    int                       pipelineIndex;
-    bool                      canDoStreaming;
-    bool                      useLoadBalancing;
-    bool                      haveCurvilinearMeshOptimizations;
-    bool                      haveRectilinearMeshOptimizations;
-    int                       nFilters;
+    int                 pipelineIndex;
+    bool                canDoStreaming;
+    bool                doingOnDemandStreaming;
+    bool                useLoadBalancing;
+    bool                haveCurvilinearMeshOptimizations;
+    bool                haveRectilinearMeshOptimizations;
+    int                 nFilters;
 
   private:
     // This method is defined to prevent accidental use of a bitwise copy
     // implementation.  If you want to re-define it to do something
     // meaningful, that's fine.
-                avtContract(const avtContract &) {;};
+    avtContract(const avtContract &) {;};
 };
 
 

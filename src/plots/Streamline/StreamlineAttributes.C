@@ -197,8 +197,119 @@ StreamlineAttributes::IntegrationDirection_FromString(const std::string &s, Stre
     return false;
 }
 
+//
+// Enum conversion methods for StreamlineAttributes::TerminationType
+//
+
+static const char *TerminationType_strings[] = {
+"Distance", "Time"};
+
+std::string
+StreamlineAttributes::TerminationType_ToString(StreamlineAttributes::TerminationType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return TerminationType_strings[index];
+}
+
+std::string
+StreamlineAttributes::TerminationType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return TerminationType_strings[index];
+}
+
+bool
+StreamlineAttributes::TerminationType_FromString(const std::string &s, StreamlineAttributes::TerminationType &val)
+{
+    val = StreamlineAttributes::Distance;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == TerminationType_strings[i])
+        {
+            val = (TerminationType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for StreamlineAttributes::IntegrationType
+//
+
+static const char *IntegrationType_strings[] = {
+"DormandPrince", "AdamsBashforth"};
+
+std::string
+StreamlineAttributes::IntegrationType_ToString(StreamlineAttributes::IntegrationType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return IntegrationType_strings[index];
+}
+
+std::string
+StreamlineAttributes::IntegrationType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return IntegrationType_strings[index];
+}
+
+bool
+StreamlineAttributes::IntegrationType_FromString(const std::string &s, StreamlineAttributes::IntegrationType &val)
+{
+    val = StreamlineAttributes::DormandPrince;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == IntegrationType_strings[i])
+        {
+            val = (IntegrationType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for StreamlineAttributes::StreamlineAlgorithmType
+//
+
+static const char *StreamlineAlgorithmType_strings[] = {
+"LoadOnDemand", "ParallelStaticDomains"};
+
+std::string
+StreamlineAttributes::StreamlineAlgorithmType_ToString(StreamlineAttributes::StreamlineAlgorithmType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return StreamlineAlgorithmType_strings[index];
+}
+
+std::string
+StreamlineAttributes::StreamlineAlgorithmType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return StreamlineAlgorithmType_strings[index];
+}
+
+bool
+StreamlineAttributes::StreamlineAlgorithmType_FromString(const std::string &s, StreamlineAttributes::StreamlineAlgorithmType &val)
+{
+    val = StreamlineAttributes::LoadOnDemand;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == StreamlineAlgorithmType_strings[i])
+        {
+            val = (StreamlineAlgorithmType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // Type map format string
-const char *StreamlineAttributes::TypeMapFormatString = "iddDDDDDDdDdDbiibdiisabbi";
+const char *StreamlineAttributes::TypeMapFormatString = "iddDDDDDDdDdDbiibdiisabbiddiiiii";
 
 // ****************************************************************************
 // Method: StreamlineAttributes::StreamlineAttributes
@@ -220,8 +331,8 @@ StreamlineAttributes::StreamlineAttributes() :
     colorTableName("Default"), singleColor(0, 0, 0)
 {
     sourceType = SpecifiedPoint;
-    stepLength = 1;
-    maxTime = 10;
+    maxStepLength = 0.1;
+    termination = 10;
     pointSource[0] = 0;
     pointSource[1] = 0;
     pointSource[2] = 0;
@@ -261,6 +372,12 @@ StreamlineAttributes::StreamlineAttributes() :
     legendFlag = true;
     lightingFlag = true;
     StreamlineDirection = Forward;
+    relTol = 1e-06;
+    absTol = 1e-06;
+    terminationType = Distance;
+    streamlineAlgorithmType = ParallelStaticDomains;
+    maxStreamlineProcessCount = 10;
+    maxDomainCacheSize = 3;
 }
 
 // ****************************************************************************
@@ -283,8 +400,8 @@ StreamlineAttributes::StreamlineAttributes(const StreamlineAttributes &obj) :
 {
 
     sourceType = obj.sourceType;
-    stepLength = obj.stepLength;
-    maxTime = obj.maxTime;
+    maxStepLength = obj.maxStepLength;
+    termination = obj.termination;
     pointSource[0] = obj.pointSource[0];
     pointSource[1] = obj.pointSource[1];
     pointSource[2] = obj.pointSource[2];
@@ -330,6 +447,13 @@ StreamlineAttributes::StreamlineAttributes(const StreamlineAttributes &obj) :
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
     StreamlineDirection = obj.StreamlineDirection;
+    relTol = obj.relTol;
+    absTol = obj.absTol;
+    terminationType = obj.terminationType;
+    integrationType = obj.integrationType;
+    streamlineAlgorithmType = obj.streamlineAlgorithmType;
+    maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
+    maxDomainCacheSize = obj.maxDomainCacheSize;
 
     SelectAll();
 }
@@ -375,8 +499,8 @@ StreamlineAttributes::operator = (const StreamlineAttributes &obj)
     if (this == &obj) return *this;
 
     sourceType = obj.sourceType;
-    stepLength = obj.stepLength;
-    maxTime = obj.maxTime;
+    maxStepLength = obj.maxStepLength;
+    termination = obj.termination;
     pointSource[0] = obj.pointSource[0];
     pointSource[1] = obj.pointSource[1];
     pointSource[2] = obj.pointSource[2];
@@ -422,6 +546,13 @@ StreamlineAttributes::operator = (const StreamlineAttributes &obj)
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
     StreamlineDirection = obj.StreamlineDirection;
+    relTol = obj.relTol;
+    absTol = obj.absTol;
+    terminationType = obj.terminationType;
+    integrationType = obj.integrationType;
+    streamlineAlgorithmType = obj.streamlineAlgorithmType;
+    maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
+    maxDomainCacheSize = obj.maxDomainCacheSize;
 
     SelectAll();
     return *this;
@@ -487,8 +618,8 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
 
     // Create the return value
     return ((sourceType == obj.sourceType) &&
-            (stepLength == obj.stepLength) &&
-            (maxTime == obj.maxTime) &&
+            (maxStepLength == obj.maxStepLength) &&
+            (termination == obj.termination) &&
             pointSource_equal &&
             lineStart_equal &&
             lineEnd_equal &&
@@ -510,7 +641,14 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (singleColor == obj.singleColor) &&
             (legendFlag == obj.legendFlag) &&
             (lightingFlag == obj.lightingFlag) &&
-            (StreamlineDirection == obj.StreamlineDirection));
+            (StreamlineDirection == obj.StreamlineDirection) &&
+            (relTol == obj.relTol) &&
+            (absTol == obj.absTol) &&
+            (terminationType == obj.terminationType) &&
+            (integrationType == obj.integrationType) &&
+            (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
+            (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
+            (maxDomainCacheSize == obj.maxDomainCacheSize));
 }
 
 // ****************************************************************************
@@ -753,31 +891,38 @@ StreamlineAttributes::NewInstance(bool copy) const
 void
 StreamlineAttributes::SelectAll()
 {
-    Select(ID_sourceType,          (void *)&sourceType);
-    Select(ID_stepLength,          (void *)&stepLength);
-    Select(ID_maxTime,             (void *)&maxTime);
-    Select(ID_pointSource,         (void *)pointSource, 3);
-    Select(ID_lineStart,           (void *)lineStart, 3);
-    Select(ID_lineEnd,             (void *)lineEnd, 3);
-    Select(ID_planeOrigin,         (void *)planeOrigin, 3);
-    Select(ID_planeNormal,         (void *)planeNormal, 3);
-    Select(ID_planeUpAxis,         (void *)planeUpAxis, 3);
-    Select(ID_planeRadius,         (void *)&planeRadius);
-    Select(ID_sphereOrigin,        (void *)sphereOrigin, 3);
-    Select(ID_sphereRadius,        (void *)&sphereRadius);
-    Select(ID_boxExtents,          (void *)boxExtents, 6);
-    Select(ID_useWholeBox,         (void *)&useWholeBox);
-    Select(ID_pointDensity,        (void *)&pointDensity);
-    Select(ID_displayMethod,       (void *)&displayMethod);
-    Select(ID_showStart,           (void *)&showStart);
-    Select(ID_radius,              (void *)&radius);
-    Select(ID_lineWidth,           (void *)&lineWidth);
-    Select(ID_coloringMethod,      (void *)&coloringMethod);
-    Select(ID_colorTableName,      (void *)&colorTableName);
-    Select(ID_singleColor,         (void *)&singleColor);
-    Select(ID_legendFlag,          (void *)&legendFlag);
-    Select(ID_lightingFlag,        (void *)&lightingFlag);
-    Select(ID_StreamlineDirection, (void *)&StreamlineDirection);
+    Select(ID_sourceType,                (void *)&sourceType);
+    Select(ID_maxStepLength,             (void *)&maxStepLength);
+    Select(ID_termination,               (void *)&termination);
+    Select(ID_pointSource,               (void *)pointSource, 3);
+    Select(ID_lineStart,                 (void *)lineStart, 3);
+    Select(ID_lineEnd,                   (void *)lineEnd, 3);
+    Select(ID_planeOrigin,               (void *)planeOrigin, 3);
+    Select(ID_planeNormal,               (void *)planeNormal, 3);
+    Select(ID_planeUpAxis,               (void *)planeUpAxis, 3);
+    Select(ID_planeRadius,               (void *)&planeRadius);
+    Select(ID_sphereOrigin,              (void *)sphereOrigin, 3);
+    Select(ID_sphereRadius,              (void *)&sphereRadius);
+    Select(ID_boxExtents,                (void *)boxExtents, 6);
+    Select(ID_useWholeBox,               (void *)&useWholeBox);
+    Select(ID_pointDensity,              (void *)&pointDensity);
+    Select(ID_displayMethod,             (void *)&displayMethod);
+    Select(ID_showStart,                 (void *)&showStart);
+    Select(ID_radius,                    (void *)&radius);
+    Select(ID_lineWidth,                 (void *)&lineWidth);
+    Select(ID_coloringMethod,            (void *)&coloringMethod);
+    Select(ID_colorTableName,            (void *)&colorTableName);
+    Select(ID_singleColor,               (void *)&singleColor);
+    Select(ID_legendFlag,                (void *)&legendFlag);
+    Select(ID_lightingFlag,              (void *)&lightingFlag);
+    Select(ID_StreamlineDirection,       (void *)&StreamlineDirection);
+    Select(ID_relTol,                    (void *)&relTol);
+    Select(ID_absTol,                    (void *)&absTol);
+    Select(ID_terminationType,           (void *)&terminationType);
+    Select(ID_integrationType,           (void *)&integrationType);
+    Select(ID_streamlineAlgorithmType,   (void *)&streamlineAlgorithmType);
+    Select(ID_maxStreamlineProcessCount, (void *)&maxStreamlineProcessCount);
+    Select(ID_maxDomainCacheSize,        (void *)&maxDomainCacheSize);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -816,16 +961,16 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("sourceType", SourceType_ToString(sourceType)));
     }
 
-    if(completeSave || !FieldsEqual(ID_stepLength, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_maxStepLength, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("stepLength", stepLength));
+        node->AddNode(new DataNode("maxStepLength", maxStepLength));
     }
 
-    if(completeSave || !FieldsEqual(ID_maxTime, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_termination, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("maxTime", maxTime));
+        node->AddNode(new DataNode("termination", termination));
     }
 
     if(completeSave || !FieldsEqual(ID_pointSource, &defaultObject))
@@ -962,6 +1107,48 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("StreamlineDirection", IntegrationDirection_ToString(StreamlineDirection)));
     }
 
+    if(completeSave || !FieldsEqual(ID_relTol, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("relTol", relTol));
+    }
+
+    if(completeSave || !FieldsEqual(ID_absTol, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("absTol", absTol));
+    }
+
+    if(completeSave || !FieldsEqual(ID_terminationType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("terminationType", TerminationType_ToString(terminationType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_integrationType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("integrationType", IntegrationType_ToString(integrationType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_streamlineAlgorithmType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("streamlineAlgorithmType", StreamlineAlgorithmType_ToString(streamlineAlgorithmType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maxStreamlineProcessCount, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxStreamlineProcessCount", maxStreamlineProcessCount));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maxDomainCacheSize, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxDomainCacheSize", maxDomainCacheSize));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1014,10 +1201,10 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
                 SetSourceType(value);
         }
     }
-    if((node = searchNode->GetNode("stepLength")) != 0)
-        SetStepLength(node->AsDouble());
-    if((node = searchNode->GetNode("maxTime")) != 0)
-        SetMaxTime(node->AsDouble());
+    if((node = searchNode->GetNode("maxStepLength")) != 0)
+        SetMaxStepLength(node->AsDouble());
+    if((node = searchNode->GetNode("termination")) != 0)
+        SetTermination(node->AsDouble());
     if((node = searchNode->GetNode("pointSource")) != 0)
         SetPointSource(node->AsDoubleArray());
     if((node = searchNode->GetNode("lineStart")) != 0)
@@ -1104,6 +1291,62 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
                 SetStreamlineDirection(value);
         }
     }
+    if((node = searchNode->GetNode("relTol")) != 0)
+        SetRelTol(node->AsDouble());
+    if((node = searchNode->GetNode("absTol")) != 0)
+        SetAbsTol(node->AsDouble());
+    if((node = searchNode->GetNode("terminationType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetTerminationType(TerminationType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            TerminationType value;
+            if(TerminationType_FromString(node->AsString(), value))
+                SetTerminationType(value);
+        }
+    }
+    if((node = searchNode->GetNode("integrationType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetIntegrationType(IntegrationType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            IntegrationType value;
+            if(IntegrationType_FromString(node->AsString(), value))
+                SetIntegrationType(value);
+        }
+    }
+    if((node = searchNode->GetNode("streamlineAlgorithmType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetStreamlineAlgorithmType(StreamlineAlgorithmType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            StreamlineAlgorithmType value;
+            if(StreamlineAlgorithmType_FromString(node->AsString(), value))
+                SetStreamlineAlgorithmType(value);
+        }
+    }
+    if((node = searchNode->GetNode("maxStreamlineProcessCount")) != 0)
+        SetMaxStreamlineProcessCount(node->AsInt());
+    if((node = searchNode->GetNode("maxDomainCacheSize")) != 0)
+        SetMaxDomainCacheSize(node->AsInt());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1118,17 +1361,17 @@ StreamlineAttributes::SetSourceType(StreamlineAttributes::SourceType sourceType_
 }
 
 void
-StreamlineAttributes::SetStepLength(double stepLength_)
+StreamlineAttributes::SetMaxStepLength(double maxStepLength_)
 {
-    stepLength = stepLength_;
-    Select(ID_stepLength, (void *)&stepLength);
+    maxStepLength = maxStepLength_;
+    Select(ID_maxStepLength, (void *)&maxStepLength);
 }
 
 void
-StreamlineAttributes::SetMaxTime(double maxTime_)
+StreamlineAttributes::SetTermination(double termination_)
 {
-    maxTime = maxTime_;
-    Select(ID_maxTime, (void *)&maxTime);
+    termination = termination_;
+    Select(ID_termination, (void *)&termination);
 }
 
 void
@@ -1300,6 +1543,55 @@ StreamlineAttributes::SetStreamlineDirection(StreamlineAttributes::IntegrationDi
     Select(ID_StreamlineDirection, (void *)&StreamlineDirection);
 }
 
+void
+StreamlineAttributes::SetRelTol(double relTol_)
+{
+    relTol = relTol_;
+    Select(ID_relTol, (void *)&relTol);
+}
+
+void
+StreamlineAttributes::SetAbsTol(double absTol_)
+{
+    absTol = absTol_;
+    Select(ID_absTol, (void *)&absTol);
+}
+
+void
+StreamlineAttributes::SetTerminationType(StreamlineAttributes::TerminationType terminationType_)
+{
+    terminationType = terminationType_;
+    Select(ID_terminationType, (void *)&terminationType);
+}
+
+void
+StreamlineAttributes::SetIntegrationType(StreamlineAttributes::IntegrationType integrationType_)
+{
+    integrationType = integrationType_;
+    Select(ID_integrationType, (void *)&integrationType);
+}
+
+void
+StreamlineAttributes::SetStreamlineAlgorithmType(StreamlineAttributes::StreamlineAlgorithmType streamlineAlgorithmType_)
+{
+    streamlineAlgorithmType = streamlineAlgorithmType_;
+    Select(ID_streamlineAlgorithmType, (void *)&streamlineAlgorithmType);
+}
+
+void
+StreamlineAttributes::SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
+{
+    maxStreamlineProcessCount = maxStreamlineProcessCount_;
+    Select(ID_maxStreamlineProcessCount, (void *)&maxStreamlineProcessCount);
+}
+
+void
+StreamlineAttributes::SetMaxDomainCacheSize(int maxDomainCacheSize_)
+{
+    maxDomainCacheSize = maxDomainCacheSize_;
+    Select(ID_maxDomainCacheSize, (void *)&maxDomainCacheSize);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1311,15 +1603,15 @@ StreamlineAttributes::GetSourceType() const
 }
 
 double
-StreamlineAttributes::GetStepLength() const
+StreamlineAttributes::GetMaxStepLength() const
 {
-    return stepLength;
+    return maxStepLength;
 }
 
 double
-StreamlineAttributes::GetMaxTime() const
+StreamlineAttributes::GetTermination() const
 {
-    return maxTime;
+    return termination;
 }
 
 const double *
@@ -1514,6 +1806,48 @@ StreamlineAttributes::GetStreamlineDirection() const
     return IntegrationDirection(StreamlineDirection);
 }
 
+double
+StreamlineAttributes::GetRelTol() const
+{
+    return relTol;
+}
+
+double
+StreamlineAttributes::GetAbsTol() const
+{
+    return absTol;
+}
+
+StreamlineAttributes::TerminationType
+StreamlineAttributes::GetTerminationType() const
+{
+    return TerminationType(terminationType);
+}
+
+StreamlineAttributes::IntegrationType
+StreamlineAttributes::GetIntegrationType() const
+{
+    return IntegrationType(integrationType);
+}
+
+StreamlineAttributes::StreamlineAlgorithmType
+StreamlineAttributes::GetStreamlineAlgorithmType() const
+{
+    return StreamlineAlgorithmType(streamlineAlgorithmType);
+}
+
+int
+StreamlineAttributes::GetMaxStreamlineProcessCount() const
+{
+    return maxStreamlineProcessCount;
+}
+
+int
+StreamlineAttributes::GetMaxDomainCacheSize() const
+{
+    return maxDomainCacheSize;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1602,31 +1936,38 @@ StreamlineAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_sourceType:          return "sourceType";
-    case ID_stepLength:          return "stepLength";
-    case ID_maxTime:             return "maxTime";
-    case ID_pointSource:         return "pointSource";
-    case ID_lineStart:           return "lineStart";
-    case ID_lineEnd:             return "lineEnd";
-    case ID_planeOrigin:         return "planeOrigin";
-    case ID_planeNormal:         return "planeNormal";
-    case ID_planeUpAxis:         return "planeUpAxis";
-    case ID_planeRadius:         return "planeRadius";
-    case ID_sphereOrigin:        return "sphereOrigin";
-    case ID_sphereRadius:        return "sphereRadius";
-    case ID_boxExtents:          return "boxExtents";
-    case ID_useWholeBox:         return "useWholeBox";
-    case ID_pointDensity:        return "pointDensity";
-    case ID_displayMethod:       return "displayMethod";
-    case ID_showStart:           return "showStart";
-    case ID_radius:              return "radius";
-    case ID_lineWidth:           return "lineWidth";
-    case ID_coloringMethod:      return "coloringMethod";
-    case ID_colorTableName:      return "colorTableName";
-    case ID_singleColor:         return "singleColor";
-    case ID_legendFlag:          return "legendFlag";
-    case ID_lightingFlag:        return "lightingFlag";
-    case ID_StreamlineDirection: return "StreamlineDirection";
+    case ID_sourceType:                return "sourceType";
+    case ID_maxStepLength:             return "maxStepLength";
+    case ID_termination:               return "termination";
+    case ID_pointSource:               return "pointSource";
+    case ID_lineStart:                 return "lineStart";
+    case ID_lineEnd:                   return "lineEnd";
+    case ID_planeOrigin:               return "planeOrigin";
+    case ID_planeNormal:               return "planeNormal";
+    case ID_planeUpAxis:               return "planeUpAxis";
+    case ID_planeRadius:               return "planeRadius";
+    case ID_sphereOrigin:              return "sphereOrigin";
+    case ID_sphereRadius:              return "sphereRadius";
+    case ID_boxExtents:                return "boxExtents";
+    case ID_useWholeBox:               return "useWholeBox";
+    case ID_pointDensity:              return "pointDensity";
+    case ID_displayMethod:             return "displayMethod";
+    case ID_showStart:                 return "showStart";
+    case ID_radius:                    return "radius";
+    case ID_lineWidth:                 return "lineWidth";
+    case ID_coloringMethod:            return "coloringMethod";
+    case ID_colorTableName:            return "colorTableName";
+    case ID_singleColor:               return "singleColor";
+    case ID_legendFlag:                return "legendFlag";
+    case ID_lightingFlag:              return "lightingFlag";
+    case ID_StreamlineDirection:       return "StreamlineDirection";
+    case ID_relTol:                    return "relTol";
+    case ID_absTol:                    return "absTol";
+    case ID_terminationType:           return "terminationType";
+    case ID_integrationType:           return "integrationType";
+    case ID_streamlineAlgorithmType:   return "streamlineAlgorithmType";
+    case ID_maxStreamlineProcessCount: return "maxStreamlineProcessCount";
+    case ID_maxDomainCacheSize:        return "maxDomainCacheSize";
     default:  return "invalid index";
     }
 }
@@ -1651,31 +1992,38 @@ StreamlineAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_sourceType:          return FieldType_enum;
-    case ID_stepLength:          return FieldType_double;
-    case ID_maxTime:             return FieldType_double;
-    case ID_pointSource:         return FieldType_doubleArray;
-    case ID_lineStart:           return FieldType_doubleArray;
-    case ID_lineEnd:             return FieldType_doubleArray;
-    case ID_planeOrigin:         return FieldType_doubleArray;
-    case ID_planeNormal:         return FieldType_doubleArray;
-    case ID_planeUpAxis:         return FieldType_doubleArray;
-    case ID_planeRadius:         return FieldType_double;
-    case ID_sphereOrigin:        return FieldType_doubleArray;
-    case ID_sphereRadius:        return FieldType_double;
-    case ID_boxExtents:          return FieldType_doubleArray;
-    case ID_useWholeBox:         return FieldType_bool;
-    case ID_pointDensity:        return FieldType_int;
-    case ID_displayMethod:       return FieldType_enum;
-    case ID_showStart:           return FieldType_bool;
-    case ID_radius:              return FieldType_double;
-    case ID_lineWidth:           return FieldType_linewidth;
-    case ID_coloringMethod:      return FieldType_enum;
-    case ID_colorTableName:      return FieldType_colortable;
-    case ID_singleColor:         return FieldType_color;
-    case ID_legendFlag:          return FieldType_bool;
-    case ID_lightingFlag:        return FieldType_bool;
-    case ID_StreamlineDirection: return FieldType_enum;
+    case ID_sourceType:                return FieldType_enum;
+    case ID_maxStepLength:             return FieldType_double;
+    case ID_termination:               return FieldType_double;
+    case ID_pointSource:               return FieldType_doubleArray;
+    case ID_lineStart:                 return FieldType_doubleArray;
+    case ID_lineEnd:                   return FieldType_doubleArray;
+    case ID_planeOrigin:               return FieldType_doubleArray;
+    case ID_planeNormal:               return FieldType_doubleArray;
+    case ID_planeUpAxis:               return FieldType_doubleArray;
+    case ID_planeRadius:               return FieldType_double;
+    case ID_sphereOrigin:              return FieldType_doubleArray;
+    case ID_sphereRadius:              return FieldType_double;
+    case ID_boxExtents:                return FieldType_doubleArray;
+    case ID_useWholeBox:               return FieldType_bool;
+    case ID_pointDensity:              return FieldType_int;
+    case ID_displayMethod:             return FieldType_enum;
+    case ID_showStart:                 return FieldType_bool;
+    case ID_radius:                    return FieldType_double;
+    case ID_lineWidth:                 return FieldType_linewidth;
+    case ID_coloringMethod:            return FieldType_enum;
+    case ID_colorTableName:            return FieldType_colortable;
+    case ID_singleColor:               return FieldType_color;
+    case ID_legendFlag:                return FieldType_bool;
+    case ID_lightingFlag:              return FieldType_bool;
+    case ID_StreamlineDirection:       return FieldType_enum;
+    case ID_relTol:                    return FieldType_double;
+    case ID_absTol:                    return FieldType_double;
+    case ID_terminationType:           return FieldType_enum;
+    case ID_integrationType:           return FieldType_enum;
+    case ID_streamlineAlgorithmType:   return FieldType_enum;
+    case ID_maxStreamlineProcessCount: return FieldType_int;
+    case ID_maxDomainCacheSize:        return FieldType_int;
     default:  return FieldType_unknown;
     }
 }
@@ -1700,31 +2048,38 @@ StreamlineAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_sourceType:          return "enum";
-    case ID_stepLength:          return "double";
-    case ID_maxTime:             return "double";
-    case ID_pointSource:         return "doubleArray";
-    case ID_lineStart:           return "doubleArray";
-    case ID_lineEnd:             return "doubleArray";
-    case ID_planeOrigin:         return "doubleArray";
-    case ID_planeNormal:         return "doubleArray";
-    case ID_planeUpAxis:         return "doubleArray";
-    case ID_planeRadius:         return "double";
-    case ID_sphereOrigin:        return "doubleArray";
-    case ID_sphereRadius:        return "double";
-    case ID_boxExtents:          return "doubleArray";
-    case ID_useWholeBox:         return "bool";
-    case ID_pointDensity:        return "int";
-    case ID_displayMethod:       return "enum";
-    case ID_showStart:           return "bool";
-    case ID_radius:              return "double";
-    case ID_lineWidth:           return "linewidth";
-    case ID_coloringMethod:      return "enum";
-    case ID_colorTableName:      return "colortable";
-    case ID_singleColor:         return "color";
-    case ID_legendFlag:          return "bool";
-    case ID_lightingFlag:        return "bool";
-    case ID_StreamlineDirection: return "enum";
+    case ID_sourceType:                return "enum";
+    case ID_maxStepLength:             return "double";
+    case ID_termination:               return "double";
+    case ID_pointSource:               return "doubleArray";
+    case ID_lineStart:                 return "doubleArray";
+    case ID_lineEnd:                   return "doubleArray";
+    case ID_planeOrigin:               return "doubleArray";
+    case ID_planeNormal:               return "doubleArray";
+    case ID_planeUpAxis:               return "doubleArray";
+    case ID_planeRadius:               return "double";
+    case ID_sphereOrigin:              return "doubleArray";
+    case ID_sphereRadius:              return "double";
+    case ID_boxExtents:                return "doubleArray";
+    case ID_useWholeBox:               return "bool";
+    case ID_pointDensity:              return "int";
+    case ID_displayMethod:             return "enum";
+    case ID_showStart:                 return "bool";
+    case ID_radius:                    return "double";
+    case ID_lineWidth:                 return "linewidth";
+    case ID_coloringMethod:            return "enum";
+    case ID_colorTableName:            return "colortable";
+    case ID_singleColor:               return "color";
+    case ID_legendFlag:                return "bool";
+    case ID_lightingFlag:              return "bool";
+    case ID_StreamlineDirection:       return "enum";
+    case ID_relTol:                    return "double";
+    case ID_absTol:                    return "double";
+    case ID_terminationType:           return "enum";
+    case ID_integrationType:           return "enum";
+    case ID_streamlineAlgorithmType:   return "enum";
+    case ID_maxStreamlineProcessCount: return "int";
+    case ID_maxDomainCacheSize:        return "int";
     default:  return "invalid index";
     }
 }
@@ -1756,14 +2111,14 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (sourceType == obj.sourceType);
         }
         break;
-    case ID_stepLength:
+    case ID_maxStepLength:
         {  // new scope
-        retval = (stepLength == obj.stepLength);
+        retval = (maxStepLength == obj.maxStepLength);
         }
         break;
-    case ID_maxTime:
+    case ID_termination:
         {  // new scope
-        retval = (maxTime == obj.maxTime);
+        retval = (termination == obj.termination);
         }
         break;
     case ID_pointSource:
@@ -1916,6 +2271,41 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (StreamlineDirection == obj.StreamlineDirection);
         }
         break;
+    case ID_relTol:
+        {  // new scope
+        retval = (relTol == obj.relTol);
+        }
+        break;
+    case ID_absTol:
+        {  // new scope
+        retval = (absTol == obj.absTol);
+        }
+        break;
+    case ID_terminationType:
+        {  // new scope
+        retval = (terminationType == obj.terminationType);
+        }
+        break;
+    case ID_integrationType:
+        {  // new scope
+        retval = (integrationType == obj.integrationType);
+        }
+        break;
+    case ID_streamlineAlgorithmType:
+        {  // new scope
+        retval = (streamlineAlgorithmType == obj.streamlineAlgorithmType);
+        }
+        break;
+    case ID_maxStreamlineProcessCount:
+        {  // new scope
+        retval = (maxStreamlineProcessCount == obj.maxStreamlineProcessCount);
+        }
+        break;
+    case ID_maxDomainCacheSize:
+        {  // new scope
+        retval = (maxDomainCacheSize == obj.maxDomainCacheSize);
+        }
+        break;
     default: retval = false;
     }
 
@@ -1994,14 +2384,18 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         sourceType == SpecifiedBox) &&
         (pointDensity != obj.pointDensity);
 
-    bool radiusMatters = (displayMethod != Lines) && (radius != obj.radius);
+    bool radiusMatters = (radius != obj.radius);
 
     return (sourceType != obj.sourceType) ||
            (StreamlineDirection != obj.StreamlineDirection) ||
            (displayMethod != obj.displayMethod) ||
            (showStart != obj.showStart) ||
-           (maxTime != obj.maxTime) ||
-           (stepLength != obj.stepLength) ||
+           (termination != obj.termination) ||
+           (terminationType != obj.terminationType) ||
+           (integrationType != obj.integrationType) ||
+           (maxStepLength != obj.maxStepLength) ||
+           (relTol != obj.relTol) ||
+           (absTol != obj.absTol) ||
            (coloringMethod != obj.coloringMethod && obj.coloringMethod != Solid) ||
            sourcePointsDiffer ||
            sourceLineDiffers ||

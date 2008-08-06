@@ -75,6 +75,9 @@ class StreamlineAttributes;
 //   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
 //   Add streamline direction option.
 //
+//   Dave Pugmire, Mon Aug 4 2:49:38 EDT 2008
+//   Added termination, algorithm and integration options.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -99,11 +102,18 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
     void UpdateSourceAttributes();
+    void UpdateAlgorithmAttributes();
+    void UpdateIntegrationAttributes();
   private slots:
     void sourceTypeChanged(int val);
-    void directionTypeChanged(int val);  
-    void stepLengthProcessText();
-    void maxTimeProcessText();
+    void termTypeChanged(int val);
+    void integrationTypeChanged(int val);
+    void streamlineAlgorithmChanged(int val);
+    void directionTypeChanged(int val);
+    void maxStepLengthProcessText();
+    void terminationProcessText();
+    void relTolProcessText();
+    void absTolProcessText();
     void pointSourceProcessText();
     void lineStartProcessText();
     void lineEndProcessText();
@@ -114,6 +124,8 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void sphereOriginProcessText();
     void sphereRadiusProcessText();
     void pointDensityChanged(int val);
+    void maxSLCountChanged(int val);
+    void maxDomainCacheChanged(int val);
     void displayMethodChanged(int val);
     void showStartChanged(bool val);
     void radiusProcessText();
@@ -130,8 +142,13 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QComboBox *sourceType;
     QGroupBox *sourceAtts;
     QComboBox *directionType;
-    QLineEdit *stepLength;
-    QLineEdit *maxTime;
+    QLineEdit *maxStepLength;
+    QLabel    *maxStepLengthLabel;
+    QLineEdit *termination;
+    QLineEdit *relTol;
+    QLabel    *relTolLabel;
+    QLineEdit *absTol;
+    QLabel    *absTolLabel;
     QLineEdit *pointSource;
     QLabel    *pointSourceLabel;
     QLineEdit *lineStart;
@@ -167,6 +184,14 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *singleColorLabel;
     QCheckBox *legendFlag;
     QCheckBox *lightingFlag;
+    QComboBox *termType;
+    QComboBox *integrationType;
+    QLabel    *slAlgoLabel;
+    QComboBox *slAlgo;
+    QLabel    *maxSLCountLabel;
+    QSpinBox  *maxSLCount;
+    QLabel    *maxDomainCacheLabel;
+    QSpinBox  *maxDomainCache;
 
     StreamlineAttributes *streamAtts;
 };

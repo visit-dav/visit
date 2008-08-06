@@ -243,6 +243,9 @@
 #    Cyrus Harrison, Wed Feb 13 10:33:22 PST 2008
 #    Added avtDebugDumpOptions
 #
+#    Hank Childs, Sat Mar  1 18:16:11 PST 2008
+#    Added avtDatasetOnDemandFilter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -336,6 +339,7 @@ AbstractFilters_src= \
   AbstractFilters/avtDataObjectToImageFilter.C \
   AbstractFilters/avtDataObjectToSamplePointsFilter.C \
   AbstractFilters/avtDataTreeIterator.C \
+  AbstractFilters/avtDatasetOnDemandFilter.C \
   AbstractFilters/avtDatasetToDataObjectFilter.C \
   AbstractFilters/avtDatasetToDatasetFilter.C \
   AbstractFilters/avtDatasetToImageFilter.C \

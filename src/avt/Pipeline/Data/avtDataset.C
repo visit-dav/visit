@@ -45,10 +45,14 @@
 
 #include <float.h>
 
+#include <vtkDataSet.h>
+
 #include <avtCommonDataFunctions.h>
 #include <avtCompactTreeFilter.h>
 #include <avtDataRepresentation.h>
 #include <avtDataSetWriter.h>
+#include <avtIntervalTree.h>
+#include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtWebpage.h>
 
@@ -531,6 +535,70 @@ avtDataset::DebugDump(avtWebpage *webpage, const char *prefix)
     }
     else
         webpage->AddSubheading("NULL data tree ... very bad");
+}
+
+
+// ****************************************************************************
+//  Method: avtDataset::CalculateSpatialIntervalTree
+//
+//  Purpose:
+//      Calculates a spatial interval tree.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 16, 2008
+//
+// ****************************************************************************
+
+avtIntervalTree *
+avtDataset::CalculateSpatialIntervalTree(void)
+{
+    vector<avtDataTree_p> trees;
+    avtDataTree_p root = GetDataTree();
+    vector<int> ids;
+    root->GetAllDomainIds(ids);
+    int max = -1;
+    for (int i = 0 ; i < ids.size() ; i++)
+        max = (ids[i] > max ? ids[i] : max);
+    max = UnifyMaximumValue(max);
+    if (max < 0)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    max += 1;
+
+    int dim = GetInfo().GetAttributes().GetSpatialDimension();
+    avtIntervalTree *itree = new avtIntervalTree(max, dim, true);
+    trees.push_back(root);
+    int idx = 1;
+    while (( idx > 0 )) 
+    {
+        idx -= 1;
+        avtDataTree_p curTree = trees[idx];
+        if (curTree->HasData())
+        {
+            avtDataRepresentation dr = curTree->GetDataRepresentation();
+            int id = dr.GetDomain();
+            if (id < 0 || id >= max)
+            {
+                EXCEPTION0(ImproperUseException);
+            }
+            double bbox[6];
+            vtkDataSet *ds = dr.GetDataVTK();
+            ds->GetBounds(bbox);
+            itree->AddElement(id, bbox);
+        }
+        else
+        { 
+            int nc = curTree->GetNChildren();
+            if (trees.size() < idx+nc)
+                trees.resize(idx+nc);
+            for (int j = 0 ; j < nc ; j++)
+                trees[idx++] = curTree->GetChild(j);
+        }
+    }
+    
+    itree->Calculate();
+    return itree;
 }
 
 

@@ -50,6 +50,7 @@
 #include <avtDataTree.h>
 
 class   avtDataRepresentation;
+class   avtIntervalTree;
 class   avtWebpage;
 
 
@@ -119,6 +120,9 @@ class   avtWebpage;
 //    Hank Childs, Thu Jan 24 15:48:41 PST 2008
 //    Add friend status for avtExecuteThenTimeLoopFilter.
 //
+//    Hank Childs, Mon Jun 16 12:25:31 PDT 2008
+//    Add method CalculateSpatialIntervalTree.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -157,6 +161,7 @@ class PIPELINE_API avtDataset : public avtDataObject
     void                     WriteTreeStructure(ostream &os, int indent = 0);
     void                     Compact(void);
 
+    avtIntervalTree         *CalculateSpatialIntervalTree(void);
     virtual void             DebugDump(avtWebpage *, const char *);
 
   protected:

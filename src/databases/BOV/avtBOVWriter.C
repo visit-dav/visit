@@ -149,10 +149,15 @@ avtBOVWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //  Programmer: Hank Childs
 //  Creation:   September 11, 2004
 //
+//  Modifications:
+//  
+//    Dave Pugmire, Mon Jun  2 09:33:26 EDT 2008
+//    Handle data with more than one component.
+//
 // ****************************************************************************
 
 static void
-ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, 
+ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numComponents,
              float *brick_bounds, int *brick_dims)
 {
     int  i, j, k;
@@ -251,23 +256,27 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples,
         {
             for (i = 0 ; i < brick_dims[0] ; i++)
             {
-                // Tri-linear interpolation.
-                float val = 0.;
-                for (int l = 0 ; l < 8 ; l++)
+                for ( int c = 0; c < numComponents; c++)
                 {
-                    int i_ = x_ind[i] + (l & 1 ? 1 : 0);
-                    int j_ = y_ind[j] + (l & 2 ? 1 : 0);
-                    int k_ = z_ind[k] + (l & 4 ? 1 : 0);
-                    float x_prop_ = (l & 1 ? x_prop[i] : 1.-x_prop[i]);
-                    float y_prop_ = (l & 2 ? y_prop[j] : 1.-y_prop[j]);
-                    float z_prop_ = (l & 4 ? z_prop[k] : 1.-z_prop[k]);
-                    int pt = k_*grid_dims[1]*grid_dims[0]
-                           + j_*grid_dims[0] + i_;
-                    val += x_prop_*y_prop_*z_prop_*ptr[pt];
+                    // Tri-linear interpolation.
+                    float val = 0.;
+                    for (int l = 0 ; l < 8 ; l++)
+                    {
+                        int i_ = x_ind[i] + (l & 1 ? 1 : 0);
+                        int j_ = y_ind[j] + (l & 2 ? 1 : 0);
+                        int k_ = z_ind[k] + (l & 4 ? 1 : 0);
+                        float x_prop_ = (l & 1 ? x_prop[i] : 1.-x_prop[i]);
+                        float y_prop_ = (l & 2 ? y_prop[j] : 1.-y_prop[j]);
+                        float z_prop_ = (l & 4 ? z_prop[k] : 1.-z_prop[k]);
+                        int pt = k_*grid_dims[1]*grid_dims[0]*numComponents +
+                                 j_*grid_dims[0]*numComponents +
+                                 i_*numComponents +
+                                 c;
+                        val += x_prop_*y_prop_*z_prop_*ptr[pt];
+                    }
+                    int pt = k*brick_dims[1]*brick_dims[0]*numComponents + j*brick_dims[0]*numComponents + i*numComponents +c;
+                    samples[pt] = val;
                 }
-
-                int pt = k*brick_dims[1]*brick_dims[0] + j*brick_dims[0] + i;
-                samples[pt] = val;
             }
         }
     }
@@ -307,13 +316,15 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples,
 //    Hank Childs, Fri Apr 21 16:53:27 PDT 2006
 //    Fix cut-n-paste bug.
 //
+//    Dave Pugmire, Mon Jun  2 09:33:26 EDT 2008
+//    Handle data with more than one component.
+//
 // ****************************************************************************
 
 void
 avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
     int   i;
-
     if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {
         EXCEPTION1(InvalidDBTypeException, 
@@ -333,6 +344,11 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         {
             vtkDataArray *arr2 = rgrid->GetPointData()->GetArray(i);
             if (arr2->GetNumberOfComponents() == 1)
+            {
+                arr = arr2;
+                break;
+            }
+            else if (arr2->GetNumberOfComponents() == 3)
             {
                 arr = arr2;
                 break;
@@ -416,17 +432,24 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     ofile << "DATA FORMAT: FLOATS" << endl;
 
+    if (arr->GetNumberOfComponents() > 1)
+        ofile << "DATA_COMPONENTS: " << arr->GetNumberOfComponents() << endl;
     ofile << "VARIABLE: \"" << arr->GetName()  << "\"" << endl;
-    float max = -FLT_MAX;
-    float min = +FLT_MAX;
-    int nvals = dims[0]*dims[1]*dims[2];
-    for (i = 0 ; i < nvals ; i++)
+
+    int nvals = dims[0]*dims[1]*dims[2]*arr->GetNumberOfComponents();
+
+    if (arr->GetNumberOfComponents() == 1)
     {
-        min = (min < ptr[i] ? min : ptr[i]);
-        max = (max > ptr[i] ? max : ptr[i]);
+        float max = -FLT_MAX;
+        float min = +FLT_MAX;
+        for (i = 0 ; i < nvals ; i++)
+        {
+            min = (min < ptr[i] ? min : ptr[i]);
+            max = (max > ptr[i] ? max : ptr[i]);
+        }
+        ofile << "VARIABLE PALETTE MIN: " << min << endl;
+        ofile << "VARIABLE PALETTE MAX: " << max << endl;
     }
-    ofile << "VARIABLE PALETTE MIN: " << min << endl;
-    ofile << "VARIABLE PALETTE MAX: " << max << endl;
      
     double bounds[6];
     rgrid->GetBounds(bounds);
@@ -469,7 +492,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
     else
     {
-        int vals_per_bricklet = brickletNI*brickletNJ*brickletNK;
+        int vals_per_bricklet = brickletNI*brickletNJ*brickletNK*arr->GetNumberOfComponents();
         float *samples = new float[vals_per_bricklet];
         for (int i = 0 ; i < brickletsPerX ; i++)
         {
@@ -488,7 +511,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
                     brick_bounds[4] = bounds[4] + k*z_step;
                     brick_bounds[5] = bounds[4] + (k+1)*z_step;
                     int brick_dims[3] = { brickletNI, brickletNJ, brickletNK };
-                    ResampleGrid(rgrid, ptr, samples, brick_bounds,brick_dims);
+                    ResampleGrid(rgrid, ptr, samples, arr->GetNumberOfComponents(),brick_bounds,brick_dims);
                     char str[1024];
                     int brick = k*brickletsPerY*brickletsPerX 
                               + j*brickletsPerX + i;

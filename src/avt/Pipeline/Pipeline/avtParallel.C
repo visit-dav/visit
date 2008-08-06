@@ -388,6 +388,64 @@ UnifyMinMax(double *buff, int size, int altsize)
 #endif
 }
 
+// ****************************************************************************
+//  Function: UnifyMinimumValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the minimum
+//      value over all processors.
+//
+//  Arguments:
+//      mymin    The minimum on this processor.
+//
+//  Returns:     The minimum over all processors.
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    May 19, 2008
+//
+// ****************************************************************************
+
+int
+UnifyMinimumValue(int mymin)
+{
+#ifdef PARALLEL
+    int allmin;
+    MPI_Allreduce(&mymin, &allmin, 1, MPI_INT, MPI_MIN, VISIT_MPI_COMM);
+    return allmin;
+#else
+    return mymin;
+#endif
+}
+
+// ****************************************************************************
+//  Function: UnifyMinimumValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the minimum
+//      value over all processors.
+//
+//  Arguments:
+//      mymin    The minimum on this processor.
+//
+//  Returns:     The minimum over all processors.
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    May 19, 2008
+//
+// ****************************************************************************
+
+float
+UnifyMinimumValue(float mymin)
+{
+#ifdef PARALLEL
+    float allmin;
+    MPI_Allreduce(&mymin, &allmin, 1, MPI_FLOAT, MPI_MIN, VISIT_MPI_COMM);
+    return allmin;
+#else
+    return mymin;
+#endif
+}
+
 
 // ****************************************************************************
 //  Function: UnifyMaximumValue
@@ -422,6 +480,36 @@ UnifyMaximumValue(int mymax)
     return mymax;
 #endif
 }
+
+// ****************************************************************************
+//  Function: UnifyMaximumValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the maximum
+//      value over all processors.
+//
+//  Arguments:
+//      mymax    The maximum on this processor.
+//
+//  Returns:     The maximum over all processors.
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    May 19, 2008
+//
+// ****************************************************************************
+
+float
+UnifyMaximumValue(float mymax)
+{
+#ifdef PARALLEL
+    float allmax;
+    MPI_Allreduce(&mymax, &allmax, 1, MPI_FLOAT, MPI_MAX, VISIT_MPI_COMM);
+    return allmax;
+#else
+    return mymax;
+#endif
+}
+
 
 
 // ****************************************************************************
@@ -1574,5 +1662,110 @@ GetDoubleArrayToRootProc(double *da, int nd, bool &success)
             MPI_Send(da, nd, MPI_DOUBLE, 0, mpiDoubleArrayTag, VISIT_MPI_COMM);
         }    
     }
+#endif
+}
+
+// ****************************************************************************
+//  Function: WaitAll
+//
+//  Purpose:
+//    Wait on all requests in a vector.
+//
+//  Arguments:
+//    req       Vector of requests.
+//    status    Vector of returned status.
+//  
+//  Programmer: Dave Pugmire
+//  Creation:   June 18, 2008 
+//
+// ****************************************************************************
+
+void
+WaitAll(std::vector<int> &reqs, std::vector<int> &status )
+{
+#ifdef PARALLEL
+    status.resize( reqs.size() );
+    MPI_Waitall( reqs.size(), (MPI_Request *)&reqs[0], (MPI_Status *)&status[0] );
+#endif
+}
+
+
+// ****************************************************************************
+//  Function: WaitSome
+//
+//  Purpose:
+//    Wait on a some requests in a vector.
+//
+//  Arguments:
+//    req       Vector of requests.
+//    done      Vector of completed requests.
+//    status    Vector of returned status.
+//  
+//  Programmer: Dave Pugmire
+//  Creation:   June 18, 2008 
+//
+// ****************************************************************************
+
+void
+WaitSome(std::vector<int> &reqs, std::vector<int> &done, std::vector<int> &status )
+{
+#ifdef PARALLEL
+    status.resize( reqs.size() );
+    done.resize( reqs.size() );
+    int nDone;
+    MPI_Waitsome( reqs.size(), (MPI_Request *)&reqs[0], &nDone, (int *)&done[0], (MPI_Status *)&status[0] );
+    done.resize( nDone );
+#endif
+}
+
+
+// ****************************************************************************
+//  Function: TestSome
+//
+//  Purpose:
+//    Test a vector of requests.
+//
+//  Arguments:
+//    req       Vector of requests.
+//    done      Vector of completed requests.
+//    status    Vector of returned status.
+//  
+//  Programmer: Dave Pugmire
+//  Creation:   June 18, 2008 
+//
+//
+// ****************************************************************************
+
+void
+TestSome(std::vector<int> &reqs, std::vector<int> &done, std::vector<int> &status )
+{
+#ifdef PARALLEL
+    status.resize( reqs.size() );
+    done.resize( reqs.size() );
+    int nDone;
+    MPI_Testsome( reqs.size(), (MPI_Request *)&reqs[0], &nDone, (int *)&done[0], (MPI_Status *)&status[0] );
+#endif
+}
+
+// ****************************************************************************
+//  Function: CancelRequest
+//
+//  Purpose:
+//    Cancel a request.
+//
+//  Arguments:
+//    req       The request.
+//  
+//  Programmer: Dave Pugmire
+//  Creation:   June 18, 2008 
+//
+//
+// ****************************************************************************
+
+void
+CancelRequest( int &req )
+{
+#ifdef PARALLEL
+    MPI_Cancel(&req);
 #endif
 }

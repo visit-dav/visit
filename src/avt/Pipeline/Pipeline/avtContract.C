@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtContract.C                       //
+//                               avtContract.C                               //
 // ************************************************************************* //
 
 #include <avtContract.h>
@@ -71,10 +71,12 @@
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Sun Mar  9 08:02:29 PST 2008
+//    Initialize doingOnDemandStreaming.
+//
 // ****************************************************************************
 
-avtContract::avtContract(avtDataRequest_p d,
-                                                   int pi)
+avtContract::avtContract(avtDataRequest_p d, int pi)
 {
     data             = new avtDataRequest(d);
     pipelineIndex    = pi;
@@ -83,6 +85,7 @@ avtContract::avtContract(avtDataRequest_p d,
     nFilters         = 0;
     haveCurvilinearMeshOptimizations = false;
     haveRectilinearMeshOptimizations = false;
+    doingOnDemandStreaming           = false;
 }
 
 
@@ -121,8 +124,7 @@ avtContract::avtContract(
 //
 // ****************************************************************************
 
-avtContract::avtContract(
-                      avtContract_p ps, avtDataRequest_p ds)
+avtContract::avtContract(avtContract_p ps, avtDataRequest_p ds)
 {
     *this = **ps;
     data  = new avtDataRequest(ds);
@@ -173,6 +175,9 @@ avtContract::~avtContract()
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Sun Mar  9 08:02:29 PST 2008
+//    Added doingOnDemandStreaming.
+//
 // ****************************************************************************
 
 avtContract &
@@ -185,6 +190,7 @@ avtContract::operator=(const avtContract &ps)
     nFilters         = ps.nFilters;
     haveCurvilinearMeshOptimizations = ps.haveCurvilinearMeshOptimizations;
     haveRectilinearMeshOptimizations = ps.haveRectilinearMeshOptimizations;
+    doingOnDemandStreaming = ps.doingOnDemandStreaming;
 
     return *this;
 }
@@ -259,6 +265,8 @@ avtContract::DebugDump(avtWebpage *webpage)
                             YesOrNo(haveCurvilinearMeshOptimizations));
     webpage->AddTableEntry2("Have rectilinear optimizations", 
                             YesOrNo(haveRectilinearMeshOptimizations));
+    webpage->AddTableEntry2("Doing on demand streaming", 
+                            YesOrNo(doingOnDemandStreaming));
     sprintf(str, "%d", nFilters);
     webpage->AddTableEntry2("Number of known filters", str);
     webpage->EndTable();

@@ -58,7 +58,6 @@
 #include <vtkVisItUtility.h>
 
 
-
 //
 // Macros
 //
@@ -152,6 +151,35 @@ avtIntervalTree::avtIntervalTree(int els, int dims, bool rc)
         }
         nodeIDs[i]  = -1;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtIntervalTree copy constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   June 12, 2008
+//
+// ****************************************************************************
+
+avtIntervalTree::avtIntervalTree(const avtIntervalTree *it)
+{
+    nElements = it->nElements;
+    nNodes = it->nNodes;
+    nDims = it->nDims;
+    vectorSize = it->vectorSize;
+    nodeExtents = new double[nNodes*vectorSize];
+    nodeIDs     = new int[nNodes];
+    for (int i = 0 ; i < nNodes ; i++)
+    {
+        for (int j = 0 ; j < vectorSize ; j++)
+        {
+            nodeExtents[i*vectorSize + j] = it->nodeExtents[i*vectorSize + j];
+        }
+        nodeIDs[i]  = it->nodeIDs[i];
+    }
+    hasBeenCalculated = it->hasBeenCalculated;
+    requiresCommunication = it->requiresCommunication;
 }
 
 
@@ -306,6 +334,10 @@ avtIntervalTree::Calculate(bool alreadyCollectedAllInformation)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Dave Pugmire, Tue Jul  8 10:54:28 EDT 2008
+//    Changed MPI_FLOAT to MPI_DOUBLE
+//
 // ****************************************************************************
 
 void
@@ -319,7 +351,7 @@ avtIntervalTree::CollectInformation(void)
     //
     int totalElements = nElements*vectorSize;
     double *outBuff = new double[totalElements];
-    MPI_Allreduce(nodeExtents, outBuff, totalElements, MPI_FLOAT, MPI_SUM,
+    MPI_Allreduce(nodeExtents, outBuff, totalElements, MPI_DOUBLE, MPI_SUM,
                VISIT_MPI_COMM);
 
     for (int i = 0 ; i < totalElements ; i++)

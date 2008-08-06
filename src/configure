@@ -19129,6 +19129,7 @@ COMPONENT_FILES="avt/Makefile
                  avt/Expressions/Makefile
                  avt/FileWriter/Makefile
                  avt/Filters/Makefile
+                 avt/IVP/Makefile
                  avt/Math/Makefile
                  avt/MIR/Makefile
                  avt/Pipeline/Makefile

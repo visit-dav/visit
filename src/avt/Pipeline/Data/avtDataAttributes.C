@@ -4702,6 +4702,9 @@ avtDataAttributes::SetPlotInfoAtts(const PlotInfoAttributes *pia)
 //    Also display subnames for array variables.
 //    Added support for arbitrarily large numbers of dimensions for extents.
 //
+//    Hank Childs, Mon Jul 21 12:35:31 PDT 2008
+//    Put whether or not a variable is active in the debug dump.
+//
 // ****************************************************************************
 
 static const char *
@@ -4899,6 +4902,7 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
         for (int i = 0 ; i < variables.size() ; i++)
         {
             webpage->AddTableEntry3(variables[i].varname.c_str(), NULL, NULL);
+            webpage->AddTableEntry3(NULL, "ActiveVar", YesOrNo(i == activeVariable));
             webpage->AddTableEntry3(NULL, "Type", 
                                    avtVarTypeToString(variables[i].vartype).c_str());
             webpage->AddTableEntry3(NULL, "Units", variables[i].varunits.c_str());

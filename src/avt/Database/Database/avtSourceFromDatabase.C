@@ -737,3 +737,21 @@ avtSourceFromDatabase::ReleaseData(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtSourceFromDatabase::CanDoStreaming
+//
+//  Purpose:
+//      Determine whether or not streaming is possible.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 12, 2008
+//
+// ****************************************************************************
+
+bool
+avtSourceFromDatabase::CanDoStreaming(avtContract_p contract)
+{
+    return database->CanDoStreaming(contract->GetDataRequest());
+}
+
+

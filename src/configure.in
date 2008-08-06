@@ -767,6 +767,9 @@ dnl
 dnl    Hank Childs, Sat Feb  9 15:22:00 PST 2008
 dnl    Rename components directory to avt.
 dnl
+dnl    Christoph Garth (by way of Hank Childs), Mon Feb 25 19:18:45 PST 2008
+dnl    Add avt/IVP/Makefile.in.
+dnl
 dnl    Mark C. Miller, Thu Apr  3 18:06:01 PDT 2008
 dnl    Added quotes for $CXXFLAGS in test for emptycxxflags,
 dnl    Courtesy of Matthias Langer <mlangc@gmx.at>. Thanks Matthias.
@@ -3976,6 +3979,7 @@ COMPONENT_FILES="avt/Makefile
                  avt/Expressions/Makefile
                  avt/FileWriter/Makefile
                  avt/Filters/Makefile
+                 avt/IVP/Makefile
                  avt/Math/Makefile
                  avt/MIR/Makefile
                  avt/Pipeline/Makefile

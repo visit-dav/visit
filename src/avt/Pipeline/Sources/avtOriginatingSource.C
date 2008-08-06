@@ -478,12 +478,16 @@ avtOriginatingSource::FetchSpeciesAuxiliaryData(const char *,void *,
 //    database.  (It may not have enough information if we are running in
 //    parallel).
 //
+//    Hank Childs, Sun Mar  9 07:45:38 PST 2008
+//    If we are doing on demand streaming, then indicate that we are streaming
+//    in the output.
+//
 // ****************************************************************************
 
 avtDataRequest_p
-avtOriginatingSource::BalanceLoad(avtContract_p spec)
+avtOriginatingSource::BalanceLoad(avtContract_p contract)
 {
-    bool usesAllDomains = spec->GetDataRequest()->GetSIL().UsesAllDomains();
+    bool usesAllDomains =contract->GetDataRequest()->GetSIL().UsesAllDomains();
 
     //
     // If it shouldn't use load balancing, then it has to do with auxiliary
@@ -491,9 +495,13 @@ avtOriginatingSource::BalanceLoad(avtContract_p spec)
     // would change the data attributes and it also causes an unnecessary
     // callback to our progress mechanism.
     //
-    if (spec->ShouldUseLoadBalancing())
+    if (contract->ShouldUseLoadBalancing())
     {
-        InitPipeline(spec);
+        InitPipeline(contract);
+    }
+    else if (contract->DoingOnDemandStreaming())
+    {
+        GetOutput()->GetInfo().GetValidity().SetWhetherStreaming(true);
     }
 
     //
@@ -503,23 +511,23 @@ avtOriginatingSource::BalanceLoad(avtContract_p spec)
     if (!UseLoadBalancer())
     {
         debug5 << "This source should not load balance the data." << endl;
-        rv = spec->GetDataRequest();
+        rv = contract->GetDataRequest();
     }
-    else if (! spec->ShouldUseLoadBalancing())
+    else if (! contract->ShouldUseLoadBalancing())
     {
         debug5 << "This pipeline has indicated that no load balancing should "
                << "be used." << endl;
-        rv = spec->GetDataRequest();
+        rv = contract->GetDataRequest();
     }
     else if (loadBalanceFunction != NULL)
     {
         debug5 << "Using load balancer to reduce data." << endl;
-        rv = loadBalanceFunction(loadBalanceFunctionArgs, spec);
+        rv = loadBalanceFunction(loadBalanceFunctionArgs, contract);
     }
     else
     {
         debug1 << "No load balancer exists to reduce data." << endl;
-        rv = spec->GetDataRequest();
+        rv = contract->GetDataRequest();
     }
 
     //
@@ -535,7 +543,7 @@ avtOriginatingSource::BalanceLoad(avtContract_p spec)
 //
 //  Purpose:
 //      Initializes the rest of the pipeline.  This determines if the data
-//      specification is all of the data and also makes a callback declaring
+//      request is all of the data and also makes a callback declaring
 //      how many total filters there are.
 //
 //  Arguments:

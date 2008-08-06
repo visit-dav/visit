@@ -86,6 +86,21 @@ public:
         Backward,
         Both
     };
+    enum TerminationType
+    {
+        Distance,
+        Time
+    };
+    enum IntegrationType
+    {
+        DormandPrince,
+        AdamsBashforth
+    };
+    enum StreamlineAlgorithmType
+    {
+        LoadOnDemand,
+        ParallelStaticDomains
+    };
 
     StreamlineAttributes();
     StreamlineAttributes(const StreamlineAttributes &obj);
@@ -115,8 +130,8 @@ public:
 
     // Property setting methods
     void SetSourceType(SourceType sourceType_);
-    void SetStepLength(double stepLength_);
-    void SetMaxTime(double maxTime_);
+    void SetMaxStepLength(double maxStepLength_);
+    void SetTermination(double termination_);
     void SetPointSource(const double *pointSource_);
     void SetLineStart(const double *lineStart_);
     void SetLineEnd(const double *lineEnd_);
@@ -139,11 +154,18 @@ public:
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
     void SetStreamlineDirection(IntegrationDirection StreamlineDirection_);
+    void SetRelTol(double relTol_);
+    void SetAbsTol(double absTol_);
+    void SetTerminationType(TerminationType terminationType_);
+    void SetIntegrationType(IntegrationType integrationType_);
+    void SetStreamlineAlgorithmType(StreamlineAlgorithmType streamlineAlgorithmType_);
+    void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_);
+    void SetMaxDomainCacheSize(int maxDomainCacheSize_);
 
     // Property getting methods
     SourceType           GetSourceType() const;
-    double               GetStepLength() const;
-    double               GetMaxTime() const;
+    double               GetMaxStepLength() const;
+    double               GetTermination() const;
     const double         *GetPointSource() const;
           double         *GetPointSource();
     const double         *GetLineStart() const;
@@ -176,6 +198,13 @@ public:
     bool                 GetLegendFlag() const;
     bool                 GetLightingFlag() const;
     IntegrationDirection GetStreamlineDirection() const;
+    double               GetRelTol() const;
+    double               GetAbsTol() const;
+    TerminationType      GetTerminationType() const;
+    IntegrationType      GetIntegrationType() const;
+    StreamlineAlgorithmType GetStreamlineAlgorithmType() const;
+    int                  GetMaxStreamlineProcessCount() const;
+    int                  GetMaxDomainCacheSize() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -202,6 +231,21 @@ public:
 protected:
     static std::string IntegrationDirection_ToString(int);
 public:
+    static std::string TerminationType_ToString(TerminationType);
+    static bool TerminationType_FromString(const std::string &, TerminationType &);
+protected:
+    static std::string TerminationType_ToString(int);
+public:
+    static std::string IntegrationType_ToString(IntegrationType);
+    static bool IntegrationType_FromString(const std::string &, IntegrationType &);
+protected:
+    static std::string IntegrationType_ToString(int);
+public:
+    static std::string StreamlineAlgorithmType_ToString(StreamlineAlgorithmType);
+    static bool StreamlineAlgorithmType_FromString(const std::string &, StreamlineAlgorithmType &);
+protected:
+    static std::string StreamlineAlgorithmType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -215,8 +259,8 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_sourceType = 0,
-        ID_stepLength,
-        ID_maxTime,
+        ID_maxStepLength,
+        ID_termination,
         ID_pointSource,
         ID_lineStart,
         ID_lineEnd,
@@ -238,13 +282,20 @@ public:
         ID_singleColor,
         ID_legendFlag,
         ID_lightingFlag,
-        ID_StreamlineDirection
+        ID_StreamlineDirection,
+        ID_relTol,
+        ID_absTol,
+        ID_terminationType,
+        ID_integrationType,
+        ID_streamlineAlgorithmType,
+        ID_maxStreamlineProcessCount,
+        ID_maxDomainCacheSize
     };
 
 private:
     int            sourceType;
-    double         stepLength;
-    double         maxTime;
+    double         maxStepLength;
+    double         termination;
     double         pointSource[3];
     double         lineStart[3];
     double         lineEnd[3];
@@ -267,6 +318,13 @@ private:
     bool           legendFlag;
     bool           lightingFlag;
     int            StreamlineDirection;
+    double         relTol;
+    double         absTol;
+    int            terminationType;
+    int            integrationType;
+    int            streamlineAlgorithmType;
+    int            maxStreamlineProcessCount;
+    int            maxDomainCacheSize;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

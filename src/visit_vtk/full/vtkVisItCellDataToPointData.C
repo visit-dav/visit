@@ -42,6 +42,10 @@ vtkVisItCellDataToPointData::vtkVisItCellDataToPointData()
 //    Hank Childs, Wed Mar  9 16:23:01 PST 2005
 //    Fix minor UMR.
 //
+//    Dave Pugmire, Wed Jul  30 16:57:23 EST 2008
+//    Avoid using fastTrack code for non-scalar data. The fastTrack code does
+//    not handle it right.
+//
 // **************************************************************************** 
 
 void vtkVisItCellDataToPointData::Execute()
@@ -114,6 +118,10 @@ void vtkVisItCellDataToPointData::Execute()
       canFastTrackStructured = false;
     if (inPD->GetArray(i)->GetDataType() != VTK_FLOAT)
       canFastTrackStructured = false;
+
+    // fastTrack code doesn't support non-scalar data, so for now, avoid it.
+    if (inPD->GetArray(i)->GetNumberOfComponents() != 1 )
+        canFastTrackStructured = false;
   }
        
   int abort=0;
