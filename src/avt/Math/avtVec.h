@@ -153,6 +153,14 @@ public:
         return *this;
     }
 
+    avtVecRef& operator+=( const double& rhs )
+    {
+        for( iterator i=begin(); i!=end(); ++i )
+            *i += rhs;
+            
+        return *this;
+    }
+
     avtVecRef& operator-=( const avtVecRef& rhs )
     {
         if( dim() != rhs.dim() )
@@ -162,6 +170,14 @@ public:
 
         for( iterator i=begin(); i!=end(); ++i, ++ri )
             *i -= *ri;
+            
+        return *this;
+    }
+
+    avtVecRef& operator-=( const double& rhs )
+    {
+        for( iterator i=begin(); i!=end(); ++i )
+            *i -= rhs;
             
         return *this;
     }
