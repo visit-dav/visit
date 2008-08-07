@@ -381,6 +381,13 @@
 #     Jeremy Meredith, Tue Jun 24 14:34:38 EDT 2008
 #     Patch Mesa 6.4.2 to use a larger offscreen window size limit.
 #
+#     Eric Brugger, Wed Jul  2 13:57:28 PDT 2008
+#     Modified the logic that splits the output of "mpiCC -show" into
+#     parallel linker and compiler flags to select any strings that start
+#     with "-L", "-l" and "-Wl" as linker flags, any strings that start
+#     with "-I" and "-D" as compiler flags, and any remaining strings that
+#     start with "-" as both compiler and linker flags. 
+#
 #     Tom Fogal, Fri Jul 11 10:47:31 EDT 2008
 #     Added PIL to build_python.
 #
@@ -1634,42 +1641,67 @@ function check_parallel
         MPIWRAPPER=$(which mpic++)
         if [[ "${MPIWRAPPER#no }" != "${MPIWRAPPER}" ]] ; then
            MPIWRAPPER=""
-       fi
-       if [[ "$MPIWRAPPER" == "" ]] ; then
-          MPIWRAPPER=$(which mpicxx)
-          if [[ "${MPIWRAPPER#no }" != "${MPIWRAPPER}" ]] ; then
-             MPIWRAPPER=""
-          fi
-          if [[ "$MPIWRAPPER" == "" ]] ; then
-             MPIWRAPPER=$(which mpiCC)
-             if [[ "${MPIWRAPPER#no }" != "${MPIWRAPPER}" ]] ; then
+        fi
+        if [[ "$MPIWRAPPER" == "" ]] ; then
+            MPIWRAPPER=$(which mpicxx)
+            if [[ "${MPIWRAPPER#no }" != "${MPIWRAPPER}" ]] ; then
                 MPIWRAPPER=""
-             fi
-             if [[ "$MPIWRAPPER" == "" ]] ; then
-                MPIWRAPPER=$(which mpicc)
+            fi
+            if [[ "$MPIWRAPPER" == "" ]] ; then
+                MPIWRAPPER=$(which mpiCC)
                 if [[ "${MPIWRAPPER#no }" != "${MPIWRAPPER}" ]] ; then
-                   MPIWRAPPER=""
+                    MPIWRAPPER=""
                 fi
                 if [[ "$MPIWRAPPER" == "" ]] ; then
-                   echo ""
-                   echo "Unable to find mpiCC..."
+                    MPIWRAPPER=$(which mpicc)
+                    if [[ "${MPIWRAPPER#no }" != "${MPIWRAPPER}" ]] ; then
+                        MPIWRAPPER=""
+                    fi
+                    if [[ "$MPIWRAPPER" == "" ]] ; then
+                        echo ""
+                        echo "Unable to find mpiCC..."
+                    fi
                 fi
-             fi
-          fi
+            fi
         fi
         args=`$MPIWRAPPER -show`
         index=0
-        foundL=0
         for arg in $args; do
             if [[ $index == 1 || $index > 1 ]] ; then
+                foundLinkerArg=0
+                foundCompilerArg=0
                 pos=`echo "$arg" | awk '{ printf "%d", index($1,"-L"); }'`
                 if [[ "$pos" != "0" ]] ; then
-                    foundL=1
+                    foundLinkerArg=1
+                fi
+                pos=`echo "$arg" | awk '{ printf "%d", index($1,"-l"); }'`
+                if [[ "$pos" != "0" ]] ; then
+                    foundLinkerArg=1
+                fi
+                pos=`echo "$arg" | awk '{ printf "%d", index($1,"-Wl"); }'`
+                if [[ "$pos" != "0" ]] ; then
+                    foundLinkerArg=1
+                fi
+                pos=`echo "$arg" | awk '{ printf "%d", index($1,"-D"); }'`
+                if [[ "$pos" != "0" ]] ; then
+                    foundCompilerArg=1
+                fi
+                pos=`echo "$arg" | awk '{ printf "%d", index($1,"-I"); }'`
+                if [[ "$pos" != "0" ]] ; then
+                    foundCompilerArg=1
+                fi
+                if [[ $foundLinkerArg == 0 && $foundCompilerArg == 0 ]] ; then
+                    pos=`echo "$arg" | awk '{ printf "%d", index($1,"-"); }'`
+                    if [[ "$pos" != "0" ]] ; then
+                        foundLinkerArg=1
+                        foundCompilerArg=1
+                    fi
                 fi
 
-                if [[ $foundL == 1 ]] ; then
+                if [[ $foundLinkerArg == 1 ]] ; then
                     MPICC_LDFLAGS="$MPICC_LDFLAGS$arg "
-                else
+                fi
+                if [[ $foundCompilerArg == 1 ]] ; then
                     MPICC_CPPFLAGS="$MPICC_CPPFLAGS$arg "
                 fi
             fi
