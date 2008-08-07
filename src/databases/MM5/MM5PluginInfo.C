@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 MM5GeneralPluginInfo::GetName() const
 {
     return "MM5";
@@ -100,7 +100,7 @@ MM5GeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 MM5GeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ MM5GeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 MM5GeneralPluginInfo::GetID() const
 {
     return "MM5_1.0";

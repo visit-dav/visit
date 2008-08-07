@@ -108,15 +108,18 @@ class DatabasePluginManager;
 //    no longer a singleton. The plugin manager will add a pointer to itself
 //    into the common info when it reads the info.
 //
+//    Jeremy Meredith, Thu Aug  7 16:22:24 EDT 2008
+//    Use const char* for the functions likely to return a string literal.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralDatabasePluginInfo
 {
   public:
     virtual ~GeneralDatabasePluginInfo() {;};
-    virtual char *GetName() const = 0;
-    virtual char *GetVersion() const = 0;
-    virtual char *GetID() const = 0;
+    virtual const char *GetName() const = 0;
+    virtual const char *GetVersion() const = 0;
+    virtual const char *GetID() const = 0;
     virtual bool  EnabledByDefault() const { return true; }
     virtual bool  HasWriter() const { return false; }
     virtual std::vector<std::string>  GetDfltExtsFromGen() const

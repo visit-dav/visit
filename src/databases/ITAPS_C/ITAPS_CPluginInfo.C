@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 ITAPS_CGeneralPluginInfo::GetName() const
 {
     return "ITAPS_C";
@@ -100,7 +100,7 @@ ITAPS_CGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ITAPS_CGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ ITAPS_CGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ITAPS_CGeneralPluginInfo::GetID() const
 {
     return "ITAPS_C_1.0";

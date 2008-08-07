@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 PLOT3DGeneralPluginInfo::GetName() const
 {
     return "PLOT3D";
@@ -100,7 +100,7 @@ PLOT3DGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 PLOT3DGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ PLOT3DGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 PLOT3DGeneralPluginInfo::GetID() const
 {
     return "PLOT3D_1.0";

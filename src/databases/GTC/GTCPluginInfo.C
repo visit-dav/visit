@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 GTCGeneralPluginInfo::GetName() const
 {
     return "GTC";
@@ -100,7 +100,7 @@ GTCGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 GTCGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ GTCGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 GTCGeneralPluginInfo::GetID() const
 {
     return "GTC_1.0";

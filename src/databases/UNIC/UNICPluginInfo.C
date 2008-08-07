@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 UNICGeneralPluginInfo::GetName() const
 {
     return "UNIC";
@@ -100,7 +100,7 @@ UNICGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 UNICGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ UNICGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 UNICGeneralPluginInfo::GetID() const
 {
     return "UNIC_1.0";

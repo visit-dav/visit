@@ -91,7 +91,7 @@ public:
     // --- constructor ---
 
     avtVecRef( pointer data, const size_t& n ) : 
-        _dim(n), _data( data )
+        _data( data ), _dim(n)
     {
     }
 
@@ -107,6 +107,10 @@ public:
         return *this;
     }
     
+    //  Modifications:
+    //    Jeremy Meredith, Thu Aug  7 14:38:59 EDT 2008
+    //    Added missing return statement.
+    //
     avtVecRef& operator=( const double& value )
     {
         std::fill( begin(), end(), value );

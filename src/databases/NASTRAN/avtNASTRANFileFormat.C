@@ -180,6 +180,11 @@ avtNASTRANFileFormat::ActivateTimestep()
 // Purpose: Robust way of reading string for float value
 // 
 // Programmer: Mark C. Miller, Thu Apr  3 16:27:01 PDT 2008
+//
+// Modifications:
+//    Jeremy Meredith, Thu Aug  7 13:43:03 EDT 2008
+//    Format %s doesn't use space modifier.
+//
 // ****************************************************************************
 static float Getf(const char *s)
 {
@@ -192,7 +197,7 @@ static float Getf(const char *s)
     {
         char msg[512];
         SNPRINTF(msg, sizeof(msg),
-            "Error \"%s\" at word \"% 32s\"\n", strerror(errno), s);
+            "Error \"%s\" at word \"%32s\"\n", strerror(errno), s);
         if (!avtCallback::IssueWarning(msg))
             cerr << msg << endl;
         return 0.0;
@@ -207,6 +212,11 @@ static float Getf(const char *s)
 // Purpose: Robust way of reading string for integer value
 // 
 // Programmer: Mark C. Miller, Thu Apr  3 16:27:01 PDT 2008
+//
+// Modifications:
+//    Jeremy Meredith, Thu Aug  7 13:43:03 EDT 2008
+//    Format %s doesn't use space modifier.
+//
 // ****************************************************************************
 static int Geti(const char *s)
 {
@@ -219,7 +229,7 @@ static int Geti(const char *s)
     {
         char msg[512];
         SNPRINTF(msg, sizeof(msg),
-            "Error \"%s\" at word \"% 32s\"\n", strerror(errno), s);
+            "Error \"%s\" at word \"%32s\"\n", strerror(errno), s);
         if (!avtCallback::IssueWarning(msg))
             cerr << msg << endl;
         return 0;

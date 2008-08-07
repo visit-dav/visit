@@ -1879,13 +1879,14 @@ QvisGUIApplication::Quit()
 //    Brad Whitlock, Thu Jul 24 12:06:57 PDT 2008
 //    Added support for the -launchengine argument.
 //
+//    Jeremy Meredith, Thu Aug  7 15:39:55 EDT 2008
+//    Removed unused var.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::ProcessArguments(int &argc, char **argv)
 {
-    AppearanceAttributes *aa = GetViewerState()->GetAppearanceAttributes();
-
     //
     // If we're reverse launching then there are certain arguments that we
     // should not strip out here. They will be stripped out by ViewerProxy.
@@ -4369,13 +4370,14 @@ QvisGUIApplication::RestoreSession()
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Jeremy Meredith, Thu Aug  7 15:39:55 EDT 2008
+//   Removed unused var.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::RestoreSessionWithDifferentSources()
 {
-    const char *mName = "QvisGUIApplication::RestoreSessionWithDifferentSources: ";
-
     // Get the name of the session to load.
     QString s(QFileDialog::getOpenFileName(sessionDir.c_str(),
 #if defined(_WIN32)
@@ -6550,6 +6552,9 @@ QvisGUIApplication::UpdateMetaDataAttributes(Subject *subj, void *data)
 //    Brad Whitlock, Wed Apr  9 10:23:22 PDT 2008
 //    Cleaned up string coding.
 //
+//    Jeremy Meredith, Thu Aug  7 15:39:55 EDT 2008
+//    Removed unused var.
+//
 // ****************************************************************************
 
 void
@@ -6589,7 +6594,6 @@ QvisGUIApplication::HandleMetaDataUpdate()
     if (otherWindows.count(simWinName))
     {
         const QualifiedFilename &qf = fileServer->GetOpenFile();
-        int ts = GetStateForSource(qf);
         QvisSimulationWindow *simWin =
             (QvisSimulationWindow*)otherWindows[simWinName];
         simWin->SetNewMetaData(qf, fileServer->GetMetaData(qf,GetStateForSource(qf),
@@ -7007,6 +7011,9 @@ QvisGUIApplication::SendInterface()
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Jeremy Meredith, Thu Aug  7 15:39:55 EDT 2008
+//   Removed unused vars.
+//
 // ****************************************************************************
 
 void
@@ -7117,7 +7124,6 @@ QvisGUIApplication::HandleClientMethod()
             else if(method->GetMethodName() == "MessageBoxOkCancel")
             {
                 // Ask the user a question in a yes/no message box.
-                int result = 0;
                 if(QMessageBox::information(mainWin, "VisIt",
                    method->GetStringArgs()[0].c_str(),
                    QMessageBox::Ok, QMessageBox::Cancel) == QMessageBox::Cancel)

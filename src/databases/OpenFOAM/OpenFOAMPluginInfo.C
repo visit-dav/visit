@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 OpenFOAMGeneralPluginInfo::GetName() const
 {
     return "OpenFOAM";
@@ -100,7 +100,7 @@ OpenFOAMGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 OpenFOAMGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ OpenFOAMGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 OpenFOAMGeneralPluginInfo::GetID() const
 {
     return "OpenFOAM_1.0";

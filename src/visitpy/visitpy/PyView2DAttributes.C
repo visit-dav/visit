@@ -644,7 +644,7 @@ static PyNumberMethods View2DAttributes_as_number = {
 //
 // The doc string for the class.
 //
-static char *View2DAttributes_Purpose = "This class contains the 2d view attributes.";
+static const char *View2DAttributes_Purpose = "This class contains the 2d view attributes.";
 
 //
 // The type description structure

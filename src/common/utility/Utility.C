@@ -742,13 +742,16 @@ SplitValues(const string &buff, char delim)
 //   Kathleen Bonnell, Thu Jul 26 11:27:32 PDT 2007 
 //   Fix WIN32 code to use 'home' if not null, otherwise VISITUSERHOME. 
 //
+//   Jeremy Meredith, Thu Aug  7 16:20:02 EDT 2008
+//   Use const char* for string literals.
+//
 // ****************************************************************************
 
 char *
 GetDefaultConfigFile(const char *filename, const char *home)
 {
     char *retval;
-    char *configFileName;
+    const char *configFileName;
     int  filenameLength;
 
 #ifdef WIN32
@@ -1661,6 +1664,9 @@ ConvertArgsToTunneledValues(const std::map<int,int> &portTunnelMap,
 //    and "1.4.5b1"/"1.4.5b" (ret=-3), for example, as well as "1.4" (ret=2)
 //    and "1.4b1"/"1.4b" (ret=-2).
 //
+//    Jeremy Meredith, Thu Aug  7 16:20:19 EDT 2008
+//    Removed extraneous & from %s argument to scanf.
+//
 // ****************************************************************************
 int
 GetVisItVersionFromString(const char *v0, int &major, int &minor, int &patch)
@@ -1684,7 +1690,7 @@ GetVisItVersionFromString(const char *v0, int &major, int &minor, int &patch)
     {
         ret = 2;
     }
-    if (ret==0 && sscanf(v0, "%d%s", &major, &extra) == 2)
+    if (ret==0 && sscanf(v0, "%d%s", &major, extra) == 2)
     {
         ret = -1;
     }

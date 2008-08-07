@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 DuneGeneralPluginInfo::GetName() const
 {
     return "Dune";
@@ -100,7 +100,7 @@ DuneGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 DuneGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ DuneGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 DuneGeneralPluginInfo::GetID() const
 {
     return "Dune_1.0";

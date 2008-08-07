@@ -1065,7 +1065,7 @@ void avtMFIXFileFormat::RestartVersionNumber(char* buffer)
   char s1[120];
   char s2[120];
   sscanf(buffer,"%s %s %f", s1, s2, &this->VersionNumber);
-  strncpy(this->Version, buffer, 100);
+  Version = std::string(buffer);
 }
 //----------------------------------------------------------------------------
 void avtMFIXFileFormat::SwapInt(int &value)

@@ -402,6 +402,9 @@ avtDatasetVerifier::IssueVarMismatchWarning(int nVars, int nUnits,bool isPoint,
 //    over all the arrays in 'atts' by index number.  Want to preserve the
 //    original ordering!  AddArray also does not destroy active attributes.
 //
+//    Jeremy Meredith, Thu Aug  7 14:45:00 EDT 2008
+//    Removed unused var.
+//
 // ****************************************************************************
 
 void
@@ -409,7 +412,6 @@ avtDatasetVerifier::CorrectVarMismatch(vtkDataArray *var,
                                        vtkDataSetAttributes *atts, int destNum)
 {
     int i;
-    bool isActiveAttribute = false;
     int nComponents = var->GetNumberOfComponents();
 
     vtkDataArray *newVar = var->NewInstance();

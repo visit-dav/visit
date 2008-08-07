@@ -166,6 +166,9 @@ avtVerdictExpression::~avtVerdictExpression()
 //    Hank Childs, Thu Jul 24 12:38:34 PDT 2008
 //    Add support for polygons and polyhedrons.
 //
+//    Jeremy Meredith, Thu Aug  7 14:30:46 EDT 2008
+//    Made string literal const char*, not char*.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -221,8 +224,8 @@ avtVerdictExpression::DeriveVariable(vtkDataSet *in_ds)
                     static bool issuedWarning = false;
                     if (!issuedWarning)
                     {
-                        char *warning = "The mesh quality expression you "
-                            "asked for cannot be applied to polygons.  VisIt"
+                        const char *warning = "The mesh quality expression you"
+                            " asked for cannot be applied to polygons.  VisIt"
                             " will assign to zero to all polygons for this "
                             "metric.  This warning will not be issued again "
                             "during this session, but keep in mind that "

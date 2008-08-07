@@ -105,6 +105,9 @@ class Pos;
 //    Cyrus Harrison, Wed Apr  2 16:44:14 PDT 2008
 //    Added accessor method to get the x,y,z nodes from a vector expression.
 //
+//    Jeremy Meredith, Thu Aug  7 16:21:59 EDT 2008
+//    Reorder initializers to match true order.
+//
 // ****************************************************************************
 class EXPR_API ExprNode : public ExprParseTreeNode
 {
@@ -136,7 +139,7 @@ class EXPR_API IntegerConstExpr : public ConstExpr
 {
   public:
     IntegerConstExpr(const Pos &p, int v)
-        : ConstExpr(p, ConstExpr::Integer), ExprNode(p), value(v) {}
+        : ExprNode(p), ConstExpr(p, ConstExpr::Integer), value(v) {}
     virtual ~IntegerConstExpr();
     virtual const std::string GetTypeName() { return "IntegerConst"; }
     virtual void PrintNode(ostream &o);
@@ -149,7 +152,7 @@ class EXPR_API FloatConstExpr : public ConstExpr
 {
   public:
     FloatConstExpr(const Pos &p, float v)
-        : ConstExpr(p, ConstExpr::Float), ExprNode(p), value(v) {}
+        : ExprNode(p), ConstExpr(p, ConstExpr::Float), value(v) {}
     virtual ~FloatConstExpr();
     virtual const std::string GetTypeName() { return "FloatConst"; }
     virtual void PrintNode(ostream &o);
@@ -162,7 +165,7 @@ class EXPR_API StringConstExpr : public ConstExpr
 {
   public:
     StringConstExpr(const Pos &p, std::string v)
-        : ConstExpr(p, ConstExpr::String), ExprNode(p), value(v) {}
+        : ExprNode(p), ConstExpr(p, ConstExpr::String), value(v) {}
     virtual ~StringConstExpr();
     virtual const std::string GetTypeName() { return "StringConst"; }
     virtual void PrintNode(ostream &o);
@@ -175,7 +178,7 @@ class EXPR_API BooleanConstExpr : public ConstExpr
 {
   public:
     BooleanConstExpr(const Pos &p, bool v)
-        : ConstExpr(p, ConstExpr::Boolean), ExprNode(p), value(v) {}
+        : ExprNode(p), ConstExpr(p, ConstExpr::Boolean), value(v) {}
     virtual ~BooleanConstExpr();
     virtual const std::string GetTypeName() { return "BooleanConst"; }
     virtual void PrintNode(ostream &o);
@@ -199,7 +202,7 @@ class EXPR_API UnaryExpr : public MathExpr
 {
   public:
     UnaryExpr(const Pos &p, char o, ExprNode *e)
-        : MathExpr(p, o), ExprNode(p), expr(e) {}
+        : ExprNode(p), MathExpr(p, o), expr(e) {}
     virtual ~UnaryExpr() { delete expr; }
     virtual void PrintNode(ostream &o);
     virtual std::vector<std::string> GetVarLeaves()
@@ -216,7 +219,7 @@ class EXPR_API BinaryExpr : public MathExpr
 {
   public:
     BinaryExpr(const Pos &p, char o, ExprNode *l, ExprNode *r)
-        : MathExpr(p, o), ExprNode(p), left(l), right(r) {}
+        : ExprNode(p), MathExpr(p, o), left(l), right(r) {}
     virtual ~BinaryExpr() { delete left; delete right; }
     virtual void PrintNode(ostream &o);
     virtual std::vector<std::string> GetVarLeaves();

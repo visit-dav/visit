@@ -374,6 +374,10 @@ avtSiloFileFormat::GetFile(int f)
 //    in the file to be used as the 'top dir' for this timestep. Note also,
 //    That there has to exist in the filesystem a real file (usually a symlink)
 //    named as <filename>:<dirname> that opens to the desired file. 
+//
+//    Jeremy Meredith, Thu Aug  7 16:16:34 EDT 2008
+//    Added missing filename argument to an sprintf.
+//
 // ****************************************************************************
 
 DBfile *
@@ -433,7 +437,8 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
         {
             char str[1024];
             SNPRINTF(str, sizeof(str), "Although the Silo library succesfully opened \"%s,\"\n" 
-                 "the file contains no silo objects. It may be a PDB file.");
+                     "the file contains no silo objects. It may be a PDB file.",
+                     filenames[f]);
             EXCEPTION1(InvalidFilesException, str);
         }
     }
@@ -7788,10 +7793,14 @@ avtSiloFileFormat::GetMeshname(DBfile *dbfile, char *var, char *meshname)
 //    Hank Childs, Thu Aug 16 11:06:27 PDT 2001
 //    Throw an exception here instead of in the handler.
 //
+//    Jeremy Meredith, Thu Aug  7 16:16:52 EDT 2008
+//    Accept const char*'s as input.
+//
 // ****************************************************************************
 
 void *
-avtSiloFileFormat::GetComponent(DBfile *dbfile, char *var, char *compname)
+avtSiloFileFormat::GetComponent(DBfile *dbfile, char *var,
+                                const char *compname)
 {
     char   *dirvar;
     DBfile *correctFile = dbfile;

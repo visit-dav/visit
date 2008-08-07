@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 TecplotGeneralPluginInfo::GetName() const
 {
     return "Tecplot";
@@ -100,7 +100,7 @@ TecplotGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 TecplotGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ TecplotGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 TecplotGeneralPluginInfo::GetID() const
 {
     return "Tecplot_1.0";

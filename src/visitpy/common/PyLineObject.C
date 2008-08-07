@@ -732,7 +732,7 @@ LineObject_str(PyObject *v)
 //
 // The doc string for the class.
 //
-static char *LineObject_Purpose = "Line Annotation Object";
+static const char *LineObject_Purpose = "Line Annotation Object";
 
 //
 // The type description structure

@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 ZipWrapperGeneralPluginInfo::GetName() const
 {
     return "ZipWrapper";
@@ -100,7 +100,7 @@ ZipWrapperGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ZipWrapperGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ ZipWrapperGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ZipWrapperGeneralPluginInfo::GetID() const
 {
     return "ZipWrapper_1.0";

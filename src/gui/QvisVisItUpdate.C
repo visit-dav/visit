@@ -118,12 +118,16 @@ const char *distNames[] = {
 //   Brad Whitlock, Thu May 25 12:03:28 PDT 2006
 //   Initialized some string members.
 //
+//   Jeremy Meredith, Thu Aug  7 15:42:23 EDT 2008
+//   Fixed initializer order to match true order.
+//
 // ****************************************************************************
 
 QvisVisItUpdate::QvisVisItUpdate(QObject *parent, const char *name) :
-    QObject(parent, name), GUIBase(), 
-    latestVersion(CURRENT_VERSION), files(), downloads(), distName(),
-    configName("none"), bankName("bdivp")
+    QObject(parent, name), GUIBase(), distName(), 
+    configName("none"), bankName("bdivp"),
+    latestVersion(CURRENT_VERSION), 
+    files(), downloads()
 {
     stage = STAGE_CONNECT;
     ftp = 0;

@@ -172,6 +172,9 @@ avtProteinDataBankFileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Thu May  1 12:43:27 EDT 2008
 //    Exposed the occupancy and temperature factor fields.
 //
+//    Jeremy Meredith, Thu Aug  7 13:46:38 EDT 2008
+//    Fixed broken sprintf commands.
+//
 // ****************************************************************************
 
 void
@@ -192,26 +195,26 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         else
         {
-            sprintf(prefix, "");
+            strcpy(prefix, "");
         }
 
         char name_mesh[80];
         char name_el[80],name_rt[80],name_rs[80],name_bk[80];
         char name_nm[80],name_rn[80],name_lr[80],name_en[80];
         char name_cmp[80],name_cmpnm[80],name_occ[80],name_temp[80];
-        sprintf(name_mesh, "%smesh",        prefix, i);
-        sprintf(name_el,   "%selement",     prefix, i);
-        sprintf(name_rt,   "%srestype",     prefix, i);
-        sprintf(name_rs,   "%sresseq",      prefix, i);
-        sprintf(name_bk,   "%sbackbone",    prefix, i);
-        sprintf(name_nm,   "%sname",        prefix, i);
-        sprintf(name_rn,   "%sresname",     prefix, i);
-        sprintf(name_lr,   "%slongresname", prefix, i);
-        sprintf(name_en,   "%selementname", prefix, i);
-        sprintf(name_cmp,  "%scompound",    prefix, i);
-        sprintf(name_cmpnm,"%scompoundname",prefix, i);
-        sprintf(name_occ,  "%soccupancy",   prefix, i);
-        sprintf(name_temp, "%stempFactor",  prefix, i);
+        sprintf(name_mesh, "%smesh",        prefix);
+        sprintf(name_el,   "%selement",     prefix);
+        sprintf(name_rt,   "%srestype",     prefix);
+        sprintf(name_rs,   "%sresseq",      prefix);
+        sprintf(name_bk,   "%sbackbone",    prefix);
+        sprintf(name_nm,   "%sname",        prefix);
+        sprintf(name_rn,   "%sresname",     prefix);
+        sprintf(name_lr,   "%slongresname", prefix);
+        sprintf(name_en,   "%selementname", prefix);
+        sprintf(name_cmp,  "%scompound",    prefix);
+        sprintf(name_cmpnm,"%scompoundname",prefix);
+        sprintf(name_occ,  "%soccupancy",   prefix);
+        sprintf(name_temp, "%stempFactor",  prefix);
 
         avtMeshMetaData *mmd = new avtMeshMetaData(name_mesh, 1, 0,0,0,
                                                    3, 0,

@@ -193,6 +193,9 @@ avtZeusMPFileFormat::GetFileHandle()
 //   Brad Whitlock, Wed Feb  6 16:10:46 PST 2008
 //   Added support for cylindrical coordinates.
 //
+//   Jeremy Meredith, Thu Aug  7 15:51:28 EDT 2008
+//   Use %lg format for longs.
+//
 // ****************************************************************************
 
 void
@@ -262,7 +265,7 @@ avtZeusMPFileFormat::GetFileInformation()
                         if(haveFileTime)
                         {
                             double tmp;
-                            if(sscanf(long_name+9, "%g", &tmp) == 1)
+                            if(sscanf(long_name+9, "%lg", &tmp) == 1)
                             {
                                 fileTime = tmp;
                                 haveFileTime = true;

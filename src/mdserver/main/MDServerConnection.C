@@ -1920,6 +1920,9 @@ MDServerConnection::SetFileGroupingOptions(const std::string &filter,
 //   problems for a small subset of users. Those who want the feature can
 //   set the environment variable.
 //
+//   Jeremy Meredith, Wed Aug  6 16:58:03 EDT 2008
+//   Fixing timer handle mismatch.
+//
 // ****************************************************************************
 
 void
@@ -2261,7 +2264,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                 virtualFiles[key].files.swap(pos->second.files);
             }
         }
-        visitTimer->StopTimer(stage6, "stage7: adding final virtual databases");
+        visitTimer->StopTimer(stage7, "stage7: adding final virtual databases");
     }
     else
         ReadFileListAttributes(files, true);

@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 NETCDFGeneralPluginInfo::GetName() const
 {
     return "NETCDF";
@@ -100,7 +100,7 @@ NETCDFGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 NETCDFGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ NETCDFGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 NETCDFGeneralPluginInfo::GetID() const
 {
     return "NETCDF_1.0";

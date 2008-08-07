@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 ANALYZEGeneralPluginInfo::GetName() const
 {
     return "ANALYZE";
@@ -100,7 +100,7 @@ ANALYZEGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ANALYZEGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ ANALYZEGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ANALYZEGeneralPluginInfo::GetID() const
 {
     return "ANALYZE_1.0";

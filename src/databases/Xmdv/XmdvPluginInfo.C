@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 XmdvGeneralPluginInfo::GetName() const
 {
     return "Xmdv";
@@ -100,7 +100,7 @@ XmdvGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 XmdvGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ XmdvGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 XmdvGeneralPluginInfo::GetID() const
 {
     return "Xmdv_1.0";

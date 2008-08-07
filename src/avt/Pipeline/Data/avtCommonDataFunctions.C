@@ -2791,6 +2791,9 @@ bool CCompressDataString(const unsigned char *dstr, int len,
 //    Hank Childs, Fri Jun  9 13:21:29 PDT 2006
 //    Remove unused variable.
 //
+//    Jeremy Meredith, Wed Aug  6 18:06:14 EDT 2008
+//    Fixed scanf for double, plus it doesn't understand many printf modifiers.
+//
 // ****************************************************************************
 
 bool CDecompressDataString(const unsigned char *dstr, int len,
@@ -2803,7 +2806,7 @@ bool CDecompressDataString(const unsigned char *dstr, int len,
         unsigned int strLengthOrig;
         double timeToCompress;
         sscanf((char*) &dstr[len-20], "%10d", &strLengthOrig);
-        sscanf((char*) &dstr[len-10], "% 10.6f", &timeToCompress);
+        sscanf((char*) &dstr[len-10], "%lf", &timeToCompress);
         unsigned char *strOrig = new unsigned char[strLengthOrig];
         int startDecompress = visitTimer->StartTimer(true);
         if (BZ2_bzBuffToBuffDecompress((char*) strOrig, &strLengthOrig,
@@ -2849,6 +2852,11 @@ bool CDecompressDataString(const unsigned char *dstr, int len,
 //  Programmer: Mark C. Miller 
 //  Creation:   November 15, 2005 
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Aug  6 18:06:14 EDT 2008
+//    scanf doesn't understand many printf modifiers.
+//    
+//
 // ****************************************************************************
 
 void
@@ -2860,7 +2868,7 @@ CGetCompressionInfoFromDataString(const unsigned char *dstr,
         int uncompressedLen;
         float timeToCompress;
         sscanf((char*) &dstr[len-20], "%10d", &uncompressedLen);
-        sscanf((char*) &dstr[len-10], "% 10.6f", &timeToCompress);
+        sscanf((char*) &dstr[len-10], "%f", &timeToCompress);
         if (timec) *timec = timeToCompress;
         if (ratioc) *ratioc = (float) uncompressedLen / (float) len;
     }

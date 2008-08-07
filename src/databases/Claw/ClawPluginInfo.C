@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 ClawGeneralPluginInfo::GetName() const
 {
     return "Claw";
@@ -100,7 +100,7 @@ ClawGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ClawGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ ClawGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ClawGeneralPluginInfo::GetID() const
 {
     return "Claw_1.0";

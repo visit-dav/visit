@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 XYZGeneralPluginInfo::GetName() const
 {
     return "XYZ";
@@ -100,7 +100,7 @@ XYZGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 XYZGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ XYZGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 XYZGeneralPluginInfo::GetID() const
 {
     return "XYZ_1.0";

@@ -49,6 +49,7 @@
 #include <vtkImageData.h>
 #include <ImproperUseException.h>
 
+#ifdef PARALLEL
 // ****************************************************************************
 //  Function:  AreaOwned
 //
@@ -72,6 +73,7 @@ static void AreaOwned(int rank, int size, int w, int h,
     y1 = (h*rank)/size;
     y2 = ((h*(rank+1))/size);
 }
+#endif
 
 // ****************************************************************************
 //  Constructor: avtTiledImageCompositor::avtTiledImageCompositor

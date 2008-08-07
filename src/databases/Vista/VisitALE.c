@@ -545,6 +545,11 @@ const Node *VisitGetNodeFromPath(const Node *start, const char *path)
    return root ;
 }
 
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 13:52:06 EDT 2008
+//    Order of operations in one of the while loops might be undefined.
+//    I defined it as best as I could discern the proper order was.
+//
 char *VisitGetPathFromNode(const Node *root, const Node *node)
 {
    const Node *tmp;
@@ -577,7 +582,10 @@ char *VisitGetPathFromNode(const Node *root, const Node *node)
           len -= (complen+1);
           retval[len] = '/';
           while (complen)
-              retval[len+complen] = tmp->text[--complen];
+          {
+              --complen;
+              retval[len+complen+1] = tmp->text[complen];
+          }
       }
 
       tmp = tmp->parent;

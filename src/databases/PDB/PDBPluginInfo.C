@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 PDBGeneralPluginInfo::GetName() const
 {
     return "PDB";
@@ -100,7 +100,7 @@ PDBGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 PDBGeneralPluginInfo::GetVersion() const
 {
     return "1.1";
@@ -119,7 +119,7 @@ PDBGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 PDBGeneralPluginInfo::GetID() const
 {
     return "PDB_1.1";

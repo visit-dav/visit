@@ -48,8 +48,8 @@ using namespace std;
  \sa ~FichierU()
  */
 FichierU::FichierU(const string& fileName, ifstream* istr, long offset, long taille)
-   : _numCycle(0),
-     _time(0),
+   : _time(0),
+     _numCycle(0),
      _dim(0),
      _nbPointData(0),
      _nbCellData(0),

@@ -49,6 +49,9 @@
 //    Changed for loops to use size_t to eliminate signed/unsigned int 
 //    comparison warnings.
 //
+//    Jeremy Meredith, Thu Aug  7 14:38:59 EDT 2008
+//    Removed unused variables.
+//
 // ****************************************************************************
 
 class avtBezierSegment: public avtVecArray
@@ -96,9 +99,6 @@ public:
             tmp[i] = tmp[i+1] - tmp[i];
 
         order = degree() - order + 1;
-
-        const double a = (1.0-param);
-        const double b = param;
 
         for( size_t l=1; l<order; ++l )
             for( size_t i=order-1; i>=l; --i )

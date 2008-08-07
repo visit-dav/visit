@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 ViSUSGeneralPluginInfo::GetName() const
 {
     return "ViSUS";
@@ -100,7 +100,7 @@ ViSUSGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ViSUSGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ ViSUSGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ViSUSGeneralPluginInfo::GetID() const
 {
     return "ViSUS_1.0";

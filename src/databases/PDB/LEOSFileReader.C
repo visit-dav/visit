@@ -119,6 +119,9 @@ RemoveSpaces(const char *str)
 //   Mark C. Miller, Thu Jun 17 23:07:34 PDT 2004
 //   Changed mapping of '/' from '|' to '.'
 //
+//    Jeremy Meredith, Thu Aug  7 14:07:32 EDT 2008
+//    Cast char with unknown signage to unsigned before use as array index.
+//
 // ****************************************************************************
 static bool 
 FixMatName(char *matName, int maxLen)
@@ -141,7 +144,7 @@ FixMatName(char *matName, int maxLen)
             matName[i] = ']';
         if (matName[i] == '/')
             matName[i] = '.';
-        if (validChars[matName[i]] == 0)
+        if (validChars[(unsigned char)(matName[i])] == 0)
             matName[i] = 'X';
         if (matName[i] != ' ')
             lastNonSpace = i;
@@ -319,6 +322,10 @@ LEOSFileReader::~LEOSFileReader()
 //   Mark C. Miller, Tue Apr 29 23:33:55 PDT 2008
 //   Replaced reference to env. variable in error messages to default open
 //   option.
+//
+//    Jeremy Meredith, Thu Aug  7 16:02:13 EDT 2008
+//    Use const char*'s for string literals.
+//
 // ****************************************************************************
 
 void
@@ -327,7 +334,7 @@ LEOSFileReader::ThrowInvalidVariableException(bool ignorable, const char *varCla
 {
     char errMsg[2048];
 
-    char *errMsgIgnore = "For expediency, the LEOS reader plugin makes certain "
+    const char *errMsgIgnore = "For expediency, the LEOS reader plugin makes certain "
         "assumptions about eos variables. When these assumptions turn out "
         "to be incorrect, this error condition is generated.\n\n"
         "In this case, the value for \"%s\" was assumed to be \"%s\" but in reality "
@@ -337,7 +344,7 @@ LEOSFileReader::ThrowInvalidVariableException(bool ignorable, const char *varCla
         "default open options for LEOS try harder variable to a value of 2. "
         "It will take VisIt longer to load the LEOS database but this error will not occur.";
 
-    char *errMsgRestart = "For expediency, the LEOS reader plugin makes certain "
+    const char *errMsgRestart = "For expediency, the LEOS reader plugin makes certain "
         "assumptions about eos variables. When these assumptions turn out "
         "to be incorrect, this error condition is generated.\n\n"
         "To work-around this problem, you can close the file and re-open it using "
@@ -718,6 +725,9 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
 // Programmer: Mark C. Miller
 // Creation:   February 10, 2004 
 //
+// Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:59:40 EDT 2008
+//    Assume PDB won't modify our string literals, so cast to char* as needed.
 // ****************************************************************************
 
 void
@@ -726,7 +736,7 @@ LEOSFileReader::GetTopDirs()
     if (topDirs == 0)
     {
         PDBfile *pdbPtr = pdb->filePointer();
-        topDirs = PD_ls(pdbPtr, 0 /*path*/, "Directory", &numTopDirs);
+        topDirs = PD_ls(pdbPtr, 0 /*path*/, (char*)"Directory", &numTopDirs);
     }
 }
 
@@ -1144,6 +1154,10 @@ LEOSFileReader::ParseContentsAndPopulateMetaData(avtDatabaseMetaData *md,
 // Programmer: Mark C. Miller 
 // Creation:   February 10, 2004 
 //
+// Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:59:40 EDT 2008
+//    Assume PDB won't modify our string literals, so cast to char* as needed.
+//
 // ****************************************************************************
 
 void
@@ -1169,7 +1183,8 @@ LEOSFileReader::ReadFileAndPopulateMetaData(avtDatabaseMetaData *md)
         {
             int numVars = 0;
             PDBfile *pdbPtr = pdb->filePointer();
-            char **varList = PD_ls(pdbPtr, topDirs[i], "Directory", &numVars);
+            char **varList = PD_ls(pdbPtr, topDirs[i], (char*)"Directory",
+                                   &numVars);
 
             for (j = 0; j < numVars; j++)
             {

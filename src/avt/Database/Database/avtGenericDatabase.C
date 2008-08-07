@@ -4127,6 +4127,9 @@ avtGenericDatabase::EnumScalarSelect(avtDatasetCollection &dsc,
 //    Jeremy Meredith, Tue Jun  7 10:55:18 PDT 2005
 //    Allowed empty domains.
 //
+//    Jeremy Meredith, Wed Aug  6 18:08:33 EDT 2008
+//    Changed char* to const char* to fix warning.
+//
 // ****************************************************************************
 
 void
@@ -4134,7 +4137,7 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
                       intVector &domains, boolVector &specList,
                       avtDataRequest_p &spec, avtSourceFromDatabase *src)
 {
-    char *progressString = "Doing species selection";
+    const char *progressString = "Doing species selection";
     src->DatabaseProgress(0, 0, progressString);
 
     int timestep = spec->GetTimestep();

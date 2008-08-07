@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 Vis5DGeneralPluginInfo::GetName() const
 {
     return "Vis5D";
@@ -100,7 +100,7 @@ Vis5DGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 Vis5DGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ Vis5DGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 Vis5DGeneralPluginInfo::GetID() const
 {
     return "Vis5D_1.0";

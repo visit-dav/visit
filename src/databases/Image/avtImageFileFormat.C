@@ -152,6 +152,9 @@ avtImageFileFormat::~avtImageFileFormat()
 //     If we are using the stimulate image format, don't add color channels.
 //     Also add support for image volumes, where we pull out the extension.
 //
+//     Jeremy Meredith, Thu Aug  7 16:12:17 EDT 2008
+//     Use const char* for string literals.
+//
 // ****************************************************************************
 
 void
@@ -188,7 +191,7 @@ avtImageFileFormat::Initialize(void)
     // Check to see if we have color channels.
     bool hasColorChannels = true;
     int numExtsWithoutColorChannels = 4;
-    char *extsWithoutColorChannels[4] = { "spr", "SPR", "sdt", "SDT" };
+    const char *extsWithoutColorChannels[4] = { "spr", "SPR", "sdt", "SDT" };
     for (i = 0 ; i < numExtsWithoutColorChannels ; i++)
         if (image_fext == extsWithoutColorChannels[i])
             hasColorChannels = false;
@@ -776,6 +779,9 @@ avtImageFileFormat::FreeUpResources(void)
 //     Hank Childs, Fri Mar 18 10:22:20 PST 2005
 //     Make sure to call initialize.  Also add support for image volumes.
 //
+//     Jeremy Meredith, Thu Aug  7 16:12:17 EDT 2008
+//     Use const char* for string literals.
+//
 // ****************************************************************************
 
 void
@@ -801,8 +807,8 @@ avtImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Check to see if we support colors.
     bool supportColors = true;
     int numExtsThatDontSupportColors = 5;
-    char *extsThatDontSupportColors[5] = { "spr", "SPR", "sdt", "SDT",
-                                          "imgvol" };
+    const char *extsThatDontSupportColors[5] = { "spr", "SPR", "sdt", "SDT",
+                                                 "imgvol" };
     for (i = 0 ; i < numExtsThatDontSupportColors ; i++)
         if (image_fext == extsThatDontSupportColors[i])
             supportColors = false;

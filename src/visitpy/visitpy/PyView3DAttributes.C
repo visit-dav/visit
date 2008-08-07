@@ -1002,7 +1002,7 @@ static PyNumberMethods View3DAttributes_as_number = {
 //
 // The doc string for the class.
 //
-static char *View3DAttributes_Purpose = "This class contains the 3d view attributes.";
+static const char *View3DAttributes_Purpose = "This class contains the 3d view attributes.";
 
 //
 // The type description structure

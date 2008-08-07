@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 ExtrudedVolGeneralPluginInfo::GetName() const
 {
     return "ExtrudedVol";
@@ -100,7 +100,7 @@ ExtrudedVolGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ExtrudedVolGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ ExtrudedVolGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ExtrudedVolGeneralPluginInfo::GetID() const
 {
     return "ExtrudedVol_1.0";

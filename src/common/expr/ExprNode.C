@@ -283,6 +283,8 @@ ListExpr::AddListElem(ListElemExpr *e)
     elems->push_back(e);
 }
 
+//    Jeremy Meredith, Thu Aug  7 16:21:24 EDT 2008
+//    Use %ld for longs.
 void
 ListExpr::PrintNode(ostream &o)
 {
@@ -290,7 +292,7 @@ ListExpr::PrintNode(ostream &o)
     for (size_t i=0; i<elems->size(); i++)
     {
         char tmp[256];
-        SNPRINTF(tmp, 256, "Element % 2d: ", i);
+        SNPRINTF(tmp, 256, "Element % 2ld: ", i);
         (*elems)[i]->Print(o,tmp);
     }
 }
@@ -355,6 +357,8 @@ ArgsExpr::AddArg(ArgExpr *e)
     args->push_back(e);
 }
 
+//    Jeremy Meredith, Thu Aug  7 16:21:24 EDT 2008
+//    Use %ld for longs.
 void
 ArgsExpr::PrintNode(ostream &o)
 {
@@ -362,7 +366,7 @@ ArgsExpr::PrintNode(ostream &o)
     for (size_t i=0; i<args->size(); i++)
     {
         char tmp[256];
-        SNPRINTF(tmp, 256, "Arg % 2d: ", i);
+        SNPRINTF(tmp, 256, "Arg % 2ld: ", i);
         (*args)[i]->Print(o, tmp);
     }
 }

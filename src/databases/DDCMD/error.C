@@ -3,6 +3,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "error.h"
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:49:45 EDT 2008
+//    va_arg doesn't support enums; if one is passed in, it's promoted
+//    to an int.  So here, we retrieve an int then cast it to the enum.
+//
 static char message[1024];
 void error_action(char *start, ...)
 {
@@ -26,7 +31,9 @@ void error_action(char *start, ...)
 	fprintf(stderr, "in file %s ", string);
 	line = va_arg(ap, int);
 	fprintf(stderr, "at line %d\n", line);
-	action = va_arg(ap, enum ACTION);
+        int int_action;
+	int_action = va_arg(ap, int);
+        action = (enum ACTION)(int_action);
 	switch (action)
 	{
 	case CONTINUE:

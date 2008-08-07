@@ -697,6 +697,10 @@ avtGTCFileFormat::GetDataShareMatrix( parallelBuffer **array )
 //  Dave Pugmire, Thu Dec 20 16:23:48 EST 2007
 //  Use MPI_Waitsome instead of MPI_Waitall. Process things as they become ready.
 //   
+//    Jeremy Meredith, Thu Aug  7 13:58:44 EDT 2008
+//    MPI_Request does not have a well-specified type by the MPI spec.
+//    I removed its use from within a printf, since it was debugging code.
+//
 // ****************************************************************************
 void
 avtGTCFileFormat::CommunicateData( int dim, int *shareMatrix, parallelBuffer **array,
@@ -718,7 +722,7 @@ avtGTCFileFormat::CommunicateData( int dim, int *shareMatrix, parallelBuffer **a
 	err = MPI_Isend( array[i]->Get(0), sz, MPI_FLOAT, i, rank, VISIT_MPI_COMM, &req );
 	if ( err != MPI_SUCCESS )
 	    EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Isend() failure." );
-	char str[512]; sprintf( str, "%d: sending to %d [%d] R=%x\n", rank, i, sz, req );
+	char str[512]; sprintf( str, "%d: sending to %d [%d]\n", rank, i, sz );
 	debug5 << str;
 	
 	requests.push_back( req );
@@ -744,7 +748,7 @@ avtGTCFileFormat::CommunicateData( int dim, int *shareMatrix, parallelBuffer **a
 	if ( err != MPI_SUCCESS )
 	    EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Irecv() failure." );
 	
-	char str[512]; sprintf( str, "%d: receiving from %d [%d] R=%x\n", rank, i, sz, req );
+	char str[512]; sprintf( str, "%d: receiving from %d [%d]\n", rank, i, sz );
 	debug5 << str;
 	
 	requests.push_back( req );

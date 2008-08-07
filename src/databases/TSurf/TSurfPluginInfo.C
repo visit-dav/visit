@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 TSurfGeneralPluginInfo::GetName() const
 {
     return "TSurf";
@@ -100,7 +100,7 @@ TSurfGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 TSurfGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ TSurfGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 TSurfGeneralPluginInfo::GetID() const
 {
     return "TSurf_1.0";

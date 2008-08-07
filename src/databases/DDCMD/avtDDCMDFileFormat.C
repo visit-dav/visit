@@ -706,6 +706,10 @@ avtDDCMDFileFormat::ReadData()
 //    Hank Childs, Fri Feb 15 16:00:20 PST 2008
 //    Fix memory leak.
 //
+//    Jeremy Meredith, Thu Aug  7 15:48:21 EDT 2008
+//    Assume that object_get won't modify its input char* argument, and
+//    cast our string literals appropriately.
+//
 // ****************************************************************************
 
 void
@@ -756,31 +760,31 @@ avtDDCMDFileFormat::ReadHeader(const char *filename)
     obj = (OBJECT*) malloc(sizeof(OBJECT));
     object_lineparse(header, obj);
 
-    object_get(obj, "lrec", &lRec, INT, 1, "16");
-    object_get(obj, "endian_key", &endianKey, INT, 1, "4");
-    object_get(obj, "nrecord", &nRecord, INT, 1, "1");
-    object_get(obj, "nfiles", &nFiles, INT, 1, "1");
-    object_get(obj, "nfields", &nFields, INT, 1, "1");
-    object_getv(obj, "field_names", (void **)&fieldNames, STRING);
-    object_getv(obj, "field_types", (void **)&fieldTypes, STRING);
+    object_get(obj, (char*)"lrec", &lRec, INT, 1, (char*)"16");
+    object_get(obj, (char*)"endian_key", &endianKey, INT, 1, (char*)"4");
+    object_get(obj, (char*)"nrecord", &nRecord, INT, 1, (char*)"1");
+    object_get(obj, (char*)"nfiles", &nFiles, INT, 1, (char*)"1");
+    object_get(obj, (char*)"nfields", &nFields, INT, 1, (char*)"1");
+    object_getv(obj, (char*)"field_names", (void **)&fieldNames, STRING);
+    object_getv(obj, (char*)"field_types", (void **)&fieldTypes, STRING);
     fieldSizes = (unsigned*) malloc(nFields*sizeof(int));
     for (i = 0; i < nFields; i++)
     {
         fieldSizes[i] = atoi(fieldTypes[i] + 1);
     }
 
-    object_get(obj, "h", &hMatrix, DOUBLE, 9, "1000.0");
-    object_get(obj, "time", &time, DOUBLE, 1, "0.0");
-    object_get(obj, "loop", &loop, INT, 1, "0");
+    object_get(obj, (char*)"h", &hMatrix, DOUBLE, 9, (char*)"1000.0");
+    object_get(obj, (char*)"time", &time, DOUBLE, 1, (char*)"0.0");
+    object_get(obj, (char*)"loop", &loop, INT, 1, (char*)"0");
 
     memcpy(&keyLocal, "1234", 4);
     swap = (keyLocal != endianKey);
 
-    object_get(obj, "nx", &nXFile, INT, 1, "0");
-    object_get(obj, "ny", &nYFile, INT, 1, "0");
-    object_get(obj, "nz", &nZFile, INT, 1, "0");
+    object_get(obj, (char*)"nx", &nXFile, INT, 1, (char*)"0");
+    object_get(obj, (char*)"ny", &nYFile, INT, 1, (char*)"0");
+    object_get(obj, (char*)"nz", &nZFile, INT, 1, (char*)"0");
 
-    nSpecies = object_getv(obj, "species", (void**) &speciesNames, STRING);
+    nSpecies = object_getv(obj, (char*)"species",(void**)&speciesNames,STRING);
 
     //
     // Determine the variables to plot.

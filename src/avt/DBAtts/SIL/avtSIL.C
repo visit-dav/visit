@@ -543,6 +543,9 @@ avtSIL::AddArray(avtSILArray_p  a)
 //    Dave Bremer, Tue Apr  1 15:13:05 PDT 2008
 //    Added code to add an entries to setTable and collTable
 //
+//    Jeremy Meredith, Thu Aug  7 14:26:47 EDT 2008
+//    Removed unused variable.
+//
 // ****************************************************************************
 
 void
@@ -551,7 +554,6 @@ avtSIL::AddMatrix(avtSILMatrix_p m)
     int  i;
 
     int coll_count = GetNumCollections();
-    int matrix_index = matrices.size();
 
     m->SetSIL(this);
     m->SetStartSet(GetNumSets());
@@ -716,6 +718,12 @@ avtSIL::GetSILSet(int index, bool &isTemporary) const
 //  Modifications:
 //    Dave Bremer, Tue Apr  1 15:13:05 PDT 2008
 //    Rewrote to use FindSet 
+//
+//    Jeremy Meredith, Thu Aug  7 14:27:16 EDT 2008
+//    Throw an exception if we get an unhandled SIL.  Since this path
+//    currently returned no value from a non-void function, obviously
+//    an Exception should be at least as safe as that.
+//
 // ****************************************************************************
 
 avtSILSet_p
@@ -754,6 +762,8 @@ avtSIL::GetSILSetInternal(int index, bool &isTemporary, bool returnNullIfTempora
             rv = matrices[iLocalIndex]->GetSILSet(iLocalSubIndex);
             //AddMapsToTemporarySet(rv, index);
             return rv;
+        default:
+            EXCEPTION1(ImproperUseException, "Unexpected SIL set type");
     }
 }
 
@@ -772,6 +782,11 @@ avtSIL::GetSILSetInternal(int index, bool &isTemporary, bool returnNullIfTempora
 //  Modifications:
 //    Dave Bremer, Tue Apr  1 15:13:05 PDT 2008
 //    Rewrote to use FindSet 
+//
+//    Jeremy Meredith, Thu Aug  7 14:27:16 EDT 2008
+//    Throw an exception if we get an unhandled SIL.  Since this path
+//    currently returned no value from a non-void function, obviously
+//    an Exception should be at least as safe as that.
 //
 // ****************************************************************************
 
@@ -797,6 +812,8 @@ avtSIL::GetSILSetID(int index) const
             return arrays[iLocalIndex]->GetSILSetID(iLocalSubIndex);
         case MATRIX:
             return matrices[iLocalIndex]->GetSILSetID(iLocalSubIndex);
+        default:
+            EXCEPTION1(ImproperUseException, "Unexpected SIL set type");
     }
 }
 
@@ -814,6 +831,11 @@ avtSIL::GetSILSetID(int index) const
 //  Modifications:
 //    Dave Bremer, Tue Apr  1 15:13:05 PDT 2008
 //    Rewrote to use FindSet 
+//
+//    Jeremy Meredith, Thu Aug  7 14:27:16 EDT 2008
+//    Throw an exception if we get an unhandled SIL.  Since this path
+//    currently returned no value from a non-void function, obviously
+//    an Exception should be at least as safe as that.
 //
 // ****************************************************************************
 
@@ -845,6 +867,8 @@ avtSIL::SILSetHasMapsOut(int index) const
             return false;
         case MATRIX:
             return false;
+        default:
+            EXCEPTION1(ImproperUseException, "Unexpected SIL set type");
     }
 }
 
@@ -910,6 +934,12 @@ avtSIL::AddMapsToTemporarySet(avtSILSet_p pSet, int setIndex) const
 //
 //    Dave Bremer, Tue Apr  1 15:13:05 PDT 2008
 //    Rewrote to use FindColl
+//
+//    Jeremy Meredith, Thu Aug  7 14:27:16 EDT 2008
+//    Throw an exception if we get an unhandled SIL.  Since this path
+//    currently returned no value from a non-void function, obviously
+//    an Exception should be at least as safe as that.
+//
 // ****************************************************************************
 
 avtSILCollection_p
@@ -933,6 +963,8 @@ avtSIL::GetSILCollection(int index) const
             return arrays[iLocalIndex]->GetSILCollection();
         case MATRIX:
             return matrices[iLocalIndex]->GetSILCollection(iLocalSubIndex);
+        default:
+            EXCEPTION1(ImproperUseException, "Unexpected SIL set type");
     }
 }
 
@@ -960,6 +992,10 @@ avtSIL::GetSILCollection(int index) const
 //
 //    Dave Bremer, Tue Apr  1 15:13:05 PDT 2008
 //    Rewrote to iterate through setTable.
+//
+//    Jeremy Meredith, Thu Aug  7 14:29:02 EDT 2008
+//    Added a default case to avoid warnings.
+//
 // ****************************************************************************
 
 int
@@ -1008,6 +1044,8 @@ avtSIL::GetSetIndex(const std::string &name, int collID) const
                 //Skip this because apparently this method will never be called
                 //with the name of a set contained in a matrix.
                 break;
+            default:
+                break;
         }
     }
     EXCEPTION1(InvalidVariableException, name);
@@ -1039,6 +1077,10 @@ avtSIL::GetSetIndex(const std::string &name, int collID) const
 //
 //    Dave Bremer, Tue Apr  1 15:13:05 PDT 2008
 //    Rewrote to iterate through collTable.
+//
+//    Jeremy Meredith, Thu Aug  7 14:29:02 EDT 2008
+//    Added a default case to avoid warnings.
+//
 // ****************************************************************************
 
 int
@@ -1065,6 +1107,8 @@ avtSIL::GetCollectionIndex(std::string name, int superset) const
             case MATRIX:
                 //Skip this because apparently this method will never be called
                 //with the name of a collection contained in a matrix.
+                break;
+            default:
                 break;
         }
     }
@@ -1093,6 +1137,9 @@ avtSIL::GetCollectionIndex(std::string name, int superset) const
 //
 //    Kathleen Bonnell, Tue Jun  3 08:13:27 PDT 2008
 //    Remove unreferenced variable.
+//
+//    Jeremy Meredith, Thu Aug  7 14:29:02 EDT 2008
+//    Added a default case to avoid warnings.
 //
 // ****************************************************************************
 
@@ -1126,6 +1173,9 @@ avtSIL::GetCollectionSource(int index,
             outMatrix = matrices[iLocalIndex];
             outIndex  = iLocalSubIndex;
             return MATRIX;
+        default:
+            // Fall out to exception
+            break;
     }
     EXCEPTION2(BadIndexException, index, GetNumCollections());
 }

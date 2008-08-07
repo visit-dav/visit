@@ -99,6 +99,9 @@ class vtkIdList;
 //    Took 'Cell' out of callback name, renamed 'SeedCellId' to 'SeedId'. 
 //    Added 'SeedIdIsForCell'.  Added 'FindNodesCorrespondingToOriginal'.
 //
+//    Jeremy Meredith, Thu Aug  7 14:21:23 EDT 2008
+//    Adjacency type string should have been const char*.
+//
 //*****************************************************************************
 
 
@@ -151,7 +154,7 @@ public:
        { this->SetAdjacencyType(VTK_FACE_ADJACENCY); };
   void SetAdjacencyTypeToNode()
        { this->SetAdjacencyType(VTK_NODE_ADJACENCY); };
-  char *GetAdjacencyTypeAsString();
+  const char *GetAdjacencyTypeAsString();
 
   bool Initialize(const int = VTK_LARGE_INTEGER);
 
@@ -197,7 +200,7 @@ private:
 
 };
 
-inline char *vtkOnionPeelFilter::GetAdjacencyTypeAsString(void)
+inline const char *vtkOnionPeelFilter::GetAdjacencyTypeAsString(void)
 {
   if ( this->AdjacencyType == VTK_FACE_ADJACENCY )
     {

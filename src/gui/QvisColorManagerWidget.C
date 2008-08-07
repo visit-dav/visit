@@ -218,6 +218,9 @@ QvisColorManagerWidget::setEnabled(bool val)
 //   Brad Whitlock, Wed Apr  9 10:36:22 PDT 2008
 //   Clean up string coding.
 //
+//   Jeremy Meredith, Thu Aug  7 15:40:58 EDT 2008
+//   Use %ld format for longs.
+//
 // ****************************************************************************
 
 void
@@ -229,14 +232,14 @@ QvisColorManagerWidget::addEntry(const QString &name, const QColor &color,
     ColorEntry *entry = new ColorEntry;
 
     // Create the name label.
-    temp.sprintf("entry%d.nameLabel", colorEntries.size());
+    temp.sprintf("entry%ld.nameLabel", colorEntries.size());
     QString tempName(" ");
     tempName += name;
     entry->nameLabel = new QLabel(tempName, grid, temp.ascii());
     entry->nameLabel->setEnabled(isEnabled());
 
     // Create the color box.
-    temp.sprintf("entry%d.colorBox", colorEntries.size());
+    temp.sprintf("entry%ld.colorBox", colorEntries.size());
     entry->colorBox = new QvisColorButton(grid, temp.ascii(), userData);
     entry->colorBox->setButtonColor(color);
     entry->colorBox->setEnabled(isEnabled());
@@ -246,7 +249,7 @@ QvisColorManagerWidget::addEntry(const QString &name, const QColor &color,
             SLOT(selectedColor(const QColor &, const void *)));
 
     // Create the opacity slider.
-    temp.sprintf("entry%d.opacitySlider", colorEntries.size());
+    temp.sprintf("entry%ld.opacitySlider", colorEntries.size());
     entry->opacitySlider = new QvisOpacitySlider(0, 255, 25, opacity,
         grid, temp.ascii(), userData);
     entry->opacitySlider->setTickInterval(64);

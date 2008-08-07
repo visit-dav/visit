@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 NASTRANGeneralPluginInfo::GetName() const
 {
     return "NASTRAN";
@@ -100,7 +100,7 @@ NASTRANGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 NASTRANGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ NASTRANGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 NASTRANGeneralPluginInfo::GetID() const
 {
     return "NASTRAN_1.0";

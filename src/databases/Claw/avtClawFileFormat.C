@@ -315,6 +315,9 @@ SortFilenames(vector<string> &fnames, string cycleRegex, string rootDir)
 //    Mark C. Miller, Tue Sep 18 11:08:52 PDT 2007
 //    Added support for 'ndims' header info
 //
+//    Jeremy Meredith, Thu Aug  7 15:54:10 EDT 2008
+//    Use %ld format for longs.
+//
 // ****************************************************************************
 static void 
 ReadTimeStepHeader(string rootDir, string fileName, TimeHeader_t *hdr)
@@ -326,7 +329,7 @@ ReadTimeStepHeader(string rootDir, string fileName, TimeHeader_t *hdr)
     if (nread >= sizeof(buf)-1)
     {
         char msg[256];
-	SNPRINTF(msg, sizeof(msg), "Buffer size of %d insufficient "
+	SNPRINTF(msg, sizeof(msg), "Buffer size of %ld insufficient "
 	    "to read time header", sizeof(buf));
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -659,6 +662,10 @@ avtClawFileFormat::avtClawFileFormat(const char *filename)
 //  Programmer: Mark C. Miller 
 //  Creation:   Wed Sep 12 09:20:22 PDT 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:54:10 EDT 2008
+//    Use %ld format for longs.
+//
 // ****************************************************************************
 void
 avtClawFileFormat::GetFilenames()
@@ -683,8 +690,8 @@ avtClawFileFormat::GetFilenames()
     if (gridFilenames.size() != timeFilenames.size())
     {
         char msg[256];
-	SNPRINTF(msg, sizeof(msg), "Number of time filenames, %d, doesn't agree "
-	    " with number of grid filenames, %d",
+	SNPRINTF(msg, sizeof(msg), "Number of time filenames, %ld, doesn't agree "
+	    " with number of grid filenames, %ld",
 	    timeFilenames.size(), gridFilenames.size());
         EXCEPTION1(InvalidFilesException, msg);
     }
@@ -763,6 +770,10 @@ avtClawFileFormat::FreeUpResources(void)
 //  Modifications:
 //    Mark C. Miller, Tue Sep 18 11:08:52 PDT 2007
 //    Changed naux to ndims 
+//
+//    Jeremy Meredith, Thu Aug  7 15:54:10 EDT 2008
+//    Use %ld format for longs.
+//
 // ****************************************************************************
 
 void
@@ -791,7 +802,7 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     {
         char msg[256];
         SNPRINTF(msg, sizeof(msg), "Time header's ngrid value, %d, doesn't agree "
-            "with number of headers actuall read, %d", timeHdr.ngrids, gridHdrs.size());
+            "with number of headers actuall read, %ld", timeHdr.ngrids, gridHdrs.size());
         EXCEPTION1(InvalidFilesException, msg);
     }
 

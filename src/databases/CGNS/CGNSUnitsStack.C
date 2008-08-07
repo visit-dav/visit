@@ -70,6 +70,8 @@ static const char *AngleUnitsNames[] = {
 // Creation:   Thu Sep 1 17:11:13 PST 2005
 //
 // Modifications:
+//    Jeremy Meredith, Thu Aug  7 14:13:01 EDT 2008
+//    Added default case for switch.
 //   
 // ****************************************************************************
 
@@ -204,6 +206,8 @@ public:
                     break;
                 case Character:
                     POPULATE_UNITS(char, 0, 1, CHAR_ABS, "%s^%d")
+                    break;
+                default:
                     break;
                 }
 

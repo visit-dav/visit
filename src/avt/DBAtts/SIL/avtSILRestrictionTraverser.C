@@ -150,6 +150,10 @@ avtSILRestrictionTraverser::Equal(avtSILRestriction_p silr2)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 28, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 14:30:09 EDT 2008
+//    Removed unusued vars.
+//
 // ****************************************************************************
 
 int
@@ -164,8 +168,6 @@ avtSILRestrictionTraverser::GetEnumerationCount()
     //
     // Identify the collection that has role of an enumeration
     //
-    const vector<unsigned char> &useSet = silr->useSet;
-    bool  foundOneOff = false;
     for (i = 0 ; i < mapsOut.size() ; i++)
     {
         avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);

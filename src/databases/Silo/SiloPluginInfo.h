@@ -67,9 +67,9 @@ class DBOptionsAttributes;
 class SiloGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
 {
   public:
-    virtual char *GetName() const;
-    virtual char *GetVersion() const;
-    virtual char *GetID() const;
+    virtual const char *GetName() const;
+    virtual const char *GetVersion() const;
+    virtual const char *GetID() const;
     virtual bool  EnabledByDefault() const;
     virtual bool  HasWriter() const;
     virtual std::vector<std::string>  GetDfltExtsFromGen() const;

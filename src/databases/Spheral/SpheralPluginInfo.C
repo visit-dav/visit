@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 SpheralGeneralPluginInfo::GetName() const
 {
     return "Spheral";
@@ -100,7 +100,7 @@ SpheralGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SpheralGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ SpheralGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SpheralGeneralPluginInfo::GetID() const
 {
     return "Spheral_1.0";

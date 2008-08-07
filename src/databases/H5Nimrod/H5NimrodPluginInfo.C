@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 H5NimrodGeneralPluginInfo::GetName() const
 {
     return "H5Nimrod";
@@ -100,7 +100,7 @@ H5NimrodGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 H5NimrodGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ H5NimrodGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 H5NimrodGeneralPluginInfo::GetID() const
 {
     return "H5Nimrod_1.0";

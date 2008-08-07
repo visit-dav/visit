@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 RectGeneralPluginInfo::GetName() const
 {
     return "Rect";
@@ -100,7 +100,7 @@ RectGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 RectGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ RectGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 RectGeneralPluginInfo::GetID() const
 {
     return "Rect_1.0";

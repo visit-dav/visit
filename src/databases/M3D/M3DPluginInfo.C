@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 M3DGeneralPluginInfo::GetName() const
 {
     return "M3D";
@@ -100,7 +100,7 @@ M3DGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 M3DGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ M3DGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 M3DGeneralPluginInfo::GetID() const
 {
     return "M3D_1.0";

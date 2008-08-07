@@ -45,17 +45,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void VISITPY_API          PyAxisAttributes_StartUp(AxisAttributes *subj, void *data);
-void VISITPY_API          PyAxisAttributes_CloseDown();
+void VISITPY_API           PyAxisAttributes_StartUp(AxisAttributes *subj, void *data);
+void VISITPY_API           PyAxisAttributes_CloseDown();
 VISITPY_API PyMethodDef *   PyAxisAttributes_GetMethodTable(int *nMethods);
-bool VISITPY_API          PyAxisAttributes_Check(PyObject *obj);
+bool VISITPY_API           PyAxisAttributes_Check(PyObject *obj);
 VISITPY_API AxisAttributes *  PyAxisAttributes_FromPyObject(PyObject *obj);
 VISITPY_API PyObject *      PyAxisAttributes_New();
 VISITPY_API PyObject *      PyAxisAttributes_Wrap(const AxisAttributes *attr);
-void VISITPY_API          PyAxisAttributes_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API          PyAxisAttributes_SetDefaults(const AxisAttributes *atts);
-std::string VISITPY_API   PyAxisAttributes_GetLogString();
-std::string VISITPY_API   PyAxisAttributes_ToString(const AxisAttributes *, const char *);
+void VISITPY_API           PyAxisAttributes_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API           PyAxisAttributes_SetDefaults(const AxisAttributes *atts);
+std::string VISITPY_API    PyAxisAttributes_GetLogString();
+std::string VISITPY_API    PyAxisAttributes_ToString(const AxisAttributes *, const char *);
 
 #endif
 

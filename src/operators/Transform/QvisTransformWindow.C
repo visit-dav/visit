@@ -572,6 +572,9 @@ QvisTransformWindow::UpdateWindow(bool doAll)
 //    Brad Whitlock, Thu Apr 24 15:53:37 PDT 2008
 //    Added tr()'s
 //
+//    Jeremy Meredith, Thu Aug  7 15:36:20 EDT 2008
+//    Corrected an if(a=b) to if(a==b).
+//
 // ****************************************************************************
 
 void
@@ -832,7 +835,7 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
     }
 
     // Do linear transform matrix elements
-    if (which_widget = 100 || doAll)
+    if (which_widget == 100 || doAll)
     {
         atts->SetM00(m00->displayText().simplifyWhiteSpace().toFloat());
         atts->SetM01(m01->displayText().simplifyWhiteSpace().toFloat());

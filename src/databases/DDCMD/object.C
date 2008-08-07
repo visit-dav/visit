@@ -20,14 +20,14 @@
 #define strcasecmp stricmp
 #endif
 
-static char *filenames[] = { "object.data", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+static const char *filenames[] = { "object.data", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 static int nfiles = 1;
 static int nobject = 0, mobject = 0;
 static int niobject = 0, miobject = 0;
 static OBJECT *object = NULL;
 static OBJECT **object_list = NULL;
 int object_lineparse(char *, OBJECT *);
-OBJECTFILE object_fopen(char *filename, char *mode);
+OBJECTFILE object_fopen(const char *filename, const char *mode);
 void object_fclose(OBJECTFILE file);
 void object_set(char *get, ... )
 {
@@ -216,10 +216,13 @@ void object_compilevalue(OBJECT*object)
 	{ FIRST, LAST };
 	static int lbuff = 0;
 	static char *buffer = NULL;
-	char *keyword, *op, *value, *kvalue, *ptr;
+	char *keyword, *value, *kvalue, *ptr;
+        const char *op;
 	struct
 	{
-		char *keyword, *op, *value;
+            char *keyword;
+            const char *op;
+            char *value;
 	} list[MAXKEYWORDS];
 	int nlist;
 	char *string, *opptr;
@@ -293,7 +296,8 @@ void object_compilevalue(OBJECT*object)
 FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
 {
 	static int lbuff = 0, msize = 0;
-	static char *buffer = NULL, *line = NULL, *tail, *sep;
+	static char *buffer = NULL, *line = NULL, *tail;
+        static const char *sep;
 	static union
 	{
 		double *d;
@@ -404,7 +408,7 @@ FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
 	nv = size = 0;
 	if (vptr != NULL) if (!strncmp(vptr, "$B", 2))
 		{
-			void *ptr;
+			unsigned int ptr;
 			sscanf(vptr + 2, "%d-%x", &size, &ptr);
 			vptr = NULL;
 			nv = 1;
@@ -559,7 +563,7 @@ void object_compileSectionedFile(char *filename, int section)
 	for (i = 0; i < nobject; i++) object_compilevalue(object + i);
 }
 
-void object_compilefilesubset(char *filename, int first, int last)
+void object_compilefilesubset(const char *filename, int first, int last)
 {
 	OBJECT obj;
 	char *line;
@@ -604,7 +608,7 @@ void object_compilefilesubset(char *filename, int first, int last)
 	}
 	for (i = 0; i < nobject; i++) object_compilevalue(object + i);
 }
-void object_compilefile(char *filename) { object_compilefilesubset(filename,0,0x7fffffff); }
+void object_compilefile(const char *filename) { object_compilefilesubset(filename,0,0x7fffffff); }
 
 void object_replacekeyword(OBJECT *object,char *keyword,char* keywordvalue)
 {

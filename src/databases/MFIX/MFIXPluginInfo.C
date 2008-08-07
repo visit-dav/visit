@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 MFIXGeneralPluginInfo::GetName() const
 {
     return "MFIX";
@@ -100,7 +100,7 @@ MFIXGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 MFIXGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ MFIXGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 MFIXGeneralPluginInfo::GetID() const
 {
     return "MFIX_1.0";

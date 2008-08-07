@@ -53,6 +53,8 @@
 // Creation:   Fri Mar 25 16:41:09 PST 2005
 //
 // Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:57:37 EDT 2008
+//    Use %ld format for longs.
 //   
 // ****************************************************************************
 
@@ -296,7 +298,7 @@ dbfMallocEx(const char *f, const int line, const char *src, size_t s)
     if(dbfLog)
     {
         dbfIndent(DBF_MEMLOG);
-        fprintf(DBF_MEMLOG, "dbfMalloc: %s:%d: %s: size=%d, ptr=%p\n",
+        fprintf(DBF_MEMLOG, "dbfMalloc: %s:%d: %s: size=%ld, ptr=%p\n",
             f, line, src, s, retval);
     }
 

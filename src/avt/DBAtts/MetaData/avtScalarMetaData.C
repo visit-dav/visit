@@ -970,8 +970,14 @@ avtScalarMetaData::BuildEnumNChooseRMap(int n, int maxr, std::vector<std::vector
 //  Function: Bi-nomial coefficient (n-choose-r)
 //
 //  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 14:24:38 EDT 2008
+//    Made it member function so that we got the static namespace benefits
+//    without the warnings that static functions in headers tend to generate.
+//
 // ****************************************************************************
-double NChooseR(int n, int r)
+double avtScalarMetaData::NChooseR(int n, int r)
 {
     if (n == 0)
     {
@@ -1001,10 +1007,16 @@ double NChooseR(int n, int r)
 //  ids (digits representing enum set membership)
 //
 //  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 14:24:38 EDT 2008
+//    Made it member function so that we got the static namespace benefits
+//    without the warnings that static functions in headers tend to generate.
+//
 // ****************************************************************************
 
 void
-ComboValFromDigits(const std::vector<std::vector<int> > &ptMap,
+avtScalarMetaData::ComboValFromDigits(const std::vector<std::vector<int> > &ptMap,
     const std::list<int> &digits, double *id)
 {
     int row, col;
@@ -1025,10 +1037,16 @@ ComboValFromDigits(const std::vector<std::vector<int> > &ptMap,
 //  set membership) to single numerical value.
 //
 //  Programmer: Mark C. Miller, Thu Mar 27 14:16:45 PDT 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 14:24:38 EDT 2008
+//    Made it member function so that we got the static namespace benefits
+//    without the warnings that static functions in headers tend to generate.
+//
 // ****************************************************************************
 
 void
-ComboDigitsFromVal(double id, int n, int maxr,
+avtScalarMetaData::ComboDigitsFromVal(double id, int n, int maxr,
     const std::vector<std::vector<int> > &ptMap, std::list<int> &digits)
 {
     int row, col, grp;

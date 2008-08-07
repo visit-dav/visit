@@ -401,6 +401,9 @@ avtSiloDumpFilter::PreExecute()
 //    Hank Childs, Fri Aug 27 15:25:22 PDT 2004
 //    Rename ghost data array.
 //
+//    Jeremy Meredith, Thu Aug  7 14:30:46 EDT 2008
+//    Made string literal const char*, not char*.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -604,7 +607,7 @@ avtSiloDumpFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
                    out_shapetype.size(), NULL);
 
     // Write out the face list
-    char *flname = NULL;
+    const char *flname = NULL;
     if (ndims == 3)
     {
         DBfacelist *fl;

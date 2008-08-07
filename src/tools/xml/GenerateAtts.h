@@ -191,6 +191,9 @@ using std::vector;
 //    Added generatorName and made it use HasCode,PrintCode instead of 
 //    accessing the code file directly.
 //
+//    Jeremy Meredith, Thu Aug  7 14:34:01 EDT 2008
+//    Reorder constructor initializers to be the correct order.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -484,7 +487,7 @@ class AttsGeneratorInt : public virtual Int , public virtual AttsGeneratorField
 {
   public:
     AttsGeneratorInt(const QString &n, const QString &l)
-        : Int(n,l), AttsGeneratorField("int",n,l), Field("int",n,l) { }
+        : Field("int",n,l), Int(n,l), AttsGeneratorField("int",n,l) { }
     virtual QString GetAttributeGroupID()
     {
         return "i";
@@ -506,7 +509,7 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual AttsGener
 {
   public:
     AttsGeneratorIntArray(const QString &s, const QString &n, const QString &l)
-        : IntArray(s,n,l), AttsGeneratorField("intArray",n,l), Field("intArray",n,l) { }
+        : Field("intArray",n,l), IntArray(s,n,l), AttsGeneratorField("intArray",n,l) { }
     virtual bool CanHaveConst() { return true; }
     virtual QString GetAttributeGroupID()
     {
@@ -531,7 +534,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGen
 {
   public:
     AttsGeneratorIntVector(const QString &n, const QString &l)
-        : IntVector(n,l), AttsGeneratorField("intVector",n,l), Field("intVector",n,l) { }
+        : Field("intVector",n,l), IntVector(n,l), AttsGeneratorField("intVector",n,l) { }
     virtual bool CanHaveConst() { return true; }
     virtual QString GetAttributeGroupID()
     {
@@ -556,7 +559,7 @@ class AttsGeneratorBool : public virtual Bool , public virtual AttsGeneratorFiel
 {
   public:
     AttsGeneratorBool(const QString &n, const QString &l)
-        : Bool(n,l), AttsGeneratorField("bool",n,l), Field("bool",n,l) { }
+        : Field("bool",n,l), Bool(n,l), AttsGeneratorField("bool",n,l) { }
     virtual QString GetAttributeGroupID()
     {
         return "b";
@@ -579,7 +582,7 @@ class AttsGeneratorFloat : public virtual Float , public virtual AttsGeneratorFi
 {
   public:
     AttsGeneratorFloat(const QString &n, const QString &l)
-        : Float(n,l), AttsGeneratorField("float",n,l), Field("float",n,l) { }
+        : Field("float",n,l), Float(n,l), AttsGeneratorField("float",n,l) { }
     virtual QString GetAttributeGroupID()
     {
         return "f";
@@ -602,7 +605,7 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual AttsG
 {
   public:
     AttsGeneratorFloatArray(const QString &s, const QString &n, const QString &l)
-        : FloatArray(s,n,l), AttsGeneratorField("floatArray",n,l), Field("floatArray",n,l) { }
+        : Field("floatArray",n,l), FloatArray(s,n,l), AttsGeneratorField("floatArray",n,l) { }
     virtual bool CanHaveConst() { return true; }
     virtual QString GetAttributeGroupID()
     {
@@ -627,7 +630,7 @@ class AttsGeneratorDouble : public virtual Double , public virtual AttsGenerator
 {
   public:
     AttsGeneratorDouble(const QString &n, const QString &l)
-        : Double(n,l), AttsGeneratorField("double",n,l), Field("double",n,l) { }
+        : Field("double",n,l), Double(n,l), AttsGeneratorField("double",n,l) { }
     virtual QString GetAttributeGroupID()
     {
         return "d";
@@ -650,7 +653,7 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Att
 {
   public:
     AttsGeneratorDoubleArray(const QString &s, const QString &n, const QString &l)
-        : DoubleArray(s,n,l), AttsGeneratorField("doubleArray",n,l), Field("doubleArray",n,l) { }
+        : Field("doubleArray",n,l), DoubleArray(s,n,l), AttsGeneratorField("doubleArray",n,l) { }
     virtual bool CanHaveConst() { return true; }
     virtual QString GetAttributeGroupID()
     {
@@ -675,7 +678,7 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual A
 {
   public:
     AttsGeneratorDoubleVector(const QString &n, const QString &l)
-        : DoubleVector(n,l), AttsGeneratorField("doubleVector",n,l), Field("doubleVector",n,l) { }
+        : Field("doubleVector",n,l), DoubleVector(n,l), AttsGeneratorField("doubleVector",n,l) { }
     virtual bool CanHaveConst() { return true; }
     virtual QString GetAttributeGroupID()
     {
@@ -700,7 +703,7 @@ class AttsGeneratorUChar : public virtual UChar , public virtual AttsGeneratorFi
 {
   public:
     AttsGeneratorUChar(const QString &n, const QString &l)
-        : UChar(n,l), AttsGeneratorField("uchar",n,l), Field("uchar",n,l) { }
+        : Field("uchar",n,l), UChar(n,l), AttsGeneratorField("uchar",n,l) { }
     virtual QString GetAttributeGroupID()
     {
         return "u";
@@ -723,7 +726,7 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual AttsG
 {
   public:
     AttsGeneratorUCharArray(const QString &s, const QString &n, const QString &l)
-        : UCharArray(s,n,l), AttsGeneratorField("ucharArray",n,l), Field("ucharArray",n,l) { }
+        : Field("ucharArray",n,l), UCharArray(s,n,l), AttsGeneratorField("ucharArray",n,l) { }
     virtual bool CanHaveConst() { return true; }
     virtual QString GetAttributeGroupID()
     {
@@ -748,7 +751,7 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Att
 {
   public:
     AttsGeneratorUCharVector(const QString &n, const QString &l)
-        : UCharVector(n,l), AttsGeneratorField("ucharVector",n,l), Field("ucharVector",n,l) { }
+        : Field("ucharVector",n,l), UCharVector(n,l), AttsGeneratorField("ucharVector",n,l) { }
     virtual bool CanHaveConst() { return true; }
     virtual QString GetAttributeGroupID()
     {
@@ -773,7 +776,7 @@ class AttsGeneratorString : public virtual String , public virtual AttsGenerator
 {
   public:
     AttsGeneratorString(const QString &n, const QString &l)
-        : String(n,l), AttsGeneratorField("string",n,l), Field("string",n,l) { }
+        : Field("string",n,l), String(n,l), AttsGeneratorField("string",n,l) { }
     virtual bool CanHaveConst() { return true; }
     virtual void AddSystemIncludes(UniqueStringList &sl) 
     { 
@@ -801,7 +804,7 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual A
 {
   public:
     AttsGeneratorStringVector(const QString &n, const QString &l)
-        : StringVector(n,l), AttsGeneratorField("stringVector",n,l), Field("stringVector",n,l) { }
+        : Field("stringVector",n,l), StringVector(n,l), AttsGeneratorField("stringVector",n,l) { }
     virtual bool CanHaveConst() { return true; }
     virtual void AddSystemIncludes(UniqueStringList &sl) 
     { 
@@ -830,7 +833,7 @@ class AttsGeneratorColorTable : public virtual ColorTable , public virtual AttsG
 {
   public:
     AttsGeneratorColorTable(const QString &n, const QString &l)
-        : ColorTable(n,l), AttsGeneratorField("colortable",n,l), Field("colortable",n,l) { }
+        : Field("colortable",n,l), ColorTable(n,l), AttsGeneratorField("colortable",n,l) { }
     virtual bool CanHaveConst() { return true; }
     virtual void AddSystemIncludes(UniqueStringList &sl) 
     { 
@@ -868,7 +871,7 @@ class AttsGeneratorColor : public virtual Color , public virtual AttsGeneratorFi
 {
   public:
     AttsGeneratorColor(const QString &n, const QString &l)
-        : Color(n,l), AttsGeneratorField("color",n,l), Field("color",n,l) { }
+        : Field("color",n,l), Color(n,l), AttsGeneratorField("color",n,l) { }
     virtual bool CanHaveConst() { return true; }
     virtual void AddAttributeIncludes(UniqueStringList &sl) const
     {
@@ -915,7 +918,7 @@ class AttsGeneratorLineStyle : public virtual LineStyle , public virtual AttsGen
 {
   public:
     AttsGeneratorLineStyle(const QString &n, const QString &l)
-        : LineStyle(n,l), AttsGeneratorField("linestyle",n,l), Field("linestyle",n,l) { }
+        : Field("linestyle",n,l), LineStyle(n,l), AttsGeneratorField("linestyle",n,l) { }
     virtual QString GetAttributeGroupID()
     {
         return "i";
@@ -938,7 +941,7 @@ class AttsGeneratorLineWidth : public virtual LineWidth , public virtual AttsGen
 {
   public:
     AttsGeneratorLineWidth(const QString &n, const QString &l)
-        : LineWidth(n,l), AttsGeneratorField("linewidth",n,l), Field("linewidth",n,l) { }
+        : Field("linewidth",n,l), LineWidth(n,l), AttsGeneratorField("linewidth",n,l) { }
     virtual QString GetAttributeGroupID()
     {
         return "i";
@@ -961,7 +964,7 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual AttsGenerat
 {
   public:
     AttsGeneratorOpacity(const QString &n, const QString &l)
-        : Opacity(n,l), AttsGeneratorField("opacity",n,l), Field("opacity",n,l) { }
+        : Field("opacity",n,l), Opacity(n,l), AttsGeneratorField("opacity",n,l) { }
     virtual QString GetAttributeGroupID()
     {
         return "d";
@@ -984,8 +987,9 @@ class AttsGeneratorVariableName : public virtual VariableName , public virtual A
 {
   public:
     AttsGeneratorVariableName(const QString &n, const QString &l)
-        : VariableName(n,l), AttsGeneratorField("variablename",n,l),
-          Field("variablename",n,l) { }
+        : Field("variablename",n,l), VariableName(n,l),
+          AttsGeneratorField("variablename",n,l)
+           { }
     virtual bool CanHaveConst() { return true; }
     virtual void AddSystemIncludes(UniqueStringList &sl) 
     { 
@@ -1023,7 +1027,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual AttsGeneratorField
 {
   public:
     AttsGeneratorAtt(const QString &t, const QString &n, const QString &l)
-        : Att(t,n,l), AttsGeneratorField("att",n,l), Field("att",n,l) { }
+        : Field("att",n,l), Att(t,n,l), AttsGeneratorField("att",n,l) { }
     virtual bool CanHaveConst() { return true; }
     virtual void AddAttributeIncludes(UniqueStringList &sl) const
     {
@@ -1054,7 +1058,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
 {
   public:
     AttsGeneratorAttVector(const QString &t, const QString &n, const QString &l)
-        : AttVector(t,n,l), AttsGeneratorField("attVector",n,l), Field("attVector",n,l) { }
+        : Field("attVector",n,l), AttVector(t,n,l), AttsGeneratorField("attVector",n,l) { }
     virtual bool CanHaveConst() { return true; }
     virtual void WriteHeaderForwardDeclarations(ostream &h)
     {
@@ -1314,7 +1318,7 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
 {
   public:
     AttsGeneratorEnum(const QString &t, const QString &n, const QString &l)
-        : Enum(t,n,l), AttsGeneratorField("enum",n,l), Field("enum",n,l) { }
+        : Field("enum",n,l), Enum(t,n,l), AttsGeneratorField("enum",n,l) { }
     virtual QString GetAttributeGroupID()
     {
         return "i";
@@ -1363,7 +1367,7 @@ class AttsGeneratorScaleMode : public virtual ScaleMode , public virtual AttsGen
 {
   public:
     AttsGeneratorScaleMode(const QString &n, const QString &l)
-        : ScaleMode(n,l), AttsGeneratorField("scalemode",n,l), Field("scalemode",n,l) { }
+        : Field("scalemode",n,l), ScaleMode(n,l), AttsGeneratorField("scalemode",n,l) { }
     virtual QString GetAttributeGroupID()
     {
         return "i";
@@ -1408,11 +1412,11 @@ class AttsGeneratorScaleMode : public virtual ScaleMode , public virtual AttsGen
 //
 // ----------------------------------- avtCentering -----------------------------------
 //
-class AttsGeneratoravtCentering : public virtual AttsGeneratorField, public virtual avtCenteringField
+class AttsGeneratoravtCentering : public virtual avtCenteringField, public virtual AttsGeneratorField
 {
   public:
     AttsGeneratoravtCentering(const QString &n, const QString &l)
-        : avtCenteringField(n,l), AttsGeneratorField("avtCentering",n,l), Field("avtCentering",n,l)
+        : Field("avtCentering",n,l), avtCenteringField(n,l), AttsGeneratorField("avtCentering",n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -1420,11 +1424,11 @@ class AttsGeneratoravtCentering : public virtual AttsGeneratorField, public virt
 //
 // ----------------------------------- avtGhostType -----------------------------------
 //
-class AttsGeneratoravtGhostType : public virtual AttsGeneratorField, public virtual avtGhostTypeField
+class AttsGeneratoravtGhostType : public virtual avtGhostTypeField, public virtual AttsGeneratorField
 {
   public:
     AttsGeneratoravtGhostType(const QString &n, const QString &l)
-        : avtGhostTypeField(n,l), AttsGeneratorField("avtGhostType",n,l), Field("avtGhostType",n,l)
+        : Field("avtGhostType",n,l), avtGhostTypeField(n,l), AttsGeneratorField("avtGhostType",n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -1432,11 +1436,11 @@ class AttsGeneratoravtGhostType : public virtual AttsGeneratorField, public virt
 //
 // ----------------------------------- avtSubsetType -----------------------------------
 //
-class AttsGeneratoravtSubsetType : public virtual AttsGeneratorField, public virtual avtSubsetTypeField
+class AttsGeneratoravtSubsetType : public virtual avtSubsetTypeField, public virtual AttsGeneratorField
 {
   public:
     AttsGeneratoravtSubsetType(const QString &n, const QString &l)
-        : avtSubsetTypeField(n,l), AttsGeneratorField("int",n,l), Field("int",n,l)
+        : Field("int",n,l), avtSubsetTypeField(n,l), AttsGeneratorField("int",n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -1444,11 +1448,11 @@ class AttsGeneratoravtSubsetType : public virtual AttsGeneratorField, public vir
 //
 // ----------------------------------- avtVarType -----------------------------------
 //
-class AttsGeneratoravtVarType : public virtual AttsGeneratorField, public virtual avtVarTypeField
+class AttsGeneratoravtVarType : public virtual avtVarTypeField, public virtual AttsGeneratorField
 {
   public:
     AttsGeneratoravtVarType(const QString &n, const QString &l)
-        : avtVarTypeField(n,l), AttsGeneratorField("avtVarType",n,l), Field("avtVarTypeField",n,l)
+        : Field("avtVarTypeField",n,l), avtVarTypeField(n,l), AttsGeneratorField("avtVarType",n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -1456,11 +1460,11 @@ class AttsGeneratoravtVarType : public virtual AttsGeneratorField, public virtua
 //
 // ----------------------------------- avtMeshType -----------------------------------
 //
-class AttsGeneratoravtMeshType : public virtual AttsGeneratorField, public virtual avtMeshTypeField
+class AttsGeneratoravtMeshType : public virtual avtMeshTypeField, public virtual AttsGeneratorField
 {
   public:
     AttsGeneratoravtMeshType(const QString &n, const QString &l)
-        : avtMeshTypeField(n,l), AttsGeneratorField("avtMeshType",n,l), Field("avtMeshTypeField",n,l)
+        : Field("avtMeshTypeField",n,l), avtMeshTypeField(n,l), AttsGeneratorField("avtMeshType",n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -1468,11 +1472,11 @@ class AttsGeneratoravtMeshType : public virtual AttsGeneratorField, public virtu
 //
 // ----------------------------------- avtExtentType -----------------------------------
 //
-class AttsGeneratoravtExtentType : public virtual AttsGeneratorField, public virtual avtExtentTypeField
+class AttsGeneratoravtExtentType : public virtual avtExtentTypeField, public virtual AttsGeneratorField
 {
   public:
     AttsGeneratoravtExtentType(const QString &n, const QString &l)
-        : avtExtentTypeField(n,l), AttsGeneratorField("avtExentType",n,l), Field("avtExtentType",n,l)
+        : Field("avtExtentType",n,l), avtExtentTypeField(n,l), AttsGeneratorField("avtExentType",n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -1480,11 +1484,11 @@ class AttsGeneratoravtExtentType : public virtual AttsGeneratorField, public vir
 //
 // ----------------------------------- avtMeshCoordType -----------------------------------
 //
-class AttsGeneratoravtMeshCoordType : public virtual AttsGeneratorField, public virtual avtMeshCoordTypeField
+class AttsGeneratoravtMeshCoordType : public virtual avtMeshCoordTypeField, public virtual AttsGeneratorField
 {
   public:
     AttsGeneratoravtMeshCoordType(const QString &n, const QString &l)
-        : avtMeshCoordTypeField(n,l), AttsGeneratorField("avtMeshCoordType",n,l), Field("avtMeshCoordType",n,l)
+        : Field("avtMeshCoordType",n,l), avtMeshCoordTypeField(n,l), AttsGeneratorField("avtMeshCoordType",n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -1492,11 +1496,11 @@ class AttsGeneratoravtMeshCoordType : public virtual AttsGeneratorField, public 
 //
 // ----------------------------------- LoadBalanceScheme -----------------------------------
 //
-class AttsGeneratorLoadBalanceScheme : public virtual AttsGeneratorField, public virtual LoadBalanceSchemeField
+class AttsGeneratorLoadBalanceScheme : public virtual LoadBalanceSchemeField, public virtual AttsGeneratorField
 {
   public:
     AttsGeneratorLoadBalanceScheme(const QString &n, const QString &l)
-        : LoadBalanceSchemeField(n,l), AttsGeneratorField("LoadBalanceScheme",n,l), Field("LoadBalanceScheme",n,l)
+        : Field("LoadBalanceScheme",n,l), LoadBalanceSchemeField(n,l), AttsGeneratorField("LoadBalanceScheme",n,l)
     { }
     AVT_GENERATOR_METHODS
 };

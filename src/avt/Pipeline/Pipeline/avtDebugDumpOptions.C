@@ -142,7 +142,7 @@ avtDebugDumpOptions::EnableDatasetDump()
 //  Programmer: Cyrus Harrison
 //  Creation:   Feburary 13, 2008
 //
-// ****************************************************************************\
+// ****************************************************************************
 
 void 
 avtDebugDumpOptions::DisableDatasetDump()

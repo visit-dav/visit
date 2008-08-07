@@ -161,6 +161,10 @@ inline char toupper(char c)
 //    WriteGetAttr =>  changed else-if to simple if as 'then' is a return;
 //    WriteSetMethodBody ==> use adjacent strings instead of single long string
 //
+//    Jeremy Meredith, Thu Aug  7 14:34:01 EDT 2008
+//    Reorder constructor initializers to be the correct order.
+//    Use const char* for string literals.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -315,7 +319,7 @@ class AttsGeneratorInt : public virtual Int , public virtual PythonGeneratorFiel
 {
   public:
     AttsGeneratorInt(const QString &n, const QString &l)
-        : Int(n,l), PythonGeneratorField("int",n,l), Field("int",n,l) { }
+        : Field("int",n,l), Int(n,l), PythonGeneratorField("int",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    int ival;" << endl;
@@ -359,7 +363,7 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual PythonGen
 {
   public:
     AttsGeneratorIntArray(const QString &s, const QString &n, const QString &l)
-        : IntArray(s,n,l), PythonGeneratorField("intArray",n,l), Field("intArray",n,l) { }
+        : Field("intArray",n,l), IntArray(s,n,l), PythonGeneratorField("intArray",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    int *ivals = obj->data->";
@@ -463,7 +467,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
 {
   public:
     AttsGeneratorIntVector(const QString &n, const QString &l)
-        : IntVector(n,l), PythonGeneratorField("intVector",n,l), Field("intVector",n,l) { }
+        : Field("intVector",n,l), IntVector(n,l), PythonGeneratorField("intVector",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    intVector  &vec = obj->data->";
@@ -564,7 +568,7 @@ class AttsGeneratorBool : public virtual Bool , public virtual PythonGeneratorFi
 {
   public:
     AttsGeneratorBool(const QString &n, const QString &l)
-        : Bool(n,l), PythonGeneratorField("bool",n,l), Field("bool",n,l) { }
+        : Field("bool",n,l), Bool(n,l), PythonGeneratorField("bool",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    int ival;" << endl;
@@ -613,7 +617,7 @@ class AttsGeneratorFloat : public virtual Float , public virtual PythonGenerator
 {
   public:
     AttsGeneratorFloat(const QString &n, const QString &l)
-        : Float(n,l), PythonGeneratorField("float",n,l), Field("float",n,l) { }
+        : Field("float",n,l), Float(n,l), PythonGeneratorField("float",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    float fval;" << endl;
@@ -658,7 +662,7 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual Pytho
 {
   public:
     AttsGeneratorFloatArray(const QString &s, const QString &n, const QString &l)
-        : FloatArray(s,n,l), PythonGeneratorField("floatArray",n,l), Field("floatArray",n,l) { }
+        : Field("floatArray",n,l), FloatArray(s,n,l), PythonGeneratorField("floatArray",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    float *fvals = obj->data->";
@@ -761,7 +765,7 @@ class AttsGeneratorDouble : public virtual Double , public virtual PythonGenerat
 {
   public:
     AttsGeneratorDouble(const QString &n, const QString &l)
-        : Double(n,l), PythonGeneratorField("double",n,l), Field("double",n,l) { }
+        : Field("double",n,l), Double(n,l), PythonGeneratorField("double",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    double dval;" << endl;
@@ -806,7 +810,7 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Pyt
 {
   public:
     AttsGeneratorDoubleArray(const QString &s, const QString &n, const QString &l)
-        : DoubleArray(s,n,l), PythonGeneratorField("doubleArray",n,l), Field("doubleArray",n,l) { }
+        : Field("doubleArray",n,l), DoubleArray(s,n,l), PythonGeneratorField("doubleArray",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    double *dvals = obj->data->";
@@ -910,7 +914,7 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual P
 {
   public:
     AttsGeneratorDoubleVector(const QString &n, const QString &l)
-        : DoubleVector(n,l), PythonGeneratorField("doubleVector",n,l), Field("doubleVector",n,l) { }
+        : Field("doubleVector",n,l), DoubleVector(n,l), PythonGeneratorField("doubleVector",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    doubleVector  &vec = obj->data->";
@@ -1012,7 +1016,7 @@ class AttsGeneratorUChar : public virtual UChar , public virtual PythonGenerator
 {
   public:
     AttsGeneratorUChar(const QString &n, const QString &l)
-        : UChar(n,l), PythonGeneratorField("uchar",n,l), Field("uchar",n,l) { }
+        : Field("uchar",n,l), UChar(n,l), PythonGeneratorField("uchar",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    unsigned char uval;" << endl;
@@ -1057,7 +1061,7 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual Pytho
 {
   public:
     AttsGeneratorUCharArray(const QString &s, const QString &n, const QString &l)
-        : UCharArray(s,n,l), PythonGeneratorField("ucharArray",n,l), Field("ucharArray",n,l) { }
+        : Field("ucharArray",n,l), UCharArray(s,n,l), PythonGeneratorField("ucharArray",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    unsigned char *cvals = obj->data->";
@@ -1166,7 +1170,7 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
 {
   public:
     AttsGeneratorUCharVector(const QString &n, const QString &l)
-        : UCharVector(n,l), PythonGeneratorField("ucharVector",n,l), Field("ucharVector",n,l) { }
+        : Field("ucharVector",n,l), UCharVector(n,l), PythonGeneratorField("ucharVector",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    unsignedCharVector  &vec = obj->data->";
@@ -1281,7 +1285,7 @@ class AttsGeneratorString : public virtual String , public virtual PythonGenerat
 {
   public:
     AttsGeneratorString(const QString &n, const QString &l)
-        : String(n,l), PythonGeneratorField("string",n,l), Field("string",n,l) { }
+        : Field("string",n,l), String(n,l), PythonGeneratorField("string",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    char *str;" << endl;
@@ -1326,7 +1330,7 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
 {
   public:
     AttsGeneratorStringVector(const QString &n, const QString &l)
-        : StringVector(n,l), PythonGeneratorField("stringVector",n,l), Field("stringVector",n,l) { }
+        : Field("stringVector",n,l), StringVector(n,l), PythonGeneratorField("stringVector",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    stringVector  &vec = obj->data->";
@@ -1414,7 +1418,7 @@ class AttsGeneratorColorTable : public virtual ColorTable , public virtual Pytho
 {
   public:
     AttsGeneratorColorTable(const QString &n, const QString &l)
-        : ColorTable(n,l), PythonGeneratorField("colortable",n,l), Field("colortable",n,l) { }
+        : Field("colortable",n,l), ColorTable(n,l), PythonGeneratorField("colortable",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    char *str;" << endl;
@@ -1459,7 +1463,7 @@ class AttsGeneratorColor : public virtual Color , public virtual PythonGenerator
 {
   public:
     AttsGeneratorColor(const QString &n, const QString &l)
-        : Color(n,l), PythonGeneratorField("color",n,l), Field("color",n,l) { }
+        : Field("color",n,l), Color(n,l), PythonGeneratorField("color",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    int c[4];" << endl;
@@ -1564,7 +1568,7 @@ class AttsGeneratorLineStyle : public virtual LineStyle , public virtual PythonG
 {
   public:
     AttsGeneratorLineStyle(const QString &n, const QString &l)
-        : LineStyle(n,l), PythonGeneratorField("linestyle",n,l), Field("linestyle",n,l) { }
+        : Field("linestyle",n,l), LineStyle(n,l), PythonGeneratorField("linestyle",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    int ival;" << endl;
@@ -1639,7 +1643,7 @@ class AttsGeneratorLineWidth : public virtual LineWidth , public virtual PythonG
 {
   public:
     AttsGeneratorLineWidth(const QString &n, const QString &l)
-        : LineWidth(n,l), PythonGeneratorField("linewidth",n,l), Field("linewidth",n,l) { }
+        : Field("linewidth",n,l), LineWidth(n,l), PythonGeneratorField("linewidth",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    int ival;" << endl;
@@ -1684,7 +1688,7 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual PythonGener
 {
   public:
     AttsGeneratorOpacity(const QString &n, const QString &l)
-        : Opacity(n,l), PythonGeneratorField("opacity",n,l), Field("opacity",n,l) { }
+        : Field("opacity",n,l), Opacity(n,l), PythonGeneratorField("opacity",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    double dval;" << endl;
@@ -1729,7 +1733,7 @@ class AttsGeneratorVariableName : public virtual VariableName , public virtual P
 {
   public:
     AttsGeneratorVariableName(const QString &n, const QString &l)
-        : VariableName(n,l), PythonGeneratorField("variablename",n,l), Field("variablename",n,l) { }
+        : Field("variablename",n,l), VariableName(n,l), PythonGeneratorField("variablename",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    char *str;" << endl;
@@ -1785,7 +1789,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
 {
   public:
     AttsGeneratorAtt(const QString &t, const QString &n, const QString &l)
-        : Att(t,n,l), PythonGeneratorField("att",n,l), Field("att",n,l) { cerr << "**** AttType=" << AttType << endl;}
+        : Field("att",n,l), Att(t,n,l), PythonGeneratorField("att",n,l) { cerr << "**** AttType=" << AttType << endl;}
 
     virtual void WriteIncludedHeaders(ostream &c)
     {
@@ -2080,7 +2084,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
 {
   public:
     AttsGeneratorAttVector(const QString &t, const QString &n, const QString &l)
-        : AttVector(t,n,l), PythonGeneratorField("attVector",n,l), Field("attVector",n,l) { }
+        : Field("attVector",n,l), AttVector(t,n,l), PythonGeneratorField("attVector",n,l) { }
 
     virtual void WriteSetAttr(ostream &c, const QString &className, bool first)
     {
@@ -2113,7 +2117,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "        if(obj->data->Get" << Name << "().size() == 0)" << endl;
         c << "            SNPRINTF(msg, 200, \"The index is invalid because " << name << " is empty.\");" << endl;
         c << "        else" << endl;
-        c << "            SNPRINTF(msg, 200, \"The index is invalid. Use index values in: [0, %d).\", obj->data->Get" << Name << "().size());" << endl;
+        c << "            SNPRINTF(msg, 200, \"The index is invalid. Use index values in: [0, %ld).\", obj->data->Get" << Name << "().size());" << endl;
         c << "        PyErr_SetString(PyExc_IndexError, msg);" << endl;
         c << "        return NULL;" << endl;
         c << "    }" << endl;
@@ -2288,7 +2292,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
 {
   public:
     PythonGeneratorEnum(const QString &t, const QString &n, const QString &l)
-        : Enum(t,n,l), PythonGeneratorField("enum",n,l), Field("enum",n,l) { }
+        : Field("enum",n,l), Enum(t,n,l), PythonGeneratorField("enum",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    int ival;" << endl;
@@ -2492,7 +2496,7 @@ class AttsGeneratoravtCentering : public virtual PythonGeneratorField, public vi
 {
   public:
     AttsGeneratoravtCentering(const QString &n, const QString &l)
-        : avtCenteringField(n,l), PythonGeneratorField("avtCentering",n,l), Field("avtCentering",n,l)
+        : Field("avtCentering",n,l), PythonGeneratorField("avtCentering",n,l), avtCenteringField(n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -2504,7 +2508,7 @@ class AttsGeneratoravtGhostType : public virtual PythonGeneratorField, public vi
 {
   public:
     AttsGeneratoravtGhostType(const QString &n, const QString &l)
-        : avtGhostTypeField(n,l), PythonGeneratorField("avtGhostType",n,l), Field("avtGhostType",n,l)
+        : Field("avtGhostType",n,l), PythonGeneratorField("avtGhostType",n,l), avtGhostTypeField(n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -2516,7 +2520,7 @@ class AttsGeneratoravtSubsetType : public virtual PythonGeneratorField, public v
 {
   public:
     AttsGeneratoravtSubsetType(const QString &n, const QString &l)
-        : avtSubsetTypeField(n,l), PythonGeneratorField("int",n,l), Field("int",n,l)
+        : Field("int",n,l), PythonGeneratorField("int",n,l), avtSubsetTypeField(n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -2528,7 +2532,7 @@ class AttsGeneratoravtVarType : public virtual PythonGeneratorField, public virt
 {
   public:
     AttsGeneratoravtVarType(const QString &n, const QString &l)
-        : avtVarTypeField(n,l), PythonGeneratorField("avtVarType",n,l), Field("avtVarTypeField",n,l)
+        : Field("avtVarTypeField",n,l), PythonGeneratorField("avtVarType",n,l), avtVarTypeField(n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -2540,7 +2544,7 @@ class AttsGeneratoravtMeshType : public virtual PythonGeneratorField, public vir
 {
   public:
     AttsGeneratoravtMeshType(const QString &n, const QString &l)
-        : avtMeshTypeField(n,l), PythonGeneratorField("avtMeshType",n,l), Field("avtMeshTypeField",n,l)
+        : Field("avtMeshTypeField",n,l), PythonGeneratorField("avtMeshType",n,l), avtMeshTypeField(n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -2552,7 +2556,7 @@ class AttsGeneratoravtExtentType : public virtual PythonGeneratorField, public v
 {
   public:
     AttsGeneratoravtExtentType(const QString &n, const QString &l)
-        : avtExtentTypeField(n,l), PythonGeneratorField("avtExentType",n,l), Field("avtExtentType",n,l)
+        : Field("avtExtentType",n,l), PythonGeneratorField("avtExentType",n,l), avtExtentTypeField(n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -2564,7 +2568,7 @@ class AttsGeneratoravtMeshCoordType : public virtual PythonGeneratorField, publi
 {
   public:
     AttsGeneratoravtMeshCoordType(const QString &n, const QString &l)
-        : avtMeshCoordTypeField(n,l), PythonGeneratorField("avtMeshCoordType",n,l), Field("avtMeshCoordType",n,l)
+        : Field("avtMeshCoordType",n,l), PythonGeneratorField("avtMeshCoordType",n,l), avtMeshCoordTypeField(n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -2576,7 +2580,7 @@ class AttsGeneratorLoadBalanceScheme : public virtual PythonGeneratorField, publ
 {
   public:
     AttsGeneratorLoadBalanceScheme(const QString &n, const QString &l)
-        : LoadBalanceSchemeField(n,l), PythonGeneratorField("LoadBalanceScheme",n,l), Field("LoadBalanceScheme",n,l)
+        : Field("LoadBalanceScheme",n,l), PythonGeneratorField("LoadBalanceScheme",n,l), LoadBalanceSchemeField(n,l)
     { }
     AVT_GENERATOR_METHODS
 };
@@ -2584,11 +2588,11 @@ class AttsGeneratorLoadBalanceScheme : public virtual PythonGeneratorField, publ
 //
 // --------------------------------- ScaleMode --------------------------------
 //
-class AttsGeneratorScaleMode : public virtual ScaleMode , public virtual PythonGeneratorField
+class AttsGeneratorScaleMode : public virtual PythonGeneratorField, public virtual ScaleMode 
 {
   public:
     AttsGeneratorScaleMode(const QString &n, const QString &l)
-        : ScaleMode(n,l), PythonGeneratorField("scalemode",n,l), Field("scalemode",n,l) { }
+        : Field("scalemode",n,l), PythonGeneratorField("scalemode",n,l), ScaleMode(n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
         c << "    int ival;" << endl;
@@ -3098,7 +3102,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "//" << endl;
         c << "// The doc string for the class." << endl;
         c << "//" << endl;
-        c << "static char *" << name << "_Purpose = \"" << purpose << "\";" << endl;
+        c << "static const char *" << name << "_Purpose = \"" << purpose << "\";" << endl;
         c << endl;
 
         c << "//" << endl;

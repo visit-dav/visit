@@ -7,7 +7,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_33_pts[] = {
 31553, 65535, 28380, 50117, 31377, 16679, 41425, 48955, 44824, 65535, 
 21063, 12387, 18507,     0, 31024,     0, 33580, 12387, 24413, 16679
 };
-static const unsigned char visit_arial_bold_italic_CHAR_33_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_33_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   5,   6,   7,   5,   7,   8, 
   2,   1,   9
 };
@@ -17,7 +17,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_34_pts[] = {
     0, 26637, 42473, 26637, 50129, 47015, 54023, 65535, 31494, 65535, 
 27600, 47015, 27224, 26637
 };
-static const unsigned char visit_arial_bold_italic_CHAR_34_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_34_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   8, 
   6,   8,   9,   6,   9,  10,   6,  10,  11
 };
@@ -31,7 +31,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_35_pts[] = {
 64538, 39121, 64538, 48678, 39396,     0, 64538, 26375, 17786, 39121, 
 20220,     0, 17786, 16866
 };
-static const unsigned char visit_arial_bold_italic_CHAR_35_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_35_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   7,   8,   9,   7,   9,  10,   7,  10,  11,   7,  11,  12,   7,  12,  13, 
  13,  12,  14,  12,  14,  15,  14,  15,  16,  15,  16,  10,  16,  10,  17, 
@@ -68,7 +68,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_36_pts[] = {
 52043, 48044, 51956, 61179, 50464, 52063, 51167, 50921, 51694, 49582, 
 50955, 65535, 27654, 46793, 32267,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_36_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_36_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,   9,  11,  12,   9,  12,  13, 
   9,  13,  14,   9,  14,  15,   9,  15,  16,   9,  16,  17,   9,  17,  18, 
@@ -135,7 +135,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_37_pts[] = {
 45056,  7533, 45089, 11456, 45339,  6077, 45469, 13669, 45811,  4758, 
 46104, 15767, 46471,  3577, 46992, 17751, 47320,  2533
 };
-static const unsigned char visit_arial_bold_italic_CHAR_37_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_37_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -212,7 +212,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_38_pts[] = {
 48459, 45261, 48208, 44595, 47856, 43932, 47652, 32798, 47404, 43271, 
 46592, 42357, 18408, 15925
 };
-static const unsigned char visit_arial_bold_italic_CHAR_38_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_38_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -254,7 +254,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_39_pts[] = {
     0, 26323, 15371, 26323, 23089, 46866, 27015, 65535,  4304, 65535, 
   379, 46866
 };
-static const unsigned char visit_arial_bold_italic_CHAR_39_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_39_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5
 };
 /* '(' font data */
@@ -271,7 +271,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_40_pts[] = {
 39468, 36555, 40224, 39671, 37822, 24118, 38028, 27186, 38060, 53632, 
 38371, 30282, 38851, 33405
 };
-static const unsigned char visit_arial_bold_italic_CHAR_40_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_40_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   2,   9,  10,   2,  10,  11,   2,  11,  12, 
   2,  12,  13,   2,  13,   0,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -297,7 +297,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_41_pts[] = {
 28907,  2801, 27558, 11610, 26527,     0, 25817,  8821, 23843,  5957, 
 21638,  3016, 19199,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_41_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_41_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   6,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -326,7 +326,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_42_pts[] = {
 13985, 19857, 13913, 37629, 11919, 35677,  9956, 33689,  8023, 31665, 
  6122, 29605,  4251, 27509
 };
-static const unsigned char visit_arial_bold_italic_CHAR_42_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_42_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,  15,  16,  17,  15,  17,  18, 
@@ -347,7 +347,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_43_pts[] = {
 12639, 33712, 12639, 19938, 45670, 19938, 65535, 19938, 45670, 33712, 
 65535, 33712, 32458,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_43_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_43_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   7,   8,   9,   7,   9,   0,   7,   0,   2,   9,   8,  10,   2,   4,  11
 };
@@ -359,7 +359,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_44_pts[] = {
 48424, 12038, 47360, 11052, 46379,   951, 46133, 10195, 44744,  9467, 
 43192,  8869, 41479,  8400, 43190,   274, 39734,     0, 43847, 20101
 };
-static const unsigned char visit_arial_bold_italic_CHAR_44_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_44_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   9,   3,   2,   9,   2,  10,   9,  10,  11, 
   9,  11,  12,   9,  12,  13,   9,  13,  14,  13,  15,  14,  15,  14,  16, 
@@ -370,21 +370,21 @@ static const unsigned char visit_arial_bold_italic_CHAR_44_tris[] = {
 static const unsigned short visit_arial_bold_italic_CHAR_45_pts[] = {
  6181, 32358,     0,  2401, 59353,  2401, 65535, 32358
 };
-static const unsigned char visit_arial_bold_italic_CHAR_45_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_45_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* '.' font data */
 static const unsigned short visit_arial_bold_italic_CHAR_46_pts[] = {
 39896, 25374, 34659,     0, 60298,     0, 65535, 25374
 };
-static const unsigned char visit_arial_bold_italic_CHAR_46_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_46_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* '/' font data */
 static const unsigned short visit_arial_bold_italic_CHAR_47_pts[] = {
  9813,     0, 18383,     0, 49283, 65535, 40760, 65535
 };
-static const unsigned char visit_arial_bold_italic_CHAR_47_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_47_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* '0' font data */
@@ -410,7 +410,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_48_pts[] = {
 37137,     0, 36523, 10161, 35601, 10414, 34755, 10834, 33985, 11422, 
 34172,   226, 33291, 12178, 32701, 13142, 32242, 14350, 31914, 15803
 };
-static const unsigned char visit_arial_bold_italic_CHAR_48_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_48_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   1,  11,  12, 
   1,  12,  13,   1,  13,  14,   1,  14,   2,  11,  15,  16,  11,  16,  17, 
@@ -439,7 +439,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_49_pts[] = {
 36666, 42205, 25888, 48781, 26950, 38317, 28794, 38921, 30724, 39625, 
 23522, 37407, 25193, 37812, 58690, 65535, 51030, 65535, 32497,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_49_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_49_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   1,   7,   8,   1,   8,   9,   1,   9,  10,   1,  10,   2,   7,  11,  12, 
   7,  12,  13,   7,  13,  14,   7,  14,   8,  11,  15,  16,  11,  16,  12, 
@@ -468,7 +468,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_50_pts[] = {
 42115, 16913, 42880, 33648, 43355, 18145, 44522, 35296, 44913, 19659, 
 40855, 31647, 38959, 13444, 39692, 14304, 40436, 15143
 };
-static const unsigned char visit_arial_bold_italic_CHAR_50_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_50_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   2,  14,  15,   2,  15,  16,   2,  16,  17, 
@@ -520,7 +520,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_51_pts[] = {
 58371, 28326, 58481, 13096, 57526, 29642, 56512, 30856, 57090, 10578, 
 55329, 31968, 53976, 32980, 55302,  8151
 };
-static const unsigned char visit_arial_bold_italic_CHAR_51_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_51_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   8,   9,  10,   9,  10,  11,  10,  11,   5,  11,   5,   7, 
  12,  13,  14,  12,  14,  15,  12,  15,   8,  12,   8,  10,  16,  17,  18, 
@@ -555,7 +555,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_52_pts[] = {
 47292, 44703, 49976,     0, 43100, 24278, 55000, 24278, 63511, 65535, 
 52757, 13371, 60602, 13371, 62845, 24278, 38076,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_52_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_52_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   7,   1,   3,   8,   9,   4,   8,   4,  10, 
   8,  10,  11,   8,  11,  12,   6,   1,  13,   4,   6,  10
@@ -583,7 +583,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_53_pts[] = {
 34556, 11894, 33713, 12706, 32998, 13699, 32442, 14872, 32044, 16226, 
 31806, 17760, 23662, 31951
 };
-static const unsigned char visit_arial_bold_italic_CHAR_53_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_53_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   7,   9,  10,   7,  10,  11,   7,  11,  12, 
   7,  12,  13,   7,  13,  14,   7,  14,   8,  15,  16,  17,  15,  17,  18, 
@@ -634,7 +634,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_54_pts[] = {
 23285, 10548, 20975, 24372, 21067, 21047, 21275, 31039, 21344, 18002, 
 21806, 15238
 };
-static const unsigned char visit_arial_bold_italic_CHAR_54_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_54_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   8,  10,  11,   8,  11,  12, 
   8,  12,  13,   8,  13,  14,   8,  14,  15,   8,  15,   9,  10,  16,  17, 
@@ -674,7 +674,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_55_pts[] = {
 31919, 25208, 30161, 21240, 28543, 17217, 27066, 13138, 25998,  9939, 
 25100,  7026, 24370,  4399, 23808,  2056, 23415,     0, 21699, 51383
 };
-static const unsigned char visit_arial_bold_italic_CHAR_55_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_55_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
  12,  13,  14,  13,  14,  15,  14,  15,   2,  15,   2,  16,   2,  16,   3, 
@@ -720,7 +720,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_56_pts[] = {
 23179, 29272, 22900,  7125, 21906, 27188, 21475,  9457, 20916, 24994, 
 20457, 12007, 20208, 22692, 19846, 14775, 19784, 20281, 19642, 17761
 };
-static const unsigned char visit_arial_bold_italic_CHAR_56_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_56_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,   9,  11,  12,   9,  12,   0, 
   9,   0,   2,  13,  14,  15,  14,  15,  16,  15,  16,  10,  16,  10,  11, 
@@ -784,7 +784,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_57_pts[] = {
 20416, 10407, 21383,  8064, 22654,  5989, 24228,  4182, 26070,  2677, 
 28144,  1505
 };
-static const unsigned char visit_arial_bold_italic_CHAR_57_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_57_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,   6,   8,   9,   8,  10,   9,  10,  11, 
   9,  11,  12,  11,  13,  12,  13,  12,  14,  12,  14,  15,  14,  15,  16, 
@@ -816,7 +816,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_58_pts[] = {
 40149, 65535, 36621, 48379, 53845, 48379, 57374, 65535, 30172, 17100, 
 26643,     0, 43921,     0, 47450, 17100
 };
-static const unsigned char visit_arial_bold_italic_CHAR_58_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_58_tris[] = {
   0,   1,   2,   0,   2,   3,   4,   5,   6,   4,   6,   7
 };
 /* ';' font data */
@@ -828,7 +828,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_59_pts[] = {
 38483,  8303, 37747,   715, 37562,  7659, 36518,  7112, 35352,  6663, 
 34065,  6310, 35351,   206, 32754,     0, 35844, 15101
 };
-static const unsigned char visit_arial_bold_italic_CHAR_59_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_59_tris[] = {
   0,   1,   2,   0,   2,   3,   4,   5,   6,   4,   6,   7,   4,   7,   8, 
   4,   8,   9,   4,   9,  10,   4,  10,  11,   4,  11,  12,  13,   7,   6, 
  13,   6,  14,  13,  14,  15,  13,  15,  16,  13,  16,  17,  13,  17,  18, 
@@ -840,7 +840,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_60_pts[] = {
 30322, 28581, 65535, 42238, 65535, 56767, 15048, 34594, 65535,     0, 
 65535, 14415, 15048, 22263
 };
-static const unsigned char visit_arial_bold_italic_CHAR_60_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_60_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   4,   3,   6
 };
 /* '=' font data */
@@ -848,7 +848,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_61_pts[] = {
  4839, 42167,  4839, 26669, 65535, 26669, 65535, 42167,  4839, 15564, 
  4839,     0, 65535,     0, 65535, 15564
 };
-static const unsigned char visit_arial_bold_italic_CHAR_61_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_61_tris[] = {
   0,   1,   2,   0,   2,   3,   4,   5,   6,   4,   6,   7
 };
 /* '>' font data */
@@ -856,7 +856,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_62_pts[] = {
 50288, 28442, 15079, 14402, 65535, 22281, 65535, 34490, 15079, 56624, 
 15079, 42324, 15079,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_62_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_62_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   2,   1,   6
 };
 /* '?' font data */
@@ -880,7 +880,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_63_pts[] = {
 31326, 17819, 30917, 15595, 29657, 11808, 27220,     0, 39151,     0, 
 41588, 11808
 };
-static const unsigned char visit_arial_bold_italic_CHAR_63_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_63_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   2,   1,   6, 
   1,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -952,7 +952,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_64_pts[] = {
 31456,  7306, 32895,  1743, 33228,  6437, 26027, 12607, 26346,  5319, 
 27136, 11008, 28303,  3918, 28410,  9591, 25105, 14334
 };
-static const unsigned char visit_arial_bold_italic_CHAR_64_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_64_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  11,  16,  11,  10, 
@@ -1010,7 +1010,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_65_pts[] = {
 54332,     0, 65535,     0, 10608,     0, 22759,     0, 29654, 12872, 
 33762, 22567
 };
-static const unsigned char visit_arial_bold_italic_CHAR_65_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_65_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   1,   7,   8,   1,   8,   9,   1,   9,  10,   1,  10,   2,  10,   9,   4, 
  10,   4,   3
@@ -1042,7 +1042,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_66_pts[] = {
 61854, 32876, 61832, 51540, 60869, 52362, 60501, 31714, 59798, 53092, 
 58927, 30683, 58624, 53730, 57351, 54277, 57130, 29785
 };
-static const unsigned char visit_arial_bold_italic_CHAR_66_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_66_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   8,   9,  10,   8,  10,  11,   8,  11,   7,   8,   7,   5, 
  10,   9,  12,   9,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -1091,7 +1091,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_67_pts[] = {
 34411, 10350, 33036, 11317, 31779, 12561, 31570,   932, 30701, 14058, 
 29862, 15785, 29263, 17742
 };
-static const unsigned char visit_arial_bold_italic_CHAR_67_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_67_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   8,   9,  10,   9,  10,  11,  10,  11,   6,  11,   6,   7, 
  12,  13,  14,  13,  14,  15,  14,  15,  10,  15,  10,  16,  10,  16,   8, 
@@ -1133,7 +1133,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_68_pts[] = {
 38328,   131, 37051,  8946, 35899,    32, 35009,  8854, 33171,     0, 
 32696,  8823
 };
-static const unsigned char visit_arial_bold_italic_CHAR_68_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_68_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   8,   9,  10,   9,  10,  11,  10,  11,   5,  11,   5,   7, 
  12,  13,  14,  12,  14,  15,  12,  15,   8,  12,   8,  10,  16,  17,  18, 
@@ -1160,7 +1160,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_69_pts[] = {
 13984,     0, 56358,     0, 58282,  9199, 65535, 55022, 63643, 45831, 
 58208, 24137, 60091, 33328
 };
-static const unsigned char visit_arial_bold_italic_CHAR_69_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_69_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   8,   4,   3,   8,   3,   9,   2,   1,  10,   2,  10,  11
 };
@@ -1169,7 +1169,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_70_pts[] = {
 63538, 47549, 65535, 57085, 35743, 47549, 26145, 57085, 32902, 33842, 
 30940, 24298, 58198, 24298, 14355,     0, 25949,     0, 60160, 33842
 };
-static const unsigned char visit_arial_bold_italic_CHAR_70_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_70_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   3,   7,   8,   3,   8,   5,   4,   6,   9
 };
@@ -1196,7 +1196,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_71_pts[] = {
 28366,  1527, 27958, 14713, 27387, 16599, 27045, 18751, 39708, 19409, 
 17008, 21032
 };
-static const unsigned char visit_arial_bold_italic_CHAR_71_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_71_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   6,   8,   9,   6,   9,  10,   6,  10,  11,   6,  11,   7, 
  12,  13,  14,  13,  14,  15,  14,  15,   8,  15,   8,  16,   8,  16,   9, 
@@ -1223,7 +1223,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_72_pts[] = {
 30761, 32164, 28960, 23412, 34919, 52392, 24309, 52392, 13496,     0, 
 24137,     0, 44111,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_72_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_72_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   8,   9,  10,   8,  10,   6,   2,   4,  11
 };
@@ -1231,7 +1231,7 @@ static const unsigned char visit_arial_bold_italic_CHAR_72_tris[] = {
 static const unsigned short visit_arial_bold_italic_CHAR_73_pts[] = {
 16088,     0, 29398,     0, 42885, 65535, 29614, 65535
 };
-static const unsigned char visit_arial_bold_italic_CHAR_73_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_73_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* 'J' font data */
@@ -1248,7 +1248,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_74_pts[] = {
 33371, 10898, 32185, 11088, 31144, 11406, 30248, 11851, 30462,   166, 
 29498, 12424, 28888, 13116, 28414, 13922, 28075, 14841
 };
-static const unsigned char visit_arial_bold_italic_CHAR_74_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_74_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   7,   8,   9,   8,   9,   4,   9,   4,  10,   4,  10,   6,   9,  11,  12, 
   9,  12,  13,   9,  13,  14,   9,  14,   7,  15,  12,  11,  15,  11,  16, 
@@ -1267,7 +1267,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_75_pts[] = {
 33293, 50359, 43250, 30610, 65535, 50359, 51852, 50359, 35799, 23977, 
 48059,     0, 59604,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_75_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_75_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   8, 
   6,   8,   9,   6,   9,  10,   6,  10,  11,   4,   3,   9,   4,   9,   8
 };
@@ -1276,7 +1276,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_76_pts[] = {
 17009,     0, 63198,     0, 65451, 10957, 32572, 10957, 43805, 65535, 
 30544, 65535
 };
-static const unsigned char visit_arial_bold_italic_CHAR_76_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_76_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5
 };
 /* 'M' font data */
@@ -1285,7 +1285,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_77_pts[] = {
 36255, 13945, 29276,     0, 34850, 46557, 27613, 38907, 21386, 46557, 
 20321,     0, 11805,     0, 47312,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_77_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_77_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
   0,   2,  12
@@ -1295,7 +1295,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_78_pts[] = {
 13627,     0, 23553,     0, 24432, 52505, 30828, 35282, 34390, 52505, 
 44811,     0, 48412, 17374, 54729,     0, 55647, 52505, 65535, 52505
 };
-static const unsigned char visit_arial_bold_italic_CHAR_78_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_78_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9
 };
@@ -1323,7 +1323,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_79_pts[] = {
 18313, 30197, 18253, 13067, 17837, 28229, 17700, 14975, 17466, 26299, 
 17306, 16891, 17202, 24408, 17069, 18813, 17043, 22556, 16990, 20742
 };
-static const unsigned char visit_arial_bold_italic_CHAR_79_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_79_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   0,  15,   0,   2,  16,  17,  18, 
@@ -1365,7 +1365,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_80_pts[] = {
 44587, 21596, 44215, 31195, 42574, 21520, 41802, 30964, 40186, 21474, 
 38907, 30826, 37424, 21458, 35532, 30780
 };
-static const unsigned char visit_arial_bold_italic_CHAR_80_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_80_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   1,  10,  11,   1,  11,  12, 
   1,  12,  13,   1,  13,  14,   1,  14,   2,  10,  15,  16,  10,  16,  17, 
@@ -1416,7 +1416,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_81_pts[] = {
 21175, 21248, 21483, 30169, 21795, 18214, 22127, 33002, 22829, 15440, 
 23028, 35849, 20968, 24542
 };
-static const unsigned char visit_arial_bold_italic_CHAR_81_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_81_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   7,   8,   9,   7,   9,  10,   7,  10,  11,   7,  11,   6,   7,   6,   5, 
  12,   6,  11,  12,  11,  13,  12,  13,  14,  12,  14,  15,  16,  17,  18, 
@@ -1468,7 +1468,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_82_pts[] = {
 57851,  8381, 56223, 11947, 54661, 15096, 53165, 17829, 52418, 19029, 
 51651, 20132, 50864, 21138, 50055, 22047, 49588,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_82_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_82_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   7,  10,  11,   7,  11,  12, 
   7,  12,  13,   7,  13,   9,  14,  15,  16,  15,  16,  17,  16,  17,  10, 
@@ -1517,7 +1517,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_83_pts[] = {
 37254, 48088, 38187, 48705, 39340, 49186, 35277, 44771, 35524, 45707, 
 35936, 46572, 36513, 47365
 };
-static const unsigned char visit_arial_bold_italic_CHAR_83_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_83_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   8,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -1550,7 +1550,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_84_pts[] = {
 26797,     0, 38133,     0, 36407, 46490, 47709, 46490, 65535, 55813, 
 63624, 46490, 22185, 55813, 20266, 46490
 };
-static const unsigned char visit_arial_bold_italic_CHAR_84_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_84_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   6,   7,   2, 
   6,   2,   4
 };
@@ -1572,7 +1572,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_85_pts[] = {
 32547,   176, 32096,  9603, 30974, 10159, 30012, 10875, 29219, 11714, 
 28602, 12639, 28161, 13651
 };
-static const unsigned char visit_arial_bold_italic_CHAR_85_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_85_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   6,   7,   8, 
   6,   8,   9,   6,   9,  10,   6,  10,  11,   6,  11,   2,   6,   2,  12, 
   2,  13,  14,   2,  14,  15,   2,  15,  16,   2,  16,  12,  17,  18,  19, 
@@ -1593,7 +1593,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_86_pts[] = {
 65535, 50779, 55320, 50779, 37941,     0, 34595, 12369, 26945,     0, 
 28243, 50779, 17960, 50779
 };
-static const unsigned char visit_arial_bold_italic_CHAR_86_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_86_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6
 };
 /* 'W' font data */
@@ -1602,7 +1602,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_87_pts[] = {
 44162, 39276, 37876, 28720, 35528, 39276, 23770,     0, 22238, 11788, 
 15559,     0, 21898, 39276, 14103, 39276
 };
-static const unsigned char visit_arial_bold_italic_CHAR_87_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_87_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12
@@ -1618,7 +1618,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_88_pts[] = {
 33615, 14165, 30335, 25971,  8003,     0, 21462,     0, 28433,  7980, 
 28640, 51313, 17773, 51313
 };
-static const unsigned char visit_arial_bold_italic_CHAR_88_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_88_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,  10,  11,  12,  11,  12,   1, 
  12,   1,  13,   1,  13,   3,  14,   6,   8,  14,   8,  15,  14,  15,  16, 
@@ -1634,7 +1634,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_89_pts[] = {
 65535, 51259, 53469, 51259, 40881, 33084, 40254, 32096, 39661, 31131, 
 39102, 30189, 38576, 29270, 38214, 30309, 37732, 31580, 28058,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_89_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_89_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   7,   8,   9,   7,   9,  10,   7,  10,  11,   9,   8,  12,   9,  12,  13, 
   9,  13,  14,   9,  14,  15,   9,  15,  16,   9,  16,   2,   2,  16,  17, 
@@ -1647,7 +1647,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_90_pts[] = {
 33731,  9678, 32131,  9643, 30167,  9599, 15498,  9243, 13605,     0, 
 48780, 48840, 63799, 49435, 65535, 58634, 23858, 58634, 21843, 48840
 };
-static const unsigned char visit_arial_bold_italic_CHAR_90_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_90_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,  15,  13,  12,  15,  12,  16, 
@@ -1658,7 +1658,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_91_pts[] = {
 35892,  7499, 46219, 57723, 38518, 65535, 25005,     0, 41904,     0, 
 43455,  7499, 55380, 65535, 53790, 57723
 };
-static const unsigned char visit_arial_bold_italic_CHAR_91_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_91_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   2,   1, 
   6,   1,   7
 };
@@ -1666,7 +1666,7 @@ static const unsigned char visit_arial_bold_italic_CHAR_91_tris[] = {
 static const unsigned short visit_arial_bold_italic_CHAR_92_pts[] = {
 30106,     0, 38667,     0, 28998, 65535, 20428, 65535
 };
-static const unsigned char visit_arial_bold_italic_CHAR_92_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_92_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* ']' font data */
@@ -1674,7 +1674,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_93_pts[] = {
 39969, 58035, 29635,  7850, 37343,     0, 50849, 65535, 33888, 65535, 
 32330, 58035, 21995,  7850, 20375,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_93_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_93_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   2, 
   6,   2,   1
 };
@@ -1683,21 +1683,21 @@ static const unsigned short visit_arial_bold_italic_CHAR_94_pts[] = {
     0, 12595, 18679, 12595, 24558, 65535, 31539, 44998, 39116, 65535, 
 44471, 12595, 63021, 12595
 };
-static const unsigned char visit_arial_bold_italic_CHAR_94_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_94_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6
 };
 /* '_' font data */
 static const unsigned short visit_arial_bold_italic_CHAR_95_pts[] = {
 24239,     0, 65535,     0, 65535,  6525, 24239,  6525
 };
-static const unsigned char visit_arial_bold_italic_CHAR_95_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_95_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* '`' font data */
 static const unsigned short visit_arial_bold_italic_CHAR_96_pts[] = {
     0, 65535, 14447, 44663, 27793, 44663, 18987, 65535
 };
-static const unsigned char visit_arial_bold_italic_CHAR_96_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_96_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* 'a' font data */
@@ -1733,7 +1733,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_97_pts[] = {
 64806, 43211, 64906, 32853, 61675, 17462, 62377, 20826, 62622, 46869, 
 63247, 24828, 63896, 45109, 61129, 14527
 };
-static const unsigned char visit_arial_bold_italic_CHAR_97_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_97_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   8,   9,  10,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   1,  15,   1,  16,   1,  16,   2, 
@@ -1787,7 +1787,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_98_pts[] = {
 41541,  9302, 40192,  9417, 38915,  9761, 39714,   343, 37712, 10335, 
 36581, 11139, 36474,  1372, 35523, 12173, 34604, 13390, 33889, 14744
 };
-static const unsigned char visit_arial_bold_italic_CHAR_98_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_98_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  16,  15,  13, 
@@ -1830,7 +1830,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_99_pts[] = {
 35630, 33414, 32492, 46119, 32583, 22977, 32926, 25063, 33405, 27206, 
 32378, 20946, 19655, 20464
 };
-static const unsigned char visit_arial_bold_italic_CHAR_99_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_99_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   1,   8,   2,   8,   2,   9,   2,   9,  10,   9,  10,  11, 
  10,  11,  12,  13,  14,  15,  13,  15,  10,  13,  10,  12,  16,  17,  18, 
@@ -1870,7 +1870,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_100_pts[] = {
 32392, 31911, 33859, 33454, 29933, 27686, 54391, 58700, 65535, 58700, 
 46997, 23714, 46808, 22082, 46493, 20422, 46052, 18733, 43101,   988
 };
-static const unsigned char visit_arial_bold_italic_CHAR_100_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_100_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -1911,7 +1911,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_101_pts[] = {
 63670, 40182, 62220, 42913, 60356, 45291, 53785, 30452, 53779, 30220, 
 53769, 29956, 53755, 29660, 53737, 29331
 };
-static const unsigned char visit_arial_bold_italic_CHAR_101_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_101_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   8,   9,  10,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,   2,  14,   2,   1,  15,  16,  17,  15,  17,   9, 
@@ -1945,7 +1945,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_102_pts[] = {
 40835, 52504, 41120, 53426, 41402, 54120, 41681, 54586, 42141, 55078, 
 40547, 51354, 17502,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_102_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_102_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   7,   8,   9,   7,   9,  10,   7,  10,  11,   7,  11,  12,   7,  12,  13, 
  11,  10,  14,  11,  14,  15,  11,  15,  16,  11,  16,  17,  11,  17,  18, 
@@ -1992,7 +1992,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_103_pts[] = {
 26124,  8798, 26575,  6830, 27326,  5133, 28378,  3706, 29731,  2551, 
 26039, 12127, 26011, 11837, 25990, 11559, 25978, 11292, 25974, 11036
 };
-static const unsigned char visit_arial_bold_italic_CHAR_103_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_103_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   1,   8,   9,   1,   9,  10,   1,  10,  11,   1,  11,   2, 
  12,  13,  14,  13,  14,  15,  14,  15,   8,  15,   8,   9,  16,  17,  18, 
@@ -2043,7 +2043,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_104_pts[] = {
 59276, 46871, 57499, 47525, 52822, 33171, 52712, 32265, 52528, 31098, 
 52270, 29671, 51939, 27982, 46148,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_104_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_104_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   2,  13,  14,   2,  14,   3,  15,  16,  17,  15,  17,  18, 
@@ -2063,7 +2063,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_105_pts[] = {
 30054, 65535, 27674, 53912, 40329, 53912, 42709, 65535, 26352, 47474, 
 16568,     0, 29222,     0, 39006, 47474
 };
-static const unsigned char visit_arial_bold_italic_CHAR_105_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_105_tris[] = {
   0,   1,   2,   0,   2,   3,   4,   5,   6,   4,   6,   7
 };
 /* 'j' font data */
@@ -2077,7 +2077,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_106_pts[] = {
 21524,   176, 21355,  8799, 20564,  8918, 20053,   397, 17274,  1105, 
 18636,   707, 18802,  9296, 19714,  9083
 };
-static const unsigned char visit_arial_bold_italic_CHAR_106_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_106_tris[] = {
   0,   1,   2,   0,   2,   3,   4,   5,   6,   4,   6,   7,   4,   7,   8, 
   4,   8,   9,   5,  10,  11,   5,  11,  12,   5,  12,  13,   5,  13,  14, 
   5,  14,  15,   5,  15,   6,  10,  16,  11,  16,  11,  17,  11,  17,  18, 
@@ -2092,7 +2092,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_107_pts[] = {
 40751, 62790, 47508, 28954, 65535, 45486, 49788, 45486, 38809, 21034, 
 44974,     0, 57089,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_107_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_107_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   8, 
   6,   8,   9,   6,   9,  10,   6,  10,  11,   4,   3,   9,   4,   9,   8
 };
@@ -2100,7 +2100,7 @@ static const unsigned char visit_arial_bold_italic_CHAR_107_tris[] = {
 static const unsigned short visit_arial_bold_italic_CHAR_108_pts[] = {
 16480,     0, 29134,     0, 42620, 65535, 30015, 65535
 };
-static const unsigned char visit_arial_bold_italic_CHAR_108_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_108_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* 'm' font data */
@@ -2129,7 +2129,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_109_pts[] = {
 56240, 24284, 56081, 23399, 55859, 22242, 55573, 20813, 51274,     0, 
 11603,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_109_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_109_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,  15,  16,  17,  15,  17,  18, 
@@ -2169,7 +2169,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_110_pts[] = {
 57429, 47483, 52810, 33091, 52663, 32054, 52420, 30633, 52078, 28827, 
 51639, 26636, 46153,     0, 16543,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_110_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_110_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
  12,  13,  14,  12,  14,  15,  12,  15,  16,  12,  16,  17,  12,  17,  18, 
@@ -2205,7 +2205,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_111_pts[] = {
 40231,  9551, 39807,     0, 38692,  9666, 37323,   103, 37262, 10012, 
 35939, 10588, 34953,   413, 34726, 11394, 33621, 12431, 32675, 13663
 };
-static const unsigned char visit_arial_bold_italic_CHAR_111_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_111_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  13,  16,  17, 
@@ -2246,7 +2246,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_112_pts[] = {
 47313, 20478, 46365, 20408, 45288, 20502, 44971, 13221, 44270, 20783, 
 43309, 21251, 42545, 13923, 42406, 21907, 41561, 22751, 40826, 23764
 };
-static const unsigned char visit_arial_bold_italic_CHAR_112_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_112_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -2288,7 +2288,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_113_pts[] = {
 65535, 49133, 56818, 49133, 52638, 32947, 52469, 31504, 52188, 30036, 
 51795, 28545, 51289, 27029, 50693, 25589, 45958,     0, 27300, 27535
 };
-static const unsigned char visit_arial_bold_italic_CHAR_113_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_113_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -2320,7 +2320,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_114_pts[] = {
 50885, 42821, 43608, 36696, 44846, 38268, 46222, 39682, 47737, 40938, 
 18645,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_114_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_114_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
  12,  13,  14,  12,  14,  15,  12,  15,  16,  12,  16,  17,  18,  19,  20, 
@@ -2357,7 +2357,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_115_pts[] = {
 17439, 12094, 18688,  9663, 20229,  7483, 22063,  5554, 24188,  3877, 
 26647,  2481, 23665, 35231
 };
-static const unsigned char visit_arial_bold_italic_CHAR_115_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_115_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   9,  10,  11,  10,  11,  12,  11,  12,   7, 
  12,   7,  13,   7,  13,   8,  14,  15,  16,  15,  16,  17,  16,  17,  11, 
@@ -2397,7 +2397,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_116_pts[] = {
 22650, 17180, 22192, 14684, 22092,  6538, 21864, 12648, 21725,  8166, 
 21668, 11073, 21602,  9958
 };
-static const unsigned char visit_arial_bold_italic_CHAR_116_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_116_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   8,   9,  10,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,   2,  13,   2,  14,   2,  14,  15,  16,  17,  18,  17,  18,  19, 
@@ -2426,7 +2426,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_117_pts[] = {
 49314, 24333, 48956, 22688, 48607, 21238, 48267, 19982, 47937, 18920, 
 47617, 18052, 47166, 17054, 19131, 11566
 };
-static const unsigned char visit_arial_bold_italic_CHAR_117_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_117_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   6,   5,   7,   6,   7,   8,   6,   8,   9,   6,   9,  10,   6,  10,  11, 
  10,  12,  13,  10,  13,  14,  10,  14,  15,  10,  15,  11,  16,  13,  12, 
@@ -2450,7 +2450,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_118_pts[] = {
 35190, 16147, 34962, 17848, 34651, 19979, 34254, 22539, 33774, 25529, 
 30628, 45253, 18780, 45253
 };
-static const unsigned char visit_arial_bold_italic_CHAR_118_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_118_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   8,   7,   9,   8,   9,  10,   8,  10,  11, 
   8,  11,  12,   8,  12,  13,   8,  13,  14,  13,  15,  16,  13,  16,  17, 
@@ -2462,7 +2462,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_119_pts[] = {
 44293, 35032, 37854, 22299, 35808, 35032, 27316,     0, 25040, 11545, 
 18665,     0, 22633, 35032, 14343, 35032
 };
-static const unsigned char visit_arial_bold_italic_CHAR_119_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_119_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12
@@ -2473,7 +2473,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_120_pts[] = {
 32812, 45604, 31326, 23360, 19895, 45604, 50763, 45604, 65535, 45604, 
 10534,     0, 25446,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_120_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_120_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   8,   3,   1,   8,   1,   9,   6,  10,  11,   6,  11,   4
 };
@@ -2490,7 +2490,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_121_pts[] = {
 27224,   382, 27183,  7751, 26522,  7850, 25852,  7988, 25175,  8166, 
 25823,   679, 24360,  1062
 };
-static const unsigned char visit_arial_bold_italic_CHAR_121_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_121_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   8, 
   6,   8,   5,   6,   5,   4,   9,  10,  11,   9,  11,   8,   9,   8,   7, 
  11,  10,  12,  11,  12,  13,  11,  13,  14,  11,  14,  15,  16,  17,  18, 
@@ -2506,7 +2506,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_122_pts[] = {
 35472, 11373, 63848, 43684, 45965, 41081, 17836,  9510, 57801,     0, 
 60175, 11373, 65535, 52062, 25279, 52062, 23002, 41081, 15849,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_122_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_122_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   2,   1,   6, 
   2,   6,   7,   2,   7,   8,   4,   3,   9
 };
@@ -2543,7 +2543,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_123_pts[] = {
 31018, 10209, 31028,  5806, 31253, 11753, 31277,  4892, 31582, 13550, 
 31625,  4060, 32006, 15599, 32073,  3310, 32429, 17630, 30829,  7879
 };
-static const unsigned char visit_arial_bold_italic_CHAR_123_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_123_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   5,   4,   6, 
   5,   6,   7,   5,   7,   8,   5,   8,   9,   5,   9,  10,   5,  10,  11, 
  11,  10,  12,  11,  12,  13,  11,  13,  14,  11,  14,  15,  11,  15,  16, 
@@ -2579,7 +2579,7 @@ static const unsigned char visit_arial_bold_italic_CHAR_123_tris[] = {
 static const unsigned short visit_arial_bold_italic_CHAR_124_pts[] = {
 30493,     0, 37993,     0, 37993, 65535, 30493, 65535
 };
-static const unsigned char visit_arial_bold_italic_CHAR_124_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_124_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* '}' font data */
@@ -2614,7 +2614,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_125_pts[] = {
 35401, 44563, 35300, 37778, 35256, 43655, 35143, 42840, 35132, 38732, 
 35062, 42117, 35031, 39789, 35014, 41487, 34997, 40949, 18729,     0
 };
-static const unsigned char visit_arial_bold_italic_CHAR_125_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_125_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   4,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,   9,  16,   9,  17, 
@@ -2661,7 +2661,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_126_pts[] = {
  6630, 11456,  5540, 26936,  3629, 25534,  3297,  9022,  1782, 23921, 
     0, 22096,     0,  5892
 };
-static const unsigned char visit_arial_bold_italic_CHAR_126_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_126_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   7,   8,   9,   8,   9,  10,   9,  10,  11,  10,  11,   0,  11,   0,   2, 
  12,  13,  14,  12,  14,  15,  12,  15,   7,  12,   7,   9,  16,  17,  18, 
@@ -2680,7 +2680,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_127_pts[] = {
 22897,     0, 24230,  1351, 22897, 54057, 24230, 52706, 65535, 54057, 
 64202, 52706, 65535,     0, 64202,  1351
 };
-static const unsigned char visit_arial_bold_italic_CHAR_127_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_127_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };
@@ -2689,7 +2689,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_128_pts[] = {
 22897,     0, 24230,  1351, 22897, 54057, 24230, 52706, 65535, 54057, 
 64202, 52706, 65535,     0, 64202,  1351
 };
-static const unsigned char visit_arial_bold_italic_CHAR_128_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_128_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };
@@ -2698,7 +2698,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_129_pts[] = {
 22897,     0, 24230,  1351, 22897, 54057, 24230, 52706, 65535, 54057, 
 64202, 52706, 65535,     0, 64202,  1351
 };
-static const unsigned char visit_arial_bold_italic_CHAR_129_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_129_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };
@@ -2707,7 +2707,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_130_pts[] = {
 22897,     0, 24230,  1351, 22897, 54057, 24230, 52706, 65535, 54057, 
 64202, 52706, 65535,     0, 64202,  1351
 };
-static const unsigned char visit_arial_bold_italic_CHAR_130_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_130_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };
@@ -2716,7 +2716,7 @@ static const unsigned short visit_arial_bold_italic_CHAR_131_pts[] = {
 22897,     0, 24230,  1351, 22897, 54057, 24230, 52706, 65535, 54057, 
 64202, 52706, 65535,     0, 64202,  1351
 };
-static const unsigned char visit_arial_bold_italic_CHAR_131_tris[] = {
+static const unsigned short visit_arial_bold_italic_CHAR_131_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };

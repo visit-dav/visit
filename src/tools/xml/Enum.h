@@ -60,6 +60,9 @@ using std::vector;
 //    Eric Brugger, Mon Jul 26 15:00:00 PDT 2004
 //    I changed cout to out references in the Print method.
 //
+//    Jeremy Meredith, Thu Aug  7 14:56:48 EDT 2008
+//    Use %ld for size_t values.
+//
 // ****************************************************************************
 class EnumType
 {
@@ -93,7 +96,7 @@ class EnumType
     const QString& GetValue(size_t index)
     {
         if (index < 0  ||  index >= values.size())
-            throw QString().sprintf("tried to access out-of-bounds enum type %d",index);
+            throw QString().sprintf("tried to access out-of-bounds enum type %ld",index);
         return values[index];
     }
     void Print(ostream &out)

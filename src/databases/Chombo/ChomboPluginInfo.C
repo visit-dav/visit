@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 ChomboGeneralPluginInfo::GetName() const
 {
     return "Chombo";
@@ -100,7 +100,7 @@ ChomboGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ChomboGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ ChomboGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ChomboGeneralPluginInfo::GetID() const
 {
     return "Chombo_1.0";

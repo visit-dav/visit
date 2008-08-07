@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 FITSGeneralPluginInfo::GetName() const
 {
     return "FITS";
@@ -100,7 +100,7 @@ FITSGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 FITSGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ FITSGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 FITSGeneralPluginInfo::GetID() const
 {
     return "FITS_1.0";

@@ -102,6 +102,10 @@ static double          proportion = 0.;
 static char           *output_file = NULL;
 
    
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 14:53:11 EDT 2008
+//    Use a const char* to store string literal pointers.
+//
 int 
 main(int argc, char *argv[])
 {
@@ -198,7 +202,7 @@ main(int argc, char *argv[])
         // correctly by the VTK camera.  It is purposefully colored the
         // background color.
         vtkPolyDataMapper *dummy_mapper = vtkPolyDataMapper::New();
-        char *dummy_str = "_";
+        const char *dummy_str = "_";
         dummy_mapper->SetInput(CreateText(1, &dummy_str));
         vtkActor *dummy_actor = vtkActor::New();
         dummy_actor->SetMapper(dummy_mapper);

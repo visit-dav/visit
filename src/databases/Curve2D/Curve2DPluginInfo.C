@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 Curve2DGeneralPluginInfo::GetName() const
 {
     return "Curve2D";
@@ -100,7 +100,7 @@ Curve2DGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 Curve2DGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ Curve2DGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 Curve2DGeneralPluginInfo::GetID() const
 {
     return "Curve2D_1.0";

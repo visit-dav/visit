@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 SAMRAIGeneralPluginInfo::GetName() const
 {
     return "SAMRAI";
@@ -100,7 +100,7 @@ SAMRAIGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SAMRAIGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ SAMRAIGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SAMRAIGeneralPluginInfo::GetID() const
 {
     return "SAMRAI_1.0";

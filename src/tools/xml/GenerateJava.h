@@ -112,6 +112,9 @@ using std::vector;
 //    Brad Whitlock, Thu Feb 28 16:06:19 PST 2008
 //    Made use of base classes for easier maintenance.
 //
+//    Jeremy Meredith, Thu Aug  7 14:34:01 EDT 2008
+//    Reorder constructor initializers to be the correct order.
+//
 // ****************************************************************************
 
 class JavaGeneratorField : public virtual Field
@@ -255,7 +258,7 @@ class JavaGeneratorInt : public virtual Int , public virtual JavaGeneratorField
 {
   public:
     JavaGeneratorInt(const QString &n, const QString &l)
-        : Int(n,l), JavaGeneratorField("int",n,l), Field("int",n,l) { }
+        : Field("int",n,l), Int(n,l), JavaGeneratorField("int",n,l) { }
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
@@ -289,7 +292,7 @@ class JavaGeneratorIntArray : public virtual IntArray , public virtual JavaGener
 {
   public:
     JavaGeneratorIntArray(const QString &s, const QString &n, const QString &l)
-        : IntArray(s,n,l), JavaGeneratorField("intArray",n,l), Field("intArray",n,l) { }
+        : Field("intArray",n,l), IntArray(s,n,l), JavaGeneratorField("intArray",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -376,7 +379,7 @@ class JavaGeneratorIntVector : public virtual IntVector , public virtual JavaGen
 {
   public:
     JavaGeneratorIntVector(const QString &n, const QString &l)
-        : IntVector(n,l), JavaGeneratorField("intVector",n,l), Field("intVector",n,l) { }
+        : Field("intVector",n,l), IntVector(n,l), JavaGeneratorField("intVector",n,l) { }
 
     virtual void AddImports(UniqueStringList &sl) 
     { 
@@ -442,7 +445,7 @@ class JavaGeneratorBool : public virtual Bool , public virtual JavaGeneratorFiel
 {
   public:
     JavaGeneratorBool(const QString &n, const QString &l)
-        : Bool(n,l), JavaGeneratorField("boolean",n,l), Field("boolean",n,l) { }
+        : Field("boolean",n,l), Bool(n,l), JavaGeneratorField("boolean",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -478,7 +481,7 @@ class JavaGeneratorFloat : public virtual Float , public virtual JavaGeneratorFi
 {
   public:
     JavaGeneratorFloat(const QString &n, const QString &l)
-        : Float(n,l), JavaGeneratorField("float",n,l), Field("float",n,l) { }
+        : Field("float",n,l), Float(n,l), JavaGeneratorField("float",n,l) { }
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
@@ -509,7 +512,7 @@ class JavaGeneratorFloatArray : public virtual FloatArray , public virtual JavaG
 {
   public:
     JavaGeneratorFloatArray(const QString &s, const QString &n, const QString &l)
-        : FloatArray(s,n,l), JavaGeneratorField("floatArray",n,l), Field("floatArray",n,l) { }
+        : Field("floatArray",n,l), FloatArray(s,n,l), JavaGeneratorField("floatArray",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -596,7 +599,7 @@ class JavaGeneratorDouble : public virtual Double , public virtual JavaGenerator
 {
   public:
     JavaGeneratorDouble(const QString &n, const QString &l)
-        : Double(n,l), JavaGeneratorField("double",n,l), Field("double",n,l) { }
+        : Field("double",n,l), Double(n,l), JavaGeneratorField("double",n,l) { }
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
@@ -627,7 +630,7 @@ class JavaGeneratorDoubleArray : public virtual DoubleArray , public virtual Jav
 {
   public:
     JavaGeneratorDoubleArray(const QString &s, const QString &n, const QString &l)
-        : DoubleArray(s,n,l), JavaGeneratorField("doubleArray",n,l), Field("doubleArray",n,l) { }
+        : Field("doubleArray",n,l), DoubleArray(s,n,l), JavaGeneratorField("doubleArray",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -714,7 +717,7 @@ class JavaGeneratorDoubleVector : public virtual DoubleVector , public virtual J
 {
   public:
     JavaGeneratorDoubleVector(const QString &n, const QString &l)
-        : DoubleVector(n,l), JavaGeneratorField("doubleVector",n,l), Field("doubleVector",n,l) { }
+        : Field("doubleVector",n,l), DoubleVector(n,l), JavaGeneratorField("doubleVector",n,l) { }
 
     virtual void AddImports(UniqueStringList &sl) 
     { 
@@ -778,7 +781,7 @@ class JavaGeneratorUChar : public virtual UChar , public virtual JavaGeneratorFi
 {
   public:
     JavaGeneratorUChar(const QString &n, const QString &l)
-        : UChar(n,l), JavaGeneratorField("uchar",n,l), Field("uchar",n,l) { }
+        : Field("uchar",n,l), UChar(n,l), JavaGeneratorField("uchar",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -814,7 +817,7 @@ class JavaGeneratorUCharArray : public virtual UCharArray , public virtual JavaG
 {
   public:
     JavaGeneratorUCharArray(const QString &s, const QString &n, const QString &l)
-        : UCharArray(s,n,l), JavaGeneratorField("byte",n,l), Field("ucharArray",n,l) { }
+        : Field("ucharArray",n,l), UCharArray(s,n,l), JavaGeneratorField("byte",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -901,7 +904,7 @@ class JavaGeneratorUCharVector : public virtual UCharVector , public virtual Jav
 {
   public:
     JavaGeneratorUCharVector(const QString &n, const QString &l)
-        : UCharVector(n,l), JavaGeneratorField("ucharVector",n,l), Field("ucharVector",n,l) { }
+        : Field("ucharVector",n,l), UCharVector(n,l), JavaGeneratorField("ucharVector",n,l) { }
 
     virtual void AddImports(UniqueStringList &sl) 
     { 
@@ -965,7 +968,7 @@ class JavaGeneratorString : public virtual String , public virtual JavaGenerator
 {
   public:
     JavaGeneratorString(const QString &n, const QString &l)
-        : String(n,l), JavaGeneratorField("string",n,l), Field("string",n,l) { }
+        : Field("string",n,l), String(n,l), JavaGeneratorField("string",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -1013,7 +1016,7 @@ class JavaGeneratorStringVector : public virtual StringVector , public virtual J
 {
   public:
     JavaGeneratorStringVector(const QString &n, const QString &l)
-        : StringVector(n,l), JavaGeneratorField("stringVector",n,l), Field("stringVector",n,l) { }
+        : Field("stringVector",n,l), StringVector(n,l), JavaGeneratorField("stringVector",n,l) { }
 
     virtual void AddImports(UniqueStringList &sl) 
     { 
@@ -1073,7 +1076,7 @@ class JavaGeneratorColorTable : public virtual ColorTable , public virtual JavaG
 {
   public:
     JavaGeneratorColorTable(const QString &n, const QString &l)
-        : ColorTable(n,l), JavaGeneratorField("colortable",n,l), Field("colortable",n,l) { }
+        : Field("colortable",n,l), ColorTable(n,l), JavaGeneratorField("colortable",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -1118,7 +1121,7 @@ class JavaGeneratorColor : public virtual Color , public virtual JavaGeneratorFi
 {
   public:
     JavaGeneratorColor(const QString &n, const QString &l)
-        : Color(n,l), JavaGeneratorField("color",n,l), Field("color",n,l) { }
+        : Field("color",n,l), Color(n,l), JavaGeneratorField("color",n,l) { }
 
     virtual void AddImports(UniqueStringList &sl) 
     { 
@@ -1180,7 +1183,7 @@ class JavaGeneratorLineStyle : public virtual LineStyle , public virtual JavaGen
 {
   public:
     JavaGeneratorLineStyle(const QString &n, const QString &l)
-        : LineStyle(n,l), JavaGeneratorField("linestyle",n,l), Field("linestyle",n,l) { }
+        : Field("linestyle",n,l), LineStyle(n,l), JavaGeneratorField("linestyle",n,l) { }
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
@@ -1211,7 +1214,7 @@ class JavaGeneratorLineWidth : public virtual LineWidth , public virtual JavaGen
 {
   public:
     JavaGeneratorLineWidth(const QString &n, const QString &l)
-        : LineWidth(n,l), JavaGeneratorField("linewidth",n,l), Field("linewidth",n,l) { }
+        : Field("linewidth",n,l), LineWidth(n,l), JavaGeneratorField("linewidth",n,l) { }
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
@@ -1242,7 +1245,7 @@ class JavaGeneratorOpacity : public virtual Opacity , public virtual JavaGenerat
 {
   public:
     JavaGeneratorOpacity(const QString &n, const QString &l)
-        : Opacity(n,l), JavaGeneratorField("opacity",n,l), Field("opacity",n,l) { }
+        : Field("opacity",n,l), Opacity(n,l), JavaGeneratorField("opacity",n,l) { }
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
@@ -1274,8 +1277,9 @@ class JavaGeneratorVariableName : public virtual VariableName,
 {
   public:
     JavaGeneratorVariableName(const QString &n, const QString &l)
-        : VariableName(n,l), JavaGeneratorField("variablename",n,l),
-          Field("variablename",n,l) { }
+        : Field("variablename",n,l), VariableName(n,l),
+          JavaGeneratorField("variablename",n,l)
+           { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -1323,7 +1327,7 @@ class JavaGeneratorAtt : public virtual Att , public virtual JavaGeneratorField
 {
   public:
     JavaGeneratorAtt(const QString &t, const QString &n, const QString &l)
-        : Att(t,n,l), JavaGeneratorField("att",n,l), Field("att",n,l) { }
+        : Field("att",n,l), Att(t,n,l), JavaGeneratorField("att",n,l) { }
 
     virtual void AddImports(UniqueStringList &sl) 
     { 
@@ -1373,7 +1377,7 @@ class JavaGeneratorAttVector : public virtual AttVector , public virtual JavaGen
 {
   public:
     JavaGeneratorAttVector(const QString &t, const QString &n, const QString &l)
-        : AttVector(t,n,l), JavaGeneratorField("attVector",n,l), Field("attVector",n,l) { }
+        : Field("attVector",n,l), AttVector(t,n,l), JavaGeneratorField("attVector",n,l) { }
 
     virtual void AddImports(UniqueStringList &sl) 
     { 
@@ -1516,7 +1520,7 @@ class JavaGeneratorEnum : public virtual Enum , public virtual JavaGeneratorFiel
 {
   public:
     JavaGeneratorEnum(const QString &t, const QString &n, const QString &l)
-        : Enum(t,n,l), JavaGeneratorField("enum",n,l), Field("enum",n,l) { }
+        : Field("enum",n,l), Enum(t,n,l), JavaGeneratorField("enum",n,l) { }
 
     virtual QString GetCPPName(bool, const QString &) 
     {
@@ -1563,7 +1567,7 @@ class JavaGeneratorScaleMode : public virtual ScaleMode , public virtual JavaGen
 {
   public:
     JavaGeneratorScaleMode(const QString &n, const QString &l)
-        : ScaleMode(n,l), JavaGeneratorField("scalemode",n,l), Field("scalemode",n,l) { }
+        : Field("scalemode",n,l), ScaleMode(n,l), JavaGeneratorField("scalemode",n,l) { }
 
     virtual void WriteSourceSetDefault(ostream &c)
     {

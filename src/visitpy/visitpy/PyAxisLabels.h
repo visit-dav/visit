@@ -45,17 +45,17 @@
 //
 // Functions exposed to the VisIt module.
 //
-void VISITPY_API          PyAxisLabels_StartUp(AxisLabels *subj, void *data);
-void VISITPY_API          PyAxisLabels_CloseDown();
+void VISITPY_API           PyAxisLabels_StartUp(AxisLabels *subj, void *data);
+void VISITPY_API           PyAxisLabels_CloseDown();
 VISITPY_API PyMethodDef *   PyAxisLabels_GetMethodTable(int *nMethods);
-bool VISITPY_API          PyAxisLabels_Check(PyObject *obj);
+bool VISITPY_API           PyAxisLabels_Check(PyObject *obj);
 VISITPY_API AxisLabels *  PyAxisLabels_FromPyObject(PyObject *obj);
 VISITPY_API PyObject *      PyAxisLabels_New();
 VISITPY_API PyObject *      PyAxisLabels_Wrap(const AxisLabels *attr);
-void VISITPY_API          PyAxisLabels_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API          PyAxisLabels_SetDefaults(const AxisLabels *atts);
-std::string VISITPY_API   PyAxisLabels_GetLogString();
-std::string VISITPY_API   PyAxisLabels_ToString(const AxisLabels *, const char *);
+void VISITPY_API           PyAxisLabels_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API           PyAxisLabels_SetDefaults(const AxisLabels *atts);
+std::string VISITPY_API    PyAxisLabels_GetLogString();
+std::string VISITPY_API    PyAxisLabels_ToString(const AxisLabels *, const char *);
 
 #endif
 

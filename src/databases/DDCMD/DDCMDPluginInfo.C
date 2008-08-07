@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 DDCMDGeneralPluginInfo::GetName() const
 {
     return "DDCMD";
@@ -100,7 +100,7 @@ DDCMDGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 DDCMDGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ DDCMDGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 DDCMDGeneralPluginInfo::GetID() const
 {
     return "DDCMD_1.0";
