@@ -42,6 +42,9 @@
 #    Cyrus Harrison, Tue Dec 18 14:35:17 PST 2007
 #    Added avtFactorial, avtPolynomial, and avtHermitePolynomial
 #
+#    Kathleen Bonnell, Thu Aug  7 09:20:15 PDT 2008
+#    Added avtVecArray.C
+#
 ##############################################################################
 
 ##
@@ -56,7 +59,7 @@
 ## Files...
 ##
 SRC=avtMatrix.C avtVector.C avtQuaternion.C avtTrackball.C \
-    avtFactorial.C avtPolynomial.C avtHermitePolynomial.C
+    avtFactorial.C avtPolynomial.C avtHermitePolynomial.C avtVecArray.C
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @SILO_INCLUDE@ @CPPFLAGS@
 
