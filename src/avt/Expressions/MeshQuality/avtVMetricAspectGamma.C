@@ -71,6 +71,9 @@
 //    Hank Childs, Thu Oct 17 08:07:53 PDT 2002
 //    Update for new verdict interface.
 //
+//    Eric Brugger, Thu Aug  7 08:41:30 PDT 2008
+//    Updated for verdict version 110.
+//
 // ****************************************************************************
 
 double avtVMetricAspectGamma::Metric (double coords[][3], int type)
@@ -80,9 +83,6 @@ double avtVMetricAspectGamma::Metric (double coords[][3], int type)
     {
         case VTK_TETRA:
             return v_tet_aspect_gamma(4,coords);
-
-        case VTK_TRIANGLE:
-            return v_tri_aspect(3, coords);
     }
 #endif
     return 0;

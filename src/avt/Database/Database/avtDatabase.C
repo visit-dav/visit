@@ -1265,6 +1265,9 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
 //    Hank Childs, Thu Jul 24 13:40:46 PDT 2008
 //    Give priority to names with MESH in it.
 //
+//    Eric Brugger, Thu Aug  7 08:52:06 PDT 2008
+//    Updated for verdict version 110.
+//
 // ****************************************************************************
 
 void
@@ -1323,23 +1326,23 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
         exprs[4]  = MQExprTopoPair("diagonal", 3);
         exprs[5]  = MQExprTopoPair("dimension", 3);
         exprs[6]  = MQExprTopoPair("jacobian", -1);
-        exprs[7]  = MQExprTopoPair("largest_angle", 2);
-        exprs[8]  = MQExprTopoPair("oddy", -1);
-        exprs[9]  = MQExprTopoPair("relative_size", -1);
-        exprs[10] = MQExprTopoPair("scaled_jacobian", -1);
-        exprs[11] = MQExprTopoPair("shape", -1);
-        exprs[12] = MQExprTopoPair("shape_and_size", -1);
-        exprs[13] = MQExprTopoPair("shear", -1);
-        exprs[14] = MQExprTopoPair("skew", -1);
-        exprs[15] = MQExprTopoPair("smallest_angle", 2);
-        exprs[16] = MQExprTopoPair("stretch", -1);
-        exprs[17] = MQExprTopoPair("taper", -1);
-        exprs[18] = MQExprTopoPair("volume", 3);
-        exprs[19] = MQExprTopoPair("min_side_volume", 3);
-        exprs[20] = MQExprTopoPair("max_side_volume", 3);
-        exprs[21] = MQExprTopoPair("warpage", 2);
-        exprs[22] = MQExprTopoPair("min_edge_length", -1);
-        exprs[23] = MQExprTopoPair("max_edge_length", -1);
+        exprs[7]  = MQExprTopoPair("max_edge_length", -1);
+        exprs[8]  = MQExprTopoPair("max_side_volume", 3);
+        exprs[9]  = MQExprTopoPair("maximum_angle", 2);
+        exprs[10] = MQExprTopoPair("min_edge_length", -1);
+        exprs[11] = MQExprTopoPair("min_side_volume", 3);
+        exprs[12] = MQExprTopoPair("minimum_angle", 2);
+        exprs[13] = MQExprTopoPair("oddy", -1);
+        exprs[14] = MQExprTopoPair("relative_size", -1);
+        exprs[15] = MQExprTopoPair("scaled_jacobian", -1);
+        exprs[16] = MQExprTopoPair("shape", -1);
+        exprs[17] = MQExprTopoPair("shape_and_size", -1);
+        exprs[18] = MQExprTopoPair("shear", -1);
+        exprs[19] = MQExprTopoPair("skew", -1);
+        exprs[20] = MQExprTopoPair("stretch", -1);
+        exprs[21] = MQExprTopoPair("taper", -1);
+        exprs[22] = MQExprTopoPair("volume", 3);
+        exprs[23] = MQExprTopoPair("warpage", 2);
 
         for (int j = 0 ; j < nPairs ; j++)
         {
