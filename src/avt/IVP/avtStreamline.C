@@ -149,6 +149,10 @@ avtStreamline::Advance(const avtIVPField* field, double tEnd, bool vorticity,
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug  7, 08:29:42 PDT 2008
+//    Removed unused variable in catch.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -177,7 +181,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp, const avtIVPField* field,
         {
             result = ivp->Step(field, tEnd, step);
         }
-        catch( avtIVPField::Undefined& u )
+        catch( avtIVPField::Undefined& )
         {
             // integrator left the domain, retry with smaller step
             // if step size is below given minimum, give up
@@ -499,6 +503,11 @@ avtStreamline::PtEnds( avtVec &ptBwd, avtVec &ptFwd ) const
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug  7, 08:29:42 PDT 2008
+//    Changed for loop to use size_t to eliminate signed/unsigned int 
+//    comparison warnings.
+//
 // ****************************************************************************
 
 void
@@ -522,7 +531,7 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
         _steps.clear();
         size_t sz;
         buff.io( mode, sz );
-        for ( int i = 0; i < sz; i++ )
+        for ( size_t i = 0; i < sz; i++ )
         {
             avtIVPStep *s = new avtIVPStep;
             s->Serialize( mode, buff );

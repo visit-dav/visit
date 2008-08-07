@@ -48,7 +48,7 @@
 #include <avtBezierSegment.h>
 #include <MemStream.h>
 
-class avtIVPStateHelper;
+struct avtIVPStateHelper;
 
 
 // ****************************************************************************
@@ -78,6 +78,10 @@ class avtIVPStateHelper;
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug  7 08:50:13 PDT 2008
+//    Changed return of ComputeVoriticity from double to void.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPStep: public avtBezierSegment
@@ -85,7 +89,7 @@ class IVP_API avtIVPStep: public avtBezierSegment
 public:
     avtIVPStep() : avtBezierSegment() { tStart = tEnd = vorticity = 0.0; }
     
-    double   ComputeVorticity(const avtIVPField *field)
+    void   ComputeVorticity(const avtIVPField *field)
     {
         double tMid = tStart + (tEnd-tStart)/2.0;
         

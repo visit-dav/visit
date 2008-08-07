@@ -5151,8 +5151,13 @@ NetworkManager::MemoMultipass(VisWindow *viswin)
 //  Programmer: Tom Fogal
 //  Creation:   August 2, 2008
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug  7 07:52:55 PDT 2008
+//    Changed return from bool to void.
+//
 // ****************************************************************************
-bool
+
+void
 NetworkManager::ForgetMultipass()
 {
     this->r_mgmt.mpass_saved = false;

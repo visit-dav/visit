@@ -327,6 +327,11 @@ avtIVPAdamsBashforth::Initialize(const avtIVPField *field)
 //  Programmer: Dave Pugmire
 //  Creation:   August 5, 2008
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug  7, 08:29:42 PDT 2008
+//    Changed for loops to use size_t to eliminate signed/unsigned int 
+//    comparison warnings.
+//
 // ****************************************************************************
 
 bool
@@ -334,7 +339,7 @@ avtIVPAdamsBashforth::HasConverged(avtVec &y0, avtVec &y1, double epsilon)
 {
     double maxY0 = y0.values()[0], maxY1 = y1.values()[0];
     
-    for ( int i = 1; i < y0.dim(); i++ )
+    for ( size_t i = 1; i < y0.dim(); i++ )
     {
         if ( y0.values()[i] > maxY0 )
             maxY0 = y0.values()[i];
@@ -345,7 +350,7 @@ avtIVPAdamsBashforth::HasConverged(avtVec &y0, avtVec &y1, double epsilon)
     if ( maxY0 > 1.0 && maxY1 > 1.0 )
         epsilon *= fabs(maxY1);
     
-    for ( int i = 0; i < y0.dim(); i++ )
+    for ( size_t i = 0; i < y0.dim(); i++ )
         if ( fabs( y0.values()[i] - y1.values()[i] ) > epsilon )
             return false;
     
@@ -369,6 +374,11 @@ avtIVPAdamsBashforth::HasConverged(avtVec &y0, avtVec &y1, double epsilon)
 //  Programmer: Dave Pugmire
 //  Creation:   August 5, 2008
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug  7, 08:29:42 PDT 2008
+//    Changed for loops to use size_t to eliminate signed/unsigned int 
+//    comparison warnings.
+//
 // ****************************************************************************
 
 int
@@ -389,7 +399,7 @@ avtIVPAdamsBashforth::AdamsMoulton4Steps(const avtIVPField* field,
     
    for (i = 1; i < STEPS; i++, n--)
    {
-       for ( int j = 0; j < x.dim(); j++ )
+       for ( size_t j = 0; j < x.dim(); j++ )
            delta.values()[j] += moulton[i] * fns[n].values()[j];
    }
    
@@ -413,6 +423,11 @@ avtIVPAdamsBashforth::AdamsMoulton4Steps(const avtIVPField* field,
 //  Programmer: Dave Pugmire
 //  Creation:   August 5, 2008
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug  7, 08:29:42 PDT 2008
+//    Changed for loops to use size_t to eliminate signed/unsigned int 
+//    comparison warnings.
+//
 // ****************************************************************************
 
 avtVec
@@ -426,12 +441,12 @@ avtIVPAdamsBashforth::AdamsBashforth5Steps( avtVec &y,
     // Calculate the predictor using the Adams-Bashforth formula 
     for (i = 0; i < STEPS; i++, n--)
     {
-        for ( int j = 0; j < y.dim(); j++ )
+        for ( size_t j = 0; j < y.dim(); j++ )
             delta.values()[j] += bashforth[i] * fns[n].values()[j];
     }
     
     avtVec yStep(y.dim());
-    for ( int i = 0; i < y.dim(); i++)
+    for ( size_t i = 0; i < y.dim(); i++)
         yStep.values()[i] = y.values()[i] + h*divisor*delta.values()[i];
     return yStep;
 }
@@ -446,6 +461,10 @@ avtIVPAdamsBashforth::AdamsBashforth5Steps( avtVec &y,
 //  Programmer: Dave Pugmire
 //  Creation:   August 5, 2008
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug  7, 08:29:42 PDT 2008
+//    Removed unused variable 'converged'.
+//
 // ****************************************************************************
 
 int
@@ -458,7 +477,6 @@ avtIVPAdamsBashforth::Adams5Steps(const avtIVPField* field,
                                   int iterations )
 {
     int i;
-    int converged;
 
     // Calculate the predictor using the Adams-Bashforth formula 
     fns[STEPS-1] = (*field)(t, x0);

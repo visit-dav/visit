@@ -61,7 +61,7 @@
 //
 // ****************************************************************************
 
-struct MemStream
+struct IVP_API MemStream
 {
   public:
     enum Mode {
@@ -124,7 +124,7 @@ struct MemStream
         size_t sz;
         read(sz);
         v.resize(sz);
-        for ( int i = 0; i < sz; i++ )
+        for ( size_t i = 0; i < sz; i++ )
             read(v[i]);
     }
 
@@ -163,7 +163,7 @@ struct MemStream
     template <typename T> void write( const std::vector<T> &v )
     {
         write( v.size() );
-        for ( int i = 0; i < v.size(); i++ )
+        for ( size_t i = 0; i < v.size(); i++ )
             write( v[i] );
     }
 

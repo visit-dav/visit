@@ -60,6 +60,9 @@
 #include <avtSpatialBoxSelection.h>
 
 #include <DebugStream.h>
+#include <snprintf.h>
+
+using std::string;
 
 // Define the VTK filter here.
 
@@ -594,7 +597,7 @@ avtBoxFilter::Equivalent(const AttributeGroup *a)
 // ****************************************************************************
 
 avtDataTree_p
-avtBoxFilter::ExecuteDataTree(vtkDataSet *in_ds, int dom, std::string label)
+avtBoxFilter::ExecuteDataTree(vtkDataSet *in_ds, int dom, string label)
 {
     if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0 ||
         in_ds->GetNumberOfCells() == 0)
@@ -697,7 +700,6 @@ avtBoxFilter::GeneralExecute(vtkDataSet *in_ds)
     //
     vtkUnstructuredGrid *newDS = bf->GetOutput();
     newDS->Update();
-vtkVisItUtility::WriteDataSet(newDS, "vtkBoxFilter_output.vtk");
     newDS->Register(NULL);
     //newDS->SetSource(NULL);
     bf->Delete();
@@ -715,7 +717,7 @@ vtkVisItUtility::WriteDataSet(newDS, "vtkBoxFilter_output.vtk");
 //  Programmer: Hank Childs
 //  Creation:   April 24, 2005
 //
-//  Modidfications:
+//  Modifications:
 //    Eric Brugger, Tue Apr 26 08:10:10 PDT 2005
 //    I added code to properly handle the case where the number of
 //    coordinates was one.  I also fixed the logic to properly handle
@@ -931,9 +933,25 @@ avtBoxFilter::ModifyContract(avtContract_p spec)
     return rv;
 }
 
-#include <snprintf.h>
+// ****************************************************************************
+//  Method: avtBoxFilter::CurveExecute
+//
+//  Purpose:
+//    Execution for curves.  Creates multiple discontinuous curves if the box 
+//    cuts off original curve.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 1, 2008
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug  7, 08:00:00 PDT 2008
+//    Changed creation of curves.
+//  
+//
+// ****************************************************************************
+
 avtDataTree_p
-avtBoxFilter::CurveExecute(vtkRectilinearGrid *in_ds, int dom, std::string label)
+avtBoxFilter::CurveExecute(vtkRectilinearGrid *in_ds, int dom, string label)
 {
     bool needAll = (atts.GetAmount() == BoxAttributes::All);
     float minX = atts.GetMinx();
@@ -977,7 +995,7 @@ avtBoxFilter::CurveExecute(vtkRectilinearGrid *in_ds, int dom, std::string label
     }
     
     const int nCurves = curveEndPoints.size()/2;
-    vtkDataSet *curves[nCurves];
+    vtkDataSet **curves = new vtkDataSet *[nCurves];
     stringVector labels;
 
     char l[25];
@@ -1009,6 +1027,7 @@ avtBoxFilter::CurveExecute(vtkRectilinearGrid *in_ds, int dom, std::string label
     {
         curves[i]->Delete();
     }
+    delete [] curves;
     return outDT;
 }
 
