@@ -48,6 +48,7 @@
 #include <vtkCellDataToPointData.h>
 #include <vtkDataSet.h>
 #include <vtkExecutive.h>
+#include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkPointDataToCellData.h>
 #include <vtkPolyData.h>
@@ -150,11 +151,16 @@ avtShiftCenteringFilter::~avtShiftCenteringFilter()
 //    Can no longer use SetOutput on a vtk filter, must grab the filters' 
 //    executive and SetOuputData. 
 //
+//    Hank Childs, Thu Aug  7 09:39:40 PDT 2008
+//    Add support for non-floating point arrays.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 {
+    int  i, j, k;
+
     vtkDataSet *newDS = (vtkDataSet *) inDS->NewInstance();
     newDS->ShallowCopy(inDS);
     vtkDataSet *outDS = newDS;
@@ -163,12 +169,48 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
                         = GetInput()->GetInfo().GetAttributes().GetCentering();
     if (centeringInstruction == 1 && centering == AVT_ZONECENT)
     {
+        int nArray = inDS->GetCellData()->GetNumberOfArrays();
+        vector<int> arraysToSwap;
+        for (i = 0 ; i < nArray ; i++)
+        {
+            vtkDataArray *arr = inDS->GetCellData()->GetArray(i);
+            int dt = arr->GetDataType();
+            if (dt == VTK_UNSIGNED_CHAR || dt == VTK_INT ||
+                dt == VTK_UNSIGNED_INT)
+            {
+                arraysToSwap.push_back(i);
+            }
+        }
+
+        vtkDataSet *dsToShift = inDS;
+        if (arraysToSwap.size() > 0)
+        {
+            dsToShift = (vtkDataSet *) inDS->NewInstance();
+            dsToShift->ShallowCopy(inDS);
+            for (k = arraysToSwap.size()-1 ; k >= 0 ; k--)
+            {
+                vtkDataArray *arr = inDS->GetCellData()->GetArray(k);
+                vtkFloatArray *fa = vtkFloatArray::New();
+                int ntups  = arr->GetNumberOfTuples();
+                int ncomps = arr->GetNumberOfComponents();
+                fa->SetNumberOfComponents(ncomps);
+                fa->SetNumberOfTuples(ntups);
+                for (i = 0 ; i < ntups ; i++)
+                    for (j = 0 ; j < ncomps ; j++)
+                        fa->SetComponent(i, j, arr->GetComponent(i, j));
+                fa->SetName(arr->GetName());
+                dsToShift->GetCellData()->RemoveArray(arr->GetName());
+                dsToShift->GetCellData()->AddArray(fa);
+                fa->Delete();
+            }
+        }
+
         //
         //  User requested node-centered but our data is zone-centered,
         //  create the point data from cell data.
         //
         vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
-        cd2pd->SetInput(inDS);
+        cd2pd->SetInput(dsToShift);
         cd2pd->GetExecutive()->SetOutputData(0, outDS);
         cd2pd->Update();
         cd2pd->Delete();
@@ -195,16 +237,90 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             // Only want origCells cell-data, not origCells point-data.
             outDS->GetPointData()->RemoveArray("avtOriginalCellNumbers");
         }
+
+        // Convert the former int arrays back to int.
+        if (arraysToSwap.size() > 0)
+        {
+            for (k = 0 ; k < arraysToSwap.size() ; k++)
+            {
+                vtkDataArray *arr_in  = inDS->GetCellData()
+                                            ->GetArray(arraysToSwap[k]);
+                vtkDataArray *new_arr = vtkDataArray::CreateDataArray(
+                                                         arr_in->GetDataType());
+
+                vtkDataArray *arr_out = outDS->GetPointData()
+                                            ->GetArray(arraysToSwap.size()-k-1);
+                int ntups  = arr_out->GetNumberOfTuples();
+                int ncomps = arr_out->GetNumberOfComponents();
+                new_arr->SetNumberOfComponents(ncomps);
+                new_arr->SetNumberOfTuples(ntups);
+                for (i = 0 ; i < ntups ; i++)
+                    for (j = 0 ; j < ncomps ; j++)
+                        new_arr->SetComponent(i, j, 
+                                           arr_out->GetComponent(i, j)+0.001);
+                new_arr->SetName(arr_out->GetName());
+                bool isActiveScalar = 
+                                 (inDS->GetCellData()->GetScalars() == arr_in);
+                bool isActiveVector = 
+                                 (inDS->GetCellData()->GetVectors() == arr_in);
+                outDS->GetPointData()->RemoveArray(arr_out->GetName());
+                outDS->GetPointData()->AddArray(new_arr);
+                if (isActiveScalar)
+                    outDS->GetPointData()->SetActiveScalars(new_arr->GetName());
+                if (isActiveVector)
+                    outDS->GetPointData()->SetActiveVectors(new_arr->GetName());
+                new_arr->Delete();
+            }
+            dsToShift->Delete();
+        }
     }
     else if (centeringInstruction == 2 && centering == AVT_NODECENT)
     {
+        // Detect if there are any integer type arrays and make them be floats for
+        // recenting.
+        int nArray = inDS->GetPointData()->GetNumberOfArrays();
+        vector<int> arraysToSwap;
+        for (i = 0 ; i < nArray ; i++)
+        {
+            vtkDataArray *arr = inDS->GetPointData()->GetArray(i);
+            int dt = arr->GetDataType();
+            if (dt == VTK_UNSIGNED_CHAR || dt == VTK_INT ||
+                dt == VTK_UNSIGNED_INT)
+            {
+                arraysToSwap.push_back(i);
+            }
+        }
+
+        vtkDataSet *dsToShift = inDS;
+        if (arraysToSwap.size() > 0)
+        {
+            dsToShift = (vtkDataSet *) inDS->NewInstance();
+            dsToShift->ShallowCopy(inDS);
+            for (k = arraysToSwap.size()-1 ; k >= 0 ; k--)
+            {
+                vtkDataArray *arr = inDS->GetPointData()->GetArray(k);
+                vtkFloatArray *fa = vtkFloatArray::New();
+                int ntups  = arr->GetNumberOfTuples();
+                int ncomps = arr->GetNumberOfComponents();
+                fa->SetNumberOfComponents(ncomps);
+                fa->SetNumberOfTuples(ntups);
+                for (i = 0 ; i < ntups ; i++)
+                    for (j = 0 ; j < ncomps ; j++)
+                        fa->SetComponent(i, j, arr->GetComponent(i, j));
+                fa->SetName(arr->GetName());
+                dsToShift->GetPointData()->RemoveArray(arr->GetName());
+                dsToShift->GetPointData()->AddArray(fa);
+                fa->Delete();
+            }
+        }
+
         //
         //  User requested zone-centered but our data is node-centered,
         //  create the cell data from point data.
         //
         vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
      
-        pd2cd->SetInput(inDS);
+        pd2cd->SetInput(dsToShift);
         pd2cd->GetExecutive()->SetOutputData(0, outDS);
         pd2cd->Update();
         pd2cd->Delete();
@@ -220,6 +336,42 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         {
             outDS->GetPointData()->AddArray(gn);
             outDS->GetCellData()->RemoveArray("avtGhostNodes");
+        }
+
+        // Convert the former int arrays back to int.
+        if (arraysToSwap.size() > 0)
+        {
+            for (k = 0 ; k < arraysToSwap.size() ; k++)
+            {
+                vtkDataArray *arr_in  = inDS->GetPointData()
+                                            ->GetArray(arraysToSwap[k]);
+                vtkDataArray *new_arr = vtkDataArray::CreateDataArray(
+                                                         arr_in->GetDataType());
+
+                vtkDataArray *arr_out = outDS->GetCellData()
+                                            ->GetArray(arraysToSwap.size()-k-1);
+                int ntups  = arr_out->GetNumberOfTuples();
+                int ncomps = arr_out->GetNumberOfComponents();
+                new_arr->SetNumberOfComponents(ncomps);
+                new_arr->SetNumberOfTuples(ntups);
+                for (i = 0 ; i < ntups ; i++)
+                    for (j = 0 ; j < ncomps ; j++)
+                        new_arr->SetComponent(i, j, 
+                                             arr_out->GetComponent(i, j)+0.001);
+                new_arr->SetName(arr_out->GetName());
+                bool isActiveScalar = 
+                                 (inDS->GetPointData()->GetScalars() == arr_in);
+                bool isActiveVector = 
+                                 (inDS->GetPointData()->GetVectors() == arr_in);
+                outDS->GetCellData()->RemoveArray(arr_out->GetName());
+                outDS->GetCellData()->AddArray(new_arr);
+                if (isActiveScalar)
+                    outDS->GetCellData()->SetActiveScalars(new_arr->GetName());
+                if (isActiveVector)
+                    outDS->GetCellData()->SetActiveVectors(new_arr->GetName());
+                new_arr->Delete();
+            }
+            dsToShift->Delete();
         }
     }
     else
