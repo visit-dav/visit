@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 EnSightGeneralPluginInfo::GetName() const
 {
     return "EnSight";
@@ -100,7 +100,7 @@ EnSightGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 EnSightGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ EnSightGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 EnSightGeneralPluginInfo::GetID() const
 {
     return "EnSight_1.0";

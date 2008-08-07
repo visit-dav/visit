@@ -62,6 +62,9 @@
 //   Jeremy Meredith, Mon Aug 28 17:33:55 EDT 2006
 //   Moved from QvisColorGridWidget.C to its own file.
 //
+//    Jeremy Meredith, Thu Aug  7 15:43:20 EDT 2008
+//    Use %ld format for longs.
+//
 // ****************************************************************************
 
 class QVirtualFileListBoxItem : public QFileSelectionListBoxItem
@@ -131,7 +134,7 @@ protected:
             if(names.size() > (MAX_DISPLAYED_NAMES*2))
             {
                 QString nFilesString;
-                nFilesString.sprintf("(%d total files)", names.size());
+                nFilesString.sprintf("(%ld total files)", names.size());
                 painter->drawText(offset, y, nFilesString);
                 y += yIncr;
 

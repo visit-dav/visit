@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 ProteinDataBankGeneralPluginInfo::GetName() const
 {
     return "ProteinDataBank";
@@ -100,7 +100,7 @@ ProteinDataBankGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ProteinDataBankGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ ProteinDataBankGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ProteinDataBankGeneralPluginInfo::GetID() const
 {
     return "ProteinDataBank_1.0";

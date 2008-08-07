@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 HexGeneralPluginInfo::GetName() const
 {
     return "Hex";
@@ -100,7 +100,7 @@ HexGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 HexGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ HexGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 HexGeneralPluginInfo::GetID() const
 {
     return "Hex_1.0";

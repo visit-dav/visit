@@ -959,7 +959,7 @@ TimeSliderObject_print(PyObject *v, FILE *fp, int flags)
 //
 // The doc string for the class.
 //
-static char *TimeSliderObject_Purpose = "This class defines a general set of attributes that are used to set the attributes for all annotation objects.";
+static const char *TimeSliderObject_Purpose = "This class defines a general set of attributes that are used to set the attributes for all annotation objects.";
 
 //
 // The type description structure

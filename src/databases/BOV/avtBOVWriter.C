@@ -319,6 +319,10 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
 //    Dave Pugmire, Mon Jun  2 09:33:26 EDT 2008
 //    Handle data with more than one component.
 //
+//    Jeremy Meredith, Thu Aug  7 15:55:00 EDT 2008
+//    Use const char* for string literals.
+//    Remove unnecessary format modifiers in sprintf that caused warnings.
+//
 // ****************************************************************************
 
 void
@@ -469,9 +473,9 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
     // we may as well.
     //
 #ifdef WORDS_BIGENDIAN
-    char *endian_str = "BIG";
+    const char *endian_str = "BIG";
 #else
-    char *endian_str = "LITTLE";
+    const char *endian_str = "LITTLE";
 #endif
     if (nBricklets > 1)
     {
@@ -517,7 +521,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
                               + j*brickletsPerX + i;
                     if (nBricklets > 1)
                     {
-                        sprintf(str, "%s_%0.4d.bof.gz", stem.c_str(), brick);
+                        sprintf(str, "%s_%.4d.bof.gz", stem.c_str(), brick);
                         void *gz_handle = gzopen(str, "w");
                         gzwrite(gz_handle, samples, 
                                 vals_per_bricklet*sizeof(float));

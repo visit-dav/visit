@@ -57,6 +57,9 @@
 //   Make sure UpdateAnnotationHelper is called every time a "Set" method is
 //   called.
 //
+//   Jeremy Meredith, Thu Aug  7 15:10:29 EDT 2008
+//   Use %lf's in printfs for doubles.
+//
 // ****************************************************************************
 
 /* CUSTOM - Functions that we need in visitmodule.C */
@@ -605,8 +608,8 @@ ImageObject_print(PyObject *v, FILE *fp, int flags)
         fprintf(fp, "useTransparencyColor = 1\n");
     else
         fprintf(fp, "useTransparencyColor = 0\n");
-    fprintf(fp, "width = %d\n", obj->data->GetPosition2()[0]);
-    fprintf(fp, "height = %d\n", obj->data->GetPosition2()[1]);
+    fprintf(fp, "width = %lf\n", obj->data->GetPosition2()[0]);
+    fprintf(fp, "height = %lf\n", obj->data->GetPosition2()[1]);
     if(obj->data->GetFontShadow())
         fprintf(fp, "maintainAspectRatio = 1\n");
     else
@@ -710,9 +713,9 @@ PyImageObject_StringRepresentation(const AnnotationObject *atts)
     else
         SNPRINTF(tmpStr, 1000, "useTransparencyColor = 0\n");
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "width = %d\n", atts->GetPosition2()[0]);
+    SNPRINTF(tmpStr, 1000, "width = %lf\n", atts->GetPosition2()[0]);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "height = %d\n", atts->GetPosition2()[1]);
+    SNPRINTF(tmpStr, 1000, "height = %lf\n", atts->GetPosition2()[1]);
     str += tmpStr;
     if(atts->GetFontShadow())
         SNPRINTF(tmpStr, 1000, "maintainAspectRatio = 1\n");
@@ -749,7 +752,7 @@ ImageObject_str(PyObject *v)
 //
 // The doc string for the class.
 //
-static char *ImageObject_Purpose = "Image Annotation Object";
+static const char *ImageObject_Purpose = "Image Annotation Object";
 
 //
 // The type description structure

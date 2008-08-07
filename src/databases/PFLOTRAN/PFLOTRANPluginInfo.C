@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 PFLOTRANGeneralPluginInfo::GetName() const
 {
     return "PFLOTRAN";
@@ -100,7 +100,7 @@ PFLOTRANGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 PFLOTRANGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ PFLOTRANGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 PFLOTRANGeneralPluginInfo::GetID() const
 {
     return "PFLOTRAN_1.0";

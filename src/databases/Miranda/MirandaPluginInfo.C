@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 MirandaGeneralPluginInfo::GetName() const
 {
     return "Miranda";
@@ -100,7 +100,7 @@ MirandaGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 MirandaGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ MirandaGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 MirandaGeneralPluginInfo::GetID() const
 {
     return "Miranda_1.0";

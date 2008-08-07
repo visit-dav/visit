@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 GDALGeneralPluginInfo::GetName() const
 {
     return "GDAL";
@@ -100,7 +100,7 @@ GDALGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 GDALGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ GDALGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 GDALGeneralPluginInfo::GetID() const
 {
     return "GDAL_1.0";

@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 EnzoGeneralPluginInfo::GetName() const
 {
     return "Enzo";
@@ -100,7 +100,7 @@ EnzoGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 EnzoGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ EnzoGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 EnzoGeneralPluginInfo::GetID() const
 {
     return "Enzo_1.0";

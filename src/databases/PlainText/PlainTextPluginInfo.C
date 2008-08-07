@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 PlainTextGeneralPluginInfo::GetName() const
 {
     return "PlainText";
@@ -100,7 +100,7 @@ PlainTextGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 PlainTextGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ PlainTextGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 PlainTextGeneralPluginInfo::GetID() const
 {
     return "PlainText_1.0";

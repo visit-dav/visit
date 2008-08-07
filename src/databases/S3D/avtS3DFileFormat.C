@@ -176,6 +176,10 @@ avtS3DFileFormat::avtS3DFileFormat(const char *filename)
 //  Programmer: ahern
 //  Creation:   Thu Jan 11 10:02:22 PDT 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 16:13:20 EDT 2008
+//    Assume code reading "line=line++" was supposed to just be "line++".
+//
 // ****************************************************************************
 void
 avtS3DFileFormat::OpenLogFile(void)
@@ -243,7 +247,7 @@ avtS3DFileFormat::OpenLogFile(void)
         timefile.getline(line, 128);
         if (line[0] == '!')
         {
-            line = line++;
+            line++;
         }
 
         float time;

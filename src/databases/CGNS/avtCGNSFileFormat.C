@@ -951,6 +951,10 @@ avtCGNSFileFormat::AddVectorExpressions(avtDatabaseMetaData *md, bool *haveVeloc
 //   Separated out into its own method, add variables as point_constant
 //   expressions.
 //
+//    Jeremy Meredith, Thu Aug  7 15:55:54 EDT 2008
+//    Some string comparisons were erroneously comparing char* pointers.
+//    I converted them to use strcmp.
+//
 // ****************************************************************************
 
 void
@@ -984,7 +988,7 @@ avtCGNSFileFormat::AddReferenceStateExpressions(avtDatabaseMetaData *md,
                     cg_array_read_as(i+1, RealDouble, &dval);
                     debug5 << mName << "Reference state: " << namenode 
                            << " = " << dval << endl;
-                    if(namenode == "Mach")
+                    if(strcmp(namenode,"Mach")==0)
                     {
                         Expression *e = new Expression;
                         if(nBases > 1)
@@ -996,7 +1000,7 @@ avtCGNSFileFormat::AddReferenceStateExpressions(avtDatabaseMetaData *md,
                         e->SetType(Expression::ScalarMeshVar);
                         md->AddExpression(e);
                     }
-                    else if(namenode == "SpecificHeatRatio")
+                    else if(strcmp(namenode, "SpecificHeatRatio")==0)
                     {
                         Expression *e = new Expression;
                         if(nBases > 1)
@@ -1645,6 +1649,9 @@ avtCGNSFileFormat::GetCurvilinearMesh(int base, int zone, const char *meshname,
 //   since they are probably boundary conditions or things we don't really
 //   care about.
 //
+//   Jeremy Meredith, Thu Aug  7 14:14:00 EDT 2008
+//   Added some missing cases for switch.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1949,6 +1956,10 @@ avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
                         ugrid->Delete();
                         EXCEPTION1(InvalidVariableException, meshname);
                         break;
+                    case ElementTypeNull:
+                    case MIXED:
+                        // What to do here?
+                        break;
                     }
                 }
 
@@ -2010,6 +2021,9 @@ avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
 //    Brad Whitlock, Wed Apr 16 11:51:12 PDT 2008
 //    Adjust how the base is selected since we can read data from multiple
 //    bases now.
+//
+//    Jeremy Meredith, Thu Aug  7 15:56:52 EDT 2008
+//    Added a default case for a switch.
 //
 // ****************************************************************************
 
@@ -2106,6 +2120,9 @@ avtCGNSFileFormat::GetVar(int timestate, int domain, const char *varname)
             case ZoneTypeUserDefined:
                 EXCEPTION1(InvalidVariableException, 
                            "ZoneTypeUserDefined is not supported.");
+                break;
+            default:
+                // fall out
                 break;
             }
         }

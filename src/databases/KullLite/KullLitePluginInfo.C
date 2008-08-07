@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 KullLiteGeneralPluginInfo::GetName() const
 {
     return "KullLite";
@@ -100,7 +100,7 @@ KullLiteGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 KullLiteGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ KullLiteGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 KullLiteGeneralPluginInfo::GetID() const
 {
     return "KullLite_1.0";

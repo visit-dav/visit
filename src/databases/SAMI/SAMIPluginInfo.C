@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 SAMIGeneralPluginInfo::GetName() const
 {
     return "SAMI";
@@ -100,7 +100,7 @@ SAMIGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SAMIGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ SAMIGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SAMIGeneralPluginInfo::GetID() const
 {
     return "SAMI_1.0";

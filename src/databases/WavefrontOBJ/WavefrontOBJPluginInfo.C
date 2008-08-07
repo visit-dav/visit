@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 WavefrontOBJGeneralPluginInfo::GetName() const
 {
     return "WavefrontOBJ";
@@ -100,7 +100,7 @@ WavefrontOBJGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 WavefrontOBJGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ WavefrontOBJGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 WavefrontOBJGeneralPluginInfo::GetID() const
 {
     return "WavefrontOBJ_1.0";

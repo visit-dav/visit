@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 ANSYSGeneralPluginInfo::GetName() const
 {
     return "ANSYS";
@@ -100,7 +100,7 @@ ANSYSGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ANSYSGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ ANSYSGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ANSYSGeneralPluginInfo::GetID() const
 {
     return "ANSYS_1.0";

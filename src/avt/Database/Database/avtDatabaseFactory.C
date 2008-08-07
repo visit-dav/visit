@@ -79,8 +79,8 @@ using std::vector;
 //
 // Static data members
 //
-char    *avtDatabaseFactory::fallbackFormat = "Silo";
-char    *avtDatabaseFactory::formatToTryFirst = NULL;
+char  *avtDatabaseFactory::fallbackFormat = strdup("Silo");// not const; can't
+char  *avtDatabaseFactory::formatToTryFirst = NULL;        // use literal as-is
 bool    avtDatabaseFactory::createMeshQualityExpressions = true;
 bool    avtDatabaseFactory::createTimeDerivativeExpressions = true;
 bool    avtDatabaseFactory::createVectorMagnitudeExpressions = true;

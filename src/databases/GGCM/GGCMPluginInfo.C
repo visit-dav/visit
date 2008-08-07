@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 GGCMGeneralPluginInfo::GetName() const
 {
     return "GGCM";
@@ -100,7 +100,7 @@ GGCMGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 GGCMGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ GGCMGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 GGCMGeneralPluginInfo::GetID() const
 {
     return "GGCM_1.0";

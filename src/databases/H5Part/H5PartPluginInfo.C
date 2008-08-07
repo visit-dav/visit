@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 H5PartGeneralPluginInfo::GetName() const
 {
     return "H5Part";
@@ -100,7 +100,7 @@ H5PartGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 H5PartGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ H5PartGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 H5PartGeneralPluginInfo::GetID() const
 {
     return "H5Part_1.0";

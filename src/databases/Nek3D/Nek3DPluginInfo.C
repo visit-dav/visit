@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 Nek3DGeneralPluginInfo::GetName() const
 {
     return "Nek3D";
@@ -100,7 +100,7 @@ Nek3DGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 Nek3DGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ Nek3DGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 Nek3DGeneralPluginInfo::GetID() const
 {
     return "Nek3D_1.0";

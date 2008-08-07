@@ -457,6 +457,11 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 //
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Added '&' bitwise binary and operation
+//
+//    Jeremy Meredith, Thu Aug  7 15:37:17 EDT 2008
+//    changed an erroneous pointer-based string comparison to a true
+//    string based comparison.
+//
 // ****************************************************************************
 
 void
@@ -549,7 +554,7 @@ QvisExpressionsWindow::CreateWindowContents()
         QPopupMenu *tmpMenu = new QPopupMenu(f2, exprlist[i].name.ascii());
         for (int j=0; exprlist[i].list[j]; j++)
         {
-            if (exprlist[i].list[j]=="&")
+            if (std::string(exprlist[i].list[j])=="&")
                 tmpMenu->insertItem("&&");
             else
                 tmpMenu->insertItem(exprlist[i].list[j]);

@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 CGNSGeneralPluginInfo::GetName() const
 {
     return "CGNS";
@@ -100,7 +100,7 @@ CGNSGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 CGNSGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ CGNSGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 CGNSGeneralPluginInfo::GetID() const
 {
     return "CGNS_1.0";

@@ -199,6 +199,9 @@ typedef struct
 //    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
 //    Added bools to control ignoring of extents.
 //
+//    Jeremy Meredith, Thu Aug  7 16:16:00 EDT 2008
+//    Made GetComponent accept const char*'s as input.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -352,7 +355,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                                                       char**,int, const char*);
     int                   GetMeshtype(DBfile *, char *);
     void                  GetMeshname(DBfile *, char *, char *);
-    void                 *GetComponent(DBfile *, char *, char *);
+    void                 *GetComponent(DBfile *, char *, const char *);
 
     void                  GetTimeVaryingInformation(DBfile *,
                               avtDatabaseMetaData *md = NULL);

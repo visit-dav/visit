@@ -218,6 +218,9 @@ avtDatabaseWriter::Write(const std::string &filename,
 //    chosen var is the active var, or it's a mesh_quality expression
 //    defined on the active Mesh.  Change how meshname is determined.
 //
+//    Jeremy Meredith, Wed Aug  6 18:07:45 EDT 2008
+//    Put extra parens to clarfy combined if-assignment statement.
+//
 // ****************************************************************************
 
 void
@@ -381,7 +384,7 @@ avtDatabaseWriter::Write(const std::string &filename,
                         // expression is defined on this mesh
                         canAdd = true;
                     }
-                    else if (index = varname.find("mesh_quality") != std::string::npos &&
+                    else if ((index = varname.find("mesh_quality")) != std::string::npos &&
                              varname.find(meshname, index+12) != std::string::npos)
                     {
                         // mesh_quality expression  

@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 PLOT2DGeneralPluginInfo::GetName() const
 {
     return "PLOT2D";
@@ -100,7 +100,7 @@ PLOT2DGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 PLOT2DGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ PLOT2DGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 PLOT2DGeneralPluginInfo::GetID() const
 {
     return "PLOT2D_1.0";

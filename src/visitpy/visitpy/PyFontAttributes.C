@@ -478,7 +478,7 @@ FontAttributes_str(PyObject *v)
 //
 // The doc string for the class.
 //
-static char *FontAttributes_Purpose = "Describes font properties that we can set through VTK";
+static const char *FontAttributes_Purpose = "Describes font properties that we can set through VTK";
 
 //
 // The type description structure

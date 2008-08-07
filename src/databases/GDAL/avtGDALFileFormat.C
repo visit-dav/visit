@@ -172,6 +172,14 @@ avtGDALFileFormat::GetDataset()
 //   Brad Whitlock, Thu Sep 22 16:38:54 PST 2005
 //   Fixed calls to log10 so it builds on win32.
 //
+//    Jeremy Meredith, Thu Aug  7 16:07:49 EDT 2008
+//    None of the mesh name creation "sprintf"'s had a %dx%d in their
+//    format string, but they had xsize and ysize in the argument list.
+//    The code appears to assume that the resolution==0 mesh was just "mesh",
+//    so for that case I removed the xsize,ysize arguments.  For the lower
+//    resolution ones, there was no assumption about the actual name, so
+//    I added a %dx%d string assuming that was the original intent.
+//
 // ****************************************************************************
 
 void
@@ -310,25 +318,24 @@ avtGDALFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         if(resolution == 0)
         {
-            SNPRINTF(meshName, 200, "mesh", xsize, ysize);
+            SNPRINTF(meshName, 200, "mesh");
             meshInfo[meshName] = newMesh;
 
             if(addZComponent)
             {
-                SNPRINTF(elevatedMeshName, 200, "elevated/mesh",
-                         xsize, ysize);
+                SNPRINTF(elevatedMeshName, 200, "elevated/mesh");
                 meshInfo[elevatedMeshName] = elevatedMesh;
             }
         }
         else
         {
-            SNPRINTF(meshName, 200, whFormat, "lower_res/resolution_", xsize,ysize);
+            SNPRINTF(meshName, 200, whFormat, "lower_res/resolution_%dx%d", xsize,ysize);
             meshInfo[meshName] = newMesh;
 
             if(addZComponent)
             {
                 SNPRINTF(elevatedMeshName, 200, whFormat,
-                         "elevated/lower_res/resolution_", xsize, ysize);
+                         "elevated/lower_res/resolution_%dx%d", xsize, ysize);
                 meshInfo[elevatedMeshName] = elevatedMesh;
             }
         }

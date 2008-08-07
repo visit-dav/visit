@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 SASGeneralPluginInfo::GetName() const
 {
     return "SAS";
@@ -100,7 +100,7 @@ SASGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SASGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ SASGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SASGeneralPluginInfo::GetID() const
 {
     return "SAS_1.0";

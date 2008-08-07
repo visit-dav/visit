@@ -573,6 +573,9 @@ SaveViewAction::SaveCurrentView()
 //   Brad Whitlock, Tue Apr 29 11:50:45 PDT 2008
 //   Added tr().
 //
+//   Jeremy Meredith, Thu Aug  7 14:56:48 EDT 2008
+//   Use %ld for long values.
+//
 // ****************************************************************************
 
 void
@@ -600,7 +603,7 @@ SaveViewAction::AddNewView(void *v, int vt)
         QPixmap icon(blankcamera_xpm);
         QPainter paint(&icon);
         QString str;
-        str.sprintf("%d", views.size());
+        str.sprintf("%ld", views.size());
         paint.setPen(QColor(0,255,0));
         QFont f(QApplication::font());
         f.setBold(true);

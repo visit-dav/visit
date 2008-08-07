@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 LinesGeneralPluginInfo::GetName() const
 {
     return "Lines";
@@ -100,7 +100,7 @@ LinesGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 LinesGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ LinesGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 LinesGeneralPluginInfo::GetID() const
 {
     return "Lines_1.0";

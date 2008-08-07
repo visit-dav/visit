@@ -25,7 +25,7 @@ static const unsigned short visit_times_italic_CHAR_33_pts[] = {
 21905,  4716, 21960,  3963, 21960,  5484, 22124,  3254, 22124,  6205, 
 27870, 16755
 };
-static const unsigned char visit_times_italic_CHAR_33_tris[] = {
+static const unsigned short visit_times_italic_CHAR_33_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   0,  11,   1, 
  11,   1,  12,   1,  12,  13,  12,  13,  14,  13,  14,  15,  16,  13,  15, 
@@ -66,7 +66,7 @@ static const unsigned short visit_times_italic_CHAR_34_pts[] = {
  3733, 52096,  3449, 18136,  3317, 49322,  2902, 46010,  2489, 42160, 
     0, 18136
 };
-static const unsigned char visit_times_italic_CHAR_34_tris[] = {
+static const unsigned short visit_times_italic_CHAR_34_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -94,7 +94,7 @@ static const unsigned short visit_times_italic_CHAR_35_pts[] = {
 64809, 40753, 64809, 44458, 64809, 21076, 64809, 24874, 44445,     0, 
 48139,     0, 21433, 21076
 };
-static const unsigned char visit_times_italic_CHAR_35_tris[] = {
+static const unsigned short visit_times_italic_CHAR_35_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,   4, 
  11,   4,   6,   5,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17, 
@@ -140,7 +140,7 @@ static const unsigned short visit_times_italic_CHAR_36_pts[] = {
 41393,  8078, 40174,  7634, 39200,  5175, 38984,  7316, 37821,  7126, 
 36687,  7063, 36417,  7068, 36097,  7083, 30145,     0
 };
-static const unsigned char visit_times_italic_CHAR_36_tris[] = {
+static const unsigned short visit_times_italic_CHAR_36_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   5,   4,   7,   5,   7,   8,   5,   8,   9,   5,  10,  11,   5,  11,  12, 
   5,  12,   6,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -218,7 +218,7 @@ static const unsigned short visit_times_italic_CHAR_37_pts[] = {
 49710,  3387, 49519,  3965, 49497,   876, 49404,  4601, 45283,  8682, 
 45374,  7212, 45445, 11049, 45644,  5852, 45929, 13293
 };
-static const unsigned char visit_times_italic_CHAR_37_tris[] = {
+static const unsigned short visit_times_italic_CHAR_37_tris[] = {
   0,   1,   2,   0,   2,   3,   4,   5,   6,   5,   6,   7,   6,   7,   8, 
   7,   8,   9,   8,   9,  10,   9,  10,  11,  10,  11,  12,  10,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  18,  19,  20, 
@@ -305,7 +305,7 @@ static const unsigned short visit_times_italic_CHAR_38_pts[] = {
 52696,  5623, 53933,    51, 54539,  4161, 55273,     0, 56438,  3284, 
 50908,  7670, 49318,  1293, 50359,   828, 50322, 25627
 };
-static const unsigned char visit_times_italic_CHAR_38_tris[] = {
+static const unsigned short visit_times_italic_CHAR_38_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   1,   8,   9,   1,   9,  10,   1,  10,  11,   1,  11,  12, 
   1,  12,  13,   1,  13,  14,   1,  14,   2,  15,  16,  17,  16,  17,  18, 
@@ -363,7 +363,7 @@ static const unsigned short visit_times_italic_CHAR_39_pts[] = {
  5795, 59758,  5059, 58110,  4417, 56240,  4016, 54595,  3614, 52434, 
  3210, 49756,  2805, 46561,  2398, 42849
 };
-static const unsigned char visit_times_italic_CHAR_39_tris[] = {
+static const unsigned short visit_times_italic_CHAR_39_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -385,7 +385,7 @@ static const unsigned short visit_times_italic_CHAR_40_pts[] = {
 30728, 19906, 31006, 17974, 30505, 23786, 30561, 21844, 37839,     0, 
 39020,   563, 37606,  4075
 };
-static const unsigned char visit_times_italic_CHAR_40_tris[] = {
+static const unsigned short visit_times_italic_CHAR_40_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   7,   8,   9,   8,   9,  10,   9,  10,   2,  10,   2,   0,  11,  12,  13, 
  11,  13,  14,  11,  14,   7,  11,   7,   9,  12,  15,  16,  12,  16,  17, 
@@ -407,7 +407,7 @@ static const unsigned short visit_times_italic_CHAR_41_pts[] = {
 26669,  9569, 24758,  7317, 24097,  4195, 22658,  5153, 20370,  3077, 
 17892,  1088, 18726,     0
 };
-static const unsigned char visit_times_italic_CHAR_41_tris[] = {
+static const unsigned short visit_times_italic_CHAR_41_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   8,   9,  10,   9,  10,  11,  10,  11,   5,  11,   5,   7, 
  12,  13,   8,  12,   8,  10,  14,  15,  16,  14,  16,  17,  14,  17,  18, 
@@ -470,7 +470,7 @@ static const unsigned short visit_times_italic_CHAR_42_pts[] = {
 31530, 21074, 30950, 23122, 30945,  2013, 30485, 25106, 30168,  1586, 
 30135, 27027, 29901, 28884, 21908, 57324,     0, 20386,     0, 46480
 };
-static const unsigned char visit_times_italic_CHAR_42_tris[] = {
+static const unsigned short visit_times_italic_CHAR_42_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -528,7 +528,7 @@ static const unsigned short visit_times_italic_CHAR_43_pts[] = {
 15749, 27210, 15749, 23369, 42484, 23369, 65535, 23369, 42484, 27210, 
 65535, 27210, 38697,     0
 };
-static const unsigned char visit_times_italic_CHAR_43_tris[] = {
+static const unsigned short visit_times_italic_CHAR_43_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   7,   8,   9,   7,   9,   0,   7,   0,   2,   9,   8,  10,   2,   4,  11
 };
@@ -548,7 +548,7 @@ static const unsigned short visit_times_italic_CHAR_44_pts[] = {
 47905,  1739, 46707,  4991, 44592,  3724, 42299,  2572, 43884,     0, 
 49451, 26712
 };
-static const unsigned char visit_times_italic_CHAR_44_tris[] = {
+static const unsigned short visit_times_italic_CHAR_44_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -566,7 +566,7 @@ static const unsigned char visit_times_italic_CHAR_44_tris[] = {
 static const unsigned short visit_times_italic_CHAR_45_pts[] = {
 65535, 19983,  4818, 19983,     0,  4158, 60716,  4158
 };
-static const unsigned char visit_times_italic_CHAR_45_tris[] = {
+static const unsigned short visit_times_italic_CHAR_45_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* '.' font data */
@@ -580,7 +580,7 @@ static const unsigned short visit_times_italic_CHAR_46_pts[] = {
 65535, 11403, 65404, 13242, 65011, 14968, 64356, 16582, 63439, 18084, 
 62260, 19474, 60890, 20674, 59398, 21607, 57784, 22274, 56049, 22674
 };
-static const unsigned char visit_times_italic_CHAR_46_tris[] = {
+static const unsigned short visit_times_italic_CHAR_46_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -594,7 +594,7 @@ static const unsigned char visit_times_italic_CHAR_46_tris[] = {
 static const unsigned short visit_times_italic_CHAR_47_pts[] = {
 49204, 65535, 45508, 65535, 11399,     0, 15322,     0
 };
-static const unsigned char visit_times_italic_CHAR_47_tris[] = {
+static const unsigned short visit_times_italic_CHAR_47_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* '0' font data */
@@ -622,7 +622,7 @@ static const unsigned short visit_times_italic_CHAR_48_pts[] = {
 31896,   199, 30943,  2589, 30012,  3259, 29744,   796, 29151,  4121, 
 28408,  5177, 27830,  6428, 27747,  1792, 27169,  9518, 27417,  7875
 };
-static const unsigned char visit_times_italic_CHAR_48_tris[] = {
+static const unsigned short visit_times_italic_CHAR_48_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  15,  16,  17,  16,  17,  18, 
@@ -662,7 +662,7 @@ static const unsigned short visit_times_italic_CHAR_49_pts[] = {
 43154, 54225, 43011, 53665, 42797, 52869, 42513, 51838, 38610, 12458, 
 37512,  7766, 37773,  9121, 38139, 10685
 };
-static const unsigned char visit_times_italic_CHAR_49_tris[] = {
+static const unsigned short visit_times_italic_CHAR_49_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -696,7 +696,7 @@ static const unsigned short visit_times_italic_CHAR_50_pts[] = {
 47054, 35324, 44924, 26731, 43301, 30089, 40531, 22146, 38240, 24114, 
 35648, 17308
 };
-static const unsigned char visit_times_italic_CHAR_50_tris[] = {
+static const unsigned short visit_times_italic_CHAR_50_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   6,   5,   7,   6,   7,   8,   6,   8,   9,   6,   9,  10,   6,  10,  11, 
   6,  11,  12,   6,  12,  13,   6,  13,  14,   6,  14,  15,  13,  16,  17, 
@@ -746,7 +746,7 @@ static const unsigned short visit_times_italic_CHAR_51_pts[] = {
 18147,  7097, 18042,  3891, 17913,  6538, 17804,  4580, 17772,  5940, 
 17725,  5306, 28973, 35611
 };
-static const unsigned char visit_times_italic_CHAR_51_tris[] = {
+static const unsigned short visit_times_italic_CHAR_51_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  13,  14,  15,  13,  15,  16,  13,  16,  17,  13,  17,   1, 
@@ -783,7 +783,7 @@ static const unsigned short visit_times_italic_CHAR_52_pts[] = {
 42764,     0, 51192, 53282, 47675, 17286, 49454, 23174, 55354, 17286, 
 57039, 23174, 61586, 65535, 35876,     0, 17897, 17286
 };
-static const unsigned char visit_times_italic_CHAR_52_tris[] = {
+static const unsigned short visit_times_italic_CHAR_52_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   6,   8,  11, 
   6,  11,   0,   6,   0,   2,   5,   3,  12,   3,   1,  13
@@ -810,7 +810,7 @@ static const unsigned short visit_times_italic_CHAR_53_pts[] = {
 18373,  6362, 18399,  4855, 18519,  6987, 18624,  4072, 18762,  7571, 
 18998,  3350, 19103,  8116, 19523,  2689, 19541,  8621, 18324,  5698
 };
-static const unsigned char visit_times_italic_CHAR_53_tris[] = {
+static const unsigned short visit_times_italic_CHAR_53_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   3,   8,   4,   8,   4,   9,   4,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  15,  16,  17,  16,  17,  18, 
@@ -857,7 +857,7 @@ static const unsigned short visit_times_italic_CHAR_54_pts[] = {
 29524,  4959, 28632,  6188, 27999,  2003, 27938,  7587, 27442,  9156, 
 27145, 10895
 };
-static const unsigned char visit_times_italic_CHAR_54_tris[] = {
+static const unsigned short visit_times_italic_CHAR_54_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,   1,  13,   1,   0,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -889,7 +889,7 @@ static const unsigned short visit_times_italic_CHAR_55_pts[] = {
 28063, 51436, 29232, 53034, 30343, 54377, 31396, 55464, 32391, 56295, 
 33327, 56870, 25763,  1762, 29509,     0
 };
-static const unsigned char visit_times_italic_CHAR_55_tris[] = {
+static const unsigned short visit_times_italic_CHAR_55_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   1,   9,  10,   1,  10,  11,   1,  11,  12, 
   1,  12,  13,   1,  13,  14,   1,  14,  15,   1,  15,   2,   7,  16,  17, 
@@ -930,7 +930,7 @@ static const unsigned short visit_times_italic_CHAR_56_pts[] = {
 28751,  4172, 29534,   737, 27433,  5285, 26317,  6601, 27098,  1658, 
 25449,  8077, 24829,  9711, 24883,  2949, 24457, 11504, 18184, 15359
 };
-static const unsigned char visit_times_italic_CHAR_56_tris[] = {
+static const unsigned short visit_times_italic_CHAR_56_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,  11,  12,  13, 
  11,  13,  14,  11,  14,  10,  11,  10,   9,  15,  16,  17,  16,  17,  18, 
@@ -993,7 +993,7 @@ static const unsigned short visit_times_italic_CHAR_57_pts[] = {
 30283,  7484, 20897,  2457, 19156,  1936, 20054,   311, 17317,  1489, 
 17317,     0
 };
-static const unsigned char visit_times_italic_CHAR_57_tris[] = {
+static const unsigned short visit_times_italic_CHAR_57_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,   8,  16,   8,   6, 
@@ -1039,7 +1039,7 @@ static const unsigned short visit_times_italic_CHAR_58_pts[] = {
 31146, 10349, 31724,  2963, 31724, 11290, 32467,  2093, 32467, 12160, 
 33327,  1339, 33327, 12911, 34257,   753, 34257, 13495, 35257, 13913
 };
-static const unsigned char visit_times_italic_CHAR_58_tris[] = {
+static const unsigned short visit_times_italic_CHAR_58_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   5,   6,   7,   6,   7,   8, 
   7,   8,   9,   8,   9,  10,   9,  10,  11,  10,  11,   2,  11,   2,   1, 
  12,  13,  14,  12,  14,   5,  12,   5,   7,  15,  16,  17,  16,  17,  18, 
@@ -1082,7 +1082,7 @@ static const unsigned short visit_times_italic_CHAR_59_pts[] = {
 33823,     0, 35032,  3276, 36057,  1178, 36837,  4451, 37914,  2185, 
 49565, 59777
 };
-static const unsigned char visit_times_italic_CHAR_59_tris[] = {
+static const unsigned short visit_times_italic_CHAR_59_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -1110,7 +1110,7 @@ static const unsigned short visit_times_italic_CHAR_60_pts[] = {
 12530, 25926, 12530, 23483, 65535,     0, 65535,  4496, 19919, 24782, 
 65535, 44868, 65535, 49209
 };
-static const unsigned char visit_times_italic_CHAR_60_tris[] = {
+static const unsigned short visit_times_italic_CHAR_60_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6
 };
 /* '=' font data */
@@ -1118,7 +1118,7 @@ static const unsigned short visit_times_italic_CHAR_61_pts[] = {
   735, 24855,   735, 19859, 65535, 19859, 65535, 24855,   735,  4995, 
   735,     0, 65535,     0, 65535,  4995
 };
-static const unsigned char visit_times_italic_CHAR_61_tris[] = {
+static const unsigned short visit_times_italic_CHAR_61_tris[] = {
   0,   1,   2,   0,   2,   3,   4,   5,   6,   4,   6,   7
 };
 /* '>' font data */
@@ -1126,7 +1126,7 @@ static const unsigned short visit_times_italic_CHAR_62_pts[] = {
 65535, 23283, 65535, 25726, 12530, 49209, 12530, 44668, 58189, 24382, 
 12530,  4296, 12530,     0
 };
-static const unsigned char visit_times_italic_CHAR_62_tris[] = {
+static const unsigned short visit_times_italic_CHAR_62_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6
 };
 /* '?' font data */
@@ -1163,7 +1163,7 @@ static const unsigned short visit_times_italic_CHAR_63_pts[] = {
 26369,  8895, 26396,   491, 27029,  9167, 27052,   218, 27738,  9331, 
 23848,  4672
 };
-static const unsigned char visit_times_italic_CHAR_63_tris[] = {
+static const unsigned short visit_times_italic_CHAR_63_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   7,   8,   9,   8,   9,  10,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   0,  15,   0,   2,  16,  17,  18, 
@@ -1254,7 +1254,7 @@ static const unsigned short visit_times_italic_CHAR_64_pts[] = {
 54655, 36094, 49446, 17349, 49545, 17894, 49634, 33368, 49673, 18488, 
 49385, 33973, 49332, 16409, 49374, 16854, 45606, 15726
 };
-static const unsigned char visit_times_italic_CHAR_64_tris[] = {
+static const unsigned short visit_times_italic_CHAR_64_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   7,   8,   9,   8,   9,  10,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -1332,7 +1332,7 @@ static const unsigned short visit_times_italic_CHAR_65_pts[] = {
 49827, 12881, 57825,  4851, 49448,  9190, 59356,  3041, 49640, 10878, 
 58879,  3444
 };
-static const unsigned char visit_times_italic_CHAR_65_tris[] = {
+static const unsigned short visit_times_italic_CHAR_65_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,  16,  17,  18, 
@@ -1386,7 +1386,7 @@ static const unsigned short visit_times_italic_CHAR_66_pts[] = {
 14629,  1920, 13705,  1789, 12606,  1695, 11333,  1641, 10761,     0, 
 21235, 11989, 20565,  9757
 };
-static const unsigned char visit_times_italic_CHAR_66_tris[] = {
+static const unsigned short visit_times_italic_CHAR_66_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,  10,  11,  12,  11,  12,  13, 
  12,  13,   7,  13,   7,  14,   7,  14,   9,  15,  16,  17,  16,  17,  18, 
@@ -1447,7 +1447,7 @@ static const unsigned short visit_times_italic_CHAR_67_pts[] = {
 37934, 47150, 39901, 51737, 26924, 31035, 27993, 33872, 28088, 44693, 
 29540, 37148, 30773, 46906, 25143, 22431, 25500, 25314, 26093, 28182
 };
-static const unsigned char visit_times_italic_CHAR_67_tris[] = {
+static const unsigned short visit_times_italic_CHAR_67_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  10,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -1503,7 +1503,7 @@ static const unsigned short visit_times_italic_CHAR_68_pts[] = {
 27686, 44272, 27390, 42979, 24713, 10179, 23663,  6144, 23913,  7222, 
 24263,  8567, 22407, 50478
 };
-static const unsigned char visit_times_italic_CHAR_68_tris[] = {
+static const unsigned short visit_times_italic_CHAR_68_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,   0,  13,   0,   2,  14,  15,  16,  14,  16,  17,  14,  17,   9, 
@@ -1560,7 +1560,7 @@ static const unsigned short visit_times_italic_CHAR_69_pts[] = {
 31047, 50838, 30908, 49732, 30677, 48470, 30354, 47051, 26932,  9500, 
 26270,  6700, 26428,  7529, 26648,  8462, 24870, 55179
 };
-static const unsigned char visit_times_italic_CHAR_69_tris[] = {
+static const unsigned short visit_times_italic_CHAR_69_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   4,   6,   7,   4,   7,   8,   4,   8,   9,   4,   9,  10,   4,  10,  11, 
   4,  11,  12,   4,  12,  13,   4,  13,  14,   4,  14,  15,   4,  15,  16, 
@@ -1613,7 +1613,7 @@ static const unsigned short visit_times_italic_CHAR_70_pts[] = {
 28902, 44804, 26084, 10631, 25025,  6458, 25277,  7616, 25630,  9007, 
 23606, 52724
 };
-static const unsigned char visit_times_italic_CHAR_70_tris[] = {
+static const unsigned short visit_times_italic_CHAR_70_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -1670,7 +1670,7 @@ static const unsigned short visit_times_italic_CHAR_71_pts[] = {
 36191,  3033, 38932,     0, 38964,  2831, 26876, 10001, 25893, 12257, 
 26371,  2957, 24769, 17227, 25191, 14665, 44724, 24747
 };
-static const unsigned char visit_times_italic_CHAR_71_tris[] = {
+static const unsigned short visit_times_italic_CHAR_71_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -1735,7 +1735,7 @@ static const unsigned short visit_times_italic_CHAR_72_pts[] = {
 48680,  7773, 24983, 40416, 24789, 39382, 24518, 38218, 22024,  9081, 
 21204,  5662, 21400,  6655, 21673,  7795, 46897, 44849, 19946, 44849
 };
-static const unsigned char visit_times_italic_CHAR_72_tris[] = {
+static const unsigned short visit_times_italic_CHAR_72_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -1786,7 +1786,7 @@ static const unsigned short visit_times_italic_CHAR_73_pts[] = {
 35695, 57434, 35409, 55946, 35008, 54264, 31635, 12855, 30354,  7731, 
 30659,  9123, 31086, 10831, 28490, 63752
 };
-static const unsigned char visit_times_italic_CHAR_73_tris[] = {
+static const unsigned short visit_times_italic_CHAR_73_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -1831,7 +1831,7 @@ static const unsigned short visit_times_italic_CHAR_74_pts[] = {
 21923, 10001, 21970, 10586, 19521, 14411, 19350,  5646, 11582,  8420, 
 40830, 62090
 };
-static const unsigned char visit_times_italic_CHAR_74_tris[] = {
+static const unsigned short visit_times_italic_CHAR_74_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -1888,7 +1888,7 @@ static const unsigned short visit_times_italic_CHAR_75_pts[] = {
 49574,  5863, 27214, 44124, 27016, 42999, 26740, 41764, 24142,  9941, 
 23128,  6067, 23370,  7148, 23708,  8439, 49242, 49096, 22055, 49096
 };
-static const unsigned char visit_times_italic_CHAR_75_tris[] = {
+static const unsigned short visit_times_italic_CHAR_75_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -1941,7 +1941,7 @@ static const unsigned short visit_times_italic_CHAR_76_pts[] = {
 35027, 56108, 34627, 54450, 31158, 12716, 30082,  8354, 30338,  9592, 
 30697, 11045
 };
-static const unsigned char visit_times_italic_CHAR_76_tris[] = {
+static const unsigned short visit_times_italic_CHAR_76_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   5,   4,   6, 
   5,   6,   7,   5,   7,   8,   5,   8,   9,   5,   9,  10,   5,  10,  11, 
   5,  11,  12,   5,  12,  13,   5,  13,  14,   5,  14,  15,   5,  15,  16, 
@@ -1985,7 +1985,7 @@ static const unsigned short visit_times_italic_CHAR_77_pts[] = {
 50604,  7392, 16134,  5767, 16393,  6812, 16726,  8027, 15837,  4185, 
 15948,  4891, 17866, 40112
 };
-static const unsigned char visit_times_italic_CHAR_77_tris[] = {
+static const unsigned short visit_times_italic_CHAR_77_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   7,   6,  16, 
@@ -2028,7 +2028,7 @@ static const unsigned short visit_times_italic_CHAR_78_pts[] = {
 23679, 46989, 24366, 46700, 24976, 46330, 25572, 45855, 26153, 45273, 
 26719, 44586, 19623,  6147, 19736,  7056, 19924,  8091, 19554, 47601
 };
-static const unsigned char visit_times_italic_CHAR_78_tris[] = {
+static const unsigned short visit_times_italic_CHAR_78_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -2076,7 +2076,7 @@ static const unsigned short visit_times_italic_CHAR_79_pts[] = {
 29169,   412, 29143,  3836, 27736,  4970, 27253,   927, 26557,  6429, 
 25597,  8098, 25487,  1648, 24851,  9863, 24318, 11725, 23999, 13683
 };
-static const unsigned char visit_times_italic_CHAR_79_tris[] = {
+static const unsigned short visit_times_italic_CHAR_79_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,  10,  11,  12,  11,  12,  13, 
  12,  13,   7,  13,   7,   9,  14,  15,  16,  14,  16,  17,  14,  17,  10, 
@@ -2129,7 +2129,7 @@ static const unsigned short visit_times_italic_CHAR_80_pts[] = {
 38533, 29702, 39325, 26850, 39910, 29555, 35340, 30291, 26952,  7008, 
 27270,  8485, 27715, 10268, 25237, 55994
 };
-static const unsigned char visit_times_italic_CHAR_80_tris[] = {
+static const unsigned short visit_times_italic_CHAR_80_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,  16,  17,  18, 
@@ -2193,7 +2193,7 @@ static const unsigned short visit_times_italic_CHAR_81_pts[] = {
 37552,  6010, 37019,  6061, 36468,  6097, 36063,  1579, 35899,  6119, 
 35312,  6126, 34682,  6113, 34031,  6074, 33359,  6008
 };
-static const unsigned char visit_times_italic_CHAR_81_tris[] = {
+static const unsigned short visit_times_italic_CHAR_81_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -2259,7 +2259,7 @@ static const unsigned short visit_times_italic_CHAR_82_pts[] = {
 32648, 51327, 32351, 50054, 29006, 11857, 28147,  7951, 28351,  9163, 
 28638, 10465, 26615, 59248
 };
-static const unsigned char visit_times_italic_CHAR_82_tris[] = {
+static const unsigned short visit_times_italic_CHAR_82_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -2324,7 +2324,7 @@ static const unsigned short visit_times_italic_CHAR_83_pts[] = {
 61037, 62322, 59286, 48493, 59264, 47683, 59227, 46788, 59176, 45807, 
 59111, 44740
 };
-static const unsigned char visit_times_italic_CHAR_83_tris[] = {
+static const unsigned short visit_times_italic_CHAR_83_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -2378,7 +2378,7 @@ static const unsigned short visit_times_italic_CHAR_84_pts[] = {
 60258, 45501, 60166, 44402, 60014, 43247, 59800, 42035, 59526, 40768, 
 34548,  7305, 34961,  9082, 35538, 11301, 36281, 13962
 };
-static const unsigned char visit_times_italic_CHAR_84_tris[] = {
+static const unsigned short visit_times_italic_CHAR_84_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -2427,7 +2427,7 @@ static const unsigned short visit_times_italic_CHAR_85_pts[] = {
 30767,  3455, 26491,  5793, 25426,  6957, 25690,  1387, 24597,  8221, 
 24005,  9586, 23734,  2467, 23650, 11051, 50997, 45042, 19190, 45042
 };
-static const unsigned char visit_times_italic_CHAR_85_tris[] = {
+static const unsigned short visit_times_italic_CHAR_85_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -2477,7 +2477,7 @@ static const unsigned short visit_times_italic_CHAR_86_pts[] = {
 27399, 44599, 27341, 43745, 27260, 42727, 27155, 41544, 23092,     0, 
 50299, 49679, 21093, 49679
 };
-static const unsigned char visit_times_italic_CHAR_86_tris[] = {
+static const unsigned short visit_times_italic_CHAR_86_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -2521,7 +2521,7 @@ static const unsigned short visit_times_italic_CHAR_87_pts[] = {
 38661, 35756, 38654, 35556, 38645, 35342, 35036,     0, 53638, 39737, 
 33585, 39737, 17484,     0, 16672, 39737
 };
-static const unsigned char visit_times_italic_CHAR_87_tris[] = {
+static const unsigned short visit_times_italic_CHAR_87_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,  11,  16,  17, 
@@ -2579,7 +2579,7 @@ static const unsigned short visit_times_italic_CHAR_88_pts[] = {
 37876,  2807, 37526,  2495, 36939,  2121, 36218,  1821, 35364,  1594, 
 34377,  1441, 33256,  1362, 32854,     0, 48527, 48415, 21636, 48415
 };
-static const unsigned char visit_times_italic_CHAR_88_tris[] = {
+static const unsigned short visit_times_italic_CHAR_88_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,  16,  17,  18, 
@@ -2635,7 +2635,7 @@ static const unsigned short visit_times_italic_CHAR_89_pts[] = {
 51479, 45424, 50058, 43328, 40583, 25308, 39872, 28876, 35703,  8360, 
 36110, 10004, 36635, 11897, 35411,  6967, 48321, 52823, 20886, 52823
 };
-static const unsigned char visit_times_italic_CHAR_89_tris[] = {
+static const unsigned short visit_times_italic_CHAR_89_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -2671,7 +2671,7 @@ static const unsigned short visit_times_italic_CHAR_90_pts[] = {
 25778, 50650, 26657, 51607, 27601, 52417, 28617, 53110, 29707, 53687, 
 30870, 54147, 32106, 54490
 };
-static const unsigned char visit_times_italic_CHAR_90_tris[] = {
+static const unsigned short visit_times_italic_CHAR_90_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   5,   4,   6, 
   5,   6,   7,   5,   7,   8,   5,   8,   9,   5,   9,  10,   5,  10,  11, 
   5,  11,  12,   5,  12,  13,   5,  13,  14,   5,  14,  15,   5,  15,  16, 
@@ -2686,7 +2686,7 @@ static const unsigned short visit_times_italic_CHAR_91_pts[] = {
 31953,  2628, 49373, 63011, 44878, 65535, 25946,     0, 41239,     0, 
 41959,  2628, 60211, 65535, 59420, 63011
 };
-static const unsigned char visit_times_italic_CHAR_91_tris[] = {
+static const unsigned short visit_times_italic_CHAR_91_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   2,   1, 
   6,   1,   7
 };
@@ -2694,7 +2694,7 @@ static const unsigned char visit_times_italic_CHAR_91_tris[] = {
 static const unsigned short visit_times_italic_CHAR_92_pts[] = {
 27327, 65535, 24165, 65535, 32258,     0, 35548,     0
 };
-static const unsigned char visit_times_italic_CHAR_92_tris[] = {
+static const unsigned short visit_times_italic_CHAR_92_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* ']' font data */
@@ -2702,7 +2702,7 @@ static const unsigned short visit_times_italic_CHAR_93_pts[] = {
 46318, 62906, 28929,  2514, 33432,     0, 52365, 65535, 37064, 65535, 
 36344, 62906, 18851,  2514, 18091,     0
 };
-static const unsigned char visit_times_italic_CHAR_93_tris[] = {
+static const unsigned short visit_times_italic_CHAR_93_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   2, 
   6,   2,   1
 };
@@ -2711,21 +2711,21 @@ static const unsigned short visit_times_italic_CHAR_94_pts[] = {
 28589, 65535, 26729, 65535,     0, 20508,  5828, 20508, 27528, 57359, 
 49228, 20508, 54932, 20508
 };
-static const unsigned char visit_times_italic_CHAR_94_tris[] = {
+static const unsigned short visit_times_italic_CHAR_94_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6
 };
 /* '_' font data */
 static const unsigned short visit_times_italic_CHAR_95_pts[] = {
 65535,     0, 65535,  3129, 26633,  3129, 26633,     0
 };
-static const unsigned char visit_times_italic_CHAR_95_tris[] = {
+static const unsigned short visit_times_italic_CHAR_95_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* '`' font data */
 static const unsigned short visit_times_italic_CHAR_96_pts[] = {
 18865, 65535,     0, 65535, 25425, 35765, 28155, 35765
 };
-static const unsigned char visit_times_italic_CHAR_96_tris[] = {
+static const unsigned short visit_times_italic_CHAR_96_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* 'a' font data */
@@ -2761,7 +2761,7 @@ static const unsigned short visit_times_italic_CHAR_97_pts[] = {
 46719,  1608, 46734,  9473, 47117,  1119, 47139, 11072, 47602,   716, 
 48175,   403
 };
-static const unsigned char visit_times_italic_CHAR_97_tris[] = {
+static const unsigned short visit_times_italic_CHAR_97_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   8,   9,  10,   8,  10,  11,   8,  11,   0,   8,   0,   2, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -2817,7 +2817,7 @@ static const unsigned short visit_times_italic_CHAR_98_pts[] = {
 32785,  2251, 31200,  2135, 30485,     0, 29799,  2234, 28312,  2533, 
 27774,   205, 26739,  3030, 25081,  3727, 25033,   820, 25173, 61274
 };
-static const unsigned char visit_times_italic_CHAR_98_tris[] = {
+static const unsigned short visit_times_italic_CHAR_98_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -2870,7 +2870,7 @@ static const unsigned short visit_times_italic_CHAR_99_pts[] = {
 56090, 37394, 56095, 41164, 55751, 40029, 55701, 39623, 55730, 38555, 
 55685, 39203
 };
-static const unsigned char visit_times_italic_CHAR_99_tris[] = {
+static const unsigned short visit_times_italic_CHAR_99_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   6,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  13,  15,  16, 
@@ -2935,7 +2935,7 @@ static const unsigned short visit_times_italic_CHAR_100_pts[] = {
 40995,  9438, 41120,  1087, 41478, 11108, 41535,   696, 41992,   391, 
 48359, 61274
 };
-static const unsigned char visit_times_italic_CHAR_100_tris[] = {
+static const unsigned short visit_times_italic_CHAR_100_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   7,   8,   9,   8,   9,  10,   9,  10,  11,  10,  11,   1,  11,   1,   0, 
   8,   7,  12,   8,  12,  13,   8,  13,  14,   8,  14,  15,   8,  15,  16, 
@@ -2998,7 +2998,7 @@ static const unsigned short visit_times_italic_CHAR_101_pts[] = {
 33788,  9230, 32549, 10675, 31585, 12237, 31199,   815, 30897, 13916, 
 30484, 15711
 };
-static const unsigned char visit_times_italic_CHAR_101_tris[] = {
+static const unsigned short visit_times_italic_CHAR_101_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   1,   9,  10,   1,  10,  11,   1,  11,  12, 
   1,  12,   2,   9,  13,  14,   9,  14,  15,   9,  15,  16,   9,  16,  10, 
@@ -3065,7 +3065,7 @@ static const unsigned short visit_times_italic_CHAR_102_pts[] = {
 54075, 61242, 54021, 59810, 53985, 60964, 53940, 60131, 53931, 60707, 
 53913, 60472, 13349,  3547
 };
-static const unsigned char visit_times_italic_CHAR_102_tris[] = {
+static const unsigned short visit_times_italic_CHAR_102_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  14,  15,  16,  15,  16,  17,  16,  17,   2, 
@@ -3154,7 +3154,7 @@ static const unsigned short visit_times_italic_CHAR_103_pts[] = {
 25549, 10395, 25463,  5488, 25260,  9727, 25143,  6245, 25053,  9070, 
 24951,  7012, 24929,  8424, 24887,  7788, 32389, 20099
 };
-static const unsigned char visit_times_italic_CHAR_103_tris[] = {
+static const unsigned short visit_times_italic_CHAR_103_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -3236,7 +3236,7 @@ static const unsigned short visit_times_italic_CHAR_104_pts[] = {
 47362,  7359, 47469, 31858, 47569,  8121, 47665, 32927, 47783, 33880, 
 25620, 61143
 };
-static const unsigned char visit_times_italic_CHAR_104_tris[] = {
+static const unsigned short visit_times_italic_CHAR_104_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -3292,7 +3292,7 @@ static const unsigned short visit_times_italic_CHAR_105_pts[] = {
 28851, 38581, 28816, 11268, 27997,  8076, 28192,  8915, 28352, 36177, 
 28465,  9979, 28664, 37541, 27880,  7462, 21647, 41218, 32952, 60592
 };
-static const unsigned char visit_times_italic_CHAR_105_tris[] = {
+static const unsigned short visit_times_italic_CHAR_105_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -3348,7 +3348,7 @@ static const unsigned short visit_times_italic_CHAR_106_pts[] = {
 19200,  1789, 19085,  1810, 18987,  1838, 18902,  1871, 18826,  1910, 
 18758,  1955, 18699,  2006, 18649,  2063, 32776, 46995, 14465,  3684
 };
-static const unsigned char visit_times_italic_CHAR_106_tris[] = {
+static const unsigned short visit_times_italic_CHAR_106_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -3405,7 +3405,7 @@ static const unsigned short visit_times_italic_CHAR_107_pts[] = {
 40292,   240, 40544, 18360, 40940,    60, 41447, 14796, 41656,     0, 
 42223, 11862, 42532,    78, 42875,  9560, 38846, 39298, 24945, 61274
 };
-static const unsigned char visit_times_italic_CHAR_107_tris[] = {
+static const unsigned short visit_times_italic_CHAR_107_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -3449,7 +3449,7 @@ static const unsigned short visit_times_italic_CHAR_108_pts[] = {
 26857,  5107, 26732,  1722, 26514,  5076, 26271,  5094, 26045,  5148, 
 25834,  5239, 25640,  5366, 25461,  5529, 25307,  5719, 26156, 61274
 };
-static const unsigned char visit_times_italic_CHAR_108_tris[] = {
+static const unsigned short visit_times_italic_CHAR_108_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -3512,7 +3512,7 @@ static const unsigned short visit_times_italic_CHAR_109_pts[] = {
 58074, 28893, 21668, 29698, 21570, 29417, 20649, 26148, 20571,  5194, 
 13556,   933, 19234,   933
 };
-static const unsigned char visit_times_italic_CHAR_109_tris[] = {
+static const unsigned short visit_times_italic_CHAR_109_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -3587,7 +3587,7 @@ static const unsigned short visit_times_italic_CHAR_110_pts[] = {
 55648, 39532, 29681, 12078, 29666, 40812, 29466, 39757, 29133, 38321, 
 29004,  9981, 18597,  1266, 26402,  1266, 28067, 34307, 28667, 36505
 };
-static const unsigned char visit_times_italic_CHAR_110_tris[] = {
+static const unsigned short visit_times_italic_CHAR_110_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   1,   9,  10,   1,  10,  11,   1,  11,  12, 
   1,  12,  13,   1,  13,  14,   1,  14,  15,   1,  15,  16,   1,  16,  17, 
@@ -3638,7 +3638,7 @@ static const unsigned short visit_times_italic_CHAR_111_pts[] = {
 34021,  3059, 32914,   183, 32767,  3601, 31616,  4359, 30570,  5334, 
 30391,   735, 29675,  6509, 28979,  7865, 28482,  9404, 28183, 11124
 };
-static const unsigned char visit_times_italic_CHAR_111_tris[] = {
+static const unsigned short visit_times_italic_CHAR_111_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -3691,7 +3691,7 @@ static const unsigned short visit_times_italic_CHAR_112_pts[] = {
 38639, 16755, 38074, 46462, 37969, 45855, 37793, 45051, 37547, 44051, 
 32406,  5214, 32575,  5986, 32812,  6923, 32578, 48819
 };
-static const unsigned char visit_times_italic_CHAR_112_tris[] = {
+static const unsigned short visit_times_italic_CHAR_112_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -3753,7 +3753,7 @@ static const unsigned short visit_times_italic_CHAR_113_pts[] = {
 54865, 36184, 52993,  8278, 52183,  4819, 52284,  5422, 52453,  6200, 
 52689,  7152, 57937, 47705
 };
-static const unsigned char visit_times_italic_CHAR_113_tris[] = {
+static const unsigned short visit_times_italic_CHAR_113_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -3806,7 +3806,7 @@ static const unsigned short visit_times_italic_CHAR_114_pts[] = {
 30405, 36762, 30629,  8220, 31021,  9412, 19603,     0, 28537,     0, 
 30405,  7457
 };
-static const unsigned char visit_times_italic_CHAR_114_tris[] = {
+static const unsigned short visit_times_italic_CHAR_114_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   1,   9,  10,   1,  10,  11,   1,  11,  12, 
   1,  12,  13,   1,  13,  14,   1,  14,  15,   1,  15,  16,   1,  16,  17, 
@@ -3860,7 +3860,7 @@ static const unsigned short visit_times_italic_CHAR_115_pts[] = {
 41914, 52857, 42879, 53623, 43971, 54220, 40018, 49986, 40469, 51013, 
 41101, 51970
 };
-static const unsigned char visit_times_italic_CHAR_115_tris[] = {
+static const unsigned short visit_times_italic_CHAR_115_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   8, 
   7,   8,   9,   8,   9,  10,   9,  10,   5,  10,   5,   4,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   7,  15,   7,   6,  13,  16,  17, 
@@ -3907,7 +3907,7 @@ static const unsigned short visit_times_italic_CHAR_116_pts[] = {
 31776,  5253, 31556,  5313, 31349,  5413, 31299,   761, 31154,  5554, 
 30972,  5734, 30814,  5952, 30691,  6207, 30604,  6498, 30551,  6825
 };
-static const unsigned char visit_times_italic_CHAR_116_tris[] = {
+static const unsigned short visit_times_italic_CHAR_116_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -3961,7 +3961,7 @@ static const unsigned short visit_times_italic_CHAR_117_pts[] = {
 24102, 43145, 24486, 40390, 25240, 41205, 20886, 39349, 19332, 37070, 
 29021,  9326, 46681,  4101
 };
-static const unsigned char visit_times_italic_CHAR_117_tris[] = {
+static const unsigned short visit_times_italic_CHAR_117_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   8,  10,   9,  10,   9,  11, 
   9,  11,  12,  11,  12,  13,  12,  13,  14,  12,  14,  15,  14,  15,  16, 
@@ -4021,7 +4021,7 @@ static const unsigned short visit_times_italic_CHAR_118_pts[] = {
 27408, 43891, 28016, 42892, 29532, 38451, 30825, 31941, 31896, 23362, 
 32744, 12715, 33369,     0, 55257, 45993
 };
-static const unsigned char visit_times_italic_CHAR_118_tris[] = {
+static const unsigned short visit_times_italic_CHAR_118_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,  10,  11,  12,  10,  12,  13, 
  10,  13,   9,  10,   9,   7,  14,  12,  11,  14,  11,  15,  14,  15,  16, 
@@ -4069,7 +4069,7 @@ static const unsigned short visit_times_italic_CHAR_119_pts[] = {
 21074, 29597, 21404, 28298, 21672, 26773, 22190, 22563, 22617, 17782, 
 22953, 12427, 23198,  6500, 23351,     0, 13839, 32810
 };
-static const unsigned char visit_times_italic_CHAR_119_tris[] = {
+static const unsigned short visit_times_italic_CHAR_119_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   1,   9,  10,   1,  10,  11,   1,  11,  12, 
   1,  12,   2,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -4133,7 +4133,7 @@ static const unsigned short visit_times_italic_CHAR_120_pts[] = {
 50537,  7146, 50243,  7624, 49923,  8380, 49576,  9416, 49679,   385, 
 47892,     0, 48749,    96, 49203, 10730, 13291,  4817, 21926, 46311
 };
-static const unsigned char visit_times_italic_CHAR_120_tris[] = {
+static const unsigned short visit_times_italic_CHAR_120_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  10,  11,  12, 
  10,  12,  13,  10,  13,  14,  10,  14,  15,  10,  15,  16,  10,  16,  17, 
@@ -4209,7 +4209,7 @@ static const unsigned short visit_times_italic_CHAR_121_pts[] = {
 23155,  3780, 23253,  2202, 23310,  4377, 23440,  1759, 23569,  4951, 
 23702,  1342, 23932,  5503, 24040,   950, 24399,  6033
 };
-static const unsigned char visit_times_italic_CHAR_121_tris[] = {
+static const unsigned short visit_times_italic_CHAR_121_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -4257,7 +4257,7 @@ static const unsigned short visit_times_italic_CHAR_122_pts[] = {
 26976, 41463, 27641, 42322, 28301, 43018, 28958, 43585, 29617, 44059, 
 30278, 44438, 30942, 44724
 };
-static const unsigned char visit_times_italic_CHAR_122_tris[] = {
+static const unsigned short visit_times_italic_CHAR_122_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   6,   5,   7,   6,   7,   8,   6,   8,   9,   6,   9,  10,   6,  10,  11, 
   6,  11,  12,   6,  12,  13,   6,  13,  14,   6,  14,  15,   6,  15,  16, 
@@ -4295,7 +4295,7 @@ static const unsigned short visit_times_italic_CHAR_123_pts[] = {
 36370, 27856, 36552, 27032, 35045, 32229, 35102, 30025, 35542,  8610, 
 35866,  9889, 36182, 24055, 36407, 11392
 };
-static const unsigned char visit_times_italic_CHAR_123_tris[] = {
+static const unsigned short visit_times_italic_CHAR_123_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   8,   9,  10,   9,  10,  11,  10,  11,  12,  11,  12,   0, 
  12,   0,   2,  13,  14,  15,  14,  15,  16,  15,  16,  10,  16,  10,   8, 
@@ -4326,7 +4326,7 @@ static const unsigned char visit_times_italic_CHAR_123_tris[] = {
 static const unsigned short visit_times_italic_CHAR_124_pts[] = {
 36820, 65535, 33947, 65535, 33947,     0, 36820,     0
 };
-static const unsigned char visit_times_italic_CHAR_124_tris[] = {
+static const unsigned short visit_times_italic_CHAR_124_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* '}' font data */
@@ -4357,7 +4357,7 @@ static const unsigned short visit_times_italic_CHAR_125_pts[] = {
 40669, 65193, 40836, 63515, 41737, 63030, 43306, 40341, 43631, 41515, 
 43975, 55670, 44171, 42938, 38584, 64308
 };
-static const unsigned char visit_times_italic_CHAR_125_tris[] = {
+static const unsigned short visit_times_italic_CHAR_125_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,   9,  11,   6,   9,   6,   8, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  11,  16,  11,  10, 
@@ -4402,7 +4402,7 @@ static const unsigned short visit_times_italic_CHAR_126_pts[] = {
  2702,  5637,  3026, 16564,  3262,  7921,  3959,  9937,   904, 11735, 
   299,  8844,     0,  5637
 };
-static const unsigned char visit_times_italic_CHAR_126_tris[] = {
+static const unsigned short visit_times_italic_CHAR_126_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   0,   7,   1,   7,   1,   8,   1,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  11,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -4423,7 +4423,7 @@ static const unsigned short visit_times_italic_CHAR_127_pts[] = {
 23643,     0, 24952,  1327, 23643, 53113, 24952, 51785, 65535, 53113, 
 64225, 51785, 65535,     0, 64225,  1327
 };
-static const unsigned char visit_times_italic_CHAR_127_tris[] = {
+static const unsigned short visit_times_italic_CHAR_127_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };
@@ -4432,7 +4432,7 @@ static const unsigned short visit_times_italic_CHAR_128_pts[] = {
 23643,     0, 24952,  1327, 23643, 53113, 24952, 51785, 65535, 53113, 
 64225, 51785, 65535,     0, 64225,  1327
 };
-static const unsigned char visit_times_italic_CHAR_128_tris[] = {
+static const unsigned short visit_times_italic_CHAR_128_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };
@@ -4441,7 +4441,7 @@ static const unsigned short visit_times_italic_CHAR_129_pts[] = {
 23643,     0, 24952,  1327, 23643, 53113, 24952, 51785, 65535, 53113, 
 64225, 51785, 65535,     0, 64225,  1327
 };
-static const unsigned char visit_times_italic_CHAR_129_tris[] = {
+static const unsigned short visit_times_italic_CHAR_129_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };
@@ -4450,7 +4450,7 @@ static const unsigned short visit_times_italic_CHAR_130_pts[] = {
 23643,     0, 24952,  1327, 23643, 53113, 24952, 51785, 65535, 53113, 
 64225, 51785, 65535,     0, 64225,  1327
 };
-static const unsigned char visit_times_italic_CHAR_130_tris[] = {
+static const unsigned short visit_times_italic_CHAR_130_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };
@@ -4459,7 +4459,7 @@ static const unsigned short visit_times_italic_CHAR_131_pts[] = {
 23643,     0, 24952,  1327, 23643, 53113, 24952, 51785, 65535, 53113, 
 64225, 51785, 65535,     0, 64225,  1327
 };
-static const unsigned char visit_times_italic_CHAR_131_tris[] = {
+static const unsigned short visit_times_italic_CHAR_131_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };

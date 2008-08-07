@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 FluentGeneralPluginInfo::GetName() const
 {
     return "Fluent";
@@ -100,7 +100,7 @@ FluentGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 FluentGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ FluentGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 FluentGeneralPluginInfo::GetID() const
 {
     return "Fluent_1.0";

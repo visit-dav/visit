@@ -320,13 +320,16 @@ avtFileWriter::WriteImageDirectly(vtkImageWriter *wrtr, const char *filename,
 //    Do not overwrite pre-existing files.  Also, give a warning when trying
 //    to save to a file that does not exist.
 //
+//    Jeremy Meredith, Wed Aug  6 18:03:45 EDT 2008
+//    Changed char* to const char* to fix warning.
+//
 // ****************************************************************************
 
 char *
 avtFileWriter::CreateFilename(const char *base, bool family)
 {
     char *rv = NULL;
-    char *msg = NULL;
+    const char *msg = NULL;
     bool keepGoing = true;
     while (keepGoing)
     {

@@ -103,6 +103,10 @@ avtCurvatureExpression::~avtCurvatureExpression()
 //  Programmer:   Hank Childs
 //  Creation:     May 11, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 14:33:06 EDT 2008
+//    Removed unused var.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -133,8 +137,6 @@ avtCurvatureExpression::DeriveVariable(vtkDataSet *in_ds)
     vtkPolyData *out = curvatures->GetOutput();
     vtkDataArray *curvature = out->GetPointData()->GetArray(
                                doGauss ? "Gauss_Curvature" : "Mean_Curvature");
-    bool shouldDelete = false;
-
     vtkFloatArray *flt_curvature = vtkFloatArray::New();
     int npts = pd->GetNumberOfPoints();
     flt_curvature->SetNumberOfTuples(npts);

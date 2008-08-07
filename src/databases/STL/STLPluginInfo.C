@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 STLGeneralPluginInfo::GetName() const
 {
     return "STL";
@@ -100,7 +100,7 @@ STLGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 STLGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ STLGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 STLGeneralPluginInfo::GetID() const
 {
     return "STL_1.0";

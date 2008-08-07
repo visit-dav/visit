@@ -1218,6 +1218,9 @@ Engine::ProcessInput()
 //    Tom Fogal, Fri Jul 11 11:55:43 EDT 2008
 //    Added `icet' command line parameter.
 //
+//    Jeremy Meredith, Thu Aug  7 16:23:22 EDT 2008
+//    Wrap parallel-only vars with appropriate ifdef.
+//
 // ****************************************************************************
 
 void
@@ -1299,7 +1302,9 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 long int tval = strtol(argv[i+1], &endptr, 10);
                 if (*(argv[i+1]) != '\0' && *endptr == '\0' && errno == 0)
                 {
+#ifdef PARALLEL
                     int nanoSecsOfSleeps = (int) tval;
+#endif
                     int secsOfSpinBeforeSleeps = -1;
 
                     if (i+2 < argc)
@@ -2193,6 +2198,9 @@ Engine::EngineAbortCallback(void *data)
 //    Hank Childs, Fri Feb  1 09:03:22 PST 2008
 //    Avoid a divide by zero.
 //
+//    Jeremy Meredith, Thu Aug  7 16:23:46 EDT 2008
+//    Removed unused vars.
+//
 // ****************************************************************************
 
 void
@@ -2243,8 +2251,6 @@ Engine::EngineUpdateProgressCallback(void *data, const char *type, const char *d
 
         timeOfLastProgressCallback = timeOfThisProgressCallback;
 
-        int cur1 = rpc->GetCurStageNum();
-        int tot1 = rpc->GetMaxStageNum();
         int percent = int(100. * float(cur)/(total+0.0001));
         percent = (percent < 0 ? 0 : percent);
         percent = (percent > 100 ? 100 : percent);
@@ -2646,6 +2652,7 @@ Engine::GetProcessAttributes()
 
 }
 
+#ifdef PARALLEL
 // ****************************************************************************
 //  Function: startx
 //
@@ -2664,6 +2671,7 @@ startx(size_t display)
     // fork-exec X server ...
     // reminder: InitVTK::UnforceMesa(), perhaps?
 }
+#endif
 
 // ****************************************************************************
 //  Function: connectx

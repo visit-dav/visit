@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 SARGeneralPluginInfo::GetName() const
 {
     return "SAR";
@@ -100,7 +100,7 @@ SARGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SARGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ SARGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SARGeneralPluginInfo::GetID() const
 {
     return "SAR_1.0";

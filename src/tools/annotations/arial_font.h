@@ -47,7 +47,11 @@
 class vtkPolyData;
 
 
-vtkPolyData *CreateText(int nstr, char *str[]);
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 14:52:31 EDT 2008
+//    Use const string inputs since we're not modifying them.
+//
+vtkPolyData *CreateText(int nstr, const char *const str[]);
 
 
 #endif

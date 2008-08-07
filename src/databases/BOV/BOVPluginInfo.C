@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 BOVGeneralPluginInfo::GetName() const
 {
     return "BOV";
@@ -100,7 +100,7 @@ BOVGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 BOVGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ BOVGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 BOVGeneralPluginInfo::GetID() const
 {
     return "BOV_1.0";

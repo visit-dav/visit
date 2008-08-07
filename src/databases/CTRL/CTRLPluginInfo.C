@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 CTRLGeneralPluginInfo::GetName() const
 {
     return "CTRL";
@@ -100,7 +100,7 @@ CTRLGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 CTRLGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ CTRLGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 CTRLGeneralPluginInfo::GetID() const
 {
     return "CTRL_1.0";

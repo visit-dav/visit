@@ -719,6 +719,9 @@ TecplotFEZone::GetNumTopologicalDimensions() const
     case FEPOLYHEDRON:
         tdim = 3;
         break;
+    case ORDERED:
+        // What to do with this?
+        break;
     }
 
     return tdim;
@@ -2564,6 +2567,8 @@ TecplotFile::Write(FILE *f)
 // Creation:   Mon Jun 16 15:23:39 PDT 2008
 //
 // Modifications:
+//    Jeremy Meredith, Thu Aug  7 13:50:48 EDT 2008
+//    Need %ld for long integers.
 //   
 // ****************************************************************************
 
@@ -2582,7 +2587,7 @@ TecplotFile::EnsureUniqueZoneNames()
             for(size_t i = 0; i < pos->second.size(); ++i)
             {
                 char suffix[20];
-                sprintf(suffix, "_%02d", i+1);
+                sprintf(suffix, "_%02ld", i+1);
                 zones[i].zoneName += suffix;
             }
         }

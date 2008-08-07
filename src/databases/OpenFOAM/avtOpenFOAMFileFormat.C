@@ -83,6 +83,11 @@ void avtOpenFOAMFileFormat::FreeUpResources(void)
 //      file.  By populating it, you are telling the rest of VisIt what
 //      information it can request from you.
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 13:44:31 EDT 2008
+//    Change comparison between two char*'s (by pointer) to use
+//    an actual string comparison.
+//
 // ****************************************************************************
 
 void avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
@@ -177,7 +182,7 @@ void avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, in
   debug5<<"Add variables to metadata:"<<endl;
   for(int j = 0; j < numSolvers; j++)
     {
-    const char * tempSolver = directory->GetFile(j);
+    std::string tempSolver = directory->GetFile(j);
     if(tempSolver !="polyMesh")
       {
       if(tempSolver != "." && tempSolver != "..")

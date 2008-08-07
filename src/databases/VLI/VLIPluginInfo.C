@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 VLIGeneralPluginInfo::GetName() const
 {
     return "VLI";
@@ -100,7 +100,7 @@ VLIGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 VLIGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ VLIGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 VLIGeneralPluginInfo::GetID() const
 {
     return "VLI_1.0";

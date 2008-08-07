@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 XDMFGeneralPluginInfo::GetName() const
 {
     return "XDMF";
@@ -100,7 +100,7 @@ XDMFGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 XDMFGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ XDMFGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 XDMFGeneralPluginInfo::GetID() const
 {
     return "XDMF_1.0";

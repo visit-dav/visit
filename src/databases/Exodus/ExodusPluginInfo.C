@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 ExodusGeneralPluginInfo::GetName() const
 {
     return "Exodus";
@@ -100,7 +100,7 @@ ExodusGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ExodusGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ ExodusGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ExodusGeneralPluginInfo::GetID() const
 {
     return "Exodus_1.0";

@@ -58,11 +58,13 @@
 //  Creation:   November 12, 2004 
 //
 //  Modifications:
+//    Jeremy Meredith, Thu Aug  7 14:37:30 EDT 2008
+//    Made constructor initializers match true initializer order.
 //
 // ****************************************************************************
 
 avtLevelsPointGlyphMapper::avtLevelsPointGlyphMapper():
-    avtPointGlypher(), avtLevelsMapper()
+    avtLevelsMapper(), avtPointGlypher()
 {
     ColorByScalarOff();
 }

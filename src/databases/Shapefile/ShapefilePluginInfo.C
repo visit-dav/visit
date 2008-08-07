@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 ShapefileGeneralPluginInfo::GetName() const
 {
     return "Shapefile";
@@ -100,7 +100,7 @@ ShapefileGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ShapefileGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ ShapefileGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ShapefileGeneralPluginInfo::GetID() const
 {
     return "Shapefile_1.0";

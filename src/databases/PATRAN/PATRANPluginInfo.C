@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 PATRANGeneralPluginInfo::GetName() const
 {
     return "PATRAN";
@@ -100,7 +100,7 @@ PATRANGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 PATRANGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ PATRANGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 PATRANGeneralPluginInfo::GetID() const
 {
     return "PATRAN_1.0";

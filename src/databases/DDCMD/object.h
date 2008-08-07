@@ -51,7 +51,7 @@ void object_free(OBJECT *);
 int object_get(OBJECT *, char *, void *, int, int, char *);
 int object_getv(OBJECT*c, char *member, void **, int type);
 int object_getv1(OBJECT*c, char *member, void **, int type);
-void object_compilefilesubset(char *filename, int first, int last);
+void object_compilefilesubset(const char *filename, int first, int last);
 void object_replacekeyword(OBJECT *object,char *keyword,char* keywordvalue);
 void object_Bcast(int root,int comm);
 int object_lineparse(char *, OBJECT *);

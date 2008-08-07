@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 VistaGeneralPluginInfo::GetName() const
 {
     return "Vista";
@@ -100,7 +100,7 @@ VistaGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 VistaGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ VistaGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 VistaGeneralPluginInfo::GetID() const
 {
     return "Vista_1.0";

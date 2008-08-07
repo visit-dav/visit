@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 AUXFileGeneralPluginInfo::GetName() const
 {
     return "AUXFile";
@@ -100,7 +100,7 @@ AUXFileGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 AUXFileGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ AUXFileGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 AUXFileGeneralPluginInfo::GetID() const
 {
     return "AUXFile_1.0";

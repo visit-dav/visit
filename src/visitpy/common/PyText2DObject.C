@@ -649,7 +649,7 @@ Text2DObject_print(PyObject *v, FILE *fp, int flags)
 //
 // The doc string for the class.
 //
-static char *Text2DObject_Purpose = "This class defines defines an interface to a 2D text object.";
+static const char *Text2DObject_Purpose = "This class defines defines an interface to a 2D text object.";
 
 //
 // The type description structure

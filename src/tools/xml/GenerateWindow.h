@@ -139,6 +139,9 @@
 //    Brad Whitlock, Wed Apr 23 13:34:15 PDT 2008
 //    Made it use QString::arg for internationalization.
 //
+//    Jeremy Meredith, Thu Aug  7 14:34:01 EDT 2008
+//    Reorder constructor initializers to be the correct order.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -195,7 +198,7 @@ class WindowGeneratorInt : public virtual Int , public virtual WindowGeneratorFi
 {
   public:
     WindowGeneratorInt(const QString &n, const QString &l)
-        : Int(n,l), WindowGeneratorField("int",n,l), Field("int",n,l) { }
+        : Field("int",n,l), Int(n,l), WindowGeneratorField("int",n,l) { }
     virtual void            writeHeaderCallback(ostream &h)
     {
         if (rangeSet)
@@ -304,7 +307,7 @@ class WindowGeneratorIntArray : public virtual IntArray , public virtual WindowG
 {
   public:
     WindowGeneratorIntArray(const QString &s, const QString &n, const QString &l)
-        : IntArray(s,n,l), WindowGeneratorField("intArray",n,l), Field("intArray",n,l) { }
+        : Field("intArray",n,l), IntArray(s,n,l), WindowGeneratorField("intArray",n,l) { }
 };
 
 
@@ -315,7 +318,7 @@ class WindowGeneratorIntVector : public virtual IntVector , public virtual Windo
 {
   public:
     WindowGeneratorIntVector(const QString &n, const QString &l)
-        : IntVector(n,l), WindowGeneratorField("intVector",n,l), Field("intVector",n,l) { }
+        : Field("intVector",n,l), IntVector(n,l), WindowGeneratorField("intVector",n,l) { }
 };
 
 
@@ -326,7 +329,7 @@ class WindowGeneratorBool : public virtual Bool , public virtual WindowGenerator
 {
   public:
     WindowGeneratorBool(const QString &n, const QString &l)
-        : Bool(n,l), WindowGeneratorField("bool",n,l), Field("bool",n,l) { }
+        : Field("bool",n,l), Bool(n,l), WindowGeneratorField("bool",n,l) { }
     virtual void            writeHeaderCallback(ostream &h)
     {
         h << "    void "<<name<<"Changed(bool val);" << endl;
@@ -376,7 +379,7 @@ class WindowGeneratorFloat : public virtual Float , public virtual WindowGenerat
 {
   public:
     WindowGeneratorFloat(const QString &n, const QString &l)
-        : Float(n,l), WindowGeneratorField("float",n,l), Field("float",n,l) { }
+        : Field("float",n,l), Float(n,l), WindowGeneratorField("float",n,l) { }
     virtual void            writeHeaderCallback(ostream &h)
     {
         h << "    void "<<name<<"ProcessText();" << endl;
@@ -440,7 +443,7 @@ class WindowGeneratorFloatArray : public virtual FloatArray , public virtual Win
 {
   public:
     WindowGeneratorFloatArray(const QString &s, const QString &n, const QString &l)
-        : FloatArray(s,n,l), WindowGeneratorField("floatArray",n,l), Field("floatArray",n,l) { }
+        : Field("floatArray",n,l), FloatArray(s,n,l), WindowGeneratorField("floatArray",n,l) { }
     virtual void               writeHeaderCallback(ostream &h)
     {
         h << "    void "<<name<<"ProcessText();" << endl;
@@ -546,7 +549,7 @@ class WindowGeneratorDouble : public virtual Double , public virtual WindowGener
 {
   public:
     WindowGeneratorDouble(const QString &n, const QString &l)
-        : Double(n,l), WindowGeneratorField("double",n,l), Field("double",n,l) { }
+        : Field("double",n,l), Double(n,l), WindowGeneratorField("double",n,l) { }
     virtual void            writeHeaderCallback(ostream &h)
     {
         h << "    void "<<name<<"ProcessText();" << endl;
@@ -610,7 +613,7 @@ class WindowGeneratorDoubleArray : public virtual DoubleArray , public virtual W
 {
   public:
     WindowGeneratorDoubleArray(const QString &s, const QString &n, const QString &l)
-        : DoubleArray(s,n,l), WindowGeneratorField("doubleArray",n,l), Field("doubleArray",n,l) { }
+        : Field("doubleArray",n,l), DoubleArray(s,n,l), WindowGeneratorField("doubleArray",n,l) { }
     virtual void               writeHeaderCallback(ostream &h)
     {
         h << "    void "<<name<<"ProcessText();" << endl;
@@ -716,7 +719,7 @@ class WindowGeneratorDoubleVector : public virtual DoubleVector , public virtual
 {
   public:
     WindowGeneratorDoubleVector(const QString &n, const QString &l)
-        : DoubleVector(n,l), WindowGeneratorField("doubleVector",n,l), Field("doubleVector",n,l) { }
+        : Field("doubleVector",n,l), DoubleVector(n,l), WindowGeneratorField("doubleVector",n,l) { }
 };
 
 
@@ -727,7 +730,7 @@ class WindowGeneratorUChar : public virtual UChar , public virtual WindowGenerat
 {
   public:
     WindowGeneratorUChar(const QString &n, const QString &l)
-        : UChar(n,l), WindowGeneratorField("uchar",n,l), Field("uchar",n,l) { }
+        : Field("uchar",n,l), UChar(n,l), WindowGeneratorField("uchar",n,l) { }
 };
 
 
@@ -738,7 +741,7 @@ class WindowGeneratorUCharArray : public virtual UCharArray , public virtual Win
 {
   public:
     WindowGeneratorUCharArray(const QString &s, const QString &n, const QString &l)
-        : UCharArray(s,n,l), WindowGeneratorField("ucharArray",n,l), Field("ucharArray",n,l) { }
+        : Field("ucharArray",n,l), UCharArray(s,n,l), WindowGeneratorField("ucharArray",n,l) { }
 };
 
 //
@@ -748,7 +751,7 @@ class WindowGeneratorUCharVector : public virtual UCharVector , public virtual W
 {
   public:
     WindowGeneratorUCharVector(const QString &n, const QString &l)
-        : UCharVector(n,l), WindowGeneratorField("ucharVector",n,l), Field("ucharVector",n,l) { }
+        : Field("ucharVector",n,l), UCharVector(n,l), WindowGeneratorField("ucharVector",n,l) { }
 };
 
 
@@ -759,7 +762,7 @@ class WindowGeneratorString : public virtual String , public virtual WindowGener
 {
   public:
     WindowGeneratorString(const QString &n, const QString &l)
-        : String(n,l), WindowGeneratorField("string",n,l), Field("string",n,l) { }
+        : Field("string",n,l), String(n,l), WindowGeneratorField("string",n,l) { }
     virtual void            writeHeaderCallback(ostream &h)
     {
         h << "    void "<<name<<"ProcessText();" << endl;
@@ -821,7 +824,7 @@ class WindowGeneratorStringVector : public virtual StringVector , public virtual
 {
   public:
     WindowGeneratorStringVector(const QString &n, const QString &l)
-        : StringVector(n,l), WindowGeneratorField("stringVector",n,l), Field("stringVector",n,l) { }
+        : Field("stringVector",n,l), StringVector(n,l), WindowGeneratorField("stringVector",n,l) { }
 };
 
 
@@ -832,7 +835,7 @@ class WindowGeneratorColorTable : public virtual ColorTable , public virtual Win
 {
   public:
     WindowGeneratorColorTable(const QString &n, const QString &l)
-        : ColorTable(n,l), WindowGeneratorField("colortable",n,l), Field("colortable",n,l) { }
+        : Field("colortable",n,l), ColorTable(n,l), WindowGeneratorField("colortable",n,l) { }
     virtual void            writeHeaderCallback(ostream &h)
     {
         h << "    void "<<name<<"Changed(bool useDefault, const QString &ctName);" << endl;
@@ -880,7 +883,7 @@ class WindowGeneratorColor : public virtual Color , public virtual WindowGenerat
 {
   public:
     WindowGeneratorColor(const QString &n, const QString &l)
-        : Color(n,l), WindowGeneratorField("color",n,l), Field("color",n,l) { }
+        : Field("color",n,l), Color(n,l), WindowGeneratorField("color",n,l) { }
     virtual void            writeHeaderCallback(ostream &h)
     {
         h << "    void "<<name<<"Changed(const QColor &color);" << endl;
@@ -932,7 +935,7 @@ class WindowGeneratorOpacity : public virtual Opacity , public virtual WindowGen
 {
   public:
     WindowGeneratorOpacity(const QString &n, const QString &l)
-        : Opacity(n,l), WindowGeneratorField("opacity",n,l), Field("opacity",n,l) { }
+        : Field("opacity",n,l), Opacity(n,l), WindowGeneratorField("opacity",n,l) { }
     virtual void            writeHeaderCallback(ostream &h)
     {
         h << "    void "<<name<<"Changed(int opacity, const void*);" << endl;
@@ -982,7 +985,7 @@ class WindowGeneratorLineStyle : public virtual LineStyle , public virtual Windo
 {
   public:
     WindowGeneratorLineStyle(const QString &n, const QString &l)
-        : LineStyle(n,l), WindowGeneratorField("linestyle",n,l), Field("linestyle",n,l) { }
+        : Field("linestyle",n,l), LineStyle(n,l), WindowGeneratorField("linestyle",n,l) { }
     virtual void            writeHeaderCallback(ostream &h)
     {
         h << "    void "<<name<<"Changed(int style);" << endl;
@@ -1030,7 +1033,7 @@ class WindowGeneratorLineWidth : public virtual LineWidth , public virtual Windo
 {
   public:
     WindowGeneratorLineWidth(const QString &n, const QString &l)
-        : LineWidth(n,l), WindowGeneratorField("linewidth",n,l), Field("linewidth",n,l) { }
+        : Field("linewidth",n,l), LineWidth(n,l), WindowGeneratorField("linewidth",n,l) { }
     virtual void            writeHeaderCallback(ostream &h)
     {
         h << "    void "<<name<<"Changed(int style);" << endl;
@@ -1084,7 +1087,7 @@ class WindowGeneratorVariableName : public virtual VariableName , public virtual
 {
   public:
     WindowGeneratorVariableName(const QString &n, const QString &l)
-        : VariableName(n,l), WindowGeneratorField("variablename",n,l), Field("variablename",n,l) { }
+        : Field("variablename",n,l), VariableName(n,l), WindowGeneratorField("variablename",n,l) { }
     virtual void            writeHeaderCallback(ostream &h)
     {
         h << "    void "<<name<<"Changed(const QString &varName);" << endl;
@@ -1163,7 +1166,7 @@ class WindowGeneratorAtt : public virtual Att , public virtual WindowGeneratorFi
 {
   public:
     WindowGeneratorAtt(const QString &t, const QString &n, const QString &l)
-        : Att(t,n,l), WindowGeneratorField("att",n,l), Field("att",n,l) { }
+        : Field("att",n,l), Att(t,n,l), WindowGeneratorField("att",n,l) { }
 };
 
 
@@ -1174,7 +1177,7 @@ class WindowGeneratorAttVector : public virtual AttVector , public virtual Windo
 {
   public:
     WindowGeneratorAttVector(const QString &t, const QString &n, const QString &l)
-        : AttVector(t,n,l), WindowGeneratorField("attVector",n,l), Field("attVector",n,l) { }
+        : Field("attVector",n,l), AttVector(t,n,l), WindowGeneratorField("attVector",n,l) { }
 };
 
 
@@ -1185,7 +1188,7 @@ class WindowGeneratorEnum : public virtual Enum , public virtual WindowGenerator
 {
   public:
     WindowGeneratorEnum(const QString &t, const QString &n, const QString &l)
-        : Enum(t,n,l), WindowGeneratorField("enum",n,l), Field("enum",n,l) { }
+        : Field("enum",n,l), Enum(t,n,l), WindowGeneratorField("enum",n,l) { }
     virtual void            writeHeaderCallback(ostream &h)
     {
         h << "    void "<<name<<"Changed(int val);" << endl;
@@ -1247,7 +1250,7 @@ class WindowGeneratorScaleMode : public virtual ScaleMode , public virtual Windo
 {
   public:
     WindowGeneratorScaleMode(const QString &n, const QString &l)
-        : ScaleMode(n,l), WindowGeneratorField("scalemode",n,l), Field("scalemode",n,l) { }
+        : Field("scalemode",n,l), ScaleMode(n,l), WindowGeneratorField("scalemode",n,l) { }
     virtual void            writeHeaderCallback(ostream &h)
     {
         h << "    void "<<name<<"Changed(int val);" << endl;

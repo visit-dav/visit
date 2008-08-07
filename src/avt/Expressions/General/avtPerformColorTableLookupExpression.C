@@ -245,6 +245,8 @@ avtPerformColorTableLookupExpression::ProcessArguments(ArgsExpr *args,
 //  Creation:   Tue Jan  8 17:04:08 PST 2008
 //
 //  Modifications:
+//    Jeremy Meredith, Wed Aug  6 17:23:47 EDT 2008
+//    Assumed an "if (a=b)" line should have read "if (a==b)".
 //
 // ****************************************************************************
 
@@ -292,7 +294,7 @@ avtPerformColorTableLookupExpression::DoOperation(vtkDataArray *in, vtkDataArray
         // vtkSkewLookupTable. For vtkLogLookupTable it works fine, though. As a workaround, we manually check
         // whether we are dealing with "Skew" lookup and cast vtkLookupTable manually to vtkSkewLookupTable if
         // necessary. 
-        if (mLUTMapping = Skew)
+        if (mLUTMapping == Skew)
             col = dynamic_cast<vtkSkewLookupTable*>(vtkLUT)->MapValue(in->GetTuple1(i));
         else
             col = vtkLUT->MapValue(in->GetTuple1(i));

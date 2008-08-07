@@ -98,11 +98,11 @@
     </Function>
     <Function name="BuildEnumNChooseRMap" user="true" member="true">
     </Function>
-    <Function name="NChooseR" user="true" member="false">
+    <Function name="NChooseR" user="true" member="true">
     </Function>
-    <Function name="ComboValFromDigits" user="true" member="false">
+    <Function name="ComboValFromDigits" user="true" member="true">
     </Function>
-    <Function name="ComboDigitsFromVal" user="true" member="false">
+    <Function name="ComboDigitsFromVal" user="true" member="true">
     </Function>
     <Function name="UpdateValByInsertingDigit" user="true" member="true">
     </Function>

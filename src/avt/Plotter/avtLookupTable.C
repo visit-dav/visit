@@ -263,6 +263,9 @@ avtLookupTable::GetNumberOfColors()
 //    Brad Whitlock, Fri Apr 25 12:26:40 PDT 2003
 //    I made it throw InvalidColortableException.
 //
+//    Jeremy Meredith, Thu Aug  7 14:38:16 EDT 2008
+//    Use true string comparison (instead of undefined pointer comparison).
+//
 // ****************************************************************************
 
 bool
@@ -274,7 +277,7 @@ avtLookupTable::SetColorTable(const char *ctName, bool validName)
 
     // Figure out the circumstances in which we should use the default
     // color table.
-    if(ctName == "Default")
+    if(std::string(ctName) == "Default")
         useDefault = true;
     else if(ctName == NULL)
         useDefault = true;

@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 VASPGeneralPluginInfo::GetName() const
 {
     return "VASP";
@@ -100,7 +100,7 @@ VASPGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 VASPGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ VASPGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 VASPGeneralPluginInfo::GetID() const
 {
     return "VASP_1.0";

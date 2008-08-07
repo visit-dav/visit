@@ -110,6 +110,10 @@ Sequence::AddSymbol(const Symbol &s)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Aug  6 15:56:21 EDT 2008
+//    Handle symbol printing better.
+//
 // ****************************************************************************
 void
 Sequence::Print(ostream &o, int pos) const
@@ -124,10 +128,20 @@ Sequence::Print(ostream &o, int pos) const
     {
         for (size_t i=0; i<symbols.size(); i++)
         {
-            if (pos == i) o << dot.c_str() << " ";
-                o << *(symbols[i]) << " ";
+            if ((size_t)pos == i) o << dot.c_str() << " ";
+            {
+                int tt = symbols[i]->GetTerminalType();
+                if (symbols[i]->IsNonTerminal())
+                    o << *(symbols[i]) << " ";
+                else if (tt == '\\')
+                    o << "(backslash) ";
+                else if (tt < 256)
+                    o << char(tt) << " ";
+                else
+                    o << *(symbols[i]) << " ";
+            }
         }
-        if (pos == symbols.size()) o << dot.c_str() << " ";
+        if ((size_t)pos == symbols.size()) o << dot.c_str() << " ";
     }
 }
 

@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 TetradGeneralPluginInfo::GetName() const
 {
     return "Tetrad";
@@ -100,7 +100,7 @@ TetradGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 TetradGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ TetradGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 TetradGeneralPluginInfo::GetID() const
 {
     return "Tetrad_1.0";

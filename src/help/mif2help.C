@@ -48,9 +48,13 @@
 using std::string;
 using std::vector;
 
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 16:17:23 EDT 2008
+//    Use const char* for string literals.
+//
 std::string CurrentTime()
 {
-    char *tstr[] = {"PDT", "PST"};
+    const char *tstr[] = {"PDT", "PST"};
     char s1[10], s2[10], s3[10], tmpbuf[200];
     time_t t;
     char *c = NULL;

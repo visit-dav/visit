@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 CosmosPPGeneralPluginInfo::GetName() const
 {
     return "CosmosPP";
@@ -100,7 +100,7 @@ CosmosPPGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 CosmosPPGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ CosmosPPGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 CosmosPPGeneralPluginInfo::GetID() const
 {
     return "CosmosPP_1.0";

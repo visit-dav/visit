@@ -72,14 +72,16 @@ class QObject;
 // Creation:   Wed Aug  1 15:11:06 PDT 2007
 //
 // Modifications:
-
+//    Jeremy Meredith, Thu Aug  7 15:41:55 EDT 2008
+//    Use const char*'s when possible to allow string literals.
+//
 // ****************************************************************************
 
 class SC_NamesTabsIndex
 {
 public:
     SC_NamesTabsIndex(){}
-    SC_NamesTabsIndex(char *n, char *tab, int i):name(n),tabName(tab), index(i){}
+    SC_NamesTabsIndex(const char *n, const char *tab, int i):name(n),tabName(tab), index(i){}
     QString getName() {return name;}
     void setScrollView(QScrollView *sc) {scrollView = sc;}
     QScrollView *getScrollView() {return scrollView;}

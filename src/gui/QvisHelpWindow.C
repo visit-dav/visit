@@ -89,10 +89,13 @@
 //   Brad Whitlock, Mon Apr 21 15:24:47 PDT 2008
 //   Added locale.
 //
+//   Jeremy Meredith, Thu Aug  7 15:42:23 EDT 2008
+//   Fixed initializer order to match true order.
+//
 // ****************************************************************************
 
 QvisHelpWindow::QvisHelpWindow(const QString &captionString) :
-    QvisDelayedWindow(captionString), helpFile(), index(), bookmarks(), locale()
+    QvisDelayedWindow(captionString), locale(), helpFile(), index(), bookmarks()
 {
     // Set the help path from an environment variable.
     char *helpHome = getenv("VISITHELPHOME");

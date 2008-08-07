@@ -222,13 +222,16 @@ SymbolInformation(PDBfile *pdb, const char *name, TypeEnum *t,
 //   Rob Managan, Tue Jan 15 15:15:58 PST 2008
 //   Changed to support other related files.
 //
+//    Jeremy Meredith, Thu Aug  7 15:59:13 EDT 2008
+//    Assume PDB won't modify our string literals, so cast to char* as needed.
+//
 // ****************************************************************************
 
 void
 avtCaleFileFormat::Identify(const char *filename)
 {
     const char *mName = "avtCaleFileFormat::Identify: ";
-    PDBfile *pdb = PD_open((char *)filename,"r") ;
+    PDBfile *pdb = PD_open((char *)filename,(char*)"r") ;
    
     if (pdb == NULL)
     {
@@ -238,9 +241,9 @@ avtCaleFileFormat::Identify(const char *filename)
     {
         int nnalls = 0, kmax = 0, lmax = 0;
         int pdberr ;
-        pdberr  = PD_read(pdb,"/parameters/nnalls",&nnalls) ;
-        pdberr |= PD_read(pdb,"/parameters/kmax",&kmax) ;
-        pdberr |= PD_read(pdb,"/parameters/lmax",&lmax) ;
+        pdberr  = PD_read(pdb,(char*)"/parameters/nnalls",&nnalls) ;
+        pdberr |= PD_read(pdb,(char*)"/parameters/kmax",&kmax) ;
+        pdberr |= PD_read(pdb,(char*)"/parameters/lmax",&lmax) ;
 
         debug5 << mName << "nnalls = " << nnalls << endl;
         debug5 << mName << "kmax = " << kmax << endl;
@@ -311,13 +314,16 @@ avtCaleFileFormat::FreeUpResources(void)
 //
 // Modifications:
 //   
+//    Jeremy Meredith, Thu Aug  7 15:59:35 EDT 2008
+//    Assume PDB won't modify our string literals, so cast to char* as needed.
+//
 // ****************************************************************************
 
 PDBfile *
 avtCaleFileFormat::GetPDBFile()
 {
     if(pdbfile == NULL)
-        pdbfile = PD_open((char *)filename, "r");
+        pdbfile = PD_open((char *)filename, (char*)"r");
 
     return pdbfile;
 }
@@ -336,6 +342,9 @@ avtCaleFileFormat::GetPDBFile()
 //  Modifications:
 //    Kathleen Bonnell, Tue Jul 1 16:00:00 PDT 2008
 //    Removed unreferenced variables.
+//
+//    Jeremy Meredith, Thu Aug  7 15:59:37 EDT 2008
+//    Assume PDB won't modify our string literals, so cast to char* as needed.
 //
 // ****************************************************************************
 
@@ -383,14 +392,14 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         int len;
     }  parec;
     
-    pdberr =           PD_read(GetPDBFile(),"/parameters/nfpa",&nfpa);
+    pdberr =           PD_read(GetPDBFile(),(char*)"/parameters/nfpa",&nfpa);
     parec *palist = new parec[nfpa];
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/nnalls",&nnalls);
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/namix",&namix);
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/npbin",&npbin);
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/rdifmix",&rdifmix);
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ngrps",&ngrps);
-    pdberr = pdberr && PD_read(GetPDBFile(),"fpalist",palist);
+    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/nnalls",&nnalls);
+    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/namix",&namix);
+    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/npbin",&npbin);
+    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/rdifmix",&rdifmix);
+    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/ngrps",&ngrps);
+    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"fpalist",palist);
     if (!pdberr)
     {
         EXCEPTION1(InvalidDBTypeException,
@@ -508,7 +517,7 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char name[33];
     }  trcname_str;
 
-    pdberr = PD_read(GetPDBFile(),"/parameters/nreg",&nreg);
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nreg",&nreg);
     if (!pdberr)
     {
         EXCEPTION1(InvalidDBTypeException,
@@ -519,7 +528,7 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         trcname_str *rname = new trcname_str[nreg+1];
 
-        pdberr = PD_read(GetPDBFile(),"/ppa/rname",rname);
+        pdberr = PD_read(GetPDBFile(),(char*)"/ppa/rname",rname);
         if (!pdberr)
         {
             EXCEPTION1(InvalidDBTypeException,
@@ -555,11 +564,11 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     md->AddExpression(&vel_expr);
 
     int ifstr, ifstrain, iftpstr, ifmhda, ifmhdb;
-    pdberr =           PD_read(GetPDBFile(),"/parameters/ifstr",&ifstr);
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ifstrain",&ifstrain);
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/iftpstr",&iftpstr);
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ifmhda",&ifmhda);
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ifmhdb",&ifmhdb);
+    pdberr =           PD_read(GetPDBFile(),(char*)"/parameters/ifstr",&ifstr);
+    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/ifstrain",&ifstrain);
+    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/iftpstr",&iftpstr);
+    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/ifmhda",&ifmhda);
+    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/ifmhdb",&ifmhdb);
     if (!pdberr)
     {
         EXCEPTION1(InvalidDBTypeException,
@@ -681,8 +690,8 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
 
     int ntp, ncp, ncurves, ntimes, tplen ;
-    pdberr =           PD_read(GetPDBFile(),"/parameters/ntp",&ntp);
-    pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/ncp",&ncp);
+    pdberr =           PD_read(GetPDBFile(),(char*)"/parameters/ntp",&ntp);
+    pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/ncp",&ncp);
     if (!pdberr)
     {
         ntp = ncp = 0;
@@ -767,6 +776,10 @@ avtCaleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Kathleen Bonnell, Mon Jul 14 13:34:37 PDT 2008
 //    Specify curves as 1D rectilinear grids with yvalues stored in point data.
 //
+//    Jeremy Meredith, Thu Aug  7 15:59:40 EDT 2008
+//    Assume PDB won't modify our string literals, so cast to char* as needed.
+//    Removed extra unused arguments to printf.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -785,15 +798,15 @@ avtCaleFileFormat::GetMesh(const char *meshname)
         if (kminmesh == -1) 
             GetUsedMeshLimits();
         // Read the ndims and number of X,Y,Z nodes from file. 
-        pdberr =           PD_read(GetPDBFile(),"/parameters/kmax",&kmax);
-        pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/lmax",&lmax);
-        pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/lp",&lp);
-        pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/nnalls",&nnalls);
-        pdberr = pdberr && PD_read(GetPDBFile(),"/parameters/namix",&namix);
+        pdberr =           PD_read(GetPDBFile(),(char*)"/parameters/kmax",&kmax);
+        pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/lmax",&lmax);
+        pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/lp",&lp);
+        pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/nnalls",&nnalls);
+        pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/parameters/namix",&namix);
         double *z = new double[nnalls];
         double *r = new double[nnalls];
-        pdberr = pdberr && PD_read(GetPDBFile(),"/arrays/z",z);
-        pdberr = pdberr && PD_read(GetPDBFile(),"/arrays/r",r);
+        pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/arrays/z",z);
+        pdberr = pdberr && PD_read(GetPDBFile(),(char*)"/arrays/r",r);
         if (!pdberr)
         {
             EXCEPTION1(InvalidDBTypeException,
@@ -859,7 +872,7 @@ avtCaleFileFormat::GetMesh(const char *meshname)
 
         int nCells = sgrid->GetNumberOfCells(); 
         int *blanks = new int[namix]; 
-        pdberr = PD_read(GetPDBFile(),"/arrays/ireg",blanks);
+        pdberr = PD_read(GetPDBFile(),(char*)"/arrays/ireg",blanks);
       
         debug4 << mName <<"nCells " << nCells << " nnalls " << nnalls 
                << " k " << kminmesh << ":" << kmaxmesh << " l " << lminmesh 
@@ -904,8 +917,8 @@ avtCaleFileFormat::GetMesh(const char *meshname)
     {
         int ntp, ncp, ncurves, ntimes, tplen, foundit=0;
         int pdberr;
-        pdberr = PD_read(GetPDBFile(),"/parameters/ntp",&ntp);
-        pdberr = PD_read(GetPDBFile(),"/parameters/ncp",&ncp);
+        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/ntp",&ntp);
+        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/ncp",&ncp);
         double *ttime, *data;
 
         for ( int i = 1 ; i <= ntp ; i++ )
@@ -931,7 +944,7 @@ avtCaleFileFormat::GetMesh(const char *meshname)
                         break;
                     ttime = new double[tplen];
                     data  = new double[tplen];
-                    sprintf(vname, "/ppa/tpdata_%d/tpcur_0/tpdat",i,icur);
+                    sprintf(vname, "/ppa/tpdata_%d/tpcur_0/tpdat",i);
                     pdberr = PD_read(GetPDBFile(),vname,ttime);
                     sprintf(vname, "/ppa/tpdata_%d/tpcur_%d/tpdat",i,icur);
                     pdberr = PD_read(GetPDBFile(),vname,data);
@@ -968,7 +981,7 @@ avtCaleFileFormat::GetMesh(const char *meshname)
                             break;
                         ttime = new double[tplen];
                         data  = new double[tplen];
-                        sprintf(vname, "/ppa/cpdata_%d/cpcur_0/tpdat",i,icur);
+                        sprintf(vname, "/ppa/cpdata_%d/cpcur_0/tpdat",i);
                         pdberr = PD_read(GetPDBFile(),vname,ttime);
                         sprintf(vname, "/ppa/cpdata_%d/cpcur_%d/tpdat",i,icur);
                         pdberr = PD_read(GetPDBFile(),vname,data);
@@ -1031,6 +1044,9 @@ avtCaleFileFormat::GetMesh(const char *meshname)
 //    Brad Whitlock, Fri Oct 5 14:10:28 PST 2007
 //    Added support for mixed material variables.
 //
+//    Jeremy Meredith, Thu Aug  7 15:59:41 EDT 2008
+//    Assume PDB won't modify our string literals, so cast to char* as needed.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1043,14 +1059,14 @@ avtCaleFileFormat::GetVar(const char *varname)
     int kmax, lmax, lp, nnalls, namix, nvals, pdberr, nk, nl;
     int npbin, ngrps, rdifmix;
     int length, group, grplen;
-    pdberr = PD_read(GetPDBFile(),"/parameters/kmax",&kmax);
-    pdberr = PD_read(GetPDBFile(),"/parameters/lmax",&lmax);
-    pdberr = PD_read(GetPDBFile(),"/parameters/lp",&lp);
-    pdberr = PD_read(GetPDBFile(),"/parameters/nnalls",&nnalls);
-    pdberr = PD_read(GetPDBFile(),"/parameters/namix",&namix);
-    pdberr = PD_read(GetPDBFile(),"/parameters/npbin",&npbin);
-    pdberr = PD_read(GetPDBFile(),"/parameters/rdifmix",&rdifmix);
-    pdberr = PD_read(GetPDBFile(),"/parameters/ngrps",&ngrps);
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/kmax",&kmax);
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/lmax",&lmax);
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/lp",&lp);
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nnalls",&nnalls);
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/namix",&namix);
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/npbin",&npbin);
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/rdifmix",&rdifmix);
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/ngrps",&ngrps);
     length = namix;
     char    vstring[33];
 
@@ -1237,6 +1253,10 @@ avtCaleFileFormat::GetVectorVar(const char *varname)
 //
 //  Purpose: Return the cycle associated with this file
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:59:42 EDT 2008
+//    Assume PDB won't modify our string literals, so cast to char* as needed.
+//
 // ***************************************************************************
 int 
 avtCaleFileFormat::GetCycle(void) 
@@ -1244,7 +1264,7 @@ avtCaleFileFormat::GetCycle(void)
     int pdberr ;
     int cycle ;
  
-    pdberr = PD_read(GetPDBFile(),"/parameters/cycle",&cycle) ;
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/cycle",&cycle) ;
     debug4 << " cycle " << cycle << endl ;
     return cycle; 
 }
@@ -1298,6 +1318,10 @@ avtCaleFileFormat::GetCycleFromFilename(const char *f) const
 //
 //  Purpose: Return the time associated with this file
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:59:42 EDT 2008
+//    Assume PDB won't modify our string literals, so cast to char* as needed.
+//
 // ***************************************************************************
 
 double 
@@ -1306,7 +1330,7 @@ avtCaleFileFormat::GetTime(void)
     int pdberr ;
     double dtime ;
  
-    pdberr = PD_read(GetPDBFile(),"/parameters/time",&dtime) ;
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/time",&dtime) ;
     debug4 << " time " << dtime << endl ;
     return dtime; 
 }
@@ -1316,6 +1340,10 @@ avtCaleFileFormat::GetTime(void)
 //  Method: avtCaleFileFormat::GetAuxiliarData
 //
 //  Purpose: STMD version of GetAuxiliaryData. 
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:59:43 EDT 2008
+//    Assume PDB won't modify our string literals, so cast to char* as needed.
 //
 // ***************************************************************************
 
@@ -1333,14 +1361,14 @@ avtCaleFileFormat::GetAuxiliaryData(const char *var,
         int dims[3] = {1,1,1}, ndims = 2; 
 
         debug4 << mName << "Asked to read material information." << endl;
-        pdberr = PD_read(GetPDBFile(),"/parameters/kmax",&kmax);
-        pdberr = PD_read(GetPDBFile(),"/parameters/lmax",&lmax);
-        pdberr = PD_read(GetPDBFile(),"/parameters/lp",&lp);
-        pdberr = PD_read(GetPDBFile(),"/parameters/nnalls",&nnalls);
-        pdberr = PD_read(GetPDBFile(),"/parameters/namix",&namix);
-        pdberr = PD_read(GetPDBFile(),"/parameters/mixmax",&mixmax);
-        pdberr = PD_read(GetPDBFile(),"/parameters/nregx",&nregx);
-        pdberr = PD_read(GetPDBFile(),"/parameters/nreg",&nreg);
+        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/kmax",&kmax);
+        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/lmax",&lmax);
+        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/lp",&lp);
+        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nnalls",&nnalls);
+        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/namix",&namix);
+        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/mixmax",&mixmax);
+        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nregx",&nregx);
+        pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nreg",&nreg);
 
         if (kminmesh == -1)
             GetUsedMeshLimits();
@@ -1389,7 +1417,7 @@ avtCaleFileFormat::GetAuxiliaryData(const char *var,
             debug4 << mName << "nreg>=1, we have a material." << endl;    
             trcname_str *rname = new trcname_str[nreg+1];
        
-            pdberr = PD_read(GetPDBFile(),"/ppa/rname",rname);
+            pdberr = PD_read(GetPDBFile(),(char*)"/ppa/rname",rname);
             strcpy(rname[0].name,"Phony");
          
             for ( i = 0 ; i < nmats ; i++ )
@@ -1410,8 +1438,8 @@ avtCaleFileFormat::GetAuxiliaryData(const char *var,
             double *zmass = new double[namix]; // volume fractions are in this 
 
             int maxmixindx, ir, j;
-            pdberr = PD_read(GetPDBFile(),"/arrays/ireg",ireg);
-            pdberr = PD_read(GetPDBFile(),"/arrays/zmass",zmass);
+            pdberr = PD_read(GetPDBFile(),(char*)"/arrays/ireg",ireg);
+            pdberr = PD_read(GetPDBFile(),(char*)"/arrays/zmass",zmass);
          
             for ( i = 0 ; i < nnalls ; i++ )
             {
@@ -1427,15 +1455,15 @@ avtCaleFileFormat::GetAuxiliaryData(const char *var,
 
             int *nmatlst = new int[namix];
             int *grdlst  = new int[mixmax];
-            pdberr = PD_read(GetPDBFile(),"/arrays/nmatlst",nmatlst);
-            pdberr = PD_read(GetPDBFile(),"/arrays/grdlst",grdlst);
+            pdberr = PD_read(GetPDBFile(),(char*)"/arrays/nmatlst",nmatlst);
+            pdberr = PD_read(GetPDBFile(),(char*)"/arrays/grdlst",grdlst);
          
             int *rlen  = new int[nregx];
             int *rlencln  = new int[nregx];
             int *rlenmix  = new int[nregx];
-            pdberr = PD_read(GetPDBFile(),"/arrays/rlen",rlen);
-            pdberr = PD_read(GetPDBFile(),"/arrays/rlencln",rlencln);
-            pdberr = PD_read(GetPDBFile(),"/arrays/rlenmix",rlenmix);
+            pdberr = PD_read(GetPDBFile(),(char*)"/arrays/rlen",rlen);
+            pdberr = PD_read(GetPDBFile(),(char*)"/arrays/rlencln",rlencln);
+            pdberr = PD_read(GetPDBFile(),(char*)"/arrays/rlenmix",rlenmix);
          
             int **rndx = new int*[nreg+1];
             int **rndxmix = new int*[nreg+1];
@@ -1610,6 +1638,10 @@ avtCaleFileFormat::GetAuxiliaryData(const char *var,
 //
 //  Purpose:    find largest k,l used in mesh
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:59:44 EDT 2008
+//    Assume PDB won't modify our string literals, so cast to char* as needed.
+//
 // ***************************************************************************
 
 void 
@@ -1618,19 +1650,19 @@ avtCaleFileFormat::GetUsedMeshLimits (void)
     int ibc, pdberr;
     int kmax, lmax, nbc, nbcx;
    
-    pdberr = PD_read(GetPDBFile(),"/parameters/kmax",&kmax);
-    pdberr = PD_read(GetPDBFile(),"/parameters/lmax",&lmax);
-    pdberr = PD_read(GetPDBFile(),"/parameters/nbc",&nbc);
-    pdberr = PD_read(GetPDBFile(),"/parameters/nbcx",&nbcx);
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/kmax",&kmax);
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/lmax",&lmax);
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nbc",&nbc);
+    pdberr = PD_read(GetPDBFile(),(char*)"/parameters/nbcx",&nbcx);
    
     int *bck1 = new int[nbcx];
     int *bck2 = new int[nbcx];
     int *bcl1 = new int[nbcx];
     int *bcl2 = new int[nbcx];
-    pdberr = PD_read(GetPDBFile(),"/arrays/bck1",bck1);
-    pdberr = PD_read(GetPDBFile(),"/arrays/bck2",bck2);
-    pdberr = PD_read(GetPDBFile(),"/arrays/bcl1",bcl1);
-    pdberr = PD_read(GetPDBFile(),"/arrays/bcl2",bcl2);
+    pdberr = PD_read(GetPDBFile(),(char*)"/arrays/bck1",bck1);
+    pdberr = PD_read(GetPDBFile(),(char*)"/arrays/bck2",bck2);
+    pdberr = PD_read(GetPDBFile(),(char*)"/arrays/bcl1",bcl1);
+    pdberr = PD_read(GetPDBFile(),(char*)"/arrays/bcl2",bcl2);
 
     kminmesh = kmax;
     lminmesh = lmax;

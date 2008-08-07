@@ -126,6 +126,10 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //   Add special handling of '-s' and '-o' args on Windows, to ensure proper
 //   parsing of paths-with-spaces. 
 //
+//    Jeremy Meredith, Thu Aug  7 15:01:14 EDT 2008
+//    Assume Python won't modify argv, and cast a string literal to
+//    a const.
+//
 // ****************************************************************************
 
 int
@@ -335,7 +339,7 @@ main(int argc, char *argv[])
             argv3[ii+1] = argv[ii];
         }
         argv3[0] = argv[0];
-        argv3[1] = "-";
+        argv3[1] = (char*)"-";
         retval = Py_Main(argc+1, argv3);
         delete[] argv3;
         

@@ -1244,10 +1244,15 @@ static float nice_triangle_spacing[] = {
 //  Programmer: Hank Childs
 //  Creation:   December 29, 2002 (moved to this file Jan. 6, 2003)
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 14:48:49 EDT 2008
+//    Chars may be singed; convert to unsigned before using as array index.
+//    Use const string inputs.
+//
 // ****************************************************************************
 
 vtkPolyData *
-CreateText(int nstr, char *str[])
+CreateText(int nstr, const char *const str[])
 {
     //
     // Set up the VTK output dataset.
@@ -1300,11 +1305,11 @@ CreateText(int nstr, char *str[])
             // Each character is made up of multiple triangles.  Add the
             // triangles to the output one at a time.
             //
-            int ntri = nice_triangle_ntriangles[ch];
+            int ntri = nice_triangle_ntriangles[(unsigned char)(ch)];
             unsigned char *xptr = 
-                          &nice_triangle_x_index[(int)nice_triangle_start[ch]];
+                &nice_triangle_x_index[(int)nice_triangle_start[(unsigned char)(ch)]];
             unsigned char *yptr = 
-                          &nice_triangle_y_index[(int)nice_triangle_start[ch]];
+                &nice_triangle_y_index[(int)nice_triangle_start[(unsigned char)(ch)]];
             for (int j = 0 ; j < ntri ; j++)
             {
                 float pt[3];
@@ -1331,7 +1336,7 @@ CreateText(int nstr, char *str[])
                 output->InsertNextCell(VTK_TRIANGLE, 3, verts);
             }
             double scale_factor = 1.1;
-            char_base_x += (scale_factor * nice_triangle_spacing[ch]);
+            char_base_x += (scale_factor * nice_triangle_spacing[(unsigned char)(ch)]);
         }
     }
 

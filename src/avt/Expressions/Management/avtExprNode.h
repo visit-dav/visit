@@ -57,6 +57,10 @@ class ExprPipelineState;
 //
 //    Kathleen Bonnell, Fri Nov 17 08:32:54 PST 2006 
 //    Added private CreateFilters(string) for FuncExpr class. 
+//
+//    Jeremy Meredith, Thu Aug  7 14:34:01 EDT 2008
+//    Reorder constructor initializers to be the correct order.
+//
 
 
 class EXPRESSION_API avtExprNode : public virtual ExprNode
@@ -71,7 +75,7 @@ class EXPRESSION_API avtIntegerConstExpr
 {
   public:
     avtIntegerConstExpr(const Pos &p, int v)
-        : avtExprNode(p), IntegerConstExpr(p,v), ExprNode(p) {}
+        : ExprNode(p), avtExprNode(p), IntegerConstExpr(p,v) {}
     virtual void CreateFilters(ExprPipelineState *);
 };
 
@@ -80,7 +84,7 @@ class EXPRESSION_API avtFloatConstExpr
 {
   public:
     avtFloatConstExpr(const Pos &p, float v)
-        : avtExprNode(p), FloatConstExpr(p,v), ExprNode(p) {}
+        : ExprNode(p), avtExprNode(p), FloatConstExpr(p,v) {}
     virtual void CreateFilters(ExprPipelineState *);
 };
 
@@ -89,7 +93,7 @@ class EXPRESSION_API avtStringConstExpr
 {
   public:
     avtStringConstExpr(const Pos &p, std::string v)
-        : avtExprNode(p), StringConstExpr(p,v), ExprNode(p) {}
+        : ExprNode(p), avtExprNode(p), StringConstExpr(p,v) {}
     virtual void CreateFilters(ExprPipelineState *);
 };
 
@@ -98,7 +102,7 @@ class EXPRESSION_API avtBooleanConstExpr
 {
   public:
     avtBooleanConstExpr(const Pos &p, bool v)
-        : avtExprNode(p), BooleanConstExpr(p,v), ExprNode(p) {}
+        : ExprNode(p), avtExprNode(p), BooleanConstExpr(p,v) {}
     virtual void CreateFilters(ExprPipelineState *);
 };
 
@@ -107,7 +111,7 @@ class EXPRESSION_API avtUnaryExpr
 {
   public:
     avtUnaryExpr(const Pos &p, char o, ExprNode *e)
-        : avtExprNode(p), UnaryExpr(p,o,e), ExprNode(p) {}
+        : ExprNode(p), avtExprNode(p), UnaryExpr(p,o,e) {}
     virtual void CreateFilters(ExprPipelineState *);
 };
 
@@ -115,7 +119,7 @@ class EXPRESSION_API avtBinaryExpr : public avtExprNode, public BinaryExpr
 {
   public:
     avtBinaryExpr(const Pos &p, char o, ExprNode *l, ExprNode *r)
-        : avtExprNode(p), BinaryExpr(p, o, l, r), ExprNode(p) {}
+        : ExprNode(p), avtExprNode(p), BinaryExpr(p, o, l, r) {}
     virtual void CreateFilters(ExprPipelineState *);
 };
 
@@ -123,7 +127,7 @@ class EXPRESSION_API avtIndexExpr : public avtExprNode, public IndexExpr
 {
   public:
     avtIndexExpr(const Pos &p, ExprNode *e, int ind)
-        : avtExprNode(p), IndexExpr(p,e,ind), ExprNode(p) {}
+        : ExprNode(p), avtExprNode(p), IndexExpr(p,e,ind) {}
     virtual void CreateFilters(ExprPipelineState *);
 };
 
@@ -131,7 +135,7 @@ class EXPRESSION_API avtVectorExpr : public avtExprNode, public VectorExpr
 {
   public:
     avtVectorExpr(const Pos &p, ExprNode *x, ExprNode *y, ExprNode *z=NULL)
-        : avtExprNode(p), VectorExpr(p,x,y,z), ExprNode(p) {}
+        : ExprNode(p), avtExprNode(p), VectorExpr(p,x,y,z) {}
     virtual void CreateFilters(ExprPipelineState *);
 };
 
@@ -139,7 +143,7 @@ class EXPRESSION_API avtFunctionExpr : public avtExprNode, public FunctionExpr
 {
   public:
     avtFunctionExpr(const Pos &p, std::string n, ArgsExpr *e=NULL)
-        : avtExprNode(p), FunctionExpr(p,n,e), ExprNode(p) {}
+        : ExprNode(p), avtExprNode(p), FunctionExpr(p,n,e) {}
     virtual void CreateFilters(ExprPipelineState *);
   private:
     avtExpressionFilter *CreateFilters(std::string);
@@ -149,7 +153,7 @@ class EXPRESSION_API avtVarExpr : public avtExprNode, public VarExpr
 {
   public:
     avtVarExpr(const Pos &p, DBExpr *d, PathExpr *v, bool exp)
-        : avtExprNode(p), VarExpr(p,d,v,exp), ExprNode(p) {}
+        : ExprNode(p), avtExprNode(p), VarExpr(p,d,v,exp) {}
     virtual void CreateFilters(ExprPipelineState *);
 };
     

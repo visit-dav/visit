@@ -51,8 +51,4 @@
     <Include file="source" quoted="false">
       cstring 
     </Include>
- 
-  </Attribute>
-    <Constant name="namedColors" member="false">
-    </Constant>
   </Attribute>

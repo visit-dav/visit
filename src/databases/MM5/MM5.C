@@ -255,6 +255,8 @@ int mm5p_big_header_read(mm5_big_header_t *bh, FILE *f, int swap_endian)
  * Creation:   Wed Jul 12 11:00:04 PDT 2006
  *
  * Modifications:
+ *    Jeremy Meredith, Thu Aug  7 13:42:07 EDT 2008
+ *    index into bh->BHIC for strings is a double index
  *   
  ***************************************************************************/
 void mm5p_big_header_print(mm5_big_header_t *bh, FILE *f)
@@ -289,7 +291,7 @@ void mm5p_big_header_print(mm5_big_header_t *bh, FILE *f)
     for(j = 0; j < 50; ++j)
         for(i = 0; i < 20; ++i)
         {
-            fprintf(f, "        [%d][%d] = \"%s\"\n", j, i, bh->BHIC[j]);
+            fprintf(f, "        [%d][%d] = \"%s\"\n", j, i, bh->BHIC[j][i]);
         }
     fprintf(f, "    }\n");
 
@@ -297,7 +299,7 @@ void mm5p_big_header_print(mm5_big_header_t *bh, FILE *f)
     for(j = 0; j < 20; ++j)
         for(i = 0; i < 20; ++i)
         {
-            fprintf(f, "        [%d][%d] = \"%s\"\n", j, i, bh->BHRC[j]);
+            fprintf(f, "        [%d][%d] = \"%s\"\n", j, i, bh->BHRC[j][i]);
         }
     fprintf(f, "    }\n");
 

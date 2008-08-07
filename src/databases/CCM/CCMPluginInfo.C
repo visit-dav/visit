@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 CCMGeneralPluginInfo::GetName() const
 {
     return "CCM";
@@ -100,7 +100,7 @@ CCMGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 CCMGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ CCMGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 CCMGeneralPluginInfo::GetID() const
 {
     return "CCM_1.0";

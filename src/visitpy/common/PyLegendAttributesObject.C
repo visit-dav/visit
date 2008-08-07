@@ -825,7 +825,7 @@ LegendAttributesObject_print(PyObject *v, FILE *fp, int flags)
 //
 // The doc string for the class.
 //
-static char *LegendAttributesObject_Purpose = "This class defines defines an interface to a legend annotation object.";
+static const char *LegendAttributesObject_Purpose = "This class defines defines an interface to a legend annotation object.";
 
 //
 // The type description structure

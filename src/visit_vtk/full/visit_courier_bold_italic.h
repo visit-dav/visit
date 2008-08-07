@@ -25,7 +25,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_33_pts[] = {
 39221,  4107, 39270,  3401, 39300,  5014, 39416,  2751, 39538,  5883, 
 39659,  2157, 39933,  6713
 };
-static const unsigned char visit_courier_bold_italic_CHAR_33_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_33_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   0,   2,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -61,7 +61,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_34_pts[] = {
 41839,  4952, 41795,  4566, 41782,  3137, 41763,  4243, 41744,  3983, 
 41737,  3786
 };
-static const unsigned char visit_courier_bold_italic_CHAR_34_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_34_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   1,  14,  15,   1,  15,  16,   1,  16,  17, 
@@ -121,7 +121,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_35_pts[] = {
 28182,  1598, 28175,  4758, 28041,  4175, 28008,  1997, 27946,  3663, 
 27889,  3224, 27904,  2417, 27869,  2857, 41141,  2857
 };
-static const unsigned char visit_courier_bold_italic_CHAR_35_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_35_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,  15,  16,  17,  15,  17,  14, 
@@ -221,7 +221,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_36_pts[] = {
 37674,  1530, 37574,  4448, 37504,  1915, 37484,  3927, 37419,  3471, 
 37402,  2323, 37381,  3080, 37368,  2753
 };
-static const unsigned char visit_courier_bold_italic_CHAR_36_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_36_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   9,   8,  10,   9,  10,  11, 
   9,  11,  12,   9,  12,  13,  13,  12,  14,  13,  14,  15,  13,  15,  16, 
@@ -320,7 +320,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_37_pts[] = {
 44382,     0, 43817,  5659, 43029,  5969, 42761,   110, 42308,  6404, 
 41653,  6962, 41094,  7616
 };
-static const unsigned char visit_courier_bold_italic_CHAR_37_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_37_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   7,  10,  11,   7,  11,  12, 
   7,  12,  13,   7,  13,   9,  14,  15,  16,  15,  16,  17,  16,  17,  10, 
@@ -405,7 +405,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_38_pts[] = {
 46553, 39895, 47271, 40499, 34725, 14604, 35039, 15507, 35228, 27124, 
 35478, 16413, 34537, 13705
 };
-static const unsigned char visit_courier_bold_italic_CHAR_38_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_38_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -454,7 +454,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_39_pts[] = {
 43234,  1019, 44072,  1592, 44861,  2339, 45601,  3304, 46292,  4489, 
 46935,  5893, 47529,  7516, 65535, 61961
 };
-static const unsigned char visit_courier_bold_italic_CHAR_39_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_39_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -482,7 +482,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_40_pts[] = {
 54522,  6040, 54673,  5628, 53581,  1358, 53368,  9303, 53022,   869, 
 52470, 12470, 52432,   489, 51829, 15540, 51812,   217, 51444, 18513
 };
-static const unsigned char visit_courier_bold_italic_CHAR_40_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_40_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   6,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  11,  13,  14,  11,  14,  15,  11,  15,  16, 
@@ -521,7 +521,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_41_pts[] = {
 32997,   921, 33105,  6060, 33390,   589, 32070,  3161, 32108,  2650, 
 32135,  3848, 32219,  2170, 32329,  4559, 32404,  1722, 32652,  5297
 };
-static const unsigned char visit_courier_bold_italic_CHAR_41_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_41_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  13,  14,  15,  13,  15,  16,  13,  16,  10,  13,  10,  12, 
@@ -571,7 +571,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_42_pts[] = {
 52690,  6078, 52556,  8487, 52415,  5090, 52274,  9335, 51957,  4125, 
 51879, 10283, 48559,   815, 49548,  1450, 50489,  2266, 51315,  3184
 };
-static const unsigned char visit_courier_bold_italic_CHAR_42_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_42_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -624,7 +624,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_43_pts[] = {
 40129,   481, 40775,   856, 41380,  1337, 41934,  1944, 42424,  2695, 
 42850,  3590, 43213,  4629, 43512,  5812
 };
-static const unsigned char visit_courier_bold_italic_CHAR_43_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_43_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -654,7 +654,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_44_pts[] = {
 44162,    23, 44541,     0, 45221,    85, 45887,   342, 46539,   769, 
 47178,  1368, 47803,  2138, 65535, 26343
 };
-static const unsigned char visit_courier_bold_italic_CHAR_44_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_44_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -665,7 +665,7 @@ static const unsigned char visit_courier_bold_italic_CHAR_44_tris[] = {
 static const unsigned short visit_courier_bold_italic_CHAR_45_pts[] = {
 62876,     0, 65535, 12613,  8644, 12613,  5985,     0
 };
-static const unsigned char visit_courier_bold_italic_CHAR_45_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_45_tris[] = {
   0,   1,   2,   0,   2,   3
 };
 /* '.' font data */
@@ -679,7 +679,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_46_pts[] = {
 47219,  6402, 47292,  5286, 47513,  4263, 47881,  3332, 48397,  2494, 
 49059,  1748, 49873,  1119, 50843,   629, 51968,   279, 53249,    69
 };
-static const unsigned char visit_courier_bold_italic_CHAR_46_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_46_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -703,7 +703,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_47_pts[] = {
 28077,   406, 28473,   635, 28867,   940, 29285,  1347, 29726,  1855, 
 30192,  2466, 30681,  3178
 };
-static const unsigned char visit_courier_bold_italic_CHAR_47_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_47_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -739,7 +739,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_48_pts[] = {
 26232,  9023, 27324,  6599, 25453, 11842, 25234, 22895, 25057, 21771, 
 24985, 15057, 24930, 20693, 24854, 19658, 24829, 18668
 };
-static const unsigned char visit_courier_bold_italic_CHAR_48_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_48_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   6,   7,   8, 
   6,   8,   0,   6,   0,   2,   9,  10,  11,   9,  11,  12,   9,  12,   8, 
   9,   8,   7,  11,  10,  13,  10,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -780,7 +780,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_49_pts[] = {
 23358,  1995, 23380,  6126, 23683,  1485, 23931,  7109, 23050,  5059, 
 22940,  3907, 22986,  3206
 };
-static const unsigned char visit_courier_bold_italic_CHAR_49_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_49_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,  13, 
  11,  13,  14,  11,  14,   0,  11,   0,   2,  15,  16,  17,  16,  17,  18, 
@@ -822,7 +822,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_50_pts[] = {
 56322,  9800, 55816,  9986, 55260, 10098, 54654, 10135, 54077, 10083, 
 53466,  9928, 52820,  9669, 52139,  9307, 17167,     0
 };
-static const unsigned char visit_courier_bold_italic_CHAR_50_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_50_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   7,   8,   9,   8,   9,  10,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,   0, 
@@ -888,7 +888,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_51_pts[] = {
 21858,  3424, 20303,  7211, 20341,  5597, 20495,  7987, 20644,  4833, 
 20814,  8730, 21150,  4109, 21261,  9438, 20240,  6401, 31201, 46540
 };
-static const unsigned char visit_courier_bold_italic_CHAR_51_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_51_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,   9,  11,  12,   9,  12,   0, 
   9,   0,   2,  11,  10,  13,  10,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -946,7 +946,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_52_pts[] = {
 36002,  5673, 36286,  1381, 36514,  6587, 35694,  4688, 35592,  3633, 
 35635,  2981, 22431, 12860
 };
-static const unsigned char visit_courier_bold_italic_CHAR_52_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_52_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -994,7 +994,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_53_pts[] = {
 22157,  4026, 20419,  8314, 20467,  6574, 20613,  9072, 20805,  5674, 
 20936,  9799, 21368,  4825, 21388, 10493, 20354,  7524
 };
-static const unsigned char visit_courier_bold_italic_CHAR_53_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_53_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   8, 
   6,   8,   5,   6,   5,   4,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   8,  15,   8,   7,  16,  17,  18, 
@@ -1054,7 +1054,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_54_pts[] = {
 40925,  8075, 39571,     0, 39459,  8145, 38165,  8355, 37044,  8705, 
 36774,   152, 36095,  9195, 35318,  9825, 34686, 10642, 34170, 11695
 };
-static const unsigned char visit_courier_bold_italic_CHAR_54_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_54_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  12,  13,  14,  12,  14,  15,  12,  15,   0,  12,   0,   2,  16,  17,  18, 
@@ -1098,7 +1098,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_55_pts[] = {
 33246,  4489, 33383,  1821, 33513,  5207, 33656,  1377, 33888,  6033, 
 34007,   970
 };
-static const unsigned char visit_courier_bold_italic_CHAR_55_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_55_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -1148,7 +1148,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_56_pts[] = {
 28888,  2239, 29432, 26113, 23311, 14264, 23370, 10368, 23605, 16037, 
 23844,  8413, 24095, 17799, 24634,  6616, 24782, 19552, 23212, 12481
 };
-static const unsigned char visit_courier_bold_italic_CHAR_56_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_56_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   7,  15,   7,  16,   7,  16,   9, 
@@ -1216,7 +1216,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_57_pts[] = {
 23690,  7072, 23707,  2809, 24128,  7770, 24157,  2259, 24690,  8426, 
 24736,  1752, 25335,  8997, 25778,  1121, 26020,  9440, 23128,  4718
 };
-static const unsigned char visit_courier_bold_italic_CHAR_57_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_57_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -1265,7 +1265,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_58_pts[] = {
 55563,  2602, 55899, 13296, 56543,  3680, 42025,  5672, 42090,  4686, 
 42133,  6987, 42285,  3780, 42459,  8244, 42611,  2956, 43002,  9441
 };
-static const unsigned char visit_courier_bold_italic_CHAR_58_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_58_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -1299,7 +1299,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_59_pts[] = {
 35535,  2107, 35609,  1307, 35617,  2434, 35735,  1055, 35754,  2820, 
 35913,   811, 35945,  3264, 36141,   576
 };
-static const unsigned char visit_courier_bold_italic_CHAR_59_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_59_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -1327,7 +1327,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_60_pts[] = {
 57506,  5884, 57416,  6224, 57290,  6534, 57128,  6813, 56904,  7091, 
 56593,  7396, 56194,  7727, 55709,  8084, 55136,  8469
 };
-static const unsigned char visit_courier_bold_italic_CHAR_60_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_60_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -1360,7 +1360,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_61_pts[] = {
  9316,   164,  6151,  2574,  6387,  1987,  6409,  6186,  6718,  1471, 
  6967,  7182,  6073,  5112,  5962,  3961,  6009,  3232
 };
-static const unsigned char visit_courier_bold_italic_CHAR_61_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_61_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   8, 
   6,   8,   5,   6,   5,   4,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   8,  15,   8,   7,  16,  17,  18, 
@@ -1392,7 +1392,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_62_pts[] = {
 23485, 40302, 23574, 39955, 23700, 39642, 23862, 39364, 24085, 39088, 
 24394, 38785, 24791, 38455, 25274, 38097, 25844, 37711
 };
-static const unsigned char visit_courier_bold_italic_CHAR_62_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_62_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -1439,7 +1439,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_63_pts[] = {
 34539,  6319, 34799,   951, 33717,  3553, 33760,  2921, 33808,  4545, 
 33890,  2345, 34082,  5467, 38912, 19670
 };
-static const unsigned char visit_courier_bold_italic_CHAR_63_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_63_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  13,  14,  15,  13,  15,  16,  13,  16,  17,  13,  17,  18, 
@@ -1512,7 +1512,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_64_pts[] = {
 40961, 26979, 41072, 25449, 41158, 29210, 41405, 24010, 41750, 31373, 
 54162, 23757, 53327, 17491
 };
-static const unsigned char visit_courier_bold_italic_CHAR_64_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_64_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   5,   6,   7,   5,   7,   2, 
   5,   2,   1,   8,   9,  10,   8,  10,   7,   8,   7,   6,  11,  12,  13, 
  11,  13,  10,  11,  10,   9,  12,  14,  13,  14,  13,  15,  13,  15,  16, 
@@ -1578,7 +1578,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_65_pts[] = {
 45621,   143, 42918,  2224, 43120,  1727, 43138,  5281, 43403,  1285, 
 43615,  6132, 42852,  4365, 42757,  3382, 42797,  2776
 };
-static const unsigned char visit_courier_bold_italic_CHAR_65_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_65_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   8, 
   6,   8,   5,   6,   5,   4,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   8,  15,   8,   7,  16,  17,  18, 
@@ -1635,7 +1635,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_66_pts[] = {
 14566,  5358, 14835,  1304, 15050,  6222, 14276,  4428, 14179,  3431, 
 14220,  2816
 };
-static const unsigned char visit_courier_bold_italic_CHAR_66_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_66_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,   1, 
@@ -1703,7 +1703,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_67_pts[] = {
 31566,   849, 30352, 11099, 29563,  1510, 29137, 12367, 28192, 13749, 
 27675,  2360, 27517, 15243, 27112, 16850, 55604, 34387
 };
-static const unsigned char visit_courier_bold_italic_CHAR_67_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_67_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   1,   6,   7, 
   1,   7,   8,   1,   8,   2,   7,   6,   9,   7,   9,  10,   7,  10,  11, 
   7,  11,  12,   7,  12,  13,  13,  12,  14,  12,  14,  15,  14,  15,  16, 
@@ -1765,7 +1765,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_68_pts[] = {
 44364,   655, 16514,  3273, 16553,  2686, 16579,  4072, 16669,  2152, 
 16775,  4826, 16864,  1672, 17101,  5536
 };
-static const unsigned char visit_courier_bold_italic_CHAR_68_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_68_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -1825,7 +1825,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_69_pts[] = {
 39052, 16449, 38982, 18308, 38924, 17798, 38942, 16911, 38905, 17402, 
 54295, 34030
 };
-static const unsigned char visit_courier_bold_italic_CHAR_69_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_69_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   1,  15,   1,   0,  16,  17,  18, 
@@ -1891,7 +1891,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_70_pts[] = {
 39302, 14937, 39279, 18342, 39154, 17645, 39130, 15342, 39064, 17060, 
 39010, 16588, 39026, 15772, 38992, 16228, 55067, 31775
 };
-static const unsigned char visit_courier_bold_italic_CHAR_70_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_70_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,   1, 
@@ -1965,7 +1965,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_71_pts[] = {
 28858, 28749, 29461, 30398, 26810, 18057, 26862, 18847, 26948, 19641, 
 27068, 20438, 27223, 21239
 };
-static const unsigned char visit_courier_bold_italic_CHAR_71_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_71_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -2044,7 +2044,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_72_pts[] = {
 32559,  7798, 33049,  1512, 33143,  7566, 29963,  8096, 30230,   133, 
 30969,  8063
 };
-static const unsigned char visit_courier_bold_italic_CHAR_72_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_72_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,  10,  11,  12,  10,  12,  13, 
  10,  13,   9,  10,   9,   7,  14,  15,  16,  15,  16,  17,  16,  17,  11, 
@@ -2102,7 +2102,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_73_pts[] = {
 19987,  2225, 20189,  1728, 20207,  5307, 20472,  1286, 20684,  6158, 
 19921,  4382, 19825,  3384, 19866,  2777
 };
-static const unsigned char visit_courier_bold_italic_CHAR_73_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_73_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   8, 
   6,   8,   5,   6,   5,   4,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   8,  15,   8,   7,  16,  17,  18, 
@@ -2149,7 +2149,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_74_pts[] = {
 26765, 19199, 26778, 19508, 26568, 17864, 26473, 20758, 26235, 21124, 
 25930, 21465, 25574, 21760
 };
-static const unsigned char visit_courier_bold_italic_CHAR_74_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_74_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   8, 
   6,   8,   5,   6,   5,   4,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   8,  15,   8,   7,  16,  17,  18, 
@@ -2212,7 +2212,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_75_pts[] = {
 49945, 17433, 49009, 19403, 47981, 21193, 46874, 22787, 46007,     0, 
 45688, 24186, 44440,  6667, 44996,  4525, 45518,  2302, 43852,  8730
 };
-static const unsigned char visit_courier_bold_italic_CHAR_75_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_75_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   1,  15,   1,   0,  16,  17,  18, 
@@ -2271,7 +2271,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_76_pts[] = {
 18407,  7787, 18888,   146, 16140,  2268, 16345,  1761, 16365,  5409, 
 16632,  1311, 16851,  6276, 16073,  4466, 15976,  3449, 16017,  2830
 };
-static const unsigned char visit_courier_bold_italic_CHAR_76_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_76_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   8, 
   6,   8,   5,   6,   5,   4,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   8,  15,   8,   7,  16,  17,  18, 
@@ -2322,7 +2322,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_77_pts[] = {
 40878,   128, 40971,  7094, 38478,  1980, 38657,  1538, 38675,  4703, 
 38908,  1145, 39099,  5461, 38420,  3887, 38335,  3012, 38371,  2472
 };
-static const unsigned char visit_courier_bold_italic_CHAR_77_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_77_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -2377,7 +2377,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_78_pts[] = {
 45125, 40355, 45308, 39894, 45326, 43171, 45565, 39487, 45761, 43947, 
 45065, 42335, 44978, 41438, 45015, 40870
 };
-static const unsigned char visit_courier_bold_italic_CHAR_78_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_78_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -2426,7 +2426,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_79_pts[] = {
 33371,  9500, 31870, 10503, 31176,   868, 30485, 11792, 29291, 13315, 
 28614,  1953, 28363, 15019, 27700, 16904, 27302, 18970, 18880, 19296
 };
-static const unsigned char visit_courier_bold_italic_CHAR_79_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_79_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   7,   8,   9,   8,   9,  10,   9,  10,  11,  10,  11,   0,  11,   0,   2, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,   7,  16,   7,   9, 
@@ -2478,7 +2478,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_80_pts[] = {
 55762, 32942, 55328, 21803, 55197, 32027, 54512, 31142, 53715, 30326, 
 53596, 20762
 };
-static const unsigned char visit_courier_bold_italic_CHAR_80_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_80_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   1,  15,   1,   0,  16,  17,  18, 
@@ -2548,7 +2548,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_81_pts[] = {
 44114,  8994, 44559,  1186, 44798,  8884, 45280,   889, 45522,  8742, 
 45912,   640, 46243,  8575
 };
-static const unsigned char visit_courier_bold_italic_CHAR_81_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_81_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -2625,7 +2625,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_82_pts[] = {
 55331, 34066, 54967, 33487, 54573, 23361, 54539, 32929, 54063, 32406, 
 53541, 31918, 52971, 31464
 };
-static const unsigned char visit_courier_bold_italic_CHAR_82_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_82_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,   1, 
@@ -2711,7 +2711,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_83_pts[] = {
 19180,  3439, 19160,  5681, 19089,  5190, 19068,  3914, 19046,  4770, 
 19031,  4421, 27060, 34229
 };
-static const unsigned char visit_courier_bold_italic_CHAR_83_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_83_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   2,   1,   6, 
   1,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,   8, 
@@ -2784,7 +2784,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_84_pts[] = {
 21543,  4987, 21792,  1209, 21991,  5787, 21274,  4118, 21184,  3180, 
 21222,  2610, 54013, 29454
 };
-static const unsigned char visit_courier_bold_italic_CHAR_84_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_84_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -2838,7 +2838,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_85_pts[] = {
 31317,  9047, 32158,   154, 30370,  9809, 29558, 10685, 29969,   618, 
 28927, 11620, 28475, 12613, 28205, 13665
 };
-static const unsigned char visit_courier_bold_italic_CHAR_85_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_85_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -2890,7 +2890,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_86_pts[] = {
 48116, 44084, 45635, 38996, 45812, 38551, 45829, 41717, 46060, 38157, 
 46250, 42467, 45577, 40909, 45493, 40042, 45528, 39493
 };
-static const unsigned char visit_courier_bold_italic_CHAR_86_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_86_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   8, 
   6,   8,   5,   6,   5,   4,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   8,  15,   8,   7,  16,  17,  18, 
@@ -2932,7 +2932,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_87_pts[] = {
 47871, 37630, 45446, 39496, 45626, 39045, 45649, 42252, 45878, 38647, 
 46083, 43012, 45388, 41433, 45301, 40556, 45337, 40000, 17954,     0
 };
-static const unsigned char visit_courier_bold_italic_CHAR_87_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_87_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  12,  13,  14,  12,  14,  15,  12,  15,  11,  12,  11,   9,  16,  17,  18, 
@@ -2991,7 +2991,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_88_pts[] = {
 32045,  3863, 32135,  4789, 32101,  5323, 31998,  5812, 31827,  6256, 
 31776,  3003, 47747, 42064
 };
-static const unsigned char visit_courier_bold_italic_CHAR_88_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_88_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -3056,7 +3056,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_89_pts[] = {
 39263, 42568, 39266, 44777, 39375, 43120, 39376, 44259, 39412, 43686, 
 47637, 42064
 };
-static const unsigned char visit_courier_bold_italic_CHAR_89_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_89_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  13,  14,  15,  13,  15,   1,  13,   1,   0,  16,  17,  18, 
@@ -3099,7 +3099,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_90_pts[] = {
 54060, 19772, 53458, 19300, 52905, 18704, 52417, 17966, 51992, 17086, 
 51633, 16064, 18308,     0
 };
-static const unsigned char visit_courier_bold_italic_CHAR_90_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_90_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   4,   6,   8,   4,   8,   9,   4,   9,  10,   4,  10,  11, 
   4,  11,  12,   4,  12,  13,   4,  13,  14,   4,  14,  15,   4,  15,  16, 
@@ -3126,7 +3126,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_91_pts[] = {
 64255, 57510, 59826, 50640, 60789, 50672, 61385, 58003, 61635, 50767, 
 62287, 57973
 };
-static const unsigned char visit_courier_bold_italic_CHAR_91_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_91_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   6,   7,   8, 
   6,   8,   5,   6,   5,   4,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,   8,  15,   8,   7,  16,  17,  18, 
@@ -3151,7 +3151,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_92_pts[] = {
 60096,  3541, 60152,  4144, 60141,  4790, 60108,  5387, 60053,  5935, 
 59977,  6433, 59878,  6881
 };
-static const unsigned char visit_courier_bold_italic_CHAR_92_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_92_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -3176,7 +3176,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_93_pts[] = {
 33377,  5171, 33635,  1247, 33842,  5990, 33099,  4284, 33006,  3329, 
 33045,  2723
 };
-static const unsigned char visit_courier_bold_italic_CHAR_93_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_93_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,   8,  14,   8,   6,  15,  16,  17,  16,  17,  18, 
@@ -3202,7 +3202,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_94_pts[] = {
  7649,  4641,  8371,  4811,  9067,  5048,  9738,  5353, 10453,  5780, 
 11282,  6382, 12224,  7160, 13280,  8114, 14449,  9243
 };
-static const unsigned char visit_courier_bold_italic_CHAR_94_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_94_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -3228,7 +3228,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_95_pts[] = {
 22815,   940, 23085,   655, 23440,   419, 23902,   235, 24470,   104, 
 25147,    26, 25930,     0
 };
-static const unsigned char visit_courier_bold_italic_CHAR_95_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_95_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -3250,7 +3250,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_96_pts[] = {
 41721, 31746, 41836, 33092, 41701, 34223, 41295, 35395, 40620, 36608, 
 39675, 37861, 38460, 39154
 };
-static const unsigned char visit_courier_bold_italic_CHAR_96_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_96_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -3296,7 +3296,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_97_pts[] = {
 64875,  9060, 64504,  9458, 64621,  3932, 63370, 10043, 63910,  3109, 
 64015,  9787
 };
-static const unsigned char visit_courier_bold_italic_CHAR_97_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_97_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   5,   7,   6,   7,   6,   8,   6,   8,   9,   8,   9,  10,   9,  10,  11, 
  12,   9,  11,  12,  11,  13,  12,  13,  14,  12,  14,  15,  15,  14,  16, 
@@ -3359,7 +3359,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_98_pts[] = {
 35172,  9975, 34022, 10810, 34977,   550, 33082, 11790, 32350, 12877, 
 32635,  1238, 31828, 14069
 };
-static const unsigned char visit_courier_bold_italic_CHAR_98_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_98_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  10,  16,  10,   8, 
@@ -3418,7 +3418,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_99_pts[] = {
 53748, 39291, 54291, 28987, 54713, 28402, 29840, 33316, 29896, 18460, 
 30282, 20263
 };
-static const unsigned char visit_courier_bold_italic_CHAR_99_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_99_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   5,   6,   7,   5,   7,   2, 
   5,   2,   1,   8,   9,  10,   8,  10,   7,   8,   7,   6,  11,  12,  13, 
  11,  13,  10,  11,  10,   9,  12,  14,  13,  14,  13,  15,  13,  15,  16, 
@@ -3476,7 +3476,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_100_pts[] = {
 50006, 46894, 50510, 18725, 50042, 16765, 49263, 14947, 46863,  1303, 
 65535, 52363, 18264, 14136
 };
-static const unsigned char visit_courier_bold_italic_CHAR_100_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_100_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  15,  12,  14,  15,  14,  16, 
@@ -3528,7 +3528,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_101_pts[] = {
 65383, 21695, 65535, 23946, 65467, 22479, 65518, 23229, 64725, 29909, 
 63712, 32456, 62295, 34714, 60472, 36681
 };
-static const unsigned char visit_courier_bold_italic_CHAR_101_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_101_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   4,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  12,   9,  11,  12,  11,  13,  12,  13,  14,  12,  14,  15,  14,  16,  15, 
@@ -3585,7 +3585,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_102_pts[] = {
 45517, 41568, 46462, 41898, 42875, 38891, 43176, 39523, 43588, 40108, 
 44110, 40648
 };
-static const unsigned char visit_courier_bold_italic_CHAR_102_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_102_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,  10,  11,  12,  11,  12,   8, 
  12,   8,   6,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -3651,7 +3651,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_103_pts[] = {
 29239,  3988, 29433,   944, 29605,  4635, 29020,  3288, 28947,  2537, 
 28977,  2071, 27187, 24215
 };
-static const unsigned char visit_courier_bold_italic_CHAR_103_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_103_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,  10,  11,  12,  11,  12,   2, 
  12,   2,   0,  13,  14,  15,  13,  15,   9,  13,   9,  11,  16,  17,  18, 
@@ -3719,7 +3719,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_104_pts[] = {
 37666,  6114, 37614,  4389, 37516,  6732, 37308,  3412, 37266,  7293, 
 36916,  7799, 36799,  2509, 36466,  8248, 35998,  8518
 };
-static const unsigned char visit_courier_bold_italic_CHAR_104_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_104_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -3770,7 +3770,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_105_pts[] = {
 20854,  5962, 21151,  1445, 21390,  6918, 20532,  4923, 20425,  3802, 
 20470,  3120
 };
-static const unsigned char visit_courier_bold_italic_CHAR_105_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_105_tris[] = {
   0,   1,   2,   0,   2,   3,   4,   5,   6,   4,   6,   7,   4,   7,   8, 
   4,   8,   9,   4,   9,  10,  11,  12,  13,  11,  13,  10,  11,  10,   9, 
  14,  15,  16,  15,  16,  17,  16,  17,  18,  17,  18,  19,  18,  19,  20, 
@@ -3804,7 +3804,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_106_pts[] = {
 31306,  6524, 31716,   119, 29404,  1878, 29577,  1450, 29592,  4514, 
 29819,  1074, 30000,  5242, 29348,  3729, 29266,  2885, 29300,  2356
 };
-static const unsigned char visit_courier_bold_italic_CHAR_106_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_106_tris[] = {
   0,   1,   2,   0,   2,   3,   4,   5,   6,   4,   6,   7,   4,   7,   8, 
   4,   8,   9,   4,   9,  10,  11,  12,  13,  12,  13,  14,  13,  14,  15, 
  14,  15,   6,  15,   6,   5,  16,  17,  18,  17,  18,  19,  18,  19,  20, 
@@ -3850,7 +3850,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_107_pts[] = {
 41320,  3465, 41362,  2843, 41408,  4329, 41485,  2278, 41671,  5184, 
 42790, 55414
 };
-static const unsigned char visit_courier_bold_italic_CHAR_107_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_107_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,   1, 
@@ -3894,7 +3894,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_108_pts[] = {
 20867,  1940, 20889,  5957, 21183,  1444, 21424,  6913, 20567,  4919, 
 20460,  3799, 20505,  3118
 };
-static const unsigned char visit_courier_bold_italic_CHAR_108_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_108_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   7,   8,   9,   7,   9,   6,   7,   6,   5,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,   9,  16,   9,   8, 
@@ -3953,7 +3953,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_109_pts[] = {
 30310,  4158, 30407,  5154, 30367,  5759, 30249,  6308, 30053,  6804, 
 30020,  3233
 };
-static const unsigned char visit_courier_bold_italic_CHAR_109_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_109_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -4030,7 +4030,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_110_pts[] = {
 38304,  4454, 38204,  6831, 37993,  3462, 37948,  7401, 37590,  7914, 
 37474,  2546, 37130,  8369, 36658,  8644
 };
-static const unsigned char visit_courier_bold_italic_CHAR_110_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_110_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -4087,7 +4087,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_111_pts[] = {
 49519,  2214, 50052, 11354, 32531, 11531, 32995,   782, 33863, 10491, 
 34919,   347, 35350,  9682, 36918,    86, 36992,  9104, 31401, 12717
 };
-static const unsigned char visit_courier_bold_italic_CHAR_111_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_111_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   6,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -4141,7 +4141,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_112_pts[] = {
 20995,  1740, 21154,  1344, 21170,  4184, 21377,   995, 21548,  4859, 
 20943,  3456, 20867,  2674, 20899,  2184
 };
-static const unsigned char visit_courier_bold_italic_CHAR_112_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_112_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   2,   9,  10,   2,  10,  11,   2,  11,   0, 
   9,  12,  10,  12,  10,  13,  10,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -4203,7 +4203,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_113_pts[] = {
 57996,  5028, 57982,  2394, 57787,  5353, 57520,  5637, 57631,  1767, 
 56714,  6058, 57139,  1194, 57169,  5874
 };
-static const unsigned char visit_courier_bold_italic_CHAR_113_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_113_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   6,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  13,  15,  16, 
@@ -4260,7 +4260,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_114_pts[] = {
 17110,  2173, 17308,  1688, 17325,  5183, 17584,  1256, 17791,  6014, 
 17046,  4280, 16952,  3305, 16992,  2712
 };
-static const unsigned char visit_courier_bold_italic_CHAR_114_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_114_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -4332,7 +4332,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_115_pts[] = {
 21467,  6717, 21385,  3744, 21361,  6119, 21286,  5594, 21265,  4236, 
 21240,  5140, 21225,  4759
 };
-static const unsigned char visit_courier_bold_italic_CHAR_115_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_115_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   1,   6,   7, 
   1,   7,   8,   1,   8,   2,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -4408,7 +4408,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_116_pts[] = {
 33751,  2338, 30109,  7278, 30045, 11620, 29961, 11069, 29917,  8312, 
 29901, 10515, 29865,  9958, 29853,  9398
 };
-static const unsigned char visit_courier_bold_italic_CHAR_116_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_116_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   6,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  14,  11,  13,  14,  13,  15,  14,  15,  16, 
@@ -4465,7 +4465,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_117_pts[] = {
 63620,  7829, 63420,  8334, 63393,  4724, 24304, 11932, 24220, 11387, 
 24234,  8235, 24161, 10861, 24125, 10357, 24113,  9872, 48916,  1402
 };
-static const unsigned char visit_courier_bold_italic_CHAR_117_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_117_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   6,   5,   7,   6,   7,   8,   6,   8,   9,   6,   9,  10,   6,  10,  11, 
  12,  13,  14,  12,  14,  15,  12,  15,  16,  12,  16,  17,  12,  17,  11, 
@@ -4512,7 +4512,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_118_pts[] = {
 62863, 35287, 63381, 28321, 63574, 35120, 59347, 27428, 60405, 27464, 
 61039, 35421, 61338, 27571, 62018, 35388, 58039, 27428
 };
-static const unsigned char visit_courier_bold_italic_CHAR_118_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_118_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  10,  11,  12,  11,  12,  13,  12,  13,  14,  13,  14,  15,  14,  15,  16, 
@@ -4555,7 +4555,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_119_pts[] = {
 32997, 28025, 33096, 35347, 33558, 28335, 33816, 35180, 34362, 29004, 
 34399, 34945, 32239, 35448, 31468, 27612
 };
-static const unsigned char visit_courier_bold_italic_CHAR_119_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_119_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  10,  16,  10,  17, 
@@ -4612,7 +4612,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_120_pts[] = {
 35078,  6176, 34948,  6563, 34785,  3276, 34767,  6920, 34533,  7248, 
 34289,  2387, 34237,  7546
 };
-static const unsigned char visit_courier_bold_italic_CHAR_120_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_120_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
  12,  11,  10,  12,  10,  13,  12,  13,  14,  12,  14,  15,  16,  17,  18, 
@@ -4675,7 +4675,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_121_pts[] = {
 44583,  4412, 44545,  3165, 44474,  4850, 44319,  2451, 44292,  5249, 
 44037,  5611, 43944,  1796, 43708,  5934, 43373,  6140
 };
-static const unsigned char visit_courier_bold_italic_CHAR_121_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_121_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   9,  10,  11,  10,  11,  12,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -4718,7 +4718,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_122_pts[] = {
 56814, 13836, 56091, 13787, 55399, 13642, 54736, 13399, 54102, 13059, 
 53498, 12622, 52941, 12084, 52447, 11442, 52015, 10697, 20136,     0
 };
-static const unsigned char visit_courier_bold_italic_CHAR_122_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_122_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   4,   6,   8,   4,   8,   9,   4,   9,  10,   4,  10,  11, 
   4,  11,  12,   4,  12,  13,   4,  13,  14,   4,  14,  15,   4,  15,  16, 
@@ -4768,7 +4768,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_123_pts[] = {
 43127,  3202, 43666,  2525, 41649,  6375, 41630,  9810, 41556,  9357, 
 41508,  7185, 41503,  8905, 41471,  8452, 41461,  7999
 };
-static const unsigned char visit_courier_bold_italic_CHAR_123_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_123_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,  11,  12,  13, 
  12,  13,  14,  13,  14,  15,  14,  15,  16,  15,  16,  17,  16,  17,  18, 
@@ -4819,7 +4819,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_124_pts[] = {
 53147,  2450, 53307,  2923, 53377,  3386, 53432,  4124, 53471,  5138, 
 53495,  6428, 53502,  7994
 };
-static const unsigned char visit_courier_bold_italic_CHAR_124_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_124_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   0,   6,   7,   0,   7,   8,   0,   8,   9,   0,   9,  10,   0,  10,  11, 
   0,  11,  12,   0,  12,  13,   0,  13,  14,   0,  14,  15,   0,  15,  16, 
@@ -4869,7 +4869,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_125_pts[] = {
 36346,  2712, 36364,  4007, 36458,  2213, 36532,  4732, 36646,  1751, 
 36812,  5422, 36908,  1324, 37204,  6076, 50390, 37167
 };
-static const unsigned char visit_courier_bold_italic_CHAR_125_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_125_tris[] = {
   0,   1,   2,   0,   2,   3,   0,   3,   4,   0,   4,   5,   0,   5,   6, 
   1,   7,   8,   1,   8,   9,   1,   9,  10,   1,  10,  11,   1,  11,   2, 
  12,  13,  14,  13,  14,  15,  14,  15,   7,  15,   7,  16,   7,  16,   8, 
@@ -4933,7 +4933,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_126_pts[] = {
 10225,  5154, 10225, 12484, 10801,  4659, 10874, 13315, 11426,  4274, 
 11719, 14248, 12098,  3999, 12758, 15284, 12819,  3834, 13588,  3779
 };
-static const unsigned char visit_courier_bold_italic_CHAR_126_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_126_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   4,   6,   7,   6,   7,   8,   7,   8,   9,   8,   9,  10,   9,  10,  11, 
  12,   9,  11,  12,  11,  13,  12,  13,  14,  12,  14,  15,  14,  16,  15, 
@@ -4966,7 +4966,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_127_pts[] = {
 18303,     0, 19779,  1497, 18303, 59883, 19779, 58386, 65535, 59883, 
 64059, 58386, 65535,     0, 64059,  1497
 };
-static const unsigned char visit_courier_bold_italic_CHAR_127_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_127_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };
@@ -4975,7 +4975,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_128_pts[] = {
 18303,     0, 19779,  1497, 18303, 59883, 19779, 58386, 65535, 59883, 
 64059, 58386, 65535,     0, 64059,  1497
 };
-static const unsigned char visit_courier_bold_italic_CHAR_128_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_128_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };
@@ -4984,7 +4984,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_129_pts[] = {
 18303,     0, 19779,  1497, 18303, 59883, 19779, 58386, 65535, 59883, 
 64059, 58386, 65535,     0, 64059,  1497
 };
-static const unsigned char visit_courier_bold_italic_CHAR_129_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_129_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };
@@ -4993,7 +4993,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_130_pts[] = {
 18303,     0, 19779,  1497, 18303, 59883, 19779, 58386, 65535, 59883, 
 64059, 58386, 65535,     0, 64059,  1497
 };
-static const unsigned char visit_courier_bold_italic_CHAR_130_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_130_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };
@@ -5002,7 +5002,7 @@ static const unsigned short visit_courier_bold_italic_CHAR_131_pts[] = {
 18303,     0, 19779,  1497, 18303, 59883, 19779, 58386, 65535, 59883, 
 64059, 58386, 65535,     0, 64059,  1497
 };
-static const unsigned char visit_courier_bold_italic_CHAR_131_tris[] = {
+static const unsigned short visit_courier_bold_italic_CHAR_131_tris[] = {
   0,   1,   2,   1,   2,   3,   2,   3,   4,   3,   4,   5,   4,   5,   6, 
   5,   6,   7,   6,   7,   1,   1,   0,   6
 };

@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 FLASHGeneralPluginInfo::GetName() const
 {
     return "FLASH";
@@ -100,7 +100,7 @@ FLASHGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 FLASHGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ FLASHGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 FLASHGeneralPluginInfo::GetID() const
 {
     return "FLASH_1.0";

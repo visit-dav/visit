@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 ZeusMPGeneralPluginInfo::GetName() const
 {
     return "ZeusMP";
@@ -100,7 +100,7 @@ ZeusMPGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ZeusMPGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ ZeusMPGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ZeusMPGeneralPluginInfo::GetID() const
 {
     return "ZeusMP_1.0";

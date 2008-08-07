@@ -561,7 +561,7 @@ static void InitState_32(Dictionary &d, State &s)
 
 static void InitState_33(Dictionary &d, State &s)
 {
-    // reduce rule 41: MultiSlash ==> \ 
+    // reduce rule 41: MultiSlash ==> (backslash) 
     SetReduceRule(s,  41, d.Get('/'));
     SetReduceRule(s,  41, d.Get('\\'));
     SetReduceRule(s,  41, d.Get(257));
@@ -1633,7 +1633,7 @@ static void InitState_102(Dictionary &d, State &s)
 
 static void InitState_103(Dictionary &d, State &s)
 {
-    // reduce rule 40: MultiSlash ==> MultiSlash \ 
+    // reduce rule 40: MultiSlash ==> MultiSlash (backslash) 
     SetReduceRule(s,  40, d.Get('/'));
     SetReduceRule(s,  40, d.Get('\\'));
     SetReduceRule(s,  40, d.Get(257));

@@ -232,6 +232,8 @@ PDBFileObject::IsOpen() const
 // Creation:   Tue Sep 16 09:15:05 PDT 2003
 //
 // Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:59:40 EDT 2008
+//    Assume PDB won't modify our string literals, so cast to char* as needed.
 //   
 // ****************************************************************************
 
@@ -240,7 +242,7 @@ PDBFileObject::Open()
 {
     Close();
 
-    pdb = PD_open((char *)filename.c_str(), "r");
+    pdb = PD_open((char *)filename.c_str(), (char*)"r");
 
     // Should probably throw an exception here if pdb == 0.
 

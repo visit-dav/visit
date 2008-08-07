@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 RAWGeneralPluginInfo::GetName() const
 {
     return "RAW";
@@ -100,7 +100,7 @@ RAWGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 RAWGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ RAWGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 RAWGeneralPluginInfo::GetID() const
 {
     return "RAW_1.0";

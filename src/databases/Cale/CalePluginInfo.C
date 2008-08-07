@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 CaleGeneralPluginInfo::GetName() const
 {
     return "Cale";
@@ -100,7 +100,7 @@ CaleGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 CaleGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ CaleGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 CaleGeneralPluginInfo::GetID() const
 {
     return "Cale_1.0";

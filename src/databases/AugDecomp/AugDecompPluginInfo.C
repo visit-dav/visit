@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 AugDecompGeneralPluginInfo::GetName() const
 {
     return "AugDecomp";
@@ -100,7 +100,7 @@ AugDecompGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 AugDecompGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ AugDecompGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 AugDecompGeneralPluginInfo::GetID() const
 {
     return "AugDecomp_1.0";

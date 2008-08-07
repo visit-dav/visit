@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 PixieGeneralPluginInfo::GetName() const
 {
     return "Pixie";
@@ -100,7 +100,7 @@ PixieGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 PixieGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ PixieGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 PixieGeneralPluginInfo::GetID() const
 {
     return "Pixie_1.0";

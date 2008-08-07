@@ -202,6 +202,10 @@ public:
     ~avtVecArray();
     
     // assignment operator
+    //  Modifications:
+    //    Jeremy Meredith, Thu Aug  7 14:38:59 EDT 2008
+    //    Added missing return statement.
+    //
     avtVecArray& operator=( const avtVecArray& other )
     {
         _data = other._data;

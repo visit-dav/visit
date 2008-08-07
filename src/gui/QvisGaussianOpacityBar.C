@@ -343,6 +343,10 @@ QvisGaussianOpacityBar::mousePressEvent(QMouseEvent *e)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:39:32 EDT 2008
+//    Added missing case to avoid warnings.
+//
 // ****************************************************************************
 void
 QvisGaussianOpacityBar::mouseMoveEvent(QMouseEvent *e)
@@ -400,6 +404,8 @@ QvisGaussianOpacityBar::mouseMoveEvent(QMouseEvent *e)
             gaussian[currentGaussian].by = 2;
         if (gaussian[currentGaussian].by < 0)
             gaussian[currentGaussian].by = 0;
+        break;
+      case modeNone:
         break;
     }
     lastx = x;

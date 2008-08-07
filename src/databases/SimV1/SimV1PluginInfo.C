@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 SimV1GeneralPluginInfo::GetName() const
 {
     return "SimV1";
@@ -100,7 +100,7 @@ SimV1GeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SimV1GeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ SimV1GeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SimV1GeneralPluginInfo::GetID() const
 {
     return "SimV1_1.0";

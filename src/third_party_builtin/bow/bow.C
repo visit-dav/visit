@@ -155,8 +155,8 @@ extern char **libenvp;
 static void find_tmpdir(char *tmpdir);
 static char *fioX_read(bowglobal bg,char *pathsrc);
 static int fioX_write(char *pathdst,char *buf,int size);
-static int fioX_size(char *pathsrc);
-static int fioX_isdir(char *pathsrc);
+static int fioX_size(const char *pathsrc);
+static int fioX_isdir(const char *pathsrc);
 static int my_floor(float f);
 static void bowglobal_adderror(bowglobal bg);
 
@@ -713,7 +713,7 @@ static void find_tmpdir(char *tmpdir)
 {
     char *s;
 
-    if (s=getenv("BOW_TMPDIR")) {
+    if ((s=getenv("BOW_TMPDIR"))) {
         sprintf(tmpdir,"%s",s);
         return;
     }
@@ -774,7 +774,7 @@ static int fioX_write(char *pathdst,char *buf,int size)
 
 /* return size of file or -1 on error */
 
-static int fioX_size(char *pathsrc)
+static int fioX_size(const char *pathsrc)
 {
     static VisItStat_t st_store;
     static VisItStat_t *st = &st_store;
@@ -786,7 +786,7 @@ static int fioX_size(char *pathsrc)
 
 /* return 1 if dir and exists, 0 otherwise */
 
-static int fioX_isdir(char *pathsrc)
+static int fioX_isdir(const char *pathsrc)
 {
     static struct stat st_store;
     static struct stat *st = &st_store;

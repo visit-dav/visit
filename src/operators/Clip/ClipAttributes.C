@@ -473,6 +473,9 @@ ClipAttributes::TypeName() const
 //   Gunther H. Weber, Tue Aug 14 12:50:19 PDT 2007
 //   Plane tool can modify clip planes 
 //
+//   Jeremy Meredith, Thu Aug  7 15:34:07 EDT 2008
+//   Add missing case in switch to avoid warnings.
+//
 // ****************************************************************************
 
 bool
@@ -518,6 +521,8 @@ ClipAttributes::CopyAttributes(const AttributeGroup *atts)
                         SetPlane3Normal(tmp->GetNormal());
                         retval = true;
                     }
+                    break;
+                case None:
                     break;
             }
         }
@@ -587,6 +592,9 @@ ClipAttributes::CopyAttributes(const AttributeGroup *atts)
 //   Gunther H. Weber, Tue Aug 14 12:50:19 PDT 2007
 //   Plane tool can modify clip planes 
 //   
+//   Jeremy Meredith, Thu Aug  7 15:34:07 EDT 2008
+//   Add missing case in switch to avoid warnings.
+//
 // ****************************************************************************
 
 AttributeSubject *
@@ -619,6 +627,8 @@ ClipAttributes::CreateCompatible(const std::string &tname) const
                 p->SetOrigin(GetPlane3Origin());
                 normal_arr = GetPlane3Normal();
                 p->SetNormal(normal_arr);
+                break;
+            case None:
                 break;
         }
 
@@ -1568,6 +1578,9 @@ ClipAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // Programmer: Hank Childs
 // Creation:   August 28, 2007
 //
+//   Jeremy Meredith, Thu Aug  7 15:34:07 EDT 2008
+//   Add missing case in switch to avoid warnings.
+//
 // ****************************************************************************
 
 bool
@@ -1632,6 +1645,8 @@ ClipAttributes::EqualTo(const AttributeGroup *atts) const
 
         break;
 
+        case None:
+            break;
     }
 
 

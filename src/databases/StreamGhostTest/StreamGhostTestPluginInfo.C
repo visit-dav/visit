@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 StreamGhostTestGeneralPluginInfo::GetName() const
 {
     return "StreamGhostTest";
@@ -100,7 +100,7 @@ StreamGhostTestGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 StreamGhostTestGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ StreamGhostTestGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 StreamGhostTestGeneralPluginInfo::GetID() const
 {
     return "StreamGhostTest_1.0";

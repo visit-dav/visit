@@ -2081,6 +2081,11 @@ int vtkVisItDataReader::CharacterizeFile()
   return 1;
 }
 
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 16:14:56 EDT 2008
+//    Check for empty string in nameOfAttribute; the old check
+//    always returned true since it was testing the pointer.
+//
 void vtkVisItDataReader::CheckFor(const char* name, char *line, int &num, 
                              char** &array, int &allocSize)
 {
@@ -2120,9 +2125,9 @@ void vtkVisItDataReader::CheckFor(const char* name, char *line, int &num,
       }
 
     // enter the name
-    char nameOfAttribute[256];
+    char nameOfAttribute[256] = "";
     sscanf(line, "%*s %s", nameOfAttribute);
-    if ( nameOfAttribute )
+    if ( strlen(nameOfAttribute) > 0 )
       {
       array[num-1] = new char [strlen(nameOfAttribute)+1];
       strcpy(array[num-1],nameOfAttribute);

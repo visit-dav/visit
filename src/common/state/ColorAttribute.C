@@ -47,9 +47,14 @@
 //
 // Programmer: Mark C. Miller,
 // Creation:   July 13, 2006
+//
+// Modifications:
+//    Jeremy Meredith, Thu Aug  7 16:18:15 EDT 2008
+//    Use const char* to allow string literals.
+//
 // **************************************************************************
 
-typedef struct { unsigned char r,g,b; char *n; } named_color_t;
+typedef struct { unsigned char r,g,b; const char *n; } named_color_t;
 
 static named_color_t namedColors[] =
 {

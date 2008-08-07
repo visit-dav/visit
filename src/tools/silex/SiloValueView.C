@@ -57,6 +57,9 @@
 //    Mark Miller, Tue 23 Mar 11:19:13 PDT 2004
 //    Added call to free memory from the Silo DBGetVar call.
 //
+//    Jeremy Meredith, Thu Aug  7 14:46:58 EDT 2008
+//    Use %ld for longs.
+//
 // ****************************************************************************
 SiloValueViewWindow::SiloValueViewWindow(SiloFile *s, const QString &n, QWidget *p)
     : QMainWindow(p, n), silo(s), name(n)
@@ -86,7 +89,7 @@ SiloValueViewWindow::SiloValueViewWindow(SiloFile *s, const QString &n, QWidget 
         sprintf(str, "short: %d", *((short*)var));
         break;
       case DB_LONG:
-        sprintf(str, "long: %d", *((long*)var));
+        sprintf(str, "long: %ld", *((long*)var));
         break;
       case DB_FLOAT:
         sprintf(str, "float: %g", *((float*)var));

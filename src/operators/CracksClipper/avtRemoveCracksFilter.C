@@ -72,17 +72,22 @@
 //  Programmer: Kathleen Bonnell
 //  Creation:   Fri Oct 13 11:05:01 PDT 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:33:06 EDT 2008
+//    Made the function return a const char* so we don't need the
+//    const cast.
+//
 // ****************************************************************************
 
-char * 
+const char * 
 GetCrackVar(int which, CracksClipperAttributes *a)
 {
     if (0 == which) 
-        return const_cast<char*>(a->GetCrack1Var().c_str());
+        return a->GetCrack1Var().c_str();
     else if (1 == which) 
-        return const_cast<char*>(a->GetCrack2Var().c_str());
+        return a->GetCrack2Var().c_str();
     else 
-        return const_cast<char*>(a->GetCrack3Var().c_str());
+        return a->GetCrack3Var().c_str();
 }
 
 
@@ -115,9 +120,13 @@ GetShowCrack(int which, CracksClipperAttributes *a)
 //  Programmer: Kathleen Bonnell
 //  Creation:   Fri Oct 13 11:05:01 PDT 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:30:07 EDT 2008
+//    Since we're returning string literals, make them be const char*.
+//
 // ****************************************************************************
 
-char * 
+const char * 
 GetCrackWidth(int which)
 {
     if (0 == which) 
@@ -521,6 +530,9 @@ avtRemoveCracksFilter::NeedsProcessing(vtkDataSet *ds, bool *np)
 //    Clip on a cell-by-cell basis, considering crack size and clipping
 //    with largest crack direction first in all cases.
 //
+//    Jeremy Meredith, Thu Aug  7 15:30:34 EDT 2008
+//    Use const char* for string literals.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -530,9 +542,9 @@ avtRemoveCracksFilter::RemoveCracks(vtkDataSet *inds)
                              GetArray(atts.GetStrainVar().c_str());
 
     int nc = inds->GetNumberOfCells(); 
-    char *centers = "avtCellCenters";
-    char *crackvar;
-    char *crackwidth;
+    const char *centers = "avtCellCenters";
+    const char *crackvar;
+    const char *crackwidth;
     vtkAppendFilter *apd = vtkAppendFilter::New();
 
     vtkDataSet *dsToUse = inds->NewInstance();

@@ -69,6 +69,8 @@
 // Creation:   Wed Mar 5 11:45:12 PDT 2008
 //
 // Modifications:
+//    Jeremy Meredith, Thu Aug  7 14:55:48 EDT 2008
+//    Use const char * for string literals.
 //   
 // ****************************************************************************
 
@@ -112,7 +114,7 @@ public:
     static QString
     CurrentTime()
     {
-        char *tstr[] = {"PDT", "PST"};
+        const char *tstr[] = {"PDT", "PST"};
         char s1[10], s2[10], s3[10], tmpbuf[200];
         time_t t;
         char *c = NULL;

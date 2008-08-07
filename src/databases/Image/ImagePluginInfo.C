@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 ImageGeneralPluginInfo::GetName() const
 {
     return "Image";
@@ -100,7 +100,7 @@ ImageGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ImageGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ ImageGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 ImageGeneralPluginInfo::GetID() const
 {
     return "Image_1.0";

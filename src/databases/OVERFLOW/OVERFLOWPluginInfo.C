@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 OVERFLOWGeneralPluginInfo::GetName() const
 {
     return "OVERFLOW";
@@ -100,7 +100,7 @@ OVERFLOWGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 OVERFLOWGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ OVERFLOWGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 OVERFLOWGeneralPluginInfo::GetID() const
 {
     return "OVERFLOW_1.0";

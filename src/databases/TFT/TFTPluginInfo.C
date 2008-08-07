@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 TFTGeneralPluginInfo::GetName() const
 {
     return "TFT";
@@ -100,7 +100,7 @@ TFTGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 TFTGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ TFTGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 TFTGeneralPluginInfo::GetID() const
 {
     return "TFT_1.0";

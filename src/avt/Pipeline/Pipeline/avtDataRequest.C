@@ -1704,6 +1704,9 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //    Cyrus Harrison, Tue Feb 12 13:35:19 PST 2008
 //    Added needPostGhostMaterialInfo.
 //
+//    Jeremy Meredith, Thu Aug  7 14:44:02 EDT 2008
+//    Removed unused var.
+//
 // ****************************************************************************
 
 static const char *
@@ -1771,7 +1774,6 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     for (it = admissibleDataTypes.begin();
          it != admissibleDataTypes.end(); it++)
     {
-        bool isAnAdmissibleType = false;
         const char *type = vtkImageScalarTypeNameMacro(it->first);
         bool val = it->second;
         char entry[1024];

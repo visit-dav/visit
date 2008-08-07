@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 TimeVaryingExodusGeneralPluginInfo::GetName() const
 {
     return "TimeVaryingExodus";
@@ -100,7 +100,7 @@ TimeVaryingExodusGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 TimeVaryingExodusGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ TimeVaryingExodusGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 TimeVaryingExodusGeneralPluginInfo::GetID() const
 {
     return "TimeVaryingExodus_1.0";

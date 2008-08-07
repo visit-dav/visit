@@ -2265,6 +2265,9 @@ PF3DFileFormat::MasterInformation::GetNDomains() const
 //   Brad Whitlock, Fri Dec 2 11:30:16 PDT 2005
 //   Rewrote for dynamic master file structure.
 //
+//   Jeremy Meredith, Thu Aug  7 15:59:40 EDT 2008
+//   Assume PDB won't modify our string literals, so cast to char* as needed.
+//
 // ****************************************************************************
 
 bool
@@ -2347,7 +2350,8 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
         int nLongs = bufferSize / sizeof(long) +
             (((bufferSize % sizeof(long)) > 0) ? 1 : 0);
         void *buffer = (void *) new long[nLongs];
-        retval = (PD_read(pdb->filePointer(), "__@history", buffer) == TRUE);
+        retval = (PD_read(pdb->filePointer(), (char*)"__@history", buffer)
+                  == TRUE);
 
         //
         // Stage 3: Convert the data from the history structure into items

@@ -115,6 +115,10 @@ avtSymmEvalExpression::AddInputVariableName(const char *vname)
 //  Programmer: Hank Childs
 //  Creation:   January 21, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 14:33:34 EDT 2008
+//    Use %ld for long integers.
+//
 // ****************************************************************************
 
 void
@@ -156,7 +160,7 @@ avtSymmEvalExpression::ProcessArguments(ArgsExpr *args,
     if (elems->size() != GetNumberOfInputParameters())
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "%s.  You're list had %d numbers, where %d were "
+        SNPRINTF(msg, 1024, "%s.  You're list had %ld numbers, where %d were "
                   "expected.", badSyntaxMsg, elems->size(), 
                  GetNumberOfInputParameters());
         EXCEPTION2(ExpressionException, outputVariableName, msg);

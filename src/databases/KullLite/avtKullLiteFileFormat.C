@@ -290,6 +290,9 @@ avtKullLiteFileFormat::~avtKullLiteFileFormat()
 //    Hank Childs, Tue Jun 14 16:31:33 PDT 2005
 //    Add support for RZ meshes.
 //
+//    Jeremy Meredith, Thu Aug  7 15:52:08 EDT 2008
+//    Assume PDB won't modify our char*'s, and cast any literals as needed.
+//
 // ****************************************************************************
 
 void
@@ -300,7 +303,7 @@ avtKullLiteFileFormat::ReadInPrimaryMesh(int fi)
     debug4 << "Reading in dataset from KullLite file " << my_filenames[fi].c_str()
            << endl;
 
-    m_pdbFile = PD_open((char *) my_filenames[fi].c_str(), "r");
+    m_pdbFile = PD_open((char *) my_filenames[fi].c_str(), (char*)"r");
     if (m_pdbFile == NULL)
     {
         Close();
@@ -312,7 +315,7 @@ avtKullLiteFileFormat::ReadInPrimaryMesh(int fi)
 
     // Read in the tags
     m_tags = MAKE_N(pdb_taglist, 1);
-    if (PD_read(m_pdbFile, "MeshTags", m_tags) == false)
+    if (PD_read(m_pdbFile, (char*)"MeshTags", m_tags) == false)
     {
         // This is a valid possibility, we have to deal with it
         SFREE(m_tags);
@@ -323,7 +326,7 @@ avtKullLiteFileFormat::ReadInPrimaryMesh(int fi)
     int nRecvZones = ReadNumberRecvZones();
 
     int nMaterials = 0;
-    PD_read(m_pdbFile, "num_materials", &nMaterials); //This can fail,
+    PD_read(m_pdbFile, (char*)"num_materials", &nMaterials); //This can fail,
                                                       // that's okay
 
     // This however, isn't okay. If there are materials, 
@@ -894,6 +897,10 @@ avtKullLiteFileFormat::GetMesh(int dom, const char *mesh)
 //  Programmer: Hank Childs
 //  Creation:   July 28, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:52:08 EDT 2008
+//    Assume PDB won't modify our char*'s, and cast any literals as needed.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -902,7 +909,7 @@ avtKullLiteFileFormat::CreateMeshTags(const char *mesh, int dom)
     //
     // Open the file.  We will need this to create the tags.
     //
-    m_pdbFile = PD_open((char *) my_filenames[dom].c_str(), "r");
+    m_pdbFile = PD_open((char *) my_filenames[dom].c_str(), (char*)"r");
     if (m_pdbFile == NULL)
     {
         Close();
@@ -914,7 +921,7 @@ avtKullLiteFileFormat::CreateMeshTags(const char *mesh, int dom)
     // Construct the tags.
     //
     pdb_taglist *tags = MAKE_N(pdb_taglist, 1);
-    if (PD_read(m_pdbFile, "MeshTags", tags) == false)
+    if (PD_read(m_pdbFile, (char*)"MeshTags", tags) == false)
     {
         EXCEPTION1(InvalidVariableException, mesh);
         return NULL;
@@ -936,7 +943,7 @@ avtKullLiteFileFormat::CreateMeshTags(const char *mesh, int dom)
     else if (strcmp(mesh, "mesh_tags/edges_mesh") == 0)
     {
         pdb_mesh2d *mesh2d = MAKE_N(pdb_mesh2d, 1);
-        if (PD_read(m_pdbFile, "mesh", mesh2d) == false)
+        if (PD_read(m_pdbFile, (char*)"mesh", mesh2d) == false)
         {
             Close();
             EXCEPTION1(InvalidDBTypeException, "Cannot be a KullLite file, "
@@ -948,7 +955,7 @@ avtKullLiteFileFormat::CreateMeshTags(const char *mesh, int dom)
     else if (strcmp(mesh, "mesh_tags/faces_mesh") == 0)
     {
         pdb_mesh3d *mesh3d = MAKE_N(pdb_mesh3d, 1);
-        if (PD_read(m_pdbFile, "mesh", mesh3d) == false)
+        if (PD_read(m_pdbFile, (char*)"mesh", mesh3d) == false)
         {
             Close();
             EXCEPTION1(InvalidDBTypeException, "Cannot be a KullLite file, "
@@ -1195,6 +1202,9 @@ avtKullLiteFileFormat::CreateZoneMeshTags(vtkUnstructuredGrid *ugrid,
 //    files contain the material. Also changed code to fix an apparent compiler
 //    error on xlC.
 //
+//    Jeremy Meredith, Thu Aug  7 15:52:08 EDT 2008
+//    Assume PDB won't modify our char*'s, and cast any literals as needed.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1215,7 +1225,7 @@ avtKullLiteFileFormat::GetVar(int fi, const char *var)
                                            "is a material");
     }
 
-    m_pdbFile = PD_open((char *) my_filenames[fi].c_str(), "r");
+    m_pdbFile = PD_open((char *) my_filenames[fi].c_str(), (char*)"r");
     if (m_pdbFile == NULL)
     {
         Close();
@@ -1239,7 +1249,7 @@ avtKullLiteFileFormat::GetVar(int fi, const char *var)
     if (m_tags == NULL)
     {
         m_tags = MAKE_N(pdb_taglist, 1);
-        if (PD_read(m_pdbFile, "MeshTags", m_tags) == false)
+        if (PD_read(m_pdbFile, (char*)"MeshTags", m_tags) == false)
         {
             Close();
             EXCEPTION1(InvalidVariableException, "No meshtag data.");
@@ -1609,6 +1619,10 @@ avtKullLiteFileFormat::GetAuxiliaryData(const char *var, int domain,
 //  Programmer: Hank Childs
 //  Creation:   July 26, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:52:08 EDT 2008
+//    Assume PDB won't modify our char*'s, and cast any literals as needed.
+//
 // ****************************************************************************
 
 void *
@@ -1650,7 +1664,7 @@ avtKullLiteFileFormat::GetMeshTagMaterial(const char *var, int dom)
     //
     // Now open the file and read out the tag list.
     //
-    m_pdbFile = PD_open((char *) my_filenames[dom].c_str(), "r");
+    m_pdbFile = PD_open((char *) my_filenames[dom].c_str(), (char*)"r");
     if (m_pdbFile == NULL)
     {
         Close();
@@ -1658,7 +1672,7 @@ avtKullLiteFileFormat::GetMeshTagMaterial(const char *var, int dom)
                    " is file not a valid PDB file.");
     }
     pdb_taglist *tags = MAKE_N(pdb_taglist, 1);
-    if (PD_read(m_pdbFile, "MeshTags", tags) == false)
+    if (PD_read(m_pdbFile, (char*)"MeshTags", tags) == false)
     {
         Close();
         EXCEPTION1(InvalidVariableException, "MeshTags");
@@ -1731,6 +1745,9 @@ avtKullLiteFileFormat::GetMeshTagMaterial(const char *var, int dom)
 //    Hank Childs, Fri Aug 25 17:08:25 PDT 2006
 //    Beef up some logic where bad data can crash the reader.
 //
+//    Jeremy Meredith, Thu Aug  7 15:52:08 EDT 2008
+//    Assume PDB won't modify our char*'s, and cast any literals as needed.
+//
 // ****************************************************************************
 
 void *
@@ -1740,7 +1757,7 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
     if (NumberOfMaterials() == 0)
         EXCEPTION1(InvalidVariableException, "No materials to query.");
 
-    m_pdbFile = PD_open((char *) my_filenames[domain].c_str(), "r");
+    m_pdbFile = PD_open((char *) my_filenames[domain].c_str(), (char*)"r");
     if (m_pdbFile == NULL)
     {
         Close();
@@ -1784,7 +1801,7 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
     
     // Read in the tags
     m_tags = MAKE_N(pdb_taglist, 1);
-    if (PD_read(m_pdbFile, "MeshTags", m_tags) == false)
+    if (PD_read(m_pdbFile, (char*)"MeshTags", m_tags) == false)
     {
         Close();
         EXCEPTION1(InvalidVariableException, "No meshtag data.");
@@ -1962,6 +1979,9 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
 //     Hank Childs, Wed May 10 15:08:18 PDT 2006
 //     Add support for densities.
 //
+//    Jeremy Meredith, Thu Aug  7 15:52:08 EDT 2008
+//    Assume PDB won't modify our char*'s, and cast any literals as needed.
+//
 // ****************************************************************************
 
 void
@@ -1972,7 +1992,7 @@ avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     bool hasDensities = false;
     if (my_filenames.size() > 0)
     {
-        m_pdbFile = PD_open((char *) my_filenames[0].c_str(), "r");
+        m_pdbFile = PD_open((char *) my_filenames[0].c_str(), (char*)"r");
         if (m_pdbFile == NULL)
         {
             Close();
@@ -2199,6 +2219,9 @@ void avtKullLiteFileFormat::ReadInMaterialNames()
 //    Brad Whitlock, Mon Aug 28 14:29:04 PST 2006
 //    Added code to keep a list of materials per domain.
 //
+//    Jeremy Meredith, Thu Aug  7 15:52:08 EDT 2008
+//    Assume PDB won't modify our char*'s, and cast any literals as needed.
+//
 // ****************************************************************************
 
 void avtKullLiteFileFormat::ReadInMaterialName(int fi)
@@ -2206,7 +2229,7 @@ void avtKullLiteFileFormat::ReadInMaterialName(int fi)
     debug4 << "Reading in material header from KullLite file "
            << my_filenames[fi].c_str() << endl;    
 
-    m_pdbFile = PD_open((char *) my_filenames[fi].c_str(), "r");
+    m_pdbFile = PD_open((char *) my_filenames[fi].c_str(), (char*)"r");
     if (m_pdbFile == NULL)
     {
         Close();
@@ -2219,7 +2242,7 @@ void avtKullLiteFileFormat::ReadInMaterialName(int fi)
     // "typeofmesh" defined.
     //
     char buff[1024];
-    if (PD_read(m_pdbFile, "typeofmesh", buff) == false)
+    if (PD_read(m_pdbFile, (char*)"typeofmesh", buff) == false)
     {
         Close();
         EXCEPTION1(InvalidDBTypeException, "Cannot be a KullLite file, "
@@ -2227,11 +2250,11 @@ void avtKullLiteFileFormat::ReadInMaterialName(int fi)
     }
 
     int nMaterials = 0;
-    PD_read(m_pdbFile, "num_materials", &nMaterials);
+    PD_read(m_pdbFile, (char*)"num_materials", &nMaterials);
 
     // There are materials, read in the tags
     m_tags = MAKE_N(pdb_taglist, 1);
-    if ((PD_read(m_pdbFile, "MeshTags", m_tags) == false) || !m_tags)
+    if ((PD_read(m_pdbFile, (char*)"MeshTags", m_tags) == false) || !m_tags)
     {
         Close();
         EXCEPTION1(InvalidDBTypeException, "Cannot be a KullLite file, "
@@ -2330,6 +2353,10 @@ void avtKullLiteFileFormat::ReadInMaterialName(int fi)
 //  Programmer: Akira Haddox
 //  Creation:  July 1, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:52:08 EDT 2008
+//    Assume PDB won't modify our char*'s, and cast any literals as needed.
+//
 // ****************************************************************************
 
 
@@ -2338,8 +2365,8 @@ avtKullLiteFileFormat::ReadNumberRecvZones()
 {
     // Read in RecvZonesSize: the number of lists of received zones.
     int nRecvZonesLists = 0;
-    PD_read(m_pdbFile, "RecvZonesSize", &nRecvZonesLists); //This can fail,
-                                                           // that's okay
+    PD_read(m_pdbFile, (char*)"RecvZonesSize", &nRecvZonesLists); //This can
+                                                           // fail; that's okay
 
     // Start our counter at 0 : also takes care of if there are no RecvZones.
     int nRecvZones = 0;
@@ -2347,7 +2374,7 @@ avtKullLiteFileFormat::ReadNumberRecvZones()
     if (nRecvZonesLists)
     {
         pdb_comm * m_recvZones = MAKE_N(pdb_comm, nRecvZonesLists);
-        if (PD_read(m_pdbFile, "RecvZones", &m_recvZones) == false)
+        if (PD_read(m_pdbFile, (char*)"RecvZones", &m_recvZones) == false)
         {
             SFREE(m_recvZones);
             Close();
@@ -2503,6 +2530,10 @@ OrderWedgePoints(const vector< vector<int> > &nodes, int *points)
 //  Programmer: Hank Childs
 //  Creation:   July 23, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:52:08 EDT 2008
+//    Assume PDB won't modify our char*'s, and cast any literals as needed.
+//
 // ****************************************************************************
 
 bool
@@ -2514,7 +2545,7 @@ avtKullLiteFileFormat::ReadMeshFromFile(void)
     {
         // Read in the Mesh
         m_kullmesh3d = MAKE_N(pdb_mesh3d, 1);
-        if (PD_read(m_pdbFile, "mesh", m_kullmesh3d) == false)
+        if (PD_read(m_pdbFile, (char*)"mesh", m_kullmesh3d) == false)
         {
             Close();
             EXCEPTION1(InvalidDBTypeException, "Cannot be a KullLite file, "
@@ -2525,7 +2556,7 @@ avtKullLiteFileFormat::ReadMeshFromFile(void)
     {
         // Read in the Mesh
         m_kullmesh2d = MAKE_N(pdb_mesh2d, 1);
-        if (PD_read(m_pdbFile, "mesh", m_kullmesh2d) == false)
+        if (PD_read(m_pdbFile, (char*)"mesh", m_kullmesh2d) == false)
         {
             Close();
             EXCEPTION1(InvalidDBTypeException, "Cannot be a KullLite file, "
@@ -2554,13 +2585,16 @@ avtKullLiteFileFormat::ReadMeshFromFile(void)
 //    Code around strstr deficiency.  If substring is longer than the
 //    search string, then some implementations of strstr lead to UMRs.
 //
+//    Jeremy Meredith, Thu Aug  7 15:52:08 EDT 2008
+//    Assume PDB won't modify our char*'s, and cast any literals as needed.
+//
 // ****************************************************************************
 
 bool
 avtKullLiteFileFormat::GetMeshDimension(void)
 {
     char *typeofmesh = MAKE_N(char, 1024);
-    if (PD_read(m_pdbFile, "typeofmesh", &typeofmesh) == false)
+    if (PD_read(m_pdbFile, (char*)"typeofmesh", &typeofmesh) == false)
     {
         Close();
         EXCEPTION1(InvalidDBTypeException, "Cannot be a KullLite file, does "
@@ -2604,12 +2638,16 @@ avtKullLiteFileFormat::GetMeshDimension(void)
 //  Programmer: Hank Childs
 //  Creation:   June 14, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug  7 15:52:08 EDT 2008
+//    Assume PDB won't modify our char*'s, and cast any literals as needed.
+//
 // ****************************************************************************
 
 bool
 avtKullLiteFileFormat::IsRZ(void)
 {
-    return (PD_inquire_type(m_pdbFile, "rz") ? true : false);
+    return (PD_inquire_type(m_pdbFile, (char*)"rz") ? true : false);
 }
 
 

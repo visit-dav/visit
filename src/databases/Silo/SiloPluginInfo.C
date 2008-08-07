@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 SiloGeneralPluginInfo::GetName() const
 {
     return "Silo";
@@ -100,7 +100,7 @@ SiloGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SiloGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ SiloGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SiloGeneralPluginInfo::GetID() const
 {
     return "Silo_1.0";

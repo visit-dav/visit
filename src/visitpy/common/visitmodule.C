@@ -1170,6 +1170,9 @@ visit_Version(PyObject *self, PyObject *args)
 //   Brad Whitlock, Wed Nov 22 14:31:34 PST 2006
 //   I added code to accept the name of the VisIt script to run.
 //
+//   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
+//   Change string literals to const char*'s.
+//
 // ****************************************************************************
 
 PyObject *
@@ -1189,8 +1192,8 @@ visit_Launch(PyObject *self, PyObject *args)
     //
     // Determine if the function was called with any arguments.
     //
-    char *visitProgram = 0;
-    static char *visitProgramDefault = "visit";
+    const char *visitProgram = 0;
+    static const char *visitProgramDefault = "visit";
     if (!PyArg_ParseTuple(args, "s", &visitProgram))
     {
         visitProgram = visitProgramDefault;
@@ -3131,6 +3134,9 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
 //   Improve the error message for the case where the user specifies the 
 //   processor count as an integer, not a string.
 //
+//   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
+//   Change string literals to const char*'s.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3144,7 +3150,7 @@ OpenComponentHelper(PyObject *self, PyObject *args, bool openEngine)
             "\tDid you put in a number as an integer rather than as a string?\n"
             "\tE.g.: (\"-np\", \"2\"), not (\"-np\", 2)";
 
-    char  *hostName;
+    const char  *hostName;
     char  *arg1;
     stringVector argv;
 
@@ -3217,6 +3223,8 @@ visit_OpenMDServer(PyObject *self, PyObject *args)
 // Creation:   Mon May 9 09:23:27 PDT 2005
 //
 // Modifications:
+//   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
+//   Change string literals to const char*'s.
 //   
 // ****************************************************************************
 
@@ -3226,9 +3234,9 @@ OpenClientHelper(PyObject *self, PyObject *args, int componentNumber)
     ENSURE_VIEWER_EXISTS();
 
     static const char *OCEError = "Arguments must be: clientName, program, arg | (args...)";
-    char  *clientName = 0;
-    char  *program = 0;
-    char  *arg1 = 0;
+    const char  *clientName = 0;
+    const char  *program = 0;
+    const char  *arg1 = 0;
     stringVector argv;
 
     if(componentNumber == 1)
@@ -4235,6 +4243,9 @@ visit_ClearAllWindows(PyObject *self, PyObject *args)
 //    Brad Whitlock, Thu Apr 1 11:40:23 PDT 2004
 //    I fixed an argument passing bug.
 //
+//    Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
+//    Change string literals to const char*'s.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -4242,8 +4253,8 @@ visit_ClearCache(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    char *engineName = 0;
-    char *simulationName = 0;
+    const char *engineName = 0;
+    const char *simulationName = 0;
     if(!PyArg_ParseTuple(args, "ss", &engineName, &simulationName))
     {
         if (!PyArg_ParseTuple(args, "s", &engineName))
@@ -11141,6 +11152,9 @@ visit_DomainPick(const char *type, int el, int dom, stringVector vars,
 //   Kathleen Bonnell, Tue Jun  1 08:29:54 PDT 2004 
 //   Swapped order of dom/zone in call to DomainPick. 
 //
+//   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
+//   Change string literals to const char*'s.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -11148,7 +11162,7 @@ visit_PickByZone(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    char *type = "PickByZone";
+    const char *type = "PickByZone";
     int dom = 0, zone = 0;
     PyObject *tuple = NULL;
     if (!PyArg_ParseTuple(args, "ii|O", &zone, &dom, &tuple))
@@ -11180,6 +11194,8 @@ visit_PickByZone(PyObject *self, PyObject *args)
 // Creation:   December 16, 2004
 //
 // Modifications:
+//   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
+//   Change string literals to const char*'s.
 //
 // ****************************************************************************
 
@@ -11188,7 +11204,7 @@ visit_PickByGlobalZone(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    char *type = "PickByZone";
+    const char *type = "PickByZone";
     int dom = 0, zone = 0;
     PyObject *tuple = NULL;
     if (!PyArg_ParseTuple(args, "i|O", &zone, &tuple))
@@ -11223,13 +11239,16 @@ visit_PickByGlobalZone(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Tue Jun  1 08:29:54 PDT 2004 
 //   Swapped order of dom/node in call to DomainPick. 
 //
+//   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
+//   Change string literals to const char*'s.
+//
 // ****************************************************************************
 STATIC PyObject *
 visit_PickByNode(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    char *type = "PickByNode";
+    const char *type = "PickByNode";
     int dom = 0, node = 0;
     PyObject *tuple = NULL;
     if (!PyArg_ParseTuple(args, "ii|O", &node, &dom, &tuple))
@@ -11262,6 +11281,8 @@ visit_PickByNode(PyObject *self, PyObject *args)
 // Creation:   December 16, 2004
 //
 // Modifications:
+//   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
+//   Change string literals to const char*'s.
 //
 // ****************************************************************************
 
@@ -11270,7 +11291,7 @@ visit_PickByGlobalNode(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    char *type = "PickByNode";
+    const char *type = "PickByNode";
     int dom = 0, node = 0;
     PyObject *tuple = NULL;
     if (!PyArg_ParseTuple(args, "i|O", &node, &tuple))
@@ -11684,6 +11705,9 @@ CreateAnnotationWrapper(AnnotationObject *annot)
 //   Brad Whitlock, Mon Nov 12 16:00:45 PST 2007
 //   Added Text3D.
 //
+//   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
+//   Change string literals to const char*'s.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -11692,7 +11716,7 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
     const char *mName = "visit_CreateAnnotationObject: ";
     ENSURE_VIEWER_EXISTS();
 
-    char *annotType = 0, *annotName = 0;
+    const char *annotType = 0, *annotName = 0;
     if (!PyArg_ParseTuple(args, "ss", &annotType, &annotName))
     {
         if (!PyArg_ParseTuple(args, "s", &annotType))
@@ -11974,15 +11998,19 @@ visit_GetAnnotationObjectNames(PyObject *self, PyObject *args)
 // Programmer: Mark C. Miller 
 // Creation:   Tuesday, January 18, 2005 
 //   
+// Modifications:
+//   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
+//   Change string literals to const char*'s.
+//
 // ****************************************************************************
 
 STATIC PyObject *
 visit_GetProcessAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
-    char *componentName;
-    char *engineHostName;
-    char *engineDbName;
+    const char *componentName;
+    const char *engineHostName;
+    const char *engineDbName;
     if (!PyArg_ParseTuple(args, "sss", &componentName, &engineHostName,
                                        &engineDbName))
     {
@@ -14223,6 +14251,11 @@ NeedToLoadPlugins(Subject *, void *)
 //   Brad Whitlock, Tue Jun 24 13:51:41 PDT 2008
 //   Pass the viewer proxy to the log callback function.
 //
+//   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
+//   Change some string literals to const char*'s.  For others,
+//   assume Init::Initialize won't modify argv, and simply convert one
+//   some string literals to a char*.
+//
 // ****************************************************************************
 
 static int
@@ -14237,19 +14270,19 @@ InitializeModule()
     {
         int argc = 1;
         char *argv[4];
-        argv[0] = "cli";
+        argv[0] = (char*)"cli";
 
         if(moduleDebugLevel > 0)
         {
-            static char *nums[] = {"1", "2", "3", "4", "5"};
-            argv[argc++] = "-debug";
-            argv[argc++] = nums[moduleDebugLevel - 1];
+            static const char *nums[] = {"1", "2", "3", "4", "5"};
+            argv[argc++] = (char*)"-debug";
+            argv[argc++] = (char*)nums[moduleDebugLevel - 1];
         }
         for(int i = 1; i < cli_argc; ++i)
         {
            if(strcmp(cli_argv[i], "-pid") == 0)
            {
-               argv[argc++] = "-pid";
+               argv[argc++] = (char*)"-pid";
                break;
            }
         }
@@ -14888,6 +14921,10 @@ initscriptfunctions()
 //   Brad Whitlock, Wed Nov 22 14:00:57 PST 2006
 //   I removed the code to print an error and exit.
 //
+//   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
+//   Assyme PyErr_NewException won't modify its string argument and cast
+//   literals to char*'s before passing in.
+//
 // ****************************************************************************
 
 void
@@ -14919,9 +14956,9 @@ initvisit()
 
     // Add the Python error message.
     d = PyModule_GetDict(visitModule);
-    VisItError = PyErr_NewException("visit.VisItException", NULL, NULL);
+    VisItError = PyErr_NewException((char*)"visit.VisItException", NULL, NULL);
     PyDict_SetItemString(d, "VisItException", VisItError);
-    VisItInterrupt = PyErr_NewException("visit.VisItInterrupt", NULL, NULL);
+    VisItInterrupt = PyErr_NewException((char*)"visit.VisItInterrupt", NULL, NULL);
     PyDict_SetItemString(d, "VisItInterrupt", VisItInterrupt);
 
     // Define builtin visit functions that are written in python.
@@ -14952,6 +14989,9 @@ initvisit()
 // Creation:   Wed Dec 13 11:37:05 PDT 2006
 //
 // Modifications:
+//   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
+//   Assyme PyErr_NewException won't modify its string argument and cast
+//   literals to char*'s before passing in.
 //   
 // ****************************************************************************
 
@@ -15007,9 +15047,9 @@ initvisit2()
         }
     }
 
-    VisItError = PyErr_NewException("visit.VisItException", NULL, NULL);
+    VisItError = PyErr_NewException((char*)"visit.VisItException", NULL, NULL);
     PyDict_SetItemString(d, "VisItException", VisItError);
-    VisItInterrupt = PyErr_NewException("visit.VisItInterrupt", NULL, NULL);
+    VisItInterrupt = PyErr_NewException((char*)"visit.VisItInterrupt", NULL, NULL);
     PyDict_SetItemString(d, "VisItInterrupt", VisItInterrupt);
 
     // Define builtin visit functions that are written in python.

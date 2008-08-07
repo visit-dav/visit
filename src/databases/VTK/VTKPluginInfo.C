@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 VTKGeneralPluginInfo::GetName() const
 {
     return "VTK";
@@ -100,7 +100,7 @@ VTKGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 VTKGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ VTKGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 VTKGeneralPluginInfo::GetID() const
 {
     return "VTK_1.0";

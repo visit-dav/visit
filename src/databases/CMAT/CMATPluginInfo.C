@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 CMATGeneralPluginInfo::GetName() const
 {
     return "CMAT";
@@ -100,7 +100,7 @@ CMATGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 CMATGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ CMATGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 CMATGeneralPluginInfo::GetID() const
 {
     return "CMAT_1.0";

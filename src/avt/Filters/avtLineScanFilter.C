@@ -420,6 +420,7 @@ avtLineScanFilter::PreExecute(void)
 }
 
 
+#ifdef PARALLEL
 static int
 AssignToProc(int val, int nlines)
 {
@@ -429,6 +430,7 @@ AssignToProc(int val, int nlines)
     int proc = val / linesPerProc;
     return proc;
 }
+#endif
 
 
 // ****************************************************************************

@@ -80,7 +80,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 CEAucdGeneralPluginInfo::GetName() const
 {
     return "CEAucd";
@@ -99,7 +99,7 @@ CEAucdGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 CEAucdGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -118,7 +118,7 @@ CEAucdGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 CEAucdGeneralPluginInfo::GetID() const
 {
     return "CEAucd_1.0";

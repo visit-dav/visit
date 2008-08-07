@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 Dyna3DGeneralPluginInfo::GetName() const
 {
     return "Dyna3D";
@@ -100,7 +100,7 @@ Dyna3DGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 Dyna3DGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ Dyna3DGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 Dyna3DGeneralPluginInfo::GetID() const
 {
     return "Dyna3D_1.0";

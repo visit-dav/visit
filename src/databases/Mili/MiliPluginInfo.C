@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 MiliGeneralPluginInfo::GetName() const
 {
     return "Mili";
@@ -100,7 +100,7 @@ MiliGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 MiliGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ MiliGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 MiliGeneralPluginInfo::GetID() const
 {
     return "Mili_1.0";

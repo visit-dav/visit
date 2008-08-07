@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 SimV1WriterGeneralPluginInfo::GetName() const
 {
     return "SimV1Writer";
@@ -100,7 +100,7 @@ SimV1WriterGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SimV1WriterGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ SimV1WriterGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 SimV1WriterGeneralPluginInfo::GetID() const
 {
     return "SimV1Writer_1.0";

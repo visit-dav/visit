@@ -132,6 +132,9 @@ public:
     void SetEnumAlwaysIncludeValue(double val);
     void SetEnumAlwaysIncludeRange(double min, double max);
     static void BuildEnumNChooseRMap(int n, int maxr, std::vector<std::vector<int> > &ptMap);
+    static double NChooseR(int n, int r);
+    static void ComboValFromDigits(const std::vector<std::vector<int> > &ptMap, const std::list<int> &digits, double *id);
+    static void ComboDigitsFromVal(double id, int n, int maxr, const std::vector<std::vector<int> > &ptMap, std::list<int> &digits);
     static void UpdateValByInsertingDigit(double *id, int n, int maxr, const std::vector<std::vector<int> > &ptMap, int newDigit);
 
     // IDs that can be used to identify fields in case statements
@@ -187,8 +190,4 @@ private:
     static const char *TypeMapFormatString;
 };
 
-// User-defined functions
-static double NChooseR(int n, int r);
-static void ComboValFromDigits(const std::vector<std::vector<int> > &ptMap, const std::list<int> &digits, double *id);
-static void ComboDigitsFromVal(double id, int n, int maxr, const std::vector<std::vector<int> > &ptMap, std::list<int> &digits);
 #endif

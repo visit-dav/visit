@@ -3081,6 +3081,9 @@ avtPLOT3DFileFormat::GetVectorVar(int dom, const char *name)
 //     Read information from Visit Plot3d file; read global expressions and
 //     account for 2 and 3D files.  
 //  
+//    Jeremy Meredith, Thu Aug  7 15:47:31 EDT 2008
+//    Use const char*'s for string literlas.
+//
 // ****************************************************************************
 
 void
@@ -3149,9 +3152,9 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     md->Add(mesh);
 
     const int NUM_SCALARS = 10;
-    char *scalar_names[NUM_SCALARS] = { "density", "pressure", "temperature", 
-         "enthalpy", "internal_energy", "kinetic_energy", "velocity_magnitude",
-         "stagnation_energy", "entropy", "swirl" };
+    const char *scalar_names[NUM_SCALARS] = { "density", "pressure", 
+         "temperature", "enthalpy", "internal_energy", "kinetic_energy", 
+         "velocity_magnitude", "stagnation_energy", "entropy", "swirl" };
 
     int i;
     for (i = 0; i < NUM_SCALARS; i++)
@@ -3165,8 +3168,8 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
 
     const int NUM_VECTORS = 4;
-    char *vector_names[4] = { "velocity", "vorticity", "momentum",
-                               "pressure_gradient"};
+    const char *vector_names[4] = { "velocity", "vorticity", "momentum",
+                                    "pressure_gradient"};
     for (i = 0; i < NUM_VECTORS; i++)
     {
         avtVectorMetaData *vd1 = new avtVectorMetaData;

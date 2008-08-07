@@ -482,6 +482,10 @@ ViewerSubject::~ViewerSubject()
 //    Brad Whitlock, Thu Apr 10 10:06:59 PDT 2008
 //    Added support for internationalization.
 //
+//    Jeremy Meredith, Thu Aug  7 15:01:14 EDT 2008
+//    Assume QApplication won't modify argv, and cast a string literal to
+//    a const.
+//
 // ****************************************************************************
 
 void
@@ -519,7 +523,7 @@ ViewerSubject::Connect(int *argc, char ***argv)
     int argc2 = *argc + 2;
     for(int i = 0; i < *argc; ++i)
         argv2[i] = (*argv)[i];
-    argv2[*argc] = "-font";
+    argv2[*argc] = (char*)"-font";
     argv2[*argc+1] = (char*)GetViewerState()->GetAppearanceAttributes()->GetFontName().c_str();
     argv2[*argc+2] = NULL;
     debug1 << "Viewer using font: " << argv2[*argc+1] << endl;

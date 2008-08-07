@@ -368,13 +368,16 @@ QvisSubsetWindow::GetNextListViewIndex(QListView *lv)
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Jeremy Meredith, Thu Aug  7 15:40:58 EDT 2008
+//   Use %ld format for longs.
+//
 // ****************************************************************************
 
 int
 QvisSubsetWindow::AddListView(bool visible)
 {
     QString tmp;
-    tmp.sprintf("L%d", listViews.size());
+    tmp.sprintf("L%ld", listViews.size());
 
     // Create a new list view.
     SubsetPanel entry;
@@ -401,7 +404,7 @@ QvisSubsetWindow::AddListView(bool visible)
 
     // Create a popup menu that can be used to set the action for the
     // all sets button.
-    tmp.sprintf("popup%d", listViews.size());
+    tmp.sprintf("popup%ld", listViews.size());
     entry.allSetsPopupMenu = new QPopupMenu();
     entry.allSetsPopupMenu->insertItem(tr("Reverse"),  0);
     entry.allSetsPopupMenu->insertItem(tr("Turn on"),  1);
@@ -412,7 +415,7 @@ QvisSubsetWindow::AddListView(bool visible)
     // Create some buttons.
     QHBox *allButtonParent = new QHBox(entry.frame);
     allButtonParent->setSpacing(0);
-    tmp.sprintf("allSets%d", listViews.size());
+    tmp.sprintf("allSets%ld", listViews.size());
     entry.allSetsLabel = new QLabel(tr("All sets"), entry.frame,
         tmp.latin1());
     // Create the button that does the action.
@@ -438,7 +441,7 @@ QvisSubsetWindow::AddListView(bool visible)
 
     // Create a popup menu that can be used to set the action for the
     // selected sets button.
-    tmp.sprintf("popup%d", listViews.size());
+    tmp.sprintf("popup%ld", listViews.size());
     entry.selectedSetsPopupMenu = new QPopupMenu();
     entry.selectedSetsPopupMenu->insertItem(tr("Reverse"),  0);
     entry.selectedSetsPopupMenu->insertItem(tr("Turn on"),  1);
@@ -449,7 +452,7 @@ QvisSubsetWindow::AddListView(bool visible)
     // Create some buttons.
     QHBox *selectedButtonParent = new QHBox(entry.frame);
     selectedButtonParent->setSpacing(0);
-    tmp.sprintf("selectedSets%d", listViews.size());
+    tmp.sprintf("selectedSets%ld", listViews.size());
     entry.selectedSetsLabel = new QLabel(tr("Selected sets"), entry.frame,
         tmp.latin1());
     // Create the button that does the action.
