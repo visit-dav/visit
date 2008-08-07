@@ -51,8 +51,7 @@ Consider the leaveDomains SLs and the balancing at the same time.
 #include <avtStreamlineFilter.h>
 
 #include <math.h>
-#include <fstream.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 #include <vtkAppendPolyData.h>
 #include <vtkCellDataToPointData.h>

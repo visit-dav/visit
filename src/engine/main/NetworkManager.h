@@ -386,6 +386,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Tom Fogal, Sun Aug  3 22:47:59 EDT 2008
 //    Added MemoMultipass and ForgetMultipass.
 //
+//    Kathleen Bonnell, Thu Aug  8 07:54:11 PDT 2008
+//    Changed return of ForgetMultipass from bool to void.
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -510,7 +513,7 @@ class NetworkManager
                                          avtDataObject_p& input_as_dob,
                                          int windowID) const;
     bool               MemoMultipass(VisWindow *viswin);
-    bool               ForgetMultipass();
+    void               ForgetMultipass();
     avtDataObject_p    RenderTranslucent(int windowID,
                                          const avtImage_p& input);
     bool               Shadowing(int windowID) const;

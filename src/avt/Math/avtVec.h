@@ -39,6 +39,11 @@
 #ifndef AVT_VEC_H
 #define AVT_VEC_H
 
+#ifdef WIN32
+  #include <algorithm>
+  #include <functional>
+#endif
+
 #include <stdexcept>
 #include <numeric>
 #include <cmath>
@@ -52,7 +57,14 @@
 class avtVecRef;
 inline std::ostream& operator<<( std::ostream& out, const avtVecRef& v );
 
-// -------------------------------------------------------------------------
+//*****************************************************************************
+//  Class avtVecRef
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug  7, 08:20:17 PDT 2008
+//    Added return for operator=.
+//
+//*****************************************************************************
 
 class MATH_API avtVecRef
 {
@@ -98,6 +110,7 @@ public:
     avtVecRef& operator=( const double& value )
     {
         std::fill( begin(), end(), value );
+        return *this;
     }
     
     // --- basic access ---
@@ -242,7 +255,15 @@ protected:
     size_type _dim;
 };
 
-// -------------------------------------------------------------------------
+//*****************************************************************************
+//  Class avtVec
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug  7, 08:20:17 PDT 2008
+//    Changed for-loops to use size_t to eliminate signed/unsigned int 
+//    comparison warnings.  Cast 'fabs' arg in call to std::transform.
+//
+//*****************************************************************************
 
 class avtVec: public avtVecRef
 {
@@ -346,7 +367,7 @@ inline avtVec operator*( const double& s, const avtVecRef& v )
 {
     avtVec result( v.dim() );
     
-    for( int i=0; i<v.dim(); ++i )
+    for( size_t i=0; i<v.dim(); ++i )
         result[i] = s*v[i];
         
     return result;
@@ -356,7 +377,7 @@ inline avtVec operator*( const avtVecRef& v, const double& s )
 {
     avtVec result( v.dim() );
     
-    for( int i=0; i<v.dim(); ++i )
+    for( size_t i=0; i<v.dim(); ++i )
         result[i] = v[i]*s;
         
     return result;
@@ -366,7 +387,7 @@ inline avtVec operator/( const avtVecRef& v, const double& s )
 {
     avtVec result( v.dim() );
     
-    for( int i=0; i<v.dim(); ++i )
+    for( size_t i=0; i<v.dim(); ++i )
         result[i] = v[i]/s;
         
     return result;
@@ -376,7 +397,7 @@ inline avtVec operator/( const double& s, const avtVecRef& v )
 {
     avtVec result( v.dim() );
     
-    for( int i=0; i<v.dim(); ++i )
+    for( size_t i=0; i<v.dim(); ++i )
         result[i] = s/v[i];
         
     return result;
@@ -391,7 +412,7 @@ inline avtVec operator+( const avtVec& v0, const avtVec& v1 )
     
     avtVec result( v0.dim() );
     
-    for( int i=0; i<v0.dim(); ++i )
+    for( size_t i=0; i<v0.dim(); ++i )
         result[i] = v0[i] + v1[i];
         
     return result;
@@ -404,7 +425,7 @@ inline avtVec operator-( const avtVecRef& v0, const avtVecRef& v1 )
     
     avtVec result( v0.dim() );
     
-    for( int i=0; i<v0.dim(); ++i )
+    for( size_t i=0; i<v0.dim(); ++i )
         result[i] = v0[i] - v1[i];
         
     return result;
@@ -417,7 +438,7 @@ inline avtVec operator*( const avtVecRef& v0, const avtVecRef& v1 )
     
     avtVec result( v0.dim() );
     
-    for( int i=0; i<v0.dim(); ++i )
+    for( size_t i=0; i<v0.dim(); ++i )
         result[i] = v0[i] * v1[i];
         
     return result;
@@ -430,7 +451,7 @@ inline avtVec operator/( const avtVecRef& v0, const avtVecRef& v1 )
     
     avtVec result( v0.dim() );
     
-    for( int i=0; i<v0.dim(); ++i )
+    for( size_t i=0; i<v0.dim(); ++i )
         result[i] = v0[i] / v1[i];
         
     return result;
@@ -478,7 +499,7 @@ inline avtVec lerp( const double& t, const avtVecRef& v0, const avtVecRef& v1 )
         
     avtVec result( v0.dim() );
 
-    for( int i=0; i<v0.dim(); ++i )
+    for( size_t i=0; i<v0.dim(); ++i )
         result[i] = (1.0-t)*v0[i] + t*v1[i];
         
     return result;
@@ -512,7 +533,7 @@ inline double max( const avtVecRef& v )
 inline avtVec abs( const avtVecRef& v )
 {
     avtVec result( v.dim() );
-    std::transform( v.begin(), v.end(), result.begin(), fabs );
+    std::transform(v.begin(), v.end(), result.begin(), (double(*)(double))fabs);
     
     return result;
 }

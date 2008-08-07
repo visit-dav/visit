@@ -315,6 +315,11 @@ avtIVPDopri5::SetTolerances(const double& relt, const double& abst)
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug  7, 08:29:42 PDT 2008
+//    Changed for loops to use size_t to eliminate signed/unsigned int 
+//    comparison warnings.
+//
 // ****************************************************************************
 
 double 
@@ -329,7 +334,7 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
     
     double h;
     
-    for(int i=0 ; i < y.dim() ; i++) 
+    for(size_t i=0 ; i < y.dim() ; i++) 
     {
         sk = abstol + reltol * std::abs(y[i]);
         sqr = k1[i] / sk;
@@ -355,7 +360,7 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
     // estimate the second derivative of the solution
     double der2 = 0.0;
 
-    for( int i=0; i<y.dim(); i++) 
+    for( size_t i=0; i<y.dim(); i++) 
     {
         sk = abstol + reltol * std::abs( y[i] );
         sqr = ( k2[i] - k1[i] ) / sk;
@@ -389,6 +394,11 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 //
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug  7, 08:29:42 PDT 2008
+//    Changed for loops to use size_t to eliminate signed/unsigned int 
+//    comparison warnings.
 //
 // ****************************************************************************
 
@@ -478,7 +488,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
         avtVec ee = h * ( e1*k1 + e3*k3 + e4*k4 + e5*k5 + e6*k6 + e7*k7 );
         double sk, sqr;
             
-        for( int i=0; i<y.dim(); i++ ) 
+        for( size_t i=0; i<y.dim(); i++ ) 
         {
             sk = abstol + reltol * std::max(std::abs(y[i]), std::abs(y_new[i]));
             sqr = ee[i]/sk;
@@ -509,7 +519,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
             {
                 double stnum = 0.0, stden = 0.0, sqr;
 
-                for( int i=0; i<k7.dim(); i++ ) 
+                for( size_t i=0; i<k7.dim(); i++ ) 
                 {
                     sqr = k7[i] - k6[i];
                     stnum += sqr * sqr;

@@ -164,7 +164,15 @@ private:
     unsigned int _dim;
 };
 
-// -------------------------------------------------------------------------
+// ****************************************************************************
+//
+//   Modifications:
+//     Kathleen Bonnell, Aug 7 08:14:22 PDT 2008
+//     Moved constructors and destructor to .C file so that symbols are 
+//     exported on windows.  
+//     Added return for operator=.
+//
+// ****************************************************************************
 
 class MATH_API avtVecArray
 {
@@ -182,36 +190,23 @@ public:
     typedef ptrdiff_t                            difference_type;
 
     // constructors
-    avtVecArray() : _dim(0)
-    {
-    }
+    avtVecArray();
     
-    avtVecArray( size_type n, const avtVecRef& value )
-        : _data( n*value.dim() ), _dim( value.dim() )
-    {
-        std::fill( begin(), end(), value );
-    }
+    avtVecArray( size_type n, const avtVecRef& value );
     
-    avtVecArray( unsigned int dim, size_type n ) :
-        _data( n*dim ), _dim(dim)
-    {
-    }
+    avtVecArray( unsigned int dim, size_type n );
     
-    avtVecArray( const avtVecArray& other ) : 
-        _data( other._data ), _dim( other.dim() )
-    {
-    }
+    avtVecArray( const avtVecArray& other ); 
     
     // destructor 
-    ~avtVecArray() 
-    {
-    }
+    ~avtVecArray();
     
     // assignment operator
     avtVecArray& operator=( const avtVecArray& other )
     {
         _data = other._data;
         _dim  = other._dim;
+        return *this;
     }
 
     // iterators
