@@ -504,6 +504,10 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Sean Ahern, Tue May 27 15:22:47 EDT 2008
 //    Added "exp" function.
 //
+//    Eric Brugger, Wed Aug  6 17:21:53 PDT 2008
+//    Renamed smallest_angle to minimum_angle and largest_angle to
+//    maximum_angle.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -780,10 +784,10 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtVMetricAspectGamma();
     if (functionName == "warpage")
         return new avtVMetricWarpage();
-    if (functionName == "largest_angle")
-        return new avtVMetricLargestAngle();
-    if (functionName == "smallest_angle")
-        return new avtVMetricSmallestAngle();
+    if (functionName == "maximum_angle")
+        return new avtVMetricMaximumAngle();
+    if (functionName == "minimum_angle")
+        return new avtVMetricMinimumAngle();
     if (functionName == "revolved_volume")
         return new avtRevolvedVolume;
     if (functionName == "revolved_surface_area")

@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtVMetricLargestAngle.C                     //
+//                          avtVMetricMinimumAngle.C                         //
 // ************************************************************************* //
 
-#include "avtVMetricLargestAngle.h"
+#include "avtVMetricMinimumAngle.h"
 
 #include <vtkCellType.h>
 #include <vtkDataSet.h>
@@ -51,38 +51,34 @@
 #include <DebugStream.h>
 
 // ****************************************************************************
-//  Method: avtVMetricLargestAngle::Metric
+//  Method: avtVMetricMinimumAngle::Metric
 //
 //  Purpose:
-//      Inspect an element and calculate the LargestAngle.
+//      Inspect an element and calculate the MinimumAngle.
 //
 //  Arguments:
 //      coords    The set of xyz points for the cell.
 //      numPoints The number of xyz points for the cell.
 //      type      The vtk type of the cell.
 //
-//  Returns:      The LargestAngle of the cell, or defaultValue if not supported.
+//  Returns:      The MinimumAngle of the cell, or defaultValue if not 
+//                supported.
 //
-//  Programmer:   Akira Haddox
-//  Creation:     June 13, 2002
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Oct 17 08:07:53 PDT 2002
-//    Update for new verdict interface.
+//  Programmer:   Eric Brugger
+//  Creation:     July 31, 2008
 //
 // ****************************************************************************
 
-double avtVMetricLargestAngle::Metric (double coords[][3], int type)
+double avtVMetricMinimumAngle::Metric (double coords[][3], int type)
 {
-#ifdef HAVE_VERDICT 
+#ifdef HAVE_VERDICT
     switch (type)
     {
         case VTK_TRIANGLE:
-            return v_tri_largest_angle(3, coords);
+            return v_tri_minimum_angle(3, coords);
         
         case VTK_QUAD:
-            return v_quad_largest_angle(4, coords);
+            return v_quad_minimum_angle(4, coords);
     }
 #endif
     return -1;

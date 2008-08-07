@@ -50,7 +50,8 @@
 #include <avtVMetricDiagonal.h>
 #include <avtVMetricDimension.h>
 #include <avtVMetricJacobian.h>
-#include <avtVMetricLargestAngle.h>
+#include <avtVMetricMaximumAngle.h>
+#include <avtVMetricMinimumAngle.h>
 #include <avtVMetricOddy.h>
 #include <avtVMetricRelativeSize.h>
 #include <avtVMetricScaledJacobian.h>
@@ -58,7 +59,6 @@
 #include <avtVMetricShapeAndSize.h>
 #include <avtVMetricShear.h>
 #include <avtVMetricSkew.h>
-#include <avtVMetricSmallestAngle.h>
 #include <avtVMetricStretch.h>
 #include <avtVMetricTaper.h>
 #include <avtVMetricVolume.h>

@@ -71,6 +71,9 @@
 //    Hank Childs, Thu Oct 17 08:07:53 PDT 2002
 //    Update for new verdict interface.
 //
+//    Eric Brugger, Thu Jul 31 16:17:54 PDT 2008
+//    Updated for verdict version 110.
+//
 // ****************************************************************************
 
 double avtVMetricRelativeSize::Metric (double coords[][3], int type)
@@ -80,16 +83,16 @@ double avtVMetricRelativeSize::Metric (double coords[][3], int type)
     {
         case VTK_HEXAHEDRON:
         case VTK_VOXEL:
-            return v_hex_relative_size(8, coords);
+            return v_hex_relative_size_squared(8, coords);
         
         case VTK_TETRA:
-            return v_tet_relative_size(4,coords);
+            return v_tet_relative_size_squared(4,coords);
 
         case VTK_QUAD:
-            return v_quad_relative_size(4, coords);
+            return v_quad_relative_size_squared(4, coords);
             
         case VTK_TRIANGLE:
-            return v_tri_relative_size(3, coords);
+            return v_tri_relative_size_squared(3, coords);
     }
 #endif
     return -1;

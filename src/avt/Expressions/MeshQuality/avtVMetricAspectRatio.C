@@ -72,6 +72,9 @@
 //    Hank Childs, Thu Oct 17 08:07:53 PDT 2002
 //    Update for new verdict interface.
 //
+//    Eric Brugger, Thu Jul 31 16:11:27 PDT 2008
+//    Updated for verdict version 110.
+//
 // ****************************************************************************
 
 double avtVMetricAspectRatio::Metric (double coords[][3], int type)
@@ -83,9 +86,6 @@ double avtVMetricAspectRatio::Metric (double coords[][3], int type)
         case VTK_VOXEL:
             return v_hex_aspect(8, coords);
         
-        case VTK_TETRA:
-            return v_tet_aspect(4,coords);
-
         case VTK_QUAD:
             return v_quad_aspect(4, coords);
     }
