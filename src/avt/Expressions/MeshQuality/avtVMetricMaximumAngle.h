@@ -37,26 +37,26 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtVMetricSmallestAngle.h                        //
+//                          avtVMetricMaximumAngle.h                         //
 // ************************************************************************* //
 
-#ifndef AVT_VMETRIC_SmallestAngle_H
-#define AVT_VMETRIC_SmallestAngle_H
+#ifndef AVT_VMETRIC_MaximumAngle_H
+#define AVT_VMETRIC_MaximumAngle_H
 #include <expression_exports.h>
 #include <avtVerdictExpression.h>
 
 // ****************************************************************************
-//  Class: avtVMetricSmallestAngle
+//  Class: avtVMetricMaximumAngle
 //
 //  Purpose:
-//   This metric measures SmallestAngle.
+//    This metric measures MaximumAngle.
 //
-//  Programmer: Akira Haddox
-//  Creation:   June 13, 2002
+//  Programmer: Eric Brugger
+//  Creation:   July 31, 2008
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtVMetricSmallestAngle : public avtVerdictExpression
+class EXPRESSION_API avtVMetricMaximumAngle : public avtVerdictExpression
 {
     public:
         double Metric(double coords[][3], int type);

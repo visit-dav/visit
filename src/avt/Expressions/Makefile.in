@@ -223,6 +223,9 @@
 #   Sean Ahern Tue May 27 15:17:08 EDT 2008
 #   Added avtExpFunction.C
 #
+#   Eric Brugger, Thu Jul 31 16:25:40 PDT 2008
+#   Updated for verdict 110.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -399,7 +402,8 @@ MeshQuality_src= \
   MeshQuality/avtVMetricDiagonal.C \
   MeshQuality/avtVMetricDimension.C \
   MeshQuality/avtVMetricJacobian.C \
-  MeshQuality/avtVMetricLargestAngle.C \
+  MeshQuality/avtVMetricMaximumAngle.C \
+  MeshQuality/avtVMetricMinimumAngle.C \
   MeshQuality/avtVMetricOddy.C \
   MeshQuality/avtVMetricRelativeSize.C \
   MeshQuality/avtVMetricScaledJacobian.C \
@@ -407,13 +411,21 @@ MeshQuality_src= \
   MeshQuality/avtVMetricShapeAndSize.C \
   MeshQuality/avtVMetricShear.C \
   MeshQuality/avtVMetricSkew.C \
-  MeshQuality/avtVMetricSmallestAngle.C \
   MeshQuality/avtVMetricStretch.C \
   MeshQuality/avtVMetricTaper.C \
   MeshQuality/avtVMetricVolume.C \
   MeshQuality/avtVMetricWarpage.C \
   MeshQuality/avtVerdictExpression.C \
-  MeshQuality/verdict.C
+  MeshQuality/V_EdgeMetric.C \
+  MeshQuality/V_GaussIntegration.C \
+  MeshQuality/V_HexMetric.C \
+  MeshQuality/V_KnifeMetric.C \
+  MeshQuality/V_PyramidMetric.C \
+  MeshQuality/V_QuadMetric.C \
+  MeshQuality/V_TetMetric.C \
+  MeshQuality/V_TriMetric.C \
+  MeshQuality/V_WedgeMetric.C \
+  MeshQuality/VerdictVector.C
 
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@

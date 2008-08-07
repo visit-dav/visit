@@ -139,6 +139,10 @@
 //    Brad Whitlock, Tue Apr  8 12:17:11 PDT 2008
 //    Added support for internalization of the expression category names.
 //
+//    Eric Brugger, Wed Aug  6 17:49:59 PDT 2008
+//    Renamed smallest_angle to minimum_angle and largest_angle to
+//    maximum_angle.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -155,11 +159,12 @@ const char *expr_meshquality[] = {
     "diagonal",
     "dimension",
     "jacobian",
-    "largest_angle",
     "max_edge_length",
     "max_side_volume",
+    "maximum_angle",
     "min_edge_length",
     "min_side_volume",
+    "minimum_angle",
     "neighbor",
     "node_degree",
     "oddy",
@@ -169,7 +174,6 @@ const char *expr_meshquality[] = {
     "shape_and_size",
     "shear",
     "skew",
-    "smallest_angle",
     "stretch",
     "taper",
     "warpage",

@@ -37,31 +37,48 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtVMetricLargestAngle.h                         //
+//                          avtVMetricMaximumAngle.C                         //
 // ************************************************************************* //
 
-#ifndef AVT_VMETRIC_LargestAngle_H
-#define AVT_VMETRIC_LargestAngle_H
-#include <expression_exports.h>
-#include <avtVerdictExpression.h>
+#include "avtVMetricMaximumAngle.h"
+
+#include <vtkCellType.h>
+#include <vtkDataSet.h>
+#include <vtkFloatArray.h>
+
+#include <verdict.h>
+
+#include <DebugStream.h>
 
 // ****************************************************************************
-//  Class: avtVMetricLargestAngle
+//  Method: avtVMetricMaximumAngle::Metric
 //
 //  Purpose:
-//    This metric measures LargestAngle.
+//      Inspect an element and calculate the MaximumAngle.
 //
-//  Programmer: Akira Haddox
-//  Creation:   June 13, 2002
+//  Arguments:
+//      coords    The set of xyz points for the cell.
+//      numPoints The number of xyz points for the cell.
+//      type      The vtk type of the cell.
+//
+//  Returns:      The MaximumAngle of the cell, or defaultValue if not supported.
+//
+//  Programmer:   Eric Brugger
+//  Creation:     July 31, 2008
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtVMetricLargestAngle : public avtVerdictExpression
+double avtVMetricMaximumAngle::Metric (double coords[][3], int type)
 {
-    public:
-        double Metric(double coords[][3], int type);
-};
-
+#ifdef HAVE_VERDICT 
+    switch (type)
+    {
+        case VTK_TRIANGLE:
+            return v_tri_maximum_angle(3, coords);
+        
+        case VTK_QUAD:
+            return v_quad_maximum_angle(4, coords);
+    }
 #endif
-
-
+    return -1;
+}
