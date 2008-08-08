@@ -2877,7 +2877,11 @@ ViewerRPC_str(PyObject *v)
 //
 // The doc string for the class.
 //
+#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
 static const char *ViewerRPC_Purpose = "This class contains the attributes for controlling the viewer.";
+#else
+static char *ViewerRPC_Purpose = "This class contains the attributes for controlling the viewer.";
+#endif
 
 //
 // The type description structure

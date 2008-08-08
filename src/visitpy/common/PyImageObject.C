@@ -752,7 +752,11 @@ ImageObject_str(PyObject *v)
 //
 // The doc string for the class.
 //
+#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
 static const char *ImageObject_Purpose = "Image Annotation Object";
+#else
+static char *ImageObject_Purpose = "Image Annotation Object";
+#endif
 
 //
 // The type description structure

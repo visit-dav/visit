@@ -732,7 +732,11 @@ LineObject_str(PyObject *v)
 //
 // The doc string for the class.
 //
+#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
 static const char *LineObject_Purpose = "Line Annotation Object";
+#else
+static char *LineObject_Purpose = "Line Annotation Object";
+#endif
 
 //
 // The type description structure

@@ -487,7 +487,11 @@ DatabaseCorrelation_str(PyObject *v)
 //
 // The doc string for the class.
 //
+#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
 static const char *DatabaseCorrelation_Purpose = "This class encapsulates a database correlation, which is a mapping of one or more databases to a set of indices that go from 0 to N.";
+#else
+static char *DatabaseCorrelation_Purpose = "This class encapsulates a database correlation, which is a mapping of one or more databases to a set of indices that go from 0 to N.";
+#endif
 
 //
 // The type description structure

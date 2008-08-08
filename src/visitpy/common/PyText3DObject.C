@@ -772,7 +772,11 @@ Text3DObject_str(PyObject *v)
 //
 // The doc string for the class.
 //
+#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
 static const char *Text3DObject_Purpose = "This class defines an interface for controlling Text3D annotation objects.";
+#else
+static char *Text3DObject_Purpose = "This class defines an interface for controlling Text3D annotation objects.";
+#endif
 
 //
 // The type description structure
