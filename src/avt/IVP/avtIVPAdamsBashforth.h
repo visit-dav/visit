@@ -56,6 +56,11 @@
 //  Programmer: Dave Pugmire
 //  Creation:   August 5, 2008
 //
+//  Modifications:
+//    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
+//    Improved version of A-B solver that builds function history from
+//    initial Euler steps.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
@@ -71,6 +76,7 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     // adaptive stepsize control retries until success or underflow
     virtual Result   Step(const avtIVPField* field, const double& t_max, 
                           avtIVPStep* ivpstep = NULL);
+    virtual void    OnExitDomain();
 
     virtual avtVec   GetCurrentY() const;
     virtual double   GetCurrentT() const;
@@ -92,6 +98,11 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     // state serialization
     virtual void     AcceptStateVisitor(avtIVPStateHelper &aiss);
     
+    void             UpdateHistory( const avtVec &yNew );
+    avtIVPSolver::Result EulerStep(const avtIVPField* field,
+                                   avtVec &yNew);
+    avtIVPSolver::Result ABStep(const avtIVPField* field,
+                                avtVec &yNew);
     int              AdamsMoulton4Steps(const avtIVPField* field,
                                         avtVec x,
                                         double t,
@@ -113,15 +124,12 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
                                     double epsilon );
 
   private:
-    void Initialize(const avtIVPField* field);
-    
     double tol;
     double h, h_max;
     double t;
-    avtVec fns[4];
-    avtVec x;
+    avtVecArray history;
+    avtVec yCur;
     avtVec ys[2];
-    int initialized;
 };
 
 #endif

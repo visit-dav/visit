@@ -47,6 +47,7 @@
 
 #include <ExprParser.h>
 #include <ParsingExprList.h>
+#include <Utility.h>
 
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
@@ -73,6 +74,11 @@ static void UsageAndExit(DatabasePluginManager *, const char *);
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    June  3, 2008
+//
+//  Modifications:
+//    Eric Brugger, Fri Aug  8 12:22:32 PDT 2008
+//    Made to use strtod instead of strtof if on Windows or HAVE_STRTOF is
+//    not defined or HAVE_STRTOF_PROTOTYPE is not defined.
 //
 // ****************************************************************************
 void
@@ -130,7 +136,11 @@ FillOptionsFromCommandline(DBOptionsAttributes *opts)
             cerr << "Set to new value "<<opts->GetInt(name) << endl;
             break;
           case DBOptionsAttributes::Float:
+#if defined(_WIN32) || !defined(HAVE_STRTOF) || !defined(HAVE_STRTOF_PROTOTYPE)
+            opts->SetFloat(name, (float) strtod(buff, NULL));
+#else
             opts->SetFloat(name, strtof(buff, NULL));
+#endif
             cerr << "Set to new value "<<opts->GetFloat(name) << endl;
             break;
           case DBOptionsAttributes::Double:

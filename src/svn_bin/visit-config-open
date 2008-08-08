@@ -99,7 +99,7 @@
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib"</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
                     <Field name="parallel" type="bool">false</Field>
                 </Object>
                 <Object name="HostProfile">
@@ -121,7 +121,7 @@
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib"</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
                     <Field name="parallel" type="bool">true</Field>
                 </Object>
                 <Object name="HostProfile">
@@ -143,7 +143,7 @@
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib"</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
                     <Field name="parallel" type="bool">true</Field>
                 </Object>
                 <Object name="HostProfile">
@@ -231,7 +231,7 @@
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib"</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
                     <Field name="parallel" type="bool">false</Field>
                 </Object>
                 <Object name="HostProfile">
@@ -253,7 +253,7 @@
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib"</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
                     <Field name="parallel" type="bool">true</Field>
                 </Object>
                 <Object name="HostProfile">
@@ -487,7 +487,7 @@
                     <Field name="timeLimitSet" type="bool">false</Field>
                     <Field name="timeLimit" type="string"></Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">mpirun</Field>
+                    <Field name="launchMethod" type="string">srun</Field>
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>
@@ -535,7 +535,7 @@
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib"</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
                     <Field name="parallel" type="bool">false</Field>
                 </Object>
                 <Object name="HostProfile">
@@ -557,7 +557,7 @@
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib"</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
                     <Field name="parallel" type="bool">true</Field>
                 </Object>
                 <Object name="HostProfile">
@@ -579,7 +579,7 @@
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib"</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
                     <Field name="parallel" type="bool">true</Field>
                 </Object>
                 <Object name="HostProfile">

@@ -86,5 +86,8 @@
       <Include file="header" quoted="false">
         cmath
       </Include>
+      <Include file="header" quoted="false">
+        math.h
+      </Include>
     </Attribute>
   </Plugin>

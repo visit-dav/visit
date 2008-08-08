@@ -224,6 +224,10 @@ class avtIVPState
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
+//    Added OnExitDomain method.
+//
 // ****************************************************************************
 
 class avtIVPSolver
@@ -243,7 +247,7 @@ class avtIVPSolver
     virtual Result  Step( const avtIVPField* field, 
                          const double& t_max, 
                          avtIVPStep* ivpstep = 0 ) = 0;
-
+    virtual void    OnExitDomain() {}
     virtual avtVec  GetCurrentY() const = 0;
     virtual double  GetCurrentT() const = 0;
 

@@ -39,15 +39,13 @@
 #ifndef AVT_VEC_H
 #define AVT_VEC_H
 
-#ifdef WIN32
-  #include <algorithm>
-  #include <functional>
-#endif
-
-#include <stdexcept>
-#include <numeric>
+#include <algorithm>
 #include <cmath>
+#include <functional>
 #include <iosfwd>
+#include <numeric>
+#include <stdexcept>
+#include <math.h>
 #include <stdlib.h>
 
 #include <math_exports.h>
