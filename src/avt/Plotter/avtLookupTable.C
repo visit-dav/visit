@@ -266,6 +266,9 @@ avtLookupTable::GetNumberOfColors()
 //    Jeremy Meredith, Thu Aug  7 14:38:16 EDT 2008
 //    Use true string comparison (instead of undefined pointer comparison).
 //
+//    Jeremy Meredith, Fri Aug  8 10:26:38 EDT 2008
+//    Check for NULL ctName before doing a comparison, not afterwards....
+//
 // ****************************************************************************
 
 bool
@@ -277,9 +280,9 @@ avtLookupTable::SetColorTable(const char *ctName, bool validName)
 
     // Figure out the circumstances in which we should use the default
     // color table.
-    if(std::string(ctName) == "Default")
+    if(ctName == NULL)
         useDefault = true;
-    else if(ctName == NULL)
+    else if(std::string(ctName) == "Default")
         useDefault = true;
     else if(!ct->ColorTableExists(ctName))
     {
