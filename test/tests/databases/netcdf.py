@@ -14,6 +14,9 @@
 #    Brad Whitlock, Wed Oct 10 11:20:44 PDT 2007
 #    Added tests for CCSM data.
 #
+#    Jeremy Meredith, Fri Aug  8 11:23:29 EDT 2008
+#    Updated streamline settings to match new attribute fields.
+#
 # ----------------------------------------------------------------------------
 
 def test0(datapath):
@@ -94,8 +97,9 @@ def test0(datapath):
     # Plot the wind using a streamline plot.
     AddPlot("Streamline", "wind")
     s = StreamlineAttributes()
-    s.stepLength = 1.
-    s.maxTime = 1e+06
+    s.maxStepLength = 1.
+    s.termination = 1e+06
+    s.terminationType = s.Time
     s.lineStart  = (-1e+06, -1.25e+06, 500000)
     s.lineEnd  = (1e+06, -1.25e+06, 500000)
     s.pointDensity = 15
