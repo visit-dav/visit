@@ -15,6 +15,9 @@
 #    Brad Whitlock, Mon Apr 21 10:55:14 PDT 2008
 #    Updated variable names to compensate for changes to CGNS reader.
 #
+#    Jeremy Meredith, Fri Aug  8 11:23:29 EDT 2008
+#    Updated streamline settings to match new attribute fields.
+#
 # ----------------------------------------------------------------------------
 
 def test0(datapath):
@@ -120,8 +123,9 @@ def test0(datapath):
     s.sourceType = s.SpecifiedLine
     s.lineStart = (-0.0331738, -0.822069, 0)
     s.lineEnd = (-0.5, 1, 0.)
-    s.stepLength = 0.01
-    s.maxTime = 1000
+    s.maxStepLength = 0.01
+    s.termination = 1000
+    s.terminationType = s.Time
     s.pointDensity = 30
     s.coloringMethod = s.Solid
     s.legendFlag = 0
