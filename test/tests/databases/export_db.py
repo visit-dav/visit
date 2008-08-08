@@ -23,6 +23,8 @@
 #    Uncommented tests for '6366, which were previously checked in, but
 #    commented out.
 #
+#    Mark C. Miller Fri Aug  8 09:11:44 PDT 2008
+#    Fixed typo of missing '()' on call to DeleteAllPlots
 # ----------------------------------------------------------------------------
 
 
@@ -48,7 +50,7 @@ AddPlot("Pseudocolor", "t")
 DrawPlots()
 Test("export_db_01")
 
-DeleteAllPlots
+DeleteAllPlots()
 OpenDatabase("test_ex_db2.silo")
 AddPlot("Pseudocolor", "u")
 DrawPlots()
