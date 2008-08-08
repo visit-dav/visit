@@ -9,7 +9,7 @@
 //    to an int.  So here, we retrieve an int then cast it to the enum.
 //
 static char message[1024];
-void error_action(char *start, ...)
+void error_action(const char *start, ...)
 {
 	va_list ap;
 	enum ACTION action;
