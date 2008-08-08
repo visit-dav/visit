@@ -140,6 +140,10 @@ avtPFLOTRANFileFormat::GetNTimesteps(void)
 //    Added support for automatic parallel decomposition and parallel I/O
 //    via hyperslab reading.
 //
+//    Eric Brugger, Fri Aug  8 13:53:01 PDT 2008
+//    Added an explicit conversion from a char* to a string to make the
+//    MIPSpro compiler happy.
+//
 // ****************************************************************************
 
 void
@@ -211,7 +215,7 @@ avtPFLOTRANFileFormat::LoadFile(void)
             nTime++;
             double time;
             sscanf(name, "Time: %lf h", &time);
-            times.push_back(std::make_pair(time,name));
+            times.push_back(std::make_pair(time,std::string(name)));
         }
         else
         {

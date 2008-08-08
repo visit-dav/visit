@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 #include <cmath>
+#include <math.h>
 
 // ****************************************************************************
 // Class: SliceAttributes

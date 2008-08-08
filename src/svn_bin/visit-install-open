@@ -61,7 +61,6 @@ quad=true
 up=true
 pengra=true
 thunder=true
-prism=true
 yana=true
 xchem=true
 davinci=true
@@ -84,7 +83,6 @@ do
          up=false
          pengra=false
          thunder=false
-         prism=false
          yana=false
          xchem=false
          davinci=false
@@ -137,14 +135,6 @@ do
          ;;
       +thunder)
          thunder=true
-         shift
-         ;;
-      -prism)
-         prism=false
-         shift
-         ;;
-      +prism)
-         prism=true
          shift
          ;;
       -yana)
@@ -445,42 +435,6 @@ then
 fi
 
 #
-# Install on prism.
-#
-rm -f prism
-cat <<EOF > prism
-#!/bin/sh
-./visit-install -private -c open -g visit -b bdivp -gw -l $ver linux-x86_64-ib /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on prism"           > resultlog 2>&1
-echo "       ---------------------------"          >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-x86_64-ib/bin   >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-ib/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-ib/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-ib/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-x86_64-ib/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-ib\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): prism" $emailName < resultlog
-EOF
-
-if [ $prism = true ]
-then
-   if [ $test = no ]
-   then
-      scp prism0:/usr/tmp/$user/prism/visitbuild/visit$ver2.linux-x86_64-ib.tar.gz .
-      scp visit$ver2.linux-x86_64-ib.tar.gz pengra2:
-      scp visit-install pengra2:
-      scp prism pengra2:prism_install
-      ssh pengra2 "chmod 750 prism_install;./prism_install"
-   fi
-fi
-
-#
 # Install on yana.
 #
 rm -f yana
@@ -629,5 +583,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad up pengra thunder prism yana xchem davinci ellipse
+   rm -f hoth sunspot quad up pengra thunder yana xchem davinci ellipse
 fi

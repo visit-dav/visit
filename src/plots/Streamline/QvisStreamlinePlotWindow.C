@@ -539,8 +539,11 @@ QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
 //   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
 //   Add streamline direction option.
 //
-//   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
+//   Dave Pugmire, Wed Aug 6 15:16:23 EDT 2008
 //   Add accurate distance calculate option.
+//
+//   Dave Pugmire, Fri Aug 8 16:27:03 EDT 2008
+//   Set the termType combo box.
 //
 // ****************************************************************************
 
@@ -738,6 +741,10 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             absTol->setText(temp);
             break;
           case 27: //terminationType
+            termType->blockSignals(true);
+            termType->setCurrentItem( int(streamAtts->GetTerminationType()) );
+            termType->blockSignals(false);
+            
             accurateDistance->setEnabled( (streamAtts->GetTerminationType() == StreamlineAttributes::Distance) );
             break;
 
@@ -947,6 +954,11 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
 // Programmer: Dave Pugmire
 // Creation:   Thu Jul 31 14:41:00 EDT 2008
 //
+// Modifications:
+//
+//   Dave Pugmire, Fri Aug 8 16:27:03 EDT 2008
+//   Change the step label text based on the integration method.
+//
 // ****************************************************************************
 
 void
@@ -963,17 +975,11 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
     absTol->hide();
     absTolLabel->hide();
 
-    //both use a step length.
-    if ( useDormandPrince || useAdamsBashforth )
-    {
-        maxStepLength->show();
-        maxStepLengthLabel->show();
-    }
-    
     if ( useDormandPrince )
     {
         maxStepLength->show();
         maxStepLengthLabel->show();
+        maxStepLengthLabel->setText(tr("Maximum step length"));
         relTol->show();
         relTolLabel->show();
         absTol->show();
@@ -983,6 +989,7 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
     {
         maxStepLength->show();
         maxStepLengthLabel->show();
+        maxStepLengthLabel->setText(tr("Step length"));
         absTol->show();
         absTolLabel->show();
     }

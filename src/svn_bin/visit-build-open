@@ -74,7 +74,6 @@ quad=true
 up=true
 pengra=true
 thunder=true
-prism=true
 yana=true
 xchem=true
 davinci=true
@@ -97,7 +96,6 @@ do
          up=false
          pengra=false
          thunder=false
-         prism=false
          yana=false
          xchem=false
          davinci=false
@@ -152,14 +150,6 @@ do
          thunder=true
          shift
          ;;
-      -prism)
-         prism=false
-         shift
-         ;;
-      +prism)
-         prism=true
-         shift
-         ;;
       -yana)
          yana=false
          shift
@@ -212,7 +202,6 @@ then
    echo "    up (LC, AIX),"
    echo "    pengra (LC, Linux, x86_64),"
    echo "    thunder (LC, Linux, ia64),"
-   echo "    prism (LC, Linux, x86_64),"
    echo "    yana (LC, Linux, x86_64),"
    echo "    xchem (HEAF, Linux),"
    echo "    davinci (LBNL, Altix),"
@@ -578,58 +567,6 @@ then
 fi
 
 #
-# Build on prism.
-#
-rm -f prism
-cat <<EOF > prism
-#!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/prism ; then
-   mkdir /usr/tmp/$user/prism
-fi
-rm -rf /usr/tmp/$user/prism/visitbuild
-mkdir /usr/tmp/$user/prism/visitbuild
-mv prism_$dist.tar.gz /usr/tmp/$user/prism/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/prism/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-export PATH=\$PATH:/usr/bin/X11
-env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
-make -j 3 >> ../../buildlog 2>&1
-svn_bin/visit-bin-dist -switch ib >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64-ib.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on prism"        > resultlog 2>&1
-echo "       -------------------------"       >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): prism" $emailName < resultlog
-EOF
-
-if [ $prism = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on prism"
-      scp prism prism0:prism_buildit
-      scp $dist.tar.gz prism0:prism_$dist.tar.gz
-      ssh prism0 "chmod 750 prism_buildit;./prism_buildit" &
-   fi
-fi
-
-#
 # Build on yana.
 #
 rm -f yana
@@ -849,5 +786,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad up pengra thunder prism yana xchem davinci ellipse
+   rm -f hoth sunspot quad up pengra thunder yana xchem davinci ellipse
 fi
