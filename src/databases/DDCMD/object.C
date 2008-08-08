@@ -941,7 +941,7 @@ int object_lineparse(char *line, OBJECT*object)
 	return rc;
 }
 
-OBJECTFILE object_fopen(char *filename, char *mode)
+OBJECTFILE object_fopen(const char *filename, const char *mode)
 {
 	OBJECTFILE file;
 	file.file = fopen(filename, mode);
