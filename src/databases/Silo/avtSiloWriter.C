@@ -633,6 +633,9 @@ avtSiloWriter::ConstructChunkOptlist(const avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Thu Jul 31 18:06:08 PDT 2008
 //    Added option to write all data to a single file 
+//
+//    Mark C. Miller, Thu Aug  7 23:38:24 PDT 2008
+//    Fixed filename generation for single block case
 // ****************************************************************************
 
 void
@@ -644,7 +647,7 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
     //
     string fname = dir + stem;
     char filename[1024];
-    if (singleFile)
+    if (singleFile || nblocks == 1)
         sprintf(filename, "%s.silo", fname.c_str());
     else
         sprintf(filename, "%s.%d.silo", fname.c_str(), chunk);
