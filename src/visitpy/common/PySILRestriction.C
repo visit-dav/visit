@@ -798,7 +798,11 @@ SILRestriction_print(PyObject *v, FILE *fp, int flags)
     return 0;
 }
 
+#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
 static const char *SILRestriction_Purpose = "This class contains attributes used to restrict the subset inclusion lattice of a plot.";
+#else
+static char *SILRestriction_Purpose = "This class contains attributes used to restrict the subset inclusion lattice of a plot.";
+#endif
 
 //
 // The type description structure

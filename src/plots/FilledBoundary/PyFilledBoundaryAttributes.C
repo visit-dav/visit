@@ -1333,7 +1333,11 @@ FilledBoundaryAttributes_str(PyObject *v)
 //
 // The doc string for the class.
 //
+#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
 static const char *FilledBoundaryAttributes_Purpose = "This class contains the plot attributes for the filled boundary plot.";
+#else
+static char *FilledBoundaryAttributes_Purpose = "This class contains the plot attributes for the filled boundary plot.";
+#endif
 
 //
 // The type description structure

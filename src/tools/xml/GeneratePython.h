@@ -2707,6 +2707,9 @@ class PythonFieldFactory
 //    Brad Whitlock, Thu Feb 28 16:29:20 PST 2008
 //    Made it use a base class.
 //
+//    Tom Fogal, Fri Aug  8 10:22:02 EDT 2008
+//    Add const in the doc string conditionally, based on python version.
+//
 // ----------------------------------------------------------------------------
 #include <GeneratorBase.h>
 
@@ -3102,7 +3105,12 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "//" << endl;
         c << "// The doc string for the class." << endl;
         c << "//" << endl;
+        c << "#if PY_MAJOR_VERSION > 2 || "
+          << "(PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)" << endl;
         c << "static const char *" << name << "_Purpose = \"" << purpose << "\";" << endl;
+        c << "#else" << endl;
+        c << "static char *" << name << "_Purpose = \"" << purpose << "\";" << endl;
+        c << "#endif" << endl;
         c << endl;
 
         c << "//" << endl;

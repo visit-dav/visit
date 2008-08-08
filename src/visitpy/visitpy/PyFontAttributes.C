@@ -478,7 +478,11 @@ FontAttributes_str(PyObject *v)
 //
 // The doc string for the class.
 //
+#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
 static const char *FontAttributes_Purpose = "Describes font properties that we can set through VTK";
+#else
+static char *FontAttributes_Purpose = "Describes font properties that we can set through VTK";
+#endif
 
 //
 // The type description structure

@@ -649,7 +649,11 @@ Text2DObject_print(PyObject *v, FILE *fp, int flags)
 //
 // The doc string for the class.
 //
+#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
 static const char *Text2DObject_Purpose = "This class defines defines an interface to a 2D text object.";
+#else
+static char *Text2DObject_Purpose = "This class defines defines an interface to a 2D text object.";
+#endif
 
 //
 // The type description structure
