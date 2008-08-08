@@ -391,6 +391,10 @@
 #     Tom Fogal, Fri Jul 11 10:47:31 EDT 2008
 #     Added PIL to build_python.
 #
+#     Jeremy Meredith, Fri Aug  8 13:13:36 EDT 2008
+#     Added new "download_web_file" which lets us grab a file directly
+#     off the web instead of visit's 3rd party directory.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -871,6 +875,49 @@ function download_file
         fi
     fi
     if [[ -e $2 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+# *************************************************************************** #
+# Function: download_web_file                                                 #
+#                                                                             #
+# Purpose: Downloads a file using wget and show a dialog screen.              #
+#                                                                             #
+# Programmer: Jeremy Meredith                                                 #
+# Date: Fri Aug  8 13:07:18 EDT 2008                                          #
+#                                                                             #
+# Modifications:                                                              #
+#                                                                             #
+# *************************************************************************** #
+
+function download_web_file
+{
+    # Print a dialog screen
+    if [[ "$GRAPHICAL" == "yes" ]] ; then
+        $DLG --backtitle "$DLG_BACKTITLE" --infobox \
+"Downloading $1 . . ." $DLG_HEIGHT $DLG_WIDTH
+    else
+        echo "Downloading $1 . . ." 
+    fi
+
+    # Try and download the file.
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        # MaxOS X comes with curl
+        curl -ksfo $2 "$1"
+    else
+        wget $WGET_OPTS -o /dev/null "$1"
+        if [[ $? != 0 ]] ; then
+           echo ""
+           echo "Unable to run.  Need to download $2 from the "
+           echo "VisIt website, but cannot locate the wget utility "
+           echo "to do so."
+           echo ""
+           exit 1
+        fi
+    fi
+    if [[ -e $1 ]] ; then
         return 1
     fi
     return 0
@@ -3400,7 +3447,7 @@ function build_python
             # Check for version >= 7.0.0 (MacOS 10.3, Panther)
             VER=$(uname -r)
             if (( ${VER%%.*} < 7 )) ; then
-               info_box "Patching VTK . . ." 1>&3
+               info_box "Patching Python . . ." 1>&3
                patch -p0 << \EOF
 diff -rp Python-2.5.orig/Modules/getpath.c Python-2.5/Modules/getpath.c
 *** Python-2.5.orig/Modules/getpath.c Sun Jul  9 18:18:57 2006
@@ -3417,7 +3464,7 @@ diff -rp Python-2.5.orig/Modules/getpath.c Python-2.5/Modules/getpath.c
   
 EOF
               if [[ $? != 0 ]] ; then
-                 echo "Unable to patch VTK. Wrong version?"
+                 echo "Unable to patch Python. Wrong version?"
                  return 1
               fi
            fi
@@ -3535,7 +3582,7 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
 
     if ! test -f ${PIL_FILE} ; then
         info_box "Downloading PIL ..." 1>&3
-        download_file ${PIL_URL}
+        download_web_file "${PIL_URL}"
         if test $? -ne 0 ; then
             return 1
         fi
