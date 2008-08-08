@@ -50,6 +50,9 @@
 #
 #    Mark C. Miller, Sun Aug  3 21:14:22 PDT 2008
 #    Fixed to work in /groups/visit dir (new location of LLNL testing)
+#
+#    Mark C. Miller, Fri Aug  8 09:00:27 PDT 2008
+#    Fixed path used to invoke nersc_username_to_email
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -270,7 +273,7 @@ cat $modifiersFile nersc_repo_modifiers_$dateTag | grep -v '^[0-9]*$' | sort | u
 rm -f $modifiersFile
 mv ${modifiersFile}_tmp $modifiersFile 
 for u in `cat $modifiersFile`; do
-    uemail=`./nersc_username_to_email $u`
+    uemail=`$rootTestDir/src/svn_bin/nersc_username_to_email $u`
     modifiersEmails="$modifiersEmails $uemail" 
 done
 
