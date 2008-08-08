@@ -145,8 +145,9 @@ typedef __int64 int64_t;
 //
 // --------
 // If the data was written in parallel
-// The header becomes 132 chars.  Here are two example headers:
+// The header becomes 132 chars.  Here are three example headers:
 // #std 4  6  6  6   120  240  0.1500E+01  300  1  2XUPT
+// #std 4  6  6  6   120  240  0.1500E+01  300  1  2 XUPTS03
 // #std 4  6  6  6   120  240  0.1500E+01  300  1  2 U T123
 // This example means:  #std is for versioning, 4 bytes per sample (could be 8, 
 //   for double precision), 6x6x6 blocks, 120 of 240 blocks are in this file, 
@@ -175,6 +176,29 @@ typedef __int64 int64_t;
 //     for each block
 //         for each sample in the block
 //             write the sample
+//
+//
+// ****************************************************************************
+// Example of a metadata input file
+//
+// NEK3D
+// version: 1.0
+// filetemplate: example.fld%02d  
+// firsttimestep: 2                 # first dump here: example.fld02
+// numtimesteps: 3                  # number of dumps
+// type: binary                     # ascii or binary
+//
+// 
+// NEK3D
+// version: 1.0
+// filetemplate: example%02d.f%04d  
+// firsttimestep: 2                 # first dump here: example??.f0002
+// numtimesteps: 3                  # number of dumps
+// type: binary                     # ascii or binary
+//
+//
+// NOTE: if the number of printf tokens is > 1 than the multiple fld format
+//       is used.
 // ****************************************************************************
 
 
@@ -224,6 +248,9 @@ typedef __int64 int64_t;
 //    Support varying numbers of blocks per file in the parallel format.
 //    Removed the code to read on one proc and broadcast the header, rather
 //    than having all procs read it, because it made no performance difference.
+//
+//    Dave Bremer, Fri Aug  8 12:57:47 PDT 2008
+//    Brought in a change from Stefan Kerkemeier to correct an error message.
 // ****************************************************************************
 
 avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
@@ -293,6 +320,13 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
 //
 //    Kathleen Bonnell, Wed Jul 2 09:44:44 PDT 2008 
 //    Removed unreferenced variables.
+//
+//    Dave Bremer, Fri Aug  8 12:57:47 PDT 2008
+//    Brought in changes prompted by Stefan Kerkemeier, to check that a 
+//    file open succeeded, allow parsing of the S## style of scalar field
+//    tag within the serial file header, and read the number of output
+//    directories from the parallel file header, allowing users to skip
+//    the "numoutputdirs:" tag in the .nek file.
 //
 // ****************************************************************************
 
@@ -401,11 +435,15 @@ avtNek3DFileFormat::ParseMetaDataFile(const char *filename)
             else
             {
                 EXCEPTION1(InvalidDBTypeException, 
-                   "Value following type: must be \"binary\" or \"ascii\"" );
+                    "Value following type: \"ascii\" or \"binary\" or \"binary6\"" );
             }
         }
         else if (STREQUAL("numoutputdirs:", tag.c_str())==0)
         {
+            //This tag can be deprecated, because the number of output dirs 
+            //can be determined from the header, and the parallel nature of the
+            //file can be inferred from the number of printf tokens in the template.
+            //This reader scans the headers for the number of fld files
             f >> iNumOutputDirs;
             if (iNumOutputDirs > 1)
                 bParFormat = true;
@@ -502,6 +540,12 @@ avtNek3DFileFormat::ParseNekFileHeader()
 
     GetFileName(iFirstTimestep, 0, blockfilename, fileTemplate.size() + 64);
     ifstream  f(blockfilename);
+    if (!f.is_open())
+    {
+        char msg[1024];
+        SNPRINTF(msg, 1024, "Could not open file %s.", filename);
+        EXCEPTION1(InvalidFilesException, msg);
+    }
 
     if (!bParFormat)
     {
@@ -524,6 +568,10 @@ avtNek3DFileFormat::ParseNekFileHeader()
                 bHasPressure = true;
             else if (tag == "T")
                 bHasTemperature = true;
+            else if (tag.length() == 3 && tag[0] == 'S')
+            {
+                iNumSFields = 10*(tag[1] - '0') + (tag[2] - '0');
+            }
             else if (tag == "1")
             {
                 char c;
@@ -597,9 +645,14 @@ avtNek3DFileFormat::ParseNekFileHeader()
         //the field tags without a whitespace separator.
         while (f.peek() == ' ')
             f.get();
+
+        //The number of output dirs comes next, but may abut the field tags
+        int iNumOutputDirs = 0;
         while (f.peek() >= '0' && f.peek() <= '9')
-            f.get();
-        
+        {
+            iNumOutputDirs *= 10;
+            iNumOutputDirs += (f.get() - '0');
+        }
         char tmpTags[32];
         f.read(tmpTags, 32);
         tmpTags[31] = '\0';
@@ -1552,6 +1605,10 @@ avtNek3DFileFormat::GetTimes(std::vector<double> &outTimes)
 //    Dave Bremer, Fri Jun  6 15:38:45 PDT 2008
 //    Added the bParFormat flag allowing the parallel format to be used
 //    by a serial code, in which there is only one output dir.
+//
+//    Dave Bremer, Fri Aug  8 12:57:47 PDT 2008
+//    Brought in a change from Stefan Kerkemeier to infer that the parallel/binary
+//    format is in use if 2 or 3 printf tokens are in the file template.
 // ****************************************************************************
 
 void
@@ -1564,6 +1621,12 @@ avtNek3DFileFormat::GetFileName(int timestep, int pardir, char *outFileName, int
     {
         if (fileTemplate[ii] == '%' && fileTemplate[ii+1] != '%')
             nPrintfTokens++;
+    }
+
+    if (nPrintfTokens > 1) 
+    {
+        bBinary = true;
+        bParFormat = true;
     }
 
     if (!bParFormat && nPrintfTokens != 1)
