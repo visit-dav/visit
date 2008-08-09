@@ -56,6 +56,9 @@ dnl    Tom Fogal, Tue Jul  1 13:33:34 EDT 2008
 dnl    Fixed a `test' conditional which would produce a warning when not using
 dnl    IceT.
 dnl
+dnl    Tom Fogal, Mon Aug  4 10:52:41 EDT 2008
+dnl    Don't force USE_MGL_NAMESPACE; not required, and may do strange things
+dnl    in the HW rendering case.
 
 dnl provide --enable-icet and --with-icet-(include|lib)dir=... options.  These
 dnl values will be picked up later by the AX_CHECK_ICET macro.
@@ -118,10 +121,6 @@ AS_IF([test "x$enable_icet" != "xno"],
 
         dnl Now that we've got include/library directories (somehow, who cares
         dnl how at this point) we can set up appopriate compiler/linker flags.
-        dnl
-        dnl Note we require IceT to use OS mesa, so we force USE_MGL_NAMESPACE!
-        ICET_CXXFLAGS="-DUSE_MGL_NAMESPACE"
-        ICET_LDFLAGS=
         AS_IF([test -n "${ICET_INCLUDEDIR}"],
             [
                 ICET_CXXFLAGS="${ICET_CXXFLAGS} -I${ICET_INCLUDEDIR}"
@@ -206,7 +205,7 @@ AC_DEFUN([AX_VISIT_ICET], [
     AC_REQUIRE([AX_CHECK_ICET])
     dnl The `0' looks strange there, but is important; if the variable is unset
     dnl then we would otherwise expand to an empty string, which the shell
-    dnl would warn about.  `test' does not seem to use short-circuit
+    dnl would warn about.  Since `test' does not seem to use short-circuit
     dnl evaluation (or at least does semantic analysis before any evaluation),
     dnl we can't just throw in an earlier clause which requires ax_have_icet to
     dnl be nonempty.
