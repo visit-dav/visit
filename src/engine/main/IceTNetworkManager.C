@@ -104,6 +104,9 @@
     } while(0)
 #endif
 
+static void SendImageToRenderNodes(int, int, bool, GLubyte * const,
+                                   GLuint * const);
+
 // ****************************************************************************
 //  Method: lerp
 //
@@ -209,25 +212,16 @@ IceTNetworkManager::~IceTNetworkManager(void)
 //
 //  Modifications:
 //
-//    Tom Fogal, Thu Jul 17 14:51:09 EDT 2008
-//    Configure every process to have a tile.  This lets us rely on every
-//    process having an image, later.
-//
 // ****************************************************************************
 void
 IceTNetworkManager::TileLayout(size_t width, size_t height) const
 {
-    GLint n_proc;
     debug2 << "IceTNM: configuring " << width << "x" << height
            << " single tile display." << std::endl;
 
     ICET(icetResetTiles());
-    ICET(icetGetIntegerv(ICET_NUM_PROCESSES, &n_proc));
-
-    for(GLint proc=0; proc < n_proc; ++proc) {
-        debug3 << "IceTNM: adding " << proc << "/" << n_proc-1 << std::endl;
-        ICET(icetAddTile(0,0, width, height, proc));
-    }
+    const GLint this_mpi_rank_gets_an_image = 0;
+    ICET(icetAddTile(0,0, width, height, this_mpi_rank_gets_an_image));
 }
 
 // ****************************************************************************
@@ -350,8 +344,6 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
 
         ICET(icetDrawFunc(render));
         ICET(icetDrawFrame());
-        // The IceT documentation recommends synchronization after rendering.
-        MPI_Barrier(VISIT_MPI_COMM);
 
         // Now that we're done rendering, we need to post process the image.
         debug3 << "IceTNM: Starting readback." << std::endl;
@@ -538,9 +530,6 @@ IceTNetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
 //    Tom Fogal, Wed Jul  2 11:05:07 EDT 2008
 //    Readback and send/recv the Z buffer (unconditionally...).
 //
-//    Tom Fogal, Thu Jul 17 14:49:35 EDT 2008
-//    Rely on the tiles being setup correctly; forget the whole `buddy' system.
-//
 //    Tom Fogal, Thu Jul 17 17:02:40 EDT 2008
 //    Repurposed viewported argument for a boolean to grab Z.
 //
@@ -556,10 +545,7 @@ IceTNetworkManager::Readback(const VisWindow * const viswin,
 
     GLboolean have_image;
 
-    DEBUG_ONLY(
-        ICET(icetGetBooleanv(ICET_COLOR_BUFFER_VALID, &have_image));
-        assert(GL_TRUE == have_image);
-    );
+    ICET(icetGetBooleanv(ICET_COLOR_BUFFER_VALID, &have_image));
 
     int width=-42, height=-42;
     viswin->GetSize(width, height);
@@ -568,12 +554,33 @@ IceTNetworkManager::Readback(const VisWindow * const viswin,
     GLubyte *pixels = NULL;
     GLuint *depth = NULL;
 
-    // We have an image.  First read it back from IceT.
-    pixels = icetGetColorBuffer();
-    DEBUG_ONLY(ICET_CHECK_ERROR);
+    if(readZ && have_image == GL_TRUE)
+    {
+        depth = icetGetDepthBuffer();
+        DEBUG_ONLY(ICET_CHECK_ERROR);
+        assert(NULL != depth);
+    }
+    // We can't delete pointers IceT gives us.  However if we're a receiving
+    // node, we'll dynamically allocate our buffers and thus need to deallocate
+    // them.
+    bool dynamic = false;
 
-    this->VerifyColorFormat(); // Bail out if we don't get GL_RGBA data.
-    assert(NULL != pixels);
+    if(have_image == GL_TRUE)
+    {
+        // We have an image.  First read it back from IceT.
+        pixels = icetGetColorBuffer();
+        DEBUG_ONLY(ICET_CHECK_ERROR);
+
+        this->VerifyColorFormat(); // Bail out if we don't get GL_RGBA data.
+        assert(NULL != pixels);
+    } else {
+        // We don't have an image -- we need to receive it from our buddy.
+        pixels = new GLubyte[4*width*height];
+        depth = new GLuint[width*height];
+
+        dynamic = true;
+    }
+    SendImageToRenderNodes(width, height, readZ, pixels, depth);
 
     vtkImageData *image = avtImageRepresentation::NewImage(width, height);
     // NewImage assumes we want a 3-component ("GL_RGB") image, but IceT gives
@@ -587,22 +594,24 @@ IceTNetworkManager::Readback(const VisWindow * const viswin,
         void *img_pix = image->GetScalarPointer();
         memcpy(img_pix, pixels, width*height*4);
     }
-
     float *visit_depth_buffer = NULL;
-    if(readZ) {
-        depth = icetGetDepthBuffer();
-        DEBUG_ONLY(ICET_CHECK_ERROR);
-        assert(NULL != depth);
 
-        debug1 << "converting depth values ..." << std::endl;
+    if(readZ)
+    {
+        debug4 << "Converting depth values ..." << std::endl;
         visit_depth_buffer = utofv(depth, width*height);
     }
+
     avtSourceFromImage screenCapSrc(image, visit_depth_buffer);
     avtImage_p visit_img = screenCapSrc.GetTypedOutput();
     visit_img->Update(screenCapSrc.GetGeneralContract());
     visit_img->SetSource(NULL);
     image->Delete();
     delete[] visit_depth_buffer;
+    if(dynamic)
+    {
+        delete[] depth;
+    }
 
     debug3 << "Readback complete." << std::endl;
 
@@ -684,4 +693,40 @@ render()
 
     net_mgr = dynamic_cast<IceTNetworkManager*>(engy->GetNetMgr());
     net_mgr->RealRender();
+}
+
+// ****************************************************************************
+//  Function: SendImageToRenderNodes
+//
+//  Purpose: IceT distinguishes between `tile nodes' and `render nodes'.  All
+//           nodes assist in image composition, but final images are only
+//           collected on tile nodes.
+//           Unfortunately various post-rendering algorithms in VisIt do not
+//           make this distinction, which in IceT parlance means we assume all
+//           nodes are tile nodes.  This method should send out the image to
+//           all other nodes, so we can still utilize IceT by blurring that
+//           distinction so that the rest of VisIt never knows.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 7, 2008
+//
+// ****************************************************************************
+static void
+SendImageToRenderNodes(int width, int height, bool Z,
+                       GLubyte * const pixels,
+                       GLuint * const depth)
+{
+    GLint n_tiles, n_procs, rank;
+    GLboolean have_image;
+
+    ICET(icetGetIntegerv(ICET_NUM_TILES, &n_tiles));
+    ICET(icetGetIntegerv(ICET_NUM_PROCESSES, &n_procs));
+    ICET(icetGetIntegerv(ICET_RANK, &rank));
+    ICET(icetGetBooleanv(ICET_COLOR_BUFFER_VALID, &have_image));
+
+    //              4: assuming GL_RGBA.
+    MPI_Bcast(pixels, 4*width*height, MPI_BYTE, 0, VISIT_MPI_COMM);
+    if(Z) {
+        MPI_Bcast(depth, width*height, MPI_UNSIGNED, 0, VISIT_MPI_COMM);
+    }
 }
