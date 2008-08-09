@@ -23,12 +23,16 @@ class Options(Singleton):
         Singleton.__init__(self)
         self._db = None
         self._avg = None
+        self._max_proc = None
 
     def db(self): return self._db
     def set_db(self, d): self._db = d
 
     def average(self): return self._avg
     def set_average(self, v): self._avg = v
+
+    def max_processors(self): return self._max_proc
+    def set_max_processors(self, mp): self._max_proc = mp
 
 def OptHandle():
     try:
@@ -39,25 +43,30 @@ def OptHandle():
 
 def usage():
     global prog_name
-    print "Usage:", prog_name, "[-f <input>] [-o <output>]"
+    print "Usage:", prog_name, "-f <input> [-a] [-n #]"
     print "Creates a gnuplot datafile from an SQLite DB of rendering data."
     print ""
-    print "\t%-10s %-10s %-50s" % ("-f", "<string>", "SQLite DB file")
+    print "\t%-10s %-10s %-50s" % ("-f", "<string>",  "SQLite DB file")
+    print "\t%-10s %-10s %-50s" % ("-a", "",          "Aggregate results")
+    print "\t%-10s %-10s %-50s" % ("-n", "<integer>", "max # of processors")
 
 def parse_opt(argv):
     from getopt import getopt, GetoptError
     try:
-        opts, args = getopt(argv, "af:h")
+        opts, args = getopt(argv, "af:hn:")
     except GetoptError, e:
         usage()
         sys.exit(2)
 
+    OptHandle().set_max_processors(16777216)
     OptHandle().set_average(False)
     for o,a in opts:
         if o in ("-a"):
             OptHandle().set_average(True)
         if o in ("-f"):
             OptHandle().set_db(a)
+        if o in ("-n"):
+            OptHandle().set_max_processors(a)
         if o in ("-h"):
             usage()
             sys.exit(0)
@@ -89,12 +98,13 @@ if __name__ == "__main__":
     sql = ''.join([s for s in ('SELECT ', select, ' ',
                                'FROM rendering ',
                                'WHERE icet=:icet ', clause, ' ',
+                               'AND n_proc <= :nproc ',
                                'ORDER BY n_proc')])
 
-    sr.execute(sql, {"icet": 0})
+    sr.execute(sql, {"icet": 0, "nproc": OptHandle().max_processors()})
     with open("sr.data", "w") as f:
         gnuplot_from_cursor(f, sr)
 
-    sr.execute(sql, {"icet": 1})
+    sr.execute(sql, {"icet": 1, "nproc": OptHandle().max_processors()})
     with open("icet.data", "w") as f:
         gnuplot_from_cursor(f, sr)
