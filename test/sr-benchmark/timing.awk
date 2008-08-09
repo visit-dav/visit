@@ -8,10 +8,18 @@ BEGIN {
         print "'pat' variable not set!"
         exit 0
     }
+    transparent=0
 }
 
 /Initializing a [[:digit:]]+ processor engine/ {
     n_proc=$5
+}
+
+/Checking multipass rendering (enabled)/ {
+    transparent=1
+}
+/Checking multipass rendering (disabled)/ {
+    transparent=0
 }
 
 # We match against everything and do a match on a variable, because we want
@@ -28,9 +36,9 @@ BEGIN {
         # 0 test; some strange cases render e.g. 0 cells.  These cases aren't
         # really valid data, so we filter them out.
         if($9 != 0 && $4 != 0 && $6 != 0) {
-            printf "INSERT INTO rendering VALUES ("       \
-                   "'%d', '%d', '%d', '%d', '%f');\n",    \
-                   n_proc, icet, n_cells, n_pixels, r_time
+            printf "INSERT INTO rendering VALUES ("          \
+                   "'%d', '%d', '%d', '%d', '%d', '%f');\n", \
+                   n_proc, icet, transparent, n_cells, n_pixels, r_time
         }
     }
 }
