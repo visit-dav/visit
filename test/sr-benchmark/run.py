@@ -6,8 +6,6 @@ import sys
 homedir=os.environ['HOME']
 # where are the data files?
 datadir=homedir + "/visit/data"
-# needed for launching the compute engine
-host=os.environ['HOSTNAME']
 
 def SetSRMode():
     ra = GetRenderingAttributes()
@@ -37,6 +35,11 @@ def DeleteAddRender(p, v):
     print "Rendering ", p, ":", v
     DeleteAllPlots()
     AddPlot(p, v)
+    if p is "Pseudocolor":
+        print "Setting 60% transparency ..."
+        pcAtts = PseudocolorAttributes()
+        pcAtts.opacity = 0.60
+        SetPlotOptions(pcAtts)
     MyRender("result")
 
 def PlotVars(plots, vars):
@@ -62,22 +65,22 @@ def RunTestsWithDB(db_name, plots, vars):
     SetView3D(save_view)
 
 InitialSetup()
-RunTestsWithDB(host + ":" + datadir + "/multi_ucd3d.silo",
-               ["Contour", "Pseudocolor"],
-               ["p","sum","u","v","mag","hist"])
+RunTestsWithDB(datadir + "/hist_ucd3d_0000",
+               ["Vector"],
+               ["vec"])
 if False:
-    RunTestsWithDB(host + ":" + datadir + "/hist_ucd3d_0000",
-                   ["Vector"],
-                   ["vec"])
-    RunTestsWithDB(host + ":" + datadir + "/noise.silo",
+    RunTestsWithDB(datadir + "/multi_ucd3d.silo",
+                   ["Contour", "Pseudocolor"],
+                   ["p","sum","u","v","mag","hist"])
+    RunTestsWithDB(datadir + "/noise.silo",
                    ["Contour", "Pseudocolor"],
                    ["airVf", "chromeVf", "hardyglobal", "hgslice", "radial",
                     "shepardglobal", "x"])
-    RunTestsWithDB(host + ":" + datadir + "/phi.h5nimrod",
+    RunTestsWithDB(datadir + "/phi.h5nimrod",
                    ["Contour", "Pseudocolor"],
                    ["P", "T_e", "nd", "mesh_quality/diagonal",
                     "mesh_quality/volume"])
-    RunTestsWithDB(host + ":" + datadir + "/allinone00.pdb",
+    RunTestsWithDB(datadir + "/allinone00.pdb",
                    ["Contour", "Pseudocolor"],
                    ["revolved_mesh/a", "revolved_mesh/ireg"])
 
