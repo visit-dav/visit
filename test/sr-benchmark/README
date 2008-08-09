@@ -1,7 +1,7 @@
 These are a collection of scripts for benchmarking the SR mode renderers in
 VisIt.  The meat of the work happens in `scaling-pixels.sh', which runs a set
 of tests at varying resolutions and processor counts.  The results are stored
-in a sqlite3 database named `results.db' by default.
+in a sqlite3 database named `${HOSTNAME}.db' by default.
 
 At this point, you can develop your own scripts to extract out the information
 of interest in the format you want.  Some ready-made scripts to utilize gnuplot

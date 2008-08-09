@@ -3,9 +3,9 @@
 import os
 import sys
 
-homedir=os.environ['HOME']
+rootdir=os.environ['V_DIR']
 # where are the data files?
-datadir=homedir + "/visit/data"
+datadir=rootdir + "/data"
 
 def SetSRMode():
     ra = GetRenderingAttributes()
@@ -68,20 +68,9 @@ InitialSetup()
 RunTestsWithDB(datadir + "/hist_ucd3d_0000",
                ["Vector"],
                ["vec"])
-if False:
+if True:
     RunTestsWithDB(datadir + "/multi_ucd3d.silo",
                    ["Contour", "Pseudocolor"],
                    ["p","sum","u","v","mag","hist"])
-    RunTestsWithDB(datadir + "/noise.silo",
-                   ["Contour", "Pseudocolor"],
-                   ["airVf", "chromeVf", "hardyglobal", "hgslice", "radial",
-                    "shepardglobal", "x"])
-    RunTestsWithDB(datadir + "/phi.h5nimrod",
-                   ["Contour", "Pseudocolor"],
-                   ["P", "T_e", "nd", "mesh_quality/diagonal",
-                    "mesh_quality/volume"])
-    RunTestsWithDB(datadir + "/allinone00.pdb",
-                   ["Contour", "Pseudocolor"],
-                   ["revolved_mesh/a", "revolved_mesh/ireg"])
 
 sys.exit(0)
