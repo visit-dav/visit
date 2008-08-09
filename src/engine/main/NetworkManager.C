@@ -5089,9 +5089,13 @@ NetworkManager::RenderGeometry()
 //
 //  Modifications:
 //
-//    Tom Fogal,  Sat Jun 14 15:01:09 EDT 2008
+//    Tom Fogal, Sat Jun 14 15:01:09 EDT 2008
 //    Removed const qualification from argument, as our dependencies aren't
 //    const-correct.
+//
+//    Tom Fogal, Wed Jul 30 13:31:25 EDT 2008
+//    Add a timer; mostly so post processing scripts can determine whether or
+//    not we had transparent geometry.
 //
 // ****************************************************************************
 
@@ -5099,6 +5103,7 @@ bool
 NetworkManager::MultipassRendering(VisWindow *viswin) const
 {
     bool multipass = false;
+    int mpass = visitTimer->StartTimer();
 
     // If we're not doing 3D rendering in this window, then we'll never need
     // multipass rendering.
@@ -5113,6 +5118,9 @@ NetworkManager::MultipassRendering(VisWindow *viswin) const
     const std::string status = (multipass) ? "enabled" : "disabled";
     debug5 << "Multipass rendering is " << status << std::endl;
 
+    char msg[64];
+    SNPRINTF(msg, 64, "Checking multipass rendering (%s)", status.c_str());
+    visitTimer->StopTimer(mpass, msg);
     return multipass;
 }
 
