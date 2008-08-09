@@ -297,8 +297,8 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
         GLenum outputs = ICET_COLOR_BUFFER_BIT;
         // Scratch all that, I guess.  That might be the correct way to go
         // about things in the long run, but IceT only gives us back half an
-        // if we don't set the depth buffer bit.  The compositing is a bit
-        // wrong, but there's not much else we can do..
+        // image if we don't set the depth buffer bit.  The compositing is a
+        // bit wrong, but there's not much else we can do..
         // Consider removing the `hack' if a workaround is found.
         if(/*hack*/true/*hack*/ || !this->MemoMultipass(viswin))
         {
@@ -310,8 +310,8 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
         }
         ICET(icetInputOutputBuffers(inputs, outputs));
 
-        // If there is a backdrop image of sorts, we need to tell IceT so that
-        // it can composite correctly.
+        // If there is a backdrop image, we need to tell IceT so that it can
+        // composite correctly.
         if(viswin->GetBackgroundMode() != AnnotationAttributes::Solid)
         {
             ICET(icetEnable(ICET_CORRECT_COLORED_BACKGROUND));
@@ -393,7 +393,6 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
     }
     CATCHALL(...)
     {
-        debug5 << "IceTNM::Render exception!" << std::endl;
         assert("Exception thrown, bailing out" == (const char*)0x0fa1afe1);
         RETHROW;
     }
@@ -420,6 +419,10 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
 //    anyway.  If it doesn't render into the framebuffer, it might as well not
 //    happen...
 //
+//    Tom Fogal, Mon Aug  4 17:47:25 EDT 2008
+//    Remove the DataObject; since we override the method, it's always NULL
+//    (and was never used anyway).
+//
 // ****************************************************************************
 
 void
@@ -430,8 +433,7 @@ IceTNetworkManager::RealRender()
         this->viswinMap.find(this->r_mgmt.windowID)->second.viswin;
     if(this->MemoMultipass(viswin))
     {
-        avtDataObject_p i_as_dob;
-        i_as_dob = this->RenderTranslucent(this->r_mgmt.windowID, dob);
+        this->RenderTranslucent(this->r_mgmt.windowID, dob);
     }
 }
 
@@ -461,9 +463,59 @@ IceTNetworkManager::RenderGeometry()
     {
         return NetworkManager::RenderGeometry();
     }
-    CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
+    CallProgressCallback("IceTNetworkManager", "Render geometry", 0, 1);
         viswin->ScreenRender(this->r_mgmt.viewportedMode, true);
-    CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
+    CallProgressCallback("IceTNetworkManager", "Render geometry", 0, 1);
+    return NULL;
+}
+
+// ****************************************************************************
+//  Method: RenderTranslucent
+//
+//  Purpose: Renders translucent geometry within a VisWindow.
+//           Expects that opaque geometry has already been rendered.  In the
+//           IceT case, our work is a lot simpler because we don't need to
+//           read the image back from the framebuffer (we'll read it back from
+//           IceT later anyway).
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 4, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+avtDataObject_p
+IceTNetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
+{
+    VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
+    CallProgressCallback("IceTNetworkManager", "Transparent rendering", 0, 1);
+    {
+        StackTimer second_pass("Second-pass screen capture for SR");
+
+        //
+        // We have to disable any gradient background before
+        // rendering, as those will overwrite the first pass
+        //
+        AnnotationAttributes::BackgroundMode bm = viswin->GetBackgroundMode();
+        viswin->SetBackgroundMode(AnnotationAttributes::Solid);
+
+        viswin->ScreenRender(
+            this->r_mgmt.viewportedMode,
+            true,   // Z buffer
+            false,  // opaque geometry
+            true,   // translucent geometry
+            input   // image to composite with
+        );
+
+        // Restore the background mode for next time
+        viswin->SetBackgroundMode(bm);
+    }
+    CallProgressCallback("IceTNetworkManager", "Transparent rendering", 1, 1);
+
+    //
+    // In this implementation, the user should never use the return value --
+    // read it back from IceT instead!
+    //
     return NULL;
 }
 

@@ -65,6 +65,9 @@
 //    Tom Fogal, Sat Jul 26 23:07:15 EDT 2008
 //    Override RenderGeometry for a potential IceT-only optimization.
 //
+//    Tom Fogal, Sat Jul 26 23:07:15 EDT 2008
+//    Override RenderTranslucent so we can avoid an avtImageCompositor.
+//
 // ****************************************************************************
 
 class IceTNetworkManager: public NetworkManager
@@ -83,6 +86,9 @@ class IceTNetworkManager: public NetworkManager
  protected:
 
     virtual avtImage_p RenderGeometry();
+    virtual avtDataObject_p
+                       RenderTranslucent(int windowID,
+                                         const avtImage_p& input);
     virtual avtImage_p Readback(const VisWindow * const, bool) const;
     virtual void       StopTimer(int windowID);
 
