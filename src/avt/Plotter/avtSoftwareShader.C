@@ -43,6 +43,7 @@
 #include <avtSoftwareShader.h>
 
 #include <vtkCamera.h>
+#include <vtkImageData.h>
 #include <vtkLight.h>
 #include <vtkMatrix4x4.h>
 
@@ -389,6 +390,9 @@ avtSoftwareShader::GetLightDirection(const LightAttributes &la,
 //    Tom Fogal, Mon Jun 16 11:15:21 EDT 2008
 //    Made the avtView3D arguments constant.
 //
+//    Tom Fogal, Fri Aug  8 14:28:05 EDT 2008
+//    Removed the assumption that the input image was 3 components.
+//
 // ****************************************************************************
 
 void
@@ -406,6 +410,8 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
     current_image->GetImage().GetSize(&rs, &cs);
     int l_width, l_height;
     light_image->GetImage().GetSize(&l_height, &l_width);
+    const int n_comp =
+        current_image->GetImage().GetImageVTK()->GetNumberOfScalarComponents();
  
     //
     // Calculate aspect ratios
@@ -544,18 +550,18 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
                 break;
             }
 
-            unsigned char r = rgb[3*idx+0];
-            unsigned char g = rgb[3*idx+1];
-            unsigned char b = rgb[3*idx+2];
+            unsigned char r = rgb[n_comp*idx+0];
+            unsigned char g = rgb[n_comp*idx+1];
+            unsigned char b = rgb[n_comp*idx+2];
 
             double scale = 1.0 - (strength * (1.0 - alpha));
             r = (unsigned char)(scale * double(r));
             g = (unsigned char)(scale * double(g));
             b = (unsigned char)(scale * double(b));
 
-            rgb[3*idx+0] = r;
-            rgb[3*idx+1] = g;
-            rgb[3*idx+2] = b;
+            rgb[n_comp*idx+0] = r;
+            rgb[n_comp*idx+1] = g;
+            rgb[n_comp*idx+2] = b;
         }
     }
 
