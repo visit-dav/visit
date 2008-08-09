@@ -386,6 +386,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Tom Fogal, Sun Aug  3 22:47:59 EDT 2008
 //    Added MemoMultipass and ForgetMultipass.
 //
+//    Tom Fogal, Mon Aug  4 16:52:13 EDT 2008
+//    virtualize RenderTranslucent so IceT can use a shorter implementation.
+//
 //    Kathleen Bonnell, Thu Aug  8 07:54:11 PDT 2008
 //    Changed return of ForgetMultipass from bool to void.
 //
@@ -514,7 +517,8 @@ class NetworkManager
                                          int windowID) const;
     bool               MemoMultipass(VisWindow *viswin);
     void               ForgetMultipass();
-    avtDataObject_p    RenderTranslucent(int windowID,
+    virtual avtDataObject_p
+                       RenderTranslucent(int windowID,
                                          const avtImage_p& input);
     bool               Shadowing(int windowID) const;
     bool               DepthCueing(int windowID) const;
