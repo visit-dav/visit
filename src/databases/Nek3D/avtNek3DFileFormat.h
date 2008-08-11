@@ -86,6 +86,9 @@
 //    Dave Bremer, Thu Jun 12 12:59:23 PDT 2008
 //    Support varying numbers of blocks per file in the parallel format.
 //    The distribution of blocks is assumed to be constant over time.
+//
+//    Dave Bremer, Mon Aug 11 13:53:18 PDT 2008
+//    Added a method to parse field tags in nek binary header files.
 // ****************************************************************************
 
 class avtNek3DFileFormat : public avtMTMDFileFormat
@@ -166,6 +169,7 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
 
     virtual void           ParseMetaDataFile(const char *filename);
     virtual void           ParseNekFileHeader();
+    virtual void           ParseFieldTags(ifstream &f);
     virtual void           ReadBlockLocations();
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
