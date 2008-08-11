@@ -2781,8 +2781,12 @@ avtFLASHFileFormat::GetAuxiliaryData(const char *var, int dom,
 //    in the usual manner.
 //
 //    Randy Hudson, February 19, 2008
-//       Added code to read the "sim info" hdf5 dataset so "file format version"
-//       could be read from it, since the latter now has 2 values.
+//    Added code to read the "sim info" hdf5 dataset so "file format version"
+//    could be read from it, since the latter now has 2 values.
+//
+//    Randy Hudson, August 8, 2008
+//    Added support for particles of file format version 9 by allowing further
+//    testing beyond the finding of "particle names"
 //
 // ****************************************************************************
 
@@ -2795,24 +2799,20 @@ avtFLASHFileFormat::ReadVersionInfo(hid_t file_id)
     void       *old_clientdata;
     H5Eget_auto(&old_errorfunc, &old_clientdata);
     H5Eset_auto(NULL, NULL);
-  
+
     // If this is a FLASH3 Particles file, or a FLASH3 file with particles, 
-    // then it will have the "particle names" field.  Otherwise more checking 
-    // needs to be done.  We perform this check first because particles
-    // files will not have "file format version" (FLASH2) or "sim info" 
-    // (FLASH3) making it impossible to determine format version in the
-    // usual manner.
-   
+    // then it will have the "particle names" field.  If, in addition, it's a
+    // file format version (FFV) 9 file, it can have "file format version" and 
+    // "sim info", so further checking is needed.  Further checking is also
+    // needed for non-particle files.  So...further checking all around.
+
+    int flash3_particles = 0;   //  Init to false
     hid_t h5_PN = H5Dopen(file_id, "particle names");
     if (h5_PN >= 0)
     {
-        debug5 << " Found particle names, assuming FLASH3" << endl;
-        fileFormatVersion = FLASH3_FFV8;
+        flash3_particles = 1;
+        debug5 << " Found particle names, assuming FLASH3; need to test for file format version 8 or 9" << endl;
         H5Dclose(h5_PN);
-
-        // turn back on error reporting
-        H5Eset_auto(old_errorfunc, old_clientdata);
-        return;
     }
 
     //
@@ -2827,8 +2827,15 @@ avtFLASHFileFormat::ReadVersionInfo(hid_t file_id)
         hid_t h5_SI = H5Dopen(file_id, "sim info");
         if (h5_SI < 0)
         {
-            debug5 << "sim info not found, assuming FLASH2." << endl;
-            fileFormatVersion = 7;
+            debug5 << "sim info not found, assuming FLASH2...unless FLASH3 particles" << endl;
+            if (flash3_particles == 1)
+            {
+                fileFormatVersion = FLASH3_FFV8;
+            }
+            else
+            {
+                fileFormatVersion = 7;
+            }
         }
         else
         {
@@ -2865,9 +2872,16 @@ avtFLASHFileFormat::ReadVersionInfo(hid_t file_id)
         return;
     }
 
-    // FLASH 2 has file format version available in global attributes.
-    H5Dread(h5_FFV, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
-        &fileFormatVersion);
+    if (flash3_particles == 1)
+    {
+        fileFormatVersion = FLASH3_FFV8;
+    }
+    else
+    {
+        // FLASH 2 has file format version available in global attributes.
+        H5Dread(h5_FFV, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+                &fileFormatVersion);
+    }
 
     H5Dclose(h5_FFV);
     // turn back on error reporting
