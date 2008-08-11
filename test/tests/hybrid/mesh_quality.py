@@ -58,12 +58,13 @@ SetView3D(v)
 pc = PseudocolorAttributes()
 pc.minFlag = 1
 pc.maxFlag = 1
-pc.min=1
-pc.max=2
+pc.min=11
+pc.max=22
 SetPlotOptions(pc)
 
 Test("mesh_quality_03")
 
+pc.minFlag=0
 pc.maxFlag=0
 SetPlotOptions(pc)
 Test("mesh_quality_04")
