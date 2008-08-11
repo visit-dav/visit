@@ -154,6 +154,12 @@ avtShiftCenteringFilter::~avtShiftCenteringFilter()
 //    Hank Childs, Thu Aug  7 09:39:40 PDT 2008
 //    Add support for non-floating point arrays.
 //
+//    Cyrus Harrison, Mon Aug 11 13:48:25 PDT 2008
+//    Fixed indexing problem with non-floating point array support. 
+//    Switched to use array name and exclude special avt arrays:
+//    avtGhostZones, avtGhostNode, avtOriginalCellNumber from int-float-int
+//    conversion.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -170,7 +176,8 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     if (centeringInstruction == 1 && centering == AVT_ZONECENT)
     {
         int nArray = inDS->GetCellData()->GetNumberOfArrays();
-        vector<int> arraysToSwap;
+        vector<string> arraysToSwap;
+        
         for (i = 0 ; i < nArray ; i++)
         {
             vtkDataArray *arr = inDS->GetCellData()->GetArray(i);
@@ -178,7 +185,11 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             if (dt == VTK_UNSIGNED_CHAR || dt == VTK_INT ||
                 dt == VTK_UNSIGNED_INT)
             {
-                arraysToSwap.push_back(i);
+                string arr_name(arr->GetName());
+                if(arr_name != "avtGhostZones" && 
+                   arr_name != "avtGhostNodes" && 
+                   arr_name != "avtOriginalCellNumbers")
+                    arraysToSwap.push_back(arr_name);
             }
         }
 
@@ -189,7 +200,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             dsToShift->ShallowCopy(inDS);
             for (k = arraysToSwap.size()-1 ; k >= 0 ; k--)
             {
-                vtkDataArray *arr = inDS->GetCellData()->GetArray(k);
+                vtkDataArray *arr = inDS->GetCellData()->GetArray(arraysToSwap[k].c_str());
                 vtkFloatArray *fa = vtkFloatArray::New();
                 int ntups  = arr->GetNumberOfTuples();
                 int ncomps = arr->GetNumberOfComponents();
@@ -244,12 +255,12 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             for (k = 0 ; k < arraysToSwap.size() ; k++)
             {
                 vtkDataArray *arr_in  = inDS->GetCellData()
-                                            ->GetArray(arraysToSwap[k]);
+                                            ->GetArray(arraysToSwap[k].c_str());
                 vtkDataArray *new_arr = vtkDataArray::CreateDataArray(
                                                          arr_in->GetDataType());
-
                 vtkDataArray *arr_out = outDS->GetPointData()
-                                            ->GetArray(arraysToSwap.size()-k-1);
+                                            ->GetArray(arraysToSwap[k].c_str());
+                
                 int ntups  = arr_out->GetNumberOfTuples();
                 int ncomps = arr_out->GetNumberOfComponents();
                 new_arr->SetNumberOfComponents(ncomps);
@@ -279,7 +290,8 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         // Detect if there are any integer type arrays and make them be floats for
         // recenting.
         int nArray = inDS->GetPointData()->GetNumberOfArrays();
-        vector<int> arraysToSwap;
+        vector<string> arraysToSwap;
+        
         for (i = 0 ; i < nArray ; i++)
         {
             vtkDataArray *arr = inDS->GetPointData()->GetArray(i);
@@ -287,7 +299,10 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             if (dt == VTK_UNSIGNED_CHAR || dt == VTK_INT ||
                 dt == VTK_UNSIGNED_INT)
             {
-                arraysToSwap.push_back(i);
+                string arr_name(arr->GetName());
+                if(arr_name != "avtGhostZones" && 
+                   arr_name != "avtGhostNodes" )
+                    arraysToSwap.push_back(arr_name);
             }
         }
 
@@ -298,7 +313,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             dsToShift->ShallowCopy(inDS);
             for (k = arraysToSwap.size()-1 ; k >= 0 ; k--)
             {
-                vtkDataArray *arr = inDS->GetPointData()->GetArray(k);
+                vtkDataArray *arr = inDS->GetPointData()->GetArray(arraysToSwap[k].c_str());
                 vtkFloatArray *fa = vtkFloatArray::New();
                 int ntups  = arr->GetNumberOfTuples();
                 int ncomps = arr->GetNumberOfComponents();
@@ -337,6 +352,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             outDS->GetPointData()->AddArray(gn);
             outDS->GetCellData()->RemoveArray("avtGhostNodes");
         }
+        
 
         // Convert the former int arrays back to int.
         if (arraysToSwap.size() > 0)
@@ -344,12 +360,12 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             for (k = 0 ; k < arraysToSwap.size() ; k++)
             {
                 vtkDataArray *arr_in  = inDS->GetPointData()
-                                            ->GetArray(arraysToSwap[k]);
+                                            ->GetArray(arraysToSwap[k].c_str());
                 vtkDataArray *new_arr = vtkDataArray::CreateDataArray(
                                                          arr_in->GetDataType());
 
                 vtkDataArray *arr_out = outDS->GetCellData()
-                                            ->GetArray(arraysToSwap.size()-k-1);
+                                            ->GetArray(arraysToSwap[k].c_str());
                 int ntups  = arr_out->GetNumberOfTuples();
                 int ncomps = arr_out->GetNumberOfComponents();
                 new_arr->SetNumberOfComponents(ncomps);
