@@ -129,6 +129,7 @@ def test0(datapath):
     s.pointDensity = 30
     s.coloringMethod = s.Solid
     s.legendFlag = 0
+    s.showStart = 0
     SetPlotOptions(s)
     DrawPlots()
     Test("CGNS_0_07")
