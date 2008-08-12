@@ -60,7 +60,7 @@ rootTestDir=/groups/visit/miller/nersc_repo_test/trunk
 errorLogFile=$rootTestDir/testLogFile_$dateTag
 modifiersFile=$rootTestDir/nersc_repo_modifiers_since_last_pass
 modifiersEmails=
-subjectLeader="NERSC-VisIt Testing:"
+subjectLeader="LLNL-VisIt Testing:"
 rm -f $rootTestDir/testLogFile_*
 errorMsgCount=0;
 touch $errorLogFile
