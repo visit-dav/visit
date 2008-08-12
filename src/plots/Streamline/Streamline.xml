@@ -108,7 +108,7 @@
         Lines
       </Field>
       <Field name="showStart" label="Show tube start" type="bool">
-        true
+        false
       </Field>
       <Field name="radius" label="Radius" type="double">
         0.125000

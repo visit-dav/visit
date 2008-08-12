@@ -250,13 +250,17 @@ avtStreamlinePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //  Method: avtStreamlinePlot::CustomizeBehavior
 //
 //  Purpose:
-//      Customizes the behavior as appropriate for a Streamline plot.  This includes
-//      behavior like shifting towards or away from the screen.
+//      Customizes the behavior as appropriate for a Streamline plot.  This 
+//      includes behavior like shifting towards or away from the screen.
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Fri Oct 4 15:22:57 PST 2002
 //
 //  Modifications:
+//
+//    Hank Childs, Tue Aug 12 10:55:03 PDT 2008
+//    Shift the streamline plot towards the front, so it will show up over 
+//    Pseudocolor plots.
 //
 // ****************************************************************************
 
@@ -265,6 +269,7 @@ avtStreamlinePlot::CustomizeBehavior(void)
 {
     SetLegendRanges();
     behavior->SetLegend(varLegendRefPtr);
+    behavior->SetShiftFactor(0.3);
 }
 
 
