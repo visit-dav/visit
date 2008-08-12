@@ -523,6 +523,9 @@ avtStreamlinePlot::SetLighting(bool lightingOn)
 //
 // Modifications:
 //   
+//    Hank Childs, Tue Aug 12 15:04:40 PDT 2008
+//    If we don't have any streamlines, make sure something sensible shows up.
+//
 // ****************************************************************************
 
 void
@@ -531,12 +534,16 @@ avtStreamlinePlot::SetLegendRanges()
     double min, max;
     varMapper->GetVarRange(min, max);
 
+    if (max < 0.)
+        max = 0.;
+
     //
     // Set the range for the legend's text and colors.
     //
     varLegend->SetVarRange(0., max);
     varLegend->SetRange(0., max);
 }
+
 
 // ****************************************************************************
 // Method: avtStreamlinePlot::SetLineWidth

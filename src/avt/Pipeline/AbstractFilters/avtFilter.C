@@ -149,11 +149,10 @@ avtFilter::UpdateProgress(int current, int total)
 //
 //  Purpose: 
 //      Walks up a pipeline and determine what needs to re-execute and what
-//      part of the data specification can be reduced through the use of
-//      meta-data.
+//      part of the data request can be reduced through the use of meta-data.
 //
 //  Arguments:
-//      spec    The pipeline specification.
+//      contract   The contract.
 //
 //  Returns:    A Boolean indicating if anything upstream was modified.
 //
@@ -214,11 +213,10 @@ avtFilter::UpdateProgress(int current, int total)
 // ****************************************************************************
 
 bool
-avtFilter::Update(avtContract_p spec)
+avtFilter::Update(avtContract_p contract)
 {
     debug1 << "Entered update for " << GetType() << endl;
 
-    
     bool debug_dump = avtDebugDumpOptions::DumpEnabled();
     
     CheckAbort();
@@ -235,7 +233,7 @@ avtFilter::Update(avtContract_p spec)
     if (debug_dump)
     {
         InitializeWebpage();
-        DumpContract(spec, "input");
+        DumpContract(contract, "input");
     }
 
     //
@@ -243,10 +241,9 @@ avtFilter::Update(avtContract_p spec)
     // we are actually interested in using.  Give the derived types an
     // opportunity to reduce the data we are interested in.
     //
-    avtContract_p newSpec =
-                                      ModifyContractAndDoBookkeeping(spec);
+    avtContract_p newSpec = ModifyContractAndDoBookkeeping(contract);
 
-    if (debug_dump )
+    if (debug_dump)
         DumpContract(newSpec, "output");
 
     bool modifiedUpstream = UpdateInput(newSpec);
@@ -330,9 +327,9 @@ avtFilter::Update(avtContract_p spec)
 //      track of how many total filters there are in the pipeline).
 //
 //  Arguments:
-//      spec     The current pipeline specification.
+//      contract   The current contract.
 //
-//  Returns:     The new pipeline specification.
+//  Returns:       The new contract.
 //
 //  Programmer:  Hank Childs
 //  Creation:    June 20, 2001
@@ -352,24 +349,33 @@ avtFilter::Update(avtContract_p spec)
 //    Hank Childs, Fri Jun 15 17:21:24 PDT 2007
 //    Have filters inspect the original specification, not the new one.
 //
+//    Hank Childs, Tue Aug 12 15:06:36 PDT 2008
+//    Make sure that we always re-execute when doing on demand streaming.
+//
 // ****************************************************************************
 
 avtContract_p
-avtFilter::ModifyContractAndDoBookkeeping(avtContract_p spec)
+avtFilter::ModifyContractAndDoBookkeeping(avtContract_p contract)
 {
     int   i;
 
-    //
-    // Some derived types need to examine a specification as it goes up.
-    //
-    ExamineContract(spec);
+    if (contract->DoingOnDemandStreaming())
+    {
+        // Make sure that it always re-executes if we are executing on demand.
+        modified = true;
+    }
 
-    avtContract_p newspec = ModifyContract(spec);
-    newspec->AddFilter();
+    //
+    // Some derived types need to examine a contract as it goes up.
+    //
+    ExamineContract(contract);
+
+    avtContract_p newcontract = ModifyContract(contract);
+    newcontract->AddFilter();
     int additionalFilters = AdditionalPipelineFilters();
     for (i = 0 ; i < additionalFilters ; i++)
     {
-        newspec->AddFilter();
+        newcontract->AddFilter();
     }
 
     //
@@ -378,10 +384,10 @@ avtFilter::ModifyContractAndDoBookkeeping(avtContract_p spec)
     int nAttributes = dynamicAttributes.size();
     for (i = 0 ; i < nAttributes ; i++)
     {
-        newspec = dynamicAttributes[i]->ModifyContract(newspec);
+        newcontract = dynamicAttributes[i]->ModifyContract(newcontract);
     }
 
-    return newspec;
+    return newcontract;
 }
 
 
@@ -395,9 +401,9 @@ avtFilter::ModifyContractAndDoBookkeeping(avtContract_p spec)
 //      types don't need to if the mechanism does not apply.
 //
 //  Arguments:
-//      spec     The current pipeline specification.
+//      contract   The current contract.
 //
-//  Returns:     The new pipeline specification.
+//  Returns:       The new contract.
 //
 //  Programmer:  Hank Childs
 //  Creation:    May 31, 2001
@@ -410,16 +416,16 @@ avtFilter::ModifyContractAndDoBookkeeping(avtContract_p spec)
 // ****************************************************************************
 
 avtContract_p
-avtFilter::ModifyContract(avtContract_p spec)
+avtFilter::ModifyContract(avtContract_p contract)
 {
     //
     // By default, all filters admit only VTK_FLOAT data
     //
     vector<int> dataTypes;
     dataTypes.push_back(VTK_FLOAT);
-    spec->GetDataRequest()->UpdateAdmissibleDataTypes(dataTypes);
+    contract->GetDataRequest()->UpdateAdmissibleDataTypes(dataTypes);
 
-    return spec;
+    return contract;
 }
 
 
@@ -1111,8 +1117,8 @@ avtFilter::PostExecute(void)
 //  Method: avtFilter::ExamineContract
 //
 //  Purpose:
-//      Allows the base types an opportunity to examine the pipeline
-//      specification.  This is defined as a hook for derived types.
+//      Allows the base types an opportunity to examine the contract.
+//      This is basically defined as a hook for derived types.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 24, 2001
@@ -1389,7 +1395,7 @@ avtFilter::DumpDataObject(avtDataObject_p dob, const char *prefix)
 //
 //  Purpose:
 //      "Dumps" a contract.  This means create a web page and put the
-//      information about a pipeline specification into it.
+//      information about a contract into it.
 //
 //  Programmer: Hank Childs
 //  Creation:   June 15, 2007
@@ -1397,7 +1403,7 @@ avtFilter::DumpDataObject(avtDataObject_p dob, const char *prefix)
 // ****************************************************************************
 
 void
-avtFilter::DumpContract(avtContract_p spec, const char *prefix)
+avtFilter::DumpContract(avtContract_p contract, const char *prefix)
 {
     if (webpage == NULL)
     {
@@ -1415,7 +1421,7 @@ avtFilter::DumpContract(avtContract_p spec, const char *prefix)
         webpage->AddSectionForLinks("output_contract");
         webpage->AddHeading("OUTPUT CONTRACT");
     }
-    spec->DebugDump(webpage);
+    contract->DebugDump(webpage);
 }
 
 
