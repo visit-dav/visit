@@ -13,15 +13,14 @@
 
 <p>Welcome to VisIt's release notes page. This page describes the important
 enhancements and bug-fixes that were added to this release.</p>
-<!-- COMMENT OUT FOR NOW 
 <p><b><font size="4">Announcements</font></b></p>
 <ul>
     <li>The VisIt team released a patch release, <a href="relnotes1.9.1.html">version 1.9.1</a>, to
     fix some critical defects that surfaced in the VisIt 1.9 release. Descriptions of the defects addressed
     by the patch release can be found in the <a href="relnotes1.9.1.html">VisIt 1.9.1 release notes</a>. 
     All version 1.9.1 fixes are included in this release.</li>
+    <li>VisIt's streamline plot has been majorly upgraded.  More information can be found in the <a href="#Plot_changes">Changes to plots</a> section.</li>
 </ul>
--->
 <p><b>Sections<b></p>
 <ul>
     <li><a href="#General_Features">Features for all users</a></li>
@@ -30,6 +29,7 @@ enhancements and bug-fixes that were added to this release.</p>
     <li><a href="#Plot_changes">Changes to plots</a></li>
     <li><a href="#Operator_changes">Changes to operators</a></li>
     <li><a href="#Expression_changes">Changes to expressions</a></li>
+    <li><a href="#Query_changes">Changes to picks and queries</a></li>
     <li><a href="#CLI_changes">Changes to the command line interface</a></li>
     <li><a href="#Bugs_fixed">Bugs fixed (bug fixes also found in other categories)</a></li>
     <li><a href="#Config_changes">Changes to machine configuration files</a></li>
@@ -41,12 +41,14 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
     <li>Initial support for internationalization has been added. This allows the GUI to be translated
         into languages other than English, following standard Qt internationalization procedures.</li>
+    <li>Considerable tuning was added for data sets with many domains (or patches) as well as large AMR data sets.</li>
     <li>Queries that accept variables for input now have a variable widget for ease of entry. </li>
     <li>The Overlay button has been changed so that it only creates new copies of the selected 
         plots in the plot list instead of copying all plots in the plot list. The new behavior
         results in far fewer unwanted plots when using overlay to create new plots with a
         different database. Overlay was also changed so that it is possible to overlay plots
         from a specific database time step.</li>
+    <li>The Subset window is now considerably faster when selecting over a large number of domains.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -68,29 +70,51 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 1.10.0</font></b></p>
 <ul>
+    <li>VisIt now supports the UNIC file format.</li>
+    <li>To the FLASH reader has been added support for particles of file format 
+        version 9.  The reader should now read all files with particles.</li>
+    <li>The FLASH reader has been fixed to, again, prevent coincident blocks from
+        different refinement levels from being drawn over one another.</li>
     <li>The Tecplot reader has been enhanced so it can read binary Tecplot files.</li>
     <li>The XDMF reader has been fixed so it no longer causes memory problems when
         reading meshes of type VxVyVz, which are curvilinear meshes where the coordinates
         exist in separate HDF5 arrays.</li>
+    <li>VisIt now supports various changes made in the Nek3D file format.</li>
     <li>The BOV reader has been optimized to perform better when using a large number
         of processors.  Previously, all of VisIt's processors read the same header
         file simultaneously, which severely affects parallel performance on some
         machines.</li>
     <li>The VTK reader will now read 'CYCLE' from the FieldData.  It also fully supports the 'Try harder to get accurate cycles/times' option.</li> 
+    <li>The EnSight reader now correctly supports wildcard substitution in EnSight files.</li>
+    <li>VisIt automatically adds mesh quality expressions for curvilinear and unstructured meshes.  However, it limits the numbers of expressions
+        it adds (when faced with a large number of meshes) to not incur performance costs.  The mechanism for choosing which meshes receive the
+        mesh quality expressions has been improved to pick the most important meshes.</li>
+    <li>A crash was fixed for the TimeVaryingExodus file format.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 1.10.0</font></b></p>
 <ul>
+    <li>VisIt's streamline plot has been greatly upgraded.
+    <ul>
+         <li>It can now integrate streamlines across domain boundaries.</li>
+         <li>It now works correctly in both serial and parallel (including distributed memory parallelism).</li>
+         <li>It has a parallel processing mode that allows for parallelization to occur over streamlines, allowing for large data sets to be processed with limited resources.  This mode requires ghost data and knowledge of the extents of each domain.  If that data is not available, it can still create correct streamlines, albeit by processing all the domains.</li>
+         <li>The integration methods are more numerically correct than those previously used.</li>
+         <li>Two dimensional streamlines can no longer be easily obscured by other plots, such as the Pseudocolor plot.</li>
+    </ul>
+    </li>
     <li>The Spreadsheet plot's data window has been fixed on the MacOS X platform so 
         the File, Edit, and Operations menu are once again available as they are on
         other platforms.</li>
+    <li>Ray-casted volume rendering would sometimes incorrectly cull away domains with non-square windows.  This bug has been fixed.</li>
+    <li>The histogram plot now does its default weighting by frequency.</li>
 </ul>
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 1.10.0</font></b></p>
 <ul>
-    <li>&nbsp;</li>
+    <li>A memory issue with the Clip operator was fixed.  This issue led to intermittant crashes previously.</li>
     <li>&nbsp;</li>
     <li>&nbsp;</li>
     <li>&nbsp;</li>
@@ -100,18 +124,31 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 1.10.0</font></b></p>
 <ul>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
+    <li>There is a new <i>transpose</i> expression for tensor data.</li>
+    <li>The Laplacian expression was reimplemented for rectilinear data to be more efficient and to only require a single layer of ghost cells.</li>
+    <li>The area and revolved volume expressions now support arbitrary 2D polygons.</li>
+    <li>New expressions for <i>min_corner_angle</i> and <i>max_corner_angle</i> were added.  This expression is not exposed by default, as it gives ambiguous answers vis-a-vis arcsin.</li>
+    <li>In the past, expressions have often gotten confused as to whether they are scalars or vectors.  This issue should be much improved.</li>
+</ul>
+
+<a name="Query_changes"></a>
+<p><b><font size="4">Changes to VisIt's picks and queries in version 1.10.0</font></b></p>
+<ul>
+    <li>Query-over-time of a non-default variable now uses the correct variable name and units in the legend.</li>
+    <li>Pick-through-time now uses the variable name and units for the y-axis labels.</li>
+    <li>Pick no longer confused on variable to use when selected after a Query on a non-default variable has been performed.</li>
+    <li>Pick now works on time-curves.</li>
+    <li>Queries such as NumNodes and Variable Sum now work correctly with material selection enabled.</li>
+    <li>The area and revolved volume queries now support arbitrary 2D polygons.</li>
+    <li>The Hohlraum Flux query now does a better job of issuing warnings in error conditions and not crashing.  Also, this query now gives output in full double precision.</li>
 </ul>
 
 <a name="CLI_changes"></a>
 <p><b><font size="4">Changes to VisIt's command-line interface in version 1.10.0</font></b></p>
 <ul>
     <li>The <i>OverlayDatabase</i> function now accepts an optional second argument for specifying a time state.</li>
-    <li>&nbsp;</li>
+    <li>When bringing up the CLI from the GUI's <i>Controls->Command</i> window, it is no longer necessary to enter a string to activate the Execute button.  (The CLI can now be launched directly without a dummy command.)</li>
+    <li>Python callbacks no longer fail silently.  If you have registered a function with an incorrect signature, you will now get a proper error message.</li>
     <li>&nbsp;</li>
     <li>&nbsp;</li>
     <li>&nbsp;</li>
@@ -120,19 +157,20 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Bugs fixed in version 1.10.0</font></b></p>
 <ul>
+    <li>If you try to combine a ray-casted volume rendering with transparent geometry, VisIt still cannot handle this.  But VisIt no longer hangs and now
+        issues an error message.</li>
     <li>The "visit -movie" movie generation script once again can detect the engine configuration 
         used to generate the plots in a session file and can reuse that configuration when 
         generating a movie.</li>
-    <li>Query-over-time of a non-default variable now uses the correct variable name and units in the legend.</li>
-    <li>Pick-through-time now uses the variable name and units for the y-axis labels.</li>
-    <li>Pick no longer confused on variable to use when selected after a Query on a non-default variable has been performed.</li>
     <li>For windows platforms, running 'visit -cli -o', 'visit -cli -s', or double-clicking a python now correctly parses paths and works correctly.</li>
-    <li>Pick now works on time-curves.</li>
     <li>Macro recording for 2D zooming produced invalid Python code for setting the 2D view attributes.</li>
+    <li>Macro creation now does more checking to make sure that macro names are valid, which prevents problems when the macros are actually registered.</li>
     <li>VisIt's libsim library used a non-zero idle timeout that slowed down polling simulations.</li>
     <li>Restore session from sources is broken.</li>
     <li>VisIt displays the files from localhost in the File panel when the <i>-launchengine</i> argument is provided to launch a remote compute engine.</li>
-    <li>Queries such as NumNodes and Variable Sum now work correctly with material selection enabled.</li>
+    <li>If you apply a resample operator to a FilledBoundary plot, VisIt now issues a warning and no longer crashes.</li>
+    <li>On Macs, if you used the Variables dropdown to change the variable of a plot and if that variable was invalid (e.g. a bad expression), then VisIt
+        will no longer crash.<li>
 </ul>
 
 <a name="Config_changes"></a>
@@ -149,6 +187,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 1.10.0</font></b></p>
 <ul>
     <li>Development on Windows can now be done directly from the SVN repository, as the build process has been modified to use native source tree instead of a modified one.</li>
+    <li>The Klocwork tool was applied to VisIt and many potential bugs were found and fixed.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

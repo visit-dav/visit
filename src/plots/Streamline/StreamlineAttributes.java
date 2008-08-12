@@ -136,7 +136,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         useWholeBox = true;
         pointDensity = 2;
         displayMethod = DISPLAYMETHOD_LINES;
-        showStart = true;
+        showStart = false;
         radius = 0.125;
         lineWidth = 2;
         coloringMethod = COLORINGMETHOD_COLORBYSPEED;
