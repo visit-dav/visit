@@ -3332,7 +3332,11 @@ oldcxxflags="$CXXFLAGS"
 oldldflags="$LDFLAGS"
 oldlibs="$LIBS"
 CXXFLAGS="-I$MESA/include"
-LDFLAGS="-L$MESA/lib -Wl,-rpath=$MESA/lib $LDFLAGS"
+if test "$SHORT_UNAME" = "linux"; then
+    LDFLAGS="-L$MESA/lib -Wl,-rpath=$MESA/lib $LDFLAGS"
+else
+    LDFLAGS="-L$MESA/lib $LDFLAGS"
+fi
 LIBS="-lOSMesa -lMesaGL $GL_LIBS $X_LIBS $PTHREAD_LIB"
 OSMESA_SIZE_LIMIT="4096"
 AC_TRY_RUN([

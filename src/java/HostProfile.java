@@ -65,7 +65,7 @@ public class HostProfile extends AttributeSubject
 
     public HostProfile()
     {
-        super(39);
+        super(43);
 
         profileName = new String("notset");
         host = new String("localhost");
@@ -91,6 +91,10 @@ public class HostProfile extends AttributeSubject
         launchArgs = new String("");
         sublaunchArgsSet = false;
         sublaunchArgs = new String("");
+        sublaunchPreCmdSet = false;
+        sublaunchPreCmd = new String("");
+        sublaunchPostCmdSet = false;
+        sublaunchPostCmd = new String("");
         hostAliases = new String("");
         shareOneBatchJob = false;
         sshPortSpecified = false;
@@ -110,7 +114,7 @@ public class HostProfile extends AttributeSubject
 
     public HostProfile(HostProfile obj)
     {
-        super(39);
+        super(43);
 
         int i;
 
@@ -141,6 +145,10 @@ public class HostProfile extends AttributeSubject
         launchArgs = new String(obj.launchArgs);
         sublaunchArgsSet = obj.sublaunchArgsSet;
         sublaunchArgs = new String(obj.sublaunchArgs);
+        sublaunchPreCmdSet = obj.sublaunchPreCmdSet;
+        sublaunchPreCmd = new String(obj.sublaunchPreCmd);
+        sublaunchPostCmdSet = obj.sublaunchPostCmdSet;
+        sublaunchPostCmd = new String(obj.sublaunchPostCmd);
         hostAliases = new String(obj.hostAliases);
         shareOneBatchJob = obj.shareOneBatchJob;
         sshPortSpecified = obj.sshPortSpecified;
@@ -198,6 +206,10 @@ public class HostProfile extends AttributeSubject
                 (launchArgs.equals(obj.launchArgs)) &&
                 (sublaunchArgsSet == obj.sublaunchArgsSet) &&
                 (sublaunchArgs.equals(obj.sublaunchArgs)) &&
+                (sublaunchPreCmdSet == obj.sublaunchPreCmdSet) &&
+                (sublaunchPreCmd.equals(obj.sublaunchPreCmd)) &&
+                (sublaunchPostCmdSet == obj.sublaunchPostCmdSet) &&
+                (sublaunchPostCmd.equals(obj.sublaunchPostCmd)) &&
                 (hostAliases.equals(obj.hostAliases)) &&
                 (shareOneBatchJob == obj.shareOneBatchJob) &&
                 (sshPortSpecified == obj.sshPortSpecified) &&
@@ -360,94 +372,118 @@ public class HostProfile extends AttributeSubject
         Select(23);
     }
 
+    public void SetSublaunchPreCmdSet(boolean sublaunchPreCmdSet_)
+    {
+        sublaunchPreCmdSet = sublaunchPreCmdSet_;
+        Select(24);
+    }
+
+    public void SetSublaunchPreCmd(String sublaunchPreCmd_)
+    {
+        sublaunchPreCmd = sublaunchPreCmd_;
+        Select(25);
+    }
+
+    public void SetSublaunchPostCmdSet(boolean sublaunchPostCmdSet_)
+    {
+        sublaunchPostCmdSet = sublaunchPostCmdSet_;
+        Select(26);
+    }
+
+    public void SetSublaunchPostCmd(String sublaunchPostCmd_)
+    {
+        sublaunchPostCmd = sublaunchPostCmd_;
+        Select(27);
+    }
+
     public void SetHostAliases(String hostAliases_)
     {
         hostAliases = hostAliases_;
-        Select(24);
+        Select(28);
     }
 
     public void SetShareOneBatchJob(boolean shareOneBatchJob_)
     {
         shareOneBatchJob = shareOneBatchJob_;
-        Select(25);
+        Select(29);
     }
 
     public void SetSshPortSpecified(boolean sshPortSpecified_)
     {
         sshPortSpecified = sshPortSpecified_;
-        Select(26);
+        Select(30);
     }
 
     public void SetSshPort(int sshPort_)
     {
         sshPort = sshPort_;
-        Select(27);
+        Select(31);
     }
 
     public void SetClientHostDetermination(int clientHostDetermination_)
     {
         clientHostDetermination = clientHostDetermination_;
-        Select(28);
+        Select(32);
     }
 
     public void SetManualClientHostName(String manualClientHostName_)
     {
         manualClientHostName = manualClientHostName_;
-        Select(29);
+        Select(33);
     }
 
     public void SetMachinefileSet(boolean machinefileSet_)
     {
         machinefileSet = machinefileSet_;
-        Select(30);
+        Select(34);
     }
 
     public void SetMachinefile(String machinefile_)
     {
         machinefile = machinefile_;
-        Select(31);
+        Select(35);
     }
 
     public void SetVisitSetsUpEnv(boolean visitSetsUpEnv_)
     {
         visitSetsUpEnv = visitSetsUpEnv_;
-        Select(32);
+        Select(36);
     }
 
     public void SetCanDoHWAccel(boolean canDoHWAccel_)
     {
         canDoHWAccel = canDoHWAccel_;
-        Select(33);
+        Select(37);
     }
 
     public void SetHavePreCommand(boolean havePreCommand_)
     {
         havePreCommand = havePreCommand_;
-        Select(34);
+        Select(38);
     }
 
     public void SetHwAccelPreCommand(String hwAccelPreCommand_)
     {
         hwAccelPreCommand = hwAccelPreCommand_;
-        Select(35);
+        Select(39);
     }
 
     public void SetHavePostCommand(boolean havePostCommand_)
     {
         havePostCommand = havePostCommand_;
-        Select(36);
+        Select(40);
     }
 
     public void SetHwAccelPostCommand(String hwAccelPostCommand_)
     {
         hwAccelPostCommand = hwAccelPostCommand_;
-        Select(37);
+        Select(41);
     }
 
     public void SetTunnelSSH(boolean tunnelSSH_)
     {
         tunnelSSH = tunnelSSH_;
-        Select(38);
+        Select(42);
     }
 
     // Property getting methods
@@ -475,6 +511,10 @@ public class HostProfile extends AttributeSubject
     public String  GetLaunchArgs() { return launchArgs; }
     public boolean GetSublaunchArgsSet() { return sublaunchArgsSet; }
     public String  GetSublaunchArgs() { return sublaunchArgs; }
+    public boolean GetSublaunchPreCmdSet() { return sublaunchPreCmdSet; }
+    public String  GetSublaunchPreCmd() { return sublaunchPreCmd; }
+    public boolean GetSublaunchPostCmdSet() { return sublaunchPostCmdSet; }
+    public String  GetSublaunchPostCmd() { return sublaunchPostCmd; }
     public String  GetHostAliases() { return hostAliases; }
     public boolean GetShareOneBatchJob() { return shareOneBatchJob; }
     public boolean GetSshPortSpecified() { return sshPortSpecified; }
@@ -543,34 +583,42 @@ public class HostProfile extends AttributeSubject
         if(WriteSelect(23, buf))
             buf.WriteString(sublaunchArgs);
         if(WriteSelect(24, buf))
-            buf.WriteString(hostAliases);
+            buf.WriteBool(sublaunchPreCmdSet);
         if(WriteSelect(25, buf))
-            buf.WriteBool(shareOneBatchJob);
+            buf.WriteString(sublaunchPreCmd);
         if(WriteSelect(26, buf))
-            buf.WriteBool(sshPortSpecified);
+            buf.WriteBool(sublaunchPostCmdSet);
         if(WriteSelect(27, buf))
-            buf.WriteInt(sshPort);
+            buf.WriteString(sublaunchPostCmd);
         if(WriteSelect(28, buf))
-            buf.WriteInt(clientHostDetermination);
+            buf.WriteString(hostAliases);
         if(WriteSelect(29, buf))
-            buf.WriteString(manualClientHostName);
+            buf.WriteBool(shareOneBatchJob);
         if(WriteSelect(30, buf))
-            buf.WriteBool(machinefileSet);
+            buf.WriteBool(sshPortSpecified);
         if(WriteSelect(31, buf))
-            buf.WriteString(machinefile);
+            buf.WriteInt(sshPort);
         if(WriteSelect(32, buf))
-            buf.WriteBool(visitSetsUpEnv);
+            buf.WriteInt(clientHostDetermination);
         if(WriteSelect(33, buf))
-            buf.WriteBool(canDoHWAccel);
+            buf.WriteString(manualClientHostName);
         if(WriteSelect(34, buf))
-            buf.WriteBool(havePreCommand);
+            buf.WriteBool(machinefileSet);
         if(WriteSelect(35, buf))
-            buf.WriteString(hwAccelPreCommand);
+            buf.WriteString(machinefile);
         if(WriteSelect(36, buf))
-            buf.WriteBool(havePostCommand);
+            buf.WriteBool(visitSetsUpEnv);
         if(WriteSelect(37, buf))
-            buf.WriteString(hwAccelPostCommand);
+            buf.WriteBool(canDoHWAccel);
         if(WriteSelect(38, buf))
+            buf.WriteBool(havePreCommand);
+        if(WriteSelect(39, buf))
+            buf.WriteString(hwAccelPreCommand);
+        if(WriteSelect(40, buf))
+            buf.WriteBool(havePostCommand);
+        if(WriteSelect(41, buf))
+            buf.WriteString(hwAccelPostCommand);
+        if(WriteSelect(42, buf))
             buf.WriteBool(tunnelSSH);
     }
 
@@ -654,48 +702,60 @@ public class HostProfile extends AttributeSubject
                 SetSublaunchArgs(buf.ReadString());
                 break;
             case 24:
-                SetHostAliases(buf.ReadString());
+                SetSublaunchPreCmdSet(buf.ReadBool());
                 break;
             case 25:
-                SetShareOneBatchJob(buf.ReadBool());
+                SetSublaunchPreCmd(buf.ReadString());
                 break;
             case 26:
-                SetSshPortSpecified(buf.ReadBool());
+                SetSublaunchPostCmdSet(buf.ReadBool());
                 break;
             case 27:
-                SetSshPort(buf.ReadInt());
+                SetSublaunchPostCmd(buf.ReadString());
                 break;
             case 28:
-                SetClientHostDetermination(buf.ReadInt());
+                SetHostAliases(buf.ReadString());
                 break;
             case 29:
-                SetManualClientHostName(buf.ReadString());
+                SetShareOneBatchJob(buf.ReadBool());
                 break;
             case 30:
-                SetMachinefileSet(buf.ReadBool());
+                SetSshPortSpecified(buf.ReadBool());
                 break;
             case 31:
-                SetMachinefile(buf.ReadString());
+                SetSshPort(buf.ReadInt());
                 break;
             case 32:
-                SetVisitSetsUpEnv(buf.ReadBool());
+                SetClientHostDetermination(buf.ReadInt());
                 break;
             case 33:
-                SetCanDoHWAccel(buf.ReadBool());
+                SetManualClientHostName(buf.ReadString());
                 break;
             case 34:
-                SetHavePreCommand(buf.ReadBool());
+                SetMachinefileSet(buf.ReadBool());
                 break;
             case 35:
-                SetHwAccelPreCommand(buf.ReadString());
+                SetMachinefile(buf.ReadString());
                 break;
             case 36:
-                SetHavePostCommand(buf.ReadBool());
+                SetVisitSetsUpEnv(buf.ReadBool());
                 break;
             case 37:
-                SetHwAccelPostCommand(buf.ReadString());
+                SetCanDoHWAccel(buf.ReadBool());
                 break;
             case 38:
+                SetHavePreCommand(buf.ReadBool());
+                break;
+            case 39:
+                SetHwAccelPreCommand(buf.ReadString());
+                break;
+            case 40:
+                SetHavePostCommand(buf.ReadBool());
+                break;
+            case 41:
+                SetHwAccelPostCommand(buf.ReadString());
+                break;
+            case 42:
                 SetTunnelSSH(buf.ReadBool());
                 break;
             }
@@ -729,6 +789,10 @@ public class HostProfile extends AttributeSubject
         str = str + stringToString("launchArgs", launchArgs, indent) + "\n";
         str = str + boolToString("sublaunchArgsSet", sublaunchArgsSet, indent) + "\n";
         str = str + stringToString("sublaunchArgs", sublaunchArgs, indent) + "\n";
+        str = str + boolToString("sublaunchPreCmdSet", sublaunchPreCmdSet, indent) + "\n";
+        str = str + stringToString("sublaunchPreCmd", sublaunchPreCmd, indent) + "\n";
+        str = str + boolToString("sublaunchPostCmdSet", sublaunchPostCmdSet, indent) + "\n";
+        str = str + stringToString("sublaunchPostCmd", sublaunchPostCmd, indent) + "\n";
         str = str + stringToString("hostAliases", hostAliases, indent) + "\n";
         str = str + boolToString("shareOneBatchJob", shareOneBatchJob, indent) + "\n";
         str = str + boolToString("sshPortSpecified", sshPortSpecified, indent) + "\n";
@@ -780,6 +844,10 @@ public class HostProfile extends AttributeSubject
     private String  launchArgs;
     private boolean sublaunchArgsSet;
     private String  sublaunchArgs;
+    private boolean sublaunchPreCmdSet;
+    private String  sublaunchPreCmd;
+    private boolean sublaunchPostCmdSet;
+    private String  sublaunchPostCmd;
     private String  hostAliases;
     private boolean shareOneBatchJob;
     private boolean sshPortSpecified;
