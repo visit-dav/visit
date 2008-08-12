@@ -114,11 +114,15 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 1.10.0</font></b></p>
 <ul>
-    <li>A memory issue with the Clip operator was fixed.  This issue led to intermittant crashes previously.</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
+    <li>A memory issue with the Clip operator was fixed.  This issue led to intermittent crashes previously.</li>
+    <li>VisIt now provides a "Dual Mesh Operator" to aid with using the resample operator on images. This operator only 
+        works on rectilinear grids and creates the dual mesh of the input, with the following two conversion modes:
+        <ul>
+          <li>Nodes to Zones: Creates output zones centered at input nodes and converts point data to cell data</li>
+          <li>Zones to Nodes: Creates output nodes centered at input zone centers and converts cell data to point data.</li>
+        </ul>
+        You can explicitly choose how you want to convert or use Auto, which looks at the primary variable to determine the proper direction. </li>
+        For conversion examples see: <a href="http://visitusers.org/index.php?title=Dual_Mesh_Operator">http://visitusers.org/index.php?title=Dual_Mesh_Operator</a>
 </ul>
 
 <a name="Expression_changes"></a>
@@ -141,6 +145,7 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>Queries such as NumNodes and Variable Sum now work correctly with material selection enabled.</li>
     <li>The area and revolved volume queries now support arbitrary 2D polygons.</li>
     <li>The Hohlraum Flux query now does a better job of issuing warnings in error conditions and not crashing.  Also, this query now gives output in full double precision.</li>
+    <li>The Shapelet Decomposition query was updated to retain the original spatial extents in the recomposition output.</li>
 </ul>
 
 <a name="CLI_changes"></a>
