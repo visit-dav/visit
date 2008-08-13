@@ -1938,6 +1938,45 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
     return hasNonMeshPlots;
 }
 
+
+// ****************************************************************************
+//  Method: NetworkManager::NeedZBufferToCompositeEvenIn2D
+//
+//  Purpose: 
+//      Determines if we need ZBuffer information, even in 2D mode.  This is
+//      necessary because some plots (read: streamline) use their own custom
+//      data decompositions.  And if there is a second plot (read: pseudocolor)
+//      then they will overlap and get blended.  This issue normally doesn't
+//      occur because it is determined before the composite.  But when the
+//      data decomposition is different between plots, then the burden is
+//      shifted to the compositor.  Hence the need for the ZBuffer, so it
+//      can properly respect the shift factor.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 13, 2008
+//
+// ****************************************************************************
+
+bool
+NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
+{
+    bool needsZBufferToCompositeEvenIn2D = false;
+
+    for (size_t i = 0; i < plotIds.size(); i++)
+    {
+        workingNet = NULL;
+        UseNetwork(plotIds[i]);
+        if (workingNet->GetPlot()->NeedZBufferToCompositeEvenIn2D())
+        {
+            needsZBufferToCompositeEvenIn2D = true;
+            break;
+        }
+    }
+
+    return needsZBufferToCompositeEvenIn2D;
+}
+
+
 // ****************************************************************************
 //  Method: NetworkManager::Render
 //
@@ -2116,6 +2155,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 
         avtWholeImageCompositer *imageCompositer;
 
+        bool needZBufferToCompositeEvenIn2D = 
+                                        NeedZBufferToCompositeEvenIn2D(plotIds);
+
         imageCompositer = MakeCompositer(
                  viswin->GetWindowMode() == WINMODE_3D,
                  viswin->GetBackgroundMode() == AnnotationAttributes::Gradient,
@@ -2123,7 +2165,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                  this->MemoMultipass(viswin),
                  this->Shadowing(windowID),
                  this->DepthCueing(windowID),
-                 !imageBasedPlots.empty()
+                 !imageBasedPlots.empty(),
+                 needZBufferToCompositeEvenIn2D
         );
 
         assert(NULL != imageCompositer);
@@ -4136,16 +4179,20 @@ NetworkManager::SetCompositerBackground(
 //    in some cases, causing the compositer to blend with the background image
 //    instead of overwriting it.
 //
+//    Hank Childs, Wed Aug 13 10:20:52 PDT 2008
+//    Added argument needZBufferToCompositeEvenIn2D.
+//
 // ****************************************************************************
 
 avtWholeImageCompositer *
 NetworkManager::MakeCompositer(bool threeD, bool gradientBG, bool needZ, bool multipass,
-                               bool shadows, bool depth_cueing, bool image_plots)
+                               bool shadows, bool depth_cueing, bool image_plots,
+                               bool needZBufferToCompositeEvenIn2D)
 {
     avtWholeImageCompositer *compositer;
     // Even if it's not a 3D render, we'll need Z if there is a gradient
     // background.
-    if(threeD || gradientBG)
+    if(threeD || gradientBG || needZBufferToCompositeEvenIn2D)
     {
         compositer = new avtWholeImageCompositerWithZ();
     }

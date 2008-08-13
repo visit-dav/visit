@@ -392,6 +392,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Bonnell, Thu Aug  8 07:54:11 PDT 2008
 //    Changed return of ForgetMultipass from bool to void.
 //
+//    Hank Childs, Wed Aug 13 10:14:21 PDT 2008
+//    Added NeedZBufferToCompositeEvenIn2D.
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -472,6 +475,7 @@ class NetworkManager
     void          SetLoadBalancer(LoadBalancer *lb) {loadBalancer = lb;};
 
     bool          HasNonMeshPlots(const intVector plotids);
+    bool          NeedZBufferToCompositeEvenIn2D(const intVector plotids);
     avtDataObjectWriter_p GetOutput(bool respondWithNullData,
                                     bool calledForRender,
                                     float *cellCountMultiplier);
@@ -553,7 +557,8 @@ class NetworkManager
                                                    bool needZ, bool multipass,
                                                    bool shadows,
                                                    bool depthCueing,
-                                                   bool image_plots);
+                                                   bool image_plots,
+                                                   bool compositeZEvenWith2D);
     static void                     SetCompositerBackground(
                                         avtWholeImageCompositer * const,
                                         const VisWindow * const);

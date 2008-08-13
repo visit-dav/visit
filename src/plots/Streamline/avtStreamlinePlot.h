@@ -68,6 +68,12 @@ class     avtVariableMapper;
 //    Hank Childs, Mon Jul 21 14:11:33 PDT 2008
 //    Add method EnhanceSpecification.
 //
+//    Hank Childs, Wed Aug 13 10:47:32 PDT 2008
+//    Indicate that we need z-buffer compositing, even in 2D, as the
+//    streamline plot uses a different decomposition of the data and the
+//    compositor assumes that z-buffer issues are resolved before it starts
+//    compositing in 2D ... unless this flag is on.
+//
 // ****************************************************************************
 
 class avtStreamlinePlot : public avtLineDataPlot
@@ -84,6 +90,8 @@ class avtStreamlinePlot : public avtLineDataPlot
     virtual bool                SetColorTable(const char *ctName);
 
     virtual void                ReleaseData(void);
+    virtual bool                NeedZBufferToCompositeEvenIn2D(void)
+                                              { return true; };
 
   protected:
     StreamlineAttributes        atts;
