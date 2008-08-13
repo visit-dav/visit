@@ -61,9 +61,13 @@ using std::vector;
 //  Creation:   Fri Aug 31 15:27:59 PST 2007
 //
 //  Modifications:
-//
 //    Eric Brugger, Thu Jan  3 11:07:49 PST 2008
 //    I changed the destructor so that it is defined in the ".C" file.
+//
+//    Eric Brugger, Tue Jul 15 15:19:36 PDT 2008
+//    I added support for the 'b' field type. This involved adding the method
+//    bFieldConvert and the variables labelSize, iSpeciesSize, labelUnsigned
+//    and iSpeciesUnsigned.
 //
 // ****************************************************************************
 
@@ -126,6 +130,8 @@ class avtDDCMDFileFormat : public avtSTMDFileFormat
 
     // Variable information
     int                    labelOffset, iSpeciesOffset;
+    int                    labelSize, iSpeciesSize;
+    bool                   labelUnsigned, iSpeciesUnsigned;
     int                    nVars;
     vector<string>         varNames;
     int                   *varOffsets;
@@ -148,6 +154,7 @@ class avtDDCMDFileFormat : public avtSTMDFileFormat
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
     void                   Convert(void *ptr, int size);
+    long long              bFieldConvert(const unsigned char *ptr, int size);
     void                   DetermineBlockDecomposition();
     void                   CopyExchangeDataToBlocks();
     void                   ExchangeProcessorData();
