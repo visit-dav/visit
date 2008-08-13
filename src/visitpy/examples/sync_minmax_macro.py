@@ -10,7 +10,19 @@ import re
 #
 ###############################################################################
 def SyncMinMax(srcWin):
+    """Synchronize all plot's min/max settings to those of specified window ID.
 
+    SyncMinMax will find all non-hidden plots in the specified window and for
+    each plot that supports the explicit setting of its min/max values (the
+    Pseudocolor plot does this, for example), find equivalent plots in all
+    other windows and force those plots to use the same min/max. This makes
+    it easier to compare subtlely different results in different windows.
+
+    SyncMinMax is designed to work when there are multiple plots in each 
+    window. However, if there are multiple plots of the same type (e.g.
+    two Pseudocolor plots) in the source window, it will use only the
+    FIRST it finds there to set all equivalent plots min/max values.
+    """
     #
     # Iterate over all plots in srcWin finding the first of each 'type'
     # that has min/max settings and record those settings,
