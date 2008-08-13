@@ -105,6 +105,32 @@ avtDDCMDFileFormat::Convert(void *ptr, int size)
 
 
 // ****************************************************************************
+//  Method: avtDDCMDFileFormat::bFieldConvert
+//
+//  Purpose:
+//      Convert a 'b' field type into an unsigned long long.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Tue Jul 15 15:21:50 PDT 2008
+//
+// ****************************************************************************
+
+long long
+avtDDCMDFileFormat::bFieldConvert(const unsigned char *ptr, int size)
+{
+    long long result = 0;
+
+    for (int i = 0; i < size; i++)
+    {
+        result *= 256;
+        result += *(ptr+i);
+    }
+
+    return result;
+}
+
+
+// ****************************************************************************
 //  Method: avtDDCMDFileFormat::DetermineBlockDecomposition
 //
 //  Purpose:
@@ -171,6 +197,10 @@ avtDDCMDFileFormat::DetermineBlockDecomposition()
 //  Programmer: Eric Brugger
 //  Creation:   Fri Aug 31 15:27:59 PST 2007
 //
+//  Modifications:
+//    Eric Brugger, Tue Jul 15 15:21:50 PDT 2008
+//    I added support for the 'b' field type.
+//
 // ****************************************************************************
 
 void
@@ -197,28 +227,56 @@ avtDDCMDFileFormat::ExchangeProcessorData()
 
     char   *data = readProcessorData;
 
-    for (int i = 0; i < nRecords; i++)
+    if (labelUnsigned)
     {
-        //
-        // Byte swap the data if necessary.
-        //
-        unsigned id = *((unsigned *) (data+labelOffset));
-        if (swap) Convert(&id, 4);
+        for (int i = 0; i < nRecords; i++)
+        {
+            //
+            // Byte swap the data if necessary.
+            //
+            unsigned id = *((unsigned *) (data+labelOffset));
+            if (swap) Convert(&id, 4);
 
-        int iX = id / (nYFile * nZFile);
-        id %= (nYFile * nZFile);
-        int iY = id / nZFile;
-        int iZ = id % nZFile;
+            int iX = id / (nYFile * nZFile);
+            id %= (nYFile * nZFile);
+            int iY = id / nZFile;
+            int iZ = id % nZFile;
 
-        int iXBlock = iX / deltaX;
-        int iYBlock = iY / deltaY;
-        int iZBlock = iZ / deltaZ;
-        int iBlock = iXBlock * nYFileBlocks * nZFileBlocks +
-                     iYBlock * nZFileBlocks + iZBlock;
+            int iXBlock = iX / deltaX;
+            int iYBlock = iY / deltaY;
+            int iZBlock = iZ / deltaZ;
+            int iBlock = iXBlock * nYFileBlocks * nZFileBlocks +
+                         iYBlock * nZFileBlocks + iZBlock;
 
-        outCharCounts[iBlock] += lRec;
-        
-        data += lRec;
+            outCharCounts[iBlock] += lRec;
+
+            data += lRec;
+        }
+    }
+    else
+    {
+        for (int i = 0; i < nRecords; i++)
+        {
+            //
+            // Byte swap the data if necessary.
+            //
+            long long id = bFieldConvert((unsigned char *)data+labelOffset, labelSize);
+
+            int iX = id / (nYFile * nZFile);
+            id %= (nYFile * nZFile);
+            int iY = id / nZFile;
+            int iZ = id % nZFile;
+
+            int iXBlock = iX / deltaX;
+            int iYBlock = iY / deltaY;
+            int iZBlock = iZ / deltaZ;
+            int iBlock = iXBlock * nYFileBlocks * nZFileBlocks +
+                         iYBlock * nZFileBlocks + iZBlock;
+
+            outCharCounts[iBlock] += lRec;
+
+            data += lRec;
+        }
     }
 
     debug1 << "outCharCounts=";
@@ -246,30 +304,60 @@ avtDDCMDFileFormat::ExchangeProcessorData()
 
     data = readProcessorData;
 
-    for (int i = 0; i < nRecords; i++)
+    if (labelUnsigned)
     {
-        //
-        // Byte swap the data if necessary.
-        //
-        unsigned id = *((unsigned *) (data+labelOffset));
-        if (swap) Convert(&id, 4);
+        for (int i = 0; i < nRecords; i++)
+        {
+            //
+            // Byte swap the data if necessary.
+            //
+            unsigned id = *((unsigned *) (data+labelOffset));
+            if (swap) Convert(&id, 4);
 
-        int iX = id / (nYFile * nZFile);
-        id %=  (nYFile * nZFile);
-        int iY = id / nZFile;
-        int iZ = id % nZFile;
+            int iX = id / (nYFile * nZFile);
+            id %=  (nYFile * nZFile);
+            int iY = id / nZFile;
+            int iZ = id % nZFile;
 
-        int iXBlock = iX / deltaX;
-        int iYBlock = iY / deltaY;
-        int iZBlock = iZ / deltaZ;
-        int iBlock = iXBlock * nYFileBlocks * nZFileBlocks +
-                     iYBlock * nZFileBlocks + iZBlock;
+            int iXBlock = iX / deltaX;
+            int iYBlock = iY / deltaY;
+            int iZBlock = iZ / deltaZ;
+            int iBlock = iXBlock * nYFileBlocks * nZFileBlocks +
+                         iYBlock * nZFileBlocks + iZBlock;
 
-        memcpy(outProcessorData + outProcOffsets[iBlock], data, lRec);
+            memcpy(outProcessorData + outProcOffsets[iBlock], data, lRec);
 
-        outProcOffsets[iBlock] += lRec;
-        
-        data += lRec;
+            outProcOffsets[iBlock] += lRec;
+
+            data += lRec;
+        }
+    }
+    else
+    {
+        for (int i = 0; i < nRecords; i++)
+        {
+            //
+            // Byte swap the data if necessary.
+            //
+            long long id = bFieldConvert((unsigned char *)data+labelOffset, labelSize);
+
+            int iX = id / (nYFile * nZFile);
+            id %=  (nYFile * nZFile);
+            int iY = id / nZFile;
+            int iZ = id % nZFile;
+
+            int iXBlock = iX / deltaX;
+            int iYBlock = iY / deltaY;
+            int iZBlock = iZ / deltaZ;
+            int iBlock = iXBlock * nYFileBlocks * nZFileBlocks +
+                         iYBlock * nZFileBlocks + iZBlock;
+
+            memcpy(outProcessorData + outProcOffsets[iBlock], data, lRec);
+
+            outProcOffsets[iBlock] += lRec;
+
+            data += lRec;
+        }
     }
 
     //
@@ -360,6 +448,10 @@ avtDDCMDFileFormat::ExchangeProcessorData()
 //  Programmer: Eric Brugger
 //  Creation:   Fri Aug 31 15:27:59 PST 2007
 //
+//  Modifications:
+//    Eric Brugger, Tue Jul 15 15:21:50 PDT 2008
+//    I added support for the 'b' field type.
+//
 // ****************************************************************************
 
 void
@@ -427,15 +519,22 @@ avtDDCMDFileFormat::CopyExchangeDataToBlocks()
         char *field = data;
         for (int j = 0; j < nFields; j++)
         {
-            if (swap && fieldTypes[j][0] != (char)'s') Convert(field, fieldSizes[j]);
+            if (swap && fieldTypes[j][0] != (char)'b') Convert(field, fieldSizes[j]);
             field += fieldSizes[j];
         }
 
         //
         // Copy the record into the correct zone in the correct block.
         //
-        unsigned id = *((unsigned *) (data+labelOffset));
-        unsigned iSpecies = *((unsigned *) (data+iSpeciesOffset));
+        long long id, iSpecies;
+        if (labelUnsigned)
+            id = *((unsigned *) (data+labelOffset));
+        else
+            id = bFieldConvert((unsigned char *)data+labelOffset, labelSize);
+        if (iSpeciesUnsigned)
+            iSpecies = *((unsigned *) (data+iSpeciesOffset));
+        else
+            iSpecies = bFieldConvert((unsigned char *)data+iSpeciesOffset, iSpeciesSize);
 
         int iX = id / (nYFile * nZFile);
         id %= (nYFile * nZFile);
@@ -702,9 +801,11 @@ avtDDCMDFileFormat::ReadData()
 //  Creation:   Fri Aug 31 15:27:59 PST 2007
 //
 //  Modifications:
-//
 //    Hank Childs, Fri Feb 15 16:00:20 PST 2008
 //    Fix memory leak.
+//
+//    Eric Brugger, Tue Jul 15 15:21:50 PDT 2008
+//    I added support for the 'b' field type.
 //
 //    Jeremy Meredith, Thu Aug  7 15:48:21 EDT 2008
 //    Assume that object_get won't modify its input char* argument, and
@@ -803,11 +904,15 @@ avtDDCMDFileFormat::ReadHeader(const char *filename)
         {
             if (strcmp(fieldNames[i], "label") == 0)
             {
-                 labelOffset = offset;
+                 labelOffset   = offset;
+                 labelSize     = fieldSizes[i];
+                 labelUnsigned = fieldTypes[i][0] == 'u' ? true : false;
             }
             else if (strcmp(fieldNames[i], "species_index") == 0)
             {
-                 iSpeciesOffset = offset;
+                 iSpeciesOffset   = offset;
+                 iSpeciesSize     = fieldSizes[i];
+                 iSpeciesUnsigned = fieldTypes[i][0] == 'u' ? true : false;
             }
             else if (strcmp(fieldNames[i], "number_particles") == 0)
             {
@@ -971,7 +1076,6 @@ avtDDCMDFileFormat::~avtDDCMDFileFormat()
 //  Creation:   Fri Aug 31 15:27:59 PST 2007
 //
 //  Modifications:
-//
 //    Eric Brugger, Thu Jan  3 11:11:39 PST 2008
 //    I modified the routine to set readData to false so that the data
 //    would be recreated if necessary by ActivateTimestep.
@@ -1082,6 +1186,10 @@ avtDDCMDFileFormat::ActivateTimestep(void)
 //  Programmer: brugger -- generated by xml2avt
 //  Creation:   Fri Aug 31 15:27:59 PST 2007
 //
+//  Modifications:
+//    Eric Brugger, Tue Jul 15 15:21:50 PDT 2008
+//    I added the stress tensor to the list of variables in the file.
+//
 // ****************************************************************************
 
 void
@@ -1159,6 +1267,12 @@ avtDDCMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     vars.push_back("Ky");
     vars.push_back("Kz");
     vars.push_back("U");
+    vars.push_back("vir_xx");
+    vars.push_back("vir_yy");
+    vars.push_back("vir_zz");
+    vars.push_back("vir_xy");
+    vars.push_back("vir_xz");
+    vars.push_back("vir_yz");
     for (int i = 0; i < vars.size(); i++)
     {
         for (int j = 0; j < nSpecies; j++)
@@ -1381,6 +1495,13 @@ avtDDCMDFileFormat::GetMesh(int domain, const char *meshname)
 //  Programmer: brugger -- generated by xml2avt
 //  Creation:   Fri Aug 31 15:27:59 PST 2007
 //
+//  Modifications:
+//    Eric Brugger, Tue Jul 15 15:21:50 PDT 2008
+//    I changed the loop that searches for an underscore in the variable name
+//    to split the name into a variable name and a species name to search
+//    from the end of the name backwards so that it can handle variable
+//    names with underscores.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1397,7 +1518,7 @@ avtDDCMDFileFormat::GetVar(int domain, const char *varname)
     // Determine the variable name and the species name.
     //
     int i;
-    for (i = 0; i < var.length() && var[i] != '_'; i++)
+    for (i = var.length() - 1; i > 0 && var[i] != '_'; i--)
         /* do nothing */;
     string varBase = var.substr(0, i);
     string varSpec = var.substr(i+1, var.length() - i - 1);
