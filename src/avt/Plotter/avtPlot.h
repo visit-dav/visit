@@ -241,6 +241,9 @@ class     WindowAttributes;
 //    I made GetNumberOfStagesForImageBasedPlot a const method, to allow
 //    calling it from a const method in NetworkManager.
 //
+//    Hank Childs, Wed Aug 13 10:36:40 PDT 2008
+//    Add new virtual method "NeedZBufferToCompositeEvenIn2D".
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -311,6 +314,8 @@ class PLOTTER_API avtPlot
                                                       ScaleMode rs);
     virtual bool              CanDoCurveViewScaling(void) { return false; } 
     virtual bool              CanDo2DViewScaling(void)    { return true; } 
+    virtual bool              NeedZBufferToCompositeEvenIn2D(void) 
+                                                          { return false; };
 
     virtual avtFilter	      *GetFilterForTopOfPipeline() { return 0; }
 
