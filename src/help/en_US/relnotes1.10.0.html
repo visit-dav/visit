@@ -19,9 +19,10 @@ enhancements and bug-fixes that were added to this release.</p>
     fix some critical defects that surfaced in the VisIt 1.9 release. Descriptions of the defects addressed
     by the patch release can be found in the <a href="relnotes1.9.1.html">VisIt 1.9.1 release notes</a>. 
     All version 1.9.1 fixes are included in this release.</li>
-    <li>VisIt's streamline plot has been majorly upgraded.  More information can be found in the <a href="#Plot_changes">Changes to plots</a> section.</li>
+    <li>The mesh quality metrics have been updated to use the latest version of the Verdict library. This affects the mesh quality metrics as well as all calculations involving the volume of an element. More information can be found in the <a href="#General_Features">Features for all users</a> section.</li>
+    <li>The streamline plot has been significantly improved.  More information can be found in the <a href="#Plot_changes">Changes to plots</a> section.</li>
 </ul>
-<p><b>Sections<b></p>
+<p><b>Sections</b></p>
 <ul>
     <li><a href="#General_Features">Features for all users</a></li>
     <li><a href="#Advanced_Features">Features for advanced users</a></li>
@@ -39,9 +40,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 1.10.0</font></b></p>
 <ul>
+    <li>The mesh quality metrics have been updated to use Verdict version 110. The new version calculates shear and hexahedral volumes more accurately. The Verdict volume metric is used for all volume calculations in VisIt, so any calculations that involve calculating the volume of a hexahedral element may change. This includes many queries such as volume, centroid, center of mass, and spherical compactness.</li>
     <li>Initial support for internationalization has been added. This allows the GUI to be translated
         into languages other than English, following standard Qt internationalization procedures.</li>
-    <li>Considerable tuning was added for data sets with many domains (or patches) as well as large AMR data sets.</li>
+    <li>The performance was improved for data sets with many domains (or patches) as well as large AMR data sets.</li>
     <li>Queries that accept variables for input now have a variable widget for ease of entry. </li>
     <li>The Overlay button has been changed so that it only creates new copies of the selected 
         plots in the plot list instead of copying all plots in the plot list. The new behavior
@@ -71,7 +73,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">File format reader changes in version 1.10.0</font></b></p>
 <ul>
     <li>VisIt now supports the UNIC file format.</li>
-    <li>To the FLASH reader has been added support for particles of file format 
+    <li>The FLASH reader has been enhanced to read particles of file format 
         version 9.  The reader should now read all files with particles.</li>
     <li>The FLASH reader has been fixed to, again, prevent coincident blocks from
         different refinement levels from being drawn over one another.</li>
@@ -90,12 +92,13 @@ enhancements and bug-fixes that were added to this release.</p>
         it adds (when faced with a large number of meshes) to not incur performance costs.  The mechanism for choosing which meshes receive the
         mesh quality expressions has been improved to pick the most important meshes.</li>
     <li>A crash was fixed for the TimeVaryingExodus file format.</li>
+    <li>The DDCMD reader was enhanced to support reading 'b' field types and to be able to plot the stress tensor.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 1.10.0</font></b></p>
 <ul>
-    <li>VisIt's streamline plot has been greatly upgraded.
+    <li>The streamline plot has been significantly improved.
     <ul>
          <li>It can now integrate streamlines across domain boundaries.</li>
          <li>It now works correctly in both serial and parallel (including distributed memory parallelism).</li>
@@ -140,7 +143,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
     <li>Query-over-time of a non-default variable now uses the correct variable name and units in the legend.</li>
     <li>Pick-through-time now uses the variable name and units for the y-axis labels.</li>
-    <li>Pick no longer confused on variable to use when selected after a Query on a non-default variable has been performed.</li>
+    <li>Pick no longer gets confused about which variable to use when performed after a doing a Query of a non-default variable.</li>
     <li>Pick now works on time-curves.</li>
     <li>Queries such as NumNodes and Variable Sum now work correctly with material selection enabled.</li>
     <li>The area and revolved volume queries now support arbitrary 2D polygons.</li>
@@ -154,44 +157,41 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>The <i>OverlayDatabase</i> function now accepts an optional second argument for specifying a time state.</li>
     <li>When bringing up the CLI from the GUI's <i>Controls->Command</i> window, it is no longer necessary to enter a string to activate the Execute button.  (The CLI can now be launched directly without a dummy command.)</li>
     <li>Python callbacks no longer fail silently.  If you have registered a function with an incorrect signature, you will now get a proper error message.</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Bugs fixed in version 1.10.0</font></b></p>
 <ul>
-    <li>If you try to combine a ray-casted volume rendering with transparent geometry, VisIt still cannot handle this.  But VisIt no longer hangs and now
-        issues an error message.</li>
+    <li>If you combine a ray-casted volume rendering with transparent geometry, VisIt now issues an error message and no longer hangs.</li>
     <li>The "visit -movie" movie generation script once again can detect the engine configuration 
         used to generate the plots in a session file and can reuse that configuration when 
         generating a movie.</li>
     <li>For windows platforms, running 'visit -cli -o', 'visit -cli -s', or double-clicking a python now correctly parses paths and works correctly.</li>
-    <li>Macro recording for 2D zooming produced invalid Python code for setting the 2D view attributes.</li>
+    <li>Macro recording for 2D zooming no longer produces invalid Python code for setting the 2D view attributes.</li>
     <li>Macro creation now does more checking to make sure that macro names are valid, which prevents problems when the macros are actually registered.</li>
     <li>VisIt's libsim library used a non-zero idle timeout that slowed down polling simulations.</li>
-    <li>Restore session from sources is broken.</li>
+    <li>Restore session from sources now works again.</li>
     <li>VisIt displays the files from localhost in the File panel when the <i>-launchengine</i> argument is provided to launch a remote compute engine.</li>
     <li>If you apply a resample operator to a FilledBoundary plot, VisIt now issues a warning and no longer crashes.</li>
     <li>On Macs, if you used the Variables dropdown to change the variable of a plot and if that variable was invalid (e.g. a bad expression), then VisIt
-        will no longer crash.<li>
+        will no longer crash.</li>
 </ul>
 
 <a name="Config_changes"></a>
 <p><b><font size="4">Changes to configuration files in version 1.10.0</font></b></p>
 <ul>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
-    <li>&nbsp;</li>
+    <li>The host profiles for yana have been modified to use SLURM and Moab.</li>
+    <li>The host profiles for thunder have been modified to use Moab.</li>
+    <li>The host profiles for hopi have been modified to use SLURM and Moab.</li>
+    <li>The parallel hardware accelerated host profile for gauss has been modified for Choas 4</li>
+    <li>The host profiles for lilac have been modified to use Moab.</li>
+    <li>"-switch ib" has been removed from all the host profiles since it is no longer necessary.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 1.10.0</font></b></p>
 <ul>
-    <li>Development on Windows can now be done directly from the SVN repository, as the build process has been modified to use native source tree instead of a modified one.</li>
+    <li>Development on Windows can now be done directly from the SVN repository, as the build process has been modified to use the native source tree instead of a modified one.</li>
     <li>The Klocwork tool was applied to VisIt and many potential bugs were found and fixed.</li>
 </ul>
 
