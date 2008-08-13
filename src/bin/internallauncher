@@ -337,6 +337,16 @@ exec perl -x $0 ${1+"$@"};
 #    Sean Ahern, Mon Aug  4 10:54:52 EDT 2008
 #    Changed how we run perl.
 #
+#    Eric Brugger, Mon Aug 11 10:33:40 PDT 2008
+#    I modified the script to make sure that it doesn't add any leading ":",
+#    trailing ":", or imbedded "::" strings to any paths, since this adds
+#    "." to the search path, which is insecure and can cause tough to
+#    diagnose problems.
+#
+#    Eric Brugger, Wed Aug 13 09:43:07 PDT 2008
+#    Added a hack to use the moab ttc option to specify the number of
+#    processors if running on hopi.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1174,13 +1184,31 @@ if ($host =~ /^q\d+$/ || $host =~ /^qfe\d$/)
     $remotehost = "172.16.$interface.9"    if ($remotehost =~ /^white269/);
     $remotehost = "172.16.$interface.13"   if ($remotehost =~ /^white432/);
 
-    $ENV{PATH} = join ':' , ("$ENV{PATH}","/lsf/bin");
-    $ENV{LD_LIBRARY_PATH} = join ':' ,
-                         ("$ENV{LD_LIBRARY_PATH}",
-                          "/usr/local/packages/gcc-3.2.3/lib",
-                          "/usr/local/opt/Compaq_MPI_64_2.6_r6/lib",
-                          "/usr/local/opt/Compaq_MPI_64_2.6_r6/shlib",
-                          "/lsfdir/Q_CD/4.2/alpha5-rms/lib");
+    if ($ENV{PATH} eq "")
+    {
+        $ENV{PATH} = "/lsf/bin";
+    }
+    else
+    {
+        $ENV{PATH} = join ':' , ("$ENV{PATH}","/lsf/bin");
+    }
+    if ($ENV{LD_LIBRARY_PATH} eq "")
+    {
+        $ENV{LD_LIBRARY_PATH} = join ':' ,
+                             ("/usr/local/packages/gcc-3.2.3/lib",
+                              "/usr/local/opt/Compaq_MPI_64_2.6_r6/lib",
+                              "/usr/local/opt/Compaq_MPI_64_2.6_r6/shlib",
+                              "/lsfdir/Q_CD/4.2/alpha5-rms/lib");
+    }
+    else
+    {
+        $ENV{LD_LIBRARY_PATH} = join ':' ,
+                             ("$ENV{LD_LIBRARY_PATH}",
+                              "/usr/local/packages/gcc-3.2.3/lib",
+                              "/usr/local/opt/Compaq_MPI_64_2.6_r6/lib",
+                              "/usr/local/opt/Compaq_MPI_64_2.6_r6/shlib",
+                              "/lsfdir/Q_CD/4.2/alpha5-rms/lib");
+    }
 }
 
 # ----
@@ -1212,11 +1240,11 @@ if ( ($parallel) and $exe_name eq "engine" and $host =~ /lens/ )
         # On lens, we need to have a specific LD_LIBRARY_PATH set.  I'm
         # not sure this script is the right place to do this, but it
         # works for now.
-    $ENV{LD_LIBRARY_PATH} = join ':' ,
-        ("/sw/analysis-x86/ompi/1.2.6/sl5_gcc4.2.0/lib",
-         "/ccs/compilers/gcc/sl5-x86_64/4.2.0-amd/gnutools-4.2.0-barcelona/lib64",
-         "/ccs/compilers/gcc/sl5-x86_64/4.2.0-amd/binutils/lib64",
-         "/sw/analysis-x86/python/2.5.2/sl5_gnu4.1.1/lib");
+        $ENV{LD_LIBRARY_PATH} = join ':' ,
+            ("/sw/analysis-x86/ompi/1.2.6/sl5_gcc4.2.0/lib",
+             "/ccs/compilers/gcc/sl5-x86_64/4.2.0-amd/gnutools-4.2.0-barcelona/lib64",
+             "/ccs/compilers/gcc/sl5-x86_64/4.2.0-amd/binutils/lib64",
+             "/sw/analysis-x86/python/2.5.2/sl5_gnu4.1.1/lib");
     }
 }
 
@@ -1262,16 +1290,23 @@ $IsRunningOnFranklinNERSC = 0;
 if ( -e "$visitdir/franklin.nersc.gov" )
 {
     $IsRunningOnFranklinNERSC = 1;
-    $ENV{LD_LIBRARY_PATH} = join ':' ,
-         ("$ENV{LD_LIBRARY_PATH}", "/opt/gcc/4.2.3/snos/lib64");
+    if ($ENV{LD_LIBRARY_PATH} eq "")
+    {
+        $ENV{LD_LIBRARY_PATH} ="/opt/gcc/4.2.3/snos/lib64";
+    }
+    else
+    {
+        $ENV{LD_LIBRARY_PATH} = join ':' ,
+            ("$ENV{LD_LIBRARY_PATH}", "/opt/gcc/4.2.3/snos/lib64");
+    }
 }     
 
 # ----
-# HACK for yana @ LLNL
+# HACK for yana and hopi @ LLNL
 #
 # ----
 $UseTTC = 0;
-if ($host =~ /^yana\d+$/)
+if ($host =~ /^yana\d+$/ or $host =~ /^hopi\d+$/)
 {
     $UseTTC = 1;
 }
@@ -1651,12 +1686,54 @@ if (! defined($ENV{PYTHONPATH_VISITORIG}))
     $ENV{PYTHONPATH_VISITORIG} = "$ENV{PYTHONPATH}";
 }
 
-$ENV{LD_LIBRARY_PATH}    = "$visitlibdir:$ENV{LD_LIBRARY_PATH_VISITORIG}";
-$ENV{LD_LIBRARY32_PATH}  = "$visitlibdir:$ENV{LD_LIBRARY32_PATH_VISITORIG}";
-$ENV{LD_LIBRARYN32_PATH} = "$visitlibdir:$ENV{LD_LIBRARYN32_PATH_VISITORIG}";
-$ENV{LD_LIBRARY64_PATH}  = "$visitlibdir:$ENV{LD_LIBRARY64_PATH_VISITORIG}";
-$ENV{LIBPATH}            = "$visitlibdir:$ENV{LIBPATH_VISITORIG}";
-$ENV{PYTHONPATH}         = "$visitlibdir/python:$ENV{PYTHONPATH_VISITORIG}";
+if ($ENV{LD_LIBRARY_PATH_VISITORIG} eq "")
+{
+    $ENV{LD_LIBRARY_PATH} = "$visitlibdir";
+}
+else
+{
+    $ENV{LD_LIBRARY_PATH} = "$visitlibdir:$ENV{LD_LIBRARY_PATH_VISITORIG}";
+}
+if ($ENV{LD_LIBRARY32_PATH_VISITORIG} eq "")
+{
+    $ENV{LD_LIBRARY32_PATH} = "$visitlibdir";
+}
+else
+{
+    $ENV{LD_LIBRARY32_PATH} = "$visitlibdir:$ENV{LD_LIBRARY32_PATH_VISITORIG}";
+}
+if ($ENV{LD_LIBRARYN32_PATH_VISITORIG} eq "")
+{
+    $ENV{LD_LIBRARYN32_PATH} = "$visitlibdir";
+}
+else
+{
+    $ENV{LD_LIBRARYN32_PATH} = "$visitlibdir:$ENV{LD_LIBRARYN32_PATH_VISITORIG}";
+}
+if ($ENV{LD_LIBRARY64_PATH_VISITORIG} eq "")
+{
+    $ENV{LD_LIBRARY64_PATH} = "$visitlibdir";
+}
+else
+{
+    $ENV{LD_LIBRARY64_PATH} = "$visitlibdir:$ENV{LD_LIBRARY64_PATH_VISITORIG}";
+}
+if ($ENV{LIBPATH_VISITORIG} eq "")
+{
+    $ENV{LIBPATH} = "$visitlibdir";
+}
+else
+{
+    $ENV{LIBPATH} = "$visitlibdir:$ENV{LIBPATH_VISITORIG}";
+}
+if ($ENV{PYTHONPATH_VISITORIG} eq "")
+{
+    $ENV{PYTHONPATH} = "$visitlibdir/python";
+}
+else
+{
+    $ENV{PYTHONPATH} = "$visitlibdir/python:$ENV{PYTHONPATH_VISITORIG}";
+}
 
 # Add /usr/local/lib to the shared library path.  This was added for the
 # c++ library on some sun systems, but it may have broader applicability.
@@ -1665,7 +1742,14 @@ $ENV{LD_LIBRARY_PATH}    = "$ENV{LD_LIBRARY_PATH}:/usr/local/lib";
 # Set up some environment flags that let VisIt run on Darwin.
 if($os eq "darwin")
 {
-    $ENV{DYLD_FALLBACK_LIBRARY_PATH}   = "$visitlibdir:$ENV{HOME}/.visit/$archdir/plugins/plots:$ENV{HOME}/.visit/$archdir/plugins/databases:$ENV{HOME}/.visit/$archdir/plugins/operators:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries:$ENV{DYLD_FALLBACK_LIBRARY_PATH}";
+    if ($ENV{DYLD_FALLBACK_LIBRARY_PATH} eq "")
+    {
+        $ENV{DYLD_FALLBACK_LIBRARY_PATH} = "$visitlibdir:$ENV{HOME}/.visit/$archdir/plugins/plots:$ENV{HOME}/.visit/$archdir/plugins/databases:$ENV{HOME}/.visit/$archdir/plugins/operators:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries";
+    }
+    else
+    {
+        $ENV{DYLD_FALLBACK_LIBRARY_PATH} = "$visitlibdir:$ENV{HOME}/.visit/$archdir/plugins/plots:$ENV{HOME}/.visit/$archdir/plugins/databases:$ENV{HOME}/.visit/$archdir/plugins/operators:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries:$ENV{DYLD_FALLBACK_LIBRARY_PATH}";
+    }
 }
 
 # Set up plugin search paths in the correct order

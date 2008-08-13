@@ -213,13 +213,13 @@
                     <Field name="numNodesSet" type="bool">true</Field>
                     <Field name="numNodes" type="int">4</Field>
                     <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">gauss</Field>
+                    <Field name="partition" type="string">pbatch</Field>
                     <Field name="bankSet" type="bool">true</Field>
                     <Field name="bank" type="string">bdivp</Field>
                     <Field name="timeLimitSet" type="bool">true</Field>
                     <Field name="timeLimit" type="string">30m</Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">psub/srun</Field>
+                    <Field name="launchMethod" type="string">msub/srun</Field>
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>
@@ -235,13 +235,13 @@
                     <Field name="numNodesSet" type="bool">true</Field>
                     <Field name="numNodes" type="int">16</Field>
                     <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">gauss</Field>
+                    <Field name="partition" type="string">pbatch</Field>
                     <Field name="bankSet" type="bool">true</Field>
                     <Field name="bank" type="string">bdivp</Field>
                     <Field name="timeLimitSet" type="bool">true</Field>
                     <Field name="timeLimit" type="string">30m</Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">psub/srun</Field>
+                    <Field name="launchMethod" type="string">msub/srun</Field>
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>
@@ -249,75 +249,9 @@
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="canDoHWAccel" type="bool">true</Field>
                     <Field name="havePreCommand" type="bool">true</Field>
-                    <Field name="hwAccelPreCommand" type="string">/usr/bin/X11/xinit</Field>
+                    <Field name="hwAccelPreCommand" type="string">/usr/bin/xinit</Field>
                     <Field name="havePostCommand" type="bool">true</Field>
-                    <Field name="hwAccelPostCommand" type="string">-- /usr/bin/X11/X</Field>
-                </Object>
-                <Object name="HostProfile">
-                    <Field name="profileName" type="string">serial</Field>
-                    <Field name="host" type="string">gviz.llnl.gov</Field>
-                    <Field name="hostAliases" type="string">gviz#.llnl.gov gviz##.llnl.gov gviz###.llnl.gov gviz# gviz## gviz###</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">1</Field>
-                    <Field name="numNodesSet" type="bool">false</Field>
-                    <Field name="numNodes" type="int">0</Field>
-                    <Field name="partitionSet" type="bool">false</Field>
-                    <Field name="partition" type="string"></Field>
-                    <Field name="bankSet" type="bool">false</Field>
-                    <Field name="bank" type="string"></Field>
-                    <Field name="timeLimitSet" type="bool">false</Field>
-                    <Field name="timeLimit" type="string"></Field>
-                    <Field name="launchMethodSet" type="bool">false</Field>
-                    <Field name="launchMethod" type="string"></Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
-                    <Field name="parallel" type="bool">false</Field>
-                </Object>
-                <Object name="HostProfile">
-                    <Field name="profileName" type="string">parallel pdebug</Field>
-                    <Field name="host" type="string">gviz.llnl.gov</Field>
-                    <Field name="hostAliases" type="string">gviz#.llnl.gov gviz##.llnl.gov gviz###.llnl.gov gviz# gviz## gviz###</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">4</Field>
-                    <Field name="numNodesSet" type="bool">true</Field>
-                    <Field name="numNodes" type="int">2</Field>
-                    <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">gviz,pdebug</Field>
-                    <Field name="bankSet" type="bool">true</Field>
-                    <Field name="bank" type="string">bdivp</Field>
-                    <Field name="timeLimitSet" type="bool">true</Field>
-                    <Field name="timeLimit" type="string">30m</Field>
-                    <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">psub/srun</Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
-                    <Field name="parallel" type="bool">true</Field>
-                </Object>
-                <Object name="HostProfile">
-                    <Field name="profileName" type="string">parallel pbatch</Field>
-                    <Field name="host" type="string">gviz.llnl.gov</Field>
-                    <Field name="hostAliases" type="string">gviz#.llnl.gov gviz##.llnl.gov gviz###.llnl.gov gviz# gviz## gviz###</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">16</Field>
-                    <Field name="numNodesSet" type="bool">true</Field>
-                    <Field name="numNodes" type="int">8</Field>
-                    <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">gviz,pbatch</Field>
-                    <Field name="bankSet" type="bool">true</Field>
-                    <Field name="bank" type="string">bdivp</Field>
-                    <Field name="timeLimitSet" type="bool">true</Field>
-                    <Field name="timeLimit" type="string">30m</Field>
-                    <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">psub/srun</Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
-                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hwAccelPostCommand" type="string">-- /usr/bin/X</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
@@ -349,14 +283,14 @@
                     <Field name="numProcessors" type="int">4</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
                     <Field name="numNodes" type="int">0</Field>
-                    <Field name="partitionSet" type="bool">false</Field>
-                    <Field name="partition" type="string"></Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">pdebug</Field>
                     <Field name="bankSet" type="bool">false</Field>
                     <Field name="bank" type="string"></Field>
                     <Field name="timeLimitSet" type="bool">false</Field>
                     <Field name="timeLimit" type="string"></Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">mpirun</Field>
+                    <Field name="launchMethod" type="string">srun</Field>
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>
@@ -372,13 +306,13 @@
                     <Field name="numNodesSet" type="bool">true</Field>
                     <Field name="numNodes" type="int">1</Field>
                     <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">hopi</Field>
+                    <Field name="partition" type="string">pbatch</Field>
                     <Field name="bankSet" type="bool">true</Field>
                     <Field name="bank" type="string">bdivp</Field>
                     <Field name="timeLimitSet" type="bool">true</Field>
                     <Field name="timeLimit" type="string">30m</Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">psub/mpirun</Field>
+                    <Field name="launchMethod" type="string">msub/srun</Field>
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>
@@ -438,13 +372,13 @@
                     <Field name="numNodesSet" type="bool">true</Field>
                     <Field name="numNodes" type="int">8</Field>
                     <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">lilac,pbatch</Field>
+                    <Field name="partition" type="string">pbatch</Field>
                     <Field name="bankSet" type="bool">true</Field>
                     <Field name="bank" type="string">bdivp</Field>
                     <Field name="timeLimitSet" type="bool">true</Field>
                     <Field name="timeLimit" type="string">30m</Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">psub/srun</Field>
+                    <Field name="launchMethod" type="string">msub/srun</Field>
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>

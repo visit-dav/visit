@@ -1329,6 +1329,10 @@ HostProfileList::ChangeHostForActiveProfile(const std::string &newHost)
 //   "-dir /usr/gapps/visit -switch ib" and to set the number of nodes for
 //   the parallel gauss profiles.
 //
+//   Eric Brugger, Wed Aug 13 09:59:20 PDT 2008
+//   I modified the routine to no longer set the profile arguments for gauss
+//   to "-dir /usr/gapps/visit -switch ib".
+//
 // ****************************************************************************
 void
 HostProfileList::ProcessOldVersions(DataNode *parentNode,
@@ -1421,19 +1425,9 @@ HostProfileList::ProcessOldVersions(DataNode *parentNode,
             else if (hostNode->AsString() == "gauss.llnl.gov")
             {
                 DataNode *nameNode     = children[i]->GetNode("profileName");
-                DataNode *argsNode     = children[i]->GetNode("arguments");
                 DataNode *nProcNode    = children[i]->GetNode("numProcessors");
                 DataNode *nNodeSetNode = children[i]->GetNode("numNodesSet");
                 DataNode *nNodeNode    = children[i]->GetNode("numNodes");
-                if (argsNode != 0)
-                {
-                    stringVector newArgs;
-                    newArgs.push_back("-dir");
-                    newArgs.push_back("/usr/gapps/visit");
-                    newArgs.push_back("-switch");
-                    newArgs.push_back("ib");
-                    argsNode->SetStringVector(newArgs);
-                }
                 if (nameNode != 0 && nProcNode != 0 &&
                     nNodeSetNode != 0 && nNodeNode != 0)
                 {
