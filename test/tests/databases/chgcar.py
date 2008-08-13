@@ -10,6 +10,12 @@
 #  Programmer: Jeremy Meredith
 #  Date:       February 20, 2007
 #
+#    Jeremy Meredith, Wed Aug 13 14:39:11 EDT 2008
+#    Unrestricted the number of labels plotted.  Since I now
+#    have automatic decomposition of chgcar files, the actual
+#    labels chosen was varying based on serial vs parallel
+#    (which is fine, but doesn't help for regression testing).
+#
 # ----------------------------------------------------------------------------
 
 
@@ -61,6 +67,7 @@ SetOperatorOptions(IndexSelectAtts)
 AddPlot("Label", "charge")
 LabelAtts = LabelAttributes()
 LabelAtts.textHeight1 = 0.05
+LabelAtts.restrictNumberOfLabels = 0
 SetPlotOptions(LabelAtts)
 DrawPlots()
 
