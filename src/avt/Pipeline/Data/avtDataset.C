@@ -547,6 +547,11 @@ avtDataset::DebugDump(avtWebpage *webpage, const char *prefix)
 //  Programmer: Hank Childs
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Aug 13 09:05:12 PDT 2008
+//    Add support for processors that have no data.
+//
 // ****************************************************************************
 
 avtIntervalTree *
@@ -573,7 +578,11 @@ avtDataset::CalculateSpatialIntervalTree(void)
     while (( idx > 0 )) 
     {
         idx -= 1;
+
         avtDataTree_p curTree = trees[idx];
+        if (*curTree == NULL)
+            continue;
+
         if (curTree->HasData())
         {
             avtDataRepresentation dr = curTree->GetDataRepresentation();
