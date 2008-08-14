@@ -1,5 +1,95 @@
 import re
 
+def SaveActivePlots(activePlots):
+    thePlots = GetPlotList()
+    for p in range(thePlots.GetNumPlots()):
+        if thePlots.GetPlots(p).activeFlag == 1:
+            activePlots.append(p)
+
+def RestoreActivePlots(activePlots):
+    SetActivePlots(tuple(activePlots))
+
+###############################################################################
+# Function: UnsynchMinMax 
+#
+# Purpose:  As best as possible, undo whatever min/max changes SyncMinMax has
+#           done. 
+#
+# Programmer: Mark C. Miller, Tue Aug 12 11:04:58 PDT 2008
+#
+###############################################################################
+def UnsyncMinMax():
+    """Undo whatever min/max settings changes SyncMinMax did.
+
+    UnsyncMinMax does its best to undo whatever changes to plots SyncMinMax
+    does. However, if the user changes things between invokations of
+    SyncMinMax and UnsyncMinMax, it can be possible to confuse this operation
+    and prevent it from correctly undoing everything.
+    """
+
+    global plotsChangedSinceLastUnsync
+
+    globAtts = GetGlobalAttributes()
+    origActiveWindowID = globAtts.windows[globAtts.activeWindow]
+
+    #
+    # Iterate over all windows represented in plotsChangedSinceLastUnsync
+    #
+    for winID in plotsChangedSinceLastUnsync.keys():
+        try:
+            plotInfos = plotsChangedSinceLastUnsync[winID]
+            SetActiveWindow(winID)
+            origActivePlotList = []
+            SaveActivePlots(origActivePlotList)
+            for pi in range(len(plotInfos)):
+                plotIndex = plotInfos[pi][0]
+                plotOrigAttrs = plotInfos[pi][1]
+                plotSetAttrs = plotInfos[pi][2]
+
+                #
+                # Get the current attributes of the plot. If the only
+                # difference between the plots current attributes and
+                # the original attributes before SyncMinMax changed
+                # them is the min/max settings, then we'll set back to
+                # the original
+                #
+                SetActivePlots((plotIndex,))
+                attrs = GetPlotOptions()
+                if attrs != plotOrigAttrs:
+                    savedMinFlag = plotOrigAttrs.minFlag
+                    savedMaxFlag = plotOrigAttrs.maxFlag
+                    savedMin     = plotOrigAttrs.min
+                    savedMax     = plotOrigAttrs.max
+                    plotOrigAttrs.minFlag = 1
+                    plotOrigAttrs.maxFlag = 1
+                    plotOrigAttrs.min = attrs.min
+                    plotOrigAttrs.max = attrs.max
+                    if attrs == plotOrigAttrs:
+                        plotOrigAttrs.minFlag = savedMinFlag
+                        plotOrigAttrs.maxFlag = savedMaxFlag
+                        plotOrigAttrs.min = savedMin
+                        plotOrigAttrs.max = savedMax
+                        SetPlotOptions(plotOrigAttrs)
+                
+            #
+            # Restore the active plot list
+            #
+            RestoreActivePlots(origActivePlotsList)
+
+        except:
+            continue
+
+    #
+    # Restore the active window
+    #
+    SetActiveWindow(origActiveWindowID)
+
+    #
+    # Clear the list of plots we've changed
+    #
+    plotsChangedSinceLastUnsync = {}
+    
+
 ###############################################################################
 # Function: SyncMinMax 
 #
@@ -23,26 +113,19 @@ def SyncMinMax(srcWin):
     two Pseudocolor plots) in the source window, it will use only the
     FIRST it finds there to set all equivalent plots min/max values.
     """
+
     #
     # Iterate over all plots in srcWin finding the first of each 'type'
     # that has min/max settings and record those settings,
     #
     globAtts = GetGlobalAttributes()
     origActiveWindowID = globAtts.windows[globAtts.activeWindow]
-    plotAttrsByType = {}
-    origActivePlotsList = []
+    plotAttrsByKey = {}
     SetActiveWindow(srcWin)
+    origActivePlotsList = []
+    SaveActivePlots(origActivePlotsList)
     srcPlots = GetPlotList()
     for p in range(srcPlots.GetNumPlots()):
-
-        #
-        # Since we're going to be calling SetActivePlots, keep
-        # a list of the ones that were orignally active in the
-        # window.
-        #
-        if srcPlots.GetPlots(p).activeFlag == 1:
-            origActivePlotsList.append(p)
-
         #
         # Ignore plots that are hidden.
         #
@@ -50,16 +133,23 @@ def SyncMinMax(srcWin):
            continue
 
         #
-        # Get this plot's type string.
+        # Form a 'key' for this plot. If its the only one of its
+        # type, just use the type. Otherwise combine type with
+        # variable name.
         #
-        plotType = PlotPlugins()[srcPlots.GetPlots(p).plotType]
-
+        plotKey = PlotPlugins()[srcPlots.GetPlots(p).plotType]
+        for q in range(srcPlots.GetNumPlots()):
+            if q == p: continue
+            if PlotPlugins()[srcPlots.GetPlots(q).plotType] == plotKey:
+                plotKey = plotKey + ":" + srcPlots.GetPlots(p).plotVar
+                break
+         
         #
-        # If we've already seen a plot of this type, skip it. 
+        # If we've already seen a plot with this key, skip it. 
         # We use only the FIRST such plot as the 'master' for
         # min/max values for other plots of that type.
         #
-        if plotType in plotAttrsByType:
+        if plotKey in plotAttrsByKey:
             continue
 
         #
@@ -113,20 +203,21 @@ def SyncMinMax(srcWin):
         # only need the min/max values so saving all the attrs is
         # way overkill. But, its convenient.
         #
-        plotAttrsByType[plotType] = attrs
+        plotAttrsByKey[plotKey] = attrs
 
-    #
-    # Restore the window's list of active plots
-    #
-    SetActivePlots(tuple(origActivePlotsList))
+    RestoreActivePlots(origActivePlotsList)
 
     #
     # Ok, now iterate over plots in all windows other than the
     # source window and set their min/max values to those of
     # the 'master(s)' identified in the loop above.
     #
+    global plotsChangedSinceLastUnsync
     for win in range(len(globAtts.windows)):
 
+        #
+        # Get window ID for call to SetActiveWindow
+        #
         winID = globAtts.windows[win]
 
         #
@@ -136,11 +227,10 @@ def SyncMinMax(srcWin):
             continue
 
         SetActiveWindow(winID)
-
         origActivePlotsList = []
+        SaveActivePlots(origActivePlotsList)
         thePlots = GetPlotList()
         for p in range(thePlots.GetNumPlots()):
-
             #
             # Skip hidden plots
             #
@@ -148,44 +238,49 @@ def SyncMinMax(srcWin):
                 continue;
 
             #
-            # Since we're going to be calling SetActivePlots,
-            # remember original setting.
+            # Form a 'key' for this plot. If its the only one of its
+            # type, just use the type. Otherwise combine type with
+            # variable name.
             #
-            if thePlots.GetPlots(p).activeFlag == 1:
-                origActivePlotsList.append(p)
-
-            #
-            # Get this plot's type string.
-            #
-            plotType = PlotPlugins()[thePlots.GetPlots(p).plotType]
+            plotKey = PlotPlugins()[thePlots.GetPlots(p).plotType]
+            for q in range(thePlots.GetNumPlots()):
+                if q == p: continue
+                if PlotPlugins()[thePlots.GetPlots(q).plotType] == plotKey:
+                    plotKey = plotKey + ":" + thePlots.GetPlots(p).plotVar
+                    break
 
             #
             # If we don't have a 'master' for it, skip it.
             #
-            if plotType not in plotAttrsByType:
+            if plotKey not in plotAttrsByKey:
                 continue
 
             #
             # Update the min/max settings for this plot.
             #
-            newAttrs = plotAttrsByType[plotType]
+            newAttrs = plotAttrsByKey[plotKey]
             SetActivePlots((p,))
             currentAttrs = GetPlotOptions()
-            currentAttrs.minFlag = 1 
-            currentAttrs.min     = newAttrs.min
-            currentAttrs.maxFlag = 1
-            currentAttrs.max     = newAttrs.max
-            SetPlotOptions(currentAttrs)
-	    DrawPlots()
+            if currentAttrs.minFlag != 1 or currentAttrs.min != newAttrs.min or \
+               currentAttrs.maxFlag != 1 or currentAttrs.max != newAttrs.max:
+                origAttrs = GetPlotOptions()
+                currentAttrs.minFlag = 1 
+                currentAttrs.min     = newAttrs.min
+                currentAttrs.maxFlag = 1
+                currentAttrs.max     = newAttrs.max
+                SetPlotOptions(currentAttrs)
 
-        #
-        # Restore this window's active plot list
-        #
-        SetActivePlots(tuple(origActivePlotsList))
+                #
+                # Record the fact that we fiddled with this
+                # plots extents so that we can later unsync them
+                # if we need to.
+                #
+                if winID not in plotsChangedSinceLastUnsync:
+                    plotsChangedSinceLastUnsync[winID] = []
+                plotsChangedSinceLastUnsync[winID].append((p,origAttrs,currentAttrs))
 
-    #
-    # Restore the active window
-    #
+        RestoreActivePlots(origActivePlotsList)
+
     SetActiveWindow(origActiveWindowID)
 
 ###############################################################################
@@ -238,10 +333,11 @@ for f in range(1000000):
 # We assume no more than 4 windows and, furthermore, all
 # have ids 1...4. We can't do much better than this.
 #
-RegisterMacro("SyncMinMaxTo1", SyncMinMax1)
-RegisterMacro("SyncMinMaxTo2", SyncMinMax2)
-RegisterMacro("SyncMinMaxTo3", SyncMinMax3)
-RegisterMacro("SyncMinMaxTo4", SyncMinMax4)
+RegisterMacro("SyncMinMaxToWin1", SyncMinMax1)
+RegisterMacro("SyncMinMaxToWin2", SyncMinMax2)
+RegisterMacro("SyncMinMaxToWin3", SyncMinMax3)
+RegisterMacro("SyncMinMaxToWin4", SyncMinMax4)
+RegisterMacro("UndoSyncMinMax", UnsyncMinMax)
 
 #
 # Provide the equivalent of VCR step forward/backward
@@ -252,5 +348,7 @@ RegisterMacro("SyncMinMaxTo4", SyncMinMax4)
 # window 1 will have to act as the master for these
 # to be useful.
 #
-RegisterMacro("NextAndSyncTo1", NextAndSync1)
-RegisterMacro("PrevAndSyncTo1", PrevAndSync1)
+RegisterMacro("NextAndSyncToWin1", NextAndSync1)
+RegisterMacro("PrevAndSyncToWin1", PrevAndSync1)
+
+plotsChangedSinceLastUnsync = {}
