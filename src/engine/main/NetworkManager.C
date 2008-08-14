@@ -1955,6 +1955,13 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //  Programmer:  Hank Childs
 //  Creation:    August 13, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 14 14:31:49 PDT 2008
+//    Make sure the workingNet is set to NULL.  This caused problems with
+//    SR transitions (tests/rendering/offscreensave.py) and with picking
+//    in SR mode (tests/queries/queriesOverTime.py).
+//
 // ****************************************************************************
 
 bool
@@ -1972,6 +1979,7 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
             break;
         }
     }
+    workingNet = NULL;
 
     return needsZBufferToCompositeEvenIn2D;
 }
