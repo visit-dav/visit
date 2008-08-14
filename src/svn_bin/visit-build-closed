@@ -41,7 +41,6 @@ crier=true
 sunset=true
 purple=true
 lilac=true
-gauss=true
 hopi=true
 
 dist=undefined
@@ -59,7 +58,6 @@ do
          sunset=false
          purple=false
          lilac=false
-         gauss=false
          hopi=false
          shift
          ;;
@@ -95,14 +93,6 @@ do
          lilac=true
          shift
          ;;
-      -gauss)
-         gauss=false
-         shift
-         ;;
-      +gauss)
-         gauss=true
-         shift
-         ;;
       -hopi)
          hopi=false
          shift
@@ -129,7 +119,6 @@ then
    echo "    sunset (B-Div, Solaris),"
    echo "    purple (LC, AIX),"
    echo "    lilac (LC, Linux),"
-   echo "    gauss (LC, x86_64),"
    echo "    hopi (LC, x86_64)"
    exit
 fi
@@ -377,58 +366,6 @@ then
 fi
 
 #
-# Build on gauss.
-#
-rm -f gauss
-cat <<EOF > gauss
-#!/bin/sh
-XLOCALEDIR=/usr/lib/X11/locale
-PATH=/usr/bin/X11:\$PATH
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/gauss ; then
-   mkdir /usr/tmp/$user/gauss
-fi
-rm -rf /usr/tmp/$user/gauss/visitbuild
-mkdir /usr/tmp/$user/gauss/visitbuild
-mv gauss_$dist.tar.gz /usr/tmp/$user/gauss/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/gauss/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../../buildlog 2>&1
-make -j 3 >> ../../buildlog 2>&1
-svn_bin/visit-bin-dist -switch ib >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64-ib.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on gauss"        > resultlog 2>&1
-echo "       -------------------------"       >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $gauss = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on gauss"
-      scp gauss gauss2:gauss_buildit
-      scp $dist.tar.gz gauss2:gauss_$dist.tar.gz
-      ssh gauss2 "chmod 750 gauss_buildit;./gauss_buildit" &
-   fi
-fi
-
-#
 # Build on hopi.
 #
 rm -f hopi
@@ -485,5 +422,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f crier sunset purple lilac gauss hopi
+   rm -f crier sunset purple lilac hopi
 fi

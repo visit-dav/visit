@@ -30,7 +30,6 @@ crier=true
 sunset=true
 purple=true
 lilac=true
-gauss=true
 hopi=true
 
 ver=undefined
@@ -48,7 +47,6 @@ do
          sunset=false
          purple=false
          lilac=false
-         gauss=false
          hopi=false
          shift
          ;;
@@ -82,14 +80,6 @@ do
          ;;
       +lilac)
          lilac=true
-         shift
-         ;;
-      -gauss)
-         gauss=false
-         shift
-         ;;
-      +gauss)
-         gauss=true
          shift
          ;;
       -hopi)
@@ -293,43 +283,6 @@ then
 fi
 
 #
-# Install on gauss.
-#
-rm -f gauss
-cat <<EOF > gauss
-#!/bin/sh
-./visit-install -private -c closed -g visit -b bdivp -gw -l $ver linux-x86_64-ib /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo ""                                            > resultlog 2>&1
-echo "        install of visit on gauss"           >> resultlog 2>&1
-echo "       ---------------------------"          >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-x86_64-ib/bin   >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-ib/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-ib/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-ib/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-x86_64-ib/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-ib\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mv resultlog resultlog.gauss
-EOF
-
-if [ $gauss = true ]
-then
-   if [ $test = no ]
-   then
-      scp gauss2:/usr/tmp/$user/gauss/visitbuild/visit$ver2.linux-x86_64-ib.tar.gz .
-      scp visit$ver2.linux-x86_64-ib.tar.gz lilac3:
-      scp visit-install lilac3:
-      scp gauss lilac3:gauss_install
-      ssh lilac3 "chmod 750 gauss_install;./gauss_install"
-   fi
-fi
-
-#
 # Install on hopi.
 #
 rm -f hopi
@@ -371,5 +324,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f crier sunset purple lilac gauss hopi
+   rm -f crier sunset purple lilac hopi
 fi
