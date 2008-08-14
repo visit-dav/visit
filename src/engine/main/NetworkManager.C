@@ -1969,6 +1969,7 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 {
     bool needsZBufferToCompositeEvenIn2D = false;
 
+/*
     for (size_t i = 0; i < plotIds.size(); i++)
     {
         workingNet = NULL;
@@ -1980,6 +1981,7 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
         }
     }
     workingNet = NULL;
+ */
 
     return needsZBufferToCompositeEvenIn2D;
 }
