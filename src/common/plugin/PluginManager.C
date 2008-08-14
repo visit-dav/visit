@@ -1326,6 +1326,8 @@ PluginManager::ReadPluginDir(vector< vector<pair<string,string> > > &files)
 //    Hank Childs, Thu Jan 19 17:05:49 PST 2006
 //    Print out plugin errors to the screen.  ['6629]
 //
+//    Mark C. Miller, Thu Aug 14 01:22:59 PDT 2008
+//    Made messages reported to screen include plugin name and error msg.
 // ****************************************************************************
 
 void
@@ -1336,7 +1338,8 @@ PluginManager::PluginOpen(const string &pluginFile)
     if(!lib)
     {
         const char *pluginError = PluginError();
-        cerr << "Error opening plugin file: " << pluginError << endl;
+        cerr << "Error opening plugin file: " << pluginFile
+             << " (" << pluginError << ")" << endl;
         EXCEPTION3(InvalidPluginException, "Error opening plugin file",
                    pluginFile.c_str(), pluginError);
     }
@@ -1348,7 +1351,8 @@ PluginManager::PluginOpen(const string &pluginFile)
     if (!handle)
     {
         const char *pluginError = PluginError();
-        cerr << "Error opening plugin file: " << pluginError << endl;
+        cerr << "Error opening plugin file: " << pluginFile
+             << " (" << pluginError << ")" << endl;
         EXCEPTION3(InvalidPluginException, "Error opening plugin file",
                    pluginFile.c_str(), pluginError);
     }
