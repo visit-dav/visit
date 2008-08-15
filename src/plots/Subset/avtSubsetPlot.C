@@ -732,6 +732,33 @@ avtSubsetPlot::SetPointGlyphSize()
         levelsMapper->SetPointSize(atts.GetPointSizePixels());
 }
 
+
+// ****************************************************************************
+//  Method: avtSubsetPlot::NeedZBufferToCompositeEvenIn2D
+//
+//  Purpose:
+//      Tells the compositer that it needs zbuffer info to composite correctly,
+//      in the case that the subset plot is bleeding over the domain boundary,
+//      which means it can spill into other processor's portion of image 
+//      space.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 13, 2008
+//
+// ****************************************************************************
+
+bool
+avtSubsetPlot::NeedZBufferToCompositeEvenIn2D(void)
+{
+    if (atts.GetLineWidth() > 0)
+        return true;
+    if (atts.GetPointSizePixels() > 0)
+        return true;
+
+    return false;
+}
+
+
 // ****************************************************************************
 //  Method: avtSubsetPlot::SetColors
 //

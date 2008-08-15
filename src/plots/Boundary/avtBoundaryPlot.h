@@ -81,6 +81,10 @@ class     avtSmoothPolyDataFilter;
 //    Brad Whitlock, Thu Jul 21 15:32:26 PST 2005
 //    Added SetPointGlyphSize.
 //
+//    Hank Childs, Wed Aug 13 13:46:31 PDT 2008
+//    Add NeedZBufferToCompositeEvenIn2D because thick lines can bleed into
+//    other processor's portion of image space.
+//
 // ****************************************************************************
 
 class
@@ -100,6 +104,8 @@ avtBoundaryPlot : public avtVolumeDataPlot
 
     virtual bool              AttributesDependOnDatabaseMetaData(void)
                                   { return true; };
+    virtual bool              NeedZBufferToCompositeEvenIn2D(void);
+
 
     void                      SetLegend(bool);
     void                      SetLineWidth(int);

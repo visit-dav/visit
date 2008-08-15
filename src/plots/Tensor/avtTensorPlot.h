@@ -73,6 +73,10 @@ class     avtLookupTable;
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Changed GetCellCountMultiplierForSRThreshold to Set...
 //
+//    Hank Childs, Wed Aug 13 13:45:33 PDT 2008
+//    Turn on NeedZBufferToCompositeEvenIn2D, as tensor glyphs can bleed
+//    into other processor's portion of image space.
+//
 // ****************************************************************************
 
 class avtTensorPlot : public avtPointDataPlot
@@ -87,6 +91,9 @@ class avtTensorPlot : public avtPointDataPlot
     static avtPlot             *Create();
 
     virtual void                SetAtts(const AttributeGroup*);
+    virtual bool                NeedZBufferToCompositeEvenIn2D(void)
+                                                          { return true; };
+
 
   protected:
     TensorAttributes              atts;

@@ -145,6 +145,10 @@ class     avtVariablePointGlyphMapper;
 //    Brad Whitlock, Thu Jul 21 15:25:44 PST 2005
 //    Added SetPointGlyphSize.
 //
+//    Hank Childs, Wed Aug 13 11:42:07 PDT 2008
+//    Add NeedZBufferToCompositeEvenIn2D because thick lines can bleed into
+//    other processor's portion of image space.
+//
 // ****************************************************************************
 
 class
@@ -177,7 +181,7 @@ avtMeshPlot : public avtPlot
     virtual int     TargetTopologicalDimension(void);
     virtual const AttributeSubject 
                    *SetOpaqueMeshIsAppropriate(bool);
-
+    virtual bool    NeedZBufferToCompositeEvenIn2D(void);
 
   protected:
     avtSurfaceAndWireframeRenderer_p renderer;

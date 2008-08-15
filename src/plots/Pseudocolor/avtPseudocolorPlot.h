@@ -128,6 +128,10 @@ class     avtVariableLegend;
 //    Brad Whitlock, Thu Jul 21 15:25:44 PST 2005
 //    Added SetPointGlyphSize.
 //
+//    Hank Childs, Wed Aug 13 13:46:31 PDT 2008
+//    Add NeedZBufferToCompositeEvenIn2D because thick lines can bleed into
+//    other processor's portion of image space.
+//
 // ****************************************************************************
 
 class avtPseudocolorPlot : public avtSurfaceDataPlot
@@ -144,6 +148,7 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     virtual void                GetDataExtents(std::vector<double> &);
     virtual bool                SetColorTable(const char *ctName);
     virtual void                ReleaseData(void);
+    virtual bool                NeedZBufferToCompositeEvenIn2D(void);
 
     void                        SetLegend(bool);
     void                        SetLighting(bool);

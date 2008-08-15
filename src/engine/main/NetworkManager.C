@@ -1969,7 +1969,6 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 {
     bool needsZBufferToCompositeEvenIn2D = false;
 
-/*
     for (size_t i = 0; i < plotIds.size(); i++)
     {
         workingNet = NULL;
@@ -1980,8 +1979,6 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
             break;
         }
     }
-    workingNet = NULL;
- */
 
     return needsZBufferToCompositeEvenIn2D;
 }
@@ -2165,9 +2162,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 
         avtWholeImageCompositer *imageCompositer;
 
-        bool needZBufferToCompositeEvenIn2D = 
-                                        NeedZBufferToCompositeEvenIn2D(plotIds);
-
         imageCompositer = MakeCompositer(
                  viswin->GetWindowMode() == WINMODE_3D,
                  viswin->GetBackgroundMode() == AnnotationAttributes::Gradient,
@@ -2176,7 +2170,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                  this->Shadowing(windowID),
                  this->DepthCueing(windowID),
                  !imageBasedPlots.empty(),
-                 needZBufferToCompositeEvenIn2D
+                 this->r_mgmt.needZBufferToCompositeEvenIn2D
         );
 
         assert(NULL != imageCompositer);
@@ -4501,6 +4495,9 @@ NetworkManager::ViewerExecute(const VisWindow * const viswin,
 //    Added member qualification to cellCounts, fixing a parallel-only compile
 //    error.
 //
+//    Hank Childs, Fri Aug 15 14:32:16 PDT 2008
+//    Set values of needZBufferToCompositeEvenIn2D.
+//
 // ****************************************************************************
 
 void
@@ -4543,6 +4540,10 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 
     // see if there are any non-mesh plots in the list
     bool hasNonMeshPlots = HasNonMeshPlots(plotIds);
+
+    // see if we need the z-buffer to composite correctly in 2D.
+    this->r_mgmt.needZBufferToCompositeEvenIn2D = 
+                              NeedZBufferToCompositeEvenIn2D(plotIds);
 
     // Fullframe scale.
     double FFScale[] = {1., 1., 1.};
@@ -4621,7 +4622,8 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
         TimedCodeBlock("Adding plot to the vis window",
             viswin->AddPlot(anActor);
             avtPlot_p plot = workingNetSaved->GetPlot();
-            if(plot->PlotIsImageBased()) {
+            if (plot->PlotIsImageBased()) 
+            {
                 imageBasedPlots.push_back(plot);
             }
         );

@@ -110,6 +110,10 @@ class     avtLookupTable;
 //    Hank Childs, Fri Feb 15 15:41:15 PST 2008
 //    Fix memory leak by adding new data member.
 //
+//    Hank Childs, Wed Aug 13 13:46:31 PDT 2008
+//    Add NeedZBufferToCompositeEvenIn2D because thick lines can bleed into
+//    other processor's portion of image space.
+//
 // ****************************************************************************
 
 class
@@ -131,6 +135,8 @@ avtContourPlot : public avtSurfaceDataPlot
     void            SetLegend(bool);
     void            SetLineWidth(int);
     void            SetLineStyle(int);
+
+    virtual bool    NeedZBufferToCompositeEvenIn2D(void);
 
   protected:
      avtContourFilter        *contourFilter;

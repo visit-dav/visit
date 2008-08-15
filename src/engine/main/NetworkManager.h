@@ -413,6 +413,7 @@ class NetworkManager
         bool handledCues;
         bool needToSetUpWindowContents;
         bool viewportedMode;
+        bool needZBufferToCompositeEvenIn2D;
     };
 
  public:
