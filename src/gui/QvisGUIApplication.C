@@ -190,6 +190,8 @@
 #define CLEAR_STATUS_TAG          106
 #define INITIALIZE_SESSIONDIR_TAG 107
 #define DELAYED_LOAD_FILE_TAG     108
+#define REDO_PICK_TAG             109
+#define RESTORE_PICK_ATTS_TAG     110
 
 // Note that the order of entries in the windowNames string list must match
 // the ordering here.
@@ -1284,6 +1286,11 @@ QvisGUIApplication::Synchronize(int tag)
 //   Brad Whitlock, Wed Feb  6 16:59:40 PST 2008
 //   Added code to load a file later.
 //
+//   Gunther H. Weber, Fri Aug 15 10:26:56 PDT 2008
+//   Added methods for re-pick. Sequence is: change attributes,
+//   sync REDO_PICK_TAG, pick, sync RESTORE_PICK_ATTS_TAG, change attributes
+//   back.
+//
 // ****************************************************************************
 
 void
@@ -1337,6 +1344,14 @@ QvisGUIApplication::HandleSynchronize(int val)
     {
         // Deferred from FinalInitialization
         LoadFile(loadFile, true);
+    }
+    else if(val == REDO_PICK_TAG)
+    {
+        QTimer::singleShot(10, pickWin, SLOT(redoPick()));
+    }
+    else if(val == RESTORE_PICK_ATTS_TAG)
+    {
+        QTimer::singleShot(10, pickWin, SLOT(restorePickAttributesAfterRepick()));
     }
 }
 
@@ -1461,6 +1476,10 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
+//   Gunther H. Weber, Fri Aug 15 10:47:43 PDT 2008
+//   Bug fix: Check for system visitrc file when determining whether loading
+//   the file should be delayed. 
+//
 // ****************************************************************************
 
 void
@@ -1546,7 +1565,8 @@ QvisGUIApplication::FinalInitialization()
         }
         else
         {
-            if(QFile(GetUserVisItRCFile().c_str()).exists())
+            if(QFile(GetSystemVisItRCFile().c_str()).exists() ||
+               QFile(GetUserVisItRCFile().c_str()).exists())
             {
                 // We load the file later because it gives the user's .visitrc
                 // file a chance to take effect, giving any callback functions
@@ -2930,6 +2950,9 @@ QvisGUIApplication::CreateMainWindow()
 //   Brad Whitlock, Fri Jun 15 09:38:47 PDT 2007
 //   Added Macro window.
 //
+//   Gunther H. Weber, Fri Aug 15 10:46:55 PDT 2008
+//   Connect signals necessary for redoing a pick. 
+//
 // ****************************************************************************
 
 void
@@ -2965,6 +2988,10 @@ QvisGUIApplication::SetupWindows()
      pickWin = (QvisPickWindow *)GetWindowPointer(WINDOW_PICK);
      connect(mainWin, SIGNAL(activatePickWindow()),
              pickWin, SLOT(show()));
+     connect(pickWin, SIGNAL(initiateRedoPick()),
+             this, SLOT(redoPick()));
+     connect(pickWin, SIGNAL(initiateRestorePickAttributesAfterRepick()),
+             this, SLOT(restorePickAttributesAfterRepick()));
 
      preferencesWin = (QvisPreferencesWindow *)GetWindowPointer(WINDOW_PREFERENCES);
      connect(mainWin, SIGNAL(activatePreferencesWindow()),
@@ -8062,6 +8089,41 @@ QvisGUIApplication::SaveCrashRecoveryFile()
     SaveSessionFile(CrashRecoveryFile());
     Synchronize(CLEAR_STATUS_TAG);
     GetViewerMethods()->SetSuppressMessages(false);
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::redoPick
+//
+// Purpose: 
+//   Trigger repeating the current pick.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Fri Aug 15 10:30:05 PDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisGUIApplication::redoPick()
+{
+    Synchronize(REDO_PICK_TAG);
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::SaveCrashRecoveryFile
+//
+// Purpose: 
+//   Trigger restoring the pick attributes after a repick.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Fri Aug 15 10:30:05 PDT 2008
+//
+// ****************************************************************************
+
+void
+QvisGUIApplication::restorePickAttributesAfterRepick()
+{
+    Synchronize(RESTORE_PICK_ATTS_TAG);
 }
 
 //

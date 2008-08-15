@@ -69,7 +69,7 @@ public class PickAttributes extends AttributeSubject
 
     public PickAttributes()
     {
-        super(66);
+        super(67);
 
         variables = new Vector();
         variables.addElement(new String("default"));
@@ -150,6 +150,7 @@ public class PickAttributes extends AttributeSubject
         globalIncidentElements = new Vector();
         elementIsGlobal = false;
         displayPickLetter = true;
+        reusePickLetter = false;
         ghostType = 0;
         hasMixedGhostTypes = -1;
         linesData = false;
@@ -163,7 +164,7 @@ public class PickAttributes extends AttributeSubject
 
     public PickAttributes(PickAttributes obj)
     {
-        super(66);
+        super(67);
 
         int i;
 
@@ -295,6 +296,7 @@ public class PickAttributes extends AttributeSubject
         }
         elementIsGlobal = obj.elementIsGlobal;
         displayPickLetter = obj.displayPickLetter;
+        reusePickLetter = obj.reusePickLetter;
         ghostType = obj.ghostType;
         hasMixedGhostTypes = obj.hasMixedGhostTypes;
         linesData = obj.linesData;
@@ -508,6 +510,7 @@ public class PickAttributes extends AttributeSubject
                 globalIncidentElements_equal &&
                 (elementIsGlobal == obj.elementIsGlobal) &&
                 (displayPickLetter == obj.displayPickLetter) &&
+                (reusePickLetter == obj.reusePickLetter) &&
                 (ghostType == obj.ghostType) &&
                 (hasMixedGhostTypes == obj.hasMixedGhostTypes) &&
                 (linesData == obj.linesData) &&
@@ -907,58 +910,64 @@ public class PickAttributes extends AttributeSubject
         Select(56);
     }
 
+    public void SetReusePickLetter(boolean reusePickLetter_)
+    {
+        reusePickLetter = reusePickLetter_;
+        Select(57);
+    }
+
     public void SetGhostType(int ghostType_)
     {
         ghostType = ghostType_;
-        Select(57);
+        Select(58);
     }
 
     public void SetHasMixedGhostTypes(int hasMixedGhostTypes_)
     {
         hasMixedGhostTypes = hasMixedGhostTypes_;
-        Select(58);
+        Select(59);
     }
 
     public void SetLinesData(boolean linesData_)
     {
         linesData = linesData_;
-        Select(59);
+        Select(60);
     }
 
     public void SetInputTopoDim(int inputTopoDim_)
     {
         inputTopoDim = inputTopoDim_;
-        Select(60);
+        Select(61);
     }
 
     public void SetMeshCoordType(int meshCoordType_)
     {
         meshCoordType = meshCoordType_;
-        Select(61);
+        Select(62);
     }
 
     public void SetCreateSpreadsheet(boolean createSpreadsheet_)
     {
         createSpreadsheet = createSpreadsheet_;
-        Select(62);
+        Select(63);
     }
 
     public void SetSubsetName(String subsetName_)
     {
         subsetName = subsetName_;
-        Select(63);
+        Select(64);
     }
 
     public void SetFloatFormat(String floatFormat_)
     {
         floatFormat = floatFormat_;
-        Select(64);
+        Select(65);
     }
 
     public void SetTimePreserveCoord(boolean timePreserveCoord_)
     {
         timePreserveCoord = timePreserveCoord_;
-        Select(65);
+        Select(66);
     }
 
     // Property getting methods
@@ -1019,6 +1028,7 @@ public class PickAttributes extends AttributeSubject
     public Vector   GetGlobalIncidentElements() { return globalIncidentElements; }
     public boolean  GetElementIsGlobal() { return elementIsGlobal; }
     public boolean  GetDisplayPickLetter() { return displayPickLetter; }
+    public boolean  GetReusePickLetter() { return reusePickLetter; }
     public int      GetGhostType() { return ghostType; }
     public int      GetHasMixedGhostTypes() { return hasMixedGhostTypes; }
     public boolean  GetLinesData() { return linesData; }
@@ -1154,22 +1164,24 @@ public class PickAttributes extends AttributeSubject
         if(WriteSelect(56, buf))
             buf.WriteBool(displayPickLetter);
         if(WriteSelect(57, buf))
-            buf.WriteInt(ghostType);
+            buf.WriteBool(reusePickLetter);
         if(WriteSelect(58, buf))
-            buf.WriteInt(hasMixedGhostTypes);
+            buf.WriteInt(ghostType);
         if(WriteSelect(59, buf))
-            buf.WriteBool(linesData);
+            buf.WriteInt(hasMixedGhostTypes);
         if(WriteSelect(60, buf))
-            buf.WriteInt(inputTopoDim);
+            buf.WriteBool(linesData);
         if(WriteSelect(61, buf))
-            buf.WriteInt(meshCoordType);
+            buf.WriteInt(inputTopoDim);
         if(WriteSelect(62, buf))
-            buf.WriteBool(createSpreadsheet);
+            buf.WriteInt(meshCoordType);
         if(WriteSelect(63, buf))
-            buf.WriteString(subsetName);
+            buf.WriteBool(createSpreadsheet);
         if(WriteSelect(64, buf))
-            buf.WriteString(floatFormat);
+            buf.WriteString(subsetName);
         if(WriteSelect(65, buf))
+            buf.WriteString(floatFormat);
+        if(WriteSelect(66, buf))
             buf.WriteBool(timePreserveCoord);
     }
 
@@ -1362,30 +1374,33 @@ public class PickAttributes extends AttributeSubject
                 SetDisplayPickLetter(buf.ReadBool());
                 break;
             case 57:
-                SetGhostType(buf.ReadInt());
+                SetReusePickLetter(buf.ReadBool());
                 break;
             case 58:
-                SetHasMixedGhostTypes(buf.ReadInt());
+                SetGhostType(buf.ReadInt());
                 break;
             case 59:
-                SetLinesData(buf.ReadBool());
+                SetHasMixedGhostTypes(buf.ReadInt());
                 break;
             case 60:
-                SetInputTopoDim(buf.ReadInt());
+                SetLinesData(buf.ReadBool());
                 break;
             case 61:
-                SetMeshCoordType(buf.ReadInt());
+                SetInputTopoDim(buf.ReadInt());
                 break;
             case 62:
-                SetCreateSpreadsheet(buf.ReadBool());
+                SetMeshCoordType(buf.ReadInt());
                 break;
             case 63:
-                SetSubsetName(buf.ReadString());
+                SetCreateSpreadsheet(buf.ReadBool());
                 break;
             case 64:
-                SetFloatFormat(buf.ReadString());
+                SetSubsetName(buf.ReadString());
                 break;
             case 65:
+                SetFloatFormat(buf.ReadString());
+                break;
+            case 66:
                 SetTimePreserveCoord(buf.ReadBool());
                 break;
             }
@@ -1474,6 +1489,7 @@ public class PickAttributes extends AttributeSubject
         str = str + intVectorToString("globalIncidentElements", globalIncidentElements, indent) + "\n";
         str = str + boolToString("elementIsGlobal", elementIsGlobal, indent) + "\n";
         str = str + boolToString("displayPickLetter", displayPickLetter, indent) + "\n";
+        str = str + boolToString("reusePickLetter", reusePickLetter, indent) + "\n";
         str = str + intToString("ghostType", ghostType, indent) + "\n";
         str = str + intToString("hasMixedGhostTypes", hasMixedGhostTypes, indent) + "\n";
         str = str + boolToString("linesData", linesData, indent) + "\n";
@@ -1578,6 +1594,7 @@ public class PickAttributes extends AttributeSubject
     private Vector   globalIncidentElements; // vector of Integer objects
     private boolean  elementIsGlobal;
     private boolean  displayPickLetter;
+    private boolean  reusePickLetter;
     private int      ghostType;
     private int      hasMixedGhostTypes;
     private boolean  linesData;

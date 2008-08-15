@@ -84,7 +84,7 @@ PickAttributes::PickType_FromString(const std::string &s, PickAttributes::PickTy
 }
 
 // Type map format string
-const char *PickAttributes::TypeMapFormatString = "s*bbbbbbbbbsbiiii*iissDDDDDDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbiibiibssb";
+const char *PickAttributes::TypeMapFormatString = "s*bbbbbbbbbsbiiii*iissDDDDDDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibiibssb";
 
 // ****************************************************************************
 // Method: PickAttributes::PickAttributes
@@ -158,6 +158,7 @@ PickAttributes::PickAttributes() :
     globalElement = -1;
     elementIsGlobal = false;
     displayPickLetter = true;
+    reusePickLetter = false;
     ghostType = 0;
     hasMixedGhostTypes = -1;
     linesData = false;
@@ -276,6 +277,7 @@ PickAttributes::PickAttributes(const PickAttributes &obj) :
     globalIncidentElements = obj.globalIncidentElements;
     elementIsGlobal = obj.elementIsGlobal;
     displayPickLetter = obj.displayPickLetter;
+    reusePickLetter = obj.reusePickLetter;
     ghostType = obj.ghostType;
     hasMixedGhostTypes = obj.hasMixedGhostTypes;
     linesData = obj.linesData;
@@ -422,6 +424,7 @@ PickAttributes::operator = (const PickAttributes &obj)
     globalIncidentElements = obj.globalIncidentElements;
     elementIsGlobal = obj.elementIsGlobal;
     displayPickLetter = obj.displayPickLetter;
+    reusePickLetter = obj.reusePickLetter;
     ghostType = obj.ghostType;
     hasMixedGhostTypes = obj.hasMixedGhostTypes;
     linesData = obj.linesData;
@@ -551,6 +554,7 @@ PickAttributes::operator == (const PickAttributes &obj) const
             (globalIncidentElements == obj.globalIncidentElements) &&
             (elementIsGlobal == obj.elementIsGlobal) &&
             (displayPickLetter == obj.displayPickLetter) &&
+            (reusePickLetter == obj.reusePickLetter) &&
             (ghostType == obj.ghostType) &&
             (hasMixedGhostTypes == obj.hasMixedGhostTypes) &&
             (linesData == obj.linesData) &&
@@ -760,6 +764,7 @@ PickAttributes::SelectAll()
     Select(ID_globalIncidentElements,      (void *)&globalIncidentElements);
     Select(ID_elementIsGlobal,             (void *)&elementIsGlobal);
     Select(ID_displayPickLetter,           (void *)&displayPickLetter);
+    Select(ID_reusePickLetter,             (void *)&reusePickLetter);
     Select(ID_ghostType,                   (void *)&ghostType);
     Select(ID_hasMixedGhostTypes,          (void *)&hasMixedGhostTypes);
     Select(ID_linesData,                   (void *)&linesData);
@@ -1427,6 +1432,13 @@ PickAttributes::SetDisplayPickLetter(bool displayPickLetter_)
 }
 
 void
+PickAttributes::SetReusePickLetter(bool reusePickLetter_)
+{
+    reusePickLetter = reusePickLetter_;
+    Select(ID_reusePickLetter, (void *)&reusePickLetter);
+}
+
+void
 PickAttributes::SetGhostType(int ghostType_)
 {
     ghostType = ghostType_;
@@ -1985,6 +1997,12 @@ PickAttributes::GetDisplayPickLetter() const
     return displayPickLetter;
 }
 
+bool
+PickAttributes::GetReusePickLetter() const
+{
+    return reusePickLetter;
+}
+
 int
 PickAttributes::GetGhostType() const
 {
@@ -2495,6 +2513,7 @@ PickAttributes::GetFieldName(int index) const
     case ID_globalIncidentElements:      return "globalIncidentElements";
     case ID_elementIsGlobal:             return "elementIsGlobal";
     case ID_displayPickLetter:           return "displayPickLetter";
+    case ID_reusePickLetter:             return "reusePickLetter";
     case ID_ghostType:                   return "ghostType";
     case ID_hasMixedGhostTypes:          return "hasMixedGhostTypes";
     case ID_linesData:                   return "linesData";
@@ -2585,6 +2604,7 @@ PickAttributes::GetFieldType(int index) const
     case ID_globalIncidentElements:      return FieldType_intVector;
     case ID_elementIsGlobal:             return FieldType_bool;
     case ID_displayPickLetter:           return FieldType_bool;
+    case ID_reusePickLetter:             return FieldType_bool;
     case ID_ghostType:                   return FieldType_int;
     case ID_hasMixedGhostTypes:          return FieldType_int;
     case ID_linesData:                   return FieldType_bool;
@@ -2675,6 +2695,7 @@ PickAttributes::GetFieldTypeName(int index) const
     case ID_globalIncidentElements:      return "intVector";
     case ID_elementIsGlobal:             return "bool";
     case ID_displayPickLetter:           return "bool";
+    case ID_reusePickLetter:             return "bool";
     case ID_ghostType:                   return "int";
     case ID_hasMixedGhostTypes:          return "int";
     case ID_linesData:                   return "bool";
@@ -3032,6 +3053,11 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_displayPickLetter:
         {  // new scope
         retval = (displayPickLetter == obj.displayPickLetter);
+        }
+        break;
+    case ID_reusePickLetter:
+        {  // new scope
+        retval = (reusePickLetter == obj.reusePickLetter);
         }
         break;
     case ID_ghostType:

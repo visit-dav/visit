@@ -172,6 +172,7 @@ public:
     void SetGlobalIncidentElements(const intVector &globalIncidentElements_);
     void SetElementIsGlobal(bool elementIsGlobal_);
     void SetDisplayPickLetter(bool displayPickLetter_);
+    void SetReusePickLetter(bool reusePickLetter_);
     void SetGhostType(int ghostType_);
     void SetHasMixedGhostTypes(int hasMixedGhostTypes_);
     void SetLinesData(bool linesData_);
@@ -265,6 +266,7 @@ public:
           intVector    &GetGlobalIncidentElements();
     bool               GetElementIsGlobal() const;
     bool               GetDisplayPickLetter() const;
+    bool               GetReusePickLetter() const;
     int                GetGhostType() const;
     int                GetHasMixedGhostTypes() const;
     bool               GetLinesData() const;
@@ -373,6 +375,7 @@ public:
         ID_globalIncidentElements,
         ID_elementIsGlobal,
         ID_displayPickLetter,
+        ID_reusePickLetter,
         ID_ghostType,
         ID_hasMixedGhostTypes,
         ID_linesData,
@@ -444,6 +447,7 @@ private:
     intVector            globalIncidentElements;
     bool                 elementIsGlobal;
     bool                 displayPickLetter;
+    bool                 reusePickLetter;
     int                  ghostType;
     int                  hasMixedGhostTypes;
     bool                 linesData;

@@ -326,6 +326,9 @@ class SplashScreen;
 //    Dave Pugmire, Thu Jan 31 10:47:06 EST 2008
 //    Added sessionDir and UpdateSessionDir.
 //
+//    Gunther H. Weber, Fri Aug 15 10:22:13 PDT 2008
+//    Added methods for initiating and synchronizing repick.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -399,6 +402,8 @@ public slots:
     void newExpression();
     void SaveCrashRecoveryFile();
     void Interpret(const QString &);
+    void redoPick();
+    void restorePickAttributesAfterRepick();
 private slots:
     void Quit();
     void HeavyInitialization();
