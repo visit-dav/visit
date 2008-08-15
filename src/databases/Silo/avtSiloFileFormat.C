@@ -7206,6 +7206,13 @@ avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn)
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Changed interface to vtkCSGGrid class to accept raw Silo representation
+//
+//    Mark C. Miller, Thu Aug 14 19:52:12 PDT 2008
+//    Added code to explicitly cache csg grid objects from within the plugin.
+//    Note that the plugin is caching its objects in the 'cache' object but
+//    is doing so in a 'place' that VisIt itself can never find due to 
+//    different name of the 'type' of the cache.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -7217,7 +7224,6 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
 #ifdef MDSERVER
     return 0;
 #else
-
     //
     // Allow empty data sets
     //
@@ -7229,6 +7235,19 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
     // library, so let's cast it away.
     //
     char *meshname  = const_cast<char *>(mn);
+
+    //
+    // Check in cache for this domain before trying to read it.
+    // We have to explicitly handle caching of CSG meshes here in the plugin
+    // because of single vtkCSGGrid object maps to many VisIt domains. Also,
+    // we cache the object using a 'type' (SILO_CSG_GRID) that is unique to
+    // the SILO plugin so that VisIt's Generic Database class will never 
+    // find it.
+    //
+    vtkCSGGrid *cached_csggrid = (vtkCSGGrid*) cache->GetVTKObject(meshname,
+        "SILO_CSG_GRID", timestep, dom, "none");
+    if (cached_csggrid)
+        return cached_csggrid;
 
     //
     // Get the Silo construct.
@@ -7274,6 +7293,17 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
 
 
     DBFreeCsgmesh(csgm);
+
+    //
+    // Cache this csggrid object. We'll probably be asked to read this same one
+    // many times, each for a different CSG region but all part of the same vtkCSGGrid
+    // object.  So, we have to explicitly handle caching of CSG meshes here in the plugin
+    // because of single vtkCSGGrid object maps to many VisIt domains. Also,
+    // we cache the object using a 'type' (SILO_CSG_GRID) that is unique to
+    // the SILO plugin so that VisIt's Generic Database class will never 
+    // find it.
+    //
+    cache->CacheVTKObject(meshname, "SILO_CSG_GRID", timestep, dom, "none", csggrid);
 
     return csggrid;
 
