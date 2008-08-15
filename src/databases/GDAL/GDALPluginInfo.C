@@ -49,6 +49,8 @@ extern "C" const char *GDALVisItPluginVersion = VERSION;
 extern "C" const char *VisItPluginVersion = VERSION;
 #endif
 
+#include <stdlib.h>
+
 #if defined(__APPLE__)
 #define GetGeneralInfo GDAL_GetGeneralInfo
 #endif

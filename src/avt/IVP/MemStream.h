@@ -46,6 +46,7 @@
 #include <ivp_exports.h>
 #include <vector>
 #include <list>
+#include <cstring>
 #include <avtVec.h>
 #include <avtVecArray.h>
 #include <DebugStream.h>

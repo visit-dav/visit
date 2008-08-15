@@ -51,6 +51,7 @@
 #include <ImproperUseException.h>
 #include <TimingsManager.h>
 
+#include <climits>
 
 using     std::sort;
 using     std::string;
