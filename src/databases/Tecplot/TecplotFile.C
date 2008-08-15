@@ -39,6 +39,7 @@
 #include <map>
 
 #include <DebugStream.h> // for now...
+#include <cstring>
 
 #define TECPLOT_71  71
 #define TECPLOT_75  75

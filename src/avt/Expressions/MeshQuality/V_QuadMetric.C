@@ -25,7 +25,6 @@
 
 
 #include "verdict.h"
-#include "iostream.h" 
 #include "VerdictVector.h"
 #include "verdict_defines.h"
 #include "V_GaussIntegration.h"
