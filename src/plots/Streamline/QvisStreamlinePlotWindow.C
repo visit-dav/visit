@@ -128,6 +128,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
 //   Add accurate distance calculate option.
 //
+//   Dave Pugmire, Wed Aug 13 12:56:11 EST 2008
+//   Changed label text for streamline algorithms.
+//
 // ****************************************************************************
 
 void
@@ -408,7 +411,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     algoGLayout->addWidget( slAlgoLabel, 1,0);
     algoGLayout->addWidget( slAlgo, 1,1);
     
-    maxSLCountLabel = new QLabel(tr("Streamline process count"), algoGrp, "slMaxCountLabel");
+    maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp, "slMaxCountLabel");
     maxSLCount = new QSpinBox(1, 100000, 1, algoGrp, "slMaxCount");
     connect(maxSLCount, SIGNAL(valueChanged(int)), 
             this, SLOT(maxSLCountChanged(int)));

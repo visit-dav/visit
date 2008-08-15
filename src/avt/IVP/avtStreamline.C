@@ -123,18 +123,23 @@ avtStreamline::~avtStreamline()
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//
+//    Dave Pugmire, Wed Aug 13 10:58:32 EDT 2008
+//    Modify how data without ghost zones are handled.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
 avtStreamline::Advance(const avtIVPField* field, double tEnd, bool vorticity, 
-                       bool haveGhostZones)
+                       bool haveGhostZones, double *extents)
 {
     wantVorticity = vorticity;
     
     if (tEnd < TMin())
-        return DoAdvance(_ivp_bwd, field, tEnd, haveGhostZones);
+        return DoAdvance(_ivp_bwd, field, tEnd, haveGhostZones, extents);
     else if (tEnd > TMax())
-        return DoAdvance(_ivp_fwd, field, tEnd, haveGhostZones);
+        return DoAdvance(_ivp_fwd, field, tEnd, haveGhostZones, extents);
     
     return avtIVPSolver::OK;
 }
@@ -153,11 +158,14 @@ avtStreamline::Advance(const avtIVPField* field, double tEnd, bool vorticity,
 //    Kathleen Bonnell, Thu Aug  7, 08:29:42 PDT 2008
 //    Removed unused variable in catch.
 //
+//    Dave Pugmire, Wed Aug 13 10:58:32 EDT 2008
+//    Modify how data without ghost zones are handled.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
 avtStreamline::DoAdvance(avtIVPSolver* ivp, const avtIVPField* field, 
-                         double tEnd, bool haveGhostZones)
+                         double tEnd, bool haveGhostZones, double *extents)
 {
     avtIVPSolver::Result result;
 
@@ -183,6 +191,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp, const avtIVPField* field,
         }
         catch( avtIVPField::Undefined& )
         {
+            debug1<<ivp->GetCurrentY()<<" not in domain\n";
             // integrator left the domain, retry with smaller step
             // if step size is below given minimum, give up
 
@@ -195,7 +204,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp, const avtIVPField* field,
             if( fabs(h) < 1e-9 )
             {
                 delete step;
-                HandleGhostZones(ivp, haveGhostZones);
+                HandleGhostZones(ivp, haveGhostZones, extents);
                 return avtIVPSolver::OUTSIDE_DOMAIN;
             }
             
@@ -210,6 +219,8 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp, const avtIVPField* field,
         // record step if it was successful
         if (result == avtIVPSolver::OK)
         {
+            //avtVec eval = (*field)( 1.0, step->back() );
+            //cout<<"Step: "<<step->back()<<" F(s)= "<<eval<<" vel= "<<step->velEnd<<" s= "<<step->velEnd.length()<<endl;
             if ( wantVorticity )
                 step->ComputeVorticity( field );
             //cout<<"Step. dist= "<<ivp->GetCurrentDist()
@@ -256,133 +267,71 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp, const avtIVPField* field,
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//
+//    Dave Pugmire, Wed Aug 13 10:58:32 EDT 2008
+//    Modify how data without ghost zones are handled. Pass in a dataset extents
+//    array. Use that to do adaptive jumping out on the velocity vector.
+//
 // ****************************************************************************
 
 void
-avtStreamline::HandleGhostZones(avtIVPSolver* ivp, bool haveGhostZones)
+avtStreamline::HandleGhostZones(avtIVPSolver *ivp,
+                                bool haveGhostZones,
+                                double *extents)
 {
-    if ( haveGhostZones )
+    if ( haveGhostZones || extents==NULL || size() == 0 )
         return;
-    
-    //debug1 << "Try to jump out into a ghostzone. Size = " << size() << endl;
-    if ( size() >= 2 )
-    {
-        static const double eps = 1e-3;
 
-        if ( ivp == _ivp_fwd )
+    // Determine the minimum non-zero data extent.
+    double range[3], minRange = -1.0;
+    range[0] = (extents[1]-extents[0]);
+    range[1] = (extents[3]-extents[2]);
+    range[2] = (extents[5]-extents[4]);
+    for ( int i = 0; i < 3; i++ )
+    {
+        if (range[i] > 0.0 )
         {
-            //debug1<< "Forward SL\n";
-            iterator s1 = end(), s0 = end();
-            
-            s0--;
-            s0--;
-            s1--;
-            for ( int i = size()-2; i > 0; i-- )
-            {
-                avtVec p0 = (*s0)->front();
-                avtVec p1 = (*s1)->front();
-                
-                // Compute a vector between the last two points.
-                double vec[3] = {  
-                                   p1.values()[0]-p0.values()[0], 
-                                   p1.values()[1]-p0.values()[1], 
-                                   p1.values()[2]-p0.values()[2] 
-                                };
-                double lenSq = vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2];
-            
-                //debug1 << i<<": Tangent: " << vec[0] << " " << vec[1] 
-                //       << " " << vec[2] << endl;
-                
-                
-                // If the vector is zero, advance Y a small distance 
-                // in the tangent direction.
-                if (lenSq > 0.0)
-                {
-                    double len = sqrt(lenSq);
-                    vec[0] /= len;
-                    vec[1] /= len;
-                    vec[2] /= len;
-                    
-                    //debug1 << i<<": Tangent: " << vec[0] << " " 
-                    //       << vec[1] << " " << vec[2] << endl;
-                    vec[0] *= eps;
-                    vec[1] *= eps;
-                    vec[2] *= eps;
-                    
-                    avtVec newY = ivp->GetCurrentY();
-                    newY.values()[0] += vec[0];
-                    newY.values()[1] += vec[1];
-                    newY.values()[2] += vec[2];
-                    
-                    ivp->SetCurrentY( newY );
-                    ivp->SetCurrentT( ivp->GetCurrentT() + eps );
-                    break;
-                }
-                s0--;
-                s1--;
-            }
-        }
-        else
-        {
-            iterator s1 = begin(), s0 = begin();
-            //debug1<< "Backward SL\n";
-            s0++;
-            int i = 0;
-            while ( s0 != end() )
-            {
-                avtVec p0 = (*s0)->front();
-                avtVec p1 = (*s1)->front();
-                
-                // Compute a vector between the last two points.
-                double vec[3] = {
-                                   p1.values()[0]-p0.values()[0], 
-                                   p1.values()[1]-p0.values()[1], 
-                                   p1.values()[2]-p0.values()[2]
-                                };
-                double lenSq = vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2];
-            
-                //debug1 << i<<": Tangent: " << vec[0] << " " << vec[1] 
-                //       << " " << vec[2] << endl;
-                //debug1 << "len = " << lenSq << endl;
-                
-                
-                // If the vector is zero, advance Y a small distance in 
-                // the tangent direction.
-                if ( lenSq > 0.0 )
-                {
-                    double len = sqrt(lenSq);
-                    vec[0] /= len;
-                    vec[1] /= len;
-                    vec[2] /= len;
-                    
-                    //debug1 << i<<": Tangent: " << vec[0] << " " 
-                    //       << vec[1] << " " << vec[2] << endl;
-                    vec[0] *= eps;
-                    vec[1] *= eps;
-                    vec[2] *= eps;
-                    ///debug1 << i<<": Tangent: " << vec[0] << " " 
-                    //       << vec[1] << " " << vec[2] << endl;
-                    
-                    avtVec newY = ivp->GetCurrentY();
-                    //debug1 << "Y: " << newY.values()[0] <<", " 
-                    //       << newY.values()[1]<<", "
-                    //       << newY.values()[2]<< " --> ";
-                    newY.values()[0] += vec[0];
-                    newY.values()[1] += vec[1];
-                    newY.values()[2] += vec[2];
-                    //debug1 << newY.values()[0] <<", " <<newY.values()[1]
-                    //       <<", "<<newY.values()[2]<< endl;
-                    
-                    ivp->SetCurrentY( newY );
-                    ivp->SetCurrentT( ivp->GetCurrentT() - eps );
-                    break;
-                }
-                s0++;
-                s1++;
-                i++;
-            }
+            if ( minRange < 0 || range[i] < minRange )
+                minRange = range[i];
         }
     }
+    
+    if ( minRange < 0.0 )
+        return;
+
+    avtVec dir, pt;
+    if ( ivp == _ivp_fwd )
+    {
+        iterator si = _steps.end();
+        si--;
+        dir = (*si)->velEnd;
+        pt = (*si)->front();
+    }
+    else
+    {
+        iterator si = _steps.begin();
+        dir = (*si)->velEnd;
+        dir *= -1.0;
+        pt = (*si)->front();
+    }
+    
+    double len = dir.length();
+    if ( len == 0.0 )
+        return;
+
+    //Jump out .1% of the min distance.
+    dir /= len;
+    double leapingDistance = minRange * 0.001;
+
+    debug1<< "Leaping: "<<leapingDistance<< " dir = "<<dir<<endl;
+    debug1<< "Leap: "<<pt;
+    dir *= leapingDistance;
+    avtVec newPt = pt + dir;
+    debug1<<" ==> "<<newPt<<endl;
+
+    ivp->SetCurrentY( newPt );
+    ivp->SetCurrentT( ivp->GetCurrentT() + leapingDistance );
 }
 
 

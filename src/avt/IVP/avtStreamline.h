@@ -78,6 +78,11 @@
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//
+//    Dave Pugmire, Wed Aug 13 10:58:32 EDT 2008
+//    Modify how data without ghost zones are handled.
+//
 // ****************************************************************************
 
 class IVP_API avtStreamline
@@ -96,7 +101,8 @@ class IVP_API avtStreamline
    
     avtIVPSolver::Result 
               Advance(const avtIVPField* field, double tEnd, 
-                      bool vorticity=false, bool haveGhostZones=false );
+                      bool vorticity=false, bool haveGhostZones=false,
+                      double *extents=NULL);
 
     // Min/Max T of integrated streamlines.
     double    TMin() const;
@@ -126,9 +132,11 @@ class IVP_API avtStreamline
     
     avtIVPSolver::Result 
               DoAdvance(avtIVPSolver* ivp, const avtIVPField* field, 
-                        double t, bool haveGhostZones=false);
+                        double t, bool haveGhostZones=false,
+                        double *extents=NULL);
 
-    void      HandleGhostZones( avtIVPSolver* ivp, bool haveGhostZones );
+    void      HandleGhostZones(avtIVPSolver* ivp, bool haveGhostZones,
+                               double *extents);
 
     // Integration steps.
     //std::list<const avtIVPStep*> _steps;

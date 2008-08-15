@@ -265,6 +265,9 @@ protected:
 //    Changed for-loops to use size_t to eliminate signed/unsigned int 
 //    comparison warnings.  Cast 'fabs' arg in call to std::transform.
 //
+//    Dave Pugmire, Wed Aug 13 10:58:32 EDT 2008
+//    Added distSqrVecVec and distVecVec functions.
+//
 //*****************************************************************************
 
 class avtVec: public avtVecRef
@@ -578,6 +581,25 @@ inline const avtVecRef sub( unsigned int size, const avtVecRef& v )
         EXCEPTION0(ImproperUseException);
     
     return avtVecRef( (double*)v.begin()+size, dim );
+}
+
+inline double distSqrVecVec( const avtVecRef &u, const avtVecRef &v )
+{
+    if (u.dim() != v.dim())
+        EXCEPTION0(ImproperUseException);
+    double len = 0;
+    
+    for (size_t i = 0; i < u.dim(); i++)
+    {
+        double diff = (u[i]-v[i]);
+        len += diff*diff;
+    }
+    return len;
+}
+
+inline double distVecVec( const avtVecRef &u, const avtVecRef &v )
+{
+    return sqrt(distSqrVecVec(u,v));
 }
 
 // ostream operator

@@ -400,6 +400,9 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 //    Changed for loops to use size_t to eliminate signed/unsigned int 
 //    comparison warnings.
 //
+//    Dave Pugmire, Wed Aug 13 10:58:32 EDT 2008
+//    Store the velocity with each step.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -554,7 +557,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
             // --- step looks ok - prepare for return
             if( reject ) 
                 h_new = direction * std::min( std::abs(h_new), std::abs(h) );
-                
+
             // fill in step
             // make interpolation polynomial
             if( ivpstep )
@@ -569,6 +572,8 @@ avtIVPDopri5::Step(const avtIVPField* field,
         
                 ivpstep->tStart = t;
                 ivpstep->tEnd   = t + h;
+                ivpstep->velStart = k1;
+                ivpstep->velEnd = k7;
             }
             
             // update internal state

@@ -201,6 +201,9 @@ class avtStreamlineWrapper
 //   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
 //   Add accurate distance calculate option.
 //
+//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//   Add dataSpatialDimension
+//
 // ****************************************************************************
 
 class avtStreamlineFilter : public avtDatasetOnDemandFilter
@@ -251,6 +254,7 @@ class avtStreamlineFilter : public avtDatasetOnDemandFilter
     int    pointDensity;
     int    streamlineDirection;
     int    coloringMethod;
+    int    dataSpatialDimension;
     std::string normalizedVecExprName;
 
     avtIntervalTree *intervalTree;
@@ -326,7 +330,7 @@ class avtStreamlineFilter : public avtDatasetOnDemandFilter
                                    std::vector<avtStreamlineWrapper *> &pts);
     void                      IntegrateStreamline(avtStreamlineWrapper *slSeg);
     avtIVPSolver::Result      IntegrateDomain(avtStreamlineWrapper *slSeg, 
-                                              vtkDataSet *ds);
+                                              vtkDataSet *ds, double *extents);
     void                      CreateStreamlineOutput( 
                                  vector<avtStreamlineWrapper *> &streamlines );
 

@@ -554,6 +554,11 @@ avtIVPAdamsBashforth::ABStep(const avtIVPField* field,
 //  Programmer: Dave Pugmire
 //  Creation:   August 5, 2008
 //
+//  Modifications:
+//
+//    Dave Pugmire, Wed Aug 13 10:58:32 EDT 2008
+//    Store the velocity with each step.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -599,6 +604,9 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
         (*ivpstep)[1] = yNew;
         ivpstep->tStart = t;
         ivpstep->tEnd = t + h;
+        
+        ivpstep->velStart = (*field)(t,yCur);
+        ivpstep->velEnd = (*field)((t+h),yNew);
 
         t = t+h;
         yCur = yNew;
