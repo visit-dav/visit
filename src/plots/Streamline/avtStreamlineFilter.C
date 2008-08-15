@@ -168,6 +168,10 @@ avtStreamlineWrapper::~avtStreamlineWrapper()
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//   Print out how many steps have been taken.
+//
 // ****************************************************************************
 
 void
@@ -187,7 +191,8 @@ avtStreamlineWrapper::Debug()
     debug1<<" Dom= [ "<<domain<<", ";
     for (int i = 0; i < seedPtDomainList.size(); i++)
         debug1<<seedPtDomainList[i]<<", ";
-    debug1<<"]\n";
+    debug1<<"] ";
+    debug1<< " steps= "<<sl->size()<<endl;
 }
 
 
@@ -234,6 +239,12 @@ avtStreamlineWrapper::Serialize(MemStream::Mode mode, MemStream &buff,
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//   Step derivative is not giving the right answer. So, use the velEnd vector
+//   for coloring by speed.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -253,8 +264,10 @@ avtStreamlineWrapper::GetVTKPolyData(int spatialDim, int coloringMethod,
     
     unsigned int i = 0;
     float val = 0.0, theta = 0.0;
+    debug1<<"Create vtkPolyData\n";
     for(siter = sl->begin(); siter != sl->end(); ++siter, i++)
     {
+        debug1<<i<<": "<< (*siter)->front()<<endl;
         points->InsertPoint(i, (*siter)->front()[0], (*siter)->front()[1], 
                             (spatialDim > 2 ? (*siter)->front()[2] : 0.0));
         cells->InsertCellPoint(i);
@@ -263,11 +276,12 @@ avtStreamlineWrapper::GetVTKPolyData(int spatialDim, int coloringMethod,
         if (coloringMethod == STREAMLINE_COLOR_SPEED)
         {
             avtIVPStep *step = (*siter);
-            avtVec deriv = step->derivative(step->tStart);
+            avtVec deriv = step->velEnd;
             val = deriv.values()[0]*deriv.values()[0] 
                 + deriv.values()[1]*deriv.values()[1];
             if (spatialDim == 3)
                 val += deriv.values()[2]*deriv.values()[2];
+            val = sqrt(val);
         }
         
         if (coloringMethod == STREAMLINE_COLOR_VORTICITY || 
@@ -429,6 +443,9 @@ avtStreamlineWrapper::ComputeStatistics()
 //   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
 //   Add accurate distance calculate option.
 //
+//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//   Add dataSpatialDimension
+//
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
@@ -449,6 +466,7 @@ avtStreamlineFilter::avtStreamlineFilter()
     absTol = 0;
     haveGhostZones = false;
     intervalTree = NULL;
+    dataSpatialDimension = 3;
 
     //
     // Initialize source values.
@@ -555,15 +573,13 @@ avtStreamlineFilter::ComputeRankList(const vector<int> &domList,
 void
 avtStreamlineFilter::SetDomain(avtStreamlineWrapper *slSeg)
 {
-    //debug1<<"avtStreamlineFilter::SetDomain(avtStreamlineWrapper *slSeg)\n";
-
     pt3d endPt;
     slSeg->GetEndPoint(endPt);
     
     slSeg->seedPtDomainList.resize(0);
     intervalTree->GetElementsListFromRange(endPt.xyz, endPt.xyz, 
                                            slSeg->seedPtDomainList);
-    
+
     slSeg->domain = -1;
     // 1 domain, easy.
     if (slSeg->seedPtDomainList.size() == 1)
@@ -1126,11 +1142,22 @@ avtStreamlineFilter::SetStreamlineDirection(int dir)
 //  Programmer: Hank Childs
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//   Don't use on demand if user has not requested it.
+//
 // ****************************************************************************
 
 bool
 avtStreamlineFilter::CheckOnDemandViability(void)
 {
+    // If we don't want on demand, don't provide it.
+    if (method != STREAMLINE_STAGED_LOAD_ONDEMAND)
+    {
+        debug1 << "avtStreamlineFilter::CheckOnDemandViability(): = " << 0 <<endl;
+        return false;
+    }
+    
     avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
     bool val = (it == NULL ? false : true);
     debug1 << "avtStreamlineFilter::CheckOnDemandViability(): = " << val <<endl;
@@ -1155,6 +1182,9 @@ avtStreamlineFilter::CheckOnDemandViability(void)
 //
 //    Hank Childs, Mon Jun 16 12:19:20 PDT 2008
 //    Calculate a new interval tree when in non-on-demand mode.
+//
+//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//   In serial mode, set the cacheQLen to be the total number of domains.
 //
 // ****************************************************************************
 
@@ -1191,6 +1221,7 @@ avtStreamlineFilter::Execute(void)
     //    else if (method == ASYNC_BALANCED_LOAD_ONDEMAND)
     //        ParallelBalancedStaticDomains(seedpoints, true, MAX_CNT, true);
 #else
+    SetMaxQueueLength(cacheQLen);
     StagedLoadOnDemand(seedpoints);
 #endif
     
@@ -1579,12 +1610,16 @@ avtStreamlineFilter::LoadOnDemand(
 //    Remove the "area code" from the initialization so it will compile on
 //    my box.
 //
+//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//   Add dataSpatialDimension
+//
 // ****************************************************************************
 
 void
 avtStreamlineFilter::Initialize()
 {
     InitStatistics();
+    dataSpatialDimension = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
 
 #ifdef PARALLEL
     rank = PAR_Rank();
@@ -1669,6 +1704,8 @@ avtStreamlineFilter::Initialize()
 #else
     // for serial, it's all load on demand.
     method = STREAMLINE_STAGED_LOAD_ONDEMAND;
+    // allow all domains to be in memory.
+    cacheQLen = numDomains;
 #endif
 
     IOTime += visitTimer->StopTimer(timerHandle, "GetDomain()");
@@ -1693,6 +1730,11 @@ avtStreamlineFilter::Initialize()
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//   Add dataSpatialDimension and optimization for reclinear grids.
+//
 // ****************************************************************************
 
 bool
@@ -1701,10 +1743,31 @@ avtStreamlineFilter::PointInDomain(pt3d &pt, int domain)
     //debug1<< "avtStreamlineFilter::PointInDomain(["<<pt.xyz[0]<<" "
     //      <<pt.xyz[1]<<" "<<pt.xyz[2]<<"], dom= "<<domain<<");\n";
     vtkDataSet *ds = GetDomain(domain);
+
     if (ds == NULL)
     {
         EXCEPTION0(ImproperUseException);
         return false;
+    }
+
+    // If it's rectilinear, we can do bbox test...
+    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        double bbox[6];
+        intervalTree->GetElementExtents(domain, bbox);
+        //debug1<<"[ "<<bbox[0]<<" "<<bbox[1]<<" ] [ "<<bbox[2]<<" "<<bbox[3]<<" ] [ "<<bbox[4]<<" "<<bbox[5]<<" ]"<<endl;
+        if (pt.xyz[0] < bbox[0] || pt.xyz[0] > bbox[1] ||
+            pt.xyz[1] < bbox[2] || pt.xyz[1] > bbox[3])
+        {
+            return false;
+        }
+        
+        if(dataSpatialDimension == 3 &&
+           (pt.xyz[2] < bbox[4] || pt.xyz[2] > bbox[5]))
+        {
+            return false;
+        }
+        return true;
     }
 
     vtkVisItCellLocator *cellLocator = domainToCellLocatorMap[domain];
@@ -2427,7 +2490,7 @@ avtStreamlineFilter::StaticDomainExchangeStreamlines(
                 int len = slSeg->UnSerialize(&buff[offset], solver);
                 //debug1<< j<<": size = " << len << endl;
                 offset += len;
-                slSeg->Debug();
+                //slSeg->Debug();
             }
         }
         
@@ -3741,7 +3804,7 @@ avtStreamlineFilter::AsyncRecvStreamlines(
 
                     pt3d pt;
                     slSeg->GetEndPoint(pt);
-                    slSeg->Debug();
+                    //slSeg->Debug();
 
                     if (PointInDomain(pt, slSeg->domain))
                     {
@@ -4520,6 +4583,12 @@ FindNextDomain(const vector<avtStreamlineWrapper *> &streamlines,
 //  Programmer: Dave Pugmire
 //  Creation:   March 4, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//   Bug fix. If the seed is not found in any domains, put it in the terminated
+//   streamlines array.
+//
 // ****************************************************************************
 
 void
@@ -4589,8 +4658,9 @@ avtStreamlineFilter::StagedLoadOnDemand(
             else
                 outOfBounds.push_back(slSeg);
         }
-        
+
         // Integrate all the active streamlines.
+        debug1<<"Integrate active streamlines. sz= "<<activeStreamlines.size()<<". Inact "<<inactiveStreamlines.size()<<endl;
         if (activeStreamlines.size() > 0)
         {
             //Integrate the active streamlines.
@@ -4606,15 +4676,19 @@ avtStreamlineFilter::StagedLoadOnDemand(
                 {
                     pt3d endPt;
                     slSeg->GetEndPoint(endPt);
+                    bool InDomain = false;
                     for (int j = 0; j < slSeg->seedPtDomainList.size(); j++)
                     {
                         if (PointInDomain(endPt, slSeg->seedPtDomainList[j]))
                         {
                             slSeg->domain = slSeg->seedPtDomainList[j];
                             outOfBounds.push_back(slSeg);
+                            InDomain = true;
                             break;
                         }
                     }
+                    if ( !InDomain )
+                        terminatedStreamlines.push_back(slSeg);
                 }
             }
         }
@@ -4655,6 +4729,12 @@ avtStreamlineFilter::StagedLoadOnDemand(
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//   Pass domain extents into integration for ghost zone handling.
+
+//
 // ****************************************************************************
 
 void
@@ -4676,7 +4756,9 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg)
         slSeg->UpdateDomainCount(slSeg->domain);
 
         int integrationTimer = visitTimer->StartTimer();
-        avtIVPSolver::Result result = IntegrateDomain(slSeg, ds);
+        double extents[6];
+        intervalTree->GetElementExtents(slSeg->domain, extents);
+        avtIVPSolver::Result result = IntegrateDomain(slSeg, ds, extents);
         integrationTime += visitTimer->StopTimer(integrationTimer, 
                                                  "StreamlineIntegration");
         numIntegrationSteps++;
@@ -4694,45 +4776,8 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg)
             slSeg->domain = -1;
         }
     }
-
-    /*
-    SetDomain(slSeg);
-
-    debug1<<"while (true)"<<endl;
-    while (true)
-    {
-        
-        if (ds == NULL)
-        {
-            slSeg->status = avtStreamlineWrapper::TERMINATE;
-            break;
-        }
-        
-        // Integrate over this domain.
-        slSeg->UpdateDomainCount(slSeg->domain);
-
-        int integrationTimer = visitTimer->StartTimer();
-        avtIVPSolver::Result result = IntegrateDomain(slSeg, ds);
-        integrationTime += visitTimer->StopTimer(integrationTimer, 
-                                                 "StreamlineIntegration");
-        numIntegrationSteps++;
-
-        if (slSeg->status == avtStreamlineWrapper::OUTOFBOUNDS)
-        {
-            if (loadOnDemand || DomainLoaded(slSeg->domain))
-                continue;
-            else
-                break;
-        }    
-        else
-        {
-            slSeg->status = avtStreamlineWrapper::TERMINATE;
-            break;
-        }
-    }
-    */
     
-    debug1 << "   IntegrateStreamline DONE: status = " << slSeg->status 
+    debug1 << "   IntegrateStreamline DONE: status = " << (slSeg->status==avtStreamlineWrapper::TERMINATE ? "TERMINATE" : "OOB")
            << " domCnt= "<<slSeg->seedPtDomainList.size()<<endl;
 }
 
@@ -4758,7 +4803,7 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg)
 
 avtIVPSolver::Result
 avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg, 
-                                     vtkDataSet *ds)
+                                     vtkDataSet *ds, double *extents)
 {
     avtDataAttributes &a = GetInput()->GetInfo().GetAttributes();
     haveGhostZones = (a.GetContainsGhostZones()==AVT_NO_GHOSTS ? false : true);
@@ -4793,12 +4838,12 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
     double t = (slSeg->dir == avtStreamlineWrapper::FWD 
                     ? termination : -termination);
     
-    slSeg->Debug();
+    //slSeg->Debug();
     bool doVorticity = ((coloringMethod == STREAMLINE_COLOR_VORTICITY)
                        || (displayMethod == STREAMLINE_DISPLAY_RIBBONS));
     avtIVPSolver::Result result = slSeg->sl->Advance(&field, t, doVorticity, 
-                                                     haveGhostZones);
-    slSeg->Debug();
+                                                     haveGhostZones, extents);
+    //slSeg->Debug();
 
     if (result == avtIVPSolver::OUTSIDE_DOMAIN)
     {
@@ -4807,7 +4852,6 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
 
         //Set the new domain.
         SetDomain(slSeg);
-        slSeg->Debug();
 
         // See if we are really done.
         if (slSeg->seedPtDomainList.size() == 0 ||
@@ -4816,6 +4860,7 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         {
             debug1<<"TERMINATE: sz= "<<slSeg->seedPtDomainList.size()<<" dom= "
                   <<slSeg->domain<<" oldDom= "<<oldDomain<<endl;
+            //slSeg->Debug();
             slSeg->status = avtStreamlineWrapper::TERMINATE;
         }
     }
@@ -4880,6 +4925,11 @@ avtStreamlineFilter::SetZToZero(vtkPolyData *pd) const
 //  Programmer: Hank Childs
 //  Creation:   March 3, 2007
 //
+//  Modifications:
+//
+//    Dave Pugmire, Tue Aug 12 13:44:10 EDT 2008
+//    Moved the box extents code to the seed point generation function.
+//
 // ****************************************************************************
 
 void
@@ -4887,14 +4937,6 @@ avtStreamlineFilter::PreExecute(void)
 {
     avtDatasetOnDemandFilter::PreExecute();
 
-    // If we have a box source and we are using the whole box, then plug
-    // the current spatial extents into the box extents.
-    if (sourceType == STREAMLINE_SOURCE_BOX && useWholeBox)
-    {
-        avtDataset_p input = GetTypedInput();
-        avtDatasetExaminer::GetSpatialExtents(input, boxExtents);
-    }
-    
     // Create the solver. --Get from user prefs.
     if (integrationType == STREAMLINE_INTEGRATE_DORLAND_PRINCE)
     {
@@ -5006,6 +5048,13 @@ static int comparePtDom(const void *a, const void *b)
 }
 
 
+static float
+randMinus1_1()
+{
+    float r = 2.0 * ((float)rand() / (float)RAND_MAX);
+    return (r-1.0);
+}
+
 // ****************************************************************************
 //  Method: avtStreamlineFilter::GetSeedPoints
 //
@@ -5015,18 +5064,26 @@ static int comparePtDom(const void *a, const void *b)
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//    Dave Pugmire, Tue Aug 12 13:44:10 EDT 2008
+//    Moved the box extents code from PreExecute to here.
+//    Attempt to slightly adjust seed points not in the DS.
+//
+//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//   Add dataSpatialDimension.
+//
 // ****************************************************************************
 
 void
 avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
 {
-    int spatialDim=GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
     std::vector<pt3d> candidatePts;
 
     // Add seed points based on the source.
     if(sourceType == STREAMLINE_SOURCE_POINT)
     {
-        double z0 = (spatialDim > 2) ? pointSource[2] : 0.0;
+        double z0 = (dataSpatialDimension > 2) ? pointSource[2] : 0.0;
         pt3d pt(pointSource[0], pointSource[1], z0);
         candidatePts.push_back(pt);
     }
@@ -5034,8 +5091,8 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
     else if(sourceType == STREAMLINE_SOURCE_LINE)
     {
         vtkLineSource* line = vtkLineSource::New();
-        double z0 = (spatialDim > 2) ? lineStart[2] : 0.;
-        double z1 = (spatialDim > 2) ? lineEnd[2] : 0.;
+        double z0 = (dataSpatialDimension > 2) ? lineStart[2] : 0.;
+        double z1 = (dataSpatialDimension > 2) ? lineEnd[2] : 0.;
         line->SetPoint1(lineStart[0], lineStart[1], z0);
         line->SetPoint2(lineEnd[0], lineEnd[1], z1);
         line->SetResolution(pointDensity);
@@ -5059,7 +5116,7 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
         avtVector N(planeNormal);
         U.normalize();
         N.normalize();
-        if(spatialDim <= 2)
+        if(dataSpatialDimension <= 2)
            N = avtVector(0.,0.,1.);
         // Determine the right vector.
         avtVector R(U % N);
@@ -5108,20 +5165,49 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
         int npts = (pointDensity+1)*(pointDensity+1);
 
         int nZvals = 1;
-        if(spatialDim > 2)
+        if(dataSpatialDimension > 2)
         {
             npts *= (pointDensity+1);
             nZvals = (pointDensity+1);
         }
 
+        //Whole domain, ask intervalTree.
+        if (useWholeBox)
+            intervalTree->GetExtents( boxExtents );
+        
         float dX = boxExtents[1] - boxExtents[0];
         float dY = boxExtents[3] - boxExtents[2];
         float dZ = boxExtents[5] - boxExtents[4];
+
+        // If using whole box, shrink the extents inward by 0.5%
+        const float shrink = 0.005;
+        if (useWholeBox)
+        {
+            if (dX > 0.0)
+            {
+                boxExtents[0] += (shrink*dX);
+                boxExtents[1] -= (shrink*dX);
+                dX = boxExtents[1] - boxExtents[0];
+            }
+            if ( dY > 0.0 )
+            {
+                boxExtents[2] += (shrink*dY);
+                boxExtents[3] -= (shrink*dY);
+                dY = boxExtents[3] - boxExtents[2];
+            }
+            if ( dZ > 0.0 )
+            {
+                boxExtents[4] += (shrink*dZ);
+                boxExtents[5] -= (shrink*dZ);
+                dZ = boxExtents[5] - boxExtents[4];
+            }
+        }
+
         int index = 0;
         for(int k = 0; k < nZvals; ++k)
         {
             float Z = 0.;
-            if(spatialDim > 2)
+            if(dataSpatialDimension > 2)
                 Z = (float(k) / float(pointDensity)) * dZ + boxExtents[4];
             for(int j = 0; j < pointDensity+1; ++j)
             {
@@ -5141,6 +5227,14 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
     //heartburn.
     //Also, filter out any points that aren't inside the DS.
     vector<seedPtDomain> ptDom;
+    double dataRange[6];
+    
+    intervalTree->GetExtents(dataRange);
+    double dX = dataRange[1]-dataRange[0];
+    double dY = dataRange[3]-dataRange[2];
+    double dZ = dataRange[5]-dataRange[4];
+    double minRange = std::min(dX, std::min(dY,dZ));
+
     for (int i = 0; i < candidatePts.size(); i++)
     {
         vector<int> dl;
@@ -5148,16 +5242,49 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
         intervalTree->GetElementsListFromRange(candidatePts[i].values(), 
                                                candidatePts[i].values(), dl);
 
+        //cout<<i<<": "<<candidatePts[i].xyz[0]<<" "<<candidatePts[i].xyz[1]<<" "<<candidatePts[i].xyz[2]<<" dl= "<<dl.size()<<endl;
+        // seed in no domains, try to wiggle it into a DS.
+        if (dl.size() == 0)
+        {
+            //Try to wiggle it by 0.5% of the dataset size.
+            double offset[3], wiggle[3] = {dX*0.005, dY*0.005, dZ*0.005};
+            bool foundGoodPt = false;
+            for ( int i = 0; i < 100; i++ )
+            {
+                pt3d wigglePt(candidatePts[i].xyz[0]+wiggle[0]*randMinus1_1(),
+                              candidatePts[i].xyz[1]+wiggle[1]*randMinus1_1(),
+                              candidatePts[i].xyz[2]+wiggle[2]*randMinus1_1());
+                
+                vector<int> dl2;
+                intervalTree->GetElementsListFromRange(wigglePt.values(), wigglePt.values(), dl2);
+                //cout<<"Wiggle it: "<<i<<": "<<wigglePt.values()[0]<<" "<<wigglePt.values()[1]<<" "<<wigglePt.values()[2];
+                //cout<<" domain cnt: "<<dl2.size()<<endl;
+                if ( dl2.size() > 0 )
+                {
+                    candidatePts[i].xyz[0] = wigglePt.values()[0];
+                    candidatePts[i].xyz[1] = wigglePt.values()[1];
+                    candidatePts[i].xyz[2] = wigglePt.values()[2];
+                    dl.resize(0);
+                    for ( int j = 0; j < dl2.size(); j++ )
+                        dl.push_back(dl2[j]);
+                    foundGoodPt = true;
+                    //cout<<"Wiggle it: "<<i<<": "<<wigglePt.values()[0]<<" "<<wigglePt.values()[1]<<" "<<wigglePt.values()[2]<<" dl= "<<dl.size()<<endl;
+                    break;
+                }
+                
+            }
+            
+            // Can't find a point inside, we will skip it.
+            if (!foundGoodPt)
+                continue;
+        }
+
         debug1<<"Candidate pt: "<<i<<" ["<<candidatePts[i].values()[0]<<", "
               <<candidatePts[i].values()[1]<<", "<<candidatePts[i].values()[2];
         debug1<<" dom =[";
         for (int j = 0; j < dl.size();j++)
             debug1<<dl[j]<<", ";
         debug1<<"]\n";
-
-        //Seed point is outside, so skip it.
-        if (dl.size() == 0)
-            continue;
         
         // Add seed for each domain/pt. At this point, we don't know where 
         // the pt belongs....
@@ -5208,6 +5335,11 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//   Add dataSpatialDimension.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -5231,7 +5363,7 @@ avtStreamlineFilter::StartSphere(float val, double pt[3])
         arr->SetTuple1(i, val);
 
     // If we're not 3D, make the sphere be 2D.
-    if(GetInput()->GetInfo().GetAttributes().GetSpatialDimension() <= 2)
+    if(dataSpatialDimension <= 2)
         SetZToZero(sphereData);
 
     sphereData->GetPointData()->SetScalars(arr);
@@ -5251,6 +5383,11 @@ avtStreamlineFilter::StartSphere(float val, double pt[3])
 //
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
+//
+//  Modifications:
+//
+//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//   Add dataSpatialDimension.
 //
 // ****************************************************************************
 
@@ -5272,9 +5409,10 @@ avtStreamlineFilter::CreateStreamlineOutput(
     {
         avtStreamlineWrapper *slSeg = (avtStreamlineWrapper *) streamlines[i];
         vector<float> thetas;
-        vtkPolyData *pd = slSeg->GetVTKPolyData(
-                   GetInput()->GetInfo().GetAttributes().GetSpatialDimension(),
-                    coloringMethod, displayMethod, thetas);
+        vtkPolyData *pd = slSeg->GetVTKPolyData(dataSpatialDimension,
+                                                coloringMethod, displayMethod,
+                                                thetas);
+        debug1<<"Done w/ GetVTKPolyData\n";
         
         if (pd == NULL)
             continue;

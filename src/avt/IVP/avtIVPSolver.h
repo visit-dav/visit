@@ -82,6 +82,10 @@ struct avtIVPStateHelper;
 //    Kathleen Bonnell, Thu Aug  7 08:50:13 PDT 2008
 //    Changed return of ComputeVoriticity from double to void.
 //
+//    Dave Pugmire, Wed Aug 13 10:58:32 EDT 2008
+//    Store the velocity with each step.
+//
+//
 // ****************************************************************************
 
 class IVP_API avtIVPStep: public avtBezierSegment
@@ -104,6 +108,8 @@ public:
         buff.io( mode, tStart );
         buff.io( mode, tEnd );
         buff.io( mode, vorticity );
+        buff.io( mode, velStart );
+        buff.io( mode, velEnd );
         
         //TODO
         //avtBezierSegment::Serialize( mode, buff );
@@ -117,6 +123,7 @@ public:
     }
     
     double tStart, tEnd;
+    avtVec velStart, velEnd;
     double vorticity;
 };
 
@@ -152,7 +159,6 @@ class avtIVPState
 
     void       Serialize(MemStream::Mode mode, MemStream &buff)
                {
-                   //debug1 << "avtIVPState::Serialize()\n";
                    if ( mode == MemStream::WRITE )
                    {
                        buff.io(mode, _size );
@@ -165,8 +171,6 @@ class avtIVPState
                        allocate(sz);
                        buff.io(mode, _data, sz);
                    }
-                   //debug1 << "DONE: avtIVPState::Serialize() sz= " 
-                   //       << size() << endl;
                }
 
   private:
@@ -244,7 +248,7 @@ class avtIVPSolver
     
     virtual void    Reset(const double& t_start, const avtVecRef& y_start) = 0;
 
-    virtual Result  Step( const avtIVPField* field, 
+    virtual Result  Step(const avtIVPField* field, 
                          const double& t_max, 
                          avtIVPStep* ivpstep = 0 ) = 0;
     virtual void    OnExitDomain() {}
