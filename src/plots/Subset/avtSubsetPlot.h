@@ -104,6 +104,10 @@ class     avtSmoothPolyDataFilter;
 //    Added another ghost zone filter (gz2) for removing edges on the coarse
 //    fine boundary of AMR grids.
 //
+//    Hank Childs, Wed Aug 13 11:42:07 PDT 2008
+//    Add NeedZBufferToCompositeEvenIn2D because thick lines can bleed into
+//    other processor's portion of image space.
+//
 // ****************************************************************************
 
 class
@@ -128,6 +132,7 @@ avtSubsetPlot : public avtVolumeDataPlot
     void                      SetLegend(bool);
     void                      SetLineWidth(int);
     void                      SetLineStyle(int);
+    virtual bool              NeedZBufferToCompositeEvenIn2D(void);
 
   protected:
     avtFeatureEdgesFilter           *wf;

@@ -94,6 +94,10 @@ class     avtLookupTable;
 //    Kathleen Bonnell, Wed Dec 22 17:01:09 PST 2004 
 //    Added SetLimitsMode. 
 //
+//    Hank Childs, Wed Aug 13 11:40:52 PDT 2008
+//    Turn on NeedZBufferToCompositeEvenIn2D, as vector glyphs can bleed
+//    into other processor's portion of image space.
+//
 // ****************************************************************************
 
 class avtVectorPlot : public avtPointDataPlot
@@ -111,6 +115,8 @@ class avtVectorPlot : public avtPointDataPlot
     virtual bool                SetColorTable(const char *ctName);
 
     void                        SetLimitsMode(int);
+    virtual bool                NeedZBufferToCompositeEvenIn2D(void)
+                                                          { return true; };
 
   protected:
     VectorAttributes            atts;

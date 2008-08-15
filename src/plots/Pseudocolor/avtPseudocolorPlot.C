@@ -412,7 +412,39 @@ avtPseudocolorPlot::CustomizeBehavior()
     }
 
     behavior->SetLegend(varLegendRefPtr);
-    behavior->SetShiftFactor(0.);
+    if (behavior->GetInfo().GetAttributes().GetTopologicalDimension() <= 1)
+        behavior->SetShiftFactor(0.1);
+    else
+        behavior->SetShiftFactor(0.0);
+}
+
+
+// ****************************************************************************
+//  Method: avtPseudocolorPlot::NeedZBufferToCompositeEvenIn2D
+//
+//  Purpose:
+//      Tells the compositer that it needs zbuffer info to composite correctly,
+//      in the case that the pseudocolor plot is bleeding over the domain 
+//      boundary, which means it can spill into other processor's portion of 
+//      image space.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 13, 2008
+//
+// ****************************************************************************
+
+bool
+avtPseudocolorPlot::NeedZBufferToCompositeEvenIn2D(void)
+{
+    if (behavior->GetInfo().GetAttributes().GetTopologicalDimension() <= 1)
+    {
+        if (atts.GetPointType() != PseudocolorAttributes::Point)
+            return true;
+        else if (atts.GetPointSizePixels() != 1)
+            return true;
+    }
+
+    return false;
 }
 
 
