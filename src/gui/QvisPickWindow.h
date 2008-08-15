@@ -134,6 +134,10 @@ class PickAttributes;
 //   Brad Whitlock, Wed Apr  9 11:29:38 PDT 2008
 //   QString for caption, shortName.
 //
+//   Gunther H. Weber, Fri Aug 15 10:22:46 PDT 2008
+//   Added buttons, methods and variables for repick with and without
+//   bringing up a Spreadsheet plot.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -153,6 +157,11 @@ public slots:
     virtual void apply();
     virtual void makeDefault();
     virtual void reset();
+    virtual void redoPick();
+    virtual void restorePickAttributesAfterRepick();
+signals:
+    void initiateRedoPick(); 
+    void initiateRestorePickAttributesAfterRepick();
 protected:
     virtual void CreateWindowContents();
     void UpdateWindow(bool doAll);
@@ -182,6 +191,8 @@ private slots:
     void savePickText();
     void preserveCoordActivated(int);
     void clearPicks();
+    void redoPickClicked();
+    void redoPickWithSpreadsheetClicked();
 private:
     void UpdatePage(void);
     void ClearPages(void);
@@ -227,5 +238,10 @@ private:
     QSpinBox           *userMaxPickTabs;
 
     int		        saveCount;
+
+    // Saving attributes for restoring them after re-doing a pick
+    bool                createSpreadsheetSave;
+    bool                displayPickLetterSave;
+    bool                reusePickLetterSave;
 };
 #endif

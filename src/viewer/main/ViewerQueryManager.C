@@ -1881,10 +1881,14 @@ ViewerQueryManager::ClearPickPoints()
 //    Added new arguments to ViewerPlotList::AddPlot.
 //
 //    Gunther H. Weber, Wed Mar 19 18:50:34 PDT 2008
-//    Added logic for spreadsheet pick mode
+//    Added logic for spreadsheet pick mode.
 //
 //    Brad Whitlock, Tue Apr 29 16:37:08 PDT 2008
 //    Support for internationalization.
+//
+//    Gunther H. Weber, Fri Aug 15 10:18:03 PDT 2008
+//    Check whether reusePickLetter flag in PickAttributes is set and
+//    do not update pick letter if it is.
 //
 // ****************************************************************************
 
@@ -2012,7 +2016,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         //
         pickAtts->SetMatSelected(!usesAllMaterials || 
                                  plot->GetRealVarType() == AVT_MATERIAL);
-        pickAtts->SetPickLetter(designator);
+        if (!pickAtts->GetReusePickLetter()) pickAtts->SetPickLetter(designator);
         pickAtts->SetTimeStep(plot->GetState());
         pickAtts->SetDatabaseName(db);
         if (win->GetWindowMode() == WINMODE_CURVE)
@@ -2561,6 +2565,10 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 //   Brad Whitlock, Tue Apr 29 16:40:45 PDT 2008
 //   Support for internationalization.
 //
+//   Gunther H. Weber, Fri Aug 15 10:17:05 PDT 2008
+//   Check whether reusePickLetter flag in PickAttributes is set and  
+//   do not advance pick designtor if it is.
+//
 // ****************************************************************************
 
 void
@@ -2632,9 +2640,12 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
         UpdatePickAtts();
 
         //
-        // Make the pick label ready for the next pick point.
+        // 
         //
-        UpdateDesignator();
+        //
+        // If we are not reusing a pick letter, make the pick label ready for the next pick point.
+        //
+        if (!pickAtts->GetReusePickLetter()) UpdateDesignator();
     }
 
     //

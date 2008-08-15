@@ -220,6 +220,10 @@ QvisPickWindow::~QvisPickWindow()
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Gunther H. Weber, Fri Aug 15 10:50:10 PDT 2008
+//   Add buttons for redoing pick with and without opening a Spreadsheet plot.
+//   Added a missing tr() for "Clear Picks".
+//
 // ****************************************************************************
 
 void
@@ -258,7 +262,7 @@ QvisPickWindow::CreateWindowContents()
     connect(savePicksButton, SIGNAL(clicked()),
             this, SLOT(savePickText()));
     gLayout->addWidget(savePicksButton, 0, 3);
-    
+
     varsButton = new QvisVariableButton(true, false, true, -1,
         central, "varsButton");
     varsButton->setText(tr("Variables"));
@@ -390,7 +394,7 @@ QvisPickWindow::CreateWindowContents()
             this, SLOT(savePicksToggled(bool)));
     gLayout->addMultiCellWidget(savePicksCheckBox, 11, 11, 0, 2);
 
-    QPushButton *clearPicksButton = new QPushButton("Clear Picks", central,
+    QPushButton *clearPicksButton = new QPushButton(tr("Clear Picks"), central,
             "clearPicksButton");
     connect(clearPicksButton, SIGNAL(clicked()),
             this, SLOT(clearPicks()));
@@ -400,7 +404,13 @@ QvisPickWindow::CreateWindowContents()
                                       central, "timeCurveCheckBox");
     connect(timeCurveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
-    gLayout->addMultiCellWidget(timeCurveCheckBox, 12, 12, 0, 3);
+    gLayout->addMultiCellWidget(timeCurveCheckBox, 12, 12, 0, 2);
+
+    QPushButton *redoPickButton = new QPushButton(tr("Repeat Pick"),
+            central, "redoPickButton");
+    connect(redoPickButton, SIGNAL(clicked()),
+            this, SLOT(redoPickClicked()));
+    gLayout->addWidget(redoPickButton, 12, 3);
 
     preserveCoord= new QComboBox(false, central, "preserveCoord");
     preserveCoord->insertItem(tr("Time curve use picked element"));
@@ -414,7 +424,14 @@ QvisPickWindow::CreateWindowContents()
                                         central, "spreadsheetCheckBox");
     connect(spreadsheetCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(spreadsheetToggled(bool)));
-    gLayout->addMultiCellWidget(spreadsheetCheckBox, 14, 14, 0, 3);
+    gLayout->addMultiCellWidget(spreadsheetCheckBox, 14, 14, 0, 2);
+
+    QPushButton *redoPickWithSpreadsheetButton =
+        new QPushButton(tr("Display in Spreadsheet"), central,
+                "redoPickWithSpreadsheetButton");
+    connect(redoPickWithSpreadsheetButton, SIGNAL(clicked()),
+            this, SLOT(redoPickWithSpreadsheetClicked()));
+    gLayout->addWidget(redoPickWithSpreadsheetButton, 14, 3);
 }
 
 // ****************************************************************************
@@ -1695,4 +1712,127 @@ void
 QvisPickWindow::clearPicks()
 {
     GetViewerMethods()->ClearPickPoints();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::redoPickClicked()
+//
+// Purpose: 
+//   This is a Qt slot function that repeats the last pick.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Fri Aug 15 10:52:49 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void QvisPickWindow::redoPickClicked()
+{
+    // Save old state
+    createSpreadsheetSave = pickAtts->GetCreateSpreadsheet();
+    displayPickLetterSave = pickAtts->GetDisplayPickLetter();
+    reusePickLetterSave = pickAtts->GetReusePickLetter();
+
+    // Do not display a new pick letter, do not advance pick letter, create
+    // a spreadsheet
+    pickAtts->SetDisplayPickLetter(false);
+    pickAtts->SetReusePickLetter(true);
+    pickAtts->Notify();
+    GetViewerMethods()->SetPickAttributes();
+
+    // Make sure that pick results are displayed even though we are reusing the
+    // pick letter.
+    lastLetter = " ";
+
+    // Tell GUI to initiate the repick once the attribute change is complete
+    // The GUI will then call our redoPick() slot method.
+    emit initiateRedoPick();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::redoPickWithSpreadsheetClicked()
+//
+// Purpose: 
+//   This is a Qt slot function that repeats the last pick to bring up a
+//   spreadsheet.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Fri Aug 15 10:52:49 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void QvisPickWindow::redoPickWithSpreadsheetClicked()
+{
+    // Save old state
+    createSpreadsheetSave = pickAtts->GetCreateSpreadsheet();
+    displayPickLetterSave = pickAtts->GetDisplayPickLetter();
+    reusePickLetterSave = pickAtts->GetReusePickLetter();
+
+    // Do not display a new pick letter, do not advance pick letter, create
+    // a spreadsheet
+    pickAtts->SetCreateSpreadsheet(true);
+    pickAtts->SetDisplayPickLetter(false);
+    pickAtts->SetReusePickLetter(true);
+    pickAtts->Notify();
+    GetViewerMethods()->SetPickAttributes();
+
+    // Tell GUI to initiate the repick once thre attribute change is complete
+    // The GUI will then call our redoPick() slot method.
+    emit initiateRedoPick();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::redoPick()
+//
+// Purpose: 
+//   This is a Qt slot function that is called by the GUI after the 
+//   PickAttributes change initiated by a redoPickClicked() or
+//   redoPickWithSpreadsheetClicked() method changed.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Fri Aug 15 10:52:49 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::redoPick()
+{
+    if (pickAtts->GetPickType() == PickAttributes::Zone)
+        GetViewerMethods()->PointQuery("Pick", pickAtts->GetPickPoint(), pickAtts->GetVariables());
+    else if (pickAtts->GetPickType() == PickAttributes::Node)
+        GetViewerMethods()->PointQuery("NodePick", pickAtts->GetPickPoint(),  pickAtts->GetVariables());
+
+    // Tell GUI to restore the pick attributes once the pick is complete
+    emit initiateRestorePickAttributesAfterRepick();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::restorePickAttributesAfterRepick()
+//
+// Purpose: 
+//   This is a Qt slot function that is called by the GUI to restore the
+//   PickAttributes to their original values after a repeated pick operation
+//   is completed. 
+//
+// Programmer: Gunther H. Weber
+// Creation:   Fri Aug 15 10:52:49 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::restorePickAttributesAfterRepick()
+{
+    // Restore the pick attributes
+    pickAtts->SetCreateSpreadsheet(createSpreadsheetSave);
+    pickAtts->SetDisplayPickLetter(displayPickLetterSave);
+    pickAtts->SetReusePickLetter(reusePickLetterSave);
+    pickAtts->Notify();
+    GetViewerMethods()->SetPickAttributes();
 }

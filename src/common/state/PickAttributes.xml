@@ -176,6 +176,9 @@
     <Field name="displayPickLetter" label="displayPickLetter" type="bool">
       true
     </Field>
+    <Field name="reusePickLetter" label="reusePickLetter" type="bool">
+      false
+    </Field>
     <Field name="ghostType" label="ghostType" type="int" internal="true">
       0
     </Field>
