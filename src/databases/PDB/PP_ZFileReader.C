@@ -569,7 +569,11 @@ PP_ZFileReader::GetTimeVaryingInformation(avtDatabaseMetaData *md)
 // Creation:   Wed Sep 8 11:09:50 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Aug 15 15:20:11 PDT 2008
+//   It turns out that the first material name is not used at all since the
+//   ireg value for 0 is used for ghosting. This means that there are nmats+1
+//   material names in the file and we should skip the first one.
+//
 // ****************************************************************************
 
 bool
@@ -597,6 +601,7 @@ PP_ZFileReader::ReadMaterialNamesHelper(const char *namregVar, int nmats,
             int nmatNames = 0;
             char *sptr = namreg;
             bool keepGoing = true;
+            bool skippingMaterialName = true;
             do
             {
                 // Null terminate the string.
@@ -604,17 +609,22 @@ PP_ZFileReader::ReadMaterialNamesHelper(const char *namregVar, int nmats,
                 for(; s > sptr && *s == ' '; --s) 
                     *s = '\0';
 
-                // If we have a non-empty string, add it to the list of
-                // material names.
-                if(s > sptr)
-                {
-                    char tmp[100]; 
-                    SNPRINTF(tmp, 100, "%d %s", nmatNames+1, sptr);
-                    matNames.push_back(tmp);
-                    ++nmatNames;
-                }
+                if(skippingMaterialName)
+                    skippingMaterialName = false;
                 else
-                    keepGoing = false;
+                {
+                    // If we have a non-empty string, add it to the list of
+                    // material names.
+                    if(s > sptr)
+                    {
+                        char tmp[100]; 
+                        SNPRINTF(tmp, 100, "%d %s", nmatNames+1, sptr);
+                        matNames.push_back(tmp);
+                        ++nmatNames;
+                    }
+                    else
+                        keepGoing = false;
+                }
 
                 sptr += maxNameLength;
                 if(sptr - namreg > namregLen)
@@ -682,6 +692,10 @@ PP_ZFileReader::ReadMaterialNames(int nmats, stringVector &matNames)
 //
 //   Brad Whitlock, Fri Sep 3 07:26:53 PDT 2004
 //   Added support for mixed materials in Flash files.
+//
+//   Brad Whitlock, Fri Aug 15 15:26:44 PDT 2008
+//   If we had to scan ireg to determine the number of materials then we can
+//   still look for material names from namreg and use them.
 //
 // ****************************************************************************
 
@@ -794,16 +808,17 @@ PP_ZFileReader::PopulateMaterialNames()
 
                     // Add all of the materials in the range [1,maxMat].
                     bool gaps = false;
+                    int usedMats = 0;
                     for(i = 1; i <= maxMat; ++i)
                     {
-                        char tmp[20];
-                        sprintf(tmp, "%d", i);
-                        materialNames.push_back(tmp);
+                        if(mats[i])
+                            ++usedMats;
 
                         // See if there are gapps in the range [1,maxMat].
-                        gaps |= mats[i];
+                        gaps |= !mats[i];
                     }
 
+                    bool numericMaterialNames = true;
                     if(gaps)
                     {
                         // There were gaps. Print a message to the logs.
@@ -813,6 +828,27 @@ PP_ZFileReader::PopulateMaterialNames()
                                   "SIL will be more likely to match the next "
                                   "time step as we change time states."
                                << endl;
+                    }
+                    else
+                    {
+                        // There were no gaps so see if we can read the
+                        // material names.
+                        stringVector names;
+                        if(ReadMaterialNames(usedMats, names))
+                        {
+                            materialNames = names;
+                            numericMaterialNames = false;
+                        }
+                    }
+
+                    if(numericMaterialNames)
+                    {
+                        for(i = 1; i <= maxMat; ++i)
+                        {
+                            char tmp[20];
+                            sprintf(tmp, "%d", i);
+                            materialNames.push_back(tmp);
+                        }
                     }
                 }
 

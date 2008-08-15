@@ -128,12 +128,13 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>The Vista/Diablo format no longer crashes on some 64-bit systems.</li>
     <li>The Protein Data Bank format now exposes the Temperature and 
         Occupancy Factor columns as new variables.</li>
+    <li>An off by one error was fixed in the PDB reader, ensuring that the correct material names are used.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 1.10</font></b></p>
 <ul>
-    <li>The streamline plot has been significantly improved.
+    <li>The Streamline plot has been significantly improved.
     <ul>
          <li>It can now integrate streamlines across domain boundaries.</li>
          <li>It now works correctly in both serial and parallel (including distributed memory parallelism).</li>
@@ -146,7 +147,7 @@ enhancements and bug-fixes that were added to this release.</p>
         the File, Edit, and Operations menu are once again available as they are on
         other platforms.</li>
     <li>Ray-casted volume rendering would sometimes incorrectly cull away domains with non-square windows.  This bug has been fixed.</li>
-    <li>The histogram plot now does its default weighting by frequency.</li>
+    <li>The Histogram plot now does its default weighting by frequency.</li>
     <li>The Vector plot now has the ability to only show one vector per original cell
         or node.  This is useful when making Vector plots from data which has been
         clipped -- or any similar process which divides cells or creates new nodes.
@@ -247,6 +248,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
     <li>Development on Windows can now be done directly from the SVN repository, as the build process has been modified to use the native source tree instead of a modified one.</li>
     <li>The Klocwork tool was applied to VisIt and many potential bugs were found and fixed.</li>
+    <li>The source code was improved to reduce the number of compiler warnings.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
