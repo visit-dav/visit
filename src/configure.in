@@ -3958,7 +3958,6 @@ TOOLS_FILES="tools/Makefile
              tools/clipeditor/Makefile
              tools/convert/Makefile
              tools/curv3dprep/Makefile
-             tools/doxygenate/Makefile
              tools/escan/Makefile
              tools/imagetools/Makefile
              tools/makemili/Makefile
