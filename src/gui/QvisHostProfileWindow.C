@@ -445,6 +445,9 @@ QvisHostProfileWindow::CreateSelectedTab(QWidget *parent)
 //   Dave Bremer, Wed Apr 16 17:54:14 PDT 2008
 //   Added fields for commands to run pre and post the mpi command.
 //
+//   Eric Brugger, Mon Aug 18 10:39:11 PDT 2008
+//   Added support for just "msub" as a parallel launch method.
+//
 // ****************************************************************************
 
 QWidget *
@@ -466,6 +469,7 @@ QvisHostProfileWindow::CreateParallelTab(QWidget *parent)
     launchMethod->insertItem("bsub");
     launchMethod->insertItem("dmpirun");
     launchMethod->insertItem("mpirun");
+    launchMethod->insertItem("msub");
     launchMethod->insertItem("poe");
     launchMethod->insertItem("prun");
     launchMethod->insertItem("psub");

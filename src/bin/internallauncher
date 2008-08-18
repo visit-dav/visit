@@ -347,6 +347,9 @@ exec perl -x $0 ${1+"$@"};
 #    Added a hack to use the moab ttc option to specify the number of
 #    processors if running on hopi.
 #
+#    Eric Brugger, Mon Aug 18 10:32:47 PDT 2008
+#    I added support for just "msub" as a parallel launch method.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2100,6 +2103,10 @@ if ($procs_set or ($parallel and $parlaunch_set))
                     push @mpicmd, "env LD_LIBRARY_PATH=$visitlibdir:$visitarchdir/system_libs";
                 }
                 push @mpicmd, "@visitcmd\n";
+            }
+            elsif ($sublauncher eq "")
+            {
+                @mpicmd = "@visitcmd\n";
             }
 
             print TFILE "#!/bin/tcsh\n";
