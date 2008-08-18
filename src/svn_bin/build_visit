@@ -395,6 +395,9 @@
 #     Added new "download_web_file" which lets us grab a file directly
 #     off the web instead of visit's 3rd party directory.
 #
+#     Hank Childs, Mon Aug 18 10:46:10 PDT 2008
+#     Patches for VTK and Silo for compilation issue with gcc 4.3.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -2989,6 +2992,54 @@ function build_vtk
     # Apply patches
     #
     if [[ ${VTK_VERSION} == 5.0.0c ]] ; then
+        patch -p0 << \EOF
+diff -rp VTK/Utilities/DICOMParser/DICOMParser.cxx.orig VTK/Utilities/DICOMParser/DICOMParser.cxx
+--- VTK/Utilities/DICOMParser/DICOMParser.cxx.orig        2008-08-18 11:31:49.000000000 -0600
++++ VTK/Utilities/DICOMParser/DICOMParser.cxx     2008-08-18 11:33:17.000000000 -0600
+@@ -37,6 +37,7 @@
+ #endif
+
+ #include <string>
++#include <string.h>
+ #include <map>
+
+ #include "DICOMConfig.h"
+EOF
+        if [[ $? != 0 ]] ; then
+           echo "Unable to patch VTK. Wrong version?"
+           return 1
+        fi
+        patch -p0 << \EOF
+--- VTK/Utilities/DICOMParser/DICOMAppHelper.cxx.orig   2008-08-18 12:13:40.000000000 -0600
++++ VTK/Utilities/DICOMParser/DICOMAppHelper.cxx        2008-08-18 12:14:03.000000000 -0600
+@@ -32,6 +32,7 @@
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <string>
++#include <string.h>
+ #include <math.h>
+ #include <algorithm>
+EOF
+        if [[ $? != 0 ]] ; then
+           echo "Unable to patch VTK. Wrong version?"
+           return 1
+        fi
+        patch -p0 << \EOF
+--- VTK/Utilities/DICOMParser/DICOMFile.cxx.orig        2008-08-18 12:14:23.000000000 -0600
++++ VTK/Utilities/DICOMParser/DICOMFile.cxx     2008-08-18 12:13:13.000000000 -0600
+@@ -24,6 +24,7 @@
+
+ #include <stdio.h>
+ #include <string>
++#include <string.h>
+
+ #include "DICOMConfig.h"
+ #include "DICOMFile.h"
+EOF
+        if [[ $? != 0 ]] ; then
+           echo "Unable to patch VTK. Wrong version?"
+           return 1
+        fi
         if [[ "$OPSYS" == "Darwin" ]]; then
             info_box "Patching VTK . . ." 1>&3
             patch -p0 << \EOF
@@ -3629,6 +3680,58 @@ function build_silo
           return 1
        fi
     fi
+
+    # THESE PATCHES SHOULD BE REMOVED WHEN SILO IS PATCHED.
+    patch -p0 << \EOF
+--- silo-4.6.1/tools/silex/SiloArrayView.cpp.orig       2008-08-18 12:37:47.000000000 -0600
++++ silo-4.6.1/tools/silex/SiloArrayView.cpp    2008-08-18 12:38:01.000000000 -0600
+@@ -40,6 +40,7 @@
+ #include <qlistbox.h>
+ #include <qapplication.h>
+ #include <iostream>
++#include <stdlib.h>
+ using std::cerr;
+
+ // ----------------------------------------------------------------------------
+EOF
+    if [[ $? != 0 ]] ; then
+       echo "Unable to patch Silo. Wrong version?"
+       return 1
+    fi
+    patch -p0 << \EOF
+--- silo-4.6.1/tools/silex/SiloObjectView.cpp.orig      2008-08-18 12:40:16.000000000 -0600
++++ silo-4.6.1/tools/silex/SiloObjectView.cpp   2008-08-18 12:40:35.000000000 -0600
+@@ -41,6 +41,7 @@
+ #include <qmessagebox.h>
+ #include <iostream>
+ #include <string>
++#include <stdlib.h>
+
+ // ----------------------------------------------------------------------------
+ //                            Object View Window
+EOF
+    if [[ $? != 0 ]] ; then
+       echo "Unable to patch Silo. Wrong version?"
+       return 1
+    fi
+    patch -p0 << \EOF
+--- silo-4.6.1/tools/silex/SiloValueView.cpp.orig       2008-08-18 12:38:19.000000000 -0600
++++ silo-4.6.1/tools/silex/SiloValueView.cpp    2008-08-18 12:38:38.000000000 -0600
+@@ -39,6 +39,7 @@
+ #include <SiloFile.h>
+ #include <qlabel.h>
+ #include <iostream>
++#include <stdlib.h>
+ using std::cerr;
+
+ // ----------------------------------------------------------------------------
+EOF
+    if [[ $? != 0 ]] ; then
+       echo "Unable to patch Silo. Wrong version?"
+       return 1
+    fi
+    # END PATCHES
+
     #
     # Call configure
     #
