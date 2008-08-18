@@ -1257,7 +1257,7 @@ cp $VisItDir/include/qt/private/*.h             $incdir/qt/private
 if (-e $VisItDir/help) then
    set tmpDir = `pwd`
    cd $VisItDir/help
-   set translations=`find . -maxdepth 1 -type d`
+   set translations=`find . -type d`
    cd $tmpDir
    foreach t1 ($translations)
        set translation=`echo $t1 | sed "s/.\///g"`
