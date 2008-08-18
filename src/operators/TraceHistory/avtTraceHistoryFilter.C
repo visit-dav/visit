@@ -284,39 +284,24 @@ avtTraceHistoryFilter::InitializeDataset(void)
 //  Programmer: Hank Childs
 //  Creation:   May 22, 2007
 //
+//  Modifications:
+//    Brad Whitlock, Mon Aug 18 09:32:03 PDT 2008
+//    Made it directly include the ExtrudedVol writer instead of accessing
+//    it via the plugin managers since those are now off limits. The AVT pipeline
+//    probably should not be aware of plugins anyway.
+//
 // ****************************************************************************
+
+#include <avtExtrudedVolWriter.h>
 
 void
 avtTraceHistoryFilter::OutputTime(avtDataset_p ds, int time)
 {
-    DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
-    EngineDatabasePluginInfo *edpi = NULL;
-    int index = dbmgr->GetAllIndexFromName("ExtrudedVol");
-    if (index >= 0)
-    {
-        std::string id = dbmgr->GetAllID(index);
-        if (dbmgr->PluginAvailable(id))
-        {
-            edpi = dbmgr->GetEnginePluginInfo(id);
-        }
-    }
-    if (edpi == NULL)
-    {
-        EXCEPTION1(VisItException, "Was not able to load ExtrudedVol "
-                                   "database type for outputting the data.");
-    }
-
-    DBOptionsAttributes *opts = edpi->GetWriteOptions();
+    DBOptionsAttributes *opts = new DBOptionsAttributes();
     opts->SetInt("Time", time);
     opts->SetInt("nTimes", atts.GetNumiter());
-    edpi->SetWriteOptions(opts);
 
-    avtDatabaseWriter *wrtr = edpi->GetWriter();
-    if (wrtr == NULL)
-    {
-        EXCEPTION1(VisItException, "The ExtrudedVol database does not have a "
-                                   "writer ... internal error?!?.");
-    }
+    avtExtrudedVolWriter *wrtr = new avtExtrudedVolWriter(opts);
 
     avtDataObject_p dob;
     CopyTo(dob, ds);
@@ -336,6 +321,7 @@ avtTraceHistoryFilter::OutputTime(avtDataset_p ds, int time)
     //vars.push_back(vmd.name);
     wrtr->Write(filename, &md, vars, false);
     delete wrtr;
+    delete opts;
 }
 
 
