@@ -496,6 +496,10 @@ avtXDMFFileFormat::ReadXMLDataItem(DataItem *dataItem, void *buf, int lBuf,
 //    Brad Whitlock, Fri May 16 09:52:31 PDT 2008
 //    Added debugging info since it can help debug creation of XML schemas.
 //
+//    Eric Brugger, Tue Aug 19 15:49:00 PDT 2008
+//    I added coding to convert uchar, char, uint, and int to float if
+//    necessary, since HDF5 doesn't do that type of conversion.
+//
 // ****************************************************************************
 
 int
@@ -504,16 +508,15 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
 {
     const char *mName = "avtXDMFFileFormat::ReadHDFDataItem: ";
     hid_t     file_id, dataset_id, dataspace_id;
+    hid_t     dataset_type;
+    size_t    dataset_type_size;
+    H5T_sign_t dataset_type_sign;
+    H5T_class_t dataset_type_class;
 
     //
-    // Translate the buffer type to an HDF5 data type.
+    // Check that the buffer type is valid.
     //
-    hid_t buf_type;
-    if (bufType == VTK_FLOAT)
-        buf_type = H5T_NATIVE_FLOAT;
-    else if (bufType == VTK_INT)
-        buf_type = H5T_NATIVE_INT;
-    else
+    if (bufType != VTK_FLOAT && bufType != VTK_INT)
         return 0;
 
     //
@@ -555,10 +558,39 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
     if ((dataset_id = H5Dopen(file_id, datasetname)) < 0)
     {
         avtCallback::IssueWarning("Unable to open dataset.");
-        H5Fclose(file_id);
         return 0;
     }
 
+    //
+    // Get the data type information for the data set.
+    //
+    if ((dataset_type = H5Dget_type(dataset_id)) < 0)
+    {
+        avtCallback::IssueWarning("Unable to get the dataset type.");
+        H5Dclose(dataset_id);
+        return 0;
+    }
+
+    dataset_type_class = H5Tget_class(dataset_type);
+    dataset_type_sign  = H5Tget_sign(dataset_type);
+    dataset_type_size  = H5Tget_size(dataset_type);
+
+    //
+    // Check that the type is supported.  This includes 1 and 4 byte
+    // integers and 4 and 8 byte floats.
+    //
+    if ((dataset_type_class == H5T_INTEGER &&
+         dataset_type_size != 1 && dataset_type_size != 4) ||
+        (dataset_type_class == H5T_FLOAT &&
+         dataset_type_size != 4 && dataset_type_size != 8) ||
+        (dataset_type_class != H5T_INTEGER &&
+         dataset_type_class != H5T_FLOAT))
+    {
+        avtCallback::IssueWarning("Unsupported data type.");
+        H5Dclose(dataset_id);
+        return 0;
+    }
+        
     //
     // Determine the size of the dataset.
     //
@@ -566,7 +598,6 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
     {
         avtCallback::IssueWarning("Unable to get the dataspace id.");
         H5Dclose(dataset_id);
-        H5Fclose(file_id);
         return 0;
     }
     hssize_t ldataset = H5Sget_simple_extent_npoints(dataspace_id);
@@ -591,7 +622,6 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
     {
         avtCallback::IssueWarning("Dimensions don't match dataset size.");
         H5Dclose(dataset_id);
-        H5Fclose(file_id);
         return 0;
     }
 
@@ -602,20 +632,106 @@ avtXDMFFileFormat::ReadHDFDataItem(DataItem *dataItem, void *buf, int lBuf,
     {
         avtCallback::IssueWarning("Buffer size doesn't match dataset size.");
         H5Dclose(dataset_id);
-        H5Fclose(file_id);
         return 0;
     }
 
     //
     // Read the data set.
     //
-    if (H5Dread(dataset_id, buf_type, H5S_ALL, H5S_ALL,
-                H5P_DEFAULT, buf) < 0)
+    if (bufType == VTK_INT && dataset_type_class == H5T_INTEGER)
     {
-        avtCallback::IssueWarning("Unable to read the dataset.");
-        H5Dclose(dataset_id);
-        H5Fclose(file_id);
-        return 0;
+        debug4 << mName << "Reading integer data" << endl;
+        if (H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
+                    H5P_DEFAULT, buf) < 0)
+        {
+            avtCallback::IssueWarning("Unable to read the dataset.");
+            H5Dclose(dataset_id);
+            return 0;
+        }
+    }
+    else if (bufType == VTK_FLOAT && dataset_type_class == H5T_FLOAT)
+    {
+        debug4 << mName << "Reading float data" << endl;
+        if (H5Dread(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+                    H5P_DEFAULT, buf) < 0)
+        {
+            avtCallback::IssueWarning("Unable to read the dataset.");
+            H5Dclose(dataset_id);
+            return 0;
+        }
+    }
+    else if (bufType == VTK_FLOAT)
+    {
+        if (dataset_type_size == 1 && dataset_type_sign == H5T_SGN_NONE)
+        {
+            debug4 << mName << "Converting uchar to float" << endl;
+            unsigned char *cBuf = new unsigned char[lBuf];
+            if (H5Dread(dataset_id, H5T_NATIVE_UCHAR, H5S_ALL, H5S_ALL,
+                        H5P_DEFAULT, cBuf) < 0)
+            {
+                avtCallback::IssueWarning("Unable to read the dataset.");
+                H5Dclose(dataset_id);
+                return 0;
+            }
+            float *fBuf = (float *)buf;
+            for (int i = 0; i < lBuf; i++)
+                *fBuf++ = *cBuf++;
+            delete [] cBuf;
+        }
+        else if (dataset_type_size == 1 && dataset_type_sign == H5T_SGN_2)
+        {
+            debug4 << mName << "Converting char to float" << endl;
+            char *cBuf = new char[lBuf];
+            if (H5Dread(dataset_id, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL,
+                        H5P_DEFAULT, cBuf) < 0)
+            {
+                avtCallback::IssueWarning("Unable to read the dataset.");
+                H5Dclose(dataset_id);
+                return 0;
+            }
+            float *fBuf = (float *)buf;
+            for (int i = 0; i < lBuf; i++)
+                *fBuf++ = *cBuf++;
+            delete [] cBuf;
+        }
+        else if (dataset_type_size == 4 && dataset_type_sign == H5T_SGN_NONE)
+        {
+            debug4 << mName << "Converting uint to float" << endl;
+            unsigned int *iBuf = new unsigned int[lBuf];
+            if (H5Dread(dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL,
+                        H5P_DEFAULT, iBuf) < 0)
+            {
+                avtCallback::IssueWarning("Unable to read the dataset.");
+                H5Dclose(dataset_id);
+                return 0;
+            }
+            float *fBuf = (float *)buf;
+            for (int i = 0; i < lBuf; i++)
+                *fBuf++ = *iBuf++;
+            delete [] iBuf;
+        }
+        else if (dataset_type_size == 4 && dataset_type_sign == H5T_SGN_2)
+        {
+            debug4 << mName << "Converting int to float" << endl;
+            int *iBuf = new int[lBuf];
+            if (H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
+                        H5P_DEFAULT, iBuf) < 0)
+            {
+                avtCallback::IssueWarning("Unable to read the dataset.");
+                H5Dclose(dataset_id);
+                return 0;
+            }
+            float *fBuf = (float *)buf;
+            for (int i = 0; i < lBuf; i++)
+                *fBuf++ = *iBuf++;
+            delete [] iBuf;
+        }
+        else
+        {
+            avtCallback::IssueWarning("Unable to read the dataset.");
+            H5Dclose(dataset_id);
+            return 0;
+        }
     }
 
     //
