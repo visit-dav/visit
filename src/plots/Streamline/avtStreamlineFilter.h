@@ -204,6 +204,9 @@ class avtStreamlineWrapper
 //   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
 //   Add dataSpatialDimension
 //
+//   Dave Pugmire, Tue Aug 19 17:13:04EST 2008
+//   Remove accurate distance calculate option.
+//
 // ****************************************************************************
 
 class avtStreamlineFilter : public avtDatasetOnDemandFilter
@@ -219,7 +222,7 @@ class avtStreamlineFilter : public avtDatasetOnDemandFilter
     // Methods to set the filter's attributes.
     void                      SetSourceType(int sourceType);
     void                      SetMaxStepLength(double len);
-    void                      SetTermination(int type, double term, bool accurateDistance);
+    void                      SetTermination(int type, double term);
     void                      SetIntegrationType(int algo);
     void                      SetStreamlineAlgorithm(int algo, int maxCnt, int domainCache);
     void                      SetTolerances(double reltol, double abstol);
@@ -246,7 +249,6 @@ class avtStreamlineFilter : public avtDatasetOnDemandFilter
     double absTol;
     int terminationType;
     int integrationType;
-    bool accurateDistance;
     double termination;
     double radius;
     int    displayMethod;

@@ -131,6 +131,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Dave Pugmire, Wed Aug 13 12:56:11 EST 2008
 //   Changed label text for streamline algorithms.
 //
+//   Dave Pugmire, Tue Aug 19 17:18:03 EST 2008
+//   Removed the accurate distance calculation option.
+//
 // ****************************************************************************
 
 void
@@ -151,12 +154,6 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     connect(termination, SIGNAL(returnPressed()),
             this, SLOT(terminationProcessText()));
     mainLayout->addWidget(termination, 1,1);
-
-    accurateDistance = new QCheckBox(tr("Accurate distance"), central, "accurateDistance");
-    connect(accurateDistance, SIGNAL(toggled(bool)),
-            this, SLOT(accurateDistanceChanged(bool)));
-    mainLayout->addWidget(accurateDistance, 2,1);
-
 
     //Create the direction of integration.
     mainLayout->addWidget(new QLabel(tr("Streamline direction"), central, "streamlineDirectionLabel"),3,0);
@@ -548,6 +545,9 @@ QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
 //   Dave Pugmire, Fri Aug 8 16:27:03 EDT 2008
 //   Set the termType combo box.
 //
+//   Dave Pugmire, Tue Aug 19 17:18:03 EST 2008
+//   Removed the accurate distance calculation option.
+//
 // ****************************************************************************
 
 void
@@ -747,8 +747,6 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             termType->blockSignals(true);
             termType->setCurrentItem( int(streamAtts->GetTerminationType()) );
             termType->blockSignals(false);
-            
-            accurateDistance->setEnabled( (streamAtts->GetTerminationType() == StreamlineAttributes::Distance) );
             break;
 
           case 28: //integrationType
@@ -779,12 +777,6 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             maxDomainCache->blockSignals(true);
             maxDomainCache->setValue(streamAtts->GetMaxDomainCacheSize());
             maxDomainCache->blockSignals(false);
-            break;
-
-          case 32: //accurateDistance
-            accurateDistance->blockSignals(true);
-            accurateDistance->setChecked(streamAtts->GetAccurateDistance());
-            accurateDistance->blockSignals(false);
             break;
         }
     }
@@ -1679,14 +1671,6 @@ void
 QvisStreamlinePlotWindow::displayMethodChanged(int val)
 {
     streamAtts->SetDisplayMethod((StreamlineAttributes::DisplayMethod)val);
-    Apply();
-}
-
-void
-QvisStreamlinePlotWindow::accurateDistanceChanged(bool val)
-{
-    streamAtts->SetAccurateDistance(val);
-    SetUpdate(false);
     Apply();
 }
 

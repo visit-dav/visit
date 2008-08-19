@@ -61,6 +61,9 @@
 //    Improved version of A-B solver that builds function history from
 //    initial Euler steps.
 //
+//    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
+//    Chagned how distanced based termination is computed.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
@@ -74,7 +77,10 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
 
     // perform a single integration step
     // adaptive stepsize control retries until success or underflow
-    virtual Result   Step(const avtIVPField* field, const double& t_max,
+    virtual Result   Step(const avtIVPField* field,
+                          const bool& timeMode,
+                          const double& t_max,
+                          const double& d_max,
                           avtIVPStep* ivpstep = NULL);
     virtual void    OnExitDomain();
 
@@ -126,7 +132,7 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
   private:
     double tol;
     double h, h_max;
-    double t;
+    double t, d;
     avtVecArray history;
     avtVec yCur;
     avtVec ys[2];

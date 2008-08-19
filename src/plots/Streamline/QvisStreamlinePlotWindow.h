@@ -81,6 +81,9 @@ class StreamlineAttributes;
 //   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
 //   Add accurate distance calculate option.
 //
+//   Dave Pugmire, Tue Aug 19 17:18:03 EST 2008
+//   Removed the accurate distance calculation option.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -110,7 +113,6 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
   private slots:
     void sourceTypeChanged(int val);
     void termTypeChanged(int val);
-    void accurateDistanceChanged(bool val);
     void integrationTypeChanged(int val);
     void streamlineAlgorithmChanged(int val);
     void directionTypeChanged(int val);
@@ -149,7 +151,6 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLineEdit *maxStepLength;
     QLabel    *maxStepLengthLabel;
     QLineEdit *termination;
-    QCheckBox *accurateDistance;
     QLineEdit *relTol;
     QLabel    *relTolLabel;
     QLineEdit *absTol;

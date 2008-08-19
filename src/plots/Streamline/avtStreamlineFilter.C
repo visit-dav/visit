@@ -446,6 +446,9 @@ avtStreamlineWrapper::ComputeStatistics()
 //   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
 //   Add dataSpatialDimension
 //
+//   Dave Pugmire, Tue Aug 19 17:13:04EST 2008
+//   Remove accurate distance calculate option.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
@@ -453,7 +456,6 @@ avtStreamlineFilter::avtStreamlineFilter()
     normalizedVecExprName = "";
     maxStepLength = 0.;
     terminationType = STREAMLINE_TERMINATE_DISTANCE;
-    accurateDistance = false;
     termination = 100.;
     showStart = true;
     radius = 0.125;
@@ -745,7 +747,6 @@ avtStreamlineFilter::SetIntegrationType(int type)
 // Arguments:
 //   type : Type of termination.
 //   term : When to terminate.
-//   accurateDist: Perform accurate distance calculations.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 6 12:57:25 PDT 2002
@@ -762,15 +763,17 @@ avtStreamlineFilter::SetIntegrationType(int type)
 //
 //   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
 //   Add accurate distance calculate option.
+//
+//   Dave Pugmire, Tue Aug 19 17:13:04EST 2008
+//   Remove accurate distance calculate option.
 //   
 // ****************************************************************************
 
 void
-avtStreamlineFilter::SetTermination(int type, double term, bool accurateDist)
+avtStreamlineFilter::SetTermination(int type, double term)
 {
     terminationType = type;
     termination = term;
-    accurateDistance = accurateDist;
 }
 
 
@@ -4733,7 +4736,10 @@ avtStreamlineFilter::StagedLoadOnDemand(
 //
 //   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
 //   Pass domain extents into integration for ghost zone handling.
-
+//
+//   Hank Childs, Tue Aug 19 14:41:44 PDT 2008
+//   Make sure we initialize the bounds, especially if we are in 2D.
+//
 //
 // ****************************************************************************
 
@@ -4756,7 +4762,7 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg)
         slSeg->UpdateDomainCount(slSeg->domain);
 
         int integrationTimer = visitTimer->StartTimer();
-        double extents[6];
+        double extents[6] = { 0.,0., 0.,0., 0.,0. };
         intervalTree->GetElementExtents(slSeg->domain, extents);
         avtIVPSolver::Result result = IntegrateDomain(slSeg, ds, extents);
         integrationTime += visitTimer->StopTimer(integrationTimer, 
@@ -4799,6 +4805,9 @@ avtStreamlineFilter::IntegrateStreamline(avtStreamlineWrapper *slSeg)
 //   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
 //   Add accurate distance calculate option.
 //
+//   Dave Pugmire, Tue Aug 19 17:13:04EST 2008
+//   Remove accurate distance calculate option.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -4828,21 +4837,21 @@ avtStreamlineFilter::IntegrateDomain(avtStreamlineWrapper *slSeg,
         velocity->AddDataSet(ds);
     
     velocity->CachingOn();
-    if (terminationType==STREAMLINE_TERMINATE_DISTANCE && !accurateDistance)
-        velocity->SelectVectors(normalizedVecExprName.c_str());
-
     avtIVPVTKField field(velocity);
-    if (terminationType==STREAMLINE_TERMINATE_DISTANCE && accurateDistance)
-        field.SetNormalized(true);
-    
-    double t = (slSeg->dir == avtStreamlineWrapper::FWD 
-                    ? termination : -termination);
+    bool timeMode = (terminationType==STREAMLINE_TERMINATE_TIME);
+    double end = termination;
+    if (slSeg->dir == avtStreamlineWrapper::BWD)
+        end = - end;
     
     //slSeg->Debug();
     bool doVorticity = ((coloringMethod == STREAMLINE_COLOR_VORTICITY)
-                       || (displayMethod == STREAMLINE_DISPLAY_RIBBONS));
-    avtIVPSolver::Result result = slSeg->sl->Advance(&field, t, doVorticity, 
-                                                     haveGhostZones, extents);
+                        || (displayMethod == STREAMLINE_DISPLAY_RIBBONS));
+    avtIVPSolver::Result result = slSeg->sl->Advance(&field,
+                                                     timeMode,
+                                                     end,
+                                                     doVorticity,
+                                                     haveGhostZones,
+                                                     extents);
     //slSeg->Debug();
 
     if (result == avtIVPSolver::OUTSIDE_DOMAIN)
@@ -5070,8 +5079,11 @@ randMinus1_1()
 //    Moved the box extents code from PreExecute to here.
 //    Attempt to slightly adjust seed points not in the DS.
 //
-//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
-//   Add dataSpatialDimension.
+//    Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//    Add dataSpatialDimension.
+//
+//    Hank Childs, Tue Aug 19 14:41:44 PDT 2008
+//    Make sure we initialize the bounds, especially if we are in 2D.
 //
 // ****************************************************************************
 
@@ -5227,7 +5239,7 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
     //heartburn.
     //Also, filter out any points that aren't inside the DS.
     vector<seedPtDomain> ptDom;
-    double dataRange[6];
+    double dataRange[6] = { 0.,0., 0.,0., 0.,0. };
     
     intervalTree->GetExtents(dataRange);
     double dX = dataRange[1]-dataRange[0];
@@ -5579,6 +5591,9 @@ avtStreamlineFilter::CreateStreamlineOutput(
 //   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
 //   Add accurate distance calculate option.
 //
+//   Dave Pugmire, Tue Aug 19 17:13:04EST 2008
+//   Remove accurate distance calculate option.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -5592,30 +5607,6 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
         // The avtStreamlinePlot requested "colorVar", so remove that from the
         // contract now.
         out_dr = new avtDataRequest(in_dr,in_dr->GetOriginalVariable());
-    }
-
-    // If we want distance termination, create a normalization expression.
-    if (terminationType==STREAMLINE_TERMINATE_DISTANCE && !accurateDistance)
-    {
-        string varName = in_dr->GetOriginalVariable();
-
-        // Make it something unlikely to be used by a user....
-        normalizedVecExprName = string("__STREAMLINE_NORMALIZED__") + varName;
-        string edef = string("normalize(<") + varName + string( ">)");
-        
-        ExpressionList *elist = ParsingExprList::Instance()->GetList();
-        Expression *e = new Expression();
-        
-        e->SetName(normalizedVecExprName.c_str());
-        e->SetDefinition(edef.c_str());
-        e->SetType(Expression::VectorMeshVar);
-        elist->AddExpressions(*e);
-        delete e;
-
-        if ( *out_dr == NULL )
-            out_dr = new avtDataRequest(in_dr,in_dr->GetOriginalVariable());
-        
-        out_dr->AddSecondaryVariable( normalizedVecExprName.c_str() );
     }
 
     avtContract_p out_contract;
