@@ -76,8 +76,8 @@
 #include <NoInputException.h>
 #include <DebugStream.h>
 
-#ifdef HAVE_ZLIB_H
-#include <zlib.h>
+#ifdef HAVE_LIBBZ2
+#include <bzlib.h>
 #include <TimingsManager.h>
 #endif
 
@@ -2706,16 +2706,12 @@ MajorEigenvalue(double *vals)
 //  Programmer: Mark C. Miller 
 //  Creation:   November 15, 2005 
 //
-//  Modifciations:
-//    Mark C. Miller, Sun Aug 17 00:38:37 PDT 2008
-//    Switched to use ZLIB
-//
 // ****************************************************************************
 
 bool
 CMaybeCompressedDataString(const unsigned char *dstr)
 {
-    if (dstr[0] == 'Z' && dstr[1] == 'L' && dstr[2] == 'I' && dstr[3] == 'B')
+    if (dstr[0] == 'B' && dstr[1] == 'Z' && dstr[2] == 'h')
         return true;
     return false;
 }
@@ -2744,33 +2740,25 @@ CMaybeCompressedDataString(const unsigned char *dstr)
 //    Hank Childs, Fri Jun  9 13:21:29 PDT 2006
 //    Remove unused variable.
 //
-//    Mark C. Miller, Sun Aug 17 00:38:37 PDT 2008
-//    Switched to use ZLIB
 // ****************************************************************************
 bool CCompressDataString(const unsigned char *dstr, int len,
                          unsigned char **newdstr, int *newlen,
                          float *timec, float *ratioc)
 {
-#ifdef HAVE_ZLIB_H 
+#ifdef HAVE_LIBBZ2
     unsigned int lenBZ2 = *newlen == 0 ? len / 2 : *newlen;
-    unsigned char *dstrBZ2 = new unsigned char [lenBZ2+24];
+    unsigned char *dstrBZ2 = new unsigned char [lenBZ2+20];
     int startCompress = visitTimer->StartTimer(true);
-    uLongf lenBZ2tmp = (uLongf) lenBZ2;
-    dstrBZ2[0] = 'Z';
-    dstrBZ2[1] = 'L';
-    dstrBZ2[2] = 'I';
-    dstrBZ2[3] = 'B';
-    if (compress2(&dstrBZ2[4], &lenBZ2tmp, dstr, (uLong) len, Z_DEFAULT_COMPRESSION) != Z_OK)
+    if (BZ2_bzBuffToBuffCompress((char*)dstrBZ2, &lenBZ2, (char*) dstr, len,
+                                 1, 0, 250) != BZ_OK)
     {
         visitTimer->StopTimer(startCompress,
                         "Failed attempt to compress data", true);
-        debug5 << "Failed to compress data" << endl;
         delete [] dstrBZ2;
         return false;
     }
     else
     {
-        lenBZ2 = (unsigned int) lenBZ2tmp+4;
         double timeToCompress = 
             visitTimer->StopTimer(startCompress, "Compressing data", true);
         debug5 << "Compressed data "
@@ -2806,15 +2794,13 @@ bool CCompressDataString(const unsigned char *dstr, int len,
 //    Jeremy Meredith, Wed Aug  6 18:06:14 EDT 2008
 //    Fixed scanf for double, plus it doesn't understand many printf modifiers.
 //
-//    Mark C. Miller, Sun Aug 17 00:38:37 PDT 2008
-//    Switched to use ZLIB
 // ****************************************************************************
 
 bool CDecompressDataString(const unsigned char *dstr, int len,
                            unsigned char **newdstr, int *newlen,
                            float *timec, float *timedc, float *ratioc)
 {
-#ifdef HAVE_ZLIB_H
+#ifdef HAVE_LIBBZ2
     if (CMaybeCompressedDataString(dstr))
     {
         unsigned int strLengthOrig;
@@ -2823,19 +2809,18 @@ bool CDecompressDataString(const unsigned char *dstr, int len,
         sscanf((char*) &dstr[len-10], "%lf", &timeToCompress);
         unsigned char *strOrig = new unsigned char[strLengthOrig];
         int startDecompress = visitTimer->StartTimer(true);
-        uLongf strLengthOrigTmp = (uLongf) strLengthOrig;
-        if (uncompress(strOrig, &strLengthOrigTmp, &dstr[4], len-4) != Z_OK)
+        if (BZ2_bzBuffToBuffDecompress((char*) strOrig, &strLengthOrig,
+                                       (char*) dstr, len, 0, 0) != BZ_OK)
         {
             visitTimer->StopTimer(startDecompress,
                             "Failed attempt to decompress data", true);
-            debug5 << "Found 4 character \"ZLIB\" header in data string "
+            debug5 << "Found 3 character \"BZh\" header in data string "
                    << "but failed to decompress. Assuming coincidence." << endl;
             delete [] strOrig;
             return false;
         }
         else
         {
-            strLengthOrig = (unsigned int) strLengthOrigTmp;
             double timeToDecompress =
                 visitTimer->StopTimer(startDecompress, "Decompressing data", true);
             debug5 << "Uncompressed data 1:"
