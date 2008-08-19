@@ -55,6 +55,7 @@
 
 #include <PlotPluginManager.h>
 #include <OperatorPluginManager.h>
+#include <Utility.h>
 
 using namespace StringHelpers;
 

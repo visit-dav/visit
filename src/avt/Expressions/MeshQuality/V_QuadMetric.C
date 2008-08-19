@@ -29,6 +29,7 @@
 #include "verdict_defines.h"
 #include "V_GaussIntegration.h"
 #include <memory.h>
+#include <VisItStream.h>
 
 
 //! the average area of a quad

@@ -124,6 +124,9 @@
 //    Kathleen Bonnell, Fri Jun 20 08:18:07 PDT 2008 
 //    Allow creation of projects for MSVC8.
 //
+//    Kathleen Bonnell, Tue Aug 19 10:28:23 PDT 2008 
+//    Modified how moc files are handled.
+//
 // ****************************************************************************
 
 class ProjectFileGeneratorPlugin : public Plugin
@@ -553,17 +556,25 @@ protected:
         else
             WriteProjectSolution_Version8(out, projects);
     }
-
     void WriteProjectHelper(ostream &out, const QString &pluginType, 
              char pluginComponent, const QString &exports, const QString &libs,
              const vector<QString> &srcFiles, bool version7)
     {
+        vector<QString> hdrFiles, mocFiles;
+        WriteProjectHelper(out, pluginType, pluginComponent, exports, libs,
+                           srcFiles, version7, hdrFiles, mocFiles);
+    }
+
+    void WriteProjectHelper(ostream &out, const QString &pluginType, 
+             char pluginComponent, const QString &exports, const QString &libs,
+             const vector<QString> &srcFiles, bool version7, const vector<QString> &hdrFiles, const vector<QString> &mocFiles)
+    {
         if(version7)
             WriteProjectHelper_Version7(out, pluginType, pluginComponent, 
-                                        exports, libs, srcFiles);
+                                 exports, libs, srcFiles, hdrFiles, mocFiles);
         else
             WriteProjectHelper_Version8(out, pluginType, pluginComponent, 
-                                        exports, libs, srcFiles);
+                                 exports, libs, srcFiles, hdrFiles, mocFiles);
     }
 
     /***************************************************************************
@@ -603,7 +614,7 @@ protected:
 
     void WritePlotProject_G(ostream &out, bool version7)
     {
-        vector<QString> srcFiles;
+        vector<QString> srcFiles, hdrFiles, mocFiles;
         srcFiles.push_back(name + "PluginInfo.C");
         srcFiles.push_back(name + "CommonPluginInfo.C");
         srcFiles.push_back(name + "GUIPluginInfo.C");
@@ -614,10 +625,11 @@ protected:
             {
                 if(wfiles[i].right(2) == ".h")
                 {
+                    hdrFiles.push_back(wfiles[i]);
+                    mocFiles.push_back(wfiles[i].left(
+                        wfiles[i].length() - 2) + "_moc.C");
                     srcFiles.push_back(wfiles[i].left(
                         wfiles[i].length() - 2) + ".C");
-                    srcFiles.push_back(wfiles[i].left(
-                        wfiles[i].length() - 2) + "_moc.C");
                 }
             }
         }
@@ -625,10 +637,11 @@ protected:
         {
             if(defaultwfiles[i].right(2) == ".h")
             {
+                hdrFiles.push_back(defaultwfiles[i]);
+                mocFiles.push_back(defaultwfiles[i].left(
+                    defaultwfiles[i].length() - 2) + "_moc.C");
                 srcFiles.push_back(defaultwfiles[i].left(
                     defaultwfiles[i].length() - 2) + ".C");
-                srcFiles.push_back(defaultwfiles[i].left(
-                    defaultwfiles[i].length() - 2) + "_moc.C");
             }
         }
 
@@ -639,7 +652,7 @@ protected:
 
         WriteProjectHelper(out, "plots", 'G', "GUI_PLUGIN_EXPORTS",
             "state.lib misc.lib plugin.lib gui.lib viewerproxy.lib "
-            "viewerrpc.lib winutil.lib", srcFiles, version7);
+            "viewerrpc.lib winutil.lib", srcFiles, version7, hdrFiles, mocFiles);
     }
 
     void WritePlotProject_S(ostream &out, const QString &addLibs, bool version7)
@@ -917,13 +930,14 @@ protected:
 
     void WriteOperatorProject_G(ostream &out, bool version7)
     {
-        vector<QString> srcFiles;
+        vector<QString> srcFiles, hdrFiles, mocFiles;
         srcFiles.push_back(name + "PluginInfo.C");
         srcFiles.push_back(name + "CommonPluginInfo.C");
         srcFiles.push_back(name + "GUIPluginInfo.C");
         srcFiles.push_back(atts->name + ".C");
         srcFiles.push_back("Qvis" + name + "Window.C");
-        srcFiles.push_back("Qvis" + name + "Window_moc.C");
+        hdrFiles.push_back("Qvis" + name + "Window.h");
+        mocFiles.push_back("Qvis" + name + "Window_moc.C");
 
         if(customwfiles)
         {
@@ -931,10 +945,11 @@ protected:
             {
                 if(wfiles[i].right(2) == ".h")
                 {
+                    hdrFiles.push_back(wfiles[i]);
+                    mocFiles.push_back(wfiles[i].left(
+                        wfiles[i].length() - 2) + "_moc.C");
                     srcFiles.push_back(wfiles[i].left(
                         wfiles[i].length() - 2) + ".C");
-                    srcFiles.push_back(wfiles[i].left(
-                        wfiles[i].length() - 2) + "_moc.C");
                 }
             }
         }
@@ -944,10 +959,11 @@ protected:
             {
                 if(defaultwfiles[i].right(2) == ".h")
                 {
+                    hdrFiles.push_back(defaultwfiles[i]);
+                    mocFiles.push_back(defaultwfiles[i].left(
+                        defaultwfiles[i].length() - 2) + "_moc.C");
                     srcFiles.push_back(defaultwfiles[i].left(
                         defaultwfiles[i].length() - 2) + ".C");
-                    srcFiles.push_back(defaultwfiles[i].left(
-                        defaultwfiles[i].length() - 2) + "_moc.C");
                 }
             }
         }
@@ -959,7 +975,7 @@ protected:
 
         WriteProjectHelper(out, "operators", 'G', "GUI_PLUGIN_EXPORTS",
             "state.lib misc.lib plugin.lib gui.lib viewerproxy.lib "
-            "viewerrpc.lib", srcFiles, version7);
+            "viewerrpc.lib", srcFiles, version7, hdrFiles, mocFiles);
     }
 
     void WriteOperatorProject_S(ostream &out, bool version7)

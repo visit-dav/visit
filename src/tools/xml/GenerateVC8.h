@@ -46,6 +46,8 @@
 //    VC8 specific code.
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Aug 19 10:32:54 PDT 2008
+//    Modified how moc files are generated, to eliminate unnecessary recompile.
 //  
 // ****************************************************************************
     void WriteProject_TOP_LEVEL_Version8(ostream &out)
@@ -61,7 +63,8 @@
         out << "\tKeyword=\"MakeFileProj\">" << endl;
         out << "\t<Platforms>" << endl;
         out << "\t\t<Platform" << endl;
-        out << "\t\t\tName=\"Win32\"/>" << endl;
+        out << "\t\t\tName=\"Win32\"" << endl;
+        out << "\t\t/>" << endl;
         out << "\t</Platforms>" << endl;
         out << "\t<ToolFiles>" << endl;
         out << "\t</ToolFiles>" << endl;
@@ -74,20 +77,28 @@
             out << "\t\t\tIntermediateDirectory=\".\\" << configs[i] 
                 << "\"" << endl;
             out << "\t\t\tConfigurationType=\"10\"" << endl;
-            out << "\t\t\tInheritedPropertySheets=\"..\\NO_SEC_DEP.vsprops\"" << endl;
+            out << "\t\t\tInheritedPropertySheets=\""
+                << "$(VCInstallDir)VCProjectDefaults\\UpgradeFromVC71.vsprops;"
+                << "..\\NO_SEC_DEP.vsprops;" 
+                << "..\\VisItIncludePaths.vsprops;"
+                << "..\\VisItLibPaths.vsprops\"" << endl;
             out << "\t\t\tUseOfMFC=\"0\"" << endl;
             out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"false\">" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCPreBuildEventTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCPreBuildEventTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCCustomBuildTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCCustomBuildTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCMIDLTool\"" << endl;
             out << "\t\t\t\tTypeLibraryName=\".\\" << configs[i] 
                 << "\\" << name << ".tlb\"" << endl;
-            out << "\t\t\t\tHeaderFileName=\"\"/>" << endl;
+            out << "\t\t\t\tHeaderFileName=\"\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCPostBuildEventTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCPostBuildEventTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t</Configuration>" << endl;
         }
         out << "\t</Configurations>" << endl;
@@ -158,14 +169,15 @@
         }
         out << "\tEndGlobalSection" << endl;
         out << "\tGlobalSection(SolutionProperties) = preSolution" << endl;
-        out << "\t\tHideSolutionNode= FALSE" << endl;
+        out << "\t\tHideSolutionNode=false" << endl;
         out << "\tEndGlobalSection" << endl;
         out << "EndGlobal" << endl;
     }
 
     void WriteProjectHelper_Version8(ostream &out, const QString &pluginType, 
              char pluginComponent, const QString &exports, const QString &libs,
-             const vector<QString> &srcFiles)
+             const vector<QString> &srcFiles, const vector<QString> &hdrFiles, 
+             const vector<QString> &mocFiles)
     {
         const char *suffix = (pluginComponent == 'E') ? "_ser" : "";
 
@@ -189,7 +201,8 @@
         out << "\t>" << endl;
         out << "\t<Platforms>" << endl;
         out << "\t\t<Platform" << endl;
-        out << "\t\t\tName=\"Win32\"/>" << endl;
+        out << "\t\t\tName=\"Win32\"" << endl;
+        out << "\t\t/>" << endl;
         out << "\t</Platforms>" << endl;
         out << "\t<ToolFiles>" << endl;
         out << "\t</ToolFiles>" << endl;
@@ -203,56 +216,18 @@
             out << "\t\t\tIntermediateDirectory=\".\\" << configs[j] << "\\" 
                 << name << pluginComponent << "\\\"" << endl;
             out << "\t\t\tConfigurationType=\"2\"" << endl;
-            out << "\t\t\tInheritedPropertySheets=\"..\\NO_SEC_DEP.vsprops\"" << endl;
+            out << "\t\t\tInheritedPropertySheets=\""
+                << "$(VCInstallDir)VCProjectDefaults\\UpgradeFromVC71.vsprops;"
+                << "..\\NO_SEC_DEP.vsprops;" 
+                << "..\\VisItIncludePaths.vsprops;"
+                << "..\\VisItLibPaths.vsprops\"" << endl;
             out << "\t\t\tUseOfMFC=\"0\"" << endl;
             out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"false\"" << endl;
-            out << "\t\t\tCharacterSet=\"2\">" << endl;
-
-            if(pluginComponent == 'G')
-            {
-                QString winType("PlotWindow");
-                if(pluginType == "operators")
-                    winType = "Window";
-                out << "\t\t\t<Tool" << endl;
-                out << "\t\t\t\tName=\"VCPreBuildEventTool\"" << endl;
-                out << "\t\t\t\tCommandLine=\""
-                    << "$(QTDIR)\\bin\\moc.exe "
-                    << pluginBase;
-                if (withinDevDir)
-                    out << "\\" << pluginType << "\\" << name;
-                out << "\\Qvis" << name << winType << ".h "
-                    << "-o "
-                    << pluginBase;
-                if (withinDevDir)
-                    out << "\\" << pluginType << "\\" << name;
-                out << "\\Qvis" << name << winType << "_moc.C";
-                if (customwfiles)
-                {
-                    for (size_t i = 0; i < wfiles.size(); ++i)
-                    {
-                        if (wfiles[i].right(2) == ".h")
-                        {
-                            out << "\n$(QTDIR)\\bin\\moc.exe "
-                                << pluginBase;
-                            if (withinDevDir)
-                                out << "\\" << pluginType << "\\" << name;
-                            out << "\\" << wfiles[i] << " -o " << pluginBase;
-                            if (withinDevDir)
-                                out << "\\" << pluginType << "\\" << name;
-                            out << "\\" << wfiles[i].left(wfiles[i].length()-2)
-                                << "_moc.C";
-                        }
-                    }
-                }
-                out << "\"/>" << endl;
-            }
-            else
-            {
-                out << "\t\t\t<Tool" << endl;
-                out << "\t\t\t\tName=\"VCPreBuildEventTool\"/>" << endl;
-            }
-
-
+            out << "\t\t\tCharacterSet=\"2\"" << endl;
+            out << "\t\t\t>" << endl;
+            out << "\t\t\t<Tool" << endl;
+            out << "\t\t\t\tName=\"VCPreBuildEventTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCCustomBuildTool\"" << endl;
             out << "\t\t\t/>" << endl;
@@ -270,9 +245,10 @@
             out << "\t\t\t\tSuppressStartupBanner=\"true\"" << endl;
             out << "\t\t\t\tTargetEnvironment=\"1\"" << endl;
             out << "\t\t\t\tTypeLibraryName=\".\\" << configs[j] << "\\" 
-                << name << pluginComponent << "\\" 
-                << name << pluginComponent << ".tlb\"" << endl;
-            out << "\t\t\t\tHeaderFileName=\"\"/>" << endl;
+                << name << pluginComponent << "\\lib" << pluginComponent
+                << name << pType << ".tlb\"" << endl;
+            out << "\t\t\t\tHeaderFileName=\"\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
             out << "\t\t\t\tOptimization=\"" << optims[j] << "\"" << endl;
@@ -282,10 +258,7 @@
                 << pluginBase;
             if (withinDevDir)
                 out << "\\" << pluginType << "\\" << name;
-            out << ";" << visitIncludes;
-            out << ";" << includeBase << "\\VisIt"
-                << ";" << includeBase << "\\VTK"
-                << ";" << tpIncludes
+            out << ";" << tpIncludes
                 << "\"" << endl;
             out << "\t\t\t\tPreprocessorDefinitions=\""
                 << preproc  << ";" << debug[j]
@@ -294,7 +267,7 @@
                 out << ";" << exports;
             out << "\"" << endl;
             if (configs[j] == "Release")
-                out << "\t\t\t\tStringPooling=\"TRUE\"" << endl;
+                out << "\t\t\t\tStringPooling=\"true\"" << endl;
             else 
                 out << "\t\t\t\tBasicRuntimeChecks=\"" << brc[j] 
                     << "\"" << endl;
@@ -314,23 +287,28 @@
             if (configs[j] == "Release")
             {
                 out << "\t\t\t\tWarningLevel=\"3\"" << endl;
-                out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"/>" << endl;
+                out << "\t\t\t\tSuppressStartupBanner=\"true\"" << endl;
+                out << "\t\t\t/>" << endl;
             }
             else
             {
-                out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+                out << "\t\t\t\tSuppressStartupBanner=\"true\"" << endl;
                 out << "\t\t\t\tDebugInformationFormat=\"" << dif[j] 
-                    << "\"/>" << endl;
+                    << "\"" << endl;
+                out << "\t\t\t/>" << endl;
             }
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCManagedResourceCompilerTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCManagedResourceCompilerTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCResourceCompilerTool\"" << endl;
             out << "\t\t\t\tPreprocessorDefinitions=\"" << debug[j] << "\"" 
                 << endl;
-            out << "\t\t\t\tCulture=\"1033\"/>" << endl;
+            out << "\t\t\t\tCulture=\"1033\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCPreLinkEventTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCPreLinkEventTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCLinkerTool\"" << endl;
             if (configs[j] == "Purify")
@@ -342,36 +320,42 @@
                 << pType << suffix << ".dll\"" << endl;
             out << "\t\t\t\tLinkIncremental=\"" << li[j] << "\"" << endl;
             out << "\t\t\t\tSuppressStartupBanner=\"true\"" << endl;
-            out << "\t\t\t\tAdditionalLibraryDirectories=\""
-                << libBase << "\\ThirdParty;"
-                << libBase << "\\" << configs[j]
-                << ";" << tpLibDir;
+            out << "\t\t\t\tAdditionalLibraryDirectories=\"" << tpLibDir;
             out << "\"" << endl;
             if (configs[j] != "Release")
-                out << "\t\t\t\tGenerateDebugInformation=\"TRUE\""  << endl;
+                out << "\t\t\t\tGenerateDebugInformation=\"true\""  << endl;
             out << "\t\t\t\tProgramDatabaseFile=\".\\" << configs[j] << "\\" 
                 << name << pluginComponent << "\\" 
                 << name << pluginComponent << ".pdb\"" << endl;
             out << "\t\t\t\tImportLibrary=\".\\" << configs[j] << "\\" 
                 << name << pluginComponent << "\\lib" << pluginComponent  
                 << name << pType << suffix << ".lib\"" << endl;
-            out << "\t\t\t\tTargetMachine=\"1\"/>" << endl;
+            out << "\t\t\t\tTargetMachine=\"1\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCALinkTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCALinkTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCManifestTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCManifestTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCXDCMakeTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCXDCMakeTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCBscMakeTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCBscMakeTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCFxCopTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCFxCopTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCAppVerifierTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCAppVerifierTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCWebDeploymentTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCWebDeploymentTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCPostBuildEventTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCPostBuildEventTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t</Configuration>" << endl;
         }
         out << "\t</Configurations>" << endl;
@@ -380,7 +364,8 @@
         out << "\t<Files>" << endl;
         out << "\t\t<Filter" << endl;
         out << "\t\t\tName=\"Source Files\"" << endl;
-        out << "\t\t\tFilter=\"C;cpp;c;cxx;rc;def;r;odl;idl;hpj;bat\">" << endl;
+        out << "\t\t\tFilter=\"cpp;c;cxx;rc;def;r;odl;idl;hpj;bat\"" << endl;
+        out << "\t\t\t>" << endl;
     
         for(size_t i = 0; i < srcFiles.size(); ++i)
         {
@@ -390,21 +375,22 @@
             if (withinDevDir)
             {
                 out << pluginBase << "\\" << pluginType 
-                    << "\\" << name << "\\" << srcFiles[i];
+                    << "\\" << name << "\\" << srcFiles[i] << "\"" << endl;
             }
             else 
             {
-                out << srcFiles[i];
+                out << srcFiles[i] << "\"" << endl;
             }
 #else
             out << pluginBase << "\\" << pluginType 
-                << "\\" << name << "\\" << srcFiles[i];
+                << "\\" << name << "\\" << srcFiles[i] << "\"" << endl;
 #endif
-            out << "\">" << endl;
+            out << "\t\t\t\t>" << endl;
             for (int j = 0; j < 3; j++)
             {
                 out << "\t\t\t\t<FileConfiguration" << endl;
-                out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\">" << endl;
+                out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\"" << endl;
+                out << "\t\t\t\t\t>" << endl;
                 out << "\t\t\t\t\t<Tool" << endl;
                 out << "\t\t\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
                 out << "\t\t\t\t\t\tOptimization=\"" << optims[j] 
@@ -415,13 +401,110 @@
                     out << "\t\t\t\t\t\tBasicRuntimeChecks=\"3\"" << endl;
                 else if (configs[j] == "Purify")
                     out << "\t\t\t\t\t\tBasicRuntimeChecks=\"0\"" << endl;
-                out << "\t\t\t\t\t\tCompileAs=\"2\"/>" << endl;
+                out << "\t\t\t\t\t\tCompileAs=\"2\"" << endl;
+                out << "\t\t\t\t\t/>" << endl;
                 out << "\t\t\t\t</FileConfiguration>" << endl;
             }
             out << "\t\t\t</File>" << endl;
         }
-    
         out << "\t\t</Filter>" << endl;
+
+        if(pluginComponent == 'G' && hdrFiles.size() > 0)
+        {
+            out << "\t\t<Filter" << endl;
+            out << "\t\t\tName=\"Header Files\"" << endl;
+            out << "\t\t\tFilter=\"h;hxx\"" << endl;
+            out << "\t\t\t>" << endl;
+    
+            for(size_t i = 0; i < hdrFiles.size(); ++i)
+            {
+                out << "\t\t\t<File" << endl;
+                out << "\t\t\t\tRelativePath=\"";
+#ifdef _WIN32
+                if (withinDevDir)
+                {
+                    out << pluginBase << "\\" << pluginType 
+                        << "\\" << name << "\\" << hdrFiles[i] << "\"" << endl;
+                }
+                else 
+                {
+                    out << hdrFiles[i] << "\"" << endl;
+                }
+#else
+                out << pluginBase << "\\" << pluginType 
+                    << "\\" << name << "\\" << hdrFiles[i] << "\"" << endl;
+#endif
+                out << "\t\t\t\t>" << endl;
+                for (int j = 0; j < 3; j++)
+                {
+                    out << "\t\t\t\t<FileConfiguration" << endl;
+                    out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\"" 
+                        << endl;
+                    out << "\t\t\t\t\t>" << endl;
+                    out << "\t\t\t\t\t<Tool" << endl;
+                    out << "\t\t\t\t\t\tName=\"VCCustomBuildTool\"" << endl;
+                    out << "\t\t\t\t\t\tDescription=\"Moc&apos;ing " 
+                        << hdrFiles[i] << " ...\"" << endl;
+                    out << "\t\t\t\t\t\tCommandLine=\"$(QTDIR)\\bin\\moc.exe "
+                        << pluginBase;
+                    if (withinDevDir)
+                        out << "\\" << pluginType << "\\" << name;
+                    out << "\\" << hdrFiles[i] << " -o " << pluginBase;
+                    if (withinDevDir)
+                        out << "\\" << pluginType << "\\" << name;
+                    out << "\\" << mocFiles[i] << "\"" << endl;
+                    out << "\t\t\t\t\t\tAdditionalDependencies="
+                        << "\"$(QTDIR)\\bin\\moc.exe\"" << endl;
+                    out << "\t\t\t\t\t\tOutputs=\"" << pluginBase;
+                    if (withinDevDir)
+                        out << "\\" << pluginType << "\\" << name;
+                    out << "\\" << mocFiles[i] << "\"" << endl;
+                    out << "\t\t\t\t\t/>" << endl;
+                    out << "\t\t\t\t</FileConfiguration>" << endl;
+                }
+                out << "\t\t\t</File>" << endl;
+            }
+            out << "\t\t</Filter>" << endl;
+            out << "\t\t<Filter" << endl;
+            out << "\t\t\tName=\"Generated MOC Files\"" << endl;
+            out << "\t\t\tFilter=\"\"" << endl;
+            out << "\t\t\t>" << endl;
+    
+            for(size_t i = 0; i < mocFiles.size(); ++i)
+            {
+                out << "\t\t\t<File" << endl;
+                out << "\t\t\t\tRelativePath=\"";
+#ifdef _WIN32
+                if (withinDevDir)
+                {
+                    out << pluginBase << "\\" << pluginType 
+                        << "\\" << name << "\\" << mocFiles[i] << "\"" << endl;
+                }
+                else 
+                {
+                    out << mocFiles[i] << "\"" << endl;
+                }
+#else
+                out << pluginBase << "\\" << pluginType 
+                    << "\\" << name << "\\" << mocFiles[i] << "\"" << endl;
+#endif
+                out << "\t\t\t\t>" << endl;
+                for (int j = 0; j < 3; j++)
+                {
+                    out << "\t\t\t\t<FileConfiguration" << endl;
+                    out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\""
+                        << endl;
+                    out << "\t\t\t\t\t>" << endl;
+                    out << "\t\t\t\t\t<Tool" << endl;
+                    out << "\t\t\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
+                    out << "\t\t\t\t\t\tCompileAs=\"2\"" << endl;
+                    out << "\t\t\t\t\t/>" << endl;
+                    out << "\t\t\t\t</FileConfiguration>" << endl;
+                }
+                out << "\t\t\t</File>" << endl;
+            }
+            out << "\t\t</Filter>" << endl;
+        }
         out << "\t</Files>" << endl;
         out << "\t<Globals>" << endl;
         out << "\t</Globals>" << endl;
@@ -461,9 +544,11 @@
         out << "\tVersion=\"8.00\"" << endl;
         out << "\tName=\"" << name << pluginComponent << "\"" << endl;
         out << "\tRootNamespace=\"" << name << pluginComponent << "\"" << endl;
+        out << "\t>" << endl;
         out << "\t<Platforms>" << endl;
         out << "\t\t<Platform" << endl;
-        out << "\t\t\tName=\"Win32\"/>" << endl;
+        out << "\t\t\tName=\"Win32\"" << endl;
+        out << "\t\t/>" << endl;
         out << "\t</Platforms>" << endl;
         out << "\t<ToolFiles>" << endl;
         out << "\t</ToolFiles>" << endl;
@@ -482,8 +567,11 @@
             out << "\t\t\tIntermediateDirectory=\".\\" << configs[i] << "\\" 
                 << name << pluginComponent << "\\\"" << endl;
             out << "\t\t\tConfigurationType=\"2\"" << endl;
-            out << "\t\t\tInheritedProperySheets=\"..\\NO_SEC_DEP.vsprops\"" 
-                << endl;
+            out << "\t\t\tInheritedPropertySheets=\""
+                << "$(VCInstallDir)VCProjectDefaults\\UpgradeFromVC71.vsprops;"
+                << "..\\NO_SEC_DEP.vsprops;" 
+                << "..\\VisItIncludePaths.vsprops;"
+                << "..\\VisItLibPaths.vsprops\"" << endl;
             out << "\t\t\tUseOfMFC=\"0\"" << endl;
             out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"false\"" << endl;
             out << "\t\t\tCharacterSet=\"2\">" << endl;
@@ -503,9 +591,10 @@
             out << "\t\t\t\tSuppressStartupBanner=\"true\"" << endl;
             out << "\t\t\t\tTargetEnvironment=\"1\"" << endl;
             out << "\t\t\t\tTypeLibraryName=\".\\" << configs[i] << "\\" 
-                << name << pluginComponent << "\\" 
-                << name << pluginComponent << ".tlb\"" << endl;
-            out << "\t\t\t\tHeaderFileName=\"\"/>" << endl;
+                << name << pluginComponent << "\\lib" << pluginComponent
+                << name << ".tlb\"" << endl;
+            out << "\t\t\t\tHeaderFileName=\"\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
             out << "\t\t\t\tOptimization=\"" << optims[i] << "\"" << endl;
@@ -515,9 +604,6 @@
                 << pluginBase;
             if (withinDevDir)
                 out << "\\databases\\" << name;
-            out << ";" << visitIncludes;
-            out << ";" << includeBase << "\\VisIt"
-                << ";" << includeBase << "\\VTK";
             if (pluginComponent != 'I')
                 out << tpIncludes;
             out << "\"" << endl;
@@ -530,7 +616,7 @@
             out << "\"" << endl;
             if (configs[i] == "Release")
             {
-                out << "\t\t\t\tStringPooling=\"TRUE\"" << endl;
+                out << "\t\t\t\tStringPooling=\"true\"" << endl;
             }
             else
             {
@@ -553,23 +639,28 @@
             if (configs[i] == "Release")
             {
                 out << "\t\t\t\tWarningLevel=\"3\"" << endl;
-                out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"/>" << endl;
+                out << "\t\t\t\tSuppressStartupBanner=\"true\"" << endl;
+                out << "\t\t\t/>" << endl;
             }
             else
             {
-                out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+                out << "\t\t\t\tSuppressStartupBanner=\"true\"" << endl;
                 out << "\t\t\t\tDebugInformationFormat=\"" << dif[i] 
-                    << "\"/>" << endl;
+                    << "\"" << endl;
+                out << "\t\t\t/>" << endl;
             }
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCManagedResourceCompilerTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCManagedResourceCompilerTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCResourceCompilerTool\"" << endl;
             out << "\t\t\t\tPreprocessorDefinitions=\"" << debug[i] 
                 << "\"" << endl;
-            out << "\t\t\t\tCulture=\"1033\"/>" << endl;
+            out << "\t\t\t\tCulture=\"1033\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCPreLinkEventTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCPreLinkEventTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCLinkerTool\"" << endl;
             if (configs[i] == "Purify")
@@ -581,14 +672,11 @@
                 out << " vtkFiltering.lib" << tpLibs;
             out << "\"" << endl;
             out << "\t\t\t\tOutputFile=\"" << binBase << "\\" << configs[i]
-                << "\\databases\\lib" << pluginComponent << name << pluginSuffix 
-                << ".dll\"" << endl;
+                << "\\databases\\lib" << pluginComponent << name 
+                << pluginSuffix << ".dll\"" << endl;
             out << "\t\t\t\tLinkIncremental=\"" << li[i] << "\"" << endl;
             out << "\t\t\t\tSuppressStartupBanner=\"true\"" << endl;
-            out << "\t\t\t\tAdditionalLibraryDirectories=\""
-                << libBase << "\\ThirdParty;"
-                << libBase << "\\" << configs[i];
-            out << "\"" << endl;
+            out << "\t\t\t\tAdditionalLibraryDirectories=\"\"" << endl;
             if (configs[i] != "Release")
                 out << "\t\t\t\tGenerateDebugInformation=\"true\"" << endl;
             out << "\t\t\t\tProgramDatabaseFile=\".\\" << configs[i] 
@@ -599,21 +687,29 @@
                 << pluginComponent << name << pluginSuffix << ".lib\"" << endl;
             out << "\t\t\t\tTargetMachine=\"1\"/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCALinkTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCALinkTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCManifestTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCManifestTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCXDCMakeTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCXDCMakeTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCBscMakeTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCBscMakeTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCFxCopTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCFxCopTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCAppVerifierTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCAppVerifierTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCWebDeploymentTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCWebDeploymentTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t\t<Tool" << endl;
-            out << "\t\t\t\tName=\"VCPostBuildEventTool\"/>" << endl;
+            out << "\t\t\t\tName=\"VCPostBuildEventTool\"" << endl;
+            out << "\t\t\t/>" << endl;
             out << "\t\t</Configuration>" << endl;
         } // end for
         } // end new scope
@@ -633,22 +729,23 @@
             if (withinDevDir)
             {
                 out << pluginBase << "\\databases\\" << name << "\\" 
-                    << srcFiles[i];
+                    << srcFiles[i] << "\"" << endl;
             }
             else
             {
-                out << srcFiles[i];
+                out << srcFiles[i] << "\"" << endl;
             }
 #else
             out << pluginBase << "\\databases\\" << name << "\\" 
-                << srcFiles[i];
+                << srcFiles[i] << "\"" << endl;
 #endif
-            out << "\">" << endl;
+            out << "\t\t\t\t>" << endl;
 
             for (int j = 0; j < 3; ++j)
             {
                 out << "\t\t\t\t<FileConfiguration" << endl;
-                out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\">" << endl;
+                out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\"" << endl;
+                out << "\t\t\t\t\t>" << endl;
                 out << "\t\t\t\t\t<Tool" << endl;
                 out << "\t\t\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
                 out << "\t\t\t\t\t\tOptimization=\"" << optims[j] 

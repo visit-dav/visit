@@ -167,6 +167,9 @@ static bool GetCreateTimeDerivativeExpressions()
 //   Jeremy Meredith, Wed Jan 23 16:25:45 EST 2008
 //   Store the current default file opening options.
 //
+//    Kathleen Bonnell, Thu Aug 14 16:13:41 PDT 2008 
+//    Added shouldSendFileOpenOptions.
+//
 // ****************************************************************************
 
 ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
@@ -175,6 +178,7 @@ ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
     databaseCorrelationList = new DatabaseCorrelationList;
     dbPluginInfoAtts = new DBPluginInfoAttributes;
     fileOpenOptions = new FileOpenOptions;
+    shouldSendFileOpenOptions = false;
 }
 
 // ****************************************************************************
@@ -194,10 +198,15 @@ ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
 //   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //   Replaced tryHarderCyclesTimes and treatAllDBsAsTimeVarying with
 //   static functions calling VWM
+//   
+//   Kathleen Bonnell, Thu Aug 14 16:13:41 PDT 2008 
+//   Added shouldSendFileOpenOptions.
+//
 // ****************************************************************************
 
 ViewerFileServer::ViewerFileServer(const ViewerFileServer &) : ViewerServerManager()
 {
+    shouldSendFileOpenOptions = false;
 }
 
 // ****************************************************************************
@@ -437,10 +446,12 @@ ViewerFileServer::GetMetaData(const std::string &host,
         int         ts;
         SplitKey(pos->first, name, ts);
 
-        bool cyclesAndTimesAreGood = pos->second->AreAllTimesAccurateAndValid() &&
-                                     pos->second->AreAllCyclesAccurateAndValid();
+        bool cyclesAndTimesAreGood = 
+                 pos->second->AreAllTimesAccurateAndValid() &&
+                 pos->second->AreAllCyclesAccurateAndValid();
 
-        if (name == dbName && (!forceReadAllCyclesAndTimes || cyclesAndTimesAreGood))
+        if (name == dbName && 
+            (!forceReadAllCyclesAndTimes || cyclesAndTimesAreGood))
         {
             return pos->second;
         }
@@ -606,6 +617,9 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
 //   Brad Whitlock, Tue Apr 29 14:52:33 PDT 2008
 //   Support for internationalization.
 //
+//   Kathleen Bonnell, Thu Aug 14 16:13:41 PDT 2008 
+//   Added call to SendFileOpenOptions after StartServer.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -714,15 +728,15 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                 if (numAttempts == numTries)
                 {
                     QString msg = tr("VisIt was unable to open \"%1\"."
-                              "  Each attempt to open it caused VisIt's "
-                              "metadata server to crash.  This can occur when "
-                              "the file is corrupted, or when the underlying "
-                              "file format has changed and VisIt's readers "
-                              "have not been updated yet, or when the reader "
-                              "VisIt is using"
-                              " for your file format is not robust.  Please "
-                              "check whether the file is corrupted and, if "
-                              "not, contact a VisIt developer.").arg(db.c_str());
+                            "  Each attempt to open it caused VisIt's "
+                            "metadata server to crash.  This can occur when "
+                            "the file is corrupted, or when the underlying "
+                            "file format has changed and VisIt's readers "
+                            "have not been updated yet, or when the reader "
+                            "VisIt is using"
+                            " for your file format is not robust.  Please "
+                            "check whether the file is corrupted and, if "
+                            "not, contact a VisIt developer.").arg(db.c_str());
                     Error(msg);
                 }
 
@@ -731,6 +745,7 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                     stringVector startArgs(servers[host]->arguments);
                     CloseServer(host, false);
                     StartServer(host, startArgs);
+                    SendFileOpenOptions(host);
                 }
                 CATCHALL(...)
                 {
@@ -891,7 +906,8 @@ ViewerFileServer::GetSILForState(const std::string &host,
             // If the metadata does not change over time or if it does and
             // the time states match then return what we found.
             //
-            if ((invariantMetaData || ts == timeState) && !GetTreatAllDBsAsTimeVarying())
+            if ((invariantMetaData || ts == timeState) && 
+                !GetTreatAllDBsAsTimeVarying())
             {
                 return pos->second;
             }
@@ -926,6 +942,9 @@ ViewerFileServer::GetSILForState(const std::string &host,
 //
 //   Brad Whitlock, Tue Apr 29 14:54:17 PDT 2008
 //   Support for internationalization.
+//
+//   Kathleen Bonnell, Thu Aug 14 16:13:41 PDT 2008 
+//   Added call to SendFileOpenOptions after StartServer.
 //
 // ****************************************************************************
 
@@ -1010,6 +1029,7 @@ ViewerFileServer::GetSILHelper(const std::string &host, const std::string &db,
                     stringVector startArgs(servers[host]->arguments);
                     CloseServer(host, false);
                     StartServer(host, startArgs);
+                    SendFileOpenOptions(host);
                 }
                 CATCHALL(...)
                 {
@@ -1093,6 +1113,9 @@ ViewerFileServer::ExpandDatabaseName(std::string &hostDBName,
 //   Brad Whitlock, Tue Apr 29 14:55:30 PDT 2008
 //   Support for internationalization.
 //
+//   Kathleen Bonnell, Thu Aug 14 16:13:41 PDT 2008 
+//   Added call to SendFileOpenOptions after StartServer.
+//
 // ****************************************************************************
 
 std::string
@@ -1140,6 +1163,7 @@ ViewerFileServer::ExpandedFileName(const std::string &host,
                         stringVector startArgs(servers[host]->arguments);
                         CloseServer(host, false);
                         StartServer(host, startArgs);
+                        SendFileOpenOptions(host);
                     }
                     CATCHALL(...)
                     {
@@ -1310,6 +1334,10 @@ ViewerFileServer::StartServer(const std::string &host)
 //    Brad Whitlock, Tue Apr 29 14:59:18 PDT 2008
 //    Support for internationalization.
 //
+//    Kathleen Bonnell, Thu Aug 14 16:18:21 PDT 2008
+//    Moved UpdateDBPluginInfo and setting of default file open options to
+//    SendFileOpenOptions, and call that method after this one completes. 
+//
 // ****************************************************************************
 
 void
@@ -1366,16 +1394,7 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         // server map.
         servers[host] = new ServerInfo(newServer, args);
 
-        // Once we start a new server, we need to update the current
-        // DB plugin list with data from this machine.  Revert to the
-        // old one after we have the initial set.
-        string oldhost = dbPluginInfoAtts->GetHost();
-        UpdateDBPluginInfo(host);
-        if (oldhost != "")
-            UpdateDBPluginInfo(oldhost);
-
-        // Send the new server our current options for opening files.
-        newServer->SetDefaultFileOpenOptions(*fileOpenOptions);
+        shouldSendFileOpenOptions = true;
     }
     CATCH(BadHostException)
     {
@@ -1510,6 +1529,43 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
     delete dialog;
 }
 
+
+// ****************************************************************************
+// Method: ViewerFileServer::SendFileOpenOptions
+//
+// Purpose: 
+//   Updates DBPluginInfo and FileOpenOptions for the specified host.
+//
+// Arguments:
+//   host : The name of the host on which to update.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 14, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+//
+void
+ViewerFileServer::SendFileOpenOptions(const std::string &host)
+{
+    if(shouldSendFileOpenOptions && servers.find(host) != servers.end())
+    {
+        // Once we start a new server, we need to update the current
+        // DB plugin list with data from this machine.  Revert to the
+        // old one after we have the initial set.
+
+        string oldhost = dbPluginInfoAtts->GetHost();
+        UpdateDBPluginInfo(host);
+        if (oldhost != "")
+            UpdateDBPluginInfo(oldhost);
+
+        // Send the new server our current options for opening files.
+        servers[host]->proxy->SetDefaultFileOpenOptions(*fileOpenOptions);
+    }
+    shouldSendFileOpenOptions = false;
+}
+
 // ****************************************************************************
 // Method: ViewerFileServer::NoFaultStartServer
 //
@@ -1549,10 +1605,14 @@ ViewerFileServer::NoFaultStartServer(const std::string &host)
 //   Brad Whitlock, Fri Feb 28 08:02:31 PDT 2003
 //   I removed a warning message.
 //
+//   Kathleen Bonnell, Thu Aug 14 16:13:41 PDT 2008 
+//   Added call to SendFileOpenOptions after StartServer.
+//
 // ****************************************************************************
 
 void
-ViewerFileServer::NoFaultStartServer(const std::string &host, const stringVector &args)
+ViewerFileServer::NoFaultStartServer(const std::string &host, 
+    const stringVector &args)
 {
     if(servers.find(host) == servers.end())
     {
@@ -1560,6 +1620,7 @@ ViewerFileServer::NoFaultStartServer(const std::string &host, const stringVector
         TRY
         {
             StartServer(host, args);
+            SendFileOpenOptions(host);
         }
         CATCHALL(...)
         {
@@ -1699,6 +1760,9 @@ ViewerFileServer::SendKeepAlives()
 //   Hank Childs, Sun Nov 11 22:21:55 PST 2007
 //   Add support for changing the username.
 //
+//   Kathleen Bonnell, Thu Aug 14 16:21:57 PDT 2008
+//   Added call to SendFileOpenOptions.
+//
 // ****************************************************************************
 
 void
@@ -1811,6 +1875,8 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
         }
 #endif
     }
+    // We only want to do this after the mdserver has connected back
+    SendFileOpenOptions(mdServerHost);
 }
 
 // ****************************************************************************
@@ -1979,7 +2045,8 @@ ViewerFileServer::ClearFile(const std::string &fullName)
     // Remove the correlation
     if(databaseCorrelationList->RemoveCorrelation(fullName))
     {
-        debug4 << "\tDeleted database correlation for " << fullName.c_str() << endl;
+        debug4 << "\tDeleted database correlation for " 
+               << fullName.c_str() << endl;
         databaseCorrelationList->Notify();
     }
 }
