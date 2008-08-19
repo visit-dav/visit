@@ -74,6 +74,9 @@ static inline double sign( const double& a, const double& b )
 //    Improved version of A-B solver that builds function history from
 //    initial Euler steps.
 //
+//    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
+//    Chagned how distanced based termination is computed.
+//
 // ****************************************************************************
 
 avtIVPAdamsBashforth::avtIVPAdamsBashforth()
@@ -82,6 +85,7 @@ avtIVPAdamsBashforth::avtIVPAdamsBashforth()
     tol = 1e-8;
     h = 1e-5;
     t = 0.0;
+    d = 0.0;
 }
 
 // ****************************************************************************
@@ -264,12 +268,16 @@ avtIVPAdamsBashforth::SetTolerances(const double& relt, const double& abst)
 //    Improved version of A-B solver that builds function history from
 //    initial Euler steps.
 //
+//    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
+//    Chagned how distanced based termination is computed.
+//
 // ****************************************************************************
 
 void 
 avtIVPAdamsBashforth::Reset(const double& t_start, const avtVecRef& y_start)
 {
     t = t_start;
+    d = 0.0;
     yCur = y_start;
     h = h_max;
     history.resize(yCur.dim(), 0);
@@ -559,11 +567,16 @@ avtIVPAdamsBashforth::ABStep(const avtIVPField* field,
 //    Dave Pugmire, Wed Aug 13 10:58:32 EDT 2008
 //    Store the velocity with each step.
 //
+//    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
+//    Chagned how distanced based termination is computed.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
 avtIVPAdamsBashforth::Step(const avtIVPField* field,
+                           const bool &timeMode,
                            const double& t_max,
+                           const double& d_max,
                            avtIVPStep* ivpstep)
 {
     const double direction = sign( 1.0, t_max - t );
@@ -604,6 +617,15 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
         (*ivpstep)[1] = yNew;
         ivpstep->tStart = t;
         ivpstep->tEnd = t + h;
+
+        if (!timeMode)
+        {
+            double len = ivpstep->length();
+
+            if ( d+len > d_max )
+                throw avtIVPField::Undefined();
+            d = d + len;
+        }
         
         ivpstep->velStart = (*field)(t,yCur);
         ivpstep->velEnd = (*field)((t+h),yNew);
@@ -634,6 +656,7 @@ avtIVPAdamsBashforth::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(h)
         .Accept(h_max)
         .Accept(t)
+        .Accept(d)
         .Accept(yCur)
         .Accept(history)
         .Accept(ys[0])

@@ -66,6 +66,10 @@
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
+//    Chagned how distanced based termination is computed.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPDopri5: public avtIVPSolver
@@ -81,7 +85,10 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
 
     // perform a single integration step
     // adaptive stepsize control retries until success or underflow
-    virtual Result   Step(const avtIVPField* field, const double& t_max,
+    virtual Result   Step(const avtIVPField* field,
+                          const bool &timeMode,
+                          const double& t_max,
+                          const double& d_max,
                           avtIVPStep* ivpstep = NULL);
 
     virtual avtVec   GetCurrentY() const;
@@ -116,6 +123,7 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
     double h_init;
 
     double t, t_max;
+    double d;
 
     unsigned int n_accepted;
     unsigned int n_rejected;

@@ -85,13 +85,17 @@ struct avtIVPStateHelper;
 //    Dave Pugmire, Wed Aug 13 10:58:32 EDT 2008
 //    Store the velocity with each step.
 //
+//    Hank Childs, Tue Aug 19 15:34:14 PDT 2008
+//    Make sure that velStart and velEnd are appropriately sized.
 //
 // ****************************************************************************
 
 class IVP_API avtIVPStep: public avtBezierSegment
 {
 public:
-    avtIVPStep() : avtBezierSegment() { tStart = tEnd = vorticity = 0.0; }
+    avtIVPStep() : avtBezierSegment()
+                  { tStart = tEnd = vorticity = 0.0; 
+                    velStart = avtVec(0.,0.,0.); velEnd = avtVec(0.,0.,0.); }
     
     void   ComputeVorticity(const avtIVPField *field)
     {
@@ -232,6 +236,9 @@ class avtIVPState
 //    Dave Pugmire, Fri Aug  8 16:05:34 EDT 2008
 //    Added OnExitDomain method.
 //
+//    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
+//    Chagned how distanced based termination is computed.
+//
 // ****************************************************************************
 
 class avtIVPSolver
@@ -249,7 +256,9 @@ class avtIVPSolver
     virtual void    Reset(const double& t_start, const avtVecRef& y_start) = 0;
 
     virtual Result  Step(const avtIVPField* field, 
+                         const bool &timeMode,
                          const double& t_max, 
+                         const double& d_max,
                          avtIVPStep* ivpstep = 0 ) = 0;
     virtual void    OnExitDomain() {}
     virtual avtVec  GetCurrentY() const = 0;

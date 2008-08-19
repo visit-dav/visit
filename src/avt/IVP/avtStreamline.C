@@ -128,18 +128,42 @@ avtStreamline::~avtStreamline()
 //    Dave Pugmire, Wed Aug 13 10:58:32 EDT 2008
 //    Modify how data without ghost zones are handled.
 //
+//    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
+//    Chagned how distanced based termination is computed.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
-avtStreamline::Advance(const avtIVPField* field, double tEnd, bool vorticity, 
-                       bool haveGhostZones, double *extents)
+avtStreamline::Advance(const avtIVPField* field,
+                       bool timeMode,
+                       double end,
+                       bool vorticity,
+                       bool haveGhostZones,
+                       double *extents)
 {
     wantVorticity = vorticity;
+    double tEnd, dEnd;
+    
+    if ( timeMode )
+    {
+        tEnd = end;
+        dEnd = std::numeric_limits<double>::max();
+    }
+    else
+    {
+        dEnd = end;
+        tEnd = std::numeric_limits<double>::max();
+        if ( end < 0 )
+        {
+            tEnd = -tEnd;
+            dEnd = fabs(dEnd);
+        }
+    }
     
     if (tEnd < TMin())
-        return DoAdvance(_ivp_bwd, field, tEnd, haveGhostZones, extents);
+        return DoAdvance(_ivp_bwd, field, tEnd, dEnd, timeMode, haveGhostZones, extents);
     else if (tEnd > TMax())
-        return DoAdvance(_ivp_fwd, field, tEnd, haveGhostZones, extents);
+        return DoAdvance(_ivp_fwd, field, tEnd, dEnd, timeMode, haveGhostZones, extents);
     
     return avtIVPSolver::OK;
 }
@@ -161,11 +185,19 @@ avtStreamline::Advance(const avtIVPField* field, double tEnd, bool vorticity,
 //    Dave Pugmire, Wed Aug 13 10:58:32 EDT 2008
 //    Modify how data without ghost zones are handled.
 //
+//    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
+//    Chagned how distanced based termination is computed.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
-avtStreamline::DoAdvance(avtIVPSolver* ivp, const avtIVPField* field, 
-                         double tEnd, bool haveGhostZones, double *extents)
+avtStreamline::DoAdvance(avtIVPSolver* ivp,
+                         const avtIVPField* field,
+                         double tEnd,
+                         double dEnd,
+                         bool timeMode,
+                         bool haveGhostZones,
+                         double *extents)
 {
     avtIVPSolver::Result result;
 
@@ -173,6 +205,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp, const avtIVPField* field,
     // domain of field
     if(! field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()))
     {
+        //cout<<"Pt0 "<<ivp->GetCurrentY()<<" not in domain\n";
         return avtIVPSolver::OUTSIDE_DOMAIN;
     }
     
@@ -187,7 +220,8 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp, const avtIVPField* field,
 
         try
         {
-            result = ivp->Step(field, tEnd, step);
+            debug1<< "Step( t= "<<tEnd<<", d= "<<dEnd<<" );\n";
+            result = ivp->Step(field, timeMode, tEnd, dEnd, step);
         }
         catch( avtIVPField::Undefined& )
         {
@@ -199,6 +233,7 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp, const avtIVPField* field,
             ivp->PutState( state );
 
             double h = ivp->GetNextStepSize();
+
             h = h/2;
             
             if( fabs(h) < 1e-9 )
@@ -219,13 +254,9 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp, const avtIVPField* field,
         // record step if it was successful
         if (result == avtIVPSolver::OK)
         {
-            //avtVec eval = (*field)( 1.0, step->back() );
-            //cout<<"Step: "<<step->back()<<" F(s)= "<<eval<<" vel= "<<step->velEnd<<" s= "<<step->velEnd.length()<<endl;
             if ( wantVorticity )
                 step->ComputeVorticity( field );
-            //cout<<"Step. dist= "<<ivp->GetCurrentDist()
-            //    <<" T= "<<ivp->GetCurrentT()<<endl;
-
+            
             if (ivp->GetCurrentT() < TMin())
             {
                 IntersectWithPlane( _steps.front(), step );

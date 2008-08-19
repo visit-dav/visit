@@ -88,6 +88,11 @@ static inline double sign( const double& a, const double& b )
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//
+//    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
+//    Chagned how distanced based termination is computed.
+//
 // ****************************************************************************
 
 avtIVPDopri5::avtIVPDopri5()
@@ -95,6 +100,7 @@ avtIVPDopri5::avtIVPDopri5()
      // set (somewhat) reasonable defaults
      reltol = 1e-8;
      abstol = 1e-6;
+     d = 0.0;
      
      h_max = 0.0;
 }
@@ -106,6 +112,10 @@ avtIVPDopri5::avtIVPDopri5()
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//
+//    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
+//    Chagned how distanced based termination is computed.
 // ****************************************************************************
 
 avtIVPDopri5::avtIVPDopri5( const double& t_start, const avtVecRef& y_start )
@@ -113,7 +123,7 @@ avtIVPDopri5::avtIVPDopri5( const double& t_start, const avtVecRef& y_start )
     // set (somewhat) reasonable defaults
     reltol = 1e-8;
     abstol = 1e-6;
-    
+    d = 0.0;
     h_max = 0.0;
 
     Reset(t_start, y_start);
@@ -157,6 +167,7 @@ avtIVPDopri5::Reset(const double& t_start, const avtVecRef& y_start)
     iasti  = 0;
     
     t = t_start;
+    d = 0.0;
     y = y_start;
     k1 = avtVec(y_start.dim());
 }
@@ -320,6 +331,9 @@ avtIVPDopri5::SetTolerances(const double& relt, const double& abst)
 //    Changed for loops to use size_t to eliminate signed/unsigned int 
 //    comparison warnings.
 //
+//    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
+//    Consider a negative stepsize.
+//
 // ****************************************************************************
 
 double 
@@ -379,7 +393,7 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
     else 
         h1 = pow( 0.01/der12, 0.2 );
 
-    h = std::min( 100.0*h, std::min( h1, h_max ) );
+    h = std::min( fabs(100.0*h), std::min( h1, h_max ) );
     h = sign( h, direction );
 
     return h;
@@ -403,11 +417,16 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 //    Dave Pugmire, Wed Aug 13 10:58:32 EDT 2008
 //    Store the velocity with each step.
 //
+//    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
+//    Consider a negative stepsize. Change how distance termination is computed.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
-avtIVPDopri5::Step(const avtIVPField* field, 
+avtIVPDopri5::Step(const avtIVPField* field,
+                   const bool &timeMode,
                    const double& t_max,
+                   const double& d_max,
                    avtIVPStep* ivpstep) 
 {
     const double direction = sign( 1.0, t_max - t );
@@ -533,7 +552,7 @@ avtIVPDopri5::Step(const avtIVPField* field,
                 if( stden > 0.0 ) 
                     hlamb = h * sqrt( stnum/stden );
             
-                if( hlamb > 3.25 ) 
+                if( fabs(hlamb) > 3.25 ) 
                 {
                     nonsti = 0;
                     iasti++;
@@ -580,8 +599,17 @@ avtIVPDopri5::Step(const avtIVPField* field,
             // first-same-as-last for k1
             k1 = k7;
             y = y_new;
+
             t = t+h;
             h = h_new;
+            
+            if (!timeMode)
+            {
+                double len = ivpstep->Length();
+                if ( d+len > d_max )
+                    throw avtIVPField::Undefined();
+                d = d + len;
+            }
             
             // normal exit
             //debug1 << "\tavtIVPDopri5::step(): normal exit, now at t = " 
@@ -627,6 +655,7 @@ avtIVPDopri5::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(h_init)
         .Accept(t)
         .Accept(t_max)
+        .Accept(d)
         .Accept(facold)
         .Accept(hlamb)
         .Accept(n_accepted)
