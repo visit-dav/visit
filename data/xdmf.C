@@ -44,25 +44,26 @@ write_hdf5_2d_curv_data(hid_t file_id)
     /*
      * Create the scalar data.
      */
-    float *pressure = (float *) malloc(NX*NY * sizeof(float));
+    unsigned char *pressure =
+        (unsigned char *) malloc(NX*NY * sizeof(unsigned char));
 
     for (int j = 0; j < NY; j++)
     {
         for (int i = 0; i < NX; i++)
         {
             int ndx = j * NX + i;
-            pressure[ndx] = (float) j;
+            pressure[ndx] = (unsigned char) j;
         }
     }
 
-    float *velocityx = (float *) malloc((NX+1)*(NY+1) * sizeof(float));
+    char *velocityx = (char *) malloc((NX+1)*(NY+1) * sizeof(char));
 
     for (int j = 0; j < NY+1; j++)
     {
         for (int i = 0; i < NX+1; i++)
         {
             int ndx = j * (NX+1) + i;
-            velocityx[ndx] = (float) i;
+            velocityx[ndx] = (char) i;
         }
     }
 
@@ -71,6 +72,7 @@ write_hdf5_2d_curv_data(hid_t file_id)
      */
     /*
      * Data types: H5T_NATIVE_CHAR
+     *             H5T_NATIVE_UCHAR
      *             H5T_NATIVE_INT
      *             H5T_NATIVE_LONG
      *             H5T_NATIVE_FLOAT
@@ -102,10 +104,10 @@ write_hdf5_2d_curv_data(hid_t file_id)
     dims[1] = NX;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/Pressure_2D", H5T_NATIVE_FLOAT,
+    dataset_id = H5Dcreate(file_id, "/Pressure_2D", H5T_NATIVE_UCHAR,
                            dataspace_id, H5P_DEFAULT);
 
-    status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+    status = H5Dwrite(dataset_id, H5T_NATIVE_UCHAR, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, pressure);
 
     status = H5Dclose(dataset_id);
@@ -116,10 +118,10 @@ write_hdf5_2d_curv_data(hid_t file_id)
     dims[1] = NX + 1;
     dataspace_id = H5Screate_simple(2, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/VelocityX_2D", H5T_NATIVE_FLOAT,
+    dataset_id = H5Dcreate(file_id, "/VelocityX_2D", H5T_NATIVE_CHAR,
                            dataspace_id, H5P_DEFAULT);
 
-    status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+    status = H5Dwrite(dataset_id, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, velocityx);
 
     status = H5Dclose(dataset_id);
@@ -293,7 +295,8 @@ write_hdf5_3d_curv_data(hid_t file_id)
     /*
      * Create the scalar data.
      */
-    float *pressure = (float *) malloc(NX*NY*NZ * sizeof(float));
+    unsigned int *pressure = (unsigned int *)
+        malloc(NX*NY*NZ * sizeof(unsigned int));
 
     for (int k = 0; k < NZ; k++)
     {
@@ -302,7 +305,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
             for (int i = 0; i < NX; i++)
             {
                 int ndx = k * NX * NY + j * NX + i;
-                pressure[ndx] = (float) k;
+                pressure[ndx] = (unsigned int) k;
             }
         }
     }
@@ -335,7 +338,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
         }
     }
 
-    float *velocityz = (float *) malloc((NX+1)*(NY+1)*(NZ+1) * sizeof(float));
+    int *velocityz = (int *) malloc((NX+1)*(NY+1)*(NZ+1) * sizeof(int));
 
     for (int k = 0; k < NZ+1; k++)
     {
@@ -344,7 +347,7 @@ write_hdf5_3d_curv_data(hid_t file_id)
             for (int i = 0; i < NX+1; i++)
             {
                 int ndx = k * (NX+1) * (NY+1) + j * (NX+1) + i;
-                velocityz[ndx] = (float) k;
+                velocityz[ndx] = (int) k;
             }
         }
     }
@@ -610,10 +613,10 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[2] = NX;
     dataspace_id = H5Screate_simple(3, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/Pressure", H5T_NATIVE_FLOAT,
+    dataset_id = H5Dcreate(file_id, "/Pressure", H5T_NATIVE_UINT,
                            dataspace_id, H5P_DEFAULT);
 
-    status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+    status = H5Dwrite(dataset_id, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, pressure);
 
     status = H5Dclose(dataset_id);
@@ -655,10 +658,10 @@ write_hdf5_3d_curv_data(hid_t file_id)
     dims[2] = NX+1;
     dataspace_id = H5Screate_simple(3, dims, NULL);
 
-    dataset_id = H5Dcreate(file_id, "/VelocityZ", H5T_NATIVE_FLOAT,
+    dataset_id = H5Dcreate(file_id, "/VelocityZ", H5T_NATIVE_INT,
                            dataspace_id, H5P_DEFAULT);
 
-    status = H5Dwrite(dataset_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL,
+    status = H5Dwrite(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
                       H5P_DEFAULT, velocityz);
 
     status = H5Dclose(dataset_id);
@@ -864,7 +867,7 @@ create_collection3d()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -979,7 +982,7 @@ create_collection_partial_var2()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1110,7 +1113,7 @@ create_multi_domain3d()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1183,7 +1186,7 @@ create_multi_grid3d()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1238,12 +1241,12 @@ create_uniform3d()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
     fprintf(xmf, "     <Attribute Name=\"VelocityZ\" AttributeType=\"Scalar\" Center=\"Node\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ+1, NY+1, NX+1);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Int\" Precision=\"4\" Format=\"HDF\">\n", NZ+1, NY+1, NX+1);
     fprintf(xmf, "        mesh.h5:/VelocityZ\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1370,12 +1373,12 @@ create_corect2d()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"UChar\" Precision=\"1\" Format=\"HDF\">\n", NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure_2D\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
     fprintf(xmf, "     <Attribute Name=\"VelocityX\" AttributeType=\"Scalar\" Center=\"Node\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NY+1, NX+1);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"Char\" Precision=\"4\" Format=\"HDF\">\n", NY+1, NX+1);
     fprintf(xmf, "        mesh.h5:/VelocityX_2D\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1419,12 +1422,12 @@ create_corect3d()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
     fprintf(xmf, "     <Attribute Name=\"VelocityZ\" AttributeType=\"Scalar\" Center=\"Node\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ+1, NY+1, NX+1);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Int\" Precision=\"4\" Format=\"HDF\">\n", NZ+1, NY+1, NX+1);
     fprintf(xmf, "        mesh.h5:/VelocityZ\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1468,12 +1471,12 @@ create_rect2d()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"UChar\" Precision=\"4\" Format=\"HDF\">\n", NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure_2D\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
     fprintf(xmf, "     <Attribute Name=\"VelocityX\" AttributeType=\"Scalar\" Center=\"Node\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NY+1, NX+1);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"Char\" Precision=\"4\" Format=\"HDF\">\n", NY+1, NX+1);
     fprintf(xmf, "        mesh.h5:/VelocityX_2D\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1520,12 +1523,12 @@ create_rect3d()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
     fprintf(xmf, "     <Attribute Name=\"VelocityZ\" AttributeType=\"Scalar\" Center=\"Node\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ+1, NY+1, NX+1);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Int\" Precision=\"4\" Format=\"HDF\">\n", NZ+1, NY+1, NX+1);
     fprintf(xmf, "        mesh.h5:/VelocityZ\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1605,7 +1608,7 @@ create_err_dataitem2()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1646,7 +1649,7 @@ create_err_dataitem3()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1687,7 +1690,7 @@ create_err_dataitem4()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1728,7 +1731,7 @@ create_err_dataitem5()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1769,7 +1772,7 @@ create_err_dataitem6()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1876,7 +1879,7 @@ create_err_dataitem7()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ+1, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ+1, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1917,7 +1920,7 @@ create_err_dup_meshnames()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -1973,7 +1976,7 @@ create_err_dup_varnames()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
@@ -2021,7 +2024,7 @@ create_err_dup_varnames2()
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
     fprintf(xmf, "     <Attribute Name=\"Pressure\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
-    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d %d\" NumberType=\"UInt\" Precision=\"4\" Format=\"HDF\">\n", NZ, NY, NX);
     fprintf(xmf, "        mesh.h5:/Pressure\n");
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Attribute>\n");
