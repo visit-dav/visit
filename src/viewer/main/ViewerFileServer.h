@@ -181,6 +181,9 @@ class SILAttributes;
 //    Store the current default file opening options.  Added method that can
 //    be used to update existing mdservers with new ones when they change.
 //
+//    Kathleen Bonnell, Thu Aug 14 16:13:41 PDT 2008 
+//    Added SendFileOpenOptions.
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -348,6 +351,7 @@ protected:
                                const std::string &db,
                                int timeState);
     bool  ExpansionRequired(const std::string &) const;
+    void  SendFileOpenOptions(const std::string &host);
 private:
     static ViewerFileServer *instance;
 
@@ -359,6 +363,7 @@ private:
     FileOpenOptions          *fileOpenOptions;
     stringVector              declinedFiles;
     intVector                 declinedFilesLength;
+    bool                      shouldSendFileOpenOptions;
 };
 
 #endif

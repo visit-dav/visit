@@ -48,26 +48,9 @@
 
 
 #ifdef __cplusplus
-  #ifdef WIN32
-    #ifdef VERDICT_EXPORTS
-      #define C_FUNC_DEF extern "C" __declspec(dllexport)
-    #else
-      #define C_FUNC_DEF extern "C" __declspec(dllimport)
-    #endif
-  #else
-    #define C_FUNC_DEF extern "C"
-  #endif
+  #define C_FUNC_DEF extern "C"
 #else
-  #ifdef WIN32
-    #ifdef VERDICT_EXPORTS
-      #define C_FUNC_DEF __declspec(dllexport)
-    #else
-      #define C_FUNC_DEF __declspec(dllimport)
-    #endif
-  #else
-    #define C_FUNC_DEF
-  #endif
-
+  #define C_FUNC_DEF
 #endif
 
 

@@ -53,6 +53,9 @@
 //    Kathleen Bonnell, Fri Jun 20 08:19:55 PDT 2008
 //    Move 'CreateKey' method to parent class.
 //    
+//    Kathleen Bonnell, Tue Aug 19 10:32:54 PDT 2008
+//    Modified how moc files are generated, to eliminate unnecessary recompile.
+//    
 // ****************************************************************************
 
     void WriteProject_TOP_LEVEL_Version7(ostream &out)
@@ -167,7 +170,8 @@
 
     void WriteProjectHelper_Version7(ostream &out, const QString &pluginType, 
              char pluginComponent, const QString &exports, const QString &libs,
-             const vector<QString> &srcFiles)
+             const vector<QString> &srcFiles, const vector<QString> &hdrFiles, 
+             const vector<QString> &mocFiles)
     {
         const char *suffix = (pluginComponent == 'E') ? "_ser" : "";
 
@@ -296,51 +300,8 @@
             out << "\t\t\t\tHeaderFileName=\"\"/>" << endl;
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCPostBuildEventTool\"/>" << endl;
-
-            if(pluginComponent == 'G')
-            {
-                QString winType("PlotWindow");
-                if(pluginType == "operators")
-                    winType = "Window";
-                out << "\t\t\t<Tool" << endl;
-                out << "\t\t\t\tName=\"VCPreBuildEventTool\"" << endl;
-                out << "\t\t\t\tCommandLine=\""
-                    << "$(QTDIR)\\bin\\moc.exe "
-                    << pluginBase;
-                if (withinDevDir)
-                    out << "\\" << pluginType << "\\" << name;
-                out << "\\Qvis" << name << winType << ".h "
-                    << "-o "
-                    << pluginBase;
-                if (withinDevDir)
-                    out << "\\" << pluginType << "\\" << name;
-                out << "\\Qvis" << name << winType << "_moc.C";
-                if (customwfiles)
-                {
-                    for (size_t i = 0; i < wfiles.size(); ++i)
-                    {
-                        if (wfiles[i].right(2) == ".h")
-                        {
-                            out << "\n$(QTDIR)\\bin\\moc.exe "
-                                << pluginBase;
-                            if (withinDevDir)
-                                out << "\\" << pluginType << "\\" << name;
-                            out << "\\" << wfiles[i] << " -o " << pluginBase;
-                            if (withinDevDir)
-                                out << "\\" << pluginType << "\\" << name;
-                            out << "\\" << wfiles[i].left(wfiles[i].length()-2)
-                                << "_moc.C";
-                        }
-                    }
-                }
-                out << "\"/>" << endl;
-            }
-            else
-            {
-                out << "\t\t\t<Tool" << endl;
-                out << "\t\t\t\tName=\"VCPreBuildEventTool\"/>" << endl;
-            }
-
+            out << "\t\t\t<Tool" << endl;
+            out << "\t\t\t\tName=\"VCPreBuildEventTool\"/>" << endl;
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCPreLinkEventTool\"/>" << endl;
             out << "\t\t\t<Tool" << endl;
@@ -407,8 +368,96 @@
             }
             out << "\t\t\t</File>" << endl;
         }
-    
         out << "\t\t</Filter>" << endl;
+
+        if(pluginComponent == 'G' && hdrFiles.size() > 0)
+        {
+            out << "\t\t<Filter" << endl;
+            out << "\t\t\tName=\"Header Files\"" << endl;
+            out << "\t\t\tFilter=\"h;hxx\">" << endl;
+    
+            for(size_t i = 0; i < hdrFiles.size(); ++i)
+            {
+                out << "\t\t\t<File" << endl;
+                out << "\t\t\t\tRelativePath=\"";
+#ifdef _WIN32
+                if (withinDevDir)
+                {
+                    out << pluginBase << "\\" << pluginType 
+                        << "\\" << name << "\\" << hdrFiles[i];
+                }
+                else 
+                {
+                    out << hdrFiles[i];
+                }
+#else
+                out << pluginBase << "\\" << pluginType 
+                    << "\\" << name << "\\" << hdrFiles[i];
+#endif
+                out << "\">" << endl;
+                for (int j = 0; j < 3; j++)
+                {
+                    out << "\t\t\t\t<FileConfiguration" << endl;
+                    out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\">" << endl;
+                    out << "\t\t\t\t\t<Tool" << endl;
+                    out << "\t\t\t\t\t\tName=\"VCCustomBuildTool\"" << endl;
+                    out << "\t\t\t\t\t\tDescription=\"Moc&apos;ing " 
+                        << hdrFiles[i] << " ...\"" << endl;
+                    out << "\t\t\t\t\t\tCommandLine=\"$(QTDIR)\\bin\\moc.exe "
+                        << pluginBase;
+                    if (withinDevDir)
+                        out << "\\" << pluginType << "\\" << name;
+                    out << "\\" << hdrFiles[i] << " -o " << pluginBase;
+                    if (withinDevDir)
+                        out << "\\" << pluginType << "\\" << name;
+                    out << "\\" << mocFiles[i] << "\"" << endl;
+                    out << "\t\t\t\t\t\tAdditionalDependencies="
+                        << "\"$(QTDIR)\\bin\\moc.exe\"" << endl;
+                    out << "\t\t\t\t\t\tOutputs=\"" << pluginBase;
+                    if (withinDevDir)
+                        out << "\\" << pluginType << "\\" << name;
+                    out << "\\" << mocFiles[i] << "\"/>" << endl;
+                    out << "\t\t\t\t</FileConfiguration>" << endl;
+                }
+                out << "\t\t\t</File>" << endl;
+            }
+            out << "\t\t</Filter>" << endl;
+            out << "\t\t<Filter" << endl;
+            out << "\t\t\tName=\"Generated MOC Files\"" << endl;
+            out << "\t\t\tFilter=\"\">" << endl;
+    
+            for(size_t i = 0; i < mocFiles.size(); ++i)
+            {
+                out << "\t\t\t<File" << endl;
+                out << "\t\t\t\tRelativePath=\"";
+#ifdef _WIN32
+                if (withinDevDir)
+                {
+                    out << pluginBase << "\\" << pluginType 
+                        << "\\" << name << "\\" << mocFiles[i];
+                }
+                else 
+                {
+                    out << mocFiles[i];
+                }
+#else
+                out << pluginBase << "\\" << pluginType 
+                    << "\\" << name << "\\" << mocFiles[i];
+#endif
+                out << "\">" << endl;
+                for (int j = 0; j < 3; j++)
+                {
+                    out << "\t\t\t\t<FileConfiguration" << endl;
+                    out << "\t\t\t\t\tName=\"" << configs[j] << "|Win32\">" << endl;
+                    out << "\t\t\t\t\t<Tool" << endl;
+                    out << "\t\t\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
+                    out << "\t\t\t\t\t\tCompileAs=\"2\"/>" << endl;
+                    out << "\t\t\t\t</FileConfiguration>" << endl;
+                }
+                out << "\t\t\t</File>" << endl;
+            }
+            out << "\t\t</Filter>" << endl;
+        }
         out << "\t</Files>" << endl;
         out << "\t<Globals>" << endl;
         out << "\t</Globals>" << endl;

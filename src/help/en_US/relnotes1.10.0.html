@@ -112,7 +112,7 @@ enhancements and bug-fixes that were added to this release.</p>
         file simultaneously, which severely affects parallel performance on some
         machines.  In addition, the BOV reader now correctly supports large
         (4GB or more) files.</li>
-    <li>The VTK reader will now read 'CYCLE' from the FieldData.  It also fully supports the 'Try harder to get accurate cycles/times' option.</li> 
+    <li>The VTK reader will now read 'CYCLE' from the FieldData (both legacy and xml formats).  It also fully supports the 'Try harder to get accurate cycles/times' option.</li> 
     <li>The EnSight reader now correctly supports wildcard substitution in EnSight files.</li>
     <li>VisIt automatically adds mesh quality expressions for curvilinear and unstructured meshes.  However, it limits the numbers of expressions
         it adds (when faced with a large number of meshes) to not incur performance costs.  The mechanism for choosing which meshes receive the
@@ -129,6 +129,7 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>The Protein Data Bank format now exposes the Temperature and 
         Occupancy Factor columns as new variables.</li>
     <li>An off by one error was fixed in the PDB reader, ensuring that the correct material names are used.</li>
+    <li>The VASP, TFT, MM5, basic NETCDF, FITS, Cale and Silo readers now generate curves which can be used in expressions.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -171,6 +172,7 @@ enhancements and bug-fixes that were added to this release.</p>
         You can explicitly choose how you want to convert or use Auto, which looks at the primary variable to determine the proper direction. </li>
         For conversion examples see: <a href="http://visitusers.org/index.php?title=Dual_Mesh_Operator">http://visitusers.org/index.php?title=Dual_Mesh_Operator</a>
     <li>The Transform Operator now supports an arbitrary 3x3 linear transform matrix.</li>
+    <li>A problem with using the Box Operator on Curves was fixed.</li>
 </ul>
 
 <a name="Expression_changes"></a>
@@ -184,7 +186,7 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>The expression language now supports using backslashes to escape the next character.
         For example, some variable names like "dist (cm)" can now be specified either using the
         original quoting mechanism, i.e. <tt>&lt;dist (cm)&gt;</tt>, or with backslashes,
-        i.e. <tt>dist\ \(cm\)</tt><li>
+        i.e. <tt>dist\ \(cm\)</tt></li>
     <li>Backslashes may also be used as directory separators in file names.
         Note, however, that due to the backslash-escaping mechanism, you must use
         two successive backslashes here, e.g. <tt>\\path\\to\\file.vtk</tt>.  This
@@ -210,6 +212,7 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>The <i>OverlayDatabase</i> function now accepts an optional second argument for specifying a time state.</li>
     <li>When bringing up the CLI from the GUI's <i>Controls->Command</i> window, it is no longer necessary to enter a string to activate the Execute button.  (The CLI can now be launched directly without a dummy command.)</li>
     <li>Python callbacks no longer fail silently.  If you have registered a function with an incorrect signature, you will now get a proper error message.</li>
+    <li>A hang when attempting <i>OpenGUI()</i> from the cli on Windows has been fixed.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -219,7 +222,7 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>The "visit -movie" movie generation script once again can detect the engine configuration 
         used to generate the plots in a session file and can reuse that configuration when 
         generating a movie.</li>
-    <li>For windows platforms, running 'visit -cli -o', 'visit -cli -s', or double-clicking a python now correctly parses paths and works correctly.</li>
+        <li>For windows platforms, running <i>visit -cli -o</i>, <i>visit -cli -s</i>, or double-clicking a <i>.py</i> now correctly parses paths and works correctly.</li>
     <li>Macro recording for 2D zooming no longer produces invalid Python code for setting the 2D view attributes.</li>
     <li>Macro creation now does more checking to make sure that macro names are valid, which prevents problems when the macros are actually registered.</li>
     <li>VisIt's libsim library used a non-zero idle timeout that slowed down polling simulations.</li>
@@ -230,6 +233,8 @@ enhancements and bug-fixes that were added to this release.</p>
         will no longer crash.</li>
     <li>The "Lock Tools" icon in the toolbar is now grouped correctly with the other "Lock" icons.</li>
     <li>The deprecated Parallel Axis plot has been removed.  Use the new Parallel Coordinates plot instead.</li>
+    <li>Issues with log-log scaling of mulitple curves have been resolved.</li>
+</ul>
 </ul>
 
 <a name="Config_changes"></a>
