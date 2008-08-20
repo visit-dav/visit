@@ -7213,6 +7213,9 @@ avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn)
 //    is doing so in a 'place' that VisIt itself can never find due to 
 //    different name of the 'type' of the cache.
 //
+//    Mark C. Miller, Wed Aug 20 11:39:39 PDT 2008
+//    Had to force a copy on the csg object returned here to prevent collisions
+//    in the variable cache with stuff that generic database is doing.
 // ****************************************************************************
 
 vtkDataSet *
@@ -7247,7 +7250,13 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
     vtkCSGGrid *cached_csggrid = (vtkCSGGrid*) cache->GetVTKObject(meshname,
         "SILO_CSG_GRID", timestep, dom, "none");
     if (cached_csggrid)
-        return cached_csggrid;
+    {
+        debug5 << "Avoiding re-read of CSG grid by returning cached grid: name=\""
+               << meshname << "\", d=" << dom << ", t=" << timestep << endl;
+        vtkCSGGrid *cache_copy = vtkCSGGrid::New(); 
+        cache_copy->ShallowCopy(cached_csggrid);
+        return cache_copy;
+    }
 
     //
     // Get the Silo construct.
@@ -7305,7 +7314,9 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
     //
     cache->CacheVTKObject(meshname, "SILO_CSG_GRID", timestep, dom, "none", csggrid);
 
-    return csggrid;
+    vtkCSGGrid *csgcopy = vtkCSGGrid::New(); 
+    csgcopy->ShallowCopy(csggrid);
+    return csgcopy;
 
 #endif
     return 0;

@@ -493,10 +493,9 @@ void vtkCSGGrid::CopyStructure(vtkDataSet *ds)
   this->SetRegions(csgGrid->GetRegions());
   this->SetCellRegionIds(csgGrid->GetCellRegionIds());
 
-  // BOUNDARY COPY IS WRONG
   this->numBoundaries = csgGrid->numBoundaries;
-  this->gridBoundaries = new double[this->numBoundaries*10];
-  for (i = 0; i < this->numBoundaries*10; i++)
+  this->gridBoundaries = new double[NUM_QCOEFFS*(this->numBoundaries+6)];
+  for (i = 0; i < NUM_QCOEFFS*(this->numBoundaries+6); i++)
     this->gridBoundaries[i] = csgGrid->gridBoundaries[i];
 
   this->numRegions = csgGrid->numRegions;
@@ -727,17 +726,8 @@ void vtkCSGGrid::GetCellNeighbors(vtkIdType cellId, vtkIdList *ptIds,
 //----------------------------------------------------------------------------
 void vtkCSGGrid::ShallowCopy(vtkDataObject *dataObject)
 {
-  vtkCSGGrid *grid = vtkCSGGrid::SafeDownCast(dataObject);
-
-  if ( grid != NULL )
-    {
-    this->SetBoundaries(grid->GetBoundaries());
-    this->SetRegions(grid->GetRegions());
-    this->SetCellRegionIds(grid->GetCellRegionIds());
-    }
-
-  // Do superclass
-  this->vtkDataSet::ShallowCopy(dataObject);
+    // There is no shallow copy
+    DeepCopy(dataObject);
 }
 
 //----------------------------------------------------------------------------
@@ -747,32 +737,30 @@ void vtkCSGGrid::DeepCopy(vtkDataObject *srcObject)
 
   if ( grid != NULL )
     {
-    vtkImplicitFunction *next;
-    vtkImplicitFunctionCollection *dstColl, *srcColl;
-    
-    // copy boundaries
-    dstColl = vtkImplicitFunctionCollection::New();
-    srcColl = grid->GetBoundaries();
-    srcColl->InitTraversal();
-    while ((next = srcColl->GetNextItem()) != NULL)
-        dstColl->AddItem(next);
-    this->SetBoundaries(dstColl);
-    dstColl->Delete();
+      int i;
+      this->numBoundaries = grid->numBoundaries;
+      this->gridBoundaries = new double[NUM_QCOEFFS*(this->numBoundaries+6)];
+      for (i = 0; i < NUM_QCOEFFS*(this->numBoundaries+6); i++)
+        this->gridBoundaries[i] = grid->gridBoundaries[i];
 
-    // copy regions
-    dstColl = vtkImplicitFunctionCollection::New();
-    srcColl = grid->GetRegions();
-    srcColl->InitTraversal();
-    while ((next = srcColl->GetNextItem()) != NULL)
-        dstColl->AddItem(next);
-    this->SetRegions(dstColl);
-    dstColl->Delete();
+      this->numRegions = grid->numRegions;
+      this->leftIds = new int[this->numRegions];
+      this->rightIds = new int[this->numRegions];
+      this->regTypeFlags = new int[this->numRegions];
+      for (i = 0; i < this->numRegions; i++)
+        {
+          this->leftIds[i] = grid->leftIds[i];
+          this->rightIds[i] = grid->rightIds[i];
+          this->regTypeFlags[i] = grid->regTypeFlags[i];
+        }
 
-    // copy cell region ids
-    vtkIdTypeArray *s = vtkIdTypeArray::New();
-    s->DeepCopy(grid->GetCellRegionIds());
-    this->SetCellRegionIds(s);
-    s->Delete();
+      this->numZones = grid->numZones;
+      this->gridZones = new int[this->numZones];
+      for (i = 0; i < this->numZones; i++)
+        this->gridZones[i] = grid->gridZones[i];
+
+      for (i = 0; i < 6; i++)
+        this->Bounds[i] = grid->Bounds[i];
     }
 
   // Do superclass
