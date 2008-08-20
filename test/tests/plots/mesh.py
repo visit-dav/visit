@@ -32,6 +32,8 @@
 #    Removed opaque-mode portion of mesh_point_01, as opaque-mode no longer
 #    applies to Mesh plots of Point meshes. 
 #
+#    Mark C. Miller, Tue Aug 19 17:31:29 PDT 2008
+#    Add code to permit the test to be run with compression as well.
 # ----------------------------------------------------------------------------
 
 
@@ -265,6 +267,14 @@ def Main():
     TestGlobe()
     TestRect3d()
     TestAutoOpaqueFlag()
+
+# Added to allow this test to be run with compression too.
+# Another .py file sources this file with 'useCompression'
+# defined.
+if "useCompression" in dir():
+    ra = GetRenderingAttributes()
+    ra.compressionActivationMode = ra.Always
+    SetRenderingAttributes(ra)
 
 Main()
 Exit()

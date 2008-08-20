@@ -34,10 +34,11 @@
 import time
 sleepTime=1
 
-
 # Turn on scalable rendering
 ra = GetRenderingAttributes()
 ra.scalableActivationMode = ra.Always
+if "useCompression" in dir():
+    ra.compressionActivationMode = ra.Always
 SetRenderingAttributes(ra)
 
 # close the compute engine, if any, so we can start a new, parallel one
