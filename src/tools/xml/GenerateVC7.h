@@ -56,6 +56,10 @@
 //    Kathleen Bonnell, Tue Aug 19 10:32:54 PDT 2008
 //    Modified how moc files are generated, to eliminate unnecessary recompile.
 //    
+//    Kathleen Bonnell, Wed Aug 20 10:22:17 PDT 2008
+//    Add ENGINE and MDSERVER preprocessor defines when plugin has engine
+//    specific mdserver specific code respectively.
+//    
 // ****************************************************************************
 
     void WriteProject_TOP_LEVEL_Version7(ostream &out)
@@ -231,6 +235,8 @@
                 << ";GENERAL_PLUGIN_EXPORTS";
             if (exports != "")
                 out << ";" << exports;
+            if (pluginComponent == 'E' && hasEngineSpecificCode )
+                out << ";ENGINE"; 
             out << "\"" << endl;
             if (configs[j] == "Release")
                 out << "\t\t\t\tStringPooling=\"TRUE\"" << endl;
@@ -483,11 +489,15 @@
         pluginDefs = "GENERAL_PLUGIN_EXPORTS";
         if (pluginComponent == 'M')
         {
-            pluginDefs += ";MDSERVER_PLUGIN_EXPORTS;MDSERVER";
+            pluginDefs += ";MDSERVER_PLUGIN_EXPORTS";
+            if (has_MDS_specific_code)
+                pluginDefs += ";MDSERVER";
         }
         else if(pluginComponent == 'E')
         {
             pluginDefs += ";ENGINE_PLUGIN_EXPORTS";
+            if (hasEngineSpecificCode)
+                pluginDefs += ";ENGINE";
             pluginSuffix = "Database_ser";
         }
 
@@ -543,6 +553,10 @@
                 << pluginDefs;
             if (pluginComponent != 'I')
                out << tpPreproc;
+            if (pluginComponent == 'E' && hasEngineSpecificCode)
+               out << ";ENGINE";
+            if (pluginComponent == 'M' && has_MDS_specific_code)
+               out << ";MDSERVER";
             out << "\"" << endl;
             if (configs[i] == "Release")
             {
