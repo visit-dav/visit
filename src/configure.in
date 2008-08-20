@@ -820,6 +820,10 @@ dnl    Configure cognomen if the user is doing a parallel build.
 dnl    
 dnl    Mark C. Miller, Tue Aug 19 23:34:41 PDT 2008
 dnl    Added AC_PROG_EGREP. See note near it as to why. What a pain!
+dnl
+dnl    Hank Childs, Wed Aug 20 11:58:50 MDT 2008
+dnl    Add test for stropts.h for SYSV vs BSD.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1851,7 +1855,8 @@ if test "$USE_PTY" = "yes"; then
     if test "$UNAME" = "FreeBSD" || test "$UNAME" = "AIX" || test "$UNAME" = "Darwin"; then
         AC_MSG_RESULT(BSD)
     else
-        AC_TRY_LINK([#include <stdlib.h>], grantpt(0),
+        AC_TRY_LINK([#include <stdlib.h>
+                     #include <stropts.h>], grantpt(0),
             AC_MSG_RESULT(SYSV)
             AC_DEFINE(PTY_SYSV, [1], [Define PTY_SYSV if we have System V style pty functions -- BSD otherwise.]),
             AC_MSG_RESULT(BSD))
