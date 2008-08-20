@@ -680,6 +680,10 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Added point mesh support and made it throw an exception if the 
 //    simulation's mesh callback could not find the named mesh.
 //
+//    Brad Whitlock, Wed Aug 20 13:59:37 PDT 2008
+//    Return point meshes as unstructured grids so materials can be defined
+//    on them without causing glitches later in the pipeline.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1105,9 +1109,9 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
                 return NULL;
 
 
-            vtkPolyData  *pd = vtkPolyData::New();
+            vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New();
             vtkPoints    *points  = vtkPoints::New();
-            pd->SetPoints(points);
+            ugrid->SetPoints(points);
             points->Delete();
 
             //
@@ -1116,7 +1120,7 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
             int npts = pmesh->nnodes;
             points->SetNumberOfPoints(npts);
             float *pts = (float *) points->GetVoidPointer(0);
-            pd->Allocate(npts);
+            ugrid->Allocate(npts);
             vtkIdType onevertex[1];
             if (pmesh->xcoords.dataType == VISIT_DATATYPE_FLOAT)
             {
@@ -1130,7 +1134,7 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
                         pts[i*3 + 2] = 0.f;
 
                     onevertex[0] = i;
-                    pd->InsertNextCell(VTK_VERTEX, 1, onevertex);
+                    ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
                 }
             }
             else if (pmesh->xcoords.dataType == VISIT_DATATYPE_DOUBLE)
@@ -1145,7 +1149,7 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
                         pts[i*3 + 2] = 0.f;
 
                     onevertex[0] = i;
-                    pd->InsertNextCell(VTK_VERTEX, 1, onevertex);
+                    ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
                 }
             }
             else
@@ -1158,7 +1162,7 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
             FreeDataArray(pmesh->ycoords);
             FreeDataArray(pmesh->zcoords);
 
-            return pd;
+            return ugrid;
         }
         break;
       default:
