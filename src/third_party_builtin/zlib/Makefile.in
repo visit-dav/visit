@@ -72,14 +72,14 @@ all: message $(LIBSHARED)
 ## Remove all the sources we untarred
 ##
 clean_untarred_sources:
-	$(RM) $(SRC) $(HDR) ChangeLog ../../include/visit/zlib.h
+	$(RM) $(SRC) $(HDR) ChangeLog ../../include/visit/{zlib.h,zconf.h}
 
 clean: clean_untarred_sources
 	$(RM) $(OBJ) $(LIBSHARED)
 
 zlib.h:
 	gunzip < zlib-1.2.3.v.tar.gz | tar xvf -
-	cp zlib.h ../../include/visit/.
+	cp zlib.h zconf.h ../../include/visit/.
 	touch zlib.h
 
 adler32.c: zlib.h

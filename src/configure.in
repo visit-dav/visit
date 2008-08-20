@@ -817,7 +817,9 @@ dnl    line option are not available prior to calling MPI_Init.
 dnl
 dnl    Tom Fogal, Sun Jul 27 11:58:16 EDT 2008
 dnl    Configure cognomen if the user is doing a parallel build.
-dnl
+dnl    
+dnl    Mark C. Miller, Tue Aug 19 23:34:41 PDT 2008
+dnl    Added AC_PROG_EGREP. See note near it as to why. What a pain!
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1023,6 +1025,18 @@ else
   AC_MSG_RESULT([no])
 fi
 AC_SUBST(CXXFLAGS)
+
+#
+# VisIt DOES NOT need this. However, this configure script uses
+# tests like AC_CHECK_HEADERS which can actually wind up setting
+# value for $EGREP and AC_TYPE_UID_T which depends on it. So,
+# you can wind up with cases where AC_TYPE_UID_T behaves strangely
+# depending on whether AC_CHECK_HEADERS was invoked ahead of it.
+# To avoid this issue (and probably others with autoconf's bizarre
+# behavior), we explicitly make a request for egrep here and it
+# will set $EGREP
+#
+AC_PROG_EGREP
 
 #
 # Get the simple C++ tests out of the way
