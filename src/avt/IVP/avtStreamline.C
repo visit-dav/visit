@@ -488,6 +488,9 @@ avtStreamline::PtEnds( avtVec &ptBwd, avtVec &ptFwd ) const
 //    Changed for loop to use size_t to eliminate signed/unsigned int 
 //    comparison warnings.
 //
+//    Hank Childs, Tue Aug 19 17:05:38 PDT 2008
+//    Initialize the sz variable to make purify happy.
+//
 // ****************************************************************************
 
 void
@@ -509,7 +512,7 @@ avtStreamline::Serialize(MemStream::Mode mode, MemStream &buff,
     {
         //debug1 << "avtStreamline READ: listSz = " << _steps.size() <<endl;
         _steps.clear();
-        size_t sz;
+        size_t sz = 0;
         buff.io( mode, sz );
         for ( size_t i = 0; i < sz; i++ )
         {
