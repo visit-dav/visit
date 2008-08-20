@@ -62,7 +62,10 @@
 //    initial Euler steps.
 //
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
-//    Chagned how distanced based termination is computed.
+//    Changed how distanced based termination is computed.
+//
+//    Dave Pugmire, Wed Aug 20, 12:54:44 EDT 2008
+//    Add a tolerance and counter for handling stiffness detection.
 //
 // ****************************************************************************
 
@@ -133,6 +136,8 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     double tol;
     double h, h_max;
     double t, d;
+    int degenerate_iterations;
+    double stiffness_eps;
     avtVecArray history;
     avtVec yCur;
     avtVec ys[2];
