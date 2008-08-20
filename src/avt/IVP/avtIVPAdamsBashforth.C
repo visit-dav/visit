@@ -75,7 +75,10 @@ static inline double sign( const double& a, const double& b )
 //    initial Euler steps.
 //
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
-//    Chagned how distanced based termination is computed.
+//    Changed how distanced based termination is computed.
+//
+//    Dave Pugmire, Wed Aug 20, 12:54:44 EDT 2008
+//    Add a tolerance and counter for handling stiffness detection.
 //
 // ****************************************************************************
 
@@ -86,6 +89,8 @@ avtIVPAdamsBashforth::avtIVPAdamsBashforth()
     h = 1e-5;
     t = 0.0;
     d = 0.0;
+    degenerate_iterations = 0;
+    stiffness_eps = tol / 1000.0;
 }
 
 // ****************************************************************************
@@ -246,12 +251,17 @@ avtIVPAdamsBashforth::SetMaximumStepSize(const double& hMax)
 //  Programmer: Dave Pugmire
 //  Creation:   August 5, 2008
 //
+//  Modifications:
+//    Dave Pugmire, Wed Aug 20, 12:54:44 EDT 2008
+//    Add a tolerance and counter for handling stiffness detection.
+//
 // ****************************************************************************
 
 void
 avtIVPAdamsBashforth::SetTolerances(const double& relt, const double& abst)
 {
-    tol = relt;
+    tol = abst;
+    stiffness_eps = tol / 1000.0;
 }
 
 // ****************************************************************************
@@ -269,7 +279,10 @@ avtIVPAdamsBashforth::SetTolerances(const double& relt, const double& abst)
 //    initial Euler steps.
 //
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
-//    Chagned how distanced based termination is computed.
+//    Changed how distanced based termination is computed.
+//
+//    Dave Pugmire, Wed Aug 20, 12:54:44 EDT 2008
+//    Add a tolerance and counter for handling stiffness detection.
 //
 // ****************************************************************************
 
@@ -278,6 +291,7 @@ avtIVPAdamsBashforth::Reset(const double& t_start, const avtVecRef& y_start)
 {
     t = t_start;
     d = 0.0;
+    degenerate_iterations = 0;
     yCur = y_start;
     h = h_max;
     history.resize(yCur.dim(), 0);
@@ -570,6 +584,9 @@ avtIVPAdamsBashforth::ABStep(const avtIVPField* field,
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
 //    Chagned how distanced based termination is computed.
 //
+//    Dave Pugmire, Wed Aug 20, 12:54:44 EDT 2008
+//    Add a tolerance and counter for handling stiffness detection.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result 
@@ -618,15 +635,32 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
         ivpstep->tStart = t;
         ivpstep->tEnd = t + h;
 
+        // Handle distanced based termination.
         if (!timeMode)
         {
             double len = ivpstep->length();
+            
+            //debug1<<"ABStep: "<<t<<" d: "<<d<<" => "<<(d+len)<<" h= "<<h<<" len= "<<len<<" sEps= "<<stiffness_eps<<endl;
+            if (len < stiffness_eps)
+            {
+                degenerate_iterations++;
+                if (degenerate_iterations > 15)
+                {
+                    //debug1<<"********** STIFFNESS ***************************\n";
+                    return avtIVPSolver::STIFFNESS_DETECTED;
+                }
+            }
+            else
+                degenerate_iterations = 0;
 
             if ( d+len > d_max )
+            {
+                //debug1<<"********** TOO LONG ***************************\n";
                 throw avtIVPField::Undefined();
-            d = d + len;
+            }
+            d = d+len;
         }
-        
+
         ivpstep->velStart = (*field)(t,yCur);
         ivpstep->velEnd = (*field)((t+h),yNew);
 
@@ -648,11 +682,18 @@ avtIVPAdamsBashforth::Step(const avtIVPField* field,
 //  Programmer: Dave Pugmire
 //  Creation:   August 5, 2008
 //
+//  Modifications:
+//
+//    Dave Pugmire, Wed Aug 20, 12:54:44 EDT 2008
+//    Add a tolerance and counter for handling stiffness detection.
+//
 // ****************************************************************************
 void
 avtIVPAdamsBashforth::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
     aiss.Accept(tol)
+        .Accept(degenerate_iterations)
+        .Accept(stiffness_eps)
         .Accept(h)
         .Accept(h_max)
         .Accept(t)
