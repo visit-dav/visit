@@ -81,6 +81,21 @@ chomp( $progname= `basename $0`);
 chomp( $progdir = `dirname $0` );
 chomp( $cwd     = `pwd`        );
 
+# check if we are called via a symbolic link to visit
+$link = readlink($0);
+if ($link) {
+    chomp( $linkname= `basename $link`);
+    if ($linkname eq "visit") {
+        # Get directory to which link points
+        chomp( $linkdir = `dirname $link`);
+
+        for ($linkdir) {
+            /^\//  && do { $progdir = $linkdir; last; }; # starts with `/'
+            $progdir="$progdir/$linkdir";
+        }
+    }
+}
+
 # Add the program directory to the path!
 $ENV{PATH} = join ':' , ("$progdir", "$ENV{PATH}");
 
