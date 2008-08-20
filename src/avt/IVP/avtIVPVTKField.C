@@ -119,6 +119,12 @@ avtIVPVTKField::operator()(const double& t, const avtVecRef& x) const
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 19 16:59:16 PDT 2008
+//    Increase the size of the "w" (weights) variable to prevent stack 
+//    overwrites.
+//
 // ****************************************************************************
 
 double
@@ -148,7 +154,7 @@ avtIVPVTKField::ComputeVorticity( const double& t, const avtVecRef& x ) const
     inVectors->GetTuples( cell->PointIds, cellVectors );
 
     double *cellVel = cellVectors->GetPointer(0);
-    double pcoords[3], w[3];
+    double pcoords[3], w[100];
     iv->GetLastWeights( w );
     iv->GetLastLocalCoordinates( pcoords );
     cell->Derivatives( 0, pcoords, cellVel, 3, derivs);
