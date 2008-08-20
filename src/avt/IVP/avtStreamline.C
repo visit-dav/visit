@@ -186,7 +186,10 @@ avtStreamline::Advance(const avtIVPField* field,
 //    Modify how data without ghost zones are handled.
 //
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
-//    Chagned how distanced based termination is computed.
+//    Changed how distanced based termination is computed.
+//
+//    Dave Pugmire, Wed Aug 20, 07:43:58 EDT 2008
+//    Bug fix. Check to see if _steps is empty before using front/back.
 //
 // ****************************************************************************
 
@@ -259,7 +262,8 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             
             if (ivp->GetCurrentT() < TMin())
             {
-                IntersectWithPlane( _steps.front(), step );
+                if (!_steps.empty())
+                    IntersectWithPlane( _steps.front(), step );
                 _steps.push_front( step );
 
                 if( ivp->GetCurrentT() <= tEnd )
@@ -269,7 +273,8 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             }
             else 
             {
-                IntersectWithPlane( _steps.back(), step );
+                if (!_steps.empty())
+                    IntersectWithPlane( _steps.back(), step );
                 _steps.push_back( step );
 
                 if( ivp->GetCurrentT() >= tEnd )
