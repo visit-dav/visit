@@ -115,6 +115,10 @@ static const int MAX_SLMSG_SZ = 10*1024*1024;
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//   Dave Pugmire, Wed Aug 20 10:37:24 EST 2008
+//   Initialize some previously unitialized member data.
+//
 // ****************************************************************************
 
 avtStreamlineWrapper::avtStreamlineWrapper()
@@ -123,6 +127,8 @@ avtStreamlineWrapper::avtStreamlineWrapper()
     domain = -1;
     numTimesCommunicated = 0;
     sl = NULL;
+    dir = FWD;
+    maxCnt = sum= numDomainsVisited = 0;
 }
 
 
@@ -131,6 +137,10 @@ avtStreamlineWrapper::avtStreamlineWrapper()
 //
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
+//
+//  Modifications:
+//   Dave Pugmire, Wed Aug 20 10:37:24 EST 2008
+//   Initialize some previously unitialized member data.
 //
 // ****************************************************************************
 
@@ -141,6 +151,7 @@ avtStreamlineWrapper::avtStreamlineWrapper(avtStreamline *s, Dir slDir)
     domain = -1;
     dir = slDir;
     numTimesCommunicated = 0;
+    maxCnt = sum= numDomainsVisited = 0;
 }
 
 
@@ -5085,6 +5096,10 @@ randMinus1_1()
 //    Hank Childs, Tue Aug 19 14:41:44 PDT 2008
 //    Make sure we initialize the bounds, especially if we are in 2D.
 //
+//   Dave Pugmire, Wed Aug 20 10:37:24 EST 2008
+//   Bug fix. The loop index "i" was being changed when trying to "wiggle"
+//   seed points into domains.
+//
 // ****************************************************************************
 
 void
@@ -5251,8 +5266,8 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
     {
         vector<int> dl;
         seedPtDomain pd;
-        intervalTree->GetElementsListFromRange(candidatePts[i].values(), 
-                                               candidatePts[i].values(), dl);
+        intervalTree->GetElementsListFromRange(candidatePts[i].xyz, 
+                                               candidatePts[i].xyz, dl);
 
         //cout<<i<<": "<<candidatePts[i].xyz[0]<<" "<<candidatePts[i].xyz[1]<<" "<<candidatePts[i].xyz[2]<<" dl= "<<dl.size()<<endl;
         // seed in no domains, try to wiggle it into a DS.
@@ -5261,26 +5276,26 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
             //Try to wiggle it by 0.5% of the dataset size.
             double offset[3], wiggle[3] = {dX*0.005, dY*0.005, dZ*0.005};
             bool foundGoodPt = false;
-            for ( int i = 0; i < 100; i++ )
+            for ( int w = 0; w < 100; w++ )
             {
                 pt3d wigglePt(candidatePts[i].xyz[0]+wiggle[0]*randMinus1_1(),
                               candidatePts[i].xyz[1]+wiggle[1]*randMinus1_1(),
                               candidatePts[i].xyz[2]+wiggle[2]*randMinus1_1());
                 
                 vector<int> dl2;
-                intervalTree->GetElementsListFromRange(wigglePt.values(), wigglePt.values(), dl2);
+                intervalTree->GetElementsListFromRange(wigglePt.xyz, wigglePt.xyz, dl2);
                 //cout<<"Wiggle it: "<<i<<": "<<wigglePt.values()[0]<<" "<<wigglePt.values()[1]<<" "<<wigglePt.values()[2];
                 //cout<<" domain cnt: "<<dl2.size()<<endl;
                 if ( dl2.size() > 0 )
                 {
-                    candidatePts[i].xyz[0] = wigglePt.values()[0];
-                    candidatePts[i].xyz[1] = wigglePt.values()[1];
-                    candidatePts[i].xyz[2] = wigglePt.values()[2];
+                    candidatePts[i].xyz[0] = wigglePt.xyz[0];
+                    candidatePts[i].xyz[1] = wigglePt.xyz[1];
+                    candidatePts[i].xyz[2] = wigglePt.xyz[2];
                     dl.resize(0);
                     for ( int j = 0; j < dl2.size(); j++ )
                         dl.push_back(dl2[j]);
                     foundGoodPt = true;
-                    //cout<<"Wiggle it: "<<i<<": "<<wigglePt.values()[0]<<" "<<wigglePt.values()[1]<<" "<<wigglePt.values()[2]<<" dl= "<<dl.size()<<endl;
+                    //cout<<"Wiggle it: "<<w<<": "<<wigglePt.values()[0]<<" "<<wigglePt.values()[1]<<" "<<wigglePt.values()[2]<<" dl= "<<dl.size()<<endl;
                     break;
                 }
                 
@@ -5291,8 +5306,8 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
                 continue;
         }
 
-        debug1<<"Candidate pt: "<<i<<" ["<<candidatePts[i].values()[0]<<", "
-              <<candidatePts[i].values()[1]<<", "<<candidatePts[i].values()[2];
+        debug1<<"Candidate pt: "<<i<<" ["<<candidatePts[i].xyz[0]<<", "
+              <<candidatePts[i].xyz[1]<<", "<<candidatePts[i].xyz[2];
         debug1<<" dom =[";
         for (int j = 0; j < dl.size();j++)
             debug1<<dl[j]<<", ";
