@@ -43,7 +43,7 @@
 #    I changed _ser.o to simply be .o.
 #
 #    Mark C. Miller, Mon Dec 12 20:53:03 PST 2005
-#    Added BZIP2_LIBS variable
+#    Added ZLIB_LIB variable
 #
 #    Thomas R. Treadway, Wed Feb  7 17:53:04 PST 2007
 #    Added $(GLEW_LIBS) for MacOS X.
@@ -60,8 +60,8 @@
 
 CPPFLAGS=-I. -I../../include -I../../include/visit
 
-SERLIBS=-L../../lib -lXext -lprep_ser -ldatabase_ser -lpipeline_ser -lvisit_vtk -lutility -lmisc -lcomm -lrpc -lstate -ldbatts -lavtexceptions @SILO_LIB@ @VTK_LIBS@ $(X_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS) @LIBS@ @PTHREAD_LIB@
-PARLIBS=-L../../lib -lXext -lprep_par -ldatabase_par -lpipeline_par -lvisit_vtk -lutility -lmisc -lcomm -lrpc -lstate -ldbatts -lavtexceptions @SILO_LIB@ @VTK_LIBS@ $(X_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+SERLIBS=-L../../lib -lXext -lprep_ser -ldatabase_ser -lpipeline_ser -lvisit_vtk -lutility -lmisc -lcomm -lrpc -lstate -ldbatts -lavtexceptions @SILO_LIB@ @VTK_LIBS@ $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) @LIBS@ @PTHREAD_LIB@
+PARLIBS=-L../../lib -lXext -lprep_par -ldatabase_par -lpipeline_par -lvisit_vtk -lutility -lmisc -lcomm -lrpc -lstate -ldbatts -lavtexceptions @SILO_LIB@ @VTK_LIBS@ $(X_LIBS) $(ZLIB_LIB) $(GLEW_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 LIBDEP=
 
 ##

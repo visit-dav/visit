@@ -875,16 +875,24 @@ avtVariableCache::OneTimestep::~OneTimestep()
 //  Programmer: Mark C. Miller (refactored from orig. code by Hank Childs)
 //  Created:    May 20, 2008
 //
+//  Modifications:
+//  
+//    Mark C. Miller, Thu Aug 14 19:31:14 PDT 2008
+//    Moved test for negative domain to front to avoid unnecessary work.
+//
 // ****************************************************************************
 
 void
 avtVariableCache::OneTimestep::GetHashIndices(int domain, int *L0, int *L1, int *L2) const
 {
+    if (domain < 0) // work around negative modulos.
+    {
+        *L0 = *L1 = *L2 = 0;
+        return;
+    }
     *L0 = domain % HASH_SIZE;
     *L1 = (domain / HASH_SIZE) % HASH_SIZE;
     *L2 = (domain / (HASH_SIZE*HASH_SIZE)) % HASH_SIZE;
-    if (domain < 0) // work around negative modulos.
-        *L0 = *L1 = *L2 = 0;
 }
 
 // ****************************************************************************

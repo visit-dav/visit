@@ -60,9 +60,9 @@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=@BUILD_MESA_STUB@ @BUILD_BZIP2@ @BUILD_GLEW@ @BUILD_BILIB@ \
+SUBDIRS=@BUILD_MESA_STUB@ @BUILD_ZLIB@ @BUILD_GLEW@ @BUILD_BILIB@ \
     @BUILD_SLIVR@ @BUILD_COGNOMEN@ bow
-ALLSUBDIRS=mesa_stub bzip2 glew bilib slivr bow cognomen
+ALLSUBDIRS=mesa_stub zlib glew bilib slivr bow cognomen
 
 message:
 	@echo

@@ -33,9 +33,6 @@
 /* Define if you have isfinite. */
 #undef HAVE_ISFINITE
 
-/* Define if you have the bz2 library. */
-#undef HAVE_LIBBZ2
-
 /* Define if you have the cgns library. */
 #undef HAVE_LIBCGNS
 
@@ -48,6 +45,9 @@
 /* Define if you have the hdf5 library. */
 #undef HAVE_LIBHDF5
 
+/* Define to 1 if you have the `m' library (-lm). */
+#undef HAVE_LIBM
+
 /* Define if you have the netcdf library. */
 #undef HAVE_LIBNETCDF
 
@@ -57,7 +57,7 @@
 /* Define if you have the sz library. */
 #undef HAVE_LIBSZ
 
-/* Define if you have the z library. */
+/* Define to 1 if you have the `z' library (-lz). */
 #undef HAVE_LIBZ
 
 /* Define to 1 if you have the <limits.h> header file. */

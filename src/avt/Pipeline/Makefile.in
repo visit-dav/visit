@@ -402,7 +402,7 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libpipeline
-LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(ZLIB_LIB) $(GLEW_LIBS)
 SERLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lexpr -lparser -lavtmath_ser -llightweight_visit_vtk @VTK_LIBS@ $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@
 PARLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lexpr -lparser -lavtmath_par -llightweight_visit_vtk @VTK_LIBS@ $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
 

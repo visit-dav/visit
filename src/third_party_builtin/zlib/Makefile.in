@@ -49,36 +49,51 @@
 @VARIABLES@
 
 CPPFLAGS=-I. -I../../include @CPPFLAGS@
+#CFLAGS=@CFLAGS@ -O3 -DZ_PREFIX
+CFLAGS=@CFLAGS@ -O3
 LIBS=
 
 ##
 ## Files...
 ##
-SRC=blocksort.c huffman.c crctable.c randtable.c compress.c decompress.c bzlib.c
-HDR=bzlib.h  bzlib_private.h
+SRC=adler32.c compress.c crc32.c gzio.c uncompr.c deflate.c trees.c \
+    zutil.c inflate.c infback.c inftrees.c inffast.c
+HDR=crc32.h  deflate.h  inffast.h  inffixed.h  inflate.h  inftrees.h  \
+    trees.h  zconf.h  zlib.h  zutil.h
 OBJ=$(SRC:.c=.o)
-LIB=libbz2
+LIB=libz
 
 ##
 ## Standard targets...
 ##
 all: message $(LIBSHARED)
 
-clean:
-	$(RM) $(OBJ) $(SRC) $(HDR) $(LIBSHARED) LICENSE words* ../../include/visit/bzlib.h
+##
+## Remove all the sources we untarred
+##
+clean_untarred_sources:
+	$(RM) $(SRC) $(HDR) ChangeLog ../../include/visit/zlib.h
 
-LICENSE:
-	gunzip < bzip2-1.0.3.v.tar.gz | tar xvf -
-	touch LICENSE
-	cp bzlib.h ../../include/visit/.
+clean: clean_untarred_sources
+	$(RM) $(OBJ) $(LIBSHARED)
 
-blocksort.c: LICENSE 	 
-huffman.c: LICENSE
-crctable.c: LICENSE
-randtable.c: LICENSE
-compress.c: LICENSE
-decompress.c: LICENSE
-bzlib.c: LICENSE
+zlib.h:
+	gunzip < zlib-1.2.3.v.tar.gz | tar xvf -
+	cp zlib.h ../../include/visit/.
+	touch zlib.h
+
+adler32.c: zlib.h
+compress.c: zlib.h
+crc32.c: zlib.h
+gzio.c: zlib.h
+uncompr.c: zlib.h
+deflate.c: zlib.h
+trees.c: zlib.h
+zutil.c: zlib.h
+inflate.c: zlib.h
+infback.c: zlib.h
+inftrees.c: zlib.h
+inffast.c: zlib.h
 
 ##
 ## Other targets
@@ -86,7 +101,7 @@ bzlib.c: LICENSE
 message:
 	@echo
 	@echo "****************************************************************************"
-	@echo "*** Building Bzip2 Library ($(LIB))"
+	@echo "*** Building zlib Library ($(LIB))"
 	@echo "****************************************************************************"
 
 ##

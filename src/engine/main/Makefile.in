@@ -230,7 +230,7 @@
 #    Added PLATFORM_CPPFLAGS.
 #
 #    Mark C. Miller, Mon Dec 12 20:53:03 PST 2005
-#    Added BZIP2_LIBS variable
+#    Added ZLIB_LIB variable
 #
 #    Hank Childs, Mon Feb  6 14:16:15 PST 2006
 #    Remove one -lexpr, since it is listed twice in the link line.
@@ -292,7 +292,7 @@ SERLIBS=$(COMMONLIBS) -lviswindow_ser -lplotter_ser -lmir_ser -lavtwriter_ser \
         -lavtddf_ser -lavtivp_ser -lavtmath_ser -lavtshapelets_ser -ldatabase_ser -lquery_ser \
         -lexpressions_ser -lavtfilters_ser -lpipeline_ser  \
         -lengineparstate_ser -lparallel_visit_vtk_ser \
-        $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(BZIP2_LIBS) \
+        $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) $(ZLIB_LIB) \
 	$(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
 
 PARLIBS=$(COMMONLIBS) -lviswindow_par -lplotter_par -lmir_par -lavtwriter_par \
@@ -300,7 +300,7 @@ PARLIBS=$(COMMONLIBS) -lviswindow_par -lplotter_par -lmir_par -lavtwriter_par \
         -lexpressions_par -lavtfilters_par -lpipeline_par \
         -lengineparstate_par -lparallel_visit_vtk_par \
         $(GLEW_LIBS) @VTKQT_LIBS@ $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) $(X_LIBS) \
-	$(BZIP2_LIBS) $(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
+	$(ZLIB_LIB) $(FILIB_LIBS) @LIBS@ @PTHREAD_LIB@ @TCMALLOC_LIB@
 
 SERLIBDEP=../../lib/libplugin.@SHLIB_LIBEXT@ ../../lib/libplotter_ser.@SHLIB_LIBEXT@ \
           ../../lib/libdatabase_ser.@SHLIB_LIBEXT@ ../../lib/libpipeline_ser.@SHLIB_LIBEXT@ \
