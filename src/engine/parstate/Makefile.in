@@ -98,7 +98,7 @@ SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 
 LIB=libengineparstate
-LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(ZLIB_LIB) $(GLEW_LIBS)
 SERLIBS=-lstate -lcomm -lmisc -lutility -lpipeline_ser -ldbatts -lavtexceptions \
         -lexpr -lparser -lavtmath_ser -llightweight_visit_vtk $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)
 PARLIBS=-lstate -lcomm -lmisc -lutility -lpipeline_par -ldbatts -lavtexceptions \

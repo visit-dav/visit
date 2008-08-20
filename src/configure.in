@@ -1660,41 +1660,14 @@ esac
 AC_SUBST(DB_BUILD_DIRS)
 
 dnl
-dnl bzip2 related stuff
-dnl
-AC_ARG_ENABLE(bzip2,
-   AS_HELP_STRING([--disable-bzip2], [do not build or use bzip2 library -- disables compression]),
-   Usebzip2="$enable_bzip2", Usebzip2=yes)
-AC_ARG_WITH(bzip2,
-   AS_HELP_STRING([--with-bzip2], [build against external bzip2 in LIB-DIR (can be ommited if "-lbzip2" alone works)]),
-   [WithExternalBzip2=$withval],
-   [WithExternalBzip2="no"])
-            
-BUILD_BZIP2=""
-BZIP2_LIBS=""
-if test "$Usebzip2" = "yes"; then
-    if test $WithExternalBzip2 != "no"; then
-        if test $WithExternalBzip2 -nq "yes"; then
-            BZIP2_LIBS="-L${WithExternalBzip2}"
-        fi
-    else
-    BUILD_BZIP2="bzip2"
-    fi
-    AC_DEFINE(HAVE_LIBBZ2, [1], [Define if you have the bz2 library.])
-    BZIP2_LIBS="${BZIP2_LIBS} -lbz2"
-fi
-AC_SUBST(BUILD_BZIP2)
-AC_SUBST(BZIP2_LIBS)
-
-dnl
 dnl glew related stuff 
 dnl
 AC_ARG_ENABLE(glew,
-   AS_HELP_STRING([--disable-glew], [do not build or use glew library -- disables detection of OpenGL extensions]),
+   AC_HELP_STRING([--disable-glew], [do not build or use glew library -- disables detection of OpenGL extensions]),
    Useglew="$enable_glew", Useglew=yes)
 
 AC_ARG_WITH(glew,
-   AS_HELP_STRING([--with-glew], [build against external glew in INC-DIR,LIB-DIR (may be ommitted)]),
+   AC_HELP_STRING([--with-glew], [build against external glew in INC-DIR,LIB-DIR (may be ommitted)]),
    [WithExternalGlew=$withval],
    [WithExternalGlew="no"])
 
@@ -1920,77 +1893,83 @@ AC_TRY_COMPILE([#include <sys/types.h>
 # Check for non-graphics libraries in the reverse order that they
 # are needed.  The libraries are added to the beginning of `LIBS'.
 #
-AC_CHECK_LIB(m,        main,      LIBS="-lm $LIBS")
+AC_CHECK_LIB(m, main)
 
-dnl  Is zlib present?
-dnl
-dnl  It's required if hdf5 was compiled with deflate support. Normally check
-dnl  for zlib.h and libz.a but skip the test if `--without-zlib' is specified.
-dnl  Alternate directories can be specified for the header and library by
-dnl  giving names like this `--with-zlib=INC,LIB' (if only the LIB directory
-dnl  is supplied then it must still be preceded by a comma).
-dnl
-
-saved_CPPFLAGS="$CPPFLAGS"
-saved_CFLAGS="$CFLAGS"
-saved_LDFLAGS="$LDFLAGS"
-saved_LIBS="$LIBS"
-
-AC_ARG_WITH(zlib,[  --with-zlib=INC-DIR,LIB-DIR     Use the GNU zlib compression],
-            ,withval=yes)
+#
+# Handle zlib. By default, we try to find a zlib because VisIt can
+# use compression when shipping data between engine and viewer. 
+# Since zlib may not be available everywhere, we also support it
+# as a 3rd party builtin. So, the logic here handles several cases.
+# If we can find it 'normally', we use that. If finding 'normally'
+# fails, we use our 3rd party builtin. Alternatively, the user
+# can explicitly specify to use our 3rd party builtin effectively
+# disabling the step where we find it 'normally.' Likewise, the user
+# can explicitly specify zlib inc/lib dirs s/he wants or disable zlib
+# entirely though that also disables any compression in VisIt between
+# engine and viewer.
+#
+BUILD_ZLIB=""
+ZLIB_LIB="-lz"
+AC_ARG_WITH(zlib,[  --with-zlib=INC-DIR,LIB-DIR     Use the GNU zlib compression],,withval=yes)
 case $withval in
     yes)
-	#
-	# Header
-	#
-
-        AC_CHECK_HEADERS(zlib.h)
-        AC_CHECK_LIB(z, compress2,
-		ZLIB_LIB="-lz $ZLIB_LIB"
-		AC_DEFINE(HAVE_LIBZ, [1], [Define if you have the z library.]))
+        # This is the 'default' action when --with-zlib= is NOT
+        # given on the command line to configure. So, we look
+        # for zlib headers and lib 'normally'
+        AC_CHECK_HEADERS(zlib.h,have_zlib_h="yes")
+        if test -n "$have_zlib_h"; then
+            AC_CHECK_LIB(z, compress2)
+            if test -z "`echo $LIBS | tr ' ' '\n' | grep -x -e '-lz'`"; then
+                # If we get here, there was a problem with the 'normal'
+                # way of finding zlib. So, we'll fallback to our 3rd
+                # party builtin. Note that in this case, zlib.h will
+                # appear in VisIt's include dir. So, all we need to
+                # do is add '-lz' to LIBS variable.
+                BUILD_ZLIB=zlib
+                LIBS="-lz $LIBS"
+                AC_DEFINE(HAVE_ZLIB_H,1)
+            fi
+        fi
+        ;;
+    builtin)
+        # This is the case where they user has specified --with-zlib=builtin
+        # to skip the attempt to look for zlib 'normally' and explicilty force 
+        # the use of our 3rd party builtin. Note that in this case, zlib.h
+        # will appear in VisIt's include dir. So, all we need to do is
+        # add '-lz' to LIBS variable.
+        AC_MSG_CHECKING(for GNU zlib)
+        BUILD_ZLIB=zlib
+        LIBS="-lz $LIBS"
+        AC_DEFINE(HAVE_ZLIB_H,1)
+        AC_MSG_RESULT(builtin)
         ;;
     no)
+        # Totally disable zlib
+        ZLIB_LIBS=""
         AC_MSG_CHECKING(for GNU zlib)
         AC_MSG_RESULT(suppressed)
         ;;
     *)
-	#
-	# Header
-	#
-
+	# Use a zlib at the specified inc/lib dir pair
+        AC_MSG_CHECKING(for GNU zlib)
         zlib_inc="`echo $withval |cut -f1 -d,`"
-        if test "X" != "$zlib_inc"; then
-            CPPFLAGS="$CPPFLAGS -I$zlib_inc"
-	    AC_CHECK_HEADERS(zlib.h,ZLIB_INCLUDE="-I$zlib_inc $ZLIB_INCLUDE")
-	    CPPFLAGS="$saved_CPPFLAGS"
-        else
-            AC_CHECK_HEADERS(zlib.h)
+        if test ! -f $zlib_inc/zlib.h; then
+            AC_MSG_ERROR(no zlib.h found in $zlib_inc)
         fi
-
+        CPPFLAGS="$CPPFLAGS -I$zlib_inc"
         zlib_lib="`echo $withval |cut -f2 -d, -s`"
-        if test "X" != "$zlib_lib"; then
-	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE"
-            LDFLAGS="$LDFLAGS -L$zlib_lib"
-	    AC_CHECK_LIB(z, compress2,
-			ZLIB_LIB="-L$zlib_lib -lz $ZLIB_LIB"
-			AC_DEFINE(HAVE_LIBZ, [1], [Define if you have the z library.])
-			)
-	    LIBS="$saved_LIBS"
-	    LDFLAGS="$saved_LDFLAGS"
-	    CPPFLAGS="$saved_CPPFLAGS"
-        else
-	    CPPFLAGS="$CPPFLAGS $ZLIB_INCLUDE"
-            AC_CHECK_LIB(z, compress2,
-			ZLIB_LIB="-lz $ZLIB_LIB"
-			AC_DEFINE(HAVE_LIBZ, [1], [Define if you have the z library.])
-		        )
-	    LIBS="$saved_LIBS"
-	    CPPFLAGS="$saved_CPPFLAGS"
+        if test ! -f $zlib_lib/libz.a && test ! -f $zlib_lib/libz.so; then
+            AC_MSG_ERROR(no libz.a or libz.so found in $zlib_lib)
         fi
+        LDFLAGS="$LDFLAGS -L$zlib_lib"
+        LIBS="-lz $LIBS"
+        AC_DEFINE(HAVE_ZLIB_H,1)
+        ZLIB_LIBS="-L$zlib_lib -lz"
+        AC_MSG_RESULT(-I$zlib_inc -L$zlib_lib -lz)
         ;;
 esac
-AC_SUBST(ZLIB_INCLUDE)
-AC_SUBST(ZLIB_LIB)
+AC_SUBST(BUILD_ZLIB)
+AC_SUBST(ZLIB_LIB) # primarily for mac pre-binding
 
 dnl  Is szip present?
 dnl
@@ -2252,15 +2231,15 @@ if test -n "$HDF5_LIB"; then
         AC_MSG_CHECKING(whether to use libsilo.a or libsiloh5.a)
 
       if test "$SHORT_UNAME" = "darwin"; then
-        SILO_LIB="-L$SILO_LIBDIR -lsiloh5 $HDF5_LIB $ZLIB_LIB"
+        SILO_LIB="-L$SILO_LIBDIR -lsiloh5 $HDF5_LIB"
         AC_MSG_RESULT(libsiloh5.dylib)
       else
         saved_CPPFLAGS="$CPPFLAGS"
         saved_LIBS="$LIBS"
 	saved_SILO_LIB="$SILO_LIB"
 
-        SILO_LIB="-L$SILO_LIBDIR -lsiloh5 $HDF5_LIB $ZLIB_LIB"
-        CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE $ZLIB_INCLUDE"
+        SILO_LIB="-L$SILO_LIBDIR -lsiloh5 $HDF5_LIB"
+        CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE"
         LIBS="$SILO_LIB $LIBS"
 
         AC_TRY_RUN(
@@ -2292,7 +2271,7 @@ if test -n "$HDF5_LIB"; then
 
         AC_MSG_CHECKING(whether libsilo.a depends on hdf5)
       if test "$SHORT_UNAME" = "darwin"; then
-        SILO_LIB="$SILO_LIB $HDF5_LIB $ZLIB_LIB"
+        SILO_LIB="$SILO_LIB $HDF5_LIB"
         AC_MSG_RESULT(libsilo.dylib)
       else
 
@@ -2300,8 +2279,8 @@ if test -n "$HDF5_LIB"; then
         saved_LIBS="$LIBS"
 	saved_SILO_LIB="$SILO_LIB"
 
-        SILO_LIB="$SILO_LIB $HDF5_LIB $ZLIB_LIB"
-        CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE $ZLIB_INCLUDE"
+        SILO_LIB="$SILO_LIB $HDF5_LIB"
+        CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE"
         LIBS="$SILO_LIB $LIBS"
 
         AC_TRY_RUN(
@@ -4014,7 +3993,7 @@ SIMULATION_PROTOTYPE_FILES="sim/Makefile
                             sim/lib/Makefile"
 CQSCORE_FILES="cqscore/Makefile"
 THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
-                           third_party_builtin/bzip2/Makefile
+                           third_party_builtin/zlib/Makefile
                            third_party_builtin/glew/Makefile
                            third_party_builtin/bilib/Makefile
                            third_party_builtin/mesa_stub/Makefile

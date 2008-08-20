@@ -234,6 +234,9 @@
 //   Brad Whitlock, Thu Feb 28 16:54:23 PST 2008
 //   Made it use a base class.
 //
+//    Mark C. Miller, Mon Aug 18 22:00:05 PDT 2008
+//    Replaced BZIP2_LIBS with ZLIB_LIB
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin : public Plugin
@@ -440,13 +443,13 @@ class MakefileGeneratorPlugin : public Plugin
             out << "EPARLIBS_FOR_MACOSX_PREBINDING=" << endl;
             out << "SLIBS_FOR_MACOSX_PREBINDING=" << endl;
 #else
-            out << "ELIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS) "
+            out << "ELIBS_FOR_MACOSX_PREBINDING=$(ZLIB_LIB) $(GLEW_LIBS) "
                    "$(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "VLIBS_FOR_MACOSX_PREBINDING=-lviewer -lengineproxy "
                    "-lenginerpc -lviewerrpc -lmdserverproxy -lmdserverrpc "
                    "-lvclproxy -lvclrpc -lplugin -lqtviswindow "
                    "-lviswindow_ser -lavtwriter_ser -lvtkqt -lwinutil "
-                   "-lproxybase $(QT_LDFLAGS) $(QT_LIBS) $(BZIP2_LIBS) "
+                   "-lproxybase $(QT_LDFLAGS) $(QT_LIBS) $(ZLIB_LIB) "
                    "$(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser "
                    "-ldatabase_ser -lmir_ser -lplugin" << endl;
@@ -638,12 +641,12 @@ class MakefileGeneratorPlugin : public Plugin
             out << "EPARLIBS_FOR_MACOSX_PREBINDING=" << endl;
             out << "SLIBS_FOR_MACOSX_PREBINDING=" << endl;
 #else
-            out << "ELIBS_FOR_MACOSX_PREBINDING=$(GLEW_LIBS) $(BZIP2_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
+            out << "ELIBS_FOR_MACOSX_PREBINDING=$(GLEW_LIBS) $(ZLIB_LIB) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "VLIBS_FOR_MACOSX_PREBINDING=-lviewer -lengineproxy "
                    "-lenginerpc -lviewerrpc -lmdserverproxy -lmdserverrpc "
                    "-lvclproxy -lvclrpc -lplugin -lqtviswindow "
                    "-lviswindow_ser -lavtwriter_ser -lvtkqt -lwinutil "
-                   "-lproxybase $(QT_LDFLAGS) $(QT_LIBS) $(BZIP2_LIBS) "
+                   "-lproxybase $(QT_LDFLAGS) $(QT_LIBS) $(ZLIB_LIB) "
                    "$(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser -ldatabase_ser -lmir_ser -lplugin" << endl;
             out << "EPARLIBS_FOR_MACOSX_PREBINDING=-lavtddf_par -ldatabase_par -lmir_par -lplugin" << endl;
@@ -723,8 +726,8 @@ class MakefileGeneratorPlugin : public Plugin
                 out << libs[i] << " ";
             out << endl;
             out << "" << endl;
-            out << "ELIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
-            out << "MLIBS_FOR_MACOSX_PREBINDING=$(GLEW_LIBS) $(BZIP2_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
+            out << "ELIBS_FOR_MACOSX_PREBINDING=$(ZLIB_LIB) $(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
+            out << "MLIBS_FOR_MACOSX_PREBINDING=$(GLEW_LIBS) $(ZLIB_LIB) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "ILIBS=" << endl;
             out << "MLIBS=-lpipeline_ser -ldatabase_ser -lmir_ser -lavtmath_ser -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lplugin -lvisit_vtk -llightweight_visit_vtk  $(MLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
             out << "ESERLIBS=-lpipeline_ser -ldatabase_ser -lmir_ser -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;

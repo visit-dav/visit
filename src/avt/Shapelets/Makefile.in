@@ -60,7 +60,7 @@ CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libavtshapelets
-LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(ZLIB_LIB) $(GLEW_LIBS)
 SERLIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS)
 PARLIBS=-ldbatts -lpipeline_par -lavtmath_par -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS)
 

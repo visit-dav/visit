@@ -76,7 +76,7 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@ @VTKQT_CPPFLAGS@
 
 OBJ=$(SRC:.C=.o)
 LIB=libqtviswindow
-LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(ZLIB_LIB) $(GLEW_LIBS)
 LIBS=-ldbatts -lviswindow_ser -lpipeline_ser -lavtfilters_ser -lavtmath_ser -lavtview -lavtexceptions -lplotter_ser -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lmisc -lstate -lcomm -lexpr -lparser -lutility $(LIBS_FOR_MACOSX_PREBINDING) @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS)
 
 ##

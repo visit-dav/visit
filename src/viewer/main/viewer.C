@@ -62,16 +62,6 @@ using namespace StringHelpers;
 static void ErrorCallback(void *, const char *);
 static void ViewerWarningCallback(void *, const char *);
 
-#ifdef AIX
-#ifdef HAVE_LIBBZ2
-#include <bzlib.h>
-void foobz2(void)
-{
-   BZ2_bzlibVersion();
-}
-#endif
-#endif
-
 // ****************************************************************************
 //  Function: Log output from a piped system command to debug logs
 //

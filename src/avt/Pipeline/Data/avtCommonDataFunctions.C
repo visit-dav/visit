@@ -76,8 +76,8 @@
 #include <NoInputException.h>
 #include <DebugStream.h>
 
-#ifdef HAVE_LIBBZ2
-#include <bzlib.h>
+#ifdef HAVE_ZLIB_H
+#include <zlib.h>
 #include <TimingsManager.h>
 #endif
 
@@ -2701,17 +2701,21 @@ MajorEigenvalue(double *vals)
 //  Function: CMaybeCompressedDataString
 //
 //  Purpose: Check a data string for leading characters indicating it *might*
-//           be a BZ2 compressed string. 
+//           be a compressed string. 
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   November 15, 2005 
+//
+//  Modifciations:
+//    Mark C. Miller, Sun Aug 17 00:38:37 PDT 2008
+//    Switched to use ZLIB
 //
 // ****************************************************************************
 
 bool
 CMaybeCompressedDataString(const unsigned char *dstr)
 {
-    if (dstr[0] == 'B' && dstr[1] == 'Z' && dstr[2] == 'h')
+    if (dstr[0] == 'Z' && dstr[1] == 'L' && dstr[2] == 'I' && dstr[3] == 'B')
         return true;
     return false;
 }
@@ -2740,36 +2744,45 @@ CMaybeCompressedDataString(const unsigned char *dstr)
 //    Hank Childs, Fri Jun  9 13:21:29 PDT 2006
 //    Remove unused variable.
 //
+//    Mark C. Miller, Sun Aug 17 00:38:37 PDT 2008
+//    Switched to use ZLIB
 // ****************************************************************************
 bool CCompressDataString(const unsigned char *dstr, int len,
                          unsigned char **newdstr, int *newlen,
                          float *timec, float *ratioc)
 {
-#ifdef HAVE_LIBBZ2
-    unsigned int lenBZ2 = *newlen == 0 ? len / 2 : *newlen;
-    unsigned char *dstrBZ2 = new unsigned char [lenBZ2+20];
+#ifdef HAVE_ZLIB_H 
+    unsigned int lenZIP = *newlen == 0 ? len / 2 : *newlen;
+    unsigned char *dstrZIP = new unsigned char [lenZIP+24];
     int startCompress = visitTimer->StartTimer(true);
-    if (BZ2_bzBuffToBuffCompress((char*)dstrBZ2, &lenBZ2, (char*) dstr, len,
-                                 1, 0, 250) != BZ_OK)
+    uLongf lenZIPtmp = (uLongf) lenZIP;
+    dstrZIP[0] = 'Z';
+    dstrZIP[1] = 'L';
+    dstrZIP[2] = 'I';
+    dstrZIP[3] = 'B';
+    // use fastest mode of compression. Maybe we'll make a GUI knob for it?
+    if (compress2(&dstrZIP[4], &lenZIPtmp, dstr, (uLong) len, 1) != Z_OK)
     {
         visitTimer->StopTimer(startCompress,
                         "Failed attempt to compress data", true);
-        delete [] dstrBZ2;
+        debug5 << "Failed to compress data" << endl;
+        delete [] dstrZIP;
         return false;
     }
     else
     {
+        lenZIP = (unsigned int) lenZIPtmp+4;
         double timeToCompress = 
             visitTimer->StopTimer(startCompress, "Compressing data", true);
         debug5 << "Compressed data "
-               << (float) len / (float) lenBZ2
+               << (float) len / (float) lenZIP
                << ":1 in " << timeToCompress << " seconds" << endl;
-        sprintf((char*) &dstrBZ2[lenBZ2], "%10d", len);
-        sprintf((char*) &dstrBZ2[lenBZ2+10], "% 10.6f", timeToCompress);
-        *newdstr = dstrBZ2;
-        *newlen = lenBZ2+20;
+        sprintf((char*) &dstrZIP[lenZIP], "%10d", len);
+        sprintf((char*) &dstrZIP[lenZIP+10], "% 10.6f", timeToCompress);
+        *newdstr = dstrZIP;
+        *newlen = lenZIP+20;
         if (timec) *timec = timeToCompress;
-        if (ratioc) *ratioc = (float) len / (float) lenBZ2;
+        if (ratioc) *ratioc = (float) len / (float) lenZIP;
         return true;
     }
 #else
@@ -2794,13 +2807,15 @@ bool CCompressDataString(const unsigned char *dstr, int len,
 //    Jeremy Meredith, Wed Aug  6 18:06:14 EDT 2008
 //    Fixed scanf for double, plus it doesn't understand many printf modifiers.
 //
+//    Mark C. Miller, Sun Aug 17 00:38:37 PDT 2008
+//    Switched to use ZLIB
 // ****************************************************************************
 
 bool CDecompressDataString(const unsigned char *dstr, int len,
                            unsigned char **newdstr, int *newlen,
                            float *timec, float *timedc, float *ratioc)
 {
-#ifdef HAVE_LIBBZ2
+#ifdef HAVE_ZLIB_H
     if (CMaybeCompressedDataString(dstr))
     {
         unsigned int strLengthOrig;
@@ -2809,18 +2824,19 @@ bool CDecompressDataString(const unsigned char *dstr, int len,
         sscanf((char*) &dstr[len-10], "%lf", &timeToCompress);
         unsigned char *strOrig = new unsigned char[strLengthOrig];
         int startDecompress = visitTimer->StartTimer(true);
-        if (BZ2_bzBuffToBuffDecompress((char*) strOrig, &strLengthOrig,
-                                       (char*) dstr, len, 0, 0) != BZ_OK)
+        uLongf strLengthOrigTmp = (uLongf) strLengthOrig;
+        if (uncompress(strOrig, &strLengthOrigTmp, &dstr[4], len-4) != Z_OK)
         {
             visitTimer->StopTimer(startDecompress,
                             "Failed attempt to decompress data", true);
-            debug5 << "Found 3 character \"BZh\" header in data string "
+            debug5 << "Found 4 character \"ZLIB\" header in data string "
                    << "but failed to decompress. Assuming coincidence." << endl;
             delete [] strOrig;
             return false;
         }
         else
         {
+            strLengthOrig = (unsigned int) strLengthOrigTmp;
             double timeToDecompress =
                 visitTimer->StopTimer(startDecompress, "Decompressing data", true);
             debug5 << "Uncompressed data 1:"

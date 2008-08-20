@@ -161,7 +161,7 @@
 #    Eliminated refs to sl_io library. Added LibPipelineStubs.
 #
 #    Mark C. Miller, Mon Dec 12 20:53:03 PST 2005
-#    Added BZIP2_LIBS variable
+#    Added ZLIB_LIB variable
 #
 #    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
 #    Added $(GLEW_LIBS)  
@@ -208,7 +208,6 @@ LIBS= \
     -llightweight_visit_vtk \
     @VTK_LIGHTWEIGHT_LIBS@ \
     @PREBIND_LIBS@ \
-    $(BZIP2_LIBS) \
     @LIBS@ \
     @PTHREAD_LIB@
 LIBDEP=
