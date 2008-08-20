@@ -267,6 +267,9 @@
 #    Tom Fogal, Sun Jul 27 23:43:55 EDT 2008
 #    Add conditional linking of cognomen.
 #
+#    Hank Childs Tue Aug 19 21:57:35 PDT 2008
+#    Add cognomen to the purify line.
+#
 ##############################################################################
 
 ##
@@ -370,7 +373,7 @@ $(ENGINEWRAPPAR) or_no_par_wrapper: $(PARLIBDEP) $(PAROBJ) $(LIBRARYPAROBJ) $(LI
 
 purify: $(SERLIBDEP) $(SEROBJ) $(MAINSEROBJ) $(LIBSHAREDSER) $(MAINPAROBJ) $(LIBSHAREDPAR)
 	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir -chain-length=64	$(CXX) -o @ENGINE_SER@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)
-	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir -chain-length=64 -follow-child-processes=yes $(CXX) -o @ENGINE_PAR@ $(LDFLAGS) $(MAINPAROBJ) -lengine_par $(PARLIBS) @MPI_LIBS@
+	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir -chain-length=64 -follow-child-processes=yes $(CXX) -o @ENGINE_PAR@ $(LDFLAGS) $(MAINPAROBJ) -lengine_par $(PARLIBS) @LIBCOGNOMEN@ @MPI_LIBS@
 
 quantify: $(SERLIBDEP) $(SEROBJ)
 	quantify $(CXX) -o @ENGINE_SER@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)
