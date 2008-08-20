@@ -44,6 +44,7 @@
 
 #include <list>
 #include <iostream>
+#include <limits>
 
 #include <avtVecArray.h>
 
