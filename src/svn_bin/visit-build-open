@@ -414,7 +414,7 @@ ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 OBJECT_MODE=32
 export OBJECT_MODE
-env CXXFLAGS=-O2 MAKE=gmake ./configure --with-config=config-site/up041_32.conf >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 MAKE=gmake ./configure --with-config=config-site/up041_32.conf --enable-visitmodule >> ../../buildlog 2>&1
 gmake -j 4 >> ../../buildlog 2>&1
 svn_bin/visit-bin-dist -make gmake >> ../../buildlog 2>&1
 mv visit\$ver2.aix.tar.gz ../..
@@ -423,7 +423,7 @@ gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
 cd $dist/src
 OBJECT_MODE=64
 export OBJECT_MODE
-env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
 gmake -j 4 >> ../../buildlog 2>&1
 svn_bin/visit-bin-dist -make gmake >> ../../buildlog 2>&1
 mv visit\$ver2.aix64.tar.gz ../..
@@ -484,7 +484,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
 make -j 3 >> ../../buildlog 2>&1
 svn_bin/visit-bin-dist >> ../../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ../..
@@ -696,7 +696,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 svn_bin/visit-bin-dist >> ../../buildlog 2>&1
 mv visit\$ver2.linux-ia64.tar.gz ../..
@@ -750,7 +750,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
 make -j 2 >> ../../buildlog 2>&1
 svn_bin/visit-bin-dist >> ../../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ../..
