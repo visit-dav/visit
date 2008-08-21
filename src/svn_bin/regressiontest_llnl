@@ -53,6 +53,9 @@
 #
 #    Mark C. Miller, Fri Aug  8 09:00:27 PDT 2008
 #    Fixed path used to invoke nersc_username_to_email
+#
+#    Mark C. Miller, Thu Aug 21 11:05:01 PDT 2008
+#    Added chgcar_11 to skipList
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -366,7 +369,8 @@ skipList_dueTo_clientServer="\
           nersc,scalable,parallel:tests/queries/bestfitline.py"
 
 skipList_dueTo_parallelRendering="\
-          nersc,scalable,parallel:tests/databases/boxlib.py"
+          nersc,scalable,parallel:tests/databases/boxlib.py \
+          nersc,scalable,parallel:tests/databases/chgcar.py:chgcar_11"
 
 skipList_dueTo_temporaryBugs="\
 	  nersc,scalable,parallel:tests/databases/defer_expr.py \
