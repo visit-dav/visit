@@ -14256,6 +14256,8 @@ NeedToLoadPlugins(Subject *, void *)
 //   assume Init::Initialize won't modify argv, and simply convert one
 //   some string literals to a char*.
 //
+//   Mark C. Miller, Thu Aug 21 11:32:08 PDT 2008
+//   Added passing of '-clobber_vlogs' to Init
 // ****************************************************************************
 
 static int
@@ -14269,7 +14271,7 @@ InitializeModule()
     TRY
     {
         int argc = 1;
-        char *argv[4];
+        char *argv[6];
         argv[0] = (char*)"cli";
 
         if(moduleDebugLevel > 0)
@@ -14283,6 +14285,11 @@ InitializeModule()
            if(strcmp(cli_argv[i], "-pid") == 0)
            {
                argv[argc++] = (char*)"-pid";
+               break;
+           }
+           if(strcmp(cli_argv[i], "-clobber_vlogs") == 0)
+           {
+               argv[argc++] = (char*)"-clobber_vlogs";
                break;
            }
         }
