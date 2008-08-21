@@ -130,7 +130,7 @@ avtStreamline::~avtStreamline()
 //    Modify how data without ghost zones are handled.
 //
 //    Dave Pugmire, Tue Aug 19, 17:38:03 EDT 2008
-//    Chagned how distanced based termination is computed.
+//    Changed how distanced based termination is computed.
 //
 // ****************************************************************************
 
@@ -192,6 +192,10 @@ avtStreamline::Advance(const avtIVPField* field,
 //    Dave Pugmire, Wed Aug 20, 07:43:58 EDT 2008
 //    Bug fix. Check to see if _steps is empty before using front/back.
 //
+//    Dave Pugmire, Thu Aug 21, 15:46:31 EDT 2008
+//    Fixed a memory leak. If the solver step fails, delete the avtIVPStep
+//    before continuing.
+//
 // ****************************************************************************
 
 avtIVPSolver::Result
@@ -250,8 +254,10 @@ avtStreamline::DoAdvance(avtIVPSolver* ivp,
             ivp->SetNextStepSize( h );
 
             // retry step
+            delete step;
             continue;
         }
+        
         catch( std::exception& )
         {
         }
