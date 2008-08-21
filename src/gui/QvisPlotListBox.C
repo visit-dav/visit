@@ -166,6 +166,9 @@ QvisPlotListBox::viewportMouseDoubleClickEvent(QMouseEvent *e)
 //   Brad Whitlock, Tue Nov 20 14:34:44 PST 2007
 //   Fixed plot expansion.
 //
+//   Sean Ahern, Thu Aug 21 14:32:54 EDT 2008
+//   Fixed deleting operators on non-selected plots.
+//
 // ****************************************************************************
 
 void
@@ -175,44 +178,41 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
     QPoint itemClickLocation(clickLocation);
     int y = 0;
     int heightSum = 0;
-    int action = -1, id = -1;
+    int action = -1, opId = -1;
     bool bs = signalsBlocked();
     bool emitted = true;
 
-    for(size_t i = 0; i < count(); ++i)
+    // Walk through all of the items, checking if we've clicked in each one.
+    for (size_t i = 0; i < count(); ++i)
     {
         QListBoxItem *current = item(i);
         QvisPlotListBoxItem *item2 = (QvisPlotListBoxItem *)current;
         int h = current->height(this);
 
-        if(clickLocation.y() >= y && clickLocation.y() < (y + h))
+        if (clickLocation.y() >= y && clickLocation.y() < (y + h))
         {
-				      
+            // We've clicked in the item.
+
             // If the item is not selected, select it.
-
-            if(!bs)
-                blockSignals(true);
+            blockSignals(false);
             setSelected(current, true);
-            if(!bs)
-                blockSignals(false);
+            blockSignals(bs);
 
-            // Reduce the y location of the click location
+            // Reduce the y location of the click location to be local to the
+            // item.
             itemClickLocation.setY(clickLocation.y() - heightSum);
 
             // Handle the click.
-            
-            if(action == -1)
+            if (action == -1)
             {
-                action = item2->clicked(itemClickLocation, doubleClicked, id);
+                action = item2->clicked(itemClickLocation, doubleClicked, opId);
             }
         }
         else
         {
-            if(!bs)
-                blockSignals(true);
+            blockSignals(false);
             setSelected(current, false);
-            if(!bs)
-                blockSignals(false);
+            blockSignals(bs);
         }
         heightSum += h;
         y += h;
@@ -227,25 +227,25 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
          emit activateSubsetWindow();
         break;
     case 2: // plot clicked
-         emit activatePlotWindow(id);
+         emit activatePlotWindow(opId);
         break;
     case 3: // operator clicked
-         emit activateOperatorWindow(id);
+         emit activateOperatorWindow(opId);
         break;
     case 4: // promote clicked
-         emit promoteOperator(id);
+         emit promoteOperator(opId);
         break;
     case 5: // demote clicked
-        emit demoteOperator(id);
+        emit demoteOperator(opId);
         break;
     case 6: // delete clicked
-         emit removeOperator(id);
+         emit removeOperator(opId);
         break;
     default:
-        if(rightClick)
-	{
-	    emit selectionChanged();
-	}
+        if (rightClick)
+        {
+            emit selectionChanged();
+        }
         else
             emitted = false;
         break;
