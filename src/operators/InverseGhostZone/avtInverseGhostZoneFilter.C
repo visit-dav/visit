@@ -157,6 +157,9 @@ avtInverseGhostZoneFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Wed Jun 14 13:44:49 PDT 2006
 //    Fix memory leak.
 //
+//    Sean Ahern, Thu Aug 21 14:25:51 EDT 2008
+//    When there are no ghost zones, the inverse is a NULL mesh.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -165,7 +168,7 @@ avtInverseGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     vtkDataArray *gz = in_ds->GetCellData()->GetArray("avtGhostZones");
     if (gz == NULL)
     {
-        return in_ds;
+        return NULL;
     }
 
     //
