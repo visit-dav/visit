@@ -374,6 +374,12 @@ avtOpenGLLabelRenderer::ClearCharacterDisplayLists()
 //   Added code to limit the label to MAX_LABEL_SIZE characters since the
 //   labels in the caches don't necessarily seem to have NULL terminators.
 //
+//   Jeremy Meredith, Fri Aug 22 13:25:46 EDT 2008
+//   The screenPoint Z values weren't right.  This didn't hurt (sinec
+//   in the past the Z test and Z writing were disabled), but to get
+//   SR mode label plots to work right, I corrected their value
+//   when calling glTranslate.
+//
 // ****************************************************************************
 
 void
@@ -385,7 +391,11 @@ avtOpenGLLabelRenderer::DrawLabel(const double *screenPoint, const char *label)
 //       << screenPoint[1] << ", " << screenPoint[2] << ")" << endl;
 
     // Translate the text to the screen location
-    glTranslatef(screenPoint[0], screenPoint[1], screenPoint[2]);
+    // Note: The Z values map to 1..0 (from using the pointXForm matrix),
+    // but we need -1..1 (due to the glOrtho call in DrawLabels3D).
+    // Avoid going all the way to -1 or 1 because these values are
+    // how we identify "background" during compositing.
+    glTranslatef(screenPoint[0], screenPoint[1], .999-1.998*screenPoint[2]);
 
     // Scale the text
     glScalef(x_scale, y_scale, 1);    
@@ -559,6 +569,13 @@ avtOpenGLLabelRenderer::DrawLabel2(const double *screenPoint, const char *label)
 //   I removed the code to set the colors because I moved it into the new
 //   SetColor method.
 //
+//    Jeremy Meredith, Thu Aug 21 16:00:11 EDT 2008
+//    For 3D, only disable *testing* against the Z buffer, don't disable
+//    *writing* to the Z buffer.  This fixes SR mode compositing, as well
+//    as rendering labels with translucent geometry.
+//    Also, restore lighting and depth testing to its true old value;
+//    don't just guess.
+//
 // ****************************************************************************
 
 void
@@ -585,23 +602,33 @@ avtOpenGLLabelRenderer::RenderLabels()
 #endif
 
     //
-    // Turn off lighting. -- Really we should check VTK somehow to see
-    //                       if lighting is enabled before we go and
-    //                       turn it off because we need that check before
-    //                       we go turning it on.
+    // Turn off lighting, recording its old value
     //
+    bool enableLighting = glIsEnabled(GL_LIGHTING);
     glDisable(GL_LIGHTING);
 
-    // Disable depth testing
-    bool enableDepthTest = true;
-    glDisable(GL_DEPTH_TEST);
+    //
+    // We'll set depth testing explicity, so record its old value
+    //
+    bool enableDepthTest = glIsEnabled(GL_DEPTH_TEST);
 
     if(renderLabels3D)
     {
+        glEnable(GL_DEPTH_TEST);
+
+        // Note: turning off GL_DEPTH_TEST also disables writing
+        // to the zbuffer.  But we want that part (so that compositing
+        // in SR mode still works), so instead we enable the depth
+        // test, but let it always pass
+        GLint oldDepthTest;  // again, record old value
+        glGetIntegerv(GL_DEPTH_FUNC, &oldDepthTest);
+        glDepthFunc(GL_ALWAYS);
         DrawLabels3D();
+        glDepthFunc(oldDepthTest);
     }
     else 
     {
+        glDisable(GL_DEPTH_TEST);
         DrawLabels2D();
     }
 
@@ -609,7 +636,9 @@ avtOpenGLLabelRenderer::RenderLabels()
     if(enableDepthTest)
         glEnable(GL_DEPTH_TEST);
 
-    glEnable(GL_LIGHTING);
+    // Re-enalbe lighting if it was on.
+    if (enableLighting)
+        glEnable(GL_LIGHTING);
 
 #ifdef TEXTURED_FONT
     glDisable(GL_BLEND);
