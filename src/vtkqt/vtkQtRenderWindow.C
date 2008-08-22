@@ -87,10 +87,9 @@ vtkQtRenderWindow* vtkQtRenderWindow::New() {
     }
 
     // Create the render window as a child of the parent widget.
-    vtkQtRenderWindow *tmp = new vtkQtRenderWindow(parentForAllWindows,
-        0, 0, WType_TopLevel);
+    vtkQtRenderWindow *tmp = new vtkQtRenderWindow(parentForAllWindows, WType_TopLevel);
 #else
-    vtkQtRenderWindow *tmp = new vtkQtRenderWindow;
+    vtkQtRenderWindow *tmp = new vtkQtRenderWindow(0, WType_TopLevel);
 #endif
 
     return tmp;
@@ -129,10 +128,13 @@ int vtkQtRenderWindow::GetGlobalMaximumNumberOfMultiSamples() {
 //   Brad Whitlock, Wed Mar 12 10:04:38 PDT 2003
 //   I added hide and show callbacks.
 //
+//   Brad Whitlock, Wed Aug 20 09:47:48 PDT 2008
+//   Removed all but 2 arguments.
+//
 // ****************************************************************************
 
-vtkQtRenderWindow::vtkQtRenderWindow(const QGLFormat &format, QWidget *parent, const char *name, const QGLWidget *shareWidget, WFlags f)
-    : vtkRenderWindow(), QMainWindow(parent, name, f)
+vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, WFlags f)
+    : vtkRenderWindow(), QMainWindow(parent, 0, f)
 {
     vtkDebugMacro(<< " vtkQtRenderWindow constructor\n");
     this->WindowName = 0;
@@ -164,63 +166,6 @@ vtkQtRenderWindow::vtkQtRenderWindow(const QGLFormat &format, QWidget *parent, c
 #include <qtoolbutton.h>
 #include <qwhatsthis.h>
 #include <qpainter.h>
-
-// ****************************************************************************
-// Method: vtkQtRenderWindow::vtkQtRenderWindow
-//
-// Purpose: 
-//   Constructor for the vtkQtRenderWindow class.
-//
-// Arguments:
-//
-// Programmer: Matthias Koenig 
-// Creation:   2000
-//
-// Modifications:
-//   ... lots of changes by LLNL ...
-//
-//   Brad Whitlock, Mon Jan 27 17:22:45 PST 2003
-//   I made it inherit from QMainWindow so we can have toolbars. I also made
-//   it contain my vtkQtGLWidget.
-//
-//   Brad Whitlock, Wed Mar 12 10:04:38 PDT 2003
-//   I added hide and show callbacks.
-//
-// ****************************************************************************
-
-vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, const char *name, const QGLWidget *shareWidget, WFlags f)
-    : vtkRenderWindow(), QMainWindow(parent, name, f)
-{
-    vtkDebugMacro(<< " vtkQtRenderWindow constructor\n");
-    this->Interactor = NULL;
-    this->WindowName = 0;
-    this->MultiSamples = vtkQtRenderWindowGlobalMaximumNumberOfMultiSamples;
-
-    // Initialize some callback function pointers/data.
-    this->resizeEventCallback = 0;
-    this->resizeEventData = 0;
-    this->closeEventCallback = 0;
-    this->closeEventCallbackData = 0;
-    this->hideEventCallback = 0;
-    this->hideEventCallbackData = 0;
-    this->showEventCallback = 0;
-    this->showEventCallbackData = 0;
-
-    // Set the window name
-    SetWindowName("window 1");
-
-    setFocusPolicy(QWidget:: WheelFocus);
-    setBackgroundMode(QWidget::NoBackground);
-
-    // Create the GL widget.
-    gl = new vtkQtGLWidget(this, "vtkQtGLWidget");
-    setCentralWidget(gl);
-
-/*
-cout << "vtkQtRenderWindow::vtkQtRenderWindow: Size[0]="
-     << this->Size[0] << ", Size[1]=" << this->Size[1] << endl;
-*/
-}
 
 // Modified by LLNL
 vtkQtRenderWindow::~vtkQtRenderWindow()

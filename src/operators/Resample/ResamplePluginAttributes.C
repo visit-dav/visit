@@ -1066,3 +1066,25 @@ ResamplePluginAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) con
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
 
+bool
+ResamplePluginAttributes::SetValue(const std::string &name, const double &value)
+{
+    int index = FieldNameToIndex(name);
+    bool retval = true;
+    if(index == ID_endX)
+        SetEndX(value);
+    else if(index == ID_endY)
+        SetEndY(value);
+    else if(index == ID_endZ)
+        SetEndZ(value);
+    else if(index == ID_startX)
+        SetStartX(value);
+    else if(index == ID_startY)
+        SetStartY(value);
+    else if(index == ID_startZ)
+        SetStartZ(value);
+    else
+        retval = AttributeSubject::SetValue(name, value);
+    return retval;
+}
+

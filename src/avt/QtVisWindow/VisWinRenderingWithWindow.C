@@ -64,16 +64,20 @@
 //    Jeremy Meredith, Tue Jul 17 16:37:04 EDT 2007
 //    Added fullscreen support.
 //
+//    Brad Whitlock, Mon Aug 18 14:45:18 PDT 2008
+//    Pass in the vtkQtRenderWindow that we'll be using.
+//
 // ****************************************************************************
 
 VisWinRenderingWithWindow::VisWinRenderingWithWindow(
-                                                    VisWindowColleagueProxy &p)
+    vtkQtRenderWindow *rw, bool own, VisWindowColleagueProxy &p)
     : VisWinRendering(p)
 {
     cursorIndex = 0;
     fullScreenMode = false;
 
-    renWin = vtkQtRenderWindow::New();
+    renWin = rw;
+    ownRenderWindow = own;
     InitializeRenderWindow(renWin);
  
     iren = vtkQtRenderWindowInteractor::New();
@@ -91,7 +95,7 @@ VisWinRenderingWithWindow::VisWinRenderingWithWindow(
 
 VisWinRenderingWithWindow::~VisWinRenderingWithWindow()
 {
-    if (renWin != NULL)
+    if (renWin != NULL && ownRenderWindow)
     {
         renWin->Delete();
         renWin = NULL;
@@ -117,6 +121,10 @@ VisWinRenderingWithWindow::~VisWinRenderingWithWindow()
 //    Jeremy Meredith, Tue Jul 17 16:37:04 EDT 2007
 //    Added fullscreen support.
 //
+//    Brad Whitlock, Fri Aug 22 14:44:05 PST 2008
+//    If we don't own the render window then it must be embedded. We should
+//    not do any window manager grab in that case.
+//
 // ****************************************************************************
 
 void
@@ -128,7 +136,8 @@ VisWinRenderingWithWindow::RealizeRenderWindow(void)
         renWin->show();
 
 #ifdef Q_WS_X11
-    WindowMetrics::WaitForWindowManagerToGrabWindow(renWin);
+    if(ownRenderWindow)
+        WindowMetrics::WaitForWindowManagerToGrabWindow(renWin);
 #endif
 }
 

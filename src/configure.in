@@ -824,6 +824,9 @@ dnl
 dnl    Hank Childs, Wed Aug 20 11:58:50 MDT 2008
 dnl    Add test for stropts.h for SYSV vs BSD.
 dnl
+dnl    Brad Whitlock, Mon Aug 18 11:01:03 PDT 2008
+dnl    Added tools/embedviewer. Removed some viewer source stuff.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1437,15 +1440,6 @@ if test "$UseGUI" = "yes"; then
         VISWINDOW="VisWindow"
         VIEWERLIB="$""(VDSO)"
         VIEWEROBJ="$""(VOBJ)"
-        # The private source can go into the executable on all UNIX versions
-        # except for MacOS X.
-        if test "$SHORT_UNAME" = "darwin" ; then
-            VIEWERLIB_SRC="$""(PUBLIC_SRC) $""(PRIVATE_SRC) $""(SRCMOC)"
-            VIEWEREXE_SRC="$""(MAINSRC)"
-        else
-            VIEWERLIB_SRC="$""(PUBLIC_SRC)"
-            VIEWEREXE_SRC="$""(MAINSRC) $""(PRIVATE_SRC) $""(SRCMOC)"
-        fi
 
         if test -z "$VTK"; then
             AC_MSG_ERROR([viewer is here, but no VTK library was specified. 
@@ -1456,8 +1450,6 @@ is set and rerun 'configure'.])
         AC_MSG_RESULT(not found)
         VIEWER=""
         VISWINDOW=""
-        VIEWERLIB_SRC=""
-        VIEWEREXE_SRC=""
     fi
 
     dnl
@@ -1501,8 +1493,6 @@ AC_SUBST(VIEWER)
 AC_SUBST(VISWINDOW)
 AC_SUBST(VIEWERLIB)
 AC_SUBST(VIEWEROBJ)
-AC_SUBST(VIEWERLIB_SRC)
-AC_SUBST(VIEWEREXE_SRC)
 AC_SUBST(ENGINEPROXYDIR)
 
 #
@@ -3956,6 +3946,7 @@ TOOLS_FILES="tools/Makefile
              tools/clipeditor/Makefile
              tools/convert/Makefile
              tools/curv3dprep/Makefile
+             tools/embedviewer/Makefile
              tools/escan/Makefile
              tools/imagetools/Makefile
              tools/makemili/Makefile

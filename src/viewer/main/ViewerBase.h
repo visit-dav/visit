@@ -62,9 +62,10 @@ public:
     static void DisableMessageSuppression() { suppressMessages = false;}
     static bool SuppressMessages()          { return suppressMessages;}
     
+protected:
+    static ViewerMethods         *base_viewerMethods;
 private:
     static ViewerState           *base_viewerState;
-    static ViewerMethods         *base_viewerMethods;
     static PlotPluginManager     *base_plotPlugins;
     static OperatorPluginManager *base_operatorPlugins;
     static bool                   suppressMessages;

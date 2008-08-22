@@ -85,13 +85,18 @@ class     vtkQtRenderWindowInteractor;
 //    Jeremy Meredith, Tue Jul 17 16:37:04 EDT 2007
 //    Added fullscreen support.
 //
+//    Brad Whitlock, Mon Aug 18 14:44:46 PDT 2008
+//    Pass in the vtkQtRenderWindow that we'll be using.
+//
 // ****************************************************************************
 
 class QTVISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
 {
   public:
                                        VisWinRenderingWithWindow(
-                                                    VisWindowColleagueProxy &);
+                                           vtkQtRenderWindow *rw, 
+                                           bool own,
+                                           VisWindowColleagueProxy &);
     virtual                           ~VisWinRenderingWithWindow();
 
     virtual void                       GetWindowSize(int &w, int &h);
@@ -124,6 +129,7 @@ class QTVISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
 
     int                                cursorIndex;
     bool                               fullScreenMode;
+    bool                               ownRenderWindow;
 };
 
 

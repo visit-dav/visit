@@ -35,7 +35,45 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#ifndef VIEWER_STATE_BUFFERED_H
+#define VIEWER_STATE_BUFFERED_H
+#include <ViewerBase.h>
+#include <SimpleObserver.h>
 
-#include <EngineKey.h>
+class AttributeSubject;
+class ViewerClientConnection;
+class ViewerState;
 
-std::string EngineKey::localhost("localhost");
+// ****************************************************************************
+// Class: ViewerStateBuffered
+//
+// Purpose:
+//   Contains a ViewerState and any time its state objects change, we emit
+//   the InputFromClient signal.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 20 15:49:48 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class ViewerStateBuffered : public ViewerBase, public SimpleObserver
+{
+    Q_OBJECT
+public:
+    ViewerStateBuffered(ViewerState *);
+    virtual ~ViewerStateBuffered();
+
+    virtual void Update(Subject *);
+
+    ViewerState *GetState() { return viewerState; }
+signals:
+    void InputFromClient(ViewerClientConnection *, AttributeSubject *);
+private:
+    ViewerState *viewerState;
+};
+
+#endif

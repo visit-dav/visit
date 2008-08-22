@@ -165,6 +165,8 @@ public:
     // User-defined methods
     void UpdateOrthogonalAxes();
     virtual bool EqualTo(const AttributeGroup *atts) const;
+    virtual bool SetValue(const std::string &name, const int &value);
+    virtual bool SetValue(const std::string &name, const bool &value);
 
     // IDs that can be used to identify fields in case statements
     enum {

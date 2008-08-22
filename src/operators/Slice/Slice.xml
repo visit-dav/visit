@@ -80,6 +80,10 @@
       </Function>
       <Function name="EqualTo" user="true" member="true">
       </Function>
+      <Function name="SetValue1" user="true" member="true">
+      </Function>
+      <Function name="SetValue2" user="true" member="true">
+      </Function>
       <Include file="source" quoted="false">
         PlaneAttributes.h
       </Include>

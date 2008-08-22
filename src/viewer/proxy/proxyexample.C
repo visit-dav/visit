@@ -242,191 +242,6 @@ private:
 
 const int VisItClient::INVALID_PLUGIN_INDEX = -1;
 
-///////////////////////////////////////////////////////////////////////////////
-
-#include <DataNode.h>
-
-#define SETVALUE_BODY(FUNC) \
-        if(atts == 0) return false; \
-        DataNode *node = new DataNode("root"); \
-        atts->CreateNode(node, true, true); \
-        DataNode *d = node->SearchForNode(name); \
-        bool retval; \
-        if((retval = (d != 0 && d->GetNodeType() != INTERNAL_NODE)) == true) \
-        { \
-            d->FUNC(value); \
-            atts->SetFromNode(node); \
-        } \
-        delete node; \
-        return retval;
-
-#define SETAVALUE_BODY(FUNC) \
-        if(atts == 0) return false; \
-        DataNode *node = new DataNode("root"); \
-        atts->CreateNode(node, true, true); \
-        DataNode *d = node->SearchForNode(name); \
-        bool retval; \
-        if((retval = (d != 0 && d->GetNodeType() != INTERNAL_NODE)) == true) \
-        { \
-            d->FUNC(value, len); \
-            atts->SetFromNode(node); \
-        } \
-        delete node; \
-        return retval;
-
-#define GETVALUE_BODY(FUNC) \
-        if(atts == 0) return false; \
-        DataNode *node = new DataNode("root"); \
-        atts->CreateNode(node, true, true); \
-        DataNode *d = node->SearchForNode(name); \
-        bool retval; \
-        if((retval = (d != 0 && d->GetNodeType() != INTERNAL_NODE)) == true) \
-            value = d->FUNC(); \
-        delete node; \
-        return retval;
-
-#define GETAVALUE_BODY(T, FUNC) \
-        if(atts == 0) return false; \
-        DataNode *node = new DataNode("root"); \
-        atts->CreateNode(node, true, true); \
-        DataNode *d = node->SearchForNode(name); \
-        bool retval; \
-        if((retval = (d != 0 && d->GetNodeType() != INTERNAL_NODE)) == true) \
-        {\
-            const T *src = d->FUNC(); \
-            if(src != 0) \
-            { \
-                len = d->GetLength(); \
-                T *dest = new T[len]; \
-                for(int i = 0; i < len; ++i) \
-                    dest[i] = src[i]; \
-                *value = dest; \
-            } \
-            else retval = false; \
-        }\
-        delete node; \
-        return retval;
-
-// ****************************************************************************
-// Class: PluginAttributesAccessor
-//
-// Purpose:
-//   This class provides a way to set/get values inside of plugin state 
-//   objects in a generic way that does not require you to link a plugin into
-//   your application.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Mar 13 11:29:36 PDT 2008
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-class PluginAttributesAccessor
-{
-public:
-    PluginAttributesAccessor(AttributeSubject *g)
-    {
-        atts = g;
-    }
-
-    ~PluginAttributesAccessor()
-    {
-    }
-
-    // Set methods
-    bool SetValue(const std::string &name, char value)  
-    { SETVALUE_BODY(SetChar) }
-    bool SetValue(const std::string &name, unsigned char value) 
-    { SETVALUE_BODY(SetUnsignedChar) }
-    bool SetValue(const std::string &name, int value)   
-    { SETVALUE_BODY(SetInt) }
-    bool SetValue(const std::string &name, long value)  
-    { SETVALUE_BODY(SetLong) }
-    bool SetValue(const std::string &name, float value) 
-    { SETVALUE_BODY(SetFloat) }
-    bool SetValue(const std::string &name, double value)
-    { SETVALUE_BODY(SetDouble) }
-    bool SetValue(const std::string &name, const std::string &value) 
-    { SETVALUE_BODY(SetString) }
-
-    bool SetValue(const std::string &name, const char *value, int len)  
-    { SETAVALUE_BODY(SetCharArray) }
-    bool SetValue(const std::string &name, const unsigned char *value, int len) 
-    { SETAVALUE_BODY(SetUnsignedCharArray) }
-    bool SetValue(const std::string &name, const int *value, int len)   
-    { SETAVALUE_BODY(SetIntArray) }
-    bool SetValue(const std::string &name, const long *value, int len)  
-    { SETAVALUE_BODY(SetLongArray) }
-    bool SetValue(const std::string &name, const float *value, int len) 
-    { SETAVALUE_BODY(SetFloatArray) }
-    bool SetValue(const std::string &name, const double *value, int len)
-    { SETAVALUE_BODY(SetDoubleArray) }
-
-    bool SetValue(const std::string &name, const charVector &value)  
-    { SETVALUE_BODY(SetCharVector) }
-    bool SetValue(const std::string &name, const unsignedCharVector &value) 
-    { SETVALUE_BODY(SetUnsignedCharVector) }
-    bool SetValue(const std::string &name, const intVector &value)   
-    { SETVALUE_BODY(SetIntVector) }
-    bool SetValue(const std::string &name, const longVector &value)  
-    { SETVALUE_BODY(SetLongVector) }
-    bool SetValue(const std::string &name, const floatVector &value) 
-    { SETVALUE_BODY(SetFloatVector) }
-    bool SetValue(const std::string &name, const doubleVector &value)
-    { SETVALUE_BODY(SetDoubleVector) }
-    bool SetValue(const std::string &name, const stringVector &value)
-    { SETVALUE_BODY(SetStringVector) }
-
-    // Get methods
-    bool GetValue(const std::string &name, bool &value) const   
-    { GETVALUE_BODY(AsChar) }
-    bool GetValue(const std::string &name, unsigned char &value) const  
-    { GETVALUE_BODY(AsUnsignedChar) }
-    bool GetValue(const std::string &name, int &value) const    
-    { GETVALUE_BODY(AsInt) }
-    bool GetValue(const std::string &name, long &value) const   
-    { GETVALUE_BODY(AsLong) }
-    bool GetValue(const std::string &name, float &value) const  
-    { GETVALUE_BODY(AsFloat) }
-    bool GetValue(const std::string &name, double &value) const 
-    { GETVALUE_BODY(AsDouble) }
-    bool GetValue(const std::string &name, std::string &value) const 
-    { GETVALUE_BODY(AsString) }
-
-    bool GetValue(const std::string &name, char **value, int &len)  const 
-    { GETAVALUE_BODY(char,AsCharArray) }
-    bool GetValue(const std::string &name, unsigned char **value, int &len) const 
-    { GETAVALUE_BODY(unsigned char,AsUnsignedCharArray) }
-    bool GetValue(const std::string &name, int **value, int &len)   const 
-    { GETAVALUE_BODY(int, AsIntArray) }
-    bool GetValue(const std::string &name, long **value, int &len)  const 
-    { GETAVALUE_BODY(long,AsLongArray) }
-    bool GetValue(const std::string &name, float **value, int &len) const 
-    { GETAVALUE_BODY(float,AsFloatArray) }
-    bool GetValue(const std::string &name, double **value, int &len)const 
-    { GETAVALUE_BODY(double,AsDoubleArray) }
-
-    bool GetValue(const std::string &name, charVector &value)  const 
-    { GETVALUE_BODY(AsCharVector) }
-    bool GetValue(const std::string &name, unsignedCharVector &value) const 
-    { GETVALUE_BODY(AsUnsignedCharVector) }
-    bool GetValue(const std::string &name, intVector &value)   const 
-    { GETVALUE_BODY(AsIntVector) }
-    bool GetValue(const std::string &name, longVector &value)  const 
-    { GETVALUE_BODY(AsLongVector) }
-    bool GetValue(const std::string &name, floatVector &value) const 
-    { GETVALUE_BODY(AsFloatVector) }
-    bool GetValue(const std::string &name, doubleVector &value)const 
-    { GETVALUE_BODY(AsDoubleVector) }
-    bool GetValue(const std::string &name, stringVector &value)const 
-    { GETVALUE_BODY(AsStringVector) }
-private:
-    AttributeSubject *atts;
-};
-
 // ****************************************************************************
 // Class: PseudocolorVis
 //
@@ -440,7 +255,10 @@ private:
 // Creation:   Thu Mar 13 11:26:48 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Aug 20 11:11:14 PDT 2008
+//   Removed PluginAttributesAccessor since the SetValue methods that it
+//   provided have now been moved into the AttributeGroup class.
+//
 // ****************************************************************************
 
 class PseudocolorVis : public VisItClient
@@ -473,17 +291,17 @@ protected:
         // Save an image.
         GetViewerMethods()->SaveWindow();
 
-        // Set some pseudocolor plot attributes
-        AttributeSubject *pc = GetViewerState()->GetPlotAttributes(plotType);
-        if(pc != 0)
+        // Set some pseudocolor plot attributes using the base class'
+        // SetValue methods.
+        AttributeSubject *pcAtts = GetViewerState()->GetPlotAttributes(plotType);
+        if(pcAtts != 0)
         {
-            PluginAttributesAccessor pcAtts(pc);
-            pcAtts.SetValue("min", 1.5);
-            pcAtts.SetValue("minFlag", true);
-            pcAtts.SetValue("max", 4.5);
-            pcAtts.SetValue("maxFlag", true);
-            pcAtts.SetValue("colorTableName", "calewhite");
-            pc->Notify();
+            pcAtts->SetValue("min", 1.5);
+            pcAtts->SetValue("minFlag", true);
+            pcAtts->SetValue("max", 4.5);
+            pcAtts->SetValue("maxFlag", true);
+            pcAtts->SetValue("colorTableName", "calewhite");
+            pcAtts->Notify();
             GetViewerMethods()->SetPlotOptions(plotType);
         }
 

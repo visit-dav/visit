@@ -114,7 +114,10 @@ ViewerClientConnection::ViewerClientConnection(const ViewerState *s,
 // Creation:   Tue May 31 13:38:17 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 14 13:19:41 PDT 2008
+//   It's possible that the notifier and the parent process will be 0 if 
+//   we're using the viewer without a client.
+//
 // ****************************************************************************
 
 ViewerClientConnection::ViewerClientConnection(ParentProcess *p,
@@ -122,8 +125,11 @@ ViewerClientConnection::ViewerClientConnection(ParentProcess *p,
     const char *name) : ViewerBase(parent, name)
 {
     notifier = sn;
-    connect(notifier, SIGNAL(activated(int)),
-            this, SLOT(ReadFromClientAndProcess(int)));
+    if(notifier != 0)
+    {
+        connect(notifier, SIGNAL(activated(int)),
+                this, SLOT(ReadFromClientAndProcess(int)));
+    }
     ownsNotifier = false;
 
     remoteProcess = 0;
@@ -131,9 +137,11 @@ ViewerClientConnection::ViewerClientConnection(ParentProcess *p,
 
     // Hook Xfer up to the objects in the viewerState object.
     xfer = new Xfer;
-    xfer->SetInputConnection(parentProcess->GetWriteConnection());
-    xfer->SetOutputConnection(parentProcess->GetReadConnection());
-
+    if(parentProcess != 0)
+    {
+        xfer->SetInputConnection(parentProcess->GetWriteConnection());
+        xfer->SetOutputConnection(parentProcess->GetReadConnection());
+    }
     viewerState = new ViewerState(*s);
     for(int i = 0; i < viewerState->GetNumStateObjects(); ++i)
     {    
@@ -156,6 +164,9 @@ ViewerClientConnection::ViewerClientConnection(ParentProcess *p,
 // Modifications:
 //   Brad Whitlock, Mon Jul 11 08:43:49 PDT 2005
 //   Fixed a memory problem on Windows.
+//
+//   Brad Whitlock, Thu Aug 14 13:19:22 PDT 2008
+//   Don't assume that the notifier will exist always.
 //
 // ****************************************************************************
 
@@ -340,7 +351,9 @@ ViewerClientConnection::SetupSpecialOpcodeHandler(void (*cb)(int,void*),
 // Creation:   Tue May 31 13:48:44 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 14 13:17:42 PDT 2008
+//   Don't assume the notifier will exist.
+//
 // ****************************************************************************
 
 void
@@ -359,9 +372,12 @@ ViewerClientConnection::Update(Subject *subj)
         if(rpc->GetRPCType() == ViewerRPC::DetachRPC)
         {
             doEmit = false;
-            disconnect(notifier, SIGNAL(activated(int)),
-                       this, SLOT(ReadFromClientAndProcess(int)));
-            notifier->setEnabled(false);
+            if(notifier != 0)
+            {
+                disconnect(notifier, SIGNAL(activated(int)),
+                           this, SLOT(ReadFromClientAndProcess(int)));
+                notifier->setEnabled(false);
+            }
             emit DisconnectClient(this);
         }
     }
@@ -445,6 +461,9 @@ ViewerClientConnection::BroadcastToClient(AttributeSubject *src)
 //   This is a Qt slot function that reads from the client and processes
 //   the results. Note that this object observes all of the state objects
 //   attached to its xfer so the Update method will get called.
+//
+// Note:
+//     This method is called as a result of the socket notifier firing.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue May 31 13:46:34 PST 2005

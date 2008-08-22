@@ -43,90 +43,49 @@
 #include <visit-config.h>
 #include <stdio.h>
 
+#include <qapplication.h>
+
+#include <VisItViewer.h>
+#include <AppearanceAttributes.h>
 #include <DebugStream.h>
-#include <StringHelpers.h>
-#include <ViewerSubject.h>
+#include <LostConnectionException.h>
+#include <ViewerMethods.h>
+#include <ViewerState.h>
 #include <VisItException.h>
-#include <Init.h>
-#include <InitVTK.h>
-#include <RemoteProcess.h>
-#include <ViewerPasswordWindow.h>
-#include <avtCallback.h>
-
-#include <PlotPluginManager.h>
-#include <OperatorPluginManager.h>
-#include <Utility.h>
-
-using namespace StringHelpers;
-
-static void ErrorCallback(void *, const char *);
-static void ViewerWarningCallback(void *, const char *);
 
 // ****************************************************************************
-//  Function: Log output from a piped system command to debug logs
+// Method: Viewer_LogQtMessages
 //
-//  Programmer: Mark C. Miller
-//  Created:    April 9, 2008
+// Purpose: 
+//   Message handler that routes Qt messages to the debug logs.
+//
+// Arguments:
+//   type : The message type.
+//   msg  : The message.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 15 18:17:47 PST 2007
+//
+// Modifications:
+//   
 // ****************************************************************************
 
 static void
-LogCommand(const char *cmd, const char *truncate_at_pattern)
+Viewer_LogQtMessages(QtMsgType type, const char *msg)
 {
-#if !defined(_WIN32)
-    char buf[256];
-    buf[sizeof(buf)-1] = '\0';
-    FILE *pfile = popen(cmd,"r");
-
-    if (pfile)
+    switch(type)
     {
-        debug5 << endl;
-        debug5 << "Begin output from \"" << cmd << "\"..." << endl;
-        debug5 << "-------------------------------------------------------------" << endl;
-        while (fgets(buf, sizeof(buf)-1, pfile) != 0)
-        {
-            if (truncate_at_pattern && (FindRE(buf, truncate_at_pattern) != FindNone))
-            {
-                debug5 << "############### TRUNCATED #################" << endl;
-                break;
-            }
-            debug5 << buf;
-        }
-        debug5 << "End output from \"" << cmd << "\"..." << endl;
-        debug5 << "-------------------------------------------------------------" << endl;
-        debug5 << endl;
-        pclose(pfile);
+    case QtDebugMsg:
+        debug1 << "Qt: Debug: " << msg << endl;
+        break;
+    case QtWarningMsg:
+        debug1 << "Qt: Warning: " << msg << endl;
+        break;
+    case QtFatalMsg:
+        debug1 << "Qt: Fatal: " << msg << endl;
+        abort();
+        break;
     }
-#endif
-}
-
-// ****************************************************************************
-//  Function: Log output from xdpyinfo and glxinfo commands w/truncation 
-//
-//  Programmer: Mark C. Miller
-//  Created:    April 9, 2008
-//
-//  Modifications:
-//    Mark C. Miller, Thu Apr 10 08:16:51 PDT 2008
-//    Truncated glxinfo output
-//
-//    Sean Ahern, Thu Apr 24 18:17:33 EDT 2008
-//    Avoided this if we're on the Mac.
-//
-//    Kathleen Bonnell, Wed Apr 30 10:59:18 PDT 2008 
-//    Windows compiler doesn't like 'and', use '&&' instead. 
-//
-// ****************************************************************************
-
-static void
-LogGlxAndXdpyInfo()
-{
-#if !defined(_WIN32) && !defined(Q_WS_MACX)
-    if (debug5_real)
-    {
-        LogCommand("xdpyinfo", "number of visuals"); // truncate at list of visuals
-        LogCommand("glxinfo -v -t", "^Vis  Vis");    // truncate at table of visuals
-    }
-#endif
 }
 
 // ****************************************************************************
@@ -143,73 +102,10 @@ LogGlxAndXdpyInfo()
 //  Creation:   August 16, 2000
 //
 //  Modifications:
-//    Brad Whitlock, Fri Oct 27 14:49:04 PST 2000
-//    I passed argc, argv to the ViewerSubject constructor and made it
-//    return an error code.
-//
-//    Jeremy Meredith, Fri Nov 17 16:15:04 PST 2000
-//    Removed initialization of exceptions and added general initialization.
-//
-//    Brad Whitlock, Mon Nov 27 17:24:37 PST 2000
-//    Changed the call to Init::Initialize.
-//
-//    Hank Childs, Tue Apr 24 15:23:35 PDT 2001
-//    Initialize VTK modules.
-//
-//    Brad Whitlock, Thu Apr 26 13:34:18 PST 2001
-//    Removed top-level catch so uncaught exceptions will cause the code to
-//    core. That makes it easier to find the exceptions and more likely that
-//    they will be caught.
-//
-//    Jeremy Meredith, Fri Apr 27 15:46:47 PDT 2001
-//    Added initialization of the remote process instantiation
-//    authentication callback.
-//
-//    Jeremy Meredith, Thu May 10 14:56:48 PDT 2001
-//    Addded plot plugin manager initialization.
-//
-//    Jeremy Meredith, Thu Jul 26 03:14:23 PDT 2001
-//    Added operator plugin manager initialization.
-//
-//    Brad Whitlock, Wed Jul 18 09:12:22 PDT 2001
-//    Registered a view callback.
-//
-//    Hank Childs, Mon Aug 20 21:41:59 PDT 2001
-//    Changed format for view callbacks.
-//
-//    Eric Brugger, Tue Aug 21 10:21:18 PDT 2001
-//    I removed the registration of the view callback.
-//
-//    Kathleen Bonnell, Fri Feb  7 09:09:47 PST 2003 
-//    I moved the registration of the authentication callback to ViewerSubject.
-//
-//    Brad Whitlock, Mon Jun 9 11:23:50 PDT 2003
-//    I made plugins get loaded later.
-//
-//    Hank Childs, Fri Aug  8 08:13:21 PDT 2003
-//    Register an error function.
-//
-//    Hank Childs, Tue Jun  1 13:54:48 PDT 2004
-//    Call Init::Finalize.
-//
-//    Hank Childs, Tue Feb 15 12:16:38 PST 2005
-//    Register a warning function.
-//
-//    Brad Whitlock, Mon Feb 12 17:18:15 PST 2007
-//    Pass the ViewerSubject address to the error and warning callback 
-//    registration functions.
-//
-//    Mark C. Miller, Thu Apr  3 14:36:48 PDT 2008
-//    Moved setting of component name to before Initialize
-//
-//    Mark C. Miller, Thu Apr 10 08:16:51 PDT 2008
-//    Added logging of info from X display and glx 
-//
-//    Brad Whitlock, Wed Jul 9 09:59:31 PDT 2008
-//    Delete the plugin managers afer the ViewerSubject destructor to avoid
-//    crashes on Linux. I suspect when the plugins were unloaded in the 
-//    ViewerSubject destructor, that prevented the code from being available
-//    when the ViewerSubject's xfer destructor was called.
+//    Brad Whitlock, Thu Aug 14 10:09:17 PDT 2008
+//    Rewrote so it uses the VisItViewer class, which encapsulates some of 
+//    the stuff needed to set up the viewer. The new design permits us to 
+//    embed the viewer in other Qt applications.
 //
 // ****************************************************************************
 
@@ -218,50 +114,85 @@ main(int argc, char *argv[])
 {
     int retval = 0;
 
+    //
+    // Do basic initialization. This is only done once to initialize the
+    // viewer library.
+    //
+    VisItViewer::Initialize(&argc, &argv);
+
     TRY
     {
         //
-        // Do basic initialization.
+        // Create the viewer.
         //
-        Init::SetComponentName("viewer");
-        Init::Initialize(argc, argv, 0, 1, false);
-        LogGlxAndXdpyInfo();
+        VisItViewer viewer;
 
         //
-        // Create the viewer subject.
-        //
-        ViewerSubject viewer;
-
-        //
-        // Initialize the error logging.
-        //
-        Init::ComponentRegisterErrorFunction(ErrorCallback, (void*)&viewer);
-        InitVTK::Initialize();
-        avtCallback::RegisterWarningCallback(ViewerWarningCallback, 
-            (void*)&viewer);
-
-        //
-        // Connect back to the client and perform some initialization.
+        // Connect back to the client.
         //
         viewer.Connect(&argc, &argv);
 
         //
+        // Process the command line arguments first since some may be removed
+        // by QApplication::QApplication.
+        //
+        viewer.ProcessCommandLine(argc, argv);
+
+        //
+        // Create the QApplication. This sets the qApp pointer.
+        //
+        char **argv2 = new char *[argc + 3];
+        int argc2 = argc + 2;
+        for(int i = 0; i < argc; ++i)
+            argv2[i] = argv[i];
+        argv2[argc] = (char*)"-font";
+        argv2[argc+1] = (char*)viewer.State()->GetAppearanceAttributes()->GetFontName().c_str();
+        argv2[argc+2] = NULL;
+        debug1 << "Viewer using font: " << argv2[argc+1] << endl;
+        qInstallMsgHandler(Viewer_LogQtMessages);
+        QApplication *mainApp = new QApplication(argc2, argv2, !viewer.GetNowinMode());
+
+        //
+        // Now that we've created the QApplication, let's call the viewer's
+        // setup routine.
+        //
+        viewer.Setup();
+
+        //
         // Execute the viewer.
         //
-        TRY
+        bool keepGoing = true;
+        while (keepGoing)
         {
-            retval = viewer.Execute();
+            TRY
+            { 
+                retval = mainApp->exec();
+                keepGoing = false;
+
+                // Remove the crash recovery file on a successful exit.
+                viewer.RemoveCrashRecoveryFile();
+            }
+            CATCH(LostConnectionException)
+            {
+                cerr << "The component that launched VisIt's viewer has terminated "
+                        "abnormally." << endl;
+                keepGoing = false;
+                retval = -1;
+            }
+            CATCH2(VisItException, ve)
+            {
+                QString msg = QObject::tr("VisIt has encountered the following error: %1.\n"
+                    "VisIt will attempt to continue processing, but it may "
+                    "behave unreliably.  Please save this error message and "
+                    "give it to a VisIt developer.  In addition, you may want "
+                    "to save your session and re-start.  Of course, this "
+                    "session may still cause VisIt to malfunction.").
+                    arg(ve.Message().c_str());
+                viewer.Error(msg);
+                keepGoing = true;
+            }
+            ENDTRY
         }
-        CATCH2(VisItException, e)
-        {
-            debug1 << "VisIt's viewer encountered the following uncaught "
-                   "exception: " << e.GetExceptionType().c_str()
-                   << " from (" << e.GetFilename().c_str()
-                   << ":" << e.GetLine() << ")" << endl
-                   << e.Message().c_str() << endl;
-            retval = -1;
-        }
-        ENDTRY
     }
     CATCH2(VisItException, e)
     {
@@ -272,65 +203,11 @@ main(int argc, char *argv[])
     }
     ENDTRY
 
-    // Unload plugins.
-    delete ViewerBase::GetPlotPluginManager();
-    delete ViewerBase::GetOperatorPluginManager();
-
-    Init::Finalize();
+    // Finalize the viewer library.
+    VisItViewer::Finalize();
 
     return retval;
 }
 
-
-// ****************************************************************************
-//  Function: ErrorCallback
-//
-//  Purpose:
-//      A callback routine that can issue error messages.
-//
-//  Arguments:
-//      args    Arguments to the callback.
-//      msg     The message to issue.
-//
-//  Programmer: Hank Childs
-//  Creation:   August 8, 2003
-//
-//  Modifications:
-//    Brad Whitlock, Mon Feb 12 17:17:49 PST 2007
-//    Passed in the ViewerSubject pointer.
-//
-// ****************************************************************************
-
-static void
-ErrorCallback(void *ptr, const char *msg)
-{
-    ((ViewerSubject *)ptr)->Error(msg);
-}
-
-
-// ****************************************************************************
-//  Function: ViewerWarningCallback
-//
-//  Purpose:
-//      A callback routine that can issue warning messages.
-//
-//  Arguments:
-//      args    Arguments to the callback.
-//      msg     The message to issue.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 15, 2005
-//
-//  Modifications:
-//    Brad Whitlock, Mon Feb 12 17:17:49 PST 2007
-//    Passed in the ViewerSubject pointer.
-//
-// ****************************************************************************
-
-static void
-ViewerWarningCallback(void *ptr, const char *msg)
-{
-    ((ViewerSubject *)ptr)->Warning(msg);
-}
 
 

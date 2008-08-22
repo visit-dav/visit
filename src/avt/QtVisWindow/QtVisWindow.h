@@ -46,6 +46,7 @@
 
 #include <VisWindow.h>
 
+class vtkQtRenderWindow;
 
 // ****************************************************************************
 //  Class: QtVisWindow
@@ -63,14 +64,21 @@
 //    Jeremy Meredith, Tue Jul 17 16:35:37 EDT 2007
 //    Added fullscreen support.
 //
+//    Brad Whitlock, Mon Aug 18 16:23:28 PDT 2008
+//    Added a window creation callback.
+//
 // ****************************************************************************
 
 class QTVISWINDOW_API QtVisWindow : public VisWindow
 {
   public:
     QtVisWindow(bool fullScreenMode = false);
-};
 
+    static void SetWindowCreationCallback(vtkQtRenderWindow *(*wcc)(void*), void *wccdata);
+  protected:
+    static vtkQtRenderWindow* (*windowCreationCallback)(void *);
+    static void                *windowCreationData;
+};
 
 #endif
 

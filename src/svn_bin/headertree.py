@@ -71,7 +71,7 @@ def ResetIncludes(headers):
 
 
 def main():
-    visitDir = "/data_vobs/VisIt"
+    visitDir = "."
     visitHeaders = CreateIncludes("%s/include/visit" % visitDir)
     vtkHeaders   = CreateIncludes("%s/include/vtk" % visitDir)
     vtkHeaders   = vtkHeaders + CreateIncludes("%s/include/vtk/Common" % visitDir)
