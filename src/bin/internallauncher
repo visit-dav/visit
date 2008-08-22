@@ -353,6 +353,15 @@ exec perl -x $0 ${1+"$@"};
 #    Tom Fogal, Fri Aug 15 17:31:35 EDT 2008
 #    Added valgrind support to the qsub/mpirun launch method.
 #
+#    Tom Fogal, Fri Aug 15 17:31:35 EDT 2008
+#    Made the function which creates valgrind arguments set an environment
+#    variable which helps prevent false positive.
+#
+#    Sean Ahern (via Tom Fogal), Fri Aug 22 16:08:37 EDT 2008
+#    Fixed up the hack included for ORNL's `Lens' cluster, which likes to load
+#    PGI-based libraries behind the user's back.
+#    Default to use `sh' in qsub scripts; it's more portable than tcsh.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1233,7 +1242,6 @@ if ($host eq "redrose1.sandia.gov" || $host eq "redrose2.sandia.gov")
 
 # ----
 # HACK for lens.ccs.ornl.gov @ ORNL
-#
 # ----
 $IsRunningOnLens_ORNL = 0;
 if ( ($parallel) and $exe_name eq "engine" and $host =~ /lens/ )
@@ -1242,15 +1250,6 @@ if ( ($parallel) and $exe_name eq "engine" and $host =~ /lens/ )
     if ( $domain eq "ccs.ornl.gov" )
     {
         $IsRunningOnLens_ORNL = 1;
-
-        # On lens, we need to have a specific LD_LIBRARY_PATH set.  I'm
-        # not sure this script is the right place to do this, but it
-        # works for now.
-        $ENV{LD_LIBRARY_PATH} = join ':' ,
-            ("/sw/analysis-x86/ompi/1.2.6/sl5_gcc4.2.0/lib",
-             "/ccs/compilers/gcc/sl5-x86_64/4.2.0-amd/gnutools-4.2.0-barcelona/lib64",
-             "/ccs/compilers/gcc/sl5-x86_64/4.2.0-amd/binutils/lib64",
-             "/sw/analysis-x86/python/2.5.2/sl5_gnu4.1.1/lib");
     }
 }
 
@@ -2114,7 +2113,12 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 @mpicmd = "@visitcmd\n";
             }
 
-            print TFILE "#!/bin/tcsh\n";
+            print TFILE "#!/bin/sh\n";
+            if ($IsRunningOnLens_ORNL)
+            {
+                # Lens loads modules that we hate, by default.
+                print TFILE 'eval $(modulecmd sh unload PE-pgi)\n';
+            }
             print TFILE $cdcmd;
             print TFILE $limitcmd;
             print TFILE "@sublaunchprecmd", "\n", if $sublaunchprecmd_set;
@@ -2578,7 +2582,9 @@ sub IsAVisItComponentName {
     return 0;
 }
 
-=head1 Generates the valgrind part of the command line.
+=head1 Generates the valgrind part of the command line.  Sets up a
+       valgrind-friendly environment.
+
 =over
 =item arg1
     Array which should contain the arguments to valgrind proper.
@@ -2587,6 +2593,11 @@ sub IsAVisItComponentName {
 
 sub generate_args_valgrind {
     my @args_vg = @_;
+
+    # setting this environment variable causes libstdc++ routines to free
+    # memory ASAP, instead of leaving it around in pools.  This helps valgrind
+    # properly detect leaks, at a performance cost.
+    $ENV{GLIBCXX_FORCE_NEW} = "1" if not exists $ENV{GLIBCXX_FORCE_NEW};
 
     my @cmd = ("valgrind");
     if(scalar(@args_vg) != 0) {
