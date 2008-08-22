@@ -350,6 +350,9 @@ exec perl -x $0 ${1+"$@"};
 #    Eric Brugger, Mon Aug 18 10:32:47 PDT 2008
 #    I added support for just "msub" as a parallel launch method.
 #
+#    Tom Fogal, Fri Aug 15 17:31:35 EDT 2008
+#    Added valgrind support to the qsub/mpirun launch method.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2084,6 +2087,8 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 push @mpicmd, @sublaunchargs if $sublaunchargs_set;
                 push @mpicmd, "-np", $procs if $procs_set;
                 push @mpicmd, "-machinefile", $machinefile if $machinefile_set;
+                push @mpicmd, generate_args_valgrind(@debug_valgrind_args)
+                              if $debug_valgrind;
                 push @mpicmd, "@visitcmd -plugindir $ENV{VISITPLUGINDIR}\n";
             }
             elsif ($sublauncher eq "srun")
