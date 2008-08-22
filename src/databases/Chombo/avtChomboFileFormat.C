@@ -342,6 +342,9 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    Gunther H. Weber, Mon Mar 24 20:46:04 PDT 2008
 //    Added support for node centered Chombo data.
 //
+//    Dave Pugmire, Fri Aug 22 10:27:39 EDT 2008
+//    boxes_buff was leaking.
+//
 // ****************************************************************************
 
 void
@@ -829,6 +832,8 @@ avtChomboFileFormat::InitializeReader(void)
             }
             patchId++;
         }
+
+        delete [] boxes_buff;
 
         hid_t data_atts = H5Gopen(level, "data_attributes");
         if (data_atts >= 0)
