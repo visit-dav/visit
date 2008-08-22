@@ -513,13 +513,13 @@ avtStreamlineFilter::avtStreamlineFilter()
 //    Christoph Garth, Mon Feb 25 17:12:49 PST 2008
 //    Port to new streamline infrastructure
 //
+//    Hank Childs, Fri Aug 22 09:41:02 PDT 2008
+//    Move deletion of solver to PostExecute.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::~avtStreamlineFilter()
 {
-    if (solver)
-        delete solver;
-    
     std::map<int, vtkVisItCellLocator*>::const_iterator it;
     for ( it = domainToCellLocatorMap.begin(); it != domainToCellLocatorMap.end(); it++ )
         it->second->Delete();
@@ -1197,8 +1197,8 @@ avtStreamlineFilter::CheckOnDemandViability(void)
 //    Hank Childs, Mon Jun 16 12:19:20 PDT 2008
 //    Calculate a new interval tree when in non-on-demand mode.
 //
-//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
-//   In serial mode, set the cacheQLen to be the total number of domains.
+//    Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
+//    In serial mode, set the cacheQLen to be the total number of domains.
 //
 // ****************************************************************************
 
@@ -4751,7 +4751,6 @@ avtStreamlineFilter::StagedLoadOnDemand(
 //   Hank Childs, Tue Aug 19 14:41:44 PDT 2008
 //   Make sure we initialize the bounds, especially if we are in 2D.
 //
-//
 // ****************************************************************************
 
 void
@@ -4982,6 +4981,11 @@ avtStreamlineFilter::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   March 3, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 22 09:40:21 PDT 2008
+//    Move the deletion of the solver here.
+//
 // ****************************************************************************
 
 void
@@ -5004,6 +5008,10 @@ avtStreamlineFilter::PostExecute(void)
                                            .GetCumulativeCurrentDataExtents();
         e->Merge(range);
     }
+
+    if (solver)
+        delete solver;
+    solver = NULL;
 }
 
 
@@ -5096,9 +5104,9 @@ randMinus1_1()
 //    Hank Childs, Tue Aug 19 14:41:44 PDT 2008
 //    Make sure we initialize the bounds, especially if we are in 2D.
 //
-//   Dave Pugmire, Wed Aug 20 10:37:24 EST 2008
-//   Bug fix. The loop index "i" was being changed when trying to "wiggle"
-//   seed points into domains.
+//    Dave Pugmire, Wed Aug 20 10:37:24 EST 2008
+//    Bug fix. The loop index "i" was being changed when trying to "wiggle"
+//    seed points into domains.
 //
 // ****************************************************************************
 
