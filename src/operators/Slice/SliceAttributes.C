@@ -1557,3 +1557,33 @@ SliceAttributes::EqualTo(const AttributeGroup *atts) const
     return true;
 }
 
+bool
+SliceAttributes::SetValue(const std::string &name, const int &value)
+{
+    int index = FieldNameToIndex(name);
+    bool retval;
+    if(index == ID_axisType)
+    {
+        SetAxisType((AxisType)value);
+        retval = true;
+    }
+    else
+        retval = AttributeSubject::SetValue(name, value);
+    return retval;
+}
+
+bool
+SliceAttributes::SetValue(const std::string &name, const bool &value)
+{
+    int index = FieldNameToIndex(name);
+    bool retval;
+    if(index == ID_flip)
+    {
+        SetFlip(value);
+        retval = true;
+    }
+    else
+        retval = AttributeSubject::SetValue(name, value);
+    return retval;
+}
+

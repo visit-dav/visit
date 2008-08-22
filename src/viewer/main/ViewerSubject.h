@@ -58,11 +58,12 @@
 #include <string>
 #include <map>
 
-class avtDatabaseMetaData;
-class BufferConnection;
 class QApplication;
 class QSocketNotifier;
 class QTimer;
+
+class BufferConnection;
+class DataNode;
 class SILAttributes;
 class ViewerActionBase;
 class ViewerClientConnection;
@@ -70,13 +71,16 @@ class ViewerCommandFromSimObserver;
 class ViewerConfigManager;
 class ViewerMessageBuffer;
 class ViewerMetaDataObserver;
-class ViewerSILAttsObserver;
+class ViewerMethods;
 class ViewerObserverToSignal;
 class ViewerOperatorFactory;
 class ViewerPlotFactory;
+class ViewerSILAttsObserver;
+class ViewerStateBuffered;
 class ViewerWindow;
-class DataNode;
+class avtDatabaseMetaData;
 class avtDefaultPlotMetaData;
+
 
 // ****************************************************************************
 //  Class: ViewerSubject
@@ -461,6 +465,10 @@ class avtDefaultPlotMetaData;
 //    Brad Whitlock, Thu Apr 10 10:09:31 PDT 2008
 //    Added applicationLocale.
 //
+//    Brad Whitlock, Thu Aug 14 14:48:53 PDT 2008
+//    Refactored the ViewerSubject so it no longer contains the QApplication or
+//    the event loop so it can be embedded in other Qt applications.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -470,10 +478,22 @@ public:
     ViewerSubject();
     ~ViewerSubject();
 
+    void ProcessCommandLine(int argc, char **argv);
     void Connect(int *argc, char ***argv);
+    void Initialize();
+    void RemoveCrashRecoveryFile() const;
 
-    int Execute();
+    void SetNowinMode(bool);
+    bool GetNowinMode() const;
 
+    void SetUseWindowMetrics(bool);
+    bool GetUseWindowMetrics() const;
+
+    ViewerState   *GetViewerDelayedState();
+    ViewerMethods *GetViewerDelayedMethods();
+public:
+    // Methods that should not be called outside of the "viewer".
+    // ************************************************************************
     ViewerPlotFactory *GetPlotFactory() const;
     ViewerOperatorFactory *GetOperatorFactory() const;
 
@@ -511,7 +531,6 @@ private:
 
     void ProcessEvents();
     void ReadConfigFiles(int argc, char **argv);
-    void ProcessCommandLine(int *argc, char ***argv);
     void CustomizeAppearance();
     void InitializeWorkArea();
     int  OpenDatabaseHelper(const std::string &db, int timeState,
@@ -567,7 +586,6 @@ private:
     void ExportEntireState();
     void ImportEntireState();
     void ImportEntireStateWithDifferentSources();
-    void RemoveCrashRecoveryFile() const;
 
     void SetAnnotationAttributes();
     void SetDefaultAnnotationAttributes();
@@ -656,6 +674,7 @@ private slots:
     void ProcessSpecialOpcodes(int opcode);
     void DisconnectClient(ViewerClientConnection *client);
     void DiscoverClientInformation();
+    void CreateViewerDelayedState();
 
     void HandleViewerRPC();
     void HandlePostponedAction();
@@ -696,7 +715,6 @@ private:
     typedef std::vector<ViewerClientConnection *> ViewerClientConnectionVector;
     static void BroadcastToAllClients(void *, Subject *);
 
-    QApplication          *mainApp;
     QSocketNotifier       *checkParent;
     QSocketNotifier       *checkRenderer;
     QTimer                *keepAliveTimer;
@@ -716,6 +734,8 @@ private:
     ParentProcess         *parent;
     ViewerClientConnectionVector clients;
     BufferConnection      *inputConnection;
+    ViewerStateBuffered   *viewerDelayedState;
+    ViewerMethods         *viewerDelayedMethods;
 
     ViewerObserverToSignal *viewerRPCObserver;
     ViewerObserverToSignal *postponedActionObserver;
@@ -734,7 +754,6 @@ private:
     bool                   defaultStereoToOn;
     bool                   useWindowMetrics;
     char                  *configFileName;
-    char                 **qt_argv;
 
     ViewerPlotFactory     *plotFactory;
     ViewerOperatorFactory *operatorFactory;

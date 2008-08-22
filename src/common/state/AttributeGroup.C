@@ -2779,3 +2779,162 @@ operator << (ostream& os, const AttributeGroup& atts)
 
     return os;
 }
+
+// ****************************************************************************
+// Method: AttributeGroup::FieldNameToIndex
+//
+// Purpose: 
+//   Converts a field name into a field index.
+//
+// Arguments:
+//   fieldName : The name of the field to look up.
+//
+// Returns:    The field index or -1 on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 20 10:40:23 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+AttributeGroup::FieldNameToIndex(const std::string &fieldName) const
+{
+    for(int i = 0; i < NumAttributes(); ++i)
+        if(GetFieldName(i) == fieldName)
+            return i;
+    return -1;
+}
+
+//
+// Define the SetValue method bodies.
+//
+#define SET_VALUE_BODY(T, TC) \
+bool \
+AttributeGroup::SetValue(const std::string &name, const T &value) \
+{ \
+    bool retval = false; \
+    int index = FieldNameToIndex(name); \
+    if(index != -1 && typeMap[index].typeCode == TC) \
+    { \
+        if(typeMap[index].address == 0) \
+            SelectAll(); \
+        *((T *)typeMap[index].address) = value; \
+        typeMap[index].selected = true; \
+        retval = true; \
+    } \
+    return retval; \
+}
+
+#define SET_VALUE_ARRAY_BODY(T, TC) \
+bool \
+AttributeGroup::SetValue(const std::string &name, const T *value, int len) \
+{ \
+    bool retval = false; \
+    int index = FieldNameToIndex(name); \
+    if(index != -1 &&  \
+       typeMap[index].typeCode == TC && \
+       typeMap[index].length == len) \
+    { \
+        if(typeMap[index].address == 0) \
+            SelectAll(); \
+        memcpy((void *)typeMap[index].address, (void*)value, len * sizeof(T)); \
+        typeMap[index].selected = true; \
+        retval = true; \
+    } \
+    return retval; \
+}
+
+SET_VALUE_BODY(char,                msgTypeChar);
+SET_VALUE_BODY(unsigned char,       msgTypeUnsignedChar);
+SET_VALUE_BODY(int,                 msgTypeInt);
+SET_VALUE_BODY(long,                msgTypeLong);
+SET_VALUE_BODY(float,               msgTypeFloat);
+SET_VALUE_BODY(double,              msgTypeDouble);
+SET_VALUE_BODY(std::string,         msgTypeString);
+SET_VALUE_BODY(bool,                msgTypeBool);
+
+SET_VALUE_ARRAY_BODY(char,          msgTypeListChar);
+SET_VALUE_ARRAY_BODY(unsigned char, msgTypeListUnsignedChar);
+SET_VALUE_ARRAY_BODY(int,           msgTypeListInt);
+SET_VALUE_ARRAY_BODY(long,          msgTypeListLong);
+SET_VALUE_ARRAY_BODY(float,         msgTypeListFloat);
+SET_VALUE_ARRAY_BODY(double,        msgTypeListDouble);
+SET_VALUE_ARRAY_BODY(std::string,   msgTypeListString);
+SET_VALUE_ARRAY_BODY(bool,          msgTypeListBool);
+
+SET_VALUE_BODY(charVector,          msgTypeVectorChar);
+SET_VALUE_BODY(unsignedCharVector,  msgTypeVectorUnsignedChar);
+SET_VALUE_BODY(intVector,           msgTypeVectorInt);
+SET_VALUE_BODY(longVector,          msgTypeVectorLong);
+SET_VALUE_BODY(floatVector,         msgTypeVectorFloat);
+SET_VALUE_BODY(doubleVector,        msgTypeVectorDouble);
+SET_VALUE_BODY(stringVector,        msgTypeVectorString);
+SET_VALUE_BODY(boolVector,          msgTypeVectorBool);
+
+//
+// Define the GetValue method bodies.
+//
+#define GET_VALUE_BODY(T, TC) \
+bool \
+AttributeGroup::GetValue(const std::string &name, T &value)\
+{ \
+    bool retval = false; \
+    int index = FieldNameToIndex(name); \
+    if(index != -1 && typeMap[index].typeCode == TC) \
+    { \
+        if(typeMap[index].address == 0) \
+            SelectAll(); \
+        value = *((T *)typeMap[index].address); \
+        retval = true; \
+    } \
+    return retval; \
+}
+
+#define GET_VALUE_ARRAY_BODY(T, TC) \
+bool \
+AttributeGroup::GetValue(const std::string &name, T **value, int &len) \
+{ \
+    bool retval = false; \
+    int index = FieldNameToIndex(name); \
+    if(index != -1 && typeMap[index].typeCode == TC) \
+    { \
+        if(typeMap[index].address == 0) \
+            SelectAll(); \
+        len = typeMap[index].length; \
+        *value = new T[len]; \
+        memcpy((void*)*value, (void *)typeMap[index].address, len * sizeof(T)); \
+        retval = true; \
+    } \
+    return retval; \
+}
+
+GET_VALUE_BODY(char,                msgTypeChar);
+GET_VALUE_BODY(unsigned char,       msgTypeUnsignedChar);
+GET_VALUE_BODY(int,                 msgTypeInt);
+GET_VALUE_BODY(long,                msgTypeLong);
+GET_VALUE_BODY(float,               msgTypeFloat);
+GET_VALUE_BODY(double,              msgTypeDouble);
+GET_VALUE_BODY(std::string,         msgTypeString);
+GET_VALUE_BODY(bool,                msgTypeBool);
+
+GET_VALUE_ARRAY_BODY(char,          msgTypeListChar);
+GET_VALUE_ARRAY_BODY(unsigned char, msgTypeListUnsignedChar);
+GET_VALUE_ARRAY_BODY(int,           msgTypeListInt);
+GET_VALUE_ARRAY_BODY(long,          msgTypeListLong);
+GET_VALUE_ARRAY_BODY(float,         msgTypeListFloat);
+GET_VALUE_ARRAY_BODY(double,        msgTypeListDouble);
+GET_VALUE_ARRAY_BODY(std::string,   msgTypeListString);
+GET_VALUE_ARRAY_BODY(bool,          msgTypeListBool);
+
+GET_VALUE_BODY(charVector,          msgTypeVectorChar);
+GET_VALUE_BODY(unsignedCharVector,  msgTypeVectorUnsignedChar);
+GET_VALUE_BODY(intVector,           msgTypeVectorInt);
+GET_VALUE_BODY(longVector,          msgTypeVectorLong);
+GET_VALUE_BODY(floatVector,         msgTypeVectorFloat);
+GET_VALUE_BODY(doubleVector,        msgTypeVectorDouble);
+GET_VALUE_BODY(stringVector,        msgTypeVectorString);
+GET_VALUE_BODY(boolVector,          msgTypeVectorBool);

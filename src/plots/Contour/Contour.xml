@@ -90,6 +90,10 @@
       </Function>
       <Function name="SetFromNode" user="false" member="true">
       </Function>
+      <Function name="SetValue1" user="true" member="true">
+      </Function>
+      <Function name="SetValue2" user="true" member="true">
+      </Function>
       <Function name="ContourViewerPluginInfo::InitializeGlobalObjects" user="false" member="true">
       </Function>
       <Function name="ContourViewerPluginInfo::InitializePlotAtts" user="false" member="true">

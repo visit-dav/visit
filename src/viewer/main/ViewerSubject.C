@@ -137,6 +137,7 @@
 #include <ViewerQueryManager.h>
 #include <ViewerServerManager.h>
 #include <ViewerState.h>
+#include <ViewerStateBuffered.h>
 #include <ViewerSILAttsObserver.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
@@ -184,41 +185,6 @@ ViewerSubject  *viewerSubject=0;
 using std::string;
 
 // ****************************************************************************
-// Method: Viewer_LogQtMessages
-//
-// Purpose: 
-//   Message handler that routes Qt messages to the debug logs.
-//
-// Arguments:
-//   type : The message type.
-//   msg  : The message.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Mar 15 18:17:47 PST 2007
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-static void
-Viewer_LogQtMessages(QtMsgType type, const char *msg)
-{
-    switch(type)
-    {
-    case QtDebugMsg:
-        debug1 << "Qt: Debug: " << msg << endl;
-        break;
-    case QtWarningMsg:
-        debug1 << "Qt: Warning: " << msg << endl;
-        break;
-    case QtFatalMsg:
-        debug1 << "Qt: Fatal: " << msg << endl;
-        abort();
-        break;
-    }
-}
-
-// ****************************************************************************
 //  Method: ViewerSubject constructor
 //
 //  Programmer: Eric Brugger
@@ -264,6 +230,9 @@ Viewer_LogQtMessages(QtMsgType type, const char *msg)
 //    Brad Whitlock, Thu Apr 10 09:49:27 PDT 2008
 //    Added applicationLocale.
 //
+//    Brad Whitlock, Thu Aug 14 09:57:59 PDT 2008
+//    Removed mainApp, Added call to CreateState.
+//
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject() : ViewerBase(0, "ViewerSubject"), 
@@ -276,7 +245,6 @@ ViewerSubject::ViewerSubject() : ViewerBase(0, "ViewerSubject"),
     // Initialize pointers to some Qt objects that don't get created
     // until later.
     //
-    mainApp = 0;
     checkParent = 0;
     checkRenderer = 0;
 
@@ -355,7 +323,7 @@ ViewerSubject::ViewerSubject() : ViewerBase(0, "ViewerSubject"),
     //
     noconfig = false;
     configFileName = 0;
-    configMgr = 0;
+    configMgr = new ViewerConfigManager(this);
     systemSettings = 0;
     localSettings = 0;
 
@@ -366,9 +334,15 @@ ViewerSubject::ViewerSubject() : ViewerBase(0, "ViewerSubject"),
     operatorFactory = 0;
     messageBuffer = new ViewerMessageBuffer;
     messagePipe[0] = -1; messagePipe[1] = -1;
-    qt_argv = NULL;
 
     viewerSubject = this;   // FIX_ME Hack, this should be removed.
+
+    //
+    // Create and connect state objects.
+    //
+    CreateState();
+    viewerDelayedState = 0;
+    viewerDelayedMethods = 0;
 }
 
 // ****************************************************************************
@@ -403,6 +377,9 @@ ViewerSubject::ViewerSubject() : ViewerBase(0, "ViewerSubject"),
 //    Brad Whitlock, Mon Feb 12 10:33:39 PDT 2007
 //    Delete the ViewerState and ViewerMethods objects.
 //
+//    Brad Whitlock, Wed Aug 20 15:45:57 PDT 2008
+//    Delete viewerDelayedState.
+//
 // ****************************************************************************
 
 ViewerSubject::~ViewerSubject()
@@ -423,9 +400,8 @@ ViewerSubject::~ViewerSubject()
     delete GetViewerState();
     delete GetViewerMethods();
     delete inputConnection;
-
-    if (qt_argv != NULL)
-        delete [] qt_argv;
+    delete viewerDelayedState;
+    delete viewerDelayedMethods;
 }
 
 // ****************************************************************************
@@ -444,91 +420,50 @@ ViewerSubject::~ViewerSubject()
 //  Creation:   August 9, 2000
 //
 //  Modifications:
-//    Brad Whitlock, Tue Jun 17 14:27:26 PST 2003
-//    Completely reorganized.
-//
-//    Brad Whitlock, Tue Jul 29 11:18:07 PDT 2003
-//    I changed the interface to ParentProcess::Connect.
-//
-//    Brad Whitlock, Thu May 6 12:24:21 PDT 2004
-//    I added a little Qt/mac code to prevent the viewer from having anything
-//    in its menubar.
-//
-//    Brad Whitlock, Tue Aug 3 10:03:13 PDT 2004
-//    I added code to block socket signals until the viewer is totally
-//    initialized if we're not deferring initialization. This prevents a
-//    bug where the CLI can send commands and the viewer will process them
-//    before processing the config files. We get away with this because
-//    the cli does not defer initialization.
-//
-//    Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
-//    Added metadata and SIL attributes (needed for simulations).
-//
-//    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
-//    Added procAtts
-//
-//    Brad Whitlock, Mon May 2 14:04:44 PST 2005
-//    I made parent be a pointer so we can donate it to another object later.
-//
-//    Hank Childs, Mon Jul 18 16:00:32 PDT 2005
-//    Instead of creating a temporary argv pointer and freeing it immediately
-//    after sending it down to Qt, create a more permanent one, since Qt 
-//    does *not* make a copy of the argv that is passed into it.  So if we
-//    free that buffer right away, Qt may have a dangling pointer.
-//
-//    Brad Whitlock, Thu Mar 15 18:23:51 PST 2007
-//    Addede a message handler for Qt.
-//
-//    Brad Whitlock, Thu Apr 10 10:06:59 PDT 2008
-//    Added support for internationalization.
-//
-//    Jeremy Meredith, Thu Aug  7 15:01:14 EDT 2008
-//    Assume QApplication won't modify argv, and cast a string literal to
-//    a const.
+//    Brad Whitlock, Thu Aug 14 10:02:40 PDT 2008
+//    Changed the method so it only connects to the parent process. Connecting
+//    to a parent process will now be optional based on whether this method
+//    is called.
 //
 // ****************************************************************************
 
 void
 ViewerSubject::Connect(int *argc, char ***argv)
 {
-    //
-    // Connect to the parent.
-    //
-    int total = visitTimer->StartTimer();
+    if(parent == 0)
+    {
+        int timeid = visitTimer->StartTimer();
+        parent = new ParentProcess;
+        parent->Connect(1, 1, argc, argv, true);
+        visitTimer->StopTimer(timeid, "Connecting to client");
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::Initialize
+//
+// Purpose: 
+//   First stage of initialization for various objects in the viewer subject.
+//   Other stages are started by calling this method.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       Must be called after ProcessArguments(), Connect() and after a
+//             QApplication has been created.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 14 10:04:24 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::Initialize()
+{
     int timeid = visitTimer->StartTimer();
-    parent = new ParentProcess;
-    parent->Connect(1, 1, argc, argv, true);
-    visitTimer->StopTimer(timeid, "Connecting to client");
-
-    //
-    // Create and connect state objects.
-    //
-    CreateState();
-
-    //
-    // Read the config files.
-    //
-    ReadConfigFiles(*argc, *argv);
-
-    //
-    // Process the command line arguments first since some may be removed
-    // by QApplication::QApplication.
-    //
-    ProcessCommandLine(argc, argv);
-
-    //
-    // Create the QApplication context. This sets the qApp pointer.
-    //
-    char **argv2 = new char *[*argc + 3];
-    int argc2 = *argc + 2;
-    for(int i = 0; i < *argc; ++i)
-        argv2[i] = (*argv)[i];
-    argv2[*argc] = (char*)"-font";
-    argv2[*argc+1] = (char*)GetViewerState()->GetAppearanceAttributes()->GetFontName().c_str();
-    argv2[*argc+2] = NULL;
-    debug1 << "Viewer using font: " << argv2[*argc+1] << endl;
-    qInstallMsgHandler(Viewer_LogQtMessages);
-    mainApp = new QApplication(argc2, argv2, !nowin);
 
     // Make VisIt translation aware.
     QTranslator *translator = new QTranslator(0);
@@ -545,7 +480,7 @@ ViewerSubject::Connect(int *argc, char ***argv)
     debug1 << "Trying to load translator file: " << (transPath + transFile).ascii() << endl;
     if(translator->load(transFile, transPath))
     {
-        mainApp->installTranslator(translator);
+        qApp->installTranslator(translator);
         debug1 << "Loaded translation " << (transPath + transFile).ascii() << endl;
     }
     else
@@ -556,11 +491,6 @@ ViewerSubject::Connect(int *argc, char ***argv)
 
     // Customize the colors and fonts.
     CustomizeAppearance();
-   
-    qt_argv = argv2;
-    // Do not delete argv2, since Qt did not make a copy.  qt_argv will be
-    // deleted in the destructor.
-    //delete [] argv2;
 
     //
     // Set up the Xfer object.
@@ -603,127 +533,7 @@ ViewerSubject::Connect(int *argc, char ***argv)
         QTimer::singleShot(350, this, SLOT(EnableSocketSignals()));
     }
 
-    visitTimer->StopTimer(total, "Total time connecting and setting up");
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::ReadConfigFiles.
-//
-//  Purpose:
-//    Process the viewer command line arguments.
-//
-//  Arguments:
-//    argc      The number of command line arguments.
-//    argv      The command line arguments.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   April 17, 2002
-//
-//  Modifications:
-//    Brad Whitlock, Fri May 16 14:54:28 PST 2003
-//    I added support for the -config flag to read a named config file.
-//
-//    Brad Whitlock, Wed Feb 16 09:35:48 PDT 2005
-//    Updated since I moved Get*ConfigFile to Utility.h instead of having
-//    them be ConfigManager methods.
-//
-//    Brad Whitlock, Mon Feb 12 12:23:11 PDT 2007
-//    I made it use ViewerState.
-//
-//    Hank Childs, Mon Feb 26 11:33:37 PST 2007
-//    Issue a warning when a config file was not found.
-//
-//    Kathleen Bonnell, Tue Jul 24 15:44:37 PDT 2007 
-//    Added WIN32 specific-code to handle an arg that may have spaces in it. 
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ReadConfigFiles(int argc, char **argv)
-{
-    int timeid = visitTimer->StartTimer();
-
-    //
-    // Look for config file, related flags.
-    //
-    bool specifiedConfig = false;
-    for (int i = 1 ; i < argc ; i++)
-    {
-        if (strcmp(argv[i], "-noconfig") == 0)
-        {
-            noconfig = true;
-            if(configFileName != 0)
-            {
-                delete [] configFileName;
-                configFileName = 0;
-            }
-        }
-        else if (strcmp(argv[i], "-config") == 0 && (i+1) < argc && !noconfig)
-        {
-            specifiedConfig = true;
-            if(configFileName != 0)
-            {
-                delete [] configFileName;
-                configFileName = 0;
-            }
-#ifndef WIN32
-            int len = strlen(argv[i+1]);
-            configFileName = new char[len + 1];
-            strcpy(configFileName, argv[i+1]);
-#else
-            string tmp = argv[i+1];
-            int argcnt = 1;
-            if (argv[i+1][0] == '\"' || argv[i+1][0] == '\'')
-            {
-                for (int j = i+2; j < argc; j++, argcnt++)
-                {
-                    if (tmp[tmp.length()-1] == '\"' || 
-                        tmp[tmp.length()-1] == '\'')
-                        break;
-                    tmp += " ";
-                    tmp += argv[j];
-                }
-            }
-            int len = tmp.length();
-            configFileName = new char[len+1];
-            strcpy(configFileName, tmp.c_str());
-            nConfigArgs = argcnt;
-#endif
-        }       
-    }
-
-    //
-    // Read the config file and setup the appearance attributes. Note that
-    // we call the routine to process the config file settings here because
-    // it only has to update the appearance attributes.
-    //
-    configMgr = new ViewerConfigManager(this);
-    timeid = visitTimer->StartTimer();
-    char *configFile = GetSystemConfigFile();
-    if (noconfig)
-        systemSettings = NULL;
-    else
-        systemSettings = configMgr->ReadConfigFile(configFile);
-    delete [] configFile;
-    configFile = GetDefaultConfigFile(configFileName);
-    if (specifiedConfig && strcmp(configFile, configFileName) != 0)
-    {
-        cerr << "\n\nYou specified a config file with the \"-config\" option,"
-                " but the config file could not be located.  Note that this "
-                "may be because you must fully qualify the directory of the "
-                "config file.\n\n\n";
-    }
-    if (noconfig)
-        localSettings = NULL;
-    else
-        localSettings = configMgr->ReadConfigFile(configFile);
-    delete [] configFile;
-    configMgr->Add(GetViewerState()->GetAppearanceAttributes());
-    configMgr->Add(GetViewerState()->GetPluginManagerAttributes());
-    configMgr->ProcessConfigSettings(systemSettings);
-    configMgr->ProcessConfigSettings(localSettings);
-    configMgr->ClearSubjects();
-    visitTimer->StopTimer(timeid, "Reading config files.");
+    visitTimer->StopTimer(timeid, "Total time setting up");
 }
 
 // ****************************************************************************
@@ -823,6 +633,9 @@ ViewerSubject::CreateState()
 //   I made it use the ViewerState object to connect the xfer object. I also
 //   made parent be a pointer.
 //
+//   Brad Whitlock, Thu Aug 14 13:06:42 PDT 2008
+//   Only set up xfer's input/output connections if there is a parent.
+//
 // ****************************************************************************
 
 void
@@ -831,8 +644,11 @@ ViewerSubject::ConnectXfer()
     //
     // Set up xfer's connections so it can send/receive the RPCs.
     //
-    xfer.SetInputConnection(parent->GetWriteConnection());
-    xfer.SetOutputConnection(parent->GetReadConnection());
+    if(parent != 0)
+    {
+        xfer.SetInputConnection(parent->GetWriteConnection());
+        xfer.SetOutputConnection(parent->GetReadConnection());
+    }
 
     //
     // Set up all of the objects that have been added to viewerState so far.
@@ -885,7 +701,7 @@ ViewerSubject::ConnectObjectsAndHandlers()
     //
     // Create a QSocketNotifier that tells us to call ReadFromParentAndProcess.
     //
-    if(parent->GetWriteConnection())
+    if(parent != 0 && parent->GetWriteConnection() != 0)
     {
         if(parent->GetWriteConnection()->GetDescriptor() != -1)
         {
@@ -967,17 +783,20 @@ ViewerSubject::ConnectObjectsAndHandlers()
     }
 #endif
 
-    //
-    // Get the localhost name from the parent and give it to the
-    // ViewerServerManager and EngineKey so it can use it when needed.
-    //
-    ViewerServerManager::SetLocalHost(parent->GetApparentHostName());
-    EngineKey::SetLocalHost(parent->GetApparentHostName());
+    if(parent != 0)
+    {
+        //
+        // Get the localhost name from the parent and give it to the
+        // ViewerServerManager and EngineKey so it can use it when needed.
+        //
+        ViewerServerManager::SetLocalHost(parent->GetApparentHostName());
+        EngineKey::SetLocalHost(parent->GetApparentHostName());
 
-    //
-    // Set the default user name.
-    //
-    HostProfile::SetDefaultUserName(parent->GetTheUserName());
+        //
+        // Set the default user name.
+        //
+        HostProfile::SetDefaultUserName(parent->GetTheUserName());
+    }
 }
 
 // ****************************************************************************
@@ -1110,6 +929,10 @@ ViewerSubject::InformClientOfPlugins() const
 //   Added code to turn the parent object and the checkParent objects into
 //   a ViewerClientConnection object now that the viewer is initialized.
 //
+//   Brad Whitlock, Wed Aug 20 15:46:47 PDT 2008
+//   Added code to set up ViewerMethods so it writes into a buffered viewer
+//   state that gets copied into the central xfer's input buffer.
+//
 // ****************************************************************************
 
 void
@@ -1180,13 +1003,25 @@ ViewerSubject::HeavyInitialization()
         xfer.SetInputConnection(inputConnection);
         xfer.SetOutputConnection(0);
         xfer.SetUpdateCallback(BroadcastToAllClients, (void *)this);
-        disconnect(checkParent, SIGNAL(activated(int)),
-                   this, SLOT(ReadFromParentAndProcess(int)));
+        if(checkParent != 0)
+        {
+            disconnect(checkParent, SIGNAL(activated(int)),
+                       this, SLOT(ReadFromParentAndProcess(int)));
+        }
         connect(client, SIGNAL(InputFromClient(ViewerClientConnection *, AttributeSubject *)),
                 this,   SLOT(AddInputToXfer(ViewerClientConnection *, AttributeSubject *)));
         connect(client, SIGNAL(DisconnectClient(ViewerClientConnection *)),
                 this,   SLOT(DisconnectClient(ViewerClientConnection *)));
         clients.push_back(client);
+
+        // Hook up the viewer delayed state. If we're currently reading from the parent,
+        // we don't want to hook it up since it adds observers to the subjects in
+        // the global viewer state, which could currently be in a Notify() if 
+        // processingFromParent is true.
+        if(processingFromParent)
+            QTimer::singleShot(100, this, SLOT(CreateViewerDelayedState()));
+        else
+            CreateViewerDelayedState();
 
         // Discover the client's information.
         QTimer::singleShot(100, this, SLOT(DiscoverClientInformation()));
@@ -1194,6 +1029,70 @@ ViewerSubject::HeavyInitialization()
         heavyInitializationDone = true;
         visitTimer->StopTimer(timeid, "Heavy initialization.");
     }
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::CreateViewerDelayedState
+//
+// Purpose: 
+//   This method sets up the delayed viewer state, which lets us execute
+//   viewer methods later in the central xfer queue. Methods executed in this
+//   fashion won't be executed during engine RPC's or at other bad times.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 22 11:48:31 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::CreateViewerDelayedState()
+{
+    // Create an internal ViewerState that we'll use for the ViewerMethods 
+    // object. We use a buffered version so all of the input from the viewer
+    // methods and state will be buffered into the central input for the
+    // xfer object. This should cause all commands to be buffered until they
+    // can be safely executed. For example, this prevents us from executing
+    // commands via ViewerMethods while the engine is executing.
+    viewerDelayedState = new ViewerStateBuffered(GetViewerState());
+    connect(viewerDelayedState, SIGNAL(InputFromClient(ViewerClientConnection *, AttributeSubject *)),
+            this,                SLOT(AddInputToXfer(ViewerClientConnection *, AttributeSubject *)));
+    // Override the base class's ViewerMethods object, if it exists, with one that
+    // uses the buffered state.
+    viewerDelayedMethods = new ViewerMethods(viewerDelayedState->GetState());
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::GetViewerDelayedState
+//
+// Purpose: 
+//   Returns the buffered viewer state if it has been created.
+//
+// Arguments:
+//
+// Returns:    The buffered viewer state otherwise the regular unbuffered
+//             viewer state.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 20 16:06:25 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerState *
+ViewerSubject::GetViewerDelayedState()
+{
+    return (viewerDelayedState != 0) ? viewerDelayedState->GetState() : GetViewerState();
+}
+
+ViewerMethods *
+ViewerSubject::GetViewerDelayedMethods()
+{
+    return viewerDelayedMethods;
 }
 
 // ****************************************************************************
@@ -1233,8 +1132,7 @@ ViewerSubject::AddInputToXfer(ViewerClientConnection *client,
     // state object if the state object is one that we can freely send. Note
     // that we don't send ViewerRPC, postponedAction, syncAtts, messageAtts,
     // statusAtts, metaData, silAtts.
-    if(client != 0 &&
-       subj->GetGuido() >= GetViewerState()->FreelyExchangedState())
+    if(subj->GetGuido() >= GetViewerState()->FreelyExchangedState())
     {
         for(int i = 0; i < clients.size(); ++i)
         {
@@ -1289,108 +1187,6 @@ ViewerSubject::DisconnectClient(ViewerClientConnection *client)
         // information.
         QTimer::singleShot(100, this, SLOT(DiscoverClientInformation()));
     }
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::Execute
-//
-//  Purpose:
-//    Execute the viewer subject.
-//
-//  Programmer: Eric Brugger
-//  Creation:   August 16, 2000
-//
-//  Modifications:
-//    Brad Whitlock, Wed Nov 1 14:56:23 PST 2000
-//    I made it use Qt and return a return code.
-//
-//    Brad Whitlock, Mon Nov 27 14:24:02 PST 2000
-//    I added code to connect some of ViewerWindowManager's signals to
-//    ViewerSubject's slots.
-//
-//    Brad Whitlock, Fri May 25 16:45:22 PST 2001
-//    Added code to print a message if a LostConnectionException is encountered.
-//
-//    Jeremy Meredith, Fri Jul 20 11:25:10 PDT 2001
-//    Added call to SetShift.
-//
-//    Jeremy Meredith, Fri Sep 14 13:30:17 PDT 2001
-//    Added call to SetPreshift.
-//
-//    Brad Whitlock, Mon Oct 22 18:52:46 PST 2001
-//    Changed the exception handling keywords to macros.
-//
-//    Jeremy Meredith, Thu Dec 19 12:13:34 PST 2002
-//    Added support for launching engines from the command line.
-//
-//    Brad Whitlock, Fri Dec 27 12:41:32 PDT 2002
-//    I passed an empty string vector to the CreateEngine method because
-//    the engine manager now passes the ViewerServerManager's unknown
-//    arguments to the engines that get launched.
-//   
-//    Kathleen Bonnell, Fri Feb  7 09:09:47 PST 2003  
-//    Added registration of the authentication callback. (moved from viewer.C)
-//
-//    Brad Whitlock, Fri Jul 25 12:24:37 PDT 2003
-//    Moved most of the code elsewhere.
-//
-//    Hank Childs, Tue Feb 28 11:28:37 PST 2006
-//    Catch all exceptions and keep executing.  This will probably lead to
-//    crashes in some cases, but the alternative is to just quit.
-//
-//    Hank Childs, Thu Mar  2 09:51:29 PST 2006
-//    Correct logic from last change ... exit normally when we have a normal
-//    exit condition.
-//
-//    Brad Whitlock, Thu Jan 31 12:36:52 PST 2008
-//    Added code to remove the crash recovery file.
-//
-//    Brad Whitlock, Wed Apr 30 09:16:01 PDT 2008
-//    Support for internationalization.
-//
-// ****************************************************************************
-
-int
-ViewerSubject::Execute()
-{
-    //
-    // Enter the event processing loop.
-    //
-    int retval;
-    bool keepGoing = true;
-    while (keepGoing)
-    {
-        TRY
-        {
-            retval = mainApp->exec();
-            keepGoing = false;
-        }
-        CATCH(LostConnectionException)
-        {
-            cerr << "The component that launched VisIt's viewer has terminated "
-                    "abnormally." << endl;
-            keepGoing = false;
-            retval = -1;
-        }
-        CATCH2(VisItException, ve)
-        {
-            QString msg = tr("VisIt has encountered the following error: %1.\n"
-                    "VisIt will attempt to continue processing, but it may "
-                    "behave unreliably.  Please save this error message and "
-                    "give it to a VisIt developer.  In addition, you may want"
-                    " to save your session and re-start.  Of course, this "
-                    "session may still cause VisIt to malfunction.").
-                    arg(ve.Message().c_str());
-            Error(msg);
-            keepGoing = true;
-        }
-        ENDTRY
-    }
-
-    // Remove the crash recovery file.
-    RemoveCrashRecoveryFile();
-
-    return retval;
 }
 
 // ****************************************************************************
@@ -1956,6 +1752,9 @@ ViewerSubject::ProcessEventsCB(void *cbData)
 //   Brad Whitlock, Tue Sep 9 15:38:10 PST 2003
 //   I increased the amount of time that we can use to process events.
 //
+//   Brad Whitlock, Thu Aug 14 09:56:41 PDT 2008
+//   Use qApp.
+//
 // ****************************************************************************
 
 void
@@ -1963,7 +1762,7 @@ ViewerSubject::ProcessEvents()
 {
     if (interruptionEnabled)
     {
-         mainApp->processEvents(100);
+         qApp->processEvents(100);
     }
 }
 
@@ -1986,6 +1785,10 @@ ViewerSubject::ProcessEvents()
 //    Brad Whitlock, Wed Jan 11 17:38:13 PST 2006
 //    I passed a flag to the window metrics.
 //
+//    Brad Whitlock, Fri Aug 22 14:33:24 PST 2008
+//    I made it honor the useWindowMetrics setting in the event that
+//    none of the geometry or other flags were set.
+//
 // ****************************************************************************
 
 void
@@ -1993,7 +1796,6 @@ ViewerSubject::InitializeWorkArea()
 {
     char           tmp[50];
     int            x, y, w, h;
-    WindowMetrics *wm = 0;
 
     if (nowin)
     {
@@ -2023,11 +1825,46 @@ ViewerSubject::InitializeWorkArea()
         // If any of the options are missing then use the WindowMetrics
         // class to fill in the blanks.
         //
+        int wmBorder[4], wmShift[2], wmScreen[4];
         if(borders.size() == 0 || shift.size() == 0 ||
            preshift.size() == 0 || geometry.size() == 0)
         {
-            wm = WindowMetrics::Instance();
-            wm->MeasureScreen(useWindowMetrics);
+            if(useWindowMetrics)
+            {
+                WindowMetrics *wm = WindowMetrics::Instance();
+                wm->MeasureScreen(useWindowMetrics);
+
+                wmBorder[0] = wm->GetBorderT();
+                wmBorder[1] = wm->GetBorderB();
+                wmBorder[2] = wm->GetBorderL();
+                wmBorder[3] = wm->GetBorderR();
+
+                wmShift[0] = wm->GetShiftX();
+                wmShift[1] = wm->GetShiftY();
+
+                wmScreen[0] = wm->GetScreenW();
+                wmScreen[1] = wm->GetScreenH();
+                wmScreen[2] = wm->GetScreenX();
+                wmScreen[3] = wm->GetScreenY();
+                delete wm;
+            }
+            else
+            {
+                // May want platform specific coding here.
+                wmBorder[0] = 22;
+                wmBorder[1] = 0;
+                wmBorder[2] = 0;
+                wmBorder[3] = 0;
+
+                wmShift[0] = 0;
+                wmShift[1] = 22;
+
+                QRect geom = qApp->desktop()->screenGeometry();
+                wmScreen[0] = geom.width();
+                wmScreen[1] = geom.height();
+                wmScreen[2] = geom.x();
+                wmScreen[3] = geom.y();
+            }
         }
 
         //
@@ -2036,8 +1873,7 @@ ViewerSubject::InitializeWorkArea()
         if(borders.size() == 0)
         {
             SNPRINTF(tmp, 50, "%d,%d,%d,%d",
-                     wm->GetBorderT(), wm->GetBorderB(),
-                     wm->GetBorderL(), wm->GetBorderR());
+                     wmBorder[0], wmBorder[1], wmBorder[2], wmBorder[3]);
             borders = tmp;
         }
 
@@ -2046,7 +1882,7 @@ ViewerSubject::InitializeWorkArea()
         //
         if(shift.size() == 0)
         {
-            SNPRINTF(tmp, 50, "%d,%d", wm->GetShiftX(), wm->GetShiftY());
+            SNPRINTF(tmp, 50, "%d,%d", wmShift[0], wmShift[1]);
             shift = tmp;
         }
 
@@ -2055,7 +1891,7 @@ ViewerSubject::InitializeWorkArea()
         //
         if(preshift.size() == 0)
         {
-            SNPRINTF(tmp, 50, "%d,%d", wm->GetShiftX(), wm->GetShiftY());
+            SNPRINTF(tmp, 50, "%d,%d", wmShift[0], wmShift[1]);
             preshift = tmp;
         }
 
@@ -2064,12 +1900,12 @@ ViewerSubject::InitializeWorkArea()
         //
         if(geometry.size() == 0)
         {
-            int h1 = int(wm->GetScreenW() * 0.8);
-            int h2 = int(wm->GetScreenH() * 0.8);
+            int h1 = int(wmScreen[0] * 0.8);
+            int h2 = int(wmScreen[1] * 0.8);
             h = (h1 < h2) ? h1 : h2;
             w = h;
-            x = wm->GetScreenX() + wm->GetScreenW() - w;
-            y = wm->GetScreenY();
+            x = wmScreen[2] - wmScreen[0] - w;
+            y = wmScreen[3];
             if(smallWindow)
             {
                 w /= 2; h /= 2; x += w;
@@ -2088,11 +1924,6 @@ ViewerSubject::InitializeWorkArea()
                 geometry = tmp;
             }
         }
-
-        //
-        // Delete the WindowMetrics object.
-        //
-        delete wm;
     }
 
     //
@@ -2122,6 +1953,9 @@ ViewerSubject::InitializeWorkArea()
 //   Brad Whitlock, Mon Mar 19 16:30:42 PST 2007
 //   Added font changing.
 //
+//   Brad Whitlock, Thu Aug 14 09:56:54 PDT 2008
+//   Use qApp.
+//
 // ****************************************************************************
 
 void
@@ -2134,23 +1968,23 @@ ViewerSubject::CustomizeAppearance()
     //
 #if QT_VERSION < 300
     if (GetViewerState()->GetAppearanceAttributes()->GetStyle() == "cde")
-        mainApp->setStyle(new QCDEStyle);
+        qApp->setStyle(new QCDEStyle);
     else if (GetViewerState()->GetAppearanceAttributes()->GetStyle() == "windows")
-        mainApp->setStyle(new QWindowsStyle);
+        qApp->setStyle(new QWindowsStyle);
     else if (GetViewerState()->GetAppearanceAttributes()->GetStyle() == "platinum")
-        mainApp->setStyle(new QPlatinumStyle);
+        qApp->setStyle(new QPlatinumStyle);
 #if QT_VERSION >= 230
     else if (GetViewerState()->GetAppearanceAttributes()->GetStyle() == "sgi")
-        mainApp->setStyle(new QSGIStyle);
+        qApp->setStyle(new QSGIStyle);
 #endif
     else
-        mainApp->setStyle(new QMotifStyle);
+        qApp->setStyle(new QMotifStyle);
 #else
     debug1 << mName << "Setting the application style to: "
            << GetViewerState()->GetAppearanceAttributes()->GetStyle().c_str()
            << endl;
     // Set the style via the style name.
-    mainApp->setStyle(GetViewerState()->GetAppearanceAttributes()->GetStyle().c_str());
+    qApp->setStyle(GetViewerState()->GetAppearanceAttributes()->GetStyle().c_str());
 #endif
 
     QFont font;
@@ -2169,7 +2003,7 @@ ViewerSubject::CustomizeAppearance()
     if(okay)
     {
         debug1 << mName << "Font okay. name=" << font.toString().latin1() << endl;
-        mainApp->setFont(font, true);
+        qApp->setFont(font, true);
 
         // Force the font change on all top level widgets.
         QWidgetList *list = QApplication::topLevelWidgets();
@@ -2243,7 +2077,7 @@ ViewerSubject::CustomizeAppearance()
             dcg.setColor(QColorGroup::Highlight, Qt::darkBlue);
         }
         QPalette pal(cg, dcg, cg);
-        mainApp->setPalette(pal, true);
+        qApp->setPalette(pal, true);
     }
 }
 
@@ -2287,6 +2121,128 @@ ViewerOperatorFactory *
 ViewerSubject::GetOperatorFactory() const
 {
     return operatorFactory;
+}
+
+// ****************************************************************************
+//  Method: ViewerSubject::ReadConfigFiles.
+//
+//  Purpose:
+//    Process the viewer command line arguments.
+//
+//  Arguments:
+//    argc      The number of command line arguments.
+//    argv      The command line arguments.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   April 17, 2002
+//
+//  Modifications:
+//    Brad Whitlock, Fri May 16 14:54:28 PST 2003
+//    I added support for the -config flag to read a named config file.
+//
+//    Brad Whitlock, Wed Feb 16 09:35:48 PDT 2005
+//    Updated since I moved Get*ConfigFile to Utility.h instead of having
+//    them be ConfigManager methods.
+//
+//    Brad Whitlock, Mon Feb 12 12:23:11 PDT 2007
+//    I made it use ViewerState.
+//
+//    Hank Childs, Mon Feb 26 11:33:37 PST 2007
+//    Issue a warning when a config file was not found.
+//
+//    Kathleen Bonnell, Tue Jul 24 15:44:37 PDT 2007 
+//    Added WIN32 specific-code to handle an arg that may have spaces in it. 
+//
+//    Brad Whitlock, Thu Aug 14 14:44:22 PDT 2008
+//    Move creation of the config manager to the constructor.
+//
+// ****************************************************************************
+
+void
+ViewerSubject::ReadConfigFiles(int argc, char **argv)
+{
+    int timeid = visitTimer->StartTimer();
+
+    //
+    // Look for config file, related flags.
+    //
+    bool specifiedConfig = false;
+    for (int i = 1 ; i < argc ; i++)
+    {
+        if (strcmp(argv[i], "-noconfig") == 0)
+        {
+            noconfig = true;
+            if(configFileName != 0)
+            {
+                delete [] configFileName;
+                configFileName = 0;
+            }
+        }
+        else if (strcmp(argv[i], "-config") == 0 && (i+1) < argc && !noconfig)
+        {
+            specifiedConfig = true;
+            if(configFileName != 0)
+            {
+                delete [] configFileName;
+                configFileName = 0;
+            }
+#ifndef WIN32
+            int len = strlen(argv[i+1]);
+            configFileName = new char[len + 1];
+            strcpy(configFileName, argv[i+1]);
+#else
+            string tmp = argv[i+1];
+            int argcnt = 1;
+            if (argv[i+1][0] == '\"' || argv[i+1][0] == '\'')
+            {
+                for (int j = i+2; j < argc; j++, argcnt++)
+                {
+                    if (tmp[tmp.length()-1] == '\"' || 
+                        tmp[tmp.length()-1] == '\'')
+                        break;
+                    tmp += " ";
+                    tmp += argv[j];
+                }
+            }
+            int len = tmp.length();
+            configFileName = new char[len+1];
+            strcpy(configFileName, tmp.c_str());
+            nConfigArgs = argcnt;
+#endif
+        }       
+    }
+
+    //
+    // Read the config file and setup the appearance attributes. Note that
+    // we call the routine to process the config file settings here because
+    // it only has to update the appearance attributes.
+    //
+    timeid = visitTimer->StartTimer();
+    char *configFile = GetSystemConfigFile();
+    if (noconfig)
+        systemSettings = NULL;
+    else
+        systemSettings = configMgr->ReadConfigFile(configFile);
+    delete [] configFile;
+    configFile = GetDefaultConfigFile(configFileName);
+    if (specifiedConfig && strcmp(configFile, configFileName) != 0)
+    {
+        cerr << "\n\nYou specified a config file with the \"-config\" option,"
+                " but the config file could not be located.  Note that this "
+                "may be because you must fully qualify the directory of the "
+                "config file.\n\n\n";
+    }
+    if (noconfig)
+        localSettings = NULL;
+    else
+        localSettings = configMgr->ReadConfigFile(configFile);
+    delete [] configFile;
+    configMgr->Add(GetViewerState()->GetAppearanceAttributes());
+    configMgr->Add(GetViewerState()->GetPluginManagerAttributes());
+    configMgr->ProcessConfigSettings(systemSettings);
+    configMgr->ProcessConfigSettings(localSettings);
+    configMgr->ClearSubjects();
+    visitTimer->StopTimer(timeid, "Reading config files.");
 }
 
 // ****************************************************************************
@@ -2411,127 +2367,132 @@ ViewerSubject::GetOperatorFactory() const
 //    Brad Whitlock, Thu Apr 10 09:48:44 PDT 2008
 //    Added support for -locale argument.
 //
+//    Brad Whitlock, Wed Aug 13 10:31:38 PDT 2008
+//    Moved the code to read the config files to here.
+//
 // ****************************************************************************
 
 void
-ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
+ViewerSubject::ProcessCommandLine(int argc, char **argv)
 {
-    int    argc2 = *argc;
-    char **argv2 = *argv;
     std::string tmpGeometry, tmpViewerGeometry;
     bool geometryProvided = false, viewerGeometryProvided = false;
+
+    // Read the config files.
+    ReadConfigFiles(argc, argv);
 
     //
     // Process the command line for the viewer.
     //
-    for (int i = 1 ; i < argc2 ; i++)
+    for (int i = 1 ; i < argc ; i++)
     {
-        if (strcmp(argv2[i], "-borders") == 0)
+debug1 << "Processing option " << i << " " << argv[i] << endl;
+        if (strcmp(argv[i], "-borders") == 0)
         {
-            if (i + 1 >= argc2)
+            if (i + 1 >= argc)
             {
                 cerr << "Borders string missing for -borders option" << endl;
                 continue;
             }
-            borders = argv2[i+1];
+            borders = argv[i+1];
             i += 1;
         }
-        else if (strcmp(argv2[i], "-shift") == 0)
+        else if (strcmp(argv[i], "-shift") == 0)
         {
-            if (i + 1 >= argc2)
+            if (i + 1 >= argc)
             {
                 cerr << "Shift string missing for -shift option" << endl;
                 continue;
             }
-            shift = argv2[i+1];
+            shift = argv[i+1];
             i += 1;
         }
-        else if (strcmp(argv2[i], "-preshift") == 0)
+        else if (strcmp(argv[i], "-preshift") == 0)
         {
-            if (i + 1 >= argc2)
+            if (i + 1 >= argc)
             {
                 cerr << "Preshift string missing for -preshift option" << endl;
                 continue;
             }
-            preshift = argv2[i+1];
+            preshift = argv[i+1];
             i += 1;
         }
-        else if (strcmp(argv2[i], "-geometry") == 0)
+        else if (strcmp(argv[i], "-geometry") == 0)
         {
-            if (i + 1 >= argc2)
+            if (i + 1 >= argc)
             {
                 cerr << "Geometry string missing for -geometry option" << endl;
                 continue;
             }
-            tmpGeometry = argv2[i+1];
+            tmpGeometry = argv[i+1];
             geometryProvided = true;
             i += 1;
         }
-        else if (strcmp(argv2[i], "-viewer_geometry") == 0)
+        else if (strcmp(argv[i], "-viewer_geometry") == 0)
         {
-            if (i + 1 >= argc2)
+            if (i + 1 >= argc)
             {
                 cerr << "Geometry string missing for -viewer_geometry option" << endl;
                 continue;
             }
-            tmpViewerGeometry = argv2[i+1];
+            tmpViewerGeometry = argv[i+1];
             viewerGeometryProvided = true;
             i += 1;
         }
-        else if (strcmp(argv2[i], "-small") == 0)
+        else if (strcmp(argv[i], "-small") == 0)
         {
             smallWindow = true;
         }
-        else if (strcmp(argv2[i], "-debug") == 0)
+        else if (strcmp(argv[i], "-debug") == 0)
         {
             int debugLevel = 1; 
-            if (i+1 < argc2 && isdigit(*(argv2[i+1])))
-               debugLevel = atoi(argv2[i+1]);
+            if (i+1 < argc && isdigit(*(argv[i+1])))
+               debugLevel = atoi(argv[i+1]);
             else
                cerr << "Warning: debug level not specified, assuming 1" << endl;
             if (debugLevel > 0 && debugLevel < 6)
             {
                 ViewerServerManager::SetDebugLevel(debugLevel);
 
-                clientArguments.push_back(argv2[i]);
-                clientArguments.push_back(argv2[i+1]);
+                clientArguments.push_back(argv[i]);
+                clientArguments.push_back(argv[i+1]);
             }
             i++;
         }
-        else if (strcmp(argv2[i], "-host")     == 0 ||
-                 strcmp(argv2[i], "-port")     == 0 ||
-                 strcmp(argv2[i], "-nread")    == 0 ||
-                 strcmp(argv2[i], "-nwrite")   == 0 ||
-                 strcmp(argv2[i], "-nborders") == 0)
+        else if (strcmp(argv[i], "-host")     == 0 ||
+                 strcmp(argv[i], "-port")     == 0 ||
+                 strcmp(argv[i], "-nread")    == 0 ||
+                 strcmp(argv[i], "-nwrite")   == 0 ||
+                 strcmp(argv[i], "-nborders") == 0)
         {
             // this argument and the following option are dangerous to pass on
             i++;
         }
-        else if (strcmp(argv2[i], "-wpipe") == 0 ||
-                 strcmp(argv2[i], "-rpipe") == 0)
+        else if (strcmp(argv[i], "-wpipe") == 0 ||
+                 strcmp(argv[i], "-rpipe") == 0)
         {
             // This argument and its following options are dangerous to pass on
             i += 2;
         }
-        else if (strcmp(argv2[i], "-background") == 0 ||
-                strcmp(argv2[i], "-bg") == 0)
+        else if (strcmp(argv[i], "-background") == 0 ||
+                strcmp(argv[i], "-bg") == 0)
         {
-            if (i + 1 >= argc2)
+            if (i + 1 >= argc)
             {
                 cerr << "The -background option must be followed by a color."
                      << endl;
                 continue;
             }
 
-            clientArguments.push_back(argv2[i]);
-            clientArguments.push_back(argv2[i+1]);
+            clientArguments.push_back(argv[i]);
+            clientArguments.push_back(argv[i+1]);
 
             // Store the background color in the viewer's appearance
             // attributes so the gui will be colored properly on startup.
-            GetViewerState()->GetAppearanceAttributes()->SetBackground(std::string(argv2[i+1]));
+            GetViewerState()->GetAppearanceAttributes()->SetBackground(std::string(argv[i+1]));
             ++i;
         }
-        else if(strcmp(argv2[i], "-config") == 0)
+        else if(strcmp(argv[i], "-config") == 0)
         {
             // Make sure the -config flag and the filename that follows it is
             // not passed along to other components.
@@ -2541,145 +2502,142 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             i+=nConfigArgs; 
 #endif
         }
-        else if (strcmp(argv2[i], "-foreground") == 0 ||
-                strcmp(argv2[i], "-fg") == 0)
+        else if (strcmp(argv[i], "-foreground") == 0 ||
+                strcmp(argv[i], "-fg") == 0)
         {
-            if (i + 1 >= argc2)
+            if (i + 1 >= argc)
             {
                 cerr << "The -foreground option must be followed by a color."
                      << endl;
                 continue;
             }
 
-            clientArguments.push_back(argv2[i]);
-            clientArguments.push_back(argv2[i+1]);
+            clientArguments.push_back(argv[i]);
+            clientArguments.push_back(argv[i+1]);
 
             // Store the foreground color in the viewer's appearance
             // attributes so the gui will be colored properly on startup.
-            GetViewerState()->GetAppearanceAttributes()->SetForeground(std::string(argv2[i+1]));
+            GetViewerState()->GetAppearanceAttributes()->SetForeground(std::string(argv[i+1]));
             ++i;
         }
-        else if (strcmp(argv2[i], "-style") == 0)
+        else if (strcmp(argv[i], "-style") == 0)
         {
-            if (i + 1 >= argc2)
+            if (i + 1 >= argc)
             {
                 cerr << "The -style option must be followed by a style name."
                      << endl;
                 continue;
             }
-            if (strcmp(argv2[i + 1], "motif") == 0 ||
-               strcmp(argv2[i + 1], "cde") == 0 ||
-               strcmp(argv2[i + 1], "windows") == 0 ||
-               strcmp(argv2[i + 1], "platinum") == 0
+            if (strcmp(argv[i + 1], "motif") == 0 ||
+               strcmp(argv[i + 1], "cde") == 0 ||
+               strcmp(argv[i + 1], "windows") == 0 ||
+               strcmp(argv[i + 1], "platinum") == 0
 #if QT_VERSION >= 230
-               || strcmp(argv2[i + 1], "sgi") == 0
+               || strcmp(argv[i + 1], "sgi") == 0
 #endif
 #if QT_VERSION >= 300
 #ifdef QT_WS_MACX
-               || strcmp(argv2[i + 1], "aqua") == 0
-               || strcmp(argv2[i + 1], "macintosh") == 0
+               || strcmp(argv[i + 1], "aqua") == 0
+               || strcmp(argv[i + 1], "macintosh") == 0
 #endif
 #endif
                      )
             {
-                clientArguments.push_back(argv2[i]);
-                clientArguments.push_back(argv2[i+1]);
+                clientArguments.push_back(argv[i]);
+                clientArguments.push_back(argv[i+1]);
 
-                GetViewerState()->GetAppearanceAttributes()->SetStyle(argv2[i+1]);
+                GetViewerState()->GetAppearanceAttributes()->SetStyle(argv[i+1]);
             }
             ++i;
         }
-        else if (strcmp(argv2[i], "-font") == 0)
+        else if (strcmp(argv[i], "-font") == 0)
         {
-            if (i + 1 >= argc2)
+            if (i + 1 >= argc)
             {
                 cerr << "The -font option must be followed by a "
                         "font description." << endl;
                 continue;
             }
 
-            clientArguments.push_back(argv2[i]);
-            clientArguments.push_back(argv2[i+1]);
+            clientArguments.push_back(argv[i]);
+            clientArguments.push_back(argv[i+1]);
 
-            GetViewerState()->GetAppearanceAttributes()->SetFontName(argv2[i + 1]);
+            GetViewerState()->GetAppearanceAttributes()->SetFontName(argv[i + 1]);
             ++i;
         }
-        else if (strcmp(argv2[i], "-locale") == 0)
+        else if (strcmp(argv[i], "-locale") == 0)
         {
-            if (i + 1 >= argc2)
+            if (i + 1 >= argc)
             {
                 cerr << "The -locale option must be followed by a "
                         "locale name." << endl;
                 continue;
             }
 
-            clientArguments.push_back(argv2[i]);
-            clientArguments.push_back(argv2[i+1]);
+            clientArguments.push_back(argv[i]);
+            clientArguments.push_back(argv[i+1]);
 
-            applicationLocale = QString(argv2[i+1]);
+            applicationLocale = QString(argv[i+1]);
             ++i;
         }
-        else if (strcmp(argv2[i], "-timing") == 0 ||
-                 strcmp(argv2[i], "-timings") == 0)
+        else if (strcmp(argv[i], "-timing") == 0 ||
+                 strcmp(argv[i], "-timings") == 0)
         {
             //
             // Enable timing and pass the option to child processes.
             //
             visitTimer->Enable();
 
-            clientArguments.push_back(argv2[i]);
-            unknownArguments.push_back(argv2[i]);
+            clientArguments.push_back(argv[i]);
+            unknownArguments.push_back(argv[i]);
         }
-        else if (strcmp(argv2[i], "-noint") == 0)
+        else if (strcmp(argv[i], "-noint") == 0)
         {
             interruptionEnabled = false;
         }
-        else if (strcmp(argv2[i], "-noconfig") == 0)
+        else if (strcmp(argv[i], "-noconfig") == 0)
         {
             // do nothing; processed by an earlier parsing of the command line
         }
-        else if (strcmp(argv2[i], "-defer") == 0)
+        else if (strcmp(argv[i], "-defer") == 0)
         {
             deferHeavyInitialization = true;
         }
-        else if (strcmp(argv2[i], "-nowin") == 0)
+        else if (strcmp(argv[i], "-nowin") == 0)
         {
             InitVTK::ForceMesa();
-            avtCallback::SetSoftwareRendering(true);
-            ViewerWindow::SetNoWinMode(true);
-            ViewerRemoteProcessChooser::SetNoWinMode(true);
-            avtCallback::SetNowinMode(true);
             RemoteProcess::DisablePTY();
+            SetNowinMode(true);
             nowin = true;
         }
-        else if (strcmp(argv2[i], "-fullscreen") == 0)
+        else if (strcmp(argv[i], "-fullscreen") == 0)
         {
             ViewerWindow::SetFullScreenMode(true);
         }
-        else if (strcmp(argv2[i], "-nopty") == 0)
+        else if (strcmp(argv[i], "-nopty") == 0)
         {
             RemoteProcess::DisablePTY();
         }
-        else if (strcmp(argv2[i], "-stereo") == 0)
+        else if (strcmp(argv[i], "-stereo") == 0)
         {
             VisWinRendering::SetStereoEnabled();
             defaultStereoToOn = true;
-            unknownArguments.push_back(argv2[i]);
+            unknownArguments.push_back(argv[i]);
         }
-        else if (strcmp(argv2[i], "-launchengine") == 0)
+        else if (strcmp(argv[i], "-launchengine") == 0)
         {
-            if(i + 1 >= argc2)
+            if(i + 1 >= argc)
             {
                 cerr << "The -launchengine option must be followed by a "
                         "host name." << endl;
                 continue;
             }
-            launchEngineAtStartup = argv2[i+1];
+            launchEngineAtStartup = argv[i+1];
             ++i;
         }
-        else if (strcmp(argv2[i], "-key") == 0)
+        else if (strcmp(argv[i], "-key") == 0)
         {
-            if(i + 1 >= argc2)
+            if(i + 1 >= argc)
             {
                 cerr << "The -key option must be followed by a key." << endl;
                 continue;
@@ -2687,34 +2645,35 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             // Don't do anything with the key. Just skip over it.
             ++i;
         }
-        else if (strcmp(argv2[i], "-numrestarts") == 0)
+        else if (strcmp(argv[i], "-numrestarts") == 0)
         {
-            if ((i + 1 >= argc2) || (!isdigit(*(argv2[i+1]))))
+            if ((i + 1 >= argc) || (!isdigit(*(argv[i+1]))))
             {
                 cerr << "The -numrestarts option must be followed by an "
                         "integer number." << endl;
                 continue;
             }
-            numEngineRestarts = atoi(argv2[++i]);
+            numEngineRestarts = atoi(argv[++i]);
         }
-        else if (strcmp(argv2[i], "-engineargs") == 0)
+        else if (strcmp(argv[i], "-engineargs") == 0)
         {
-            if ((i + 1 >= argc2))
+            if ((i + 1 >= argc))
             {
                 cerr << "The -engineargs option must be followed by a "
                         "string." << endl;
                 continue;
             }
-            engineParallelArguments = SplitValues(argv2[++i], ';');
+            engineParallelArguments = SplitValues(argv[++i], ';');
         }
-        else if(strcmp(argv2[i], "-nowindowmetrics") == 0)
+        else if(strcmp(argv[i], "-nowindowmetrics") == 0)
         {
+debug1 << "Handling -nowindowmetrics" << endl;
             useWindowMetrics = false;
         }
         else // Unknown argument -- add it to the list
         {
-            clientArguments.push_back(argv2[i]);
-            unknownArguments.push_back(argv2[i]);
+            clientArguments.push_back(argv[i]);
+            unknownArguments.push_back(argv[i]);
         }
     }
 
@@ -2934,6 +2893,9 @@ ViewerSubject::SetFromNode(DataNode *parentNode,
 //    Brad Whitlock, Thu Jan 25 18:06:08 PST 2007
 //    Disconnect socket notifiers so simulations can't send any more commands.
 //
+//    Brad Whitlock, Thu Aug 14 09:57:29 PDT 2008
+//    Use qApp.
+//
 // ****************************************************************************
 
 void
@@ -2967,7 +2929,7 @@ ViewerSubject::Close()
     //
     // Break out of the application loop.
     //
-    mainApp->exit(0);
+    qApp->exit(0);
 }
 
 // ****************************************************************************
@@ -6951,6 +6913,9 @@ ViewerSubject::ProcessFromParent()
 //    return early without reading the input from the client. Now the code to
 //    ignore the client is in the ProcessFromParent method.
 //
+//    Brad Whitlock, Thu Aug 14 09:57:44 PDT 2008
+//    Use qApp.
+//
 // ****************************************************************************
 
 void
@@ -6970,7 +6935,7 @@ ViewerSubject::ReadFromParentAndProcess(int)
     {
         cerr << "The component that launched VisIt's viewer has terminated "
                 "abnormally." << endl;
-        mainApp->quit();
+        qApp->quit();
     }
     ENDTRY
 }
@@ -7248,7 +7213,8 @@ void
 ViewerSubject::StartLaunchProgress()
 {
     launchingComponent = true;
-    checkParent->setEnabled(false);
+    if(checkParent != 0)
+        checkParent->setEnabled(false);
 }
 
 // ****************************************************************************
@@ -7271,7 +7237,8 @@ void
 ViewerSubject::EndLaunchProgress()
 {
     launchingComponent = false;
-    checkParent->setEnabled(true);
+    if(checkParent != 0)
+        checkParent->setEnabled(true);
 }
 
 // ****************************************************************************
@@ -9456,4 +9423,99 @@ ViewerSubject::SetDefaultFileOpenOptions()
     fs->BroadcastUpdatedFileOpenOptions();
     ViewerEngineManager *em = ViewerEngineManager::Instance();
     em->UpdateDefaultFileOpenOptions(fs->GetFileOpenOptions());
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::GetNowinMode
+//
+// Purpose: 
+//   Get the nowin mode.
+//
+// Returns:    The current nowin mode.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 22 15:16:39 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerSubject::GetNowinMode() const
+{
+    return nowin;
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::SetNowinMode
+//
+// Purpose: 
+//   Set the nowin mode.
+//
+// Arguments:
+//   value : The new nowin value.
+//
+// Note:       This method only has an effect before the Initialize method
+//             has been called.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 22 15:16:58 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::SetNowinMode(bool value)
+{
+    nowin = value;
+    avtCallback::SetSoftwareRendering(nowin);
+    ViewerWindow::SetNoWinMode(nowin);
+    ViewerRemoteProcessChooser::SetNoWinMode(nowin);
+    avtCallback::SetNowinMode(nowin);
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::SetUseWindowMetrics
+//
+// Purpose: 
+//   Sets whether the window metrics are used.
+//
+// Arguments:
+//   value : The new window metrics value
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 22 15:17:35 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::SetUseWindowMetrics(bool value)
+{
+    useWindowMetrics = value;
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::GetUseWindowMetrics
+//
+// Purpose: 
+//   Get the window metrics setting.
+//
+// Returns:    The current window metrics setting.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 22 15:18:24 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerSubject::GetUseWindowMetrics() const
+{
+    return useWindowMetrics;
 }

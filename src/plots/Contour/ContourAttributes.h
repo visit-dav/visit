@@ -187,6 +187,8 @@ public:
     void EnlargeMultiColor(int newSize);
     bool ColorIsChanged(int index) const;
     void MarkColorAsChanged(int index);
+    virtual bool SetValue(const std::string &name, const int &value);
+    virtual bool SetValue(const std::string &name, const doubleVector &value);
 
     // IDs that can be used to identify fields in case statements
     enum {

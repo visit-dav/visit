@@ -102,6 +102,9 @@ class VTKQT_API vtkQtRenderWindow : public vtkRenderWindow, public QMainWindow
 //  Added stereo methods, to override base class in order to enable red-green
 //  stereo support.
 //
+//  Brad Whitlock, Wed Aug 20 09:41:03 PDT 2008
+//  Changed to a single constructor that defaults to an embedded widget.
+//
 // ****************************************************************************
 
 public:
@@ -125,8 +128,7 @@ public:
     // Set name of rendering window
     virtual void SetWindowName(const char *);
 
-    vtkQtRenderWindow(QWidget *parent = 0, const char* name = 0, const QGLWidget *shareWidget = 0, WFlags f = 0);
-    vtkQtRenderWindow(const QGLFormat &format, QWidget *parent = 0, const char *name = 0, const QGLWidget *shareWidget = 0, WFlags f = 0);
+    vtkQtRenderWindow(QWidget *parent = 0, WFlags f = 0);
     virtual ~vtkQtRenderWindow();
     static vtkQtRenderWindow *New();
 

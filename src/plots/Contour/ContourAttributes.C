@@ -1576,3 +1576,38 @@ ContourAttributes::MarkColorAsChanged(int index)
     }
 }
 
+bool
+ContourAttributes::SetValue(const std::string &name, const int &value)
+{
+    int index = FieldNameToIndex(name);
+    bool retval;
+    if(index == ID_contourNLevels)
+    {
+        SetContourNLevels(value);
+        retval = true;
+    }
+    else
+        retval = AttributeSubject::SetValue(name, value);
+    return retval;
+}
+
+bool
+ContourAttributes::SetValue(const std::string &name, const doubleVector &value)
+{
+    int index = FieldNameToIndex(name);
+    bool retval;
+    if(index == ID_contourPercent)
+    {
+        SetContourPercent(value);
+        retval = true;
+    }
+    else if(index == ID_contourValue)
+    {
+        SetContourValue(value);
+        retval = true;
+    }
+    else
+        retval = AttributeSubject::SetValue(name, value);
+    return retval;
+}
+

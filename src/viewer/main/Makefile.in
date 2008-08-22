@@ -310,6 +310,11 @@
 #    Added VIEWER_MESA_STUB_CPPFLAGS back into CPPFLAGS.  They were
 #    clobbered some time in the past.
 #
+#    Brad Whitlock, Mon Aug 18 13:18:27 PDT 2008
+#    Added VisItViewer and changed rules for building the viewer library.
+#    Nearly everything goes into libviewer now so we can use the viewer
+#    in other applications.
+#
 ##############################################################################
 
 ##
@@ -345,13 +350,7 @@ CPPFLAGS=@PLATFORM_CPPFLAGS@ @CPPFLAGS@ @VIEWER_MESA_STUB_CPPFLAGS@ $(VTK_INCLUD
 ## Files...
 ##
 
-PUBLIC_SRC= \
-    ViewerBase.C \
-    ViewerOperator.C \
-    ViewerPlot.C \
-    ViewerSubject.C
-
-PRIVATE_SRC=\
+LIBSRC= \
     ActionGroupDescription.C \
     AnimationActions.C \
     EngineKey.C \
@@ -364,6 +363,7 @@ PRIVATE_SRC=\
     ViewerAction.C \
     ViewerActionBase.C \
     ViewerActionManager.C \
+    ViewerBase.C \
     ViewerChangeUsernameWindow.C \
     ViewerClientConnection.C \
     ViewerCommandFromSimObserver.C \
@@ -379,28 +379,33 @@ PRIVATE_SRC=\
     ViewerMetaDataObserver.C \
     ViewerMultipleAction.C \
     ViewerObserverToSignal.C \
+    ViewerOperator.C \
     ViewerOperatorFactory.C \
     ViewerPasswordWindow.C \
+    ViewerPlot.C \
     ViewerPlotFactory.C \
     ViewerPlotList.C \
     ViewerPopupMenu.C \
     ViewerQuery.C \
     ViewerQueryManager.C \
     ViewerRemoteProcessChooser.C \
-    ViewerServerManager.C \
     ViewerSILAttsObserver.C \
+    ViewerServerManager.C \
+    ViewerStateBuffered.C \
+    ViewerSubject.C \
     ViewerToggleAction.C \
     ViewerToolbar.C \
     ViewerWindow.C \
     ViewerWindowManager.C \
     ViewerWindowManagerAttributes.C \
+    VisItViewer.C \
     WindowActions.C
+
 
 MAINSRC=viewer.C
 
 HDRMOC = \
     PlotAndOperatorActions.h \
-    ViewerBase.h \
     ViewerAction.h \
     ViewerActionBase.h \
     ViewerChangeUsernameWindow.h \
@@ -416,25 +421,14 @@ HDRMOC = \
     ViewerPlotList.h \
     ViewerServerManager.h \
     ViewerSILAttsObserver.h \
+    ViewerStateBuffered.h \
     ViewerSubject.h \
     ViewerWindowManager.h
 
 SRCMOC=${HDRMOC:.h=_moc.C}
 
-VIEWERLIB_SRC=@VIEWERLIB_SRC@
-VIEWEREXE_SRC=@VIEWEREXE_SRC@
-
-##
-## On MacOS X, here are the expansions
-##
-## VIEWERLIB_SRC=$(PUBLIC_SRC) $(PRIVATE_SRC) $(SRCMOC)
-## VIEWEREXE_SRC=$(MAINSRC)
-##
-## On other Unix versions, here are the expansions.
-##
-## VIEWERLIB_SRC=$(PUBLIC_SRC)
-## VIEWEREXE_SRC=$(MAINSRC) $(PRIVATE_SRC) $(SRCMOC)
-##
+VIEWERLIB_SRC=$(LIBSRC) $(SRCMOC)
+VIEWEREXE_SRC=$(MAINSRC)
 
 VIEWERLIB_OBJ=${VIEWERLIB_SRC:.C=.o}
 VIEWEREXE_OBJ=${VIEWEREXE_SRC:.C=.o}
@@ -443,7 +437,7 @@ OBJ=$(VIEWERLIB_OBJ)
 ##
 ## dependency generation requires SRC to be defined as all source files
 ##
-SRC=$(PUBLIC_SRC) $(PRIVATE_SRC) $(MAINSRC) $(SRCMOC)
+SRC=$(LIBSRC) $(MAINSRC) $(SRCMOC)
 
 ##
 ## Standard targets...

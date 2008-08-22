@@ -36,71 +36,103 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* //
-//                               QtVisWindow.C                               //
-// ************************************************************************* //
+#include <qapplication.h>
+#include <qdir.h>
 
-#include <QtVisWindow.h>
+#include <visitstream.h>
+#include <VisItViewer.h>
+#include <VisItException.h>
 
-#include <VisWinRenderingWithWindow.h>
-#include <vtkQtRenderWindow.h>
-
-vtkQtRenderWindow* (*QtVisWindow::windowCreationCallback)(void *) = 0;
-void                *QtVisWindow::windowCreationData = 0;
+#include <SimpleVisApp.h>
 
 // ****************************************************************************
-//  Method: QtVisWindow constructor
+//  Method: main
 //
-//  Programmer: Hank Childs
-//  Creation:   March 4, 2004
+//  Purpose:
+//      The embedded viewer main program.
+//
+//  Arguments:
+//      argc    The number of command line arguments.
+//      argv    The command line arguments.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Aug 18 16:49:40 PDT 2008
 //
 //  Modifications:
-//    Jeremy Meredith, Tue Jul 17 16:35:37 EDT 2007
-//    Added fullscreen support.
 //
 // ****************************************************************************
 
-QtVisWindow::QtVisWindow(bool fullScreenMode) : VisWindow(false)
+int
+main(int argc, char *argv[])
 {
-    bool owns = true;
-    vtkQtRenderWindow *renWin = 0;
-    if(windowCreationCallback != 0)
+    int retval = 0;
+
+    //
+    // Do basic initialization. This is only done once to initialize the
+    // viewer library.
+    //
+    VisItViewer::Initialize(&argc, &argv);
+
+    TRY
     {
-        renWin = windowCreationCallback(windowCreationData);
-        owns = false;
+        //
+        // Create the viewer.
+        //
+        VisItViewer viewer;
+
+        // Set up VISITHOME so it finds our development version of VisIt when 
+        // run from this directory.
+        QDir d("../../");
+        std::string visithome(d.absPath().latin1());
+        viewer.SetVISITHOME(visithome);
+
+        //
+        // Process the command line arguments first since some may be removed
+        // by QApplication::QApplication.
+        //
+        viewer.ProcessCommandLine(argc, argv);
+
+        //
+        // Create the QApplication. This sets the qApp pointer.
+        //
+        QApplication *mainApp = new QApplication(argc, argv);
+
+        //
+        // Create our visualization app. We have to do it before the call to Setup()
+        // since we're embedding vis windows.
+        //
+        SimpleVisApp *visapp = new SimpleVisApp(&viewer);
+
+        //
+        // Now that we've created the QApplication, let's call the viewer's
+        // setup routine.
+        //
+        viewer.Setup();
+
+        //
+        // Show our app's main window
+        //
+        visapp->show();
+
+        //
+        // Execute the viewer.
+        //
+        retval = mainApp->exec();
     }
-    else
-        renWin = vtkQtRenderWindow::New();
-    VisWinRenderingWithWindow *ren =
-        new VisWinRenderingWithWindow(renWin, owns, colleagueProxy);
-    ren->SetFullScreenMode(fullScreenMode);
-    Initialize(ren);
+    CATCH2(VisItException, e)
+    {
+        cerr << "VisIt's viewer encountered the following fatal "
+                "initialization error: " << endl
+             << e.Message().c_str() << endl;
+        retval = -1;
+    }
+    ENDTRY
+
+    // Finalize the viewer library.
+    VisItViewer::Finalize();
+
+    return retval;
 }
 
-// ****************************************************************************
-// Method: QtVisWindow::SetWindowCreationCallback
-//
-// Purpose: 
-//   Sets the window creation callback.
-//
-// Arguments:
-//   wcc     : The window creation callback.
-//   wccdata : The window creation callback arguments.
-//
-// Returns:    A new instance of vtkQtRenderWindow.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Aug 18 16:24:18 PDT 2008
-//
-// Modifications:
-//   
-// ****************************************************************************
 
-void
-QtVisWindow::SetWindowCreationCallback(vtkQtRenderWindow *(*wcc)(void*), void *wccdata)
-{
-    windowCreationCallback = wcc;
-    windowCreationData = wccdata;
-}
+

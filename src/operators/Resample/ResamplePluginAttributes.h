@@ -135,6 +135,8 @@ public:
     virtual std::string               GetFieldTypeName(int index) const;
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
+    // User-defined methods
+    virtual bool SetValue(const std::string &name, const double &value);
 
     // IDs that can be used to identify fields in case statements
     enum {

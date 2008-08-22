@@ -41,8 +41,8 @@
 #include <state_exports.h>
 #include <vector>
 #include <string>
-#include <exception>
 #include <visitstream.h>
+#include <vectortypes.h>
 #include <VisItException.h>
 
 // Forward declaration
@@ -176,9 +176,66 @@ public:
     virtual const std::string TypeName() const;
 
     virtual std::string GetFieldName(int index) const;
+    int                 FieldNameToIndex(const std::string &fieldName) const;
     virtual FieldType   GetFieldType(int index) const;
     virtual std::string GetFieldTypeName(int index) const;
     virtual bool        FieldsEqual(int index, const AttributeGroup*) const;
+
+    // Generic methods for setting fields.
+    virtual bool SetValue(const std::string &name, const char &value);
+    virtual bool SetValue(const std::string &name, const unsigned char &value);
+    virtual bool SetValue(const std::string &name, const int &value);
+    virtual bool SetValue(const std::string &name, const long &value);
+    virtual bool SetValue(const std::string &name, const float &value);
+    virtual bool SetValue(const std::string &name, const double &value);
+    virtual bool SetValue(const std::string &name, const std::string &value);
+    virtual bool SetValue(const std::string &name, const bool &value);
+
+    virtual bool SetValue(const std::string &name, const char *value, int len);
+    virtual bool SetValue(const std::string &name, const unsigned char *value, int len);
+    virtual bool SetValue(const std::string &name, const int *value, int len);
+    virtual bool SetValue(const std::string &name, const long *value, int len);
+    virtual bool SetValue(const std::string &name, const float *value, int len);
+    virtual bool SetValue(const std::string &name, const double *value, int len);
+    virtual bool SetValue(const std::string &name, const std::string *value, int len);
+    virtual bool SetValue(const std::string &name, const bool *value, int len);
+
+    virtual bool SetValue(const std::string &name, const charVector &value);
+    virtual bool SetValue(const std::string &name, const unsignedCharVector &value);
+    virtual bool SetValue(const std::string &name, const intVector &value);
+    virtual bool SetValue(const std::string &name, const longVector &value);
+    virtual bool SetValue(const std::string &name, const floatVector &value);
+    virtual bool SetValue(const std::string &name, const doubleVector &value);
+    virtual bool SetValue(const std::string &name, const stringVector &value);
+    virtual bool SetValue(const std::string &name, const boolVector &value);
+
+    // Generic methods for getting fields.
+    virtual bool GetValue(const std::string &name,  char &value);
+    virtual bool GetValue(const std::string &name,  unsigned char &value);
+    virtual bool GetValue(const std::string &name,  int &value);
+    virtual bool GetValue(const std::string &name,  long &value);
+    virtual bool GetValue(const std::string &name,  float &value);
+    virtual bool GetValue(const std::string &name,  double &value);
+    virtual bool GetValue(const std::string &name,  std::string &value);
+    virtual bool GetValue(const std::string &name,  bool &value);
+
+    virtual bool GetValue(const std::string &name,  char **value, int &len);
+    virtual bool GetValue(const std::string &name,  unsigned char **value, int &len);
+    virtual bool GetValue(const std::string &name,  int **value, int &len);
+    virtual bool GetValue(const std::string &name,  long **value, int &len);
+    virtual bool GetValue(const std::string &name,  float **value, int &len);
+    virtual bool GetValue(const std::string &name,  double **value, int &len);
+    virtual bool GetValue(const std::string &name,  std::string **value, int &len);
+    virtual bool GetValue(const std::string &name,  bool **value, int &len);
+
+    virtual bool GetValue(const std::string &name,  charVector &value);
+    virtual bool GetValue(const std::string &name,  unsignedCharVector &value);
+    virtual bool GetValue(const std::string &name,  intVector &value);
+    virtual bool GetValue(const std::string &name,  longVector &value);
+    virtual bool GetValue(const std::string &name,  floatVector &value);
+    virtual bool GetValue(const std::string &name,  doubleVector &value);
+    virtual bool GetValue(const std::string &name,  stringVector &value);
+    virtual bool GetValue(const std::string &name,  boolVector &value);
 
     static bool VersionLessThan(const char *configVersion, const char *version);
 protected:
@@ -246,8 +303,6 @@ private:
 
 ostream& operator<<(ostream& os, const AttributeGroup&);
 
-// Some vector typedefs.
-#include <vectortypes.h>
 typedef std::vector<AttributeGroup *> AttributeGroupVector;
 
 // An exception class
