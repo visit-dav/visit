@@ -331,6 +331,9 @@
 #    Hank Childs, Mon Aug 11 14:48:51 PDT 2008
 #    Add support for libtcmalloc.
 #
+#    Brad Whitlock, Thu Aug 21 10:21:12 PDT 2008
+#    Added code to copy translation files.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -778,6 +781,7 @@ ln -s $Version distribution/visit/current
 mkdir distribution/visit/$Version/$visitbindir
 mkdir distribution/visit/$Version/$visitbindir/bin
 mkdir distribution/visit/$Version/$visitbindir/bin/movietemplates
+mkdir distribution/visit/$Version/$visitbindir/bin/translations
 mkdir distribution/visit/$Version/$visitbindir/lib
 mkdir distribution/visit/$Version/$visitbindir/include
 mkdir distribution/visit/$Version/$visitbindir/help
@@ -892,6 +896,9 @@ cp $VisItDir/bin/movietemplates/*.{bmp,jpg,gif,tif} $bindir/movietemplates
 cp $VisItDir/bin/visitdiff.py  $bindir
 # Copy the visitprotocol program.
 cp $VisItDir/exe/visitprotocol $bindir
+# Copy the language translations
+cp $VisItDir/bin/translations/*.qm $bindir/translations
+cp $VisItDir/bin/translations/*.ts $bindir/translations
 
 #
 # Make symlinks for the programs
