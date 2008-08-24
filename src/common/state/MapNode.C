@@ -372,6 +372,12 @@ MapNode::ToXMLNode() const
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    December 14, 2007
+//
+//  Modifications:
+//
+//    Tom Fogal, Thu Aug 21 14:28:43 EDT 2008
+//    Remove an unused variable.
+//
 // ****************************************************************************
 void 
 MapNode::SetValue(const XMLNode &node)
@@ -381,7 +387,6 @@ MapNode::SetValue(const XMLNode &node)
     if(node.Name()!="map_node" || nchildren == 0)
         return; // error
 
-    XMLNode *child = node.GetChild(0);
     // find out if we have child nodes, or if this node is a value node
     if(nchildren == 1 && node.GetChild(0)->Name() == "variant")
     {

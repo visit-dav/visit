@@ -367,8 +367,4 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     virtual void                  RealizeRenderWindow(void) = 0;
 };
-
-
 #endif
-
-
