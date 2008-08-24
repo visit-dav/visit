@@ -174,9 +174,7 @@ vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
 //
 //  Purpose:
 //      Initialize the VTK portion of the program.  Separated from Init so
-//      there would not be a VTK dependence on the GUI.  The only 
-//      initialization that happens currently is the vtk print statements are
-//      re-routed to the debug stream.
+//      there would not be a VTK dependence on the GUI.
 //
 //  Programmer: Hank Childs
 //  Creation:   April 24, 2001
@@ -220,7 +218,7 @@ InitVTK::Initialize(void)
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Feb  5 09:09:08 PST 2003
-//    Use vtkGrahpicsFactory and vtkImagingFactory static variables to
+//    Use vtkGraphicsFactory and vtkImagingFactory static variables to
 //    handle Mesa objects.
 //
 // ****************************************************************************
@@ -234,7 +232,6 @@ InitVTK::ForceMesa(void)
 #endif
 }
 
-
 void
 InitVTK::UnforceMesa(void)
 {
@@ -243,5 +240,3 @@ InitVTK::UnforceMesa(void)
     vtkImagingFactory::SetUseMesaClasses(0);
 #endif
 }
-
-

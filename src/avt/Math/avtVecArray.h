@@ -43,6 +43,13 @@
 #include <iterator>
 #include <vector>
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Tom Fogal, Thu Aug 21 15:23:16 EDT 2008
+//    Added some const qualifications to member functions.
+//
+// ****************************************************************************
 template<typename Ref>
 class avtVecArrayIterator
 {
@@ -107,47 +114,47 @@ public:
         return *this;
     }
     
-    bool operator==( const avtVecArrayIterator& other )
+    bool operator==( const avtVecArrayIterator& other ) const
     {
         return _cur == other._cur;
     }
 
-    bool operator!=( const avtVecArrayIterator& other )
+    bool operator!=( const avtVecArrayIterator& other ) const
     {
         return _cur != other._cur;
     }
     
-    bool operator<( const avtVecArrayIterator& other )
+    bool operator<( const avtVecArrayIterator& other ) const
     {
         return _cur < other._cur;
     }
     
-    bool operator>( const avtVecArrayIterator& other )
+    bool operator>( const avtVecArrayIterator& other ) const
     {
         return _cur > other._cur;
     }
     
-    bool operator>=( const avtVecArrayIterator& other )
+    bool operator>=( const avtVecArrayIterator& other ) const
     {
         return _cur >= other._cur;
     }
     
-    bool operator<=( const avtVecArrayIterator& other )
+    bool operator<=( const avtVecArrayIterator& other ) const
     {
         return _cur <= other._cur;
     }
     
-    difference_type operator-( const avtVecArrayIterator& other )
+    difference_type operator-( const avtVecArrayIterator& other ) const
     {
         return (_cur - other._cur)/_dim;
     }
     
-    avtVecArrayIterator operator-( difference_type n )
+    avtVecArrayIterator operator-( difference_type n ) const
     {
         return VecArrayIterator( *this ) -= n;
     }
 
-    avtVecArrayIterator operator+( difference_type n )
+    avtVecArrayIterator operator+( difference_type n ) const
     {
         return avtVecArrayIterator( *this ) += n;
     }
@@ -313,5 +320,3 @@ protected:
 };
 
 #endif // AVT_VECARRAY_H
-
-

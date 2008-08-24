@@ -798,22 +798,26 @@ avtTransparencyActor::RemoveFromRenderer(vtkRenderer *ren)
 //    the suspension of transparent rendering for two-pass mode.
 //
 //    Kathleen Bonnell, Wed May 17 15:08:39 PDT 2006
-///   Ensure that appender has non-NULL input (can have empty input, not NULL).
+//    Ensure that appender has non-NULL input (can have empty input, not NULL).
+//
+//    Tom Fogal, Thu Aug 14 14:14:54 EDT 2008
+//    Match size types.
+//
 // ****************************************************************************
 
 void
 avtTransparencyActor::SetUpActor(void)
 {
     appender->RemoveAllInputs();
-    int numActors = datasets.size();
+    size_t numActors = datasets.size();
     vtkActor *repActor = NULL;
     bool addedInput = false;
-    for (int i = 0 ; i < numActors ; i++)
+    for (size_t i = 0 ; i < numActors ; i++)
     {
         if (useActor[i] && visibility[i] == true)
         {
-            int numParts = datasets[i].size();
-            for (int j = 0 ; j < numParts ; j++)
+            size_t numParts = datasets[i].size();
+            for (size_t j = 0 ; j < numParts ; j++)
             {
                 PrepareDataset(i, j);
                 if (preparedDataset[i][j] != NULL)

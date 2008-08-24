@@ -118,6 +118,9 @@ using std::vector;
 //    Made oldest method public.
 //    Added const operator[]
 //
+//    Tom Fogal, Thu Aug 21 16:06:29 EDT 2008
+//    Made the destructor virtual, since there is a virtual method.
+//
 // ****************************************************************************
 
 // tags for which kind of delete to call on cache pre-emption
@@ -138,7 +141,7 @@ class MRUCacheBase {
    public:
 
       MRUCacheBase() : numSlots(nS), ageCounter(0) {};
-     ~MRUCacheBase() {};
+      virtual ~MRUCacheBase() {};
 
       // explicit existence test (won't change MRU history)
       bool exists(const kT& key) const;
