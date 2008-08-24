@@ -362,6 +362,10 @@ exec perl -x $0 ${1+"$@"};
 #    PGI-based libraries behind the user's back.
 #    Default to use `sh' in qsub scripts; it's more portable than tcsh.
 #
+#    Tom Fogal, Sat Aug 23 14:45:04 EDT 2008
+#    Removed all force specification's of the xterm's font, allowing the user's
+#    X resource DB to take effect.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2415,7 +2419,7 @@ else
             {
                 # Run GDB under an xterm
                 $debugtitle = "\"Debug $real_exe\"";
-                @debugcmd = ("xterm", "-title", $debugtitle, "-fn", "fixed", "-e", "gdb", $real_exe, "-x", $gdbfilename);
+                @debugcmd = ("xterm", "-title", $debugtitle, "-e", "gdb", $real_exe, "-x", $gdbfilename);
             }
 
             print STDERR "Running: @debugcmd\n" if (! $quiet);
@@ -2467,7 +2471,7 @@ else
                 elsif($ENV{TERM} eq "xterm" or $ENV{DISPLAY} ne undef)
                 {
                     @tmpcmd = @visitcmd;
-                    @visitcmd = ("xterm", "-title", "VisIt $exe_name$ver", "-fn", "fixed", "-e");
+                    @visitcmd = ("xterm", "-title", "VisIt $exe_name$ver", "-e");
                     push @visitcmd, @tmpcmd;
                 }
                 else
@@ -2486,7 +2490,7 @@ else
                 splice @visitcmd, 0, 1, @newcmd;
 
                 @tmpcmd = @visitcmd;
-                @visitcmd = ("xterm", "-title", "VisIt $exe_name$ver", "-fn", "fixed", "-e");
+                @visitcmd = ("xterm", "-title", "VisIt $exe_name$ver", "-e");
                 push @visitcmd, @tmpcmd;
             }
         }
