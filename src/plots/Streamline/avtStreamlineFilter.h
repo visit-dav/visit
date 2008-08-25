@@ -70,6 +70,9 @@ class vtkAppendPolyData;
 #define STREAMLINE_COLOR_SOLID       0
 #define STREAMLINE_COLOR_SPEED       1
 #define STREAMLINE_COLOR_VORTICITY   2
+#define STREAMLINE_COLOR_ARCLENGTH   3
+#define STREAMLINE_COLOR_TIME        4
+#define STREAMLINE_COLOR_ID          5
 
 #define STREAMLINE_DISPLAY_LINES     0
 #define STREAMLINE_DISPLAY_TUBES     1
@@ -137,7 +140,7 @@ class avtStreamlineWrapper
     };
 
     avtStreamlineWrapper();
-    avtStreamlineWrapper( avtStreamline *s, Dir slDir=FWD );
+    avtStreamlineWrapper( avtStreamline *s, Dir slDir=FWD, int ID=-1 );
     ~avtStreamlineWrapper();
 
     void UpdateDomainCount( int dom );
@@ -163,6 +166,7 @@ class avtStreamlineWrapper
     vector<int> domainVisitCnts;
     int maxCnt, sum, numDomainsVisited;
     int numTimesCommunicated;
+    int id;
 };
 
 // ****************************************************************************

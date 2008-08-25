@@ -119,6 +119,9 @@ static const int MAX_SLMSG_SZ = 10*1024*1024;
 //   Dave Pugmire, Wed Aug 20 10:37:24 EST 2008
 //   Initialize some previously unitialized member data.
 //
+//   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
+//   Add a seed point id attribute to each streamline.
+//
 // ****************************************************************************
 
 avtStreamlineWrapper::avtStreamlineWrapper()
@@ -129,6 +132,7 @@ avtStreamlineWrapper::avtStreamlineWrapper()
     sl = NULL;
     dir = FWD;
     maxCnt = sum= numDomainsVisited = 0;
+    id = -1;
 }
 
 
@@ -142,9 +146,12 @@ avtStreamlineWrapper::avtStreamlineWrapper()
 //   Dave Pugmire, Wed Aug 20 10:37:24 EST 2008
 //   Initialize some previously unitialized member data.
 //
+//   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
+//   Add a seed point id attribute to each streamline.
+//
 // ****************************************************************************
 
-avtStreamlineWrapper::avtStreamlineWrapper(avtStreamline *s, Dir slDir)
+avtStreamlineWrapper::avtStreamlineWrapper(avtStreamline *s, Dir slDir, int ID)
 {
     sl = s;
     status = UNSET;
@@ -152,6 +159,7 @@ avtStreamlineWrapper::avtStreamlineWrapper(avtStreamline *s, Dir slDir)
     dir = slDir;
     numTimesCommunicated = 0;
     maxCnt = sum= numDomainsVisited = 0;
+    id = ID;
 }
 
 
@@ -216,6 +224,10 @@ avtStreamlineWrapper::Debug()
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
+//   Add a seed point id attribute to each streamline.
+//
 // ****************************************************************************
 
 void
@@ -225,6 +237,7 @@ avtStreamlineWrapper::Serialize(MemStream::Mode mode, MemStream &buff,
     //debug1 << "avtStreamlineWrapper::Serialize. sz= "<<buff.buffLen()<< endl;
 
     buff.io(mode, dir);
+    buff.io(mode, id);
     buff.io(mode, domain);
     buff.io(mode, status);
     buff.io(mode, numTimesCommunicated);
@@ -256,6 +269,9 @@ avtStreamlineWrapper::Serialize(MemStream::Mode mode, MemStream &buff,
 //   Step derivative is not giving the right answer. So, use the velEnd vector
 //   for coloring by speed.
 //
+//   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
+//   Add new coloring methods, length, time and ID.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -283,10 +299,11 @@ avtStreamlineWrapper::GetVTKPolyData(int spatialDim, int coloringMethod,
                             (spatialDim > 2 ? (*siter)->front()[2] : 0.0));
         cells->InsertCellPoint(i);
 
+        avtIVPStep *step = (*siter);
+
         // Set the speed/vorticity.
         if (coloringMethod == STREAMLINE_COLOR_SPEED)
         {
-            avtIVPStep *step = (*siter);
             avtVec deriv = step->velEnd;
             val = deriv.values()[0]*deriv.values()[0] 
                 + deriv.values()[1]*deriv.values()[1];
@@ -294,11 +311,22 @@ avtStreamlineWrapper::GetVTKPolyData(int spatialDim, int coloringMethod,
                 val += deriv.values()[2]*deriv.values()[2];
             val = sqrt(val);
         }
+        else if (coloringMethod ==  STREAMLINE_COLOR_ARCLENGTH)
+        {
+            val += step->length();
+        }
+        else if (coloringMethod ==  STREAMLINE_COLOR_TIME)
+        {
+            val = step->tEnd;
+        }
+        else if (coloringMethod ==  STREAMLINE_COLOR_ID)
+        {
+            val = (float)id;
+        }
         
         if (coloringMethod == STREAMLINE_COLOR_VORTICITY || 
             displayMethod == STREAMLINE_DISPLAY_RIBBONS)
         {
-            avtIVPStep *step = (*siter);
             double dT = (step->tEnd - step->tStart);
             float scaledVort = step->vorticity * dT;
             theta += scaledVort;
@@ -2687,6 +2715,11 @@ avtStreamlineFilter::OLD_ParallelBalancedStaticDomains(std::vector<pt3d> &allSee
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
+//   Memory leak fix.
+//
 // ****************************************************************************
 
 void
@@ -2793,22 +2826,28 @@ avtStreamlineFilter::AsyncStaticDomains(
                 
                 MemStream buff;
                 slSeg->Serialize(MemStream::WRITE, buff, solver);
+                bool deleteSLSeg = true;
                 
                 for (int i = 0; i < slSeg->seedPtDomainList.size(); i++)
                 {
                     int domRank = DomainToRank(slSeg->seedPtDomainList[i]);
                     if (domRank == rank)
+                    {
                         distributeStreamlines[ rank ].push_back(slSeg);
+                        deleteSLSeg = false;
+                    }
                     else
                     {
                         streamlineSetChanged = true;
-                        avtStreamlineWrapper *newSeg =new avtStreamlineWrapper;
+                        avtStreamlineWrapper *newSeg = new avtStreamlineWrapper;
                         buff.rewind();
                         newSeg->Serialize(MemStream::READ, buff, solver);
                         newSeg->domain = slSeg->seedPtDomainList[i];
                         distributeStreamlines[ domRank ].push_back(newSeg);
                     }
                 }
+                if ( deleteSLSeg )
+                    delete slSeg;
             }
         }
 
@@ -3184,6 +3223,11 @@ bool slDomainCompare(const avtStreamlineWrapper *slA,
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
+//   Fix memory leak. domainCnt not delete if allSameDomain is true.
+//
 // ****************************************************************************
 
 void
@@ -3212,7 +3256,10 @@ avtStreamlineFilter::SortStreamlines(
     }
     
     if (allSameDomain)
+    {
+        delete domainCnt;
         return;
+    }
     
     domainArrayPtr = domainCnt;
     std::sort(streamlines.begin(), streamlines.end(), slDomainCompare);
@@ -4237,6 +4284,11 @@ avtStreamlineFilter::AsyncSendSL(int receiver, avtStreamlineWrapper *slSeg)
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
+//  Modifications:
+//
+//   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
+//   Memory leak fix.
+//
 // ****************************************************************************
 
 void
@@ -4260,7 +4312,7 @@ avtStreamlineFilter::AsyncSendSLs(int receiver,
         avtStreamlineWrapper *slSeg = slSegs[i];
         slSeg->numTimesCommunicated++;
         slSeg->Serialize(MemStream::WRITE, buff, solver);
-        //delete slSeg;
+        delete slSeg;
         
         numSLCommunicated++;
     }
@@ -5061,7 +5113,7 @@ avtStreamlineFilter::UpdateDataObjectInfo(void)
 typedef struct
 {
     pt3d pt;
-    int domain;
+    int domain, id;
 } seedPtDomain;
 
 static int comparePtDom(const void *a, const void *b)
@@ -5107,6 +5159,9 @@ randMinus1_1()
 //    Dave Pugmire, Wed Aug 20 10:37:24 EST 2008
 //    Bug fix. The loop index "i" was being changed when trying to "wiggle"
 //    seed points into domains.
+//
+//   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
+//   Add a seed point id attribute to each streamline.
 //
 // ****************************************************************************
 
@@ -5327,6 +5382,7 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
         {
             pd.pt = candidatePts[i];
             pd.domain = dl[j];
+            pd.id = i;
             ptDom.push_back(pd);
         }
     }
@@ -5342,8 +5398,10 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
              streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
         {
             avtStreamline *sl = new avtStreamline(solver, 0.0, pt);
-            avtStreamlineWrapper *slSeg = new avtStreamlineWrapper(sl, 
-                                                    avtStreamlineWrapper::FWD);
+            avtStreamlineWrapper *slSeg;
+            slSeg = new avtStreamlineWrapper(sl,
+                                             avtStreamlineWrapper::FWD,
+                                             ptDom[i].id);
             slSeg->domain = ptDom[i].domain;
             pts.push_back(slSeg);
         }
@@ -5352,8 +5410,10 @@ avtStreamlineFilter::GetSeedPoints(std::vector<avtStreamlineWrapper *> &pts)
              streamlineDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
         {
             avtStreamline *sl = new avtStreamline(solver, 0.0, pt);
-            avtStreamlineWrapper *slSeg = new avtStreamlineWrapper(sl, 
-                                                    avtStreamlineWrapper::BWD);
+            avtStreamlineWrapper *slSeg;
+            slSeg = new avtStreamlineWrapper(sl, 
+                                             avtStreamlineWrapper::BWD,
+                                             ptDom[i].id);
             slSeg->domain = ptDom[i].domain;
             pts.push_back(slSeg);
         }

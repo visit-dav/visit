@@ -17,6 +17,9 @@
         Solid
         ColorBySpeed
         ColorByVorticity
+        ColorByLength
+        ColorByTime
+        ColorBySeedPointID
       </Enum>
       <Enum name="DisplayMethod">
         Lines
@@ -156,9 +159,6 @@
       </Field>
       <Field name="maxDomainCacheSize" label="Max domain cache" type="int">
         3
-      </Field>
-      <Field name="accurateDistance" label="Accurate distance" type="bool">
-        false
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
