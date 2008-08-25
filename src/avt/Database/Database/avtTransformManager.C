@@ -660,6 +660,9 @@ avtTransformManager::FreeUpResources(int lastts)
 //    Added argument for the domain ID to the signature.  This is needed for
 //    efficiency when accessing the cache.
 //
+//    Hank Childs, Mon Aug 25 16:19:57 PDT 2008
+//    Make delete logic squeaky clean.
+//
 // ****************************************************************************
 vtkDataSet *
 avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
@@ -723,19 +726,22 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                     rv = 0;
                 }
 
+                bool needDelete = false;
                 if (!rv)
                 {
                     debug5 << "avtTransformManager: Converting data set from native to float" << endl;
                     rv = ConvertDataSetToFloat(ds);
+                    needDelete = true;
                     if (objectWasCachedInGenericDB[ds])
                     {
                         cache.CacheVTKObject(vname, type, ts, dom, mat, rv);
-                        rv->Delete();
                     }
                 }
                 vtkDataSet *tmprv = rv->NewInstance();
                 tmprv->CopyStructure(rv);
                 tmprv->GetFieldData()->ShallowCopy(rv->GetFieldData());
+                if (needDelete)
+                    rv->Delete();
                 rv = tmprv;
             }
         }
@@ -773,14 +779,15 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                     else
                         debug5 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in generic db's cache" << endl;
 
+                    bool needDelete = false;
                     if (!newda)
                     {
                         debug5 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in tmngr's cache" << endl;
                         newda = ConvertDataArrayToFloat(da);
+                        needDelete = true;
                         if (objectWasCachedInGenericDB[da])
                         {
                             cache.CacheVTKObject(vname, type, ts, dom, mat, newda);
-                            newda->Delete();
                         }
                     }
                     if (cd->GetScalars() == da)
@@ -791,6 +798,8 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                         rv->GetCellData()->SetTensors(newda);
                     else
                         rv->GetCellData()->AddArray(newda);
+                    if (needDelete)
+                        newda->Delete();
                 }
             }
             else if (pass == 1)
@@ -836,14 +845,15 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                     else
                         debug5 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in generic db's cache" << endl;
 
+                    bool needDelete = false;
                     if (!newda)
                     {
                         debug5 << "avtTransformManager: Array \"" << da->GetName() << "\" was not in tmngr's cache" << endl;
                         newda = ConvertDataArrayToFloat(da);
+                        needDelete = true;
                         if (objectWasCachedInGenericDB[da])
                         {
                             cache.CacheVTKObject(vname, type, ts, dom, mat, newda);
-                            newda->Delete();
                         }
                         else
                         {
@@ -858,6 +868,9 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                         rv->GetPointData()->SetTensors(newda);
                     else
                         rv->GetPointData()->AddArray(newda);
+
+                    if (needDelete)
+                        newda->Delete();
                 }
             }
             else if (pass == 1)

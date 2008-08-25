@@ -804,6 +804,10 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
 //    Hank Childs, Mon Jan  7 17:34:00 PST 2002 
 //    Clear out the cache when the timestep changes.
 //
+//    Hank Childs, Mon Aug 25 16:16:01 PDT 2008
+//    When changing time slices, clear out the cache of the transform 
+//    manager as well.
+//
 // ****************************************************************************
 
 void
@@ -822,6 +826,7 @@ avtGenericDatabase::UpdateInternalState(int ts)
                    << lastTimestep << endl;
             Interface->FreeUpResources(lastTimestep, allDomains);
             cache.ClearTimestep(lastTimestep);
+            xformManager->ClearTimestep(lastTimestep);
         }
     }
     lastTimestep = ts;
