@@ -88,21 +88,22 @@ StreamlineAttributes::SourceType_FromString(const std::string &s, StreamlineAttr
 //
 
 static const char *ColoringMethod_strings[] = {
-"Solid", "ColorBySpeed", "ColorByVorticity"
+"Solid", "ColorBySpeed", "ColorByVorticity", 
+"ColorByLength", "ColorByTime", "ColorBySeedPointID"
 };
 
 std::string
 StreamlineAttributes::ColoringMethod_ToString(StreamlineAttributes::ColoringMethod t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
+    if(index < 0 || index >= 6) index = 0;
     return ColoringMethod_strings[index];
 }
 
 std::string
 StreamlineAttributes::ColoringMethod_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
+    int index = (t < 0 || t >= 6) ? 0 : t;
     return ColoringMethod_strings[index];
 }
 
@@ -110,7 +111,7 @@ bool
 StreamlineAttributes::ColoringMethod_FromString(const std::string &s, StreamlineAttributes::ColoringMethod &val)
 {
     val = StreamlineAttributes::Solid;
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 6; ++i)
     {
         if(s == ColoringMethod_strings[i])
         {
@@ -309,7 +310,7 @@ StreamlineAttributes::StreamlineAlgorithmType_FromString(const std::string &s, S
 }
 
 // Type map format string
-const char *StreamlineAttributes::TypeMapFormatString = "iddDDDDDDdDdDbiibdiisabbiddiiiiib";
+const char *StreamlineAttributes::TypeMapFormatString = "iddDDDDDDdDdDbiibdiisabbiddiiiii";
 
 // ****************************************************************************
 // Method: StreamlineAttributes::StreamlineAttributes
@@ -378,7 +379,6 @@ StreamlineAttributes::StreamlineAttributes() :
     streamlineAlgorithmType = ParallelStaticDomains;
     maxStreamlineProcessCount = 10;
     maxDomainCacheSize = 3;
-    accurateDistance = false;
 }
 
 // ****************************************************************************
@@ -455,7 +455,6 @@ StreamlineAttributes::StreamlineAttributes(const StreamlineAttributes &obj) :
     streamlineAlgorithmType = obj.streamlineAlgorithmType;
     maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
     maxDomainCacheSize = obj.maxDomainCacheSize;
-    accurateDistance = obj.accurateDistance;
 
     SelectAll();
 }
@@ -555,7 +554,6 @@ StreamlineAttributes::operator = (const StreamlineAttributes &obj)
     streamlineAlgorithmType = obj.streamlineAlgorithmType;
     maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
     maxDomainCacheSize = obj.maxDomainCacheSize;
-    accurateDistance = obj.accurateDistance;
 
     SelectAll();
     return *this;
@@ -651,8 +649,7 @@ StreamlineAttributes::operator == (const StreamlineAttributes &obj) const
             (integrationType == obj.integrationType) &&
             (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
             (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
-            (maxDomainCacheSize == obj.maxDomainCacheSize) &&
-            (accurateDistance == obj.accurateDistance));
+            (maxDomainCacheSize == obj.maxDomainCacheSize));
 }
 
 // ****************************************************************************
@@ -927,7 +924,6 @@ StreamlineAttributes::SelectAll()
     Select(ID_streamlineAlgorithmType,   (void *)&streamlineAlgorithmType);
     Select(ID_maxStreamlineProcessCount, (void *)&maxStreamlineProcessCount);
     Select(ID_maxDomainCacheSize,        (void *)&maxDomainCacheSize);
-    Select(ID_accurateDistance,          (void *)&accurateDistance);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1154,12 +1150,6 @@ StreamlineAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("maxDomainCacheSize", maxDomainCacheSize));
     }
 
-    if(completeSave || !FieldsEqual(ID_accurateDistance, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("accurateDistance", accurateDistance));
-    }
-
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1268,7 +1258,7 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
+            if(ival >= 0 && ival < 6)
                 SetColoringMethod(ColoringMethod(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1358,8 +1348,6 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         SetMaxStreamlineProcessCount(node->AsInt());
     if((node = searchNode->GetNode("maxDomainCacheSize")) != 0)
         SetMaxDomainCacheSize(node->AsInt());
-    if((node = searchNode->GetNode("accurateDistance")) != 0)
-        SetAccurateDistance(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1603,13 +1591,6 @@ StreamlineAttributes::SetMaxDomainCacheSize(int maxDomainCacheSize_)
 {
     maxDomainCacheSize = maxDomainCacheSize_;
     Select(ID_maxDomainCacheSize, (void *)&maxDomainCacheSize);
-}
-
-void
-StreamlineAttributes::SetAccurateDistance(bool accurateDistance_)
-{
-    accurateDistance = accurateDistance_;
-    Select(ID_accurateDistance, (void *)&accurateDistance);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1868,12 +1849,6 @@ StreamlineAttributes::GetMaxDomainCacheSize() const
     return maxDomainCacheSize;
 }
 
-bool
-StreamlineAttributes::GetAccurateDistance() const
-{
-    return accurateDistance;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1994,7 +1969,6 @@ StreamlineAttributes::GetFieldName(int index) const
     case ID_streamlineAlgorithmType:   return "streamlineAlgorithmType";
     case ID_maxStreamlineProcessCount: return "maxStreamlineProcessCount";
     case ID_maxDomainCacheSize:        return "maxDomainCacheSize";
-    case ID_accurateDistance:          return "accurateDistance";
     default:  return "invalid index";
     }
 }
@@ -2051,7 +2025,6 @@ StreamlineAttributes::GetFieldType(int index) const
     case ID_streamlineAlgorithmType:   return FieldType_enum;
     case ID_maxStreamlineProcessCount: return FieldType_int;
     case ID_maxDomainCacheSize:        return FieldType_int;
-    case ID_accurateDistance:          return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -2108,7 +2081,6 @@ StreamlineAttributes::GetFieldTypeName(int index) const
     case ID_streamlineAlgorithmType:   return "enum";
     case ID_maxStreamlineProcessCount: return "int";
     case ID_maxDomainCacheSize:        return "int";
-    case ID_accurateDistance:          return "bool";
     default:  return "invalid index";
     }
 }
@@ -2335,11 +2307,6 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (maxDomainCacheSize == obj.maxDomainCacheSize);
         }
         break;
-    case ID_accurateDistance:
-        {  // new scope
-        retval = (accurateDistance == obj.accurateDistance);
-        }
-        break;
     default: retval = false;
     }
 
@@ -2426,7 +2393,6 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
            (showStart != obj.showStart) ||
            (termination != obj.termination) ||
            (terminationType != obj.terminationType) ||
-           (accurateDistance != obj.accurateDistance) ||
            (integrationType != obj.integrationType) ||
            (maxStepLength != obj.maxStepLength) ||
            (relTol != obj.relTol) ||

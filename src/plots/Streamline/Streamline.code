@@ -236,7 +236,6 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
            (showStart != obj.showStart) ||
            (termination != obj.termination) ||
            (terminationType != obj.terminationType) ||
-           (accurateDistance != obj.accurateDistance) ||
            (integrationType != obj.integrationType) ||
            (maxStepLength != obj.maxStepLength) ||
            (relTol != obj.relTol) ||

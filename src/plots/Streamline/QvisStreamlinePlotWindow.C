@@ -134,6 +134,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Dave Pugmire, Tue Aug 19 17:18:03 EST 2008
 //   Removed the accurate distance calculation option.
 //
+//   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
+//   Add new coloring methods, length, time and ID.
+//
 // ****************************************************************************
 
 void
@@ -358,6 +361,9 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     coloringMethod->insertItem(tr("Solid"),0);
     coloringMethod->insertItem(tr("Speed"),1);
     coloringMethod->insertItem(tr("Vorticity magnitude"),2);
+    coloringMethod->insertItem(tr("Arc length"),3);
+    coloringMethod->insertItem(tr("Time"),4);
+    coloringMethod->insertItem(tr("Seed point ID"),5);
     connect(coloringMethod, SIGNAL(activated(int)),
             this, SLOT(coloringMethodChanged(int)));
     aLayout->addWidget(new QLabel(coloringMethod, tr("Color by"), 
