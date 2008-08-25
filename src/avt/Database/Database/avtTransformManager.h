@@ -80,6 +80,9 @@ class avtSourceFromDatabase;
 //    This is needed for performance reasons when there are a large number
 //    of entries in the cache.
 //
+//    Hank Childs, Mon Aug 25 16:16:57 PDT 2008
+//    Add a function to clear the cache.
+//
 // ****************************************************************************
 
 class DATABASE_API avtTransformManager
@@ -98,8 +101,10 @@ class DATABASE_API avtTransformManager
 
     bool                       TransformMaterialDataset(const avtDatabaseMetaData *const md,
                                    const avtDataRequest_p &spec, avtMaterial **mat, int);
-  private:
 
+    void                       ClearTimestep(int ts) { cache.ClearTimestep(ts); };
+
+  private:
     vtkDataSet                *NativeToFloat(const avtDatabaseMetaData *const md,
                                              const avtDataRequest_p &spec,
                                              vtkDataSet *ds, int dom);
