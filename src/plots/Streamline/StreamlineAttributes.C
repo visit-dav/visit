@@ -376,6 +376,7 @@ StreamlineAttributes::StreamlineAttributes() :
     relTol = 0.0001;
     absTol = 1e-05;
     terminationType = Distance;
+    integrationType = DormandPrince;
     streamlineAlgorithmType = ParallelStaticDomains;
     maxStreamlineProcessCount = 10;
     maxDomainCacheSize = 3;

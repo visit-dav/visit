@@ -150,6 +150,7 @@
         Distance
       </Field>
       <Field name="integrationType" label="Integration type" type="enum" subtype="IntegrationType">
+        DormandPrince
       </Field>
       <Field name="streamlineAlgorithmType" label="Streamline algorithm type" type="enum" subtype="StreamlineAlgorithmType">
         ParallelStaticDomains
