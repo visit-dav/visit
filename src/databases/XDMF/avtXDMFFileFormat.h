@@ -93,6 +93,7 @@ class MeshInfo
                        MeshInfo()
                        {
                            order = NULL;
+                           baseIndex = NULL;
                            extents = NULL;
                            ghostOffsets = NULL;
                            topologyData = NULL;
@@ -102,6 +103,7 @@ class MeshInfo
     virtual           ~MeshInfo()
                       {
                           if (order != NULL) delete [] order;
+                          if (baseIndex != NULL) delete [] baseIndex;
                           if (extents != NULL) delete [] extents;
                           if (ghostOffsets != NULL) delete [] ghostOffsets;
                           if (topologyData != NULL) delete topologyData;
@@ -140,6 +142,7 @@ class MeshInfo
     int                topologicalDimension;
     int                spatialDimension;
     int                dimensions[3];
+    int               *baseIndex;
     double            *extents;
     int               *ghostOffsets;
     DataItem          *topologyData;
@@ -226,6 +229,10 @@ class DomainInfo
 //    Added the arguments baseOffset and order to ParseTopology and
 //    PopulateCellInformation.
 //
+//    Eric Brugger, Tue Aug 26 15:53:36 PDT 2008
+//    Modified ParseGridInformation to handle grid information with a
+//    baseIndex.
+//
 // ****************************************************************************
 
 class avtXDMFFileFormat : public avtSTMDFileFormat
@@ -289,7 +296,7 @@ class avtXDMFFileFormat : public avtSTMDFileFormat
                                string &, string &, DataItem **);
     void                   ParseGeometry(string &, int &, DataItem **);
     VarInfo               *ParseAttribute(int, int, const string &);
-    void                   ParseGridInformation(string &);
+    void                   ParseGridInformation(string &, string &);
     void                   ParseUniformGrid(vector<MeshInfo*> &, int,
                                int, bool, const string &);
     void                   ParseGrid(vector<MeshInfo*> &, int, int,

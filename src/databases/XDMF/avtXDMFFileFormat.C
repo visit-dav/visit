@@ -57,6 +57,8 @@
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 #include <avtGhostData.h>
+#include <avtStructuredDomainBoundaries.h>
+#include <avtVariableCache.h>
 
 #include <Expression.h>
 
@@ -1386,11 +1388,17 @@ avtXDMFFileFormat::ParseAttribute(int iDomain, int iGrid,
 //  Programmer: Eric Brugger
 //  Creation:   Mon Mar 17 13:22:09 PDT 2008
 //
+//  Modifications:
+//    Eric Brugger, Tue Aug 26 15:57:05 PDT 2008
+//    Modified the routine to handle grid information with a baseIndex.
+//
 // ****************************************************************************
 
 void
-avtXDMFFileFormat::ParseGridInformation(string &ghostOffsets)
+avtXDMFFileFormat::ParseGridInformation(string &baseIndex,
+    string &ghostOffsets)
 {
+    bool haveBaseIndex = false;
     bool haveGhostOffsets = false;
 
     //
@@ -1400,12 +1408,16 @@ avtXDMFFileFormat::ParseGridInformation(string &ghostOffsets)
     {
         if (strcmp(xdmfParser.GetAttributeName(), "Name") == 0)
         {
-            if (strcmp(xdmfParser.GetAttributeValue(), "GhostOffsets") == 0)
+            if (strcmp(xdmfParser.GetAttributeValue(), "BaseIndex") == 0)
+                haveBaseIndex = true;
+            else if (strcmp(xdmfParser.GetAttributeValue(), "GhostOffsets") == 0)
                 haveGhostOffsets = true;
         }
         else if (strcmp(xdmfParser.GetAttributeName(), "Value") == 0)
         {
-            if (haveGhostOffsets)
+            if (haveBaseIndex)
+                baseIndex = string(xdmfParser.GetAttributeValue());
+            else if (haveGhostOffsets)
                 ghostOffsets = string(xdmfParser.GetAttributeValue());
         }
     }
@@ -1451,6 +1463,11 @@ avtXDMFFileFormat::ParseGridInformation(string &ghostOffsets)
 //    Eric Brugger, Tue Apr  8 14:25:31 PDT 2008
 //    I added coding to handle baseOffset and order for unstructured grids.
 //
+//    Eric Brugger, Tue Aug 26 15:57:05 PDT 2008
+//    Modified the routine to handle grid information with a baseIndex. I
+//    also reversed the order in which the ghost zone indices are interpreted
+//    to match the order in which dimensions are interpreted.
+//
 // ****************************************************************************
 
 void
@@ -1469,6 +1486,7 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
     DataItem *meshData[3];
     VarInfo  *varInfo = NULL;
     vector<VarInfo*> varList;
+    string    baseIndex;
     string    ghostOffsets;
 
     //
@@ -1495,7 +1513,7 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
             }
             else if (strcmp(xdmfParser.GetElementName(), "Information") == 0)
             {
-                ParseGridInformation(ghostOffsets);
+                ParseGridInformation(baseIndex, ghostOffsets);
             }
             else
             {
@@ -1732,6 +1750,23 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
         }
     }
 
+    if (baseIndex != "")
+    {
+        meshInfo->baseIndex = new int[3];
+        for (int i = 0; i < 3; i++)
+            meshInfo->baseIndex[i] = 0;
+        if (meshInfo->topologicalDimension == 2)
+        {
+            sscanf(baseIndex.c_str(), "%d %d",
+                &meshInfo->baseIndex[1], &meshInfo->baseIndex[0]);
+        }
+        else
+        {
+            sscanf(baseIndex.c_str(), "%d %d %d", &meshInfo->baseIndex[2],
+                &meshInfo->baseIndex[1], &meshInfo->baseIndex[0]);
+        }
+    }
+
     if (ghostOffsets != "")
     {
         meshInfo->ghostOffsets = new int[6];
@@ -1740,15 +1775,15 @@ avtXDMFFileFormat::ParseUniformGrid(vector<MeshInfo*> &meshList,
         if (meshInfo->topologicalDimension == 2)
         {
             sscanf(ghostOffsets.c_str(), "%d %d %d %d",
-                &meshInfo->ghostOffsets[0], &meshInfo->ghostOffsets[1],
-                &meshInfo->ghostOffsets[2], &meshInfo->ghostOffsets[3]);
+                &meshInfo->ghostOffsets[2], &meshInfo->ghostOffsets[3],
+                &meshInfo->ghostOffsets[0], &meshInfo->ghostOffsets[1]);
         }
         else
         {
             sscanf(ghostOffsets.c_str(), "%d %d %d %d %d %d",
-                &meshInfo->ghostOffsets[0], &meshInfo->ghostOffsets[1],
+                &meshInfo->ghostOffsets[4], &meshInfo->ghostOffsets[5],
                 &meshInfo->ghostOffsets[2], &meshInfo->ghostOffsets[3],
-                &meshInfo->ghostOffsets[4], &meshInfo->ghostOffsets[5]);
+                &meshInfo->ghostOffsets[0], &meshInfo->ghostOffsets[1]);
         }
     }
 
@@ -2217,6 +2252,10 @@ avtXDMFFileFormat::ActivateTimestep(void)
 //    Eric Brugger, Mon Apr 14 16:50:42 PDT 2008
 //    Added support for tensors.
 //
+//    Eric Brugger, Tue Aug 26 15:57:05 PDT 2008
+//    Modified the routine to add structured domain boundary information
+//    for multiblock rectilinear or curvilinear meshes.
+//
 // ****************************************************************************
 
 void
@@ -2232,6 +2271,87 @@ avtXDMFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddMeshToMetaData(md, meshInfo->name, meshInfo->type,
             meshInfo->extents, meshInfo->nBlocks, 0,
             meshInfo->spatialDimension, meshInfo->topologicalDimension);
+
+        if (!avtDatabase::OnlyServeUpMetaData() && meshInfo->nBlocks > 1)
+        {
+            //
+            // Check that baseIndex is defined on all the submeshes and
+            // that the mesh is either pure rectilinear or pure curvilinear.
+            //
+            avtMeshType meshType = meshInfo->blockList[0]->type;
+            int iBlock = 0;
+            while (iBlock < meshInfo->nBlocks)
+            {
+                if (meshInfo->blockList[iBlock]->baseIndex == NULL ||
+                    meshInfo->blockList[iBlock]->type != meshType)
+                    break;
+                iBlock++;
+            }
+
+            //
+            // Create the appropriate domain boundary information.
+            //
+            if (meshType == AVT_RECTILINEAR_MESH &&
+                iBlock == meshInfo->nBlocks)
+            {
+                avtRectilinearDomainBoundaries *rdb =
+                    new avtRectilinearDomainBoundaries(true);
+
+                rdb->SetNumDomains(meshInfo->nBlocks);
+                for (int j = 0; j < meshInfo->nBlocks; j++)
+                {
+                    int extents[6];
+
+                    extents[0] = meshInfo->blockList[j]->baseIndex[0];
+                    extents[1] = meshInfo->blockList[j]->baseIndex[0] +
+                                 meshInfo->blockList[j]->dimensions[0] - 1;
+                    extents[2] = meshInfo->blockList[j]->baseIndex[1];
+                    extents[3] = meshInfo->blockList[j]->baseIndex[1] +
+                                 meshInfo->blockList[j]->dimensions[1] - 1;
+                    extents[4] = meshInfo->blockList[j]->baseIndex[2];
+                    extents[5] = meshInfo->blockList[j]->baseIndex[2] +
+                                 meshInfo->blockList[j]->dimensions[2] - 1;
+
+                    rdb->SetIndicesForRectGrid(j, extents);
+                }
+                rdb->CalculateBoundaries();
+
+                void_ref_ptr vr = void_ref_ptr(rdb,
+                    avtStructuredDomainBoundaries::Destruct);
+                cache->CacheVoidRef("any_mesh",
+                    AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
+            }
+            else if (meshType == AVT_CURVILINEAR_MESH &&
+                iBlock == meshInfo->nBlocks)
+            {
+                avtCurvilinearDomainBoundaries *cdb =
+                    new avtCurvilinearDomainBoundaries(true);
+
+                cdb->SetNumDomains(meshInfo->nBlocks);
+                for (int j = 0; j < meshInfo->nBlocks; j++)
+                {
+                    int extents[6];
+
+                    extents[0] = meshInfo->blockList[j]->baseIndex[0];
+                    extents[1] = meshInfo->blockList[j]->baseIndex[0] +
+                                 meshInfo->blockList[j]->dimensions[0] - 1;
+                    extents[2] = meshInfo->blockList[j]->baseIndex[1];
+                    extents[3] = meshInfo->blockList[j]->baseIndex[1] +
+                                 meshInfo->blockList[j]->dimensions[1] - 1;
+                    extents[4] = meshInfo->blockList[j]->baseIndex[2];
+                    extents[5] = meshInfo->blockList[j]->baseIndex[2] +
+                                 meshInfo->blockList[j]->dimensions[2] - 1;
+
+                    cdb->SetIndicesForRectGrid(j, extents);
+                }
+                cdb->CalculateBoundaries();
+
+                void_ref_ptr vr = void_ref_ptr(cdb,
+                    avtStructuredDomainBoundaries::Destruct);
+                cache->CacheVoidRef("any_mesh",
+                    AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
+            }
+        }
     }   
 
     //
@@ -2611,7 +2731,6 @@ avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
 //    Eric Brugger, Thu Mar 20 16:14:36 PDT 2008
 //    I replaced ReadHDFDataItem with ReadDataItem.
 //
-//  Modifications:
 //    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
 //    I replaced some code with a call to the function GetPoints.
 //
