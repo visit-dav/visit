@@ -109,8 +109,7 @@ class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
 
     virtual int           AdditionalPipelineFilters(void) { return 2; };
 
-    virtual avtContract_p
-                          ModifyContract(avtContract_p);
+    virtual avtContract_p ModifyContract(avtContract_p);
     
     virtual bool          FilterUnderstandsTransformedRectMesh();
 };

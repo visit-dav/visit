@@ -118,6 +118,7 @@ avtCurrentExtentFilter::UpdateDataObjectInfo(void)
     }
 }
 
+
 // ****************************************************************************
 //  Method:  avtCurrentExtentFilter::FilterUnderstandsTransformedRectMesh
 //
@@ -133,6 +134,7 @@ avtCurrentExtentFilter::UpdateDataObjectInfo(void)
 //  Creation:    February 15, 2007
 //
 // ****************************************************************************
+
 bool
 avtCurrentExtentFilter::FilterUnderstandsTransformedRectMesh()
 {
@@ -140,3 +142,27 @@ avtCurrentExtentFilter::FilterUnderstandsTransformedRectMesh()
     // this filter safe
     return true;
 }
+
+
+// ****************************************************************************
+//  Method: avtCurrentExtentFilter::ModifyContract
+//
+//  Purpose:
+//      The base class declares that this filter can only work on floats.
+//      Reimplement this method to do nothing, just to prevent the base class
+//      from doing the wrong thing.  The way the base class is working should
+//      be overhauled, but I'm not going to address that now.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 26, 2008
+//
+// ****************************************************************************
+
+avtContract_p
+avtCurrentExtentFilter::ModifyContract(avtContract_p c)
+{
+    return c;
+}
+
+
+

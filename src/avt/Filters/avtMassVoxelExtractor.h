@@ -79,6 +79,9 @@ class     vtkMatrix4x4;
 //    Hank Childs, Fri Jun  1 15:28:14 PDT 2007
 //    Added support for non-scalars.
 //
+//    Hank Childs, Wed Aug 27 11:24:53 PDT 2008
+//    Add support for non-floats.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
@@ -112,13 +115,15 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
     unsigned char   *ghosts;
     int              dims[3];
     int              ncell_arrays;
-    float           *cell_arrays[AVT_VARIABLE_LIMIT];
+    void            *cell_arrays[AVT_VARIABLE_LIMIT];
     int              cell_size[AVT_VARIABLE_LIMIT];
     int              cell_index[AVT_VARIABLE_LIMIT];
+    int              cell_vartypes[AVT_VARIABLE_LIMIT];
     int              npt_arrays;
-    float           *pt_arrays[AVT_VARIABLE_LIMIT];
+    void            *pt_arrays[AVT_VARIABLE_LIMIT];
     int              pt_size[AVT_VARIABLE_LIMIT];
     int              pt_index[AVT_VARIABLE_LIMIT];
+    int              pt_vartypes[AVT_VARIABLE_LIMIT];
 
     float           *prop_buffer;
     int             *ind_buffer;

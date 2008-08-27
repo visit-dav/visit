@@ -79,6 +79,9 @@
 //    Added an ability to extract voxels using the world-space version
 //    even when they're really in image space.
 //
+//    Hank Childs, Wed Aug 27 11:11:28 PDT 2008
+//    Initialize spatial coordinates array.
+//
 // ****************************************************************************
 
 avtMassVoxelExtractor::avtMassVoxelExtractor(int w, int h, int d,
@@ -90,6 +93,9 @@ avtMassVoxelExtractor::avtMassVoxelExtractor(int w, int h, int d,
     aspect = 1;
     view_to_world_transform = vtkMatrix4x4::New();
     ProportionSpaceToZBufferSpace = new float[depth];
+    X = NULL;
+    Y = NULL;
+    Z = NULL;
     divisors_X = NULL;
     divisors_Y = NULL;
     divisors_Z = NULL;
@@ -115,6 +121,9 @@ avtMassVoxelExtractor::avtMassVoxelExtractor(int w, int h, int d,
 //    Hank Childs, Sun Nov 21 10:35:40 PST 2004
 //    Delete the view to world transform.
 //
+//    Hank Childs, Wed Aug 27 11:10:51 PDT 2008
+//    Delete the spatial coordinate arrays.
+//
 // ****************************************************************************
 
 avtMassVoxelExtractor::~avtMassVoxelExtractor()
@@ -124,12 +133,116 @@ avtMassVoxelExtractor::~avtMassVoxelExtractor()
     delete [] prop_buffer;
     delete [] ind_buffer;
     delete [] valid_sample;
+    if (X != NULL)
+        delete [] X;
+    if (Y != NULL)
+        delete [] Y;
+    if (Z != NULL)
+        delete [] Z;
     if (divisors_X != NULL)
         delete [] divisors_X;
     if (divisors_Y != NULL)
         delete [] divisors_Y;
     if (divisors_Z != NULL)
         delete [] divisors_Z;
+}
+
+
+// ****************************************************************************
+//  Function:  AssignEight
+//
+//  Purpose:
+//      A templated function to assign 8 values to a floating point array.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 26, 2008
+//
+// ****************************************************************************
+
+template <class T> static void
+AssignEight(float *vals, int *index, int s, int m, T *array)
+{
+    for (int i = 0 ; i < 8 ; i++)
+        vals[i] = (float) array[s*index[i]+m];
+}
+
+static void
+AssignEight(int vartype, float *vals, int *index, int s, int m, void *array)
+{
+    switch (vartype)
+    {
+      case VTK_CHAR:
+        AssignEight(vals, index, s, m, (char *) array);
+        break;
+      case VTK_UNSIGNED_CHAR:
+        AssignEight(vals, index, s, m, (unsigned char *) array);
+        break;
+      case VTK_SHORT:
+        AssignEight(vals, index, s, m, (short *) array);
+        break;
+      case VTK_UNSIGNED_SHORT:
+        AssignEight(vals, index, s, m, (unsigned short *) array);
+        break;
+      case VTK_INT:
+        AssignEight(vals, index, s, m, (int *) array);
+        break;
+      case VTK_UNSIGNED_INT:
+        AssignEight(vals, index, s, m, (unsigned int *) array);
+        break;
+      case VTK_UNSIGNED_LONG:
+        AssignEight(vals, index, s, m, (long *) array);
+        break;
+      case VTK_FLOAT:
+        AssignEight(vals, index, s, m, (float *) array);
+        break;
+      case VTK_DOUBLE:
+        AssignEight(vals, index, s, m, (double *) array);
+        break;
+      case VTK_ID_TYPE:
+        AssignEight(vals, index, s, m, (vtkIdType *) array);
+        break;
+    }
+}
+
+// ****************************************************************************
+//  Function:  ConvertToFloat
+//
+//  Purpose:
+//     A function that performs a cast and conversion to a float.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 26, 2008
+//
+// ****************************************************************************
+
+static float
+ConvertToFloat(int vartype, int index, int s, int m, void *array)
+{
+    switch (vartype)
+    {
+      case VTK_CHAR:
+        return (float) ((char*)array)[s*index+m];
+      case VTK_UNSIGNED_CHAR:
+        return (float) ((unsigned char*)array)[s*index+m];
+      case VTK_SHORT:
+        return (float) ((short*)array)[s*index+m];
+      case VTK_UNSIGNED_SHORT:
+        return (float) ((unsigned short*)array)[s*index+m];
+      case VTK_INT:
+        return (float) ((int*)array)[s*index+m];
+      case VTK_UNSIGNED_INT:
+        return (float) ((unsigned int*)array)[s*index+m];
+      case VTK_UNSIGNED_LONG:
+        return (float) ((unsigned long*)array)[s*index+m];
+      case VTK_FLOAT:
+        return ((float*)array)[s*index+m];
+      case VTK_DOUBLE:
+        return (float) ((double*)array)[s*index+m];
+      case VTK_ID_TYPE:
+        return (float) ((vtkIdType*)array)[s*index+m];
+    }
+
+    return 0.;
 }
 
 
@@ -460,6 +573,9 @@ avtMassVoxelExtractor::ExtractWorldSpaceGrid(vtkRectilinearGrid *rgrid,
 //    Hank Childs, Fri Jun  1 15:37:33 PDT 2007
 //    Add support for non-scalars.
 //
+//    Hank Childs, Wed Aug 27 11:06:27 PDT 2008
+//    Add support for non-floats.
+//
 // ****************************************************************************
 
 void
@@ -469,10 +585,22 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
 {
     int  i, j, k;
 
-    X = (float *) rgrid->GetXCoordinates()->GetVoidPointer(0);
-    Y = (float *) rgrid->GetYCoordinates()->GetVoidPointer(0);
-    Z = (float *) rgrid->GetZCoordinates()->GetVoidPointer(0);
     rgrid->GetDimensions(dims);
+    if (X != NULL)
+        delete [] X;
+    if (Y != NULL)
+        delete [] Y;
+    if (Z != NULL)
+        delete [] Z;
+    X = new float[dims[0]];
+    for (i = 0 ; i < dims[0] ; i++)
+        X[i] = rgrid->GetXCoordinates()->GetTuple1(i);
+    Y = new float[dims[1]];
+    for (i = 0 ; i < dims[1] ; i++)
+        Y[i] = rgrid->GetYCoordinates()->GetTuple1(i);
+    Z = new float[dims[2]];
+    for (i = 0 ; i < dims[2] ; i++)
+        Z[i] = rgrid->GetZCoordinates()->GetTuple1(i);
 
     vtkDataArray *arr = rgrid->GetCellData()->GetArray("avtGhostZones");
     if (arr != NULL)
@@ -484,11 +612,7 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
     for (i = 0 ; i < rgrid->GetCellData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
-        if (arr->GetDataType() != VTK_FLOAT)
-        {
-            debug1 << "Not able to sample non-float!" << endl;
-            continue;
-        }
+        cell_vartypes[ncell_arrays] = arr->GetDataType();
         const char *name = arr->GetName();
         cell_size[ncell_arrays] = arr->GetNumberOfComponents();
         for (j = 0 ; j < varorder.size() ; j++)
@@ -502,18 +626,14 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
                 break;
             }
         }
-        cell_arrays[ncell_arrays++] = (float *) arr->GetVoidPointer(0);
+        cell_arrays[ncell_arrays++] = arr->GetVoidPointer(0);
     }
 
     npt_arrays = 0;
     for (i = 0 ; i < rgrid->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
-        if (arr->GetDataType() != VTK_FLOAT)
-        {
-            debug1 << "Not able to sample non-float!" << endl;
-            continue;
-        }
+        pt_vartypes[npt_arrays] = arr->GetDataType();
         const char *name = arr->GetName();
         pt_size[npt_arrays] = arr->GetNumberOfComponents();
         for (j = 0 ; j < varorder.size() ; j++)
@@ -527,7 +647,7 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
                 break;
             }
         }
-        pt_arrays[npt_arrays++] = (float *) arr->GetVoidPointer(0);
+        pt_arrays[npt_arrays++] = arr->GetVoidPointer(0);
     }
 
     if (divisors_X != NULL)
@@ -563,6 +683,7 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
 //  Programmer: Hank Childs
 //  Creation:   November 21, 2004
 //
+//  Modifications:
 // 
 //    Jeremy Meredith, Fri Feb  9 14:00:51 EST 2007
 //    Flip back across the x axis if pretendGridsAreInWorldSpace is set.
@@ -1067,24 +1188,26 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
         {
             for (int m = 0 ; m < cell_size[l] ; m++)
                 tmpSampleList[count][cell_index[l]+m] = 
-                                          cell_arrays[l][cell_size[l]*index+m];
+                                 ConvertToFloat(cell_vartypes[l], index,
+                                                cell_size[l], m, cell_arrays[l]);
         }
         if (npt_arrays > 0)
         {
-            int index0 = (ind[2])*dims[0]*dims[1] +(ind[1])*dims[0] + (ind[0]);
-            int index1 = (ind[2])*dims[0]*dims[1] + 
+            int index[8];
+            index[0] = (ind[2])*dims[0]*dims[1] +(ind[1])*dims[0] + (ind[0]);
+            index[1] = (ind[2])*dims[0]*dims[1] + 
                                                  (ind[1])*dims[0] + (ind[0]+1);
-            int index2 = (ind[2])*dims[0]*dims[1] + 
+            index[2] = (ind[2])*dims[0]*dims[1] + 
                                                  (ind[1]+1)*dims[0] + (ind[0]);
-            int index3 = (ind[2])*dims[0]*dims[1] + 
+            index[3] = (ind[2])*dims[0]*dims[1] + 
                                                 (ind[1]+1)*dims[0]+ (ind[0]+1);
-            int index4 = (ind[2]+1)*dims[0]*dims[1] + 
+            index[4] = (ind[2]+1)*dims[0]*dims[1] + 
                                                    (ind[1])*dims[0] + (ind[0]);
-            int index5 = (ind[2]+1)*dims[0]*dims[1] + 
+            index[5] = (ind[2]+1)*dims[0]*dims[1] + 
                                                   (ind[1])*dims[0]+ (ind[0]+1);
-            int index6 = (ind[2]+1)*dims[0]*dims[1] + 
+            index[6] = (ind[2]+1)*dims[0]*dims[1] + 
                                                   (ind[1]+1)*dims[0]+ (ind[0]);
-            int index7 = (ind[2]+1)*dims[0]*dims[1] +
+            index[7] = (ind[2]+1)*dims[0]*dims[1] +
                                                (ind[1]+1)*dims[0] + (ind[0]+1);
             float x_right = prop[0];
             float x_left = 1. - prop[0];
@@ -1094,19 +1217,21 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
             float z_front = 1. - prop[2];
             for (l = 0 ; l < npt_arrays ; l++)
             {
-                float *pt_array = pt_arrays[l];
+                void  *pt_array = pt_arrays[l];
                 int    s = pt_size[l];
                 for (int m = 0 ; m < s ; m++)
                 {
+                    float vals[8];
+                    AssignEight(pt_vartypes[l], vals, index, s, m, pt_array);
                     float val = 
-                      x_left*y_bottom*z_front*pt_array[s*index0+m] +
-                      x_right*y_bottom*z_front*pt_array[s*index1+m] +
-                      x_left*y_top*z_front*pt_array[s*index2+m] +
-                      x_right*y_top*z_front*pt_array[s*index3+m] +
-                      x_left*y_bottom*z_back*pt_array[s*index4+m] +
-                      x_right*y_bottom*z_back*pt_array[s*index5+m] +
-                      x_left*y_top*z_back*pt_array[s*index6+m] +
-                      x_right*y_top*z_back*pt_array[s*index7+m];
+                      x_left*y_bottom*z_front*vals[0] +
+                      x_right*y_bottom*z_front*vals[1] +
+                      x_left*y_top*z_front*vals[2] +
+                      x_right*y_top*z_front*vals[3] +
+                      x_left*y_bottom*z_back*vals[4] +
+                      x_right*y_bottom*z_back*vals[5] +
+                      x_left*y_top*z_back*vals[6] +
+                      x_right*y_top*z_back*vals[7];
                     tmpSampleList[count][pt_index[l]+m] = val;
                 }
             }    
@@ -1409,6 +1534,9 @@ inline int FindIndex(const float &pt, const int &last_hit, const int &n,
 //    Hank Childs, Fri Jun  1 15:45:58 PDT 2007
 //    Add support for non-scalars.
 //
+//    Hank Childs, Wed Aug 27 11:07:04 PDT 2008
+//    Add support for non-floats.
+//
 // ****************************************************************************
 
 void
@@ -1433,17 +1561,14 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
 
     vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)rgrid->GetCellData()
                                                    ->GetArray("avtGhostZones");
-    std::vector<float *> cell_arrays;
+    std::vector<void *>  cell_arrays;
+    std::vector<int>     cell_vartypes;
     std::vector<int>     cell_size;
     std::vector<int>     cell_index;
     for (i = 0 ; i < rgrid->GetCellData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
-        if (arr->GetDataType() != VTK_FLOAT)
-        {
-            debug1 << "Not able to sample non-float!" << endl;
-            continue;
-        }
+        cell_vartypes.push_back(arr->GetDataType());
         const char *name = arr->GetName();
         cell_size.push_back(arr->GetNumberOfComponents());
         for (j = 0 ; j < varnames.size() ; j++)
@@ -1457,20 +1582,17 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
                 break;
             }
         }
-        cell_arrays.push_back((float *) arr->GetVoidPointer(0));
+        cell_arrays.push_back(arr->GetVoidPointer(0));
     }
 
-    std::vector<float *> pt_arrays;
+    std::vector<void *>  pt_arrays;
+    std::vector<int>     pt_vartypes;
     std::vector<int>     pt_size;
     std::vector<int>     pt_index;
     for (i = 0 ; i < rgrid->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
-        if (arr->GetDataType() != VTK_FLOAT)
-        {
-            debug1 << "Not able to sample non-float!" << endl;
-            continue;
-        }
+        pt_vartypes.push_back(arr->GetDataType());
         const char *name = arr->GetName();
         pt_size.push_back(arr->GetNumberOfComponents());
         for (j = 0 ; j < varnames.size() ; j++)
@@ -1484,7 +1606,7 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
                 break;
             }
         }
-        pt_arrays.push_back((float *) arr->GetVoidPointer(0));
+        pt_arrays.push_back(arr->GetVoidPointer(0));
     }
 
     int startX = SnapXLeft(x[0]);
@@ -1582,33 +1704,38 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
                     int index = zind*((nX-1)*(nY-1)) + yind*(nX-1) + xind;
                     for (m = 0 ; m < cell_size[l] ; m++)
                         tmpSampleList[count][cell_index[l]+m] = 
-                                            cell_arrays[l][cell_size[l]*index+m];
+                                  ConvertToFloat(cell_vartypes[l],index,
+                                              cell_size[l], m, cell_arrays[l]);
                 }
                 if (pt_arrays.size() > 0)
                 {
-                    int index0 = (zind)*nX*nY + (yind)*nX + (xind);
-                    int index1 = (zind)*nX*nY + (yind)*nX + (xind+1);
-                    int index2 = (zind)*nX*nY + (yind+1)*nX + (xind);
-                    int index3 = (zind)*nX*nY + (yind+1)*nX + (xind+1);
-                    int index4 = (zind+1)*nX*nY + (yind)*nX + (xind);
-                    int index5 = (zind+1)*nX*nY + (yind)*nX + (xind+1);
-                    int index6 = (zind+1)*nX*nY + (yind+1)*nX + (xind);
-                    int index7 = (zind+1)*nX*nY + (yind+1)*nX + (xind+1);
+                    int index[8];
+                    index[0] = (zind)*nX*nY + (yind)*nX + (xind);
+                    index[1] = (zind)*nX*nY + (yind)*nX + (xind+1);
+                    index[2] = (zind)*nX*nY + (yind+1)*nX + (xind);
+                    index[3] = (zind)*nX*nY + (yind+1)*nX + (xind+1);
+                    index[4] = (zind+1)*nX*nY + (yind)*nX + (xind);
+                    index[5] = (zind+1)*nX*nY + (yind)*nX + (xind+1);
+                    index[6] = (zind+1)*nX*nY + (yind+1)*nX + (xind);
+                    index[7] = (zind+1)*nX*nY + (yind+1)*nX + (xind+1);
                     for (l = 0 ; l < pt_arrays.size() ; l++)
                     {
-                        float *pt_array = pt_arrays[l];
+                        void  *pt_array = pt_arrays[l];
                         int    s        = pt_size[l];
                         for (m = 0 ; m < s ; m++)
                         {
+                            float vals[8];
+                            AssignEight(pt_vartypes[l], vals, index, 
+                                        s, m, pt_array);
                             float val = 
-                                  x_left*y_bottom*z_front*pt_array[s*index0+m] +
-                                  x_right*y_bottom*z_front*pt_array[s*index1+m] +
-                                  x_left*y_top*z_front*pt_array[s*index2+m] +
-                                  x_right*y_top*z_front*pt_array[s*index3+m] +
-                                  x_left*y_bottom*z_back*pt_array[s*index4+m] +
-                                  x_right*y_bottom*z_back*pt_array[s*index5+m] +
-                                  x_left*y_top*z_back*pt_array[s*index6+m] +
-                                  x_right*y_top*z_back*pt_array[s*index7+m];
+                                  x_left*y_bottom*z_front*vals[0] +
+                                  x_right*y_bottom*z_front*vals[1] +
+                                  x_left*y_top*z_front*vals[2] +
+                                  x_right*y_top*z_front*vals[3] +
+                                  x_left*y_bottom*z_back*vals[4] +
+                                  x_right*y_bottom*z_back*vals[5] +
+                                  x_left*y_top*z_back*vals[6] +
+                                  x_right*y_top*z_back*vals[7];
                             tmpSampleList[count][pt_index[l]+m] = val;
                         }
                     }    

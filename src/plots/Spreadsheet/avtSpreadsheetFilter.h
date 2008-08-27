@@ -72,10 +72,11 @@ class avtSpreadsheetFilter : public avtDatasetToDatasetFilter
   protected:
     SpreadsheetAttributes      atts;
 
-    virtual avtContract_p
-                              ModifyContract(avtContract_p);
+    virtual avtContract_p     ModifyContract(avtContract_p);
     virtual void              Execute(void);
 };
 
 
 #endif
+
+

@@ -598,21 +598,21 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 // ****************************************************************************
 
 avtContract_p
-avtVolumeFilter::ModifyContract(avtContract_p spec)
+avtVolumeFilter::ModifyContract(avtContract_p contract)
 {
-    avtContract_p newspec = NULL;
+    avtContract_p newcontract = NULL;
 
     if (primaryVariable != NULL)
     {
         delete [] primaryVariable;
     }
 
-    avtDataRequest_p ds = spec->GetDataRequest();
+    avtDataRequest_p ds = contract->GetDataRequest();
     const char *var = ds->GetVariable();
 
     if (atts.GetScaling() == VolumeAttributes::Linear)
     {
-        newspec = spec;
+        newcontract = contract;
         primaryVariable = new char[strlen(var)+1];
         strcpy(primaryVariable, var);
     }
@@ -642,7 +642,7 @@ avtVolumeFilter::ModifyContract(avtContract_p spec)
           avtDataRequest(exprName.c_str(),
                                ds->GetTimestep(), ds->GetRestriction());
         nds->AddSecondaryVariable(var);
-        newspec = new avtContract(spec, nds);
+        newcontract = new avtContract(contract, nds);
         primaryVariable = new char[exprName.size()+1];
         strcpy(primaryVariable, exprName.c_str());
     }
@@ -666,14 +666,14 @@ avtVolumeFilter::ModifyContract(avtContract_p spec)
             new avtDataRequest(exprName,
                 ds->GetTimestep(), ds->GetRestriction());
         nds->AddSecondaryVariable(var);
-        newspec = new avtContract(spec, nds);
+        newcontract = new avtContract(contract, nds);
         primaryVariable = new char[strlen(exprName)+1];
         strcpy(primaryVariable, exprName);
     }
 
-    newspec->NoStreaming();
-    newspec->SetHaveRectilinearMeshOptimizations(true);
-    return newspec;
+    newcontract->NoStreaming();
+    newcontract->SetHaveRectilinearMeshOptimizations(true);
+    return newcontract;
 }
 
 

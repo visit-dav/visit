@@ -37,15 +37,16 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                  avtCurrentExtentFilter.h                                 //
+//                        avtCurrentExtentFilter.h                           //
 // ************************************************************************* //
 
 #ifndef AVT_CURRENT_EXTENT_FILTER_H
 #define AVT_CURRENT_EXTENT_FILTER_H
+
 #include <filters_exports.h>
 
-
 #include <avtDatasetToDatasetFilter.h>
+
 
 // ****************************************************************************
 //  Class: avtCurrentExtentFilter
@@ -60,6 +61,10 @@
 //  Modifications:
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
+//
+//    Hank Childs, Tue Aug 26 14:37:27 PDT 2008
+//    Implement ModifyContract to prevent base class from declaring that it
+//    can only work on floats.
 //
 // ****************************************************************************
 
@@ -77,7 +82,7 @@ class AVTFILTERS_API avtCurrentExtentFilter : public avtDatasetToDatasetFilter
     virtual void          Execute(void);
     virtual void          UpdateDataObjectInfo(void);
     virtual bool          FilterUnderstandsTransformedRectMesh();
-
+    virtual avtContract_p ModifyContract(avtContract_p);
 };
 
 
