@@ -129,6 +129,7 @@ enhancements and bug-fixes that were added to this release.</p>
         reading meshes of type VxVyVz, which are curvilinear meshes where the coordinates
         exist in separate HDF5 arrays.</li>
     <li>The XDMF reader has been fixed so that it can also read HDF data items of type char, unsigned char, int, and unsigned int. It could already read float and double.</li>
+    <li>The XDMF reader now supports a BaseIndex attribute as an Information field in a Grid. The BaseIndex specifies the location of a structured grid within either a rectilinear or curvilinear multiblock mesh.</li>
     <li>VisIt now supports various changes made in the Nek3D file format.</li>
     <li>The BOV reader has been optimized to perform better when using a large number
         of processors.  Previously, all of VisIt's processors read the same header
@@ -336,7 +337,6 @@ enhancements and bug-fixes that were added to this release.</p>
     <li>Host profiles for ORNL's visualization cluster, lens, have been added.</li>
     <li>Host profiles for ORNL's Cray XT4/5, jaguar, have been added.</li>
     <li>The host profiles for LLNL's yana system have been modified to use SLURM and Moab.</li>
-    <li>The host profiles for LLNL's thunder system have been modified to use Moab.</li>
     <li>The host profiles for LLNL's hopi system have been modified to use SLURM and Moab.</li>
     <li>The parallel hardware accelerated host profile for LLNL's gauss
         cluster has been modified for Chaos 4.</li>
