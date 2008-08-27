@@ -151,7 +151,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         relTol = 0.0001;
         absTol = 1e-05;
         terminationType = TERMINATIONTYPE_DISTANCE;
-            streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS;
+        integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
+        streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS;
         maxStreamlineProcessCount = 10;
         maxDomainCacheSize = 3;
     }
