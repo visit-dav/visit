@@ -95,8 +95,7 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
     char                    *primaryVariable;
 
     virtual void             Execute(void);
-    virtual avtContract_p
-                             ModifyContract(avtContract_p);
+    virtual avtContract_p    ModifyContract(avtContract_p);
     virtual void             VerifyInput(void);
     virtual bool             FilterUnderstandsTransformedRectMesh();
 };

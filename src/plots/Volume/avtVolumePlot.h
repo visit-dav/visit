@@ -96,6 +96,9 @@ class avtResampleFilter;
 //    Kathleen Bonnell, Wed May  9 16:58:50 PDT 2007
 //    Set CanDo2DViewScaling to false.
 //
+//    Hank Childs, Tue Aug 26 14:46:36 PDT 2008
+//    Define UtilizeRenderingFilters to state that we don't need them.
+//
 // ****************************************************************************
 
 class
@@ -121,6 +124,7 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual bool        CanCacheWriterExternally(void) { return false; }
 
     virtual bool        CanDo2DViewScaling(void) { return false; }
+    virtual bool        UtilizeRenderingFilters(void) { return false; };
 
   protected:
     VolumeAttributes         atts;

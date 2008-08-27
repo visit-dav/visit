@@ -934,6 +934,9 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    Made an array `static const' to avoid a warning and allow it to be put in
 //    a RO section of the object.
 //
+//    Hank Childs, Wed Aug 27 11:42:57 PDT 2008
+//    Print the array type.
+//
 // **************************************************************************** 
 
 const char *
@@ -952,7 +955,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
     bool dataset_dump = avtDebugDumpOptions::DatasetDumpEnabled();
     string vtk_fname ="";
     
-    if(dataset_dump)
+    if (dataset_dump)
     {
         int  i;
         static int times = 0;
@@ -1089,6 +1092,40 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
             oss << "<ul>";
             for (int i=0; i<data[fd]->GetNumberOfArrays(); i++)
             {
+                char *arr_type = "<unknown>";
+                switch (data[fd]->GetArray(i)->GetDataType())
+                {
+                  case VTK_CHAR:
+                    arr_type = "char";
+                    break;
+                  case VTK_UNSIGNED_CHAR:
+                    arr_type = "unsigned char";
+                    break;
+                  case VTK_SHORT:
+                    arr_type = "short";
+                    break;
+                  case VTK_UNSIGNED_SHORT:
+                    arr_type = "unsigned short";
+                    break;
+                  case VTK_INT:
+                    arr_type = "int";
+                    break;
+                  case VTK_UNSIGNED_INT:
+                    arr_type = "unsigned int";
+                    break;
+                  case VTK_UNSIGNED_LONG:
+                    arr_type = "unsigned long";
+                    break;
+                  case VTK_FLOAT:
+                    arr_type = "float";
+                    break;
+                  case VTK_DOUBLE:
+                    arr_type = "double";
+                    break;
+                  case VTK_ID_TYPE:
+                    arr_type = "id_type";
+                    break;
+                }
                 oss << "<li>" << data[fd]->GetArray(i)->GetName() 
                     << "<ul>" 
                     << "<li>" 
@@ -1098,14 +1135,15 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
                     << "</li><li>" 
                     << "ncomps = " 
                     << data[fd]->GetArray(i)->GetNumberOfComponents()
+                    << "</li><li>" 
+                    << "type = " 
+                    << arr_type
                     << "</li></ul>"
                     << "</li>";
             }
             oss << "</ul>";
         }
     }
-    
-    
     
     SNPRINTF(str,strsize,oss.str().c_str());
     return str;

@@ -976,7 +976,7 @@ avtSamplePointExtractor::ExtractHex(vtkHexahedron *hex, vtkDataSet *ds,
         {
              float val = arr->GetComponent(hexind, j);
              for (i = 0 ; i < 8 ; i++)
-                  h.val[i][idx+j] = val;
+                 h.val[i][idx+j] = val;
         }
     }
 
@@ -995,7 +995,7 @@ avtSamplePointExtractor::ExtractHex(vtkHexahedron *hex, vtkDataSet *ds,
 
         for (j = 0 ; j < li.pointDataSize[v] ; j++)
             for (i = 0 ; i < 8 ; i++)
-             h.val[i][idx+j] = arr->GetComponent(ids->GetId(i), j);
+                h.val[i][idx+j] = arr->GetComponent(ids->GetId(i), j);
     }
 
     if (rayfoo != NULL)

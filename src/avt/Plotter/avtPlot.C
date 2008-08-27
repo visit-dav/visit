@@ -388,10 +388,10 @@ avtPlot::SetVarUnits(const char *name)
 //
 // ****************************************************************************
 avtDataObjectWriter_p
-avtPlot::Execute(avtDataObject_p input, avtContract_p spec,
+avtPlot::Execute(avtDataObject_p input, avtContract_p contract,
                  const WindowAttributes *atts)
 {
-   return Execute(input, spec, atts, false);
+   return Execute(input, contract, atts, false);
 }
 
 // ****************************************************************************
@@ -481,13 +481,17 @@ avtPlot::Execute(avtDataObject_p input, avtContract_p spec,
 //    Hank Childs, Fri Feb  1 13:14:21 PST 2008
 //    Make use of UtilizeRenderingFilters.
 //
+//    Hank Childs, Tue Aug 26 14:41:07 PDT 2008
+//    Calculate the current extents, even for plots that don't
+//    "UtilizeRenderingFilters".
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
-avtPlot::Execute(avtDataObject_p input, avtContract_p spec,
+avtPlot::Execute(avtDataObject_p input, avtContract_p contract,
                  const WindowAttributes *atts, const bool combinedExecute)
 {
-    SetVarName(spec->GetDataRequest()->GetVariable());
+    SetVarName(contract->GetDataRequest()->GetVariable());
 
     if (*input == NULL)
     {
@@ -511,10 +515,10 @@ avtPlot::Execute(avtDataObject_p input, avtContract_p spec,
     {
         dob = ReduceGeometry(dob);
         dob = CompactTree(dob);
-        dob = SetCurrentExtents(dob);
     }
+    dob = SetCurrentExtents(dob);
 
-    spec = EnhanceSpecification(spec);
+    contract = EnhanceSpecification(contract);
 
     avtDataObjectWriter_p writer = dob->InstantiateWriter();
     writer->SetInput(dob);
@@ -523,7 +527,7 @@ avtPlot::Execute(avtDataObject_p input, avtContract_p spec,
     // do any work with the writer.
     if (!combinedExecute)
     {
-       writer->Execute(spec);
+       writer->Execute(contract);
     }
 
     //
@@ -865,10 +869,10 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
 //
 // ****************************************************************************
 avtActor_p
-avtPlot::CombinedExecute(avtDataObject_p input, avtContract_p spec,
+avtPlot::CombinedExecute(avtDataObject_p input, avtContract_p contract,
                  const WindowAttributes *atts)
 {
-   avtDataObjectWriter_p writer = Execute(input, spec, atts, true);
+   avtDataObjectWriter_p writer = Execute(input, contract, atts, true);
    writer->GetInput()->GetInfo().ParallelMerge(writer);
    return Execute(NULL, writer->GetInput());
 }
@@ -1026,8 +1030,10 @@ avtPlot::ReduceGeometry(avtDataObject_p curDS)
 //  Creation:   September 18, 2001
 //
 //  Modifications:
+//
 //    Kathleen Bonnell, Fri Oct 12 11:38:41 PDT 2001
 //    Set flag specifiying that execution depends on DLB. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -1338,9 +1344,9 @@ avtPlot::SetScaleMode(avtDataObject_p curDS, ScaleMode xScaleMode,
 // ****************************************************************************
 
 avtContract_p
-avtPlot::EnhanceSpecification(avtContract_p spec)
+avtPlot::EnhanceSpecification(avtContract_p contract)
 {
-    return spec;
+    return contract;
 }
 
 
