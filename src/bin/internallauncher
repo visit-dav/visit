@@ -366,6 +366,10 @@ exec perl -x $0 ${1+"$@"};
 #    Removed all force specification's of the xterm's font, allowing the user's
 #    X resource DB to take effect.
 #
+#    Hank Childs, Wed Aug 27 08:38:49 PDT 2008
+#    Change ncpus to ppn.  This takes out compatibility with cosmea, but
+#    it is a safe thing to do on the RC and I'll fix up cosmea manually.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2160,7 +2164,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             $nodes = $procs if (!$nodes_set);
             $ppn = ceil($procs / $nodes);
             $qsubNumNodeStr = "nodes";
-            $qsubPPNStr = "ncpus";
+            $qsubPPNStr = "ppn";
             $qsubSeparator = ":";
             if ( $IsRunningOnJaguarCNL_ORNL ) {$qsubNumNodeStr = "size";}
             if ( $IsRunningOnFranklinNERSC ) {
