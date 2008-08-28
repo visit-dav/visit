@@ -398,6 +398,9 @@
 #     Hank Childs, Mon Aug 18 10:46:10 PDT 2008
 #     Patches for VTK and Silo for compilation issue with gcc 4.3.
 #
+#     Hank Childs, Thu Aug 28 10:11:34 PDT 2008
+#     Make szip build on FC9.  (szip is required for HDF5.)
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -3904,7 +3907,7 @@ function build_szip
     info_box "Configuring SZIP . . ." 1>&3
     cd ${SZIP_DIR}
     echo "Invoking command to configure SZIP"
-    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" LIBS="-lm" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
         --disable-shared \
         --prefix="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
