@@ -576,6 +576,9 @@ avtMassVoxelExtractor::ExtractWorldSpaceGrid(vtkRectilinearGrid *rgrid,
 //    Hank Childs, Wed Aug 27 11:06:27 PDT 2008
 //    Add support for non-floats.
 //
+//    Hank Childs, Thu Aug 28 10:52:32 PDT 2008
+//    Make sure we only sample the variables that were requested.
+//
 // ****************************************************************************
 
 void
@@ -612,20 +615,23 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
     for (i = 0 ; i < rgrid->GetCellData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
-        cell_vartypes[ncell_arrays] = arr->GetDataType();
         const char *name = arr->GetName();
-        cell_size[ncell_arrays] = arr->GetNumberOfComponents();
+        int idx = -1;
         for (j = 0 ; j < varorder.size() ; j++)
         {
             if (varorder[j] == name)
             {
-                int idx = 0;
+                idx = 0;
                 for (k = 0 ; k < j ; k++)
                     idx += varsize[k];
-                cell_index[ncell_arrays] = idx;
                 break;
             }
         }
+        if (idx < 0)
+            continue;
+        cell_index[ncell_arrays] = idx;
+        cell_vartypes[ncell_arrays] = arr->GetDataType();
+        cell_size[ncell_arrays] = arr->GetNumberOfComponents();
         cell_arrays[ncell_arrays++] = arr->GetVoidPointer(0);
     }
 
@@ -633,20 +639,23 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
     for (i = 0 ; i < rgrid->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
-        pt_vartypes[npt_arrays] = arr->GetDataType();
         const char *name = arr->GetName();
-        pt_size[npt_arrays] = arr->GetNumberOfComponents();
+        int idx = -1;
         for (j = 0 ; j < varorder.size() ; j++)
         {
             if (varorder[j] == name)
             {
-                int idx = 0;
+                idx = 0;
                 for (k = 0 ; k < j ; k++)
                     idx += varsize[k];
-                pt_index[npt_arrays] = idx;
                 break;
             }
         }
+        if (idx < 0)
+            continue;
+        pt_index[npt_arrays] = idx;
+        pt_vartypes[npt_arrays] = arr->GetDataType();
+        pt_size[npt_arrays] = arr->GetNumberOfComponents();
         pt_arrays[npt_arrays++] = arr->GetVoidPointer(0);
     }
 
@@ -1537,6 +1546,9 @@ inline int FindIndex(const float &pt, const int &last_hit, const int &n,
 //    Hank Childs, Wed Aug 27 11:07:04 PDT 2008
 //    Add support for non-floats.
 //
+//    Hank Childs, Thu Aug 28 10:52:32 PDT 2008
+//    Make sure we only sample the variables that were requested.
+//
 // ****************************************************************************
 
 void
@@ -1568,20 +1580,23 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
     for (i = 0 ; i < rgrid->GetCellData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
-        cell_vartypes.push_back(arr->GetDataType());
         const char *name = arr->GetName();
-        cell_size.push_back(arr->GetNumberOfComponents());
+        int idx = -1;
         for (j = 0 ; j < varnames.size() ; j++)
         {
             if (varnames[j] == name)
             {
-                int idx = 0;
+                idx = 0;
                 for (k = 0 ; k < j ; k++)
                     idx += varsizes[k];
-                cell_index.push_back(idx);
                 break;
             }
         }
+        if (idx < 0)
+            continue;
+        cell_index.push_back(idx);
+        cell_size.push_back(arr->GetNumberOfComponents());
+        cell_vartypes.push_back(arr->GetDataType());
         cell_arrays.push_back(arr->GetVoidPointer(0));
     }
 
@@ -1592,20 +1607,23 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
     for (i = 0 ; i < rgrid->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
-        pt_vartypes.push_back(arr->GetDataType());
         const char *name = arr->GetName();
-        pt_size.push_back(arr->GetNumberOfComponents());
+        int idx = -1;
         for (j = 0 ; j < varnames.size() ; j++)
         {
             if (varnames[j] == name)
             {
-                int idx = 0;
+                idx = 0;
                 for (k = 0 ; k < j ; k++)
                     idx += varsizes[k];
-                pt_index.push_back(idx);
                 break;
             }
         }
+        if (idx < 0)
+            continue;
+        pt_index.push_back(idx);
+        pt_size.push_back(arr->GetNumberOfComponents());
+        pt_vartypes.push_back(arr->GetDataType());
         pt_arrays.push_back(arr->GetVoidPointer(0));
     }
 
