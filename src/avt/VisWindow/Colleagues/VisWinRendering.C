@@ -934,6 +934,7 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
                               bool doOpaque, bool doTranslucent,
                               avtImage_p input)
 {
+    int t1 = visitTimer->StartTimer();
     bool second_pass = (*input != NULL);
 
     vtkRenderWindow *renWin = GetRenderWindow();
@@ -999,6 +1000,7 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
     // Make sure that the window is up-to-date.
     //
     avtCallback::ClearRenderingExceptions();
+    int t2 = visitTimer->StartTimer();
     if (second_pass)
     {
         // We can't erase the rgb/z data we just worked
@@ -1013,6 +1015,8 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
         // so we better darn well allow erasing before drawing.
         renWin->Render();
     }
+    visitTimer->StopTimer(t2, "Time for actual vtkRenderWindow::Render()");
+
     std::string errorMsg = avtCallback::GetRenderingException();
     if (errorMsg != "")
     {
@@ -1033,6 +1037,7 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
         mediator.ResumeOpaqueGeometry();
     if(!doTranslucent)
         mediator.ResumeTranslucentGeometry();
+    visitTimer->StopTimer(t1, "Time spent in VisWinRendering::ScreenRender");
 }
 
 // ****************************************************************************
@@ -1079,7 +1084,15 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
 //    Moved code to compute size and origin of region to capture to
 //    GetCaptureRegion.
 //
+//    Hank Childs, Thu Aug 28 13:04:44 PDT 2008
+//    Read RGBA data instead of RGB.  First and foremost, this bypasses a Mesa
+//    bug on Fedora where RGB data is not served up correctly.  Second, by
+//    requesting RGBA data, we get onto Mesa's fast track routines for read
+//    back.  (Note: timing shows that this read back routine is fairly quick
+//    even when not fast tracked, so this isn't a huge result.)
+//
 // ****************************************************************************
+
 avtImage_p
 VisWinRendering::ScreenReadback(bool doViewportOnly, bool doCanvasZBufferToo)
 {
@@ -1106,13 +1119,27 @@ VisWinRendering::ScreenReadback(bool doViewportOnly, bool doCanvasZBufferToo)
     // very easy to avoid copying the buffer.
     //
     const int readFrontBuffer = 1;
-    unsigned char *pixels = renWin->GetPixelData(c0,r0,c0+w-1,r0+h-1,readFrontBuffer);
-
+    int t1 = visitTimer->StartTimer();
+    int t3 = visitTimer->StartTimer();
+    unsigned char *pixels = renWin->GetRGBACharPixelData(c0,r0,c0+w-1,r0+h-1,readFrontBuffer);
+    visitTimer->StopTimer(t3, "Getting RGBA from Mesa/OpenGL");
+    
     vtkImageData *image = avtImageRepresentation::NewImage(w, h);
-    unsigned char *img_pix = (unsigned char *)image->GetScalarPointer(0, 0, 0); 
+    unsigned char *img_pix = (unsigned char *)image->GetScalarPointer(0, 0, 0);
 
-    memcpy(img_pix, pixels, 3*w*h);
+    const int numPix = w*h;
+    int t2 = visitTimer->StartTimer();
+    for (int i = 0 ; i < numPix ; i++)
+    {
+        *img_pix++ = *pixels++;
+        *img_pix++ = *pixels++;
+        *img_pix++ = *pixels++;
+        pixels++; // Alpha
+    }
+    visitTimer->StopTimer(t2, "Copying RGBA to RGB");
+    pixels -= 4*w*h;
     delete [] pixels;
+    visitTimer->StopTimer(t1, "Total RGB readback time");
 
     //
     // Force some updates so we can let screenCaptureSource be destructed.
