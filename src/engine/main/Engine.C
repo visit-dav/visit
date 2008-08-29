@@ -266,7 +266,7 @@ Engine::~Engine()
     delete metaData;
     delete commandFromSim;
 
-    for (int i=0; i<rpcExecutors.size(); i++)
+    for (size_t i=0; i<rpcExecutors.size(); i++)
         delete rpcExecutors[i];
 
     delete quitRPC;
@@ -2694,7 +2694,8 @@ Engine::GetProcessAttributes()
 //  Returns: Success / failure.
 //
 //  Arguments:
-//    n   Display number to create.
+//    n          Display number to create.
+//    user_args  User-given arguments to xinit.
 //
 //  Programmer: Tom Fogal
 //  Creation:   July 27, 2008
@@ -2818,6 +2819,9 @@ connectx(size_t display)
 //    Add a check to make sure we don't start too many X servers.
 //    Make sure the X server started up correctly before connecting.
 //
+//    Tom Fogal, Mon Aug 11 13:55:38 EDT 2008
+//    Cast to avoid a warning.
+//
 // ****************************************************************************
 
 static void
@@ -2842,7 +2846,7 @@ SetupDisplay(size_t n, const std::string &user_args)
         if(cog_set_intersect(&lnodes, rank))
         {
             assert((rank-min) >= 0);
-            if(PAR_Rank() == rank && (rank-min) < n)
+            if(PAR_Rank() == rank && static_cast<size_t>(rank-min) < n)
             {
                 const int display = rank-min;
                 if(startx(display, split(user_args, PAR_Rank(), display)))
