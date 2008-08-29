@@ -177,6 +177,9 @@ class Xfer;
 //    Tom Fogal, Tue Aug  5 14:26:03 EDT 2008
 //    Added a string to store arguments to the X server.
 //
+//    Tom Fogal, Mon Aug 11 11:39:07 EDT 2008
+//    Instance variable to store how many X servers we should start up.
+//
 // ****************************************************************************
 
 class Engine
@@ -337,6 +340,7 @@ class Engine
  private:
     bool                      useIceT;
     std::string               X_Args;
+    size_t                    nDisplays;
 };
 
 #endif
