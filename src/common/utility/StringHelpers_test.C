@@ -46,7 +46,6 @@ using std::vector;
 
 int main(int argc, char **argv)
 {
-    int errcnt = 0;
     vector<int> falseNegatives;
     vector<int> falsePositives;
 
@@ -79,6 +78,13 @@ int main(int argc, char **argv)
     if (!ValidatePrintfFormatString("hello world", "dummy"))
         falseNegatives.push_back(__LINE__);
     if (!ValidatePrintfFormatString("firstInt = %d\nsecondFlt=%G\n", "int", "float"))
+        falseNegatives.push_back(__LINE__);
+
+    if(str_to_u_numeric<size_t>("42") != 42)
+        falseNegatives.push_back(__LINE__);
+    if(str_to_u_numeric<size_t>("0") != 0)
+        falseNegatives.push_back(__LINE__);
+    if(str_to_u_numeric<size_t>("2147483648") != 2147483648UL)
         falseNegatives.push_back(__LINE__);
 
     //
