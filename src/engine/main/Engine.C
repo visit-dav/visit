@@ -2887,6 +2887,9 @@ connectx(size_t display)
 //    Reorganize so we only call InitVTK::*orceMesa once; this seems to work
 //    more reliably.
 //
+//    Brad Whitlock, Fri Aug 29 09:55:09 PDT 2008
+//    Added Mac-specific code for unsetenv since it returns void on Mac.
+//
 // ****************************************************************************
 
 static void
@@ -2905,11 +2908,15 @@ SetupDisplay(size_t n, const std::string &user_args)
     // Default to always use Mesa.  Only if the X server is successfully
     // started will we switch to HW rendering.
     bool hardware = false;
+#ifdef __APPLE__
+    unsetenv("DISPLAY");
+#else
     if(unsetenv("DISPLAY") != 0)
     {
         perror("unsetenv");
         debug1 << "unsetenv DISPLAY failed." << std::endl;
     }
+#endif
 
     for(rank = min; rank <= max; ++rank)
     {
