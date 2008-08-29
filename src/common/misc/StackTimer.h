@@ -42,6 +42,8 @@
 #ifndef STACK_TIMER_H
 #define STACK_TIMER_H
 
+#include <string>
+
 #include <TimingsManager.h>
 
 // ****************************************************************************
@@ -69,13 +71,17 @@
 //    Moved constructor and destructor to 'C' file, in order for this class'
 //    methods to be available on windows platform.
 //
+//    Tom Fogal, Mon Aug 25 09:54:55 EDT 2008
+//    Made a std::string-based constructor.
+//
 // ****************************************************************************
 
 class MISC_API StackTimer
 {
   public:
+    StackTimer(const std::string &);
     StackTimer(const char *msg); 
-    ~StackTimer() ;
+    ~StackTimer();
 
   private:
 

@@ -59,6 +59,21 @@ StackTimer::StackTimer(const char *msg)
     this->timer_index = visitTimer->StartTimer();
 }
 
+// ****************************************************************************
+//  StackTimer string Constructor
+//
+//  Purpose: Easier to use (sometimes) version of the timer.
+//
+//  Programmer: Tom Fogal
+//  Creation:   July 25, 2007
+//
+// ****************************************************************************
+
+StackTimer::StackTimer(const std::string &msg): message(msg)
+{
+    this->timer_index = visitTimer->StartTimer();
+}
+
 StackTimer::~StackTimer() 
 {
     visitTimer->StopTimer(this->timer_index, this->message);
