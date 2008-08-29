@@ -40,8 +40,10 @@
 #include <Executors.h>
 
 #include <cassert>
-#include <errno.h>
-#include <stdlib.h>
+#include <cerrno>
+#include <cstdlib>
+#include <signal.h>
+#include <sys/wait.h>
 #if !defined(_WIN32)
 #include <strings.h>
 #include <sys/types.h>   // for getpid()
@@ -117,12 +119,15 @@ const char *dummy_string1 = "DEBUG_MEMORY_LEAKS";
 
 // Static data
 Engine *Engine::instance = NULL;
+// If we start an X server, this holds its PID -- used to shut it down.
+static pid_t pid_xserver = -1;
 
 // Static methods
 static void WriteByteStreamToSocket(NonBlockingRPC *, Connection *,
                                     avtDataObjectString &);
 static void ResetEngineTimeout(void *p, int secs);
 static void SetupDisplay(size_t n);
+static void TeardownDisplay(pid_t xpid);
 
 // message tag for interrupt messages used in static abort callback function
 #ifdef PARALLEL
@@ -431,11 +436,20 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
 //    Remove the variable which captures the return value of StartTimer.  It
 //    can't be used, and the compiler complains about it.
 //
+//    Tom Fogal, Tue Jul 29 10:56:51 EDT 2008
+//    Kill the X server if one was started.
+//
 // ****************************************************************************
 void
 Engine::Finalize(void)
 {
     visitTimer->StartTimer();
+
+    if(pid_xserver != -1)
+    {
+        TeardownDisplay(pid_xserver);
+    }
+
     Init::Finalize();
 }
 
@@ -2658,6 +2672,8 @@ Engine::GetProcessAttributes()
 //
 //  Purpose: Fork-exec an X server.
 //
+//  Returns: Success / failure.
+//
 //  Arguments:
 //    n   Display number to create.
 //
@@ -2665,11 +2681,40 @@ Engine::GetProcessAttributes()
 //  Creation:   July 27, 2008
 //
 // ****************************************************************************
-static void
+static bool
 startx(size_t display)
 {
-    // fork-exec X server ...
-    // reminder: InitVTK::UnforceMesa(), perhaps?
+    pid_t pid;
+
+    if((pid = fork()) == -1)
+    {
+        perror("Could not fork to start X server");
+        return false;
+    }
+
+    if(pid == 0)
+    {
+        char disp[8];
+        char layout[32];
+        static const char *sentinel = NULL;
+        debug3 << "Starting X server on " << display << std::endl;
+        SNPRINTF(disp, 8, ":%zu", display);
+        SNPRINTF(layout, 32, "%s%zu", "Layout", display);
+
+        // FIXME Need something better than a sleep ...
+        // Ideally we'd run a hypothetical /bin/nothing, which would simply
+        // start up and then block, waiting for a signal.  When it gets a
+        // signal, it should exit cleanly.
+        execlp("xinit", "xinit", "/bin/sleep", "7200", "--",
+               disp, "-sharevts", "-once", "-terminate", sentinel);
+
+        perror("Could not exec X server.");
+        return false;
+    }
+    debug3 << "Saving X server PID " << pid << std::endl;
+
+    pid_xserver = pid;
+    return true;
 }
 #endif
 
@@ -2689,8 +2734,10 @@ static void
 connectx(size_t display)
 {
     static char env_display[1024];
-    SNPRINTF(env_display, 1024, "DISPLAY:%zu", display);
+    debug3 << "Connecting to display " << display << std::endl;
+    SNPRINTF(env_display, 1024, "DISPLAY=:%zu", display);
     putenv(env_display);
+    InitVTK::UnforceMesa();
 }
 
 // ****************************************************************************
@@ -2707,6 +2754,12 @@ connectx(size_t display)
 //  Programmer: Tom Fogal
 //  Creation:   July 27, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Tue Jul 29 10:28:07 EDT 2008
+//    Add a check to make sure we don't start too many X servers.
+//    Make sure the X server started up correctly before connecting.
+//
 // ****************************************************************************
 
 static void
@@ -2721,21 +2774,84 @@ SetupDisplay(size_t n)
     int rank;
     int min = cog_set_min(&lnodes);
     int max = cog_set_min(&lnodes);
+
+    // Default to always using Mesa.
+    InitVTK::ForceMesa();
+
     for(rank = min; rank <= max; ++rank)
     {
         if(cog_set_intersect(&lnodes, rank))
         {
             assert((rank-min) >= 0);
-            if((rank-min) < n)
+            if(PAR_Rank() == rank && (rank-min) < n)
             {
-                startx(rank-min);
-                connectx(rank-min);
+                if(startx(rank-min))
+                {
+                    // Give some time for the X server to start up.
+                    sleep(6);
+                    debug1 << "Sleep done, connecting .." << std::endl;
+                    connectx(rank-min);
+                }
+                else
+                {
+                    debug1 << "X server startup failed; forcing Mesa."
+                           << std::endl;
+                    InitVTK::ForceMesa();
+                }
             }
         }
     }
 #else
     connectx(0);
 #endif
+}
+
+// ****************************************************************************
+//  Function: TeardownDisplay
+//
+//  Purpose:
+//    Disconnect from the display we used for HW rendering.  Stop the given
+//    process.
+//
+//  Arguments:
+//    xpid   The PID of the X server we started earlier.
+//
+//  Programmer: Tom Fogal
+//  Creation:   July 29, 2008
+//
+// ****************************************************************************
+
+static void
+TeardownDisplay(pid_t xpid)
+{
+    assert(xpid > 0);
+    unsetenv("DISPLAY");
+
+    debug3 << "Tearing down display " << xpid << std::endl;
+
+    if(kill(xpid, SIGKILL) < 0)
+    {
+        char err[1024];
+        strerror_r(errno, err, 1024);
+        debug1 << "Could not stop X server: " << err << std::endl;
+        std::cerr << "Could not stop the X server: " << err << std::endl
+                  << "You might have a stale X server or engine_par "
+                  << "processes around now.";
+    }
+    int status;
+    waitpid(xpid, &status, WUNTRACED);
+    if(WIFEXITED(status))
+    {
+        debug4 << "X server exited on it's own." << std::endl;
+    }
+    else if(WIFSIGNALED(status))
+    {
+        debug4 << "X server killed successfully." << std::endl;
+    }
+    else
+    {
+        debug4 << "UNEXPECTED X server death status: " << status << std::endl;
+    }
 }
 
 // ****************************************************************************
