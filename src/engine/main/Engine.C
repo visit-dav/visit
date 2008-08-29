@@ -42,6 +42,7 @@
 #include <cassert>
 #include <cerrno>
 #include <cstdlib>
+#include <cctype>
 #include <signal.h>
 #include <sys/wait.h>
 #if !defined(_WIN32)
@@ -140,9 +141,9 @@ static void connectx(size_t display);
 static std::string car(const std::string);
 static std::string cdr(const std::string);
 static std::string format(std::string s, size_t node, size_t display);
+static bool has_nonspace_chars(const std::string &s);
 static void append(std::vector<std::string> &, std::vector<std::string>);
 static std::vector<std::string> split(std::string, size_t, size_t);
-
 
 // message tag for interrupt messages used in static abort callback function
 #ifdef PARALLEL
@@ -3096,6 +3097,32 @@ format(std::string s, size_t node, size_t display)
     return s;
 }
 
+//****************************************************************************
+//  Function: has_nonspace_chars
+//
+//  Purpose: Predicate to determine if a string has any useful content.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 20, 2008
+//
+//  Modifications:
+//
+//****************************************************************************
+static bool
+has_nonspace_chars(const std::string &s)
+{
+    std::string::const_iterator iter = s.begin();
+
+    while(iter != s.end())
+    {
+        if(!isspace(*iter))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 //  Function: append
 //
@@ -3115,7 +3142,8 @@ append(std::vector<std::string> &argv, std::vector<std::string> lst)
 {
     if(lst.empty()) { return; }
 
-    if(lst.front() != "") {
+    if(has_nonspace_chars(lst.front()))
+    {
         argv.push_back(lst.front());
     }
     lst.erase(lst.begin());
