@@ -84,7 +84,7 @@
 #include <SimulationCommand.h>
 #include <SocketConnection.h>
 #include <StringHelpers.h>
-#include <TimingsManager.h>
+#include <StackTimer.h>
 #include <vtkDebugStream.h>
 
 #include <avtDatabaseMetaData.h>
@@ -570,6 +570,9 @@ Engine::Finalize(void)
 //    Use a new method, SetupDisplay, for initializing the connection to the X
 //    server.
 //
+//    Tom Fogal, Mon Aug 25 10:04:30 EDT 2008
+//    Make sure the number of GPUs ends up in the timing output.
+//
 // ****************************************************************************
 
 void
@@ -589,9 +592,11 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     }
     else
     {
+        std::ostringstream s;
+        s << "Setting up " << this->nDisplays << " GPUs for HW rendering";
         debug3 << "Setting up X displays for " << this->nDisplays << " GPUs."
                << "  Using X arguments: '" << this->X_Args << "'" << std::endl;
-        SetupDisplay(this->nDisplays, this->X_Args);
+        TimedCodeBlock(s.str(), SetupDisplay(this->nDisplays, this->X_Args));
     }
     avtCallback::SetNowinMode(true);
 
