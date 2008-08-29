@@ -126,8 +126,19 @@ static pid_t pid_xserver = -1;
 static void WriteByteStreamToSocket(NonBlockingRPC *, Connection *,
                                     avtDataObjectString &);
 static void ResetEngineTimeout(void *p, int secs);
-static void SetupDisplay(size_t n);
+static void SetupDisplay(size_t n, const std::string &);
 static void TeardownDisplay(pid_t xpid);
+static bool startx(size_t display, std::vector<std::string> args);
+static void connectx(size_t display);
+
+// X configuration helpers; splits a string, argv[] style, and converts certain
+// format strings into node or display identifiers.
+static std::string car(const std::string);
+static std::string cdr(const std::string);
+static std::string format(std::string s, size_t node, size_t display);
+static void append(std::vector<std::string> &, std::vector<std::string>);
+static std::vector<std::string> split(std::string, size_t, size_t);
+
 
 // message tag for interrupt messages used in static abort callback function
 #ifdef PARALLEL
@@ -569,7 +580,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     }
     else
     {
-        SetupDisplay(1);
+        SetupDisplay(1, this->X_Args);
     }
     avtCallback::SetNowinMode(true);
 
@@ -1232,6 +1243,9 @@ Engine::ProcessInput()
 //    Tom Fogal, Fri Jul 11 11:55:43 EDT 2008
 //    Added `icet' command line parameter.
 //
+//    Tom Fogal, Tue Aug  5 14:21:56 EDT 2008
+//    Add `x-args' command line parameter.
+//
 //    Jeremy Meredith, Thu Aug  7 16:23:22 EDT 2008
 //    Wrap parallel-only vars with appropriate ifdef.
 //
@@ -1251,6 +1265,11 @@ Engine::ProcessCommandLine(int argc, char **argv)
             NetworkManager::SetStereoEnabled();
         else if (strcmp(argv[i], "-hw-accel") == 0)
             haveHWAccel = true;
+        else if (strcmp(argv[i], "-x-args") == 0 && i+1 < argc)
+        {
+            this->X_Args = std::string(argv[i+1]);
+            i++;
+        }
         else if ((strcmp(argv[i], "-timing") == 0 ||
                   strcmp(argv[i], "-timings") == 0) && timingsAllowed)
             visitTimer->Enable();
@@ -2680,9 +2699,16 @@ Engine::GetProcessAttributes()
 //  Programmer: Tom Fogal
 //  Creation:   July 27, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Tue Aug  5 16:33:49 EDT 2008
+//    Add argument string-vector, and code to convert that into an argv-style
+//    array.  Finally, use execvp to start xinit.  All of this allows the user
+//    to specify their own custom arguments to the X launch.
+//
 // ****************************************************************************
 static bool
-startx(size_t display)
+startx(size_t display, std::vector<std::string> user_args)
 {
     pid_t pid;
 
@@ -2694,21 +2720,48 @@ startx(size_t display)
 
     if(pid == 0)
     {
-        char disp[8];
-        char layout[32];
-        static const char *sentinel = NULL;
+        char **argv;
         debug3 << "Starting X server on " << display << std::endl;
-        SNPRINTF(disp, 8, ":%zu", display);
-        SNPRINTF(layout, 32, "%s%zu", "Layout", display);
 
         // FIXME Need something better than a sleep ...
         // Ideally we'd run a hypothetical /bin/nothing, which would simply
-        // start up and then block, waiting for a signal.  When it gets a
+        // start up and then block, waiting for a signal.  When it gets that
         // signal, it should exit cleanly.
-        execlp("xinit", "xinit", "/bin/sleep", "7200", "--",
-               disp, "-sharevts", "-once", "-terminate", sentinel);
+        std::vector<std::string> args;
+        args.push_back("xinit");
+        args.push_back("/bin/sleep");
+        args.push_back("7200");
+        args.push_back("--");
+        args.push_back(format(":%l", /* unused */0, display));
+        args.push_back("-sharevts");
+        args.push_back("-once");
+        args.push_back("-terminate");
+        append(args, user_args);
+
+        { // Convert the argument vector into a C-style one.
+            argv = static_cast<char**>(malloc(sizeof(char *) * args.size()+1));
+
+            // Need an index to index argv; can't use an iterator here.
+            size_t i = 0;
+            for(i = 0; i < args.size(); ++i) {
+                argv[i] = static_cast<char*>
+                          (malloc(sizeof(char) * args[i].length()));
+                args[i].copy(argv[i], args[i].length());
+                argv[i][args[i].length()] = '\0';
+            }
+            argv[i] = NULL; // need an explicit sentinel
+        }
+#ifndef NDEBUG
+        debug4 << "X server command line arguments:" << std::endl;
+        for(size_t i=0; i < args.size(); ++i) {
+            debug4 << "\t" << argv[i] << std::endl;
+        }
+#endif
+        execvp("xinit", argv);
 
         perror("Could not exec X server.");
+        for(size_t i=0; i < args.size(); ++i) { free(argv[i]); }
+        free(argv);
         return false;
     }
     debug3 << "Saving X server PID " << pid << std::endl;
@@ -2729,13 +2782,18 @@ startx(size_t display)
 //  Programmer: Tom Fogal
 //  Creation:   July 27, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Tue Aug  5 16:36:20 EDT 2008
+//    Dropped the array size down a notch; why was it so huge before?
+//
 // ****************************************************************************
 static void
 connectx(size_t display)
 {
-    static char env_display[1024];
+    static char env_display[128];
     debug3 << "Connecting to display " << display << std::endl;
-    SNPRINTF(env_display, 1024, "DISPLAY=:%zu", display);
+    SNPRINTF(env_display, 128, "DISPLAY=:%zu", display);
     putenv(env_display);
     InitVTK::UnforceMesa();
 }
@@ -2763,7 +2821,7 @@ connectx(size_t display)
 // ****************************************************************************
 
 static void
-SetupDisplay(size_t n)
+SetupDisplay(size_t n, const std::string &user_args)
 {
 #ifdef PARALLEL
     cog_set lnodes;
@@ -2775,7 +2833,8 @@ SetupDisplay(size_t n)
     int min = cog_set_min(&lnodes);
     int max = cog_set_min(&lnodes);
 
-    // Default to always using Mesa.
+    // Default to always use Mesa.  Only if the X server is successfully
+    // started will we switch to HW rendering.
     InitVTK::ForceMesa();
 
     for(rank = min; rank <= max; ++rank)
@@ -2785,18 +2844,18 @@ SetupDisplay(size_t n)
             assert((rank-min) >= 0);
             if(PAR_Rank() == rank && (rank-min) < n)
             {
-                if(startx(rank-min))
+                const int display = rank-min;
+                if(startx(display, split(user_args, PAR_Rank(), display)))
                 {
                     // Give some time for the X server to start up.
                     sleep(6);
                     debug1 << "Sleep done, connecting .." << std::endl;
-                    connectx(rank-min);
+                    connectx(display);
                 }
                 else
                 {
                     debug1 << "X server startup failed; forcing Mesa."
                            << std::endl;
-                    InitVTK::ForceMesa();
                 }
             }
         }
@@ -2835,7 +2894,7 @@ TeardownDisplay(pid_t xpid)
         strerror_r(errno, err, 1024);
         debug1 << "Could not stop X server: " << err << std::endl;
         std::cerr << "Could not stop the X server: " << err << std::endl
-                  << "You might have a stale X server or engine_par "
+                  << "You might have stale X server or engine_par "
                   << "processes around now.";
     }
     int status;
@@ -2883,4 +2942,138 @@ ResetEngineTimeout(void *p, int secs)
         debug5 << "ResetEngineTimeout: Overriding timeout to " << secs << " seconds." << endl;
     }
     e->ResetTimeout(secs);
+}
+
+// X configuration helpers; splits a string, argv[] style, and converts certain
+// format strings into node or display identifiers.
+
+// ****************************************************************************
+//  Function: car
+//
+//  Purpose: Pulls the first word out of a space-separated string.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+static std::string
+car(const std::string s)
+{
+    if(s.find(' ') != std::string::npos) {
+        return s.substr(0, s.find(' '));
+    }
+    return s;
+}
+
+// ****************************************************************************
+//  Function: cdr
+//
+//  Purpose: Removes the first word from a space-separated string.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+static std::string
+cdr(const std::string s)
+{
+    std::string::size_type space;
+    if((space = s.find(' ')) != std::string::npos) {
+        return s.substr(space+1);
+    }
+    return s;
+}
+
+// ****************************************************************************
+//  Function: format
+//
+//  Purpose: Replace special formatters within a string with particular values.
+//           Currently `%l' expands to the display, and `%n' expands to the
+//           node ID.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 5, 2008
+//
+//  Modifications:
+//
+//    Tom Fogal, Thu Aug  7 16:43:49 EDT 2008
+//    Use a debug stream instead of cerr.  Use SNPRINTF macro instead of
+//    calling the function directly.
+//
+// ****************************************************************************
+static std::string
+format(std::string s, size_t node, size_t display)
+{
+    std::string::size_type percent;
+    if((percent = s.find('%')) != std::string::npos) {
+        std::string::iterator start = s.begin() + percent;
+        /* assume all formatters are '%x': i.e., always 2 characters */
+        std::string::iterator end = s.begin() + (percent+2);
+        std::string::iterator type = s.begin() + (percent+1);
+
+        if(*type == 'l') {
+            char str_display[8];
+            SNPRINTF(str_display, 8, "%zu", display);
+            s.replace(start, end, str_display);
+        } else if(*type == 'n') {
+            char str_node[8];
+            SNPRINTF(str_node, 8, "%zu", node);
+            s.replace(start, end, str_node);
+        } else {
+            debug5 << "unknown formatter '" << *type << "'" << std::endl;
+        }
+    }
+    // If they gave multiple %'s in the same string, recurse.
+    if(s.find('%') != std::string::npos) {
+        return format(s, node, display);
+    }
+    return s;
+}
+
+// ****************************************************************************
+//  Function: append
+//
+//  Purpose: Append all elements from one vector to another.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 5, 2008
+//
+//  Modifications:
+//
+//    Tom Fogal, Thu Aug  7 16:39:39 EDT 2008
+//    Remove/ignore empty strings.
+//
+// ****************************************************************************
+static void
+append(std::vector<std::string> &argv, std::vector<std::string> lst)
+{
+    if(lst.empty()) { return; }
+
+    if(lst.front() != "") {
+        argv.push_back(lst.front());
+    }
+    lst.erase(lst.begin());
+    append(argv, lst);
+}
+
+// ****************************************************************************
+//  Function: split
+//
+//  Purpose: Splits a string into a vector of strings, separated by spaces.
+//           Converts node and display IDs (via format specifiers) as it
+//           proceeds.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+static std::vector<std::string>
+split(std::string str, size_t node, size_t display)
+{
+    std::vector<std::string> ret;
+    ret.push_back(format(car(str), node, display));
+    if(str.find(' ') != std::string::npos) {
+        append(ret, split(cdr(str), node, display));
+    }
+    return ret;
 }
