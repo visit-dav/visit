@@ -46,6 +46,14 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 1.11</font></b></p>
 <ul>
+    <li>VisIt now supports hardware based rendering for clusters with
+        multiple GPUs per node.  The previous <tt>-hw-accel</tt>
+        interface is preserved.  Therefore no host profile
+        modifications will be necessary, but you must update your VisIt
+        host profiles if you'd like to use more than one GPU.
+        For full information, see
+        <a href="http://www.visitusers.org/index.php?title=Parallel_Hardware_Acceleration">
+        the wiki</a>.
 </ul>
 
 <a name="File_format"></a>
