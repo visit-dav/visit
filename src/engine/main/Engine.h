@@ -174,6 +174,9 @@ class Xfer;
 //    manager.  This should be set if we're given the `-icet' command line
 //    parameter.
 //
+//    Tom Fogal, Tue Aug  5 14:26:03 EDT 2008
+//    Added a string to store arguments to the X server.
+//
 // ****************************************************************************
 
 class Engine
@@ -333,6 +336,7 @@ class Engine
 
  private:
     bool                      useIceT;
+    std::string               X_Args;
 };
 
 #endif
