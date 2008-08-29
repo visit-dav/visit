@@ -129,7 +129,10 @@ static void WriteByteStreamToSocket(NonBlockingRPC *, Connection *,
 static void ResetEngineTimeout(void *p, int secs);
 static void SetupDisplay(size_t n, const std::string &);
 static void TeardownDisplay(pid_t xpid);
+#ifdef PARALLEL
+static char **vec_convert(std::vector<std::string> svec, size_t *len);
 static bool startx(size_t display, std::vector<std::string> args);
+#endif
 static void connectx(size_t display);
 
 // X configuration helpers; splits a string, argv[] style, and converts certain
@@ -585,6 +588,8 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     }
     else
     {
+        debug3 << "Setting up X displays for " << this->nDisplays << " GPUs."
+               << "  Using X arguments: '" << this->X_Args << "'" << std::endl;
         SetupDisplay(this->nDisplays, this->X_Args);
     }
     avtCallback::SetNowinMode(true);
@@ -1255,7 +1260,7 @@ Engine::ProcessInput()
 //    Wrap parallel-only vars with appropriate ifdef.
 //
 //    Tom Fogal, Mon Aug 11 11:40:57 EDT 2008
-//    Add `n-cpus-per-node' command line parameter.
+//    Add `n-gpus-per-node' command line parameter.
 //
 // ****************************************************************************
 
@@ -2700,6 +2705,42 @@ Engine::GetProcessAttributes()
 
 #ifdef PARALLEL
 // ****************************************************************************
+//  Function: vec_convert
+//
+//  Purpose: Converts a vector of strings into ... a vector of strings.  The
+//           latter is really a NULL-terminated C array, suitable for passing
+//           to an exec(2).
+//           Note that all strings (and the array itself) are dynamically
+//           allocated, and must be 'free'd by the caller.
+//
+//  Returns: Converted string vector.
+//
+//  Arguments:
+//    svec       original vector
+//    len        filled with the number of elements in the new vector.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 15, 2008
+//
+// ****************************************************************************
+static char **
+vec_convert(std::vector<std::string> svec, size_t *len)
+{
+    char **argv;
+
+    *len = svec.size();
+    argv = (char**) malloc(sizeof(char*) * (*len+1));
+
+    size_t i;
+    for(i=0; i < *len; ++i)
+    {
+        argv[i] = strdup(svec[i].c_str());
+    }
+    argv[i] = NULL;
+    return argv;
+}
+
+// ****************************************************************************
 //  Function: startx
 //
 //  Purpose: Fork-exec an X server.
@@ -2720,67 +2761,57 @@ Engine::GetProcessAttributes()
 //    array.  Finally, use execvp to start xinit.  All of this allows the user
 //    to specify their own custom arguments to the X launch.
 //
+//    Tom Fogal, Mon Aug 11 19:02:11 EDT 2008
+//    Move print out of the child; this is confusing for the output stream (two
+//    processes can write to it, concurrently!).  Convert to an argv[] array in
+//    both processes, so that we can still output the X server options.
+//
 // ****************************************************************************
 static bool
 startx(size_t display, std::vector<std::string> user_args)
 {
-    pid_t pid;
+    char **argv;
+    size_t v_elems;
 
-    if((pid = fork()) == -1)
+    std::vector<std::string> args;
+    args.push_back("xinit");
+    args.push_back("--");
+    args.push_back(format(":%l", /* unused */0, display));
+    args.push_back("-sharevts");
+    args.push_back("-once");
+    args.push_back("-terminate");
+    append(args, user_args);
+
+    argv = vec_convert(args, &v_elems);
+    if((pid_xserver = fork()) == (pid_t) -1)
     {
-        perror("Could not fork to start X server");
+        perror("fork");
         return false;
     }
 
-    if(pid == 0)
+    if(pid_xserver == 0)
     {
-        char **argv;
-        debug3 << "Starting X server on " << display << std::endl;
-
-        // FIXME Need something better than a sleep ...
-        // Ideally we'd run a hypothetical /bin/nothing, which would simply
-        // start up and then block, waiting for a signal.  When it gets that
-        // signal, it should exit cleanly.
-        std::vector<std::string> args;
-        args.push_back("xinit");
-        args.push_back("/bin/sleep");
-        args.push_back("7200");
-        args.push_back("--");
-        args.push_back(format(":%l", /* unused */0, display));
-        args.push_back("-sharevts");
-        args.push_back("-once");
-        args.push_back("-terminate");
-        append(args, user_args);
-
-        { // Convert the argument vector into a C-style one.
-            argv = static_cast<char**>(malloc(sizeof(char *) * args.size()+1));
-
-            // Need an index to index argv; can't use an iterator here.
-            size_t i = 0;
-            for(i = 0; i < args.size(); ++i) {
-                argv[i] = static_cast<char*>
-                          (malloc(sizeof(char) * args[i].length()));
-                args[i].copy(argv[i], args[i].length());
-                argv[i][args[i].length()] = '\0';
-            }
-            argv[i] = NULL; // need an explicit sentinel
-        }
-#ifndef NDEBUG
-        debug4 << "X server command line arguments:" << std::endl;
-        for(size_t i=0; i < args.size(); ++i) {
-            debug4 << "\t" << argv[i] << std::endl;
-        }
-#endif
         execvp("xinit", argv);
-
-        perror("Could not exec X server.");
-        for(size_t i=0; i < args.size(); ++i) { free(argv[i]); }
-        free(argv);
+        perror("execvp of xinit");
         return false;
     }
-    debug3 << "Saving X server PID " << pid << std::endl;
+#ifndef NDEBUG
+    debug5 << "X server command line arguments:" << std::endl;
+    for(size_t i=0; i < args.size(); ++i) {
+        debug5 << "\t" << argv[i] << std::endl;
+    }
+#endif
+    for(size_t i=0; i < v_elems; ++i)
+    {
+        free(argv[i]);
+    }
+    free(argv);
+    debug3 << "Child started " << (int)pid_xserver << std::endl;
+    debug4 << "Giving a sec for the X server to start ...";
+    sleep(display);
+    debug4 << " done!" << std::endl;
 
-    pid_xserver = pid;
+    debug3 << "Saved X server PID " << pid_xserver << std::endl;
     return true;
 }
 #endif
@@ -2806,10 +2837,20 @@ static void
 connectx(size_t display)
 {
     static char env_display[128];
+    char s_disp[128];
+
     debug3 << "Connecting to display " << display << std::endl;
+    SNPRINTF(s_disp, 128, ":%zu", display);
     SNPRINTF(env_display, 128, "DISPLAY=:%zu", display);
-    putenv(env_display);
+
+    if(putenv(env_display) != 0)
+    {
+        perror("putenv");
+        debug1 << "putenv(\"" << env_display << "\") failed." << std::endl;
+    }
     InitVTK::UnforceMesa();
+
+    system("xhost +");
 }
 
 // ****************************************************************************
@@ -2830,10 +2871,11 @@ connectx(size_t display)
 //
 //    Tom Fogal, Tue Jul 29 10:28:07 EDT 2008
 //    Add a check to make sure we don't start too many X servers.
-//    Make sure the X server started up correctly before connecting.
+//    Wait for the X server to start up correctly before connecting.
 //
 //    Tom Fogal, Mon Aug 11 13:55:38 EDT 2008
 //    Cast to avoid a warning.
+//    Use cog_set_max instead of calling '_min twice.
 //
 // ****************************************************************************
 
@@ -2848,11 +2890,16 @@ SetupDisplay(size_t n, const std::string &user_args)
     cog_set_local(&lnodes, PAR_Rank());
     int rank;
     int min = cog_set_min(&lnodes);
-    int max = cog_set_min(&lnodes);
+    int max = cog_set_max(&lnodes);
 
     // Default to always use Mesa.  Only if the X server is successfully
     // started will we switch to HW rendering.
     InitVTK::ForceMesa();
+    if(unsetenv("DISPLAY") != 0)
+    {
+        perror("unsetenv");
+        debug1 << "unsetenv DISPLAY failed." << std::endl;
+    }
 
     for(rank = min; rank <= max; ++rank)
     {
@@ -2864,9 +2911,6 @@ SetupDisplay(size_t n, const std::string &user_args)
                 const int display = rank-min;
                 if(startx(display, split(user_args, PAR_Rank(), display)))
                 {
-                    // Give some time for the X server to start up.
-                    sleep(6);
-                    debug1 << "Sleep done, connecting .." << std::endl;
                     connectx(display);
                 }
                 else
@@ -2905,14 +2949,19 @@ TeardownDisplay(pid_t xpid)
 
     debug3 << "Tearing down display " << xpid << std::endl;
 
-    if(kill(xpid, SIGKILL) < 0)
+    if(kill(xpid, SIGINT) < 0)
     {
-        char err[1024];
-        strerror_r(errno, err, 1024);
-        debug1 << "Could not stop X server: " << err << std::endl;
-        std::cerr << "Could not stop the X server: " << err << std::endl
-                  << "You might have stale X server or engine_par "
-                  << "processes around now.";
+        perror("Killing X via SIGINT");
+        sleep(2);
+        if(kill(xpid, SIGKILL) < 0)
+        {
+            char err[1024];
+            strerror_r(errno, err, 1024);
+            debug1 << "Could not stop X server: " << err << std::endl;
+            std::cerr << "Could not stop the X server: " << err << std::endl
+                      << "You might have stale X server or engine_par "
+                      << "processes around now.";
+        }
     }
     int status;
     waitpid(xpid, &status, WUNTRACED);
