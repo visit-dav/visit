@@ -366,6 +366,9 @@ exec perl -x $0 ${1+"$@"};
 #    Removed all force specification's of the xterm's font, allowing the user's
 #    X resource DB to take effect.
 #
+#    Tom Fogal, Tue Aug 26 14:02:15 EDT 2008
+#    Fixed a couple minor errors with the recent qsub changes.
+#
 #    Hank Childs, Wed Aug 27 08:38:49 PDT 2008
 #    Change ncpus to ppn.  This takes out compatibility with cosmea, but
 #    it is a safe thing to do on the RC and I'll fix up cosmea manually.
@@ -2078,7 +2081,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             push @visitcmd, @post_args;
 
             $cdcmd     = "cd $cwd\n";
-            $limitcmd  = "limit coredumpsize 0\n";
+            $limitcmd  = "ulimit -c 0\n";
 
             if ($sublauncher eq "mpiexec")
             {
@@ -2125,7 +2128,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             if ($IsRunningOnLens_ORNL)
             {
                 # Lens loads modules that we hate, by default.
-                print TFILE 'eval $(modulecmd sh unload PE-pgi)\n';
+                print TFILE 'eval $(modulecmd sh unload PE-pgi)',"\n";
             }
             print TFILE $cdcmd;
             print TFILE $limitcmd;
