@@ -44,9 +44,15 @@
 #define STRINGHELPERS_H
 #include <utility_exports.h>
 
+#include <iostream>
 #include <set>
 #include <string>
 #include <vector>
+#include <cassert>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <snprintf.h>
 
 using std::string;
 using std::vector;
@@ -81,6 +87,80 @@ namespace StringHelpers
 
    const char UTILITY_API *Basename(const char *path);
    const char UTILITY_API *Dirname(const char *path);
+
+// ****************************************************************************
+//  Function: str_to_u_numeric
+//
+//  Purpose: Converts a string value into an unsigned numeric type as given by
+//           the template parameter.
+//           WARNING: This is likely to compile and silently fail if given a
+//                    signed type in the template parameter.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 11, 2008
+//
+// ****************************************************************************
+    template<typename UT>
+    UT str_to_u_numeric(const char * const s)
+    {
+        assert(strlen(s) >= 1);
+        // strtoul() will happily convert a negative string into an unsigned
+        // integer.  Do a simple check and bail out if we're given a negative
+        // number.
+        if(s[0] == '-')
+        {
+            std::cerr << __FUNCTION__ << "Negative input "
+                      << "'" << s << "'" << std::endl;
+            return 0;
+        }
+
+        const char *str = s;
+        // get rid of leading 0's; they confuse strtoul.
+        if(str[0] == '0' && str[1] != 'x')
+        {
+            while(*str == '0') { ++str; }
+        }
+
+        // One might want to think about switching this to an `unsigned long
+        // long' and using `strtoull' below.  That will catch more cases, but
+        // this is more portable.
+        unsigned long ret;
+        char *end;
+        errno = 0;
+        ret = strtoul(str, &end, 0);
+        switch(errno)
+        {
+            case 0: /* success */ break;
+            case ERANGE:
+            {
+                UT bytes = sizeof(UT);
+                std::cerr << __FUNCTION__ << ": constant does not fit in "
+                          << bytes << " bytes." << std::endl;
+                break;
+            }
+            case EINVAL:
+                perror("bad base (0)?");
+                break;
+            default:
+            {
+                char e_msg[1024];
+                SNPRINTF(e_msg, 1024, "%s: cannot convert %s to "
+                         "unsigned value: %s", __FUNCTION__, s,
+                         strerror(errno));
+                std::cerr << e_msg << std::endl;
+                break;
+            }
+        }
+        if(end == s) {
+            std::cerr << __FUNCTION__ << ": illegal unsigned constant "
+                      << "'" << s << "'" << std::endl;
+        }
+        if(ret < 0) {
+            std::cerr << __FUNCTION__ << ": cannot convert "
+                      << "'" << s << "'" << std::endl;
+        }
+        return static_cast<UT>(ret);
+    }
 }
 
 #endif
