@@ -2883,6 +2883,10 @@ connectx(size_t display)
 //    Cast to avoid a warning.
 //    Use cog_set_max instead of calling '_min twice.
 //
+//    Tom Fogal, Fri Aug 29 10:19:00 EDT 2008
+//    Reorganize so we only call InitVTK::*orceMesa once; this seems to work
+//    more reliably.
+//
 // ****************************************************************************
 
 static void
@@ -2900,7 +2904,7 @@ SetupDisplay(size_t n, const std::string &user_args)
 
     // Default to always use Mesa.  Only if the X server is successfully
     // started will we switch to HW rendering.
-    InitVTK::ForceMesa();
+    bool hardware = false;
     if(unsetenv("DISPLAY") != 0)
     {
         perror("unsetenv");
@@ -2918,6 +2922,7 @@ SetupDisplay(size_t n, const std::string &user_args)
                 if(startx(display, split(user_args, PAR_Rank(), display)))
                 {
                     connectx(display);
+                    hardware = true;
                 }
                 else
                 {
@@ -2926,6 +2931,10 @@ SetupDisplay(size_t n, const std::string &user_args)
                 }
             }
         }
+    }
+    if(false == hardware)
+    {
+        InitVTK::ForceMesa();
     }
 #else
     connectx(0);
