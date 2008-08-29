@@ -82,6 +82,7 @@
 #include <SILAttributes.h>
 #include <SimulationCommand.h>
 #include <SocketConnection.h>
+#include <StringHelpers.h>
 #include <TimingsManager.h>
 #include <vtkDebugStream.h>
 
@@ -189,6 +190,9 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //    Tom Fogal, Fri Jul 11 13:53:23 EDT 2008
 //    Default IceT to false.
 //
+//    Tom Fogal, Mon Aug 11 11:40:16 EDT 2008
+//    Initialize the number of displays.
+//
 // ****************************************************************************
 
 Engine::Engine()
@@ -233,6 +237,7 @@ Engine::Engine()
     setEFileOpenOptionsRPC = NULL;
 
     useIceT = false;
+    nDisplays = 0;
 }
 
 // ****************************************************************************
@@ -580,7 +585,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     }
     else
     {
-        SetupDisplay(1, this->X_Args);
+        SetupDisplay(this->nDisplays, this->X_Args);
     }
     avtCallback::SetNowinMode(true);
 
@@ -1249,6 +1254,9 @@ Engine::ProcessInput()
 //    Jeremy Meredith, Thu Aug  7 16:23:22 EDT 2008
 //    Wrap parallel-only vars with appropriate ifdef.
 //
+//    Tom Fogal, Mon Aug 11 11:40:57 EDT 2008
+//    Add `n-cpus-per-node' command line parameter.
+//
 // ****************************************************************************
 
 void
@@ -1268,6 +1276,11 @@ Engine::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-x-args") == 0 && i+1 < argc)
         {
             this->X_Args = std::string(argv[i+1]);
+            i++;
+        }
+        else if (strcmp(argv[i], "-n-gpus-per-node") == 0 && i+1 < argc)
+        {
+            this->nDisplays = StringHelpers::str_to_u_numeric<size_t>(argv[i+1]);
             i++;
         }
         else if ((strcmp(argv[i], "-timing") == 0 ||
