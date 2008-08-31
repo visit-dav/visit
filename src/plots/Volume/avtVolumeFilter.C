@@ -235,6 +235,9 @@ avtVolumeFilter::Execute(void)
 //    Hank Childs, Tue Mar 13 16:13:05 PDT 2007
 //    Pass distance to integration ray function.
 //
+//    Hank Childs, Sat Aug 30 10:51:40 PDT 2008
+//    Turn on shading.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -293,7 +296,6 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
 
     avtFlatLighting fl;
     avtLightingModel *lm = &fl;
-/*
     avtPhong phong;
     if (atts.GetLightingFlag())
     {
@@ -303,7 +305,6 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     {
         lm = &fl;
     }
- */
 
     //
     // Determine which variables to use and tell the ray function.
@@ -313,7 +314,11 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     avtDatasetExaminer::GetVariableList(input, vl);
     int primIndex = -1;
     int opacIndex = -1;
+    int gradIndex = -1;
     int count = 0;
+    char gradName[128];
+    SNPRINTF(gradName, 128, "_%s_gradient", primaryVariable);
+    
     for (int i = 0 ; i < vl.nvars ; i++)
     {
         if ((strstr(vl.varnames[i].c_str(), "vtk") != NULL) &&
@@ -328,8 +333,13 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
         {
             opacIndex = count;
         }
-        count++;
+        if (vl.varnames[i] == gradName)
+        {
+            gradIndex = count;
+        }
+        count += vl.varsizes[i];
     }
+
     if (primIndex == -1)
     {
         if (vl.nvars <= 0)
@@ -362,6 +372,19 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
             EXCEPTION1(InvalidVariableException,atts.GetOpacityVariable());
         }
     }
+    if (atts.GetLightingFlag() && gradIndex == -1)
+    {
+        if (vl.nvars <= 0)
+        {
+            debug1 << "Could not locate gradient variable, assuming that we "
+                   << "are running in parallel and have more processors "
+                   << "than domains." << endl;
+        }
+        else
+        {
+            EXCEPTION1(InvalidVariableException,gradName);
+        }
+    }
 
     int newPrimIndex = UnifyMaximumValue(primIndex);
     if (primIndex >= 0 && newPrimIndex != primIndex)
@@ -382,6 +405,16 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
         EXCEPTION1(InvalidVariableException, atts.GetOpacityVariable());
     }
     opacIndex = newOpacIndex;
+
+    int newGradIndex = UnifyMaximumValue(gradIndex);
+    if (gradIndex >= 0 && newGradIndex != gradIndex)
+    {
+        //
+        // We shouldn't ever have different orderings for our variables.
+        //
+        EXCEPTION1(InvalidVariableException, gradName);
+    }
+    gradIndex = newGradIndex;
 
     avtOpacityMap *om2 = NULL;
     if (primIndex == opacIndex)
@@ -416,6 +449,8 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
 
     compositeRF->SetColorVariableIndex(primIndex);
     compositeRF->SetOpacityVariableIndex(opacIndex);
+    if (atts.GetLightingFlag())
+        compositeRF->SetGradientVariableIndex(gradIndex);
     integrateRF->SetPrimaryVariableIndex(primIndex);
     integrateRF->SetRange(range[0], range[1]);
     if (atts.GetSampling() == VolumeAttributes::KernelBased)
@@ -442,6 +477,29 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     {
         integrateRF->SetDistance(view.GetFarPlane()-view.GetNearPlane());
         integrateRF->SetWindowSize(size[0], size[1]);
+    }
+
+    double view_dir[3];
+    view_dir[0] = vi.focus[0] - vi.camera[0];
+    view_dir[1] = vi.focus[1] - vi.camera[1];
+    view_dir[2] = vi.focus[2] - vi.camera[2];
+    double mag = sqrt(view_dir[0]*view_dir[0] + view_dir[1]*view_dir[1]
+                      + view_dir[2]*view_dir[2]);
+    if (mag != 0.) // only 0 if focus and camera are the same
+    {
+        view_dir[0] /= mag;
+        view_dir[1] /= mag;
+        view_dir[2] /= mag;
+    }
+    lm->SetViewDirection(view_dir);
+    lm->SetViewUp(vi.viewUp);
+    lm->SetLightInfo(window.GetLights());
+    const RenderingAttributes &render_atts = window.GetRenderAtts();
+    if (render_atts.GetSpecularFlag())
+    {
+        lm->SetSpecularInfo(render_atts.GetSpecularFlag(), 
+                            render_atts.GetSpecularCoeff(),
+                            render_atts.GetSpecularPower());
     }
 
     //
@@ -595,6 +653,9 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Sat Aug 30 10:50:15 PDT 2008
+//    Add the gradient variable when lighting is on.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -669,6 +730,25 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
         newcontract = new avtContract(contract, nds);
         primaryVariable = new char[strlen(exprName)+1];
         strcpy(primaryVariable, exprName);
+    }
+
+    if (atts.GetLightingFlag())
+    {
+        char exprName[128];
+        SNPRINTF(exprName, 128, "_%s_gradient", var);
+        char exprDef[128];
+        SNPRINTF(exprDef, 128, "gradient(%s)", var);
+        ExpressionList *elist = ParsingExprList::Instance()->GetList();
+
+        Expression *e = new Expression();
+        e->SetName(exprName);
+        e->SetDefinition(exprDef); 
+        e->SetType(Expression::VectorMeshVar);
+        elist->AddExpressions(*e);
+        delete e;
+        avtDataRequest_p nds = new avtDataRequest(ds);
+        nds->AddSecondaryVariable(exprName);
+        newcontract = new avtContract(contract, nds);
     }
 
     newcontract->NoStreaming();

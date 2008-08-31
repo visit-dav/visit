@@ -64,6 +64,10 @@
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Sun Aug 31 10:28:47 PDT 2008
+//    Actually enabled this (after almost 8 years!!) and made several changes
+//    to make it work.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtPhong : public avtLightingModel
@@ -72,23 +76,8 @@ class PIPELINE_API avtPhong : public avtLightingModel
                            avtPhong();
     virtual               ~avtPhong();
 
-    virtual double         GetShading(double, const double[3]) const;
-
-    void                   SetAmbient(double a)   { ambient = a; };
-    void                   SetDiffuse(double d)   { diffuse = d; };
-    void                   SetSpecular(double s)  { specular = s; };
-    void                   SetGlossiness(int g)   { glossiness = g; };
-    void                   SetLightDirection(double [3]);
-
-    virtual bool           NeedsGradients(void) { return true; };
-
-  protected:
-    double                 ambient;
-    double                 diffuse;
-    double                 specular;
-    int                    glossiness;
-    double                 lightDirection[3];
-    double                 half[3];
+    virtual void           AddLighting(int, const avtRay *, unsigned char *)
+                             const;
 };
 
 

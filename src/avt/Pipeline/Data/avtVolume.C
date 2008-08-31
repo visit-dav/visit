@@ -44,7 +44,6 @@
 
 #include <vtkDataArray.h>
 
-#include <avtGradients.h>
 #include <avtImagePartition.h>
 #include <avtRay.h>
 #include <avtRayFunction.h>
@@ -80,6 +79,9 @@
 //    Hank Childs, Tue Feb 28 08:14:32 PST 2006
 //    Initialize useKernel.
 //
+//    Hank Childs, Sun Aug 31 08:04:42 PDT 2008
+//    Remove support for gradients.
+//
 // ****************************************************************************
 
 avtVolume::avtVolume(int sw, int sh, int sd, int nv)
@@ -94,9 +96,6 @@ avtVolume::avtVolume(int sw, int sh, int sd, int nv)
         EXCEPTION0(ImproperUseException);
     }
 
-    gradientVariable = 0;
-    gradientSpread = 5;
-
     restrictedMinWidth  = 0;
     restrictedMaxWidth  = sw-1;
     restrictedMinHeight = 0;
@@ -107,8 +106,6 @@ avtVolume::avtVolume(int sw, int sh, int sd, int nv)
     {
         rays[i] = NULL;
     }
-
-    gradients   = new avtGradients(volumeDepth);
 
     progressCallback     = NULL;
     progressCallbackArgs = NULL;
@@ -128,17 +125,15 @@ avtVolume::avtVolume(int sw, int sh, int sd, int nv)
 //    Hank Childs, Sat Dec 11 11:22:33 PST 2004
 //    Offload some of the destruction work to ResetSamples.
 //
+//    Hank Childs, Sun Aug 31 08:04:42 PDT 2008
+//    Remove support for gradients.
+//
 // ****************************************************************************
 
 avtVolume::~avtVolume()
 {
     ResetSamples();
     delete [] rays;
-
-    if (gradients != NULL)
-    {
-        delete gradients;
-    }
 }
 
 
@@ -246,13 +241,14 @@ avtVolume::Restrict(int minw, int maxw, int minh, int maxh)
 //    Hank Childs, Tue Sep 12 08:57:39 PDT 2006
 //    Added support for ray functions that need pixel indices.
 //
+//    Hank Childs, Sun Aug 31 08:04:42 PDT 2008
+//    Remove support for gradients.
+//
 // ****************************************************************************
 
 void
 avtVolume::GetPixels(avtRayFunction *rayfoo,unsigned char *data,float *zbuffer)
 {
-    bool  needsGradients = rayfoo->NeedsGradients();
-
     int fullwidth  = (restrictedMaxWidth-restrictedMinWidth+1);
     int fullheight = (restrictedMaxHeight-restrictedMinHeight+1);
     int numRays = fullwidth*fullheight;
@@ -267,16 +263,6 @@ avtVolume::GetPixels(avtRayFunction *rayfoo,unsigned char *data,float *zbuffer)
             {
                 if (rays[i][j] != NULL)
                 {
-                    //
-                    // Only get the gradients if we need them.
-                    //
-                    avtGradients *g = NULL;
-                    if (needsGradients)
-                    {
-                        GetGradients(gradients, i, j, rayfoo);
-                        g = gradients;
-                    }
-
                     //
                     // Put the background color into an rgb block so that the
                     // ray function can use it as the background.  The z-buffer
@@ -297,7 +283,7 @@ avtVolume::GetPixels(avtRayFunction *rayfoo,unsigned char *data,float *zbuffer)
                     rays[i][j]->Finalize();
                     if (needPixelIndices)
                         rayfoo->SetPixelIndex(j, i);
-                    rayfoo->GetRayValue(rays[i][j], g, rgb, zbuffer[index]);
+                    rayfoo->GetRayValue(rays[i][j], rgb, zbuffer[index]);
 
                     //
                     // Copy the pixel onto the image.
@@ -318,398 +304,6 @@ avtVolume::GetPixels(avtRayFunction *rayfoo,unsigned char *data,float *zbuffer)
                     }
                 }
             }
-        }
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtVolume::GetGradients
-//
-//  Purpose:
-//      Gets the gradients along a ray.
-//
-//  Arguments:
-//      grads   The gradients to populate.
-//      h       The height index.
-//      w       The width index.
-//      rf      The ray function.
-//
-//  Programmer: Hank Childs
-//  Creation:   December 4, 2000
-//
-//  Modifications:
-//
-//    Hank Childs, Wed Nov 14 11:41:50 PST 2001
-//    Add support for multiple variables.
-//
-//    Hank Childs, Mon Feb 11 11:41:23 PST 2002
-//    Allow the ray function to classify a floating point value first.
-//
-// ****************************************************************************
-
-void
-avtVolume::GetGradients(avtGradients *grads, int h, int w, avtRayFunction *rf)
-{
-    GetSobelGradients(grads, h, w, rf);
-}
-
-
-// ****************************************************************************
-//  Method: avtVolume::GetCentralDifferencingGradients
-//
-//  Purpose:
-//      Gets the central differencing gradients along a ray.
-//
-//  Arguments:
-//      grads   The gradients to populate.
-//      h       The height index.
-//      w       The width index.
-//      rf      The ray function.
-//
-//  Programmer: Hank Childs
-//  Creation:   December 4, 2000
-//
-//  Modifications:
-//
-//    Hank Childs, Wed Nov 14 11:41:50 PST 2001
-//    Add support for multiple variables.
-//
-//    Hank Childs, Mon Feb 11 11:41:23 PST 2002
-//    Allow the ray function to classify a floating point value first.
-//    Renamed to GetCentralDifferencingGradients.
-//
-// ****************************************************************************
-
-void
-avtVolume::GetCentralDifferencingGradients(avtGradients *grads, int h, int w,
-                                           avtRayFunction *rf)
-{
-    avtRay *bottom = NULL;
-    avtRay *top    = NULL;
-    avtRay *left   = NULL;
-    avtRay *right  = NULL;
-    if (h-gradientSpread >= 0)
-    {
-        if (rays[h-gradientSpread] != NULL)
-        {
-            bottom = rays[h-gradientSpread][w];
-        }
-    }
-    if (h+gradientSpread < volumeHeight)
-    {
-        if (rays[h+gradientSpread] != NULL)
-        {
-            top = rays[h+gradientSpread][w];
-        }
-    }
-    if (w-gradientSpread >= 0)
-    {
-        if (rays[h] != NULL)
-        {
-            left = rays[h][w-gradientSpread];
-        }
-    }
-    if (w+gradientSpread < volumeWidth)
-    {
-        if (rays[h] != NULL)
-        {
-            right = rays[h][w+gradientSpread];
-        }
-    }
- 
-    //
-    // This is a section of code that will be executed many times, so it is
-    // worthwhile to make many hand optimizations for stupid compilers that
-    // can't do great optimizations.
-    //
-    static bool *noSamples     = NULL;
-    static int   noSamplesSize = 0;
-    if (noSamples == NULL || volumeDepth != noSamplesSize)
-    {
-        if (noSamples != NULL)
-        {
-            delete [] noSamples;
-        }
-        noSamples = new bool[volumeDepth];
-        noSamplesSize = volumeDepth;
-        for (int i = 0 ; i < volumeDepth ; i++)
-        {
-            noSamples[i] = false;
-        }
-    }
- 
-    bool  *validSample       = rays[h][w]->validSample;
-    bool  *validLeftSample   = (left!=NULL ? left->validSample : noSamples);
-    bool  *validRightSample  = (right!=NULL ? right->validSample : noSamples);
-    bool  *validBottomSample = (bottom!=NULL ? bottom->validSample :noSamples);
-    bool  *validTopSample    = (top!=NULL ? top->validSample : noSamples);
- 
-    float *sample       = rays[h][w]->sample[gradientVariable];
-    float *leftSample   = (left!=NULL ? left->sample[gradientVariable] : NULL);
-    float *rightSample  = (right!=NULL?right->sample[gradientVariable] : NULL);
-    float *bottomSample = (bottom!=NULL?bottom->sample[gradientVariable]:NULL);
-    float *topSample    = (top!=NULL ? top->sample[gradientVariable] : NULL);
- 
-    //
-    // Avoid having to calculate indices by keeping a pointer to the gradient
-    // (that will change as the gradient gets populated).
-    //
-    double *g_array = grads->gradients;
- 
-    for (int z = 0 ; z < volumeDepth ; z++)
-    {
-        if (validSample[z])
-        {
-            //
-            // Calculate the gradient in the x direction.
-            //
-            if (validLeftSample[z])
-            {
-                if (validRightSample[z])
-                {
-                    float right = rf->ClassifyForShading(rightSample[z]);
-                    float left  = rf->ClassifyForShading(leftSample[z]);
-                    *g_array = (right - left) / 2.;
-                }
-                else
-                {
-                    float samp = rf->ClassifyForShading(sample[z]);
-                    float left = rf->ClassifyForShading(leftSample[z]);
-                    *g_array = (samp - left);
-                }
-            }
-            else
-            {
-                if (validRightSample[z])
-                {
-                    float right = rf->ClassifyForShading(rightSample[z]);
-                    float samp  = rf->ClassifyForShading(sample[z]);
-                    *g_array = (right - samp);
-
-                }
-                else
-                {
-                    *g_array = 0.;
-                }
-            }
-            g_array++;
- 
-            //
-            // Calculate the gradient in the y direction.
-            //
-            if (validBottomSample[z])
-            {
-                if (validTopSample[z])
-                {
-                    float top    = rf->ClassifyForShading(topSample[z]);
-                    float bottom = rf->ClassifyForShading(bottomSample[z]);
-                    *g_array = (top - bottom) / 2;
-                }
-                else
-                {
-                    float samp   = rf->ClassifyForShading(sample[z]);
-                    float bottom = rf->ClassifyForShading(bottomSample[z]);
-                    *g_array = (samp - bottom);
-                }
-            }
-            else
-            {
-                if (validTopSample[z])
-                {
-                    float top  = rf->ClassifyForShading(topSample[z]);
-                    float samp = rf->ClassifyForShading(sample[z]);
-                    *g_array = (top - samp);
-                }
-                else
-                {
-                    *g_array = 0.;
-                }
-            }
-            g_array++;
- 
-            //
-            // Calculate the gradient in the z direction.
-            //
-            if (z-gradientSpread >= 0 && validSample[z-gradientSpread])
-            {
-                if (z+gradientSpread < volumeDepth && 
-                    validSample[z+gradientSpread])
-                {
-                    float back  = rf->ClassifyForShading(
-                                                     sample[z+gradientSpread]);
-                    float front = rf->ClassifyForShading(
-                                                     sample[z-gradientSpread]);
-                    *g_array = (back - front) / 2;
-                }
-                else
-                {
-                    float samp  = rf->ClassifyForShading(sample[z]);
-                    float front = rf->ClassifyForShading(
-                                                     sample[z-gradientSpread]);
-                    *g_array = (samp - front);
-                }
-            }
-            else
-            {
-                if (z+gradientSpread < volumeDepth && 
-                    validSample[z+gradientSpread])
-                {
-                    float back  = rf->ClassifyForShading(
-                                                     sample[z+gradientSpread]);
-                    float samp  = rf->ClassifyForShading(sample[z]);
-                    *g_array = (back - samp);
-                }
-                else
-                {
-                    *g_array = 0.;
-                }
-            }
-            g_array++;
-        }
-        else
-        {
-            //
-            // There was no gradient for this sample, so jump to the next
-            // entry.
-            //
-            g_array += 3;
-        }
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtVolume::GetSobelGradients
-//
-//  Purpose:
-//      Gets the sobel gradients along a ray.
-//
-//  Arguments:
-//      grads   The gradients to populate.
-//      h       The height index.
-//      w       The width index.
-//      rf      The ray function.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 13, 2002
-//
-// ****************************************************************************
-
-void
-avtVolume::GetSobelGradients(avtGradients *grads, int h, int w,
-                             avtRayFunction *rf)
-{
-    avtRay *topLeft     = QueryGetRay(w-gradientSpread, h+gradientSpread);
-    avtRay *left        = QueryGetRay(w-gradientSpread, h);
-    avtRay *bottomLeft  = QueryGetRay(w-gradientSpread, h-gradientSpread);
-    avtRay *top         = QueryGetRay(w,                h+gradientSpread);
-    avtRay *me          = QueryGetRay(w,                h);
-    avtRay *bottom      = QueryGetRay(w,                h-gradientSpread);
-    avtRay *topRight    = QueryGetRay(w+gradientSpread, h+gradientSpread);
-    avtRay *right       = QueryGetRay(w+gradientSpread, h);
-    avtRay *bottomRight = QueryGetRay(w+gradientSpread, h-gradientSpread);
-
-    grads->Initialize();
- 
-    int topLeftFactors[9] = { -2, -3, -2, 2, 3, 2, -2, 0, 2 };
-    ContributeRay(topLeft, grads, topLeftFactors, rf);
-
-    int leftFactors[9] = { -3, -6, -3, 0, 0, 0, -3, 0, 3 };
-    ContributeRay(left, grads, leftFactors, rf);
-
-    int bottomLeftFactors[9] = { -2, -3, -2, -2, -3, -2, -2, 0, 2 };
-    ContributeRay(bottomLeft, grads, bottomLeftFactors, rf);
-
-    int topFactors[9] = { 0, 0, 0, 3, 6, 3, -3, 0, 3 };
-    ContributeRay(top, grads, topFactors, rf);
-
-    int middleFactors[9] = { 0, 0, 0, 0, 0, 0, -6, 0, 6 };
-    ContributeRay(me, grads, middleFactors, rf);
-
-    int bottomFactors[9] = { 0, 0, 0, -3, -6, -3, -3, 0, 3 };
-    ContributeRay(bottom, grads, bottomFactors, rf);
-
-    int topRightFactors[9] = { 2, 3, 2, 2, 3, 2, -2, 0, 2 };
-    ContributeRay(topRight, grads, topRightFactors, rf);
-
-    int rightFactors[9] = { 3, 6, 3, 0, 0, 0, -2, 0, 2 };
-    ContributeRay(right, grads, rightFactors, rf);
-
-    int bottomRightFactors[9] = { 2, 3, 2, -2, -3, -2, -2, 0, 2 };
-    ContributeRay(bottomRight, grads, bottomRightFactors, rf);
-
-    //
-    // It will be normalized as we do Phong shading, so no need to normalize
-    // now.
-    //
-}
-
-
-// ****************************************************************************
-//  Method: avtVolume::ContributeRay
-//
-//  Purpose:
-//      Contributes a ray to the gradient.
-//
-//  Arguments:
-//      ray      The ray we are using.
-//      grad     The gradient we should put values into.
-//      factor   The factors for the Sobel gradient.
-//      rf       The ray function to use.
-//
-//  Programmer:  Hank Childs
-//  Creation:    February 11, 2002
-//
-// ****************************************************************************
-
-void
-avtVolume::ContributeRay(avtRay *ray, avtGradients *grad, int factor[9],
-                         avtRayFunction *rf)
-{
-    if (ray == NULL)
-    {
-        return;
-    }
-
-    //
-    // NOTE: We probably should not be using the gradient spread in Z, since
-    // there is no guarantee that is corresponds to an equal distance in
-    // unit space as the X/Y ones would.  However, probably pretty safe...
-    //
-    for (int i = 0 ; i < volumeDepth ; i++)
-    {
-        if (! ray->validSample[i])
-        {
-            continue;
-        }
-        float val = rf->ClassifyForShading(ray->sample[gradientVariable][i]);
-
-        if (i-gradientSpread >= 0)
-        {
-            //
-            // Contribute to the gradient in front of us in x,y,z.
-            //
-            grad->PartialAddGradient(i-gradientSpread, 0, factor[0]*val);
-            grad->PartialAddGradient(i-gradientSpread, 1, factor[1]*val);
-            grad->PartialAddGradient(i-gradientSpread, 2, factor[2]*val);
-        }
-
-        //
-        // Contribute to the gradient adjacent to us in x,y,z.
-        //
-        grad->PartialAddGradient(i, 0, factor[3]*val);
-        grad->PartialAddGradient(i, 1, factor[4]*val);
-        grad->PartialAddGradient(i, 2, factor[5]*val);
-
-        if (i+gradientSpread < volumeDepth)
-        {
-            //
-            // Contribute to the gradient behind us in x,y,z.
-            //
-            grad->PartialAddGradient(i+gradientSpread, 0, factor[6]*val);
-            grad->PartialAddGradient(i+gradientSpread, 1, factor[7]*val);
-            grad->PartialAddGradient(i+gradientSpread, 2, factor[8]*val);
         }
     }
 }

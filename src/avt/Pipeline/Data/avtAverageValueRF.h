@@ -42,8 +42,8 @@
 
 #ifndef AVT_AVERAGE_VALUE_RF_H
 #define AVT_AVERAGE_VALUE_RF_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtRayFunction.h>
 
@@ -70,6 +70,9 @@ class     avtVariablePixelizer;
 //    Moved inlined destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Sun Aug 31 08:42:03 PDT 2008
+//    Remove references to avtGradients.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtAverageValueRF : public avtRayFunction
@@ -80,15 +83,13 @@ class PIPELINE_API avtAverageValueRF : public avtRayFunction
                                           double = 0.);
     virtual            ~avtAverageValueRF();
 
-    virtual void        GetRayValue(const avtRay *, const avtGradients *,
+    virtual void        GetRayValue(const avtRay *,
                                     unsigned char rgb[3], float);
 
   protected:
-    double              noSampleValue;
-    bool                useNoSampleValue;
+    double                noSampleValue;
+    bool                  useNoSampleValue;
     avtVariablePixelizer *pix;
-
-    virtual bool        NeedsGradientsForFunction(void) { return false; };
 };
 
 

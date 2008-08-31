@@ -42,7 +42,13 @@
 
 #ifndef AVT_LIGHTING_MODEL
 #define AVT_LIGHTING_MODEL
+
 #include <pipeline_exports.h>
+
+#include <LightList.h>
+
+class     avtRay;
+
 
 // ****************************************************************************
 //  Class: avtLightingModel
@@ -63,10 +69,36 @@
 class PIPELINE_API avtLightingModel
 {
   public:
-    avtLightingModel();
-    virtual ~avtLightingModel();
-    virtual double             GetShading(double, const double[3]) const = 0;
-    virtual bool               NeedsGradients() = 0;
+                      avtLightingModel();
+    virtual          ~avtLightingModel();
+
+    virtual void      AddLighting(int, const avtRay *, unsigned char *) 
+                             const = 0;
+
+    void              SetGradientVariableIndex(int gvi)
+                             { gradientVariableIndex = gvi; };
+    void              SetViewDirection(double *vd)
+                             { view_direction[0] = vd[0];
+                               view_direction[1] = vd[1];
+                               view_direction[2] = vd[2]; };
+    void              SetViewUp(double *vu)
+                             { view_up[0] = vu[0];
+                               view_up[1] = vu[1];
+                               view_up[2] = vu[2]; };
+    void              SetLightInfo(const LightList &ll)
+                             { lights = ll; };
+    void              SetSpecularInfo(bool ds, double sc, double sp)
+                             { doSpecular = ds; specularCoeff = sc;
+                               specularPower = sp; };
+
+  protected:
+    int               gradientVariableIndex;
+    double            view_direction[3];
+    double            view_up[3];
+    LightList         lights;
+    bool              doSpecular;
+    double            specularCoeff;
+    double            specularPower;
 };
 
 

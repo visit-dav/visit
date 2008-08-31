@@ -42,8 +42,8 @@
 
 #ifndef AVT_MAXIMUM_INTENSITY_PROJECTION_H
 #define AVT_MAXIMUM_INTENSITY_PROJECTION_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtRayFunction.h>
 
@@ -69,6 +69,9 @@ class     avtVariablePixelizer;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Sun Aug 31 08:42:03 PDT 2008
+//    Remove references to avtGradients.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMaximumIntensityProjectionRF : public avtRayFunction
@@ -78,13 +81,11 @@ class PIPELINE_API avtMaximumIntensityProjectionRF : public avtRayFunction
                                                       avtVariablePixelizer *);
     virtual            ~avtMaximumIntensityProjectionRF();
 
-    virtual void        GetRayValue(const avtRay *, const avtGradients *,
+    virtual void        GetRayValue(const avtRay *,
                                     unsigned char [3], float);
 
   protected:
     avtVariablePixelizer  *pix;
-
-    virtual bool        NeedsGradientsForFunction(void)  { return false; };
 };
 
 

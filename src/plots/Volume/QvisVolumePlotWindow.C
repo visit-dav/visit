@@ -768,6 +768,9 @@ QvisVolumePlotWindow::CreateWindowContents()
 //   Brad Whitlock, Thu Jan 10 14:35:10 PST 2008
 //   Added support for SLIVR, use the case ids too.
 //
+//   Hank Childs, Sun Aug 31 10:53:59 PDT 2008
+//   Allow lighting toggle to remain active with ray casting.
+//
 // ****************************************************************************
 
 void
@@ -937,7 +940,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             {
                 colorWidgetGroup->setEnabled(true);
                 opacityWidgetGroup->setEnabled(true);
-                lightingToggle->setEnabled(false);
+                lightingToggle->setEnabled(true);
                 centeredDiffButton->setEnabled(true);
                 sobelButton->setEnabled(true);
                 rendererTypesComboBox->setCurrentItem(2);

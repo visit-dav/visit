@@ -43,7 +43,6 @@
 #include <avtDistanceToValueRF.h>
 
 #include <avtDistancePixelizer.h>
-#include <avtGradients.h>
 #include <avtLightingModel.h>
 #include <avtRay.h>
 
@@ -114,11 +113,13 @@ avtDistanceToValueRF::~avtDistanceToValueRF()
 //    Hank Childs, Wed Nov 14 14:51:34 PST 2001
 //    Added support for multiple variables.
 //
+//    Hank Childs, Sun Aug 31 08:42:03 PDT 2008
+//    Remove references to avtGradients.
+//
 // ****************************************************************************
 
 void
 avtDistanceToValueRF::GetRayValue(const avtRay *ray,
-                                  const avtGradients *gradients,
                                   unsigned char rgb[3], float depth)
 {
     //
@@ -173,20 +174,11 @@ avtDistanceToValueRF::GetRayValue(const avtRay *ray,
     if (location != -1)
     {
         //
-        // We have already found the distance, so let's shade it and find an
-        // intensity.
+        // We have already found the distance, so let's the color and then
+        // shade it.
         //
-        // There is a leap of faith here that the gradients were not sent
-        // in (if the test is false) because the lighting does not need them.
-        //
-        double grad[3] = { 0., 0., 0. };
-        if (gradients)
-        {
-            gradients->GetGradient(location, grad);
-        }
-        double dist = ((double) (location+1)) / ((double) numSamples);
-        intensity = lighting->GetShading(dist, grad);
-        pix->GetColor(distance, intensity, rgb);
+        pix->GetColor(distance, 1., rgb);
+        lighting->AddLighting(location, ray, rgb);
     }
 }
 

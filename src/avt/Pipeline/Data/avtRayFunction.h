@@ -82,6 +82,10 @@ class     avtRay;
 //    Define private copy constructor and assignment operator to prevent
 //    accidental use of default, bitwise copy implementations.
 //
+//    Hank Childs, Sun Aug 31 08:04:42 PDT 2008
+//    Remove infrastructure for gradients.  This is now done a different way.
+//    Add support for lighting using gradients.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtRayFunction
@@ -90,26 +94,26 @@ class PIPELINE_API avtRayFunction
                          avtRayFunction(avtLightingModel *);
     virtual             ~avtRayFunction();
 
-    bool                 NeedsGradients(void);
     void                 SetPrimaryVariableIndex(int vi)
                                     { primaryVariableIndex = vi; };
 
-    virtual void         GetRayValue(const avtRay *, const avtGradients *,
+    virtual void         GetRayValue(const avtRay *,
                                      unsigned char rgb[3], float) = 0;
     virtual bool         CanContributeToPicture(int,
                                           const float (*)[AVT_VARIABLE_LIMIT]);
-    virtual float        ClassifyForShading(float x) { return x; };
     virtual bool         NeedPixelIndices(void) { return false; };
 
     void                 SetPixelIndex(int i, int j)
                              { pixelIndexI = i; pixelIndexJ = j; };
 
+    void                 SetGradientVariableIndex(int gvi);
+
   protected:
     avtLightingModel    *lighting;
+    int                  gradientVariableIndex;
     int                  primaryVariableIndex;
     int                  pixelIndexI, pixelIndexJ;
 
-    virtual bool         NeedsGradientsForFunction(void) = 0;
     inline int           IndexOfDepth(const float &, const int &);
 
   private:

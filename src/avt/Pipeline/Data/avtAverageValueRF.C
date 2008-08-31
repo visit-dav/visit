@@ -42,7 +42,6 @@
 
 #include <avtAverageValueRF.h>
 
-#include <avtGradients.h>
 #include <avtLightingModel.h>
 #include <avtRay.h>
 #include <avtVariablePixelizer.h>
@@ -121,10 +120,13 @@ avtAverageValueRF::~avtAverageValueRF()
 //    Hank Childs, Wed Nov 14 14:51:34 PST 2001
 //    Added support for multiple variables.
 //
+//    Hank Childs, Sun Aug 31 08:42:03 PDT 2008
+//    Remove references to avtGradients.
+//
 // ****************************************************************************
 
 void
-avtAverageValueRF::GetRayValue(const avtRay *ray, const avtGradients *,
+avtAverageValueRF::GetRayValue(const avtRay *ray, 
                                unsigned char rgb[3], float depth)
 {
     //

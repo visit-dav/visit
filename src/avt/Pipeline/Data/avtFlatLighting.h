@@ -42,8 +42,11 @@
 
 #ifndef AVT_FLAT_LIGHTING_H
 #define AVT_FLAT_LIGHTING_H
+
 #include <pipeline_exports.h>
+
 #include <avtLightingModel.h>
+
 
 // ****************************************************************************
 //  Class: avtFlatLighting
@@ -55,20 +58,23 @@
 //  Creation:   November 29, 2000
 //
 //  Modifications:
+//
 //    Brad Whitlock, Wed Apr 24 10:18:48 PDT 2002
 //    Added constructor and destructor so the vtable gets into the Windows DLL.
+//
+//    Hank Childs, Sun Aug 31 10:18:24 PDT 2008
+//    Change the method that does the actual lighting.
 //
 // ****************************************************************************
 
 class PIPELINE_API avtFlatLighting : public avtLightingModel
 {
   public:
-    avtFlatLighting();
-    virtual ~avtFlatLighting();
-    virtual double      GetShading(double, const double[3]) const
-                            { return 1.; };
+                            avtFlatLighting();
+    virtual                ~avtFlatLighting();
 
-    virtual bool        NeedsGradients(void) { return false; };
+    virtual void            AddLighting(int, const avtRay *, unsigned char *)
+                                 const;
 };
 
 

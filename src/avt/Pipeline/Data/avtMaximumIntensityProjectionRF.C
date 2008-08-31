@@ -44,7 +44,6 @@
 
 #include <float.h>
 
-#include <avtGradients.h>
 #include <avtLightingModel.h>
 #include <avtRay.h>
 #include <avtVariablePixelizer.h>
@@ -118,7 +117,6 @@ avtMaximumIntensityProjectionRF::~avtMaximumIntensityProjectionRF()
 
 void
 avtMaximumIntensityProjectionRF::GetRayValue(const avtRay *ray, 
-                                             const avtGradients *gradients,
                                              unsigned char rgb[3], float depth)
 {
     double curMax = -1. * DBL_MAX;
@@ -153,18 +151,8 @@ avtMaximumIntensityProjectionRF::GetRayValue(const avtRay *ray,
     {
         double value = curMax;
 
-        //
-        // There is a leap of faith here that the gradients were not sent
-        // in (if the test is false) because the lighting does not need them.
-        //
-        double grad[3] = { 0., 0., 0. };
-        if (gradients)
-        {
-            gradients->GetGradient(maxInd, grad);
-        }
-        double distance = ((double) (maxInd+1)) / ((double) numSamples);
-        double intensity = lighting->GetShading(distance, grad);
-        pix->GetColor(value, intensity, rgb);
+        pix->GetColor(value, 1., rgb);
+        lighting->AddLighting(maxInd, ray, rgb);
     }
 }
 

@@ -45,7 +45,6 @@
 #include <snprintf.h>
 
 #include <avtCallback.h>
-#include <avtGradients.h>
 #include <avtLightingModel.h>
 #include <avtParallel.h>
 #include <avtRay.h>
@@ -104,7 +103,6 @@ avtIntegrationRF::~avtIntegrationRF()
 //
 //  Arguments:
 //      ray         The ray to use.
-//      <unnamed>   The gradients along the ray.
 //      rgb         A place to store the color.
 //      depth       The depth of the zbuffer for this pixel.
 //
@@ -116,10 +114,13 @@ avtIntegrationRF::~avtIntegrationRF()
 //    Hank Childs, Tue Mar 13 16:16:42 PDT 2007
 //    Incorporate distances so that intensities will be absolute.
 //
+//    Hank Childs, Sun Aug 31 08:42:03 PDT 2008
+//    Adapt to the new way that lighting is done.
+//
 // ****************************************************************************
 
 void
-avtIntegrationRF::GetRayValue(const avtRay *ray, const avtGradients *,
+avtIntegrationRF::GetRayValue(const avtRay *ray,
                                unsigned char rgb[3], float depth)
 {
     //
