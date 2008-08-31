@@ -42,8 +42,8 @@
 
 #ifndef AVT_DISTANCE_TO_VALUE_RF_H
 #define AVT_DISTANCE_TO_VALUE_RF_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtRayFunction.h>
 
@@ -66,6 +66,9 @@ class     avtDistancePixelizer;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Sun Aug 31 08:42:03 PDT 2008
+//    Removed references to avtGradients.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDistanceToValueRF : public avtRayFunction
@@ -75,15 +78,12 @@ class PIPELINE_API avtDistanceToValueRF : public avtRayFunction
                                           avtDistancePixelizer *);
     virtual         ~avtDistanceToValueRF();
 
-    virtual void     GetRayValue(const avtRay *, const avtGradients *,
+    virtual void     GetRayValue(const avtRay *,
                                  unsigned char rgb[3], float);
 
   protected:
     double                  criticalValue;
     avtDistancePixelizer   *pix;
-
-    virtual bool            NeedsGradientsForFunction(void)
-                                      { return false; };   
 };
 
 

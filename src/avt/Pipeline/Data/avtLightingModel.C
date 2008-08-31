@@ -36,14 +36,45 @@
 *
 *****************************************************************************/
 
+// ************************************************************************ //
+//                           avtLightingModel.h                             //
+// ************************************************************************ //
+
 #include <avtLightingModel.h>
+
+
+// ****************************************************************************
+//  Method: avtLightingModel constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   August 31, 2008
+//
+// ****************************************************************************
 
 avtLightingModel::avtLightingModel()
 {
-    // Needed on Windows
+    gradientVariableIndex = -1;
+    view_direction[0] = 0.;
+    view_direction[1] = 0.;
+    view_direction[2] = 1.;
+    view_up[0] = 0.;
+    view_up[1] = 1.;
+    view_up[2] = 0.;
+    doSpecular = false;
 }
+
+
+// ****************************************************************************
+//  Method: avtLightingModel denstructor
+//
+//  Programmer: Hank Childs
+//  Creation:   August 31, 2008
+//
+// ****************************************************************************
 
 avtLightingModel::~avtLightingModel()
 {
     // Needed on Windows
 }
+
+

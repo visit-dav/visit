@@ -42,8 +42,8 @@
 
 #ifndef AVT_COMPOSITE_RF_H
 #define AVT_COMPOSITE_RF_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtRangeMaxTable.h>
 #include <avtRayFunction.h>
@@ -79,6 +79,9 @@ struct    RGBA;
 //    Hank Childs, Sat Jan  7 17:50:22 PST 2006
 //    Add support for kernel based sampling.
 //
+//    Hank Childs, Sun Aug 31 08:04:42 PDT 2008
+//    Add a lighting model.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCompositeRF : public avtRayFunction
@@ -88,7 +91,7 @@ class PIPELINE_API avtCompositeRF : public avtRayFunction
                                       avtOpacityMap *);
     virtual           ~avtCompositeRF();
 
-    virtual void       GetRayValue(const avtRay *, const avtGradients *,
+    virtual void       GetRayValue(const avtRay *,
                                    unsigned char rgb[3], float);
 
     void               SetColorVariableIndex(int cvi)
@@ -99,7 +102,6 @@ class PIPELINE_API avtCompositeRF : public avtRayFunction
                                                { weightVariableIndex = wvi; };
     virtual bool       CanContributeToPicture(int,
                                           const float (*)[AVT_VARIABLE_LIMIT]);
-    virtual float      ClassifyForShading(float);
 
   protected:
     avtOpacityMap     *map;
@@ -111,7 +113,6 @@ class PIPELINE_API avtCompositeRF : public avtRayFunction
     int                weightVariableIndex;
 
     avtRangeMaxTable   rangeMaxTable;
-    virtual bool       NeedsGradientsForFunction(void);
 };
 
 

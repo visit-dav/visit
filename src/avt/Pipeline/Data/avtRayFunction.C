@@ -42,7 +42,6 @@
 
 #include <avtRayFunction.h>
 
-#include <avtGradients.h>
 #include <avtLightingModel.h>
 #include <avtRay.h>
 
@@ -91,28 +90,6 @@ avtRayFunction::~avtRayFunction()
 
 
 // ****************************************************************************
-//  Method: avtRayFunction::NeedsGradients
-//
-//  Purpose:
-//      Determines if gradients need to be calculated for this ray function
-//      to work.
-//
-//  Returns:    true if the ray function will need gradients to do compositing,
-//              false otherwise.
-//
-//  Programmer: Hank Childs
-//  Creation:   December 1, 2000
-//
-// ****************************************************************************
-
-bool
-avtRayFunction::NeedsGradients(void)
-{
-    return (lighting->NeedsGradients() || NeedsGradientsForFunction());
-}
-
-
-// ****************************************************************************
 //  Method: avtRayFunction::CanContributeToPicture
 //
 //  Purpose:
@@ -139,6 +116,27 @@ bool
 avtRayFunction::CanContributeToPicture(int,const float (*)[AVT_VARIABLE_LIMIT])
 {
     return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtRayFunction::SetGradientVariableIndex
+//
+//  Purpose:
+//      Tells the ray function the index of the gradient variable.  This index
+//      corresponds to the x-coordinate and the following two indices are for
+//      y and z.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 31, 2008
+//
+// ****************************************************************************
+
+void
+avtRayFunction::SetGradientVariableIndex(int gvi)
+{
+    lighting->SetGradientVariableIndex(gvi);
+    gradientVariableIndex = gvi;
 }
 
 

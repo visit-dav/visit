@@ -95,6 +95,9 @@
 //    Define private copy constructor and assignment operator to prevent
 //    accidental use of default, bitwise copy implementations.
 //
+//    Hank Childs, Sun Aug 31 10:53:59 PDT 2008
+//    Added friend status to avtPhong.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtRay
@@ -109,6 +112,7 @@ class PIPELINE_API avtRay
     friend class                  avtIntegrationRF;
     friend class                  avtMaximumIntensityProjectionRF;
     friend class                  avtMIPRangeRF;
+    friend class                  avtPhong;
     friend class                  avtVolume;
 
   public:

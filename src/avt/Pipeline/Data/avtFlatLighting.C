@@ -47,3 +47,23 @@ avtFlatLighting::~avtFlatLighting()
 {
     // Needed on Windows
 }
+
+
+// ****************************************************************************
+//  Method: avtFlatLighting
+//
+//  Purpose:
+//      Applies "flat" lighting, meaning that no lighting is applied.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 31, 2008
+//
+// ****************************************************************************
+
+void
+avtFlatLighting::AddLighting(int, const avtRay *, unsigned char *) const
+{
+    ; // No-op; leave color as it is.
+}
+
+

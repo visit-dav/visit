@@ -42,15 +42,14 @@
 
 #ifndef AVT_VOLUME_H
 #define AVT_VOLUME_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtRay.h>
 
 #include <BadIndexException.h>
 
 
-class   avtGradients;
 class   avtImagePartition;
 class   avtRayFunction;
 class   vtkDataArray;
@@ -95,6 +94,10 @@ typedef void (*PixelProgressCallback)(void *, int, int);
 //
 //    Hank Childs, Thu May 31 23:07:02 PDT 2007
 //    Add argument for number of arrays being passed in.
+//
+//    Hank Childs, Sun Aug 31 08:04:42 PDT 2008
+//    Remove support for calculating gradients on the samples.  That never
+//    really worked right.
 //
 // ****************************************************************************
 
@@ -145,15 +148,12 @@ class PIPELINE_API avtVolume
 
   protected:
     avtRay                 ***rays;
-    avtGradients             *gradients;
     
     int                       volumeWidth;
     int                       volumeHeight;
     int                       volumeDepth;
-    int                       gradientSpread;
 
     int                       numVariables;
-    int                       gradientVariable;
 
     bool                      useKernel;
 
@@ -164,15 +164,6 @@ class PIPELINE_API avtVolume
 
     PixelProgressCallback     progressCallback;
     void                     *progressCallbackArgs;
-
-    void                      GetGradients(avtGradients *, int, int,
-                                           avtRayFunction *);
-    void                      GetSobelGradients(avtGradients *, int, int,
-                                                avtRayFunction *);
-    void                      GetCentralDifferencingGradients(avtGradients *,
-                                                   int, int, avtRayFunction *);
-    void                      ContributeRay(avtRay *, avtGradients *,
-                                            int [9], avtRayFunction *);
 };
 
 

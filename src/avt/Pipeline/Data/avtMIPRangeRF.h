@@ -42,12 +42,13 @@
 
 #ifndef AVT_MIP_RANGE_RF_H
 #define AVT_MIP_RANGE_RF_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtRayFunction.h>
 
 class     avtVariablePixelizer;
+
 
 // ****************************************************************************
 //  Class: avtMIPRangeRF
@@ -69,6 +70,9 @@ class     avtVariablePixelizer;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Sun Aug 31 08:04:42 PDT 2008
+//    Code cleanup for lighting models.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMIPRangeRF : public avtRayFunction
@@ -78,14 +82,12 @@ class PIPELINE_API avtMIPRangeRF : public avtRayFunction
                                       avtVariablePixelizer *);
     virtual            ~avtMIPRangeRF();
 
-    virtual void        GetRayValue(const avtRay *, const avtGradients *,
+    virtual void        GetRayValue(const avtRay *, 
                                     unsigned char [3], float);
 
   protected:
-    double              thresholdMin, thresholdMax;
-    avtVariablePixelizer *pix;
-
-    virtual bool        NeedsGradientsForFunction(void)  { return false; };
+    double                 thresholdMin, thresholdMax;
+    avtVariablePixelizer  *pix;
 };
 
 

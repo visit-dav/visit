@@ -44,7 +44,6 @@
 
 #include <float.h>
 
-#include <avtGradients.h>
 #include <avtLightingModel.h>
 #include <avtOpacityMap.h>
 #include <avtPointExtractor.h>
@@ -157,10 +156,13 @@ avtCompositeRF::~avtCompositeRF()
 //    Allow a fully opaque sample to terminate a ray.  Also make a correction
 //    so low opacity samples don't have a huge impact. ['1735]
 //
+//    Hank Childs, Sun Aug 31 08:04:42 PDT 2008
+//    Add support for shading that actually works.
+//
 // ****************************************************************************
 
 void
-avtCompositeRF::GetRayValue(const avtRay *ray, const avtGradients *gradients,
+avtCompositeRF::GetRayValue(const avtRay *ray, 
                             unsigned char rgb[3], float depth)
 {
     //
@@ -219,30 +221,13 @@ avtCompositeRF::GetRayValue(const avtRay *ray, const avtGradients *gradients,
                                              numberOfSamplesToReachFullOpacity;
                 samplesOpacity = samplesOpacity*samplesOpacity;
 
-                //
-                // There is a leap of faith here that the gradients were not
-                // sent in (if the test is false) because the lighting and the
-                // opacity map do not need them.
-                //
-                double grad[3] = { 0., 0., 0. };
-                if (gradients)
-                {
-                    gradients->GetGradient(z, grad);
-                }
+                unsigned char rgb[3] = { color.R, color.G, color.B };
+                lighting->AddLighting(z, ray, rgb);
 
-                double distance = ((double) (z+1)) / ((double) numSamples);
-                double shading = lighting->GetShading(distance, grad);
-
-                // Only make the shading be the attenuation if it has opacity.
-                if (opac.A < 0.2)
-                {
-                    shading = 1.;
-                }
-
-                double ff = (1-opacity)*samplesOpacity*shading;
-                trgb[0] = trgb[0] + ff*color.R;
-                trgb[1] = trgb[1] + ff*color.G;
-                trgb[2] = trgb[2] + ff*color.B;
+                double ff = (1-opacity)*samplesOpacity;
+                trgb[0] = trgb[0] + ff*rgb[0];
+                trgb[1] = trgb[1] + ff*rgb[1];
+                trgb[2] = trgb[2] + ff*rgb[2];
 
                 opacity = opacity + (1-opacity)*samplesOpacity;
             }
@@ -312,49 +297,6 @@ avtCompositeRF::CanContributeToPicture(int nVerts,
     float opacMax = rangeMaxTable.GetMaximumOverRange(minIndex, maxIndex);
 
     return (opacMax > 0. ? true : false);
-}
-
-
-// ****************************************************************************
-//  Method: avtCompositeRF::NeedsGradientsForFunction
-//
-//  Purpose:
-//      Determines whether gradients are needed for this function, typically
-//      for lighting.
-//
-//  Returns:    true if we need gradients, false otherwise.
-//
-//  Programmer: Hank Childs
-//  Creation:   January 3, 2002
-//
-// ****************************************************************************
-
-bool
-avtCompositeRF::NeedsGradientsForFunction(void)
-{
-    return lighting->NeedsGradients();
-}
-
-
-// ****************************************************************************
-//  Method: avtCompositeRF::ClassifyForShading
-//
-//  Purpose:
-//      Allows the ray function to do the appropriate classification for
-//      shading.  This is because the underlying opacity value (its
-//      classification) tells a more compelling story than its variable
-//      value.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 11, 2002
-//
-// ****************************************************************************
-
-float
-avtCompositeRF::ClassifyForShading(float x)
-{
-    const RGBA &opac = secondaryTable[secondaryMap->Quantize(x)];
-    return opac.A;
 }
 
 

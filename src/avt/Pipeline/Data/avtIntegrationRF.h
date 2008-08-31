@@ -63,6 +63,9 @@
 //    Hank Childs, Tue Mar 13 16:13:05 PDT 2007
 //    Add support for setting distance along the plane.
 //
+//    Hank Childs, Sun Aug 31 08:42:03 PDT 2008
+//    Modify the signature of GetRayValue.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtIntegrationRF : public avtRayFunction
@@ -71,7 +74,7 @@ class PIPELINE_API avtIntegrationRF : public avtRayFunction
                         avtIntegrationRF(avtLightingModel *);
     virtual            ~avtIntegrationRF();
 
-    virtual void        GetRayValue(const avtRay *, const avtGradients *,
+    virtual void        GetRayValue(const avtRay *,
                                     unsigned char rgb[3], float);
     virtual bool        NeedPixelIndices(void) { return true; };
 
@@ -88,8 +91,6 @@ class PIPELINE_API avtIntegrationRF : public avtRayFunction
     static bool         issuedWarning;
     double              min, max;
     double              distance;
-
-    virtual bool        NeedsGradientsForFunction(void) { return false; };
 };
 
 

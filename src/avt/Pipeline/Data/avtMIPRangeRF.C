@@ -44,7 +44,6 @@
 
 #include <float.h>
 
-#include <avtGradients.h>
 #include <avtLightingModel.h>
 #include <avtRay.h>
 #include <avtVariablePixelizer.h>
@@ -120,10 +119,13 @@ avtMIPRangeRF::~avtMIPRangeRF()
 //    Hank Childs, Wed Nov 14 14:51:34 PST 2001
 //    Added support for multiple variables.
 //
+//    Hank Childs, Sun Aug 31 08:04:42 PDT 2008
+//    Code cleanup for lighting models.
+//
 // ****************************************************************************
 
 void
-avtMIPRangeRF::GetRayValue(const avtRay *ray, const avtGradients *gradients,
+avtMIPRangeRF::GetRayValue(const avtRay *ray, 
                            unsigned char rgb[3], float depth)
 {
     double curMax = -1. * DBL_MAX;
@@ -159,21 +161,8 @@ avtMIPRangeRF::GetRayValue(const avtRay *ray, const avtGradients *gradients,
 
     if (maxInd != -1)
     {
-        double value = curMax;
-
-        //
-        // There is a leap of faith here that the gradients were not sent
-        // in (if the test is false) because the lighting does not need them.
-        //
-        double grad[3] = { 0., 0., 0. };
-        if (gradients)
-        {
-            gradients->GetGradient(maxInd, grad);
-        }
-        double dist = ((double) (maxInd+1)) / ((double) numSamples);
-        double intensity = lighting->GetShading(dist, grad);
-
-        pix->GetColor(value, intensity, rgb);
+        pix->GetColor(curMax, 1., rgb);
+        lighting->AddLighting(maxInd, ray, rgb);
     }
 }
 

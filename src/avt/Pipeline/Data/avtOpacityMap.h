@@ -42,8 +42,8 @@
 
 #ifndef AVT_OPACITY_MAP_H
 #define AVT_OPACITY_MAP_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 struct RGBA
 {

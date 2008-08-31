@@ -246,6 +246,9 @@
 #    Hank Childs, Sat Mar  1 18:16:11 PST 2008
 #    Added avtDatasetOnDemandFilter.
 #
+#    Hank Childs, Sun Aug 31 08:04:42 PDT 2008
+#    Remove avtGradients.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -278,7 +281,6 @@ Data_src= \
   Data/avtExtractor.C \
   Data/avtFacelist.C \
   Data/avtFlatLighting.C \
-  Data/avtGradients.C \
   Data/avtHexahedronExtractor.C \
   Data/avtHexahedron20Extractor.C \
   Data/avtHexahedron27Extractor.C \

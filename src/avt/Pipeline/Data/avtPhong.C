@@ -43,7 +43,10 @@
 #include <avtPhong.h>
 
 #include <math.h>
+
 #include <visitstream.h>
+
+#include <avtRay.h>
 
 
 // ****************************************************************************
@@ -61,16 +64,6 @@
 
 avtPhong::avtPhong()
 {
-    //
-    // Default light is coming in from side.
-    //
-    double l[3] = { -0.5, -0.5, -1. };
-    SetLightDirection(l);
-
-    SetAmbient(0.5);
-    SetDiffuse(1.);
-    SetSpecular(1.);
-    SetGlossiness(1);
 }
 
 
@@ -93,79 +86,10 @@ avtPhong::~avtPhong()
 
 
 // ****************************************************************************
-//  Method: avtPhong::SetLightDirection
+//  Method: avtPhong::AddLighting
 //
 //  Purpose:
-//      Sets the vector of the light coming from the light source towards the
-//      object (focal point).
-//
-//  Arguments:
-//      l     The new light direction.
-//
-//  Programmer: Hank Childs
-//  Creation:   November 29, 2000
-//
-//  Modifications:
-//
-//    Hank Childs, Wed Feb 13 15:34:07 PST 2002
-//    Normalize the light direction.
-//
-// ****************************************************************************
-
-void
-avtPhong::SetLightDirection(double l[3])
-{
-    double mag = sqrt(l[0]*l[0] + l[1]*l[1] + l[2]*l[2]);
-    if (mag == 0.)
-    {
-        mag = 1.;
-    }
-    lightDirection[0] = l[0] / mag;
-    lightDirection[1] = l[1] / mag;
-    lightDirection[2] = l[2] / mag;
-
-    //
-    // This is the half-way between the light and the view.  The view is 0,0,-1
-    //
-    half[0] = lightDirection[0] + 0.;
-    half[1] = lightDirection[1] + 0.;
-    half[2] = lightDirection[2] + -1.;
-
-    if (half[2] == 0.)
-    {
-        //
-        // The light is on the opposite side of the object from the camera.
-        // Put it in the camera's location.
-        //
-        half[2] = -1.;
-    }
-    else
-    {
-        double norm = (half[0]*half[0])+(half[1]*half[1])+(half[2]*half[2]);
-        norm = sqrt(norm);
-        half[0] /= norm;
-        half[1] /= norm;
-        half[2] /= norm;
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtPhong::GetShading
-//
-//  Purpose:
-//      Modifies the opacity to account for shading.
-//
-//  Arguments:
-//      distance   The distance from the sample point to the plane.  This does
-//                 not need to be in specific units, because it is the same
-//                 units as the gradient.
-//      gradient   The gradient around a point (assumed to be the normal of
-//                 an underlying surface).
-//
-//  Note:       We are assuming a parallel light from far away and we are doing
-//              an orthographic projection (in camera space), so the location
-//              of the sample does not matter.
+//      Modifies the color to account for shading.
 //
 //  Note:       This version of the Phong lighting model is from Marc Levoy's
 //              paper on "Display of Surfaces from Volume Data".  It cites
@@ -173,37 +97,111 @@ avtPhong::SetLightDirection(double l[3])
 //              CACM, June 1975.
 //
 //  Programmer: Hank Childs
-//  Creation:   November 29, 2000
-//
-//  Modifications:
-//
-//    Hank Childs, Wed Feb 13 15:34:07 PST 2002
-//    Do not use specular highlighting.
+//  Creation:   August 31, 2008
 //
 // ****************************************************************************
 
-double
-avtPhong::GetShading(double distance, const double gradient[3]) const
+void
+avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
 {
-    double mag = sqrt(gradient[0]*gradient[0] + gradient[1]*gradient[1]
-                      + gradient[2]*gradient[2]);
-    if (mag == 0)
-    {
-        return 1.;
-    }  
+    double r = 0., g = 0., b = 0.;
 
-    double norm[3];
-    norm[0] = gradient[0] / mag;
-    norm[1] = gradient[1] / mag;
-    norm[2] = gradient[2] / mag;
-
-    double dot = lightDirection[0]*norm[0] + lightDirection[1]*norm[1] 
-                 + lightDirection[2]*norm[2];
-    if (dot < 0)
+    const int maxNumLights = 8;
+    for (int i = 0 ; i < maxNumLights ; i++)
     {
-        dot = -dot;
+        const LightAttributes &l = lights.GetLight(i);
+        if (! l.GetEnabledFlag())
+            continue;
+  
+        double brightness = l.GetBrightness();
+        if (l.GetType() == LightAttributes::Ambient)
+        {
+            r += brightness*rgb[0];
+            g += brightness*rgb[1];
+            b += brightness*rgb[2];
+        }
+        else 
+        {
+            double dir[3];
+            if (l.GetType() == LightAttributes::Object)
+            {
+                dir[0] = l.GetDirection()[0];
+                dir[1] = l.GetDirection()[1];
+                dir[2] = l.GetDirection()[2];
+            }
+            else // Camera light.
+            {
+                // Need to take view_direction and view_up and
+                // combine with l.GetDirection().  Result is stored
+                // in "dir".
+                // Make camera light always be aligned with view direction
+                // for now.
+                dir[0] = view_direction[0];
+                dir[1] = view_direction[1];
+                dir[2] = view_direction[2];
+            }
+
+            double grad[3];
+            grad[0] = ray->sample[gradientVariableIndex][index];
+            grad[1] = ray->sample[gradientVariableIndex+1][index];
+            grad[2] = ray->sample[gradientVariableIndex+2][index];
+            double mag = sqrt(grad[0]*grad[0] + grad[1]*grad[1] +
+                              grad[2]*grad[2]);
+            if (mag == 0.)
+                continue;
+            grad[0] /= mag;
+            grad[1] /= mag;
+            grad[2] /= mag;
+
+            double diffuse = grad[0]*dir[0] + grad[1]*dir[1] + grad[2]*dir[2];
+            if (diffuse < 0.)
+                diffuse *= -1.; // setting to 0 would be one-sided lighting
+            r += brightness*diffuse*rgb[0];
+            g += brightness*diffuse*rgb[1];
+            b += brightness*diffuse*rgb[2];
+  
+            if (doSpecular)
+            {
+                // If we have vector n1 bouncing off a wall with normal s 
+                // to give a reflecting vector n2, then n2 = n1 + 2s.
+                double reflection[3];
+                reflection[0] = dir[0] + 2*grad[0];
+                reflection[1] = dir[1] + 2*grad[1];
+                reflection[2] = dir[2] + 2*grad[2];
+                double mag = sqrt(reflection[0]*reflection[0] +
+                                  reflection[1]*reflection[1] +
+                                  reflection[2]*reflection[2]);
+                reflection[0] /= mag;
+                reflection[1] /= mag;
+                reflection[2] /= mag;
+                double dot = view_direction[0]*reflection[0]
+                           + view_direction[1]*reflection[1]
+                           + view_direction[2]*reflection[2];
+                if (dot < 0)
+                    dot *= -1.;
+                double p = pow(dot, specularPower);
+                double distToGoR = (r < 255 ? 255-r : 0.);
+                r += distToGoR*brightness*specularCoeff*p;
+                double distToGoG = (g < 255 ? 255-g : 0.);
+                g += distToGoG*brightness*specularCoeff*p;
+                double distToGoB = (b < 255 ? 255-b : 0.);
+                b += distToGoB*brightness*specularCoeff*p;
+            }
+        }
     }
-    return ambient + (1. - ambient)*dot;
+
+    if (r >= 255.0)
+        rgb[0] = 255;
+    else
+        rgb[0] = (unsigned char) r;
+    if (g >= 255.0)
+        rgb[1] = 255;
+    else
+        rgb[1] = (unsigned char) g;
+    if (b >= 255.0)
+        rgb[2] = 255;
+    else
+        rgb[2] = (unsigned char) b;
 }
 
 
