@@ -40,8 +40,10 @@
 
 #include <VisItDisplay.h>
 #include <DebugStream.h>
+#include <MesaDisplay.h>
 #include <snprintf.h>
 #include <StringHelpers.h>
+#include <XDisplay.h>
 
 // ****************************************************************************
 //  Function: format
@@ -110,4 +112,29 @@ split(std::string str, size_t node, size_t display)
         SH::append(ret, split(SH::cdr(str), node, display));
     }
     return ret;
+}
+
+// ****************************************************************************
+//  Function: Display::Create
+//
+//  Purpose:
+//    Frontend method to create the appropriate type of display.
+//
+//  Programmer: Tom Fogal
+//  Creation:   September 1, 2008
+//
+// ****************************************************************************
+VisItDisplay *
+Display::Create(enum visitDisplayType vtype)
+{
+    switch(vtype)
+    {
+        case D_MESA:
+            return new MesaDisplay();
+            break;
+        case D_X:
+            return new XDisplay();
+            break;
+    }
+    return NULL;  // unreachable.
 }

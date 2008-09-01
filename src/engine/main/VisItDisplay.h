@@ -51,6 +51,11 @@
 //  Programmer:  Tom Fogal
 //  Creation:    September 1, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Mon Sep  1 15:11:06 EDT 2008
+//    Add a method to create the appropriate display type (factory).
+//
 // ****************************************************************************
 
 class VisItDisplay
@@ -86,5 +91,15 @@ class VisItDisplay
 // `StringHelpers'
 std::string format(std::string s, size_t node, size_t display);
 std::vector<std::string> split(std::string, size_t, size_t);
+
+namespace Display {
+    enum visitDisplayType {
+        D_MESA, // mesa based SW rendering
+        D_X     // starts an X server to use HW rendering
+    };
+    /// Creates a display type based on the given parameter.  It is the
+    /// caller's responsibility to deallocate the display via `delete'.
+    VisItDisplay *Create(enum visitDisplayType);
+};
 
 #endif /* VISIT_VISIT_DISPLAY_H */
