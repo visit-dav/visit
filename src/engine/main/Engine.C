@@ -138,11 +138,7 @@ static void connectx(size_t display);
 
 // X configuration helpers; splits a string, argv[] style, and converts certain
 // format strings into node or display identifiers.
-static std::string car(const std::string);
-static std::string cdr(const std::string);
 static std::string format(std::string s, size_t node, size_t display);
-static bool has_nonspace_chars(const std::string &s);
-static void append(std::vector<std::string> &, std::vector<std::string>);
 static std::vector<std::string> split(std::string, size_t, size_t);
 
 // message tag for interrupt messages used in static abort callback function
@@ -2780,6 +2776,9 @@ vec_convert(std::vector<std::string> svec, size_t *len)
 //    processes can write to it, concurrently!).  Convert to an argv[] array in
 //    both processes, so that we can still output the X server options.
 //
+//    Tom Fogal, Mon Sep  1 11:16:43 EDT 2008
+//    Moved some functions to StringHelpers; use those versions now.
+//
 // ****************************************************************************
 static bool
 startx(size_t display, std::vector<std::string> user_args)
@@ -2794,7 +2793,7 @@ startx(size_t display, std::vector<std::string> user_args)
     args.push_back("-sharevts");
     args.push_back("-once");
     args.push_back("-terminate");
-    append(args, user_args);
+    StringHelpers::append(args, user_args);
 
     argv = vec_convert(args, &v_elems);
     if((pid_xserver = fork()) == (pid_t) -1)
@@ -3044,43 +3043,6 @@ ResetEngineTimeout(void *p, int secs)
 // format strings into node or display identifiers.
 
 // ****************************************************************************
-//  Function: car
-//
-//  Purpose: Pulls the first word out of a space-separated string.
-//
-//  Programmer: Tom Fogal
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-static std::string
-car(const std::string s)
-{
-    if(s.find(' ') != std::string::npos) {
-        return s.substr(0, s.find(' '));
-    }
-    return s;
-}
-
-// ****************************************************************************
-//  Function: cdr
-//
-//  Purpose: Removes the first word from a space-separated string.
-//
-//  Programmer: Tom Fogal
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-static std::string
-cdr(const std::string s)
-{
-    std::string::size_type space;
-    if((space = s.find(' ')) != std::string::npos) {
-        return s.substr(space+1);
-    }
-    return s;
-}
-
-// ****************************************************************************
 //  Function: format
 //
 //  Purpose: Replace special formatters within a string with particular values.
@@ -3126,59 +3088,6 @@ format(std::string s, size_t node, size_t display)
     return s;
 }
 
-//****************************************************************************
-//  Function: has_nonspace_chars
-//
-//  Purpose: Predicate to determine if a string has any useful content.
-//
-//  Programmer: Tom Fogal
-//  Creation:   August 20, 2008
-//
-//  Modifications:
-//
-//****************************************************************************
-static bool
-has_nonspace_chars(const std::string &s)
-{
-    std::string::const_iterator iter = s.begin();
-
-    while(iter != s.end())
-    {
-        if(!isspace(*iter))
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-// ****************************************************************************
-//  Function: append
-//
-//  Purpose: Append all elements from one vector to another.
-//
-//  Programmer: Tom Fogal
-//  Creation:   August 5, 2008
-//
-//  Modifications:
-//
-//    Tom Fogal, Thu Aug  7 16:39:39 EDT 2008
-//    Remove/ignore empty strings.
-//
-// ****************************************************************************
-static void
-append(std::vector<std::string> &argv, std::vector<std::string> lst)
-{
-    if(lst.empty()) { return; }
-
-    if(has_nonspace_chars(lst.front()))
-    {
-        argv.push_back(lst.front());
-    }
-    lst.erase(lst.begin());
-    append(argv, lst);
-}
-
 // ****************************************************************************
 //  Function: split
 //
@@ -3189,14 +3098,20 @@ append(std::vector<std::string> &argv, std::vector<std::string> lst)
 //  Programmer: Tom Fogal
 //  Creation:   August 5, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Mon Sep  1 11:16:43 EDT 2008
+//    Moved some functions to StringHelpers; use those versions now.
+//
 // ****************************************************************************
 static std::vector<std::string>
 split(std::string str, size_t node, size_t display)
 {
+    namespace SH = StringHelpers;
     std::vector<std::string> ret;
-    ret.push_back(format(car(str), node, display));
+    ret.push_back(format(SH::car(str), node, display));
     if(str.find(' ') != std::string::npos) {
-        append(ret, split(cdr(str), node, display));
+        SH::append(ret, split(SH::cdr(str), node, display));
     }
     return ret;
 }
