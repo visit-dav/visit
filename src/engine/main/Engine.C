@@ -39,7 +39,6 @@
 #include <Engine.h>
 #include <Executors.h>
 
-#include <cassert>
 #include <cerrno>
 #include <cstdlib>
 #include <cctype>
@@ -567,6 +566,9 @@ Engine::Finalize(void)
 //
 //    Tom Fogal, Mon Aug 25 10:04:30 EDT 2008
 //    Make sure the number of GPUs ends up in the timing output.
+//
+//    Tom Fogal, Mon Sep  1 14:19:45 EDT 2008
+//    Removed an assert.
 //
 // ****************************************************************************
 
@@ -2766,7 +2768,6 @@ Engine::SetupDisplay()
     {
         if(cog_set_intersect(&lnodes, rank))
         {
-            assert((rank-min) >= 0);
             if(PAR_Rank() == rank &&
                static_cast<size_t>(rank-min) < this->nDisplays)
             {
