@@ -1291,7 +1291,15 @@ Engine::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-n-gpus-per-node") == 0 && i+1 < argc)
         {
-            this->nDisplays = StringHelpers::str_to_u_numeric<size_t>(argv[i+1]);
+            if(!StringHelpers::str_to_u_numeric<size_t>(argv[i+1],
+                                                        &this->nDisplays))
+            {
+                debug1 << "Could not parse '-n-gpus-per-node' argument "
+                       << "'" << argv[i+1] << "'. "
+                       << "Disabling hardware acceleration!" << std::endl;
+                this->nDisplays = 0;
+                haveHWAccel = false;
+            }
             i++;
         }
         else if ((strcmp(argv[i], "-timing") == 0 ||
