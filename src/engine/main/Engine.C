@@ -75,7 +75,6 @@
 #include <InitVTK.h>
 #include <LoadBalancer.h>
 #include <LostConnectionException.h>
-#include <MesaDisplay.h>
 #include <Netnodes.h>
 #include <ParentProcess.h>
 #include <ParsingExprList.h>
@@ -85,8 +84,8 @@
 #include <SocketConnection.h>
 #include <StringHelpers.h>
 #include <StackTimer.h>
+#include <VisItDisplay.h>
 #include <vtkDebugStream.h>
-#include <XDisplay.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtDataObjectReader.h>
@@ -2772,14 +2771,14 @@ Engine::SetupDisplay()
                static_cast<size_t>(rank-min) < this->nDisplays)
             {
                 display = rank-min;
-                this->renderingDisplay = new XDisplay();
+                this->renderingDisplay = Display::Create(Display::D_X);
             }
         }
     }
 #endif
     if(this->renderingDisplay == NULL)
     {
-        this->renderingDisplay = new MesaDisplay();
+        this->renderingDisplay = Display::Create(Display::D_MESA);
     }
     if(this->renderingDisplay->Initialize(display,
                                split(this->X_Args, PAR_Rank(), display)))
