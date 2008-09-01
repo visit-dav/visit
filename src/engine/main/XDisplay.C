@@ -119,6 +119,10 @@ XDisplay::~XDisplay()
 //    processes can write to it, concurrently!).  Convert to an argv[] array in
 //    both processes, so that we can still output the X server options.
 //
+//    Tom Fogal, Mon Sep  1 13:37:59 EDT 2008
+//    Prevent memory leaks in the event of failure.  Force "-ac" in X server
+//    command line options, as usage is unreliable otherwise.
+//
 // ****************************************************************************
 
 bool
@@ -133,6 +137,7 @@ XDisplay::Initialize(size_t display, const std::vector<std::string> &user_args)
     args.push_back("xinit");
     args.push_back("--");
     args.push_back(format(":%l", /* unused */0, display));
+    args.push_back("-ac");
     args.push_back("-sharevts");
     args.push_back("-once");
     args.push_back("-terminate");

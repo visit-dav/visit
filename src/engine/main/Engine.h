@@ -75,6 +75,7 @@ class NetworkManager;
 class NonBlockingRPC;
 class Observer;
 class ProcessAttributes;
+class VisItDisplay;
 class Xfer;
 
 #include <vector>
@@ -180,6 +181,10 @@ class Xfer;
 //    Tom Fogal, Mon Aug 11 11:39:07 EDT 2008
 //    Instance variable to store how many X servers we should start up.
 //
+//    Tom Fogal, Mon Sep  1 12:47:57 EDT 2008
+//    Instance variable to store what kind of display we'll render with, and
+//    made SetupDisplay a method.
+//
 // ****************************************************************************
 
 class Engine
@@ -255,6 +260,9 @@ class Engine
 
     static void     AlarmHandler(int signal);
     static void     NewHandler(void);
+
+  private:
+    void            SetupDisplay();
 
   protected:
     // The singleton object
@@ -341,6 +349,7 @@ class Engine
     bool                      useIceT;
     std::string               X_Args;
     size_t                    nDisplays;
+    VisItDisplay             *renderingDisplay;
 };
 
 #endif
