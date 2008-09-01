@@ -270,6 +270,9 @@
 #    Hank Childs Tue Aug 19 21:57:35 PDT 2008
 #    Add cognomen to the purify line.
 #
+#    Tom Fogal, Fri Aug 29 20:06:37 EDT 2008
+#    Add new src files for abstracted rendering contexts.  Vertical formatting.
+#
 ##############################################################################
 
 ##
@@ -324,13 +327,16 @@ PARLIBDEP=../../lib/libplugin.@SHLIB_LIBEXT@ ../../lib/libplotter_par.@SHLIB_LIB
 ##
 ## Files...
 ##
-SRC= \
-    DataNetwork.C \
+SRC=                    \
+    DataNetwork.C       \
     ClonedDataNetwork.C \
-    Engine.C \
-    LoadBalancer.C \
-    Netnodes.C \
-    NetworkManager.C
+    Engine.C            \
+    LoadBalancer.C      \
+    MesaDisplay.C       \
+    Netnodes.C          \
+    NetworkManager.C    \
+    VisItDisplay.C      \
+    XDisplay.C
 
 MAINSRC=main.C
 
