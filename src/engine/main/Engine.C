@@ -76,6 +76,7 @@
 #include <InitVTK.h>
 #include <LoadBalancer.h>
 #include <LostConnectionException.h>
+#include <MesaDisplay.h>
 #include <Netnodes.h>
 #include <ParentProcess.h>
 #include <ParsingExprList.h>
@@ -86,6 +87,7 @@
 #include <StringHelpers.h>
 #include <StackTimer.h>
 #include <vtkDebugStream.h>
+#include <XDisplay.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtDataObjectReader.h>
@@ -119,25 +121,11 @@ const char *dummy_string1 = "DEBUG_MEMORY_LEAKS";
 
 // Static data
 Engine *Engine::instance = NULL;
-// If we start an X server, this holds its PID -- used to shut it down.
-static pid_t pid_xserver = -1;
 
 // Static methods
 static void WriteByteStreamToSocket(NonBlockingRPC *, Connection *,
                                     avtDataObjectString &);
 static void ResetEngineTimeout(void *p, int secs);
-static void SetupDisplay(size_t n, const std::string &);
-static void TeardownDisplay(pid_t xpid);
-#ifdef PARALLEL
-static char **vec_convert(std::vector<std::string> svec, size_t *len);
-static bool startx(size_t display, std::vector<std::string> args);
-#endif
-static void connectx(size_t display);
-
-// X configuration helpers; splits a string, argv[] style, and converts certain
-// format strings into node or display identifiers.
-static std::string format(std::string s, size_t node, size_t display);
-static std::vector<std::string> split(std::string, size_t, size_t);
 
 // message tag for interrupt messages used in static abort callback function
 #ifdef PARALLEL
@@ -191,6 +179,9 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //    Tom Fogal, Mon Aug 11 11:40:16 EDT 2008
 //    Initialize the number of displays.
 //
+//    Tom Fogal, Mon Sep  1 12:48:36 EDT 2008
+//    Initialize the display for rendering.
+//
 // ****************************************************************************
 
 Engine::Engine()
@@ -236,6 +227,7 @@ Engine::Engine()
 
     useIceT = false;
     nDisplays = 0;
+    renderingDisplay = NULL;
 }
 
 // ****************************************************************************
@@ -257,6 +249,9 @@ Engine::Engine()
 //
 //    Jeremy Meredith, Wed Jan 23 16:50:36 EST 2008
 //    Added setEFileOpenOptionsRPC.
+//
+//    Tom Fogal, Mon Sep  1 13:04:51 EDT 2008
+//    Add renderingDisplay.
 //
 // ****************************************************************************
 
@@ -294,6 +289,8 @@ Engine::~Engine()
     delete procInfoRPC;
     delete simulationCommandRPC;
     delete setEFileOpenOptionsRPC;
+
+    delete renderingDisplay;
 }
 
 // ****************************************************************************
@@ -453,16 +450,20 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
 //    Tom Fogal, Tue Jul 29 10:56:51 EDT 2008
 //    Kill the X server if one was started.
 //
+//    Tom Fogal, Mon Sep  1 13:03:09 EDT 2008
+//    Remove the X server stuff, but explicitly delete the rendering display.
+//    It must be done, otherwise in the X case we'll leave stale displays
+//    around.
+//
 // ****************************************************************************
 void
 Engine::Finalize(void)
 {
     visitTimer->StartTimer();
 
-    if(pid_xserver != -1)
-    {
-        TeardownDisplay(pid_xserver);
-    }
+    delete this->renderingDisplay;
+    // Now null it out; in case the destructor actually *does* get called.
+    this->renderingDisplay = NULL;
 
     Init::Finalize();
 }
@@ -590,7 +591,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
         s << "Setting up " << this->nDisplays << " GPUs for HW rendering";
         debug3 << "Setting up X displays for " << this->nDisplays << " GPUs."
                << "  Using X arguments: '" << this->X_Args << "'" << std::endl;
-        TimedCodeBlock(s.str(), SetupDisplay(this->nDisplays, this->X_Args));
+        TimedCodeBlock(s.str(), this->SetupDisplay());
     }
     avtCallback::SetNowinMode(true);
 
@@ -2711,169 +2712,12 @@ Engine::GetProcessAttributes()
 
 }
 
-#ifdef PARALLEL
 // ****************************************************************************
-//  Function: vec_convert
-//
-//  Purpose: Converts a vector of strings into ... a vector of strings.  The
-//           latter is really a NULL-terminated C array, suitable for passing
-//           to an exec(2).
-//           Note that all strings (and the array itself) are dynamically
-//           allocated, and must be 'free'd by the caller.
-//
-//  Returns: Converted string vector.
-//
-//  Arguments:
-//    svec       original vector
-//    len        filled with the number of elements in the new vector.
-//
-//  Programmer: Tom Fogal
-//  Creation:   August 15, 2008
-//
-// ****************************************************************************
-static char **
-vec_convert(std::vector<std::string> svec, size_t *len)
-{
-    char **argv;
-
-    *len = svec.size();
-    argv = (char**) malloc(sizeof(char*) * (*len+1));
-
-    size_t i;
-    for(i=0; i < *len; ++i)
-    {
-        argv[i] = strdup(svec[i].c_str());
-    }
-    argv[i] = NULL;
-    return argv;
-}
-
-// ****************************************************************************
-//  Function: startx
-//
-//  Purpose: Fork-exec an X server.
-//
-//  Returns: Success / failure.
-//
-//  Arguments:
-//    n          Display number to create.
-//    user_args  User-given arguments to xinit.
-//
-//  Programmer: Tom Fogal
-//  Creation:   July 27, 2008
-//
-//  Modifications:
-//
-//    Tom Fogal, Tue Aug  5 16:33:49 EDT 2008
-//    Add argument string-vector, and code to convert that into an argv-style
-//    array.  Finally, use execvp to start xinit.  All of this allows the user
-//    to specify their own custom arguments to the X launch.
-//
-//    Tom Fogal, Mon Aug 11 19:02:11 EDT 2008
-//    Move print out of the child; this is confusing for the output stream (two
-//    processes can write to it, concurrently!).  Convert to an argv[] array in
-//    both processes, so that we can still output the X server options.
-//
-//    Tom Fogal, Mon Sep  1 11:16:43 EDT 2008
-//    Moved some functions to StringHelpers; use those versions now.
-//
-// ****************************************************************************
-static bool
-startx(size_t display, std::vector<std::string> user_args)
-{
-    char **argv;
-    size_t v_elems;
-
-    std::vector<std::string> args;
-    args.push_back("xinit");
-    args.push_back("--");
-    args.push_back(format(":%l", /* unused */0, display));
-    args.push_back("-sharevts");
-    args.push_back("-once");
-    args.push_back("-terminate");
-    StringHelpers::append(args, user_args);
-
-    argv = vec_convert(args, &v_elems);
-    if((pid_xserver = fork()) == (pid_t) -1)
-    {
-        perror("fork");
-        return false;
-    }
-
-    if(pid_xserver == 0)
-    {
-        execvp("xinit", argv);
-        perror("execvp of xinit");
-        return false;
-    }
-#ifndef NDEBUG
-    debug5 << "X server command line arguments:" << std::endl;
-    for(size_t i=0; i < args.size(); ++i) {
-        debug5 << "\t" << argv[i] << std::endl;
-    }
-#endif
-    for(size_t i=0; i < v_elems; ++i)
-    {
-        free(argv[i]);
-    }
-    free(argv);
-    debug3 << "Child started " << (int)pid_xserver << std::endl;
-    debug4 << "Giving a sec for the X server to start ...";
-    sleep(display);
-    debug4 << " done!" << std::endl;
-
-    debug3 << "Saved X server PID " << pid_xserver << std::endl;
-    return true;
-}
-#endif
-
-// ****************************************************************************
-//  Function: connectx
-//
-//  Purpose: Associate this process with an X server.
-//
-//  Arguments:
-//    display   display number we should connect to.
-//
-//  Programmer: Tom Fogal
-//  Creation:   July 27, 2008
-//
-//  Modifications:
-//
-//    Tom Fogal, Tue Aug  5 16:36:20 EDT 2008
-//    Dropped the array size down a notch; why was it so huge before?
-//
-// ****************************************************************************
-static void
-connectx(size_t display)
-{
-    static char env_display[128];
-    char s_disp[128];
-
-    debug3 << "Connecting to display " << display << std::endl;
-    SNPRINTF(s_disp, 128, ":%zu", display);
-    SNPRINTF(env_display, 128, "DISPLAY=:%zu", display);
-
-    if(putenv(env_display) != 0)
-    {
-        perror("putenv");
-        debug1 << "putenv(\"" << env_display << "\") failed." << std::endl;
-    }
-    InitVTK::UnforceMesa();
-
-    system("xhost +");
-}
-
-// ****************************************************************************
-//  Function: SetupDisplay
+//  Method: SetupDisplay
 //
 //  Purpose:
-//    Initialize the display based on the number of displays we should start
-//    up; use a HW display if possible, else default to a Mesa (SW) based
-//    renderer.
-//
-//  Arguments:
-//    n   The number of HW-based display servers to start.
+//    Figure out which processes should start HW displays, and which should
+//    start Mesa (SW) displays.  Use VisItDisplay to initialize those displays.
 //
 //  Programmer: Tom Fogal
 //  Creation:   July 27, 2008
@@ -2895,11 +2739,15 @@ connectx(size_t display)
 //    Brad Whitlock, Fri Aug 29 09:55:09 PDT 2008
 //    Added Mac-specific code for unsetenv since it returns void on Mac.
 //
+//    Tom Fogal, Mon Sep  1 12:54:29 EDT 2008
+//    Change to a method from a static function, and delegate to VisItDisplay.
+//
 // ****************************************************************************
 
-static void
-SetupDisplay(size_t n, const std::string &user_args)
+void
+Engine::SetupDisplay()
 {
+    int display = -1;  // Display ID to create.
 #ifdef PARALLEL
     cog_set lnodes;
 
@@ -2910,99 +2758,37 @@ SetupDisplay(size_t n, const std::string &user_args)
     int min = cog_set_min(&lnodes);
     int max = cog_set_max(&lnodes);
 
-    // Default to always use Mesa.  Only if the X server is successfully
-    // started will we switch to HW rendering.
-    bool hardware = false;
-#ifdef __APPLE__
-    unsetenv("DISPLAY");
-#else
-    if(unsetenv("DISPLAY") != 0)
-    {
-        perror("unsetenv");
-        debug1 << "unsetenv DISPLAY failed." << std::endl;
-    }
-#endif
+    // Explicitly nullify it.  If it's still null after the loop, we'll know we
+    // should setup a SW display.
+    this->renderingDisplay = NULL;
 
     for(rank = min; rank <= max; ++rank)
     {
         if(cog_set_intersect(&lnodes, rank))
         {
             assert((rank-min) >= 0);
-            if(PAR_Rank() == rank && static_cast<size_t>(rank-min) < n)
+            if(PAR_Rank() == rank &&
+               static_cast<size_t>(rank-min) < this->nDisplays)
             {
-                const int display = rank-min;
-                if(startx(display, split(user_args, PAR_Rank(), display)))
-                {
-                    connectx(display);
-                    hardware = true;
-                }
-                else
-                {
-                    debug1 << "X server startup failed; forcing Mesa."
-                           << std::endl;
-                }
+                display = rank-min;
+                this->renderingDisplay = new XDisplay();
             }
         }
     }
-    if(false == hardware)
-    {
-        InitVTK::ForceMesa();
-    }
-#else
-    connectx(0);
 #endif
-}
-
-// ****************************************************************************
-//  Function: TeardownDisplay
-//
-//  Purpose:
-//    Disconnect from the display we used for HW rendering.  Stop the given
-//    process.
-//
-//  Arguments:
-//    xpid   The PID of the X server we started earlier.
-//
-//  Programmer: Tom Fogal
-//  Creation:   July 29, 2008
-//
-// ****************************************************************************
-
-static void
-TeardownDisplay(pid_t xpid)
-{
-    assert(xpid > 0);
-    unsetenv("DISPLAY");
-
-    debug3 << "Tearing down display " << xpid << std::endl;
-
-    if(kill(xpid, SIGINT) < 0)
+    if(this->renderingDisplay == NULL)
     {
-        perror("Killing X via SIGINT");
-        sleep(2);
-        if(kill(xpid, SIGKILL) < 0)
-        {
-            char err[1024];
-            strerror_r(errno, err, 1024);
-            debug1 << "Could not stop X server: " << err << std::endl;
-            std::cerr << "Could not stop the X server: " << err << std::endl
-                      << "You might have stale X server or engine_par "
-                      << "processes around now.";
-        }
+        this->renderingDisplay = new MesaDisplay();
     }
-    int status;
-    waitpid(xpid, &status, WUNTRACED);
-    if(WIFEXITED(status))
+    if(this->renderingDisplay->Initialize(display,
+                               split(this->X_Args, PAR_Rank(), display)))
     {
-        debug4 << "X server exited on it's own." << std::endl;
-    }
-    else if(WIFSIGNALED(status))
-    {
-        debug4 << "X server killed successfully." << std::endl;
+        this->renderingDisplay->Connect();
     }
     else
     {
-        debug4 << "UNEXPECTED X server death status: " << status << std::endl;
+        debug1 << "Display initialization failed.  Rendering in this state "
+               << "has undefined results ..." << std::endl;
     }
 }
 
@@ -3035,81 +2821,4 @@ ResetEngineTimeout(void *p, int secs)
         debug5 << "ResetEngineTimeout: Overriding timeout to " << secs << " seconds." << endl;
     }
     e->ResetTimeout(secs);
-}
-
-// X configuration helpers; splits a string, argv[] style, and converts certain
-// format strings into node or display identifiers.
-
-// ****************************************************************************
-//  Function: format
-//
-//  Purpose: Replace special formatters within a string with particular values.
-//           Currently `%l' expands to the display, and `%n' expands to the
-//           node ID.
-//
-//  Programmer: Tom Fogal
-//  Creation:   August 5, 2008
-//
-//  Modifications:
-//
-//    Tom Fogal, Thu Aug  7 16:43:49 EDT 2008
-//    Use a debug stream instead of cerr.  Use SNPRINTF macro instead of
-//    calling the function directly.
-//
-// ****************************************************************************
-static std::string
-format(std::string s, size_t node, size_t display)
-{
-    std::string::size_type percent;
-    if((percent = s.find('%')) != std::string::npos) {
-        std::string::iterator start = s.begin() + percent;
-        /* assume all formatters are '%x': i.e., always 2 characters */
-        std::string::iterator end = s.begin() + (percent+2);
-        std::string::iterator type = s.begin() + (percent+1);
-
-        if(*type == 'l') {
-            char str_display[8];
-            SNPRINTF(str_display, 8, "%zu", display);
-            s.replace(start, end, str_display);
-        } else if(*type == 'n') {
-            char str_node[8];
-            SNPRINTF(str_node, 8, "%zu", node);
-            s.replace(start, end, str_node);
-        } else {
-            debug5 << "unknown formatter '" << *type << "'" << std::endl;
-        }
-    }
-    // If they gave multiple %'s in the same string, recurse.
-    if(s.find('%') != std::string::npos) {
-        return format(s, node, display);
-    }
-    return s;
-}
-
-// ****************************************************************************
-//  Function: split
-//
-//  Purpose: Splits a string into a vector of strings, separated by spaces.
-//           Converts node and display IDs (via format specifiers) as it
-//           proceeds.
-//
-//  Programmer: Tom Fogal
-//  Creation:   August 5, 2008
-//
-//  Modifications:
-//
-//    Tom Fogal, Mon Sep  1 11:16:43 EDT 2008
-//    Moved some functions to StringHelpers; use those versions now.
-//
-// ****************************************************************************
-static std::vector<std::string>
-split(std::string str, size_t node, size_t display)
-{
-    namespace SH = StringHelpers;
-    std::vector<std::string> ret;
-    ret.push_back(format(SH::car(str), node, display));
-    if(str.find(' ') != std::string::npos) {
-        SH::append(ret, split(SH::cdr(str), node, display));
-    }
-    return ret;
 }
