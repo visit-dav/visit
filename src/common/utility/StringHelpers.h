@@ -57,6 +57,12 @@
 using std::string;
 using std::vector;
 
+#if __GNUC__ >= 3
+#   define MUST_CHECK __attribute__ ((warn_unused_result))
+#else
+#   define MUST_CHECK /*nothing*/
+#endif
+
 namespace StringHelpers
 {
    const string NON_RELEVANT_CHARS = "`~!@#$%^&*()-_=+{[}]|\\:;\"'<,>.?/0123456789";
@@ -99,19 +105,21 @@ namespace StringHelpers
 //  Programmer: Tom Fogal
 //  Creation:   August 11, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Fri Aug 29 16:15:17 EDT 2008
+//    Reorganized to propagate error upward.
+//
 // ****************************************************************************
     template<typename UT>
-    UT str_to_u_numeric(const char * const s)
+    MUST_CHECK bool str_to_u_numeric(const char * const s, UT *retval)
     {
-        assert(strlen(s) >= 1);
         // strtoul() will happily convert a negative string into an unsigned
         // integer.  Do a simple check and bail out if we're given a negative
         // number.
         if(s[0] == '-')
         {
-            std::cerr << __FUNCTION__ << "Negative input "
-                      << "'" << s << "'" << std::endl;
-            return 0;
+            return false;
         }
 
         const char *str = s;
@@ -128,39 +136,31 @@ namespace StringHelpers
         char *end;
         errno = 0;
         ret = strtoul(str, &end, 0);
+        *retval = static_cast<UT>(ret);
         switch(errno)
         {
             case 0: /* success */ break;
             case ERANGE:
-            {
-                UT bytes = sizeof(UT);
-                std::cerr << __FUNCTION__ << ": constant does not fit in "
-                          << bytes << " bytes." << std::endl;
+                // Constant does not fit in sizeof(unsigned long) bytes.
+                return false;
                 break;
-            }
             case EINVAL:
-                perror("bad base (0)?");
+                // Bad base (3rd arg) given; this should be impossible.
+                return false;
                 break;
             default:
-            {
-                char e_msg[1024];
-                SNPRINTF(e_msg, 1024, "%s: cannot convert %s to "
-                         "unsigned value: %s", __FUNCTION__, s,
-                         strerror(errno));
-                std::cerr << e_msg << std::endl;
+                // Unknown error.
+                return false;
                 break;
-            }
         }
         if(end == s) {
-            std::cerr << __FUNCTION__ << ": illegal unsigned constant "
-                      << "'" << s << "'" << std::endl;
+            // junk characters start the string .. is this a number?
+            return false;
         }
         if(ret < 0) {
-            std::cerr << __FUNCTION__ << ": cannot convert "
-                      << "'" << s << "'" << std::endl;
+            return false;
         }
-        return static_cast<UT>(ret);
+        return true;
     }
 }
-
 #endif

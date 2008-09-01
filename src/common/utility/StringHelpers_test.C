@@ -80,11 +80,17 @@ int main(int argc, char **argv)
     if (!ValidatePrintfFormatString("firstInt = %d\nsecondFlt=%G\n", "int", "float"))
         falseNegatives.push_back(__LINE__);
 
-    if(str_to_u_numeric<size_t>("42") != 42)
+    size_t s_to_num_tmp;
+    if(str_to_u_numeric<size_t>("42", &s_to_num_tmp) == false ||
+       s_to_num_tmp != 42)
         falseNegatives.push_back(__LINE__);
-    if(str_to_u_numeric<size_t>("0") != 0)
+
+    if(str_to_u_numeric<size_t>("0", &s_to_num_tmp) == false ||
+       s_to_num_tmp != 0)
         falseNegatives.push_back(__LINE__);
-    if(str_to_u_numeric<size_t>("2147483648") != 2147483648UL)
+
+    if(str_to_u_numeric<size_t>("2147483648", &s_to_num_tmp) == false ||
+       s_to_num_tmp != 2147483648UL)
         falseNegatives.push_back(__LINE__);
 
     //
@@ -121,8 +127,8 @@ int main(int argc, char **argv)
     if (falseNegatives.size())
     {
         cerr << "Strings in \"" << argv[0] << "\" on the following lines" << endl;
-	cerr << "failed when they should have succeeded..." << endl;
-	cerr << "    ";
+        cerr << "failed when they should have succeeded..." << endl;
+        cerr << "    ";
         for (size_t i = 0; i < falseNegatives.size(); i++)
             cerr << falseNegatives[i]-1 << ", ";
         cerr << endl;
@@ -130,8 +136,8 @@ int main(int argc, char **argv)
     if (falsePositives.size())
     {
         cerr << "Strings in \"" << argv[0] << "\" on the following lines" << endl;
-	cerr << "succeeded when they should have failed..." << endl;
-	cerr << "    ";
+        cerr << "succeeded when they should have failed..." << endl;
+        cerr << "    ";
         for (size_t i = 0; i < falsePositives.size(); i++)
             cerr << falsePositives[i]-1 << ", ";
         cerr << endl;
