@@ -124,7 +124,6 @@
 #include <set>
 #include <map>
 
-#include <cassert>
 #include <climits>
 
 using std::set;
@@ -2106,6 +2105,9 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //    Use Shadowing and DepthCueing methods instead of querying those modes
 //    inline.
 //
+//    Tom Fogal, Mon Sep  1 14:22:57 EDT 2008
+//    Removed asserts.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -2173,7 +2175,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                  this->r_mgmt.needZBufferToCompositeEvenIn2D
         );
 
-        assert(NULL != imageCompositer);
         SetCompositerBackground(imageCompositer, viswin);
 
         //
@@ -4345,6 +4346,11 @@ NetworkManager::SetStereoEnabled()
 //  Programmer: Tom Fogal
 //  Creation:   June 9, 2008
 //
+//  Modifications:
+//
+//    Tom Fogal, Mon Sep  1 14:55:18 EDT 2008
+//    Changed an assert to an if-and-a-throw.
+//
 // ****************************************************************************
 bool
 NetworkManager::PlotsNeedUpdating(const intVector &plots,
@@ -4353,7 +4359,12 @@ NetworkManager::PlotsNeedUpdating(const intVector &plots,
     // They should really be the same size, but at least it won't be a UMR if
     // there are more plotsInWindow -- though I think that would be another bug
     // altogether.
-    assert(plotsInWindow.size() >= plots.size());
+    if(plotsInWindow.size() < plots.size())
+    {
+        EXCEPTION1(ImproperUseException, "Differing number of current and "
+                   "window plots.  This probably means there is a bug in "
+                   "NM::SetUpWindowContents.");
+    }
 
     for(size_t p = 0; p < plots.size(); ++p)
     {
@@ -4498,6 +4509,9 @@ NetworkManager::ViewerExecute(const VisWindow * const viswin,
 //    Hank Childs, Fri Aug 15 14:32:16 PDT 2008
 //    Set values of needZBufferToCompositeEvenIn2D.
 //
+//    Tom Fogal, Mon Sep  1 14:33:09 EDT 2008
+//    Change an assert to an exception.
+//
 // ****************************************************************************
 
 void
@@ -4510,7 +4524,10 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
     VisWindow *viswin = viswinInfo.viswin;
 
     // Doesn't make sense to use this unless we need to set the contents up
-    assert(this->r_mgmt.needToSetUpWindowContents);
+    if(!this->r_mgmt.needToSetUpWindowContents)
+    {
+        EXCEPTION1(ImproperUseException, "Window contents already setup.");
+    }
 
     StackTimer setup("Setting up window contents");
     TimedCodeBlock("Clearing plots out of vis window",
@@ -4977,13 +4994,14 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
 //    Tom Fogal, Mon Jul 14 12:33:27 PDT 2008
 //    New timing scheme; call StopTimer.
 //
+//    Tom Fogal, Mon Sep  1 14:47:31 EDT 2008
+//    Remove an assert.
+//
 // ****************************************************************************
 
 void
 NetworkManager::RenderCleanup(int windowID)
 {
-    assert(viswinMap.find(windowID) != viswinMap.end());
-
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     VisWindow *viswin = viswinInfo.viswin;
 

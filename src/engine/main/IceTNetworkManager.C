@@ -52,7 +52,6 @@
 #include <UnexpectedValueException.h>
 #include <VisWindow.h>
 
-#include <cassert>
 #include <GL/ice-t_mpi.h>
 #include <mpi.h>
 #include <vtkImageData.h>
@@ -60,10 +59,10 @@
 // ****************************************************************************
 // Debugging help.
 
-#ifdef NDEBUG
-#   define DEBUG_ONLY(x) /* nothing. */
-#else
+#ifdef DEBUG_ICET
 #   define DEBUG_ONLY(x) x
+#else
+#   define DEBUG_ONLY(x) /* nothing. */
 #endif
 
 #define ICET_CHECK_ERROR                                                    \
@@ -94,14 +93,14 @@
                << ", " << ntiles << ")" << std::endl;                      \
     } while(0)
 
-#ifdef NDEBUG
-#   define ICET(x) x
-#else
-#   define ICET(x)        \
+#ifdef DEBUG_ICET
+#   define ICET(stmt)     \
     do {                  \
-        x;                \
+        stmt;             \
         ICET_CHECK_ERROR; \
     } while(0)
+#else
+#   define ICET(stmt) stmt
 #endif
 
 static void SendImageToRenderNodes(int, int, bool, GLubyte * const,
@@ -385,7 +384,6 @@ IceTNetworkManager::Render(intVector networkIds, bool getZBuffer,
     }
     CATCHALL(...)
     {
-        assert("Exception thrown, bailing out" == (const char*)0x0fa1afe1);
         RETHROW;
     }
     ENDTRY
@@ -536,20 +534,20 @@ IceTNetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
 //    Tom Fogal, Mon Jul 28 14:44:28 EDT 2008
 //    Don't ask IceT for Z if we're not going to use it anyway.
 //
+//    Tom Fogal, Mon Sep  1 14:21:46 EDT 2008
+//    Removed asserts / dependence on NDEBUG.
+//
 // ****************************************************************************
 avtImage_p
 IceTNetworkManager::Readback(const VisWindow * const viswin,
                              bool readZ) const
 {
-    assert(viswin);
-
     GLboolean have_image;
 
     ICET(icetGetBooleanv(ICET_COLOR_BUFFER_VALID, &have_image));
 
     int width=-42, height=-42;
     viswin->GetSize(width, height);
-    assert(width > 0 && height > 0);
 
     GLubyte *pixels = NULL;
     GLuint *depth = NULL;
@@ -558,7 +556,6 @@ IceTNetworkManager::Readback(const VisWindow * const viswin,
     {
         depth = icetGetDepthBuffer();
         DEBUG_ONLY(ICET_CHECK_ERROR);
-        assert(NULL != depth);
     }
     // We can't delete pointers IceT gives us.  However if we're a receiving
     // node, we'll dynamically allocate our buffers and thus need to deallocate
@@ -572,7 +569,6 @@ IceTNetworkManager::Readback(const VisWindow * const viswin,
         DEBUG_ONLY(ICET_CHECK_ERROR);
 
         this->VerifyColorFormat(); // Bail out if we don't get GL_RGBA data.
-        assert(NULL != pixels);
     } else {
         // We don't have an image -- we need to receive it from our buddy.
         pixels = new GLubyte[4*width*height];
