@@ -33,7 +33,6 @@
 * LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
 * OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 * DAMAGE.
-*
 *****************************************************************************/
 
 #include <StringHelpers.h>
@@ -62,6 +61,8 @@ static string IGNORE_CHARS = StringHelpers::NON_RELEVANT_CHARS;
 
 const int STATIC_BUF_SIZE = 4096;
 static char StaticStringBuf[STATIC_BUF_SIZE];
+
+bool has_nonspace_chars(const std::string &s);
 
 // ****************************************************************************
 //  Function: RelevantString 
@@ -773,4 +774,96 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
     re += "[^%]*$"; // anchor last char to end of line
 
     return StringHelpers::FindRE(fmtStr, re.c_str()) >= 0;
+}
+
+// ****************************************************************************
+//  Function: car
+//
+//  Purpose: Pulls the first word out of a space-separated string.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+std::string
+StringHelpers::car(const std::string s)
+{
+    if(s.find(' ') != std::string::npos) {
+        return s.substr(0, s.find(' '));
+    }
+    return s;
+}
+
+// ****************************************************************************
+//  Function: cdr
+//
+//  Purpose: Removes the first word from a space-separated string.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+std::string
+StringHelpers::cdr(const std::string s)
+{
+    std::string::size_type space;
+    if((space = s.find(' ')) != std::string::npos) {
+        return s.substr(space+1);
+    }
+    return s;
+}
+
+
+//****************************************************************************
+//  Function: has_nonspace_chars
+//
+//  Purpose: Predicate to determine if a string has any useful content.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 20, 2008
+//
+//  Modifications:
+//
+//****************************************************************************
+bool
+has_nonspace_chars(const std::string &s)
+{
+    std::string::const_iterator iter = s.begin();
+
+    while(iter != s.end())
+    {
+        if(!isspace(*iter))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+// ****************************************************************************
+//  Function: append
+//
+//  Purpose: Append all elements from one vector to another.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 5, 2008
+//
+//  Modifications:
+//
+//    Tom Fogal, Thu Aug  7 16:39:39 EDT 2008
+//    Remove/ignore empty strings.
+//
+// ****************************************************************************
+void
+StringHelpers::append(std::vector<std::string> &argv,
+                      std::vector<std::string> lst)
+{
+    if(lst.empty()) { return; }
+
+    if(has_nonspace_chars(lst.front()))
+    {
+        argv.push_back(lst.front());
+    }
+    lst.erase(lst.begin());
+    append(argv, lst);
 }
