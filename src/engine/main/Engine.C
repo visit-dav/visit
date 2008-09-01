@@ -43,6 +43,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include <cctype>
+#include <climits>
 #include <signal.h>
 #include <sys/wait.h>
 #if !defined(_WIN32)
@@ -62,23 +63,22 @@
 #include <BufferConnection.h>
 #include <CouldNotConnectException.h>
 #include <DefineVirtualDatabaseRPC.h>
-#include <IncompatibleVersionException.h>
 #include <ExpressionList.h>
 #include <ExprParser.h>
-#include <ParsingExprList.h>
-#include <avtExprNodeFactory.h>
 #ifdef PARALLEL
 #   include <cognomen.h>
 #   ifdef HAVE_ICET
 #      include <IceTNetworkManager.h>
 #   endif
 #endif
+#include <IncompatibleVersionException.h>
 #include <Init.h>
 #include <InitVTK.h>
 #include <LoadBalancer.h>
 #include <LostConnectionException.h>
 #include <Netnodes.h>
 #include <ParentProcess.h>
+#include <ParsingExprList.h>
 #include <QueryAttributes.h>
 #include <SILAttributes.h>
 #include <SimulationCommand.h>
@@ -93,17 +93,15 @@
 #include <avtDataObjectWriter.h>
 #include <avtDebugDumpOptions.h>
 #include <avtDataset.h>
+#include <avtExprNodeFactory.h>
 #include <avtFilter.h>
-#include <avtTerminatingSink.h>
 #include <avtParallel.h>
 #include <avtOriginatingSource.h>
 #include <avtTypes.h>
-#include <avtVariableMapper.h>
 #include <vtkDataSetWriter.h>
 #include <avtDataObjectToDatasetFilter.h>
 #include <avtVariableCache.h>
 
-#include <climits>
 #include <string>
 using std::string;
 
