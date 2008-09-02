@@ -397,6 +397,10 @@ static int console_get_line_or_password(const char *prompt, char *str,
  *   Jeremy Meredith, Wed Jun 27 12:16:56 EDT 2007
  *   Added the port forwarding arguments.
  *
+ *   Kathleen Bonnell, Tue Sep  2 08:42:16 PDT 2008 
+ *   Changed initialization of reading to 'true' to prevent using idata before
+ *   it is initialized.
+ *
  *****************************************************************************/
 
 int
@@ -408,7 +412,7 @@ RunRemoteCommand(const char *username, const char *host, int port,
     HANDLE handles[4];
     DWORD in_threadid, out_threadid, err_threadid;
     struct input_data idata;
-    int reading = 0;
+    int reading = 1;
     int sending = 0;
     int portnumber = -1;
     SOCKET *sklist;
@@ -651,6 +655,7 @@ RunRemoteCommand(const char *username, const char *host, int port,
     handles[2] = stdoutevent;
     handles[3] = stderrevent;
     sending = FALSE;
+    reading = TRUE;
 
     /*
      * Create spare threads to write to stdout and stderr, so we

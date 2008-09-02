@@ -977,13 +977,19 @@ GetUserVisItRCFile()
 // Creation:   Thu Jan 17 15:10:30 PST 2008
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Sep  2 08:17:22 PDT 2008
+//   Value returned from GetDefaultConfigFile has been new'd, and should
+//   be deleted here.
 //   
 // ****************************************************************************
 
 std::string
 GetSystemVisItRCFile()
 {
-    return std::string(GetDefaultConfigFile("visitrc", "VISITHOME"));
+    const char *defConfig = GetDefaultConfigFile("visitrc", "VISITHOME");
+    std::string retVal(defConfig);
+    delete [] defConfig;
+    return retVal;
 }
 
 #if defined(_WIN32)
@@ -1335,6 +1341,10 @@ GetIsDevelopmentVersion()
 //   Kathleen Bonnell, Fri Jul 20 10:48:21 PDT 2007 
 //   Removed MSVC6 specific code. 
 //
+//   Kathleen Bonnell, Tue Sep  2 08:20:15 PDT 2008 
+//   Regardless of return value from ReadKey, visithome may have been
+//   malloc'd and thus requires free. 
+//
 // ****************************************************************************
 
 std::string
@@ -1361,7 +1371,6 @@ GetVisItInstallationDirectory(const char *version)
     if(ReadKey(version, "VISITHOME", &visitHome) == 1)
     {
         installDir = visitHome;
-        delete [] visitHome;
     }
     else
     {
@@ -1374,6 +1383,8 @@ GetVisItInstallationDirectory(const char *version)
             visitdev = std::string(devdir);
         installDir = visitdev + "\\bin\\" + _VISIT_MSVC_VER + "\\Release";
     }
+    if (visitHome != 0)
+        free(visitHome);
     return installDir;
 #else
     // Get the installation dir for the version that's running. They all use
@@ -1425,6 +1436,10 @@ GetVisItInstallationDirectory(const char *version)
 //   Kathleen Bonnell, Fri Jul 20 10:48:21 PDT 2007 
 //   Removed MSVC6 specific code. 
 //
+//   Kathleen Bonnell, Tue Sep  2 08:20:15 PDT 2008 
+//   Regardless of return value from ReadKey, visithome may have been
+//   malloc'd and thus requires free. 
+//
 // ****************************************************************************
 
 std::string
@@ -1443,7 +1458,6 @@ GetVisItArchitectureDirectory(const char *version)
     if(ReadKey(version, "VISITHOME", &visitHome) == 1)
     {
         archDir = visitHome;
-        delete [] visitHome;
     }
     else
     {
@@ -1456,6 +1470,8 @@ GetVisItArchitectureDirectory(const char *version)
             visitdev = std::string(devdir);
         archDir = visitdev + "\\bin\\" + _VISIT_MSVC_VER + "\\Release";
     }
+    if (visitHome != 0)
+        free(visitHome);
     return archDir;
 #else
     // Get the installation dir for the version that's running. They all use
