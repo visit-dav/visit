@@ -44,8 +44,8 @@
 #include <cctype>
 #include <climits>
 #include <signal.h>
-#include <sys/wait.h>
 #if !defined(_WIN32)
+#include <sys/wait.h>
 #include <strings.h>
 #include <sys/types.h>   // for getpid()
 #include <unistd.h>      // for alarm()
