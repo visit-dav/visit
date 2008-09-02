@@ -401,6 +401,10 @@
 #     Hank Childs, Thu Aug 28 10:11:34 PDT 2008
 #     Make szip build on FC9.  (szip is required for HDF5.)
 #
+#     Hank Childs, Mon Sep  1 09:21:27 PDT 2008
+#     Move all patches to their own function.  (Purpose is to improve
+#     readability and maintainability.)
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -1962,37 +1966,9 @@ function check_variables
 #                          Function 3, build_mesa                             #
 # *************************************************************************** #
 
-function build_mesa
+function apply_mesa_642_patch
 {
-    #
-    # Unzip the file, provided a gzipped file exists.
-    #
-    if [[ -d ${MESA_DIR} ]] ; then
-       info_box "Found ${MESA_DIR} . . ." 1>&3
-    elif [[ -e ${MESA_FILE} ]] ; then
-       info_box "Unzipping/untarring ${MESA_FILE} . . ." 1>&3
-       uncompress_untar ${MESA_FILE}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar $MESA_FILE  Corrupted file or out of space on device?"
-          return 1
-       fi
-    elif [[ -e ${MESA_FILE%.gz} ]] ; then
-       info_box "Untarring ${MESA_FILE%.*} . . ." 1>&3
-       tar xf ${MESA_FILE%.*}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${MESA_FILE%.*}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-    
-    #
-    # Patching mesa.
-    #
-    if [[ ${MESA_VERSION} == 6.4.2 ]] ; then
-       info_box "Patching Mesa . . ." 1>&3
-       patch -p0 <<\EOF
+    patch -p0 <<\EOF
 diff -c Mesa-6.4.2.orig/configs/default Mesa-6.4.2/configs/default
 *** Mesa-6.4.2.orig/configs/default	Wed Feb  1 09:47:36 2006
 --- Mesa-6.4.2/configs/default	Wed May 23 16:43:22 2007
@@ -2109,13 +2085,17 @@ diff -c Mesa-6.4.2.orig/src/mesa/main/config.h Mesa-6.4.2/src/mesa/main/config.h
   /** Maxmimum size for CVA.  May be overridden by the drivers.  */
   #define MAX_ARRAY_LOCK_SIZE 3000
 EOF
-       if [[ $? != 0 ]] ; then
-           echo "Unable to patch Mesa. Wrong version?"
-           return 1
-       fi
-       if [[ "$OPSYS" == "Darwin" ]]; then
-           info_box "Patching Mesa for Darwin . . ." 1>&3
-           patch -p0 <<\EOF
+   if [[ $? != 0 ]] ; then
+       echo "Unable to apply generic 6.4.2 patch Mesa. Wrong version?"
+       return 1
+   fi
+
+   return 0
+}
+
+function apply_mesa_642_darwin_patch
+{
+   patch -p0 <<\EOF
 diff -p -r Mesa-6.4.2.orig/configs/darwin Mesa-6.4.2/configs/darwin
 *** Mesa-6.4.2.orig/configs/darwin	Wed Jun 29 19:34:07 2005
 --- Mesa-6.4.2/configs/darwin	Wed May 23 11:31:16 2007
@@ -2200,9 +2180,17 @@ diff -p -r Mesa-6.4.2.orig/src/mesa/sources Mesa-6.4.2/src/mesa/sources
   OSMESA_DRIVER_SOURCES = \
   	drivers/osmesa/osmesa.c
 EOF
-       elif [[ "$OPSYS" == "Linux" ]]; then
-           info_box "Patching Mesa for Linux . . ." 1>&3
-           patch -p0 <<\EOF
+   if [[ $? != 0 ]] ; then
+       echo "Unable to apply Darwin 6.4.2 patch Mesa. Wrong version?"
+       return 1
+   fi
+
+   return 0
+}
+
+function apply_mesa_642_linux_patch
+{
+   patch -p0 <<\EOF
 diff -c Mesa-6.4.2.orig/configs/linux Mesa-6.4.2/configs/linux
 *** Mesa-6.4.2.orig/configs/linux	Thu Feb  2 19:54:06 2006
 --- Mesa-6.4.2/configs/linux	Wed May 23 17:43:25 2007
@@ -2224,9 +2212,17 @@ diff -c Mesa-6.4.2.orig/configs/linux Mesa-6.4.2/configs/linux
   X11_INCLUDES = -I/usr/X11R6/include
   
 EOF
-       elif [[ "$OPSYS" == "AIX" ]]; then
-           info_box "Patching Mesa for AIX . . ." 1>&3
-           patch -p0 <<\EOF
+   if [[ $? != 0 ]] ; then
+       echo "Unable to apply Linux 6.4.2 patch Mesa. Wrong version?"
+       return 1
+   fi
+
+   return 0
+}
+
+function apply_mesa_642_aix_patch
+{
+   patch -p0 <<\EOF
 diff -c Mesa-6.4.2.orig/configs/aix Mesa-6.4.2/configs/aix
 *** Mesa-6.4.2.orig/configs/aix	Mon Sep 13 14:04:48 2004
 --- Mesa-6.4.2/configs/aix	Wed May 23 17:46:34 2007
@@ -2311,9 +2307,17 @@ diff -c Mesa-6.4.2.orig/src/mesa/swrast/s_tritemp.h Mesa-6.4.2/src/mesa/swrast/s
   
                  /*
 EOF
-       elif [[ "$OPSYS" == "SunOS" ]]; then
-           info_box "Patching Mesa . . ." 1>&3
-           patch -p0 <<\EOF
+   if [[ $? != 0 ]] ; then
+       echo "Unable to apply AIX 6.4.2 patch Mesa. Wrong version?"
+       return 1
+   fi
+
+   return 0
+}
+
+function apply_mesa_642_solaris_patch
+{
+   patch -p0 <<\EOF
 diff -p -r Mesa-6.4.2.orig/configs/solaris-x86-gcc Mesa-6.4.2/configs/solaris-x86-gcc
 *** Mesa-6.4.2.orig/configs/solaris-x86-gcc	Mon Sep 13 14:04:48 2004
 --- Mesa-6.4.2/configs/solaris-x86-gcc	Wed May 23 11:34:25 2007
@@ -2354,10 +2358,102 @@ diff -p -r Mesa-6.4.2.orig/configs/solaris-x86-gcc Mesa-6.4.2/configs/solaris-x8
   GLUT_LIB_NAME = libglut.a
   GLW_LIB_NAME = libGLw.a
 EOF
-       fi
+   if [[ $? != 0 ]] ; then
+       echo "Unable to apply Solaris 6.4.2 patch Mesa. Wrong version?"
+       return 1
+   fi
+
+   return 0
+}
+
+function apply_mesa_642_patch
+{
+   apply_mesa_642_patch
+   if [[ $? != 0 ]] ; then
+       return 1
+   fi
+   if [[ "$OPSYS" == "Darwin" ]]; then
+       info_box "Patching Mesa for Darwin . . ." 1>&3
+       apply_mesa_642_darwin_patch
        if [[ $? != 0 ]] ; then
-           echo "Unable to patch Mesa. Wrong version?"
            return 1
+       fi
+   elif [[ "$OPSYS" == "Linux" ]]; then
+       info_box "Patching Mesa for Linux . . ." 1>&3
+       apply_mesa_642_linux_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   elif [[ "$OPSYS" == "AIX" ]]; then
+       info_box "Patching Mesa for AIX . . ." 1>&3
+       apply_mesa_642_aix_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   elif [[ "$OPSYS" == "SunOS" ]]; then
+       info_box "Patching Mesa for Solaris . . ." 1>&3
+       apply_mesa_642_solaris_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function apply_mesa_patch
+{
+   info_box "Patching Mesa . . ." 1>&3
+   if [[ ${MESA_VERSION} == 6.4.2 ]] ; then
+      apply_mesa_642_patch
+   fi
+
+   return 0
+}
+
+
+function build_mesa
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    untarred_mesa=0
+    if [[ -d ${MESA_DIR} ]] ; then
+       info_box "Found ${MESA_DIR} . . ." 1>&3
+       untarred_mesa=0
+    elif [[ -e ${MESA_FILE} ]] ; then
+       info_box "Unzipping/untarring ${MESA_FILE} . . ." 1>&3
+       uncompress_untar ${MESA_FILE}
+       untarred_mesa=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $MESA_FILE  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -e ${MESA_FILE%.gz} ]] ; then
+       info_box "Untarring ${MESA_FILE%.*} . . ." 1>&3
+       tar xf ${MESA_FILE%.*}
+       untarred_mesa=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${MESA_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+    
+    #
+    # Patch mesa
+    #
+    apply_mesa_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_mesa == 1 ]] ; then
+          echo "Giving up on Mesa build because the patch failed."
+          return 1
+       else
+          echo "Patch failed, but continuing.  I believe that this script "
+          echo "tried to apply a patch to an existing directory which had "
+          echo "already been patched ... that is, that the patch is "
+          echo "failing harmlessly on a second application."
        fi
     fi
 
@@ -2455,41 +2551,9 @@ EOF
 #                          Function 4, build_qt                               #
 # *************************************************************************** #
 
-function build_qt
+function apply_qt_338_darwin_patch
 {
-    #
-    # Unzip the file, provided a gzipped file exists.
-    #
-    if [[ -d ${BV_QT_DIR} ]] ; then
-       info_box "Found ${BV_QT_DIR} . . ." 1>&3
-    elif [[ -e ${QT_FILE} ]] ; then
-       info_box "Unzipping/Untarring ${QT_FILE} . . ." 1>&3
-       uncompress_untar ${QT_FILE}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar $QT_FILE  Corrupted file or out of space on device?"
-          return 1
-       fi
-    elif [[ -e ${QT_FILE%.gz} ]] ; then
-       info_box "Untarring ${QT_FILE%.*} . . ." 1>&3
-       tar xf ${QT_FILE%.*}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${QT_FILE%.*}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-    echo "Done with untar"
-
-    # Patching
-    if [[ ${QT_VERSION} == 3.3.8 ]] ; then
-        #
-        # If we are running on MacOS X 10.5, patch Qt so that it compiles
-        #
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            VER=$(uname -r)
-            if (( ${VER%%.*} > 8 )) ; then
-                patch -p0 <<\EOF
+   patch -p0 <<\EOF
 diff -rp qt-mac-free-3.3.8/config.tests/mac/mac_version.test qt-mac-free-3.3.8.patched/config.tests/mac/mac_version.test
 *** qt-mac-free-3.3.8/config.tests/mac/mac_version.test	2004-04-23 09:40:40.000000000 -0700
 --- qt-mac-free-3.3.8.patched/config.tests/mac/mac_version.test	2007-11-16 16:08:27.000000000 -0800
@@ -2625,10 +2689,191 @@ diff -rp qt-mac-free-3.3.8/src/tools/qglobal.h qt-mac-free-3.3.8.patched/src/too
   #  endif
   #endif
 EOF
-            fi
-        fi
+   if [[ $? != 0 ]] ; then
+      echo "Qt patch for V3.3.8 on Darwin failed."
+      return 1
+   fi
+
+   return 0
+}
+
+function apply_qt_338_linux_gcc_x86_64_patch__after_configure
+{
+    #
+    # 64-bit Linux systems are often inconsistent about placing its X-libraries.
+    # Qt assumes that they are in the directory /usr/X11R6/lib64.  Some machines
+    # have them in /usr/X11R6/lib.  If they do, correct the qmake.conf file
+    # with this information.
+    #
+
+    # By placing in environment variable, it removes extraneously whitespace,
+    # making "cut" command easier to form.
+    OLDDIR=$PWD
+    cd $BV_QT_DIR
+    QT_X11DIR_TMP=$(cat mkspecs/${QT_PLATFORM}/qmake.conf | \
+    grep QMAKE_LIBDIR_X11)
+    QT_X11DIR=$(echo $QT_X11DIR_TMP | cut -d' ' -f3)
+    if [[ ! -d $QT_X11DIR ]] ; then
+       if [[ -d "/usr/X11R6/lib" ]] ; then
+          echo "Replacing Qt's X11 dir ($QT_X11DIR) with /usr/X11R6/lib"
+          # Convert all '/' to "\/" for later sed'ding
+          SED_STR1=$(echo $QT_X11DIR | sed 's/\//\\\//g')
+          cat mkspecs/${QT_PLATFORM}/qmake.conf | \
+          sed 's/'${SED_STR1}'/\/usr\/X11R6\/lib/g' > tmp.conf
+          mv -f mkspecs/${QT_PLATFORM}/qmake.conf \
+          mkspecs/${QT_PLATFORM}/qmake.conf.orig
+          mv -f tmp.conf mkspecs/${QT_PLATFORM}/qmake.conf
+       fi
     fi
+
+    # A couple of people, including myself, have run into a problem
+    # lately in which OpenGL libraries are installed in a place that
+    # Qt isn't expecting.  Qt compiles itself without OpenGL support,
+    # and that leads to linker problems during the visit build.
+    # 
+    # If you see libGL.so installed under /usr/lib64, and not in
+    # /usr/lib or /usr/X11R6/lib, then you have this problem, and
+    # can do this to fix it:
+
+    if [[ -e /usr/lib64/libGL.so ]] ; then
+       echo "Fixing OpenGLs path to /usr/lib64"
+       patch -p1 <<\EOF
+diff -rp qt-x11-free-3.3.8.orig/config.tests/x11/opengl.test qt-x11-free-3.3.8/config.tests/x11/opengl.test
+*** qt-x11-free-3.3.8.orig/config.tests/x11/opengl.test	Mon Jun 16 01:50:04 2003
+--- qt-x11-free-3.3.8/config.tests/x11/opengl.test	Fri Feb  8 15:20:03 2008
+*************** done
+*** 30,36 ****
+  LIBS=`sed -n -e '/^QMAKE_LIBS_OPENGL[	 ]*=/ { s/[^=]*=[	 ]*//; s/-l/ /g; p; }' $XCONFIG`
+  GLDIRS=`sed -n -e '/^QMAKE_LIBDIR_OPENGL[	 ]*=/ { s/[^=]*=[	 ]*//; p; }' $XCONFIG`
+  XDIRS=`sed -n -e '/^QMAKE_LIBDIR_X11[	 ]*=/ { s/[^=]*=[	 ]*//; p; }' $XCONFIG`
+! LIBDIRS="$IN_LIBDIRS $GLDIRS $XDIRS /usr/shlib /usr/lib /lib"
+  for L in $LIBS; do
+      FOUND_LIB=
+      F=
+--- 30,36 ----
+  LIBS=`sed -n -e '/^QMAKE_LIBS_OPENGL[	 ]*=/ { s/[^=]*=[	 ]*//; s/-l/ /g; p; }' $XCONFIG`
+  GLDIRS=`sed -n -e '/^QMAKE_LIBDIR_OPENGL[	 ]*=/ { s/[^=]*=[	 ]*//; p; }' $XCONFIG`
+  XDIRS=`sed -n -e '/^QMAKE_LIBDIR_X11[	 ]*=/ { s/[^=]*=[	 ]*//; p; }' $XCONFIG`
+! LIBDIRS="$IN_LIBDIRS $GLDIRS $XDIRS /usr/shlib /usr/lib64 /lib"
+  for L in $LIBS; do
+      FOUND_LIB=
+      F=
+EOF
+      if [[ $? != 0 ]] ; then
+         echo "Qt patch for V3.3.8 on Linux x86_64/gcc failed."
+         cd $OLDDIR
+         return 1
+      fi
+   fi
+   cd $OLDDIR
+
+   return 0
+}
+
+function apply_qt_338_patch
+{
+   if [[ "$OPSYS" == "Darwin" ]]; then
+       VER=$(uname -r)
+       if (( ${VER%%.*} > 8 )) ; then
+           apply_qt_338_darwin_patch
+           if [[ $? != 0 ]] ; then
+               return 1
+           fi
+       fi
+   elif [[ "$QT_PLATFORM" == "linux-g++-64" ]] ; then
+       #apply_qt_338_linux_gcc_x86_64_patch
+       echo "Applying linux patch after running configure the first time"
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function apply_qt_patch
+{
+   if [[ ${QT_VERSION} == 3.3.8 ]] ; then
+       apply_qt_338_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+}
+
+function apply_qt_patch_after_first_configure
+{
+   if [[ "$QT_PLATFORM" == "linux-g++-64" ]] ; then
+       apply_qt_338_linux_gcc_x86_64_patch__after_configure
+   fi
+   OLDDIR=$PWD
+   cd ${BV_QT_DIR}
+   if [[ "$HAS_THREAD" != "" ]] ; then
+      cat mkspecs/${QT_PLATFORM}/qmake.conf | sed 's/qt-mt/qt/g' > tmp.conf
+      mv -f mkspecs/${QT_PLATFORM}/qmake.conf \
+      mkspecs/${QT_PLATFORM}/qmake.conf.orig2
+      mv -f tmp.conf mkspecs/${QT_PLATFORM}/qmake.conf
+   fi
+
+   if [[ "$DO_DEBUG" == "yes" ]]; then
+      cat mkspecs/${QT_PLATFORM}/qmake.conf | \
+      sed '/^QMAKE_CFLAGS_RELEASE/s/$/ -g/' > tmp.conf
+      mv -f mkspecs/${QT_PLATFORM}/qmake.conf \
+      mkspecs/${QT_PLATFORM}/qmake.conf.orig
+      mv -f tmp.conf mkspecs/${QT_PLATFORM}/qmake.conf
+   fi
+   cd $OLDDIR
+
+   return 0
+}
  
+function build_qt
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    untarred_qt=0
+    if [[ -d ${BV_QT_DIR} ]] ; then
+       info_box "Found ${BV_QT_DIR} . . ." 1>&3
+       untarred_qt=0
+    elif [[ -e ${QT_FILE} ]] ; then
+       info_box "Unzipping/Untarring ${QT_FILE} . . ." 1>&3
+       uncompress_untar ${QT_FILE}
+       untarred_qt=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $QT_FILE  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -e ${QT_FILE%.gz} ]] ; then
+       info_box "Untarring ${QT_FILE%.*} . . ." 1>&3
+       tar xf ${QT_FILE%.*}
+       untarred_qt=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${QT_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+    echo "Done with untar"
+
+    #
+    # Patch Qt
+    #
+    info_box "Patching Qt . . ." 1>&3
+    apply_qt_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_qt == 1 ]] ; then
+          echo "Giving up on Qt build because the patch failed."
+          return 1
+       else
+          echo "Patch failed, but continuing.  I believe that this script "
+          echo "tried to apply a patch to an existing directory which had "
+          echo "already been patched ... that is, that the patch is "
+          echo "failing harmlessly on a second application."
+       fi
+    fi
+
     #
     # Set up environment variables for Qt.
     #
@@ -2654,81 +2899,7 @@ EOF
        echo "Not adding threading"
     fi
 
-    #
-    # 64-bit Linux systems are often inconsistent about placing its X-libraries.
-    # Qt assumes that they are in the directory /usr/X11R6/lib64.  Some machines
-    # have them in /usr/X11R6/lib.  If they do, correct the qmake.conf file
-    # with this information.
-    #
-    if [[ "$QT_PLATFORM" == "linux-g++-64" ]] ; then
-       # By placing in environment variable, it removes extraneously whitespace,
-       # making "cut" command easier to form.
-       QT_X11DIR_TMP=$(cat mkspecs/${QT_PLATFORM}/qmake.conf | \
-       grep QMAKE_LIBDIR_X11)
-       QT_X11DIR=$(echo $QT_X11DIR_TMP | cut -d' ' -f3)
-       if [[ ! -d $QT_X11DIR ]] ; then
-          if [[ -d "/usr/X11R6/lib" ]] ; then
-             echo "Replacing Qt's X11 dir ($QT_X11DIR) with /usr/X11R6/lib"
-             # Convert all '/' to "\/" for later sed'ding
-             SED_STR1=$(echo $QT_X11DIR | sed 's/\//\\\//g')
-             cat mkspecs/${QT_PLATFORM}/qmake.conf | \
-             sed 's/'${SED_STR1}'/\/usr\/X11R6\/lib/g' > tmp.conf
-             mv -f mkspecs/${QT_PLATFORM}/qmake.conf \
-             mkspecs/${QT_PLATFORM}/qmake.conf.orig
-             mv -f tmp.conf mkspecs/${QT_PLATFORM}/qmake.conf
-          fi
-       fi
-    fi
-    # A couple of people, including myself, have run into a problem
-    # lately in which OpenGL libraries are installed in a place that
-    # Qt isn't expecting.  Qt compiles itself without OpenGL support,
-    # and that leads to linker problems during the visit build.
-    # 
-    # If you see libGL.so installed under /usr/lib64, and not in
-    # /usr/lib or /usr/X11R6/lib, then you have this problem, and
-    # can do this to fix it:
-    if [[ "$QT_PLATFORM" == "linux-g++-64" ]] ; then
-       if [[ -e /usr/lib64/libGL.so ]] ; then
-          echo "Fixing OpenGLs path to /usr/lib64"
-          patch -p1 <<\EOF
-diff -rp qt-x11-free-3.3.8.orig/config.tests/x11/opengl.test qt-x11-free-3.3.8/config.tests/x11/opengl.test
-*** qt-x11-free-3.3.8.orig/config.tests/x11/opengl.test	Mon Jun 16 01:50:04 2003
---- qt-x11-free-3.3.8/config.tests/x11/opengl.test	Fri Feb  8 15:20:03 2008
-*************** done
-*** 30,36 ****
-  LIBS=`sed -n -e '/^QMAKE_LIBS_OPENGL[	 ]*=/ { s/[^=]*=[	 ]*//; s/-l/ /g; p; }' $XCONFIG`
-  GLDIRS=`sed -n -e '/^QMAKE_LIBDIR_OPENGL[	 ]*=/ { s/[^=]*=[	 ]*//; p; }' $XCONFIG`
-  XDIRS=`sed -n -e '/^QMAKE_LIBDIR_X11[	 ]*=/ { s/[^=]*=[	 ]*//; p; }' $XCONFIG`
-! LIBDIRS="$IN_LIBDIRS $GLDIRS $XDIRS /usr/shlib /usr/lib /lib"
-  for L in $LIBS; do
-      FOUND_LIB=
-      F=
---- 30,36 ----
-  LIBS=`sed -n -e '/^QMAKE_LIBS_OPENGL[	 ]*=/ { s/[^=]*=[	 ]*//; s/-l/ /g; p; }' $XCONFIG`
-  GLDIRS=`sed -n -e '/^QMAKE_LIBDIR_OPENGL[	 ]*=/ { s/[^=]*=[	 ]*//; p; }' $XCONFIG`
-  XDIRS=`sed -n -e '/^QMAKE_LIBDIR_X11[	 ]*=/ { s/[^=]*=[	 ]*//; p; }' $XCONFIG`
-! LIBDIRS="$IN_LIBDIRS $GLDIRS $XDIRS /usr/shlib /usr/lib64 /lib"
-  for L in $LIBS; do
-      FOUND_LIB=
-      F=
-EOF
-       fi
-    fi
-
-    if [[ "$HAS_THREAD" != "" ]] ; then
-       cat mkspecs/${QT_PLATFORM}/qmake.conf | sed 's/qt-mt/qt/g' > tmp.conf
-       mv -f mkspecs/${QT_PLATFORM}/qmake.conf \
-       mkspecs/${QT_PLATFORM}/qmake.conf.orig2
-       mv -f tmp.conf mkspecs/${QT_PLATFORM}/qmake.conf
-    fi
-
-    if [[ "$DO_DEBUG" == "yes" ]]; then
-       cat mkspecs/${QT_PLATFORM}/qmake.conf | \
-       sed '/^QMAKE_CFLAGS_RELEASE/s/$/ -g/' > tmp.conf
-       mv -f mkspecs/${QT_PLATFORM}/qmake.conf \
-       mkspecs/${QT_PLATFORM}/qmake.conf.orig
-       mv -f tmp.conf mkspecs/${QT_PLATFORM}/qmake.conf
-    fi
+    apply_qt_patch_after_first_configure
 
     #
     # Call configure
@@ -2845,38 +3016,9 @@ VisIt needs Qt with enabled OpenGL support. Giving up."
 #                          Function 5, build_cmake                            #
 # *************************************************************************** #
 
-function build_cmake
+function apply_cmake_245_aix_patch
 {
-    #
-    # Unzip the file, provided a gzipped file exists.
-    #
-    if [[ -d ${CMAKE_DIR} ]] ; then
-       info_box "Found ${CMAKE_DIR} . . ." 1>&3
-    elif [[ -f ${CMAKE_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${CMAKE_FILE} . . ." 1>&3
-       uncompress_untar ${CMAKE_FILE}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar $CMAKE_FILE  Corrupted file or out of space on device?"
-          return 1
-       fi
-    elif [[ -f ${CMAKE_FILE%.*} ]] ; then
-       info_box "Tarring ${CMAKE_FILE%.*} . . ." 1>&3
-       tar xf ${CMAKE_FILE%.*}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${CMAKE_FILE%.*}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-
-    #
-    # Patching cmake.
-    #
-    if [[ ${CMAKE_VERSION} == 2.4.5 ]] ; then
-        if [[ "$OPSYS" == "AIX" ]]; then
-            info_box "Patching cmake . . ." 1>&3
-            patch -p0 <<\EOF
+   patch -p0 <<\EOF
 diff -c cmake-2.4.5.orig/Utilities/cmzlib/zconf.h cmake-2.4.5/Utilities/cmzlib/zconf.h
 *** cmake-2.4.5.orig/Utilities/cmzlib/zconf.h	Mon Dec  4 08:04:11 2006
 --- cmake-2.4.5/Utilities/cmzlib/zconf.h	Mon May 21 15:59:54 2007
@@ -2896,11 +3038,82 @@ diff -c cmake-2.4.5.orig/Utilities/cmzlib/zconf.h cmake-2.4.5/Utilities/cmzlib/z
   #  define NO_DUMMY_DECL
 --- 89,94 ----
 EOF
-            if [[ $? != 0 ]] ; then
-                echo "Unable to patch cmake. Wrong version?"
-                return 1
-            fi
-        fi
+   if [[ $? != 0 ]] ; then
+      echo "CMake patch for V2.4.5 on AIX failed."
+      return 1
+   fi
+
+   return 0
+}
+
+function apply_cmake_245_patch
+{
+   if [[ "$OPSYS" == "AIX" ]]; then
+       apply_cmake_245_aix_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function apply_cmake_patch
+{
+   if [[ ${CMAKE_VERSION} == 2.4.5 ]] ; then
+       apply_cmake_245_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function build_cmake
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    untarred_cmake=0
+    if [[ -d ${CMAKE_DIR} ]] ; then
+       info_box "Found ${CMAKE_DIR} . . ." 1>&3
+       untarred_cmake=0
+    elif [[ -f ${CMAKE_FILE} ]] ; then
+       info_box "Unzipping/Tarring ${CMAKE_FILE} . . ." 1>&3
+       uncompress_untar ${CMAKE_FILE}
+       untarred_cmake=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $CMAKE_FILE  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${CMAKE_FILE%.*} ]] ; then
+       info_box "Tarring ${CMAKE_FILE%.*} . . ." 1>&3
+       tar xf ${CMAKE_FILE%.*}
+       untarred_cmake=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${CMAKE_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    # Patching cmake.
+    #
+    info_box "Patching cmake . . ." 1>&3
+    apply_cmake_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_cmake == 1 ]] ; then
+          echo "Giving up on CMake build because the patch failed."
+          return 1
+       else
+          echo "Patch failed, but continuing.  I believe that this script "
+          echo "tried to apply a patch to an existing directory which had "
+          echo "already been patched ... that is, that the patch is "
+          echo "failing harmlessly on a second application."
+       fi
     fi
 
     #
@@ -2951,51 +3164,9 @@ EOF
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
 
-function build_vtk
+function apply_vtk_500c_generic_patch_1
 {
-    #
-    # CMake is the build system for VTK.  Call another script that will build
-    # that program.
-    #
-    CMAKE_INSTALL="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
-    if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
-       echo "cmake found"
-    else
-       build_cmake
-       if [[ $? != 0 ]] ; then
-          echo "Unable to build cmake.  Giving up"
-          return 1
-       fi
-    fi
-    
-    #
-    # Unzip the file, provided a gzipped file exists.
-    #
-    if [[ -d ${VTK_DIR} ]] ; then
-       info_box "Found ${VTK_DIR} . . ." 1>&3
-    elif [[ -f ${VTK_FILE} ]] ; then
-       info_box "Unzipping/Untarring ${VTK_FILE} . . ." 1>&3
-       uncompress_untar ${VTK_FILE}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar $VTK_FILE  Corrupted file or out of space on device?"
-          return 1
-       fi
-    elif [[ -f ${VTK_FILE%.*} ]] ; then
-       info_box "Untarring ${VTK_FILE%.*} . . ." 1>&3
-       tar xf ${VTK_FILE%.*}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${VTK_FILE%.*}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-
-    #
-    # Apply patches
-    #
-    if [[ ${VTK_VERSION} == 5.0.0c ]] ; then
-        patch -p0 << \EOF
+  patch -p0 << \EOF
 diff -rp VTK/Utilities/DICOMParser/DICOMParser.cxx.orig VTK/Utilities/DICOMParser/DICOMParser.cxx
 --- VTK/Utilities/DICOMParser/DICOMParser.cxx.orig        2008-08-18 11:31:49.000000000 -0600
 +++ VTK/Utilities/DICOMParser/DICOMParser.cxx     2008-08-18 11:33:17.000000000 -0600
@@ -3008,11 +3179,17 @@ diff -rp VTK/Utilities/DICOMParser/DICOMParser.cxx.orig VTK/Utilities/DICOMParse
 
  #include "DICOMConfig.h"
 EOF
-        if [[ $? != 0 ]] ; then
-           echo "Unable to patch VTK. Wrong version?"
-           return 1
-        fi
-        patch -p0 << \EOF
+  if [[ $? != 0 ]] ; then
+     echo "Unable to patch VTK. Wrong version?"
+     return 1
+  fi
+
+  return 0
+}
+
+function apply_vtk_500c_generic_patch_2
+{
+   patch -p0 << \EOF
 --- VTK/Utilities/DICOMParser/DICOMAppHelper.cxx.orig   2008-08-18 12:13:40.000000000 -0600
 +++ VTK/Utilities/DICOMParser/DICOMAppHelper.cxx        2008-08-18 12:14:03.000000000 -0600
 @@ -32,6 +32,7 @@
@@ -3023,11 +3200,15 @@ EOF
  #include <math.h>
  #include <algorithm>
 EOF
-        if [[ $? != 0 ]] ; then
-           echo "Unable to patch VTK. Wrong version?"
-           return 1
-        fi
-        patch -p0 << \EOF
+   if [[ $? != 0 ]] ; then
+      echo "Unable to patch VTK. Wrong version?"
+      return 1
+   fi
+}
+
+function apply_vtk_500c_generic_patch_3
+{
+   patch -p0 << \EOF
 --- VTK/Utilities/DICOMParser/DICOMFile.cxx.orig        2008-08-18 12:14:23.000000000 -0600
 +++ VTK/Utilities/DICOMParser/DICOMFile.cxx     2008-08-18 12:13:13.000000000 -0600
 @@ -24,6 +24,7 @@
@@ -3039,13 +3220,15 @@ EOF
  #include "DICOMConfig.h"
  #include "DICOMFile.h"
 EOF
-        if [[ $? != 0 ]] ; then
-           echo "Unable to patch VTK. Wrong version?"
-           return 1
-        fi
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            info_box "Patching VTK . . ." 1>&3
-            patch -p0 << \EOF
+    if [[ $? != 0 ]] ; then
+       echo "Unable to patch VTK. Wrong version?"
+       return 1
+    fi
+}
+
+function apply_vtk_500c_darwin_patch
+{
+   patch -p0 << \EOF
 diff -rp VTK.orig/CMakeLists.txt VTK/CMakeLists.txt
 *** VTK.orig/CMakeLists.txt     Mon Mar 26 14:28:51 2007
 --- VTK/CMakeLists.txt  Wed Apr 25 15:41:25 2007
@@ -3171,17 +3354,15 @@ diff -rp VTK.orig/Utilities/ftgl/CMakeLists.txt VTK/Utilities/ftgl/CMakeLists.tx
   #
   # We obviously need FreeType
 EOF
-           if [[ $? != 0 ]] ; then
-              echo "Unable to patch VTK. Wrong version?"
-              return 1
-           fi
-        fi
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            # Check for version 6.x.x (MacOS 10.2, Jaguar)
-            VER=$(uname -r)
-            if (( ${VER%%.*} < 7 )) ; then
-               info_box "Patching VTK . . ." 1>&3
-               patch -p0 << \EOF
+   if [[ $? != 0 ]] ; then
+      echo "VTK patch for V5.0.0c and Darwin failed."
+      return 1
+   fi
+
+   # Check for version 6.x.x (MacOS 10.2, Jaguar)
+   VER=$(uname -r)
+   if (( ${VER%%.*} < 7 )) ; then
+       patch -p0 << \EOF
 diff -rp VTK.orig/Rendering/vtkCarbonRenderWindow.cxx VTK/Rendering/vtkCarbonRenderWindow.cxx
 *** VTK.orig/Rendering/vtkCarbonRenderWindow.cxx      Wed Aug 31 11:39:33 2005
 --- VTK/Rendering/vtkCarbonRenderWindow.cxx   Wed Aug 15 17:57:10 2007
@@ -3247,12 +3428,119 @@ diff -rp VTK.orig/Rendering/vtkCarbonRenderWindow.cxx VTK/Rendering/vtkCarbonRen
           case kEventControlBoundsChanged:
             vtk_win->UpdateGLRegion();
 EOF
-              if [[ $? != 0 ]] ; then
-                 echo "Unable to patch VTK. Wrong version?"
-                 return 1
-              fi
-           fi
-        fi
+     if [[ $? != 0 ]] ; then
+        echo "Unable to patch VTK. Wrong version?"
+        return 1
+     fi
+   fi
+
+   return 0
+}
+
+function apply_vtk_500c_generic_patches
+{
+   apply_vtk_500c_generic_patch_1
+   if [[ $? != 0 ]] ; then
+       return 1
+   fi
+   apply_vtk_500c_generic_patch_2
+   if [[ $? != 0 ]] ; then
+       return 1
+   fi
+   apply_vtk_500c_generic_patch_3
+   if [[ $? != 0 ]] ; then
+       return 1
+   fi
+}
+
+function apply_vtk_500c_patch
+{
+   apply_vtk_500c_generic_patches
+   if [[ $? != 0 ]] ; then
+       return 1
+   fi
+
+   if [[ "$OPSYS" == "Darwin" ]]; then
+       apply_vtk_500c_darwin_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function apply_vtk_patch
+{
+   if [[ ${VTK_VERSION} == 5.0.0c ]] ; then
+       apply_vtk_500c_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function build_vtk
+{
+    #
+    # CMake is the build system for VTK.  Call another script that will build
+    # that program.
+    #
+    CMAKE_INSTALL="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
+    if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
+       echo "cmake found"
+    else
+       build_cmake
+       if [[ $? != 0 ]] ; then
+          echo "Unable to build cmake.  Giving up"
+          return 1
+       fi
+    fi
+    
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    untarred_vtk=0
+    if [[ -d ${VTK_DIR} ]] ; then
+       info_box "Found ${VTK_DIR} . . ." 1>&3
+       untarred_vtk=0
+    elif [[ -f ${VTK_FILE} ]] ; then
+       info_box "Unzipping/Untarring ${VTK_FILE} . . ." 1>&3
+       uncompress_untar ${VTK_FILE}
+       untarred_vtk=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $VTK_FILE  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${VTK_FILE%.*} ]] ; then
+       info_box "Untarring ${VTK_FILE%.*} . . ." 1>&3
+       tar xf ${VTK_FILE%.*}
+       untarred_vtk=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${VTK_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    # Apply patches
+    #
+    info_box "Patching vtk . . ." 1>&3
+    apply_vtk_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_vtk == 1 ]] ; then
+          echo "Giving up on VTK build because the patch failed."
+          return 1
+       else
+          echo "Patch failed, but continuing.  I believe that this script "
+          echo "tried to apply a patch to an existing directory which had "
+          echo "already been patched ... that is, that the patch is "
+          echo "failing harmlessly on a second application."
+       fi
     fi
 
     #
@@ -3480,29 +3768,12 @@ EOF
 #                         Function 7, build_python                            #
 # *************************************************************************** #
 
-function build_python
+function apply_python_25_darwin_patch
 {
-    #
-    # Untar the file.
-    #
-    if [[ -d ${PYTHON_DIR} ]] ; then
-       info_box "Found ${PYTHON_DIR} . . ." 1>&3
-    else
-       info_box "Extracting Python source . . ." 1>&3
-       uncompress_untar ${PYTHON_FILE}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar $PYTHON_FILE.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-    if [[ $PYTHON__VERSION} == 2.5 ]] ; then
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            # Check for version >= 7.0.0 (MacOS 10.3, Panther)
-            VER=$(uname -r)
-            if (( ${VER%%.*} < 7 )) ; then
-               info_box "Patching Python . . ." 1>&3
-               patch -p0 << \EOF
+   # Check for version >= 7.0.0 (MacOS 10.3, Panther)
+   VER=$(uname -r)
+   if (( ${VER%%.*} < 7 )) ; then
+      patch -p0 << \EOF
 diff -rp Python-2.5.orig/Modules/getpath.c Python-2.5/Modules/getpath.c
 *** Python-2.5.orig/Modules/getpath.c Sun Jul  9 18:18:57 2006
 --- Python-2.5/Modules/getpath.c      Wed Aug 15 18:25:14 2007
@@ -3517,12 +3788,74 @@ diff -rp Python-2.5.orig/Modules/getpath.c Python-2.5/Modules/getpath.c
   #include <string.h>
   
 EOF
-              if [[ $? != 0 ]] ; then
-                 echo "Unable to patch Python. Wrong version?"
-                 return 1
-              fi
-           fi
-        fi
+      if [[ $? != 0 ]] ; then
+         echo "Python patch for V2.5 on Darwin failed."
+         return 1
+      fi
+   fi
+
+   return 0
+}
+
+function apply_python_25_patch
+{
+   if [[ "$OPSYS" == "Darwin" ]]; then
+       apply_python_25_darwin_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function apply_python_patch
+{
+   if [[ $PYTHON__VERSION} == 2.5 ]] ; then
+       apply_python_25_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function build_python
+{
+    #
+    # Untar the file.
+    #
+    untarred_python=0
+    if [[ -d ${PYTHON_DIR} ]] ; then
+       info_box "Found ${PYTHON_DIR} . . ." 1>&3
+       untarred_python=0
+    else
+       info_box "Extracting Python source . . ." 1>&3
+       uncompress_untar ${PYTHON_FILE}
+       untarred_python=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $PYTHON_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    # Apply patches
+    #
+    info_box "Patching python . . ." 1>&3
+    apply_python_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_python == 1 ]] ; then
+          echo "Giving up on Python build because the patch failed."
+          return 1
+       else
+          echo "Patch failed, but continuing.  I believe that this script "
+          echo "tried to apply a patch to an existing directory which had "
+          echo "already been patched ... that is, that the patch is "
+          echo "failing harmlessly on a second application."
+       fi
     fi
 
     #
@@ -3659,31 +3992,8 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
 #                            Function 8, build_silo                           #
 # *************************************************************************** #
 
-function build_silo
+function apply_generic_silo_patch
 {
-    #
-    # Unzip the file, provided a gzipped file exists.
-    #
-    if [[ -d ${SILO_DIR} ]] ; then
-       info_box "Found ${SILO_DIR} . . ." 1>&3
-    elif [[ -f ${SILO_FILE} ]] ; then
-       info_box "Unzipping/Untarring ${SILO_FILE} . . ." 1>&3
-       uncompress_untar ${SILO_FILE}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar $SILO_FILE  Corrupted file or out of space on device?"
-          return 1
-       fi
-    elif [[ -f ${SILO_FILE%.gz} ]] ; then
-       info_box "Untarring ${SILO_FILE%.gz} . . ." 1>&3
-       tar xf ${SILO_FILE%.*}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${SILO_FILE%.*}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-
     # THESE PATCHES SHOULD BE REMOVED WHEN SILO IS PATCHED.
     patch -p0 << \EOF
 --- silo-4.6.1/tools/silex/SiloArrayView.cpp.orig       2008-08-18 12:37:47.000000000 -0600
@@ -3733,7 +4043,62 @@ EOF
        echo "Unable to patch Silo. Wrong version?"
        return 1
     fi
-    # END PATCHES
+
+   return 0
+}
+
+function apply_silo_patch
+{
+   apply_generic_silo_patch
+   if [[ $? != 0 ]] ; then
+       return 1
+   fi
+
+   return 0
+}
+
+function build_silo
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    untarred_silo=0
+    if [[ -d ${SILO_DIR} ]] ; then
+       info_box "Found ${SILO_DIR} . . ." 1>&3
+       untarred_silo=0
+    elif [[ -f ${SILO_FILE} ]] ; then
+       info_box "Unzipping/Untarring ${SILO_FILE} . . ." 1>&3
+       uncompress_untar ${SILO_FILE}
+       untarred_silo=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $SILO_FILE  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${SILO_FILE%.gz} ]] ; then
+       info_box "Untarring ${SILO_FILE%.gz} . . ." 1>&3
+       tar xf ${SILO_FILE%.*}
+       untarred_silo=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${SILO_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    # Apply patches
+    #
+    info_box "Patching Silo . . ." 1>&3
+    apply_silo_patch
+    if [[ $? != 0 ]] ; then
+       echo "Patch failed, but continuing.  I believe that this script "
+       echo "tried to apply a patch to an existing directory which had "
+       echo "already been patched ... that is, that the patch is "
+       echo "failing harmlessly on a second application."
+       echo "*OR* this is the wrong Silo version, so the patch may not be "
+       echo "necessary."
+    fi
 
     #
     # Call configure
@@ -4096,38 +4461,9 @@ function build_hdf5
 #                          Function 8.2, build_mili                           #
 # *************************************************************************** #
 
-function build_mili
+function apply_mili_110_darwin_patch
 {
-    #
-    # Unzip the file, provided a gzipped file exists.
-    #
-    if [[ -d ${BV_MILI_DIR} ]] ; then
-       info_box "Found ${BV_MILI_DIR} . . ." 1>&3
-    elif [[ -f ${MILI_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${MILI_FILE} . . ." 1>&3
-       uncompress_untar ${MILI_FILE}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${MILI_FILE}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    elif [[ -f ${MILI_FILE%.*} ]] ; then
-       info_box "Tarring ${MILI_FILE%.*} . . ." 1>&3
-       tar xf ${MILI_FILE%.*}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${MILI_FILE%.*}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-
-    #
-    # Apply patches
-    #
-    if [[ ${MILI_VERSION} == 1.10.0 ]] ; then
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            info_box "Patching Mili . . ." 1>&3
-            patch -p0 << \EOF
+   patch -p0 << \EOF
 diff -rp mili.orig/src/mili_internal.h mili/src/mili_internal.h
 *** mili.orig/src/mili_internal.h       Thu Oct 12 14:31:40 2006
 --- mili/src/mili_internal.h    Thu Mar 22 16:39:39 2007
@@ -4142,10 +4478,81 @@ diff -rp mili.orig/src/mili_internal.h mili/src/mili_internal.h
   #include "misc.h"
   #include "mili.h"
 EOF
-          if [[ $? != 0 ]] ; then
-             echo "Unable to patch Mili. Wrong version?"
-             return 1
-          fi
+   if [[ $? != 0 ]] ; then
+      echo "Mili patch for V1.10 on Darwin failed."
+      return 1
+   fi
+
+   return 0
+}
+
+function apply_mili_110_patch
+{
+   if [[ "$OPSYS" == "Darwin" ]]; then
+       apply_mili_110_darwin_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function apply_mili_patch
+{
+   if [[ ${MILI_VERSION} == 1.10.0 ]] ; then
+       apply_mili_110_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function build_mili
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    untarred_mili=0
+    if [[ -d ${BV_MILI_DIR} ]] ; then
+       info_box "Found ${BV_MILI_DIR} . . ." 1>&3
+       untarred_mili=0
+    elif [[ -f ${MILI_FILE} ]] ; then
+       info_box "Unzipping/Tarring ${MILI_FILE} . . ." 1>&3
+       uncompress_untar ${MILI_FILE}
+       untarred_mili=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${MILI_FILE}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${MILI_FILE%.*} ]] ; then
+       info_box "Tarring ${MILI_FILE%.*} . . ." 1>&3
+       tar xf ${MILI_FILE%.*}
+       untarred_mili=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${MILI_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    # Apply patches
+    #
+    info_box "Patching mili . . ." 1>&3
+    apply_mili_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_mili == 1 ]] ; then
+          echo "Giving up on Mili build because the patch failed."
+          return 1
+       else
+          echo "Patch failed, but continuing.  I believe that this script "
+          echo "tried to apply a patch to an existing directory which had "
+          echo "already been patched ... that is, that the patch is "
+          echo "failing harmlessly on a second application."
        fi
     fi
 
@@ -4225,38 +4632,9 @@ EOF
 #                          Function 8.3, build_hdf4                           #
 # *************************************************************************** #
 
-function build_hdf4
+function apply_hdf4_421_darwin_patch
 {
-    #
-    # Unzip the file, provided a gzipped file exists.
-    #
-    if [[ -d ${HDF4_DIR} ]] ; then
-       info_box "Found ${HDF4_DIR} . . ." 1>&3
-    elif [[ -f ${HDF4_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${HDF4_FILE} . . ." 1>&3
-       uncompress_untar ${HDF4_FILE}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${HDF4_FILE}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    elif [[ -f ${HDF4_FILE%.*} ]] ; then
-       info_box "Tarring ${HDF4_FILE%.*} . . ." 1>&3
-       tar xf ${HDF4_FILE%.*}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${HDF4_FILE%.*}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-
-    #
-    # Apply patches
-    #
-    if [[ ${HDF4_VERSION} == 4.2.1 ]] ; then
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            info_box "Patching HDF4 . . ." 1>&3
-            patch -p0 << \EOF
+   patch -p0 << \EOF
 *** HDF4.2r1.orig/configure	Tue Feb  8 10:29:27 2005
 --- HDF4.2r1/configure	Thu Apr 26 13:30:56 2007
 *************** done
@@ -5093,14 +5471,82 @@ function build_hdf4
   #if defined _M_ALPHA || defined _M_IX86 || defined INTEL86 || defined M_I86 || defined M_I386 || defined DOS386 || defined __i386 || defined UNIX386 || defined i386
   #ifndef INTEL86
 EOF
-           if [[ $? != 0 ]] ; then
-              echo "Unable to patch HDF4. Wrong version?"
-              return 1
-           fi
-        fi
+   if [[ $? != 0 ]] ; then
+      echo "Unable to patch HDF4. Wrong version?"
+      return 1
+   fi
+}
+
+function apply_hdf4_421_patch
+{
+   if [[ "$OPSYS" == "Darwin" ]]; then
+       apply_hdf4_421_darwin_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function apply_hdf4_patch
+{
+   if [[ ${HDF4_VERSION} == 4.2.1 ]] ; then
+       apply_hdf4_421_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function build_hdf4
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    untarred_hdf4=0
+    if [[ -d ${HDF4_DIR} ]] ; then
+       info_box "Found ${HDF4_DIR} . . ." 1>&3
+       untarred_hdf4=0
+    elif [[ -f ${HDF4_FILE} ]] ; then
+       info_box "Unzipping/Tarring ${HDF4_FILE} . . ." 1>&3
+       uncompress_untar ${HDF4_FILE}
+       untarred_hdf4=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${HDF4_FILE}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${HDF4_FILE%.*} ]] ; then
+       info_box "Tarring ${HDF4_FILE%.*} . . ." 1>&3
+       tar xf ${HDF4_FILE%.*}
+       untarred_hdf4=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${HDF4_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
     fi
 
     #
+    # Apply patches
+    #
+    info_box "Patching HDF . . ." 1>&3
+    apply_hdf4_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_hdf4 == 1 ]] ; then
+          echo "Giving up on HDF4 build because the patch failed."
+          return 1
+       else
+          echo "Patch failed, but continuing.  I believe that this script "
+          echo "tried to apply a patch to an existing directory which had "
+          echo "already been patched ... that is, that the patch is "
+          echo "failing harmlessly on a second application."
+       fi
+    fi
+
     info_box "Configuring HDF4 . . ." 1>&3
     cd ${HDF4_DIR}
     echo "Invoking command to configure HDF4"
@@ -5210,37 +5656,9 @@ EOF
 #                         Function 8.4, build_netcdf                          #
 # *************************************************************************** #
 
-function build_netcdf
+function apply_netcdf_360_patch
 {
-    #
-    # Unzip the file, provided a gzipped file exists.
-    #
-    if [[ -d ${NETCDF_DIR} ]] ; then
-       info_box "Found ${NETCDF_DIR} . . ." 1>&3
-    elif [[ -f ${NETCDF_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${NETCDF_FILE} . . ." 1>&3
-       uncompress_untar ${NETCDF_FILE}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${NETCDF_FILE}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    elif [[ -f ${NETCDF_FILE%.*} ]] ; then
-       info_box "Tarring ${NETCDF_FILE%.*} . . ." 1>&3
-       tar xf ${NETCDF_FILE%.*}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${NETCDF_FILE%.*}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-
-    #
-    # Apply patches
-    #
-    if [[ ${NETCDF_VERSION} == 3.6.0 ]] ; then
-        info_box "Patching NetCDF . . ." 1>&3
-        patch -p0 << \EOF
+  patch -p0 << \EOF
 *** netcdf-3.6.0-p1.orig/src/libsrc/netcdf.h	Tue Sep 14 06:41:22 2004
 --- netcdf-3.6.0-p1/src/libsrc/netcdf.h	Thu Apr 26 14:14:41 2007
 *************** typedef enum {
@@ -5269,13 +5687,72 @@ function build_netcdf
   
   /*
 EOF
-        if [[ $? != 0 ]] ; then
-            echo "Unable to patch NetCDF. Wrong version?"
-            return 1
-        fi
+  if [[ $? != 0 ]] ; then
+      echo "Unable to patch NetCDF. Wrong version?"
+      return 1
+  fi
+
+  return 0
+}
+
+function apply_netcdf_patch
+{
+   if [[ ${NETCDF_VERSION} == 3.6.0 ]] ; then
+       apply_netcdf_360_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function build_netcdf
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    untarred_netcdf=0
+    if [[ -d ${NETCDF_DIR} ]] ; then
+       info_box "Found ${NETCDF_DIR} . . ." 1>&3
+       untarred_netcdf=0
+    elif [[ -f ${NETCDF_FILE} ]] ; then
+       info_box "Unzipping/Tarring ${NETCDF_FILE} . . ." 1>&3
+       uncompress_untar ${NETCDF_FILE}
+       untarred_netcdf=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${NETCDF_FILE}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${NETCDF_FILE%.*} ]] ; then
+       info_box "Tarring ${NETCDF_FILE%.*} . . ." 1>&3
+       tar xf ${NETCDF_FILE%.*}
+       untarred_netcdf=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${NETCDF_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
     fi
 
     #
+    # Apply patches
+    #
+    info_box "Patching NetCDF . . ." 1>&3
+    apply_netcdf_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_netcdf == 1 ]] ; then
+          echo "Giving up on NetCDF build because the patch failed."
+          return 1
+       else
+          echo "Patch failed, but continuing.  I believe that this script "
+          echo "tried to apply a patch to an existing directory which had "
+          echo "already been patched ... that is, that the patch is "
+          echo "failing harmlessly on a second application."
+       fi
+    fi
+
     info_box "Configuring NetCDF . . ." 1>&3
     cd $NETCDF_DIR
     echo "Invoking command to configure NetCDF"
@@ -5747,38 +6224,9 @@ function build_exodus
 #                         Function 8.8, build_boxlib                          #
 # *************************************************************************** #
 
-function build_boxlib
+function apply_boxlib_25_aix_patch
 {
-    #
-    # Unzip the file, provided a gzipped file exists.
-    #
-    if [[ -d ${BOXLIB_DIR} ]] ; then
-       info_box "Found ${BOXLIB_DIR} . . ." 1>&3
-    elif [[ -f ${BOXLIB_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${BOXLIB_FILE} . . ." 1>&3
-       uncompress_untar ${BOXLIB_FILE}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${BOXLIB_FILE}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    elif [[ -f ${BOXLIB_FILE%.*} ]] ; then
-       info_box "Tarring ${BOXLIB_FILE%.*} . . ." 1>&3
-       tar xf ${BOXLIB_FILE%.*}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${BOXLIB_FILE%.*}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-
-    #
-    # Apply patches
-    #
-    if [[ ${BOXLIB_VERSION} == 2.5 ]] ; then
-       info_box "Patching Boxlib 3D . . ." 1>&3
-       if [[ "$OPSYS" == "AIX" ]]; then
-          patch -p0 << \EOF
+   patch -p0 << \EOF
 diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
 *** CCSEApps.orig/BoxLib/GNUmakefile	Sun Jul 22 21:32:20 2001
 --- CCSEApps/BoxLib/GNUmakefile	Fri May 18 15:54:14 2007
@@ -5806,15 +6254,25 @@ diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
   NAMESPACE = FALSE
   
 EOF
-       else
-          patch -p0 << \EOF
+
+   if [[ $? != 0 ]] ; then
+       echo "Unable to patch Boxlib 3D. Wrong version?"
+       return 1
+   fi
+
+   return 0
+}
+
+function apply_boxlib_25_gcc_patch
+{
+    patch -p0 << \EOF
 diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
-*** CCSEApps.orig/BoxLib/GNUmakefile	Sun Jul 22 21:32:20 2001
---- CCSEApps/BoxLib/GNUmakefile	Fri May 18 15:54:14 2007
+*** CCSEApps.orig/BoxLib/GNUmakefile    Sun Jul 22 21:32:20 2001
+--- CCSEApps/BoxLib/GNUmakefile Fri May 18 15:54:14 2007
 *************** PBOXLIB_HOME = ..
 *** 7,16 ****
   TOP = $(PBOXLIB_HOME)
-  
+
   PRECISION = DOUBLE
 ! DEBUG     = TRUE
   DIM       = 3
@@ -5822,10 +6280,10 @@ diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
 ! USE_MPI   = TRUE
   #NAMESPACE = TRUE
   NAMESPACE = FALSE
-  
+
 --- 7,16 ----
   TOP = $(PBOXLIB_HOME)
-  
+
   PRECISION = DOUBLE
 ! DEBUG     = FALSE
   DIM       = 3
@@ -5833,19 +6291,19 @@ diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
 ! USE_MPI   = FALSE
   #NAMESPACE = TRUE
   NAMESPACE = FALSE
-  
+
 EOF
-       fi
-       if [[ $? != 0 ]] ; then
-           echo "Unable to patch Boxlib 3D. Wrong version?"
-           return 1
-       fi
-       if [[ "$OPSYS" == "Darwin" ]]; then
-           #
-           # Apply patches
-           #
-           info_box "Patching Boxlib 3D . . ." 1>&3
-           patch -p0 << \EOF
+   if [[ $? != 0 ]] ; then
+       echo "Unable to patch Boxlib 3D. Wrong version?"
+       return 1
+   fi
+
+   return 0
+}
+
+function apply_boxlib_25_darwin_patch
+{
+   patch -p0 << \EOF
 diff -rp CCSEApps.orig/BoxLib/BaseFab.cpp CCSEApps/BoxLib/BaseFab.cpp
 *** CCSEApps.orig/BoxLib/BaseFab.cpp	Wed Mar 19 10:11:09 2003
 --- CCSEApps/BoxLib/BaseFab.cpp	Fri Apr 27 15:09:29 2007
@@ -6096,14 +6554,166 @@ diff -rp CCSEApps.orig/BoxLib/Make.package CCSEApps/BoxLib/Make.package
 ! #F$(BOXLIB_BASE)_sources += SPECIALIZE_$(DIM)D.F
 ! #F$(BOXLIB_BASE)_headers += SPECIALIZE_F.H
 EOF
-          if [[ $? != 0 ]] ; then
-             echo "Unable to patch Boxlib 3D. Wrong version?"
-             return 1
-          fi
+    if [[ $? != 0 ]] ; then
+       echo "Unable to patch Boxlib 3D. Wrong version?"
+       return 1
+    fi
+
+    return 0
+}
+
+
+function apply_boxlib_25_patch
+{
+   # We start by fixing the Makefiles ... one way for AIX, one way for GCC
+   if [[ "$OPSYS" == "AIX" ]]; then
+       apply_boxlib_25_aix_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   else
+       apply_boxlib_25_gcc_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   # Now make the OPSYS specific changes
+   if [[ "$OPSYS" == "Darwin" ]]; then
+       apply_boxlib_25_darwin_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function apply_boxlib_patch
+{
+   if [[ ${BOXLIB_VERSION} == 2.5 ]] ; then
+       apply_boxlib_25_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function change_boxlib_dim_using_patches
+{
+    #
+    # Apply patches
+    #
+    if [[ ${BOXLIB_VERSION} == 2.5 ]] ; then
+       echo "Changing the Boxlib dimension from 3 to 2!"
+       echo "Going to $START_DIR"
+       cd $START_DIR
+       if [[ "$OPSYS" == "AIX" ]]; then
+          echo "PATCHING AIX"
+          patch -p0 << \EOF
+diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
+*** CCSEApps.orig/BoxLib/GNUmakefile	Fri Apr 27 15:18:35 2007
+--- CCSEApps/BoxLib/GNUmakefile	Fri Apr 27 15:18:54 2007
+*************** TOP = $(PBOXLIB_HOME)
+*** 8,14 ****
+  
+  PRECISION = DOUBLE
+  DEBUG     = FALSE
+! DIM       = 3
+  COMP      = xlC
+  USE_MPI   = FALSE
+  #NAMESPACE = TRUE
+--- 8,14 ----
+  
+  PRECISION = DOUBLE
+  DEBUG     = FALSE
+! DIM       = 2
+  COMP      = xlC
+  USE_MPI   = FALSE
+  #NAMESPACE = TRUE
+EOF
+       else
+          echo "PATCHING GCC"
+          patch -p0 << \EOF
+diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
+*** CCSEApps.orig/BoxLib/GNUmakefile	Fri Apr 27 15:18:35 2007
+--- CCSEApps/BoxLib/GNUmakefile	Fri Apr 27 15:18:54 2007
+*************** TOP = $(PBOXLIB_HOME)
+*** 8,14 ****
+  
+  PRECISION = DOUBLE
+  DEBUG     = FALSE
+! DIM       = 3
+  COMP      = 
+  USE_MPI   = FALSE
+  #NAMESPACE = TRUE
+--- 8,14 ----
+  
+  PRECISION = DOUBLE
+  DEBUG     = FALSE
+! DIM       = 2
+  COMP      = 
+  USE_MPI   = FALSE
+  #NAMESPACE = TRUE
+EOF
+       fi
+       if [[ $? != 0 ]] ; then
+           echo "Unable to patch Boxlib 2D. Wrong version?"
+           return 1
+       fi
+    fi
+
+    return 0
+}
+
+function build_boxlib
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    untarred_boxlib=0
+    if [[ -d ${BOXLIB_DIR} ]] ; then
+       info_box "Found ${BOXLIB_DIR} . . ." 1>&3
+       untarred_boxlib=0
+    elif [[ -f ${BOXLIB_FILE} ]] ; then
+       info_box "Unzipping/Tarring ${BOXLIB_FILE} . . ." 1>&3
+       uncompress_untar ${BOXLIB_FILE}
+       untarred_boxlib=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${BOXLIB_FILE}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${BOXLIB_FILE%.*} ]] ; then
+       info_box "Tarring ${BOXLIB_FILE%.*} . . ." 1>&3
+       tar xf ${BOXLIB_FILE%.*}
+       untarred_boxlib=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${BOXLIB_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
        fi
     fi
 
     #
+    # Apply patches
+    #
+    info_box "Patching Boxlib . . ." 1>&3
+    apply_boxlib_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_boxlib == 1 ]] ; then
+          echo "Giving up on Boxlib build because the patch failed."
+          return 1
+       else
+          echo "Patch failed, but continuing.  I believe that this script "
+          echo "tried to apply a patch to an existing directory which had "
+          echo "already been patched ... that is, that the patch is "
+          echo "failing harmlessly on a second application."
+       fi
+    fi
+
     cd $BOXLIB_DIR
     #
     # Build Boxlib 3D
@@ -6162,64 +6772,9 @@ EOF
        fi
     fi
     $MAKE clean
-    #
-    # Apply patches
-    #
-    if [[ ${BOXLIB_VERSION} == 2.5 ]] ; then
-       info_box "Patching Boxlib 2D . . ." 1>&3
-       cd $START_DIR
-       if [[ "$OPSYS" == "AIX" ]]; then
-          patch -p0 << \EOF
-diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
-*** CCSEApps.orig/BoxLib/GNUmakefile	Fri Apr 27 15:18:35 2007
---- CCSEApps/BoxLib/GNUmakefile	Fri Apr 27 15:18:54 2007
-*************** TOP = $(PBOXLIB_HOME)
-*** 8,14 ****
-  
-  PRECISION = DOUBLE
-  DEBUG     = FALSE
-! DIM       = 3
-  COMP      = xlC
-  USE_MPI   = FALSE
-  #NAMESPACE = TRUE
---- 8,14 ----
-  
-  PRECISION = DOUBLE
-  DEBUG     = FALSE
-! DIM       = 2
-  COMP      = xlC
-  USE_MPI   = FALSE
-  #NAMESPACE = TRUE
-EOF
-       else
-          patch -p0 << \EOF
-diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
-*** CCSEApps.orig/BoxLib/GNUmakefile	Fri Apr 27 15:18:35 2007
---- CCSEApps/BoxLib/GNUmakefile	Fri Apr 27 15:18:54 2007
-*************** TOP = $(PBOXLIB_HOME)
-*** 8,14 ****
-  
-  PRECISION = DOUBLE
-  DEBUG     = FALSE
-! DIM       = 3
-  COMP      = 
-  USE_MPI   = FALSE
-  #NAMESPACE = TRUE
---- 8,14 ----
-  
-  PRECISION = DOUBLE
-  DEBUG     = FALSE
-! DIM       = 2
-  COMP      = 
-  USE_MPI   = FALSE
-  #NAMESPACE = TRUE
-EOF
-       fi
-       if [[ $? != 0 ]] ; then
-           echo "Unable to patch Boxlib 2D. Wrong version?"
-           return 1
-       fi
-    fi
+
+    change_boxlib_dim_using_patches
+
     cd $BOXLIB_DIR
     #
     # Build Boxlib 2D
@@ -6513,38 +7068,9 @@ $DYLD_LIBRARY_PATH
 #                         Function 8.11, build_ccmio                         #
 # *************************************************************************** #
 
-function build_ccmio
+function apply_ccmio_261_darwin_patch
 {
-    #
-    # Unzip the file, provided a gzipped file exists.
-    #
-    if [[ -d ${CCMIO_DIR} ]] ; then
-       info_box "Found ${CCMIO_DIR} . . ." 1>&3
-    elif [[ -f ${CCMIO_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${CCMIO_FILE} . . ." 1>&3
-       uncompress_untar ${CCMIO_FILE}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${CCMIO_FILE}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    elif [[ -f ${CCMIO_FILE%.*} ]] ; then
-       info_box "Tarring ${CCMIO_FILE%.*} . . ." 1>&3
-       tar xf ${CCMIO_FILE%.*}
-       if [[ $? != 0 ]] ; then
-          echo \
-"Unable to untar ${CCMIO_FILE%.*}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-    #
-    #
-    # Apply patches
-    #
-    if [[ ${CCMIO_VERSION} == 2.6.1 ]] ; then
-       info_box "Patching CCMIO . . ." 1>&3
-       if [[ "$OPSYS" == "Darwin" ]]; then
-          patch -p0 << \EOF
+   patch -p0 << \EOF
 diff -rp libccmio-2.6.1.orig/config/config.gnu.to.star libccmio-2.6.1/config/config.gnu.to.star
 *** libccmio-2.6.1.orig/config/config.gnu.to.star
 --- libccmio-2.6.1/config/config.gnu.to.star
@@ -6586,11 +7112,88 @@ diff -rp libccmio-2.6.1.orig/config/config.system libccmio-2.6.1/config/config.s
           echo unknown
           echo System type ${SYSTEM} not supported! 1>&2 ;;
 EOF
-       fi
+   if [[ $? != 0 ]] ; then
+       echo "Unable to patch CCMIO. Wrong version?"
+       return 1
+   fi
+
+   return 0
+}
+
+function apply_ccmio_261_patch
+{
+   if [[ "$OPSYS" == "Darwin" ]]; then
+       apply_ccmio_261_darwin_patch
        if [[ $? != 0 ]] ; then
-           echo "Unable to patch CCMIO. Wrong version?"
            return 1
        fi
+   fi
+
+   return 0
+}
+
+function apply_ccmio_patch
+{
+   if [[ ${CCMIO_VERSION} == 2.6.1 ]] ; then
+       apply_ccmio_261_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function build_ccmio
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    untarred_ccmio=0
+    if [[ -d ${CCMIO_DIR} ]] ; then
+       info_box "Found ${CCMIO_DIR} . . ." 1>&3
+       untarred_ccmio=0
+    elif [[ -f ${CCMIO_FILE} ]] ; then
+       info_box "Unzipping/Tarring ${CCMIO_FILE} . . ." 1>&3
+       uncompress_untar ${CCMIO_FILE}
+       untarred_ccmio=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${CCMIO_FILE}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${CCMIO_FILE%.*} ]] ; then
+       info_box "Tarring ${CCMIO_FILE%.*} . . ." 1>&3
+       tar xf ${CCMIO_FILE%.*}
+       untarred_ccmio=1
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${CCMIO_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    # Apply patches
+    #
+    info_box "Patching CCMIO . . ." 1>&3
+    apply_ccmio_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_ccmio == 1 ]] ; then
+          echo "Giving up on CCMIO build because the patch failed."
+          return 1
+       else
+          echo "Patch failed, but continuing.  I believe that this script "
+          echo "tried to apply a patch to an existing directory which had "
+          echo "already been patched ... that is, that the patch is "
+          echo "failing harmlessly on a second application."
+       fi
+    fi
+
+    #
+    # Do some extra copies
+    #
+    if [[ ${CCMIO_VERSION} == 2.6.1 ]] ; then
        if [[ "$OPSYS" == "Darwin" ]]; then
            # Check for PPC
            MACH=$(uname -m)
