@@ -43,7 +43,9 @@
 #include <MesaDisplay.h>
 #include <snprintf.h>
 #include <StringHelpers.h>
+#ifndef WIN32
 #include <XDisplay.h>
+#endif
 
 // ****************************************************************************
 //  Function: format
@@ -123,6 +125,10 @@ split(std::string str, size_t node, size_t display)
 //  Programmer: Tom Fogal
 //  Creation:   September 1, 2008
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Sep  2 15:53:44 PDT 2008
+//    Ifdef out XDisplay stuff for windows.
+//
 // ****************************************************************************
 VisItDisplay *
 Display::Create(enum visitDisplayType vtype)
@@ -132,9 +138,11 @@ Display::Create(enum visitDisplayType vtype)
         case D_MESA:
             return new MesaDisplay();
             break;
+#ifndef WIN32
         case D_X:
             return new XDisplay();
             break;
+#endif
     }
     return NULL;  // unreachable.
 }

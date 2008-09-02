@@ -107,21 +107,26 @@ MesaDisplay::Initialize(size_t display, const std::vector<std::string> &user_arg
 //    Brad Whitlock, Fri Aug 29 09:55:09 PDT 2008
 //    Added Mac-specific code for unsetenv since it returns void on Mac.
 //
+//    Kathleen Bonnell, Tue Spe  2 15:54:17 PDT 2008 
+//    If-def'd out unsetenv for windows.
+//
 // ****************************************************************************
 
 void
 MesaDisplay::Connect()
 {
     InitVTK::ForceMesa();
+#ifndef WIN32
 #ifdef __APPLE__
     unsetenv("DISPLAY");
-#else
+#else 
     if(unsetenv("DISPLAY") != 0)
     {
         char err[1024];
         strerror_r(errno, err, 1024);
         debug1 << "unsetenv(DISPLAY) failed: " << err << std::endl;
     }
+#endif
 #endif
 }
 
