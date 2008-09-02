@@ -656,6 +656,10 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    Hank Childs, Sat Aug 30 10:50:15 PDT 2008
 //    Add the gradient variable when lighting is on.
 //
+//    Hank Childs, Tue Sep  2 09:48:04 PDT 2008
+//    Do a better job of handling oddly formed variables and make the new
+//    gradient code play well with the log feature.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -735,9 +739,9 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
     if (atts.GetLightingFlag())
     {
         char exprName[128];
-        SNPRINTF(exprName, 128, "_%s_gradient", var);
+        SNPRINTF(exprName, 128, "_%s_gradient", primaryVariable);
         char exprDef[128];
-        SNPRINTF(exprDef, 128, "gradient(%s)", var);
+        SNPRINTF(exprDef, 128, "gradient(<%s>)", primaryVariable);
         ExpressionList *elist = ParsingExprList::Instance()->GetList();
 
         Expression *e = new Expression();
@@ -746,9 +750,10 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
         e->SetType(Expression::VectorMeshVar);
         elist->AddExpressions(*e);
         delete e;
+        ds = newcontract->GetDataRequest();
         avtDataRequest_p nds = new avtDataRequest(ds);
         nds->AddSecondaryVariable(exprName);
-        newcontract = new avtContract(contract, nds);
+        newcontract = new avtContract(newcontract, nds);
     }
 
     newcontract->NoStreaming();
