@@ -156,9 +156,9 @@ avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
                 comp2[2] = view_up[2] * l.GetDirection()[1];
 
                 double comp3[3];
-                comp3[0] = view_direction[0] * l.GetDirection()[2];
-                comp3[1] = view_direction[1] * l.GetDirection()[2];
-                comp3[2] = view_direction[2] * l.GetDirection()[2];
+                comp3[0] = -view_direction[0] * l.GetDirection()[2];
+                comp3[1] = -view_direction[1] * l.GetDirection()[2];
+                comp3[2] = -view_direction[2] * l.GetDirection()[2];
 
                 dir[0] = comp1[0] + comp2[0] + comp3[0];
                 dir[1] = comp1[1] + comp2[1] + comp3[1];
