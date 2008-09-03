@@ -137,6 +137,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
 //   Add new coloring methods, length, time and ID.
 //
+//   Sean Ahern, Wed Sep  3 16:19:27 EDT 2008
+//   Mucked with the layout to make it a bit more consistent.
+//
 // ****************************************************************************
 
 void
@@ -168,9 +171,6 @@ QvisStreamlinePlotWindow::CreateWindowContents()
             this, SLOT(directionTypeChanged(int)));
     mainLayout->addWidget(directionType, 3,1);
 
-    // Add some space....
-    mainLayout->addWidget(new QLabel(tr(""), central, "streamlineDirectionLabel"),4,0);
-
     //
     // Create a tab widget so we can split source type and appearance.
     //
@@ -186,7 +186,6 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     QVBoxLayout *topSourceLayout = new QVBoxLayout(topPageSource);
     topSourceLayout->setMargin(10);
     topSourceLayout->setSpacing(5);
-
 
     // Create the source type combo box.
     QGridLayout *hLayout = new QGridLayout(topSourceLayout,2,2,10);
@@ -220,8 +219,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     QVBoxLayout *svLayout = new QVBoxLayout(pageSource, 10, 2);
     svLayout->addSpacing(10);
     QGridLayout *sLayout = new QGridLayout(svLayout, 16, 2);
-//    sLayout->setMargin(10);
-    sLayout->setSpacing(5);
+    sLayout->setMargin(10);
 
     // Create the widgets that specify a point source.
     pointSource = new QLineEdit(pageSource, "pointSource");
@@ -391,6 +389,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     pageAdvanced->setFrameStyle(QFrame::NoFrame);
     tabs->addTab(pageAdvanced, tr("Advanced"));
     QGridLayout *advGLayout = new QGridLayout(pageAdvanced, 4, 4);
+    advGLayout->setMargin(10);
     advGLayout->setSpacing(5);
 
     QGroupBox *algoGrp = new QGroupBox(pageAdvanced, "algoGrp");
