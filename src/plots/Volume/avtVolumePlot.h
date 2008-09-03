@@ -99,6 +99,10 @@ class avtResampleFilter;
 //    Hank Childs, Tue Aug 26 14:46:36 PDT 2008
 //    Define UtilizeRenderingFilters to state that we don't need them.
 //
+//    Hank Childs, Tue Sep  2 22:26:09 PDT 2008
+//    Remove definition of "CanCacheWriterExternally", as it was leading to
+//    unnecessary pipeline re-executions.
+//
 // ****************************************************************************
 
 class
@@ -120,8 +124,6 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual int         GetNumberOfStagesForImageBasedPlot(
                                                      const WindowAttributes &);
     virtual bool        Equivalent(const AttributeGroup *);
-
-    virtual bool        CanCacheWriterExternally(void) { return false; }
 
     virtual bool        CanDo2DViewScaling(void) { return false; }
     virtual bool        UtilizeRenderingFilters(void) { return false; };
