@@ -660,6 +660,9 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    Do a better job of handling oddly formed variables and make the new
 //    gradient code play well with the log feature.
 //
+//    Sean Ahern, Wed Sep  3 09:47:31 EDT 2008
+//    Fixed gradient calculation of smoothed data.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -740,8 +743,15 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
     {
         char exprName[128];
         SNPRINTF(exprName, 128, "_%s_gradient", primaryVariable);
-        char exprDef[128];
-        SNPRINTF(exprDef, 128, "gradient(<%s>)", primaryVariable);
+        char exprDef[512];
+        if (atts.GetSmoothData())
+        {
+            SNPRINTF(exprDef, 512, "gradient(recenter(<%s>))", primaryVariable);
+        }
+        else
+        {
+            SNPRINTF(exprDef, 512, "gradient(<%s>)", primaryVariable);
+        }
         ExpressionList *elist = ParsingExprList::Instance()->GetList();
 
         Expression *e = new Expression();
