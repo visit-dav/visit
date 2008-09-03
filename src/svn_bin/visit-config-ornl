@@ -8,7 +8,7 @@
                     <Field name="profileName" type="string">serial on login node</Field>
                     <Field name="host" type="string">lens.ccs.ornl.gov</Field>
                     <Field name="launchMethodSet" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/sw/analysis-x86/visit" </Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/sw/analysis-x64/visit" </Field>
                     <Field name="hostAliases" type="string">lens#.ccs.ornl.gov lens</Field>
                     <Field name="tunnelSSH" type="bool">true</Field>
                 </Object>
@@ -26,7 +26,7 @@
                     <Field name="launchMethodSet" type="bool">true</Field>
                     <Field name="launchMethod" type="string">qsub/mpirun</Field>
                     <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/sw/analysis-x86/visit" </Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/sw/analysis-x64/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">lens#.ccs.ornl.gov lens</Field>
                     <Field name="tunnelSSH" type="bool">true</Field>
