@@ -1154,6 +1154,10 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    situations where users have switched to using DBPutDefvars to create
 //    the same information but wind up also calling it the same thing.
 //
+//    Brad Whitlock, Wed Sep  3 10:07:32 PDT 2008
+//    Prevent multimesh and multimat names from being printed when all entries
+//    are EMPTY since it was causing a crash (array out of bounds).
+//
 // ****************************************************************************
 
 void
@@ -1435,8 +1439,10 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             CATCH(SiloException)
             {
                 debug1 << "Invalidating mesh \"" << multimesh_names[i] 
-                       << "\" since its first non-empty block (" << mm->meshnames[meshnum]
-                       << ") is invalid." << endl;
+                       << "\" since its first non-empty block ";
+                if(valid_var)
+                    debug1 << "(" << mm->meshnames[meshnum] << ") ";
+                debug1 << "is invalid." << endl;
                 valid_var = false;
             }
             ENDTRY
@@ -2033,8 +2039,10 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             CATCH(SiloException)
             {
                 debug1 << "Invalidating var \"" << multivar_names[i] 
-                       << "\" since its first non-empty block (" << mv->varnames[meshnum]
-                       << ") is invalid." << endl;
+                       << "\" since its first non-empty block ";
+                if(valid_var)
+                    debug1 << "(" << mv->varnames[meshnum] << ") ";
+                debug1 << "is invalid." << endl;
                 valid_var = false;
             }
             ENDTRY
@@ -2543,7 +2551,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             }
         }
 
-        char *material = mm->matnames[meshnum];
+        char *material = valid_var ? mm->matnames[meshnum] : NULL;
 
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
@@ -2558,8 +2566,10 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         if (mat == NULL)
         {
             debug1 << "Invalidating material \"" << multimat_names[i] 
-                   << "\" since its first non-empty block (" << material
-                   << ") is invalid." << endl;
+                   << "\" since its first non-empty block ";
+            if(valid_var)
+                debug1 << "(" << material << ") ";
+            debug1 << "is invalid." << endl;
             valid_var = false;
         }
 
