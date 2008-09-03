@@ -99,6 +99,10 @@ avtPhong::~avtPhong()
 //  Programmer: Hank Childs
 //  Creation:   August 31, 2008
 //
+//  Modifications:
+//      Sean Ahern, Wed Sep  3 11:27:43 EDT 2008
+//      Added support for camera lights.
+//
 // ****************************************************************************
 
 void
@@ -131,14 +135,34 @@ avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
             }
             else // Camera light.
             {
-                // Need to take view_direction and view_up and
-                // combine with l.GetDirection().  Result is stored
-                // in "dir".
-                // Make camera light always be aligned with view direction
-                // for now.
-                dir[0] = view_direction[0];
-                dir[1] = view_direction[1];
-                dir[2] = view_direction[2];
+                double view_right[3];   // The view "right" vector.
+                                        // view_direction cross view_up
+                view_right[0] = view_direction[1]*view_up[2] - view_direction[2]*view_up[1];
+                view_right[1] = view_direction[2]*view_up[0] - view_direction[0]*view_up[2];
+                view_right[2] = view_direction[0]*view_up[1] - view_direction[1]*view_up[0];
+
+                // A camera light's components are scaling factors of
+                // view_right, view_up, and view_direction.  Scale the
+                // components and set to the dir vector.
+
+                double comp1[3];
+                comp1[0] = view_right[0] * l.GetDirection()[0];
+                comp1[1] = view_right[1] * l.GetDirection()[0];
+                comp1[2] = view_right[2] * l.GetDirection()[0];
+
+                double comp2[3];
+                comp2[0] = view_up[0] * l.GetDirection()[1];
+                comp2[1] = view_up[1] * l.GetDirection()[1];
+                comp2[2] = view_up[2] * l.GetDirection()[1];
+
+                double comp3[3];
+                comp3[0] = view_direction[0] * l.GetDirection()[2];
+                comp3[1] = view_direction[1] * l.GetDirection()[2];
+                comp3[2] = view_direction[2] * l.GetDirection()[2];
+
+                dir[0] = comp1[0] + comp2[0] + comp3[0];
+                dir[1] = comp1[1] + comp2[1] + comp3[1];
+                dir[2] = comp1[2] + comp2[2] + comp3[2];
             }
 
             double grad[3];
