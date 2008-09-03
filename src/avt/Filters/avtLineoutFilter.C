@@ -72,7 +72,7 @@
 
 using std::set;
 
-struct Point
+struct IntersectionPoint
 {
     double x[3];
 };
@@ -82,7 +82,7 @@ struct CellInfo
     int origCell;
     int origDomain;
     intVector currCell;
-    vector<Point> isect;  
+    vector<IntersectionPoint> isect;  
 } ;
 
 
@@ -816,6 +816,10 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 //    Kathleen Bonnell, Thu Mar  6 09:07:33 PST 2008 
 //    Removed unused variable.
 //
+//    Jeremy Meredith, Wed Sep  3 10:28:07 EDT 2008
+//    Renamed Point struct to IntersectionPoint to avoid namespace conflict
+//    with a file in common/state.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -864,7 +868,7 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
             {
                 dup = true;
                 cellInfoList[j].currCell.push_back(currentCell);
-                Point p;
+                IntersectionPoint p;
                 p.x[0]  = center[0];
                 p.x[1]  = center[1];
                 p.x[2]  = center[2];
@@ -877,7 +881,7 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
             a.origCell = origCell;
             a.origDomain = origDomain;
             a.currCell.push_back(currentCell);
-            Point p;
+            IntersectionPoint p;
             p.x[0]  = center[0];
             p.x[1]  = center[1];
             p.x[2]  = center[2];
