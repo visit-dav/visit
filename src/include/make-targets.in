@@ -83,73 +83,118 @@ distclean: clean
 ## Cyrus Harrison, Fri Mar  9 08:38:37 PST 2007
 ## Added engine specific targets: "_eng.o", "_par_eng.o"
 ## 
+## Tom Fogal, Fri Jun  8 11:07:27 PDT 2007
+## Use depcomp to build dependencies during compilation.
+##
 ## Tom Fogal, Sun Jun  8 18:00:05 EDT 2008
 ## Added IceT specific targets.  Wrapped long lines.
+##
 
 .C.a:
 	false
 
 .c.o:
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 .c_mds.o:
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*_mds.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CC) $(CFLAGS) $(CPPFLAGS) -DMDSERVER -c $< -o $@
 
 .c_par.o:
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*_par.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CC) $(CFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ -c $< -o $@
 
 # There cannot be a tab before the OS_RULE line.  The rule contains its own
 # tab character.
 .C.o:
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 @OS_RULE@
 
 .C_eng.o:
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*_eng.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -DENGINE -c $< -o $@
 @OS_RULE@
 
 .C_mds.o:
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*_mds.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -DMDSERVER -c $< -o $@
 @OS_RULE@
 
 .C_par.o:
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*_par.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ -c $< -o $@
 @OS_RULE@
 
 .C_ogl.o:
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*_ogl.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 @OS_RULE@
 
 .C_mesa.o:
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*_mesa.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(MESA_INCLUDE) -c $< -o $@
 @OS_RULE@
 
 .C_par_eng.o:
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*_par_eng.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -DENGINE @PARALLEL_CPPFLAGS@ -c $< -o $@
 @OS_RULE@
 
 .C_par_ogl.o:
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*_par_ogl.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ -c $< -o $@
 @OS_RULE@
 
 .C_par_mesa.o:
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*_par_mesa.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ $(MESA_INCLUDE) \
 	-c $< -o $@
 @OS_RULE@
 
 # _icet implies parallel; the PARALLEL_CPPFLAGS are there on purpose.
 .C_icet.o:
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*_icet.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS)      \
 	@PARALLEL_CPPFLAGS@ @ICET_CXXFLAGS@ \
 	-c $< -o $@
 @OS_RULE@
 
 .C_mesa_icet.o:
+	source='$<' object='$@' libtool=no        \
+	depfile='./$*_mesa_icet.d'  tmpdepfile='./$*.tmp_d' \
+	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS)                      \
 	@PARALLEL_CPPFLAGS@ @ICET_CXXFLAGS@ $(MESA_INCLUDE) \
 	-c $< -o $@
 @OS_RULE@
-
 
 .f.o:
 	$(F77) $(F77FLAGS) -c $<
