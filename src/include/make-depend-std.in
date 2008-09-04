@@ -1,34 +1,20 @@
-##							-*- makefile -*-
-## Dependencies.
-## We can use `makedepend' to build a dependency list for all the
-## sources and attach that dependency list to the end of the Makefile.
+## If we don't know a better way to generate dependencies, `cpp' should
+## always work.
 ##
+## Tom Fogal, Fri Jun  8 11:24:10 PDT 2007
+## Removed `.depend'-based dependency mechanism.  Set `depmode' for depcomp
+## pick up and do dependency information during compilation.
+##
+## Tom Fogal, Wed Sep  3 18:44:54 EDT 2008
+## Use `cpp' depmode instead of `makedepend', which warnings on AIX.  Thanks,
+## Cyrus!
+##
+
+DEPMODE=depmode=cpp
+
 depend:
 	makedepend ${CXXFLAGS} $(CPPFLAGS) $(SRC)
 	@> .depend
 
-##
-## The following rules try to make it easier to see when a source
-## file is outdated.
-##
-## If the `.depend' file doesn't exist then dependency information is
-## definitely outdated (`make depend' has never been run).  Otherwise,
-## any source file which is newer than the Makefile must have outdated
-## dependencies.
-##
-checkdep:
-	@if test -f .depend; then \
-	   > .depend; \
-	   for src in $(SRC); do \
-	      if test "`ls -1t $$src Makefile|sed -n 1p`" != "Makefile"; then \
-	         echo $$src >> .depend; \
-              fi; \
-           done; \
-	   if test -s .depend; then \
-	      echo "Warning: dependency info for these files is outdated:"; \
-	      cat .depend; \
-           fi; \
-        else \
-	   echo "Please run 'make depend' first."; \
-	   exit 1; \
-        fi
+clean-dep:
+	$(RM) -f $(DEP)
