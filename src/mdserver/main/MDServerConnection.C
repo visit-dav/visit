@@ -1655,14 +1655,21 @@ MDServerConnection::GetReadFileListReturnValue() const
 // Creation:   Fri Nov 17 16:26:15 PST 2000
 //
 // Modifications:
+//
 //   Brad Whitlock, Wed Dec 14 17:05:10 PST 2005
 //   I made it read the file attributes if necessary.
+//
+//   Hank Childs, Thu Sep  4 16:50:48 PDT 2008
+//   Read the file list if it hasn't been read in yet.
 //
 // ****************************************************************************
 
 GetFileListRPC::FileList *
 MDServerConnection::GetCurrentFileList()
 {
+    if (!validFileList)
+        ReadFileList();
+
     // Reads the file attributes if necessary.
     ReadFileListAttributes(currentFileList, false);
 

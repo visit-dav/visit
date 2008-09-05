@@ -111,6 +111,9 @@ GetFileListRPCExecutor::~GetFileListRPCExecutor()
 //   Brad Whitlock, Thu Dec 15 10:23:46 PDT 2005
 //   I added a timer.
 //
+//   Hank Childs, Thu Sep  4 16:50:48 PDT 2008
+//   Print out the file list correctly for the non-automatic grouping case.
+//
 // ****************************************************************************
 
 void
@@ -139,7 +142,10 @@ GetFileListRPCExecutor::Update(Subject *s)
         else
         {
             GetFileListRPC::FileList *files = parent->GetCurrentFileList();
-            debug4 << "FILELIST=" << files << endl;
+            if (files == NULL)
+                debug4 << "FILELIST is NULL!" << endl;
+            else
+                debug4 << "FILELIST=" << *files << endl;
             debug4.flush();
 
             rpc->SendReply(files);
