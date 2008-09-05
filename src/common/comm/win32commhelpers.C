@@ -58,6 +58,13 @@ CopyHostentString(char **dest, char *src, const char *name, const char *mName)
     }
 }
 
+// ***************************************************************************
+//   Modifications:
+//     Kathleen Bonnell, Thu Sep 4 18:55:21 PDT 2008
+//     Fixed heap corruption from bad malloc of dest.
+//
+// ***************************************************************************
+//
 static void
 CopyHostentStringList(char ***destp, char **src, const char *name, const char *mName)
 {
@@ -73,7 +80,7 @@ CopyHostentStringList(char ***destp, char **src, const char *name, const char *m
     for(char **ptr = src; *ptr != NULL; ++ptr)
         ++numEntries;
 
-    char **dest = (char **)malloc(numEntries + 1);
+    char **dest = (char **)malloc(sizeof(char*)*(numEntries + 1));
     debug5 << mName << name << " = {" << endl;
     for(int i = 0; src[i] != NULL; ++i)
         CopyHostentString(&dest[i], src[i], "", mName);
@@ -103,6 +110,13 @@ CopyHostentAddress(char **dest, char *src, int length, const char *mName)
     }
 }
 
+// ***************************************************************************
+//   Modifications:
+//     Kathleen Bonnell, Thu Sep 4 18:55:21 PDT 2008
+//     Fixed heap corruption from bad malloc of dest.
+//
+// ***************************************************************************
+
 static void
 CopyHostentAddressList(char ***destp, char **src, int length, const char *name, const char *mName)
 {
@@ -118,7 +132,7 @@ CopyHostentAddressList(char ***destp, char **src, int length, const char *name, 
     for(char **ptr = src; *ptr != NULL; ++ptr)
         ++numEntries;
 
-    char **dest = (char **)malloc(numEntries + 1);
+    char **dest = (char **)malloc(sizeof(char*)*(numEntries + 1));
     debug5 << mName << name << " = {" << endl;
     for(int i = 0; src[i] != NULL; ++i)
         CopyHostentAddress(&dest[i], src[i], length, mName);
