@@ -935,6 +935,10 @@ Engine::ConnectViewer(int *argc, char **argv[])
 //    Sean Ahern, Wed Dec 12 12:02:21 EST 2007
 //    Made a distinction between the execution and the idle timeouts.
 //
+//    Hank Childs, Mon Sep  8 16:39:03 PDT 2008
+//    Make sure quitRPC is properly communicated to all processors; prevents
+//    runaway engines.
+//
 // ****************************************************************************
 
 void
@@ -951,9 +955,14 @@ Engine::PAR_EventLoop()
         // to all other processes.
         if (errFlag || !noFatalExceptions)
         {
-            quitRPC->Write(par_conn);
-            xfer->SetInputConnection(&par_conn);
-            xfer->SetEnableReadHeader(false);
+            Connection *conn = xfer->GetBufferedInputConnection();
+            quitRPC->SetQuit(true);
+            conn->Flush();
+            int hardcodedOpcodeForQuitRPC = 0;
+            conn->WriteInt(hardcodedOpcodeForQuitRPC);
+            int msg_size = quitRPC->CalculateMessageSize(*conn);
+            conn->WriteInt(msg_size);
+            quitRPC->Write(*conn);
             xfer->Process();
         }
     }
