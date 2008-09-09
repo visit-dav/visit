@@ -51,6 +51,7 @@ sub get_norecursive ($@)
 @files = ();
 
 push @files, get_svn_norecursive  "./src";
+push @files, get_svn_recursive    "./src/ac";
 push @files, get_svn_recursive    "./src/common";
 push @files, get_svn_recursive    "./src/visit_vtk";
 push @files, get_svn_recursive    "./src/engine";
