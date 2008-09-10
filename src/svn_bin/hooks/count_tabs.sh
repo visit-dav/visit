@@ -25,6 +25,9 @@
 #   Mark C. Miller, Wed Apr 23 11:01:07 PDT 2008
 #   Added build_visit to list of files we permit tabs in.
 #
+#   Hank Childs, Wed Sep 10 15:34:53 PDT 2008
+#   Allow files named "Makefile" to have tabs.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -70,6 +73,9 @@ for f in ${files} ; do
             continue
             ;;
         */svn_bin/build_visit)
+            continue
+            ;;
+        Makefile)
             continue
             ;;
     esac
