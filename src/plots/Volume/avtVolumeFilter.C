@@ -663,6 +663,9 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    Sean Ahern, Wed Sep  3 09:47:31 EDT 2008
 //    Fixed gradient calculation of smoothed data.
 //
+//    Sean Ahern, Wed Sep 10 13:04:41 EDT 2008
+//    Refined the recenter so that it always asks for nodal centering.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -746,7 +749,7 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
         char exprDef[512];
         if (atts.GetSmoothData())
         {
-            SNPRINTF(exprDef, 512, "gradient(recenter(<%s>))", primaryVariable);
+            SNPRINTF(exprDef, 512, "gradient(recenter(<%s>, \"nodal\"))", primaryVariable);
         }
         else
         {
