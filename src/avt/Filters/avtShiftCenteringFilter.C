@@ -63,7 +63,7 @@
 //  Method: avtShiftCenteringFilter constructor
 //
 //  Arguments:
-//      ci      The centering instructions
+//      target      The target centering.
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   April 19, 2001.
@@ -76,11 +76,15 @@
 //    Hank Childs, Tue Sep 10 15:00:49 PDT 2002
 //    Removed data members for shifting centering.
 //
+//    Sean Ahern, Wed Sep 10 13:13:18 EDT 2008
+//    For ease of reading code, I forced the argument to be
+//    avtCentering, not integer.
+//
 // ****************************************************************************
 
-avtShiftCenteringFilter::avtShiftCenteringFilter(int ci)
+avtShiftCenteringFilter::avtShiftCenteringFilter(avtCentering target)
 {
-    centeringInstruction = ci;
+    centeringTarget = target;
 }
 
 
@@ -160,6 +164,10 @@ avtShiftCenteringFilter::~avtShiftCenteringFilter()
 //    avtGhostZones, avtGhostNode, avtOriginalCellNumber from int-float-int
 //    conversion.
 //
+//    Sean Ahern, Wed Sep 10 13:13:18 EDT 2008
+//    For ease of reading code, I forced the target to be of type
+//    avtCentering, not integer.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -173,7 +181,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
     avtCentering centering
                         = GetInput()->GetInfo().GetAttributes().GetCentering();
-    if (centeringInstruction == 1 && centering == AVT_ZONECENT)
+    if (centeringTarget == AVT_ZONECENT)
     {
         int nArray = inDS->GetCellData()->GetNumberOfArrays();
         vector<string> arraysToSwap;
@@ -285,7 +293,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             dsToShift->Delete();
         }
     }
-    else if (centeringInstruction == 2 && centering == AVT_NODECENT)
+    else if (centeringTarget == AVT_NODECENT)
     {
         // Detect if there are any integer type arrays and make them be floats for
         // recenting.
@@ -422,6 +430,10 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 //    Hank Childs, Thu Feb 26 08:15:12 PST 2004
 //    Account for multiple variables.
 //
+//    Sean Ahern, Wed Sep 10 13:13:18 EDT 2008
+//    For ease of reading code, I forced the target to be of type
+//    avtCentering, not integer.
+//
 // ****************************************************************************
 
 void
@@ -436,12 +448,8 @@ avtShiftCenteringFilter::UpdateDataObjectInfo(void)
         return;
     }
 
-    if (centeringInstruction == 1 || centeringInstruction == 2)
-    {
-        avtCentering centering = (centeringInstruction == 1 ? AVT_NODECENT
-                                                            : AVT_ZONECENT);
-        out_atts.SetCentering(centering);
-    }
+    if (centeringTarget == AVT_NODECENT || centeringTarget == AVT_ZONECENT)
+        out_atts.SetCentering(centeringTarget);
 }
 
 

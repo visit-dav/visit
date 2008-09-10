@@ -58,7 +58,7 @@ class vtkPointDataToCellData;
 //
 //  Purpose:
 //    A filter which creates node-centered data from point-centered data or
-//    vice-verse depending upon the desired centering. 
+//    vice-versa depending upon the desired centering. 
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   April 19, 2001 
@@ -81,12 +81,16 @@ class vtkPointDataToCellData;
 //    Hank Childs, Wed Aug 11 09:47:46 PDT 2004
 //    Added ModifyContract.
 //
+//    Sean Ahern, Wed Sep 10 13:13:18 EDT 2008
+//    For ease of reading code, I forced the argument to be avtCentering, not
+//    integer.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtShiftCenteringFilter : public avtDataTreeIterator
 {
   public:
-                            avtShiftCenteringFilter(int);
+                            avtShiftCenteringFilter(avtCentering);
     virtual                ~avtShiftCenteringFilter();
 
     virtual const char     *GetType(void) { return "avtShiftCenteringFilter"; };
@@ -94,7 +98,7 @@ class AVTFILTERS_API avtShiftCenteringFilter : public avtDataTreeIterator
                                   { return "Re-centering data"; };
 
   protected:
-    int                     centeringInstruction;
+    avtCentering            centeringTarget;
 
     virtual vtkDataSet     *ExecuteData(vtkDataSet *, int, std::string);
     virtual void            UpdateDataObjectInfo(void);

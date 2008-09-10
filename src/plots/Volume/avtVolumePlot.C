@@ -442,6 +442,11 @@ avtVolumePlot::GetMapper(void)
 //    Hank Childs, Wed Nov 24 17:03:44 PST 2004
 //    No longer apply the volume filter as an operator.
 //
+//    Sean Ahern, Wed Sep 10 13:25:54 EDT 2008
+//    For ease of code reading and maintenance, I forced the
+//    avtShiftCenteringFilter to take avtCentering type, rather than
+//    int.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -463,7 +468,7 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
     //
     if (atts.GetSmoothData())
     {
-        shiftCentering = new avtShiftCenteringFilter(1);
+        shiftCentering = new avtShiftCenteringFilter(AVT_NODECENT);
         shiftCentering->SetInput(dob);
         dob = shiftCentering->GetOutput();
     }

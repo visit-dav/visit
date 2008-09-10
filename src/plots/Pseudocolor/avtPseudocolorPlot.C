@@ -323,6 +323,10 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 //    Added recentering code previously in ApplyOperators so centering
 //    will not alter query results. (Resolving '8511)
 //
+//    Sean Ahern, Wed Sep 10 13:25:54 EDT 2008
+//    For ease of code reading and maintenance, I forced the
+//    avtShiftCenteringFilter to take avtCentering type, rather than int.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -330,7 +334,8 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     avtDataObject_p dob = input; 
     topoDim = dob->GetInfo().GetAttributes().GetTopologicalDimension(); 
-    if ((atts.GetCentering() == 1) || (atts.GetCentering() == 2))
+    if ((atts.GetCentering() == PseudocolorAttributes::Nodal) ||
+        (atts.GetCentering() == PseudocolorAttributes::Zonal))
     {
         //
         // It was requested that we shift centering.  If we asked for zonal
@@ -341,7 +346,11 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
         {
             delete filter;
         }
-        filter = new avtShiftCenteringFilter(atts.GetCentering());
+        PseudocolorAttributes::Centering c = atts.GetCentering();
+        if (c == PseudocolorAttributes::Nodal)
+            filter = new avtShiftCenteringFilter(AVT_NODECENT);
+        if (c == PseudocolorAttributes::Zonal)
+            filter = new avtShiftCenteringFilter(AVT_ZONECENT);
         filter->SetInput(dob);
         dob = filter->GetOutput();
     }
