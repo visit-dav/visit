@@ -75,7 +75,7 @@ for f in ${files} ; do
         */svn_bin/build_visit)
             continue
             ;;
-        Makefile)
+        *Makefile)
             continue
             ;;
     esac
