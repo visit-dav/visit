@@ -202,7 +202,7 @@ all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ \
      @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@ \
      @CREATE_BOXLIB2D_LINK@ @CREATE_BOXLIB3D_LINK@ \
-     @CREATE_CFITSIO_LINK@ @CREATE_ITAPS_LINK@ @CREATE_H5PART_LINK@ \
+     @CREATE_CFITSIO_LINK@ @CREATE_H5PART_LINK@ \
      @CREATE_CCMIO_LINK@ @CREATE_TCMALLOC_LINK@
 
 libvtkcommon:
@@ -371,25 +371,6 @@ create_ccmio_link:
 	$(RM) libccmio.@SHLIB_LIBEXT@ libadf.@SHLIB_LIBEXT@
 	ln -s @CCMIO_LIBDIR@/libccmio.@SHLIB_LIBEXT@ .
 	ln -s @CCMIO_LIBDIR@/libadf.@SHLIB_LIBEXT@ .
-
-create_itaps_link:
-	libDirs=`echo "@ITAPS_LIB@" | tr -s ' ' | tr ' ' '\n' | grep '^-L' | sed -e 's|^-L\(.*\)|\1|'` ; \
-	libFiles=`echo "@ITAPS_LIB@" | tr -s ' ' | tr ' ' '\n' | grep '^-l' | grep -v 'netcdf\|hdf\|exoIIv2c' | sed -e 's|^-l\(.*\)|\1|'` ; \
-	for d in $$libDirs; do \
-	    for f in $$libFiles; do \
-	        if test -e $$d/lib$$f.a ; then \
-		    for fvers in $$d/lib$$f*.a ; do \
-		        $(RM) `basename $$fvers` ; \
-			ln -s $$fvers . ; \
-		    done ; \
-	        elif test -e $$d/lib$$f.@SHLIB_LIBEXT@ ; then \
-		    for fvers in $$d/lib$$f*.@SHLIB_LIBEXT@ ; do \
-		        $(RM) `basename $$fvers` ; \
-			ln -s $$fvers . ; \
-		    done ; \
-	        fi ; \
-	    done ; \
-	done
 
 create_h5part_link:
 	$(RM) libH5Part.@SHLIB_LIBEXT@     
