@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPDIR PLATFORM_CPPFLAGS CMAKE CXXFLAGS EGREP CXX LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PARALLEL PARALLEL_CPPFLAGS MPI_LIBS MPI_CC MPI_CXX LIBSTATICPAR LIBSHAREDPAR LIBSHAREDPAR_UPDATEONLY PARDEP BUILD_COGNOMEN LIBCOGNOMEN MESA_DIR MESA_INCLUDE MESA_LIBS VIEWER_MESA_STUB_CPPFLAGS VIEWER_MESA_LIBS BUILD_MESA_STUB ICET_CXXFLAGS ICET_LDFLAGS ICET_LIBS ICET_ENG_MAIN_OBJ CC CFLAGS ac_ct_CC GL_LIBS VTK_DIR VTK_INCLUDES VTK_LIBS VTK_LIGHTWEIGHT_LIBS AVTPREP_SER AVTPREP_PAR CONVERT_SER CONVERT_PAR MAKEMILI_SER MAKEMILI_PAR ENGINE_SER ENGINE_PAR ENGINELIBSER ENGINELIBPAR METADATA_SERVER MDSERVERLIB MDSERVEROBJ VISITPY SCRIPTINGLIB SCRIPTINGOBJ PY_BUILD_VISITMODULE GUI GUILIB GUIOBJ GUIFRAMEWORKS VIEWER VISWINDOW VIEWERLIB VIEWEROBJ ENGINEPROXYDIR ANNOTATION_FLAGS JAVAC JAVA_TARGET JAR JAVAFLAGS JAVAPLUGINFLAGS BUILD_SLIVR SLIVR_INCLUDE SLIVR_LIBS TEEM_CMAKE_C_FLAGS SLIVR_CMAKE_SHARED_LINKER_FLAGS HELP PLOT_BUILD_DIRS OPERATOR_BUILD_DIRS DB_BUILD_DIRS BUILD_GLEW GLEW_INCLUDE GLEW_LIBS BUILD_BILIB CXXCPP CPP F77 FFLAGS ac_ct_F77 SET_MAKE RANLIB ac_ct_RANLIB MAKEDEPEND BUILD_FORTRAN OS_RULE BUILD_ZLIB ZLIB_LIB SZIP SZIP_INCLUDE SZIP_LIB SZIP_LIBDIR HDF5 HDF5_INCLUDE HDF5_LIB HDF5_LIBDIR HDF5_EXEC SILO_INCLUDE LIBSILO SILO_LIB SILO_LIBDIR EXODUS EXODUS_LIB EXODUS_LIBS EXODUS_FLAGS PDB PDB_FLAGS PDB_LIBS PDB_EXEC MILI MILI_FLAGS MILI_LIBS MILI_DIR TCMALLOC_LIB TCMALLOC_DIR CREATE_TCMALLOC_LINK HDF4 HDF4_FLAGS HDF4_LIBS HDF4_LIBDIR BOXLIB2D BOXLIB2D_INCLUDE BOXLIB2D_LIBS BOXLIB2D_LIBDIR BOXLIB3D BOXLIB3D_INCLUDE BOXLIB3D_LIBS BOXLIB3D_LIBDIR H5PART H5PART_INCLUDE H5PART_LIB H5PART_LIBDIR VISUS VISUS_INCLUDE VISUS_LIB NETCDF NETCDF_INCLUDE NETCDF_LIB NETCDF_CXX_LIB CGNS CGNS_INCLUDE CGNS_LIB GDAL GDAL_INCLUDE GDAL_LIB GDAL_LIBS CFITSIO CFITSIO_INCLUDE CFITSIO_LIB CFITSIO_LIBDIR ITAPS_C ITAPS_C_INCLUDE ITAPS_C_LIB ITAPS_S ITAPS_S_INCLUDE ITAPS_S_LIB ITAPS_INCLUDE ITAPS_LIB CREATE_ITAPS_LINK CCMIO CCMIO_INCLUDE CCMIO_LIBS CCMIO_LIBDIR SIMULATION EXPORT_DYNAMIC ENGINE_CPPFLAGS SILOOBJVTK_CPPFLAGS PREPROCESSOR_CPPFLAGS PREPROCESSOR_PARALLEL_SRC COMPONENT_CPPFLAGS VISIT_VTK_CPPFLAGS VISIT_VTK_LDFLAGS VIEWER_CPPFLAGS QT_BIN QT_INCLUDE QT_LIB LIBQT QT_LIBS QUI_LIBS QT_LDFLAGS QT_STATICLDFLAGS QT_CXXFLAGS QT_MOC X_LIBS VTKQT_CPPFLAGS VTKQT VTKQT_LIBS PTHREAD_LIB PTHREAD_CXXFLAGS PYDIR PYVERSION PY_INCLUDEDIR PY_CXXFLAGS PY_LDFLAGS PY_LIB PY_CLI_LIB EXE_LDFLAGS PLUGIN_LDFLAGS SHLIB_CREATEPROG SHLIB_LIBS SHLIB_SERLIBS SHLIB_PARLIBS SHLIB_MPI_LIBS SHLIB_ILIBS SHLIB_GLIBS SHLIB_VLIBS SHLIB_MLIBS SHLIB_ESERLIBS SHLIB_EPARLIBS SHLIB_SLIBS SHLIB_POSTPROCESS_ILIBS SHLIB_POSTPROCESS_GLIBS SHLIB_POSTPROCESS_VLIBS SHLIB_POSTPROCESS_MLIBS SHLIB_POSTPROCESS_ESERLIBS SHLIB_POSTPROCESS_EPARLIBS SHLIB_POSTPROCESS_SLIBS SHLIB_SOEXT SHLIB_LIBEXT SHLIB_POSTPROCESS SHLIB_POSTPROCESS_SER SHLIB_POSTPROCESS_PAR SHLIB_TMPDIR PREBIND_LIBS ENGINEWRAPSER ENGINEWRAPPAR CREATE_SILO_LINK CREATE_MILI_LINK CREATE_SZIP_LINK CREATE_HDF4_LINK CREATE_HDF5_LINK CREATE_NETCDF_LINK CREATE_CGNS_LINK CREATE_GDAL_LINK CREATE_EXODUS_LINK CREATE_BOXLIB2D_LINK CREATE_BOXLIB3D_LINK CREATE_CFITSIO_LINK CREATE_H5PART_LINK CREATE_CCMIO_LINK MG tmpbin tmpinc tmplib plotplugindir operatorplugindir databaseplugindir DATA_REL_VISIT_PATH LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPDIR PLATFORM_CPPFLAGS CMAKE CXXFLAGS EGREP CXX LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PARALLEL PARALLEL_CPPFLAGS MPI_LIBS MPI_CC MPI_CXX LIBSTATICPAR LIBSHAREDPAR LIBSHAREDPAR_UPDATEONLY PARDEP BUILD_COGNOMEN LIBCOGNOMEN MESA_DIR MESA_INCLUDE MESA_LIBS VIEWER_MESA_STUB_CPPFLAGS VIEWER_MESA_LIBS BUILD_MESA_STUB ICET_CXXFLAGS ICET_LDFLAGS ICET_LIBS ICET_ENG_MAIN_OBJ CC CFLAGS ac_ct_CC GL_LIBS VTK_DIR VTK_INCLUDES VTK_LIBS VTK_LIGHTWEIGHT_LIBS AVTPREP_SER AVTPREP_PAR CONVERT_SER CONVERT_PAR MAKEMILI_SER MAKEMILI_PAR ENGINE_SER ENGINE_PAR ENGINELIBSER ENGINELIBPAR METADATA_SERVER MDSERVERLIB MDSERVEROBJ VISITPY SCRIPTINGLIB SCRIPTINGOBJ PY_BUILD_VISITMODULE GUI GUILIB GUIOBJ GUIFRAMEWORKS VIEWER VISWINDOW VIEWERLIB VIEWEROBJ ENGINEPROXYDIR ANNOTATION_FLAGS JAVAC JAVA_TARGET JAR JAVAFLAGS JAVAPLUGINFLAGS BUILD_SLIVR SLIVR_INCLUDE SLIVR_LIBS TEEM_CMAKE_C_FLAGS SLIVR_CMAKE_SHARED_LINKER_FLAGS HELP PLOT_BUILD_DIRS OPERATOR_BUILD_DIRS DB_BUILD_DIRS BUILD_GLEW GLEW_INCLUDE GLEW_LIBS BUILD_BILIB CXXCPP CPP F77 FFLAGS ac_ct_F77 SET_MAKE RANLIB ac_ct_RANLIB MAKEDEPEND BUILD_FORTRAN OS_RULE BUILD_ZLIB ZLIB_LIB SZIP SZIP_INCLUDE SZIP_LIB SZIP_LIBDIR HDF5 HDF5_INCLUDE HDF5_LIB HDF5_LIBDIR HDF5_EXEC SILO_INCLUDE LIBSILO SILO_LIB SILO_LIBDIR EXODUS EXODUS_LIB EXODUS_LIBS EXODUS_FLAGS PDB PDB_FLAGS PDB_LIBS PDB_EXEC MILI MILI_FLAGS MILI_LIBS MILI_DIR TCMALLOC_LIB TCMALLOC_DIR CREATE_TCMALLOC_LINK HDF4 HDF4_FLAGS HDF4_LIBS HDF4_LIBDIR BOXLIB2D BOXLIB2D_INCLUDE BOXLIB2D_LIBS BOXLIB2D_LIBDIR BOXLIB3D BOXLIB3D_INCLUDE BOXLIB3D_LIBS BOXLIB3D_LIBDIR H5PART H5PART_INCLUDE H5PART_LIB H5PART_LIBDIR VISUS VISUS_INCLUDE VISUS_LIB NETCDF NETCDF_INCLUDE NETCDF_LIB NETCDF_CXX_LIB CGNS CGNS_INCLUDE CGNS_LIB GDAL GDAL_INCLUDE GDAL_LIB GDAL_LIBS CFITSIO CFITSIO_INCLUDE CFITSIO_LIB CFITSIO_LIBDIR ITAPS_C_INCLUDE ITAPS_C_LIB ITAPS_C0_INCLUDE ITAPS_C0_LIB ITAPS_C1_INCLUDE ITAPS_C1_LIB ITAPS_C2_INCLUDE ITAPS_C2_LIB ITAPS_C3_INCLUDE ITAPS_C3_LIB ITAPS_C4_INCLUDE ITAPS_C4_LIB ITAPS_C CCMIO CCMIO_INCLUDE CCMIO_LIBS CCMIO_LIBDIR SIMULATION EXPORT_DYNAMIC ENGINE_CPPFLAGS SILOOBJVTK_CPPFLAGS PREPROCESSOR_CPPFLAGS PREPROCESSOR_PARALLEL_SRC COMPONENT_CPPFLAGS VISIT_VTK_CPPFLAGS VISIT_VTK_LDFLAGS VIEWER_CPPFLAGS QT_BIN QT_INCLUDE QT_LIB LIBQT QT_LIBS QUI_LIBS QT_LDFLAGS QT_STATICLDFLAGS QT_CXXFLAGS QT_MOC X_LIBS VTKQT_CPPFLAGS VTKQT VTKQT_LIBS PTHREAD_LIB PTHREAD_CXXFLAGS PYDIR PYVERSION PY_INCLUDEDIR PY_CXXFLAGS PY_LDFLAGS PY_LIB PY_CLI_LIB EXE_LDFLAGS PLUGIN_LDFLAGS SHLIB_CREATEPROG SHLIB_LIBS SHLIB_SERLIBS SHLIB_PARLIBS SHLIB_MPI_LIBS SHLIB_ILIBS SHLIB_GLIBS SHLIB_VLIBS SHLIB_MLIBS SHLIB_ESERLIBS SHLIB_EPARLIBS SHLIB_SLIBS SHLIB_POSTPROCESS_ILIBS SHLIB_POSTPROCESS_GLIBS SHLIB_POSTPROCESS_VLIBS SHLIB_POSTPROCESS_MLIBS SHLIB_POSTPROCESS_ESERLIBS SHLIB_POSTPROCESS_EPARLIBS SHLIB_POSTPROCESS_SLIBS SHLIB_SOEXT SHLIB_LIBEXT SHLIB_POSTPROCESS SHLIB_POSTPROCESS_SER SHLIB_POSTPROCESS_PAR SHLIB_TMPDIR PREBIND_LIBS ENGINEWRAPSER ENGINEWRAPPAR CREATE_SILO_LINK CREATE_MILI_LINK CREATE_SZIP_LINK CREATE_HDF4_LINK CREATE_HDF5_LINK CREATE_NETCDF_LINK CREATE_CGNS_LINK CREATE_GDAL_LINK CREATE_EXODUS_LINK CREATE_BOXLIB2D_LINK CREATE_BOXLIB3D_LINK CREATE_CFITSIO_LINK CREATE_H5PART_LINK CREATE_CCMIO_LINK MG tmpbin tmpinc tmplib plotplugindir operatorplugindir databaseplugindir DATA_REL_VISIT_PATH LIBOBJS LTLIBOBJS'
 ac_subst_files='VARIABLES TARGETS DIRTARGETS LIBTARGETS PARLIBTARGETS SOURCE_DEPENDENCIES'
 
 # Initialize some variables set by options.
@@ -920,7 +920,8 @@ Optional Packages:
   --with-cgns=INC-DIR,LIB-DIR     Location of CGNS header and library
   --with-GDAL=INC-DIR,LIB-DIR     Location of GDAL header and library
   --with-cfitsio=INC-DIR,LIB-DIR     Location of CFITSIO header and library
-  --with-itaps=INC-DIR,LIB-DIR      -I and -L/-l compiler options for ITAPS
+  --with-itaps-impls      See config-site/hoth.llnl.gov.conf for example of
+                          how to format the argument to this option
   --with-ccmio=INC-DIR,LIB-DIR      Location of CCMIO header and library
   --with-x                use the X Window System
 
@@ -5971,7 +5972,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5974:" \
+echo "$as_me:5975:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -8946,75 +8947,175 @@ fi
 
 
 #
-# Look for ITAPS
-# Note: to make it easier to support a variety of implementations
-# of ITAPS, we treat the ITAPS_INCLUDE and ITAPS_LIB symbols a little
-# differently here than for other libs. Here, they are expected
-# to include the -I and -L compiler/linker option flags and can
-# contain multiple of them. The ITAPS_LIB symbol also needs to
-# include the -lxxx linker options too.
+# Handle all ITAPS implementations.
+# ITAPS is a bit unusual in that there can be multiple implementations
+# of ITAPS library. So, a single plugin source using the ITAPS API has
+# to be compiled and linked against each implementation and, ideally,
+#  assigned a different but meaingful plugin id. We handle that by making
+# multiple copies of the database plugin source directory AT CONFIGURE TIME
+# and fudging with the files a bit.
 #
-echo "$as_me:$LINENO: checking for a ITAPS Implementation" >&5
-echo $ECHO_N "checking for a ITAPS Implementation... $ECHO_C" >&6
-CREATE_ITAPS_LINK=""
 ITAPS_C=""
-ITAPS_S=""
-ITAPS_C_INCLUDE=""
-ITAPS_C_LIB=""
-ITAPS_S_INCLUDE=""
-ITAPS_S_LIB=""
+echo "$as_me:$LINENO: checking for ITAPS Implementations" >&5
+echo $ECHO_N "checking for ITAPS Implementations... $ECHO_C" >&6
 
-# Check whether --with-itaps or --without-itaps was given.
-if test "${with_itaps+set}" = set; then
-  withval="$with_itaps"
-  itaps_specified="yes"
+# Check whether --with-itaps-impls or --without-itaps-impls was given.
+if test "${with_itaps_impls+set}" = set; then
+  withval="$with_itaps_impls"
+
 else
-  itaps_specified="no"
-
+  with_itaps_impls=$DEFAULT_ITAPS_IMPLS
 fi;
-if test "$itaps_specified" = "yes"; then
-   if test "$withval" != "no"; then
-      ITAPS_INCLUDE="`echo $withval |cut -f1 -d,`"
-      ITAPS_LIB="`echo $withval |cut -f2- -d, -s`"
-   fi
-else
-   if test "$DEFAULT_ITAPS_INCLUDE" != "" ; then
-      ITAPS_INCLUDE="$DEFAULT_ITAPS_INCLUDE"
-   fi
-   if test "$DEFAULT_ITAPS_LIB" != "" ; then
-      ITAPS_LIB="$DEFAULT_ITAPS_LIB"
-   fi
+
+#
+# Iterate over all specified implementations
+#
+if test -n "$with_itaps_impls" && test with_itaps_impls != "no"; then
+    echo "$as_me:$LINENO: result: see below" >&5
+echo "${ECHO_T}see below" >&6
+
+    itaps_impl_id=0
+    for impl_spec in $with_itaps_impls; do
+
+        #
+        # Scan out all the parts of this implementation
+        #
+        impl_name="ITAPS_`echo $impl_spec | cut -d':' -f1`"
+        impl_exts=`echo $impl_spec | cut -d':' -f2 | tr ',' ' '`
+        impl_incs=`echo $impl_spec | cut -d':' -f3 | tr ',' ' '`
+        impl_libs=`echo $impl_spec | cut -d':' -f4 | tr ',' ' '`
+
+        #
+        # Handle the 'special' case where we are just using a single
+        # implementation named ITAPS_C
+        #
+        if test "$impl_name" = "ITAPS_ITAPS_C"; then
+            ITAPS_C_INCLUDE=${impl_incs}
+            ITAPS_C_LIB=${impl_libs}
+
+
+            ITAPS_C="ITAPS_C"
+            echo "$as_me:$LINENO: result: Instantiated ITAPS_C" >&5
+echo "${ECHO_T}Instantiated ITAPS_C" >&6
+            break
+        fi
+
+        #
+        # Check for pre-existing dir and remove if appropriate, fail otherwise
+        #
+        if test -d databases/$impl_name; then
+            if test ! -e databases/${impl_name}/DO_NOT_MODIFY_THE_FILES_IN_THIS_DIR; then
+                { { echo "$as_me:$LINENO: error: \"Configure needs to remove ITAPS implementation copy databases/${impl_name}. But that directory appears to be populated with something other than a copy of the ITAPS_C database plugin.\"" >&5
+echo "$as_me: error: \"Configure needs to remove ITAPS implementation copy databases/${impl_name}. But that directory appears to be populated with something other than a copy of the ITAPS_C database plugin.\"" >&2;}
+   { (exit 1); exit 1; }; }
+            fi
+            chmod -R u+wX databases/$impl_name
+            rm -rf databases/$impl_name
+        fi
+
+        #
+        # Make a copy of the src/database/ITAPS_C dir
+        #
+        cp -R databases/ITAPS_C databases/$impl_name
+        rm -rf databases/$impl_name/.svn
+        rm -f databases/$impl_name/*.o
+        rm -f databases/$impl_name/*.d
+        rm -f databases/$impl_name/Makefile
+
+        #
+        # Change all the filenames and file contents
+        #
+        for f in databases/$impl_name/*; do
+            newf=`echo $f | sed -e "s/ITAPS_C/${impl_name}/"`
+            mv $f $newf
+        done
+        sed -i -e "s/ITAPS_C/${impl_name}/g" databases/$impl_name/*
+
+        #
+        # Fix contents of the .xml file
+        #
+        sed -i -e "s%<Extensions>\(.*\)</Extensions>%<Extensions>${impl_exts}</Extensions>%" databases/$impl_name/$impl_name.xml
+        sed -i -e "s%<CXXFLAGS>\(.*\)</CXXFLAGS>%<CXXFLAGS>$\(ITAPS_C${itaps_impl_id}_INCLUDE)</CXXFLAGS>%" databases/$impl_name/$impl_name.xml
+        sed -i -e "s%<LIBS>\(.*\)</LIBS>%<LIBS>$\(ITAPS_C${itaps_impl_id}_LIB)</LIBS>%" databases/$impl_name/$impl_name.xml
+
+        #
+        # Fix the extensions in the PluginInfo.C file
+        #
+        sed -i -e "s%defaultExtensions.push_back(\(.*\));%defaultExtensions.push_back(\"itaps_foo\");%" databases/$impl_name/${impl_name}PluginInfo.C
+        for ext in $impl_exts; do
+            sed -i -e "1,/defaultExtensions.push_back/s%defaultExtensions.push_back(\"itaps_foo\");%defaultExtensions.push_back(\"${ext}\");%" databases/$impl_name/${impl_name}PluginInfo.C
+        done
+        sed -i -e "/defaultExtensions.push_back(\"itaps_foo\");/d" databases/$impl_name/${impl_name}PluginInfo.C
+
+        #
+        # Make a warning file
+        #
+        cat > databases/$impl_name/DO_NOT_MODIFY_THE_FILES_IN_THIS_DIR << EOF
+The sources in this directory are a copy of the sources in the ITAPS_C
+directory. This copy was made to facilitate linking a single ITAPS_C source
+to multiple, various implementations of the ITAPS libraries.
+
+All modifications made here will be lost if this source code
+tree is ever re-configured. Do NOT make modifications here. Instead,
+make modifications in the ITAPS_C sources.
+EOF
+
+        #
+        # Lastly, make everything in this dir read-only so someone doesn't
+        # accidentally try to modify these sources.
+        #
+        chmod u-w,g-w,o-w databases/$impl_name/*
+
+        #
+        # Define the appropriate make variables. We have to handle this part
+        # of the process this way because the shell code that gets generated
+        # from these autoconf macros is determined at autoconf time, not
+        # configure time.
+        #
+        case $itaps_impl_id in
+            0)
+                ITAPS_C0_INCLUDE=${impl_incs}
+                ITAPS_C0_LIB=${impl_libs}
+
+
+            ;;
+            1)
+                ITAPS_C1_INCLUDE=${impl_incs}
+                ITAPS_C1_LIB=${impl_libs}
+
+
+            ;;
+            2)
+                ITAPS_C2_INCLUDE=${impl_incs}
+                ITAPS_C2_LIB=${impl_libs}
+
+
+            ;;
+            3)
+                ITAPS_C3_INCLUDE=${impl_incs}
+                ITAPS_C3_LIB=${impl_libs}
+
+
+            ;;
+            4)
+                ITAPS_C4_INCLUDE=${impl_incs}
+                ITAPS_C4_LIB=${impl_libs}
+
+
+            ;;
+            5)
+                { { echo "$as_me:$LINENO: error: \"Configure is designed to support up to a maximum of $itaps_impl_id ITAPS implementations\"" >&5
+echo "$as_me: error: \"Configure is designed to support up to a maximum of $itaps_impl_id ITAPS implementations\"" >&2;}
+   { (exit 1); exit 1; }; }
+            ;;
+        esac
+
+        ITAPS_C="$ITAPS_C $impl_name"
+        itaps_impl_id=`expr $itaps_impl_id + 1`
+        echo "$as_me:$LINENO: result: Instantiated $impl_name" >&5
+echo "${ECHO_T}Instantiated $impl_name" >&6
+    done
 fi
-if test "$ITAPS_LIB" != "" ; then
-   if test "$ITAPS_INCLUDE" != "" ; then
-      if test "`echo $ITAPS_LIB | grep sidl`" != ""; then
-          ITAPS_S="$""(ITAPS_S)"
-          ITAPS_S_LIB="$ITAPS_LIB"
-	  ITAPS_S_INCLUDE="$ITAPS_INCLUDE"
-      else
-          ITAPS_C="$""(ITAPS_C)"
-          ITAPS_C_LIB="$ITAPS_LIB"
-	  ITAPS_C_INCLUDE="$ITAPS_INCLUDE"
-      fi
-      echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-      CREATE_ITAPS_LINK="create_itaps_link"
-   else
-      echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-   fi
-else
-   echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-
-
-
-
-
-
-
-
 
 
 #
@@ -10766,9 +10867,6 @@ case $SHORT_UNAME in
     fi
     if test "$CFITSIO_LIB" != "" ; then
         CREATE_CFITSIO_LINK="create_cfitsio_link"
-    fi
-    if test "$ITAPS_LIB" != "" ; then
-        CREATE_ITAPS_LINK="create_itaps_link"
     fi
     if test "$H5PART_LIB" != "" ; then
         CREATE_H5PART_LINK="create_h5part_link"
@@ -19553,15 +19651,19 @@ s,@CFITSIO@,$CFITSIO,;t t
 s,@CFITSIO_INCLUDE@,$CFITSIO_INCLUDE,;t t
 s,@CFITSIO_LIB@,$CFITSIO_LIB,;t t
 s,@CFITSIO_LIBDIR@,$CFITSIO_LIBDIR,;t t
-s,@ITAPS_C@,$ITAPS_C,;t t
 s,@ITAPS_C_INCLUDE@,$ITAPS_C_INCLUDE,;t t
 s,@ITAPS_C_LIB@,$ITAPS_C_LIB,;t t
-s,@ITAPS_S@,$ITAPS_S,;t t
-s,@ITAPS_S_INCLUDE@,$ITAPS_S_INCLUDE,;t t
-s,@ITAPS_S_LIB@,$ITAPS_S_LIB,;t t
-s,@ITAPS_INCLUDE@,$ITAPS_INCLUDE,;t t
-s,@ITAPS_LIB@,$ITAPS_LIB,;t t
-s,@CREATE_ITAPS_LINK@,$CREATE_ITAPS_LINK,;t t
+s,@ITAPS_C0_INCLUDE@,$ITAPS_C0_INCLUDE,;t t
+s,@ITAPS_C0_LIB@,$ITAPS_C0_LIB,;t t
+s,@ITAPS_C1_INCLUDE@,$ITAPS_C1_INCLUDE,;t t
+s,@ITAPS_C1_LIB@,$ITAPS_C1_LIB,;t t
+s,@ITAPS_C2_INCLUDE@,$ITAPS_C2_INCLUDE,;t t
+s,@ITAPS_C2_LIB@,$ITAPS_C2_LIB,;t t
+s,@ITAPS_C3_INCLUDE@,$ITAPS_C3_INCLUDE,;t t
+s,@ITAPS_C3_LIB@,$ITAPS_C3_LIB,;t t
+s,@ITAPS_C4_INCLUDE@,$ITAPS_C4_INCLUDE,;t t
+s,@ITAPS_C4_LIB@,$ITAPS_C4_LIB,;t t
+s,@ITAPS_C@,$ITAPS_C,;t t
 s,@CCMIO@,$CCMIO,;t t
 s,@CCMIO_INCLUDE@,$CCMIO_INCLUDE,;t t
 s,@CCMIO_LIBS@,$CCMIO_LIBS,;t t

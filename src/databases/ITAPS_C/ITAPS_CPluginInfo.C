@@ -177,5 +177,14 @@ ITAPS_CGeneralPluginInfo::GetDfltExtsFromGen() const
     defaultExtensions.push_back("cub");
     defaultExtensions.push_back("vmesh");
 
+    // these bogus lines are to facilitate configuration with multiple
+    // itaps implementations.
+    defaultExtensions.push_back("itaps_foo");
+    defaultExtensions.push_back("itaps_foo");
+    defaultExtensions.push_back("itaps_foo");
+    defaultExtensions.push_back("itaps_foo");
+    defaultExtensions.push_back("itaps_foo");
+    defaultExtensions.push_back("itaps_foo");
+
     return defaultExtensions;
 }
