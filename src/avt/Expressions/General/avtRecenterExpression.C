@@ -49,6 +49,8 @@
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 
+#include <avtExprNode.h>
+
 #include <DebugStream.h>
 #include <ExpressionException.h>
 
@@ -63,11 +65,15 @@
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//      Sean Ahern, Wed Sep 10 12:15:05 EDT 2008
+//      Set the default recentering to "toggle".
+//
 // ****************************************************************************
 
 avtRecenterExpression::avtRecenterExpression()
 {
-    ;
+    recenterMode = Toggle;
 }
 
 
@@ -86,6 +92,89 @@ avtRecenterExpression::avtRecenterExpression()
 avtRecenterExpression::~avtRecenterExpression()
 {
     ;
+}
+
+
+// ****************************************************************************
+//  Method: avtRecenterExpression::ProcessArguments
+//
+//  Purpose:
+//      Parses optional centering argument.
+//
+//  Arguments:
+//      args      Expression arguments
+//      state     Expression pipeline state
+//
+//  Programmer:   Sean Ahern
+//  Creation:     Wed Sep 10 12:04:12 EDT 2008
+//
+// ****************************************************************************
+void
+avtRecenterExpression::ProcessArguments(ArgsExpr *args,
+                                        ExprPipelineState *state)
+{
+    // Get the argument list and number of arguments.
+    std::vector<ArgExpr*> *arguments = args->GetArgs();
+    int nargs = arguments->size();
+
+    // Check for a call with no arguments.
+    if (nargs == 0)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "recenter(): Incorrect syntax.\n"
+                   " usage: recenter(varname, [centering])\n"
+                   " The centering parameter is optional "
+                   " and specifies nodal or zonal centering.\n"
+                   " Valid values of centering: \"nodal\", \"zonal\", and \"toggle\".\n"
+                   " The default centering is to toggle, that is, to convert "
+                   " nodal to zonal or zonal to nodal.");
+    }
+
+    // Grab off the first argument.
+    ArgExpr *firstArg = (*arguments)[0];
+    avtExprNode *firstTree = dynamic_cast<avtExprNode*>(firstArg->GetExpr());
+    firstTree->CreateFilters(state);
+
+    // Check if we have a second optional argument that tells us how to
+    // center.
+    //
+    // Options:
+    //  nodal:  Recenter to nodes
+    //  zonal:  Recenter to zones
+    //  toggle: Toggle centering
+    // Default: toggle
+
+    if (nargs > 1)
+    {
+        ArgExpr *secondArg = (*arguments)[1];
+        ExprParseTreeNode *secondTree = secondArg->GetExpr();
+        string secondType = secondTree->GetTypeName();
+
+        // Check for argument passed as string
+        if (secondType == "StringConst")
+        {
+            string sval = dynamic_cast<StringConstExpr*>(secondTree)->GetValue();
+
+            if (sval == "toggle")
+                recenterMode = Toggle;
+            else if (sval == "nodal")
+                recenterMode = Nodal;
+            else if (sval == "zonal")
+                recenterMode = Zonal;
+            else
+            {
+                EXCEPTION2(ExpressionException, outputVariableName,
+                           "avtRecenterExpression: Invalid second argument.\n"
+                           " Valid options are: \"nodal\", \"zonal\", or \"toggle\".");
+            }
+        }
+        else    // Invalid argument type
+        {
+            EXCEPTION2(ExpressionException, outputVariableName,
+                       "avtRecenterExpression: Invalid second argument type.\n"
+                       "Must be a string with one of: \"nodal\", \"zonal\", \"toggle\".");
+        }
+    }
 }
 
 
@@ -115,19 +204,37 @@ avtRecenterExpression::DeriveVariable(vtkDataSet *in_ds)
                    "specify which variable to recenter");
     }
 
+    debug5 << "avtRecenterExpression: recentering mode: ";
+    if (recenterMode == Toggle)
+        debug5 << "toggle" << endl;
+    if (recenterMode == Nodal)
+        debug5 << "nodal" << endl;
+    if (recenterMode == Zonal)
+        debug5 << "zonal" << endl;
+
     vtkDataArray *cell_data = in_ds->GetCellData()->GetArray(activeVariable);
     vtkDataArray *pt_data   = in_ds->GetPointData()->GetArray(activeVariable);
 
     vtkDataArray *rv = NULL;
 
+    avtCentering target;
+    switch(recenterMode)
+    {
+    case Nodal:
+        target = AVT_NODECENT;
+        break;
+    case Toggle:
+        target = AVT_UNKNOWN_CENT;
+        break;
+    case Zonal:
+        target = AVT_ZONECENT;
+        break;
+    }
+
     if (cell_data != NULL)
-    {
-        rv = Recenter(in_ds, cell_data, AVT_ZONECENT, outputVariableName);
-    }
+        rv = Recenter(in_ds, cell_data, AVT_ZONECENT, outputVariableName, target);
     else if (pt_data != NULL)
-    {
-        rv = Recenter(in_ds, pt_data, AVT_NODECENT, outputVariableName);
-    }
+        rv = Recenter(in_ds, pt_data, AVT_NODECENT, outputVariableName, target);
     else
     {
         EXCEPTION2(ExpressionException, outputVariableName, "Was not able to locate variable to "
@@ -211,5 +318,3 @@ avtRecenterExpression::GetVariableDimension(void)
     int ncomp = atts.GetVariableDimension(varname);
     return ncomp;
 }
-
-

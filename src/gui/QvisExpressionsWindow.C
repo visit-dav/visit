@@ -1120,6 +1120,9 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Added support for '&' bitwise binary and operation
+//
+//    Sean Ahern, Wed Sep 10 12:44:22 EDT 2008
+//    Added support for recenter with optional argument.
 // ****************************************************************************
 
 void
@@ -1213,6 +1216,11 @@ QvisExpressionsWindow::insertFunction(int id)
     {
         definitionEdit->insert("(<var1>, <var2>, <var3>)");
         doParens = false;      
+    }
+    else if (str == "recenter")
+    {
+        definitionEdit->insert("(<var>, [\"nodal\", \"zonal\", \"toggle\"])");
+        doParens = false;
     }
     else if(str == "value_for_material")
     {

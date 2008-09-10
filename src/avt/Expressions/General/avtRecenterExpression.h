@@ -63,6 +63,9 @@
 //
 //    Hank Childs, Thu Oct  6 15:41:21 PDT 2005
 //    Added support for recentering vectors ['6637].
+//    
+//    Sean Ahern, Wed Sep 10 12:01:43 EDT 2008
+//    Added optional argument to specify explicit centering.
 //
 // ****************************************************************************
 
@@ -74,11 +77,20 @@ class EXPRESSION_API avtRecenterExpression : public avtSingleInputExpressionFilt
 
     virtual const char       *GetType(void) { return "avtRecenterExpression"; };
     virtual const char       *GetDescription(void) {return "Recentering";};
+    virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
+
+    typedef enum {
+        Toggle,
+        Nodal,
+        Zonal,
+    } RecenterType;
 
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void);
     virtual int               GetVariableDimension(void);
+
+    RecenterType              recenterMode;
 };
 
 

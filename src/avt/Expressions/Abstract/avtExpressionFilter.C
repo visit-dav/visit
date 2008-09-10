@@ -624,7 +624,8 @@ avtExpressionFilter::GetVariableDimension(void)
 //  Arguments:
 //      ds      The mesh the variable lays on.
 //      arr     The variable to recenter.
-//      currCent The current centering of the variable -- NOT the desired centering.
+//      currCent The current centering of the variable
+//      targCent The desires centering of the variable
 //
 //  Returns:    The array recentered.  Note: the calling routine will then
 //              be responsible for deleting the returned object.
@@ -636,14 +637,33 @@ avtExpressionFilter::GetVariableDimension(void)
 //      Sean Ahern, Mon Dec 10 09:59:27 EST 2007
 //      Added a variable for error messages.
 //
+//      Sean Ahern, Wed Sep 10 12:22:13 EDT 2008
+//      Added a target centering.  Defaults to toggling if not set
+//      (AVT_UNKNOWN_CENT).
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr, 
-                              avtCentering currCent, std::string name)
+avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
+                              avtCentering currCent,
+                              std::string name, avtCentering targCent)
 {
     vtkDataSet *ds2 = ds->NewInstance();
     ds2->CopyStructure(ds);
+
+    if (targCent == AVT_UNKNOWN_CENT)
+    {
+        if (currCent == AVT_NODECENT)
+            targCent = AVT_ZONECENT;
+        if (currCent == AVT_ZONECENT)
+            targCent = AVT_NODECENT;
+    }
+
+    if (currCent == targCent)
+    {
+        // Nothing to do.  Return the original array.
+        return arr;
+    }
 
     vtkDataArray *outv = NULL;
     if (currCent == AVT_NODECENT)
@@ -652,6 +672,12 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
         {
             EXCEPTION2(ExpressionException, name, "Asked to re-center a nodal "
                        "variable that is not nodal.");
+        }
+
+        if (targCent != AVT_ZONECENT)
+        {
+            EXCEPTION2(ExpressionException, name, "Asked to re-center a nodal "
+                       "variable to something other than zonal.");
         }
 
         ds2->GetPointData()->SetScalars(arr);
@@ -670,6 +696,12 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
         {
             EXCEPTION2(ExpressionException, name, "Asked to re-center a zonal "
                        "variable that is not zonal.");
+        }
+
+        if (targCent != AVT_NODECENT)
+        {
+            EXCEPTION2(ExpressionException, name, "Asked to re-center a zonal "
+                       "variable to something other than nodal.");
         }
 
         ds2->GetCellData()->SetScalars(arr);
