@@ -108,6 +108,9 @@ class     ExprPipelineState;
 //    Hank Childs, Sun Jan 13 13:46:15 PST 2008
 //    Add method for handling singleton constants.
 //
+//    Sean Ahern, Wed Sep 10 12:21:41 EDT 2008
+//    Added a target centering.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : virtual public 
@@ -125,8 +128,9 @@ class EXPRESSION_API avtExpressionFilter : virtual public
 
     virtual void             ProcessArguments(ArgsExpr *, ExprPipelineState *);
     virtual int              NumVariableArguments() = 0;
-    static vtkDataArray     *Recenter(vtkDataSet*, vtkDataArray*,
-                                      avtCentering, std::string name);
+    static vtkDataArray    *Recenter(vtkDataSet*, vtkDataArray*,
+                                     avtCentering, std::string name,
+                                     avtCentering targCent = AVT_UNKNOWN_CENT);
 
   protected:
     char                    *outputVariableName;
