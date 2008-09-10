@@ -1243,6 +1243,9 @@ RemoteProcess::WaitForTermination()
 //   Added code to attempt 'localhost' after using name returned by
 //   gethostname() failes.
 //
+//   Kathleen Bonnell, Tue Sep 9 15:16:47 PDT 2008 
+//   Fixed windows extra-lookup loop to correctly use hostent members.
+//
 // ****************************************************************************
 
 bool
@@ -1326,27 +1329,23 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     if(remote)
     {
         debug5 << mName << "We're on Win32 and the host is remote. "
-            "Make sure that we have the correct name for localhost by iterating "
-            "through the localHostEnt and calling gethostbyaddr." << endl;
-        bool looping = true;
-        for(int i = 0; (i < localHostEnt->h_length) && looping; ++i)
+               << "Make sure that we have the correct name for localhost by "
+               << "iterating through the localHostEnt and calling "
+               << "gethostbyaddr." << endl;
+        for(int i = 0; localHostEnt->h_addr_list[i] != 0; ++i)
         {
-            looping = (localHostEnt->h_addr_list[i] != 0);
-            if(looping)
+            struct hostent *h = NULL;
+            h = gethostbyaddr(localHostEnt->h_addr_list[i], 
+                              localHostEnt->h_length, 
+                              localHostEnt->h_addrtype);
+            if(h)
             {
-                struct hostent *h;
-                h = gethostbyaddr(localHostEnt->h_addr_list[i], 4, PF_INET);
-                if(h)
-                {
-                    localHost = std::string(h->h_name);
-                    debug5 << mName << "gethostbyaddr returned: " << localHost.c_str()
-                           << endl;
-                }
-#if defined(_WIN32)
-                else
-                    LogWindowsSocketError(mName, "gethostbyaddr");
-#endif
+                localHost = std::string(h->h_name);
+                debug5 << mName << "gethostbyaddr returned: " 
+                       << localHost.c_str() << endl;
             }
+            else
+                LogWindowsSocketError(mName, "gethostbyaddr");
         }
     }
 #endif
