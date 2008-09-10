@@ -191,6 +191,10 @@ int ReadKey(const char *key, char **keyval);
  *   Added call to free visitargs if not found, because ReadKey does the
  *   allocation regardless.
  *
+ *   Kathleen Bonnell, Wed Sep 10 16:19:53 PDT 2008 
+ *   Added loopback support: it replaces the remote host name with 127.0.0.1
+ *   unless the "-noloopback" flag is given by visit or by the user.
+ *
  *****************************************************************************/
 
 int
@@ -202,6 +206,9 @@ main(int argc, char *argv[])
     int i, j, size = 0, retval = 0, skipping = 0, nArgsSkip = 0, tmplen = 0;
     int addMovieArguments = 0, addVISITARGS = 1, useShortFileName = 0;
     int newConsole = 0;
+    int noloopback = 0;
+    int parallel = 0;
+    int hostset = 0;
 
     /*
      * Default values.
@@ -301,6 +308,26 @@ main(int argc, char *argv[])
         {
             newConsole = 1;
         }
+        else if(ARG("-noloopback"))
+        {
+            noloopback = 1;
+            PUSHARG("-noloopback");
+        }
+        else if(ARG("-par"))
+        {
+            parallel = 1;
+            PUSHARG("-par");
+        }
+        else if(ARG("-np"))
+        {
+            parallel = 1;
+            PUSHARG("-np");
+        }
+        else if(ARG("-host"))
+        {
+            hostset = 1;
+            PUSHARG("-host");
+        }
         else
         {
             if (!BEGINSWITHQUOTE(argv[i]) && HASSPACE(argv[i]))
@@ -331,6 +358,12 @@ main(int argc, char *argv[])
                 PUSHARG(argv[i]);
             }
         }
+    }
+
+    if (parallel && !noloopback)
+    {
+        noloopback = 1;
+        PUSHARG("-noloopback");
     }
 
     /* If we want a new console, allocate it now. */
@@ -411,6 +444,12 @@ main(int argc, char *argv[])
 
         if(strcmp(componentArgs[i], "-key") == 0)
             skipping = 1;
+
+        if(strcmp(componentArgs[i], "-host") == 0 && !noloopback)
+        {
+            /* replace the host arg with the loopback instead */
+            strcpy(componentArgs[i+1], "127.0.0.1"); 
+        }
 
         if(skipping == 0) 
         {

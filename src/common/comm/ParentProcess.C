@@ -698,6 +698,10 @@ ParentProcess::GetWriteConnection(int i) const
 //   Jeremy Meredith, Tue Jun 24 11:09:25 EDT 2008
 //   Added error text to connect failure message via strerror.
 //
+//   Kathleen Bonnell, Wed Sep 10 11:16:00 PDT 2008 
+//   Restructured to allow looping over all ips in h_addr_list until a 
+//   connection is completed, or there are no more ips.
+// 
 // ****************************************************************************
 
 int
@@ -705,6 +709,7 @@ ParentProcess::GetClientSocketDescriptor(int port)
 {
     const char *mName = "ParentProcess::GetClientSocketDescriptor: ";
     int                s;
+    bool               connected = false;
     struct hostent     *hp;
     struct sockaddr_in server;
 
@@ -715,16 +720,12 @@ ParentProcess::GetClientSocketDescriptor(int port)
     hp = (struct hostent *)hostInfo;
     if (hp == NULL)
         return -1;
-    memset(&server, 0, sizeof(server));
-    memcpy(&(server.sin_addr), hp->h_addr, hp->h_length);
-    server.sin_family = hp->h_addrtype;
-    server.sin_port = htons(port);
-    
+
     // 
     // Create a socket.
     // 
     debug5 << mName << "Creating a socket" << endl;
-#if defined(_WIN32)
+#ifdef _WIN32
     s = socket(AF_INET, SOCK_STREAM, 0);
     if (s == INVALID_SOCKET)
     {
@@ -740,15 +741,6 @@ ParentProcess::GetClientSocketDescriptor(int port)
     {
         LogWindowsSocketError(mName, "setsockopt");
     }
-
-    debug5 << mName << "Calling connect" << endl;
-    if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
-    {
-        LogWindowsSocketError(mName, "connect");
-        debug5 << mName << "Could not connect!" << endl;
-        closesocket(s);
-        return -1;
-    }
 #else
     s = socket(AF_INET, SOCK_STREAM, 0);
     if (s < 0)
@@ -760,22 +752,49 @@ ParentProcess::GetClientSocketDescriptor(int port)
     debug5 << mName << "Setting socket options" << endl;
     int opt = 1;
     setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(int));
-    debug5 << mName << "Calling connect" << endl;
-    debug5 << "(If you see no messages after this one, VisIt was not able\n"
-           << "to connect to the client machine.  Nine times out of ten, this\n"
-           << "is a firewall issue on the client machine. It could also mean\n"
-           << "that VisIt was unable to resolve the IP address for the client\n"
-           << "machine.  You may need to verify the contents of /etc/hosts.)" 
-           << endl;
-
-    if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
-    {
-        debug5 << mName << "Could not connect! "
-               << "(error="<<errno<<": "<<strerror(errno)<<")" << endl;
-        close(s);
-        return -1;
-    }
 #endif
+
+    //
+    // Try connection
+    //
+    memset(&server, 0, sizeof(server));
+
+    for (int i = 0; hp->h_addr_list[i] != NULL && !connected; ++i)
+    {
+        memcpy(&(server.sin_addr), hp->h_addr_list[i], hp->h_length);
+        server.sin_family = hp->h_addrtype;
+        server.sin_port = htons(port);
+    
+
+        debug5 << mName << "Calling connect" << endl;
+        debug5 << "(If you see no messages after this one, VisIt was not\n"
+               << "able to connect to the client machine.  Nine times out\n"
+               << "of ten, this is a firewall issue on the client machine.\n"
+               << "It could also mean that VisIt was unable to resolve the\n"
+               << "IP address for the client machine.";
+#ifndef _WIN32
+        debug5 << "  You may need to verify the contents of /etc/hosts." 
+#endif
+        debug5 << ")" << endl;
+
+        connected =(connect(s, (struct sockaddr *)&server, sizeof(server)) ==0);
+        if (!connected)
+        {
+#ifdef _WIN32
+            LogWindowsSocketError(mName, "connect");
+            debug5 << mName << "Could not connect!" << endl;
+            closesocket(s);
+#else
+            debug5 << mName << "Could not connect! "
+                   << "(error="<<errno<<": "<<strerror(errno)<<")" << endl;
+            close(s);
+#endif
+            continue;
+        }
+    }
+
+    if (!connected)
+        return -1;
 
     debug5 << mName << "Connected socket" << endl;
 
