@@ -773,7 +773,7 @@ ParentProcess::GetClientSocketDescriptor(int port)
                << "It could also mean that VisIt was unable to resolve the\n"
                << "IP address for the client machine.";
 #ifndef _WIN32
-        debug5 << "  You may need to verify the contents of /etc/hosts." 
+        debug5 << "  You may need to verify the contents of /etc/hosts.";
 #endif
         debug5 << ")" << endl;
 
