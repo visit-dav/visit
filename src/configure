@@ -8978,12 +8978,15 @@ echo "${ECHO_T}see below" >&6
     for impl_spec in $with_itaps_impls; do
 
         #
-        # Scan out all the parts of this implementation
+        # Scan out all the parts of this implementation. Handle the special
+        # case of the -Wl,-rpath option in the LIBS component.
         #
         impl_name="ITAPS_`echo $impl_spec | cut -d':' -f1`"
         impl_exts=`echo $impl_spec | cut -d':' -f2 | tr ',' ' '`
         impl_incs=`echo $impl_spec | cut -d':' -f3 | tr ',' ' '`
-        impl_libs=`echo $impl_spec | cut -d':' -f4 | tr ',' ' '`
+        impl_libs=`echo $impl_spec | cut -d':' -f4 | sed -e 's/-Wl,-rpath=/-Wl;-rpath=/g' -e 's/-Wl,--rpath,/-Wl;--rpath;/g'`
+        impl_libs=`echo $impl_libs | tr ',' ' '`
+        impl_libs=`echo $impl_libs | tr ';' ','`
 
         #
         # Handle the 'special' case where we are just using a single
