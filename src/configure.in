@@ -827,6 +827,13 @@ dnl
 dnl    Brad Whitlock, Mon Aug 18 11:01:03 PDT 2008
 dnl    Added tools/embedviewer. Removed some viewer source stuff.
 dnl
+dnl    Mark C. Miller, Thu Sep 10 ??:??:?? PDT 2008
+dnl    Changed how ITAPS is handled to permit multiple implementations of
+dnl    the ITAPS interfaces being built from the same plugin source code.
+dnl    
+dnl    Mark C. Miller, Thu Sep 11 10:31:38 PDT 2008
+dnl    Adjusted how ITAPS implementations are handled to deal with possible
+dnl    -Wl,-rpath= or -Wl,--rpath, directive in the libs component.
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2954,12 +2961,15 @@ if test -n "$with_itaps_impls" && test with_itaps_impls != "no"; then
     for impl_spec in $with_itaps_impls; do
 
         #
-        # Scan out all the parts of this implementation
+        # Scan out all the parts of this implementation. Handle the special
+        # case of the -Wl,-rpath option in the LIBS component.
         #
         impl_name="ITAPS_`echo $impl_spec | cut -d':' -f1`"
         impl_exts=`echo $impl_spec | cut -d':' -f2 | tr ',' ' '`
         impl_incs=`echo $impl_spec | cut -d':' -f3 | tr ',' ' '`
-        impl_libs=`echo $impl_spec | cut -d':' -f4 | tr ',' ' '`
+        impl_libs=`echo $impl_spec | cut -d':' -f4 | sed -e 's/-Wl,-rpath=/-Wl;-rpath=/g' -e 's/-Wl,--rpath,/-Wl;--rpath;/g'`
+        impl_libs=`echo $impl_libs | tr ',' ' '`
+        impl_libs=`echo $impl_libs | tr ';' ','`
 
         #
         # Handle the 'special' case where we are just using a single
