@@ -265,6 +265,12 @@ avtThresholdFilter::Equivalent(const AttributeGroup *a)
 //    Markus Glatter, Fri Aug 10 10:41:07 EDT 2007
 //    Added avtDataRangeSelection entries to support contract-based filtering.
 //
+//    Hank Childs, Thu Sep 11 11:10:37 PDT 2008
+//    Add fix for issue debugged by Gunther Weber ... reference counting can
+//    go "off-by-one" when we have data selections in play.  This is because
+//    the Threshold filter inherits from the structured mesh chunker, which
+//    assumes the return value has an extra reference.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -401,7 +407,15 @@ avtThresholdFilter::ProcessOneChunk(
         threshold->Delete();
     }
 
-    if (curOutDataSet != NULL)
+    if (curOutDataSet == in_ds)
+    {
+        // The curOutDataSet equals the in_ds, meaning
+        // that data selections allowed us to bypass any thresholding.
+        // The structured mesh chunker will automatically decrement the
+        // reference count.  So we need to add one.
+        curOutDataSet->Register(NULL);
+    }
+    else if (curOutDataSet != NULL)
     {
         curOutDataSet->GetFieldData()->PassData(in_ds->GetFieldData());
     }
