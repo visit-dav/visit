@@ -50,6 +50,9 @@
 #
 #    Mark C. Miller, Thu Aug 21 11:05:01 PDT 2008
 #    Added chgcar_11 to skipList
+#
+#    Mark C. Miller, Thu Sep 11 10:12:53 PDT 2008
+#    Added extra chmod/chgrp for top-level date dir when 'posting' results.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -451,6 +454,8 @@ for m in $modes; do
 
         # 'post' the results by copying to public directory
         mkdir /project/projectdirs/visit/public_html/${dateTag} 1>/dev/null 2>&1
+        chgrp visit /project/projectdirs/visit/public_html/${dateTag}
+        chmod g+rwX,o-rwX /project/projectdirs/visit/public_html/${dateTag}
         cp -r html_$dateTag /project/projectdirs/visit/public_html/${dateTag}/${theMode}
         chgrp -R visit /project/projectdirs/visit/public_html/${dateTag}/${theMode}
         chmod -R g+rwX,o-rwX /project/projectdirs/visit/public_html/${dateTag}/${theMode}
