@@ -11,6 +11,10 @@
 #  Programmer: Hank Childs
 #  Date:       March 31, 2005
 #
+#  Modifications:
+#  
+#    Mark C. Miller, Mon Sep 15 12:05:44 PDT 2008
+#    Added 3D test
 # ----------------------------------------------------------------------------
 
 
@@ -52,6 +56,19 @@ level0 = levels[0]
 s.TurnOffSet(level0)
 SetPlotSILRestriction(s)
 Test("boxlib_03")
+
+DeleteAllPlots()
+CloseDatabase("../data/boxlib_test_data/2D/plt0822/Header")
+
+OpenDatabase("../data/boxlib_test_data/3D/plt_asgc05_0309/Header")
+AddPlot("Pseudocolor","tracer")
+DrawPlots()
+ResetView()
+v=GetView3D()
+v.RotateAxis(2,-45.0)
+v.RotateAxis(0,65.0)
+SetView3D(v)
+Test("boxlib_04")
 
 Exit()
 
