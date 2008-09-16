@@ -61,6 +61,11 @@ class PDBFileObject;
 //   Added FreeUpResourcesForTimeStep method, lastTimeState, and 
 //   timeFlowsForward members.
 //
+//   Brad Whitlock, Mon Sep 15 16:24:23 PST 2008
+//   Added override for CanCacheVariable so variables read from this file
+//   format are never cached in the database. We already do our own low-cost
+//   caching.
+//
 // ****************************************************************************
 
 class PP_Z_MTSD_FileFormat : public avtMTSDFileFormat
@@ -89,6 +94,7 @@ public:
                                            const char *type,
                                            void *args,
                                            DestructorFunction &);
+    virtual bool          CanCacheVariable(const char *) { return false; }
 
     virtual vtkDataSet   *GetMesh(int ts, const char *var);
     virtual vtkDataArray *GetVar(int ts, const char *var);

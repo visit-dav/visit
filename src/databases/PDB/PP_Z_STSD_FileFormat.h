@@ -62,6 +62,11 @@ class avtFileFormatInterface;
 //   Brad Whitlock, Thu Sep 2 00:12:33 PDT 2004
 //   Added override for FreeUpResources.
 //
+//   Brad Whitlock, Mon Sep 15 16:24:23 PST 2008
+//   Added override for CanCacheVariable so variables read from this file
+//   format are never cached in the database. We already do our own low-cost
+//   caching.
+//
 // ****************************************************************************
 
 class PP_Z_STSD_FileFormat : public avtSTSDFileFormat
@@ -89,6 +94,7 @@ public:
     virtual vtkDataArray *GetVar(const char *var);
     virtual void         *GetAuxiliaryData(const char *var, const char *type,
                                            void *args, DestructorFunction &);
+    virtual bool          CanCacheVariable(const char *) { return false; }
     virtual void          FreeUpResources();
 protected:
     PP_ZFileReader        reader;
