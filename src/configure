@@ -1544,7 +1544,6 @@ fi
 
 # Load the OS configuration file if present.
 UNAME="`uname 2>/dev/null`"
-SHORT_UNAME=`uname -s | tr 'A-Z' 'a-z' | tr -d '0-9'`
 echo "$as_me:$LINENO: checking for OS configuration file" >&5
 echo $ECHO_N "checking for OS configuration file... $ECHO_C" >&6
 site_conf=config-site/$UNAME.conf
@@ -3664,7 +3663,7 @@ fi
 
 fi
 # If we're on Darwin, OpenGL is a framework.
-if test "$SHORT_UNAME" = "darwin"; then
+if test "$UNAME" = "Darwin"; then
     # We're on MacOS X and it always has an OpenGL framework.
     echo "$as_me:$LINENO: checking for OpenGL" >&5
 echo $ECHO_N "checking for OpenGL... $ECHO_C" >&6
@@ -3704,7 +3703,7 @@ echo "${ECHO_T}found" >&6
     VTK_INCROOT="$""(TOPDIR)/include/vtk"
     VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/Common -I$VTK_INCROOT/Filtering -I$VTK_INCROOT/Graphics -I$VTK_INCROOT/Hybrid -I$VTK_INCROOT/IO -I$VTK_INCROOT/Imaging -I$VTK_INCROOT/Rendering -I$VTK_INCROOT/Utilities"
     VTK_LIBS="-lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype -lvtksys -lvtkMPEG2Encode "
-    if test "$SHORT_UNAME" = "darwin"; then
+    if test "$UNAME" = "Darwin"; then
         VTK_LIGHTWEIGHT_LIBS=$VTK_LIBS
     else
         VTK_LIGHTWEIGHT_LIBS="-lvtkCommon -lvtkFiltering -lvtkzlib -lvtkexpat -lvtksys"
@@ -3995,7 +3994,7 @@ echo "${ECHO_T}found" >&6
         GUI="gui"
         GUILIB="$""(GDSO)"
         GUIOBJ="$""(GOBJ)"
-        if test "$SHORT_UNAME" = "darwin"; then
+        if test "$UNAME" = "Darwin"; then
             GUIFRAMEWORKS="-framework Carbon"
         else
             GUIFRAMEWORKS=""
@@ -4116,7 +4115,7 @@ _ACEOF
         BUILD_SLIVR="slivr"
         SLIVR_INCLUDE="-I$""(TOPDIR)/include/teem -I$""(TOPDIR)/include/slivr"
         SLIVR_LIBS="-lslivrV -lslivrG -lnrrd -lair -lbiff -lhest"
-        if test "$SHORT_UNAME" = "darwin"; then
+        if test "$UNAME" = "Darwin"; then
             TEEM_CMAKE_C_FLAGS="-D CMAKE_C_FLAGS:STRING=-fno-common"
             SLIVR_CMAKE_SHARED_LINKER_FLAGS="-D CMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-undefined,dynamic_lookup"
         fi
@@ -5972,7 +5971,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5975:" \
+echo "$as_me:5974:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -7800,7 +7799,7 @@ fi;
 if test "$szip_specified" = "yes"; then
    if test "$withval" != "no"; then
       SZIP_INCLUDE="-I`echo $withval |cut -f1 -d,`"
-      if test "$SHORT_UNAME" = "darwin"; then
+      if test "$UNAME" = "Darwin"; then
          SZIP_LIB="-L`echo $withval |cut -f2 -d, -s` -lsz"
       else
          SZIP_LIB="`echo $withval |cut -f2 -d, -s`/libsz.a"
@@ -7813,7 +7812,7 @@ else
    fi
    if test "$DEFAULT_SZIP_LIB" != "" ; then
       SZIP_LIBDIR="$DEFAULT_SZIP_LIB"
-      if test "$SHORT_UNAME" = "darwin"; then
+      if test "$UNAME" = "Darwin"; then
          SZIP_LIB="-L$DEFAULT_SZIP_LIB -lsz"
       else
          SZIP_LIB="$DEFAULT_SZIP_LIB/libsz.a"
@@ -7870,7 +7869,7 @@ else
   hdf5_specified="no"
 
 fi;
-if test "$SHORT_UNAME" = "darwin"; then
+if test "$UNAME" = "Darwin"; then
     H5_LIBEXT="dylib"
 else
     H5_LIBEXT="a"
@@ -7878,7 +7877,7 @@ fi
 if test "$hdf5_specified" = "yes"; then
    if test "$withval" != "no"; then
       HDF5_INCLUDE="-I`echo $withval |cut -f1 -d,`"
-      if test "$SHORT_UNAME" = "darwin"; then
+      if test "$UNAME" = "Darwin"; then
          HDF5_LIB="-L`echo $withval |cut -f2 -d, -s` -lhdf5 $SZIP_LIB"
       else
          HDF5_LIB="`echo $withval |cut -f2 -d, -s`/libhdf5.$H5_LIBEXT $SZIP_LIB"
@@ -7890,7 +7889,7 @@ else
       HDF5_INCLUDE="-I$DEFAULT_HDF5_INCLUDE $HDF5_INCLUDE"
    fi
    if test "$DEFAULT_HDF5_LIB" != "" ; then
-      if test "$SHORT_UNAME" = "darwin"; then
+      if test "$UNAME" = "Darwin"; then
          HDF5_LIB="-L$DEFAULT_HDF5_LIB -lhdf5 $SZIP_LIB $HDF5_LIB"
       else
          HDF5_LIB="$DEFAULT_HDF5_LIB/libhdf5.$H5_LIBEXT $SZIP_LIB $HDF5_LIB"
@@ -7999,7 +7998,7 @@ if test -n "$silo_library"; then
     echo "$as_me:$LINENO: result: user specified (\"$SILO_LIB\")" >&5
 echo "${ECHO_T}user specified (\"$SILO_LIB\")" >&6
 else
-        if test "$SHORT_UNAME" = "darwin"; then
+        if test "$UNAME" = "Darwin"; then
         LIBSILO="libsilo.dylib"
         LIBSILOH5="libsiloh5.dylib"
     else
@@ -8059,7 +8058,7 @@ if test -n "$HDF5_LIB"; then
         echo "$as_me:$LINENO: checking whether to use libsilo.a or libsiloh5.a" >&5
 echo $ECHO_N "checking whether to use libsilo.a or libsiloh5.a... $ECHO_C" >&6
 
-      if test "$SHORT_UNAME" = "darwin"; then
+      if test "$UNAME" = "Darwin"; then
         SILO_LIB="-L$SILO_LIBDIR -lsiloh5 $HDF5_LIB"
         echo "$as_me:$LINENO: result: libsiloh5.dylib" >&5
 echo "${ECHO_T}libsiloh5.dylib" >&6
@@ -8138,7 +8137,7 @@ echo "${ECHO_T}libsilo.a" >&6
 
         echo "$as_me:$LINENO: checking whether libsilo.a depends on hdf5" >&5
 echo $ECHO_N "checking whether libsilo.a depends on hdf5... $ECHO_C" >&6
-      if test "$SHORT_UNAME" = "darwin"; then
+      if test "$UNAME" = "Darwin"; then
         SILO_LIB="$SILO_LIB $HDF5_LIB"
         echo "$as_me:$LINENO: result: libsilo.dylib" >&5
 echo "${ECHO_T}libsilo.dylib" >&6
@@ -8287,7 +8286,7 @@ if test "$exodus_enabled" = "yes"; then
     EXODUS="$""(EXODUS)"
     EXODUS_FLAGS="$EXODUS_FLAGS -I$exodus_inc"
     EXODUS_LIBS="-L$exodus_lib -lexoIIv2c -lnetcdf"
-    if test "$SHORT_UNAME" = "darwin"; then
+    if test "$UNAME" = "Darwin"; then
         EXODUS_LIB="$exodus_lib/libexoIIv2c.dylib"
     else
         EXODUS_LIB="$exodus_lib/libexoIIv2c.a"
@@ -8464,7 +8463,7 @@ else
       HDF4_FLAGS="-I$DEFAULT_HDF4_FLAGS $HDF4_FLAGS"
    fi
    if test "$DEFAULT_HDF4_LIBS" != "" ; then
-      if test "$SHORT_UNAME" = "darwin"; then
+      if test "$UNAME" = "Darwin"; then
           HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -lvtkjpeg $SZIP_LIB -lz $HDF4_LIBS"
       else
           HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -ljpeg $SZIP_LIB -lz $HDF4_LIBS"
@@ -8710,7 +8709,7 @@ else
   netcdf_specified="no"
 
 fi;
-if test "$SHORT_UNAME" = "darwin"; then
+if test "$UNAME" = "Darwin"; then
     NETCDF_LIBEXT="dylib"
 else
     NETCDF_LIBEXT="a"
@@ -8775,7 +8774,7 @@ else
   cgns_specified="no"
 
 fi;
-if test "$SHORT_UNAME" = "darwin"; then
+if test "$UNAME" = "Darwin"; then
     CGNS_LIBEXT="dylib"
 else
     CGNS_LIBEXT="a"
@@ -8839,7 +8838,7 @@ else
   GDAL_specified="no"
 
 fi;
-if test "$SHORT_UNAME" = "darwin"; then
+if test "$UNAME" = "Darwin"; then
     GDAL_LIBEXT="dylib"
 else
     GDAL_LIBEXT="a"
@@ -8908,7 +8907,7 @@ else
   CFITSIO_specified="no"
 
 fi;
-if test "$SHORT_UNAME" = "darwin"; then
+if test "$UNAME" = "Darwin"; then
     CFITSIO_LIBEXT="dylib"
 else
     CFITSIO_LIBEXT="a"
@@ -9150,7 +9149,7 @@ else
       CCMIO_INCLUDE="-I$DEFAULT_CCMIO_INCLUDE $CCMIO_INCLUDE"
    fi
    if test "$DEFAULT_CCMIO_LIB" != "" ; then
-      if test "$SHORT_UNAME" = "darwin"; then
+      if test "$UNAME" = "Darwin"; then
           CCMIO_LIBS="-L$DEFAULT_CCMIO_LIB -lccmio -ladf $CCMIO_LIBS"
       else
           CCMIO_LIBS="-L$DEFAULT_CCMIO_LIB -lccmio -ladf $CCMIO_LIBS"
@@ -9349,7 +9348,7 @@ echo "${ECHO_T}Linking to libqt" >&6
 
     QT_STATICLDFLAGS=-L$QT_LIB
 
-    if test "$SHORT_UNAME" = "darwin"; then
+    if test "$UNAME" = "Darwin"; then
         QTMAC_FLAGS="-DMACOSX_102"
     fi
     QT_CXXFLAGS="-I$""(TOPDIR)/include/qt $QT_CXXFLAGS $QTMAC_FLAGS"
@@ -9940,7 +9939,7 @@ oldcxxflags="$CXXFLAGS"
 oldldflags="$LDFLAGS"
 oldlibs="$LIBS"
 CXXFLAGS="-I$MESA/include"
-if test "$SHORT_UNAME" = "linux"; then
+if test "$UNAME" = "Linux"; then
     LDFLAGS="-L$MESA/lib -Wl,-rpath=$MESA/lib $LDFLAGS"
 else
     LDFLAGS="-L$MESA/lib $LDFLAGS"
@@ -10046,11 +10045,11 @@ echo "${ECHO_T}$PYDIR, version $PYVERSION" >&6
     PY_LIB="-l$PYVERSION"
     PY_CLI_LIB="$PY_LIB -lpthread"
 
-    case $SHORT_UNAME in
-        linux)
+    case $UNAME in
+        Linux)
             PY_CLI_LIB="$PY_CLI_LIB -lutil"
             ;;
-        darwin)
+        Darwin)
             PY_CXXFLAGS="-Wno-long-double -I$PY_INCLUDEDIR"
             ;;
     esac
@@ -10649,22 +10648,22 @@ PLUGIN_LDFLAGS=${PLUGIN_LDFLAGS-""}
 
 
 
-case $SHORT_UNAME in
-  freebsd)
+case $UNAME in
+  FreeBSD)
     # Expecting g++
     if test -z "$SHLIB_CREATEPROG"; then
         SHLIB_CREATEPROG="$""(CXX) -shared -o"
     fi
     ;;
 
-  irix)
+  Irix)
     # Both g++ and CC use this
     if test -z "$SHLIB_CREATEPROG"; then
         SHLIB_CREATEPROG="$""(CXX) -shared -o"
     fi
     ;;
 
-  sunos)
+  SunOS)
     # Expecting g++, but -shared doesn't work right now, so we manually pass
     # -G to Sun's linker.  (This may be because g++'s libstdc++ is not a .so.)
     if test -z "$SHLIB_CREATEPROG"; then
@@ -10672,7 +10671,7 @@ case $SHORT_UNAME in
     fi
     ;;
 
-  hp-ux)
+  HP-UX)
     # This is how HP's CC works, although it is not well tested.
     if test -z "$SHLIB_CREATEPROG"; then
         SHLIB_CREATEPROG="$""(CXX) -b -o"
@@ -10681,7 +10680,7 @@ case $SHORT_UNAME in
     if test -z "$SHLIB_LIBEXT"; then SHLIB_LIBEXT="a"; fi
     ;;
 
-  aix)
+  AIX)
     if test "`echo $CXX | cut -c1-3`" = "g++"; then
         # AIX used to be the weird one.  It is mostly normal finally,
         # as long as you use g++.  It should be noted that for AIX to find
@@ -10708,14 +10707,14 @@ case $SHORT_UNAME in
                                                             fi
     ;;
 
-  osf)
+  OSF)
     # Expecting g++, but DEC's linker *still* warns about unresolved symbols
     if test -z "$SHLIB_CREATEPROG"; then
         SHLIB_CREATEPROG="$""(CXX) -Wl,-expect_unresolved -Wl,'*' -shared -o"
     fi
     ;;
 
-  linux)
+  Linux)
     # Expecting g++
     if test -z "$SHLIB_CREATEPROG"; then
         SHLIB_CREATEPROG="$""(CXX) -shared -o"
@@ -10725,7 +10724,7 @@ case $SHORT_UNAME in
     PLUGIN_LDFLAGS="$PLUGIN_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../../lib"
     ;;
 
-  darwin)
+  Darwin)
     # Expecting g++
     if test -z "$SHLIB_CREATEPROG"; then
         SHLIB_CREATEPROG="$""(CXX) -dynamiclib -o"
@@ -10833,8 +10832,8 @@ CREATE_BOXLIB3D_LINK=""
 CREATE_CFITSIO_LINK=""
 CREATE_H5PART_LINK=""
 CREATE_CCMIO_LINK=""
-case $SHORT_UNAME in
-  darwin)
+case $UNAME in
+  Darwin)
     if test "$SILO_LIB" != "" ; then
         CREATE_SILO_LINK="create_silo_link"
     fi
@@ -20399,7 +20398,7 @@ rm -f $TOPDIR/exe/xml2makefile
 (cd tools/xml && ${MAKE-make} $TOPDIR/exe/xml2makefile)
 
 # If we 're on a Darwin system, make bundles for the gui and the viewer.
-if test "$SHORT_UNAME" = "darwin";  then
+if test "$UNAME" = "Darwin";  then
     svn_bin/makebundles
 fi
 
