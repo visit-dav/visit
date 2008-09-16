@@ -445,6 +445,9 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    If we have a subset plot with secondary variables defined on it, we can't
 //    do simplified nesting.
 //
+//    Hank Childs, Mon Sep 15 16:28:51 PST 2008
+//    Manage memory for non-cachable vars.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -781,6 +784,9 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
         dob->GetInfo().GetAttributes().SetOrigElementsRequiredForPick(true);
     PopulateDataObjectInformation(dob, spec->GetVariable(), timeStep, 
         selectionsApplied, spec);
+
+    ManageMemoryForNonCachableVar(NULL);
+    ManageMemoryForNonCachableMesh(NULL);
 
     return rv;
 }

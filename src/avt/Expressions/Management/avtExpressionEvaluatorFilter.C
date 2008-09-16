@@ -156,6 +156,9 @@ avtExpressionEvaluatorFilter::~avtExpressionEvaluatorFilter()
 //    Hank Childs, Mon Jan 14 20:47:54 PST 2008
 //    Make sure no singleton constants escape out of the EEF.
 //
+//    Hank Childs, Mon Sep 15 16:30:50 PST 2008
+//    Deleted termsrc to free up memory for the next pipeline operations.
+//
 // ****************************************************************************
 
 void
@@ -201,6 +204,13 @@ avtExpressionEvaluatorFilter::Execute(void)
     GetDataTree()->Traverse(CExpandSingletonConstants, NULL, success);
 
     VerifyVariableTypes();
+
+    // Delete the termsrc to free up resources
+    if(termsrc != 0)
+    {
+        delete termsrc;
+        termsrc = 0;
+    }
 
     // Stop the timer
     visitTimer->StopTimer(timingIndex, "Expression Evaluator Filter");
