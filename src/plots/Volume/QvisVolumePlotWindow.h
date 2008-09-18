@@ -41,6 +41,10 @@
 #include <QvisPostableWindowObserver.h>
 #include <AttributeSubject.h>
 
+// SLIVR and Qt share 'emit' causing a conflict
+#undef emit
+#include <QvisCMap2Display.h>
+
 // Forward declarations
 class VolumeAttributes;
 class QButtonGroup;
@@ -60,6 +64,7 @@ class QvisOpacitySlider;
 class QvisScribbleOpacityBar;
 class QvisSpectrumBar;
 class QvisVariableButton;
+class QvisCMap2Widget;
 
 // ****************************************************************************
 // Class: QvisVolumePlotWindow
@@ -180,6 +185,9 @@ private slots:
     void rendererSamplesProcessText();
     void rendererSamplesSliderChanged(int val);
     void rendererSamplesSliderReleased();
+    void transferDimChanged(int);
+    void updateTransferFunc2D();
+    void updateTransferFunc2D(WidgetID id);
 private:
     int                      plotType;
     VolumeAttributes         *volumeAtts;
@@ -187,6 +195,7 @@ private:
     bool                     showColorsInAlphaWidget;
 
     // Widgets and layouts.
+    QvisCMap2Widget          *transferFunc2D;
     QGroupBox                *colorWidgetGroup;
     QCheckBox                *smoothCheckBox;
     QCheckBox                *equalCheckBox;
@@ -223,10 +232,13 @@ private:
     QComboBox                *rendererTypesComboBox;
     QButtonGroup             *gradientButtonGroup;
     QButtonGroup             *samplingButtonGroup;
+    QButtonGroup             *transferFunctionGroup;
     QRadioButton             *rasterizationButton;
     QRadioButton             *kernelButton;
     QRadioButton             *centeredDiffButton;
     QRadioButton             *sobelButton;
+    QRadioButton             *oneDimButton;
+    QRadioButton             *twoDimButton;
     QLabel                   *resampleTargetLabel;
     QLineEdit                *resampleTarget;
     QSlider                  *resampleTargetSlider;

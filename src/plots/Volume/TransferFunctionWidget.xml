@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+  <Attribute name="TransferFunctionWidget" purpose="Widget for 2D transfer function" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="TransferFunctionWidget.code">
+    <Enum name="WidgetType">
+      Rectangle
+      Triangle
+      Paraboloid
+      Ellipsoid
+    </Enum>
+    <Field name="Type" label="unnamed1" type="enum" subtype="WidgetType">
+    </Field>
+    <Field name="BaseColor" label="Base color" type="floatArray" length="4">
+    </Field>
+    <Field name="Position" label="Position" type="floatArray" length="8">
+    </Field>
+  </Attribute>

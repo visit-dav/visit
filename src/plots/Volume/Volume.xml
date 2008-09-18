@@ -10,6 +10,11 @@
       $(GL_LIBS)
       -lGLU
     </LIBS>
+    <Files components="G">
+      QvisCMap2Widget.C
+      QvisCMap2Display.C
+      TransferFunctionWidget.C
+    </Files>
     <Files components="V">
       avtVolumeRenderer.C
       avtVolumeFilter.C
@@ -19,6 +24,7 @@
       avtMesa3DTextureVolumeRenderer.C
       avtOpenGLSLIVRVolumeRenderer.C
       BoundingBoxContourer.C
+      TransferFunctionWidget.C
     </Files>
     <Files components="E">
       avtVolumeRenderer.C
@@ -29,6 +35,11 @@
       avtMesa3DTextureVolumeRenderer.C
       avtOpenGLSLIVRVolumeRenderer.C
       BoundingBoxContourer.C
+      TransferFunctionWidget.C
+    </Files>
+    <Files components="W">
+      QvisCMap2Widget.h
+      QvisCMap2Display.h
     </Files>
     <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="VolumeAttributes.code">
       <Enum name="Renderer">
@@ -125,6 +136,11 @@
       </Field>
       <Field name="rendererSamples" label="Render samples" type="float" enabler="rendererType:SLIVR">
         3.000000
+      </Field>
+      <Field name="TransferFunctionWidgetList" label="Transfer function widget list" type="attVector" subtype="TransferFunctionWidget">
+      </Field>
+      <Field name="transferFunctionDim" label="Dimension of the transfer function" type="int">
+        0
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
