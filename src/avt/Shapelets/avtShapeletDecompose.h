@@ -47,7 +47,7 @@
 #include <vtkRectilinearGrid.h>
 
 // ****************************************************************************
-//  Class:  avtShapeletDecompResult
+//  Class:  avtShapeletDecompose
 //
 //  Purpose:
 //    Decomposes an image into shapelet coefficents using the overlap
