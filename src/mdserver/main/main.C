@@ -53,6 +53,17 @@
 // Prototypes.
 bool ProcessCommandLine(int argc, char *argv[]);
 
+// HACK: Needed to force linking of libz on AIX
+#ifdef AIX
+#ifdef HAVE_LIBZ
+#include <zlib.h>
+void fooz(void)
+{
+   zlibVersion();
+}
+#endif
+#endif
+
 // ****************************************************************************
 // Function: main
 //

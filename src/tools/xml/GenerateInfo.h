@@ -167,6 +167,9 @@
 //   added support for putting user functions in the .code file and having 
 //   them take effect here.
 //
+//   Cyrus Harrison, Thu Sep 18 13:39:40 PDT 2008
+//   Changed code generation to include const qualifers for database info.
+//
 // ****************************************************************************
 
 class InfoGeneratorPlugin : public Plugin
@@ -616,9 +619,9 @@ class InfoGeneratorPlugin : public Plugin
             h << "class "<<name<<"GeneralPluginInfo : public virtual GeneralDatabasePluginInfo" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
-            h << "    virtual char *GetName() const;" << endl;
-            h << "    virtual char *GetVersion() const;" << endl;
-            h << "    virtual char *GetID() const;" << endl;
+            h << "    virtual const char *GetName() const;" << endl;
+            h << "    virtual const char *GetVersion() const;" << endl;
+            h << "    virtual const char *GetID() const;" << endl;
             h << "    virtual bool  EnabledByDefault() const;" << endl;
             h << "    virtual bool  HasWriter() const;" << endl;
             h << "    virtual std::vector<std::string>  GetDfltExtsFromGen() const;" << endl;
@@ -723,10 +726,7 @@ class InfoGeneratorPlugin : public Plugin
         c << "//" << endl;
         c << "// ****************************************************************************" << endl;
         c << endl;
-        if(type == "database")
-            c << "char *" << endl; // For now...
-        else
-            c << "const char *" << endl;
+        c << "const char *" << endl;
         c << name<<"GeneralPluginInfo::GetName() const" << endl;
         c << "{" << endl;
         c << "    return \""<<name<<"\";" << endl;
@@ -745,10 +745,7 @@ class InfoGeneratorPlugin : public Plugin
         c << "//" << endl;
         c << "// ****************************************************************************" << endl;
         c << endl;
-        if(type == "database")
-            c << "char *" << endl; // For now...
-        else
-            c << "const char *" << endl;
+        c << "const char *" << endl;
         c << name<<"GeneralPluginInfo::GetVersion() const" << endl;
         c << "{" << endl;
         c << "    return \""<<version<<"\";" << endl;
@@ -767,10 +764,7 @@ class InfoGeneratorPlugin : public Plugin
         c << "//" << endl;
         c << "// ****************************************************************************" << endl;
         c << endl;
-        if(type == "database")
-            c << "char *" << endl; // For now...
-        else
-            c << "const char *" << endl;
+        c << "const char *" << endl;
         c << name<<"GeneralPluginInfo::GetID() const" << endl;
         c << "{" << endl;
         c << "    return \""<<name<<"_"<<version<<"\";" << endl;

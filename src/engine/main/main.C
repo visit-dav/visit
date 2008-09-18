@@ -63,6 +63,16 @@ void foogl(void)
    GLfloat mad[] = {0.1, 0.5, 0.8, 1.0};
    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, mad);
 }
+
+// HACK: Needed to force linking of libz on AIX
+#ifdef HAVE_LIBZ
+#include <zlib.h>
+void fooz(void)
+{
+   zlibVersion();
+}
+#endif
+
 #endif
 //
 // END HACK

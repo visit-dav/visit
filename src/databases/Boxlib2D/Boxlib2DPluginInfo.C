@@ -81,7 +81,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 //
 // ****************************************************************************
 
-char *
+const char *
 Boxlib2DGeneralPluginInfo::GetName() const
 {
     return "Boxlib2D";
@@ -100,7 +100,7 @@ Boxlib2DGeneralPluginInfo::GetName() const
 //
 // ****************************************************************************
 
-char *
+const char *
 Boxlib2DGeneralPluginInfo::GetVersion() const
 {
     return "1.0";
@@ -119,7 +119,7 @@ Boxlib2DGeneralPluginInfo::GetVersion() const
 //
 // ****************************************************************************
 
-char *
+const char *
 Boxlib2DGeneralPluginInfo::GetID() const
 {
     return "Boxlib2D_1.0";
