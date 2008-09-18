@@ -49,6 +49,8 @@
 class vtkDataArray;
 class avtVolumeRendererImplementation;
 
+#define USE_HISTOGRAM 0
+
 // ****************************************************************************
 //  Class: avtVolumeRenderer
 //
@@ -111,6 +113,7 @@ class avtVolumeRenderer : public avtCustomRenderer
 
     bool                    GetScalars(vtkDataSet*,vtkDataArray*&,vtkDataArray *&);
     void                    GetRange(vtkDataArray *, float &, float &);
+    void                    WriteHistogram(vtkDataSet* ds);
 };
 
 

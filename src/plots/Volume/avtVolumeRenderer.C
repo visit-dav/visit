@@ -57,6 +57,9 @@
 #include <avtMesa3DTextureVolumeRenderer.h>
 #ifdef HAVE_LIBSLIVR
 #include <avtOpenGLSLIVRVolumeRenderer.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #endif
 
 #include <ImproperUseException.h>
@@ -73,6 +76,7 @@
 static int CalculateIndex(vtkRectilinearGrid*, const int,const int,const int);
 static float ValueSkewed(const float, const float *, const float);
 
+static char HISTOGRAM_FILENAME[] = "/tmp/histogram.dump";
 
 // ****************************************************************************
 //  Constructor:  avtVolumeRenderer::avtVolumeRenderer
@@ -101,6 +105,9 @@ avtVolumeRenderer::avtVolumeRenderer()
     gz  = NULL;
     gm  = NULL;
     gmn = NULL;
+
+    // remove previous histogram dump
+    remove(HISTOGRAM_FILENAME);
 }
 
 // ****************************************************************************
@@ -123,6 +130,9 @@ avtVolumeRenderer::~avtVolumeRenderer()
     delete[] gz;
     delete[] gm;
     delete[] gmn;
+
+    // delete histogram dump
+    remove(HISTOGRAM_FILENAME);
 }
 
 // ****************************************************************************
@@ -283,6 +293,10 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
     {
         Initialize(ds);
     }
+
+#ifdef HAVE_LIBSLIVR
+    WriteHistogram(ds);
+#endif
 
     // get data set
     vtkRectilinearGrid  *grid = (vtkRectilinearGrid*)ds;
@@ -965,4 +979,92 @@ ValueSkewed(const float val, const float *r, const float factor)
     float temp =   k * (exp(v2 * logSkew) -1.) + r[0];
     return temp;
 
+}
+// ****************************************************************************
+//  Method:  avtVolumeRenderer::WriteHistogram
+//
+//  Purpose:
+//    Writes data histogram to file for GUI readback
+//
+//  Note:
+//    In AMR datasets, this function should probably use the largest block
+//
+//  Arguments:
+//    ds         the dataset to process
+//
+//  Programmer:  Josh Stratton
+//  Creation:    Thu Jul 31 09:48:11 MDT 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+void avtVolumeRenderer::WriteHistogram(vtkDataSet* ds)
+{
+#ifdef HAVE_LIBSLIVR
+#if USE_HISTOGRAM
+  const int HIST_DIM = 256;
+
+  vtkRectilinearGrid* grid = (vtkRectilinearGrid*)ds;
+  double range[2];
+  int dimensions[3];
+
+  vtkDataArray *data = NULL;
+  vtkDataArray *opac = NULL;
+  if (!GetScalars(grid, data, opac))
+    return;
+
+  ds->GetScalarRange(range);
+  ((vtkRectilinearGrid*)ds)->GetDimensions(dimensions);
+
+  double grad_min = 100000000;
+  double grad_max = -100000000;
+  // calculate min/max gradient
+  for (int i = 0; i < dimensions[0]*dimensions[1]*dimensions[2]; i++) {
+    if (grad_min > gm[i])
+      grad_min = gm[i];
+    if (grad_max < gm[i])
+      grad_max = gm[i];
+  }
+
+  GLfloat hist[HIST_DIM*HIST_DIM];
+  for (int i = 0; i < HIST_DIM*HIST_DIM; i++)
+    hist[i] = false;
+
+  // populate histogram
+  float range_diff = range[1] - range[0];
+  float grad_diff = grad_max - grad_min;
+  for (int x = 0; x < dimensions[0]; x++) {
+    for (int y = 0; y < dimensions[1]; y++) {
+      for (int z = 0; z < dimensions[2]; z++) {
+        int index = CalculateIndex((vtkRectilinearGrid*)ds,x,y,z);      
+        double scalar = data->GetTuple1(index);
+        float magnitude = gm[index]; 
+
+        int scalar_index = HIST_DIM * ((scalar - range[0]) / range_diff);
+        int mag_index = HIST_DIM * ((magnitude - grad_min) / grad_diff);
+        hist[(mag_index*HIST_DIM)+scalar_index] = 0.8;
+      }
+    }
+  }
+
+  data->Delete();
+  opac->Delete();
+
+  // write data to disk based on histogram
+  FILE* hist_file = fopen(HISTOGRAM_FILENAME, "w");
+  if (hist_file == 0) {
+    cerr << "Error opening " << HISTOGRAM_FILENAME << endl;
+    return;
+  }
+
+  size_t written;
+  // write histogram dimension
+  written = fwrite(&HIST_DIM, 1, sizeof(int), hist_file);
+
+  // write out histogram
+  written = fwrite(hist, 1, sizeof(GLfloat)*HIST_DIM*HIST_DIM, hist_file);
+
+  fclose(hist_file);
+#endif
+#endif
 }

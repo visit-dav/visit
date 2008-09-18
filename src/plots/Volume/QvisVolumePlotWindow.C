@@ -61,6 +61,8 @@
 #include <QvisVariableButton.h>
 #include <QvisColorTableButton.h>
 #include <QNarrowLineEdit.h>
+#include <QvisCMap2Widget.h>
+#include <TransferFunctionWidget.h>
 
 #include <VolumeAttributes.h>
 #include <ColorControlPoint.h>
@@ -316,6 +318,17 @@ QvisVolumePlotWindow::CreateWindowContents()
     // Figure out the max width that we want to allow for some simple
     // line edit widgets.
     int maxWidth = fontMetrics().width("1.0000000000");
+
+    // Add the 2D transfer function widget
+    transferFunc2D = new QvisCMap2Widget(central, "transferFunc2D");
+    connect(transferFunc2D, SIGNAL(widgetListChanged()),
+            this, SLOT(updateTransferFunc2D()));
+    connect(transferFunc2D, SIGNAL(widgetChanged(WidgetID)),
+            this, SLOT(updateTransferFunc2D(WidgetID))); 
+    
+    //    transferFunc2D->setTitle("2D Transfer Function");
+    topLayout->addWidget(transferFunc2D);
+
 
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central, "colorWidgetGroup");
@@ -678,6 +691,21 @@ QvisVolumePlotWindow::CreateWindowContents()
     rendererOptionsLayout->addWidget(kernelButton,row,2);
     ++row;
 
+    // Create the transfer function dimension button
+    rendererOptionsLayout->addWidget(new QLabel(tr("Transfer Function"), central),row,0);
+    transferFunctionGroup = new QButtonGroup(0, "transferFunctionGroup");
+    connect(transferFunctionGroup, SIGNAL(clicked(int)),
+            this, SLOT(transferDimChanged(int)));
+    oneDimButton = new QRadioButton(tr("1D"), central);
+    transferFunctionGroup->insert(oneDimButton, 0);
+    rendererOptionsLayout->addWidget(oneDimButton,row,1);
+    twoDimButton = new QRadioButton(tr("2D"), central);
+    transferFunctionGroup->insert(twoDimButton, 1);
+    rendererOptionsLayout->addWidget(twoDimButton,row,2);
+    transferFunctionGroup->setButton(0);
+    //transferDimChanged(0);
+    ++row;
+
     // Create the legend toggle.
     legendToggle = new QCheckBox(tr("Legend"), central, "legendToggle");
     connect(legendToggle, SIGNAL(toggled(bool)),
@@ -771,6 +799,8 @@ QvisVolumePlotWindow::CreateWindowContents()
 //   Hank Childs, Sun Aug 31 10:53:59 PDT 2008
 //   Allow lighting toggle to remain active with ray casting.
 //
+//   Josh Stratton, Mon Sep  8 10:12:56 MDT 2008
+//   Added toggle for 1D/2D SLIVR transfer functions
 // ****************************************************************************
 
 void
@@ -892,6 +922,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             rendererTypesComboBox->blockSignals(true);
             if (volumeAtts->GetRendererType() == VolumeAttributes::Splatting)
             {
+                transferFunc2D->hide();
+                colorWidgetGroup->show();
+                opacityWidgetGroup->show();
                 colorWidgetGroup->setEnabled(true);
                 opacityWidgetGroup->setEnabled(true);
                 lightingToggle->setEnabled(true);
@@ -907,14 +940,20 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 samplesPerRay->setEnabled(false);
                 rasterizationButton->setEnabled(false);
                 kernelButton->setEnabled(false);
+                oneDimButton->setEnabled(false);
+                twoDimButton->setEnabled(false);
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
                 rendererSamples->setEnabled(false);
+                
 #endif
             }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::Texture3D)
             {
+                transferFunc2D->hide();
+                colorWidgetGroup->show();
+                opacityWidgetGroup->show();
                 colorWidgetGroup->setEnabled(true);
                 opacityWidgetGroup->setEnabled(true);
                 lightingToggle->setEnabled(true);
@@ -930,6 +969,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 samplesPerRay->setEnabled(false);
                 rasterizationButton->setEnabled(false);
                 kernelButton->setEnabled(false);
+                oneDimButton->setEnabled(false);
+                twoDimButton->setEnabled(false);
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -938,6 +979,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting)
             {
+                transferFunc2D->hide();
+                colorWidgetGroup->show();
+                opacityWidgetGroup->show();
                 colorWidgetGroup->setEnabled(true);
                 opacityWidgetGroup->setEnabled(true);
                 lightingToggle->setEnabled(true);
@@ -953,6 +997,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 samplesPerRay->setEnabled(true);
                 rasterizationButton->setEnabled(true);
                 kernelButton->setEnabled(true);
+                oneDimButton->setEnabled(false);
+                twoDimButton->setEnabled(false);
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -961,6 +1007,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCastingIntegration)
             {
+                transferFunc2D->hide();
+                colorWidgetGroup->show();
+                opacityWidgetGroup->show();
                 colorWidgetGroup->setEnabled(false);
                 opacityWidgetGroup->setEnabled(false);
                 lightingToggle->setEnabled(false);
@@ -976,6 +1025,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 samplesPerRay->setEnabled(true);
                 rasterizationButton->setEnabled(true);
                 kernelButton->setEnabled(true);
+                oneDimButton->setEnabled(false);
+                twoDimButton->setEnabled(false);
 #ifdef HAVE_LIBSLIVR
                 rendererSamplesLabel->setEnabled(false);
                 rendererSamplesSlider->setEnabled(false);
@@ -984,11 +1035,32 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::SLIVR)
             {
-                colorWidgetGroup->setEnabled(true);
-                opacityWidgetGroup->setEnabled(true);
+                if (volumeAtts->GetTransferFunctionDim() == 0) {
+                  // 1D transfer function
+                  transferFunc2D->hide();
+                  colorWidgetGroup->show();
+                  opacityWidgetGroup->show();
+
+                  transferFunc2D->setEnabled(false);
+                  colorWidgetGroup->setEnabled(true);
+                  opacityWidgetGroup->setEnabled(true);
+                }
+                else {
+                  // 2D transfer function
+                  transferFunc2D->show();
+                  colorWidgetGroup->hide();
+                  opacityWidgetGroup->hide();
+
+                  transferFunc2D->setEnabled(true);
+                  colorWidgetGroup->setEnabled(false);
+                  opacityWidgetGroup->setEnabled(false);
+                }
+
                 lightingToggle->setEnabled(true);
                 centeredDiffButton->setEnabled(true);
                 sobelButton->setEnabled(true);
+                oneDimButton->setEnabled(true);
+                twoDimButton->setEnabled(true);
 #ifdef HAVE_LIBSLIVR
                 rendererTypesComboBox->setCurrentItem(4);
                 num3DSlicesLabel->setEnabled(false);
@@ -2787,4 +2859,196 @@ QvisVolumePlotWindow::rendererSamplesSliderReleased()
 {
     SetUpdate(false);
     Apply();
+}
+
+
+// ****************************************************************************
+//  Method:  QvisVolumePlotWindow::transferDimChanged
+//
+//  Purpose:
+//    Update the UI to handle 1D or 2D transfer functions
+//
+//  Arguments:
+//    val        the dimension of the transfer function
+//
+//  Programmer:  Josh Stratton
+//  Creation:    Fri Sep  5 13:26:47 MDT 2008
+//
+// ****************************************************************************
+void
+QvisVolumePlotWindow::transferDimChanged(int val)
+{
+  volumeAtts->SetTransferFunctionDim(val);
+
+  UpdateWindow(true);
+}
+
+// ****************************************************************************
+// Method:  QvisVolumePlotWindow::updateTransferFunc2D
+//
+// Purpose:
+//   Qt slot function, called when SLIVR transfer function changes
+//
+// Arguments:
+//   none
+//
+// Programmer:  Josh Stratton
+// Creation:    Fri May 23 12:43:38 MDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisVolumePlotWindow::updateTransferFunc2D()
+{
+  // scrap all current widgets
+  volumeAtts->ClearTransferFunctionWidgetLists();
+
+  int num_widgets = transferFunc2D->numWidgets();
+  for (int i = 0; i < num_widgets; i++) {
+    WidgetID id = transferFunc2D->getID(i);
+    
+    QString qdef = transferFunc2D->getString(id);
+    const char* def = qdef.ascii();
+
+    TransferFunctionWidget widget;
+    float color[4];
+    float position[6];
+
+    // parse color
+    QColor qcolor = transferFunc2D->getColor(id);
+    color[0] = qcolor.red() / 255.0f;
+    color[1] = qcolor.green() / 255.0f;
+    color[2] = qcolor.blue() / 255.0f;
+    color[3] = transferFunc2D->getAlpha(id);
+                    
+    if (def[0] == 'r') {
+      widget.SetType(TransferFunctionWidget::Rectangle);
+
+      // parse position
+      const char *pos = def;
+      while(*pos != ' ')
+        pos++; pos++;
+      position[0] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[1] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[2] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[3] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[4] = atof(pos);
+
+      widget.SetBaseColor(color);
+      widget.SetPosition(position);
+    }
+    else if (def[0] == 't') {
+      widget.SetType(TransferFunctionWidget::Triangle);
+
+      // parse position
+      const char *pos = def;
+      while(*pos != ' ')
+        pos++; pos++;
+      position[0] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[1] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[2] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[3] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[4] = atof(pos);
+
+      widget.SetBaseColor(color);
+      widget.SetPosition(position);
+    }
+    else if (def[0] == 'p') {
+      widget.SetType(TransferFunctionWidget::Paraboloid);
+
+      // parse position
+      const char *pos = def;
+      while(*pos != ' ')
+        pos++; pos++;
+      position[0] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[1] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[2] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[3] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[4] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[5] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[6] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[7] = atof(pos);
+
+      widget.SetBaseColor(color);
+      widget.SetPosition(position);
+    }
+    else if (def[0] == 'e') {
+      widget.SetType(TransferFunctionWidget::Ellipsoid);
+
+      // parse position
+      const char *pos = def;
+      while(*pos != ' ')
+        pos++; pos++;
+      position[0] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[1] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[2] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[3] = atof(pos);
+      while(*pos != ' ')
+        pos++; pos++;
+      position[4] = atof(pos);
+
+      widget.SetBaseColor(color);
+      widget.SetPosition(position);
+    }
+
+    volumeAtts->AddTransferFunctionWidgetList(widget);
+  }
+}
+
+// ****************************************************************************
+// Method:  QvisVolumePlotWindow::updateTransferFunc2D
+//
+// Purpose:
+//   Qt slot function, called when SLIVR transfer function changes
+//
+// Arguments:
+//   none
+//
+// Programmer:  Josh Stratton
+// Creation:    Fri May 23 12:43:38 MDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisVolumePlotWindow::updateTransferFunc2D(WidgetID id)
+{
+  updateTransferFunc2D();
 }

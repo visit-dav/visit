@@ -40,6 +40,7 @@
 #define VOLUMEATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
+class TransferFunctionWidget;
 #include <ColorControlPointList.h>
 #include <GaussianControlPointList.h>
 
@@ -105,6 +106,7 @@ public:
     void SelectOpacityControlPoints();
     void SelectOpacityVariable();
     void SelectFreeformOpacity();
+    void SelectTransferFunctionWidgetList();
 
     // Property setting methods
     void SetLegendFlag(bool legendFlag_);
@@ -133,6 +135,7 @@ public:
     void SetSkewFactor(double skewFactor_);
     void SetSampling(SamplingType sampling_);
     void SetRendererSamples(float rendererSamples_);
+    void SetTransferFunctionDim(int transferFunctionDim_);
 
     // Property getting methods
     bool                           GetLegendFlag() const;
@@ -165,10 +168,25 @@ public:
     double                         GetSkewFactor() const;
     SamplingType                   GetSampling() const;
     float                          GetRendererSamples() const;
+    const AttributeGroupVector     &GetTransferFunctionWidgetList() const;
+          AttributeGroupVector     &GetTransferFunctionWidgetList();
+    int                            GetTransferFunctionDim() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
+
+
+    // Attributegroup convenience methods
+    void AddTransferFunctionWidgetList(const TransferFunctionWidget &);
+    void ClearTransferFunctionWidgetLists();
+    void RemoveTransferFunctionWidgetList(int i);
+    int  GetNumTransferFunctionWidgetLists() const;
+    TransferFunctionWidget &GetTransferFunctionWidgetList(int i);
+    const TransferFunctionWidget &GetTransferFunctionWidgetList(int i) const;
+
+    TransferFunctionWidget &operator [] (int i);
+    const TransferFunctionWidget &operator [] (int i) const;
 
     // Enum conversion functions
     static std::string Renderer_ToString(Renderer);
@@ -238,9 +256,13 @@ public:
         ID_scaling,
         ID_skewFactor,
         ID_sampling,
-        ID_rendererSamples
+        ID_rendererSamples,
+        ID_TransferFunctionWidgetList,
+        ID_transferFunctionDim
     };
 
+protected:
+    AttributeGroup *CreateSubAttributeGroup(int index);
 private:
     bool                     legendFlag;
     bool                     lightingFlag;
@@ -268,6 +290,8 @@ private:
     double                   skewFactor;
     int                      sampling;
     float                    rendererSamples;
+    AttributeGroupVector     TransferFunctionWidgetList;
+    int                      transferFunctionDim;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

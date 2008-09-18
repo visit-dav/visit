@@ -100,6 +100,14 @@ protected:
 
     void             FreeContext();
     void             CreateColormap(const VolumeAttributes &atts, bool &);
+    void             CheckContext(SlivrContext* context,
+                                  const VolumeAttributes &atts);
+    void             CreateContext(vtkRectilinearGrid *grid, 
+                                   vtkDataArray *data, 
+                                   vtkDataArray *opac, 
+                                   const VolumeAttributes &atts, 
+                                   float vmin, float vmax, 
+                                   float omin, float omax, float *gmn);
     bool             OnlyLightingFlagIsDifferent(const VolumeAttributes &lhs,
                                                  const VolumeAttributes &rhs) const;
 
