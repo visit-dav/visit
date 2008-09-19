@@ -38,6 +38,9 @@
 
 #include <visit-config.h>
 #include <QvisVolumePlotWindow.h>
+#ifdef HAVE_LIBSLIVR
+#   include <QvisCMap2Widget.h>
+#endif
 #include <qapplication.h>
 #include <qcombobox.h>
 #include <qcursor.h>
@@ -61,7 +64,6 @@
 #include <QvisVariableButton.h>
 #include <QvisColorTableButton.h>
 #include <QNarrowLineEdit.h>
-#include <QvisCMap2Widget.h>
 #include <TransferFunctionWidget.h>
 
 #include <VolumeAttributes.h>
