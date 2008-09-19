@@ -11,8 +11,7 @@
       -lGLU
     </LIBS>
     <Files components="G">
-      QvisCMap2Widget.C
-      QvisCMap2Display.C
+      $(SLIVR_GUI_IMPL)
       TransferFunctionWidget.C
     </Files>
     <Files components="V">
@@ -38,8 +37,7 @@
       TransferFunctionWidget.C
     </Files>
     <Files components="W">
-      QvisCMap2Widget.h
-      QvisCMap2Display.h
+      $(SLIVR_GUI_HDR)
     </Files>
     <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="VolumeAttributes.code">
       <Enum name="Renderer">

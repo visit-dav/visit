@@ -1,8 +1,6 @@
 #ifndef QVIS_CMAP2_WIDGET_H
 #define QVIS_CMAP2_WIDGET_H
 
-#undef emit
-
 #include <QvisCMap2Display.h> // Must come before other Qt includes because of SLIVR's
                               // "emit" method conflicing with Qt's emit macro.
 #include <qgroupbox.h>

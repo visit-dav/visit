@@ -2,9 +2,12 @@
 #define QVIS_CMAP2_DISPLAY_H
 
 #include <vector>
-#include <slivr/ColorMap2.h>
-#include <slivr/CM2Widget.h>
 
+#include <visit-config.h>
+#ifdef HAVE_LIBSLIVR
+#   include <slivr/ColorMap2.h>
+#   include <slivr/CM2Widget.h>
+#endif
 #include <qgl.h>
 #include <qmap.h>
 
@@ -25,7 +28,11 @@ typedef int WidgetID;
 // Creation:   Fri Sep 7 14:50:58 PST 2007
 //
 // Modifications:
-//   
+//
+//   Tom Fogal, Thu Sep 18 16:54:34 MDT 2008
+//   Use forward declarations where possible, and an ifdef where not, to remove
+//   a hard SLIVR dependency.
+//
 // ****************************************************************************
 
 class QvisCMap2Display : public QGLWidget
@@ -115,12 +122,12 @@ private:
     bool                            read_histogram;
     std::vector<SLIVR::ColorMap2*>  cmap2;
     SLIVR::CM2Widget               *activeW;
+#ifdef HAVE_LIBSLIVR
     SLIVR::Color                    defaultColor;
+#endif
     float                           defaultAlpha;
     IdToWidgetMap                   idToWidget;
     WidgetID                        nextID;
     WidgetRenderer                 *ren;
 };
-
-
 #endif

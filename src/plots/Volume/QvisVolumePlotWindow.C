@@ -36,8 +36,8 @@
 *
 *****************************************************************************/
 
-#include <QvisVolumePlotWindow.h>
 #include <visit-config.h>
+#include <QvisVolumePlotWindow.h>
 #include <qapplication.h>
 #include <qcombobox.h>
 #include <qcursor.h>
@@ -73,6 +73,11 @@
 #include <ColorTableAttributes.h>
 
 #define MAX_RENDERER_SAMPLE_VALUE 20.f
+#ifdef HAVE_LIBSLIVR
+#   define SLIVR_ONLY(stmt) stmt
+#else
+#   define SLIVR_ONLY(stmt) /* nothing */
+#endif
 
 // XPM data for pixmaps.
 static const char * black_xpm[] = {
@@ -310,6 +315,9 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //   Brad Whitlock, Wed Apr 23 12:14:45 PDT 2008
 //   Added tr()'s
 //
+//   Tom Fogal, Fri Sep 19 11:00:47 MDT 2008
+//   Only connect 2D TF widgets when SLIVR is available.
+//
 // ****************************************************************************
 
 void
@@ -319,6 +327,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     // line edit widgets.
     int maxWidth = fontMetrics().width("1.0000000000");
 
+#ifdef HAVE_LIBSLIVR
     // Add the 2D transfer function widget
     transferFunc2D = new QvisCMap2Widget(central, "transferFunc2D");
     connect(transferFunc2D, SIGNAL(widgetListChanged()),
@@ -328,6 +337,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     
     //    transferFunc2D->setTitle("2D Transfer Function");
     topLayout->addWidget(transferFunc2D);
+#endif
 
 
     // Add the group box that will contain the color-related widgets.
@@ -801,6 +811,10 @@ QvisVolumePlotWindow::CreateWindowContents()
 //
 //   Josh Stratton, Mon Sep  8 10:12:56 MDT 2008
 //   Added toggle for 1D/2D SLIVR transfer functions
+//
+//   Tom Fogal, Fri Sep 19 11:05:44 MDT 2008
+//   Use SLIVR_ONLY to conditionally enable 2D transfer function widgets.
+//
 // ****************************************************************************
 
 void
@@ -922,7 +936,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             rendererTypesComboBox->blockSignals(true);
             if (volumeAtts->GetRendererType() == VolumeAttributes::Splatting)
             {
-                transferFunc2D->hide();
+                SLIVR_ONLY(transferFunc2D->hide());
                 colorWidgetGroup->show();
                 opacityWidgetGroup->show();
                 colorWidgetGroup->setEnabled(true);
@@ -951,7 +965,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::Texture3D)
             {
-                transferFunc2D->hide();
+                SLIVR_ONLY(transferFunc2D->hide());
                 colorWidgetGroup->show();
                 opacityWidgetGroup->show();
                 colorWidgetGroup->setEnabled(true);
@@ -979,7 +993,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting)
             {
-                transferFunc2D->hide();
+                SLIVR_ONLY(transferFunc2D->hide());
                 colorWidgetGroup->show();
                 opacityWidgetGroup->show();
                 colorWidgetGroup->setEnabled(true);
@@ -1007,7 +1021,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             }
             else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCastingIntegration)
             {
-                transferFunc2D->hide();
+                SLIVR_ONLY(transferFunc2D->hide());
                 colorWidgetGroup->show();
                 opacityWidgetGroup->show();
                 colorWidgetGroup->setEnabled(false);
@@ -1037,21 +1051,22 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             {
                 if (volumeAtts->GetTransferFunctionDim() == 0) {
                   // 1D transfer function
-                  transferFunc2D->hide();
+                  SLIVR_ONLY(transferFunc2D->hide());
                   colorWidgetGroup->show();
                   opacityWidgetGroup->show();
 
-                  transferFunc2D->setEnabled(false);
+                  SLIVR_ONLY(transferFunc2D->setEnabled(false));
                   colorWidgetGroup->setEnabled(true);
                   opacityWidgetGroup->setEnabled(true);
                 }
-                else {
+                else
+                {
                   // 2D transfer function
-                  transferFunc2D->show();
+                  SLIVR_ONLY(transferFunc2D->show());
                   colorWidgetGroup->hide();
                   opacityWidgetGroup->hide();
 
-                  transferFunc2D->setEnabled(true);
+                  SLIVR_ONLY(transferFunc2D->setEnabled(true));
                   colorWidgetGroup->setEnabled(false);
                   opacityWidgetGroup->setEnabled(false);
                 }
@@ -2897,10 +2912,14 @@ QvisVolumePlotWindow::transferDimChanged(int val)
 //
 // Modifications:
 //
+//   Tom Fogal, Fri Sep 19 11:02:10 MDT 2008
+//   Wrap definition in HAVE_LIBSLIVR.
+//
 // ****************************************************************************
 void
 QvisVolumePlotWindow::updateTransferFunc2D()
 {
+#ifdef HAVE_LIBSLIVR
   // scrap all current widgets
   volumeAtts->ClearTransferFunctionWidgetLists();
 
@@ -3030,6 +3049,7 @@ QvisVolumePlotWindow::updateTransferFunc2D()
 
     volumeAtts->AddTransferFunctionWidgetList(widget);
   }
+#endif /* HAVE_LIBSLIVR */
 }
 
 // ****************************************************************************
@@ -3046,9 +3066,14 @@ QvisVolumePlotWindow::updateTransferFunc2D()
 //
 // Modifications:
 //
+//   Tom Fogal, Fri Sep 19 11:02:10 MDT 2008
+//   Wrap definition in HAVE_LIBSLIVR.
+//
 // ****************************************************************************
 void
 QvisVolumePlotWindow::updateTransferFunc2D(WidgetID id)
 {
+#ifdef HAVE_LIBSLIVR
   updateTransferFunc2D();
+#endif /* HAVE_LIBSLIVR */
 }
