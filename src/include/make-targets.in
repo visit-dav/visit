@@ -89,6 +89,10 @@ distclean: clean
 ## Tom Fogal, Sun Jun  8 18:00:05 EDT 2008
 ## Added IceT specific targets.  Wrapped long lines.
 ##
+## Tom Fogal, Wed Sep 17 17:11:21 MDT 2008
+## Renamed temporary depend files so that it is not possible to have a conflict
+## when one file is compiled in multiple modes.
+##
 
 .C.a:
 	false
@@ -101,13 +105,13 @@ distclean: clean
 
 .c_mds.o:
 	source='$<' object='$@' libtool=no        \
-	depfile='./$*_mds.d'  tmpdepfile='./$*.tmp_d' \
+	depfile='./$*_mds.d'  tmpdepfile='./$*.tmp_mds_d' \
 	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CC) $(CFLAGS) $(CPPFLAGS) -DMDSERVER -c $< -o $@
 
 .c_par.o:
 	source='$<' object='$@' libtool=no        \
-	depfile='./$*_par.d'  tmpdepfile='./$*.tmp_d' \
+	depfile='./$*_par.d'  tmpdepfile='./$*.tmp_par_d' \
 	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CC) $(CFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ -c $< -o $@
 
@@ -122,56 +126,56 @@ distclean: clean
 
 .C_eng.o:
 	source='$<' object='$@' libtool=no        \
-	depfile='./$*_eng.d'  tmpdepfile='./$*.tmp_d' \
+	depfile='./$*_eng.d'  tmpdepfile='./$*.tmp_eng_d' \
 	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -DENGINE -c $< -o $@
 @OS_RULE@
 
 .C_mds.o:
 	source='$<' object='$@' libtool=no        \
-	depfile='./$*_mds.d'  tmpdepfile='./$*.tmp_d' \
+	depfile='./$*_mds.d'  tmpdepfile='./$*.tmp_mds_d' \
 	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -DMDSERVER -c $< -o $@
 @OS_RULE@
 
 .C_par.o:
 	source='$<' object='$@' libtool=no        \
-	depfile='./$*_par.d'  tmpdepfile='./$*.tmp_d' \
+	depfile='./$*_par.d'  tmpdepfile='./$*.tmp_par_d' \
 	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ -c $< -o $@
 @OS_RULE@
 
 .C_ogl.o:
 	source='$<' object='$@' libtool=no        \
-	depfile='./$*_ogl.d'  tmpdepfile='./$*.tmp_d' \
+	depfile='./$*_ogl.d'  tmpdepfile='./$*.tmp_ogl_d' \
 	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 @OS_RULE@
 
 .C_mesa.o:
 	source='$<' object='$@' libtool=no        \
-	depfile='./$*_mesa.d'  tmpdepfile='./$*.tmp_d' \
+	depfile='./$*_mesa.d'  tmpdepfile='./$*.tmp_mesa_d' \
 	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(MESA_INCLUDE) -c $< -o $@
 @OS_RULE@
 
 .C_par_eng.o:
 	source='$<' object='$@' libtool=no        \
-	depfile='./$*_par_eng.d'  tmpdepfile='./$*.tmp_d' \
+	depfile='./$*_par_eng.d'  tmpdepfile='./$*.tmp_par_eng_d' \
 	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -DENGINE @PARALLEL_CPPFLAGS@ -c $< -o $@
 @OS_RULE@
 
 .C_par_ogl.o:
 	source='$<' object='$@' libtool=no        \
-	depfile='./$*_par_ogl.d'  tmpdepfile='./$*.tmp_d' \
+	depfile='./$*_par_ogl.d'  tmpdepfile='./$*.tmp_par_ogl_d' \
 	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ -c $< -o $@
 @OS_RULE@
 
 .C_par_mesa.o:
 	source='$<' object='$@' libtool=no        \
-	depfile='./$*_par_mesa.d'  tmpdepfile='./$*.tmp_d' \
+	depfile='./$*_par_mesa.d'  tmpdepfile='./$*.tmp_par_mesa_d' \
 	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ $(MESA_INCLUDE) \
 	-c $< -o $@
@@ -180,7 +184,7 @@ distclean: clean
 # _icet implies parallel; the PARALLEL_CPPFLAGS are there on purpose.
 .C_icet.o:
 	source='$<' object='$@' libtool=no        \
-	depfile='./$*_icet.d'  tmpdepfile='./$*.tmp_d' \
+	depfile='./$*_icet.d'  tmpdepfile='./$*.tmp_icet_d' \
 	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS)      \
 	@PARALLEL_CPPFLAGS@ @ICET_CXXFLAGS@ \
@@ -189,7 +193,7 @@ distclean: clean
 
 .C_mesa_icet.o:
 	source='$<' object='$@' libtool=no        \
-	depfile='./$*_mesa_icet.d'  tmpdepfile='./$*.tmp_d' \
+	depfile='./$*_mesa_icet.d'  tmpdepfile='./$*.tmp_mesa_icet_d' \
 	$(DEPMODE) $(TOPDIR)/bin/depcomp          \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS)                      \
 	@PARALLEL_CPPFLAGS@ @ICET_CXXFLAGS@ $(MESA_INCLUDE) \
