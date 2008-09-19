@@ -42,8 +42,10 @@
 #include <AttributeSubject.h>
 
 // SLIVR and Qt share 'emit' causing a conflict
-#undef emit
-#include <QvisCMap2Display.h>
+#ifdef HAVE_LIBSLIVR
+#   undef emit
+#   include <QvisCMap2Display.h>
+#endif
 
 // Forward declarations
 class VolumeAttributes;
@@ -65,6 +67,7 @@ class QvisScribbleOpacityBar;
 class QvisSpectrumBar;
 class QvisVariableButton;
 class QvisCMap2Widget;
+typedef int WidgetID;
 
 // ****************************************************************************
 // Class: QvisVolumePlotWindow
@@ -119,6 +122,9 @@ class QvisCMap2Widget;
 //
 //    Brad Whitlock, Fri Jan 11 15:29:40 PST 2008
 //    Added renderSamples for SLIVR.
+//
+//    Tom Fogal, Fri Sep 19 11:17:37 MDT 2008
+//    Don't use the CMap2D widget without SLIVR.
 //
 // ****************************************************************************
 
@@ -195,7 +201,9 @@ private:
     bool                     showColorsInAlphaWidget;
 
     // Widgets and layouts.
+#ifdef HAVE_LIBSLIVR
     QvisCMap2Widget          *transferFunc2D;
+#endif
     QGroupBox                *colorWidgetGroup;
     QCheckBox                *smoothCheckBox;
     QCheckBox                *equalCheckBox;
@@ -253,5 +261,4 @@ private:
     QSlider                  *rendererSamplesSlider;
     QLineEdit                *rendererSamples;
 };
-
 #endif

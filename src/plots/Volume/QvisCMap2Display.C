@@ -1,3 +1,4 @@
+#include <visit-config.h>
 #include <slivr/CM2Widget.h>
 #include <slivr/VolumeRenderer.h>
 #include <slivr/VideoCardInfo.h>

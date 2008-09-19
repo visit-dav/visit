@@ -838,6 +838,11 @@ dnl
 dnl    Mark C. Miller, Mon Sep 15 17:29:27 PDT 2008
 dnl    Replaced all refs to $SHORT_UNAME to $UNAME. The two were being used
 dnl    inter-changeably and I wanted to make it consistent.
+dnl
+dnl    Tom Fogal, Fri Sep 19 11:24:08 MDT 2008
+dnl    Define variables of filenames for SLIVR, to decide which parts to
+dnl    conditionally compile.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1555,6 +1560,8 @@ AC_ARG_ENABLE(slivr,
    [  --enable-slivr           build with the SLIVR volume rendering library],
    UseSLIVR=$enableval, UseSLIVR=no)
 
+SLIVR_GUI_IMPL=""
+SLIVR_GUI_HDR=""
 AC_MSG_CHECKING(if SLIVR is enabled)
 TEEM_CMAKE_C_FLAGS=""
 SLIVR_CMAKE_SHARED_LINKER_FLAGS=""
@@ -1569,6 +1576,8 @@ if test "$UseSLIVR" = "yes"; then
             TEEM_CMAKE_C_FLAGS="-D CMAKE_C_FLAGS:STRING=-fno-common"
             SLIVR_CMAKE_SHARED_LINKER_FLAGS="-D CMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-undefined,dynamic_lookup"
         fi
+        SLIVR_GUI_IMPL="QvisCMap2Display.C QvisCMap2Widget.C"
+        SLIVR_GUI_HDR="QvisCMap2Display.h QvisCMap2Widget.h"
     else
         AC_MSG_RESULT(no because cmake was not found)
         BUILD_SLIVR=""
@@ -1586,6 +1595,8 @@ AC_SUBST(SLIVR_INCLUDE)
 AC_SUBST(SLIVR_LIBS)
 AC_SUBST(TEEM_CMAKE_C_FLAGS)
 AC_SUBST(SLIVR_CMAKE_SHARED_LINKER_FLAGS)
+AC_SUBST(SLIVR_GUI_IMPL)
+AC_SUBST(SLIVR_GUI_HDR)
 
 #
 # Check if the help directory is present.
