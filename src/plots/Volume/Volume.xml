@@ -10,6 +10,9 @@
       $(GL_LIBS)
       -lGLU
     </LIBS>
+    <Files components="S">
+      TransferFunctionWidget.C
+    </Files>
     <Files components="G">
       $(SLIVR_GUI_IMPL)
       TransferFunctionWidget.C
