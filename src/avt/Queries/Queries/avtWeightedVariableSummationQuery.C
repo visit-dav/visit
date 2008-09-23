@@ -158,6 +158,10 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
 //    For better error messages, check if there is an active variable in the
 //    data attributes, and if not then retrieve from data request.
 //
+//    Kathleen Bonnell, Tue Sep 23 08:53:03 PDT 2008 
+//    Move setting of secondary var "avt_weights" till after the contract
+//    has been set for the time-varying case. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -222,14 +226,6 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     avtContract_p contract = 
         inData->GetOriginatingSource()->GetGeneralContract();
 
-    if (CalculateAverage())
-    {
-        denomVariableName = "avt_weights";
-        // State that we want avt_weights as an output, so it doesn't get
-        // thrown out after the multiply.
-        contract->GetDataRequest()->AddSecondaryVariable("avt_weights");
-    }
-
     if (timeVarying) 
     { 
         avtDataRequest_p dataRequest = GetInput()->GetOriginatingSource()
@@ -239,6 +235,14 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
         newDS->SetTimestep(queryAtts.GetTimeStep());
 
         contract = new avtContract(newDS, contract->GetPipelineIndex());
+    }
+
+    if (CalculateAverage())
+    {
+        denomVariableName = "avt_weights";
+        // State that we want avt_weights as an output, so it doesn't get
+        // thrown out after the multiply.
+        contract->GetDataRequest()->AddSecondaryVariable("avt_weights");
     }
 
     multiply->GetOutput()->Update(contract);
