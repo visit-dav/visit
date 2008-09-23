@@ -72,6 +72,9 @@
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//   Kathleen Bonnell, Mon Sep 22 18:37:29 PDT 2008 
+//   Allow labelScaling values to be negative. 
+//
 // ****************************************************************************
 
 QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent, 
@@ -153,7 +156,7 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     lLayout->setSpacing(5);
     lLayout->setColStretch(1, 10);
 
-    labelScaling = new QSpinBox(0, 300, 1, labelGroup, "labelScaling");
+    labelScaling = new QSpinBox(-300, 300, 1, labelGroup, "labelScaling");
     connect(labelScaling, SIGNAL(valueChanged(int)),
             this, SLOT(labelScalingChanged(int)));
     labelScalingLabel = new QLabel(labelScaling, tr("Scaling (x10^?)"), 
