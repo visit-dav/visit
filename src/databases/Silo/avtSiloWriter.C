@@ -675,6 +675,10 @@ avtSiloWriter::ConstructChunkOptlist(const avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Thu Aug  7 23:38:24 PDT 2008
 //    Fixed filename generation for single block case
+//
+//    Mark C. Miller, Mon Sep 22 22:03:55 PDT 2008
+//    Fixed single file, single block case to prevent it from making
+//    "domain" subdirs.
 // ****************************************************************************
 
 void
@@ -710,7 +714,7 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
         dbfile = DBCreate(filename, 0, DB_LOCAL, 
                      "Silo file written by VisIt", driver);
 
-        if (singleFile)
+        if (singleFile && nblocks > 1)
         {
             char dirname[32];
             sprintf(dirname, "domain_%d", chunk);
