@@ -20,6 +20,9 @@
 #    Randy Hudson, Wed Feb 27 12:05:00 CST 2008
 #    Add case for me (userid "rhudson").
 #
+#    John C. Anderson, Thu Sep 11 12:27:08 PDT 2008
+#    Added case for userid "jcanders".
+#
 # *****************************************************************************
 
 
@@ -79,6 +82,10 @@ case $1 in
     # Randy Hudson, University of Chicago, Argonne National Laboratory
     "rhudson")
         emaddr=hudson@mcs.anl.gov
+        ;;
+    # John C. Anderson, UC Davis / LLNL
+    "jcanders")
+        emaddr=anderson@cs.ucdavis.edu
         ;;
     *)
         emaddr=visit@llnl.gov
