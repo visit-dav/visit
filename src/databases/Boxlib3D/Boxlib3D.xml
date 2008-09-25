@@ -2,7 +2,6 @@
   <Plugin name="Boxlib3D" type="database" label="Boxlib3D" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" specifiedFilenames="true">
     <CXXFLAGS>
       -DBL_SPACEDIM=3
-      -DavtBoxlibFileFormat=avtBoxlib3DFileFormat
       $(BOXLIB3D_INCLUDE)
     </CXXFLAGS>
     <LIBS>
@@ -15,6 +14,14 @@
     <Filenames>
       Header
     </Filenames>
+    <Files components="M">
+      avtBoxlibFileFormat.C
+      avtBoxlib3DFileFormat.C
+    </Files>
+    <Files components="E">
+      avtBoxlibFileFormat.C
+      avtBoxlib3DFileFormat.C
+    </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

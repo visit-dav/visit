@@ -568,6 +568,9 @@ avtBoxlibFileFormat::GetLevelAndLocalPatchNumber(int global_patch,
 //    Hank Childs, Wed Feb 18 11:29:59 PST 2004
 //    Add a base index.
 //
+//    Kathleen Bonnell, Thu Sep 25 09:06:25 PDT 2008 
+//    Initialize arr[2] for 2d case. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -630,7 +633,9 @@ avtBoxlibFileFormat::GetMesh(int patch, const char *mesh_name)
     arr->SetNumberOfTuples(3);
     arr->SetValue(0, iStart);
     arr->SetValue(1, jStart);
-#if BL_SPACEDIM==3
+#if BL_SPACEDIM==2
+    arr->SetValue(2, 0);
+#elif BL_SPACEDIM==3
     arr->SetValue(2, kStart);
 #endif
     arr->SetName("base_index");
@@ -1273,6 +1278,9 @@ avtBoxlibFileFormat::GetVar(int patch, const char *var_name)
 //    Hank Childs, Thu Jul  8 14:08:18 PDT 2004
 //    Account for non 0-origin variables.
 //    
+//    Kathleen Bonnell, Thu Sep 25 09:06:25 PDT 2008 
+//    fab[2] doesn't exist for 2d case, so use 0 to initialzie fptr instead.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1384,7 +1392,11 @@ avtBoxlibFileFormat::GetVectorVar(int patch, const char *var_name)
 
                 *(fptr++) = (*(fab[0]))(pos);
                 *(fptr++) = (*(fab[1]))(pos);
+#if BL_SPACEDIM==2
+                *(fptr++) = 0.;
+#elif BL_SPACEDIM==3
                 *(fptr++) = (*(fab[2]))(pos);
+#endif
             }
         }
 #if BL_SPACEDIM==3
@@ -2022,6 +2034,9 @@ avtBoxlibFileFormat::GetMaterial(const char *var, int patch,
 //    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
 //    API change for avtIntervalTree.
 //
+//    Kathleen Bonnell, Thu Sep 25 09:06:25 PDT 2008 
+//    Initialize bounds[4,5] to zero for 2d case.
+//
 // ****************************************************************************
     
 void *
@@ -2040,7 +2055,10 @@ avtBoxlibFileFormat::GetSpatialIntervalTree(DestructorFunction &df)
         bounds[1] = xMax[patch];
         bounds[2] = yMin[patch];
         bounds[3] = yMax[patch];
-#if BL_SPACEDIM==3
+#if BL_SPACEDIM==2
+        bounds[4] = 0.;
+        bounds[5] = 0.;
+#elif BL_SPACEDIM==3
         bounds[4] = zMin[patch];
         bounds[5] = zMax[patch];
 #endif
