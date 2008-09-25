@@ -267,6 +267,9 @@ avtChomboFileFormat::GetTime(void)
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Modified to use regular expression based guess 
+//
+//    Mark C. Miller, Wed Sep 24 11:43:38 PDT 2008
+//    Modified regular expression to meet specifications in ticket 8737
 // ****************************************************************************
 
 int
@@ -277,7 +280,7 @@ avtChomboFileFormat::GetCycleFromFilename(const char *fname) const
     if (fname == 0 || fname[0] == '\0')
         return ret;
 
-    return GuessCycle(fname, "<plo?t(([0-9]\\.)|())([0-9]{2,5})\\..*\\.hdf5$> \\4");
+    return GuessCycle(fname, "<^([a-zA-Z_]*)([0-9]*\\.)?([0-9]*)\\.(2|3)d\\.hdf5$> \\3");
 }
 
 

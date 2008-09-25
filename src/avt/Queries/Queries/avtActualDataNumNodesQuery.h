@@ -46,6 +46,8 @@
 
 #include <avtNumNodesQuery.h>
 
+class avtCondenseDatasetFilter;
+
 
 // ****************************************************************************
 //  Class: avtActualDataNumNodesQuery
@@ -57,6 +59,8 @@
 //  Creation:   February 18, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Sep 25 13:37:13 PDT 2008
+//    Added ApplyFilter, GetNFilters and condense filter.
 //
 // ****************************************************************************
 
@@ -67,6 +71,16 @@ class QUERY_API avtActualDataNumNodesQuery : public avtNumNodesQuery
     virtual                  ~avtActualDataNumNodesQuery(); 
 
     virtual bool             OriginalData(void) { return false; };
+
+  protected:
+
+    virtual avtDataObject_p   ApplyFilters(avtDataObject_p);   
+    virtual int               GetNFilters() { return 1; };
+
+  private:
+
+    avtCondenseDatasetFilter *condense;
+
 };
 
 #endif
