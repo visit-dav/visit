@@ -404,6 +404,13 @@ QvisCMap2Display::getDefaultAlpha() const
     return defaultAlpha;
 }
 
+// ***************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Thu Sep 25 09:15:32 PDT 2008
+//    Changed WId to WidgetID so code will compile on Windows.
+//
+// ***************************************************************************
+
 WidgetID
 QvisCMap2Display::addTriangleWidget(const QString &wName,
                           float base,  // X-coordinate of bottom point
@@ -429,7 +436,7 @@ QvisCMap2Display::addTriangleWidget(const QString &wName,
     std::vector<SLIVR::CM2Widget*> &widgets = cmap2[0]->widgets();
     widgets.push_back(newW);
 
-    WId thisID = nextID++;
+    WidgetID thisID = nextID++;
     idToWidget[thisID] = newW;
 
     ren->set_colormap2(cmap2);
@@ -439,6 +446,14 @@ QvisCMap2Display::addTriangleWidget(const QString &wName,
 
     return thisID;
 }
+
+
+// ***************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Thu Sep 25 09:15:32 PDT 2008
+//    Changed WId to WidgetID so code will compile on Windows.
+//
+// ***************************************************************************
 
 WidgetID
 QvisCMap2Display::addRectangleWidget(const QString &wName,
@@ -465,7 +480,7 @@ QvisCMap2Display::addRectangleWidget(const QString &wName,
     std::vector<SLIVR::CM2Widget*> &widgets = cmap2[0]->widgets();
     widgets.push_back(newW);
 
-    WId thisID = nextID++;
+    WidgetID thisID = nextID++;
     idToWidget[thisID] = newW;
 
     ren->set_colormap2(cmap2);
@@ -475,6 +490,14 @@ QvisCMap2Display::addRectangleWidget(const QString &wName,
 
     return thisID;
 }
+
+
+// ***************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Thu Sep 25 09:15:32 PDT 2008
+//    Changed WId to WidgetID so code will compile on Windows.
+//
+// ***************************************************************************
 
 WidgetID
 QvisCMap2Display::addEllipsoidWidget(const QString &wName,
@@ -499,7 +522,7 @@ QvisCMap2Display::addEllipsoidWidget(const QString &wName,
     std::vector<SLIVR::CM2Widget*> &widgets = cmap2[0]->widgets();
     widgets.push_back(newW);
 
-    WId thisID = nextID++;
+    WidgetID thisID = nextID++;
     idToWidget[thisID] = newW;
 
     ren->set_colormap2(cmap2);
@@ -511,6 +534,14 @@ QvisCMap2Display::addEllipsoidWidget(const QString &wName,
 
     return thisID;
 }
+
+
+// ***************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Thu Sep 25 09:15:32 PDT 2008
+//    Changed WId to WidgetID so code will compile on Windows.
+//
+// ***************************************************************************
 
 WidgetID
 QvisCMap2Display::addParaboloidWidget(const QString &wName,
@@ -533,7 +564,7 @@ QvisCMap2Display::addParaboloidWidget(const QString &wName,
     std::vector<SLIVR::CM2Widget*> &widgets = cmap2[0]->widgets();
     widgets.push_back(newW);
 
-    WId thisID = nextID++;
+    WidgetID thisID = nextID++;
     idToWidget[thisID] = newW;
 
     ren->set_colormap2(cmap2);

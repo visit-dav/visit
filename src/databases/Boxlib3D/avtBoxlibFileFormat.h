@@ -74,6 +74,11 @@ class VisMF;
 //
 //    Mark C. Miller, Wed Nov  9 12:35:15 PST 2005
 //    Added GetCycleFromFilename
+//
+//    Kathleen Bonnell, Thu Sep 25 09:09:54 PDT 2008 
+//    Removed GetType, as it is redefined in derived classes
+//    avtBoxlib2DFileFormat and avtBoxlib3DFileFormat.
+//
 // ****************************************************************************
 
 class avtBoxlibFileFormat : public avtSTMDFileFormat
@@ -82,11 +87,6 @@ class avtBoxlibFileFormat : public avtSTMDFileFormat
                           avtBoxlibFileFormat(const char *);
     virtual              ~avtBoxlibFileFormat();
     
-#if BL_SPACEDIM==2
-    virtual const char   *GetType(void) { return "Boxlib2D File Format"; };
-#elif BL_SPACEDIM==3
-    virtual const char   *GetType(void) { return "Boxlib3D File Format"; };
-#endif
     virtual bool          HasInvariantSIL(void) const { return false; };
     virtual bool          HasInvariantMetaData(void) const { return false; };
     
