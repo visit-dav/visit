@@ -273,6 +273,9 @@
 #    Tom Fogal, Fri Aug 29 20:06:37 EDT 2008
 #    Add new src files for abstracted rendering contexts.  Vertical formatting.
 #
+#    Brad Whitlock, Fri Sep 26 09:53:10 PDT 2008
+#    Added cognomen to the parallel engine wrapper library.
+#
 ##############################################################################
 
 ##
@@ -375,7 +378,7 @@ $(ENGINEWRAPSER) or_no_ser_wrapper: $(SERLIBDEP) $(SEROBJ) $(LIBRARYSEROBJ) $(LI
 
 $(ENGINEWRAPPAR) or_no_par_wrapper: $(PARLIBDEP) $(PAROBJ) $(LIBRARYPAROBJ) $(LIBSHAREDPAR)
 	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(LIBRARYPAROBJ) -lengine_par $(PARLIBS) \
-	@ICET_LDFLAGS@ @ICET_LIBS@
+	@ICET_LDFLAGS@ @ICET_LIBS@ @LIBCOGNOMEN@
 
 purify: $(SERLIBDEP) $(SEROBJ) $(MAINSEROBJ) $(LIBSHAREDSER) $(MAINPAROBJ) $(LIBSHAREDPAR)
 	purify -cache-dir=$(TOPDIR)/lib -always-use-cache-dir -chain-length=64	$(CXX) -o @ENGINE_SER@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)
