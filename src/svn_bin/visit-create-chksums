@@ -133,6 +133,7 @@ do
    $cmd H5Part-20070711.tar.gz                     >> ../visit$version/$output
    $cmd HDF4.2r1.tar.gz                            >> ../visit$version/$output
    $cmd hdf5-1.6.5.tar.gz                          >> ../visit$version/$output
+   $cmd Imaging-1.1.6.tar.gz                       >> ../visit$version/$output
    $cmd Mesa-5.0-mangled.tar.gz                    >> ../visit$version/$output
    $cmd MesaLib-6.4.2.tar.gz                       >> ../visit$version/$output
    $cmd netcdf.tar.gz                              >> ../visit$version/$output
@@ -141,6 +142,7 @@ do
    $cmd qt-x11-free-3.3.2.tar.gz                   >> ../visit$version/$output
    $cmd qt-x11-free-3.3.8.tar.gz                   >> ../visit$version/$output
    $cmd silo060605.sh                              >> ../visit$version/$output
+   $cmd szip-2.1.tar.gz                            >> ../visit$version/$output
    $cmd vtk-5.0.0c.tar.gz                          >> ../visit$version/$output
    cd ../visit$version
 
