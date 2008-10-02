@@ -317,11 +317,11 @@ pc = PseudocolorAttributes()
 pc.centering = pc.Nodal
 SetPlotOptions(pc)
 DrawPlots()
-Test("mixed_centering_01")
+Test("mixed_centering_nodal")
 pc = PseudocolorAttributes()
 pc.centering = pc.Zonal
 SetPlotOptions(pc)
-Test("mixed_centering_02")
+Test("mixed_centering_zonal")
 
 # Test that we can handle multiple identity expressions.
 DefineScalarExpression("sub1", "u")
