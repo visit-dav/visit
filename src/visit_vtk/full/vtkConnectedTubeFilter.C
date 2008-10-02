@@ -143,6 +143,11 @@ vtkConnectedTubeFilter::PointSequence::Add(int i, int ci)
 //  Programmer:  Jeremy Meredith
 //  Creation:    November  1, 2002
 //
+//  Modifications:
+//
+//    Rich Cook and Hank Childs, Thu Oct  2 16:32:55 PDT 2008
+//    Initialized data member used for supporting loops.
+//
 // ****************************************************************************
 vtkConnectedTubeFilter::PointSequenceList::PointSequenceList()
 {
@@ -155,6 +160,7 @@ vtkConnectedTubeFilter::PointSequenceList::PointSequenceList()
 
     visited = NULL;
     index   = -1;
+    lookforloops = false;
 }
 
 // ****************************************************************************
@@ -248,6 +254,11 @@ vtkConnectedTubeFilter::PointSequenceList::Build(vtkPoints *points,
 //  Programmer:  Jeremy Meredith
 //  Creation:    November  1, 2002
 //
+//  Modifications:
+//
+//    Rich Cook and Hank Childs, Thu Oct  2 16:32:55 PDT 2008
+//    Initialized data member used for supporting loops.
+//
 // ****************************************************************************
 void
 vtkConnectedTubeFilter::PointSequenceList::InitTraversal()
@@ -260,6 +271,7 @@ vtkConnectedTubeFilter::PointSequenceList::InitTraversal()
         visited[i] = false;
 
     index = 0;
+    lookforloops = false;
 }
 
 // ****************************************************************************
@@ -274,6 +286,11 @@ vtkConnectedTubeFilter::PointSequenceList::InitTraversal()
 //  Programmer:  Jeremy Meredith
 //  Creation:    November  1, 2002
 //
+//  Modifications:
+//
+//    Rich Cook and Hank Childs, Thu Oct  2 16:32:55 PDT 2008
+//    Added support for loops.
+//
 // ****************************************************************************
 bool
 vtkConnectedTubeFilter::PointSequenceList::GetNextSequence(PointSequence &seq)
@@ -282,7 +299,7 @@ vtkConnectedTubeFilter::PointSequenceList::GetNextSequence(PointSequence &seq)
     for (; index < len; index++)
     {
         // if numneighbors is 1, then this is a start point
-        if (numneighbors[index] == 1 && !visited[index])
+        if ((lookforloops || numneighbors[index] == 1) && !visited[index])
         {
             int current = index;
             int previous = -1;
@@ -297,8 +314,7 @@ vtkConnectedTubeFilter::PointSequenceList::GetNextSequence(PointSequence &seq)
                 previous = current;
                 current = next;
 
-                visited[current] = true;
-
+ 
                 // we must skip any sequential identical points:
                 // 1) they are useless, and 2) they mess up calculations
                 if (pts[previous*3+0] != pts[current*3+0] ||
@@ -307,6 +323,13 @@ vtkConnectedTubeFilter::PointSequenceList::GetNextSequence(PointSequence &seq)
                 {
                     seq.Add(current, cellindex[current]);
                 }
+
+                // check for a loop (AFTER adding the node again...)
+                if (lookforloops && visited[current]) 
+                {
+                    break; 
+                }
+                visited[current] = true;
 
                 bool endpoint = (numneighbors[current] == 1);
                 if (endpoint)
@@ -325,6 +348,13 @@ vtkConnectedTubeFilter::PointSequenceList::GetNextSequence(PointSequence &seq)
             // true ==> success; got another sequence
             return true;
         }
+    }
+
+    if (index == len && !lookforloops) 
+    {
+        lookforloops = true; 
+        index=0; 
+        return GetNextSequence(seq);
     }
 
     // false ==> failed; no more sequences
