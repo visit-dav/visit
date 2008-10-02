@@ -181,7 +181,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
     avtCentering centering
                         = GetInput()->GetInfo().GetAttributes().GetCentering();
-    if (centeringTarget == AVT_ZONECENT)
+    if (centeringTarget == AVT_NODECENT)
     {
         int nArray = inDS->GetCellData()->GetNumberOfArrays();
         vector<string> arraysToSwap;
@@ -293,7 +293,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             dsToShift->Delete();
         }
     }
-    else if (centeringTarget == AVT_NODECENT)
+    else if (centeringTarget == AVT_ZONECENT)
     {
         // Detect if there are any integer type arrays and make them be floats for
         // recenting.
