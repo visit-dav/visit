@@ -2613,6 +2613,10 @@ avtXDMFFileFormat::GetPoints(MeshInfo *meshInfo, int nnodes)
 //    Eric Brugger, Fri Mar 21 15:22:11 PDT 2008
 //    I added a buffer data type argument to the calls to ReadDataItem.
 //
+//    Eric Brugger, Thu Oct  2 16:05:58 PDT 2008
+//    I added code to add base index information to the data set if it is
+//    present.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -2706,6 +2710,21 @@ avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
         break;
     }
 
+    //
+    // If we have base indices, then add that to the dataset as field data.
+    //
+    if (meshInfo->baseIndex != NULL)
+    {
+        vtkIntArray *arr = vtkIntArray::New();
+        arr->SetNumberOfTuples(3);
+        arr->SetValue(0, meshInfo->baseIndex[0]);
+        arr->SetValue(1, meshInfo->baseIndex[1]);
+        arr->SetValue(2, meshInfo->baseIndex[2]);
+        arr->SetName("base_index");
+        rgrid->GetFieldData()->AddArray(arr);
+        arr->Delete();
+    }
+
     return rgrid;
 }
 
@@ -2736,6 +2755,10 @@ avtXDMFFileFormat::GetRectilinearMesh(MeshInfo *meshInfo)
 //
 //    Brad Whitlock, Fri May 16 09:52:31 PDT 2008
 //    Added debugging info since it can help debug creation of XML schemas.
+//
+//    Eric Brugger, Thu Oct  2 16:05:58 PDT 2008
+//    I added code to add base index information to the data set if it is
+//    present.
 //
 // ****************************************************************************
 
@@ -2771,6 +2794,21 @@ avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
     // Tell the grid what its dimensions are.
     //
     sgrid->SetDimensions(meshInfo->dimensions);
+
+    //
+    // If we have base indices, then add that to the dataset as field data.
+    //
+    if (meshInfo->baseIndex != NULL)
+    {
+        vtkIntArray *arr = vtkIntArray::New();
+        arr->SetNumberOfTuples(3);
+        arr->SetValue(0, meshInfo->baseIndex[0]);
+        arr->SetValue(1, meshInfo->baseIndex[1]);
+        arr->SetValue(2, meshInfo->baseIndex[2]);
+        arr->SetName("base_index");
+        sgrid->GetFieldData()->AddArray(arr);
+        arr->Delete();
+    }
 
     return sgrid;
 }

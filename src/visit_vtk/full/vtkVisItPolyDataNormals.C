@@ -89,6 +89,9 @@ vtkVisItPolyDataNormals::vtkVisItPolyDataNormals()
 //    Hank Childs, Fri Feb 15 12:03:46 PST 2008
 //    Remove some downcast calls.
 //
+//    Eric Brugger, Thu Oct  2 16:08:56 PDT 2008
+//    Added code to not calculate the normals if they were already present.
+//
 // ****************************************************************************
 int
 vtkVisItPolyDataNormals::RequestData(vtkInformation *vtkNotUsed(request),
@@ -101,6 +104,12 @@ vtkVisItPolyDataNormals::RequestData(vtkInformation *vtkNotUsed(request),
 
     if (ComputePointNormals)
     {
+        if (input->GetPointData()->GetNormals() != NULL)
+        {
+            GetOutput()->ShallowCopy(this->GetInput());
+            return 1;
+        }
+
         // Point normals
         if (Splitting)
         {
@@ -114,6 +123,12 @@ vtkVisItPolyDataNormals::RequestData(vtkInformation *vtkNotUsed(request),
     else
     {
         // Cell normals
+        if (input->GetCellData()->GetNormals() != NULL)
+        {
+            GetOutput()->ShallowCopy(this->GetInput());
+            return 1;
+        }
+
         ExecuteCell(input, output);
     }
     return 1;
