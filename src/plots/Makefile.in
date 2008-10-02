@@ -144,6 +144,9 @@
 #    Jeremy Meredith, Tue Apr 22 14:41:14 EDT 2008
 #    Removed ParallelAxis plot.
 #
+#    Eric Brugger, Thu Oct  2 15:05:56 PDT 2008
+#    Added the WellBore plot.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -156,7 +159,7 @@ OPTIONAL=Topology
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Label Mesh Molecule \
          ParallelCoordinates Pseudocolor Scatter Spreadsheet \
-         Streamline Subset Surface Tensor Truecolor Vector Volume
+         Streamline Subset Surface Tensor Truecolor Vector Volume WellBore
 
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins
 MINIMAL=Curve Mesh Pseudocolor

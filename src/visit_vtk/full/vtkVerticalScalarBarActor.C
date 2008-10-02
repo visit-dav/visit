@@ -713,6 +713,11 @@ void vtkVerticalScalarBarActor:: BuildTics(double origin, double width,
 //    Add support for collapsing discrete tables that have each entry
 //    as the same color.
 //
+//    Eric Brugger, Thu Oct  2 16:13:10 PDT 2008
+//    Corrected an error in the logic that reversed the order of the
+//    colors in the color bar so that it did so in all cases that it
+//    should.
+//
 // **********************************************************************
 
 void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
@@ -847,13 +852,13 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
     ptIds[3] = ptIds[0] + 2;
     polys->InsertNextCell(4,ptIds);
 
+    if (!this->ReverseOrder)
+        idx = i;
+    else 
+        idx = numColors-1-i; 
     if (this->UseDefinedLabels && !this->definedLabels.empty() )
       {
       LevelColorMap::iterator it;
-      if (!this->ReverseOrder)
-          idx = i;
-      else 
-          idx = numColors-1-i; 
       if ((it = labelColorMap.find(definedLabels[idx])) != labelColorMap.end())
         {
         vtkIdType colorIndex = it->second;
@@ -861,12 +866,12 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
         }
       else
         {
-        rgba = useMe->MapValue((double)i);
+        rgba = useMe->MapValue((double)idx);
         }
       }
     else
       {
-      double val = (((double)i)/(numColors-1.0)) * (tMax - tMin) + tMin;
+      double val = (((double)idx)/(numColors-1.0)) * (tMax - tMin) + tMin;
       rgba = useMe->MapValue(val);
       }
  
