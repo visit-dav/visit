@@ -118,6 +118,11 @@ class VISIT_VTK_API vtkConnectedTubeFilter :
     //  Purpose:
     //    Encapsulates a list of separate point sequences.
     //
+    //  Modifications:
+    //
+    //    Rich Cook and Hank Childs, Thu Oct  2 16:31:45 PDT 2008
+    //    Added data member to support tubing over loops.
+    //
     // ************************************************************************
     class PointSequenceList
     {
@@ -132,6 +137,7 @@ class VISIT_VTK_API vtkConnectedTubeFilter :
         // traversal variables
         bool  *visited;
         int    index;
+        bool   lookforloops;
       public:
         PointSequenceList();
         ~PointSequenceList();
