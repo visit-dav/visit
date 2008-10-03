@@ -34,6 +34,9 @@
 #
 # Modifications:
 #
+#   Dave Pugmire, Fri Oct 3 11:29:19 EDT 2008
+#   Added avtIVP libs.
+#
 ##############################################################################
 
 ##
@@ -49,7 +52,7 @@ VTK_LIBS=@VTK_LIBS@ @VIEWER_MESA_LIBS@ $(GL_LIBS)
 VTK_INCLUDE=@VTK_INCLUDES@
 LIBS=-L../../lib -L../../vtkqt -lviewer -lengineproxy -lenginerpc -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -ldbatts -lexpr \
-     -lexpr -lparser -lplugin -lqtviswindow -lviswindow_ser -lavtmath_ser -lplotter_ser \
+     -lexpr -lparser -lplugin -lqtviswindow -lviswindow_ser -lavtivp_ser -lavtmath_ser -lplotter_ser \
      -lavtfilters_ser -lavtwriter_ser -lavtview -lpipeline_ser -lvisit_vtk \
      -llightweight_visit_vtk -lparallel_visit_vtk_ser -lvtkqt -lwinutil \
      @QT_LIBS@ -lproxybase -lmisc -lcomm -lstate -lutility -lavtexceptions \

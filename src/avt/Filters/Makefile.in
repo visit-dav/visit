@@ -90,6 +90,9 @@
 #    Jeremy Meredith, Tue Apr 15 13:41:54 EDT 2008
 #    Added avtLinearTransformFilter.
 #
+#    Dave Pugmire, Thu Oct 2 14:30:43 EDT 2008
+#    Added avtStreamlineFilter (moved from plots/Streamline)
+#
 ##############################################################################
 
 ##
@@ -132,6 +135,7 @@ SRC=\
  avtShiftCenteringFilter.C \
  avtSimilarityTransformFilter.C \
  avtSmoothPolyDataFilter.C \
+ avtStreamlineFilter.C \
  avtSummationFilter.C \
  avtSurfaceFilter.C \
  avtTiledImageCompositor.C \

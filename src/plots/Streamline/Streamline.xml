@@ -3,7 +3,6 @@
     <Files components="V">
     </Files>
     <Files components="E">
-      avtStreamlineFilter.C
     </Files>
     <Attribute name="StreamlineAttributes" purpose="Attributes for the Streamline plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Streamline.code">
       <Enum name="SourceType">
