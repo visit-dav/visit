@@ -150,6 +150,9 @@
 #    Tom Fogal, Sun Oct  5 21:49:07 MDT 2008
 #    Temporarily(?) removed Streamline from the plots list.
 #
+#    Dave Pugmire, Mon Oct  6 12:56:07 EDT 2008
+#    Re-enabled the Streamline plot
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -161,7 +164,7 @@ all: message
 OPTIONAL=Topology
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Label Mesh Molecule \
-         ParallelCoordinates Pseudocolor Scatter Spreadsheet \
+         ParallelCoordinates Pseudocolor Scatter Spreadsheet Streamline \
          Subset Surface Tensor Truecolor Vector Volume WellBore
 
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins
