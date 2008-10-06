@@ -147,6 +147,9 @@
 #    Eric Brugger, Thu Oct  2 15:05:56 PDT 2008
 #    Added the WellBore plot.
 #
+#    Tom Fogal, Sun Oct  5 21:49:07 MDT 2008
+#    Temporarily(?) removed Streamline from the plots list.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -159,7 +162,7 @@ OPTIONAL=Topology
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Label Mesh Molecule \
          ParallelCoordinates Pseudocolor Scatter Spreadsheet \
-         Streamline Subset Surface Tensor Truecolor Vector Volume WellBore
+         Subset Surface Tensor Truecolor Vector Volume WellBore
 
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins
 MINIMAL=Curve Mesh Pseudocolor

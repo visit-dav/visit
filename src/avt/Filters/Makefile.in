@@ -93,6 +93,9 @@
 #    Dave Pugmire, Thu Oct 2 14:30:43 EDT 2008
 #    Added avtStreamlineFilter (moved from plots/Streamline)
 #
+#    Tom Fogal, Sun Oct  5 14:27:54 MDT 2008
+#    (Temporarily) removed the stream line filter.
+#
 ##############################################################################
 
 ##
@@ -135,7 +138,6 @@ SRC=\
  avtShiftCenteringFilter.C \
  avtSimilarityTransformFilter.C \
  avtSmoothPolyDataFilter.C \
- avtStreamlineFilter.C \
  avtSummationFilter.C \
  avtSurfaceFilter.C \
  avtTiledImageCompositor.C \
