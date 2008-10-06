@@ -96,6 +96,9 @@
 #    Tom Fogal, Sun Oct  5 14:27:54 MDT 2008
 #    (Temporarily) removed the stream line filter.
 #
+#    Dave Pugmire, Mon Oct  6 12:47:24 EDT 2008
+#    Added back the streamlinefilter.
+#
 ##############################################################################
 
 ##
@@ -138,6 +141,7 @@ SRC=\
  avtShiftCenteringFilter.C \
  avtSimilarityTransformFilter.C \
  avtSmoothPolyDataFilter.C \
+ avtStreamlineFilter.C \
  avtSummationFilter.C \
  avtSurfaceFilter.C \
  avtTiledImageCompositor.C \
