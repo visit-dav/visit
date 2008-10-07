@@ -405,6 +405,10 @@
 #     Move all patches to their own function.  (Purpose is to improve
 #     readability and maintainability.)
 #
+#     Tom Fogal, Mon Oct  6 23:11:17 MDT 2008
+#     Force -fPIC in BoxLib for non-AIX.  Switch fortran to compiler to
+#     `gfortran' if `g77' is not found.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -6562,6 +6566,49 @@ EOF
     return 0
 }
 
+# Modifies the makefile to use `gfortran' instead of `g77'.
+function apply_boxlib_25_gfortran_patch
+{
+
+    patch -u -p0 << \EOF
+--- CCSEApps/mk/Make.Linux	2003-02-05 09:33:24.000000000 -0700
++++ CCSEApps/mk/Make.Linux.gfortran	2008-10-06 16:47:30.000000000 -0600
+@@ -51,7 +51,7 @@
+   fOPTF += $(INTEL_EXTRA_OPT_FLAGS)
+ else
+ ifeq ($(FCOMP),f77)
+-  FC       := g77 -fno-second-underscore
++  FC       := gfortran -fno-second-underscore
+   fC       := $(FC)
+   # default g77/f77 version
+   FOPTF += -O
+EOF
+}
+
+# Modifies the makefile to include `-fPIC' int he compiler flags.
+function apply_boxlib_25_fPIC_patch
+{
+    patch -u -p0 << \EOF
+--- CCSEApps/mk/Make.Linux	2003-02-05 09:33:24.000000000 -0700
++++ CCSEApps/mk/Make.Linux.fPIC	2008-10-06 16:46:16.000000000 -0600
+@@ -54,10 +54,10 @@
+   FC       := g77 -fno-second-underscore
+   fC       := $(FC)
+   # default g77/f77 version
+-  FOPTF += -O
+-  fOPTF += -O
+-  FDEBF += -g
+-  fDEBF += -g
++  FOPTF += -O -fPIC
++  fOPTF += -O -fPIC
++  FDEBF += -g -fPIC
++  fDEBF += -g -fPIC
+   #DEFINES += -DBL_FORT_USE_UNDERSCORE
+   #override XTRALIBS +=  -lf2c
+ # LIBRARY_LOCATIONS += /usr/lib/gcc-lib/i386-redhat-linux/2.96
+EOF
+}
+
 
 function apply_boxlib_25_patch
 {
@@ -6575,6 +6622,12 @@ function apply_boxlib_25_patch
        apply_boxlib_25_gcc_patch
        if [[ $? != 0 ]] ; then
            return 1
+       fi
+       apply_boxlib_25_fPIC_patch
+       # Do we need to use gfortran instead of g77?
+       if test -z `which g77`; then
+           echo "g77 not found; patching BoxLib for gfortran compile."
+           apply_boxlib_25_gfortran_patch
        fi
    fi
 
