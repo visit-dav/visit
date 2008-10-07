@@ -1904,7 +1904,7 @@ ViewerSubject::InitializeWorkArea()
             int h2 = int(wmScreen[1] * 0.8);
             h = (h1 < h2) ? h1 : h2;
             w = h;
-            x = wmScreen[2] - wmScreen[0] - w;
+            x = wmScreen[2] + wmScreen[0] - w;
             y = wmScreen[3];
             if(smallWindow)
             {
