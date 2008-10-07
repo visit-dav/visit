@@ -54,6 +54,7 @@
 #include <QvisColorTableButton.h>
 #include <QvisColorButton.h>
 #include <QvisLineWidthWidget.h>
+#include <QvisVariableButton.h>
 #include <stdio.h>
 
 
@@ -140,6 +141,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Sean Ahern, Wed Sep  3 16:19:27 EDT 2008
 //   Mucked with the layout to make it a bit more consistent.
 //
+//   Dave Pugmire, Tue Oct 7 08:17:22 EDT 2008
+//   Changed 'Termination Criteria' to 'Termination Criterion'
+//
 // ****************************************************************************
 
 void
@@ -148,7 +152,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 6, 3, 10, "mainLayout");
 
     // Create the maximum time text field.
-    mainLayout->addWidget(new QLabel(tr("Termination Criteria"), central, "terminationLabel"),0,0);
+    mainLayout->addWidget(new QLabel(tr("Termination Criterion"), central, "terminationLabel"),0,0);
     termType = new QComboBox(central, "termType");
     termType->insertItem(tr("Distance"));
     termType->insertItem(tr("Time"));
@@ -320,7 +324,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     QGroupBox *pageAppearance = new QGroupBox(central, "pageAppearance");
     pageAppearance->setFrameStyle(QFrame::NoFrame);
     tabs->addTab(pageAppearance, tr("Appearance"));
-    QGridLayout *aLayout = new QGridLayout(pageAppearance, 7, 2);
+    QGridLayout *aLayout = new QGridLayout(pageAppearance, 8, 2);
     aLayout->setMargin(10);
     aLayout->setSpacing(5);
 
@@ -381,6 +385,14 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     singleColorLabel = new QLabel(singleColor, tr("Single color"), pageAppearance, "singleColorLabel");
     aLayout->addWidget(singleColorLabel,6,0);
     aLayout->addWidget(singleColor, 6,1, Qt::AlignLeft);
+
+    QvisVariableButton *var = new QvisVariableButton(true, true, true,
+                                                     QvisVariableButton::Scalars, pageAppearance, "nm");
+    connect(var, SIGNAL(activated(const QString &)),
+            this, SLOT(varChanged(const QString&)));
+    aLayout->addWidget(var,7,0);
+    //    aLayout->addStretch(5);
+
 
     //
     // Create advanced widgets.

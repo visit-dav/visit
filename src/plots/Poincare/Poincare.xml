@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+  <Plugin name="Poincare" type="plot" label="Poincare" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false" vartype="vector" iconFile="Poincare.xpm">
+    <Files components="V">
+    </Files>
+    <Files components="E">
+      avtPoincareFilter.C
+    </Files>
+    <Attribute name="PoincareAttributes" purpose="Attributes for the Poincare plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Poincare.code">
+      <Enum name="SourceType">
+        SpecifiedPoint
+        SpecifiedLine
+        SpecifiedPlane
+        SpecifiedSphere
+        SpecifiedBox
+      </Enum>
+      <Enum name="ColoringMethod">
+        Solid
+        ColorBySpeed
+        ColorByVorticity
+        ColorByLength
+        ColorByTime
+        ColorBySeedPointID
+      </Enum>
+      <Enum name="DisplayMethod">
+        Lines
+        Tubes
+        Ribbons
+      </Enum>
+      <Enum name="IntegrationDirection">
+        Forward
+        Backward
+        Both
+      </Enum>
+      <Enum name="TerminationType">
+        Distance
+        Time
+      </Enum>
+      <Enum name="IntegrationType">
+        DormandPrince
+        AdamsBashforth
+      </Enum>
+      <Enum name="StreamlineAlgorithmType">
+        LoadOnDemand
+        ParallelStaticDomains
+      </Enum>
+      <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
+        SpecifiedPoint
+      </Field>
+      <Field name="maxStepLength" label="maximum step length" type="double">
+        0.100000
+      </Field>
+      <Field name="termination" label="Termination" type="double">
+        10.000000
+      </Field>
+      <Field name="pointSource" label="Starting point" type="doubleArray" length="3" enabler="sourceType:SpecifiedPoint">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="lineStart" label="Line start" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="lineEnd" label="Line end" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
+        1.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="planeOrigin" label="Plane origin" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="planeNormal" label="Plane normal" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
+        0.000000
+        0.000000
+        1.000000
+      </Field>
+      <Field name="planeUpAxis" label="Plane up axis" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
+        0.000000
+        1.000000
+        0.000000
+      </Field>
+      <Field name="planeRadius" label="Plane radius" type="double" enabler="sourceType:SpecifiedPlane">
+        1.000000
+      </Field>
+      <Field name="sphereOrigin" label="Sphere origin" type="doubleArray" length="3" enabler="sourceType:SpecifiedSphere">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="sphereRadius" label="Sphere radius" type="double" enabler="sourceType:SpecifiedSphere">
+        1.000000
+      </Field>
+      <Field name="boxExtents" label="Box extents" type="doubleArray" length="6" enabler="sourceType:SpecifiedBox">
+        0.000000
+        1.000000
+        0.000000
+        1.000000
+        0.000000
+        1.000000
+      </Field>
+      <Field name="pointDensity" label="Point density" type="int">
+        2
+      </Field>
+      <Field name="displayMethod" label="Display method" type="enum" subtype="DisplayMethod">
+        Lines
+      </Field>
+      <Field name="showStart" label="Show tube start" type="bool">
+        false
+      </Field>
+      <Field name="radius" label="Radius" type="double">
+        0.125000
+      </Field>
+      <Field name="lineWidth" label="Line width" type="linewidth">
+        2
+      </Field>
+      <Field name="coloringMethod" label="Coloring method" type="enum" subtype="ColoringMethod">
+        ColorBySpeed
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable">
+        Default
+      </Field>
+      <Field name="singleColor" label="Single color" type="color" length="4">
+        0
+        0
+        0
+        255
+      </Field>
+      <Field name="legendFlag" label="Legend" type="bool">
+        true
+      </Field>
+      <Field name="lightingFlag" label="Lighting" type="bool">
+        true
+      </Field>
+      <Field name="StreamlineDirection" label="Streamline Direction" type="enum" subtype="IntegrationDirection">
+        Forward
+      </Field>
+      <Field name="relTol" label="rel. tolerance" type="double">
+        0.000100
+      </Field>
+      <Field name="absTol" label="abs. tolerance" type="double">
+        0.000010
+      </Field>
+      <Field name="terminationType" label="unnamed1" type="enum" subtype="TerminationType">
+        Distance
+      </Field>
+      <Field name="integrationType" label="Integration type" type="enum" subtype="IntegrationType">
+        DormandPrince
+      </Field>
+      <Field name="streamlineAlgorithmType" label="Streamline algorithm type" type="enum" subtype="StreamlineAlgorithmType">
+        ParallelStaticDomains
+      </Field>
+      <Field name="maxStreamlineProcessCount" label="maxStreamlineProcessCount" type="int">
+        10
+      </Field>
+      <Field name="maxDomainCacheSize" label="Max domain cache" type="int">
+        3
+      </Field>
+      <Include file="source" quoted="false">
+        PlaneAttributes.h
+      </Include>
+    </Attribute>
+  </Plugin>
