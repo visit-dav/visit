@@ -49,6 +49,7 @@
 #include <avtVec.h>
 #include <avtIntervalTree.h>
 #include <MemStream.h>
+#include <filters_exports.h>
 #ifdef PARALLEL
 #include <avtParallel.h>
 #include <mpi.h>
@@ -213,7 +214,7 @@ class avtStreamlineWrapper
 //
 // ****************************************************************************
 
-class avtStreamlineFilter : public avtDatasetOnDemandFilter
+class AVTFILTERS_API avtStreamlineFilter : public avtDatasetOnDemandFilter
 {
   public:
                               avtStreamlineFilter();
