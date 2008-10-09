@@ -691,6 +691,9 @@ avtBoxlibFileFormat::GetMesh(int patch, const char *mesh_name)
 //    Hank Childs, Thu Feb 21 16:17:07 PST 2008
 //    Initialize variables in case parsing fails (Klocwork).
 //
+//    Hank Childs, Wed Oct  8 16:57:17 PDT 2008
+//    Initialize coordSys.
+//
 // ****************************************************************************
 
 void
@@ -872,7 +875,10 @@ avtBoxlibFileFormat::ReadHeader(void)
 
     // Read in coord system;
     if (iDoReading)
-        in >> integer;
+    {
+        in >> coordSys;
+        BroadcastInt(coordSys);
+    }
     // Read in width of boundary regions (ghost zones)
     if (iDoReading)
     {
@@ -1545,7 +1551,20 @@ avtBoxlibFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     mesh->blockNames = blockPieceNames;
 #if BL_SPACEDIM==2
-    mesh->meshCoordType = AVT_ZR;
+    // coordSys == 0 <- XYZ
+    // coordSys == 1 <- ZR
+    // coordSys == 2 <- r-theta
+    if (coordSys == 1)
+    {
+        mesh->meshCoordType = AVT_ZR;
+        mesh->xLabel = "R-Axis";
+        mesh->yLabel = "Z-Axis";
+    }
+    else if (coordSys == 2)
+    {
+        avtCallback::IssueWarning("The boxlib reader does not support "
+                                  "r-theta meshes");
+    }
 #endif
     md->Add(mesh);
     md->AddGroupInformation(nLevels, totalPatches, groupIds);

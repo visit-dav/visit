@@ -1123,6 +1123,10 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //
 //    Sean Ahern, Wed Sep 10 12:44:22 EDT 2008
 //    Added support for recenter with optional argument.
+//
+//    Hank Childs, Wed Oct  8 16:31:05 PDT 2008
+//    Make pos_cmfe fillin be more comprehensible.
+//
 // ****************************************************************************
 
 void
@@ -1151,7 +1155,7 @@ QvisExpressionsWindow::insertFunction(int id)
     }
     else if (str == "pos_cmfe")
     {
-        definitionEdit->insert("(<filename:var>, <meshname>, <default-var>)");
+        definitionEdit->insert("(<filename:var>, <meshname>, <fill-var-for-uncovered-regions>)");
         doParens = false;
     }
     else if (str == "symm_point")

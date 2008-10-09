@@ -54,6 +54,7 @@
 #include <vtkThreshold.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <avtCallback.h>
 #include <avtDataAttributes.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
@@ -787,6 +788,9 @@ avtThresholdFilter::UpdateDataObjectInfo(void)
 //    Removes any variable from the threshold list that's not a scalar or not in
 //    the input.  Also determines whether or not default variable is a scalar.
 //
+//    Hank Childs, Thu Oct  9 09:24:26 PDT 2008
+//    Issue a better error message for non-scalars.
+//
 // *****************************************************************************
 
 void
@@ -817,7 +821,21 @@ avtThresholdFilter::PreExecute(void)
     }
     
     if (inputVarNum >= inputVarCount)
+    {
         atts.SetDefaultVarIsScalar(false);
+        static bool issuedWarning = false;
+        if (!issuedWarning)
+        {
+            avtCallback::IssueWarning("The threshold operator was asked to "
+               "threshold by a non-scalar.  Only scalars are supported "
+               "for thresholding.  You can overcome this by using "
+               "expressions.  For example, if you would like to threshold "
+               "using a vector, then you can define an expression for "
+               "vector magnitude and threshold by that.  This warning "
+               "will only be issued once per VisIt session.");
+            issuedWarning = true;
+        }
+    }
 
     stringVector curListedVarNames = atts.GetListedVarNames();
     intVector    curZonePortions   = atts.GetZonePortions();

@@ -433,6 +433,9 @@ QvisSliceWindow::CreateWindowContents()
 //   Dave Pugmire, Thu Oct 18 08:25:42 EDT 2007
 //   Added theta-phi method of editing the plane normal.
 //
+//   Hank Childs, Thu Oct  9 11:13:19 PDT 2008
+//   Update test for what is "orthogonal" (theta-phi is not!).
+//
 // ****************************************************************************
 
 void
@@ -449,7 +452,9 @@ QvisSliceWindow::UpdateWindow(bool doAll)
     if (doAll)
         UpdateMeshNames();
 
-    bool orthogonal = sliceAtts->GetAxisType() != SliceAttributes::Arbitrary;
+    bool orthogonal = sliceAtts->GetAxisType() != SliceAttributes::Arbitrary &&
+                      sliceAtts->GetAxisType() != SliceAttributes::ThetaPhi;
+
 
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible

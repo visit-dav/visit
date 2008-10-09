@@ -79,6 +79,9 @@ class VisMF;
 //    Removed GetType, as it is redefined in derived classes
 //    avtBoxlib2DFileFormat and avtBoxlib3DFileFormat.
 //
+//    Hank Childs, Wed Oct  8 16:56:47 PDT 2008
+//    Add data member for coordinate system.
+//
 // ****************************************************************************
 
 class avtBoxlibFileFormat : public avtSTMDFileFormat
@@ -120,6 +123,7 @@ class avtBoxlibFileFormat : public avtSTMDFileFormat
     std::string                             rootPath;
 
     int                                     nLevels;
+    int                                     coordSys;
     std::vector<int>                        patchesPerLevel;
     // These entries are per patch.
     std::vector<double>                     xMin;

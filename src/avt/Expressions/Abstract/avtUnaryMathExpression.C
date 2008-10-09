@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtUnaryMathExpression.C                          //
+//                           avtUnaryMathExpression.C                        //
 // ************************************************************************* //
 
 #include <avtUnaryMathExpression.h>
@@ -49,6 +49,7 @@
 #include <vtkPointData.h>
 
 #include <ImproperUseException.h>
+#include <ExpressionException.h>
 
 
 // ****************************************************************************
@@ -281,6 +282,18 @@ avtUnaryMathExpression::DeriveVariable(vtkDataSet *in_ds)
     {
         ncomps = data->GetNumberOfComponents();
         dv = CreateArray(data);
+    }
+
+    if (data == NULL)
+    {
+        if (! NullInputIsExpected())
+        {
+            // One way to get here is to have vtkPolyData Curve plots.
+            EXCEPTION2(ExpressionException, outputVariableName,
+                 "An internal error occurred when "
+                 "trying to calculate your expression.  Please contact a "
+                 "VisIt developer.");
+        }
     }
 
     int noutcomps = GetNumberOfComponentsInOutput(ncomps);

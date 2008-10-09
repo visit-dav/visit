@@ -37,13 +37,14 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtUnaryMathExpression.h                         //
+//                            avtUnaryMathExpression.h                       //
 // ************************************************************************* //
 
 #ifndef AVT_UNARY_MATH_FILTER_H
 #define AVT_UNARY_MATH_FILTER_H
 
 #include <expression_exports.h>
+
 #include <avtSingleInputExpressionFilter.h>
 
 class     vtkDataArray;
@@ -78,6 +79,9 @@ class     vtkDataArray;
 //    Hank Childs, Sun Jan 13 20:07:56 PST 2008
 //    Add support for constants creating a singleton.
 //
+//    Hank Childs, Thu Oct  9 09:44:37 PDT 2008
+//    Define method "NullInputIsExpected".
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtUnaryMathExpression : public avtSingleInputExpressionFilter
@@ -88,6 +92,8 @@ class EXPRESSION_API avtUnaryMathExpression : public avtSingleInputExpressionFil
 
     virtual const char       *GetType(void)   { return "avtUnaryMathExpression";};
     virtual const char       *GetDescription(void) = 0;
+
+    virtual bool              NullInputIsExpected(void) { return false; };
 
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
