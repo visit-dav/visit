@@ -73,7 +73,9 @@ material entries are all set to "EMPTY".</li>
 <ul>
       <li>The Streamline plot has three new color by options: time, arc
           length and seed point id.</li>
-
+      <li>The Spreadsheet plot now prints an informational message in text files
+          that it saves so the user knows that the vertical ordering of data
+          in the file differs from what is shown in</li>
 </ul>
 
 <a name="Operator_changes"></a>
@@ -114,6 +116,12 @@ plots that are not selected.</li>
       <li>The parallel compute engine wrapper library has been linked with the cognomen library, allowing it to work in parallel with libsim once more.</li>
 
       <li>VisIt's expression evaluator frees up more problem-sized memory as it evaluates expressions, making it less likely that the compute engine will run out of memory.</li>
+
+      <li>The CLI's OpenGUI() function causes the viewer to crash when the viewer is run without a window using the <i>-nowin</i> command line argument.</li>
+
+      <li>The "visit -movie" script does not properly handle engine launch arguments.</li>
+
+      <li>VisIt's Save Movie wizard no longer presents "Streaming movie" as an option unless the img2sm encoding software exists in your path.</li>
 </ul>
 
 <a name="Config_changes"></a>

@@ -7279,6 +7279,9 @@ ViewerSubject::EndLaunchProgress()
 //   It should be safe to do this because the dialog's timer is constantly
 //   generating new events to process.
 //
+//   Brad Whitlock, Thu Oct  9 13:23:27 PDT 2008
+//   Don't perform dialog operations if the dialog does not exist.
+//
 // ****************************************************************************
 
 bool
@@ -7290,7 +7293,8 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
     ViewerConnectionProgressDialog *dialog = 
         (ViewerConnectionProgressDialog *)data[1];
     // Only show the dialog if windows have been shown.
-    bool windowsShowing = !ViewerWindowManager::Instance()->GetWindowsHidden();
+    bool windowsShowing = !ViewerWindowManager::Instance()->GetWindowsHidden() &&
+                          dialog != 0;
 
     if (stage == 0)
     {

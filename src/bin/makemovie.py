@@ -1936,6 +1936,10 @@ class MakeMovie:
     # Programmer: Brad Whitlock
     # Date:       Tue Aug 3 17:27:45 PST 2004
     #
+    # Modifications:
+    #   Brad Whitlock, Thu Oct  9 13:17:04 PDT 2008
+    #   Applied a user's fix for setting the launch arguments.
+    #
     ###########################################################################
 
     def CreateEngineArguments(self, engineProperties):
@@ -1974,11 +1978,7 @@ class MakeMovie:
                 if "launchArgsSet" in engineProperties.keys() and\
                    "launchArgs" in engineProperties.keys():
                     if engineProperties["launchArgsSet"] == 1:
-                        args = engineProperties["launchArgs"]
-                        s = ""
-                        for arg in args:
-                            s = s + arg + " "
-                        arguments = arguments + ["-la", s]
+                        arguments = arguments + ["-la", str(engineProperties["launchArgs"])]
 
         arguments = arguments + ["-forcestatic"]
 

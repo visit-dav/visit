@@ -52,6 +52,7 @@
 #include <qlineedit.h>
 #include <qlistbox.h>
 #include <qlistview.h>
+#include <qprocess.h>
 #include <qpushbutton.h>
 #include <qradiobutton.h>
 #include <qscrollview.h>
@@ -120,9 +121,8 @@ movie_format_info movieFormatInfo[] = {
     {"PPM  images",     "ppm"},
     {"RGB  images",     "rgb"},
     {TIFF_FORMAT,       "tiff"},
-    {MPEG_FORMAT,       "mpeg"}
-#if !defined(_WIN32)
-   ,{"Quicktime movie", "qt"},
+    {MPEG_FORMAT,       "mpeg"},
+#ifndef _WIN32
     {"Streaming movie", "sm"}
 #endif
 };
@@ -1566,6 +1566,9 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
 //   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Thu Oct  9 15:57:00 PDT 2008
+//   Conditionally add img2sm to the menu.
+//
 // ****************************************************************************
 
 void
@@ -1599,8 +1602,19 @@ QvisSaveMovieWizard::CreateFormatPage()
     f2innerLayout->addStretch(10);
 
     page9_formatComboBox = new QComboBox(formatAndResolution, "page9_formatComboBox");
+#ifdef _WIN32
+    int nFormats = N_MOVIE_FORMATS;
+#else
+    // See if the img2sm encoder is present in the user's path.
+    QProcess *p = new QProcess(this);
+    QStringList args;
+    args << "img2sm";
+    p->setArguments(args);
+    bool started = p->start();
+    int nFormats = started ? N_MOVIE_FORMATS : (N_MOVIE_FORMATS-1);
+#endif
     // Add all of the movie formats from the table.
-    for(int i = 0; i < N_MOVIE_FORMATS; ++i)
+    for(int i = 0; i < nFormats; ++i)
         page9_formatComboBox->insertItem(movieFormatInfo[i].menu_name, i);
     page9_formatComboBox->setCurrentItem(6);
     QLabel *formatLabel = new QLabel(page9_formatComboBox, tr("Format"),
