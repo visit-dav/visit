@@ -14,15 +14,18 @@
 <p>Welcome to VisIt's release notes page. This page describes the important
 enhancements and bug-fixes that were added to this release.</p>
 
+<!--
 <p><b><font size="4">Announcements</font></b></p>
 <ul>
     <li>The VisIt team released a patch release, <a
-    href="relnotes1.10.1.html">version 1.10.1</a>, to fix some critical
-    defects that surfaced in the VisIt 1.10 release.  Descriptions of
+    href="relnotes1.11.1.html">version 1.11.1</a>, to fix some critical
+    defects that surfaced in the VisIt 1.11 release.  Descriptions of
     the defects addressed by the patch release can be found in the <a
-    href="relnotes1.10.1.html">VisIt 1.10.1 release notes</a>.  All
-    version 1.10.1 fixes are included in this release.</li>
+    href="relnotes1.11.1.html">VisIt 1.11.1 release notes</a>.  All
+    version 1.11.1 fixes are included in this release.</li>
 </ul>
+-->
+
 <p><b>Sections</b></p>
 <ul>
     <li><a href="#General_Features">Features for all users</a></li>
@@ -59,6 +62,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 1.11</font></b></p>
 <ul>
+<li>The Silo reader causes a crash when reading multimat objects whose
+material entries are all set to "EMPTY".</li>
+<li>The PDB/Flash file reader has been changed so that it does not allow VisIt to
+    cache data since the reader performs its own caching.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -72,6 +79,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 1.11</font></b></p>
 <ul>
+<li>The InverseGhostZone operator now operates correctly on blocks that have
+no ghost zones.</li>
+<li>Deleting an operator by clicking the red X in the plot list now works for
+plots that are not selected.</li>
 </ul>
 
 <a name="Expression_changes"></a>
@@ -82,6 +93,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 1.11</font></b></p>
 <ul>
+<li>Fixed more cases of failure in the NumNodes query.</li> 
 </ul>
 
 <a name="CLI_changes"></a>
@@ -94,6 +106,14 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
       <li>A bug was fixed with Fedora Core 9 where "Save Window" and images from "Scalable rendering mode"
           were coming out corrupted.</li>
+
+      <li>Fixed the usage of the loopback device (127.0.0.1) for Windows.</li>
+
+      <li>Fixed a small memory leak on Windows platfrom.</li>
+
+      <li>The parallel compute engine wrapper library has been linked with the cognomen library, allowing it to work in parallel with libsim once more.</li>
+
+      <li>VisIt's expression evaluator frees up more problem-sized memory as it evaluates expressions, making it less likely that the compute engine will run out of memory.</li>
 </ul>
 
 <a name="Config_changes"></a>
