@@ -71,6 +71,8 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
+#include <snprintf.h>
+
 using     std::vector;
 
 
@@ -1852,6 +1854,9 @@ avtSliceFilter::ReleaseData(void)
 //    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006
 //    Set ZonesSplit.
 //
+//    Hank Childs, Thu Oct  9 11:01:14 PDT 2008
+//    Change the axis names for arbitrary slices.
+//
 // ****************************************************************************
 
 void
@@ -1899,7 +1904,7 @@ avtSliceFilter::UpdateDataObjectInfo(void)
                 outAtts.SetZUnits(inAtts.GetXUnits());
             }
         }
-        if ((normal[0] == 0.) && (normal[1] != 0.) && (normal[2] == 0.))
+        else if ((normal[0] == 0.) && (normal[1] != 0.) && (normal[2] == 0.))
         {
             if ((up[0] != 0.) && (up[1] == 0.) && (up[2] == 0.))
             {
@@ -1920,7 +1925,7 @@ avtSliceFilter::UpdateDataObjectInfo(void)
                 outAtts.SetZUnits(inAtts.GetYUnits());
             }
         }
-        if ((normal[0] == 0.) && (normal[1] == 0.) && (normal[2] != 0.))
+        else if ((normal[0] == 0.) && (normal[1] == 0.) && (normal[2] != 0.))
         {
             if ((up[0] != 0.) && (up[1] == 0.) && (up[2] == 0.))
             {
@@ -1934,6 +1939,46 @@ avtSliceFilter::UpdateDataObjectInfo(void)
             {
                 // Pretty much a no-op
             }
+        }
+        else
+        {
+            double normal_mag = sqrt(normal[0]*normal[0] + 
+                                    normal[1]*normal[1] + normal[2]*normal[2]);
+            double nn[3];
+            if (normal_mag > 0.)
+            {
+                nn[0] = normal[0] / normal_mag;
+                nn[1] = normal[1] / normal_mag;
+                nn[2] = normal[2] / normal_mag;
+            }
+            double up_mag = sqrt(up[0]*up[0] + up[1]*up[1] + up[2]*up[2]);
+            double un[3];
+            if (up_mag > 0.)
+            {
+                un[0] = up[0] / up_mag;
+                un[1] = up[1] / up_mag;
+                un[2] = up[2] / up_mag;
+            }
+            char ylabel[2048];
+            SNPRINTF(ylabel, 2048, "(%.2f,%.2f,%.2f)-Axis", un[0],un[1],un[2]);
+            outAtts.SetYLabel(ylabel);
+
+            double cross[3];
+            cross[0] = un[1]*nn[2] - un[2]*nn[1];
+            cross[1] = un[2]*nn[0] - un[0]*nn[2];
+            cross[2] = un[0]*nn[1] - un[1]*nn[0];
+            double cross_mag = sqrt(cross[0]*cross[0] + cross[1]*cross[1] +
+                                    cross[2]*cross[2]);
+            if (cross_mag > 0.)
+            {
+                cross[0] /= cross_mag;
+                cross[1] /= cross_mag;
+                cross[2] /= cross_mag;
+            }
+            char xlabel[2048];
+            SNPRINTF(xlabel, 2048, "(%.2f,%.2f,%.2f)-Axis", cross[0], cross[1], 
+                                                            cross[2]);
+            outAtts.SetXLabel(xlabel);
         }
     }
 }

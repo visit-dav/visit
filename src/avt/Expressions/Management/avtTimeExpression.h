@@ -60,6 +60,9 @@
 //    Hank Childs, Mon Jan 14 20:47:27 PST 2008
 //    Allow constants to be created as singletons.
 //
+//    Hank Childs, Thu Oct  9 09:44:37 PDT 2008
+//    Define method "NullInputIsExpected".
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtTimeExpression : public avtUnaryMathExpression
@@ -72,6 +75,8 @@ class EXPRESSION_API avtTimeExpression : public avtUnaryMathExpression
                                          { return "avtTimeExpression"; };
     virtual const char *     GetDescription(void) 
                                      { return "Generating constant (time)"; };
+
+    virtual bool             NullInputIsExpected(void) { return true; };
 
   protected:
     virtual void             DoOperation(vtkDataArray *in, vtkDataArray *out,

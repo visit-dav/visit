@@ -157,8 +157,7 @@ class avtSliceFilter : public avtPluginDataTreeIterator
     vtkMatrix4x4                 *invTrans;
     vtkMatrix4x4                 *origTrans;
 
-    virtual avtContract_p
-                            ModifyContract(avtContract_p);
+    virtual avtContract_p   ModifyContract(avtContract_p);
     virtual vtkDataSet     *ExecuteData(vtkDataSet *, int, std::string);
     virtual void            PreExecute(void);
     virtual void            PostExecute(void);

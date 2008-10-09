@@ -37,13 +37,14 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtConstantCreatorExpression.h                     //
+//                        avtConstantCreatorExpression.h                     //
 // ************************************************************************* //
 
 #ifndef AVT_CONSTANT_CREATOR_FILTER_H
 #define AVT_CONSTANT_CREATOR_FILTER_H
 
 #include <avtUnaryMathExpression.h>
+
 
 // ****************************************************************************
 //  Class: avtConstantCreatorExpression
@@ -69,9 +70,13 @@
 //    Hank Childs, Sun Jan 13 20:07:56 PST 2008
 //    Allow constants to be created as singletons.
 //
+//    Hank Childs, Thu Oct  9 09:44:37 PDT 2008
+//    Define method "NullInputIsExpected".
+//
 // ****************************************************************************
 
-class EXPRESSION_API avtConstantCreatorExpression : public avtUnaryMathExpression
+class EXPRESSION_API avtConstantCreatorExpression 
+    : public avtUnaryMathExpression
 {
   public:
                              avtConstantCreatorExpression();
@@ -82,6 +87,8 @@ class EXPRESSION_API avtConstantCreatorExpression : public avtUnaryMathExpressio
                                          { return "avtConstantCreatorExpression"; }
     virtual const char *     GetDescription(void) 
                                          { return "Generating constant"; }
+
+    virtual bool             NullInputIsExpected(void) { return true; };
 
   protected:
     virtual void             DoOperation(vtkDataArray *in, vtkDataArray *out,
