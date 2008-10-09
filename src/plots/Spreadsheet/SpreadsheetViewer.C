@@ -2406,6 +2406,9 @@ SpreadsheetViewer::changedVariable(const QString &newVar)
 //   Brad Whitlock, Wed Apr 23 11:28:00 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Thu Oct  9 14:12:35 PDT 2008
+//   Added a message about the vertical ordering being different.
+//
 // ****************************************************************************
 
 void
@@ -2428,6 +2431,9 @@ SpreadsheetViewer::saveAsText()
             if(file.open(IO_WriteOnly))
             {
                 QTextStream stream( &file );
+                stream << tr("* Note that the vertical ordering of this file's "
+                             "contents is opposite from what you would see in "
+                             "the Spreadsheet window.\n");
                 stream << txt;
                 file.close();
             }
