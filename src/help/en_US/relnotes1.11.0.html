@@ -122,6 +122,12 @@ plots that are not selected.</li>
       <li>The "visit -movie" script does not properly handle engine launch arguments.</li>
 
       <li>VisIt's Save Movie wizard no longer presents "Streaming movie" as an option unless the img2sm encoding software exists in your path.</li>
+
+      <li>Modified the component launcher code on windows to not override
+          VISITSSH or VISITSSHARGS if set in the users's environment.</li>
+
+      <li>Made available once again the ability for the windows installer
+          to copy over old config files to the new version</li>
 </ul>
 
 <a name="Config_changes"></a>
@@ -132,6 +138,8 @@ plots that are not selected.</li>
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 1.11</font></b></p>
 <ul>
+      <li>Project files for VC 8 were updated to allow successful compilation
+          in parallel.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
