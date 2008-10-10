@@ -1357,4 +1357,4 @@ rather change the name of the default font that is compiled into VisIt then you
 can replace the font name in the AppearanceAttributes state object located in
 ./common/state/AppearanceAttributes.C.
 
-If you have any problems send e-mail to visit-help@llnl.gov.
+If you have any problems send e-mail to visit-developers@ornl.gov.

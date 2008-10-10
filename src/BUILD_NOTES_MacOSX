@@ -1569,4 +1569,4 @@ clearcase_bin/visit-install 1.6 darwin-i386 INSTALL_DIR_PATH
 # create a disk image file called Visit-1.6.dmg containing both images, use:
 clearcase_bin/visit-install -dmg 1.6 darwin-ppc INSTALL_DIR_PATH
 
-If you have any problems send e-mail to visit-help@llnl.gov.
+If you have any problems send e-mail to visit-developers@ornl.gov.

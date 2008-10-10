@@ -476,8 +476,8 @@ $usage = "
     Other resources for help
     ---------------------------------------------------------------------------
         run-time:            While running VisIt, look under the \"Help\" menu.
-        on-line:             http://www.llnl.gov/visit
-        email:               visit-help\@llnl.gov
+        on-line:             https://visit.llnl.gov
+        email:               visit-users\@ornl.gov
 ";
 
 # Do the full usage help text
