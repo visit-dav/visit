@@ -424,6 +424,10 @@
 #     Updated 'usage' message to account for long options, and greatly
 #     improved the formatting.
 #
+#     Tom Fogal, Fri Oct 10 11:20:24 MDT 2008
+#     Removed an embarassing oversight leftover from debugging my
+#     earlier work on the PIL.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -8823,7 +8827,6 @@ if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
          echo "PIL build failed.  Bailing out."
       fi
       echo "Done building the Python Imaging Library"
-      exit 1
    fi
 else
    echo "Skipping Python build."
