@@ -33,6 +33,9 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Modifications:
+#   Brad Whitlock, Fri Oct 10 13:53:57 PST 2008
+#   Copy some of teem's other libraries to the destination directory since
+#   its "make install" does not do it for us.
 #
 ##############################################################################
 
@@ -57,13 +60,18 @@ clean:
 	$(RM) $(TOPDIR)/lib/libalan.@SHLIB_SOEXT@
 	$(RM) $(TOPDIR)/lib/libbane.@SHLIB_SOEXT@
 	$(RM) $(TOPDIR)/lib/libbiff.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libcoil.@SHLIB_SOEXT@
 	$(RM) $(TOPDIR)/lib/libdye.@SHLIB_SOEXT@
 	$(RM) $(TOPDIR)/lib/libecho.@SHLIB_SOEXT@
 	$(RM) $(TOPDIR)/lib/libell.@SHLIB_SOEXT@
 	$(RM) $(TOPDIR)/lib/libgage.@SHLIB_SOEXT@
 	$(RM) $(TOPDIR)/lib/libhest.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libhoover.@SHLIB_SOEXT@
 	$(RM) $(TOPDIR)/lib/liblimn.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libmite.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libmoss.@SHLIB_SOEXT@
 	$(RM) $(TOPDIR)/lib/libnrrd.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libpush.@SHLIB_SOEXT@
 	$(RM) $(TOPDIR)/lib/libten.@SHLIB_SOEXT@
 	$(RM) $(TOPDIR)/lib/libunrrdu.@SHLIB_SOEXT@
 
@@ -75,6 +83,11 @@ build_teem: README.txt
 	cd teem-1.9.0-src && $(CMAKE) -D CMAKE_C_COMPILER:FILEPATH=$(CC) -D BUILD_SHARED_LIBS:STRING=ON -D CMAKE_INSTALL_PREFIX:STRING=$(TOPDIR) @TEEM_CMAKE_C_FLAGS@ .
 	cd teem-1.9.0-src && $(MAKE)
 	cd teem-1.9.0-src && $(MAKE) install
+	cp teem-1.9.0-src/bin/libhoover.@SHLIB_SOEXT@ $(TOPDIR)/lib
+	cp teem-1.9.0-src/bin/libmoss.@SHLIB_SOEXT@ $(TOPDIR)/lib
+	cp teem-1.9.0-src/bin/libmite.@SHLIB_SOEXT@ $(TOPDIR)/lib
+	cp teem-1.9.0-src/bin/libcoil.@SHLIB_SOEXT@ $(TOPDIR)/lib
+	cp teem-1.9.0-src/bin/libpush.@SHLIB_SOEXT@ $(TOPDIR)/lib
 	$(RM) -rf $(TOPDIR)/bin/teem
 	mkdir $(TOPDIR)/bin/teem
 	mv $(TOPDIR)/bin/affine     $(TOPDIR)/bin/teem

@@ -33,6 +33,8 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Modifications:
+#   Brad Whitlock, Fri Oct 10 15:05:43 PST 2008
+#   I updated slivr.
 #
 ##############################################################################
 
@@ -57,7 +59,7 @@ clean:
 	$(RM) $(TOPDIR)/lib/libslivrV.@SHLIB_SOEXT@
 
 SLIVRConfig.cmake.in:
-	gunzip < slivr-rev-106.tar.gz | tar xvf - > /dev/null
+	gunzip < slivr-rev-132.tar.gz | tar xvf - > /dev/null
 	cp slivr/SLIVRConfig.cmake.in .
 
 slivr: SLIVRConfig.cmake.in

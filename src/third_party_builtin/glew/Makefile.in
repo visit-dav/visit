@@ -48,6 +48,9 @@
 #    Tom Fogal, Sun Jun 22 10:50:21 EDT 2008
 #    Oops, path was wrong.  Also removed a useless `cd'.
 #
+#    Brad Whitlock, Fri Oct 10 15:07:49 PST 2008
+#    Remove the glew link on make clean.
+#
 ##############################################################################
 
 ##
@@ -76,6 +79,7 @@ all: message $(LIBSHARED)
 
 clean:
 	$(RM) $(OBJ) $(LIBSHARED) credits.html
+	$(RM) $(TOPDIR)/include/glew
 
 DISTCLEAN_FILES=-rf glew ../../include/glew
 

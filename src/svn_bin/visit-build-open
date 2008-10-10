@@ -34,6 +34,9 @@
 #   Hank Childs, Sat Feb  9 14:18:54 PST 2008
 #   Change clearcase_bin to svn_bin.
 #
+#   Brad Whitlock, Fri Oct 10 15:25:27 PST 2008
+#   Added --enable-slivr to some of the Linux targets.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -239,7 +242,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel --enable-viewer-mesa-stub --enable-visitmodule >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-viewer-mesa-stub --enable-visitmodule --enable-slivr >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 svn_bin/visit-bin-dist >> ../../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ../..
@@ -535,7 +538,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule --enable-slivr >> ../../buildlog 2>&1
 make -j 3 >> ../../buildlog 2>&1
 svn_bin/visit-bin-dist >> ../../buildlog 2>&1
 mv visit\$ver2.linux-ia64.tar.gz ../..
@@ -587,7 +590,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule --enable-slivr >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
 svn_bin/visit-bin-dist >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -696,7 +699,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule --enable-slivr >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 svn_bin/visit-bin-dist >> ../../buildlog 2>&1
 mv visit\$ver2.linux-ia64.tar.gz ../..
