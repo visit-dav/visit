@@ -412,6 +412,8 @@
 #     Tom Fogal, Fri Oct  3 11:01:28 MDT 2008
 #     Fix the PIL download URL, and add a dir variable.
 #     Added a set of functions for ease of use.
+#     Cleaned up the PIL build function, and don't redirect the function so it
+#     can easily use the new functions to log information.
 #
 #     Tom Fogal, Mon Oct  6 23:11:17 MDT 2008
 #     Force -fPIC in BoxLib for non-AIX.  Switch fortran to compiler to
@@ -4095,22 +4097,27 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
 function build_pil
 {
     if ! test -f ${PIL_FILE} ; then
-        info_box "Downloading PIL ..." 1>&3
-        download_web_file "${PIL_URL}"
+        downloadv        \
+            "${PIL_URL}" \
+            "https://wci.llnl.gov/codes/visit/3rd_party/${PIL_FILE}"
+    fi
+    if ! test -d ${PIL_DIR} ; then
+        info "Extracting PIL ..."
+        uncompress_untar ${PIL_FILE}
         if test $? -ne 0 ; then
-            return 1
+            error "Could not extract ${PIL_FILE}"
+            exit 1
         fi
     fi
-    info_box "Extracting PIL ..." 1>&3
-    uncompress_untar ${PIL_FILE}
-    info_box "Installing PIL ..." 1>&3
-    pushd Imaging-1.1.6
-        # convenience variable.
-        PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
-        ${PYHOME}/bin/python ./setup.py build
-        ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
-    popd
-    echo "Done with PIL."
+    info "Installing PIL ..."
+
+    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
+    pushd Imaging-1.1.6 > /dev/null
+        ${PYHOME}/bin/python ./setup.py build >> ../${LOG_FILE} 2>&1
+        ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}" \
+            >> ../${LOG_FILE} 2>&1
+    popd > /dev/null
+    log "Done with PIL."
 
     return 0
 }
@@ -8659,7 +8666,7 @@ if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
       fi
       echo "Done building Python"
       echo "Building the Python Imaging Library"
-      build_pil 3>&1 >> ${LOG_FILE} 2>&1
+      build_pil
       if test $? -ne 0 ; then
          echo "PIL build failed.  Bailing out."
       fi
