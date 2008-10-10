@@ -58,6 +58,15 @@ public:
 
     void draw()
     {
+        // Make sure that the background is black.
+        glColor3f(0.,0.,0.);
+        glBegin(GL_QUADS);
+        glVertex2f( 0.0,  0.0);
+        glVertex2f( 1.0,  0.0);
+        glVertex2f( 1.0,  1.0);
+        glVertex2f( 0.0,  1.0);
+        glEnd();
+
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
 

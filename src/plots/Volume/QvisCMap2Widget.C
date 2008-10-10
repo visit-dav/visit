@@ -314,6 +314,7 @@ void
 QvisCMap2Widget::selectLastItem()
 {
     names->setCurrentItem(names->count()-1);
+    names->setSelected(names->count()-1, true);
 }
 
 void
@@ -370,7 +371,7 @@ QvisCMap2Widget::updateWidget(WidgetID id)
     color->blockSignals(false);
 
     opacity->blockSignals(true);
-    opacity->setValue(100. * cmap2->getAlpha(id));
+    opacity->setValue((int)(100. * cmap2->getAlpha(id)));
     opacity->blockSignals(false);
     opacity->setGradientColor(cmap2->getColor(id));
 }

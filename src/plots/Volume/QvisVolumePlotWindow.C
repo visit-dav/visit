@@ -3051,6 +3051,9 @@ QvisVolumePlotWindow::updateTransferFunc2D()
 
     volumeAtts->AddTransferFunctionWidgetList(widget);
   }
+
+  SetUpdate(false);
+  Apply();
 #endif /* HAVE_LIBSLIVR */
 }
 
