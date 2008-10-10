@@ -419,6 +419,9 @@
 #     Force -fPIC in BoxLib for non-AIX.  Switch fortran to compiler to
 #     `gfortran' if `g77' is not found.
 #
+#     Tom Fogal, Thu Oct  9 16:11:56 MDT 2008
+#     Long options and parsing.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -8134,99 +8137,245 @@ usage () {
 }
 
 # *************************************************************************** #
+# Function: starts_with_quote                                                 #
+#                                                                             #
+# Purpose: Meant to be used `if $(starts_with_quote "$var") ; then`           #
+#          conditionals.                                                      #
+#                                                                             #
+# Programmer: Tom Fogal                                                       #
+# Date: Thu Oct  9 15:24:04 MDT 2008                                          #
+#                                                                             #
+# *************************************************************************** #
+
+function starts_with_quote
+{
+    if test "${1:0:1}" = "\""; then
+        return 0
+    fi
+    if test "${1:0:1}" = "'" ; then
+        return 0
+    fi
+    return 1
+}
+
+# *************************************************************************** #
+# Function: ends_with_quote                                                   #
+#                                                                             #
+# Purpose: Meant to be used `if $(ends_with_quote "$var") ; then`             #
+#          conditionals.                                                      #
+#                                                                             #
+# Programmer: Tom Fogal                                                       #
+# Date: Thu Oct  9 15:24:13 MDT 2008                                          #
+#                                                                             #
+# *************************************************************************** #
+
+function ends_with_quote
+{
+    if test "${1: -1:1}" = "\""; then
+        return 0
+    fi
+    if test "${1: -1:1}" = "'"; then
+        return 0
+    fi
+    return 1
+}
+
+# *************************************************************************** #
+# Function: strip_quotes                                                      #
+#                                                                             #
+# Purpose: Removes all quotes from the given argument.  Meant to be used in   #
+#          $(strip_quotes "$some_string") expressions.                        #
+#                                                                             #
+# Programmer: Tom Fogal                                                       #
+# Date: Thu Oct  9 16:04:25 MDT 2008                                          #
+#                                                                             #
+# *************************************************************************** #
+
+function strip_quotes
+{
+    local arg="$@"
+    str=""
+    while test -n "$arg" ; do
+        if test "${arg:0:1}" != "\"" ; then
+            str="${str}${arg:0:1}"
+        fi
+        arg="${arg:1}"
+    done
+    echo "${str}"
+}
+
+# *************************************************************************** #
 #                       Section 2, building VisIt                             #
 # --------------------------------------------------------------------------- #
 # This section does some set up for building VisIt, and then calls the        #
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
-while getopts :45a:bcdefghijkl:mnoprst:u:v:wxyzA:BCD:EFGHIJ:KL:MNOPR:ST:U:V:WXYZ ARG
 
-do
-    argcur=$ARG
-    case $ARG in
-      4)   DO_HDF4="yes"
-           ON_HDF4="on"
-           DO_SZIP="yes"
-           ON_SZIP="on";;
-      5)   DO_HDF5="yes"
-           ON_HDF5="on"
-           DO_SZIP="yes"
-           ON_SZIP="on";;
-      a|A) VISITARCH="$OPTARG";;
-      b|B) DO_BOXLIB="yes"
-           ON_BOXLIB="on";;
-      C)   DO_CCMIO="yes"
-           ON_CCMIO="on";;
-      c)   DO_CGNS="yes"
-           ON_CGNS="on";;
-      D)   C_OPT_FLAGS="$C_OPT_FLAGS -g$OPTARG"
-           CXX_OPT_FLAGS="$CXX_OPT_FLAGS -g$OPTARG";;
-      d)   C_OPT_FLAGS="$C_OPT_FLAGS -g"
-           CXX_OPT_FLAGS="$CXX_OPT_FLAGS -g";;
-      E)   printvariables; exit 2;;
-      e)   DO_EXODUS="yes"
-           ON_EXODUS="on"
-           DO_NETCDF="yes" 
-           ON_NETCDF="on";;
-      f|F) DO_CFITSIO="yes"
-           ON_CFITSIO="on";;
-      g|G) DO_GDAL="yes"
-           ON_GDAL="on";;
-      h|H) usage; exit 2;;
-      I)   DO_ITAPS="yes"
-           ON_ITAPS="on";;
-      i)   ABS_PATH="yes"
-           ON_ABS_PATH="on";;
-      J)   MAKE_OPT_FLAGS="-j $OPTARG";;
-      j)   DO_VISIT="no"
-           ON_VISIT="off";;
-      k|K) DO_REQUIRED_THIRD_PARTY="no"
-           ON_THIRD_PARTY="off";;
-      l|L) DO_GROUP="yes"
-           GROUP="$OPTARG"
-           ON_GROUP="on";;
-      m)   DO_MILI="yes"
-           ON_MILI="on";;
-      M)   DO_TCMALLOC="yes"
-           ON_TCMALLOC="on";;
-      n|N) DO_NETCDF="yes"
-           ON_NETCDF="on";;
-      o|O) LOG_FILE="/dev/tty";;
-      p|P) parallel="yes"
-           ON_parallel="on";;
-        R) SVNREVISION="$OPTARG"
-           DO_SVN="yes"
-           DO_REVISION="yes";;
-        r) DO_H5PART="yes"
-           ON_H5PART="on"
-           DO_HDF5="yes"
-           ON_HDF5="on"
-           DO_SZIP="yes"
-           ON_SZIP="on";;
-      S)   DO_SLIVR="yes"
-           ON_SLIVR="on";;
-      s)   DO_SVN="yes"
-           ON_SVN="on";;
-      t|T) VISIT_FILE="$OPTARG"
-           USE_VISIT_FILE="yes"
-           ON_USE_VISIT_FILE="on";;
-      u|U) THIRD_PARTY_PATH="$OPTARG"
-           ON_THIRD_PARTY_PATH="on";;
-      V)   DO_VISUS="yes"
-           ON_VISUS="on";;
-      v)   VISIT_VERSION=$OPTARG
-           VISIT_FILE="visit${VISIT_VERSION}.tar.gz";;
-      w|W) DO_MODULE="yes"
-           ON_MODULE="on";;
-      x|X) set -vx;;
-      y|Y) DO_JAVA="yes"
-           ON_JAVA="on";;
-      z|Z) GRAPHICAL="no"
-           ON_GRAPHICAL="on";;
-      :)   echo "$0: \"$argcur\" requires a value"; exit 2;;
-      \?)  echo "$0: INVALID option \"$argcur\" at $OPTIND"; exit 2;;
+# Fix the arguments: cram quoted strings into a single argument.
+declare -a arguments
+quoting="" # temp buffer for concatenating quoted args
+state=0    # 0 is the default state, for grabbing std arguments.
+           # 1 is for when we've seen a quote, and are currently `cramming'
+for arg in $@ ; do
+    case $state in
+        0)
+            if $(starts_with_quote "$arg") ; then
+                state=1
+                quoting="${arg}"
+            else
+                state=0
+                arguments[${#arguments[@]}]="${arg}"
+            fi
+            ;;
+        1)
+            if $(starts_with_quote "$arg") ; then
+                state=0
+                arguments="${quoting}"
+            elif $(ends_with_quote "$arg") ; then
+                quoting="${quoting} ${arg}"
+                arguments[${#arguments[@]}]="${quoting}"
+                state=0
+            else
+                quoting="${quoting} ${arg}"
+            fi
+            ;;
+        *) error "invalid state.";;
     esac
 done
+
+# Will be set if the next argument is an argument to an argument (I swear that
+# makes sense).  Make sure to unset it after pulling the argument!
+next_arg=""
+# If the user gives any deprecated options, we'll append command line options
+# we think they should use here.
+deprecated=""
+# A few options require us to perform some action before we start building
+# things, but we'd like to finish option parsing first.  We'll set this
+# variable in those cases, and test it when we finish parsing.
+next_action=""
+for arg in "${arguments[@]}" ; do
+    # Was the last option something that took an argument?
+    if test -n "$next_arg" ; then
+        # Yep.  Which option was it?
+        case $next_arg in
+            append-cflags) C_OPT_FLAGS="${C_OPT_FLAGS} ${arg}";;
+            append-cxxflags) CXX_OPT_FLAGS="${C_OPT_FLAGS} ${arg}";;
+            arch) VISITARCH="${arg}";;
+            cflags) C_OPT_FLAGS=$(strip_quotes "${arg}");;
+            cxxflags) CXX_OPT_FLAGS=$(strip_quotes "${arg}");;
+            flags-debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"
+                         CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g";;
+            makeflags) MAKE_OPT_FLAGS="${arg}";;
+            group) GROUP="${arg}";;
+            svn) SVNREVISION="${arg}";;
+            tarball) VISIT_FILE="${arg}";;
+            thirdparty-path) THIRD_PARTY_PATH="${arg}";;
+            version) VISIT_VERSION="${arg}"
+                     VISIT_FILE="visit${VISIT_VERSION}.tar.gz";;
+            *) error "Unknown next_arg value '$next_arg'!"
+        esac
+        # Make sure we process the next option as an option and not an
+        # argument to an option.
+        next_arg=""
+        continue
+    fi
+    case $arg in
+        --absolute) ABS_PATH="yes"; ON_ABS_PATH="on";;
+        --arch) next_arg="arch";;
+        --boxlib) DO_BOXLIB="yes"; ON_BOXLIB="on";;
+        --ccmio) DO_CCMIO="yes"; ON_CCMIO="on";;
+        --cfitsio) DO_CFITSIO="yes"; ON_CFITSIO="on";;
+        --cflags) next_arg="cflags";;
+        --cgns) DO_CGNS="yes"; ON_CGNS="on";;
+        --cxxflags) next_arg="cxxflags";;
+        --console) GRAPHICAL="no"; ON_GRAPHICAL="off";;
+        --debug) set -vx;;
+        --exodus) DO_EXODUS="yes"; ON_EXODUS="on"
+                  DO_NETCDF="yes"; ON_NETCDF="on";;
+        --flags-debug) next_arg="flags-debug";;
+        --gdal) DO_GDAL="yes"; ON_GDAL="on";;
+        --group) next_arg="group"; DO_GROUP="yes"; ON_GROUP="on";;
+        --h5part) DO_H5PART="yes"; ON_H5PART="on"
+                  DO_HDF5="yes"; ON_HDF5="on"
+                  DO_SZIP="yes"; ON_SZIP="on";;
+        --hdf4) DO_HDF4="yes"; ON_HDF4="on"
+                DO_SZIP="yes"; ON_SZIP="on";;
+        --hdf5) DO_HDF5="yes"; ON_HDF5="on"
+                DO_SZIP="yes"; ON_SZIP="on";;
+        -h|--help) next_action="help";;
+        --itaps) DO_ITAPS="yes"; ON_ITAPS="on";;
+        --java) DO_JAVA="yes"; ON_JAVA="on";;
+        --makeflags) next_arg="makeflags";;
+        --mili) DO_MILI="yes"; ON_MILI="on";;
+        --netcdf) DO_NETCDF="yes"; ON_NETCDF="on";;
+        --no-visit) DO_VISIT="no"; ON_VISIT="off";;
+        --no-thirdparty) DO_REQUIRED_THIRD_PARTY="no"; ON_THIRD_PARTY="off";;
+        --parallel) parallel="yes"; ON_parallel="ON";;
+        --print-vars) next_action="print-vars";;
+        --python) DO_MODULE="yes"; ON_MODULE="on";;
+        --slivr) DO_SLIVR="yes"; ON_SLIVR="on";;
+        --stdout) LOG_FILE="/dev/tty";;
+        --svn) next_arg="svn"; DO_SVN="yes"; DO_REVISION="yes";;
+        --tarball) next_arg="tarball"
+                   USE_VISIT_FILE="yes"
+                   ON_USE_VISIT_FILE="on";;
+        --tcmalloc) DO_TCMALLOC="yes"; ON_TCMALLOC="on";;
+        --thirdparty-path) next_arg="thirdparty-path"
+                           ON_THIRD_PARTY_PATH="on";;
+        --visus) DO_VISUS="yes"; ON_VISUS="on";;
+        --version) next_arg="version";;
+        -4) deprecated="${deprecated} --hdf4";;
+        -5) deprecated="${deprecated} --hdf5";;
+        -c) deprecated="${deprecated} --cgns";;
+        -C) deprecated="${deprecated} --ccmio";;
+        -d) deprecated="${deprecated} --cflags '$C_OPT_FLAGS -g'";;
+        -D) deprecated="${deprecated} --cflags '$C_OPT_FLAGS -g#'";;
+        -E) deprecated="${deprecated} --print-vars";;
+        -e) deprecated="${deprecated} --exodus";;
+        -H) deprecated="${deprecated} --help";;
+        -i) deprecated="${deprecated} --absolute";;
+        -J) deprecated="${deprecated} --makeflags '-j <something>'";;
+        -j) deprecated="${deprecated} --no-visit";;
+        -m) deprecated="${deprecated} --mili";;
+        -M) deprecated="${deprecated} --tcmalloc";;
+        -r) deprecated="${deprecated} --h5part";;
+        -R) deprecated="${deprecated} --svn <REVISION>";;
+        -s) deprecated="${deprecated} --svn HEAD";;
+        -S) deprecated="${deprecated} --slivr";;
+        -t) deprecated="${deprecated} --tarball '<file>'";;
+        -v) deprecated="${deprecated} --tarball 'visit<version>.tar.gz'";;
+        -V) deprecated="${deprecated} --visus";;
+        -b|-B) deprecated="${deprecated} --boxlib";;
+        -f|-F) deprecated="${deprecated} --cfitsio";;
+        -g|-G) deprecated="${deprecated} --gdal";;
+        -k|-K) deprecated="${deprecated} --no-thirdparty";;
+        -l|-L) deprecated="${deprecated} --group '<arg>'";;
+        -n|-N) deprecated="${deprecated} --netcdf";;
+        -o|-O) deprecated="${deprecated} --stdout";;
+        -p|-P) deprecated="${deprecated} --parallel";;
+        -u|-U) deprecated="${deprecated} --thirdparty-path <path>";;
+        -w|-W) deprecated="${deprecated} --python";;
+        -y|-Y) deprecated="${deprecated} --java";;
+        -z|-Z) deprecated="${deprecated} --console";;
+        *)
+            echo "Unrecognized option '${arg}'."
+    esac
+done
+if test -n "${deprecated}" ; then
+    summary="You are using some deprecated options to $0.  Please re-run"
+    summary="${summary} $0 with a command line similar to:"
+    echo "$summary"
+    echo ""
+    echo "$0 ${deprecated}"
+    error ""
+fi
+if test -n "${next_action}" ; then
+    case ${next_action} in
+        print-vars) printvariables; exit 2;;
+        help) usage; exit 2;;
+    esac
+fi
+
 # Show a splashscreen. This routine also determines if we have "dialog"
 # or "whiptail", which we use to show dialogs. If we do not have either
 # then proceed in non-graphical mode.
