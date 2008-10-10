@@ -409,6 +409,9 @@
 #     Tom Fogal, Thu Oct  2 22:03:56 MDT 2008
 #     Move PIL out of build_python into its own function.
 #
+#     Tom Fogal, Fri Oct  3 11:01:28 MDT 2008
+#     Fix the PIL download URL, and add a dir variable.
+#
 #     Tom Fogal, Mon Oct  6 23:11:17 MDT 2008
 #     Force -fPIC in BoxLib for non-AIX.  Switch fortran to compiler to
 #     `gfortran' if `g77' is not found.
@@ -676,8 +679,9 @@ export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION-"2.5"}
 export PYTHON_FILE=${PYTHON_FILE-"Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"}
 export PYTHON_DIR=${PYTHON_DIR-"Python-$PYTHON_VERSION"}
 
-export PIL_URL=${PIL_URL-"http://effbot.org/downloads/Imaging-1.1.6.tar.gz"}
+export PIL_URL=${PIL_URL-"http://effbot.org/media/downloads/Imaging-1.1.6.tar.gz"}
 export PIL_FILE=${PIL_FILE-"Imaging-1.1.6.tar.gz"}
+export PIL_DIR=${PIL_DIR-"Imaging-1.1.6"}
 
 if [[ "$OPSYS" == "Darwin" ]] ; then
    export QT_FILE=${QT_FILE-"qt-mac-free-3.3.8.tar.gz"}
