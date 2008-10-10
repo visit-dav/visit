@@ -83,6 +83,7 @@
 #     Function 5, build_cmake:      build CMake (like configure, for VTK)
 #     Function 6, build_vtk:        build VTK
 #     Function 7, build_python:     build Python
+#     Function 7.1, build_pil       build the Python Imaging Library
 #     Function 8.0, build_szip:     build SZIP
 #     Function 8.1, build_hdf5:     build HDF5
 #     Function 8.2, build_mili:     build Mili
@@ -404,6 +405,9 @@
 #     Hank Childs, Mon Sep  1 09:21:27 PDT 2008
 #     Move all patches to their own function.  (Purpose is to improve
 #     readability and maintainability.)
+#
+#     Tom Fogal, Thu Oct  2 22:03:56 MDT 2008
+#     Move PIL out of build_python into its own function.
 #
 #     Tom Fogal, Mon Oct  6 23:11:17 MDT 2008
 #     Force -fPIC in BoxLib for non-AIX.  Switch fortran to compiler to
@@ -3971,6 +3975,14 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
     cd "$START_DIR"
     echo "Done with Python"
 
+    return 0
+}
+
+# *************************************************************************** #
+#                            Function 7.1, build_pil                          #
+# *************************************************************************** #
+function build_pil
+{
     if ! test -f ${PIL_FILE} ; then
         info_box "Downloading PIL ..." 1>&3
         download_web_file "${PIL_URL}"
@@ -3987,6 +3999,7 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         ${PYHOME}/bin/python ./setup.py build
         ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
     popd
+    echo "Done with PIL."
 
     return 0
 }
@@ -8534,6 +8547,13 @@ if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
          exit 1
       fi
       echo "Done building Python"
+      echo "Building the Python Imaging Library"
+      build_pil 3>&1 >> ${LOG_FILE} 2>&1
+      if test $? -ne 0 ; then
+         echo "PIL build failed.  Bailing out."
+      fi
+      echo "Done building the Python Imaging Library"
+      exit 1
    fi
 else
    echo "Skipping Python build."
