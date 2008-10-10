@@ -366,7 +366,9 @@ main(int argc, char *argv[])
         PUSHARG("-noloopback");
     }
 
-    /* If we want a new console, allocate it now. */
+    /*
+     * If we want a new console, allocate it now.
+     */
     if(newConsole)
     {
         FreeConsole();
@@ -447,7 +449,9 @@ main(int argc, char *argv[])
 
         if(strcmp(componentArgs[i], "-host") == 0 && !noloopback)
         {
-            /* replace the host arg with the loopback instead */
+            /*
+             * Replace the host arg with the loopback instead.
+             */
             strcpy(componentArgs[i+1], "127.0.0.1"); 
         }
 
@@ -535,15 +539,19 @@ ReadKeyFromRoot(HKEY which_root, const char *key, char **keyval)
     char regkey[100];
     HKEY hkey;
 
-    /* Try and read the key from the system registry. */
+    /* 
+     * Try and read the key from the system registry. 
+     */
     sprintf(regkey, "VISIT%s", VERSION);
     if (*keyval == 0)
         *keyval = (char *)malloc(500);
     
-    if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
+    if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == 
+       ERROR_SUCCESS)
     {
         DWORD keyType, strSize = 500;
-        if(RegQueryValueEx(hkey, key, NULL, &keyType, (LPBYTE)*keyval, &strSize) == ERROR_SUCCESS)
+        if(RegQueryValueEx(hkey, key, NULL, &keyType, (LPBYTE)*keyval, 
+                           &strSize) == ERROR_SUCCESS)
         {
             readSuccess = 1;
         }
@@ -662,33 +670,31 @@ ReadKey(const char *key, char **keyval)
  *   Kathleen Bonnell, Thu July 31 16:55:43 PDT 2008 
  *   Initialize visitdevdir.
  *
+ *   Kathleen Bonnell, Wed Oct 8 08:49:11 PDT 2008 
+ *   Re-organized code.  Modified settingup of VISITSSH and VISITSSHARGS so
+ *   that if these are already set by user in environment they won't be 
+ *   overwritten. 
+ *
  *****************************************************************************/
 
 char *
 AddEnvironment(int useShortFileName)
 {
-    char *tmp, *visitpath = 0, *ssh = 0, *sshargs = 0, *visitsystemconfig = 0;
+    char *tmp, *visitpath = 0;
     char *visitdevdir = 0;
-    char visituserpath[512], expvisituserpath[512], tmpdir[512];
-    int haveVISITHOME = 0, haveSSH = 0, haveSSHARGS = 0;
-    int haveVISITSYSTEMCONFIG = 0, haveVISITUSERHOME=0, haveVISITDEVDIR=0;
-    struct _stat fs;
-    TCHAR szPath[MAX_PATH];
+    char tmpdir[512];
+    int haveVISITHOME = 0;
+    int haveVISITDEVDIR=0;
 
-    /* Try and read values from the registry. */
+    tmp = (char *)malloc(10000);
+
+    /*
+     * Determine visit path
+     */
     haveVISITHOME         = ReadKey("VISITHOME", &visitpath);
-    haveSSH               = ReadKey("SSH", &ssh);
-    haveSSHARGS           = ReadKey("SSHARGS", &sshargs);
-    haveVISITSYSTEMCONFIG = ReadKey("VISITSYSTEMCONFIG", &visitsystemconfig);
- 
-    if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
-                             SHGFP_TYPE_CURRENT, szPath))) 
-    {
-        SNPRINTF(visituserpath, 512, "%s\\VisIt %s", szPath, VERSION);
-        haveVISITUSERHOME = 1;
-    }
 
-    /* We could not get the value associated with the key. It may mean
+    /*
+     * We could not get the value associated with the key. It may mean
      * that VisIt was not installed properly. Use a default value.
      */
     if(!haveVISITHOME)
@@ -716,11 +722,15 @@ AddEnvironment(int useShortFileName)
 #if defined(_DEBUG)
             sprintf(configDir, "\\windowsbuild\\bin\\%s\\Debug", _VISIT_MSVC);
 #else
-            sprintf(configDir, "\\windowsbuild\\bin\\%s\\Release", _VISIT_MSVC);
+            sprintf(configDir, "\\windowsbuild\\bin\\%s\\Release", 
+                    _VISIT_MSVC);
 #endif
-            sprintf(thirdPartyDir, "\\windowsbuild\\bin\\%s\\ThirdParty", _VISIT_MSVC);
-            visitpath = (char *)malloc(strlen(tempvisitdev) + strlen(configDir) + 1);
-            visitdevdir = (char *)malloc(strlen(tempvisitdev) + strlen(thirdPartyDir) + 1);
+            sprintf(thirdPartyDir, "\\windowsbuild\\bin\\%s\\ThirdParty", 
+                    _VISIT_MSVC);
+            visitpath = (char *)malloc(strlen(tempvisitdev) + 
+                        strlen(configDir) + 1);
+            visitdevdir = (char *)malloc(strlen(tempvisitdev) + 
+                          strlen(thirdPartyDir) + 1);
             sprintf(visitpath, "%s%s", tempvisitdev, configDir);
             sprintf(visitdevdir, "%s%s", tempvisitdev, thirdPartyDir);
         }
@@ -758,26 +768,46 @@ AddEnvironment(int useShortFileName)
         if (tempvisitdev != 0 && freetempvisitdev)
             free(tempvisitdev);
     }
-
-    if (haveVISITUSERHOME)
+ 
+    /*
+     * Determine visit user path (Path to My Documents).
+     */
     {
-        ExpandEnvironmentStrings(visituserpath,expvisituserpath,512);
-        if (_stat(expvisituserpath, &fs) == -1)
+        char visituserpath[512], expvisituserpath[512];
+        int haveVISITUSERHOME=0;
+        TCHAR szPath[MAX_PATH];
+        struct _stat fs;
+        if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
+                                 SHGFP_TYPE_CURRENT, szPath))) 
         {
-            mkdir(expvisituserpath);
+            SNPRINTF(visituserpath, 512, "%s\\VisIt %s", szPath, VERSION);
+            haveVISITUSERHOME = 1;
         }
-    }
-    else
-    {
-        strcpy(expvisituserpath, visitpath);
-    }
-    sprintf(tmpdir, "%s\\My images", expvisituserpath);
-    if (_stat(tmpdir, &fs) == -1)
-    {
-        mkdir(tmpdir);
+
+        if (haveVISITUSERHOME)
+        {
+            ExpandEnvironmentStrings(visituserpath,expvisituserpath,512);
+            if (_stat(expvisituserpath, &fs) == -1)
+            {
+                mkdir(expvisituserpath);
+            }
+        }
+        else
+        {
+            strcpy(expvisituserpath, visitpath);
+        }
+        sprintf(tmpdir, "%s\\My images", expvisituserpath);
+        if (_stat(tmpdir, &fs) == -1)
+        {
+            mkdir(tmpdir);
+        }
+        sprintf(tmp, "VISITUSERHOME=%s", expvisituserpath);
+        putenv(tmp);
     }
 
-    /* Turn the long VisIt path into the shortened system path. */
+    /* 
+     * Turn the long VisIt path into the shortened system path.
+     */
     if(useShortFileName)
     {
         char *vp2 = (char *)malloc(512);
@@ -786,20 +816,25 @@ AddEnvironment(int useShortFileName)
         visitpath = vp2;
     }
 
-    tmp = (char *)malloc(10000);
 
-    /* Add VisIt's home directory to the path */
+    /*
+     * Add VisIt's home directory to the path.
+     */
     AddPath(tmp, visitpath, visitdevdir);
 
-    /* Set the VisIt home dir. */
+    /*
+     * Set the VisIt home dir.
+     */
     sprintf(tmp, "VISITHOME=%s", visitpath);
     putenv(tmp);
 
-    sprintf(tmp, "VISITUSERHOME=%s", expvisituserpath);
-    putenv(tmp);
+    if (visitdevdir != 0)
+        free(visitdevdir);
 
-    /* Set the plugin dir. */
-    { /* new scope */
+    /*
+     * Set the plugin dir.
+     */
+    { 
         char appData[MAX_PATH];
         if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL,
                                           SHGFP_TYPE_CURRENT, appData)))
@@ -816,42 +851,68 @@ AddEnvironment(int useShortFileName)
 
     putenv(tmp);
 
-    /* Set the help dir. */
+    /*
+     * Set the help dir.
+     */
     sprintf(tmp, "VISITHELPHOME=%s\\help", visitpath);
     putenv(tmp);
 
-    /* Set the SSH program. */
-    if(haveSSH)
-    {
-        sprintf(tmp, "VISITSSH=%s", ssh);
-        putenv(tmp);
-    }
-    else
-    {
-        sprintf(tmp, "VISITSSH=%s\\qtssh.exe", visitpath);
-        putenv(tmp);
+
+    /*
+     * Set the SSH program.
+     */
+    { 
+        char *ssh = NULL, *sshargs = NULL;
+        int haveSSH = 0, haveSSHARGS = 0, freeSSH = 0, freeSSHARGS = 0;
+        
+        if((ssh = getenv("VISITSSH")) == NULL)
+        {
+            haveSSH = ReadKey("SSH", &ssh);
+            if(haveSSH)
+            {
+                sprintf(tmp, "VISITSSH=%s", ssh);
+                putenv(tmp);
+            }
+            else
+            {
+                sprintf(tmp, "VISITSSH=%s\\qtssh.exe", visitpath);
+                putenv(tmp);
+            }
+            free(ssh);
+        }
+
+        /*
+         * Set the SSH arguments.
+         */
+        if((sshargs = getenv("VISITSSHARGS")) == NULL)
+        {
+            haveSSHARGS = ReadKey("SSHARGS", &sshargs);
+            if(haveSSHARGS)
+            {
+                sprintf(tmp, "VISITSSHARGS=%s", sshargs);
+                putenv(tmp);
+            }
+            free(sshargs);
+        }
     }
 
-    /* Set the SSH arguments. */
-    if(haveSSHARGS)
+    /*
+     * Set the system config variable.
+     */
     {
-        sprintf(tmp, "VISITSSHARGS=%s", sshargs);
-        putenv(tmp);
-    }
-
-    /* Set the system config variable. */
-    if(haveVISITSYSTEMCONFIG)
-    {
-        sprintf(tmp, "VISITSYSTEMCONFIG=%s", visitsystemconfig);
-        putenv(tmp);
+        char *visitsystemconfig = NULL;
+        int haveVISITSYSTEMCONFIG = 0;
+        haveVISITSYSTEMCONFIG = ReadKey("VISITSYSTEMCONFIG",
+                                        &visitsystemconfig);
+        if(haveVISITSYSTEMCONFIG)
+        {
+            sprintf(tmp, "VISITSYSTEMCONFIG=%s", visitsystemconfig);
+            putenv(tmp);
+        }
+        free(visitsystemconfig);
     }
 
     free(tmp);
-    free(ssh);
-    free(sshargs);
-    free(visitsystemconfig);
-    if (visitdevdir != 0)
-        free(visitdevdir);
 
     return visitpath;
 }
@@ -892,7 +953,9 @@ AddPath(char *tmp, const char *visitpath, const char *visitdev)
        token = strtok( env2, ";" );
        while(token != NULL)
        {
-           /* If the token does not contain "VisIt " then add it to the path. */
+           /* 
+            * If the token does not contain "VisIt " then add it to the path.
+            */
            if(strstr(token, "VisIt ") == NULL)
            {
                int len = strlen(token);
@@ -908,7 +971,9 @@ AddPath(char *tmp, const char *visitpath, const char *visitdev)
                }
            }
 
-           /* Get next token: */
+           /* 
+            * Get next token:
+            */
            token = strtok( NULL, ";" );
        }
 
