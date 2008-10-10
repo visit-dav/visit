@@ -421,6 +421,8 @@
 #
 #     Tom Fogal, Thu Oct  9 16:11:56 MDT 2008
 #     Long options and parsing.
+#     Updated 'usage' message to account for long options, and greatly
+#     improved the formatting.
 #
 # *****************************************************************************
 #
@@ -535,7 +537,7 @@ export MAKE=${MAKE-"make"}
 export THIRD_PARTY_PATH=${THIRD_PARTY_PATH-"./visit"}
 export GROUP=${GROUP-"visit"}
 export LOG_FILE=${LOG_FILE-"build_visit_log"}
-export SVNREVISION=${SVNREVISION-""}
+export SVNREVISION=${SVNREVISION-"HEAD"}
 # Created a temporary value because the user can override most of 
 # the components, which forr the GUI happens at a later time.
 # the tmp value is useful for user feedback.
@@ -8074,66 +8076,67 @@ printvariables () {
   printf "%s%s\n" "TCMALLOC_DIR=" "${TCMALLOC_DIR}"
 }
 usage () {
-  printf "Usage: %s [-45bCcdEefghIijkmnoprSsVwxyz] [-a opt] [-l opt]\n" $0
-  printf "       [-t opt] [-u opt] [-v opt] [-D opt] [-J opt] [-R opt]\n"
-  printf "\n"
-  printf "%s %s %s\n" "-4     Build HDF4 from ["$HDF4_FILE"]"
-  printf "%s %s %s\n" "-5     Build HDF5 from ["$HDF5_FILE"]"
-  printf "%s %s %s\n" "-a opt Architecture variable VISITARCH ["$VISITARCHTMP"]"
-  printf "%s\n" "       This variable is used in contructing the 3rd parthy" 
-  printf "%s\n" "       library path usually set to something like"
-  printf "%s\n" "       linux_gcc-3.4.6 or Darwin_gcc-4.0.1"
-  printf "%s %s %s\n" "-b     Build Boxlib from ["$BOXLIB_FILE"]"
-  printf "%s %s %s\n" "-C     Build Star-CD support from ["$CCMIO_FILE"]"
-  printf "%s %s %s\n" "-c     Build CGNS from ["$CGNS_FILE"]"
-  printf "%s\n" "-D opt Select -g level debugging flag in CFLAGS/CXXFLAGS"
-  printf "%s\n" "       The default level is 2 (-g2). Level 1 produces"
-  printf "%s\n" "       minimal information, while level 3 includes extra"
-  printf "%s\n" "-d     Turn on -g, debugging flag in CFLAGS/CXXFLAGS"
-  printf "%s\n" "-E     Display user settable environment variables"
-  printf "%s %s %s\n" "-e     Build Exodus from ["$EXODUS_FILE"]"
-  printf "%s %s %s\n" "-f     Build CFITSIO from ["$CFITSIO_FILE"]"
-  printf "%s %s %s\n" "-g     Build GDAL from ["$GDAL_FILE"]"
-  printf "%s\n" "-h     display this message"
-  printf "%s %s %s\n" "-I     Build ITAPS from ["$ITAPS_FILE"]-experimental!"
-  printf "%s\n" "-i     Change the behavior of the install name path for"
-  printf "%s\n" "       the Darwin dynamic libraries. Enabling this flag"
-  printf "%s\n" "       will used the THIRD_PARTY_PATH path for creating"
-  printf "%s\n" "       an absolute path to the dynamic libraries and not"
-  printf "%s\n" "       use the default relative path [@executable_path/../lib]"
-  printf "%s\n" "-J opt Set -j level for parallel makes"
-  printf "%s\n" "-j     Do not build VisIt, build 3rd party libraries only"
-  printf "%s\n" "-k     Do not build required 3rd party libraries"
-  printf "%s %s %s\n" "-l opt Group name of installed libraries ["$GROUP"]"
-  printf "%s %s %s\n" "-m     Build Mili from:["$MILI_FILE"]."
-  printf "%s\n" "       NOTE: not available for download from web"
-  printf "%s %s %s\n" "-M     Build tcmalloc from Google's perftools from:["$TCMALLOC_FILE"]."
-  printf "%s\n" "       NOTE: not available for download from web"
-  printf "%s %s %s\n" "-n     Build NetCDF from ["$NETCDF_FILE"]"
-  printf "%s\n" "-o     Write build log to stdout not to build_visit_log file"
-  printf "%s\n" "-p     Enable parallel build, display MPI prompt"
-  printf "%s\n" "-R opt Checkout specific revision argument of VisIt from SVN"
-  printf "%s %s %s\n" "-r     Build H5Part from ["$H5PART_FILE"]"
-  printf "%s\n" "-S     Build with SLIVR shader support"
-  printf "%s\n" "-s     Use the SVN server for the VisIt distribution"
-  printf "%s %s %s\n" "       [svn co $SVN_ROOT_PATH/trunk/src]"
-  printf "%s\n" "-t opt The name of the distribution tarball, the VISIT_FILE"
-  printf "%s %s %s\n" "       variable ["$VISIT_FILE"]"
-  printf "%s\n" "       This option will over-ride the above SVN, -s section"
-  printf "%s\n" "-u opt The THIRD_PARTY_PATH path contains the root"
-  printf "%s\n" "       directory name underwhich the 3rd party libraries"
-  printf "%s\n" "       have been installed. If defined, it would typically"
-  printf "%s\n" "       mean the 3rd party libraries are pre-built and are"
-  printf "%s\n" "       installed some where like /usr/gapps/visit. The"
-  printf "%s\n" "       default assumes 3rd party libraries are to be built"
-  printf "%s %s %s\n" "       and installed in ["$THIRD_PARTY_PATH"]"
-  printf "%s %s %s\n" "-V     Build ViSUS from:["$VISUS_FILE"]-experimental!"
-  printf "%s %s %s\n" "-v opt The VISIT_VERSION value ["$VISIT_VERSION"]"
-  printf "%s\n" "-w     Build with the VisIt Python module"
-  printf "%s\n" "-x     Turn on SHELL debugging"
-  printf "%s\n" "-y     Build with the Java client library"
-  printf "%s\n" "-z     Do not bring up a graphical program (i.e. dialog) "
-  printf "%s\n" "       to direct the build."
+  printf "Usage: %s [options]\n" $0
+  printf "A download attempt will be made for all files which do not exist."
+  printf "\n\n"
+  printf "BOOLEAN FLAGS\n"
+  printf "\tThese are used to enable or disable specific functionality.  They do not take option values.\n\n"
+  printf "%-15s %s [%s]\n" "--boxlib"  "Build Boxlib" "$DO_BOXLIB"
+  printf "%-15s %s [%s]\n" "--ccmio"   "Build Star-CD support" "$DO_CCMIO"
+  printf "%-15s %s [%s]\n" "--cfitsio" "Build CFITSIO" "$DO_CFITSIO"
+  printf "%-15s %s [%s]\n" "--cgns"    "Build CGNS" "$DO_CGNS"
+  printf "%-15s %s [%s]\n" "--console" "Do not use dialog ('graphical') interface" "!$GRAPHICAL"
+  printf "%-15s %s [%s]\n" "--debug"   "Enable debugging for this script" "false"
+  printf "%-15s %s [%s]\n" "--exodus" "Build Exodus" "$DO_EXODUS"
+  printf "%-15s %s [%s]\n" "--flags-debug" "Add '-g' to C[XX]FLAGS" "false"
+  printf "%-15s %s [%s]\n" "--gdal" "Build GDAL" "$DO_GDAL"
+  printf "%-15s %s [%s]\n" "--group" "Group name of installed libraries" "$GROUP"
+  printf "%-15s %s [%s]\n" "--h5part" "Build H5Part" "$DO_H5PART"
+  printf "%-15s %s [%s]\n" "--hdf4" "Build HDF4" "${DO_HDF4}"
+  printf "%-15s %s [%s]\n" "--hdf5" "Build HDF5" "${DO_HDF5}"
+  printf "%-15s %s [%s]\n" "-h" "Display this help message." "false"
+  printf "%-15s %s [%s]\n" "--help" "Display this help message." "false"
+  printf "%-15s %s [%s]\n" "--itaps" "Build ITAPS" "${DO_ITAPS}"
+  printf "%-15s %s [%s]\n" "--java" "Build with the Java client library" "${DO_JAVA}"
+  printf "%-15s %s [%s]\n" "--mili" "Build Mili" "$DO_MILI"
+  printf "\t\t%15s\n" "NOTE: not available for download from web"
+  printf "%-15s %s [%s]\n" "--netcdf" "Build NetCDF" "${DO_NETCDF}"
+  printf "%-15s %s [%s]\n" "--no-visit" "Do not build VisIt, build 3rd party libraries only" "$DO_VISIT"
+  printf "%-15s %s [%s]\n" "--no-thirdparty" "Do not build required 3rd party libraries" "$ON_THIRD_PARTY"
+  printf "%-15s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
+  printf "%-15s %s [%s]\n" "--print-vars" "Display user settable environment variables" "false"
+  printf "%-15s %s [%s]\n" "--python" "Build with the VisIt Python module" "$DO_MODULE"
+  printf "%-15s %s [%s]\n" "--slivr" "Build with SLIVR shader support" "$DO_SLIVR"
+  printf "%-15s %s [%s]\n" "--stdout" "Write build log to stdout" "$LOG_FILE"
+  printf "%-15s %s [%s]\n" "--tcmalloc" "Build tcmalloc from Google's perftools" "$DO_TCMALLOC"
+  printf "\t\t%15s\n" "NOTE: not available for download from web"
+  printf "%-15s %s [%s]\n" "--visus" "Build ViSUS (experimental!)" "$DO_VISUS"
+  printf "%s\n" ""
+  printf "OPTIONS\n"
+  printf "These values all take a special value.  If given, they require an associated value to be provided as well.\n\n"
+  printf "%-11s <%s> \n%s [%s]\n" "--absolute" "/path/to/directory" \
+    "          Change the behavior of the install name path for
+          the Darwin dynamic libraries. Enabling this flag
+          will used the THIRD_PARTY_PATH path for creating
+          an absolute path to the dynamic libraries and not
+          use the default relative path." "@executable_path/../lib"
+  printf "%-11s <%s> %s [%s]\n" "--arch" "architecture" "Set architecture" "$VISITARCHTMP"
+  printf "\t  %s\n" "This variable is used in constructing the 3rd party"
+  printf "\t  %s\n" "library path; usually set to something like"
+  printf "\t  %s\n" "'linux_gcc-3.4.6' or 'Darwin_gcc-4.0.1'"
+  printf "%-11s %s [%s]\n" "--cflags"  "Explicitly set CFLAGS" "$CFLAGS"
+  printf "%-11s %s [%s]\n" "--cxxflags" "Explicitly set CXXFLAGS" "$CXXFLAGS"
+  printf "%-11s <%s> %s [%s]\n" "--makeflags" "flags" "Flags to 'make'" "$MAKE_OPT_FLAGS"
+  printf "%-11s <%s> %s [%s]\n" "--svn" "revision" \
+    "Use the SVN server for the VisIt distribution" "${SVNREVISION}"
+  printf "\t%s\n" "[svn co $SVN_ROOT_PATH/trunk/src]"
+  printf "%-11s <%s> %s [%s]\n" "--tarball" "file" "tarball to extract VisIt from" "$VISIT_FILE"
+  printf "%-11s <%s> \n%s [%s]\n" "--thirdparty-path" "/path/to/directory" \
+    "          Specify the root directory name under which the 3rd party
+          libraries have been installed.  If defined, it would typically
+          mean the 3rd party libraries are pre-built and are installed
+          somewhere like /usr/gapps/visit." "${THIRD_PARTY_PATH}"
+  printf "%-11s <%s> %s [%s]\n" "--version" "version" "The VisIt version to build" "$VISIT_VERSION"
 }
 
 # *************************************************************************** #
