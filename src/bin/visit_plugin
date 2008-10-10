@@ -153,7 +153,7 @@ cat >> $1 <<- EOF
 
     If you have problems, please read about more details here...
     http://visitusers.org/index.php?title=DB_plugins
-    If you still have problems, email mailto:visit-help@llnl.gov
+    If you still have problems, email mailto:visit-users@ornl.gov
 
 EOF
 }
@@ -314,7 +314,7 @@ versionBuiltWith=
 testRun=
 commentSource="user requested update `date`"
 dontRemoveTarball=0
-meEmail=visit-help@llnl.gov
+meEmail=visit-users@ornl.gov
 for options
 do
    case $1 in
@@ -470,7 +470,7 @@ if test "$optError" = "1"; then
     echo "                          to send tarball too. Multiple -email options are allowed"
     echo "        -me               email address of person executing this script. Both the"
     echo "                          sender and reply-to field of the email header will be set"
-    echo "                          to this address. Default is 'visit-help@llnl.gov'"
+    echo "                          to this address. Default is 'visit-users@ornl.gov'"
     echo "        -c  | -comment <string>"
     echo "                          Add a comment to the email/readme file indicating"
     echo "                          what is new about this plugin. If <string> is the name"

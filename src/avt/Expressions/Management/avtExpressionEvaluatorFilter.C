@@ -275,8 +275,8 @@ avtExpressionEvaluatorFilter::VerifyVariableTypes(void)
             sprintf(msg, "The expression variable \"%s\" was declared to be of"
                          " type %s, but is actually of type %s.  Please "
                          "confirm that the variable was declared correctly.  "
-                        "Contact visit-help@llnl.gov if you believe that "
-                         "the variable has been declared correctly.",
+                         "Contact visit-developers@ornl.gov if you believe "
+                         "that the variable has been declared correctly.",
                          varname.c_str(),avtVarTypeToString(et_as_avt).c_str(),
                          avtVarTypeToString(vt).c_str());
             EXCEPTION1(VisItException, msg);

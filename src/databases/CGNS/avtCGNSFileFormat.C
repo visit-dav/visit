@@ -1972,7 +1972,7 @@ avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
             {
                 avtCallback::IssueWarning("VisIt found quadratic or cubic cells "
                     "in the mesh and reduced them to linear cells. Contact "
-                    "visit-help@llnl.gov if you would like VisIt to natively "
+                    "visit-users@ornl.gov if you would like VisIt to natively "
                     "process higher order elements.");
             }
 

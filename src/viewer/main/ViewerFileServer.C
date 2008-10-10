@@ -1488,7 +1488,7 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
             "contact your system administrator.\n\n"
 
             "If none of these suggestions allow you to successfully "
-            "connect to %1 then contact visit-help@llnl.gov and provide "
+            "connect to %1 then contact visit-users@ornl.gov and provide "
             "information about how you are trying to connect. Be sure to "
             "include the VisIt version and platform on which you are "
             "running.");
