@@ -843,6 +843,11 @@ dnl    Tom Fogal, Fri Sep 19 11:24:08 MDT 2008
 dnl    Define variables of filenames for SLIVR, to decide which parts to
 dnl    conditionally compile.
 dnl
+dnl    Mark C. Miller, Thu Oct  9 18:07:17 PDT 2008
+dnl    Wrapped AC_TRY_COMPILE attempts on Silo with PUSH/POP LANG C++. This
+dnl    should be harmless for installations of Silo that DO NOT include the
+dnl    new C++ compression code and will enable it to work correctly for those
+dnl    that do.
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2272,6 +2277,7 @@ if test -n "$HDF5_LIB"; then
         CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE"
         LIBS="$SILO_LIB $LIBS"
 
+	AC_LANG_PUSH(C++)
         AC_TRY_RUN(
             [
 	    #include <silo.h>
@@ -2284,6 +2290,7 @@ if test -n "$HDF5_LIB"; then
 	    ,  have_libsiloh=yes
 	    ,  have_libsiloh=no 
         )
+	AC_LANG_POP()
         rm -f junk.silo
 
 	if test "$have_libsiloh" = "yes"; then
@@ -2313,6 +2320,7 @@ if test -n "$HDF5_LIB"; then
         CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE"
         LIBS="$SILO_LIB $LIBS"
 
+	AC_LANG_PUSH(C++)
         AC_TRY_RUN(
             [
 	    #include <silo.h>
@@ -2325,6 +2333,7 @@ if test -n "$HDF5_LIB"; then
 	    ,  silo_depends_on_hdf5=yes
 	    ,  silo_depends_on_hdf5=no 
         )
+	AC_LANG_POP()
         rm -f junk.silo
 
 	if test "$silo_depends_on_hdf5" = "yes"; then
