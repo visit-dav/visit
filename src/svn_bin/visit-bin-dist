@@ -11,7 +11,7 @@
 #    visit-bin-dist [-c] [-g] [-h] [-make <make_command>] [-md <visit_dir>]
 #                   [-nd] [-nmesa] [-npython] [-nqt] [-nstrip] [-nvtk]
 #                   [-os <operating_system>] [-compiler <compiler>]
-#                   [-switch <switch_type>]
+#                   [-arch <architecture>]
 #
 # Modifications:
 #    Jeremy Meredith, Fri May 11 14:15:01 PDT 2001
@@ -337,6 +337,9 @@
 #    Brad Whitlock, Thu Sep 11 09:58:11 PDT 2008
 #    Added code to copy the Python lib-tk modules.
 #
+#    Eric Brugger, Fri Oct 10 16:27:33 PDT 2008
+#    I removed the -switch option.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -350,7 +353,6 @@ set OSGiven = "FALSE"
 set CompilerGiven = "FALSE"
 set compiler = ""
 set SwitchGiven = "FALSE"
-set switch = ""
 set ArchGiven = "FALSE"
 set Strip = "TRUE"
 set Make = "make"
@@ -426,12 +428,6 @@ while ($#argv >= 1)
                set CompilerGiven = TRUE
                breaksw
 
-      case -switch:
-               shift
-               set switch = $1
-               set SwitchGiven = TRUE
-               breaksw
-
       case -arch:
                shift
                set osver = $1
@@ -458,7 +454,7 @@ if ($Help == TRUE) then
    echo "                      [-md <visit_dir>] [-nd] [-nmesa]"
    echo "                      [-npython] [-nqt] [-nstrip] [-nvtk]"
    echo "                      [-os <operating_system>] [-compiler <compiler>]"
-   echo "                      [-switch <switch>] [-arch <architecture>]"
+   echo "                      [-arch <architecture>]"
    echo ""
    echo "       -c             Compress the resultant package."
    echo "       -g             Gzip the resultant package.  (default)"
@@ -472,9 +468,8 @@ if ($Help == TRUE) then
    echo "       -nstrip        Do not strip the execubles and libraries."
    echo "       -nvtk          No VTK libraries."
    echo "       -os os         Operating system."
-   echo "       -arch architecture Force architecture package."
    echo "       -compiler cc   Compiler."
-   echo "       -switch switch Switch type."
+   echo "       -arch architecture Force architecture package."
    exit (1)
 endif
 
@@ -711,13 +706,8 @@ if ("$ArchGiven" == "FALSE") then
             set visitbindir = linux-ia64
             breaksw
          case x86_64:
-            if (("$SwitchGiven" == "TRUE") && ("$switch" == "ib")) then
-                set osver = linux-x86_64-ib
-                set visitbindir = linux-x86_64-ib
-            else
-                set osver = linux-x86_64
-                set visitbindir = linux-x86_64
-            endif
+            set osver = linux-x86_64
+            set visitbindir = linux-x86_64
             breaksw
       endsw
       breaksw

@@ -373,6 +373,9 @@ exec perl -x $0 ${1+"$@"};
 #    Change ncpus to ppn.  This takes out compatibility with cosmea, but
 #    it is a safe thing to do on the RC and I'll fix up cosmea manually.
 #
+#    Eric Brugger, Fri Oct 10 16:25:17 PDT 2008
+#    Removed support for the switch type.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -640,7 +643,6 @@ $fullusage = "$usage
                              intelligent version selection logic.
         -publicpluginsonly   Disable all plugins but the default ones.
         -compiler <cc>       Require version built with the specified compiler.
-        -switch <switch>     Require version built for the specified switch.
         -objectmode <mode>   Require a specific object file mode.
         -forceinteractivecli Force the CLI to behave interactively, even if run
                              with no terminal; similar to python's '-i' flag.
@@ -853,7 +855,6 @@ $add_diffsum_args = 0;
 $envonly        = 0;
 $logging        = 0;
 $req_compiler   = "";
-$req_switch     = "";
 $req_object_mode = "";
 $use_new_console = 0;
 $visit_sets_up_environment = 0;
@@ -947,7 +948,6 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-newconsole")       { $use_new_console = 1; }
     elsif ($arg eq "-break")            { if($debug_gdb) {$bp = shift; push @breakpoints, $bp; } else {push @visitargs, $arg;}}
     elsif ($arg eq "-compiler")         { $req_compiler = shift; }
-    elsif ($arg eq "-switch")           { $req_switch = shift; push @visitargs, "-switch", $req_switch; }
     elsif ($arg eq "-objectmode")       { $req_object_mode = shift; push @visitargs, "-objectmode", $req_object_mode; }
     elsif ($arg eq "-totalview" )       {
                                           $debug_totalview = shift;
@@ -1416,12 +1416,7 @@ for ($os) {
             push @supportedarchs, "linux-ia64";
         }
         elsif ($mach =~ /x86_64/) {
-            if ($req_switch eq "ib") {
-                push @supportedarchs, "linux-x86_64-ib";
-            }
-            else {
-                push @supportedarchs, "linux-x86_64";
-            }
+            push @supportedarchs, "linux-x86_64";
         }
         else {
             if ($req_compiler eq "icc") {
