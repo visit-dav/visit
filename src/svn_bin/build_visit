@@ -411,6 +411,7 @@
 #
 #     Tom Fogal, Fri Oct  3 11:01:28 MDT 2008
 #     Fix the PIL download URL, and add a dir variable.
+#     Added a set of functions for ease of use.
 #
 #     Tom Fogal, Mon Oct  6 23:11:17 MDT 2008
 #     Force -fPIC in BoxLib for non-AIX.  Switch fortran to compiler to
@@ -785,6 +786,41 @@ DLG_WIDTH="60"
 DLG_WIDTH_WIDE="80"
 
 # *************************************************************************** #
+# Function: log                                                               #
+#                                                                             #
+# Purpose: Log message for the log.                                           #
+#                                                                             #
+# Programmer: Tom Fogal                                                       #
+# Date: Fri Oct  3 09:37:51 MDT 2008                                          #
+#                                                                             #
+# *************************************************************************** #
+function log
+{
+    echo "$@" >> ${LOG_FILE}
+}
+
+# *************************************************************************** #
+# Function: error                                                             #
+#                                                                             #
+# Purpose: Report an error message and exit.                                  #
+#                                                                             #
+# Programmer: Tom Fogal                                                       #
+# Date: Fri Oct  3 09:37:51 MDT 2008                                          #
+#                                                                             #
+# *************************************************************************** #
+
+function error
+{
+    log "$@"
+    if test "${LOG_FILE}" != "/dev/tty" ; then
+        echo "Error in build process.  See ${LOG_FILE} for more information."
+        echo "If the error is unclear, please include ${LOG_FILE} in a "
+        echo "message to the visit-users list."
+    fi
+    exit 1
+}
+
+# *************************************************************************** #
 # Function: uncompress_untar
 #                                                                             #
 # Purpose: Uncompress and untar the file, checking if GNU tar can be used.    #
@@ -829,6 +865,59 @@ function uncompress_untar
                ;;
         esac
     fi
+}
+
+
+# *************************************************************************** #
+# Function: webget                                                            #
+#                                                                             #
+# Purpose: Downloads a file from the web.                                     #
+#                                                                             #
+# Programmer: Tom Fogal                                                       #
+# Date: Fri Oct  3 10:34:39 MDT 2008                                          #
+#                                                                             #
+# Modifications:                                                              #
+#                                                                             #
+# *************************************************************************** #
+function webget
+{
+    if test "${OPSYS}" = "Darwin" ; then
+        # MaxOS X comes with curl
+        curl -ksfo "$@"
+    else
+        wget ${WGET_OPTS} -o /dev/null "$@"
+        if test $? -ne 0 ; then
+            info "Download of '$@' failed."
+            return 1
+        fi
+    fi
+    return 0
+}
+
+# *************************************************************************** #
+# Function: downloadv                                                         #
+#                                                                             #
+# Purpose: Downloads a file from a list of possible locations.  Stops when    #
+#          a download succeeds.  Each argument should be a mirror of the same #
+#          file.  Dies if the file is unavailable from all locations.         #
+#                                                                             #
+# Programmer: Tom Fogal                                                       #
+# Date: Fri Oct  3 10:30:27 MDT 2008                                          #
+#                                                                             #
+# Modifications:                                                              #
+#                                                                             #
+# *************************************************************************** #
+function downloadv
+{
+    for mirror in $@ ; do
+        info "Downloading ${mirror} . . ."
+        webget "${mirror}"
+        if test $? -eq 0 ; then
+            return 0
+        fi
+        info "Download failed.."
+    done
+    error "Could not download any of '$@'."
 }
 
 # *************************************************************************** #
@@ -980,6 +1069,24 @@ function info_box
         $DLG --backtitle "$DLG_BACKTITLE" --infobox "$1" $DLG_HEIGHT $DLG_WIDTH
     fi
     return 0
+}
+
+# *************************************************************************** #
+# Function: info                                                              #
+#                                                                             #
+# Purpose: Given an informative message to the user.                          #
+#                                                                             #
+# Programmer: Tom Fogal                                                       #
+# Date: Fri Oct  3 09:41:50 MDT 2008                                          #
+#                                                                             #
+# *************************************************************************** #
+function info
+{
+    if test "${GRAPHICAL}" = "yes" ; then
+        info_box "$@"
+    else
+        echo "$@"
+    fi
 }
 
 # *************************************************************************** #
