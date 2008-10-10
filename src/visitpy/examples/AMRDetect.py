@@ -9,13 +9,16 @@
 #          This is very experimental and the code is not at all well
 #          structured.
 #
-# Usage: AMRDetect.py -db_name <db-name> -mesh_name <mesh_name>
+# Usage: visit -cli -nowin -s AMRDetect.py -db_name <db-name> -mesh_name <mesh_name>
 #
 # Programmer: Mark C. Miller
 # Date:       Tue Oct  7 10:01:50 PDT 2008
 #
 ##############################################################################
 import string, re, sys, copy
+
+meshName=""
+db=""
 
 try:
     i = 1
@@ -28,6 +31,10 @@ try:
             meshName = sys.argv[i]
         i = i + 1
 except:
+    print "Usage: AMRDetect.py -db_name <db-name> -mesh_name <mesh_name>"
+    sys.exit(1)
+
+if db == "" or meshName == "":
     print "Usage: AMRDetect.py -db_name <db-name> -mesh_name <mesh_name>"
     sys.exit(1)
 
@@ -198,7 +205,6 @@ def GetCornerPointsForZone(nDomId, vDomId, zoneId):
 # Ensure just the mesh plot is visible and active
 logSizes = []
 spatExtents = []
-cornerPoints = []
 domRankMap = [] 
 n2vDomMap = []
 nDomId = 0
@@ -246,13 +252,6 @@ for d in silr.SetsInCategory("domains"):
         rank = float(GetQueryOutputValue())
     domRankMap.append((nDomId,rank))
     print "Rank = %f"%rank
-
-    #
-    # Get the corner points for the first zone
-    #
-    cPoints = GetCornerPointsForZone(nDomId, d, 0) 
-    print "Corner points...", cPoints
-    cornerPoints.append(cPoints)
 
     # Turn this domain back off
     print "\n"
@@ -678,7 +677,6 @@ def Qf(f):
     g = f * 10**6
     g = round(g)
     g = g / 10**6
-    print "f=",f,"g=",g,"diff=",f-g
     return g
     
 def QfStr(fstr):
@@ -968,8 +966,36 @@ else: # if len(highestDoms) > 1:
         logExtents[hDom] = [0, logSizes[hDom][0]-1, 0, logSizes[hDom][1]-1,
 	                          0, logSizes[hDom][2]-1]
 
+def ClampPointToDomainExtents(p, d):
+    global spatExetnts
+    global meshDim
+
+    ptmp = list(p)
+    xEpsilon = (spatExtents[d][1] - spatExtents[d][0]) / logSizes[d][0] / 10**4
+    if ptmp[0] <= spatExtents[d][0]:
+        ptmp[0] = spatExtents[d][0] + xEpsilon
+    if ptmp[0] >= spatExtents[d][1]:
+        ptmp[0] = spatExtents[d][1] - xEpsilon
+    yEpsilon = (spatExtents[d][3] - spatExtents[d][2]) / logSizes[d][1] / 10**4
+    if ptmp[1] <= spatExtents[d][2]:
+        ptmp[1] = spatExtents[d][2] + yEpsilon
+    if ptmp[1] >= spatExtents[d][3]:
+        ptmp[1] = spatExtents[d][3] - yEpsilon
+    if meshDim == 3:
+        zEpsilon = (spatExtents[d][5] - spatExtents[d][4]) / logSizes[d][2] / 10**4
+        if ptmp[2] <= spatExtents[d][4]:
+            ptmp[2] = spatExtents[d][4] + zEpsilon
+        if ptmp[2] >= spatExtents[d][5]:
+            ptmp[2] = spatExtents[d][5] - zEpsilon
+
+    return tuple(ptmp)
+
+
 #
-# Determine logical extents of patches
+# Determine logical extents of patches.
+# Above, we computed logical extents of top-level patches. Now,
+# we iterate layer by layer downwards, computing logical extents
+# of patches in terms of their parents.
 #
 SwitchPlotsTo(meshName)
 currentHeight = maxHeight
@@ -1056,7 +1082,9 @@ while currentHeight >= 0:
             didx = list(domRankOrder).index(d)
             dextents = logExtents[didx]
             if not havePickedNode0:
-                NodePick(node0Coords)
+                p0 = copy.copy(node0Coords)
+                p0 = ClampPointToDomainExtents(p0, d)
+                NodePick(p0)
                 s = GetPickOutput()
                 vals = re.search("Node: *([0-9]*) domain <([0-9]*), ([0-9]*)(, ([0-9]*))?>", s)
                 if vals != None:
@@ -1072,7 +1100,11 @@ while currentHeight >= 0:
                         iextents[4] = (dextents[4] + logId[2]) * ratio[2]
                     print "got node 0 pick", s, nodeId, logId, dextents, iextents
             if not havePickedNodeN:
-                NodePick(nodeNCoords)
+                pN = copy.copy(nodeNCoords)
+                print "pN=",pN
+                pN = ClampPointToDomainExtents(pN, d)
+                print "pN, again",pN
+                NodePick(pN)
                 s = GetPickOutput()
                 vals = re.search("Node: *([0-9]*) domain <([0-9]*), ([0-9]*)(, ([0-9]*))?>", s)
                 if vals != None:
@@ -1095,14 +1127,73 @@ while currentHeight >= 0:
 
     currentHeight = currentHeight - 1
 
+xmlOut = open("%s_config.xml"%meshName, "w")
+xmlOut.write("<AMRDecomp ")
+xmlOut.write("meshName=\"%s\" "%meshName)
+xmlOut.write("numDims=\"%d\" "%meshDim)
+xmlOut.write("numLevels=\"%d\" "%(maxHeight+1))
+xmlOut.write("numPatches=\"%d\" "%len(domRankOrder))
+xmlOut.write(">\n")
+
+currentHeight = maxHeight
+while currentHeight >= 0:
+    domsAtHeight = []
+    for i in range(len(domHeights)):
+        if domHeights[i] != currentHeight:
+            continue
+        domsAtHeight.append(i)
+    xmlOut.write("    <Level ")
+    xmlOut.write("level=\"%d\" "%(maxHeight - currentHeight))
+    xmlOut.write("numPatches=\"%d\" "%len(domsAtHeight))
+    if currentHeight == maxHeight:
+        ratios = (1, 1, 1)
+    else:
+        ratios = levelRatios[(currentHeight+1,currentHeight)]
+    if meshDim == 2:
+        xmlOut.write("ratios=\"%d %d\" "%(ratios[0],ratios[1]))
+    else:
+        xmlOut.write("ratios=\"%d %d %d\" "%(ratios[0],ratios[1], ratios[2]))
+    xmlOut.write(">\n")
+    xmlOut.write("        ")
+    for i in range(len(domsAtHeight)): 
+        xmlOut.write("%d "%domsAtHeight[i])
+        if (i+1) % 20 == 0:
+            xmlOut.write("\n        ")
+    xmlOut.write("\n")
+    xmlOut.write("    </Level>\n")
+    currentHeight = currentHeight - 1
+
 for d in range(len(domRankOrder)):
     didx = list(domRankOrder).index(d)
-    print "Domain", n2vDomId(d)
-    print "    rank = ", didx
-    print "    logical size = ", logSizes[didx]
-    print "    spatial extents = ", spatExtents[didx]
-    print "    logical extents = ", logExtents[didx]
-    print "    level = ", maxHeight - domHeights[didx]
-    print "    children = ", domChildren[didx]
+    xmlOut.write("    <Patch ")
+    xmlOut.write("iDx=\"%d\" "%d)
+    xmlOut.write("vId=\"%d\" "%n2vDomId(d))
+    xmlOut.write("level=\"%d\" "%(maxHeight - domHeights[d]))
+    xmlOut.write("rank=\"%f\" "%domRankMap[didx][1])
+    xmlOut.write("numChildren=\"%d\" "%len(domChildren[didx]))
+    if meshDim == 2:
+        xmlOut.write("logSize=\"%d %d\" "%(logSizes[d][0], logSizes[d][1]))
+        xmlOut.write("logExtents=\"%d %d %d %d\" "%(logExtents[didx][0], logExtents[didx][1],
+                                                    logExtents[didx][2], logExtents[didx][3]))
+        xmlOut.write("spatExtents=\"%f %f %f %f\" "%(spatExtents[d][0], spatExtents[d][1],
+                                               spatExtents[d][2], spatExtents[d][3]))
+    else:
+        xmlOut.write("logSize=\"%d %d %d\" "%(logSizes[d][0], logSizes[d][1], logSizes[d][2]))
+        xmlOut.write("logExtents=\"%d %d %d %d %d %d\" "%(logExtents[didx][0], logExtents[didx][1],
+                                                          logExtents[didx][2], logExtents[didx][3],
+                                                          logExtents[didx][4], logExtents[didx][5]))
+        xmlOut.write("spatExtents=\"%f %f %f %f %f %f\" "%(spatExtents[d][0], spatExtents[d][1],
+                                                           spatExtents[d][2], spatExtents[d][3],
+                                                           spatExtents[d][4], spatExtents[d][5]))
+    xmlOut.write(">\n")
+    xmlOut.write("        ")
+    for i in range(len(domChildren[didx])):
+        xmlOut.write("%d "%domChildren[didx][i])
+        if (i+1) % 20 == 0:
+            xmlOut.write("\n        ")
+    xmlOut.write("\n")
+    xmlOut.write("    </Patch>\n")
 
+xmlOut.write("</AMRDecomp>\n")
+xmlOut.close()
 sys.exit(0)
