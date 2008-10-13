@@ -37,6 +37,11 @@
 #    Renamed the main object files to a more standard OBJ and FOBJ to play
 #    better with automatic dependencies.
 #
+#    Eric Brugger, Mon Oct 13 13:09:38 PDT 2008
+#    I modified the setting of the CFLAGS to append to the setting from
+#    configure instead of just setting it.  The previous behavior caused
+#    important flags that configure set to get dropped.
+#
 ##############################################################################
 ##
 ## Programs and options...
@@ -69,7 +74,7 @@ SIMFLIBNAME=$(TOPDIR)/archives/$(SIMFLIB).a
 LDFLAGS=-L../lib @PY_LDFLAGS@ @LDFLAGS@ @EXE_LDFLAGS@
 LIBS=@LIBS@ 
 CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../../include/visit
-CFLAGS= -I. -I../../include/visit
+CFLAGS=@CFLAGS@ -I. -I../../include/visit
 
 
 ##
