@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
   <Plugin name="Poincare" type="plot" label="Poincare" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false" vartype="vector" iconFile="Poincare.xpm">
     <Files components="V">
+      avtPoincareFilter.C
     </Files>
     <Files components="E">
       avtPoincareFilter.C
