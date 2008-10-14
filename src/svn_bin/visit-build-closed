@@ -40,7 +40,6 @@ user=`whoami`
 crier=true
 sunset=true
 purple=true
-lilac=true
 hopi=true
 
 dist=undefined
@@ -57,7 +56,6 @@ do
          crier=false
          sunset=false
          purple=false
-         lilac=false
          hopi=false
          shift
          ;;
@@ -85,14 +83,6 @@ do
          purple=true
          shift
          ;;
-      -lilac)
-         lilac=false
-         shift
-         ;;
-      +lilac)
-         lilac=true
-         shift
-         ;;
       -hopi)
          hopi=false
          shift
@@ -118,7 +108,6 @@ then
    echo "    crier (B-Div, Linux),"
    echo "    sunset (B-Div, Solaris),"
    echo "    purple (LC, AIX),"
-   echo "    lilac (LC, Linux),"
    echo "    hopi (LC, x86_64)"
    exit
 fi
@@ -317,55 +306,6 @@ then
 fi
 
 #
-# Build on lilac, both serial and parallel versions.
-#
-rm -f lilac
-cat <<EOF > lilac
-#!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/lilac ; then
-   mkdir /usr/tmp/$user/lilac
-fi
-rm -rf /usr/tmp/$user/lilac/visitbuild
-mkdir /usr/tmp/$user/lilac/visitbuild
-mv lilac_$dist.tar.gz /usr/tmp/$user/lilac/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/lilac/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../../buildlog 2>&1
-make -j 3 >> ../../buildlog 2>&1
-svn_bin/visit-bin-dist >> ../../buildlog 2>&1
-mv visit\$ver2.linux.tar.gz ../..
-cd ../..
-echo "        build of visit on lilac"        > resultlog 2>&1
-echo "       -------------------------"       >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $lilac = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on lilac"
-      scp lilac lilac3:lilac_buildit
-      scp $dist.tar.gz lilac3:lilac_$dist.tar.gz
-      ssh lilac3 "chmod 750 lilac_buildit;./lilac_buildit" &
-   fi
-fi
-
-#
 # Build on hopi.
 #
 rm -f hopi
@@ -422,5 +362,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f crier sunset purple lilac hopi
+   rm -f crier sunset purple hopi
 fi

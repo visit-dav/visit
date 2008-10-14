@@ -428,6 +428,9 @@
 #     Removed an embarassing oversight leftover from debugging my
 #     earlier work on the PIL.
 #
+#     Eric Brugger, Tue Oct 14 11:23:14 PDT 2008
+#     Changed the version to 1.11.0.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -662,7 +665,7 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
 fi
-export VISIT_VERSION=${VISIT_VERSION-"1.10.0"}
+export VISIT_VERSION=${VISIT_VERSION-"1.11.0"}
 export VISIT_FILE=${VISIT_FILE-"visit${VISIT_VERSION}.tar.gz"}
 
 export VTK_FILE=${VTK_FILE-"vtk-5.0.0c.tar.gz"}

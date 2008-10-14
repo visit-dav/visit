@@ -57,7 +57,6 @@ esac
 #
 hoth=true
 sunspot=true
-quad=true
 up=true
 pengra=true
 thunder=true
@@ -79,7 +78,6 @@ do
       -none)
          hoth=false
          sunspot=false
-         quad=false
          up=false
          pengra=false
          thunder=false
@@ -103,14 +101,6 @@ do
          ;;
       +sunspot)
          sunspot=true
-         shift
-         ;;
-      -quad)
-         quad=false
-         shift
-         ;;
-      +quad)
-         quad=true
          shift
          ;;
       -up)
@@ -266,46 +256,6 @@ then
       scp visit-install kickit:
       scp sunspot kickit:sunspot_install
       ssh kickit "chmod 750 sunspot_install;./sunspot_install"
-   fi
-fi
-
-#
-# Install on quad.
-#
-rm -f quad
-cat <<EOF > quad
-#!/bin/sh
-./visit-install -private -c open -g visit -b bdivp -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on quad"            > resultlog 2>&1
-echo "       --------------------------"           >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/sgi-irix6-mips2/bin   >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/sgi-irix6-mips2/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/sgi-irix6-mips2/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/sgi-irix6-mips2/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/sgi-irix6-mips2/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/sgi-irix6-mips2\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-cp resultlog \$HOME/quad_resultlog
-ssh thunder "cat quad_resultlog | /bin/mail  -s \"VisIt install ($dist): quad\" $emailName"
-# give thunder time to mail it before removing the log
-sleep 10
-rm \$HOME/quad_resultlog
-EOF
-
-if [ $quad = true ]
-then
-   if [ $test = no ]
-   then
-      scp quad:/usr/tmp/$user/quad/visitbuild/visit$ver2.irix6.tar.gz .
-      scp visit$ver2.irix6.tar.gz pengra2:
-      scp visit-install pengra2:
-      scp quad pengra2:quad_install
-      ssh pengra2 "chmod 750 quad_install;./quad_install"
    fi
 fi
 
@@ -583,5 +533,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad up pengra thunder yana xchem davinci ellipse
+   rm -f hoth sunspot up pengra thunder yana xchem davinci ellipse
 fi
