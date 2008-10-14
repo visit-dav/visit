@@ -1748,6 +1748,8 @@ else
 
 # Add /usr/local/lib to the shared library path.  This was added for the
 # c++ library on some sun systems, but it may have broader applicability.
+# Note that we can assume that LD_LIBRARY_PATH is not empty, since it was
+# set to $visitlibdir above.
 $ENV{LD_LIBRARY_PATH}    = "$ENV{LD_LIBRARY_PATH}:/usr/local/lib";
 
 # Set up some environment flags that let VisIt run on Darwin.
