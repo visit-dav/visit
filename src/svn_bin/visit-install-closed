@@ -29,7 +29,6 @@ user=`whoami`
 crier=true
 sunset=true
 purple=true
-lilac=true
 hopi=true
 
 ver=undefined
@@ -46,7 +45,6 @@ do
          crier=false
          sunset=false
          purple=false
-         lilac=false
          hopi=false
          shift
          ;;
@@ -72,14 +70,6 @@ do
          ;;
       +purple)
          purple=true
-         shift
-         ;;
-      -lilac)
-         lilac=false
-         shift
-         ;;
-      +lilac)
-         lilac=true
          shift
          ;;
       -hopi)
@@ -237,48 +227,11 @@ then
    then
       scp purple:/p/gscratch3/$user/purple/visitbuild/visit$ver2.aix.tar.gz .
       scp purple:/p/gscratch3/$user/purple/visitbuild/visit$ver2.aix64.tar.gz .
-      scp visit$ver2.aix.tar.gz lilac3:
-      scp visit$ver2.aix64.tar.gz lilac3:
-      scp visit-install lilac3:
-      scp purple lilac3:purple_install
-      ssh lilac3 "chmod 750 purple_install;./purple_install"
-   fi
-fi
-
-#
-# Install on lilac.
-#
-rm -f lilac
-cat <<EOF > lilac
-#!/bin/sh
-./visit-install -private -c closed -g visit -b bdivp -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo ""                                            > resultlog 2>&1
-echo "        install of visit on lilac"           >> resultlog 2>&1
-echo "       ---------------------------"          >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-intel/bin       >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mv resultlog resultlog.lilac
-EOF
- 
-if [ $lilac = true ]
-then
-   if [ $test = no ]
-   then
-      scp lilac3:/usr/tmp/$user/lilac/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
-      scp visit$ver2.linux_chaos.tar.gz lilac3:
-      scp visit-install lilac3:
-      scp lilac lilac3:lilac_install
-      ssh lilac3 "chmod 750 lilac_install;./lilac_install"
+      scp visit$ver2.aix.tar.gz hopi3:
+      scp visit$ver2.aix64.tar.gz hopi3:
+      scp visit-install hopi3:
+      scp purple hopi3:purple_install
+      ssh hopi3 "chmod 750 purple_install;./purple_install"
    fi
 fi
 
@@ -312,10 +265,10 @@ then
    if [ $test = no ]
    then
       scp hopi3:/usr/tmp/$user/hopi/visitbuild/visit$ver2.linux-x86_64.tar.gz .
-      scp visit$ver2.linux-x86_64.tar.gz lilac3:
-      scp visit-install lilac3:
-      scp hopi lilac3:hopi_install
-      ssh lilac3 "chmod 750 hopi_install;./hopi_install"
+      scp visit$ver2.linux-x86_64.tar.gz hopi3:
+      scp visit-install hopi3:
+      scp hopi hopi3:hopi_install
+      ssh hopi3 "chmod 750 hopi_install;./hopi_install"
    fi
 fi
 
@@ -324,5 +277,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f crier sunset purple lilac hopi
+   rm -f crier sunset purple hopi
 fi
