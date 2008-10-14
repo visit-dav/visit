@@ -251,31 +251,30 @@ function MM_initTimelines() { //v4.0
   </tr>
   <tr>
     <td>10. <a href="#10">Accessing data on remote machine</a></td>
-    <td>26. <a href="#26">Cannot connect to remote computer</a></td>
+    <td>26. <a href="#26">Slow performance with ATI cards on Linux</a></td>
   </tr>
   <tr>
     <td>11. <a href="#11">Running VisIt in parallel</a></td>
-    <td>27. <a href="#27">Slow performance with ATI cards on Linux</a></td>
+    <td>27. <a href="#27">Custom plugins with a downloaded VisIt binary</a></td>
   </tr>
   <tr>
     <td>12. <a href="#12">Supported data file formats</a></td>
-    <td>28. <a href="#28">Custom plugins with a downloaded VisIt binary</a></td>
+    <td>28. <a href="#28">Getting HDF5 data into VisIt</a></td>
   </tr>
   <tr>
     <td>13. <a href="#13">Getting your data into VisIt</a></td>
-    <td>29. <a href="#29">Getting HDF5 data into VisIt</a></td>
+    <td>29. <a href="#29">Getting NETCDF data into VisIt</a></td>
   </tr>
     <tr>
     <td>14. <a href="#14">Making a movie of your data</a></td>
-    <td>30. <a href="#30">Getting NETCDF data into VisIt</a></td>
+    <td>30. <a href="#30">When I run VisIt on my Linux machine, I get a black screen</a></td>
   </tr>
   <tr>
     <td>15. <a href="#15">Setting your user name to connect to a remote machine</a></td>
-    <td>31. <a href="#31">When I run VisIt on my Linux machine, I get a black screen</a></td>
+    <td>31. <a href="#31">I get the message 'Publisher cannot be verified' when installing VisIt on Windows</a></td>
   </tr>
   <tr>
-    <td>16. <a href="#16">Distributed mode on a MacOS X computer</a></td>
-    <td>32. <a href="#32">I get the message 'Publisher cannot be verified' when installing VisIt on Windows</a></td>
+    <td>16. <a href="#16">Cannot connect to a remote computer</a></td>
   </tr>
 </table>
 <p>&nbsp;</p>
@@ -301,13 +300,14 @@ function MM_initTimelines() { //v4.0
   <li> Linux (x86, x86_64, Itanium, Altix) </li>
   <li> MacOS X 10.3 and 10.4 (PowerPC and Intel) </li>
   <li> SunOS 5.7</li>
-  <li> IRIX 6.5, IRIX64 6.5</li>
-  <li> AIX 5.1</li>
+  <li> AIX 5.3</li>
 </ul>
 <p>VisIt is known to work on other platforms as well but no binary distributions for these platforms are available due to machine retirements at LLNL.</p>
 <ul>
+  <li> IRIX 6.5, IRIX64 6.5</li>
   <li> Tru64 V5.1</li>
 </ul>
+<p class="small">[<a href="#top">Top</a>]</p>
 <h2><a name="3"></a>3. What is the optimal hardware and software combination for running VisIt?</h2>
 <p> VisIt should perform well on just about any Linux or Windows system as long as you follow these guidelines:</p>
 <ul>
@@ -315,7 +315,6 @@ function MM_initTimelines() { //v4.0
   <li> You should make sure that you install the graphics driver provided by the vendor of your graphics card so that you can get full hardware-accelerated graphics rendering. The standard Linux distributions come with a generic driver that will work on all systems, but this will not give top performance. If you plan to use Linux and have not yet purchased a graphics card, you should check that the card you are considering purchasing has a driver optimized for Linux.</li>
   <li> If you run VisIt on Windows, you must use Windows 98, 2000, Me, or Windows XP. VisIt had been known to work on some versions of Windows NT 4.0, but you must have later service packs installed or VisIt will not run. </li>
 </ul>
-<p class="small">[<a href="#top">Top</a>]</p>
 <h2><a name="4"></a>4. How do I debug problems starting VisIt or opening files?</h2>
 <p> If you are having difficulty either starting VisIt and/or looking at some data files once VisIt is running, try some of the following...</p>
 <p> Add '-debug 5' to the command-line to launch VisIt. This will generate debug logs for each executable component VisIt is running
@@ -327,6 +326,7 @@ in the directory that VisIt was launched from.</p>
 <p> Once you have generated debug logs, searching for the string 'Exception' in them can often lead you to clues regarding the problem. But, be aware tha there are many cases where Exceptions are 'normal' in that they do NOT lead to a failure to startup or run correctly. So, don't be mislead by these.</p>
 <p> Problems with startup can usually be found in the viewer logs. Problems with opening a file are usually found the mdserver logs and problems with getting a particular plot to work are usually found in the engine logs.</p>
 <p> In some cases, the problems may be such that the failing components get relaunched. When this happens, the existing logs get overwritten by new ones. For this reason, they may not show the 'original' reason for the problem. The deal with this case, try also adding the command line argument '-pid' to the command to launch VisIt. This will cause the debug logs to be named with process ids so they don't get overwritten. Be aware that doing this can lead to hundreds of log files after many attempts to start/run VisIt. To find the log showing the original problem, you need to sort the logs according to time of modification.</p>
+<p class="small">[<a href="#top">Top</a>]</p>
 <h2><a name="5"></a>5. Does VisIt support stereo rendering?</h2>
 <p> Yes, VisIt supports stereo rendering. We have run VisIt with stereo rendering on the following systems:</p>
 <ul>
@@ -363,9 +363,9 @@ in the directory that VisIt was launched from.</p>
 <blockquote>
   <p><font color="999999"> <strong> setenv DISPLAY your_display_name:0.0</strong> </font></p>
 </blockquote>
-<p class="small">[<a href="#top">Top</a>]</p>
 <h2><a name="9"></a>9. I run VisIt and everything looks okay except no output is ever displayed in the visualization window. What is wrong?</h2>
 <p> This problem has arisen on Sun Blade and Linux systems and usually means that the X Server on your desktop machine does not have OpenGL support. To determine if this is the problem, type <font color="999999"> <strong>xdpyinfo</strong> </font> on a window local to your desktop. Near the top of the resulting output is a section describing the server extensions on your system. On a Sun Blade system, you should see one named GLX. On Linux systems you should see extensions named <font color="999999"> <strong>GLX</strong></font>, <font color="999999"><strong>NV-GLX</strong></font>, and <font color="999999"><strong>NVIDIA-GLX</strong> </font>. If these extensions are missing, your system administrator will have to install them for you.</p>
+<p class="small">[<a href="#top">Top</a>]</p>
 <h2><a name="10"></a>10. How do I access data on a remote machine?</h2>
 <p> First, VisIt must be installed on the remote machine. Then, in order to access data on remote machines, simply type in the name of the remote machine in the <font color="999999"> <strong>Host</strong> </font> field in the <font color="999999"> <strong>File Selection</strong> </font> window in the VisIt graphical user interface and include <font color="999999"> <strong>visit</strong> </font> in your search path on the remote machine. For more information, read the Distributed Mode portion of the Remote Visualization section in the <a href="https://wci.llnl.gov/codes/visit/1.5/VisItUsersManual1.5.pdf"> <em>VisIt Users Manual</em></a><em>.</em></p>
 <h2><a name="11"></a>11. How do I run VisIt in parallel?</h2>
@@ -637,11 +637,21 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
   <p> <strong><font color="#999999">visit -movie -geometry 1024x1024 -s movie.py -format tiff -output mymovie -fps 30 </font></strong></p>
 </blockquote>
 <p> VisIt's <a href="manuals.html">Python Interface Manual</a> documents all of the functions in the VisIt Python extension and includes examples of how to do common plotting and movie-making operations. If you need more examples of how to write Python scripts for VisIt, download the VisIt source code distribution and look for Python scripts in the <em>visitpy/examples</em> directory. If the two current ways of making movies sound too difficult, don't worry. We plan to enhance VisIt in the next few versions so it is easier to make movies.</p>
+<p> [<a href="#top">Top</a>]</p>
 <h2><a name="15"></a>15. How do I connect to a remote computer when I have a different user name on that computer?</h2>
 <p> It is fairly common for your user name on a desktop computer to differ from your user name on a remote computer. To successfully connect to a remote computer, you must provide a valid user name for the computer to which you want to connect. You will have to create a host profile for the remote computer so VisIt knows your user name on that computer. Open the Host profiles window by clicking Host profiles in the Options menu. Create a new host profile for the remote computer and be sure to enter your correct user name for that remote computer. For more information on creating host profiles, read the Distributed Mode portion of the Remote Visualization section in the <a href="https://wci.llnl.gov/codes/visit/1.5/VisItUsersManual1.5.pdf"><em>VisIt Users Manual</em></a><em>.</em></p>
+<h2><a name="16"></a>16. Why can't I connect to a remote computer?</h2>
+<p>Sometimes VisIt fails to connect to a remote computer while trying to access files in distributed mode. This can happen for a variety of reasons and they are usually related to how your computer is configured to access the network. First of all, VisIt uses SSH to launch its components on remote computers and it is possible that SSH was unable to launch VisIt on the remote computer. If you want to verify this, run <i>visit -debug 5</i>and then check to see if any <em>vcl</em>, <em>mdserver</em>, or <em>engine</em> log files are present on the remote computer in your home directory. If no log files were created then SSH was probably not able to launch VisIt components on the remote computer. In that case, make sure that you can SSH to the remote computer. Also check your local VisIt installation's <strong>Host profiles</strong> to make sure the path to VisIt on the remote computer is specified. Alternatively, you can set the <strong>PATH</strong> environment variable on the remote computer so it contains the path to the program <em>visit</em>.</p>
+<p>If there were no debug logs to be found on the remote computer and your local computer runs a newer version of Linux then quit VisIt and try running <em>visit -nopty -debug 5</em>. The<i> -nopty </i>option tells VisIt not to allocate a pseudoterminal in which to run SSH. When you run with the <i>-nopty </i>option, VisIt's <strong>password window</strong> will not be used. Instead, look for an SSH prompt in the terminal window where you ran VisIt. You should be able to enter your password at that prompt. If successful, SSH should continue trying to launch VisIt on the remote computer. If VisIt still cannot connect after SSH launches VisIt's remote components, check for debug logs on the remote computer to see if VisIt was at least able to launch there.</p>
+<p>If you found debug log files on the remote computer but VisIt still can't connect then it's possible that the remote computer cannot connect back to your local computer. This is caused either by a networking problem or a firewall that is disallowing inbound network connections to your local computer. The simplest solution is to use SSH tunneling. If that doesn't correct the problem then you will need to correct the networking and/or firewall issues.</p>
+<h3>Enabling SSH tunneling</h3>
+<p>SSH tunneling is enabled by going to the <strong>Options</strong> pulldown menu at the top of them main window and bringing up the <strong>Host profiles</strong> window, selecting the profile for the remote computer, selecting the <strong>Advanced options</strong> tab, selecting the <strong>Networking</strong> tab, toggling the <strong>Tunnel data connections through SSH</strong> setting, and pressing the <strong>Apply</strong> button.</p>
+<h3>Correcting networking issues</h3>
+<p>Some desktop computers do not provide a valid network name when VisIt asks for one. If you suspect that this could be the cause of the launch failure, try using <strong>Parse from SSH_CLIENT </strong> in your host profile for the remote computer. If that does not work and if you are using VPN then you should try manually setting the local host name VisIt will use when telling its remote components to connect back to your local computer. Open the <strong>Host profiles window</strong>  and go to the <strong>Advanced options</strong> tab. Click the <strong>Specify manually</strong> radio button and type in the IP address of your VPN session into the adjacent text field before you try connecting again.</p>
+<h3>Correcting firewall issues</h3>
+<p>VisIt uses ports <em>5600-5609</em> to listen for incoming connections (when they are expected) from remote VisIt components. If you've tried the previous suggestions and none of them worked then you may have a firewall denying VisIt access to your local computer. Try turning the firewall off or allowing ports <em>5600-5609</em> and run VisIt again. If you do not know how to enable ports for your firewall or if you do not have the required privileges, contact your system administrator.</p>
+<p> If none of these suggestions allow you to successfully connect to the remote computer then contact <a href="mailto:visit-users@ornl.gov">visit-users@ornl.gov</a> and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running in your e-mail.</p>
 <p> [<a href="#top">Top</a>]</p>
-<h2><a name="16"></a>16. Why does distributed mode not work on my MacOS X computer?</h2>
-<p> VisIt can run all of its components locally, or it can run some of them on remote computers. When the compute engine and metadata server are run on a remote computer, VisIt is said to be running in distributed mode. When VisIt runs in distributed mode, it attempts to launch some of its components on remote computers, and those programs then talk to VisIt via socket communication. Assuming that you have an account on the remote computer and VisIt is installed there, you should be able to run in distributed mode. If you have everything set up properly and distributed mode still does not work, you should check your firewall settings. MacOS X has an integrated firewall program that disallows remote programs from making inbound connections to programs running on your Mac. You either need to disable your firewall or change its settings so ports 5600 through 5605 (VisIt's ports) are not blocked. Once you change your firewall settings, VisIt components running on remote computers will be able to connect back to the Mac and distributed mode will work.</p>
 <h2><a name="17"></a>17. How do I build VisIt on my Windows computer?</h2>
 <p> You need three things in order to build VisIt on a Windows computer. Firstof all, you must have  Microsoft Visual Studio .Net 2003 or 2005. Compilers from other vendors might work to build the VisIt source code but the VisIt sourcedistribution for Windows only provides project files for the two afore-mentioned compilers. The second thing you need in order to build VisIt on Windows is the Qt library, which is available at <a href="http://www.trolltech.com/download/qt/evaluate.html?cid=3">Trolltech's Web site</a>. VisIt currently requires a Qt 3.x version such as Qt 3.3.8. (The unix version is built with Qt 3.3.8) You must build Qt before you attempt to build VisIt. The last thing you need in order to build VisIt on Windows is the <a href="source.html">VisIt source distribution for Windows</a>.</p>
 <p> The VisIt source distribution for Windows contains all of VisIt's source code and prebuilt versions of most of VisIt's support libraries so it is not required that you download and build all of those libraries unless you want to customize them. Download and install the source distribution for Windows and read the VisItBuildInstructionsOnWindows.doc file in the VisIt development directoryfor more information on building VisIt for Windows.</p>
@@ -668,6 +678,7 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
 <p>The VisIt development team usually releases a new version of VisIt every 3 months. Each VisIt release contains on average 60 enhancements or bug-fixes, improving the functionality and the quality of the tool. Check the VisIt Web site often for updates. You can also join the VisIt User's mailing list if you want to know when VisIt is updated. You can also subscribe to the VisIt project on <a href="http://freshmeat.net/projects/visit/" title="Freshmeat" target="_blank">Freshmeat.net</a> if you want to be informed when a new version of VisIt becomes available. Finally, you can use the &quot;VisIt update&quot; feature in VisIt's help menu to automatically determine if an update for your platform is available. &quot;VisIt update&quot; can in many cases even download and install the new version of VisIt. </p>
 <h2><a name="23"></a>23. What's new in the latest version of VisIt?</h2>
 <p>Each version of VisIt contains on average 60 enhancements or bug-fixes. The first time that you run a new version of VisIt, the release notes for that version will be prominently displayed in the Help window. The release notes describe the enhancements and bug-fixes made in each version of the tool. After you have read the release notes for the new version of VisIt, they will not be automatically displayed again but you can view them at any time using VisIt's <strong>Help window</strong>. </p>
+<p> [<a href="#top">Top</a>]</p>
 <h2><a name="24"></a>24. Which compilers can be used to build VisIt? </h2>
 <p>The following compilers can be used to build VisIt on the listed platforms, though this is not an exhaustive list and newer versions of these compilers often work. </p>
 <table width="50%" border="0" align="center" cellpadding="5" cellspacing="1">
@@ -677,7 +688,7 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
       <td width="65%" NOSAVE bgcolor="#9999CC" class="Section">Compiler</td>
     </tr>
     <tr>
-      <td bgcolor="#CCCCFF">AIX 5.1</td>
+      <td bgcolor="#CCCCFF">AIX 5.3</td>
       <td bgcolor="#CCCCFF">xlC </td>
     </tr>
     <tr>
@@ -702,81 +713,28 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
     </tr>
   </tbody>
 </table>
-<p> [<a href="#top">Top</a>]</p>
 <h2><a name="25"></a>25. Which license does VisIt use?</h2>
 <p>VisIt is released under the BSD license, which you can view on <a href="license.html" title="VisIt's BSD license" target="_blank">VisIt's license</a> page. </p>
 <H2>
   <CENTER>
   </CENTER>
 </H2>
-<h2><a name="26"></a>26. Why can't I connect to a remote computer?</h2>
-<p>Sometimes VisIt fails to connect to a remote computer while trying to access files in distributed mode. This can 
-  happen for a variety of reasons and they are usually related to how your computer is configured to access the network.
-  
-First of all, VisIt uses SSH to launch its components on remote computers and it is possible that SSH was unable to launch VisIt on the remote computer.
-  If you want to verify this, run <i>visit -debug 5</i>and then check to see if any <em>vcl</em>,
-  <em>mdserver</em>, or <em>engine</em> log files are present on the remote computer in your
-  home directory. If no log files were created then SSH was
-  probably not able to launch VisIt components on the remote computer. In that
-  case, make sure that you can SSH to the remote computer. Also check your local
-  VisIt installation's <strong>Host profiles</strong> to make sure the path
-  to VisIt on the remote computer is specified. Alternatively, you set the
-  <strong>PATH</strong> environment variable on the remote computer so it contains the
-path to the program <em>visit</em>.</p>
-<p>If there were no debug logs to be found on the remote computer and your local
-  computer runs a newer version of Linux then quit VisIt and
-  try running <em>visit -nopty -debug 5</em>. The<i> -nopty </i>option
-  tells VisIt not to allocate a pseudoterminal in which to
-  run SSH. When you run with the <i>-nopty </i>option, VisIt's
-  <strong>password window</strong> will not be used. Instead, look for an SSH
-  prompt in the terminal window where you ran VisIt. You should
-  be able to enter your password at that prompt. If successful,
-  SSH should continue trying to launch VisIt on the remote computer. If VisIt
-  still cannot connect after SSH launches VisIt's remote
-  components, check for debug logs on the remote computer to see if VisIt
-was at least able to launch there.</p>
-<p>If you found debug log files on the remote computer but VisIt still can't
-  connect then it's possible that the remote computer cannot connect back to your
-  local computer. Some desktop computers do not provide a
-  valid network name when VisIt asks for one. If you suspect
-  that this could be the cause of the launch failure, try
-  using <i>Parse from SSH_CLIENT </i>in your host profile for
-  host the remote computer. If that does not work and if you are using VPN
-  then you should try manually setting the local host name
-  VisIt will use when telling its remote components to connect
-  back to your local computer. Open the <strong>Host profiles window</strong>  and go to the <strong>Advanced options</strong> tab. Click the <strong>Specify manually</strong>  radio button and type in the IP address of your VPN session
-into the adjacent text field before you try connecting again.</p>
-<p> If changing the above settings still does not allow you to
-  connect then you may have a local firewall blocking
-  ports <em>5600-5609</em>, which are the ports that VisIt uses to
-  listen for incoming connections (when they are expected)
-  from remote VisIt components. If you've tried the previous
-  suggestions and none of them worked then you may have a
-  firewall denying VisIt access to local computer. Try turning
-  the firewall off or allowing ports <em>5600-5609</em> and run VisIt
-  again. If you do not know how to enable ports for your
-  firewall or if you do not have the required privileges,
-contact your system administrator.</p>
-<p> If none of these suggestions allow you to successfully
-    connect to the remote computer then contact <a href="mailto:visit-users@ornl.gov">visit-users@ornl.gov</a> and provide
-    information about how you are trying to connect. Be sure to
-    include the VisIt version and platform on which you are
-  running in your e-mail. </p>
-<h2><a name="27"></a>27. Why is VisIt running slowly on my Linux system with an ATI graphics card?</h2>
+<h2><a name="26"></a>26. Why is VisIt running slowly on my Linux system with an ATI graphics card?</h2>
 <p> The default rendering performance of VisIt running on some ATI cards on Linux systems has been found to approximate that of software rendering. One solution we have found to this problem is to switch the rendering mode to always use display lists, which restores the rendering performance to what you would expect from hardware accelerated rendering. To change the rendering mode to use display lists, change the <strong>Use display lists</strong> mode to <strong>Always</strong> on the <strong>Rendering options window</strong> and press the <strong>Apply</strong> button. The <strong>Rendering options window</strong> can be brought up by selecting <strong>Rendering...</strong> from the <strong>Options</strong> pull down menu at the top of the main control panel. To make the change permanent, press the <strong>Dismiss</strong> button and save the settings by selecting <strong>Save Settings</strong> from the <strong>Options</strong> pull down menu. </p>
-<h2><a name="28"></a>28. Why do I get a runtime error when I use my custom plugin with a binary version of VisIt from your site?</h2>
+<h2><a name="27"></a>27. Why do I get a runtime error when I use my custom plugin with a binary version of VisIt from your site?</h2>
 <p>If you install a binary from our Web site, you may be downloading a version of VisIt that uses a different C++ compiler from what may be installed on your system. Our binary distributions will often run just fine on such systems but once you create your own plugin using a C++ compiler that differs from the compiler used to build VisIt, you may experience problems. If you are running into this problem, you will often see runtime error messages similar to:</p>
 <p><em>*** glibc detected *** free(): invalid pointer: 0x095de9b8 ***<br>
 SIGABRT</em></p>
 <p>If you notice any runtime errors related to glibc because you're using a custom-built plugin with our binary distirbutions then you probably have a runtime library incompatibility. The best way to resolve this situation is to build VisIt on your platform using our build_visit script since it will automatically build VisIt. Once you've rebuilt VisIt using your C++ compiler, you should regenerate your plugin's Makefile using the your new VisIt's xml2makefile program. Once you have done that, rebuild your plugin to make it build against your new, natively built version of VisIt. </p>
-<h2><a name="29"></a>29. How do I get my HDF5 data into VisIt? </h2>
+<p> [<a href="#top">Top</a>]</p>
+<h2><a name="28"></a>28. How do I get my HDF5 data into VisIt? </h2>
 <p> HDF5 is an array storage file format that supports a wide variety of data types and VisIt reads a lot of file formats from codes that use HDF5 as a storage layer. Unfortunately, VisIt cannot provide a plugin that can read all HDF5-based files because of the various conventions that codes invent when they store their files. VisIt's HDF5-enabled plugins are programmed to know about the conventions used to map array data from the file into meaningful constructs such as meshes with data. If you need to import HDF5 data into VisIt then you might be achieve satisfactory results if you choose <em>File-&gt;Open As...</em> and then open the file using the Pixie reader, which is VisIt's most generic HDF5 reader. Note that it is possible to write a new database reader plugin to understand your data following the procedures provided in the <a href="manuals.html" title="Getting Data Into VisIt">Getting Data Into VisIt</a> manual. </p>
-<h2><a name="30"></a>30. How do I get my NETCDF data into VisIt?</h2>
+<h2><a name="29"></a>29. How do I get my NETCDF data into VisIt?</h2>
 <p> Like HDF5, NETCDF is just an array storage file format so the same problems tend to occur when you want to get NETCDF data into VisIt. However, VisIt's NETCDF reader will attempt to open NETCDF data with a variety of different readers that look for various simulation code conventions (CF support not implemented) and in the event that the file was not written using any discernable convention then a back up basic reader is used. The basic NETCDF reader exposes all of the arrays in the NETCDF file as data that can be plotted on rectilinear meshes corresponding to the size of each array. The common complaint is that the data looks okay but the mesh is not scaled accordingly. If this happens to you then VisIt is using its basic NETCDF reader, which does not support any conventions. Note that it is possible to write a new database reader plugin to understand your data following the procedures provided in the <a href="manuals.html" title="Getting Data Into VisIt">Getting Data Into VisIt</a> manual. </p>
-<h2><a name="31"></a>31. When I run VisIt on my Linux machine, I get a black screen. When I try displaying to it from a remote machine, though, everything works fine. Other OpenGL applications also seem to work, even when run locally. What is wrong?</h2>
+<h2><a name="30"></a>30. When I run VisIt on my Linux machine, I get a black screen. When I try displaying to it from a remote machine, though, everything works fine. Other OpenGL applications also seem to work, even when run locally. What is wrong?</h2>
 <p> Under Linux, hardware-accelerated rendering can become a complicated problem because many hardware vendors have their own drivers which can conflict with the direct rendering infrastructure in XFree86.  We have had some success simply removing references to DRI in the XF86Config file.  For example, remove the line in the "Module" section of the file that reads:</p>
 <p> Load     "dri"</p>
-<h2><a name="32"></a>32. When I downloaded the Windows installation and ran it, I got an error message saying "publisher cannot be verified. Are you sure you want to continue?" What is wrong?</h2>
+<h2><a name="31"></a>31. When I downloaded the Windows installation and ran it, I got an error message saying "publisher cannot be verified. Are you sure you want to continue?" What is wrong?</h2>
 <p> There is nothing wrong and you may safely proceed with the installation.</p>
 <p>&nbsp;</p>
 <!-- InstanceEndEditable -->
@@ -784,7 +742,7 @@ SIGABRT</em></p>
   <!-- InstanceBeginEditable name="Links" --><span class="links"><a href="executables.html">Executables</a> | <a href="source.html">Source Code</a> | <a href="datafiles.html">Data Files</a> | <a href="about.html" target="_top" class="links">About VisIt</a> | <a href="screens.html" class="links">Screen Shots</a> |&nbsp;<a href="gallery.html" class="links">Gallery</a> | FAQs | <a href="manuals.html">Manuals</a> | <a href="new.html" target="_top" class="links">What's New</a> | <a href="sitemap.html">Index</a></span><!-- InstanceEndEditable -->
   <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>
     <span class="body_text">Updated: 
-    <!-- #BeginDate format:Am1 -->June 23, 2008<!-- #EndDate -->
+    <!-- #BeginDate format:Am1 -->November 3, 2008<!-- #EndDate -->
     </span></p>
   <table width="100%" border="0" cellspacing="0" cellpadding="0" height="18">
     <tr> 
