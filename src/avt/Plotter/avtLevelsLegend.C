@@ -180,46 +180,73 @@ avtLevelsLegend::~avtLevelsLegend()
 //    Hank Childs, Wed May 30 11:32:47 PDT 2007
 //    Increase fudge factor (contours of 3 isolevels weren't showing up)
 //
+//    Dave Bremer, Mon Oct 13 12:36:09 PDT 2008
+//    Changed computed size depending on whether the bar is vertical 
+//    or horizontal.
+//
 // ****************************************************************************
 
 void
 avtLevelsLegend::GetLegendSize(double maxHeight, double &w, double &h)
 {
-    w = 0.08 * scale[0];
-
-    //
-    // The fudge factor added to nLines when barVisibility is true is
-    // there to make sure that there is enough room for all the levels
-    // because this algorithm doesn't exactly match the algorithm in
-    // vtkVerticalScalarBarActor.
-    //
-    double fudge = 0.7;
-    double nLines = 0.0;
-    if (title != NULL)        nLines += 1.0;
-    if (databaseInfo != NULL) nLines += 2.0;
-    if (varName != NULL)      nLines += 1.0;
-    if (message != NULL)      nLines += 1.0;
-    if (rangeVisibility)      nLines += 2.0;
-    if (barVisibility)        nLines += nLevels * 1.1 + 1.0 + fudge;
-
-    h = nLines * fontHeight * scale[1];
-
-    //
-    // If the legend is larger than the maximum size, then try to shrink
-    // the color bar so that it fits within the maximum size.
-    //
-    if (h > maxHeight && barVisibility)
+    if (orientation == VerticalTextOnRight ||
+        orientation == VerticalTextOnLeft) 
     {
-        double hTitles = h - (nLevels * 1.1 + 1.0 + fudge) * fontHeight;
-        double nLevelsSpace = (maxHeight - hTitles) / (fontHeight * 1.1);
-        if (nLevelsSpace > 2.)
+        w = 0.08 * scale[0];
+    
+        //
+        // The fudge factor added to nLines when barVisibility is true is
+        // there to make sure that there is enough room for all the levels
+        // because this algorithm doesn't exactly match the algorithm in
+        // vtkVerticalScalarBarActor.
+        //
+        double fudge = 0.7;
+        double nLines = 0.0;
+        if (title != NULL)        nLines += 1.0;
+        if (databaseInfo != NULL) nLines += 2.0;
+        if (varName != NULL)      nLines += 1.0;
+        if (message != NULL)      nLines += 1.0;
+        if (rangeVisibility)      nLines += 2.0;
+        if (barVisibility)        nLines += nLevels * 1.1 + 1.0 + fudge;
+    
+        h = nLines * fontHeight * scale[1];
+    
+        //
+        // If the legend is larger than the maximum size, then try to shrink
+        // the color bar so that it fits within the maximum size.
+        //
+        if (h > maxHeight && barVisibility)
         {
-            h = maxHeight;
+            double hTitles = h - (nLevels * 1.1 + 1.0 + fudge) * fontHeight;
+            double nLevelsSpace = (maxHeight - hTitles) / (fontHeight * 1.1);
+            if (nLevelsSpace > 2.)
+            {
+                h = maxHeight;
+            }
         }
+    
+        if(setMaxScale)
+            maxScale = maxHeight;
     }
+    else
+    {
+        double nLines = 0.0;
+        if (title != NULL)        nLines += 1.0;
+        if (databaseInfo != NULL) nLines += 2.0;
+        if (varName != NULL)      nLines += 1.0;
+        if (message != NULL)      nLines += 1.0;
+        if (rangeVisibility)      nLines += 2.0;
+        if (barVisibility)        nLines += 4.0;  //Let the height of the horz bar be 2x font height (?)
 
-    if(setMaxScale)
-        maxScale = maxHeight;
+        h = nLines * fontHeight * scale[1];
+
+        //Leaving enough space in the width is tricky.  Ideally, we'd like enough space to 
+        //create text for each level, and the text width varies greatly.
+        w = nLevels * 0.05 * scale[0];
+        if (w > 1.0)
+            w = 1.0;
+
+    }
 
     size[0] = w;
     size[1] = h;
@@ -397,13 +424,15 @@ avtLevelsLegend::SetBoundingBoxColor(const double *color)
 // Creation:   Wed Mar 21 21:34:59 PST 2007
 //
 // Modifications:
-//   
+//   Dave Bremer, Mon Oct 13 12:36:09 PDT 2008
+//   Implemented this placeholder method. 
 // ****************************************************************************
 
 void
-avtLevelsLegend::SetOrientation(LegendOrientation)
+avtLevelsLegend::SetOrientation(LegendOrientation l)
 {
-    debug1 << "avtLevelsLegend::SetOrientation: NOT IMPLEMENTED" << endl;
+    avtLegend::SetOrientation(l);
+    sBar->SetOrientation(l);
 }
 
 // ****************************************************************************
@@ -759,4 +788,28 @@ avtLevelsLegend::ChangeFontHeight(double fh)
 {
     double minScale = (scale[0] < scale[1]) ? scale[0] : scale[1];
     sBar->SetFontHeight(fh * minScale);
+}
+
+
+// ****************************************************************************
+// Method: avtLevelsLegend::SetNumberFormat
+//
+// Purpose: 
+//   Sets the number format string.
+//
+// Arguments:
+//   fmt : The new format string.
+//
+// Programmer: Dave Bremer
+// Creation:   Mon Oct 13 12:02:41 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetNumberFormat(const char *fmt)
+{
+    // Set the label format.
+    sBar->SetLabelFormat(fmt);
 }

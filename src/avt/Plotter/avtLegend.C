@@ -64,6 +64,9 @@
 //    Kathleen Bonnell, Thu Aug 12 13:07:29 PDT 2004 
 //    Initialize globalVisibility.
 //
+//    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
+//    Init orientation member
+//
 // ****************************************************************************
 
 avtLegend::avtLegend()
@@ -82,6 +85,7 @@ avtLegend::avtLegend()
     varName = NULL;
     varUnits = NULL;
     message = NULL;
+    orientation = VerticalTextOnRight;
 }
 
 
@@ -486,13 +490,15 @@ avtLegend::SetBoundingBoxColor(const double *)
 // Creation:   Thu Mar 22 02:09:25 PDT 2007
 //
 // Modifications:
+//    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
+//    This was a noop.  Now, orientation is set.
 //   
 // ****************************************************************************
 
 void
-avtLegend::SetOrientation(LegendOrientation)
+avtLegend::SetOrientation(LegendOrientation o)
 {
-    // Do nothing
+    orientation = o;
 }
 
 // ****************************************************************************

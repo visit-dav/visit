@@ -102,6 +102,13 @@ vtkVerticalScalarBarWithOpacityActor::~vtkVerticalScalarBarWithOpacityActor()
 //    defined labels are specified and there are  are too many to fit in
 //    the available space.
 //
+//    Dave Bremer, Mon Oct 13 12:36:09 PDT 2008
+//    I added support for horizontal color bars, and fixed a bug that 
+//    made the bar a little short.
+//
+//    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
+//    Updated to handle vertical, text on left or right, and horizontal,
+//    text on top or bottom.
 // ****************************************************************************
 
 void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
@@ -136,7 +143,20 @@ void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
     barHeight = LastSize[1] - barOrigin;
     }
 
-  barWidth = (int) (this->BarWidth * viewSize[0]);
+  if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
+      Orientation == VERTICAL_TEXT_ON_LEFT)
+    {
+    barWidth = (int) (this->BarWidth * viewSize[0]);
+    }
+  else
+    {
+    //Subtract space for the tick marks and text, if horizontal.
+    int tickSpace = (int)(2*halfFontSize + 0.2*(barHeight-2*halfFontSize));
+    barHeight -= tickSpace;
+    if (Orientation == HORIZONTAL_TEXT_ON_BOTTOM)
+      barOrigin += tickSpace;
+    barWidth = this->LastSize[0];
+    }
 
   //
   // Determine the number of colors in the color bar.
@@ -145,8 +165,12 @@ void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
   if ( this->UseDefinedLabels && !this->definedLabels.empty() )
     {
     numColors = this->definedLabels.size();
-    if ((this->FontHeight * 1.1 * numColors * viewSize[1]) > barHeight)
-        numColors = (int) (barHeight / (this->FontHeight * 1.1 * viewSize[1]));
+    if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
+        Orientation == VERTICAL_TEXT_ON_LEFT)
+      {
+      if ((this->FontHeight * 1.1 * numColors * viewSize[1]) > barHeight)
+          numColors = (int) (barHeight / (this->FontHeight * 1.1 * viewSize[1]));
+      }
     numLabels = numColors;
     }
   else
@@ -177,15 +201,36 @@ void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
   //
   //polygons & cell colors for color bar
   //
-  float yval = barOrigin;
-  float delta = (float)barHeight/(float)numColors;
+  float xval = 0, yval = barOrigin;
+  float delta;
+  float alphaXi;
   float barWidthDiv2 = barWidth * 0.5;
+  float barHeightDiv2 = barHeight * 0.5;
+  float testVal;
+  if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
+      Orientation == VERTICAL_TEXT_ON_LEFT)
+  {
+      if (numColors > 1)
+          delta = (float)barHeight/(float)(numColors-1);
+      else
+          delta = (float)barHeight;
+      alphaXi = (float(opacities[0]) / 255.) * barWidthDiv2;
+      testVal = barWidthDiv2;
+  }
+  else
+  {
+      if (numColors > 1)
+          delta = (float)barWidth/(float)(numColors-1);
+      else
+          delta = (float)barWidth;
+      alphaXi = (float(opacities[0]) / 255.) * barHeightDiv2;
+      testVal = barHeightDiv2;
+  }
   float coord[3];
   coord[2] = 0.;
   int pointIndex = 0;
   int colorIndex = 0;
   int nextOpacityIndex = 0;
-  float alphaXi = (float(opacities[0]) / 255.) * barWidthDiv2;
   float alphaXnexti = 0;
 
   for (int i = 0; i < numColors; ++i)
@@ -210,25 +255,53 @@ void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
       }
 
       // Figure out the points for the opacity part of the legend.
-      alphaXnexti = (float(opacities[nextOpacityIndex]) / 255.) * barWidthDiv2;
-      coord[0] = 0.;
-      coord[1] = yval;
-      pts->SetPoint(pointIndex, coord);
-      ++pointIndex;
+      if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
+          Orientation == VERTICAL_TEXT_ON_LEFT)
+      {
+          double hOffset = 0;
+          if (Orientation == VERTICAL_TEXT_ON_LEFT)
+              hOffset = barWidth;
 
-      coord[0] = barWidthDiv2 - alphaXi;
-      coord[1] = yval;
-      pts->SetPoint(pointIndex, coord);
-      ++pointIndex;
+          alphaXnexti = (float(opacities[nextOpacityIndex]) / 255.) * barWidthDiv2;
 
-      coord[0] = barWidthDiv2;
-      coord[1] = yval;
-      pts->SetPoint(pointIndex, coord);
-      ++pointIndex;
+          coord[0] = hOffset;
+          coord[1] = yval;
+          pts->SetPoint(pointIndex, coord);
+          ++pointIndex;
+    
+          coord[0] = hOffset + barWidthDiv2 - alphaXi;
+          coord[1] = yval;
+          pts->SetPoint(pointIndex, coord);
+          ++pointIndex;
+    
+          coord[0] = hOffset + barWidthDiv2;
+          coord[1] = yval;
+          pts->SetPoint(pointIndex, coord);
+          ++pointIndex;
+      }
+      else
+      {
+          alphaXnexti = (float(opacities[nextOpacityIndex]) / 255.) * barHeightDiv2;
+
+          coord[0] = xval;
+          coord[1] = barOrigin + barHeight;
+          pts->SetPoint(pointIndex, coord);
+          ++pointIndex;
+    
+          coord[0] = xval;
+          coord[1] = barOrigin + barHeightDiv2 + alphaXi;
+          pts->SetPoint(pointIndex, coord);
+          ++pointIndex;
+    
+          coord[0] = xval;
+          coord[1] = barOrigin + barHeightDiv2;
+          pts->SetPoint(pointIndex, coord);
+          ++pointIndex;
+      }
 
       // Decide which (or both) opacity quads must be added.
       int addLeft = 1, addRight = 1;
-      if(alphaXi == barWidthDiv2 && alphaXnexti == barWidthDiv2)
+      if(alphaXi == testVal && alphaXnexti == testVal)
           addLeft = 0;
       else if(alphaXi == 0. && alphaXnexti == 0.)
           addRight = 0;
@@ -266,8 +339,21 @@ void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
       }
 
       // Add the coordinate for the color part of the legend.
-      coord[0] = barWidth;
-      coord[1] = yval;
+      if (Orientation == VERTICAL_TEXT_ON_RIGHT)
+      {
+          coord[0] = barWidth;
+          coord[1] = yval;
+      }
+      else if (Orientation == VERTICAL_TEXT_ON_LEFT)
+      {
+          coord[0] = barWidth*2;
+          coord[1] = yval;
+      }
+      else
+      {
+          coord[0] = xval;
+          coord[1] = barOrigin;
+      }
       pts->SetPoint(pointIndex, coord);
       ++pointIndex;
 
@@ -287,7 +373,8 @@ void vtkVerticalScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
           polys->InsertNextCell(4,ptIds);
       }
 
-      // Move to the next Y-value.
+      // Move to the next Y-value or X-value.
+      xval += delta;
       yval += delta;
       alphaXi = alphaXnexti;
 

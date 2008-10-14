@@ -102,6 +102,8 @@ class  vtkLookupTable;
 //    Brad Whitlock, Wed Mar 21 21:39:27 PST 2007
 //    Added some new methods for setting legend properties.
 //
+//    Dave Bremer, Mon Oct 13 12:36:09 PDT 2008
+//    Added SetNumberFormat()
 // ****************************************************************************
 
 class PLOTTER_API avtLevelsLegend : public avtLegend
@@ -122,6 +124,7 @@ class PLOTTER_API avtLevelsLegend : public avtLegend
     virtual void    SetBoundingBoxColor(const double *);
     virtual void    SetOrientation(LegendOrientation);
     virtual void    SetFont(int family, bool bold, bool italic, bool shadow);
+    virtual void    SetNumberFormat(const char *);
 
     void            SetColorBarVisibility(const int);
     void            SetRange(double min, double max);
