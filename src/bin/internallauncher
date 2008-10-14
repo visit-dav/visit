@@ -376,6 +376,9 @@ exec perl -x $0 ${1+"$@"};
 #    Eric Brugger, Fri Oct 10 16:25:17 PDT 2008
 #    Removed support for the switch type.
 #
+#    Tom Fogal, Tue Oct 14 12:36:16 MDT 2008
+#    Fixed the fullhelp for parallel hardware acceleration.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -524,22 +527,23 @@ $fullusage = "$usage
         Notes: These options should only be used with parallel clusters that
         have graphics cards.  If you are using a serial version of VisIt, you
         are already getting hardware acceleration and these options are not 
-        needed.  In addition, VisIt is only set up to have one processor per
-        node interface with the graphics card.  So it is important that you
-        specify parallel options with one processor per node.
+        needed.  Furthermore, you must be in scalable rendering mode for VisIt
+        to utilize a cluster's GPUs.  By default, VisIt is configured to
+        switch into scalable rendering mode when rendering complexity exceeds
+        a predefined limit.
 
-        The -hw-pre and -hw-post command are essentially for the case where
-        the X-server is not running and VisIt must start them using xinit.
-        Usage would look like: -hw-pre xinit -hw-post \"-- /usr/bin/X11/X\"
-        which would get translated into: xinit engine_par ... -- /usr/bin/X11/X
-        This allows xinit to start the engine and allows xinit to gracefully
-        exit when engine_par terminates.  In addition, the post-command is
-        the way to give arguments to xinit.
+        VisIt must manage the creation and teardown of X servers when the
+        number of GPUs per node exceeds one.  It will do this automatically,
+        though you may customize the procedure with the -x-args parameter.
+
+        See the VisIt wiki for more information:
+
+          http://visitusers.org/index.php?title=Parallel_Hardware_Acceleration
 
     ---------------------------------------------------------------------------
-        -hw-accel            Tells VisIt that it should use graphics cards
-        -hw-pre <string>     The command to launch an x-server
-        -hw-post <string>    The arguments for the command to launch an x-server
+        -hw-accel              Tells VisIt that it should use graphics cards.
+        -n-gpus-per-node <int> Number of GPUs per node of the cluster (1).
+        -x-args '<string>'     Extra arguments to X server.
 
     Load balance options
     ---------------------------------------------------------------------------
