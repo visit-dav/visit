@@ -194,6 +194,7 @@ vtkVerticalScalarBarActor::vtkVerticalScalarBarActor() : definedLabels(), define
   this->UseSkewScaling = 0;
   this->UseLogScaling = 0;
   this->ReverseOrder = 0;
+  this->Orientation = VERTICAL_TEXT_ON_RIGHT;
 }
 
 
@@ -1439,6 +1440,8 @@ void vtkVerticalScalarBarActor::PrintSelf(ostream& os, vtkIndent indent)
      << this->BoundingBoxColor[1] << ", "
      << this->BoundingBoxColor[2] << ", "
      << this->BoundingBoxColor[3] << "\n";
+
+  os << indent << "Orientation: " << this->Orientation << "\n";
 }
 
 void vtkVerticalScalarBarActor::SetDefinedLabels(const stringVector &labels)
