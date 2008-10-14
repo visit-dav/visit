@@ -86,6 +86,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define VTK_MAX_NUMLABELS     100
 
+#define VERTICAL_TEXT_ON_RIGHT     0
+#define VERTICAL_TEXT_ON_LEFT      1
+#define HORIZONTAL_TEXT_ON_TOP     2
+#define HORIZONTAL_TEXT_ON_BOTTOM  3
+
+
 typedef std::vector<std::string> stringVector;
 typedef std::vector<double> doubleVector;
 
@@ -113,6 +119,9 @@ typedef std::vector<double> doubleVector;
 //
 //    Hank Childs, Sat Mar  3 13:25:15 PST 2007
 //    Added method "ShouldCollapseDiscrete".
+//
+//    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
+//    Added Orientation member and accessors.
 //
 // ****************************************************************************
 
@@ -229,7 +238,8 @@ public:
   // Description:
   // Set/Get the format with which to print the labels on the scalar
   // bar.
-  vtkSetStringMacro(LabelFormat);
+  //vtkSetStringMacro(LabelFormat);
+  virtual void SetLabelFormat(const char *fmt);
   vtkGetStringMacro(LabelFormat);
 
   // Description:
@@ -318,6 +328,9 @@ public:
   vtkGetMacro(ReverseOrder, int);
   vtkBooleanMacro(ReverseOrder, int);
 
+  void SetOrientation(int);
+  int  GetOrientation(void);
+
 protected:
   vtkVerticalScalarBarActor();
   virtual ~vtkVerticalScalarBarActor();
@@ -353,6 +366,11 @@ protected:
   int ColorBarVisibility;
   int ReverseOrder;
   int BoundingBoxVisibility;
+  int Orientation;    // 4 possible values
+                      // 0:  vert, text on right
+                      // 1:  vert, text on left
+                      // 2:  horz, text on top
+                      // 3:  horz, text on bottom
 
   double BarWidth;
 
@@ -390,6 +408,7 @@ protected:
   int UseLogScaling;
   double SkewFactor;
   stringVector definedLabels;
+  doubleVector definedDoubleLabels;
   double *range;
   double *varRange;
 

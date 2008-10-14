@@ -90,6 +90,8 @@ class  vtkRenderer;
 //    Brad Whitlock, Tue Mar 20 16:49:18 PST 2007
 //    Added method to set/get some legend properties.
 //
+//    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
+//    Added orientation member
 // ****************************************************************************
 
 class PLOTTER_API  avtLegend
@@ -155,6 +157,7 @@ class PLOTTER_API  avtLegend
     char                         *varName;
     char                         *varUnits;
     char                         *message;
+    LegendOrientation             orientation;
 
     virtual void                  ChangePosition(double, double) = 0;
     virtual void                  ChangeTitle(const char *) = 0;

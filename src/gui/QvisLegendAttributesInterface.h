@@ -62,6 +62,8 @@ class QvisScreenPositionEdit;
 // Creation:   Wed Mar 21 09:18:40 PDT 2007
 //
 // Modifications:
+//    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
+//    Added orientationComboBox
 //   
 // ****************************************************************************
 
@@ -88,6 +90,7 @@ private slots:
     void positionChanged(double, double);
     void widthChanged(int);
     void heightChanged(int);
+    void orientationChanged(int);
     void textChanged();
     void fontHeightChanged();
     void textColorChanged(const QColor &);
@@ -108,6 +111,7 @@ private:
     QLabel                 *positionLabel;
     QSpinBox               *widthSpinBox;
     QSpinBox               *heightSpinBox;
+    QComboBox              *orientationComboBox;
     QNarrowLineEdit        *formatString;
     QNarrowLineEdit        *fontHeight;
     QLabel                 *textColorLabel;

@@ -92,6 +92,9 @@
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
+//    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
+//    Added orientationComboBox
+//
 // ****************************************************************************
 
 QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
@@ -101,7 +104,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
     this->setTitle(GetName());
 
     int row = 0;
-    QGridLayout *cLayout = new QGridLayout(topLayout, 11, 4);
+    QGridLayout *cLayout = new QGridLayout(topLayout, 12, 4);
     cLayout->setSpacing(10);
 
     // Add controls for the layout management.
@@ -138,6 +141,19 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
     cLayout->addWidget(heightSpinBox, row, 3);
     cLayout->addWidget(new QLabel(widthSpinBox, tr("Y-scale"),
         this), row, 2);
+    ++row;
+
+    // Add controls to set the orientation
+    orientationComboBox = new QComboBox(this, "orientationComboBox");
+    orientationComboBox->insertItem("Vertical, Text on Right",   0);
+    orientationComboBox->insertItem("Vertical, Text on Left",    1);
+    orientationComboBox->insertItem("Horizontal, Text on Top",   2);
+    orientationComboBox->insertItem("Horizontal, Text on Bottom",3);
+    orientationComboBox->setEditable(false);
+    connect(orientationComboBox, SIGNAL(activated(int)),
+            this, SLOT(orientationChanged(int)));
+    cLayout->addMultiCellWidget(orientationComboBox, row, row, 1, 3);
+    cLayout->addWidget(new QLabel(tr("Orientation"), this), row, 0);
     ++row;
 
     QFrame *splitter1 = new QFrame(this, "splitter");
@@ -362,6 +378,9 @@ QvisLegendAttributesInterface::SetBool(int bit, bool val)
 //   Brad Whitlock, Mon Mar 26 12:01:37 PDT 2007
 //   Added checkbox for turning off title.
 //
+//   Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
+//   Added orientationComboBox update
+//
 // ****************************************************************************
 
 void
@@ -389,6 +408,24 @@ QvisLegendAttributesInterface::UpdateControls()
     heightSpinBox->blockSignals(true);
     heightSpinBox->setValue(h);
     heightSpinBox->blockSignals(false);
+
+    // Set the orientation.  
+    orientationComboBox->blockSignals(true);
+    if (GetBool(LEGEND_ORIENTATION0))
+    {
+        if (GetBool(LEGEND_ORIENTATION1))
+            orientationComboBox->setCurrentItem(3);
+        else
+            orientationComboBox->setCurrentItem(2);
+    }
+    else
+    {
+        if (GetBool(LEGEND_ORIENTATION1))
+            orientationComboBox->setCurrentItem(1);
+        else
+            orientationComboBox->setCurrentItem(0);
+    }
+    orientationComboBox->blockSignals(false);
 
     //
     // Set the text color. If we're using the foreground color for the text
@@ -647,6 +684,32 @@ QvisLegendAttributesInterface::heightChanged(int h)
     pos2[1] = double(h) * (1. / WIDTH_HEIGHT_PRECISION);
     pos2[2] = annot->GetPosition2()[2];
     annot->SetPosition2(pos2);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisLegendAttributesInterface::orientationChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the orientation is changed.
+//
+// Arguments:
+//   orientation: an int acting as an enum, mapping to 
+//   enum avtLegend::LegendOrientation and the options in the combo box.
+//
+// Programmer: Dave Bremer
+// Creation:   Fri Oct  3 13:57:16 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisLegendAttributesInterface::orientationChanged(int orientation)
+{
+    SetBool(LEGEND_ORIENTATION0, (orientation==2 || orientation==3) );
+    SetBool(LEGEND_ORIENTATION1, (orientation==1 || orientation==3) );
     SetUpdate(false);
     Apply();
 }

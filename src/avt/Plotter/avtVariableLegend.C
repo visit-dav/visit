@@ -236,19 +236,33 @@ avtVariableLegend::~avtVariableLegend()
 //    Brad Whitlock, Wed Mar 21 11:49:05 PDT 2007
 //    Added scaling and prevented position2 from being set.
 //
+//    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
+//    Adjust computed size based on orientation.
+//
 // ****************************************************************************
 
 void
 avtVariableLegend::GetLegendSize(double, double &w, double &h)
 {
-    w = 0.08 * scale[0];
 
     if (barVisibility)
     {
-        h = 0.26 * scale[1];
+        if (orientation == VerticalTextOnRight ||
+            orientation == VerticalTextOnLeft) 
+        {
+            w = 0.08 * scale[0];
+            h = 0.26 * scale[1];
+        }
+        else
+        {
+            w = 0.26 * scale[0];
+            h = 0.14 * scale[1];
+        }
     }
     else
     {
+        w = 0.08 * scale[0];
+
         double nLines = 0.51;
 
         if (title != NULL)        nLines += 1.0;
@@ -469,13 +483,16 @@ avtVariableLegend::SetBoundingBoxColor(const double *color)
 // Creation:   Wed Mar 21 21:34:59 PST 2007
 //
 // Modifications:
+//    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
+//    Filled in this stub method.
 //   
 // ****************************************************************************
 
 void
-avtVariableLegend::SetOrientation(LegendOrientation)
+avtVariableLegend::SetOrientation(LegendOrientation l)
 {
-    debug1 << "avtVariableLegend::SetOrientation: NOT IMPLEMENTED" << endl;
+    avtLegend::SetOrientation(l);
+    sBar->SetOrientation(l);
 }
 
 // ****************************************************************************

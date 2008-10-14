@@ -241,6 +241,10 @@ VisWinAnnotations::UpdatePlotList(std::vector<avtActor_p> &p)
 // Creation:   Wed Mar 21 21:24:47 PST 2007
 //
 // Modifications:
+//    Dave Bremer, Wed Oct  8 11:36:27 PDT 2008
+//    Now, execute the code that applies attributes to a new legend before
+//    computing the legend's position, because the orientation attribute
+//    affects the legend's width and height.
 //   
 // ****************************************************************************
 
@@ -275,6 +279,10 @@ VisWinAnnotations::UpdateLegends()
         avtLegend_p legend = (*it)->GetLegend();
         if (*legend != NULL)
         {
+            
+            if(legend->GetCurrentlyDrawn() && annot != 0)
+                annot->CustomizeLegend(legend);
+
             // The legend was added to or removed in 
             // VisWinLegends::PositionLegends. Here we want to control the
             // layout and other legend attributes.
@@ -321,9 +329,6 @@ VisWinAnnotations::UpdateLegends()
                         legend->Remove();
                 }
             }
-
-            if(legend->GetCurrentlyDrawn() && annot != 0)
-                annot->CustomizeLegend(legend);
         }
     }
 }
