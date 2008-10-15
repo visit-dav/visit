@@ -58,6 +58,9 @@ for f in ${files} ; do
     # above logic doesn't catch.
     #
     case $f in
+        *.doc)
+            continue
+            ;;
         *.ini)
             continue
             ;;
