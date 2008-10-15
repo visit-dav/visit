@@ -597,6 +597,68 @@ SETGET_FLAG(DrawBoundingBox, LEGEND_DRAW_BOX)
 SETGET_FLAG(DrawLabels,      LEGEND_DRAW_LABELS)
 SETGET_FLAG(DrawTitle,       LEGEND_DRAW_TITLE)
 
+
+static PyObject *
+LegendAttributesObject_SetOrientation(PyObject *self, PyObject *args)
+{
+    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    if (strcmp(str, "VerticalRight")==0)
+    {
+        SetBool(obj->data, LEGEND_ORIENTATION0, 0);
+        SetBool(obj->data, LEGEND_ORIENTATION1, 0);
+    }
+    else if (strcmp(str, "VerticalLeft")==0)
+    {
+        SetBool(obj->data, LEGEND_ORIENTATION0, 0);
+        SetBool(obj->data, LEGEND_ORIENTATION1, 1);
+    }
+    else if (strcmp(str, "HorizontalTop")==0)
+    {
+        SetBool(obj->data, LEGEND_ORIENTATION0, 1);
+        SetBool(obj->data, LEGEND_ORIENTATION1, 0);
+    }
+    else if (strcmp(str, "HorizontalBottom")==0)
+    {
+        SetBool(obj->data, LEGEND_ORIENTATION0, 1);
+        SetBool(obj->data, LEGEND_ORIENTATION1, 1);
+    }
+    else
+        return NULL;
+
+    UpdateAnnotationHelper(obj->data);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+
+static PyObject *
+LegendAttributesObject_GetOrientation(PyObject *self, PyObject *args)
+{
+    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+
+    PyObject *retval = NULL;
+    int or0 = GetBool(obj->data, LEGEND_ORIENTATION0);
+    int or1 = GetBool(obj->data, LEGEND_ORIENTATION1);
+
+    if (!or0 && !or1)
+        retval = PyString_FromString("VerticalRight");
+    else if (!or0 && or1)
+        retval = PyString_FromString("VerticalLeft");
+    else if (or0 && !or1)
+        retval = PyString_FromString("HorizontalTop");
+    else if (or0 && or1)
+        retval = PyString_FromString("HorizontalBottom");
+
+    return retval;
+}
+
+
 static PyObject *
 LegendAttributesObject_Delete(PyObject *self, PyObject *args)
 {
@@ -641,6 +703,8 @@ static struct PyMethodDef LegendAttributesObject_methods[] = {
     {"GetDrawLabels", LegendAttributesObject_GetDrawLabels, METH_VARARGS},
     {"SetDrawTitle", LegendAttributesObject_SetDrawTitle, METH_VARARGS},
     {"GetDrawTitle", LegendAttributesObject_GetDrawTitle, METH_VARARGS},
+    {"SetOrientation", LegendAttributesObject_SetOrientation, METH_VARARGS},
+    {"GetOrientation", LegendAttributesObject_GetOrientation, METH_VARARGS},
     {"Delete", LegendAttributesObject_Delete, METH_VARARGS},
     {NULL, NULL}
 };
@@ -708,6 +772,8 @@ LegendAttributesObject_getattr(PyObject *self, char *name)
         return LegendAttributesObject_GetDrawLabels(self, NULL);
     if(strcmp(name, "drawTitle") == 0)
         return LegendAttributesObject_GetDrawTitle(self, NULL);
+    if(strcmp(name, "orientation") == 0)
+        return LegendAttributesObject_GetOrientation(self, NULL);
 
     return Py_FindMethod(LegendAttributesObject_methods, self, name);
 }
@@ -754,6 +820,8 @@ LegendAttributesObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (LegendAttributesObject_SetDrawLabels(self, tuple) != NULL);
     else if(strcmp(name, "drawTitle") == 0)
         retval = (LegendAttributesObject_SetDrawTitle(self, tuple) != NULL);
+    else if(strcmp(name, "orientation") == 0)
+        retval = (LegendAttributesObject_SetOrientation(self, tuple) != NULL);
 
     Py_DECREF(tuple);
     return retval ? 0 : -1;
@@ -818,6 +886,18 @@ LegendAttributesObject_print(PyObject *v, FILE *fp, int flags)
 
     fprintf(fp, "drawTitle = %d\n", 
         GetBool(obj->data, LEGEND_DRAW_TITLE)?1:0);
+
+    if (!GetBool(obj->data, LEGEND_ORIENTATION0))
+        if (!GetBool(obj->data, LEGEND_ORIENTATION1))
+            fprintf(fp, "orientation = VerticalRight\n"); 
+        else
+            fprintf(fp, "orientation = VerticalLeft\n"); 
+    else
+        if (!GetBool(obj->data, LEGEND_ORIENTATION1))
+            fprintf(fp, "orientation = HorizontalTop\n"); 
+        else
+            fprintf(fp, "orientation = HorizontalBottom\n"); 
+
 
     return 0;
 }
