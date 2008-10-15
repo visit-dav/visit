@@ -331,12 +331,37 @@ avtLegendAttributesColleague::ManageLayout(avtLegend_p legend) const
 //   Brad Whitlock, Mon Mar 26 13:47:55 PST 2007
 //   Added title visibility.
 //
+//   Dave Bremer, Wed Oct 15 16:37:37 PDT 2008
+//   I set the orientation first now, because it will affect the 
+//   call to legend->GetLegendSize()
 // ****************************************************************************
 
 void
 avtLegendAttributesColleague::CustomizeLegend(avtLegend_p legend)
 {
     const char *mName = "avtLegendAttributesColleague::CustomizeLegend: ";
+
+    // Set the legend orientation.
+    bool b0 = GetBool(atts,LEGEND_ORIENTATION0);
+    bool b1 = GetBool(atts,LEGEND_ORIENTATION1);
+    avtLegend::LegendOrientation orientation;
+    if(b0 == false)
+    {
+        // Vertical
+        if(b1 == false)
+            orientation = avtLegend::VerticalTextOnRight;
+        else
+            orientation = avtLegend::VerticalTextOnLeft;
+    }
+    else
+    {
+        // Horizontal
+        if(b1 == false)
+            orientation = avtLegend::HorizontalTextOnTop;
+        else
+            orientation = avtLegend::HorizontalTextOnBottom;
+    }
+    legend->SetOrientation(orientation);
 
     // If the layout for the legend is not being managed then set the legend
     // position here so we can position it where we want.
@@ -384,28 +409,6 @@ avtLegendAttributesColleague::CustomizeLegend(avtLegend_p legend)
     bboxColor[2] = double(atts.GetColor1().Blue()) / 255.;
     bboxColor[3] = double(atts.GetColor1().Alpha()) / 255.;
     legend->SetBoundingBoxColor(bboxColor);
-
-    // Set the legend orientation.
-    bool b0 = GetBool(atts,LEGEND_ORIENTATION0);
-    bool b1 = GetBool(atts,LEGEND_ORIENTATION1);
-    avtLegend::LegendOrientation orientation;
-    if(b0 == false)
-    {
-        // Vertical
-        if(b1 == false)
-            orientation = avtLegend::VerticalTextOnRight;
-        else
-            orientation = avtLegend::VerticalTextOnLeft;
-    }
-    else
-    {
-        // Horizontal
-        if(b1 == false)
-            orientation = avtLegend::HorizontalTextOnTop;
-        else
-            orientation = avtLegend::HorizontalTextOnBottom;
-    }
-    legend->SetOrientation(orientation);
 
     // Set the font properties.
     int family;
