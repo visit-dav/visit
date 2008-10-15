@@ -70,6 +70,10 @@ class vtkUnstructuredGrid;
 //    Brad Whitlock, Tue Jul 26 14:57:47 PST 2005
 //    Added expressions.
 //
+//    Jeremy Meredith, Wed Oct 15 12:07:59 EDT 2008
+//    Added support for cell-centered vars (through VARLOCATION).
+//    Renamed ParseNodes* to ParseArrays* to reflect this capability.
+//
 // ****************************************************************************
 
 class avtTecplotFileFormat : public avtSTMDFileFormat
@@ -93,8 +97,8 @@ class avtTecplotFileFormat : public avtSTMDFileFormat
     void        ParseBLOCK(int numI, int numJ, int numK);
     void        ParsePOINT(int numI, int numJ, int numK);
     void        PushBackToken(const std::string&);
-    vtkPoints  *ParseNodesBlock(int numNodes);
-    vtkPoints  *ParseNodesPoint(int numNodes);
+    vtkPoints  *ParseArraysBlock(int numNodes, int numElements);
+    vtkPoints  *ParseArraysPoint(int numNodes, int numElements);
     vtkUnstructuredGrid *ParseElements(int numElements, const std::string&);
 
   protected:
@@ -119,6 +123,7 @@ class avtTecplotFileFormat : public avtSTMDFileFormat
     int                       numTotalVars;
     std::vector<std::string>  variableNames;
     std::vector<std::string>  allVariableNames;
+    std::vector<int>          variableCellCentered;
     std::vector<std::string>  curveNames;
     std::map<std::string,int> curveIndices;
     std::vector<int>          curveDomains;
