@@ -228,14 +228,17 @@
 //    Brad Whitlock, Thu Dec 13 16:14:12 PST 2007
 //    Fixed plugin install name on MacOS X.
 //
-//   Hank Childs, Thu Jan 10 14:33:30 PST 2008
-//   Added filenames, specifiedFilenames.
+//    Hank Childs, Thu Jan 10 14:33:30 PST 2008
+//    Added filenames, specifiedFilenames.
 //
-//   Brad Whitlock, Thu Feb 28 16:54:23 PST 2008
-//   Made it use a base class.
+//    Brad Whitlock, Thu Feb 28 16:54:23 PST 2008
+//    Made it use a base class.
 //
 //    Mark C. Miller, Mon Aug 18 22:00:05 PDT 2008
 //    Replaced BZIP2_LIBS with ZLIB_LIB
+//
+//    Brad Whitlock, Wed Oct 15 14:27:59 PDT 2008
+//    Added support for additional Java source.
 //
 // ****************************************************************************
 
@@ -426,7 +429,13 @@ class MakefileGeneratorPlugin : public Plugin
 
             out << "" << endl;
             out << "" << endl;
-            out << "JAVASRC="<<atts->name<<".java" << endl;
+            out << "JAVASRC=";
+            if(customjfiles)
+            {
+                for(size_t i = 0; i < jfiles.size(); ++i)
+                    out << jfiles[i] << " ";
+            }
+            out << atts->name<<".java" << endl;
             out << "JAVAOBJ="<<visithome<<"/java/llnl/visit/operators/"<<atts->name<<".class" << endl;
             out << "JAVAPLUGINFLAGS=-d "<<visithome<<"/java -classpath " << visithome << "/java" << endl;  
 
@@ -624,7 +633,13 @@ class MakefileGeneratorPlugin : public Plugin
 
             out << "" << endl;
             out << "" << endl;
-            out << "JAVASRC="<<atts->name<<".java" << endl;
+            out << "JAVASRC=";
+            if(customjfiles)
+            {
+                for(size_t i = 0; i < jfiles.size(); ++i)
+                    out << jfiles[i] << " ";
+            }
+            out << atts->name<<".java" << endl;
             out << "JAVAOBJ="<<visithome<<"/java/llnl/visit/plots/"<<atts->name<<".class" << endl;
             out << "JAVAPLUGINFLAGS=-d "<<visithome<<"/java -classpath " << visithome << "/java" << endl;  
 

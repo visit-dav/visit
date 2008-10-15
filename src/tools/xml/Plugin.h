@@ -284,6 +284,14 @@ class Plugin : public PluginBase
             WriteValues(out, vwfiles, indent);
             WriteCloseTag(out, "Files", indent);
         }
+        if (customjfiles)
+        {
+            StartOpenTag(out, "Files", indent);
+            WriteTagAttr(out, "components", "J");
+            FinishOpenTag(out);
+            WriteValues(out, jfiles, indent);
+            WriteCloseTag(out, "Files", indent);
+        }
 
         if (atts)
             atts->SaveXML(out, indent);

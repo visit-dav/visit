@@ -41,10 +41,12 @@ package llnl.visit.plots;
 import llnl.visit.AttributeSubject;
 import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
+import llnl.visit.ColorControlPointList;
+import java.lang.Byte;
+import java.util.Vector;
 import llnl.visit.ColorAttribute;
 import llnl.visit.ColorAttributeList;
 import java.lang.Integer;
-import java.util.Vector;
 
 // ****************************************************************************
 // Class: WellBoreAttributes
@@ -79,8 +81,10 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
 
     public WellBoreAttributes()
     {
-        super(12);
+        super(15);
 
+        defaultPalette = new ColorControlPointList();
+        changedColors = new Vector();
         colorType = COLORINGMETHOD_COLORBYMULTIPLECOLORS;
         colorTableName = new String("Default");
         singleColor = new ColorAttribute(255, 0, 0);
@@ -91,15 +95,24 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
         wellLineWidth = 0;
         wellLineStyle = 0;
         legendFlag = true;
-        nWellBores = 10;
+        nWellBores = 0;
         wellBores = new Vector();
+        wellNames = new Vector();
     }
 
     public WellBoreAttributes(WellBoreAttributes obj)
     {
-        super(12);
+        super(15);
 
         int i;
+
+        defaultPalette = new ColorControlPointList(obj.defaultPalette);
+        changedColors = new Vector(obj.changedColors.size());
+        for(i = 0; i < obj.changedColors.size(); ++i)
+        {
+            Byte bv = (Byte)obj.changedColors.elementAt(i);
+            changedColors.addElement(new Byte(bv.byteValue()));
+        }
 
         colorType = obj.colorType;
         colorTableName = new String(obj.colorTableName);
@@ -118,6 +131,10 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
             Integer iv = (Integer)obj.wellBores.elementAt(i);
             wellBores.addElement(new Integer(iv.intValue()));
         }
+        wellNames = new Vector(obj.wellNames.size());
+        for(i = 0; i < obj.wellNames.size(); ++i)
+            wellNames.addElement(new String((String)obj.wellNames.elementAt(i)));
+
 
         SelectAll();
     }
@@ -135,8 +152,19 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
             Integer wellBores2 = (Integer)obj.wellBores.elementAt(i);
             wellBores_equal = wellBores1.equals(wellBores2);
         }
+        // Compare the elements in the wellNames vector.
+        boolean wellNames_equal = (obj.wellNames.size() == wellNames.size());
+        for(i = 0; (i < wellNames.size()) && wellNames_equal; ++i)
+        {
+            // Make references to String from Object.
+            String wellNames1 = (String)wellNames.elementAt(i);
+            String wellNames2 = (String)obj.wellNames.elementAt(i);
+            wellNames_equal = wellNames1.equals(wellNames2);
+        }
         // Create the return value
-        return ((colorType == obj.colorType) &&
+        return (true /* can ignore defaultPalette */ &&
+                true /* can ignore changedColors */ &&
+                (colorType == obj.colorType) &&
                 (colorTableName.equals(obj.colorTableName)) &&
                 (singleColor == obj.singleColor) &&
                 (multiColor.equals(obj.multiColor)) &&
@@ -147,126 +175,154 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
                 (wellLineStyle == obj.wellLineStyle) &&
                 (legendFlag == obj.legendFlag) &&
                 (nWellBores == obj.nWellBores) &&
-                wellBores_equal);
+                wellBores_equal &&
+                wellNames_equal);
     }
 
     public String GetName() { return "WellBore"; }
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
+    public void SetDefaultPalette(ColorControlPointList defaultPalette_)
+    {
+        defaultPalette = defaultPalette_;
+        Select(0);
+    }
+
+    public void SetChangedColors(Vector changedColors_)
+    {
+        changedColors = changedColors_;
+        Select(1);
+    }
+
     public void SetColorType(int colorType_)
     {
         colorType = colorType_;
-        Select(0);
+        Select(2);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(1);
+        Select(3);
     }
 
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
-        Select(2);
+        Select(4);
     }
 
     public void SetMultiColor(ColorAttributeList multiColor_)
     {
         multiColor = multiColor_;
-        Select(3);
+        Select(5);
     }
 
     public void SetDrawWellsAs(int drawWellsAs_)
     {
         drawWellsAs = drawWellsAs_;
-        Select(4);
+        Select(6);
     }
 
     public void SetWellCylinderQuality(int wellCylinderQuality_)
     {
         wellCylinderQuality = wellCylinderQuality_;
-        Select(5);
+        Select(7);
     }
 
     public void SetWellRadius(float wellRadius_)
     {
         wellRadius = wellRadius_;
-        Select(6);
+        Select(8);
     }
 
     public void SetWellLineWidth(int wellLineWidth_)
     {
         wellLineWidth = wellLineWidth_;
-        Select(7);
+        Select(9);
     }
 
     public void SetWellLineStyle(int wellLineStyle_)
     {
         wellLineStyle = wellLineStyle_;
-        Select(8);
+        Select(10);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(9);
+        Select(11);
     }
 
     public void SetNWellBores(int nWellBores_)
     {
         nWellBores = nWellBores_;
-        Select(10);
+        Select(12);
     }
 
     public void SetWellBores(Vector wellBores_)
     {
         wellBores = wellBores_;
-        Select(11);
+        Select(13);
+    }
+
+    public void SetWellNames(Vector wellNames_)
+    {
+        wellNames = wellNames_;
+        Select(14);
     }
 
     // Property getting methods
-    public int                GetColorType() { return colorType; }
-    public String             GetColorTableName() { return colorTableName; }
-    public ColorAttribute     GetSingleColor() { return singleColor; }
-    public ColorAttributeList GetMultiColor() { return multiColor; }
-    public int                GetDrawWellsAs() { return drawWellsAs; }
-    public int                GetWellCylinderQuality() { return wellCylinderQuality; }
-    public float              GetWellRadius() { return wellRadius; }
-    public int                GetWellLineWidth() { return wellLineWidth; }
-    public int                GetWellLineStyle() { return wellLineStyle; }
-    public boolean            GetLegendFlag() { return legendFlag; }
-    public int                GetNWellBores() { return nWellBores; }
-    public Vector             GetWellBores() { return wellBores; }
+    public ColorControlPointList GetDefaultPalette() { return defaultPalette; }
+    public Vector                GetChangedColors() { return changedColors; }
+    public int                   GetColorType() { return colorType; }
+    public String                GetColorTableName() { return colorTableName; }
+    public ColorAttribute        GetSingleColor() { return singleColor; }
+    public ColorAttributeList    GetMultiColor() { return multiColor; }
+    public int                   GetDrawWellsAs() { return drawWellsAs; }
+    public int                   GetWellCylinderQuality() { return wellCylinderQuality; }
+    public float                 GetWellRadius() { return wellRadius; }
+    public int                   GetWellLineWidth() { return wellLineWidth; }
+    public int                   GetWellLineStyle() { return wellLineStyle; }
+    public boolean               GetLegendFlag() { return legendFlag; }
+    public int                   GetNWellBores() { return nWellBores; }
+    public Vector                GetWellBores() { return wellBores; }
+    public Vector                GetWellNames() { return wellNames; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteInt(colorType);
+            defaultPalette.Write(buf);
         if(WriteSelect(1, buf))
-            buf.WriteString(colorTableName);
+            buf.WriteByteVector(changedColors);
         if(WriteSelect(2, buf))
-            singleColor.Write(buf);
+            buf.WriteInt(colorType);
         if(WriteSelect(3, buf))
-            multiColor.Write(buf);
+            buf.WriteString(colorTableName);
         if(WriteSelect(4, buf))
-            buf.WriteInt(drawWellsAs);
+            singleColor.Write(buf);
         if(WriteSelect(5, buf))
-            buf.WriteInt(wellCylinderQuality);
+            multiColor.Write(buf);
         if(WriteSelect(6, buf))
-            buf.WriteFloat(wellRadius);
+            buf.WriteInt(drawWellsAs);
         if(WriteSelect(7, buf))
-            buf.WriteInt(wellLineWidth);
+            buf.WriteInt(wellCylinderQuality);
         if(WriteSelect(8, buf))
-            buf.WriteInt(wellLineStyle);
+            buf.WriteFloat(wellRadius);
         if(WriteSelect(9, buf))
-            buf.WriteBool(legendFlag);
+            buf.WriteInt(wellLineWidth);
         if(WriteSelect(10, buf))
-            buf.WriteInt(nWellBores);
+            buf.WriteInt(wellLineStyle);
         if(WriteSelect(11, buf))
+            buf.WriteBool(legendFlag);
+        if(WriteSelect(12, buf))
+            buf.WriteInt(nWellBores);
+        if(WriteSelect(13, buf))
             buf.WriteIntVector(wellBores);
+        if(WriteSelect(14, buf))
+            buf.WriteStringVector(wellNames);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -277,42 +333,52 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
             switch(index)
             {
             case 0:
-                SetColorType(buf.ReadInt());
+                defaultPalette.Read(buf);
+                Select(0);
                 break;
             case 1:
-                SetColorTableName(buf.ReadString());
+                SetChangedColors(buf.ReadByteVector());
                 break;
             case 2:
-                singleColor.Read(buf);
-                Select(2);
+                SetColorType(buf.ReadInt());
                 break;
             case 3:
-                multiColor.Read(buf);
-                Select(3);
+                SetColorTableName(buf.ReadString());
                 break;
             case 4:
-                SetDrawWellsAs(buf.ReadInt());
+                singleColor.Read(buf);
+                Select(4);
                 break;
             case 5:
-                SetWellCylinderQuality(buf.ReadInt());
+                multiColor.Read(buf);
+                Select(5);
                 break;
             case 6:
-                SetWellRadius(buf.ReadFloat());
+                SetDrawWellsAs(buf.ReadInt());
                 break;
             case 7:
-                SetWellLineWidth(buf.ReadInt());
+                SetWellCylinderQuality(buf.ReadInt());
                 break;
             case 8:
-                SetWellLineStyle(buf.ReadInt());
+                SetWellRadius(buf.ReadFloat());
                 break;
             case 9:
-                SetLegendFlag(buf.ReadBool());
+                SetWellLineWidth(buf.ReadInt());
                 break;
             case 10:
-                SetNWellBores(buf.ReadInt());
+                SetWellLineStyle(buf.ReadInt());
                 break;
             case 11:
+                SetLegendFlag(buf.ReadBool());
+                break;
+            case 12:
+                SetNWellBores(buf.ReadInt());
+                break;
+            case 13:
                 SetWellBores(buf.ReadIntVector());
+                break;
+            case 14:
+                SetWellNames(buf.ReadStringVector());
                 break;
             }
         }
@@ -321,6 +387,8 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
     public String toString(String indent)
     {
         String str = new String();
+        str = str + indent + "defaultPalette = {\n" + defaultPalette.toString(indent + "    ") + indent + "}\n";
+        str = str + ucharVectorToString("changedColors", changedColors, indent) + "\n";
         str = str + indent + "colorType = ";
         if(colorType == COLORINGMETHOD_COLORBYSINGLECOLOR)
             str = str + "COLORINGMETHOD_COLORBYSINGLECOLOR";
@@ -354,22 +422,26 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         str = str + intToString("nWellBores", nWellBores, indent) + "\n";
         str = str + intVectorToString("wellBores", wellBores, indent) + "\n";
+        str = str + stringVectorToString("wellNames", wellNames, indent) + "\n";
         return str;
     }
 
 
     // Attributes
-    private int                colorType;
-    private String             colorTableName;
-    private ColorAttribute     singleColor;
-    private ColorAttributeList multiColor;
-    private int                drawWellsAs;
-    private int                wellCylinderQuality;
-    private float              wellRadius;
-    private int                wellLineWidth;
-    private int                wellLineStyle;
-    private boolean            legendFlag;
-    private int                nWellBores;
-    private Vector             wellBores; // vector of Integer objects
+    private ColorControlPointList defaultPalette;
+    private Vector                changedColors; // vector of Byte objects
+    private int                   colorType;
+    private String                colorTableName;
+    private ColorAttribute        singleColor;
+    private ColorAttributeList    multiColor;
+    private int                   drawWellsAs;
+    private int                   wellCylinderQuality;
+    private float                 wellRadius;
+    private int                   wellLineWidth;
+    private int                   wellLineStyle;
+    private boolean               legendFlag;
+    private int                   nWellBores;
+    private Vector                wellBores; // vector of Integer objects
+    private Vector                wellNames; // vector of String objects
 }
 

@@ -42,6 +42,9 @@
     <Files components="W">
       $(SLIVR_GUI_HDR)
     </Files>
+    <Files components="J">
+      TransferFunctionWidget.java
+    </Files>
     <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="VolumeAttributes.code">
       <Enum name="Renderer">
         Splatting

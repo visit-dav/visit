@@ -67,7 +67,10 @@
 // Modifications:
 //    Jeremy Meredith, Thu Aug  7 14:55:48 EDT 2008
 //    Use const char * for string literals.
-//   
+//
+//    Brad Whitlock, Wed Oct 15 14:20:36 PDT 2008
+//    Added support for custom Java files.
+//
 // ****************************************************************************
 
 class PluginBase
@@ -109,6 +112,8 @@ public:
     std::vector<QString> wfiles;     // widgets
     bool customvwfiles;
     std::vector<QString> vwfiles;    // viewer widgets
+    bool customjfiles;
+    std::vector<QString> jfiles;     // Java code
 
 public:
     PluginBase(const QString &n,const QString &l,const QString &t,
@@ -143,7 +148,9 @@ public:
           customwfiles(false),
           wfiles(),
           customvwfiles(false),
-          vwfiles()
+          vwfiles(),
+          customjfiles(false),
+          jfiles()
     {
     }
 
