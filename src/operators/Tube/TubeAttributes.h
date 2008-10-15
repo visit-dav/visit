@@ -38,6 +38,7 @@
 
 #ifndef TUBEATTRIBUTES_H
 #define TUBEATTRIBUTES_H
+#include <string>
 #include <AttributeSubject.h>
 
 // ****************************************************************************
@@ -73,16 +74,22 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectScaleVariable();
 
     // Property setting methods
+    void SetScaleByVarFlag(bool scaleByVarFlag_);
     void SetWidth(float width_);
+    void SetScaleVariable(const std::string &scaleVariable_);
     void SetFineness(int fineness_);
     void SetCapping(bool capping_);
 
     // Property getting methods
-    float GetWidth() const;
-    int   GetFineness() const;
-    bool  GetCapping() const;
+    bool              GetScaleByVarFlag() const;
+    float             GetWidth() const;
+    const std::string &GetScaleVariable() const;
+          std::string &GetScaleVariable();
+    int               GetFineness() const;
+    bool              GetCapping() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -98,15 +105,19 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_width = 0,
+        ID_scaleByVarFlag = 0,
+        ID_width,
+        ID_scaleVariable,
         ID_fineness,
         ID_capping
     };
 
 private:
-    float width;
-    int   fineness;
-    bool  capping;
+    bool        scaleByVarFlag;
+    float       width;
+    std::string scaleVariable;
+    int         fineness;
+    bool        capping;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

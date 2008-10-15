@@ -108,6 +108,10 @@ avtTubeFilter::Create()
 //  Programmer:  childs<generated>
 //  Creation:    August28,2001
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Oct 15 15:51:39 EDT 2008
+//    Added support for scaling by a variable.
+//
 // ****************************************************************************
 
 void
@@ -167,6 +171,12 @@ avtTubeFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Wed May 30 16:34:42 PDT 2007
 //    Allow for unstructured grids to also be processed.
 //
+//    Jeremy Meredith, Wed Oct 15 15:58:15 EDT 2008
+//    Added support for scaling by a variable.  Note that our
+//    vtkConnectedTubeFilter does not yet support this at all, and 
+//    the VTK one is limited to nodal variables.  This should be
+//    cleaned up if we make this operator visible by default.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -218,7 +228,10 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         tube->SetInput((vtkPolyData*)in_ds);
     }
 
-    if (tube->BuildConnectivityArrays())
+    // Note -- if we're scaling by a variable, our vtkConnectedTubeFilter
+    // doesn't yet support this, so fall back to the old VTK one.
+    if (atts.GetScaleByVarFlag()==false &&
+        tube->BuildConnectivityArrays())
     {
         tube->SetRadius(atts.GetWidth());
         tube->CreateNormalsOn();
@@ -232,7 +245,10 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         // Use the vtkCleanPolyData filter to make sure it is in a good
         // format.
         vtktube->SetInput(cpd->GetOutput());
-        vtktube->SetVaryRadius(VTK_VARY_RADIUS_OFF);
+        if (atts.GetScaleByVarFlag())
+            vtktube->SetVaryRadius(VTK_VARY_RADIUS_BY_ABSOLUTE_SCALAR);
+        else
+            vtktube->SetVaryRadius(VTK_VARY_RADIUS_OFF);
         vtktube->SetRadius(atts.GetWidth());
         vtktube->SetUseDefaultNormal(1);
         vtktube->SetDefaultNormal(0.001, 0.001, 0.001);

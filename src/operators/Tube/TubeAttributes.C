@@ -40,7 +40,7 @@
 #include <DataNode.h>
 
 // Type map format string
-const char *TubeAttributes::TypeMapFormatString = "fib";
+const char *TubeAttributes::TypeMapFormatString = "bfsib";
 
 // ****************************************************************************
 // Method: TubeAttributes::TubeAttributes
@@ -58,8 +58,10 @@ const char *TubeAttributes::TypeMapFormatString = "fib";
 // ****************************************************************************
 
 TubeAttributes::TubeAttributes() : 
-    AttributeSubject(TubeAttributes::TypeMapFormatString)
+    AttributeSubject(TubeAttributes::TypeMapFormatString),
+    scaleVariable("default")
 {
+    scaleByVarFlag = false;
     width = 0.5;
     fineness = 3;
     capping = false;
@@ -83,7 +85,9 @@ TubeAttributes::TubeAttributes() :
 TubeAttributes::TubeAttributes(const TubeAttributes &obj) : 
     AttributeSubject(TubeAttributes::TypeMapFormatString)
 {
+    scaleByVarFlag = obj.scaleByVarFlag;
     width = obj.width;
+    scaleVariable = obj.scaleVariable;
     fineness = obj.fineness;
     capping = obj.capping;
 
@@ -129,7 +133,9 @@ TubeAttributes&
 TubeAttributes::operator = (const TubeAttributes &obj)
 {
     if (this == &obj) return *this;
+    scaleByVarFlag = obj.scaleByVarFlag;
     width = obj.width;
+    scaleVariable = obj.scaleVariable;
     fineness = obj.fineness;
     capping = obj.capping;
 
@@ -156,7 +162,9 @@ bool
 TubeAttributes::operator == (const TubeAttributes &obj) const
 {
     // Create the return value
-    return ((width == obj.width) &&
+    return ((scaleByVarFlag == obj.scaleByVarFlag) &&
+            (width == obj.width) &&
+            (scaleVariable == obj.scaleVariable) &&
             (fineness == obj.fineness) &&
             (capping == obj.capping));
 }
@@ -302,9 +310,11 @@ TubeAttributes::NewInstance(bool copy) const
 void
 TubeAttributes::SelectAll()
 {
-    Select(ID_width,    (void *)&width);
-    Select(ID_fineness, (void *)&fineness);
-    Select(ID_capping,  (void *)&capping);
+    Select(ID_scaleByVarFlag, (void *)&scaleByVarFlag);
+    Select(ID_width,          (void *)&width);
+    Select(ID_scaleVariable,  (void *)&scaleVariable);
+    Select(ID_fineness,       (void *)&fineness);
+    Select(ID_capping,        (void *)&capping);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -337,10 +347,22 @@ TubeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     // Create a node for TubeAttributes.
     DataNode *node = new DataNode("TubeAttributes");
 
+    if(completeSave || !FieldsEqual(ID_scaleByVarFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("scaleByVarFlag", scaleByVarFlag));
+    }
+
     if(completeSave || !FieldsEqual(ID_width, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("width", width));
+    }
+
+    if(completeSave || !FieldsEqual(ID_scaleVariable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("scaleVariable", scaleVariable));
     }
 
     if(completeSave || !FieldsEqual(ID_fineness, &defaultObject))
@@ -391,8 +413,12 @@ TubeAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
+    if((node = searchNode->GetNode("scaleByVarFlag")) != 0)
+        SetScaleByVarFlag(node->AsBool());
     if((node = searchNode->GetNode("width")) != 0)
         SetWidth(node->AsFloat());
+    if((node = searchNode->GetNode("scaleVariable")) != 0)
+        SetScaleVariable(node->AsString());
     if((node = searchNode->GetNode("fineness")) != 0)
         SetFineness(node->AsInt());
     if((node = searchNode->GetNode("capping")) != 0)
@@ -404,10 +430,24 @@ TubeAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
+TubeAttributes::SetScaleByVarFlag(bool scaleByVarFlag_)
+{
+    scaleByVarFlag = scaleByVarFlag_;
+    Select(ID_scaleByVarFlag, (void *)&scaleByVarFlag);
+}
+
+void
 TubeAttributes::SetWidth(float width_)
 {
     width = width_;
     Select(ID_width, (void *)&width);
+}
+
+void
+TubeAttributes::SetScaleVariable(const std::string &scaleVariable_)
+{
+    scaleVariable = scaleVariable_;
+    Select(ID_scaleVariable, (void *)&scaleVariable);
 }
 
 void
@@ -428,10 +468,28 @@ TubeAttributes::SetCapping(bool capping_)
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
 
+bool
+TubeAttributes::GetScaleByVarFlag() const
+{
+    return scaleByVarFlag;
+}
+
 float
 TubeAttributes::GetWidth() const
 {
     return width;
+}
+
+const std::string &
+TubeAttributes::GetScaleVariable() const
+{
+    return scaleVariable;
+}
+
+std::string &
+TubeAttributes::GetScaleVariable()
+{
+    return scaleVariable;
 }
 
 int
@@ -444,6 +502,16 @@ bool
 TubeAttributes::GetCapping() const
 {
     return capping;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Select property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+TubeAttributes::SelectScaleVariable()
+{
+    Select(ID_scaleVariable, (void *)&scaleVariable);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -470,9 +538,11 @@ TubeAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_width:    return "width";
-    case ID_fineness: return "fineness";
-    case ID_capping:  return "capping";
+    case ID_scaleByVarFlag: return "scaleByVarFlag";
+    case ID_width:          return "width";
+    case ID_scaleVariable:  return "scaleVariable";
+    case ID_fineness:       return "fineness";
+    case ID_capping:        return "capping";
     default:  return "invalid index";
     }
 }
@@ -497,9 +567,11 @@ TubeAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_width:    return FieldType_float;
-    case ID_fineness: return FieldType_int;
-    case ID_capping:  return FieldType_bool;
+    case ID_scaleByVarFlag: return FieldType_bool;
+    case ID_width:          return FieldType_float;
+    case ID_scaleVariable:  return FieldType_variablename;
+    case ID_fineness:       return FieldType_int;
+    case ID_capping:        return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -524,9 +596,11 @@ TubeAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_width:    return "float";
-    case ID_fineness: return "int";
-    case ID_capping:  return "bool";
+    case ID_scaleByVarFlag: return "bool";
+    case ID_width:          return "float";
+    case ID_scaleVariable:  return "variablename";
+    case ID_fineness:       return "int";
+    case ID_capping:        return "bool";
     default:  return "invalid index";
     }
 }
@@ -553,9 +627,19 @@ TubeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
+    case ID_scaleByVarFlag:
+        {  // new scope
+        retval = (scaleByVarFlag == obj.scaleByVarFlag);
+        }
+        break;
     case ID_width:
         {  // new scope
         retval = (width == obj.width);
+        }
+        break;
+    case ID_scaleVariable:
+        {  // new scope
+        retval = (scaleVariable == obj.scaleVariable);
         }
         break;
     case ID_fineness:
