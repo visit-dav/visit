@@ -61,18 +61,22 @@ public class TubeAttributes extends AttributeSubject implements Plugin
 {
     public TubeAttributes()
     {
-        super(3);
+        super(5);
 
+        scaleByVarFlag = false;
         width = 0.5f;
+        scaleVariable = new String("");
         fineness = 3;
         capping = false;
     }
 
     public TubeAttributes(TubeAttributes obj)
     {
-        super(3);
+        super(5);
 
+        scaleByVarFlag = obj.scaleByVarFlag;
         width = obj.width;
+        scaleVariable = new String(obj.scaleVariable);
         fineness = obj.fineness;
         capping = obj.capping;
 
@@ -82,7 +86,9 @@ public class TubeAttributes extends AttributeSubject implements Plugin
     public boolean equals(TubeAttributes obj)
     {
         // Create the return value
-        return ((width == obj.width) &&
+        return ((scaleByVarFlag == obj.scaleByVarFlag) &&
+                (width == obj.width) &&
+                (scaleVariable.equals(obj.scaleVariable)) &&
                 (fineness == obj.fineness) &&
                 (capping == obj.capping));
     }
@@ -91,26 +97,40 @@ public class TubeAttributes extends AttributeSubject implements Plugin
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
+    public void SetScaleByVarFlag(boolean scaleByVarFlag_)
+    {
+        scaleByVarFlag = scaleByVarFlag_;
+        Select(0);
+    }
+
     public void SetWidth(float width_)
     {
         width = width_;
-        Select(0);
+        Select(1);
+    }
+
+    public void SetScaleVariable(String scaleVariable_)
+    {
+        scaleVariable = scaleVariable_;
+        Select(2);
     }
 
     public void SetFineness(int fineness_)
     {
         fineness = fineness_;
-        Select(1);
+        Select(3);
     }
 
     public void SetCapping(boolean capping_)
     {
         capping = capping_;
-        Select(2);
+        Select(4);
     }
 
     // Property getting methods
+    public boolean GetScaleByVarFlag() { return scaleByVarFlag; }
     public float   GetWidth() { return width; }
+    public String  GetScaleVariable() { return scaleVariable; }
     public int     GetFineness() { return fineness; }
     public boolean GetCapping() { return capping; }
 
@@ -118,10 +138,14 @@ public class TubeAttributes extends AttributeSubject implements Plugin
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteFloat(width);
+            buf.WriteBool(scaleByVarFlag);
         if(WriteSelect(1, buf))
-            buf.WriteInt(fineness);
+            buf.WriteFloat(width);
         if(WriteSelect(2, buf))
+            buf.WriteString(scaleVariable);
+        if(WriteSelect(3, buf))
+            buf.WriteInt(fineness);
+        if(WriteSelect(4, buf))
             buf.WriteBool(capping);
     }
 
@@ -133,12 +157,18 @@ public class TubeAttributes extends AttributeSubject implements Plugin
             switch(index)
             {
             case 0:
-                SetWidth(buf.ReadFloat());
+                SetScaleByVarFlag(buf.ReadBool());
                 break;
             case 1:
-                SetFineness(buf.ReadInt());
+                SetWidth(buf.ReadFloat());
                 break;
             case 2:
+                SetScaleVariable(buf.ReadString());
+                break;
+            case 3:
+                SetFineness(buf.ReadInt());
+                break;
+            case 4:
                 SetCapping(buf.ReadBool());
                 break;
             }
@@ -148,7 +178,9 @@ public class TubeAttributes extends AttributeSubject implements Plugin
     public String toString(String indent)
     {
         String str = new String();
+        str = str + boolToString("scaleByVarFlag", scaleByVarFlag, indent) + "\n";
         str = str + floatToString("width", width, indent) + "\n";
+        str = str + stringToString("scaleVariable", scaleVariable, indent) + "\n";
         str = str + intToString("fineness", fineness, indent) + "\n";
         str = str + boolToString("capping", capping, indent) + "\n";
         return str;
@@ -156,7 +188,9 @@ public class TubeAttributes extends AttributeSubject implements Plugin
 
 
     // Attributes
+    private boolean scaleByVarFlag;
     private float   width;
+    private String  scaleVariable;
     private int     fineness;
     private boolean capping;
 }

@@ -457,6 +457,11 @@ bool vtkConnectedTubeFilter::BuildConnectivityArrays()
 //    Hank Childs, Mon Apr  7 10:02:31 PDT 2003
 //    Allocate memory for points, because VTK does not do that for you.
 //
+//    Jeremy Meredith, Wed Oct 15 15:56:34 EDT 2008
+//    It appears we were creating the tube points incorrectly (creating
+//    degenerate polys between 360 and 0 degrees) by partitioning into
+//    npts-1 sides, instead of npts sides.  Fixed that.
+//
 // ****************************************************************************
 void vtkConnectedTubeFilter::Execute()
 {
@@ -563,7 +568,7 @@ void vtkConnectedTubeFilter::Execute()
 
             for (int j = 0 ; j < NumberOfSides ; j++)
             {
-                float q = (j * 2. * vtkMath::Pi()) / float(NumberOfSides-1);
+                float q = (j * 2. * vtkMath::Pi()) / float(NumberOfSides);
                 float sq = sin(q);
                 float cq = cos(q);
                 float normal[3] = { v1[0]*cq + v2[0]*sq,

@@ -1,8 +1,13 @@
 <?xml version="1.0"?>
-  <Plugin name="Tube" type="operator" label="Tube" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="Tube.xpm">
-    <Attribute name="TubeAttributes" purpose="This class contains attributes for the tube operator." persistent="true">
-      <Field name="width" label="width" type="float">
+  <Plugin name="Tube" type="operator" label="Tube" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Tube.xpm">
+    <Attribute name="TubeAttributes" purpose="This class contains attributes for the tube operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Field name="scaleByVarFlag" label="Scale width by variable?  (Nodal)" type="bool">
+        false
+      </Field>
+      <Field name="width" label="Tube width (fixed)" type="float" enabler="scaleByVarFlag:false">
         0.500000
+      </Field>
+      <Field name="scaleVariable" label="Tube width scaling variable" type="variablename" enabler="scaleByVarFlag:true" vartypes="01000000000">
       </Field>
       <Field name="fineness" label="Fineness of tube" type="int">
         3
