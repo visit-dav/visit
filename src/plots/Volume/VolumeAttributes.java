@@ -43,6 +43,8 @@ import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
 import llnl.visit.ColorControlPointList;
 import llnl.visit.GaussianControlPointList;
+import java.util.Vector;
+import llnl.visit.TransferFunctionWidget;
 
 // ****************************************************************************
 // Class: VolumeAttributes
@@ -81,7 +83,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
 
     public VolumeAttributes()
     {
-        super(26);
+        super(28);
 
         legendFlag = true;
         lightingFlag = true;
@@ -111,11 +113,13 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         skewFactor = 1;
         sampling = SAMPLINGTYPE_RASTERIZATION;
         rendererSamples = 3f;
+        TransferFunctionWidgetList = new Vector();
+        transferFunctionDim = 0;
     }
 
     public VolumeAttributes(VolumeAttributes obj)
     {
-        super(26);
+        super(28);
 
         int i;
 
@@ -148,6 +152,15 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         skewFactor = obj.skewFactor;
         sampling = obj.sampling;
         rendererSamples = obj.rendererSamples;
+        // *** Copy the TransferFunctionWidgetList field ***
+        TransferFunctionWidgetList = new Vector(obj.TransferFunctionWidgetList.size());
+        for(i = 0; i < obj.TransferFunctionWidgetList.size(); ++i)
+        {
+            TransferFunctionWidget newObj = (TransferFunctionWidget)TransferFunctionWidgetList.elementAt(i);
+            TransferFunctionWidgetList.addElement(new TransferFunctionWidget(newObj));
+        }
+
+        transferFunctionDim = obj.transferFunctionDim;
 
         SelectAll();
     }
@@ -161,6 +174,15 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         for(i = 0; i < 256 && freeformOpacity_equal; ++i)
             freeformOpacity_equal = (freeformOpacity[i] == obj.freeformOpacity[i]);
 
+        // Compare the elements in the TransferFunctionWidgetList vector.
+        boolean TransferFunctionWidgetList_equal = (obj.TransferFunctionWidgetList.size() == TransferFunctionWidgetList.size());
+        for(i = 0; (i < TransferFunctionWidgetList.size()) && TransferFunctionWidgetList_equal; ++i)
+        {
+            // Make references to TransferFunctionWidget from Object.
+            TransferFunctionWidget TransferFunctionWidgetList1 = (TransferFunctionWidget)TransferFunctionWidgetList.elementAt(i);
+            TransferFunctionWidget TransferFunctionWidgetList2 = (TransferFunctionWidget)obj.TransferFunctionWidgetList.elementAt(i);
+            TransferFunctionWidgetList_equal = TransferFunctionWidgetList1.equals(TransferFunctionWidgetList2);
+        }
         // Create the return value
         return ((legendFlag == obj.legendFlag) &&
                 (lightingFlag == obj.lightingFlag) &&
@@ -187,7 +209,9 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                 (scaling == obj.scaling) &&
                 (skewFactor == obj.skewFactor) &&
                 (sampling == obj.sampling) &&
-                (rendererSamples == obj.rendererSamples));
+                (rendererSamples == obj.rendererSamples) &&
+                TransferFunctionWidgetList_equal &&
+                (transferFunctionDim == obj.transferFunctionDim));
     }
 
     public String GetName() { return "Volume"; }
@@ -351,6 +375,12 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         Select(25);
     }
 
+    public void SetTransferFunctionDim(int transferFunctionDim_)
+    {
+        transferFunctionDim = transferFunctionDim_;
+        Select(27);
+    }
+
     // Property getting methods
     public boolean                  GetLegendFlag() { return legendFlag; }
     public boolean                  GetLightingFlag() { return lightingFlag; }
@@ -378,6 +408,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public double                   GetSkewFactor() { return skewFactor; }
     public int                      GetSampling() { return sampling; }
     public float                    GetRendererSamples() { return rendererSamples; }
+    public Vector                   GetTransferFunctionWidgetList() { return TransferFunctionWidgetList; }
+    public int                      GetTransferFunctionDim() { return transferFunctionDim; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -434,6 +466,17 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             buf.WriteInt(sampling);
         if(WriteSelect(25, buf))
             buf.WriteFloat(rendererSamples);
+        if(WriteSelect(26, buf))
+        {
+            buf.WriteInt(TransferFunctionWidgetList.size());
+            for(int i = 0; i < TransferFunctionWidgetList.size(); ++i)
+            {
+                TransferFunctionWidget tmp = (TransferFunctionWidget)TransferFunctionWidgetList.elementAt(i);
+                tmp.Write(buf);
+            }
+        }
+        if(WriteSelect(27, buf))
+            buf.WriteInt(transferFunctionDim);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -523,6 +566,22 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             case 25:
                 SetRendererSamples(buf.ReadFloat());
                 break;
+            case 26:
+                {
+                    int len = buf.ReadInt();
+                    TransferFunctionWidgetList.clear();
+                    for(int j = 0; j < len; ++j)
+                    {
+                        TransferFunctionWidget tmp = new TransferFunctionWidget();
+                        tmp.Read(buf);
+                        TransferFunctionWidgetList.addElement(tmp);
+                    }
+                }
+                Select(26);
+                break;
+            case 27:
+                SetTransferFunctionDim(buf.ReadInt());
+                break;
             }
         }
     }
@@ -584,7 +643,51 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             str = str + "SAMPLINGTYPE_RASTERIZATION";
         str = str + "\n";
         str = str + floatToString("rendererSamples", rendererSamples, indent) + "\n";
+        str = str + indent + "TransferFunctionWidgetList = {\n";
+        for(int i = 0; i < TransferFunctionWidgetList.size(); ++i)
+        {
+            AttributeSubject s = (AttributeSubject)TransferFunctionWidgetList.elementAt(i);
+            str = str + s.toString(indent + "    ");
+            if(i < TransferFunctionWidgetList.size()-1)
+                str = str + ", ";
+            str = str + "\n";
+        }
+        str = str + "}\n";
+        str = str + intToString("transferFunctionDim", transferFunctionDim, indent) + "\n";
         return str;
+    }
+
+    // Attributegroup convenience methods
+    public void AddTransferFunctionWidgetList(TransferFunctionWidget obj)
+    {
+        TransferFunctionWidgetList.addElement(new TransferFunctionWidget(obj));
+        Select(26);
+    }
+
+    public void ClearTransferFunctionWidgetLists()
+    {
+        TransferFunctionWidgetList.clear();
+        Select(26);
+    }
+
+    public void RemoveTransferFunctionWidgetList(int index)
+    {
+        if(index >= 0 && index < TransferFunctionWidgetList.size())
+        {
+            TransferFunctionWidgetList.remove(index);
+            Select(26);
+        }
+    }
+
+    public int GetNumTransferFunctionWidgetLists()
+    {
+        return TransferFunctionWidgetList.size();
+    }
+
+    public TransferFunctionWidget GetTransferFunctionWidgetList(int i)
+    {
+        TransferFunctionWidget tmp = (TransferFunctionWidget)TransferFunctionWidgetList.elementAt(i);
+        return tmp;
     }
 
 
@@ -615,5 +718,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     private double                   skewFactor;
     private int                      sampling;
     private float                    rendererSamples;
+    private Vector                   TransferFunctionWidgetList; // vector of TransferFunctionWidget objects
+    private int                      transferFunctionDim;
 }
 

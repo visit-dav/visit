@@ -62,7 +62,8 @@ enum ComponentTypes
     COMP_MDSERVER        = 0x08,
     COMP_ENGINE          = 0x10,
     COMP_WIDGETS         = 0x20,
-    COMP_VIEWER_WIDGETS  = 0x40
+    COMP_VIEWER_WIDGETS  = 0x40,
+    COMP_JAVA            = 0x80
 };
 
 inline vector<QString>
@@ -189,6 +190,9 @@ ParseCharacters(const QString &buff)
 //    Brad Whitlock, Fri Apr 25 11:23:20 PDT 2008
 //    Added support for setting access type on functions.
 //
+//    Brad Whitlock, Wed Oct 15 14:23:40 PDT 2008
+//    Added support for additional Java files.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -243,6 +247,8 @@ class XMLParser : public QXmlDefaultHandler
                     currentPlugin->wfiles.push_back(strings[i]);
                 if (currentFileComponents & COMP_VIEWER_WIDGETS)
                     currentPlugin->vwfiles.push_back(strings[i]);
+                if (currentFileComponents & COMP_JAVA)
+                    currentPlugin->jfiles.push_back(strings[i]);
             }
             else if (currentTag == "CXXFLAGS")
             {
@@ -499,6 +505,12 @@ class XMLParser : public QXmlDefaultHandler
                     currentPlugin->vwfiles.clear();
                     comps3 |= COMP_VIEWER_WIDGETS;
                     currentPlugin->customvwfiles = true;
+                }
+                else if (comps2[i] == "J")
+                {
+                    currentPlugin->jfiles.clear();
+                    comps3 |= COMP_JAVA;
+                    currentPlugin->customjfiles = true;
                 }
                 else
                     throw QString().sprintf("invalid file '%s' for components attribute of Files tag", comps2[i].latin1());
