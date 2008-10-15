@@ -303,7 +303,7 @@ avtTecplotFileFormat::GetNextToken()
 }
 
 // ****************************************************************************
-//  Method:  ParseNodesPoint
+//  Method:  ParseArraysPoint
 //
 //  Purpose:
 //    Reads the coordinates and/or nodal data for POINT and FEPOINT formats.
@@ -320,9 +320,13 @@ avtTecplotFileFormat::GetNextToken()
 //    because we now have improved axis-variable guessing, and so if we guess
 //    wrong we want to avoid hiding what might be a normal scalar variable.
 //
+//    Jeremy Meredith, Wed Oct 15 12:07:59 EDT 2008
+//    Added support for cell-centered vars (through VARLOCATION).
+//    Renamed ParseNodes* to ParseArrays* to reflect this capability.
+//
 // ****************************************************************************
 vtkPoints*
-avtTecplotFileFormat::ParseNodesPoint(int numNodes)
+avtTecplotFileFormat::ParseArraysPoint(int numNodes, int numElements)
 {
     vtkPoints *points = vtkPoints::New();
     points->SetNumberOfPoints(numNodes);
@@ -339,8 +343,10 @@ avtTecplotFileFormat::ParseNodesPoint(int numNodes)
 
     for (int v=0; v<numTotalVars; v++)
     {
+        int numVals = (variableCellCentered[v] ? numElements : numNodes);
+
         vtkFloatArray *scalars = vtkFloatArray::New();
-        scalars->SetNumberOfTuples(numNodes);
+        scalars->SetNumberOfTuples(numVals);
         float *ptr = (float *) scalars->GetVoidPointer(0);
         vars[allVariableNames[v]].push_back(scalars);
 
@@ -350,8 +356,12 @@ avtTecplotFileFormat::ParseNodesPoint(int numNodes)
 
     for (i=0; i<numNodes; i++)
     {
+        bool doneWithCellCentered = (i>=numElements);
         for (int v = 0; v < numTotalVars; v++)
         {
+            if (variableCellCentered[v] && doneWithCellCentered)
+                continue;
+
             float val = atof(GetNextToken().c_str());
             if (v==Xindex)
             {
@@ -374,7 +384,7 @@ avtTecplotFileFormat::ParseNodesPoint(int numNodes)
 }
 
 // ****************************************************************************
-//  Method:  ParseNodesBlock
+//  Method:  ParseArraysBlock
 //
 //  Purpose:
 //    Reads the coordinates and/or nodal data for BLOCK and FEBLOCK formats.
@@ -391,9 +401,13 @@ avtTecplotFileFormat::ParseNodesPoint(int numNodes)
 //    because we now have improved axis-variable guessing, and so if we guess
 //    wrong we want to avoid hiding what might be a normal scalar variable.
 //
+//    Jeremy Meredith, Wed Oct 15 12:07:59 EDT 2008
+//    Added support for cell-centered vars (through VARLOCATION).
+//    Renamed ParseNodes* to ParseArrays* to reflect this capability.
+//
 // ****************************************************************************
 vtkPoints*
-avtTecplotFileFormat::ParseNodesBlock(int numNodes)
+avtTecplotFileFormat::ParseArraysBlock(int numNodes, int numElements)
 {
     vtkPoints *points = vtkPoints::New();
     points->SetNumberOfPoints(numNodes);
@@ -406,26 +420,28 @@ avtTecplotFileFormat::ParseNodesBlock(int numNodes)
 
     for (int v = 0; v < numTotalVars; v++)
     {
+        int numVals = (variableCellCentered[v] ? numElements : numNodes);
+
         vtkFloatArray *scalars = vtkFloatArray::New();
-        scalars->SetNumberOfTuples(numNodes);
+        scalars->SetNumberOfTuples(numVals);
         float *ptr = (float *) scalars->GetVoidPointer(0);
-        for (int i=0; i<numNodes; i++)
+        for (int i=0; i<numVals; i++)
             ptr[i] = atof(GetNextToken().c_str());
         vars[allVariableNames[v]].push_back(scalars);
 
         if (v==Xindex)
         {
-            for (int i=0; i<numNodes; i++)
+            for (int i=0; i<numVals; i++)
                 pts[3*i + 0] = ptr[i];
         }
         else if (v==Yindex)
         {
-            for (int i=0; i<numNodes; i++)
+            for (int i=0; i<numVals; i++)
                 pts[3*i + 1] = ptr[i];
         }
         else if (v==Zindex)
         {
-            for (int i=0; i<numNodes; i++)
+            for (int i=0; i<numVals; i++)
                 pts[3*i + 2] = ptr[i];
         }
     }
@@ -561,12 +577,16 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
 //    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
 //    Added support for point meshes where topo dim is zero but spatial dim>1
 //
+//    Jeremy Meredith, Wed Oct 15 12:07:59 EDT 2008
+//    Added support for cell-centered vars (through VARLOCATION).
+//    Renamed ParseNodes* to ParseArrays* to reflect this capability.
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
                                    const string &elemType)
 {
-    vtkPoints *points = ParseNodesBlock(numNodes);
+    vtkPoints *points = ParseArraysBlock(numNodes,numElements);
     vtkUnstructuredGrid *ugrid = ParseElements(numElements, elemType);
     ugrid->SetPoints(points);
     points->Delete();
@@ -604,12 +624,16 @@ avtTecplotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
 //    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
 //    Added support for point meshes where topo dim is zero but spatial dim>1
 //
+//    Jeremy Meredith, Wed Oct 15 12:07:59 EDT 2008
+//    Added support for cell-centered vars (through VARLOCATION).
+//    Renamed ParseNodes* to ParseArrays* to reflect this capability.
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParseFEPOINT(int numNodes, int numElements,
                                    const string &elemType)
 {
-    vtkPoints *points = ParseNodesPoint(numNodes);
+    vtkPoints *points = ParseArraysPoint(numNodes,numElements);
     vtkUnstructuredGrid *ugrid = ParseElements(numElements, elemType);
     ugrid->SetPoints(points);
     points->Delete();
@@ -648,6 +672,10 @@ avtTecplotFileFormat::ParseFEPOINT(int numNodes, int numElements,
 //    Jeremy Meredith, Thu Jun 26 17:28:16 EDT 2008
 //    Only assume it's a 1D mesh if *both* J and K dims are 1.
 //
+//    Jeremy Meredith, Wed Oct 15 12:07:59 EDT 2008
+//    Added support for cell-centered vars (through VARLOCATION).
+//    Renamed ParseNodes* to ParseArrays* to reflect this capability.
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
@@ -661,7 +689,11 @@ avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
     else
         topologicalDimension = MAX(topologicalDimension, 3);
 
-    vtkPoints *points = ParseNodesBlock(numNodes);
+    int numElementsI = (numI <= 1) ? 1 : numI-1;
+    int numElementsJ = (numJ <= 1) ? 1 : numJ-1;
+    int numElementsK = (numK <= 1) ? 1 : numK-1;
+    int numElements = numElementsI * numElementsJ * numElementsK;
+    vtkPoints *points = ParseArraysBlock(numNodes, numElements);
 
     vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
     sgrid->SetPoints(points);
@@ -704,6 +736,10 @@ avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
 //    Jeremy Meredith, Thu Jun 26 17:28:16 EDT 2008
 //    Only assume it's a 1D mesh if *both* J and K dims are 1.
 //
+//    Jeremy Meredith, Wed Oct 15 12:07:59 EDT 2008
+//    Added support for cell-centered vars (through VARLOCATION).
+//    Renamed ParseNodes* to ParseArrays* to reflect this capability.
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
@@ -717,7 +753,11 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
     else
         topologicalDimension = MAX(topologicalDimension, 3);
 
-    vtkPoints *points = ParseNodesPoint(numNodes);
+    int numElementsI = (numI <= 1) ? 1 : numI-1;
+    int numElementsJ = (numJ <= 1) ? 1 : numJ-1;
+    int numElementsK = (numK <= 1) ? 1 : numK-1;
+    int numElements = numElementsI * numElementsJ * numElementsK;
+    vtkPoints *points = ParseArraysPoint(numNodes, numElements);
 
     vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
     sgrid->SetPoints(points);
@@ -765,12 +805,13 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //    Allow "DATAPACKING" as an alias for "F" in zone record header.
 //    Add smarter X/Y/Z coordinate guessing.
 //
-//  Modifications:
 //    Jeremy Meredith, Mon Jul  7 14:09:28 EDT 2008
 //    Add two-stage guessing for axis variables, and make the guessing smarter.
 //    Also, allow X/Y/Z coordinate arrays to show up as normal variables just
 //    in case we still guessed wrong.
 //    
+//    Jeremy Meredith, Wed Oct 15 12:07:59 EDT 2008
+//    Added support for cell-centered vars (through VARLOCATION).
 //
 // ****************************************************************************
 
@@ -914,6 +955,10 @@ avtTecplotFileFormat::ReadFile()
                 }
             }
 
+            // Default the centering to nodal
+            variableCellCentered.clear();
+            variableCellCentered.resize(numTotalVars, 0);
+
             // If we didn't find an exact match for coordinate axis vars, guess
             if (Xindex < 0) Xindex = guessedXindex;
             if (Yindex < 0) Yindex = guessedYindex;
@@ -958,6 +1003,7 @@ avtTecplotFileFormat::ReadFile()
                      tok != "ET" &&
                      tok != "F"  &&
                      tok != "DATAPACKING"  &&
+                     tok != "VARLOCATION"  &&
                      tok != "DT" &&
                      tok != "D"))
             {
@@ -997,6 +1043,18 @@ avtTecplotFileFormat::ReadFile()
                 else if (tok == "F" || tok == "DATAPACKING")
                 {
                     format = GetNextToken();
+                }
+                else if (tok == "VARLOCATION")
+                {
+                    string centering;
+                    variableCellCentered.clear();
+                    variableCellCentered.resize(numTotalVars, 0);
+                    for (int i=0; i<numTotalVars; i++)
+                    {
+                        centering = GetNextToken();
+                        if (centering == "CELLCENTERED")
+                            variableCellCentered[i] = 1;
+                    }
                 }
                 else if (tok == "DT")
                 {
@@ -1208,6 +1266,9 @@ avtTecplotFileFormat::~avtTecplotFileFormat()
 //    Brad Whitlock, Tue Jul 26 14:59:03 PST 2005
 //    Clear the expression list.
 //
+//    Jeremy Meredith, Wed Oct 15 12:07:59 EDT 2008
+//    Added support for cell-centered vars (through VARLOCATION).
+//
 // ****************************************************************************
 
 void
@@ -1226,7 +1287,7 @@ avtTecplotFileFormat::FreeUpResources(void)
     spatialDimension = 1;
     numTotalVars = 0;
 
-    int i,j;
+    unsigned int i,j;
     for (i=0; i<meshes.size(); i++)
     {
         meshes[i]->Delete();
@@ -1243,6 +1304,7 @@ avtTecplotFileFormat::FreeUpResources(void)
     vars.clear();
     variableNames.clear();
     allVariableNames.clear();
+    variableCellCentered.clear();
     curveNames.clear();
     curveFirstVar.clear();
     curveSecondVar.clear();
@@ -1268,6 +1330,9 @@ avtTecplotFileFormat::FreeUpResources(void)
 //
 //    Mark C. Miller, Thu Mar 29 11:28:34 PDT 2007
 //    Added support for point meshes where topo dim is zero but spatial dim>1
+//
+//    Jeremy Meredith, Wed Oct 15 12:07:59 EDT 2008
+//    Added support for cell-centered vars (through VARLOCATION).
 //
 // ****************************************************************************
 
@@ -1308,10 +1373,11 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->hasSpatialExtents = false;
         md->Add(mesh);
 
-        for (int i=0; i<variableNames.size(); i++)
+        for (unsigned int i=0; i<variableNames.size(); i++)
         {
             AddScalarVarToMetaData(md, variableNames[i],
-                                   "mesh", AVT_NODECENT);
+                                   "mesh", (variableCellCentered[i] ?
+                                            AVT_ZONECENT : AVT_NODECENT));
         }
     }
     else
@@ -1323,13 +1389,13 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // construct the meshes upon request.
         //
         char s[200];
-        for (int z = 0 ; z < zoneTitles.size(); z++)
+        for (unsigned int z = 0 ; z < zoneTitles.size(); z++)
         {
             if (Xindex < 0)
             {
-                for (int i=0; i<allVariableNames.size(); i++)
+                for (unsigned int i=0; i<allVariableNames.size(); i++)
                 {
-                    for (int j=0; j<allVariableNames.size(); j++)
+                    for (unsigned int j=0; j<allVariableNames.size(); j++)
                     {
                         if (i==j) 
                             continue;
@@ -1359,7 +1425,7 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
             else
             {
-                for (int i=0; i<allVariableNames.size(); i++)
+                for (int i=0; i<(int)allVariableNames.size(); i++)
                 {
                     if (i==Xindex)
                         continue;
