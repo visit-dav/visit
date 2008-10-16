@@ -177,6 +177,9 @@ static int GetCycleFromRootPath(const std::string &rpath)
 //    Hank Childs, Tue Feb 19 14:20:22 PST 2008
 //    Initialize nMaterials.
 //
+//    Kathleen Bonnell, Thu Oct 16 14:29:35 PDT 2008
+//    Initialize coordSys.
+//
 // ****************************************************************************
 
 avtBoxlibFileFormat::avtBoxlibFileFormat(const char *fname)
@@ -195,6 +198,7 @@ avtBoxlibFileFormat::avtBoxlibFileFormat(const char *fname)
     time = 0.;
     haveReadTimeAndCycle = false;
     nMaterials = 0;
+    coordSys = 0;
 }
 
 
@@ -694,6 +698,9 @@ avtBoxlibFileFormat::GetMesh(int patch, const char *mesh_name)
 //    Hank Childs, Wed Oct  8 16:57:17 PDT 2008
 //    Initialize coordSys.
 //
+//    Kathleen Bonnell, Thu Oct 16 14:29:35 PDT 2008
+//    Moved Broadcast of coordSys so that all procs can participate.
+//
 // ****************************************************************************
 
 void
@@ -875,10 +882,9 @@ avtBoxlibFileFormat::ReadHeader(void)
 
     // Read in coord system;
     if (iDoReading)
-    {
         in >> coordSys;
-        BroadcastInt(coordSys);
-    }
+    BroadcastInt(coordSys);
+
     // Read in width of boundary regions (ghost zones)
     if (iDoReading)
     {
