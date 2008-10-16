@@ -47,7 +47,7 @@
 #include <vector>
 
 #include <vtkCellData.h>
-#include <vtkCellDataToPointData.h>
+#include <vtkVisItCellDataToPointData.h>
 #include <vtkDataSet.h>
 #include <vtkExecutive.h>
 #include <vtkFloatArray.h>
@@ -550,6 +550,10 @@ avtContourFilter::PreExecute(void)
 //    when isosurfaces for multiple values are generated, but it seems to work
 //    for single isosurfaces.
 //
+//    Jeremy Meredith, Thu Oct 16 18:21:59 EDT 2008
+//    Switch to our own version of the cd2pd filter, since it has
+//    optimizations for structured data.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -591,7 +595,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
         vtkDataSet *new_in_ds = (vtkDataSet *) in_ds->NewInstance();
         new_in_ds->CopyStructure(in_ds);
         new_in_ds->GetCellData()->AddArray(cellVar);
-        vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
+        vtkVisItCellDataToPointData *cd2pd = vtkVisItCellDataToPointData::New();
         cd2pd->SetInput(new_in_ds);
         cd2pd->GetExecutive()->SetOutputData(0, toBeContoured);
         cd2pd->Update();

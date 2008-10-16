@@ -441,12 +441,20 @@ avtFilledBoundaryPlot::ApplyOperators(avtDataObject_p input)
 //  Note:  taken almost verbatim from the Subset plot
 //
 //  Modifications:
+//    Jeremy Meredith, Tue Oct 14 16:02:06 EDT 2008
+//    The ghost zone/facelist filter must create polydata.  This wasn't
+//    previously a problem because the MIR would always output ugrids, but
+//    I'm adding optimizations to allow even rgrids to pass through in 
+//    some cases.
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtFilledBoundaryPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     int type = atts.GetBoundaryType();
+
+    gzfl->SetMustCreatePolyData(true);
 
     if (!atts.GetWireframe())
     {

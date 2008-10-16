@@ -129,6 +129,11 @@ void vtkDataSetRemoveGhostCells::Execute()
 //    Hank Childs, Fri Jun  9 12:54:36 PDT 2006
 //    Remove unused variables.
 //
+//    Jeremy Meredith, Tue Oct 14 15:30:07 EDT 2008
+//    Moved the count of the number of output cells up sooner, and
+//    use it to determine if all the cells are selected -- and if they
+//    are, then just short-circuit out.
+//
 // ****************************************************************************
 
 void vtkDataSetRemoveGhostCells::GenericExecute()
@@ -142,18 +147,24 @@ void vtkDataSetRemoveGhostCells::GenericExecute()
         GetOutput()->ShallowCopy(ds);
         return;
     }
+    int nOut = 0;
+    int nCells = ds->GetNumberOfCells();
+    for (i = 0 ; i < nCells ; i++)
+        if (arr->GetTuple1(i) == 0)
+            nOut++;
+
+    // If *all* the cells are selected, exit early, returning the input
+    if (nOut == nCells)
+    {
+        GetOutput()->ShallowCopy(ds);
+        return;
+    }
      
     vtkPoints *ptsObj = vtkVisItUtility::GetPoints(ds);
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     ugrid->SetPoints(ptsObj);
     ptsObj->Delete();
     ugrid->GetPointData()->ShallowCopy(ds->GetPointData());
-
-    int nOut = 0;
-    int nCells = ds->GetNumberOfCells();
-    for (i = 0 ; i < nCells ; i++)
-        if (arr->GetTuple1(i) == 0)
-            nOut++;
     ugrid->Allocate(8*nOut);
    
     int cellId = 0;

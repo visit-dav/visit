@@ -108,11 +108,13 @@ using     std::vector;
 //    Hank Childs, Wed Dec 20 09:25:42 PST 2006
 //    Initialize mustCreatePolyData.
 //
+//    Jeremy Meredith, Tue Oct 14 14:02:39 EDT 2008
+//    Removed unused useFacelists.
+//
 // ****************************************************************************
 
 avtFacelistFilter::avtFacelistFilter()
 {
-    useFacelists = true;
     create3DCellNumbers = false;
     forceFaceConsolidation = false;
     createEdgeListFor2DDatasets = false;
@@ -1209,43 +1211,6 @@ avtFacelistFilter::ConvertToPolys(vtkDataSet *in_ds, int tDim)
     return out_ds;
 }
 
-
-
-// ****************************************************************************
-//  Method: avtFacelistFilter::InitializeFilter
-//
-//  Purpose:
-//      Initializes the facelist filter after the input has changed by getting
-//      the new facelist.
-//
-//  Programmer: Hank Childs
-//  Creation:   October 27, 2000
-//
-//  Modifications:
-//
-//    Hank Childs, Tue Jun  5 11:44:45 PDT 2001
-//    Re-wrote function to only guide whether we should try to use facelists
-//    later on.  Blew away previous comments.
-//
-//    Hank Childs, Sat Feb 19 14:55:03 PST 2005
-//    Do not assume we have a valid input.
-//
-// ****************************************************************************
-
-void
-avtFacelistFilter::InitializeFilter(void)
-{
-    if (*(GetInput()) == NULL)
-        return;
-    if (GetInput()->GetInfo().GetValidity().GetZonesPreserved())
-    {
-        useFacelists = true;
-    }
-    else
-    {
-        useFacelists = false;
-    }
-}
 
 
 // ****************************************************************************

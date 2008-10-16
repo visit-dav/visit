@@ -90,6 +90,9 @@ class   avtFacelistFilter;
 //    case, we should remove the ghosts along the boundary, then find the
 //    external faces, then remove the faces that are interior and duplicated.
 //
+//    Jeremy Meredith, Tue Oct 14 15:42:56 EDT 2008
+//    Changed interface to SetMustCreatePolyData to allow either t/f setting.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
@@ -110,7 +113,7 @@ class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
     void                  SetCreateEdgeListFor2DDatasets(bool val);
     void                  SetGhostNodeTypesToRemove(unsigned char val);
     void                  GhostDataMustBeRemoved();
-    void                  MustCreatePolyData();
+    void                  SetMustCreatePolyData(bool val=true);
 
     virtual void          ReleaseData(void);
 

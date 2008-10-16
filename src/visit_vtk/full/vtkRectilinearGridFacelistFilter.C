@@ -808,6 +808,10 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
 //    doing a very good job in the first place).  Also renamed the routine
 //    to make it clear what its purpose was.
 //
+//    Jeremy Meredith, Tue Oct 14 15:14:39 EDT 2008
+//    Handle cases where the grid is 2D but aligned with the X or Y axis, 
+//    not just the Z axis.
+//
 // ****************************************************************************
 
 void vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(void)
@@ -829,7 +833,49 @@ void vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(void)
   int nX = input->GetXCoordinates()->GetNumberOfTuples();
   int nY = input->GetYCoordinates()->GetNumberOfTuples();
   int nZ = input->GetZCoordinates()->GetNumberOfTuples();
-  if (nZ > 1)
+  if (nX == 1)
+  {
+      static int quads2[1][4] = { { 0, 1, 2, 3 } };
+      static int ptIds2[4];
+      ptIds2[0] = 0;
+      ptIds2[1] = nY-1;
+      ptIds2[2] = nY*nZ-1;
+      ptIds2[3] = (nZ-1)*nY;
+
+      numOutCells  = 1;
+      numOutPoints = 4;
+      quads = quads2;
+      ptIds = ptIds2;
+  }
+  else if (nY == 1)
+  {
+      static int quads2[1][4] = { { 0, 1, 2, 3 } };
+      static int ptIds2[4];
+      ptIds2[0] = 0;
+      ptIds2[1] = nX-1;
+      ptIds2[2] = nX*nZ-1;
+      ptIds2[3] = (nZ-1)*nX;
+
+      numOutCells  = 1;
+      numOutPoints = 4;
+      quads = quads2;
+      ptIds = ptIds2;
+  }
+  else if (nZ == 1)
+  {
+      static int quads2[1][4] = { { 0, 1, 2, 3 } };
+      static int ptIds2[4];
+      ptIds2[0] = 0;
+      ptIds2[1] = nX-1;
+      ptIds2[2] = nX*nY-1;
+      ptIds2[3] = (nY-1)*nX;
+
+      numOutCells  = 1;
+      numOutPoints = 4;
+      quads = quads2;
+      ptIds = ptIds2;
+  }
+  else
   {
       static int quads3[6][4] = { { 0, 1, 2, 3 }, { 0, 4, 5, 1 }, 
                                   { 1, 5, 6, 2 }, { 2, 6, 7, 3 },
@@ -848,20 +894,6 @@ void vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(void)
       numOutPoints = 8;
       quads = quads3;
       ptIds = ptIds3;
-  }
-  else
-  {
-      static int quads2[1][4] = { { 0, 1, 2, 3 } };
-      static int ptIds2[4];
-      ptIds2[0] = 0;
-      ptIds2[1] = nX-1;
-      ptIds2[2] = nX*nY-1;
-      ptIds2[3] = (nY-1)*nX;
-
-      numOutCells  = 1;
-      numOutPoints = 4;
-      quads = quads2;
-      ptIds = ptIds2;
   }
 
   vtkCellArray *polys = vtkCellArray::New();
