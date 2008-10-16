@@ -376,6 +376,12 @@ exec perl -x $0 ${1+"$@"};
 #    Eric Brugger, Fri Oct 10 16:25:17 PDT 2008
 #    Removed support for the switch type.
 #
+#    Gunther H. Weber, Wed Oct 15 11:42:55 PDT 2008
+#    Improved detection of whether script is running on franklin.nersc.gov
+#    If Running on franklin.nersc.gov look for plugins in /scratch instead
+#    of user's home since an engine running on compute nodes does not have
+#    access to a user's home directory.
+#
 #    Tom Fogal, Tue Oct 14 12:36:16 MDT 2008
 #    Fixed the fullhelp for parallel hardware acceleration.
 #
@@ -1306,20 +1312,14 @@ if ( ($parallel) and $exe_name eq "engine" and $host =~ /jaguar/ )
 #
 # ----
 $IsRunningOnFranklinNERSC = 0;
-# FIXME: Need to find a better way to check whether we are running on franklin
-if ( -e "$visitdir/franklin.nersc.gov" )
+if ( $host =~ /^nid/ )
 {
-    $IsRunningOnFranklinNERSC = 1;
-    if ($ENV{LD_LIBRARY_PATH} eq "")
+    $nodename=`/usr/common/nsg/bin/nodename`;
+    if ($nodename =~ /^franklin/)
     {
-        $ENV{LD_LIBRARY_PATH} ="/opt/gcc/4.2.3/snos/lib64";
+        $IsRunningOnFranklinNERSC = 1;
     }
-    else
-    {
-        $ENV{LD_LIBRARY_PATH} = join ':' ,
-            ("$ENV{LD_LIBRARY_PATH}", "/opt/gcc/4.2.3/snos/lib64");
-    }
-}     
+}
 
 # ----
 # HACK for yana and hopi @ LLNL
@@ -1665,6 +1665,10 @@ if (defined($ENV{HOME}))
     foreach my $archdir (@supportedarchs)
     {
         $makedir  = "$ENV{HOME}/.visit";mkdir $makedir,0777 if (! -e $makedir);
+        if ($IsRunningOnFranklinNERSC)
+        {
+            $makedir  = "/scratch/scratchdirs/$ENV{USER}/.visit";mkdir $makedir,0777 if (! -e $makedir);
+        }
         $makedir .= "/$archdir";        mkdir $makedir,0777 if (! -e $makedir);
         $makedir .= "/plugins";         mkdir $makedir,0777 if (! -e $makedir);
 
@@ -1770,7 +1774,15 @@ if($os eq "darwin")
 }
 
 # Set up plugin search paths in the correct order
-$visitprivateplugins = "$ENV{HOME}/.visit/$archdir/plugins";
+if ($IsRunningOnFranklinNERSC)
+{
+    $visitprivateplugins = "/scratch/scratchdirs/$ENV{USER}/.visit/$archdir/plugins";
+}
+else
+{
+    $visitprivateplugins = "$ENV{HOME}/.visit/$archdir/plugins";
+}
+
 if ($publiconly)
 {
     # Forget the private and user-specified paths, and only use the public one

@@ -266,6 +266,9 @@ avtPixieFileFormat::FreeUpResources(void)
 //   Hank Childs, Wed Jul  9 06:02:00 PDT 2008
 //   Added test for UNIC.
 //
+//   Gunther H. Weber, Wed Oct  8 16:50:31 PDT 2008
+//   Added test for TechX VizSchema
+//
 // ****************************************************************************
     
 void
@@ -306,6 +309,30 @@ avtPixieFileFormat::Initialize()
             H5Dclose(control);
             EXCEPTION1(InvalidDBTypeException,
                "Cannot be a Pixie file because it looks like an UNIC file.");
+        }
+        hid_t runInfo = H5Gopen(fileId, "runInfo");
+        if (runInfo >= 0)
+        {
+            hid_t vsVersion = H5Aopen_name(runInfo, "vsVersion");
+            if (vsVersion >= 0)
+            {
+                H5Aclose(vsVersion);
+                H5Gclose(runInfo);
+                EXCEPTION1(InvalidDBTypeException,
+                        "Cannot be a Pixie file because it looks like a VizSchema file.");
+            }
+            hid_t software = H5Aopen_name(runInfo, "software");
+            hid_t version = H5Aopen_name(runInfo, "version");
+            H5Gclose(runInfo);
+            if (software >=0 && version >=0)
+            {
+                H5Aclose(software);
+                H5Aclose(version);
+                EXCEPTION1(InvalidDBTypeException,
+                        "Cannot be a Pixie file because it looks like a legacy VizSchema file.");
+            }
+            if (software >=0) H5Aclose(software);
+            if (version >=0) H5Aclose(version);
         }
 #endif
         // Populate the scalar variable list
