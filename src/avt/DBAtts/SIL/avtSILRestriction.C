@@ -1127,6 +1127,18 @@ avtSILRestriction::RestrictDomainsForLoadBalance(const vector<int> &domains)
 //
 //    Dave Bremer, Fri Jan 25 13:07:02 PST 2008
 //    Optimized by avoiding some calls to create avtSILSets.
+//
+//    Mark C. Miller, Thu Oct 16 11:58:44 PDT 2008
+//    I removed an optimization to return early if 'largest' is -1. This
+//    can happen only if 'domains' is empty which can happen if the SIL
+//    selection is such that there are fewer domains than processors. However,
+//    the optimization skirted logic that effects this processor's
+//    knowledge of the state of the SIL relative to other processors. For
+//    example a set would never be tagged with AllUsedOtherProc. So, it
+//    seems like this optimization should NEVER have been here once logic was
+//    added to tag sets with AllUsedOtherProc. For certain, this fixes problems
+//    with Enumeration selections (ticket 8742).
+//
 // ****************************************************************************
 
 void
@@ -1156,12 +1168,6 @@ avtSILRestriction::RestrictDomains(const vector<int> &domains,
         {
             largest = domains[i];
         }
-    }
-    if (largest < 0)
-    {
-        TurnOffAll();
-        visitTimer->StopTimer(timingsHandle, "Restricting the domain list");
-        return;
     }
 
     //
