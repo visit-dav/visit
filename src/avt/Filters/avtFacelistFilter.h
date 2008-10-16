@@ -112,6 +112,11 @@ class   avtMultiFacelist;
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Jeremy Meredith, Tue Oct 14 14:00:06 EDT 2008
+//    Changed interface to SetMustCreatePolyData to allow either setting.
+//    Removed unused "useFacelists" data member, and the InitalizeFilter
+//    method (since that's the only thing it touched).
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
@@ -129,11 +134,10 @@ class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
     void                                 SetForceFaceConsolidation(bool);
     void                                 SetCreateEdgeListFor2DDatasets(bool);
   
-    void                                 MustCreatePolyData(void)
-                                              { mustCreatePolyData = true; };
+    void                                 SetMustCreatePolyData(bool val)
+                                              { mustCreatePolyData = val; };
 
   protected:
-    bool                                 useFacelists;
     bool                                 create3DCellNumbers;
     bool                                 createEdgeListFor2DDatasets;
     bool                                 mustCreatePolyData;
@@ -146,8 +150,6 @@ class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
     avtDataTree_p                        Take3DFaces(vtkDataSet *, int,
                                                      std::string);
     vtkDataSet                          *ConvertToPolys(vtkDataSet *, int);
-
-    virtual void                         InitializeFilter(void);
 
     virtual void                         UpdateDataObjectInfo(void);
     virtual avtContract_p   ModifyContract(

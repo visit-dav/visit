@@ -86,6 +86,11 @@ struct ResampledMat;
 //    Reorder member initializers to match declaration order (and remove
 //    compiler warning).
 //
+//    Jeremy Meredith, Tue Oct 14 15:41:21 EDT 2008
+//    Added a single-material-domain fast path which short-circuits the
+//    entire reconstruction process and can return the input data set
+//    intact (even if it's e.g. rectilinear).
+//
 // ****************************************************************************
 class MIR_API ZooMIR : public MIR
 {
@@ -218,6 +223,7 @@ class MIR_API ZooMIR : public MIR
     int                                     nMaterials;
     int                                     nOrigMaterials;
     bool                                    noMixedZones;
+    int                                     singleMat;
 
     std::vector<int>                        mapMatToUsedMat;
     std::vector<int>                        mapUsedMatToMat;

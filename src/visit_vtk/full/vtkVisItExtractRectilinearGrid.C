@@ -320,7 +320,7 @@ int vtkVisItExtractRectilinearGrid::RequestData(
     output->GetPointData()->PassData(input->GetPointData());
     output->GetCellData()->PassData(input->GetCellData());
     output->GetFieldData()->PassData(input->GetFieldData());
-    vtkDebugMacro(<<"Passed data through bacause input and output are the same");
+    vtkDebugMacro(<<"Passed data through because input and output are the same");
     return 1;
     }
 

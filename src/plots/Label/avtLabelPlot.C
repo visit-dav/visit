@@ -297,6 +297,9 @@ avtLabelPlot::ApplyOperators(avtDataObject_p input)
 //   only produce poly data.  It used to do this by default, but its default
 //   behavior changed.
 //
+//   Jeremy Meredith, Tue Oct 14 14:00:06 EDT 2008
+//   Changed interface to SetMustCreatePolyData to allow either setting.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -316,7 +319,7 @@ avtLabelPlot::ApplyRenderingTransformation(avtDataObject_p input)
         delete ghostAndFaceFilter;
     ghostAndFaceFilter = new avtGhostZoneAndFacelistFilter;
     ghostAndFaceFilter->SetUseFaceFilter(true);
-    ghostAndFaceFilter->MustCreatePolyData();
+    ghostAndFaceFilter->SetMustCreatePolyData(true);
     ghostAndFaceFilter->GhostDataMustBeRemoved();
     ghostAndFaceFilter->SetInput(dob);
     dob = ghostAndFaceFilter->GetOutput();

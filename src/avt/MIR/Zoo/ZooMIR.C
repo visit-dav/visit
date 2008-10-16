@@ -57,6 +57,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkTriangulationTables.h>
+#include <vtkObjectFactory.h>
 
 #include <VisItArray.h>
 #include "BitUtils.h"
@@ -70,9 +71,15 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 20, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Oct 14 15:32:04 EDT 2008
+//    Keep track of if the entire mesh was a single material; we'll
+//    use this to return the input data set when possible.
+//
 // ****************************************************************************
 ZooMIR::ZooMIR()
 {
+    singleMat = -1;
     dimension = -1;
     mesh   = NULL;
     outPts = NULL;
@@ -305,6 +312,12 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
 //    Original node numbers array was being interpolated.  We now just slap
 //    a -1 in for new nodes instead of trying to interpolate them.
 //
+//    Jeremy Meredith, Tue Oct 14 15:32:04 EDT 2008
+//    If the entire mesh was truly a single material, there are two new fast
+//    paths:  just return the input mesh (if that material is selected)
+//    or return nothing (if the material wasn't seelcted).  This allows
+//    the output to be a rectilinear, or other non-unstructured, data set.
+//
 // ****************************************************************************
 vtkDataSet *
 ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
@@ -342,6 +355,55 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     {
         for (int i = 0; i < nMaterials+1; i++)
             matFlag[i] = true;
+    }
+
+    //
+    // If this domain was truly clean, we can re-use the input mesh
+    //
+    if (singleMat >= 0)
+    {
+        if (matFlag[singleMat])
+        {
+            // Since if we make a copy, we get corrupt ->Links
+            // for an unstructured grid, we're just going to add
+            // avtSubsets to the input mesh and 
+            vtkDataSet *outmesh = ds;
+
+            // (this was the other option: ----->>>
+            //vtkDataSet *outmesh = ds->NewInstance();
+            //outmesh->ShallowCopy(ds);
+            //if (outmesh->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+            //    ((vtkUnstructuredGrid*)outmesh)->BuildLinks();
+            // <<----- )
+
+            if (doMats)
+            {
+                //
+                // Add the avtSubsets array
+                //
+                int ncells = outmesh->GetNumberOfCells();
+                vtkIntArray *outmat = vtkIntArray::New();
+                outmat->SetName("avtSubsets");
+                outmat->SetNumberOfTuples(ncells);
+                int *buff = outmat->GetPointer(0);
+                for (int i=0; i<ncells; i++)
+                    buff[i] = singleMat;
+                outmesh->GetCellData()->AddArray(outmat);
+                outmat->Delete();
+            }
+            outmesh->Register(NULL);
+            visitTimer->StopTimer(timerHandle,
+                                  "MIR: Getting *completely* clean dataset");
+            visitTimer->DumpTimings();
+            return outmesh;
+        }
+        else
+        {
+            visitTimer->StopTimer(timerHandle,
+                                  "MIR: Getting *empty* clean dataset");
+            visitTimer->DumpTimings();
+            return NULL;
+        }
     }
 
     //
@@ -621,16 +683,17 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
 //  Note:  Copied from TetMIR's implementation
 //
 //  Modifications:
+//    Jeremy Meredith, Tue Oct 14 15:38:55 EDT 2008
+//    If there are no mixed materials (i.e. we're not just pretending
+//    to reconstruct the mesh as if it were clean), and if there is
+//    only a single material, then trigger the single-material short
+//    circuit.  (big speedup, less memory)
 //
 // ****************************************************************************
 bool
 ZooMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
 {
     int timerHandle = visitTimer->StartTimer();
-
-    // Set teh connectivity
-    MIRConnectivity conn;
-    conn.SetUpConnectivity(mesh);
 
     // no need to pack, so fake that part
     nMaterials = mat->GetNMaterials();
@@ -641,6 +704,34 @@ ZooMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
         mapMatToUsedMat[m] = m;
         mapUsedMatToMat[m] = m;
     }
+
+    // Can we skip the reconstruction entirely?
+    if (mat->GetMixlen() <= 0 ||
+        mat->GetMixMat() == NULL)
+    {
+        int ncells = mesh->GetNumberOfCells();
+        const int *matlist = mat->GetMatlist();
+        singleMat = matlist[0];
+        for (int c=1; c<ncells; c++)
+        {
+            if (matlist[c] != singleMat)
+            {
+                singleMat = -1;
+                break;
+            }
+        }
+        if (singleMat >= 0)
+        {
+            visitTimer->StopTimer(timerHandle,
+                               "MIR: Reconstructing clean mesh: one mat only");
+            visitTimer->DumpTimings();
+            return true;
+        }
+    }
+
+    // Set the connectivity
+    MIRConnectivity conn;
+    conn.SetUpConnectivity(mesh);
 
     // extract coords
     SetUpCoords();

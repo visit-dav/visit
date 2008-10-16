@@ -50,6 +50,8 @@
 #include <vtkGeometryFilter.h>
 #include <vtkLinesFromOriginalCells.h>
 #include <vtkPolyData.h>
+#include <vtkRectilinearLinesNoDataFilter.h>
+#include <vtkRectilinearGridFacelistFilter.h>
 
 #include <ImproperUseException.h>
 #include <DebugStream.h>
@@ -186,6 +188,9 @@ avtMeshFilter::~avtMeshFilter()
 //    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
 //    necessary information from the dataset. 
 //
+//    Jeremy Meredith, Tue Oct 14 15:09:12 EDT 2008
+//    Made various optimizations for regular grids.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -201,6 +206,8 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
     vtkGeometryFilter *geometryFilter = vtkGeometryFilter::New();
     vtkExtractEdges *extractEdges = vtkExtractEdges::New();
     vtkDataSetRemoveGhostCells *ghostFilter =vtkDataSetRemoveGhostCells::New();
+    vtkRectilinearGridFacelistFilter *rectFacesFilter =
+        vtkRectilinearGridFacelistFilter::New();
 
     vtkPolyData *opaquePolys = NULL;
     vtkPolyData *outDS = NULL;
@@ -233,9 +240,23 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
     {
         // Create a dataset that can be rendered as a solid surface, using
         // z buffer to shift so surface doesn't override lines of mesh.
-        geometryFilter->SetInput(revisedInput);
-        geometryFilter->Update();
-        opaquePolys = geometryFilter->GetOutput();
+
+        // Note: the vtkRectilinearGridFacelistFilter is able to consolidate
+        // the output to one polygon per cube face; much better for
+        // rendering
+        if (revisedInput->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        {
+            rectFacesFilter->SetForceFaceConsolidation(true);
+            rectFacesFilter->SetInput((vtkRectilinearGrid*)revisedInput);
+            rectFacesFilter->Update();
+            opaquePolys = rectFacesFilter->GetOutput();
+        }
+        else
+        {
+            geometryFilter->SetInput(revisedInput);
+            geometryFilter->Update();
+            opaquePolys = geometryFilter->GetOutput();
+        }
     }
 
     if (atts.GetShowInternal() && 
@@ -254,9 +275,11 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
     //  HACK, the correct way is to have a different filter
     //  than vtLinesFromOriginalCells to generate the mesh lines
     //  for Non polyData input.  Remove this hack until '6068
-    //  is resolved.
+    //  is resolved.  (Note - JSM 2008/10/14 -- fixed for
+    //  rectilinear data.)
     //
-    if (revisedInput2->GetDataObjectType() != VTK_POLY_DATA)
+    if (revisedInput2->GetDataObjectType() != VTK_POLY_DATA &&
+        revisedInput2->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {
         vtkGeometryFilter *geo = vtkGeometryFilter::New();
         geo->SetInput(revisedInput2);
@@ -272,7 +295,23 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
         revisedInput3->Register(NULL);
     }
 
-    if (revisedInput3->GetDataObjectType() == VTK_POLY_DATA) 
+    if (revisedInput3->GetDataObjectType() == VTK_RECTILINEAR_GRID) 
+    {
+        //
+        // Yes, the rectilinear lines filter we're using here
+        // can't handle things like: understanding that two neighboring
+        // polygons were from the same original cell and not putting
+        // a line between them.  However, the cases where we can get
+        // into this state essentially imply that we have unstructured
+        // or polygonal data, so we should be safe ignoring it.
+        //
+        vtkRectilinearLinesNoDataFilter *rlines =
+            vtkRectilinearLinesNoDataFilter::New();
+        rlines->SetInput((vtkRectilinearGrid*)revisedInput3);
+        rlines->Update();
+        outDS = rlines->GetOutput();
+    }
+    else if (revisedInput3->GetDataObjectType() == VTK_POLY_DATA) 
     {
         //
         // Make extra sure that we really have surfaces.
@@ -346,6 +385,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
     geometryFilter->Delete();
     extractEdges->Delete();
     ghostFilter->Delete();
+    rectFacesFilter->Delete();
 
     return rv;
 }

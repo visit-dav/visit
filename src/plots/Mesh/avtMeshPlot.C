@@ -119,6 +119,11 @@
 //    Hank Childs, Wed Dec 27 13:51:01 PST 2006
 //    Make sure that ghost data is removed.
 //
+//    Jeremy Meredith, Tue Oct 14 15:47:40 EDT 2008
+//    Don't set the create-poly-data flag in the gz/fl filter here; we
+//    can sometimes avoid it (and get better performance), but we don't
+//    know that until we're about to execute it.
+//
 // ****************************************************************************
 
 avtMeshPlot::avtMeshPlot()
@@ -128,7 +133,6 @@ avtMeshPlot::avtMeshPlot()
     ghostAndFaceFilter = new avtGhostZoneAndFacelistFilter;
     ghostAndFaceFilter->SetUseFaceFilter(true);
     ghostAndFaceFilter->GhostDataMustBeRemoved();
-    ghostAndFaceFilter->MustCreatePolyData();
     renderer = avtSurfaceAndWireframeRenderer::New();
     avtCustomRenderer_p cr;
     CopyTo(cr, renderer);
@@ -830,6 +834,11 @@ avtMeshPlot::ApplyOperators(avtDataObject_p input)
 //    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
 //    Remove glyphPoints filter, glyphing now done by avtPointGlyphMapper.
 //
+//    Jeremy Meredith, Tue Oct 14 15:49:15 EDT 2008
+//    Set the gz/fl filter must-create-polydata flag appropriately.  In this
+//    case, it only needs to be set if we're going to attempt to smooth
+//    the geometry before applying the mesh filter.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -839,7 +848,7 @@ avtMeshPlot::ApplyRenderingTransformation(avtDataObject_p input)
     
     if (dob->GetInfo().GetAttributes().GetTopologicalDimension() > 0)
     {
-        // Turn off facelist filter is user wants to see internal zones in 3d.
+        // Turn off facelist filter if user wants to see internal zones in 3d.
         if (atts.GetShowInternal() && 
             dob->GetInfo().GetAttributes().GetSpatialDimension()== 3)
             ghostAndFaceFilter->SetUseFaceFilter(false);
@@ -847,6 +856,7 @@ avtMeshPlot::ApplyRenderingTransformation(avtDataObject_p input)
             ghostAndFaceFilter->SetUseFaceFilter(true);
         ghostAndFaceFilter->SetCreate3DCellNumbers(true);
         ghostAndFaceFilter->SetInput(dob);
+        ghostAndFaceFilter->SetMustCreatePolyData(atts.GetSmoothingLevel()>0);
         dob = ghostAndFaceFilter->GetOutput();
     }
 

@@ -229,7 +229,7 @@ avtGhostZoneAndFacelistFilter::SetGhostNodeTypesToRemove(unsigned char val)
 
 
 // ****************************************************************************
-//  Method: avtGhostZoneAndFacelistFilter::MustCreatePolyData
+//  Method: avtGhostZoneAndFacelistFilter::SetMustCreatePolyData
 //
 //  Purpose:
 //      Tell the facelist filter that it must produce poly data.
@@ -237,12 +237,16 @@ avtGhostZoneAndFacelistFilter::SetGhostNodeTypesToRemove(unsigned char val)
 //  Programmer: Hank Childs
 //  Creation:   December 20, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Oct 14 15:43:36 EDT 2008
+//    Changed interface to allow either true/false setting.
+//
 // ****************************************************************************
 
 void
-avtGhostZoneAndFacelistFilter::MustCreatePolyData(void)
+avtGhostZoneAndFacelistFilter::SetMustCreatePolyData(bool val)
 {
-    faceFilter->MustCreatePolyData();
+    faceFilter->SetMustCreatePolyData(val);
 }
 
 

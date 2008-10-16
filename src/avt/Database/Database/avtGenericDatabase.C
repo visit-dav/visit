@@ -3435,6 +3435,11 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Hank Childs, Thu Feb 21 16:50:18 PST 2008
 //    Fix problem where object could be deleted multiple times.
 //
+//    Jeremy Meredith, Tue Oct 14 16:37:07 EDT 2008
+//    Material selection can now pass through original grids unscathed if
+//    they had only one material.  Added code to account for that in
+//    case of creating boundary surfaces.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -3591,29 +3596,38 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             //
             if (out_ds[d]->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
             {
-                EXCEPTION1(ImproperUseException, "MaterialSelect did not "
-                           "get a VTK_UNSTRUCTURED_GRID\n")
-            }
-
-            vtkUnstructuredGridBoundaryFilter *bf =
-                vtkUnstructuredGridBoundaryFilter::New();
-
-            vtkDataSet *in_ds = out_ds[d];
-
-            bf->SetInput((vtkUnstructuredGrid*)in_ds);
-            in_ds->Delete();
-            out_ds[d] = bf->GetOutput();
-            bf->Update();
-
-            out_ds[d]->Register(NULL);
-            //  Using SetSource(NULL) on vtkDataSets no longer a good idea.
-            //out_ds[d]->SetSource(NULL);
-            bf->Delete();
-
-            if (out_ds != NULL && out_ds[d]->GetNumberOfCells() == 0)
-            {
+                debug2 << "Warning: MaterialSelect/needBoundarySurfaces did "
+                       << "not get a VTK_UNSTRUCTURED_GRID.  This can only "
+                       << "currently happen if the material selected grid "
+                       << "was all one material, which means it should have "
+                       << "have no boundaries, so we are returning NULL.  If "
+                       << "the selection algorithm can ever get to this state "
+                       << "*with* boundaries, then this should be fixed.\n";
                 out_ds[d]->Delete();
                 out_ds[d] = NULL;
+            }
+            else
+            {
+                vtkUnstructuredGridBoundaryFilter *bf =
+                    vtkUnstructuredGridBoundaryFilter::New();
+
+                vtkDataSet *in_ds = out_ds[d];
+
+                bf->SetInput((vtkUnstructuredGrid*)in_ds);
+                in_ds->Delete();
+                out_ds[d] = bf->GetOutput();
+                bf->Update();
+
+                out_ds[d]->Register(NULL);
+                //  Using SetSource(NULL) on vtkDataSets no longer a good idea.
+                //out_ds[d]->SetSource(NULL);
+                bf->Delete();
+
+                if (out_ds != NULL && out_ds[d]->GetNumberOfCells() == 0)
+                {
+                    out_ds[d]->Delete();
+                    out_ds[d] = NULL;
+                }
             }
 
         }

@@ -100,6 +100,9 @@ using std::pair;
 //    Hank Childs, Fri Aug  3 13:46:26 PDT 2007
 //    Initialized gz2.
 //
+//    Jeremy Meredith, Tue Oct 14 14:00:06 EDT 2008
+//    Changed interface to SetMustCreatePolyData to allow either setting.
+//
 // ****************************************************************************
 
 avtSubsetPlot::avtSubsetPlot()
@@ -126,14 +129,14 @@ avtSubsetPlot::avtSubsetPlot()
     gzfl  = new avtGhostZoneAndFacelistFilter();
     gzfl->SetForceFaceConsolidation(true);
     gzfl->GhostDataMustBeRemoved();
-    gzfl->MustCreatePolyData();
+    gzfl->SetMustCreatePolyData(true);
     gz    = new avtGhostZoneFilter();
     gz->GhostDataMustBeRemoved();
     gz2   = new avtGhostZoneFilter();
     gz2->GhostDataMustBeRemoved();
     fl    = new avtFacelistFilter();
     fl->SetForceFaceConsolidation(true);
-    fl->MustCreatePolyData();
+    fl->SetMustCreatePolyData(true);
     sub   = new avtSubsetFilter();
     smooth= new avtSmoothPolyDataFilter();
 }
