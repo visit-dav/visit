@@ -385,6 +385,14 @@ exec perl -x $0 ${1+"$@"};
 #    Tom Fogal, Tue Oct 14 12:36:16 MDT 2008
 #    Fixed the fullhelp for parallel hardware acceleration.
 #
+#    Mark C. Miller, Thu Oct 16 11:02:12 PDT 2008
+#    Fixed processing of args to debug tools like totalview, valgrind, strace
+#    and debug_malloc. These looped over command line args until the hit a 
+#    VisIt component name. However, if they never hit a VisIt component name,
+#    things could fail in obscure and hard to understand ways. Now, they print
+#    an error message and exit. Also, fixed totalview invokation for mpirun'd
+#    parallel engines.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -961,10 +969,15 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-objectmode")       { $req_object_mode = shift; push @visitargs, "-objectmode", $req_object_mode; }
     elsif ($arg eq "-totalview" )       {
                                           $debug_totalview = shift;
-                                          if (!IsAVisItComponentName($debug_totalview))
+                                          while (!IsAVisItComponentName($debug_totalview))
                                           {
                                             push @debug_totalview_args, $debug_totalview;
                                             $debug_totalview = shift;
+                                            if ($debug_totalview eq "")
+                                            {
+                                                print STDERR "Did not find VisIt component name for -totalview option\n";
+                                                exit 1
+                                            }
                                           }
                                           push @norun, $debug_totalview;
                                           push @visitargs, "-norun", $debug_totalview;
@@ -986,6 +999,11 @@ while (scalar(@ARGV) > 0) {
                                           {
                                             push @debug_valgrind_args, $debug_valgrind;
                                             $debug_valgrind = shift;
+                                            if ($debug_valgrind eq "")
+                                            {
+                                                print STDERR "Did not find VisIt component name for -valgrind option\n";
+                                                exit 1
+                                            }
                                           }
                                           push @norun, $debug_valgrind;
                                           push @visitargs, "-norun", $debug_valgrind;
@@ -1003,10 +1021,15 @@ while (scalar(@ARGV) > 0) {
                                         }
     elsif ($arg eq "-strace" )          {
                                           $debug_strace = shift;
-                                          if (!IsAVisItComponentName($debug_strace))
+                                          while (!IsAVisItComponentName($debug_strace))
                                           {
                                             push @debug_strace_args, $debug_strace;
                                             $debug_strace = shift;
+                                            if ($debug_strace eq "")
+                                            {
+                                                print STDERR "Did not find VisIt component name for -strace option\n";
+                                                exit 1
+                                            }
                                           }
                                           push @norun, $debug_strace;
                                           push @visitargs, "-norun", $debug_strace;
@@ -1028,6 +1051,11 @@ while (scalar(@ARGV) > 0) {
                                           {
                                             push @debug_malloc_args, $debug_malloc;
                                             $debug_malloc = shift;
+                                            if ($debug_malloc eq "")
+                                            {
+                                                print STDERR "Did not find VisIt component name for -debug_malloc option\n";
+                                                exit 1
+                                            }
                                           }
                                           if (scalar(@debug_malloc_args) == 0)
                                           {
@@ -1912,6 +1940,14 @@ if ($procs_set or ($parallel and $parlaunch_set))
     if ($launch eq "mpirun")
     {
         @parcmd = ("mpirun");
+        if ($debug_totalview eq $exe_name)
+        {
+            push @parcmd, "-tv";
+            if (!(scalar(@debug_totalview_args) == 0))
+            {
+                $ENV{TOTALVIEW} = "totalview @debug_totalview_args" if not exists $ENV{TOTALVIEW};
+            }
+        }
         push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-np", $procs if $procs_set;
         push @parcmd, "-p",  $part  if $part_set;
