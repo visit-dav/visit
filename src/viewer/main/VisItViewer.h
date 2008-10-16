@@ -64,6 +64,10 @@ class ViewerSubject;
 // Creation:   Mon Aug 18 11:43:42 PDT 2008
 //
 // Modifications:
+//    Jeremy Meredith, Thu Oct 16 19:29:12 EDT 2008
+//    Added a flag for whether or not ProcessCommandLine should force 
+//    the identical version.  It's necessary for new viewer-apps but
+//    might confuse VisIt-proper's smart versioning.
 //   
 // ****************************************************************************
 
@@ -103,7 +107,7 @@ public:
     void SetVISITHOME(const std::string &);
 
     // Set viewer options from the command line [optional]
-    void ProcessCommandLine(int argc, char **argv);
+    void ProcessCommandLine(int argc, char **argv, bool addForceVersion=true);
 
     // Connect back to the client that launched the viewer [optional]
     void Connect(int *argc, char ***argv);

@@ -107,6 +107,11 @@ Viewer_LogQtMessages(QtMsgType type, const char *msg)
 //    the stuff needed to set up the viewer. The new design permits us to 
 //    embed the viewer in other Qt applications.
 //
+//    Jeremy Meredith, Thu Oct 16 19:29:12 EDT 2008
+//    Added a flag for whether or not ProcessCommandLine should force 
+//    the identical version.  It's necessary for new viewer-apps but
+//    might confuse VisIt-proper's smart versioning.
+//
 // ****************************************************************************
 
 int
@@ -136,7 +141,7 @@ main(int argc, char *argv[])
         // Process the command line arguments first since some may be removed
         // by QApplication::QApplication.
         //
-        viewer.ProcessCommandLine(argc, argv);
+        viewer.ProcessCommandLine(argc, argv, false);
 
         //
         // Create the QApplication. This sets the qApp pointer.
