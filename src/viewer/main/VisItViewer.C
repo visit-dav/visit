@@ -248,11 +248,15 @@ VisItViewer::GetVisItHome() const
 // Creation:   Mon Aug 18 16:33:49 PDT 2008
 //
 // Modifications:
+//    Jeremy Meredith, Thu Oct 16 19:29:12 EDT 2008
+//    Added a flag for whether or not ProcessCommandLine should force 
+//    the identical version.  It's necessary for new viewer-apps but
+//    might confuse VisIt-proper's smart versioning.
 //   
 // ****************************************************************************
 
 void
-VisItViewer::ProcessCommandLine(int argc, char **argv)
+VisItViewer::ProcessCommandLine(int argc, char **argv, bool addForceVersion)
 {
     if(visitHomeMethod == FromArgv0 || visitHomeMethod == UserSpecified)
     {
@@ -272,6 +276,11 @@ VisItViewer::ProcessCommandLine(int argc, char **argv)
         argv2[argc + 2] = "-forceversion";
         argv2[argc + 3] = VERSION;
         argv2[argc + 4] = NULL;
+        if (!addForceVersion)
+        {
+            argv2[argc + 2] = NULL;
+            argc2 -= 2;
+        }
         viewer->ProcessCommandLine(argc2, argv2);
         delete [] argv2;
     }
@@ -288,6 +297,11 @@ VisItViewer::ProcessCommandLine(int argc, char **argv)
         argv2[argc    ] = "-forceversion";
         argv2[argc + 1] = VERSION;
         argv2[argc + 2] = NULL;
+        if (!addForceVersion)
+        {
+            argv2[argc] = NULL;
+            argc2 -= 2;
+        }
         viewer->ProcessCommandLine(argc2, argv2);
         delete [] argv2;
     }
