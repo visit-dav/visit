@@ -393,6 +393,10 @@ exec perl -x $0 ${1+"$@"};
 #    an error message and exit. Also, fixed totalview invokation for mpirun'd
 #    parallel engines.
 #
+#    Mark C. Miller, Fri Oct 17 08:54:45 PDT 2008
+#    Fixed documentation for cycleregex which had a non-backslashed '$'
+#    character causing the process number to be inserted in the fullhelp string
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -680,7 +684,7 @@ $fullusage = "$usage
                              a space ' ' character and sub-expression reference
                              to indicate which part of the regular expression is
                              the cycle number.  Default behavior is as if
-                             -cycleregex '<([0-9]+)[^0-9]*$> \\0'
+                             -cycleregex '<([0-9]+)[^0-9]*\$> \\0'
                              was specified meaning the last sequence of one
                              or more digits before the end of the string found
                              is used as the cycle number. Do a 'man 7 regex'
