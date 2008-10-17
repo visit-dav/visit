@@ -71,6 +71,10 @@ class     avtIntervalTree;
 //    Cyrus Harrison, Thu Aug 23 08:35:12 PDT 2007
 //    Added ProcessArguments and option to explicitly disable ghost neighbors
 //
+//    Cyrus Harrison, Fri Oct 17 11:35:48 PDT 2008
+//    Added CheckForProperGhostZones, a new sanity check for proper ghost info
+//    before using the ghost zone neighbors enhancement in the parallel case.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
@@ -214,8 +218,9 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
     virtual void              Execute(void);
 
     virtual avtContract_p
-                               ModifyContract(avtContract_p);
-
+                              ModifyContract(avtContract_p);
+    
+    virtual bool              CheckForProperGhostZones(vtkDataSet **sets,int nsets);
     virtual void              LabelGhostNeighbors(vtkDataSet *);
     
     virtual vtkIntArray      *SingleSetLabel(vtkDataSet *, int &);
