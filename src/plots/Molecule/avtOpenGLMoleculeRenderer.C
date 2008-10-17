@@ -492,6 +492,18 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
 //    Jeremy Meredith, Wed Apr 18 10:23:53 EDT 2007
 //    Don't shorten bonds if we're not drawing the atoms.
 //
+//    Jeremy Meredith, Fri Oct 17 12:20:25 EDT 2008
+//    Small cleanups for shortened-bond rendering:
+//    - Don't shorten bonds if we're drawing as normal geometry, either;
+//      at very small atom sizes (e.g. bond radius==atom radius), it's not
+//      what we want, and at larger sizes it shouldn't matter.  It's still
+//      necessary for imposter atoms, though.
+//    - If the radius of an atom is bigger than half the bond length, don't
+//      draw that half of the bond. If we did, then we'd have that section
+//      overlap when we're shortening bonds.
+//    - Don't shorten the bonds if it's a cell-centered variable, because
+//      in that case we're not drawing the atoms at all.
+//
 // ****************************************************************************
 
 void
@@ -629,6 +641,7 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
 
 #ifdef SHORTEN_BONDS
             double dpt[3] = {pt_1[0]-pt_0[0], pt_1[1]-pt_0[1], pt_1[2]-pt_0[2]};
+            double dptlen = sqrt(dpt[0]*dpt[0]+dpt[1]*dpt[1]+dpt[2]*dpt[2]);
             vtkMath::Normalize(dpt);
 #endif
 
@@ -648,7 +661,8 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                     element_number = MAX_ELEMENT_NUMBER-1;
 
 #ifdef SHORTEN_BONDS
-                if (atts.GetDrawAtomsAs() != MoleculeAttributes::NoAtoms)
+                if (!primary_is_cell_centered &&
+                    atts.GetDrawAtomsAs() == MoleculeAttributes::ImposterAtoms)
                 {
                     // Determine radius
                     float atom_radius = atts.GetRadiusFixed();
@@ -658,6 +672,9 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                         atom_radius = covalent_radius[element_number] * radiusscale;
                     else if (radiusvar && sbv)
                         atom_radius = radiusvar[i] * radiusscale;
+
+                    if (atom_radius > dptlen/2.)
+                        continue;
 
                     const float fudge = 0.9;
 
