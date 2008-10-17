@@ -50,6 +50,7 @@
 #include <avtDDFFunctionInfo.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <avtExpressionFilter.h>
+#include <ExpressionException.h>
 #include <avtIdentityExpression.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtTypes.h>
@@ -370,6 +371,11 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    Keep track of variables that will be generated.  This is needed to
 //    force recalculation in rare cases.
 //
+//    Jeremy Meredith, Fri Oct 17 17:05:20 EDT 2008
+//    In the case of a recursive expressions, return an expression error, not
+//    an improper use error.  (The engine will treat ImproperUseExceptions
+//    as fatal and exit.)
+//
 // ****************************************************************************
 
 avtContract_p
@@ -453,7 +459,7 @@ avtExpressionEvaluatorFilter::ModifyContract(
                 // We've seen this expression already.
                 char error[] = "Recursive expression.";
                 debug1 << error << endl;
-                EXCEPTION1(ImproperUseException, error);
+                EXCEPTION2(ExpressionException, var, "it was recursive");
             }
         }
 
