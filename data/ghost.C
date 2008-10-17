@@ -53,7 +53,10 @@
 //   Mark C. Miller, Mon Mar 21 18:47:40 PST 2005
 //   Added driver option
 //
-int main(int argc, char **argv)
+//   Jeremy Meredith, Fri Oct 17 13:40:40 EDT 2008
+//   Split into a single-file style, and a multi-file (+ root file) style.
+//
+void Write(int style, int driver)
 {
     int ndims0[] = {3,3};
     int zdims0[] = {2,2};
@@ -76,88 +79,39 @@ int main(int argc, char **argv)
     float *coords2[] = {xc2, yc2};
     float zvar2[] = {2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8};
 
-    int driver = DB_PDB;
 
-    int i = 1;
-    while (i < argc)
-    {
-        if (strcmp(argv[i], "-driver") == 0)
-        {
-            i++;
-
-            if (strcmp(argv[i], "DB_HDF5") == 0)
-            {
-                driver = DB_HDF5;
-            }
-            else if (strcmp(argv[i], "DB_PDB") == 0)
-            {
-                driver = DB_PDB;
-            }
-            else
-            {
-               fprintf(stderr,"Uncrecognized driver name \"%s\"\n",
-                   argv[i]);
-            }
-        }
-        else
-        {
-            fprintf(stderr, "unrecognized argument \"%s\"\n", argv[i]);
-            exit(-1);
-        }
-
-        i++;
-    }
-
-
-    //
-    // Create the file
-    //
-    DBfile *db = DBCreate("ghost1.silo", DB_CLOBBER, DB_LOCAL,
-                          "ghost zone test 1", driver);
-
-    //
-    // Write domain 0
-    //
-    DBMkDir(db, "domain0");
-    DBSetDir(db, "domain0");
-
-    DBPutQuadmesh(db, "mesh", NULL, coords0, ndims0, 2, DB_FLOAT, DB_NONCOLLINEAR, NULL);
-    DBPutQuadvar1(db, "zvar", "mesh", zvar0, zdims0, 2, NULL,0, DB_FLOAT, DB_ZONECENT, NULL);
-
-    DBSetDir(db, "..");
-
-    //
-    // Write domain 1
-    //
-    DBMkDir(db, "domain1");
-    DBSetDir(db, "domain1");
-
-    DBPutQuadmesh(db, "mesh", NULL, coords1, ndims1, 2, DB_FLOAT, DB_NONCOLLINEAR, NULL);
-    DBPutQuadvar1(db, "zvar", "mesh", zvar1, zdims1, 2, NULL,0, DB_FLOAT, DB_ZONECENT, NULL);
-
-    DBSetDir(db, "..");
-
-    //
-    // Write domain 2
-    //
-    DBMkDir(db, "domain2");
-    DBSetDir(db, "domain2");
-
-    DBPutQuadmesh(db, "mesh", NULL, coords2, ndims2, 2, DB_FLOAT, DB_NONCOLLINEAR, NULL);
-    DBPutQuadvar1(db, "zvar", "mesh", zvar2, zdims2, 2, NULL,0, DB_FLOAT, DB_ZONECENT, NULL);
-
-    DBSetDir(db, "..");
+    DBfile *db;
+    const char *filename;
+    char comment[256];
+    sprintf(comment,"ghost zone test %d", style);
+    if (style==1)
+        db = DBCreate("ghost1.silo", DB_CLOBBER, DB_LOCAL, comment, driver);
+    else
+        db = DBCreate("ghost2_root.silo", DB_CLOBBER, DB_LOCAL, comment, driver);
 
     //
     // Write multimesh, multivar
     //
-    char *meshes[] = { "domain0/mesh",  "domain1/mesh",  "domain2/mesh" };
     int meshtypes[] = { DB_QUADMESH, DB_QUADMESH, DB_QUADMESH };
-    DBPutMultimesh(db, "mesh", 3, meshes, meshtypes, NULL);
-
-    char *zvars[] = { "domain0/zvar",  "domain1/zvar",  "domain2/zvar" };
     int zvartypes[] = { DB_QUADVAR, DB_QUADVAR, DB_QUADVAR };
-    DBPutMultivar(db, "zvar", 3, zvars, zvartypes, NULL);
+    if (style==1)
+    {
+        char *meshes[] = { "domain0/mesh",  "domain1/mesh",  "domain2/mesh" };
+        char *zvars[] =  { "domain0/zvar",  "domain1/zvar",  "domain2/zvar" };
+        DBPutMultimesh(db, "mesh", 3, meshes, meshtypes, NULL);
+        DBPutMultivar(db, "zvar", 3, zvars, zvartypes, NULL);
+    }
+    else
+    {
+        char *meshes[] = { "ghost2_dom0.silo:domain0/mesh",
+                           "ghost2_dom1.silo:domain1/mesh",
+                           "ghost2_dom2.silo:domain2/mesh" };
+        char *zvars[] =  { "ghost2_dom0.silo:domain0/zvar",
+                           "ghost2_dom1.silo:domain1/zvar",
+                           "ghost2_dom2.silo:domain2/zvar" };
+        DBPutMultimesh(db, "mesh", 3, meshes, meshtypes, NULL);
+        DBPutMultivar(db, "zvar", 3, zvars, zvartypes, NULL);
+    }
 
     //
     // Write domain connectivity
@@ -236,10 +190,103 @@ int main(int argc, char **argv)
     DBWrite(db, "Neighbor_1", &neighbors2[1][0], &len, 1, DB_INT);
 
     DBSetDir(db, "..");
+    DBSetDir(db, "..");
+
+    
+    //
+    // Write domain 0
+    //
+    if (style==2)
+    {
+        DBClose(db);
+        db = DBCreate("ghost2_dom0.silo", DB_CLOBBER, DB_LOCAL, comment, driver);
+    }
+
+    DBMkDir(db, "domain0");
+    DBSetDir(db, "domain0");
+
+    DBPutQuadmesh(db, "mesh", NULL, coords0, ndims0, 2, DB_FLOAT, DB_NONCOLLINEAR, NULL);
+    DBPutQuadvar1(db, "zvar", "mesh", zvar0, zdims0, 2, NULL,0, DB_FLOAT, DB_ZONECENT, NULL);
+
+    DBSetDir(db, "..");
+
+
+    //
+    // Write domain 1
+    //
+    if (style==2)
+    {
+        DBClose(db);
+        db = DBCreate("ghost2_dom1.silo", DB_CLOBBER, DB_LOCAL, comment, driver);
+    }
+
+    DBMkDir(db, "domain1");
+    DBSetDir(db, "domain1");
+
+    DBPutQuadmesh(db, "mesh", NULL, coords1, ndims1, 2, DB_FLOAT, DB_NONCOLLINEAR, NULL);
+    DBPutQuadvar1(db, "zvar", "mesh", zvar1, zdims1, 2, NULL,0, DB_FLOAT, DB_ZONECENT, NULL);
+
+    DBSetDir(db, "..");
+
+    //
+    // Write domain 2
+    //
+    if (style==2)
+    {
+        DBClose(db);
+        db = DBCreate("ghost2_dom2.silo", DB_CLOBBER, DB_LOCAL, comment, driver);
+    }
+
+    DBMkDir(db, "domain2");
+    DBSetDir(db, "domain2");
+
+    DBPutQuadmesh(db, "mesh", NULL, coords2, ndims2, 2, DB_FLOAT, DB_NONCOLLINEAR, NULL);
+    DBPutQuadvar1(db, "zvar", "mesh", zvar2, zdims2, 2, NULL,0, DB_FLOAT, DB_ZONECENT, NULL);
+
+    DBSetDir(db, "..");
 
     //
     // Done!  Close the file
     //
 
     DBClose(db);
+}
+
+int main(int argc, char **argv)
+{
+    int driver = DB_PDB;
+
+    int i = 1;
+    while (i < argc)
+    {
+        if (strcmp(argv[i], "-driver") == 0)
+        {
+            i++;
+
+            if (strcmp(argv[i], "DB_HDF5") == 0)
+            {
+                driver = DB_HDF5;
+            }
+            else if (strcmp(argv[i], "DB_PDB") == 0)
+            {
+                driver = DB_PDB;
+            }
+            else
+            {
+               fprintf(stderr,"Uncrecognized driver name \"%s\"\n",
+                   argv[i]);
+            }
+        }
+        else
+        {
+            fprintf(stderr, "unrecognized argument \"%s\"\n", argv[i]);
+            return -1;
+        }
+
+        i++;
+    }
+
+    Write(1, driver);
+    Write(2, driver);
+    return 0;
 }
