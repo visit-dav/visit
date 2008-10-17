@@ -291,7 +291,7 @@ avtConnComponentsExpression::Execute()
     bool have_ghosts = false;
     if(nsets > 0)
         have_ghosts = data_sets[0]->GetCellData()->GetArray("avtGhostZones");
-
+        
     // set progress related vars
 #ifdef PARALLEL
     totalSteps = nsets *4;
@@ -303,8 +303,16 @@ avtConnComponentsExpression::Execute()
     currentProgress = 0;        
 
 #ifdef PARALLEL
-    if( enableGhostNeighbors && have_ghosts)
+
+    debug2 << "avtConnComponentsExpression::enableGhostNeighbors = " 
+           << enableGhostNeighbors <<endl;
+    if( enableGhostNeighbors &&
+        CheckForProperGhostZones(data_sets,nsets))
     {
+        debug2 << "avtConnComponentsExpression:: Proper ghost zones found for "
+               << "ghost zone communication enhancement." 
+               << "Labeling ghost zone neighbors."
+               << endl;
         // if we have ghosts, label ghost neighbors for reduced comm in global
         // resolve
         for( i = 0; i <nsets ; i++)
@@ -313,6 +321,12 @@ avtConnComponentsExpression::Execute()
             UpdateProgress(currentProgress++,totalSteps);
         }
     }
+    else
+    {
+        debug2 << "avtConnComponentsExpression:: Proper ghost zones NOT found "
+               << "for ghost zone communication enhancement." << endl;
+    }
+
 #endif
     
     // filter out any ghost cells
@@ -467,6 +481,63 @@ avtConnComponentsExpression::Execute()
 
     // set the final number of components
     nFinalComps  = num_comps;
+}
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::CheckForProperGhostZones
+//
+//  Purpose:
+//     Checks for ghost zone info that can be used in to reduce parallel 
+//     communication. 
+//
+//  Arguments:
+//    sets        Input data sets.
+//    nsets       Number of input data sets. 
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   October 10, 20078
+//
+// ****************************************************************************
+bool
+avtConnComponentsExpression::CheckForProperGhostZones(vtkDataSet **sets,
+                                                      int nsets)
+{
+    bool found_ghosts = false;
+    bool valid = true;
+    int total_ncells = 0;
+    for(int i=0; i < nsets && valid; i++)
+    {
+        int ncells = sets[i]->GetNumberOfCells();
+        total_ncells += ncells;
+        vtkUnsignedCharArray *gz_array = (vtkUnsignedCharArray *) sets[i]
+                                    ->GetCellData()->GetArray("avtGhostZones");
+        if(gz_array)
+        {
+            unsigned char *gz_ptr = (unsigned char *)gz_array->GetPointer(0);
+            for(int j=0; j < ncells && valid; j++)
+            {
+                if(gz_ptr[j] & 1)
+                    found_ghosts = true;
+                if(gz_ptr[j] > 1)
+                    valid = false;
+            }
+        }
+        else
+        {
+            valid = false;
+        }
+    }
+    
+    // if we have more procs than domains, make sure procs with no data remain 
+    // neutral. 
+    
+    if(nsets == 0 || total_ncells == 0)
+        valid = true;
+    else
+        valid = valid && found_ghosts;
+        
+    int val = (int) (valid);
+    val = UnifyMinimumValue(val);
+    return (val == 1);
 }
 
 // ****************************************************************************
