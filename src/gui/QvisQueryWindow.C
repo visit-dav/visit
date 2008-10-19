@@ -1081,6 +1081,10 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
 //
+//   Cyrus Harrison, Sat Oct 18 21:33:18 PDT 2008
+//   Fixed parsing error for Connected Components Summary Query, caused by 
+//   migration of GetVars to a new text field widget. 
+//
 // ****************************************************************************
 
 void
@@ -1329,15 +1333,13 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
             }
             else if (winT == QueryList::ConnCompSummary)
             {
+                // get from textFields[0] (this used to be hooked up to GetVars ...)
                 stringVector v;
-                if (!GetVars(vars))
+                v.push_back(textFields[0]->text().stripWhiteSpace().latin1());
+                if(v[0]=="")
                     noErrors = false;
-
-                if (vars.size() != 1)
-                    noErrors = false;
-
                 if (noErrors)
-                    GetViewerMethods()->DatabaseQuery(names[index], vars, 
+                    GetViewerMethods()->DatabaseQuery(names[index], v, 
                                                       false,true);
             }
             else if (winT == QueryList::ShapeletsDecomp)
