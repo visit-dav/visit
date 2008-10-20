@@ -3314,11 +3314,20 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
         plot = plotFactory->CreatePlot(type, ek, host, db, newVarName,
                                        silr, plotState, nStates,
                                        cacheIndex, cacheSize);
-        plot->RegisterViewerPlotList(this);
+        //
+        // We have to check the plot pointer in case an invalid plot
+        // type was requested, since that's not an exception in the
+        // plot factory.
+        //
+        if(plot != 0)
+        {
+            plot->RegisterViewerPlotList(this);
 
-        // If the user passed a plot name then let's call the plot by that name.
-        if(optionalPlotName != 0)
-            plot->SetPlotName(optionalPlotName);
+            // If the user passed a plot name then let's call the plot 
+            // by that name.
+            if(optionalPlotName != 0)
+                plot->SetPlotName(optionalPlotName);
+        }
     }
     CATCH(VisItException)
     {
