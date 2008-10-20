@@ -34,16 +34,18 @@
 
 #define VERDICT_VERSION 110
 
-#define VERDICT_DBL_MIN 1.0E-30
-#define VERDICT_DBL_MAX 1.0E+30
 #define VERDICT_PI 3.1415926535897932384626
 
 /* note:  the VERDICT_USE_FLOAT must be consistent with the build of the library */
 
 #ifdef VERDICT_USE_FLOAT
    #define VERDICT_REAL float
+   #define VERDICT_DBL_MIN 1.0E-30
+   #define VERDICT_DBL_MAX 1.0E+30
 #else
    #define VERDICT_REAL double
+   #define VERDICT_DBL_MIN 1.0E-300
+   #define VERDICT_DBL_MAX 1.0E+300
 #endif
 
 
