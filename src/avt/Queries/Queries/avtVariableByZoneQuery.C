@@ -138,6 +138,11 @@ avtVariableByZoneQuery::Preparation(const avtDataAttributes &inAtts)
 //    Ensure magnitude of vectors/tensors gets reported as the result, instead
 //    of the first component.  Also ensure a failed query gets reported.
 //
+//    Brad Whitlock, Mon Oct 20 16:13:30 PDT 2008
+//    Check to see if there are varInfo's in the pick attributes. There are
+//    none in the case that the user accidentally performed the query on
+//    a Mesh plot.
+//
 // ****************************************************************************
 
 void
@@ -156,8 +161,13 @@ avtVariableByZoneQuery::PostExecute(void)
             pickAtts.SetCellPoint(cp);
             pickAtts.CreateOutputString(msg);
             SetResultMessage(msg.c_str());
-            vals = pickAtts.GetVarInfo(0).GetValues();
-            SetResultValue(vals[vals.size()-1]);
+            if(pickAtts.GetNumVarInfos() > 0)
+            {
+                vals = pickAtts.GetVarInfo(0).GetValues();
+                SetResultValue(vals[vals.size()-1]);
+            }
+            else
+                SetResultValues(vals);
         }
         else
         {
