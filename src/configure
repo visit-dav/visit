@@ -8526,10 +8526,23 @@ else
       HDF4_FLAGS="-I$DEFAULT_HDF4_FLAGS $HDF4_FLAGS"
    fi
    if test "$DEFAULT_HDF4_LIBS" != "" ; then
+      # Having removed SZIP from VisIt's configure (10/21/08), this logic for
+      # SZIP_LIB is here solely to prevent having to modify build_visit
+      # where HDF4 in concerned. If build_visit builds an HDF4 with SZIP
+      # dependence, it will also define the DEFAULT_SZIP_LIB symbol. If
+      # some person builds HDF4 with szip dependence and attempts to
+      # handle it via the --with-hdf4 config option to VisIt, it will
+      # fail because the DEFAULT_SZIP_LIB symbol will not have been
+      # defined. They will have to specify it either to configure or
+      # in a config-site file. This situation should be rare and in
+      # any event, will change shortly after 1.11 is released.
+      if test -n "$DEFAULT_SZIP_LIB"; then
+          SZIP_LIB="-L$DEFAULT_SZIP_LIB -lsz"
+      fi
       if test "$UNAME" = "Darwin"; then
-          HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -lvtkjpeg -lz $HDF4_LIBS"
+          HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -lvtkjpeg $SZIP_LIB -lz"
       else
-          HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -ljpeg -lz $HDF4_LIBS"
+          HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -ljpeg $SZIP_LIB -lz"
       fi
       HDF4_LIBDIR="$DEFAULT_HDF4_LIBS"
    fi
