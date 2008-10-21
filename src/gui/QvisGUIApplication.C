@@ -1902,6 +1902,9 @@ QvisGUIApplication::Quit()
 //    Jeremy Meredith, Thu Aug  7 15:39:55 EDT 2008
 //    Removed unused var.
 //
+//    Brad Whitlock, Mon Oct 20 16:35:10 PDT 2008
+//    Don't set the loadFile path if the host is localhost.
+//
 // ****************************************************************************
 
 void
@@ -2189,8 +2192,13 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
             {
                 if(!localOnly)
                 {
-                    loadFile.host = argv[i+1];
-                    loadFile.path = "~";
+                    std::string eHost(argv[i+1]);
+                    if(eHost != "localhost")
+                    {
+                        loadFile.host = eHost;
+                        if(loadFile.path.size() < 1)
+                            loadFile.path = "~";
+                    }
                 }
                 ++i;
             }
