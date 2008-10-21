@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPDIR PLATFORM_CPPFLAGS CMAKE CXXFLAGS EGREP CXX LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PARALLEL PARALLEL_CPPFLAGS MPI_LIBS MPI_CC MPI_CXX LIBSTATICPAR LIBSHAREDPAR LIBSHAREDPAR_UPDATEONLY PARDEP BUILD_COGNOMEN LIBCOGNOMEN MESA_DIR MESA_INCLUDE MESA_LIBS VIEWER_MESA_STUB_CPPFLAGS VIEWER_MESA_LIBS BUILD_MESA_STUB ICET_CXXFLAGS ICET_LDFLAGS ICET_LIBS ICET_ENG_MAIN_OBJ CC CFLAGS ac_ct_CC GL_LIBS VTK_DIR VTK_INCLUDES VTK_LIBS VTK_LIGHTWEIGHT_LIBS AVTPREP_SER AVTPREP_PAR CONVERT_SER CONVERT_PAR MAKEMILI_SER MAKEMILI_PAR ENGINE_SER ENGINE_PAR ENGINELIBSER ENGINELIBPAR METADATA_SERVER MDSERVERLIB MDSERVEROBJ VISITPY SCRIPTINGLIB SCRIPTINGOBJ PY_BUILD_VISITMODULE GUI GUILIB GUIOBJ GUIFRAMEWORKS VIEWER VISWINDOW VIEWERLIB VIEWEROBJ ENGINEPROXYDIR ANNOTATION_FLAGS JAVAC JAVA_TARGET JAR JAVAFLAGS JAVAPLUGINFLAGS BUILD_SLIVR SLIVR_INCLUDE SLIVR_LIBS TEEM_CMAKE_C_FLAGS SLIVR_CMAKE_SHARED_LINKER_FLAGS SLIVR_GUI_IMPL SLIVR_GUI_HDR HELP PLOT_BUILD_DIRS OPERATOR_BUILD_DIRS DB_BUILD_DIRS BUILD_GLEW GLEW_INCLUDE GLEW_LIBS BUILD_BILIB CXXCPP CPP F77 FFLAGS ac_ct_F77 SET_MAKE RANLIB ac_ct_RANLIB MAKEDEPEND BUILD_FORTRAN OS_RULE BUILD_ZLIB ZLIB_LIB SZIP SZIP_INCLUDE SZIP_LIB SZIP_LIBDIR HDF5 HDF5_INCLUDE HDF5_LIB HDF5_LIBDIR HDF5_EXEC SILO_INCLUDE LIBSILO SILO_LIB SILO_LIBDIR EXODUS EXODUS_LIB EXODUS_LIBS EXODUS_FLAGS PDB PDB_FLAGS PDB_LIBS PDB_EXEC MILI MILI_FLAGS MILI_LIBS MILI_DIR TCMALLOC_LIB TCMALLOC_DIR CREATE_TCMALLOC_LINK HDF4 HDF4_FLAGS HDF4_LIBS HDF4_LIBDIR BOXLIB2D BOXLIB2D_INCLUDE BOXLIB2D_LIBS BOXLIB2D_LIBDIR BOXLIB3D BOXLIB3D_INCLUDE BOXLIB3D_LIBS BOXLIB3D_LIBDIR H5PART H5PART_INCLUDE H5PART_LIB H5PART_LIBDIR VISUS VISUS_INCLUDE VISUS_LIB NETCDF NETCDF_INCLUDE NETCDF_LIB NETCDF_CXX_LIB CGNS CGNS_INCLUDE CGNS_LIB GDAL GDAL_INCLUDE GDAL_LIB GDAL_LIBS CFITSIO CFITSIO_INCLUDE CFITSIO_LIB CFITSIO_LIBDIR ITAPS_C_INCLUDE ITAPS_C_LIB ITAPS_C0_INCLUDE ITAPS_C0_LIB ITAPS_C1_INCLUDE ITAPS_C1_LIB ITAPS_C2_INCLUDE ITAPS_C2_LIB ITAPS_C3_INCLUDE ITAPS_C3_LIB ITAPS_C4_INCLUDE ITAPS_C4_LIB ITAPS_C CCMIO CCMIO_INCLUDE CCMIO_LIBS CCMIO_LIBDIR SIMULATION EXPORT_DYNAMIC ENGINE_CPPFLAGS SILOOBJVTK_CPPFLAGS PREPROCESSOR_CPPFLAGS PREPROCESSOR_PARALLEL_SRC COMPONENT_CPPFLAGS VISIT_VTK_CPPFLAGS VISIT_VTK_LDFLAGS VIEWER_CPPFLAGS QT_BIN QT_INCLUDE QT_LIB LIBQT QT_LIBS QUI_LIBS QT_LDFLAGS QT_STATICLDFLAGS QT_CXXFLAGS QT_MOC X_LIBS VTKQT_CPPFLAGS VTKQT VTKQT_LIBS PTHREAD_LIB PTHREAD_CXXFLAGS PYDIR PYVERSION PY_INCLUDEDIR PY_CXXFLAGS PY_LDFLAGS PY_LIB PY_CLI_LIB EXE_LDFLAGS PLUGIN_LDFLAGS SHLIB_CREATEPROG SHLIB_LIBS SHLIB_SERLIBS SHLIB_PARLIBS SHLIB_MPI_LIBS SHLIB_ILIBS SHLIB_GLIBS SHLIB_VLIBS SHLIB_MLIBS SHLIB_ESERLIBS SHLIB_EPARLIBS SHLIB_SLIBS SHLIB_POSTPROCESS_ILIBS SHLIB_POSTPROCESS_GLIBS SHLIB_POSTPROCESS_VLIBS SHLIB_POSTPROCESS_MLIBS SHLIB_POSTPROCESS_ESERLIBS SHLIB_POSTPROCESS_EPARLIBS SHLIB_POSTPROCESS_SLIBS SHLIB_SOEXT SHLIB_LIBEXT SHLIB_POSTPROCESS SHLIB_POSTPROCESS_SER SHLIB_POSTPROCESS_PAR SHLIB_TMPDIR PREBIND_LIBS ENGINEWRAPSER ENGINEWRAPPAR CREATE_SILO_LINK CREATE_MILI_LINK CREATE_SZIP_LINK CREATE_HDF4_LINK CREATE_HDF5_LINK CREATE_NETCDF_LINK CREATE_CGNS_LINK CREATE_GDAL_LINK CREATE_EXODUS_LINK CREATE_BOXLIB2D_LINK CREATE_BOXLIB3D_LINK CREATE_CFITSIO_LINK CREATE_H5PART_LINK CREATE_CCMIO_LINK MG tmpbin tmpinc tmplib plotplugindir operatorplugindir databaseplugindir DATA_REL_VISIT_PATH LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPDIR PLATFORM_CPPFLAGS CMAKE CXXFLAGS EGREP CXX LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PARALLEL PARALLEL_CPPFLAGS MPI_LIBS MPI_CC MPI_CXX LIBSTATICPAR LIBSHAREDPAR LIBSHAREDPAR_UPDATEONLY PARDEP BUILD_COGNOMEN LIBCOGNOMEN MESA_DIR MESA_INCLUDE MESA_LIBS VIEWER_MESA_STUB_CPPFLAGS VIEWER_MESA_LIBS BUILD_MESA_STUB ICET_CXXFLAGS ICET_LDFLAGS ICET_LIBS ICET_ENG_MAIN_OBJ CC CFLAGS ac_ct_CC GL_LIBS VTK_DIR VTK_INCLUDES VTK_LIBS VTK_LIGHTWEIGHT_LIBS AVTPREP_SER AVTPREP_PAR CONVERT_SER CONVERT_PAR MAKEMILI_SER MAKEMILI_PAR ENGINE_SER ENGINE_PAR ENGINELIBSER ENGINELIBPAR METADATA_SERVER MDSERVERLIB MDSERVEROBJ VISITPY SCRIPTINGLIB SCRIPTINGOBJ PY_BUILD_VISITMODULE GUI GUILIB GUIOBJ GUIFRAMEWORKS VIEWER VISWINDOW VIEWERLIB VIEWEROBJ ENGINEPROXYDIR ANNOTATION_FLAGS JAVAC JAVA_TARGET JAR JAVAFLAGS JAVAPLUGINFLAGS BUILD_SLIVR SLIVR_INCLUDE SLIVR_LIBS TEEM_CMAKE_C_FLAGS SLIVR_CMAKE_SHARED_LINKER_FLAGS SLIVR_GUI_IMPL SLIVR_GUI_HDR HELP PLOT_BUILD_DIRS OPERATOR_BUILD_DIRS DB_BUILD_DIRS BUILD_GLEW GLEW_INCLUDE GLEW_LIBS BUILD_BILIB CXXCPP CPP F77 FFLAGS ac_ct_F77 SET_MAKE RANLIB ac_ct_RANLIB MAKEDEPEND BUILD_FORTRAN OS_RULE BUILD_ZLIB ZLIB_LIB HDF5_INCLUDE HDF5_LIB HDF5_TARGET SILO_INCLUDE SILO_LIB SILO_TARGET EXODUS EXODUS_LIB EXODUS_LIBS EXODUS_FLAGS PDB PDB_FLAGS PDB_LIBS PDB_EXEC MILI MILI_FLAGS MILI_LIBS MILI_DIR TCMALLOC_LIB TCMALLOC_DIR CREATE_TCMALLOC_LINK HDF4 HDF4_FLAGS HDF4_LIBS HDF4_LIBDIR BOXLIB2D BOXLIB2D_INCLUDE BOXLIB2D_LIBS BOXLIB2D_LIBDIR BOXLIB3D BOXLIB3D_INCLUDE BOXLIB3D_LIBS BOXLIB3D_LIBDIR H5PART H5PART_INCLUDE H5PART_LIB H5PART_LIBDIR VISUS VISUS_INCLUDE VISUS_LIB NETCDF NETCDF_INCLUDE NETCDF_LIB NETCDF_CXX_LIB CGNS CGNS_INCLUDE CGNS_LIB GDAL GDAL_INCLUDE GDAL_LIB GDAL_LIBS CFITSIO CFITSIO_INCLUDE CFITSIO_LIB CFITSIO_LIBDIR ITAPS_C_INCLUDE ITAPS_C_LIB ITAPS_C0_INCLUDE ITAPS_C0_LIB ITAPS_C1_INCLUDE ITAPS_C1_LIB ITAPS_C2_INCLUDE ITAPS_C2_LIB ITAPS_C3_INCLUDE ITAPS_C3_LIB ITAPS_C4_INCLUDE ITAPS_C4_LIB ITAPS_C CCMIO CCMIO_INCLUDE CCMIO_LIBS CCMIO_LIBDIR SIMULATION EXPORT_DYNAMIC ENGINE_CPPFLAGS SILOOBJVTK_CPPFLAGS PREPROCESSOR_CPPFLAGS PREPROCESSOR_PARALLEL_SRC COMPONENT_CPPFLAGS VISIT_VTK_CPPFLAGS VISIT_VTK_LDFLAGS VIEWER_CPPFLAGS QT_BIN QT_INCLUDE QT_LIB LIBQT QT_LIBS QUI_LIBS QT_LDFLAGS QT_STATICLDFLAGS QT_CXXFLAGS QT_MOC X_LIBS VTKQT_CPPFLAGS VTKQT VTKQT_LIBS PTHREAD_LIB PTHREAD_CXXFLAGS PYDIR PYVERSION PY_INCLUDEDIR PY_CXXFLAGS PY_LDFLAGS PY_LIB PY_CLI_LIB EXE_LDFLAGS PLUGIN_LDFLAGS SHLIB_CREATEPROG SHLIB_LIBS SHLIB_SERLIBS SHLIB_PARLIBS SHLIB_MPI_LIBS SHLIB_ILIBS SHLIB_GLIBS SHLIB_VLIBS SHLIB_MLIBS SHLIB_ESERLIBS SHLIB_EPARLIBS SHLIB_SLIBS SHLIB_POSTPROCESS_ILIBS SHLIB_POSTPROCESS_GLIBS SHLIB_POSTPROCESS_VLIBS SHLIB_POSTPROCESS_MLIBS SHLIB_POSTPROCESS_ESERLIBS SHLIB_POSTPROCESS_EPARLIBS SHLIB_POSTPROCESS_SLIBS SHLIB_SOEXT SHLIB_LIBEXT SHLIB_POSTPROCESS SHLIB_POSTPROCESS_SER SHLIB_POSTPROCESS_PAR SHLIB_TMPDIR PREBIND_LIBS ENGINEWRAPSER ENGINEWRAPPAR CREATE_SILO_LINK CREATE_MILI_LINK CREATE_HDF4_LINK CREATE_NETCDF_LINK CREATE_CGNS_LINK CREATE_GDAL_LINK CREATE_EXODUS_LINK CREATE_BOXLIB2D_LINK CREATE_BOXLIB3D_LINK CREATE_CFITSIO_LINK CREATE_H5PART_LINK CREATE_CCMIO_LINK MG tmpbin tmpinc tmplib plotplugindir operatorplugindir databaseplugindir DATA_REL_VISIT_PATH LIBOBJS LTLIBOBJS'
 ac_subst_files='VARIABLES TARGETS DIRTARGETS LIBTARGETS PARLIBTARGETS SOURCE_DEPENDENCIES'
 
 # Initialize some variables set by options.
@@ -901,8 +901,7 @@ Optional Packages:
                           be ommitted)
   --without-pty           Disable PTY use
   --with-zlib=INC-DIR,LIB-DIR     Use the GNU zlib compression
-  --with-szip=INC-DIR,LIB-DIR       Location of szip headers and library
-  --with-hdf5=INC-DIR,LIB-DIR     Location of HDF5 header and library
+  --with-hdf5             use hdf5; build related plugin(s)/code
   --with-silo_include=<INC-DIR>     User-specified SILO include directory
   --with-silo_library=<LIB-DIR>     User-specified SILO library directory
   --with-exodus=<DIR>           enable Exodus driver
@@ -5977,7 +5976,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5980:" \
+echo "$as_me:5979:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -7723,6 +7722,7 @@ fi
                 # do is add '-lz' to LIBS variable.
                 BUILD_ZLIB=zlib
                 LIBS="-lz $LIBS"
+                ZLIB_LIB="-lz"
                 cat >>confdefs.h <<\_ACEOF
 #define HAVE_ZLIB_H 1
 _ACEOF
@@ -7749,7 +7749,7 @@ echo "${ECHO_T}builtin" >&6
         ;;
     no)
         # Totally disable zlib
-        ZLIB_LIBS=""
+        ZLIB_LIB=""
         echo "$as_me:$LINENO: checking for GNU zlib" >&5
 echo $ECHO_N "checking for GNU zlib... $ECHO_C" >&6
         echo "$as_me:$LINENO: result: suppressed" >&5
@@ -7778,7 +7778,7 @@ echo "$as_me: error: no libz.a or libz.so found in $zlib_lib" >&2;}
 #define HAVE_ZLIB_H 1
 _ACEOF
 
-        ZLIB_LIBS="-L$zlib_lib -lz"
+        ZLIB_LIB="-L$zlib_lib -lz"
         echo "$as_me:$LINENO: result: -I$zlib_inc -L$zlib_lib -lz" >&5
 echo "${ECHO_T}-I$zlib_inc -L$zlib_lib -lz" >&6
         ;;
@@ -7786,152 +7786,425 @@ esac
 
  # primarily for mac pre-binding
 
-
 #
-echo "$as_me:$LINENO: checking for szip" >&5
-echo $ECHO_N "checking for szip... $ECHO_C" >&6
-SZIP=""
-SZIP_INCLUDE=""
-SZIP_LIB=""
-SZIP_LIBDIR=""
+# Handle hdf5 library using new VAC_ARG_WITH3RD macro
+# All libs should be switched to use this new macro.
+#
 
-# Check whether --with-szip or --without-szip was given.
-if test "${with_szip+set}" = set; then
-  withval="$with_szip"
-  szip_specified="yes"
-else
-  szip_specified="no"
-fi;
-if test "$szip_specified" = "yes"; then
-   if test "$withval" != "no"; then
-      SZIP_INCLUDE="-I`echo $withval |cut -f1 -d,`"
-      if test "$UNAME" = "Darwin"; then
-         SZIP_LIB="-L`echo $withval |cut -f2 -d, -s` -lsz"
-      else
-         SZIP_LIB="`echo $withval |cut -f2 -d, -s`/libsz.a"
-      fi
-      SZIP_LIBDIR="`echo $withval |cut -f2 -d, -s`"
-   fi
-else
-   if test "$DEFAULT_SZIP_INCLUDE" != "" ; then
-      SZIP_INCLUDE="-I$DEFAULT_SZIP_INCLUDE $SZIP_INCLUDE"
-   fi
-   if test "$DEFAULT_SZIP_LIB" != "" ; then
-      SZIP_LIBDIR="$DEFAULT_SZIP_LIB"
-      if test "$UNAME" = "Darwin"; then
-         SZIP_LIB="-L$DEFAULT_SZIP_LIB -lsz"
-      else
-         SZIP_LIB="$DEFAULT_SZIP_LIB/libsz.a"
-      fi
-   fi
-fi
-if test "$SZIP_LIB" != "" ; then
-   if test "$SZIP_INCLUDE" != "" ; then
-      SZIP="$""(SZIP)"
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_SZLIB_H 1
-_ACEOF
-
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_LIBSZ 1
-_ACEOF
-
-      echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-   else
-      echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-   fi
-else
-   echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-
-
-
-
-
-
-saved_CPPFLAGS="$CPPFLAGS"
-saved_CFLAGS="$CFLAGS"
-saved_LDFLAGS="$LDFLAGS"
-saved_LIBS="$LIBS"
-
-echo "$as_me:$LINENO: checking for HDF5" >&5
-echo $ECHO_N "checking for HDF5... $ECHO_C" >&6
-HDF5=""
-HDF5_INCLUDE=""
-HDF5_LIB=""
-HDF5_LIBDIR=""
-HDF5_EXEC=""
 
 # Check whether --with-hdf5 or --without-hdf5 was given.
 if test "${with_hdf5+set}" = set; then
   withval="$with_hdf5"
-  hdf5_specified="yes"
-else
-  hdf5_specified="no"
 
+else
+  withval=$DEFAULT_HDF5_LIBLOC:$DEFAULT_HDF5_LIBDEP
 fi;
-if test "$UNAME" = "Darwin"; then
-    H5_LIBEXT="dylib"
-else
-    H5_LIBEXT="a"
-fi
-if test "$hdf5_specified" = "yes"; then
-   if test "$withval" != "no"; then
-      HDF5_INCLUDE="-I`echo $withval |cut -f1 -d,`"
-      if test "$UNAME" = "Darwin"; then
-         HDF5_LIB="-L`echo $withval |cut -f2 -d, -s` -lhdf5 $SZIP_LIB"
-      else
-         HDF5_LIB="`echo $withval |cut -f2 -d, -s`/libhdf5.$H5_LIBEXT $SZIP_LIB"
-      fi
-      HDF5_LIBDIR="`echo $withval |cut -f2 -d, -s`"
-   fi
-else
-   if test "$DEFAULT_HDF5_INCLUDE" != "" ; then
-      HDF5_INCLUDE="-I$DEFAULT_HDF5_INCLUDE $HDF5_INCLUDE"
-   fi
-   if test "$DEFAULT_HDF5_LIB" != "" ; then
-      if test "$UNAME" = "Darwin"; then
-         HDF5_LIB="-L$DEFAULT_HDF5_LIB -lhdf5 $SZIP_LIB $HDF5_LIB"
-      else
-         HDF5_LIB="$DEFAULT_HDF5_LIB/libhdf5.$H5_LIBEXT $SZIP_LIB $HDF5_LIB"
-      fi
-      HDF5_LIBDIR="$DEFAULT_HDF5_LIB"
-   fi
-fi
-if test "$HDF5_LIB" != "" ; then
-   if test "$HDF5_INCLUDE" != "" ; then
-      HDF5="$""(HDF5)"
-      HDF5_EXEC="$""(HDF5EXEC)"
-      echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
 
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_HDF5_H 1
+    HDF5_INCLUDE=""
+    HDF5_LIB=""
+    HDF5_TARGET=""
+    incfile=hdf5.h
+    libtags="hdf5"
+    incdirs="include inc ."
+    libdirs="libso lib ."
+    libexts="dylib so a"
+    lib_links=""
+    deplib_links=""
+    incdir=""
+    libdir=""
+    libtag=""
+    libfile=""
+
+    if test "$withval" = yes; then
+
+for ac_header in $incfile
+do
+as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking $ac_header usability" >&5
+echo $ECHO_N "checking $ac_header usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <$ac_header>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking $ac_header presence" >&5
+echo $ECHO_N "checking $ac_header presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <$ac_header>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_c_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_c_werror_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: present but cannot be compiled" >&5
+echo "$as_me: WARNING: $ac_header: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: $ac_header:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: $ac_header: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: $ac_header: in the future, the compiler will take precedence" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------------ ##
+## Report this to the AC_PACKAGE_NAME lists.  ##
+## ------------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  eval "$as_ac_Header=\$ac_header_preproc"
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
+
+fi
+if test `eval echo '${'$as_ac_Header'}'` = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
 
+fi
+
+done
+
+
+    else
+        echo "$as_me:$LINENO: checking if using hdf5" >&5
+echo $ECHO_N "checking if using hdf5... $ECHO_C" >&6
+    fi
+    if test "$withval" = builtin; then
+
+        libs=""
+        for t in $libtags; do
+            libs="$libs -l${t}"
+        done
+        HDF5_LIB="$libs"
+        HDF5_TARGET="$""(HDF5_TARGET)"
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_LIBHDF5 1
 _ACEOF
 
-   else
-      echo "$as_me:$LINENO: result: no" >&5
+        echo "$as_me:$LINENO: result: builtin" >&5
+echo "${ECHO_T}builtin" >&6
+
+    elif test -n "$withval" && test $withval != no && test $withval != yes; then
+
+        #
+        # Handle various forms of the with argument
+        #     <DIR> single dir below which inc[lude]/lib subdirs can be found
+        #     <I-DIR>,<L-DIR> separate include/lib dirs
+        #     <DIR>:<ADDL_LDFLAGS> same as <DIR> but with additional LDFLAGS needed to link with this lib
+        #     <I-DIR>,<L-DIR>:<ADDL_LDFLAGS> same as <I-DIR>,<L-DIR> but with additional LDFLAGS needed to link with the lib
+        #
+        if test -n "`echo $withval | cut -d':' -f1 | grep ','`"; then
+            #
+            # confirm location of hdf5 header file and its existance and readability
+            #
+            incdir="`echo $withval | cut -d':' -f1 | cut -d',' -f1`"
+            if test ! -r $incdir/$incfile; then
+                incdir=""
+            fi
+
+            #
+            # confirm location of hdf5 lib file and its existance and readability
+            #
+            libdir="`echo $withval | cut -d':' -f1 | cut -d',' -f2`"
+            for t in $libtags; do
+                for e in $libexts; do
+                    if test -r $libdir/lib$t.$e; then
+                        libfile=lib$t.$e
+                        libtag=$t
+                        break 2
+                    fi
+                done
+            done
+            if test -z "$libfile"; then
+                libdir=""
+            fi
+
+        else
+            locdir="`echo $withval | cut -d':' -f1`"
+
+            #
+            # confirm location of hdf5 header file and its existance and readability
+            #
+            for i in $incdirs; do
+                if test -r $locdir/$i/$incfile; then
+                    incdir=$locdir/$i
+                    break
+                fi
+            done
+
+            #
+            # confirm location of hdf5 lib file and its existance and readability
+            #
+            for l in $libdirs; do
+                for t in $libtags; do
+                    for e in $libexts; do
+                        if test -r $locdir/$l/lib$t.$e; then
+                            libdir=$locdir/$l
+                            libfile=lib$t.$e
+                            libtag=$t
+                            break 3
+                        fi
+                    done
+                done
+            done
+        fi
+        if test -z "$incdir"; then
+            { { echo "$as_me:$LINENO: error: cannot find or read header $incfile from info in $withval" >&5
+echo "$as_me: error: cannot find or read header $incfile from info in $withval" >&2;}
+   { (exit 1); exit 1; }; }
+        fi
+        if test -z "$libdir"; then
+            { { echo "$as_me:$LINENO: error: cannot find or read lib file(s) $libtags from info in $withval" >&5
+echo "$as_me: error: cannot find or read lib file(s) $libtags from info in $withval" >&2;}
+   { (exit 1); exit 1; }; }
+        fi
+
+        HDF5_LIBFILE=$libdir/$libfile
+
+        #
+        # Make links for this lib in the lib dir
+        #
+        rm -rf lib/${libfile}*
+        for f in $libdir/${libfile}*; do
+            fb=`basename $f`
+            ln -s $f lib/$fb
+            lib_links="$lib_links $f"
+        done
+
+        #
+        # Handle dependent libs for this library
+        #
+        deplib_ldflags="`echo $withval | cut -d':' -f2 | tr ',' ' '`"
+        deplib_dirs=$libdir
+        deplib_libs=""
+        deplib_flags=""
+        if test -n "`echo $withval | grep ':'`"; then
+
+            #
+            # Separate into -L terms and -l terms
+            #
+            for f in $deplib_ldflags; do
+                if test "`echo $f | cut -d'L' -f1`" = "-"; then
+                    deplib_dirs="$deplib_dirs `echo $f | cut -d'L' -f2-`"
+                elif test "`echo $f | cut -d'l' -f1`" = "-"; then
+                    deplib_libs="$deplib_libs `echo $f | cut -d'l' -f2-`"
+                    deplib_flags="$deplib_flags $f"
+                else
+                    { { echo "$as_me:$LINENO: error: unrecognized dependent lib flag \"$f\" in \"$deplib_ldflags\"" >&5
+echo "$as_me: error: unrecognized dependent lib flag \"$f\" in \"$deplib_ldflags\"" >&2;}
+   { (exit 1); exit 1; }; }
+                fi
+            done
+
+            #
+            # Create links in lib dir
+            #
+            deplib_found="$deplib_libs"
+            for l in $deplib_libs; do
+                for d in $deplib_dirs; do
+                    for e in $libexts; do
+                        libfiles="`ls -1 $d/lib${l}.${e}* 2>/dev/null`"
+                        if test -n "$libfiles"; then
+                            rm -rf lib/lib${l}.${e}*
+                            for lf in $libfiles; do
+                                lfb=`basename $lf`
+                                ln -s $lf lib/$lfb
+                                deplib_links="$deplib_links $lf"
+                                deplib_found="`echo $deplib_found | tr ' ' '\n' | grep -xve ${l}`"
+                            done
+                            continue 3
+                        fi
+                    done # loop over e (shared lib extensions)
+                done # loop over d (lib directories)
+            done # loop over l (lib names)
+
+            if test -n "`echo $deplib_found | tr -d ':space:'`"; then
+                { { echo "$as_me:$LINENO: error: unable to resolve dependent liraries \"$deplib_found\" for hdf5" >&5
+echo "$as_me: error: unable to resolve dependent liraries \"$deplib_found\" for hdf5" >&2;}
+   { (exit 1); exit 1; }; }
+            fi
+
+        fi
+
+        deplib_flags="`echo $deplib_flags | tr -d '\n'`"
+        HDF5_INCLUDE="-I$incdir"
+        HDF5_LIB="-l${libtag} $deplib_flags"
+        HDF5_TARGET="$""(HDF5_TARGET)"
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_LIBHDF5 1
+_ACEOF
+
+
+        # if these strings are all blank, then make them really so
+        if test -z "`echo $lib_links | tr -d ':space:'`"; then
+            lib_links=
+        fi
+        if test -z "`echo $deplib_links | tr -d ':space:'`"; then
+            deplib_links=
+        fi
+
+        if test -z "$deplib_links"; then
+            echo "$as_me:$LINENO: result:
+    HDF5_INCLUDE=$HDF5_INCLUDE
+    HDF5_LIB=$HDF5_LIB
+    $lib_links" >&5
+echo "${ECHO_T}
+    HDF5_INCLUDE=$HDF5_INCLUDE
+    HDF5_LIB=$HDF5_LIB
+    $lib_links" >&6
+        else
+            echo "$as_me:$LINENO: result:
+    HDF5_INCLUDE=$HDF5_INCLUDE
+    HDF5_LIB=$HDF5_LIB
+    $lib_links
+    $deplib_links" >&5
+echo "${ECHO_T}
+    HDF5_INCLUDE=$HDF5_INCLUDE
+    HDF5_LIB=$HDF5_LIB
+    $lib_links
+    $deplib_links" >&6
+        fi
+
+    else
+
+        echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
-   fi
-else
-   echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
+
+    fi
+
+
+
+
+
+
+
+# Check for possible zlib dependence. If there is, we'll just add -lz
+if test -n "$HDF5_LIB"; then
+    if test -n "`strings $HDF5_LIBFILE | grep -i inflateInit`"; then
+        if test -z "`echo $LIBS | tr ' ' '\n' | grep -x -e '-lz'`"; then
+            if test -z "$ZLIB_LIB"; then
+                { { echo "$as_me:$LINENO: error: HDF5 appears to have a dependence on zlib. Add dependent libs after ':' in --with-hdf5 arg." >&5
+echo "$as_me: error: HDF5 appears to have a dependence on zlib. Add dependent libs after ':' in --with-hdf5 arg." >&2;}
+   { (exit 1); exit 1; }; }
+            else
+                HDF5_LIB="$HDF5_LIB $ZLIB_LIB"
+
+            fi
+        fi
+    fi
+    # Check for possible szip dependence.
+    if test -n "`strings $HDF5_LIBFILE | grep -i szip_compress_memory`"; then
+        if test -z "`echo $HDF5_LIB | tr ' ' '\n' | grep -x -e '-lsz'`"; then
+            { { echo "$as_me:$LINENO: error: HDF5 appears to have a dependence on szip. Add dependent libs after ':' in --with-hdf5 arg." >&5
+echo "$as_me: error: HDF5 appears to have a dependence on szip. Add dependent libs after ':' in --with-hdf5 arg." >&2;}
+   { (exit 1); exit 1; }; }
+        fi
+    fi
 fi
-
-
-
-
-
 
 #
 # Check for the public SILO includes since that's what we'll use.
@@ -7942,307 +8215,62 @@ if test "${with_silo_include+set}" = set; then
   withval="$with_silo_include"
   silo_include=$withval
 else
-  silo_include=""
+  silo_include=$DEFAULT_SILO_INCLUDES
 fi;
-echo "$as_me:$LINENO: checking for SILO include files" >&5
-echo $ECHO_N "checking for SILO include files... $ECHO_C" >&6
 if test -n "$silo_include"; then
+    echo "$as_me:$LINENO: checking for SILO include files" >&5
+echo $ECHO_N "checking for SILO include files... $ECHO_C" >&6
     SILO_INCLUDE="-I`echo $silo_include|sed 's/ 	*/ -I/g'`"
     echo "$as_me:$LINENO: result: user specified (\"$SILO_INCLUDE\")" >&5
 echo "${ECHO_T}user specified (\"$SILO_INCLUDE\")" >&6
-else
-                    silo_keep_checking="yes"
-    if test -n "$DEFAULT_SILO_INCLUDES"; then
-        if test -r "$DEFAULT_SILO_INCLUDES/silo.h"; then
-            SILO_INCLUDE="-I$DEFAULT_SILO_INCLUDES"
-            echo "$as_me:$LINENO: result: user specified (\"$SILO_INCLUDE\")" >&5
-echo "${ECHO_T}user specified (\"$SILO_INCLUDE\")" >&6
-            silo_keep_checking="no"
-        fi
-    fi
-
-                    if test "$silo_keep_checking" = "yes"; then
-        if test -r "/usr/local/apps/include/silo.h"; then
-            SILO_INCLUDE="-I/usr/local/apps/include"
-            echo "$as_me:$LINENO: result: using /usr/local/apps/include" >&5
-echo "${ECHO_T}using /usr/local/apps/include" >&6
-        elif test -r "/usr/local/meshtv/include/silo.h"; then
-            SILO_INCLUDE="-I/usr/local/meshtv/include"
-            echo "$as_me:$LINENO: result: using /usr/local/meshtv/include" >&5
-echo "${ECHO_T}using /usr/local/meshtv/include" >&6
-        elif test -r "/usr/local/apps/meshtv/include/silo.h"; then
-            SILO_INCLUDE="-I/usr/local/apps/meshtv/include"
-            echo "$as_me:$LINENO: result: using /usr/local/apps/meshtv/include" >&5
-echo "${ECHO_T}using /usr/local/apps/meshtv/include" >&6
-        else
-            { { echo "$as_me:$LINENO: error: The SILO include files could not be found. Please provide
-    --with-silo-include=directory and rerun 'configure'." >&5
-echo "$as_me: error: The SILO include files could not be found. Please provide
-    --with-silo-include=directory and rerun 'configure'." >&2;}
-   { (exit 1); exit 1; }; }
-        fi
-    fi
 fi
 
 
 #
 # Check for the public SILO library since that's what we'll use.
 #
+SILO_LIB=
+SILO_TARGET=
 
 # Check whether --with-silo_library or --without-silo_library was given.
 if test "${with_silo_library+set}" = set; then
   withval="$with_silo_library"
   silo_library=$withval
 else
-  silo_library=""
+  silo_library=$DEFAULT_SILO_LIBRARY
 fi;
-echo "$as_me:$LINENO: checking for SILO library" >&5
-echo $ECHO_N "checking for SILO library... $ECHO_C" >&6
 if test -n "$silo_library"; then
-    SILO_LIB="-L`echo $silo_library|sed 's/  */ -L/g'` -lsilo"
-    SILO_LIBDIR="$silo_library"
-    echo "$as_me:$LINENO: result: user specified (\"$SILO_LIB\")" >&5
+    echo "$as_me:$LINENO: checking for SILO library" >&5
+echo $ECHO_N "checking for SILO library... $ECHO_C" >&6
+    silo_names="siloxx siloh5 silo"
+    silo_extns="dylib so a"
+    for n in $silo_names; do
+        for e in $silo_extns; do
+            if test -r $silo_library/lib$n.$e; then
+                SILO_LIB="-L`echo $silo_library|sed 's/  */ -L/g'` -l$n"
+                SILO_TARGET="$""(SILO_TARGET)"
+                break 2
+            fi
+        done
+    done
+    if test -n "$SILO_LIB"; then
+        # check for possible dependence on hdf5
+        if test -n "`strings $silo_library/lib$n.$e | grep -i 'SILO built with HDF5 library version'`"; then
+            if test -z "$HDF5_LIB"; then
+                { { echo "$as_me:$LINENO: error: Silo appears to have a dependence on HDF5. Please use --with-hdf5 option to configure." >&5
+echo "$as_me: error: Silo appears to have a dependence on HDF5. Please use --with-hdf5 option to configure." >&2;}
+   { (exit 1); exit 1; }; }
+            fi
+            SILO_LIB="$SILO_LIB $HDF5_LIB"
+        fi
+        echo "$as_me:$LINENO: result: user specified (\"$SILO_LIB\")" >&5
 echo "${ECHO_T}user specified (\"$SILO_LIB\")" >&6
-else
-        if test "$UNAME" = "Darwin"; then
-        LIBSILO="libsilo.dylib"
-        LIBSILOH5="libsiloh5.dylib"
     else
-        LIBSILO="libsilo.a"
-        LIBSILOH5="libsiloh5.a"
-    fi
-
-                    silo_keep_checking="yes"
-    if test -n "$DEFAULT_SILO_LIBRARY"; then
-        if test -r "$DEFAULT_SILO_LIBRARY/$LIBSILO"; then
-            SILO_LIBDIR="$DEFAULT_SILO_LIBRARY"
-            echo "$as_me:$LINENO: result: user specified (\"$SILO_LIBDIR\")" >&5
-echo "${ECHO_T}user specified (\"$SILO_LIBDIR\")" >&6
-            silo_keep_checking="no"
-	elif test -r "$DEFAULT_SILO_LIBRARY/$LIBSILOH5"; then
-            SILO_LIBDIR="$DEFAULT_SILO_LIBRARY"
-            echo "$as_me:$LINENO: result: user specified (\"$SILO_LIBDIR\")" >&5
-echo "${ECHO_T}user specified (\"$SILO_LIBDIR\")" >&6
-            silo_keep_checking="no"
-	    LIBSILO="$LIBSILOH5"
-        fi
-    fi
-
-                    if test "$silo_keep_checking" = "yes"; then
-        if test -r "/usr/local/apps/lib/$LIBSILO"; then
-            SILO_LIBDIR="/usr/local/apps/lib"
-            echo "$as_me:$LINENO: result: using /usr/local/apps/lib/$LIBSILO" >&5
-echo "${ECHO_T}using /usr/local/apps/lib/$LIBSILO" >&6
-        elif test -r "/usr/local/meshtv/lib/$LIBSILO"; then
-            SILO_LIBDIR="/usr/local/meshtv/lib"
-            echo "$as_me:$LINENO: result: using /usr/local/meshtv/lib/$LIBSILO" >&5
-echo "${ECHO_T}using /usr/local/meshtv/lib/$LIBSILO" >&6
-        elif test -r "/usr/local/apps/meshtv/lib/$LIBSILO"; then
-            SILO_LIBDIR="/usr/local/apps/meshtv/lib"
-            echo "$as_me:$LINENO: result: using /usr/local/apps/meshtv/lib/$LIBSILO" >&5
-echo "${ECHO_T}using /usr/local/apps/meshtv/lib/$LIBSILO" >&6
-        else
-            { { echo "$as_me:$LINENO: error: The SILO library could not be found. Please provide
-    --with-silo-library=directory and rerun 'configure'." >&5
-echo "$as_me: error: The SILO library could not be found. Please provide
-    --with-silo-library=directory and rerun 'configure'." >&2;}
+        echo "$as_me:$LINENO: result: not found" >&5
+echo "${ECHO_T}not found" >&6
+        { { echo "$as_me:$LINENO: error: could not find a suitable silo library at $silo_library." >&5
+echo "$as_me: error: could not find a suitable silo library at $silo_library." >&2;}
    { (exit 1); exit 1; }; }
-        fi
-    fi
-
-    SILO_LIB="-L$SILO_LIBDIR -lsilo"
-fi
-
-
-#
-# Decide whether we should try to use libsiloh5 or just libsilo
-# or whether libsilo in turn depends on HDF5
-#
-if test -n "$HDF5_LIB"; then
-    if test -r "$SILO_LIBDIR/$LIBSILOH5"; then
-
-        echo "$as_me:$LINENO: checking whether to use libsilo.a or libsiloh5.a" >&5
-echo $ECHO_N "checking whether to use libsilo.a or libsiloh5.a... $ECHO_C" >&6
-
-      if test "$UNAME" = "Darwin"; then
-        SILO_LIB="-L$SILO_LIBDIR -lsiloh5 $HDF5_LIB"
-        echo "$as_me:$LINENO: result: libsiloh5.dylib" >&5
-echo "${ECHO_T}libsiloh5.dylib" >&6
-      else
-        saved_CPPFLAGS="$CPPFLAGS"
-        saved_LIBS="$LIBS"
-	saved_SILO_LIB="$SILO_LIB"
-
-        SILO_LIB="-L$SILO_LIBDIR -lsiloh5 $HDF5_LIB"
-        CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE"
-        LIBS="$SILO_LIB $LIBS"
-
-	ac_ext=cc
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-        if test "$cross_compiling" = yes; then
-  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling
-See \`config.log' for more details." >&5
-echo "$as_me: error: cannot run test program while cross compiling
-See \`config.log' for more details." >&2;}
-   { (exit 1); exit 1; }; }
-else
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-	    #include <silo.h>
-	    int main()
-	    {
-	        return DBCreate("junk.silo", DB_CLOBBER,
-		           DB_LOCAL, 0, DB_HDF5) == 0;
-	    }
-
-
-_ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  have_libsiloh=yes
-
-else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-( exit $ac_status )
-have_libsiloh=no
-
-fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
-	ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-        rm -f junk.silo
-
-	if test "$have_libsiloh" = "yes"; then
-            echo "$as_me:$LINENO: result: libsiloh5.a" >&5
-echo "${ECHO_T}libsiloh5.a" >&6
-        else
-            echo "$as_me:$LINENO: result: libsilo.a" >&5
-echo "${ECHO_T}libsilo.a" >&6
-	    SILO_LIB="$saved_SILO_LIB"
-	fi
-
-        LIBS="$saved_LIBS"
-        CPPFLAGS="$saved_CPPFLAGS"
-      fi
-
-    else
-
-        echo "$as_me:$LINENO: checking whether libsilo.a depends on hdf5" >&5
-echo $ECHO_N "checking whether libsilo.a depends on hdf5... $ECHO_C" >&6
-      if test "$UNAME" = "Darwin"; then
-        SILO_LIB="$SILO_LIB $HDF5_LIB"
-        echo "$as_me:$LINENO: result: libsilo.dylib" >&5
-echo "${ECHO_T}libsilo.dylib" >&6
-      else
-
-        saved_CPPFLAGS="$CPPFLAGS"
-        saved_LIBS="$LIBS"
-	saved_SILO_LIB="$SILO_LIB"
-
-        SILO_LIB="$SILO_LIB $HDF5_LIB"
-        CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE"
-        LIBS="$SILO_LIB $LIBS"
-
-	ac_ext=cc
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-        if test "$cross_compiling" = yes; then
-  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling
-See \`config.log' for more details." >&5
-echo "$as_me: error: cannot run test program while cross compiling
-See \`config.log' for more details." >&2;}
-   { (exit 1); exit 1; }; }
-else
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-	    #include <silo.h>
-	    int main()
-	    {
-	        return DBCreate("junk.silo", DB_CLOBBER,
-		           DB_LOCAL, 0, DB_HDF5) == 0;
-	    }
-
-
-_ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  silo_depends_on_hdf5=yes
-
-else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-( exit $ac_status )
-silo_depends_on_hdf5=no
-
-fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
-	ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-        rm -f junk.silo
-
-	if test "$silo_depends_on_hdf5" = "yes"; then
-            echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-        else
-            echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-	    SILO_LIB="$saved_SILO_LIB"
-	fi
-
-        LIBS="$saved_LIBS"
-        CPPFLAGS="$saved_CPPFLAGS"
-
-      fi
     fi
 fi
 
@@ -8366,12 +8394,17 @@ _ACEOF
 echo "${ECHO_T}using PDB proper" >&6
    fi
 else
-   PDB_FLAGS="$SILO_INCLUDE"
-   PDB_LIBS="$SILO_LIB"
-   PDB="$""(PDB)"
-   PDB_EXEC="$""(PDBEXEC)"
-   echo "$as_me:$LINENO: result: using PDB lite" >&5
+   if test -n "$SILO_LIB"; then
+       PDB_FLAGS="$SILO_INCLUDE"
+       PDB_LIBS="$SILO_LIB"
+       PDB="$""(PDB)"
+       PDB_EXEC="$""(PDBEXEC)"
+       echo "$as_me:$LINENO: result: using PDB lite" >&5
 echo "${ECHO_T}using PDB lite" >&6
+   else
+       echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+   fi
 fi
 
 
@@ -8494,9 +8527,9 @@ else
    fi
    if test "$DEFAULT_HDF4_LIBS" != "" ; then
       if test "$UNAME" = "Darwin"; then
-          HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -lvtkjpeg $SZIP_LIB -lz $HDF4_LIBS"
+          HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -lvtkjpeg -lz $HDF4_LIBS"
       else
-          HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -ljpeg $SZIP_LIB -lz $HDF4_LIBS"
+          HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -ljpeg -lz $HDF4_LIBS"
       fi
       HDF4_LIBDIR="$DEFAULT_HDF4_LIBS"
    fi
@@ -9317,7 +9350,7 @@ VISIT_VTK_CPPFLAGS="$VISIT_VTK_CPPFLAGS $VTK_INCLUDES -I$""(TOPDIR)/include/visi
 # make sure no windowing system stuff gets in.
 #
 if test "$enable_gui" = "yes"; then
-                VIEWER_CPPFLAGS="$VIEWER_CPPFLAGS $VTK_INCLUDES -I$""(TOPDIR)/common/siloobj"
+                VIEWER_CPPFLAGS="$VIEWER_CPPFLAGS $VTK_INCLUDES"
     VIEWER_CPPFLAGS="$VIEWER_CPPFLAGS $SILO_INCLUDE"
 
 
@@ -10850,9 +10883,7 @@ fi
 #
 CREATE_SILO_LINK=""
 CREATE_MILI_LINK=""
-CREATE_SZIP_LINK=""
 CREATE_HDF4_LINK=""
-CREATE_HDF5_LINK=""
 CREATE_NETCDF_LINK=""
 CREATE_CGNS_LINK=""
 CREATE_GDAL_LINK=""
@@ -10870,14 +10901,8 @@ case $UNAME in
     if test "$MILI_LIBS" != "" ; then
         CREATE_MILI_LINK="create_mili_link"
     fi
-    if test "$SZIP_LIB" != "" ; then
-        CREATE_SZIP_LINK="create_szip_link"
-    fi
     if test "$HDF4_LIBS" != "" ; then
         CREATE_HDF4_LINK="create_hdf4_link"
-    fi
-    if test "$HDF5_LIB" != "" ; then
-        CREATE_HDF5_LINK="create_hdf5_link"
     fi
     if test "$NETCDF_LIB" != "" ; then
         CREATE_NETCDF_LINK="create_netcdf_link"
@@ -10908,8 +10933,6 @@ case $UNAME in
     fi
   ;;
 esac
-
-
 
 
 
@@ -18782,8 +18805,6 @@ COMMON_FILES="common/Makefile
               common/expr/Makefile
               common/plugin/Makefile
               common/proxybase/Makefile
-              common/siloobj/Makefile
-              common/siloobj_vtk_db/Makefile
               common/state/Makefile
               common/utility/Makefile"
 
@@ -18804,7 +18825,6 @@ TOOLS_FILES="tools/Makefile
              tools/makemili/Makefile
              tools/mpeg2encode/Makefile
              tools/mpeg_encode/Makefile
-             tools/prep/Makefile
              tools/protocol/Makefile
              tools/silex/Makefile
              tools/surfcomp/Makefile
@@ -19623,19 +19643,12 @@ s,@BUILD_FORTRAN@,$BUILD_FORTRAN,;t t
 s,@OS_RULE@,$OS_RULE,;t t
 s,@BUILD_ZLIB@,$BUILD_ZLIB,;t t
 s,@ZLIB_LIB@,$ZLIB_LIB,;t t
-s,@SZIP@,$SZIP,;t t
-s,@SZIP_INCLUDE@,$SZIP_INCLUDE,;t t
-s,@SZIP_LIB@,$SZIP_LIB,;t t
-s,@SZIP_LIBDIR@,$SZIP_LIBDIR,;t t
-s,@HDF5@,$HDF5,;t t
 s,@HDF5_INCLUDE@,$HDF5_INCLUDE,;t t
 s,@HDF5_LIB@,$HDF5_LIB,;t t
-s,@HDF5_LIBDIR@,$HDF5_LIBDIR,;t t
-s,@HDF5_EXEC@,$HDF5_EXEC,;t t
+s,@HDF5_TARGET@,$HDF5_TARGET,;t t
 s,@SILO_INCLUDE@,$SILO_INCLUDE,;t t
-s,@LIBSILO@,$LIBSILO,;t t
 s,@SILO_LIB@,$SILO_LIB,;t t
-s,@SILO_LIBDIR@,$SILO_LIBDIR,;t t
+s,@SILO_TARGET@,$SILO_TARGET,;t t
 s,@EXODUS@,$EXODUS,;t t
 s,@EXODUS_LIB@,$EXODUS_LIB,;t t
 s,@EXODUS_LIBS@,$EXODUS_LIBS,;t t
@@ -19767,9 +19780,7 @@ s,@ENGINEWRAPSER@,$ENGINEWRAPSER,;t t
 s,@ENGINEWRAPPAR@,$ENGINEWRAPPAR,;t t
 s,@CREATE_SILO_LINK@,$CREATE_SILO_LINK,;t t
 s,@CREATE_MILI_LINK@,$CREATE_MILI_LINK,;t t
-s,@CREATE_SZIP_LINK@,$CREATE_SZIP_LINK,;t t
 s,@CREATE_HDF4_LINK@,$CREATE_HDF4_LINK,;t t
-s,@CREATE_HDF5_LINK@,$CREATE_HDF5_LINK,;t t
 s,@CREATE_NETCDF_LINK@,$CREATE_NETCDF_LINK,;t t
 s,@CREATE_CGNS_LINK@,$CREATE_CGNS_LINK,;t t
 s,@CREATE_GDAL_LINK@,$CREATE_GDAL_LINK,;t t

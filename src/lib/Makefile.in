@@ -162,6 +162,10 @@
 #    Hank Childs, Fri Jun 13 15:36:21 PDT 2008
 #    Add support for google-perftools' tcmalloc.
 #
+#    Mark C. Miller, Tue Oct 21 09:24:55 PDT 2008
+#    Removed szip/hdf5 link ing stuff. That is handled during configure now
+#    in VAC_ARG_WITH3RD macro.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -198,8 +202,8 @@ all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
      libvtkexpat libvtktiff libvtkfreetype libvtkftgl libvtksys \
      libvtkmpeg2encode libosmesa libmesagl libGLU libqt libqui pythondir \
-     @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_SZIP_LINK@ \
-     @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ \
+     @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ \
+     @CREATE_HDF4_LINK@ @CREATE_NETCDF_LINK@ \
      @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@ \
      @CREATE_BOXLIB2D_LINK@ @CREATE_BOXLIB3D_LINK@ \
      @CREATE_CFITSIO_LINK@ @CREATE_H5PART_LINK@ \
@@ -319,14 +323,6 @@ create_silo_link:
 create_mili_link:
 	$(RM) libmili.@SHLIB_LIBEXT@ libgahl.@SHLIB_LIBEXT@
 	ln -s @MILI_DIR@/libmili.@SHLIB_LIBEXT@ .
-
-create_szip_link:
-	$(RM) libsz.@SHLIB_LIBEXT@
-	ln -s @SZIP_LIBDIR@/libsz.@SHLIB_LIBEXT@ .
-
-create_hdf5_link:
-	$(RM) libhdf5.@SHLIB_LIBEXT@
-	ln -s @HDF5_LIBDIR@/libhdf5.@SHLIB_LIBEXT@ .
 
 create_hdf4_link:
 	$(RM) libdf.@SHLIB_LIBEXT@ libmfhdf.@SHLIB_LIBEXT@

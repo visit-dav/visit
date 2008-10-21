@@ -1499,8 +1499,6 @@ PluginManager::PluginError() const
 void
 PluginManager::PluginClose()
 {
-    openPlugin = "";
-
 #if defined(_WIN32)
     if(handle)
     {
@@ -1515,8 +1513,15 @@ PluginManager::PluginClose()
         
     if(handle)
     {
-        dlclose(handle);
+        if (dlclose(handle) != 0)
+        {
+            const char *pluginError = PluginError();
+            cerr << "Error closing plugin file: " << openPlugin 
+                 << " (" << pluginError << ")" << endl;
+        }
         handle = 0;
     }
 #endif
+
+    openPlugin = "";
 }
