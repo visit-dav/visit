@@ -39,7 +39,7 @@
 /* Define if you have the GLEW library. */
 #undef HAVE_LIBGLEW
 
-/* Define if you have the hdf5 library. */
+/* Define if you have hdf5. */
 #undef HAVE_LIBHDF5
 
 /* Define to 1 if you have the `m' library (-lm). */

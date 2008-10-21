@@ -146,6 +146,20 @@ plots that are not selected.</li>
 <ul>
       <li>Project files for VC 8 were updated to allow successful compilation
           in parallel.</li>
+      <li>VisIt now tries to compile and link with a shared hdf5 library.</li>
+      <li>VisIt binary distributions will use a shared hdf5 library.</li>
+      <li>VisIt no longer requires Silo in order to compile.</li>
+      <li>--with-szip configuration option has been removed because VisIt does
+          not directly depend on the szip library. It may, however, depend on
+          szip indirectly (see below).</li>
+      <li>--with-hdf5 option supports specification of additional libraries upon
+            which hdf5 depends by using a colon (':') separator followed by a
+            comma separated list of flags to link against hdf5.</li>
+      <li>Config site file symbols for HDF5 changed to DEFAULT_HDF5_LIBLOC and,
+          optionally, DEFAULT_HDF5_LIBDEP. See confit-site/hoth.llnl.gov.conf
+          for an example.</li>
+      <li>New VAC_ARG_WITH3RD autoconf macro should be used to handle third
+          party libraries.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
