@@ -736,6 +736,133 @@ VisWinAxes3D::SetZGridVisibility(int zVis)
 
    
 // ****************************************************************************
+//  Method: VisWinAxes3D::SetAutoSetTicks
+//
+//  Purpose:
+//      Sets the flag which specifies if the ticks should be automatically
+//      selected or user specified.
+//
+//  Arguments:
+//      autoSetTicks The flag indicating if the ticks should be selected
+//                   automatically.
+//
+//  Programmer: Eric Brugger
+//  Creation:   October 15, 2008
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetAutoSetTicks(int autoSetTicks)
+{
+    axes->SetAdjustLabels(autoSetTicks);
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::SetMajorTickMinimum
+//
+//  Purpose:
+//      Sets the minimum values for the major tick marks.
+//
+//  Arguments:
+//      xMajorMinimum The minimum value for the x major tick marks.
+//      yMajorMinimum The minimum value for the y major tick marks.
+//      zMajorMinimum The minimum value for the z major tick marks.
+//
+//  Programmer: Eric Brugger
+//  Creation:   October 15, 2008
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetMajorTickMinimum(double xMajorMinimum, double yMajorMinimum,
+    double zMajorMinimum)
+{
+    axes->SetXMajorTickMinimum(xMajorMinimum);
+    axes->SetYMajorTickMinimum(yMajorMinimum);
+    axes->SetZMajorTickMinimum(zMajorMinimum);
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::SetMajorTickMaximum
+//
+//  Purpose:
+//      Sets the maximum values for the major tick marks.
+//
+//  Arguments:
+//      xMajorMaximum The maximum value for the x major tick marks.
+//      yMajorMaximum The maximum value for the y major tick marks.
+//      zMajorMaximum The maximum value for the z major tick marks.
+//
+//  Programmer: Eric Brugger
+//  Creation:   October 15, 2008
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetMajorTickMaximum(double xMajorMaximum, double yMajorMaximum,
+    double zMajorMaximum)
+{
+    axes->SetXMajorTickMaximum(xMajorMaximum);
+    axes->SetYMajorTickMaximum(yMajorMaximum);
+    axes->SetZMajorTickMaximum(zMajorMaximum);
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::SetMajorTickSpacing
+//
+//  Purpose:
+//      Sets the spacing for the major tick marks.
+//
+//  Arguments:
+//      xMajorSpacing The spacing for the x major tick marks.
+//      yMajorSpacing The spacing for the y major tick marks.
+//      zMajorSpacing The spacing for the z major tick marks.
+//
+//  Programmer: Eric Brugger
+//  Creation:   October 15, 2008
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetMajorTickSpacing(double xMajorSpacing, double yMajorSpacing,
+    double zMajorSpacing)
+{
+    axes->SetXMajorTickSpacing(xMajorSpacing);
+    axes->SetYMajorTickSpacing(yMajorSpacing);
+    axes->SetZMajorTickSpacing(zMajorSpacing);
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::SetMinorTickSpacing
+//
+//  Purpose:
+//      Sets the spacing for the minor tick marks.
+//
+//  Arguments:
+//      xMinorSpacing The spacing for the x minor tick marks.
+//      yMinorSpacing The spacing for the y minor tick marks.
+//      zMinorSpacing The spacing for the z minor tick marks.
+//
+//  Programmer: Eric Brugger
+//  Creation:   October 15, 2008
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetMinorTickSpacing(double xMinorSpacing, double yMinorSpacing,
+    double zMinorSpacing)
+{
+    axes->SetXMinorTickSpacing(xMinorSpacing);
+    axes->SetYMinorTickSpacing(yMinorSpacing);
+    axes->SetZMinorTickSpacing(zMinorSpacing);
+}
+
+
+// ****************************************************************************
 //  Function: SetVisibility
 //
 //  Purpose:

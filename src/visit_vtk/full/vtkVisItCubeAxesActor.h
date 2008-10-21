@@ -253,7 +253,39 @@ public:
   vtkGetVector3Macro(LabelScale, double);
 
   // Description:
-  // Shallow copy of a KatCubeAxesActor.
+  // Set/Get the tick mark location properties for each of the x, y and
+  // z axes.
+  vtkSetMacro(AdjustLabels, int);
+  vtkGetMacro(AdjustLabels, int);
+  vtkBooleanMacro(AdjustLabels, int);
+
+  vtkSetMacro(XMajorTickMinimum, double);
+  vtkGetMacro(XMajorTickMinimum, double);
+  vtkSetMacro(XMajorTickMaximum, double);
+  vtkGetMacro(XMajorTickMaximum, double);
+  vtkSetMacro(XMajorTickSpacing, double);
+  vtkGetMacro(XMajorTickSpacing, double);
+  vtkSetMacro(XMinorTickSpacing, double);
+  vtkGetMacro(XMinorTickSpacing, double);
+  vtkSetMacro(YMajorTickMinimum, double);
+  vtkGetMacro(YMajorTickMinimum, double);
+  vtkSetMacro(YMajorTickMaximum, double);
+  vtkGetMacro(YMajorTickMaximum, double);
+  vtkSetMacro(YMajorTickSpacing, double);
+  vtkGetMacro(YMajorTickSpacing, double);
+  vtkSetMacro(YMinorTickSpacing, double);
+  vtkGetMacro(YMinorTickSpacing, double);
+  vtkSetMacro(ZMajorTickMinimum, double);
+  vtkGetMacro(ZMajorTickMinimum, double);
+  vtkSetMacro(ZMajorTickMaximum, double);
+  vtkGetMacro(ZMajorTickMaximum, double);
+  vtkSetMacro(ZMajorTickSpacing, double);
+  vtkGetMacro(ZMajorTickSpacing, double);
+  vtkSetMacro(ZMinorTickSpacing, double);
+  vtkGetMacro(ZMinorTickSpacing, double);
+
+  // Description:
+  // Shallow copy of a VisItCubeAxesActor.
   void ShallowCopy(vtkVisItCubeAxesActor *actor);
 
 protected:
@@ -318,6 +350,34 @@ protected:
   vtkTextProperty *LabelTextProperty[3];
   double           TitleScale[3];
   double           LabelScale[3];
+
+  int    AdjustLabels;
+  double XMajorTickMinimum;
+  double XMajorTickMaximum;
+  double XMajorTickSpacing;
+  double XMinorTickSpacing;
+  double YMajorTickMinimum;
+  double YMajorTickMaximum;
+  double YMajorTickSpacing;
+  double YMinorTickSpacing;
+  double ZMajorTickMinimum;
+  double ZMajorTickMaximum;
+  double ZMajorTickSpacing;
+  double ZMinorTickSpacing;
+  int    LastAdjustLabels;
+  double LastXMajorTickMinimum;
+  double LastXMajorTickMaximum;
+  double LastXMajorTickSpacing;
+  double LastXMinorTickSpacing;
+  double LastYMajorTickMinimum;
+  double LastYMajorTickMaximum;
+  double LastYMajorTickSpacing;
+  double LastYMinorTickSpacing;
+  double LastZMajorTickMinimum;
+  double LastZMajorTickMaximum;
+  double LastZMajorTickSpacing;
+  double LastZMinorTickSpacing;
+
 private:
   vtkVisItCubeAxesActor(const vtkVisItCubeAxesActor&);
   void operator=(const vtkVisItCubeAxesActor&);

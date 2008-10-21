@@ -85,6 +85,9 @@ All rights reserved.
 //    Brad Whitlock, Thu Mar 27 10:55:43 PDT 2008
 //    Added support for independent title and label text properties.
 //
+//    Eric Brugger, Tue Oct 21 12:00:23 PDT 2008
+//    Added support for specifying tick mark locations.
+//
 // ****************************************************************************
 
 
@@ -127,7 +130,6 @@ public:
   vtkSetMacro(MinorTicksVisible, int);
   vtkGetMacro(MinorTicksVisible, int);
   vtkBooleanMacro(MinorTicksVisible, int);
-
 
   // Description:
   // Set/Get the title of the axis actor,
@@ -258,7 +260,6 @@ public:
   void SetLabelScale(const double);
   void SetTitleScale(const double);
 
-
   // Description:
   // Set/Get the starting position for minor and major tick points,
   // and the delta values that determine their spacing. 
@@ -274,6 +275,34 @@ public:
   void SetLabels(const std::vector<std::string> &labels);
 
   void BuildAxis(vtkViewport *viewport, bool);
+
+  // Description:
+  // Set/Get the flag that controls whether the labels are
+  // adjusted for "nice" numerical values to make it easier to read
+  // the labels. The adjustment is based in the Range instance variable.
+  vtkSetMacro(AdjustLabels, int);
+  vtkGetMacro(AdjustLabels, int);
+  vtkBooleanMacro(AdjustLabels, int);
+
+  // Description:
+  // Set/Get for the major tick mark minimum.
+  vtkSetMacro(MajorTickMinimum, double);
+  vtkGetMacro(MajorTickMinimum, double);
+
+  // Description:
+  // Set/Get for the major tick mark maximum.
+  vtkSetMacro(MajorTickMaximum, double);
+  vtkGetMacro(MajorTickMaximum, double);
+
+  // Description:
+  // Set/Get for the major tick mark spacing.
+  vtkSetMacro(MajorTickSpacing, double);
+  vtkGetMacro(MajorTickSpacing, double);
+
+  // Description:
+  // Set/Get for the minor tick mark spacing.
+  vtkSetMacro(MinorTickSpacing, double);
+  vtkGetMacro(MinorTickSpacing, double);
 
 protected:
   vtkVisItAxisActor();
@@ -304,6 +333,17 @@ protected:
   int    AxisPosition;
   double  Bounds[6];
   
+  int    AdjustLabels;
+  double  MajorTickMinimum;
+  double  MajorTickMaximum;
+  double  MajorTickSpacing;
+  double  MinorTickSpacing;
+  int    LastAdjustLabels;
+  double  LastMajorTickMinimum;
+  double  LastMajorTickMaximum;
+  double  LastMajorTickSpacing;
+  double  LastMinorTickSpacing;
+
 private:
   vtkVisItAxisActor(const vtkVisItAxisActor&);
   void operator=(const vtkVisItAxisActor&);
