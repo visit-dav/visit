@@ -279,6 +279,19 @@
 #   Mark C. Miller, Tue Jun 17 18:16:45 PDT 2008
 #   Added '-no_options' to visitconvert invokations
 #
+#   Mark C. Miller, Mon Oct 20 23:12:05 PDT 2008
+#   Put silo dependent sources in their own list and made _TARGET variable
+#   generated from that list instead of re-enumerating the same list but
+#   without the '.C' on the filenames. Made similar adjustments for PDB
+#   and HDF5 dependent sources. Introduced XXX_TARGET variable to make it
+#   more consistent with VAC_ARG_WITH3RD() macro behavior in configure in
+#   anticipation of using that macro for SILO and PDB in near future.
+#   Added clean targets to clean just source, just binary data, etc.
+#   Added rpath option so links with shared libs like HDF5 don't cause tests
+#   to fail due to LD_LIBRARY_PATH not being set correctly. Removed PDB_EXEC
+#   and HDF5_EXEC and replaced with shell code to test for existence of
+#   files to be executed before executing them.
+#
 ##############################################################################
 
 ##
@@ -290,19 +303,25 @@
 NOT_DISTRIB=near_planar.vtk *_test_data *.tar.bz2 *.tar.gz *.tar.bz \
             miranda_raw
 
+EZSRC=bov.C curve_builder.C degen_meshes.C distribution_curves.C
+EZ_TARGET=$(EZSRC:.C=)
+
 ##
 ## Optional programs.
 ##
 PDBSRC=pdbdatabase.C correlationtest.C pdbdatabase_link.C
-PDBOBJ=$(PDBSRC:.C=.o)
-PDB=./pdbdatabase ./correlationtest
-PDBEXEC=./pdbdatabase; ./correlationtest
+PDB_TARGET=$(PDBSRC:.C=)
 
 HDF5SRC=xdmf.C
-HDF5OBJ=$(HDF5SRC:.C=.o)
-HDF5=./xdmf
-HDF5EXEC=./xdmf
+HDF5_TARGET=$(HDF5SRC:.C=)
 
+SILOSRC=bigsil.C csg.C emptydomains.C fullframe.C galaxy.C ghost.C \
+        global_node.C globe.C largefile.C lineout_test.C lowfrac.C \
+        meshorigin.C multi_test.C noise.C noise2d.C one_quad.C \
+        quad_disk.C sid97.C specmix.C testall.C thinplane.C tire.C \
+        wave.C
+SILO_TARGET=$(SILOSRC:.C=)
+#SILO_TARGET=`echo $(SILOSRC) | sed -e 's/\.C//g'` is an alternative
 
 ##
 ## Optional compressed binary data files (w/o extensions)
@@ -326,27 +345,22 @@ BINSRC=samrai_test_data ANALYZE_test_data Vista_test_data Image_test_data \
 ##
 LIBS=$(SILO_LIB) @LIBS@
 MATH_LIBS_ONLY=@LIBS@
-LDFLAGS=@LDFLAGS@
+LDFLAGS=@LDFLAGS@ -Wl,--rpath=@DATA_REL_VISIT_PATH@/lib
 CXXFLAGS=$(HDF5_INCLUDE) @CXXFLAGS@
 CPPFLAGS=@CPPFLAGS@ -I. -I@DATA_REL_VISIT_PATH@/include -I@DATA_REL_VISIT_PATH@/include/visit @SILO_INCLUDE@ @PDB_FLAGS@ @VTK_INCLUDES@
 
 ##
 ## Files...
 ##
-SRC=bigsil.C curve_builder.C distribution_curves.C ghost.C global_node.C \
-    globe.C multi_test.C noise.C noise2d.C specmix.C testall.C tire.C wave.C \
-    degen_meshes.C quad_disk.C emptydomains.C galaxy.C csg.C lowfrac.C \
-    bov.C largefile.C one_quad.C fullframe.C thinplane.C sid97.C meshorigin.C \
-    lineout_test.C $(PDBSRC)
-
+SRC=$(EZSRC) $(SILOSRC) $(PDBSRC) $(HDF5SRC)
 OBJ=$(SRC:.C=.o)
 
 ##
 ## Standard targets...
 ##
-all: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./distribution_curves ./csg ./lowfrac ./bov ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test @HDF5@ @PDB@ $(BINSRC)
+all: $(EZ_TARGET) @SILO_TARGET@ @HDF5_TARGET@ $(PDB_TARGET) $(BINSRC)
 
-test: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./distribution_curves ./csg ./lowfrac ./bov ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test @HDF5@ @PDB@ $(BINSRC)
+test: $(EZ_TARGET)  @SILO_TARGET@ @HDF5_TARGET@ $(PDB_TARGET) $(BINSRC)
 	./bigsil
 	./curve_builder
 	./global_node
@@ -392,11 +406,19 @@ test: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./mu
 	    echo "" > LARGEFILE_NOT_FOUND ;\
 	    ln -sf LARGEFILE_NOT_FOUND largefile.silo ;\
 	fi
-	@HDF5_EXEC@
-	@PDB_EXEC@
+	-@for f in $(HDF5_TARGET); do \
+	    if test -x $$f; then \
+	        $$f ;\
+	    fi \
+	done
+	-@for f in pdbdatabase correlationtest; do \
+	    if test -x $$f; then \
+	        $$f ;\
+	    fi \
+	done
 
-testh5: ./bigsil ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./specmix ./sid97 ./testall ./tire ./wave ./emptydomains ./galaxy ./csg ./lowfrac ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test
-	-@if test -n "`echo $(SILO_LIB) | grep libhdf5.a`"; then \
+testh5: @SILO_TARGET@ @HDF5_TARGET@ 
+	-@if test -n "`echo $(SILO_LIB) | grep hdf5`"; then \
 	   echo "***********************************" ;\
 	   echo "***********************************" ;\
 	   echo "Building Silo Data With HDF5 Driver" ;\
@@ -435,13 +457,19 @@ testh5: ./bigsil ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./
 
 install: install_bin
 
-clean:
-	$(RM) $(OBJ) $(PDBOBJ) $(HDF5OBJ) ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./csg ./lowfrac ./distribution_curves ./bov ./largefile ./one_quad ./fullframe ./thinplane ./meshorigin ./lineout_test @HDF5@ @PDB@
+bin_data_clean:
+	$(RM) -r $(BINSRC)
+
+gen_data_clean:
 	$(RM) c0*.curve family*.pdb multi*.pdb db*.pdb allinone*.pdb sesame.pdb *.silo hist* distribution.ultra multi_ucd3d*
 	$(RM) curve.visit wave*.visit *.bov multi00*.values *_indices*.values
 	$(RM) wave_1file* wave_tv_1file*
 	$(RM) [a-z]*.xmf mesh.h5
-	$(RM) -r $(BINSRC)
+
+src_clean:
+	$(RM) $(OBJ) $(EZ_TARGET) @SILO_TARGET@ @HDF5_TARGET@ $(PDB_TARGET)
+
+clean: bin_data_clean gen_data_clean src_clean
 
 ##
 ## Other targets...
@@ -503,10 +531,15 @@ clean:
 ./galaxy: galaxy.o
 	$(CXX) -o $@ galaxy.o $(LDFLAGS) $(LIBS)
 
-./pdbdatabase: $(PDBOBJ)
+# Dummy target to due to fact that pdbdatabase_link.C
+# needs to be listed in PDBSRC symbol
+./pdbdatabase_link:
+	
+
+./pdbdatabase: pdbdatabase.o pdbdatabase_link.o
 	$(CXX) -I../include/visit -o $@ pdbdatabase.o $(LDFLAGS) $(LIBS) @PDB_LIBS@ pdbdatabase_link.o
 
-./correlationtest: $(PDBOBJ)
+./correlationtest: correlationtest.o pdbdatabase_link.o
 	$(CXX) -o $@ correlationtest.o $(LDFLAGS) $(LIBS) @PDB_LIBS@ pdbdatabase_link.o
 
 ./csg:  csg.o
