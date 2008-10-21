@@ -431,6 +431,9 @@
 #     Eric Brugger, Tue Oct 14 11:23:14 PDT 2008
 #     Changed the version to 1.11.0.
 #
+#     Mark C. Miller, Tue Oct 21 10:32:36 PDT 2008
+#     Modified to support VisIt's configure new way of handling hdf5.
+#     Modified to support shared hdf5.
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -4421,7 +4424,6 @@ function build_szip
     echo "Invoking command to configure SZIP"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" LIBS="-lm" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
-        --disable-shared \
         --prefix="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
        echo "SZIP configure failed.  Giving up"
@@ -4528,7 +4530,6 @@ function build_hdf5
     echo "Invoking command to configure HDF5"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
-        --disable-shared \
         --prefix="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" \
         --with-szlib="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
@@ -7713,11 +7714,13 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     if [[ "$DO_HDF5" == "yes" ]] ; then
         echo \
-"DEFAULT_HDF5_INCLUDE=\$VISITHOME/hdf5/$HDF5_VERSION/$VISITARCH/include" \
+"DEFAULT_HDF5_LIBLOC=\$VISITHOME/hdf5/$HDF5_VERSION/$VISITARCH" \
         >> $HOSTCONF
-        echo \
-"DEFAULT_HDF5_LIB=\$VISITHOME/hdf5/$HDF5_VERSION/$VISITARCH/lib" \
-        >> $HOSTCONF
+        if [[ "$DO_SZIP" == "yes" ]] ; then
+            echo \
+"DEFAULT_HDF5_LIBDEP=-L\$VISITHOME/szip/$SZIP_VERSION/$VISITARCH/lib,-lsz" \
+            >> $HOSTCONF
+        fi
     fi
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
@@ -7744,9 +7747,6 @@ function build_hostconf
     echo "## SZIP" >> $HOSTCONF
     echo "##" >> $HOSTCONF
     if [[ "$DO_SZIP" == "yes" ]] ; then
-        echo \
-"DEFAULT_SZIP_INCLUDE=\$VISITHOME/szip/$SZIP_VERSION/$VISITARCH/include" \
-        >> $HOSTCONF
         echo \
 "DEFAULT_SZIP_LIB=\$VISITHOME/szip/$SZIP_VERSION/$VISITARCH/lib" \
         >> $HOSTCONF
