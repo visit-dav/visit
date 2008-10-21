@@ -863,6 +863,12 @@ dnl    a trailing 'S' was included.
 dnl
 dnl    Mark C. Miller, Tue Oct 21 10:35:59 PDT 2008
 dnl    Fixed HDF4 to handle an SZIP created by build_visit
+dnl
+dnl    Brad Whitlock, Tue Oct 21 11:23:55 PDT 2008
+dnl    Added a few Silo-related variables back in so they can be substituted
+dnl    into lib/Makefile.in for the Mac since we want to use the create_silo_link
+dnl    target there.
+dnl 
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2064,6 +2070,8 @@ AC_SUBST(SILO_INCLUDE)
 #
 # Check for the public SILO library since that's what we'll use.
 #
+LIBSILO=
+SILO_LIBDIR=
 SILO_LIB=
 SILO_TARGET=
 AC_ARG_WITH(silo_library,
@@ -2077,6 +2085,8 @@ if test -n "$silo_library"; then
     for n in $silo_names; do
         for e in $silo_extns; do
             if test -r $silo_library/lib$n.$e; then
+                LIBSILO="lib$n.$e"
+                SILO_LIBDIR="$silo_library"
                 SILO_LIB="-L`echo $silo_library|sed 's/  */ -L/g'` -l$n"
                 SILO_TARGET="$""(SILO_TARGET)"
                 break 2
@@ -2097,6 +2107,9 @@ if test -n "$silo_library"; then
         AC_MSG_ERROR(could not find a suitable silo library at $silo_library.)
     fi
 fi
+# The name of the actual Silo library for use in lib/Makefile.in
+AC_SUBST(LIBSILO)
+AC_SUBST(SILO_LIBDIR)
 AC_SUBST(SILO_LIB)
 AC_SUBST(SILO_TARGET)
 
