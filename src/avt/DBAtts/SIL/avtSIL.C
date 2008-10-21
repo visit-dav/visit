@@ -1311,6 +1311,9 @@ avtSIL::MakeSILAttributes(void) const
 //
 //    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
 //    No longer printing whether a set is whole or not.
+//
+//    Mark C. Miller, Tue Oct 21 09:07:50 PDT 2008
+//    Modified to use GetSILSet; simplified logic for loops a bit
 // ****************************************************************************
 
 void
@@ -1329,24 +1332,17 @@ avtSIL::Print(ostream &out,
     int  i;
     bool useInfo;
 
-    int nSets = sets.size();
-    if (perSetInfo.size() == nSets)
-        useInfo = true; 
-    else
-        useInfo = false;
-    for (i = 0 ; i < nSets ; i++)
+    useInfo = perSetInfo.size() == GetNumSets();
+    for (i = 0 ; i < GetNumSets() ; i++)
     {
         out << "Set" << i << " " << (useInfo ? perSetInfo[i].c_str() : "") << endl;
 
-        avtSILSet_p s = sets[i];
+        avtSILSet_p s = GetSILSet(i);
         s->Print(out);
     }
 
     int nColls = collections.size();
-    if (perCollInfo.size() == nColls)
-        useInfo = true; 
-    else
-        useInfo = false;
+    useInfo = perCollInfo.size() == nColls;
     for (i = 0 ; i < nColls ; i++)
     {
         out << "Collection " << i << " " << (useInfo ? perCollInfo[i].c_str() : "") << endl;
@@ -1355,10 +1351,7 @@ avtSIL::Print(ostream &out,
     }
 
     int nMats = matrices.size();
-    if (perMatInfo.size() == nMats)
-        useInfo = true; 
-    else
-        useInfo = false;
+    useInfo = perMatInfo.size() == nMats;
     for (i = 0 ; i < nMats ; i++)
     {
         out << "Matrix " << i << " " << (useInfo ? perMatInfo[i].c_str() : "") << endl;

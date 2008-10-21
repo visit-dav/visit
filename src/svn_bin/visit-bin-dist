@@ -340,6 +340,12 @@
 #    Eric Brugger, Fri Oct 10 16:27:33 PDT 2008
 #    I removed the -switch option.
 #
+#    Mark C. Miller, Tue Oct 21 09:14:47 PDT 2008
+#    Modified to support shared HDF5 library (and possible szip).
+#    Elminated data bloat when creating a distribution from an
+#    instance in which 'make test' has been performed in data dir.
+#    Simplifed some regular expression logic for filtering lib names
+#    to copy to distro.
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -619,6 +625,18 @@ if ("$VTKLibs" == "TRUE") then
 endif
 
 #
+# Determine the names of the hdf5 shared libraries.
+#
+set HdfHDF5LibName = "libhdf5.$SHLIB_SOEXT"
+if (! -e $VisItDir/lib/libhdf5.$SHLIB_SOEXT) then
+    echo " "
+    echo "Error: Missing HDF5 library in $VisItDir/lib. aborting ..."
+    echo " "
+    exit (1)
+endif
+set HdfSzipLibName = "libsz.$SHLIB_SOEXT"
+
+#
 # Determine the os version string and hardware os string.
 #
 if ("$ArchGiven" == "FALSE") then
@@ -800,13 +818,25 @@ if ($DataFiles == "TRUE") then
    if ("$os" == "darwin") then
       setenv DYLD_LIBRARY_PATH $VisItDir/lib
    endif
-   ./globe
-   ./multi_test
+   ./globe -driver DB_HDF5
+   if (! -e globe.silo) then
+       ./globe
+   endif
+   ./multi_test -noHalfMesh -noTimeInvariantMultimesh -noCycles
    ./testall
-   ./noise
+   ./noise -driver DB_HDF5
+   if (! -e noise.silo) then
+      ./noise
+   endif
    ./tire
-   rm multi_point* multi_rect* multi_curv* poly3d.silo
    cp *.silo $pwd/distribution/visit/data
+   rm -f $pwd/distribution/visit/data/multi_point*
+   rm -f $pwd/distribution/visit/data/multi_ucd*
+   rm -f $pwd/distribution/visit/data/multi_curv*
+   rm -f $pwd/distribution/visit/data/multipart*
+   rm -f $pwd/distribution/visit/data/wave*
+   rm -f $pwd/distribution/visit/data/global_node.silo
+   rm -f $pwd/distribution/visit/data/noise.silo
    if (-e ./correlationtest) then
       ./correlationtest
        cp db{A,B}00.pdb $pwd/distribution/visit/data
@@ -965,7 +995,7 @@ endif
 #
 # Copy the VisIt libraries to the distribution.
 #
-cp `ls $VisItDir/lib/*.$SHLIB_SOEXT | grep -v libvtk | grep -v libqt | grep -v libqui | grep -v libpython | grep -v libMesaGL | grep -v libOSMesa` $libdir
+cp `ls $VisItDir/lib/*.$SHLIB_SOEXT | grep -v libvtk\|libqt\|libqui\|libpython\|libMesaGL\|libOSMesa\|libhdf\|libsz` $libdir
 cp $VisItDir/lib/libvtkqt.$SHLIB_SOEXT $libdir
 cp $VisItDir/lib/libqtviswindow.$SHLIB_SOEXT $libdir
 if("$os" == "darwin") then
@@ -1104,6 +1134,36 @@ if ("$VTKLibs" == "TRUE") then
            cp $VisItDir/lib/$vtklib.dylib $libdir/$vtklib.dylib
        endif
     end
+endif
+
+#
+# Copy the HDF5 (and szip) library, if it exists, to the distribution.
+#
+if(-e $VisItDir/lib/$HdfHDF5LibName) then
+    if ("$SHLIB_SOEXT" == "so") then
+       if ("$os" == "aix" || "$os" == "osf") then
+           cp $VisItDir/lib/libhdf5.so $libdir/libhdf5.so
+       else
+           cp $VisItDir/lib/libhdf5.so.5.0.1 $libdir/libhdf5.so.5.0.1
+           ln -s libhdf5.so.5.0.1 $libdir/libhdf5.so.5
+           ln -s libhdf5.so.5.0.1 $libdir/libhdf5.so
+       endif
+    else
+        cp $VisItDir/lib/$HdfHDF5LibName $libdir/$HdfHDF5LibName
+    endif
+endif
+if(-e $VisItDir/lib/$HdfSzipLibName) then
+    if ("$SHLIB_SOEXT" == "so") then
+       if ("$os" == "aix" || "$os" == "osf") then
+           cp $VisItDir/lib/libsz.so $libdir/libsz.so
+       else
+           cp $VisItDir/lib/libsz.so.2.0.0 $libdir/libsz.so.2.0.0
+           ln -s libsz.so.2.0.0 $libdir/libsz.so.2
+           ln -s libsz.so.2.0.0 $libdir/libsz.so
+       endif
+    else
+        cp $VisItDir/lib/$HdfSzipLibName $libdir/$HdfSzipLibName
+    endif
 endif
 
 #

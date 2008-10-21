@@ -18,9 +18,6 @@
 /* Define if you have the gdal headers. */
 #undef HAVE_GDAL_H
 
-/* Define if you have the <hdf5.h> header file. */
-#undef HAVE_HDF5_H
-
 /* Define if you have the IceT library */
 #undef HAVE_ICET
 
@@ -53,9 +50,6 @@
 
 /* Define if you have the SLIVR library. */
 #undef HAVE_LIBSLIVR
-
-/* Define if you have the sz library. */
-#undef HAVE_LIBSZ
 
 /* Define to 1 if you have the `z' library (-lz). */
 #undef HAVE_LIBZ
@@ -113,9 +107,6 @@
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
-
-/* Define if you have the <szlib.h> header file. */
-#undef HAVE_SZLIB_H
 
 /* Define if you have the pthread library. */
 #undef HAVE_THREADS

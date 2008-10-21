@@ -316,6 +316,12 @@
 #   Hank Childs, Mon Jul  7 07:00:47 PDT 2008
 #   Added UNIC.
 #
+#   Mark C. Miller, Thu Sep 18 14:42:10 PDT 2008
+#   Added logic to clean ITAPS_ dir copies created during configure
+#   for different ITAPS implementations taking care not to remove something
+#   someone may have been inadvertently editing or to remove the true
+#   source in the ITAPS_C directory.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -330,7 +336,7 @@ CGNS=CGNS
 EXODUS=Exodus TimeVaryingExodus
 GDAL=GDAL
 HDF4=Cosmos Enzo ZeusMP
-HDF5= \
+HDF5_TARGET= \
 	Chombo \
 	CosmosPP \
 	FLASH \
@@ -345,8 +351,9 @@ HDF5= \
 	XDMF
 
 MILI=Mili
+SILO_TARGET=Silo SAMI Vista
+PDB=Cale KullLite PDB
 NETCDF=NETCDF S3D
-PDB=KullLite PDB Cale
 VISUS=ViSUS
 H5PART=H5Part
 CCMIO=CCM
@@ -391,19 +398,16 @@ REQUIRED=\
  Point3D \
  ProteinDataBank \
  RAW \
- SAMI \
  SAR \
  SAS \
  STL \
  Shapefile \
- Silo \
  Spheral \
  TFT \
  TSurf \
  Tecplot \
  VASP \
  Vis5D \
- Vista \
  VTK \
  WavefrontOBJ \
  Xmdv \
@@ -411,9 +415,9 @@ REQUIRED=\
  ZipWrapper
 
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins
-MINIMAL=Curve2D Silo VTK
+MINIMAL=Curve2D RAW VTK
 
-THIRDPARTY_DEPENDENT=@EXODUS@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@ @GDAL@ @CFITSIO@ @ITAPS_C@ @H5PART@ @CCMIO@ @SIMULATION@
+THIRDPARTY_DEPENDENT=@EXODUS@ @HDF4@ @HDF5_TARGET@ @SILO_TARGET@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@ @GDAL@ @CFITSIO@ @ITAPS_C@ @H5PART@ @CCMIO@ @SIMULATION@
 
 SUBDIRS=@DB_BUILD_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(THIRDPARTY_DEPENDENT) $(SAMPLES) $(OPTIONAL)
@@ -441,15 +445,35 @@ clean:
 	for dir in $(SUBDIRS); do (cd $$dir && test ! -f Makefile || $(MAKE) $@) || exit 1; done
 	-$(RM) $(CLEAN_FILES)
 
+#
+# Note the loop for ITAPS_* dirs here is to remove any copies
+# that got created during configure. Those copies will intentionally
+# have all source files set to read-only. If we encounter an ITAPS_
+# dir in which that is NOT the case, we skip it so we don't
+# inadvertently remove something that someone was editing. The
+# ITAPS_C dir is the real source dir so we never remove that.
+#
 distclean:
 	if test -n "$(ALLSUBDIRS)"; then \
 		rev=""; for dir in $(ALLSUBDIRS); do rev="$$dir $$rev"; done; \
-		for dir in $$rev; do (cd $$dir && test ! -f Makefile || $(MAKE) $@); done \
+		for dir in $$rev; do (cd $$dir || exit && test ! -f Makefile || $(MAKE) $@); done \
 	fi
+	for dir in ITAPS_*; do \
+ 	    if test $$dir == ITAPS_C; then \
+ 	        continue; \
+ 	    fi; \
+	    for f in $$dir/*.[Chc]; do \
+ 	        if test -w $$f; then \
+	            echo "Skipping deletion of $$dir"; \
+ 	            continue 2; \
+ 	        fi; \
+ 	    done; \
+ 	    $(RM) -r $$dir; \
+ 	done
 	-$(RM) $(DISTCLEAN_FILES) *~ core
-	-$(RM) Makefile
 	-$(RM) $(LIB)
 	-$(RM) $(CLEAN_FILES)
+	-$(RM) Makefile
 
 depend: dirmakefiles
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
