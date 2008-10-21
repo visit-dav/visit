@@ -45,7 +45,7 @@
 
 #include <vector>
 
-#include <Init.h>
+#include <VisItInit.h>
 
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
@@ -82,8 +82,8 @@ using std::vector;
 int
 main(int argc, char *argv[])
 {
-    Init::SetComponentName("avtprep");
-    Init::Initialize(argc, argv, 0, 1, true);
+    VisItInit::SetComponentName("avtprep");
+    VisItInit::Initialize(argc, argv, 0, 1, true);
 
     if (argc < 3)
     {

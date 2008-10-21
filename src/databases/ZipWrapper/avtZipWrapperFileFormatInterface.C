@@ -49,7 +49,7 @@
 #include <ImproperUseException.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
-#include <Init.h>
+#include <VisItInit.h>
 #include <StringHelpers.h>
 
 #include <avtDatabase.h>
@@ -395,7 +395,7 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     char procNumStr[32];
     SNPRINTF(procNumStr, sizeof(procNumStr), "_%04d", procNum);
     tmpDir = tmpDir + "/visitzw_" + userName + "_" +
-             string(Init::GetComponentName()) +
+             string(VisItInit::GetComponentName()) +
              (procCount > 1 ? string(procNumStr) : "");
     debug5 << "ZipWrapper is using \"" << tmpDir << "\" as the temporary directory" << endl;
 
@@ -588,7 +588,7 @@ avtZipWrapperFileFormatInterface::~avtZipWrapperFileFormatInterface()
     // if this is the last instance we have, finalize the class too
     if (objList.size() == 0)
     {
-        debug5 << "Calling finalize on \"" << Init::GetComponentName() << "\"" << endl;
+        debug5 << "Calling finalize on \"" << VisItInit::GetComponentName() << "\"" << endl;
         avtZipWrapperFileFormatInterface::Finalize();
     }
 }

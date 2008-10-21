@@ -71,7 +71,7 @@
 #   endif
 #endif
 #include <IncompatibleVersionException.h>
-#include <Init.h>
+#include <VisItInit.h>
 #include <InitVTK.h>
 #include <LoadBalancer.h>
 #include <LostConnectionException.h>
@@ -386,12 +386,12 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     //
     // Initialize error logging
     //
-    Init::SetComponentName("engine");
-    Init::Initialize(*argc, *argv, PAR_Rank(), PAR_Size(), true, sigs);
+    VisItInit::SetComponentName("engine");
+    VisItInit::Initialize(*argc, *argv, PAR_Rank(), PAR_Size(), true, sigs);
 #else
     xfer = new Xfer;
-    Init::SetComponentName("engine");
-    Init::Initialize(*argc, *argv, 0,1, true, sigs);
+    VisItInit::SetComponentName("engine");
+    VisItInit::Initialize(*argc, *argv, 0,1, true, sigs);
 #endif
 
     //
@@ -463,7 +463,7 @@ Engine::Finalize(void)
     // Now null it out; in case the destructor actually *does* get called.
     this->renderingDisplay = NULL;
 
-    Init::Finalize();
+    VisItInit::Finalize();
 }
 
 // ****************************************************************************
@@ -1489,7 +1489,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
 //    Made the engine an object.
 //
 //    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
-//    Made it PAR_Exit() in parallel and call Init::Finalize()
+//    Made it PAR_Exit() in parallel and call VisItInit::Finalize()
 //
 // ****************************************************************************
 
@@ -1514,7 +1514,7 @@ Engine::AlarmHandler(int signal)
         }
     }
 
-    Init::Finalize();
+    VisItInit::Finalize();
 #ifdef PARALLEL
     PAR_Exit();
 #endif

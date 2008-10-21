@@ -39,7 +39,7 @@
 #ifndef avtOpenGLLabelRenderer
 #include <avtOpenGLLabelRenderer.h>
 #else
-#include <Init.h>
+#include <VisItInit.h>
 #endif
 #include <arial.h>
 

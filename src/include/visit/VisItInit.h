@@ -1,0 +1,1 @@
+link ../../common/misc/VisItInit.h

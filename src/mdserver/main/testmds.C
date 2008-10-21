@@ -41,7 +41,7 @@
 #include <HostProfile.h>
 #include <string>
 #include <unistd.h>
-#include <Init.h>
+#include <VisItInit.h>
 #include <avtSIL.h>
 
 #include <cstdlib>
@@ -95,8 +95,8 @@ main(int argc, char *argv[])
     }
 
     // Initialize error logging.
-    Init::SetComponentName("mdserver");
-    Init::Initialize(argc, argv);
+    VisItInit::SetComponentName("mdserver");
+    VisItInit::Initialize(argc, argv);
 
     MDServerProxy *mdserver = new MDServerProxy();
     if(argc > 1)

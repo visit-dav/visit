@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 #include <LauncherApplication.h>
-#include <Init.h>
+#include <VisItInit.h>
 #include <VisItException.h>
 #include <DebugStream.h>
 
@@ -64,8 +64,8 @@ main(int argc, char *argv[])
     int retval = 0;
 
     // Initialize error logging
-    Init::SetComponentName("launcher");
-    Init::Initialize(argc, argv);
+    VisItInit::SetComponentName("launcher");
+    VisItInit::Initialize(argc, argv);
 
     debug1 << "VisIt component launcher started." << endl;
 

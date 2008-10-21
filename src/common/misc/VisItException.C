@@ -42,7 +42,7 @@
 
 #include <VisItException.h>
 #include <DebugStream.h>
-#include <Init.h>
+#include <VisItInit.h>
 
 // ****************************************************************************
 //  Method:  VisItException constructor
@@ -89,7 +89,7 @@ VisItException::VisItException(const std::string &m)
     filename = "Unknown";
     std::string mtmp = std::string(m,0,16);
     if (mtmp.find(':') == std::string::npos)
-        msg = std::string(Init::GetComponentName()) + ": " + m;
+        msg = std::string(VisItInit::GetComponentName()) + ": " + m;
     else
     {
         if (mtmp.find("avtprep:") == 0 ||
@@ -101,7 +101,7 @@ VisItException::VisItException(const std::string &m)
             mtmp.find("viewer:") == 0)
             msg = m;
         else
-            msg = std::string(Init::GetComponentName()) + ": " + m;
+            msg = std::string(VisItInit::GetComponentName()) + ": " + m;
     }
     type     = "VisItException";
     line     = -1;

@@ -73,7 +73,7 @@
 #include <OperatorPluginInfo.h>
 #include <OperatorPluginManager.h>
 #include <QueryList.h>
-#include <Init.h>
+#include <VisItInit.h>
 #include <DebugStream.h>
 #include <StringHelpers.h>
 #include <Logging.h>
@@ -12030,7 +12030,7 @@ visit_GetProcessAttributes(PyObject *self, PyObject *args)
 
     if (strncmp(componentName, "cli", 3) != 0)
     {
-        int id = Init::ComponentNameToID(componentName);
+        int id = VisItInit::ComponentNameToID(componentName);
         GetViewerMethods()->QueryProcessAttributes(id, engineHostName, engineDbName);
 
         Synchronize();
@@ -14222,7 +14222,7 @@ NeedToLoadPlugins(Subject *, void *)
 //
 //   Brad Whitlock, Tue Jan 7 16:30:01 PST 2003
 //   I moved the Python termination function for VisIt so it is before
-//   the call to Init::Initialize because I wanted to add some debug stream
+//   the call to VisItInit::Initialize because I wanted to add some debug stream
 //   code into the termination function.
 //
 //   Brad Whitlock, Thu Dec 18 16:00:04 PST 2003
@@ -14253,7 +14253,7 @@ NeedToLoadPlugins(Subject *, void *)
 //
 //   Jeremy Meredith, Thu Aug  7 15:06:45 EDT 2008
 //   Change some string literals to const char*'s.  For others,
-//   assume Init::Initialize won't modify argv, and simply convert one
+//   assume VisItInit::Initialize won't modify argv, and simply convert one
 //   some string literals to a char*.
 //
 //   Mark C. Miller, Thu Aug 21 11:32:08 PDT 2008
@@ -14294,8 +14294,8 @@ InitializeModule()
            }
         }
 
-        Init::SetComponentName("cli");
-        Init::Initialize(argc, argv, 0, 1, false);
+        VisItInit::SetComponentName("cli");
+        VisItInit::Initialize(argc, argv, 0, 1, false);
     }
     CATCH(VisItException)
     {

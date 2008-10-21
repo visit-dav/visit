@@ -282,7 +282,7 @@ main(int argc, char *argv[])
     {
         // Initialize python
         Py_Initialize();
-        PyEval_InitThreads();
+        PyEval_VisItInit.hreads();
         Py_SetProgramName(argv[0]);
         PySys_SetArgv(argc, argv);
 

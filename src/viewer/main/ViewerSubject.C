@@ -82,7 +82,7 @@
 #include <GlobalLineoutAttributes.h>
 #include <HostProfile.h>
 #include <HostProfileList.h>
-#include <Init.h>
+#include <VisItInit.h>
 #include <InitVTK.h>
 #include <InteractorAttributes.h>
 #include <InvalidVariableException.h>
@@ -8592,7 +8592,7 @@ ViewerSubject::GetProcessAttributes()
 {
     ProcessAttributes tmpAtts;
 
-    string componentName = Init::ComponentIDToName(GetViewerState()->GetViewerRPC()->GetIntArg1());
+    string componentName = VisItInit::ComponentIDToName(GetViewerState()->GetViewerRPC()->GetIntArg1());
     if (componentName == "engine")
     {
         const std::string &hostName = GetViewerState()->GetViewerRPC()->GetProgramHost();

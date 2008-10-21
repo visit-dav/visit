@@ -39,7 +39,7 @@
 #ifndef avtOpenGLCurveRenderer
 #include <avtOpenGLCurveRenderer.h>
 #else
-#include <Init.h>
+#include <VisItInit.h>
 #endif
 
 #include <vtkPolyData.h>

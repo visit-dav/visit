@@ -37,7 +37,7 @@
 *****************************************************************************/
 #include <LauncherProxy.h>
 #include <stdio.h>
-#include <Init.h>
+#include <VisItInit.h>
 #include <ConnectionGroup.h>
 #include <LostConnectionException.h>
 
@@ -69,8 +69,8 @@ main(int argc, char *argv[])
     std::string launchHost(argv[1]);
 
     // Initialize error logging.
-    Init::SetComponentName("launcher");
-    Init::Initialize(argc, argv);
+    VisItInit::SetComponentName("launcher");
+    VisItInit::Initialize(argc, argv);
 
     // Create a launcher proxy object.
     LauncherProxy *launcher = new LauncherProxy;

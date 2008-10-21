@@ -46,7 +46,7 @@
 #include <ConfiguratingSet.h>
 #include <Colors.h>
 #include <ExprGrammar.h>
-#include <Init.h>
+#include <VisItInit.h>
 #include <InvalidExpressionException.h>
 #include <ParseException.h>
 #include <vector>
@@ -607,7 +607,7 @@ ExprParser::Parse(const std::string &s)
 
         if (errorMessageTarget == EMT_COMPONENT)
         {
-            Init::ComponentIssueError(error);
+            VisItInit::ComponentIssueError(error);
         }
         else if (errorMessageTarget == EMT_CONSOLE)
         {

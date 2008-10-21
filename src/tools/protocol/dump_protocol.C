@@ -109,7 +109,7 @@
 #include <MDServerProxy.h>
 
 // Includes for plot and operator plugins
-#include <Init.h>
+#include <VisItInit.h>
 #include <PlotPluginManager.h>
 #include <OperatorPluginManager.h>
 #include <PlotPluginInfo.h>
@@ -572,8 +572,8 @@ main(int argc, char *argv[])
     FILE *f = stdout;
 
     // Initialize
-    Init::SetComponentName("visitprotocol");
-    Init::Initialize(argc, argv, 0, 1, true, true);
+    VisItInit::SetComponentName("visitprotocol");
+    VisItInit::Initialize(argc, argv, 0, 1, true, true);
 
     // Initialize the plugin managers and load the info plugins.
     PlotPluginManager     plotPlugins;
@@ -637,7 +637,7 @@ main(int argc, char *argv[])
     DeleteStateObjects(operators);
 
     // Prepare for exit.
-    Init::Finalize();
+    VisItInit::Finalize();
 
     return 0;
 }

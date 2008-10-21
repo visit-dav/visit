@@ -40,7 +40,7 @@
 //                                    Init.C                                 //
 // ************************************************************************* //
 
-#include <Init.h>
+#include <VisItInit.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -128,7 +128,7 @@ NewHandler(void)
 }
 
 // ****************************************************************************
-//  Function: Init::Initialize
+//  Function: VisItInit::Initialize
 //
 //  Purpose:
 //      Parse any common commandline arguments (e.g. "-debug N") and do
@@ -208,7 +208,7 @@ NewHandler(void)
 // ****************************************************************************
 
 void
-Init::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
+VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
 {
     // Return if Initialize has already been called.
     if(initializeCalled)
@@ -357,14 +357,14 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
 }
 
 // ****************************************************************************
-//  Function: Init::SetComponentName
+//  Function: VisItInit::SetComponentName
 //
 //  Purpose: Sets the name of the component
 //
 // ****************************************************************************
 
 void
-Init::SetComponentName(const char *cname)
+VisItInit::SetComponentName(const char *cname)
 {
    size_t len;
 
@@ -377,7 +377,7 @@ Init::SetComponentName(const char *cname)
 }
 
 // ****************************************************************************
-//  Function: Init::GetComponentName
+//  Function: VisItInit::GetComponentName
 //
 //  Purpose: Gets the name of the component. Defaults to name of the
 //  executable of it was not set.
@@ -385,19 +385,19 @@ Init::SetComponentName(const char *cname)
 // ****************************************************************************
 
 const char *
-Init::GetComponentName(void)
+VisItInit::GetComponentName(void)
 {
    return (const char *) componentName;
 }
 
 // ****************************************************************************
-//  Function: Init::ComponentNameToID
+//  Function: VisItInit::ComponentNameToID
 //
 //  Purpose: Return integer index of component name in list of all components
 //
 // ****************************************************************************
 const int
-Init::ComponentNameToID(const char *compName)
+VisItInit::ComponentNameToID(const char *compName)
 {
     int n = sizeof(allComponentNames) / sizeof(allComponentNames[0]);
     for (int i = 0; i < n; i++)
@@ -409,13 +409,13 @@ Init::ComponentNameToID(const char *compName)
 }
 
 // ****************************************************************************
-//  Function: Init::ComponentNameToID
+//  Function: VisItInit::ComponentNameToID
 //
 //  Purpose: Return name of component with given index in list of all components
 //
 // ****************************************************************************
 const char*
-Init::ComponentIDToName(const int id)
+VisItInit::ComponentIDToName(const int id)
 {
     int n = sizeof(allComponentNames) / sizeof(allComponentNames[0]);
 
@@ -426,35 +426,35 @@ Init::ComponentIDToName(const int id)
 }
 
 // ****************************************************************************
-//  Function: Init::IsComponent
+//  Function: VisItInit::IsComponent
 //
 //  Purpose: Tests name of component against name passed as argument 
 //
 // ****************************************************************************
 bool
-Init::IsComponent(const char *compName)
+VisItInit::IsComponent(const char *compName)
 {
-   if (strcmp(compName, Init::GetComponentName()) == 0)
+   if (strcmp(compName, VisItInit::GetComponentName()) == 0)
        return true;
    else
        return false;
 }
 
 // ****************************************************************************
-//  Function: Init::GetExecutableName
+//  Function: VisItInit::GetExecutableName
 //
 //  Purpose: Gets the name of the executable 
 //
 // ****************************************************************************
 
 const char *
-Init::GetExecutableName(void)
+VisItInit::GetExecutableName(void)
 {
    return (const char *) executableName;
 }
 
 // ****************************************************************************
-//  Function: Init::ComponentRegisterErrorFunction
+//  Function: VisItInit::ComponentRegisterErrorFunction
 //
 //  Purpose:
 //      Registers an error function.
@@ -465,7 +465,7 @@ Init::GetExecutableName(void)
 // ****************************************************************************
 
 void
-Init::ComponentRegisterErrorFunction(ErrorFunction ef, void *args)
+VisItInit::ComponentRegisterErrorFunction(ErrorFunction ef, void *args)
 {
     errorFunctionArgs = args;
     errorFunction = ef;
@@ -473,7 +473,7 @@ Init::ComponentRegisterErrorFunction(ErrorFunction ef, void *args)
 
 
 // ****************************************************************************
-//  Function: Init::ComponentIssueError
+//  Function: VisItInit::ComponentIssueError
 //
 //  Purpose:
 //      Issues an error message on that component.
@@ -484,7 +484,7 @@ Init::ComponentRegisterErrorFunction(ErrorFunction ef, void *args)
 // ****************************************************************************
 
 void
-Init::ComponentIssueError(const char *msg)
+VisItInit::ComponentIssueError(const char *msg)
 {
     debug1 << "Error issued: " << msg << endl;
     if (errorFunction != NULL)
@@ -500,7 +500,7 @@ Init::ComponentIssueError(const char *msg)
 
 
 // ****************************************************************************
-// Method: Init::Finalize
+// Method: VisItInit::Finalize
 //
 // Purpose: 
 //   Calls cleanup functions before the application exits.
@@ -525,7 +525,7 @@ Init::ComponentIssueError(const char *msg)
 // ****************************************************************************
 
 void
-Init::Finalize(void)
+VisItInit::Finalize(void)
 {
     // Return if Finalize has already been called.
     if(finalizeCalled)
