@@ -57,7 +57,7 @@
 #include <GlobalLineoutAttributes.h>
 #include <HostProfile.h>
 #include <HostProfileList.h>
-#include <Init.h>
+#include <VisItInit.h>
 #include <InteractorAttributes.h>
 #include <KeyframeAttributes.h>
 #include <LightList.h>

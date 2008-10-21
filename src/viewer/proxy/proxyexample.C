@@ -315,7 +315,7 @@ protected:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-#include <Init.h>
+#include <VisItInit.h>
 #include <VisItException.h>
 
 // ****************************************************************************
@@ -340,8 +340,8 @@ int
 main(int argc, char *argv[])
 {
     // Step 1: Initialize error logging.
-    Init::SetComponentName("proxyexample");
-    Init::Initialize(argc, argv, 0, 1, false);
+    VisItInit::SetComponentName("proxyexample");
+    VisItInit::Initialize(argc, argv, 0, 1, false);
 
     // Step 2: Create the object and enter its Execute method.
     PseudocolorVis vis;
@@ -355,7 +355,7 @@ main(int argc, char *argv[])
     ENDTRY
 
     // Step 3: Finalize to close error logging, etc.
-    Init::Finalize();
+    VisItInit::Finalize();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

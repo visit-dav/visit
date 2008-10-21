@@ -58,8 +58,8 @@
 #include <ImproperUseException.h>
 
 #include <DebugStream.h>
-#include <Init.h>
-#define ScalRen ((!strcmp(Init::GetComponentName(), "engine")) ? 1 : 0)
+#include <VisItInit.h>
+#define ScalRen ((!strcmp(VisItInit::GetComponentName(), "engine")) ? 1 : 0)
 
 // ****************************************************************************
 //  Constructor:  avtSurfaceAndWireframeRenderer  

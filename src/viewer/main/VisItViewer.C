@@ -9,7 +9,7 @@
 #include <ViewerMethods.h>
 
 #include <DebugStream.h>
-#include <Init.h>
+#include <VisItInit.h>
 #include <InitVTK.h>
 #include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
@@ -49,8 +49,8 @@ static void LogGlxAndXdpyInfo();
 void
 VisItViewer::Initialize(int *argc, char ***argv)
 {
-    Init::SetComponentName("viewer");
-    Init::Initialize(*argc, *argv, 0, 1, false);
+    VisItInit::SetComponentName("viewer");
+    VisItInit::Initialize(*argc, *argv, 0, 1, false);
     LogGlxAndXdpyInfo();
 }
 
@@ -76,7 +76,7 @@ VisItViewer::Finalize()
     delete ViewerBase::GetPlotPluginManager();
     delete ViewerBase::GetOperatorPluginManager();
 
-    Init::Finalize();
+    VisItInit::Finalize();
 }
 
 // ****************************************************************************
@@ -100,7 +100,7 @@ VisItViewer::VisItViewer() : visitHome()
     //
     // Initialize the error logging.
     //
-    Init::ComponentRegisterErrorFunction(ViewerErrorCallback, (void*)viewer);
+    VisItInit::ComponentRegisterErrorFunction(ViewerErrorCallback, (void*)viewer);
     InitVTK::Initialize();
     avtCallback::RegisterWarningCallback(ViewerWarningCallback, 
                                          (void*)viewer);

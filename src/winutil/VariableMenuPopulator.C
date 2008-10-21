@@ -38,7 +38,7 @@
 
 #include <VariableMenuPopulator.h>
 
-#include <Init.h>
+#include <VisItInit.h>
 #include <StringHelpers.h>
 #include <avtDatabaseMetaData.h>
 #include <avtSIL.h>
@@ -414,7 +414,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
             meshVars.AddVariable(mmd.name, mmd.validVariable);
     }
     if (md->GetUseCatchAllMesh())
-        meshVars.AddVariable(Init::CatchAllMeshName, true);
+        meshVars.AddVariable(VisItInit::CatchAllMeshName, true);
     for (i = 0; i < md->GetNumScalars(); ++i)
     {
         const avtScalarMetaData &smd = md->GetScalars(i);

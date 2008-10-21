@@ -39,6 +39,9 @@
 /* Define if you have the GLEW library. */
 #undef HAVE_LIBGLEW
 
+/* Define if you have hdf4. */
+#undef HAVE_LIBHDF4
+
 /* Define if you have hdf5. */
 #undef HAVE_LIBHDF5
 

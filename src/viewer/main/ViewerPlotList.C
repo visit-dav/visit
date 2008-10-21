@@ -87,7 +87,7 @@
 
 #include <DebugStream.h>
 
-#include <Init.h>
+#include <VisItInit.h>
 
 #include <algorithm>
 #include <set>
@@ -3242,7 +3242,7 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
     // the active variable(s)
     //
     std::string newVarName = var;
-    if (var == Init::CatchAllMeshName)
+    if (var == VisItInit::CatchAllMeshName)
         GetMeshVarNameForActivePlots(host, db, newVarName);
 
     //

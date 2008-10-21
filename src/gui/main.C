@@ -39,7 +39,7 @@
 #include <visitstream.h>
 #include <VisItException.h>
 #include <QvisGUIApplication.h>
-#include <Init.h>
+#include <VisItInit.h>
 
 // ****************************************************************************
 //  Function: main
@@ -91,8 +91,8 @@ main(int argc, char **argv)
     TRY
     {
         // Initialize error logging.
-        Init::SetComponentName("gui");
-        Init::Initialize(argc, argv, 0, 1, false);
+        VisItInit::SetComponentName("gui");
+        VisItInit::Initialize(argc, argv, 0, 1, false);
 
         TRY
         {
@@ -116,6 +116,6 @@ main(int argc, char **argv)
     }
     ENDTRY
 
-    Init::Finalize();
+    VisItInit::Finalize();
     return retval;
 }

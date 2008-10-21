@@ -42,7 +42,7 @@
 #include <MDServerApplication.h>
 #include <DebugStream.h>
 #include <TimingsManager.h>
-#include <Init.h>
+#include <VisItInit.h>
 #include <InitVTKNoGraphics.h>
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
@@ -153,8 +153,8 @@ main(int argc, char *argv[])
     int retval = 0;
 
     // Initialize error logging
-    Init::SetComponentName("mdserver");
-    Init::Initialize(argc, argv);
+    VisItInit::SetComponentName("mdserver");
+    VisItInit::Initialize(argc, argv);
     InitVTKNoGraphics::Initialize();
     avtDatabase::SetOnlyServeUpMetaData(true);
 
@@ -191,7 +191,7 @@ main(int argc, char *argv[])
     ENDTRY
 
     debug1 << "MDSERVER exited." << endl;
-    Init::Finalize();
+    VisItInit::Finalize();
     return retval;
 }
 

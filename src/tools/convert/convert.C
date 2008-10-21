@@ -43,7 +43,7 @@
 #include <DatabasePluginManager.h>
 
 #include <DatabasePluginInfo.h>
-#include <Init.h>
+#include <VisItInit.h>
 
 #include <ExprParser.h>
 #include <ParsingExprList.h>
@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
 {
     int  i;
 
-    Init::Initialize(argc, argv);
+    VisItInit::Initialize(argc, argv);
 
     //
     // Initialize the plugin readers.
