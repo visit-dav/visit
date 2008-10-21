@@ -83,6 +83,10 @@ class vtkOutlineSource;
 //    Brad Whitlock, Tue Mar 25 16:27:40 PDT 2008
 //    Added methods for line width, font, font size.
 // 
+//    Eric Brugger, Wed Oct 15 13:05:33 PDT 2008
+//    Added SetAutoSetTicks, SetMajorTickMinimum, SetMajorTickMaximum,
+//    SetMajorTickSpacing and SetMinorTickSpacing.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxes3D : public VisWinColleague
@@ -113,6 +117,11 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
     void                      SetYGridVisibility(int);
     void                      SetZGridVisibility(int);
     void                      SetVisibility(int);
+    void                      SetAutoSetTicks(int);
+    void                      SetMajorTickMinimum(double, double, double);
+    void                      SetMajorTickMaximum(double, double, double);
+    void                      SetMajorTickSpacing(double, double, double);
+    void                      SetMinorTickSpacing(double, double, double);
     void                      SetBBoxVisibility(int);
     void                      SetFlyMode(int);
     void                      SetTickLocation(int);

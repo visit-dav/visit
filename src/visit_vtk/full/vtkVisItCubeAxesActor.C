@@ -79,6 +79,9 @@ vtkCxxSetObjectMacro(vtkVisItCubeAxesActor, Camera,vtkCamera);
 //   Brad Whitlock, Wed Mar 26 13:42:08 PDT 2008
 //   Added TitleTextProperty, LabelTextProperty, TitleScale, LabelScale.
 //
+//   Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
+//   Added support for specifying tick mark locations.
+//
 // *************************************************************************
 
 vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
@@ -212,6 +215,33 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   this->userXPow = 0;
   this->userYPow = 0;
   this->userZPow = 0;
+
+  this->AdjustLabels = 1;
+  this->XMajorTickMinimum = 0.0;
+  this->XMajorTickMaximum = 1.0;
+  this->XMajorTickSpacing = 1.0;
+  this->XMinorTickSpacing = 0.1;
+  this->YMajorTickMinimum = 0.0;
+  this->YMajorTickMaximum = 1.0;
+  this->YMajorTickSpacing = 1.0;
+  this->YMinorTickSpacing = 0.1;
+  this->ZMajorTickMinimum = 0.0;
+  this->ZMajorTickMaximum = 1.0;
+  this->ZMajorTickSpacing = 1.0;
+  this->ZMinorTickSpacing = 0.1;
+  this->LastAdjustLabels = -1;
+  this->LastXMajorTickMinimum = FLT_MAX;
+  this->LastXMajorTickMaximum = FLT_MAX;
+  this->LastXMajorTickSpacing = FLT_MAX;
+  this->LastXMinorTickSpacing = FLT_MAX;
+  this->LastYMajorTickMinimum = FLT_MAX;
+  this->LastYMajorTickMaximum = FLT_MAX;
+  this->LastYMajorTickSpacing = FLT_MAX;
+  this->LastYMinorTickSpacing = FLT_MAX;
+  this->LastZMajorTickMinimum = FLT_MAX;
+  this->LastZMajorTickMaximum = FLT_MAX;
+  this->LastZMajorTickSpacing = FLT_MAX;
+  this->LastZMinorTickSpacing = FLT_MAX;
 }
 
 // ****************************************************************************
@@ -228,6 +258,9 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
 //   Kathleen Bonnell, Wed Aug  6 13:59:15 PDT 2003 
 //   Remove valueScaleFactor, replace mustAdjustValue and ForceLabelReset
 //   with one for each axis type.
+//
+//   Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
+//   Added support for specifying tick mark locations.
 //
 // ****************************************************************************
 
@@ -251,6 +284,19 @@ void vtkVisItCubeAxesActor::ShallowCopy(vtkVisItCubeAxesActor *actor)
   this->ForceXLabelReset = actor->ForceXLabelReset;
   this->ForceYLabelReset = actor->ForceYLabelReset;
   this->ForceZLabelReset = actor->ForceZLabelReset;
+  this->SetAdjustLabels(actor->GetAdjustLabels());
+  this->SetXMajorTickMinimum(actor->GetXMajorTickMinimum());
+  this->SetXMajorTickMaximum(actor->GetXMajorTickMaximum());
+  this->SetXMajorTickSpacing(actor->GetXMajorTickSpacing());
+  this->SetXMinorTickSpacing(actor->GetXMinorTickSpacing());
+  this->SetYMajorTickMinimum(actor->GetYMajorTickMinimum());
+  this->SetYMajorTickMaximum(actor->GetYMajorTickMaximum());
+  this->SetYMajorTickSpacing(actor->GetYMajorTickSpacing());
+  this->SetYMinorTickSpacing(actor->GetYMinorTickSpacing());
+  this->SetZMajorTickMinimum(actor->GetZMajorTickMinimum());
+  this->SetZMajorTickMaximum(actor->GetZMajorTickMaximum());
+  this->SetZMajorTickSpacing(actor->GetZMajorTickSpacing());
+  this->SetZMinorTickSpacing(actor->GetZMinorTickSpacing());
 }
 
 // ****************************************************************************
@@ -1185,6 +1231,9 @@ LabelExponent(double min, double max)
 //    Multiply the calculated label scales by a scale factor that the user
 //    provided.
 //
+//    Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
+//    Added support for specifying tick mark locations.
+//
 // *************************************************************************
 
 void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
@@ -1197,9 +1246,23 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
       this->LabelTextProperty[0]->GetMTime() > this->BuildTime.GetMTime() ||
       this->LabelTextProperty[1]->GetMTime() > this->BuildTime.GetMTime() ||
       this->LabelTextProperty[2]->GetMTime() > this->BuildTime.GetMTime();
+  bool axesTicksChanged =
+      this->AdjustLabels != this->LastAdjustLabels ||
+      this->XMajorTickMinimum != this->LastXMajorTickMinimum ||
+      this->XMajorTickMaximum != this->LastXMajorTickMaximum ||
+      this->XMajorTickSpacing != this->LastXMajorTickSpacing ||
+      this->XMinorTickSpacing != this->LastXMinorTickSpacing ||
+      this->YMajorTickMinimum != this->LastYMajorTickMinimum ||
+      this->YMajorTickMaximum != this->LastYMajorTickMaximum ||
+      this->YMajorTickSpacing != this->LastYMajorTickSpacing ||
+      this->YMinorTickSpacing != this->LastYMinorTickSpacing ||
+      this->ZMajorTickMinimum != this->LastZMajorTickMinimum ||
+      this->ZMajorTickMaximum != this->LastZMajorTickMaximum ||
+      this->ZMajorTickSpacing != this->LastZMajorTickSpacing ||
+      this->ZMinorTickSpacing != this->LastZMinorTickSpacing;
 
   if ((this->GetMTime() < this->BuildTime.GetMTime()) &&
-      !labelPropsChanged
+      !labelPropsChanged && !axesTicksChanged
      ) 
     {
     return;
@@ -1296,16 +1359,17 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
   //
   if (!ticksRecomputed)
     {
-    if (this->ForceXLabelReset)
+    if (this->ForceXLabelReset || axesTicksChanged)
       BuildLabels(this->XAxes);
-    if (this->ForceYLabelReset)
+    if (this->ForceYLabelReset || axesTicksChanged)
       BuildLabels(this->YAxes);
-    if (this->ForceZLabelReset)
+    if (this->ForceZLabelReset || axesTicksChanged)
       BuildLabels(this->ZAxes);
     }
 
-  if (ticksRecomputed || this->ForceXLabelReset || this->ForceYLabelReset ||
-      this->ForceZLabelReset || this->scalingChanged)
+  if (ticksRecomputed || axesTicksChanged || this->ForceXLabelReset ||
+      this->ForceYLabelReset || this->ForceZLabelReset ||
+      this->scalingChanged)
     {
     // labels were re-built, need to recompute the scale. 
     double center[3]; 
@@ -1362,6 +1426,20 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
   this->RenderSomething = 1;
   this->BuildTime.Modified();
   this->LastFlyMode = this->FlyMode;
+
+  this->LastAdjustLabels = this->AdjustLabels;
+  this->LastXMajorTickMinimum = this->XMajorTickMinimum;
+  this->LastXMajorTickMaximum = this->XMajorTickMaximum;
+  this->LastXMajorTickSpacing = this->XMajorTickSpacing;
+  this->LastXMinorTickSpacing = this->XMinorTickSpacing;
+  this->LastYMajorTickMinimum = this->YMajorTickMinimum;
+  this->LastYMajorTickMaximum = this->YMajorTickMaximum;
+  this->LastYMajorTickSpacing = this->YMajorTickSpacing;
+  this->LastYMinorTickSpacing = this->YMinorTickSpacing;
+  this->LastZMajorTickMinimum = this->ZMajorTickMinimum;
+  this->LastZMajorTickMaximum = this->ZMajorTickMaximum;
+  this->LastZMajorTickSpacing = this->ZMajorTickSpacing;
+  this->LastZMinorTickSpacing = this->ZMinorTickSpacing;
 }
 
 
@@ -1380,6 +1458,9 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
 //
 //    Brad Whitlock, Wed Mar 26 13:49:16 PDT 2008
 //    Set the title and label properties for each axis actor.
+//
+//    Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
+//    Added support for specifying tick mark locations.
 //
 // *************************************************************************
 
@@ -1402,6 +1483,11 @@ void vtkVisItCubeAxesActor::SetNonDependentAttributes()
     this->XAxes[i]->SetTitleVisibility(this->XAxisLabelVisibility);
     this->XAxes[i]->SetTickVisibility(this->XAxisTickVisibility);
     this->XAxes[i]->SetMinorTicksVisible(this->XAxisMinorTickVisibility);
+    this->XAxes[i]->SetAdjustLabels(this->AdjustLabels);
+    this->XAxes[i]->SetMajorTickMinimum(this->XMajorTickMinimum);
+    this->XAxes[i]->SetMajorTickMaximum(this->XMajorTickMaximum);
+    this->XAxes[i]->SetMajorTickSpacing(this->XMajorTickSpacing);
+    this->XAxes[i]->SetMinorTickSpacing(this->XMinorTickSpacing);
 
     this->YAxes[i]->SetCamera(this->Camera);
     this->YAxes[i]->SetProperty(prop);
@@ -1415,6 +1501,11 @@ void vtkVisItCubeAxesActor::SetNonDependentAttributes()
     this->YAxes[i]->SetTitleVisibility(this->YAxisLabelVisibility);
     this->YAxes[i]->SetTickVisibility(this->YAxisTickVisibility);
     this->YAxes[i]->SetMinorTicksVisible(this->YAxisMinorTickVisibility);
+    this->YAxes[i]->SetAdjustLabels(this->AdjustLabels);
+    this->YAxes[i]->SetMajorTickMinimum(this->YMajorTickMinimum);
+    this->YAxes[i]->SetMajorTickMaximum(this->YMajorTickMaximum);
+    this->YAxes[i]->SetMajorTickSpacing(this->YMajorTickSpacing);
+    this->YAxes[i]->SetMinorTickSpacing(this->YMinorTickSpacing);
 
     this->ZAxes[i]->SetCamera(this->Camera);
     this->ZAxes[i]->SetProperty(prop);
@@ -1428,6 +1519,11 @@ void vtkVisItCubeAxesActor::SetNonDependentAttributes()
     this->ZAxes[i]->SetTitleVisibility(this->ZAxisLabelVisibility);
     this->ZAxes[i]->SetTickVisibility(this->ZAxisTickVisibility);
     this->ZAxes[i]->SetMinorTicksVisible(this->ZAxisMinorTickVisibility);
+    this->ZAxes[i]->SetAdjustLabels(this->AdjustLabels);
+    this->ZAxes[i]->SetMajorTickMinimum(this->ZMajorTickMinimum);
+    this->ZAxes[i]->SetMajorTickMaximum(this->ZMajorTickMaximum);
+    this->ZAxes[i]->SetMajorTickSpacing(this->ZMajorTickSpacing);
+    this->ZAxes[i]->SetMinorTickSpacing(this->ZMinorTickSpacing);
     }
 }
 
@@ -1887,6 +1983,9 @@ vtkVisItCubeAxesActor::AdjustTicksComputeRange(vtkVisItAxisActor *axes[4])
 //    Eric Brugger, Mon Jul 26 16:09:26 PDT 2004
 //    Correct a bug with a misplaced closing parenthesis.
 //
+//    Eric Brugger, Tue Oct 21 12:32:51 PDT 2008
+//    Added support for specifying tick mark locations.
+//
 // ****************************************************************
 
 void
@@ -1898,7 +1997,10 @@ vtkVisItCubeAxesActor::BuildLabels(vtkVisItAxisActor *axes[4])
   const double deltaMajor = axes[0]->GetDeltaMajor();
   const double *p2        = axes[0]->GetPoint2Coordinate()->GetValue();
   const double *range     = axes[0]->GetRange();
-  double lastVal, val = majorStart;
+  const double majorTickMinimum = axes[0]->GetMajorTickMinimum();
+  const double majorTickMaximum = axes[0]->GetMajorTickMaximum();
+  const double majorTickSpacing = axes[0]->GetMajorTickSpacing();
+  double firstVal, deltaVal, lastVal, val;
   double extents = range[1] - range[0];
   bool mustAdjustValue;
   int lastPow;
@@ -1927,14 +2029,31 @@ vtkVisItCubeAxesActor::BuildLabels(vtkVisItAxisActor *axes[4])
         break; 
     }
 
+  if (this->AdjustLabels)
+    {
+    firstVal = majorStart;
+    deltaVal = deltaMajor;
+    }
+  else
+    {
+    firstVal = majorTickMinimum +
+        ceil((majorStart - majorTickMinimum) / majorTickSpacing) *
+        majorTickSpacing;
+    firstVal = firstVal > majorTickMinimum ? firstVal : majorTickMinimum;
+    lastVal = majorTickMaximum < lastVal ? majorTickMaximum : lastVal;
+    lastVal = lastVal + majorTickSpacing / 1e6;
+    deltaVal = majorTickSpacing;
+    }
+
   // figure out how many labels we need:
+  val = firstVal;
   while (val <= lastVal && labelCount < VTK_MAX_LABELS)
     {
     labelCount++;
-    val += deltaMajor;
+    val += deltaVal;
     }
 
-  val = majorStart;
+  val = firstVal;
 
   double scaleFactor = 1.;
   if (lastPow != 0)
@@ -1976,7 +2095,7 @@ vtkVisItCubeAxesActor::BuildLabels(vtkVisItAxisActor *axes[4])
         SNPRINTF(label, 64, "0.00000");
       }
     labels.push_back(label);
-    val += deltaMajor;
+    val += deltaVal;
     }
   for (i = 0; i < 4; i++)
     {

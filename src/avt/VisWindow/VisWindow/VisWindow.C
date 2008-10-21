@@ -4027,6 +4027,9 @@ VisWindow::UpdateAxesArray()
 //   Brad Whitlock, Wed Mar 26 14:16:57 PDT 2008
 //   Set the axis text properties.
 //
+//   Eric Brugger, Wed Oct 15 09:21:13 PDT 2008
+//   Added the setting of the tick mark locations.
+//
 // ****************************************************************************
 
 void
@@ -4074,6 +4077,24 @@ VisWindow::UpdateAxes3D()
                                a && axis3D.GetZAxis().GetLabel().GetVisible());
 
     axes3D->SetTickLocation(axis3D.GetTickLocation());
+
+    axes3D->SetAutoSetTicks(axis3D.GetAutoSetTicks());
+    axes3D->SetMajorTickMinimum(
+        axis3D.GetXAxis().GetTickMarks().GetMajorMinimum(),
+        axis3D.GetYAxis().GetTickMarks().GetMajorMinimum(),
+        axis3D.GetZAxis().GetTickMarks().GetMajorMinimum());
+    axes3D->SetMajorTickMaximum(
+        axis3D.GetXAxis().GetTickMarks().GetMajorMaximum(),
+        axis3D.GetYAxis().GetTickMarks().GetMajorMaximum(),
+        axis3D.GetZAxis().GetTickMarks().GetMajorMaximum());
+    axes3D->SetMajorTickSpacing(
+        axis3D.GetXAxis().GetTickMarks().GetMajorSpacing(),
+        axis3D.GetYAxis().GetTickMarks().GetMajorSpacing(),
+        axis3D.GetZAxis().GetTickMarks().GetMajorSpacing());
+    axes3D->SetMinorTickSpacing(
+        axis3D.GetXAxis().GetTickMarks().GetMinorSpacing(),
+        axis3D.GetYAxis().GetTickMarks().GetMinorSpacing(),
+        axis3D.GetZAxis().GetTickMarks().GetMinorSpacing());
 
     //
     // Fly Mode (axes3D type).
