@@ -50,7 +50,7 @@ typedef void  (*ErrorFunction)(void *, const char *);
 
 
 // ****************************************************************************
-//  Namespace: Init
+//  Namespace: VisItInit
 //
 //  Purpose:
 //      A module that does initialization procedures.  It has been extended to
@@ -73,7 +73,7 @@ typedef void  (*ErrorFunction)(void *, const char *);
 //
 // ****************************************************************************
 
-namespace Init
+namespace VisItInit
 {
     MISC_API void Initialize(int &argc, char *argv[], int r=0, int n=1,
                              bool strip=true, bool sigs=true);
