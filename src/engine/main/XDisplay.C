@@ -44,10 +44,12 @@
 #include <vector>
 
 #include <XDisplay.h>
+
 #include <DebugStream.h>
 #include <InitVTK.h>
 #include <snprintf.h>
 #include <StringHelpers.h>
+#include <visit-config.h>
 
 #ifdef DEBUG_X
 #   define DEBUG_ONLY(block) block
@@ -222,12 +224,20 @@ XDisplay::Connect()
 //  Programmer:  Tom Fogal
 //  Creation:    July 29, 2008
 //
+//  Modifications:
+//
+//    Eric Brugger, Tue Oct 21 16:58:25 PDT 2008
+//    I made use of unsetenv dependent on HAVE_SETENV (only gcc 3.2 on
+//    Solaris).  I Replaced strerror_r with strerror.
+//
 // ****************************************************************************
 
 void
 XDisplay::Teardown()
 {
+#ifdef HAVE_SETENV
     unsetenv("DISPLAY");
+#endif
 
     debug3 << "Tearing down display " << this->xserver << std::endl;
 
@@ -239,10 +249,10 @@ XDisplay::Teardown()
         // Hrumph.
         if(kill(this->xserver, SIGKILL) < 0)
         {
-            char err[1024];
-            strerror_r(errno, err, 1024);
-            debug1 << "Could not stop X server: " << err << std::endl;
-            std::cerr << "Could not stop the X server: " << err << std::endl
+            debug1 << "Could not stop X server: "
+                   << strerror(errno) << std::endl;
+            std::cerr << "Could not stop the X server: "
+                      << strerror(errno) << std::endl
                       << "You might have stale X server or engine_par "
                       << "processes around now." << std::endl;
         }

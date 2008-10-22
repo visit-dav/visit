@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="WellBore" type="plot" label="Well Bore" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="mesh">
+  <Plugin name="WellBore" type="plot" label="Well Bore" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false" vartype="mesh">
     <CXXFLAGS>
     </CXXFLAGS>
     <LIBS>
