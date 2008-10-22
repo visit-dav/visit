@@ -689,6 +689,9 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
 //    only a single material, then trigger the single-material short
 //    circuit.  (big speedup, less memory)
 //
+//    Mark C. Miller, Tue Oct 21 23:11:24 PDT 2008
+//    Fixed bug where singleMat would get assigned matlist[0] even if matlist
+//    was never allocated (ncells == 0).
 // ****************************************************************************
 bool
 ZooMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
@@ -711,7 +714,7 @@ ZooMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
     {
         int ncells = mesh->GetNumberOfCells();
         const int *matlist = mat->GetMatlist();
-        singleMat = matlist[0];
+        singleMat = ncells > 0 ? matlist[0] : -1;
         for (int c=1; c<ncells; c++)
         {
             if (matlist[c] != singleMat)
