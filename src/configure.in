@@ -868,6 +868,10 @@ dnl    Brad Whitlock, Tue Oct 21 11:23:55 PDT 2008
 dnl    Added a few Silo-related variables back in so they can be substituted
 dnl    into lib/Makefile.in for the Mac since we want to use the create_silo_link
 dnl    target there.
+dnl
+dnl    Eric Brugger, Wed Oct 22 16:10:34 PDT 2008
+dnl    Added DATA_EXE_LDFLAGS, which is used in the data directory to set
+dnl    the rpath to $ORIGIN/../src/lib on linux systems.
 dnl 
 dnl --------------------------------------------------------------------------
 
@@ -3357,8 +3361,10 @@ SHLIB_POSTPROCESS_SER="mv $""(LIBSHAREDTEMPSER) $""@"
 SHLIB_POSTPROCESS_PAR="mv $""(LIBSHAREDTEMPPAR) $""@"
 EXE_LDFLAGS=${EXE_LDFLAGS-""}
 PLUGIN_LDFLAGS=${PLUGIN_LDFLAGS-""}
+DATA_EXE_LDFLAGS=${DATA_EXE_LDFLAGS-""}
 AC_SUBST(EXE_LDFLAGS)
 AC_SUBST(PLUGIN_LDFLAGS)
+AC_SUBST(DATA_EXE_LDFLAGS)
 
 case $UNAME in
   FreeBSD)
@@ -3459,6 +3465,7 @@ case $UNAME in
     # Set RPATH relative to executable
     EXE_LDFLAGS="$EXE_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../lib"
     PLUGIN_LDFLAGS="$PLUGIN_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../../lib"
+    DATA_EXE_LDFLAGS="$DATA_EXE_LDFLAGS -Wl,--rpath,\\\$\$ORIGIN/../src/lib"
     ;;
 
   Darwin)

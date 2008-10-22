@@ -669,6 +669,12 @@ fi
 rm -f ellipse
 cat <<EOF > ellipse
 #!/bin/sh
+PATH=/soft/intel-c-9.1.042-f-9.1.036-r1/bin:\$PATH
+export PATH
+LD_LIBRARY_PATH=/soft/intel-c-9.1.042-f-9.1.036-r1/lib:\$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH
+INTEL_HOME=/soft/intel-c-9.1.042-f-9.1.036-r1
+export INTEL_HOME
 if test ! -d tmp ; then
    mkdir tmp
 fi
