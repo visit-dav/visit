@@ -41,6 +41,7 @@
 
 #include <DebugStream.h>
 #include <InitVTK.h>
+#include <visit-config.h>
 
 // ****************************************************************************
 //  Method: MesaDisplay constructor
@@ -110,6 +111,10 @@ MesaDisplay::Initialize(size_t display, const std::vector<std::string> &user_arg
 //    Kathleen Bonnell, Tue Spe  2 15:54:17 PDT 2008 
 //    If-def'd out unsetenv for windows.
 //
+//    Eric Brugger, Tue Oct 21 16:54:04 PDT 2008
+//    I made use of unsetenv dependent on HAVE_SETENV (only gcc 3.2 on
+//    Solaris).  I Replaced strerror_r with strerror.
+//
 // ****************************************************************************
 
 void
@@ -120,12 +125,12 @@ MesaDisplay::Connect()
 #ifdef __APPLE__
     unsetenv("DISPLAY");
 #else 
+#ifdef HAVE_SETENV
     if(unsetenv("DISPLAY") != 0)
     {
-        char err[1024];
-        strerror_r(errno, err, 1024);
-        debug1 << "unsetenv(DISPLAY) failed: " << err << std::endl;
+        debug1 << "unsetenv(DISPLAY) failed: " << strerror(errno) << std::endl;
     }
+#endif
 #endif
 #endif
 }

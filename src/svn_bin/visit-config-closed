@@ -184,6 +184,50 @@
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
+                    <Field name="host" type="string">eos.llnl.gov</Field>
+                    <Field name="hostAliases" type="string">eos#.llnl.gov eos##.llnl.gov eos###.llnl.gov eos# eos## eos###</Field>
+                    <Field name="timeout" type="int">480</Field>
+                    <Field name="numProcessors" type="int">1</Field>
+                    <Field name="numNodesSet" type="bool">false</Field>
+                    <Field name="numNodes" type="int">0</Field>
+                    <Field name="partitionSet" type="bool">false</Field>
+                    <Field name="partition" type="string"></Field>
+                    <Field name="bankSet" type="bool">false</Field>
+                    <Field name="bank" type="string"></Field>
+                    <Field name="timeLimitSet" type="bool">false</Field>
+                    <Field name="timeLimit" type="string"></Field>
+                    <Field name="launchMethodSet" type="bool">false</Field>
+                    <Field name="launchMethod" type="string"></Field>
+                    <Field name="forceStatic" type="bool">true</Field>
+                    <Field name="forceDynamic" type="bool">false</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
+                    <Field name="parallel" type="bool">false</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">parallel pbatch</Field>
+                    <Field name="host" type="string">eos.llnl.gov</Field>
+                    <Field name="hostAliases" type="string">eos#.llnl.gov eos##.llnl.gov eos###.llnl.gov eos# eos## eos###</Field>
+                    <Field name="timeout" type="int">480</Field>
+                    <Field name="numProcessors" type="int">16</Field>
+                    <Field name="numNodesSet" type="bool">true</Field>
+                    <Field name="numNodes" type="int">2</Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">pbatch</Field>
+                    <Field name="bankSet" type="bool">true</Field>
+                    <Field name="bank" type="string">bdivp</Field>
+                    <Field name="timeLimitSet" type="bool">true</Field>
+                    <Field name="timeLimit" type="string">30:00</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">msub/srun</Field>
+                    <Field name="forceStatic" type="bool">true</Field>
+                    <Field name="forceDynamic" type="bool">false</Field>
+                    <Field name="active" type="bool">false</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
+                    <Field name="parallel" type="bool">true</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">gauss.llnl.gov</Field>
                     <Field name="hostAliases" type="string">gauss#.llnl.gov gauss##.llnl.gov gauss###.llnl.gov gauss# gauss## gauss###</Field>
                     <Field name="timeout" type="int">480</Field>
@@ -321,6 +365,72 @@
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
+                    <Field name="host" type="string">juno.llnl.gov</Field>
+                    <Field name="hostAliases" type="string">juno#.llnl.gov juno##.llnl.gov juno###.llnl.gov juno# juno## juno###</Field>
+                    <Field name="timeout" type="int">480</Field>
+                    <Field name="numProcessors" type="int">1</Field>
+                    <Field name="numNodesSet" type="bool">false</Field>
+                    <Field name="numNodes" type="int">0</Field>
+                    <Field name="partitionSet" type="bool">false</Field>
+                    <Field name="partition" type="string"></Field>
+                    <Field name="bankSet" type="bool">false</Field>
+                    <Field name="bank" type="string"></Field>
+                    <Field name="timeLimitSet" type="bool">false</Field>
+                    <Field name="timeLimit" type="string"></Field>
+                    <Field name="launchMethodSet" type="bool">false</Field>
+                    <Field name="launchMethod" type="string"></Field>
+                    <Field name="forceStatic" type="bool">true</Field>
+                    <Field name="forceDynamic" type="bool">false</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
+                    <Field name="parallel" type="bool">false</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">parallel interactive pdebug</Field>
+                    <Field name="host" type="string">juno.llnl.gov</Field>
+                    <Field name="hostAliases" type="string">juno#.llnl.gov juno##.llnl.gov juno###.llnl.gov juno# juno## juno###</Field>
+                    <Field name="timeout" type="int">480</Field>
+                    <Field name="numProcessors" type="int">8</Field>
+                    <Field name="numNodesSet" type="bool">false</Field>
+                    <Field name="numNodes" type="int">0</Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">pdebug</Field>
+                    <Field name="bankSet" type="bool">false</Field>
+                    <Field name="bank" type="string"></Field>
+                    <Field name="timeLimitSet" type="bool">false</Field>
+                    <Field name="timeLimit" type="string"></Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">srun</Field>
+                    <Field name="forceStatic" type="bool">true</Field>
+                    <Field name="forceDynamic" type="bool">false</Field>
+                    <Field name="active" type="bool">false</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
+                    <Field name="parallel" type="bool">true</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">parallel pbatch</Field>
+                    <Field name="host" type="string">juno.llnl.gov</Field>
+                    <Field name="hostAliases" type="string">juno#.llnl.gov juno##.llnl.gov juno###.llnl.gov juno# juno## juno###</Field>
+                    <Field name="timeout" type="int">480</Field>
+                    <Field name="numProcessors" type="int">16</Field>
+                    <Field name="numNodesSet" type="bool">true</Field>
+                    <Field name="numNodes" type="int">2</Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">pbatch</Field>
+                    <Field name="bankSet" type="bool">true</Field>
+                    <Field name="bank" type="string">bdivp</Field>
+                    <Field name="timeLimitSet" type="bool">true</Field>
+                    <Field name="timeLimit" type="string">30:00</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">msub/srun</Field>
+                    <Field name="forceStatic" type="bool">true</Field>
+                    <Field name="forceDynamic" type="bool">false</Field>
+                    <Field name="active" type="bool">false</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
+                    <Field name="parallel" type="bool">true</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">minos.llnl.gov</Field>
                     <Field name="hostAliases" type="string">minos#.llnl.gov minos##.llnl.gov minos###.llnl.gov minos# minos## minos###</Field>
                     <Field name="timeout" type="int">480</Field>
@@ -416,13 +526,13 @@
                     <Field name="numNodesSet" type="bool">true</Field>
                     <Field name="numNodes" type="int">4</Field>
                     <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">purple,pbatch</Field>
+                    <Field name="partition" type="string">pbatch</Field>
                     <Field name="bankSet" type="bool">true</Field>
                     <Field name="bank" type="string">bdivp</Field>
                     <Field name="timeLimitSet" type="bool">true</Field>
-                    <Field name="timeLimit" type="string">30m</Field>
+                    <Field name="timeLimit" type="string">30:00</Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">psub</Field>
+                    <Field name="launchMethod" type="string">msub</Field>
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>
@@ -438,15 +548,15 @@
                     <Field name="numNodesSet" type="bool">true</Field>
                     <Field name="numNodes" type="int">4</Field>
                     <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">purple</Field>
-                    <Field name="launchArgsSet" type="bool">true</Field>
-                    <Field name="launchArgs" type="string">-pool viz</Field>
+                    <Field name="partition" type="string">viz</Field>
+                    <Field name="launchArgsSet" type="bool">false</Field>
+                    <Field name="launchArgs" type="string"></Field>
                     <Field name="bankSet" type="bool">true</Field>
                     <Field name="bank" type="string">bdivp</Field>
                     <Field name="timeLimitSet" type="bool">true</Field>
-                    <Field name="timeLimit" type="string">30m</Field>
+                    <Field name="timeLimit" type="string">30:00</Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">psub</Field>
+                    <Field name="launchMethod" type="string">msub</Field>
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>
@@ -616,13 +726,13 @@
                     <Field name="numNodesSet" type="bool">true</Field>
                     <Field name="numNodes" type="int">2</Field>
                     <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">um</Field>
+                    <Field name="partition" type="string">pbatch</Field>
                     <Field name="bankSet" type="bool">true</Field>
                     <Field name="bank" type="string">bdivp</Field>
                     <Field name="timeLimitSet" type="bool">true</Field>
-                    <Field name="timeLimit" type="string">30m</Field>
+                    <Field name="timeLimit" type="string">30:00</Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">psub</Field>
+                    <Field name="launchMethod" type="string">msub</Field>
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>
@@ -682,13 +792,13 @@
                     <Field name="numNodesSet" type="bool">true</Field>
                     <Field name="numNodes" type="int">2</Field>
                     <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">uv,pbatch</Field>
+                    <Field name="partition" type="string">pbatch</Field>
                     <Field name="bankSet" type="bool">true</Field>
                     <Field name="bank" type="string">bdivp</Field>
                     <Field name="timeLimitSet" type="bool">true</Field>
-                    <Field name="timeLimit" type="string">30m</Field>
+                    <Field name="timeLimit" type="string">30:00</Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">psub</Field>
+                    <Field name="launchMethod" type="string">msub</Field>
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>

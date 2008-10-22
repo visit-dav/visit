@@ -559,7 +559,7 @@
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/soft/visit-1.6.1-r1"</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/soft/visit-1.11.0-r1"</Field>
                     <Field name="parallel" type="bool">false</Field>
                 </Object>
                 <Object name="HostProfile">
@@ -583,7 +583,7 @@
                     <Field name="forceStatic" type="bool">true</Field>
                     <Field name="forceDynamic" type="bool">false</Field>
                     <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-dir" "/soft/visit-1.6.1-r1"</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/soft/visit-1.11.0-r1"</Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="machinefileSet" type="bool">true</Field>
                     <Field name="machinefile" type="string">$PBS_NODEFILE</Field>

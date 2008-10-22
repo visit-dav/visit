@@ -141,5 +141,5 @@ WellBoreGeneralPluginInfo::GetID() const
 bool
 WellBoreGeneralPluginInfo::EnabledByDefault() const
 {
-    return true;
+    return false;
 }
