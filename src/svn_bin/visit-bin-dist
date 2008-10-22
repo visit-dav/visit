@@ -349,6 +349,14 @@
 #
 #    Mark C. Miller, Tue Oct 21 18:47:08 PDT 2008
 #    Fixed code to copy files to keep it from copying links and big files.
+#
+#    Eric Brugger, Wed Oct 22 16:21:42 PDT 2008
+#    I changed the script so that it would no longer abort if the shared
+#    version of the hdf5 library wasn't present and only try to copy the
+#    shared version of the hdf5 and szip libraries if they were present.
+#    I also removed a message that normally printed out that gave the
+#    impression that something had failed.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -630,14 +638,14 @@ endif
 #
 # Determine the names of the hdf5 shared libraries.
 #
-set HdfHDF5LibName = "libhdf5.$SHLIB_SOEXT"
+set HdfHDF5LibName = ""
 if (! -e $VisItDir/lib/libhdf5.$SHLIB_SOEXT) then
-    echo " "
-    echo "Error: Missing HDF5 library in $VisItDir/lib. aborting ..."
-    echo " "
-    exit (1)
+    set HdfHDF5LibName = "libhdf5.$SHLIB_SOEXT"
 endif
-set HdfSzipLibName = "libsz.$SHLIB_SOEXT"
+set HdfSzipLibName = ""
+if (! -e $VisItDir/lib/libsz.$SHLIB_SOEXT) then
+    set HdfSzipLibName = "libsz.$SHLIB_SOEXT"
+endif
 
 #
 # Determine the os version string and hardware os string.
@@ -1362,8 +1370,6 @@ if (-e $VisItDir/help) then
            if (-e $VisItDir/help/$translation/visit.helpml) then
               cp $VisItDir/help/$translation/visit.helpml $helpdir/$translation
            endif
-       else
-           echo "FAILED TEST: $translation"
        endif
    end
 endif
