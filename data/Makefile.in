@@ -292,6 +292,11 @@
 #   and HDF5_EXEC and replaced with shell code to test for existence of
 #   files to be executed before executing them.
 #
+#   Eric Brugger, Wed Oct 22 16:18:41 PDT 2008
+#   Changed the setting of LDFLAGS to use DATA_EXE_LDFLAGS instead of
+#   unconditionally setting the rpath, which doesn't work on non-linux
+#   systems.
+#
 ##############################################################################
 
 ##
@@ -345,7 +350,7 @@ BINSRC=samrai_test_data ANALYZE_test_data Vista_test_data Image_test_data \
 ##
 LIBS=$(SILO_LIB) @LIBS@
 MATH_LIBS_ONLY=@LIBS@
-LDFLAGS=@LDFLAGS@ -Wl,--rpath=@DATA_REL_VISIT_PATH@/lib
+LDFLAGS=@LDFLAGS@ @DATA_EXE_LDFLAGS@
 CXXFLAGS=$(HDF5_INCLUDE) @CXXFLAGS@
 CPPFLAGS=@CPPFLAGS@ -I. -I@DATA_REL_VISIT_PATH@/include -I@DATA_REL_VISIT_PATH@/include/visit @SILO_INCLUDE@ @PDB_FLAGS@ @VTK_INCLUDES@
 
