@@ -434,6 +434,12 @@
 #     Mark C. Miller, Tue Oct 21 10:32:36 PDT 2008
 #     Modified to support VisIt's configure new way of handling hdf5.
 #     Modified to support shared hdf5.
+#
+#     Tom Fogal, Wed Oct 22 09:05:43 MDT 2008
+#     Add an --szip command line to enable SZip.  Don't force SZip if the user
+#     wants HDF5 (currently will break if they don't and SZip isn't part of
+#     their linker's default search path, though)
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -8310,8 +8316,7 @@ for arg in "${arguments[@]}" ; do
                   DO_SZIP="yes"; ON_SZIP="on";;
         --hdf4) DO_HDF4="yes"; ON_HDF4="on"
                 DO_SZIP="yes"; ON_SZIP="on";;
-        --hdf5) DO_HDF5="yes"; ON_HDF5="on"
-                DO_SZIP="yes"; ON_SZIP="on";;
+        --hdf5) DO_HDF5="yes"; ON_HDF5="on";;
         -h|--help) next_action="help";;
         --itaps) DO_ITAPS="yes"; ON_ITAPS="on";;
         --java) DO_JAVA="yes"; ON_JAVA="on";;
@@ -8323,6 +8328,7 @@ for arg in "${arguments[@]}" ; do
         --parallel) parallel="yes"; ON_parallel="ON";;
         --print-vars) next_action="print-vars";;
         --python) DO_MODULE="yes"; ON_MODULE="on";;
+        --szip) DO_SZIP="yes"; ON_SZIP="on";;
         --slivr) DO_SLIVR="yes"; ON_SLIVR="on";;
         --stdout) LOG_FILE="/dev/tty";;
         --svn) next_arg="svn"; DO_SVN="yes"; DO_REVISION="yes";;
@@ -8368,7 +8374,7 @@ for arg in "${arguments[@]}" ; do
         -y|-Y) deprecated="${deprecated} --java";;
         -z|-Z) deprecated="${deprecated} --console";;
         *)
-            echo "Unrecognized option '${arg}'."
+            echo "Unrecognized option '${arg}'.";;
     esac
 done
 if test -n "${deprecated}" ; then
@@ -8551,8 +8557,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
                  DO_HDF4="yes"
                  DO_SZIP="yes";;
               HDF5)
-                 DO_HDF5="yes"
-                 DO_SZIP="yes";;
+                 DO_HDF5="yes";;
               Mili)
                  DO_MILI="yes";;
               NetCDF)
