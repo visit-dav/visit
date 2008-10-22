@@ -437,8 +437,7 @@
 #
 #     Tom Fogal, Wed Oct 22 09:05:43 MDT 2008
 #     Add an --szip command line to enable SZip.  Don't force SZip if the user
-#     wants HDF5 (currently will break if they don't and SZip isn't part of
-#     their linker's default search path, though)
+#     wants HDF5, but enable SZip if they ask for it.
 #
 # *****************************************************************************
 #
@@ -4534,10 +4533,16 @@ function build_hdf5
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
     fi
     echo "Invoking command to configure HDF5"
+    cf_szip=""
+    if test "x${DO_SZIP}" = "xyes"; then
+        echo "SZip requested.  Configuring HDF5 with SZip support."
+        sz_dir="${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}"
+        cf_szip="--with-szlib=${sz_dir}"
+    fi
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" \
-        --with-szlib="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+        ${cf_szip}
     if [[ $? != 0 ]] ; then
        echo "HDF5 configure failed.  Giving up"
        return 1
