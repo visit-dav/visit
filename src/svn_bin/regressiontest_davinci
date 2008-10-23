@@ -57,6 +57,9 @@
 #    Mark C. Miller, Thu Oct 23 09:27:46 PDT 2008
 #    Fixed problem getting uncleaned file count correctly.
 #    Fixed cd to data dir during clean
+#
+#    Mark C. Miller, Thu Oct 23 09:50:31 PDT 2008
+#    Found and fixed another issue handling output from wc correctly.
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -144,7 +147,7 @@ checkAndHandleError() {
     # at the end of a run
     emailSubject=$shortSubject
     if test -n "`echo $handlerBehavior | grep flush`"; then
-        if test `wc -l $errorLogFile | tr -s ' ' | cut -d' ' -f2` -eq 0; then
+        if test `wc -l $errorLogFile | tr -s ' ' | sed -e 's/^ //' | cut -d' ' -f1` -eq 0; then
             return
 	else
 	    emailSubject="Message(s) from VisIt's Automatic Test Run"
