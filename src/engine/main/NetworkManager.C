@@ -126,6 +126,8 @@
 
 #include <climits>
 
+#include <vtkImageData.h>
+
 using std::set;
 
 //
@@ -136,6 +138,7 @@ static void   DumpImage(avtImage_p, const char *fmt, bool allprocs=true);
 static ref_ptr<avtDatabase> GetDatabase(void *, const std::string &,
                                         int, const char *);
 static avtDDF *GetDDFCallbackBridge(void *arg, const char *name);
+static bool OnlyRootNodeHasData(avtImage_p &);
 
 //
 // Static data members of the NetworkManager class.
@@ -2108,6 +2111,11 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //    Tom Fogal, Mon Sep  1 14:22:57 EDT 2008
 //    Removed asserts.
 //
+//    Tom Fogal, Thu Oct 23 11:41:24 EDT 2008
+//    Check to see if non-root processes have null images, and skip a
+//    compositing step if they do.  This prevents the volume plot from
+//    having swathes of faded image data.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -2163,7 +2171,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             DumpImage(theImage, "before_OpaqueComposite");
 
         avtWholeImageCompositer *imageCompositer;
-
         imageCompositer = MakeCompositer(
                  viswin->GetWindowMode() == WINMODE_3D,
                  viswin->GetBackgroundMode() == AnnotationAttributes::Gradient,
@@ -2186,11 +2193,26 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         imageCompositer->AddImageInput(theImage, 0, 0);
 
         //
-        // Do the parallel composite using a 1 stage pipeline
+        // Parallel composite (via 1 stage `pipeline')
         //
-        imageCompositer->Execute();
-        avtDataObject_p compositedImageAsDataObject =
-            imageCompositer->GetOutput();
+        avtDataObject_p compositedImageAsDataObject;
+
+        // Some plots / DBs simply don't support decomposition.  In that case,
+        // we don't want to do image composition because only the root node
+        // will have any data.  If the plot utilizes transparency, we'll fade
+        // process 0's (correct) image by compositing, because process 0 will
+        // have the right image and everybody else will have a plain white BG.
+        if(OnlyRootNodeHasData(theImage))
+        {
+            debug3 << "Data are not decomposed.  Skipping opaque composite."
+                   << std::endl;
+            CopyTo(compositedImageAsDataObject, theImage);
+        }
+        else
+        {
+            imageCompositer->Execute();
+            compositedImageAsDataObject = imageCompositer->GetOutput();
+        }
 
         // Dump the composited image when debugging.  Note that we only
         // want all processors to dump it if we have done an Allreduce
@@ -3641,7 +3663,8 @@ NetworkManager::RenderBalance(int numTrianglesIHave)
    size = PAR_Size();
    if (rank == 0)
       triCounts = new int [size]; 
-   MPI_Gather(&numTrianglesIHave, 1, MPI_INT, triCounts, 1, MPI_INT, 0, VISIT_MPI_COMM);
+   MPI_Gather(&numTrianglesIHave, 1, MPI_INT, triCounts, 1, MPI_INT, 0,
+              VISIT_MPI_COMM);
    if (rank == 0)
    {  int i, maxTriangles, minTriangles, totTriangles, avgTriangles;
       minTriangles = triCounts[0];
@@ -4134,6 +4157,113 @@ GetDDFCallbackBridge(void *arg, const char *name)
 }
 
 // ****************************************************************************
+//  Function: IsBlankImage
+//
+//  Purpose:
+//    Scans the image to see if it is blank.
+//
+//  Programmer: Tom Fogal
+//  Creation:   October 22, 2008
+//
+// ****************************************************************************
+bool
+IsBlankImage(avtImage_p img)
+{
+    int w,h;
+    unsigned char *rgb = static_cast<unsigned char *>
+        (img->GetImage().GetImageVTK()->GetScalarPointer());
+    img->GetSize(&w, &h);
+
+    const int n_pixels = w * h;
+    const int n_components =
+        img->GetImage().GetImageVTK()->GetNumberOfScalarComponents();
+    unsigned char * const last = rgb + (n_pixels * n_components);
+
+    // Can we find a pixel which isn't white (i.e. 0xFF)?  If we search every
+    // pixel (...) and can't find a non-white pixel, it must be a blank image.
+    unsigned char *idx = std::find_if(rgb, last,
+                                      std::bind2nd(
+                                          std::not_equal_to<unsigned char>(),
+                                          0xFF)
+                                     );
+    return idx == last;
+}
+#ifdef PARALLEL
+// ****************************************************************************
+//  Function: BuildBlankImageVector
+//
+//  Purpose:
+//    Determines if the local image is blank, and builds a vector of that
+//    property within the MPI job.
+//
+//  Programmer: Tom Fogal
+//  Creation:   October 20, 2008
+//
+// ****************************************************************************
+static std::vector<int>
+BuildBlankImageVector(avtImage_p img)
+{
+    std::vector<int> data;
+    int *rcv = new int[PAR_Size()];
+    int local = IsBlankImage(img);
+    const int dest_node = 0;
+    const int src_node = 0;
+
+    MPI_Gather(&local, 1, MPI_INT, rcv, 1, MPI_INT, dest_node, VISIT_MPI_COMM);
+    MPI_Bcast(rcv, PAR_Size(), MPI_INT, src_node, VISIT_MPI_COMM);
+
+    data.reserve(PAR_Size());
+    for(size_t i = 0 ; i < PAR_Size(); ++i)
+    {
+        data.push_back(rcv[i]);
+    }
+
+    delete []rcv;
+    return data;
+}
+#endif
+
+
+// ****************************************************************************
+//  Function: OnlyRootNodeHasData
+//
+//  Purpose:
+//    Report whether or not the root node has all the data for this rendering.
+//    The image should be the image rendered by this process; global
+//    communication will figure out which nodes have image data.  Thus,
+//    this method MUST be called synchronously!
+//
+//  Programmer: Tom Fogal
+//  Creation:   October 17, 2008
+//
+// ****************************************************************************
+
+static bool
+OnlyRootNodeHasData(avtImage_p &img)
+{
+#ifndef PARALLEL
+    return true;
+#else
+    std::vector<int> data = BuildBlankImageVector(img);
+    const bool root_is_blank = data[0];
+
+    // Starting from the 2nd element in the list, search for an element which
+    // is greater than 0.  If we find one, than somebody else has data; we
+    // don't really care who it is.
+    std::vector<int>::const_iterator it;
+    it = std::find_if(data.begin()+1, data.end(),
+                      std::bind2nd(std::greater<int>(), 0));
+    const bool others_are_blank = (it != data.end());
+
+    if(!root_is_blank && others_are_blank)
+    {
+        return true;
+    }
+    return false;
+#endif
+}
+
+// ****************************************************************************
 //  Function: SetCompositerBackground
 //
 //  Purpose: Sets the default background for an image compositer based on the
@@ -4211,6 +4341,7 @@ NetworkManager::MakeCompositer(bool threeD, bool gradientBG, bool needZ, bool mu
     // If it *is* 3D though, we need Z in many more cases.
     if(threeD)
     {
+        debug3 << "Compositer outputting Z buffer." << std::endl;
         compositer->SetShouldOutputZBuffer(
             needZ || multipass || shadows || depth_cueing || image_plots
         );

@@ -333,7 +333,6 @@ QvisWellBorePlotWindow::UpdateWindow(bool doAll)
 {
     QString temp;
     int    index;
-    double r;
 
     bool updateColors = false;
     bool updateNames = false;
@@ -350,12 +349,6 @@ QvisWellBorePlotWindow::UpdateWindow(bool doAll)
             }
         }
 
-        const double         *dptr;
-        const float          *fptr;
-        const int            *iptr;
-        const char           *cptr;
-        const unsigned char  *uptr;
-        const string         *sptr;
         QColor                tempcolor;
         switch(i)
         {
@@ -595,7 +588,8 @@ QvisWellBorePlotWindow::UpdateMultipleAreaColors()
             QColor temp(wellBoreColors[i].Red(), wellBoreColors[i].Green(),
                         wellBoreColors[i].Blue());
 
-            multipleColors->addEntry(QString(""), temp, wellBoreColors[i].Alpha());
+            multipleColors->addEntry(QString(""), temp, 
+                                     wellBoreColors[i].Alpha());
         }
     }
     else // nEntries < multipleColors->numEntries()
@@ -651,7 +645,8 @@ QvisWellBorePlotWindow::UpdateMultipleAreaNames()
     {
         for(int i = 0; i < nEntries; ++i)
         {
-            multipleColors->setAttributeName(i, atts->GetWellNames()[i]);
+            multipleColors->setAttributeName(i, 
+                            atts->GetWellNames()[i].c_str());
         }
     }
     else if(nEntries > multipleColors->numEntries())
@@ -659,13 +654,14 @@ QvisWellBorePlotWindow::UpdateMultipleAreaNames()
         // Set all of the existing names.
         for(int i = 0; i < multipleColors->numEntries(); ++i)
         {
-            multipleColors->setAttributeName(i, atts->GetWellNames()[i]);
+            multipleColors->setAttributeName(i, 
+                            atts->GetWellNames()[i].c_str());
         }
 
         // Add new entries
         for(int i = multipleColors->numEntries(); i < nEntries; ++i)
         {
-            multipleColors->addEntry(atts->GetWellNames()[i],
+            multipleColors->addEntry(atts->GetWellNames()[i].c_str(),
                                      QColor(0,0,0), 255);
         }
     }
@@ -674,7 +670,8 @@ QvisWellBorePlotWindow::UpdateMultipleAreaNames()
         // Set all of the existing names.
         for(int i = 0; i < nEntries; ++i)
         {
-            multipleColors->setAttributeName(i, atts->GetWellNames()[i]);
+            multipleColors->setAttributeName(i, 
+                            atts->GetWellNames()[i].c_str());
         }
 
         // Remove excess entries
@@ -714,7 +711,7 @@ QvisWellBorePlotWindow::UpdateWellName(int index)
     }
     else
     {
-        wellName->setText(atts->GetWellNames()[index]);
+        wellName->setText(atts->GetWellNames()[index].c_str());
     }
 }
 
@@ -1481,7 +1478,8 @@ QvisWellBorePlotWindow::wellNameTextChanged(const QString &text)
     BlockAllSignals(true);
     wellListBox->changeItem(newname, index);
     BlockAllSignals(false);
-    multipleColors->setAttributeName(index, atts->GetWellNames()[index]); 
+    multipleColors->setAttributeName(index, 
+                    atts->GetWellNames()[index].c_str()); 
 }
 
 
