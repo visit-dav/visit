@@ -44,6 +44,16 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 1.11</font></b></p>
 <ul>
+  <li>Mesh plots were greatly tuned for rectilinear meshes, including 
+      AMR rectilinear meshes.  You should see considerable improvement in 
+      both performance and memory footprint.</li>
+  <li>Material interface reconstruction was tuned for the case of a domain
+      that has only a single material.  Again, you should see considerable
+      improvement in both performance and memory footprint.</li>
+  <li>You can now change legends to have a horizontal orientation, as opposed
+      to the traditional vertical orientation.  To access the controls (as
+      well as other legend controls), go to Controls->Annotations in the main
+      GUI and look under the Objects tab.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -71,11 +81,19 @@ material entries are all set to "EMPTY".</li>
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 1.11</font></b></p>
 <ul>
+      <li>The Volume plot's ray-casting option now has a lighting model.  This 
+          results in significantly higher quality pictures, at the cost of more 
+          computation time.  To use the old (faster) way, disable lighting
+          in the plot options.</li>
       <li>The Streamline plot has three new color by options: time, arc
           length and seed point id.</li>
+      <li>The Volume plot's ray-casting option no longer has additional, unnecessary
+          executions when making its first image.</li>
       <li>The Spreadsheet plot now prints an informational message in text files
           that it saves so the user knows that the vertical ordering of data
           in the file differs from what is shown in</li>
+      <li>The Volume plot can now directly volume render unsigned character data with no intermediate
+          representations, meaning that the memory footprint will now be lower in this case.</li>
 </ul>
 
 <a name="Operator_changes"></a>
@@ -83,8 +101,20 @@ material entries are all set to "EMPTY".</li>
 <ul>
 <li>The InverseGhostZone operator now operates correctly on blocks that have
 no ghost zones.</li>
+<li>The Slice operator now labels axes differently when projecting to two dimensions.
+It has always correctly labeled the axes when doing orthogonal slices.  However, for
+non-orthogonal slices, it was consistently labeling the axes as <i>X</i> and <i>Y</i>, even
+though those were not the true axes.  It will now label the axes with
+the true axes, for example the <i>0.707,0,-0.707 Axis</i>.</li>
 <li>Deleting an operator by clicking the red X in the plot list now works for
 plots that are not selected.</li>
+<li>The Tube operator now successfully works on line segments that form loops,
+where these segments would previously be ignored.</li>
+<li>The Threshold operator now issues a warning if you are thresholding by the
+<i>default</i> variable and that variable is not a scalar.</li>
+<li>When the Slice operator is projecting to two dimensions and the slice plane is
+set using the theta-phi method, users can now set the up-axis for projection to
+two dimensions.</li>
 </ul>
 
 <a name="Expression_changes"></a>
@@ -108,6 +138,8 @@ plots that are not selected.</li>
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 1.11</font></b></p>
 <ul>
+      <li>VisIt should be significantly better at cleaning up runaway parallel engines.</li>
+
       <li>A bug was fixed with Fedora Core 9 where "Save Window" and images from
           "Scalable rendering mode" ("SR mode")
           were coming out corrupted.</li>
@@ -116,6 +148,9 @@ plots that are not selected.</li>
           adjusts composition appropriately.  This fixes a bug which caused the
           volume plot to create images with visible slices.</li>
 
+      <li>If file grouping is set to <i>off</i> and you connect to a remote host,
+          the files on the remote machine now display correctly, where previously
+          it would appear as an empty list.</li>
       <li>Fixed the usage of the loopback device (127.0.0.1) for Windows.</li>
 
       <li>Fixed a small memory leak on Windows platfrom.</li>
@@ -139,6 +174,9 @@ plots that are not selected.</li>
       <li>VisIt no longer reverts to displaying files from your home directory when the
           <i>-launchengine</i> argument is added to the command line as a result of adding
           parallel command line arguments such as <i>-np, -nn</i>.</li>
+
+      <li>A significant memory bloat was found and fixed for the case of 
+          processing double precision data.</li>
 </ul>
 
 <a name="Config_changes"></a>
@@ -167,6 +205,8 @@ plots that are not selected.</li>
           for an example.</li>
       <li>New VAC_ARG_WITH3RD autoconf macro should be used to handle third
           party libraries.</li>
+      <li>The build_visit script was refactored so that all patch code is now cleanly isolated 
+          into their own separate function.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
