@@ -138,9 +138,10 @@ static void   DumpImage(avtImage_p, const char *fmt, bool allprocs=true);
 static ref_ptr<avtDatabase> GetDatabase(void *, const std::string &,
                                         int, const char *);
 static avtDDF *GetDDFCallbackBridge(void *arg, const char *name);
-static bool IsBlankImage(avtImage_p img);
 static bool OnlyRootNodeHasData(avtImage_p &);
+static void BroadcastImage(avtImage_p &, bool, int);
 #ifdef PARALLEL
+static bool IsBlankImage(avtImage_p img);
 static std::vector<int> BuildBlankImageVector(avtImage_p img);
 #endif
 
@@ -2210,6 +2211,17 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         {
             debug3 << "Data are not decomposed.  Skipping opaque composite."
                    << std::endl;
+            // Sometimes the other processors need the image too, e.g. in
+            // multipass rendering, or when image effects are enabled.
+            // Essentially any point later in this method with a data
+            // dependency on theImage.
+            if(imageCompositer->GetAllProcessorsNeedResult())
+            {
+                const int src_node = 0;
+                BroadcastImage(theImage,
+                               imageCompositer->GetShouldOutputZBuffer(),
+                               src_node);
+            }
             CopyTo(compositedImageAsDataObject, theImage);
         }
         else
@@ -2233,10 +2245,11 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 
         if (this->MemoMultipass(viswin))
         {
+            avtImage_p tmp_img;
+            CopyTo(tmp_img, compositedImageAsDataObject);
+
             compositedImageAsDataObject =
-                this->RenderTranslucent(windowID,
-                                        imageCompositer->GetTypedOutput()
-                                       ); 
+                this->RenderTranslucent(windowID, tmp_img);
         }
 
         //
@@ -4160,6 +4173,7 @@ GetDDFCallbackBridge(void *arg, const char *name)
     return nm->GetDDF(name);
 }
 
+#ifdef PARALLEL
 // ****************************************************************************
 //  Function: IsBlankImage
 //
@@ -4192,7 +4206,6 @@ IsBlankImage(avtImage_p img)
                                      );
     return idx == last;
 }
-#ifdef PARALLEL
 // ****************************************************************************
 //  Function: BuildBlankImageVector
 //
@@ -4264,6 +4277,76 @@ OnlyRootNodeHasData(avtImage_p &img)
         return true;
     }
     return false;
+#endif
+}
+
+// ****************************************************************************
+//  Function: BroadcastImage
+//
+//  Purpose:
+//    Broadcasts an image from a processor to all other processors.
+//    This method MUST be called synchronously!
+//
+//  Arguments:
+//    img       The image to broadcast, or fill with a received image.
+//    send_zbuf Set if we should send over the Z buffer too
+//    root      Which process will source the image
+//
+//  Programmer: Tom Fogal
+//  Creation:   October 24, 2008
+//
+// ****************************************************************************
+static void
+BroadcastImage(avtImage_p &img, bool send_zbuf, int root)
+{
+#ifdef PARALLEL
+    int w,h;
+    img->GetSize(&w, &h);
+    unsigned char *data;
+    float *zb = NULL;
+
+    const int n_pixels = w * h;
+    const int n_components =
+        img->GetImage().GetImageVTK()->GetNumberOfScalarComponents();
+    const size_t img_size = n_pixels * n_components;
+
+    if(PAR_Rank() == root)
+    {
+        data = img->GetImage().GetRGBBuffer();
+        if(send_zbuf)
+        {
+            zb = img->GetImage().GetZBuffer();
+        }
+    }
+    else
+    {
+        debug4 << "Creating buffer for new " << w << "x" << h << " image."
+               << std::endl;
+        data = new unsigned char [img_size];
+        zb = new float[w*h];
+    }
+
+    debug5 << "Synching color buffers from process " << root << std::endl;
+    MPI_Bcast(data, img_size, MPI_BYTE, root, VISIT_MPI_COMM);
+    if(send_zbuf)
+    {
+        debug5 << "Synching depth buffers to processors from "
+               << root << std::endl;
+        MPI_Bcast(zb, w*h, MPI_FLOAT, root, VISIT_MPI_COMM);
+    }
+    if(PAR_Rank() != root)
+    {
+        vtkImageData *image = avtImageRepresentation::NewImage(w,h);
+        {
+            void *img_data = image->GetScalarPointer();
+            memcpy(img_data, data, img_size);
+        }
+        avtSourceFromImage conv(image, zb);
+        img = conv.GetTypedOutput();
+        img->Update(conv.GetGeneralContract());
+        img->SetSource(NULL);
+        image->Delete();
+    }
 #endif
 }
 
