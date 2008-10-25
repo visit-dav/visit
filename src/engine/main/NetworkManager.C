@@ -138,7 +138,11 @@ static void   DumpImage(avtImage_p, const char *fmt, bool allprocs=true);
 static ref_ptr<avtDatabase> GetDatabase(void *, const std::string &,
                                         int, const char *);
 static avtDDF *GetDDFCallbackBridge(void *arg, const char *name);
+static bool IsBlankImage(avtImage_p img);
 static bool OnlyRootNodeHasData(avtImage_p &);
+#ifdef PARALLEL
+static std::vector<int> BuildBlankImageVector(avtImage_p img);
+#endif
 
 //
 // Static data members of the NetworkManager class.
@@ -4166,7 +4170,7 @@ GetDDFCallbackBridge(void *arg, const char *name)
 //  Creation:   October 22, 2008
 //
 // ****************************************************************************
-bool
+static bool
 IsBlankImage(avtImage_p img)
 {
     int w,h;
