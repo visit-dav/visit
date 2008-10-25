@@ -297,6 +297,9 @@
 #   unconditionally setting the rpath, which doesn't work on non-linux
 #   systems.
 #
+#   Tom Fogal, Sat Oct 25 13:10:34 MDT 2008
+#   I qualified a couple paths so that a user does not need `.' in their PATH.
+#
 ##############################################################################
 
 ##
@@ -413,12 +416,12 @@ test: $(EZ_TARGET)  @SILO_TARGET@ @HDF5_TARGET@ $(PDB_TARGET) $(BINSRC)
 	fi
 	-@for f in $(HDF5_TARGET); do \
 	    if test -x $$f; then \
-	        $$f ;\
+	        ./$$f ;\
 	    fi \
 	done
 	-@for f in pdbdatabase correlationtest; do \
 	    if test -x $$f; then \
-	        $$f ;\
+	        ./$$f ;\
 	    fi \
 	done
 
