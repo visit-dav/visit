@@ -73,6 +73,9 @@
 //    Allreduce in the event this is used as the end of the first stage
 //    in a two-pass compositing scheme.
 //
+//    Tom Fogal, Fri Oct 24 20:04:04 MDT 2008
+//    Add GetAllProcessorsNeedResult method.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtWholeImageCompositer : public avtImageCompositer
@@ -90,6 +93,7 @@ class AVTFILTERS_API avtWholeImageCompositer : public avtImageCompositer
                                             unsigned char g,
                                             unsigned char b);
       void                    SetAllProcessorsNeedResult(bool);
+      bool                    GetAllProcessorsNeedResult() const;
 
       virtual void            Execute() = 0;
 
@@ -117,6 +121,10 @@ inline void avtWholeImageCompositer::SetBackground(unsigned char r,
 inline void avtWholeImageCompositer::SetAllProcessorsNeedResult(bool all)
 {
     allReduce = all;
+}
+inline bool avtWholeImageCompositer::GetAllProcessorsNeedResult() const
+{
+    return allReduce;
 }
 
 #endif
