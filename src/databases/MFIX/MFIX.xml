@@ -1,8 +1,16 @@
 <?xml version="1.0"?>
-  <Plugin name="MFIX" type="database" label="MFIX" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false">
+  <Plugin name="MFIX" type="database" label="MFIX" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="true">
     <Extensions>
       .RES
     </Extensions>
+    <Files components="M">
+      avtMFIXFileFormat.C
+      vtkMFIXReader.C
+    </Files>
+    <Files components="E">
+      avtMFIXFileFormat.C
+      vtkMFIXReader.C
+    </Files>
     <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

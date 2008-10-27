@@ -1,3 +1,42 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-400142
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+
 // ************************************************************************* //
 //                            avtMFIXFileFormat.h                            //
 // ************************************************************************* //
@@ -7,13 +46,11 @@
 
 #include <avtMTMDFileFormat.h>
 
-#include <vector>
-#include <string>
-#include <vtkFloatArray.h>
-#include "vtkHexahedron.h"
-#include "vtkWedge.h"
-#include "vtkQuad.h"
+#include <vectortypes.h>
 
+class DBOptionsAttributes;
+class vtkMFIXReader;
+class vtkUnstructuredGrid;
 
 // ****************************************************************************
 //  Class: avtMFIXFileFormat
@@ -28,17 +65,20 @@
 //    Jeremy Meredith, Thu Aug  7 15:46:38 EDT 2008
 //    Use a C++ string for Version so comparisons are easier.
 //
+//    Kathleen Bonnell, Wed Oct 22 17:11:07 PDT 2008
+//    Reworked to use vtkMFIXReader for bulk of work, and to have DBOptions.
+//
 // ****************************************************************************
 
 class avtMFIXFileFormat : public avtMTMDFileFormat
 {
   public:
-                       avtMFIXFileFormat(const char *);
-    virtual           ~avtMFIXFileFormat() {;};
+                       avtMFIXFileFormat(const char *, DBOptionsAttributes *);
+    virtual           ~avtMFIXFileFormat();
 
     virtual int            GetNTimesteps(void);
 
-    virtual void           GetTimes(std::vector<double> &times);
+    virtual void           GetTimes(doubleVector &_times);
 
     virtual const char    *GetType(void)   { return "MFIX"; };
     virtual void           FreeUpResources(void); 
@@ -47,103 +87,26 @@ class avtMFIXFileFormat : public avtMTMDFileFormat
     virtual vtkDataArray  *GetVar(int, int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
 
-    char RestartFileName[256];
 
 
   protected:
-  vtkPoints *Points;            // Points array for building grid
-  vtkUnstructuredGrid *FluidMesh;    // Unstructured Grid
-  vtkUnstructuredGrid *InletMesh;    // Unstructured Grid
-  vtkUnstructuredGrid *OutletMesh;    // Unstructured Grid
-  vtkUnstructuredGrid *ObstructionMesh;    // Unstructured Grid
-  vtkHexahedron *AHexahedron;   // Hexahedron type cell
-  vtkWedge *AWedge;             // Wedge type cell
-  vtkQuad  *AQuad;
-
-
-    // Restart File Variables
-    int MaxTimeStep;
-    char DataBuffer[513];
-    int IMinimum1;
-    int JMinimum1;
-    int KMinimum1;
-    int IMaximum;
-    int JMaximum;
-    int KMaximum;
-    int IMaximum1;
-    int JMaximum1;
-    int KMaximum1;
-    int IMaximum2;
-    int JMaximum2;
-    int KMaximum2;
-    int IJMaximum2;
-    int IJKMaximum2;
-    int MMAX;
-    double XLength;
-    double YLength;
-    double ZLength;
-    double DeltaTime;
-    int    DimensionIc;
-    int    DimensionBc;
-    int    DimensionC;
-    int    DimensionIs;
-    double Ce;
-    double Cf;
-    double Phi;
-    double PhiW;
-    double XMinimum;
-    int SPXRecordsPerTimestep; 
-    std::vector<int> NMax;
-    std::vector<double> C;
-    std::vector<int> Flag;
-    std::vector<double> Dx;
-    std::vector<double> Dy;
-    std::vector<double> Dz;
-    float VersionNumber;
-    char CoordinateSystem[17];
-    char Units[17];
-    int DIM_tmp;
-    std::vector<int> TempI;
-    std::vector<double> TempD;
-    std::string Version;
-    int NumberOfSPXFilesUsed;
-    int  NumberOfScalars;
-    int NumberOfReactionRates;
-    bool BkEpsilon;
-    std::vector<int> SpxFileExists;
-    std::vector<std::string> VariableNames;
-    std::vector<int> VariableComponents;
-    std::vector<int> VariableIndexToSPX;
-    std::vector<int> VariableTimesteps;
-    std::vector< std::vector<int> > VariableTimestepTable;
-    std::vector<int> SPXToNVarTable;
-    std::vector<int> VariableToSkipTable;
-    std::vector< std::vector<int> > SPXTimestepIndexTable;
-    int numberOfFloatsInBlock;
 
     virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
-    // Helper Functions
-    void ReadRestartFile(const char *filename);
-    void GetInt(istream& in, int &val);
-    void GetDouble(istream& in, double& val);
-    void SkipBytes(istream& in, int n);
-    void GetBlockOfDoubles(istream& in, std::vector<double> &d , int n);
-    void GetBlockOfInts(istream& in, std::vector<int> &v, int n);
-    void RestartVersionNumber(char* buffer);
-    void SwapInt(int &value);
-    void SwapFloat(float &value);
-    void SwapDouble(double &value);
-    void CreateVariableNames(const char *filename);
-    void GetTimeSteps(const char *filename);
-    int  GetMaxTimeStep();
-    void MakeTimeStepTable();
-    void GetNumberOfVariablesInSPXFiles();
-    void MakeSPXTimeStepIndexTable();
-    void MakeMeshes();
-    void GetVariableAtTimestep(int vari , int tstep, vtkFloatArray *v, const char *filename);
-    void GetBlockOfFloats(istream& in, vtkFloatArray *v, int n);
+  private:
 
+    void                 ReadInData(void);
+    void                 ReadInformation(void);
+    void                 SetUpReader(void);
+
+    char                 RestartFileName[256];
+    doubleVector         times;
+    stringVector         variables;
+    bool                 readInData;
+    bool                 readInformation;
+    bool                 fileBigEndian;
+
+    vtkMFIXReader *reader;
 };
 
 
