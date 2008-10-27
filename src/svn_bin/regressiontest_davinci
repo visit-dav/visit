@@ -328,7 +328,7 @@ find . -name .svn -prune -false -o -name '*.d' -o -name '.depend' -o -name '.par
 find . -name .svn -prune -false -o \( -name 'Makefile' -exec test -e \{\}.in \; \) -print | grep -v ./avt/Preprocessor/Makefile\\\|./tools/windowmaker/Makefile\\\|./tools/prep/Makefile\\\|./sim/examples/Makefile\\\|./common/siloobj/Makefile\\\|./common/siloobj_vtk_db/Makefile\\\|./cqscore/Makefile 1>> undistcleaned_files_log.txt
 undistcleanedFilesCount=`wc -l undistcleaned_files_log.txt | tr -s ' ' | sed -e 's/^ //' | cut -d' ' -f1`
 checkAndHandleError $undistcleanedFilesCount warning "make distclean left files; removing manually" undistcleaned_files_log.txt
-if test -n "$undistcleanedFilesCount" -a test $undistcleanedFilesCount -ne 0; then
+if test -n "$undistcleanedFilesCount" -a $undistcleanedFilesCount -ne 0; then
     cat undistcleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2 | xargs -n 1 rm -f
 fi
 
