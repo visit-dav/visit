@@ -76,6 +76,10 @@ enhancements and bug-fixes that were added to this release.</p>
 material entries are all set to "EMPTY".</li>
 <li>The PDB/Flash file reader has been changed so that it does not allow VisIt to
     cache data since the reader performs its own caching.</li>
+<li>The MFIX reader will now work correctly when run on a big-endian machine.  
+    The reader still assumes data file is big-endian.  If this is not the case, 
+    the user can tell VisIt this via the Database Options available when 
+    opening the file.</li> 
 </ul>
 
 <a name="Plot_changes"></a>
