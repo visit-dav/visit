@@ -369,6 +369,7 @@ DeleteAllPlots()
 DefineScalarExpression("ident_mesh", "quadmesh2d")
 AddPlot("Pseudocolor", "ident_mesh")
 DrawPlots()
-Test("ident_mesh")
+txt = GetLastError()
+TestText("ident_mesh_error", txt)
 
 Exit()
