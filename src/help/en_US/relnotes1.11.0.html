@@ -76,6 +76,13 @@ enhancements and bug-fixes that were added to this release.</p>
 material entries are all set to "EMPTY".</li>
 <li>The PDB/Flash file reader has been changed so that it does not allow VisIt to
     cache data since the reader performs its own caching.</li>
+<li>Configuration for the ITAPS reader has changed to support multiple implementations
+    of ITAPS libraries in one installation of VisIt. The new configuration switch
+    is --with-itaps-impls=[very long string] which defines all the features of
+    each ITAPS implementation VisIt is to be compiled with. Each implementation leads
+    to an ITAPS database reader plugin with a different name. See DEFAULT_ITAPS_IMPLS
+    specification in config-site/hoth.llnl.gov for further explanation and example.
+    cache data since the reader performs its own caching.</li>
 <li>The MFIX reader will now work correctly when run on a big-endian machine.  
     The reader still assumes data file is big-endian.  If this is not the case, 
     the user can tell VisIt this via the Database Options available when 
@@ -179,6 +186,9 @@ two dimensions.</li>
           <i>-launchengine</i> argument is added to the command line as a result of adding
           parallel command line arguments such as <i>-np, -nn</i>.</li>
 
+      <li>Replaced use of bzip2 compression with libz compression for data sent from engine
+          to viewer. Emperical results show better compression and performance with libz.</li>
+
       <li>A significant memory bloat was found and fixed for the case of 
           processing double precision data.</li>
 </ul>
@@ -209,6 +219,7 @@ two dimensions.</li>
           for an example.</li>
       <li>New VAC_ARG_WITH3RD autoconf macro should be used to handle third
           party libraries.</li>
+      <li>libz was added as a third party builtin and bzip2 was removed.</li>
       <li>The build_visit script was refactored so that all patch code is now cleanly isolated 
           into their own separate function.</li>
 </ul>
