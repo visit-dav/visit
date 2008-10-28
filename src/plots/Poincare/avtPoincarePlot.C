@@ -46,6 +46,8 @@
 #include <avtLookupTable.h>
 #include <avtVariableLegend.h>
 #include <avtVariableMapper.h>
+#include <avtStreamlineFilter.h>
+#include <avtPoincareFilter.h>
 
 // ****************************************************************************
 //  Method: avtPoincarePlot constructor
@@ -57,7 +59,11 @@
 
 avtPoincarePlot::avtPoincarePlot()
 {
-    PoincareFilter = new avtPoincareFilter;
+#ifdef ENGINE
+    poincareFilter = new avtPoincareFilter;
+    streamlineFilter = new avtStreamlineFilter;
+    poincareFilter = new avtPoincareFilter;
+#endif
     avtLUT = new avtLookupTable; 
     varMapper = new avtVariableMapper;
     varMapper->SetLookupTable(avtLUT->GetLookupTable());
@@ -86,14 +92,22 @@ avtPoincarePlot::avtPoincarePlot()
 avtPoincarePlot::~avtPoincarePlot()
 {
 #ifdef ENGINE
-#else
-    //   what();
-#endif
-    if (PoincareFilter != NULL)
+    if (poincareFilter != NULL)
     {
-        delete PoincareFilter;
-        PoincareFilter = NULL;
+        delete poincareFilter;
+        poincareFilter = NULL;
     }
+    if (streamlineFilter != NULL)
+    {
+        delete streamlineFilter;
+        streamlineFilter = NULL;
+    }
+    if (poincareFilter != NULL )
+    {
+        delete poincareFilter;
+        poincareFilter = NULL;
+    }
+#endif
 
     if (varMapper != NULL)
     {
@@ -171,12 +185,16 @@ avtPoincarePlot::GetMapper(void)
 avtDataObject_p
 avtPoincarePlot::ApplyOperators(avtDataObject_p input)
 {
+#ifdef ENGINE
     cout<<"ApplyOperators\n";
+    streamlineFilter->SetInput(input);
+
+    poincareFilter->SetInput(streamlineFilter->GetOutput());
+    avtDataObject_p dob = poincareFilter->GetOutput();
+    return dob;
+#else
     return input;
-    /*
-    PoincareFilter->SetInput(input);
-    return PoincareFilter->GetOutput();
-    */
+#endif
 }
 
 
@@ -275,5 +293,33 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 {
     cout <<"SetAtts\n";
     const PoincareAttributes *newAtts = (const PoincareAttributes *)a;
-    //BASED ON ATTRIBUTE VALUES, CHANGE PARAMETERS IN MAPPER AND FILTER.
+
+    //needsRecalculation = atts.ChangesRequireRecalculation(*newAtts);
+
+    atts = *newAtts;
+#ifdef ENGINE
+    debug1<<"avtPoincarePlot::SetAtts()"<<endl;
+
+    // Set the streamline attributes.
+    streamlineFilter->SetIntegrationType(STREAMLINE_INTEGRATE_DORLAND_PRINCE);
+    streamlineFilter->SetStreamlineAlgorithm(STREAMLINE_STAGED_LOAD_ONDEMAND,
+                                             10, 3);
+    streamlineFilter->SetMaxStepLength(atts.GetMaxStepLength());
+    streamlineFilter->SetTolerances(atts.GetRelTol(),atts.GetAbsTol());
+    streamlineFilter->SetTermination(STREAMLINE_TERMINATE_TIME, atts.GetTermination());
+
+    streamlineFilter->SetDisplayMethod(STREAMLINE_DISPLAY_LINES);
+    streamlineFilter->SetShowStart(false);
+    streamlineFilter->SetRadius(0.0);
+    streamlineFilter->SetPointDensity(0);
+    streamlineFilter->SetStreamlineDirection(0);
+
+    streamlineFilter->SetSourceType(STREAMLINE_SOURCE_POINT);
+    streamlineFilter->SetPointSource(atts.GetPointSource());
+    streamlineFilter->SetColoringMethod(STREAMLINE_COLOR_SOLID);
+
+    // Set the slicer attributes.
+    
+    // Set the poincareFilter attributes.
+#endif
 }
