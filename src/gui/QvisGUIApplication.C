@@ -237,6 +237,8 @@
 static void QPrinterToPrinterAttributes(QPrinter *, PrinterAttributes *);
 static void PrinterAttributesToQPrinter(PrinterAttributes *, QPrinter *);
 
+static bool restoringSession = false;
+
 // ****************************************************************************
 // Function: StripSurroundingQuotes
 //
@@ -2469,6 +2471,10 @@ QvisGUIApplication::SetOrientation(int orientation)
 //   Thomas R. Treadway, Fri Apr 13 14:04:21 PDT 2007
 //   Offset window by 20 pixels, due to MenuBar when on a Mac.
 //
+//   Kathleen Bonnell, Tue Oct 28 08:18:06 PDT 2008
+//   Added logic specific to restoring session, to prevent window from
+//   being drawn partly offscreen when running VisIt remotely.
+// 
 // ****************************************************************************
 
 void
@@ -2484,8 +2490,13 @@ QvisGUIApplication::MoveAndResizeMainWindow(int orientation)
     x = screenX+borders[2]-shiftX;
     y = screenY+borders[0]-shiftY;
 #else
-    x = screenX+borders[2]-shiftX-preshiftX;
-    y = screenY+borders[0]-shiftY-preshiftY;
+    x = screenX+borders[2]-shiftX;
+    y = screenY+borders[0]-shiftY;
+    if (!restoringSession)
+    {
+        x-=preshiftX;
+        y-=preshiftY;
+    }
 #endif
     if (orientation < 2)
     {
@@ -2496,6 +2507,13 @@ QvisGUIApplication::MoveAndResizeMainWindow(int orientation)
             h = savedGUISize[1];
             x = savedGUILocation[0];
             y = savedGUILocation[1];
+#ifndef _WIN32
+            if (restoringSession)
+            {
+                x+=preshiftX;
+                y+=preshiftY;
+            }
+#endif
         }
         else
         {
@@ -4517,6 +4535,9 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
 //   Added call to allow the viewer to restore from a session when no
 //   plots exist in the session file.
 //
+//   Kathleen Bonnell, Tue Oct 28 08:18:06 PDT 2008
+//   Set 'restoringSession' flag.
+//
 // ****************************************************************************
 
 void
@@ -4526,6 +4547,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
     // If the user chose a file, tell the viewer to import that session file.
     if(!s.isEmpty())
     {
+        restoringSession = true;
         std::string filename(s.latin1());
           
         // Make the gui read in its part of the config.
@@ -4649,6 +4671,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
             // already part of the filename.
             GetViewerMethods()->ImportEntireState(filename, false);
         }
+    restoringSession = false;
     }
 }
 
@@ -4821,6 +4844,11 @@ QvisGUIApplication::ProcessConfigSettings(DataNode *node, bool systemConfig)
 //   Brad Whitlock, Tue Jul 25 10:18:13 PDT 2006
 //   I added code to make the main window process its settings.
 //
+//   Kathleen Bonnell, Tue Oct 28 08:18:06 PDT 2008
+//   For call to SetFromNode, if a session is being restored, instead of 
+//   passing the value from savedGUIGeometry, pass false so values stored in
+//   session file aren't overwritten.
+//
 // ****************************************************************************
 
 void
@@ -4873,8 +4901,8 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
     ReadPluginWindowConfigs(guiNode, configVersion);
 
     // Read the main window's config settings now.
-    mainWin->SetFromNode(guiNode, savedGUIGeometry, savedGUISize, 
-        savedGUILocation, borders);
+    mainWin->SetFromNode(guiNode, restoringSession ? false : savedGUIGeometry, 
+        savedGUISize, savedGUILocation, borders);
 }
 
 // ****************************************************************************

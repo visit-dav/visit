@@ -187,10 +187,13 @@ two dimensions.</li>
           parallel command line arguments such as <i>-np, -nn</i>.</li>
 
       <li>Replaced use of bzip2 compression with libz compression for data sent from engine
-          to viewer. Emperical results show better compression and performance with libz.</li>
+          to viewer. Empirical results show better compression and performance with libz.</li>
 
       <li>A significant memory bloat was found and fixed for the case of 
           processing double precision data.</li>
+
+      <li>Restoring sessions while running remotely via cygwin or XWin32 will
+          no longer cause main GUI window to be un-sizeable.</li>
 </ul>
 
 <a name="Config_changes"></a>

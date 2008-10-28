@@ -439,6 +439,8 @@
 #     Add an --szip command line to enable SZip.  Don't force SZip if the user
 #     wants HDF5, but enable SZip if they ask for it.
 #
+#     Mark C. Miller, Tue Oct 28 11:14:17 PDT 2008
+#     Modified build of H5Part to use -DH5_USE_16_API. See notes in that func.
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -7155,9 +7157,17 @@ function build_cfitsio
     return 0
 }
 
-# *************************************************************************** #
-#                         Function 8.10, build_h5part                         #
-# *************************************************************************** #
+# ***************************************************************************
+#                         Function 8.10, build_h5part
+#
+# Modifications:
+#
+#  Mark C. Miller, Tue Oct 28 11:10:36 PDT 2008
+#  Added -DH5_USE_16_API to CFLAGS for configuring H5Part. This should be
+#  harmless when building H5Part against versions of HDF5 before 1.8 and
+#  necessary when building against versions of HDF5 1.8 or later. It tells
+#  HDF5 which version of the HDF5 API H5Part was implemented with.
+# ***************************************************************************
 
 function build_h5part
 {
@@ -7204,7 +7214,7 @@ $DYLD_LIBRARY_PATH
     echo "Invoking command to configure H5Part"
     ./configure ${WITHHDF5ARG} ${OPTIONAL} \
        CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-       CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+       CFLAGS="$C_OPT_FLAGS -DH5_USE_16_API" CXXFLAGS="$CXX_OPT_FLAGS" \
        --prefix="$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
        echo "H5Part configure failed.  Giving up"
