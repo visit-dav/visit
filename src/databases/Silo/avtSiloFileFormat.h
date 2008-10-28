@@ -202,6 +202,10 @@ typedef struct
 //    Jeremy Meredith, Thu Aug  7 16:16:00 EDT 2008
 //    Made GetComponent accept const char*'s as input.
 //
+//    Cyrus Harrison, Mon Oct 27 10:33:39 PDT 2008
+//    Added FindDecomposedMeshType() to help with creating the correct type of
+//    domain boundries object in GetConnectivityAndGroupInformation.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -320,6 +324,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     void                  ReadInConnectivity(vtkUnstructuredGrid *,
                                              DBzonelist *, int,
                                              vector<int>&);
+    avtMeshType           FindDecomposedMeshType(DBfile *dbfile);
     void                  GetConnectivityAndGroupInformation(DBfile *, bool = false);
     void                  GetConnectivityAndGroupInformationFromFile(DBfile *,
                                int &, int *&,int *&,int &,int *&,int &,int *&);

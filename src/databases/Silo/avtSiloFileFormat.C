@@ -3250,6 +3250,69 @@ avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
                                 groupInfo.ids);
 }
 
+// ****************************************************************************
+//  Method: avtSiloFileFormat::FindDecomposedMeshType
+//
+//  Purpose:
+//      Finds and returns the type of the first multimesh at the root of this
+//      Silo file. Returns AVT_UNKNOWN_MESH if no multimesh is found.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Monday October 27, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtMeshType
+avtSiloFileFormat::FindDecomposedMeshType(DBfile *dbfile)
+{
+    char current_dir[512];
+    DBGetDir(dbfile,current_dir);
+    DBSetDir(dbfile,"/");
+    avtMeshType res = AVT_UNKNOWN_MESH;
+    // read toc
+    DBtoc *toc = DBGetToc(dbfile);
+    if (toc == NULL)
+        EXCEPTION1(InvalidFilesException,
+                   "Could not obtain Silo Table of Contents when looking for "
+                   " decomposed mesh type.");
+    
+    stringVector mmeshes;
+    int nmmesh = toc->nmultimesh;    
+    for (int i = 0 ; i < nmmesh ; i++)
+        mmeshes.push_back(toc->multimesh_names[i]);
+        
+    // loop over meshes and look for first non empty
+    for (int i = 0 ; i < nmmesh && res == AVT_UNKNOWN_MESH; i++)
+    {
+        DBmultimesh *mm = DBGetMultimesh(dbfile, mmeshes[i].c_str());
+        if (mm)
+        {
+            for(int j = 0; j < mm->nblocks && res == AVT_UNKNOWN_MESH; j++)
+            {
+                int silo_type= mm->meshtypes[j];
+                if(silo_type== DB_QUAD_RECT)
+                    res = AVT_RECTILINEAR_MESH;
+                else if(silo_type == DB_QUAD_CURV || silo_type == DB_QUADMESH)
+                    res = AVT_CURVILINEAR_MESH;
+                else if(silo_type == DB_POINTMESH)
+                    res = AVT_POINT_MESH;
+                else if(silo_type == DB_UCDMESH)
+                    res = AVT_UNSTRUCTURED_MESH;
+            }
+            // free multimesh
+            DBFreeMultimesh(mm);
+        }
+    }
+    
+    debug4 << "avtSiloFileFormat::FindDecomposedMeshType result = " << res << endl;
+    // toc points to internal structure, so we do not need to free it.
+    // set current dir back to where we were before this method
+    DBSetDir(dbfile,current_dir);
+    return res;
+}
+
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetConnectivityAndGroupInformation
@@ -3294,6 +3357,9 @@ avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
 //    Rename "dynamic" to "streaming", since we really care about whether we
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
+//
+//    Added call to FindDecomposedMeshType() to help with creating the 
+//    correct type of domain boundries object.
 //
 // ****************************************************************************
 
@@ -3376,8 +3442,20 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile,
     //
     if (ndomains > 0 && !avtDatabase::OnlyServeUpMetaData())
     {
-        avtCurvilinearDomainBoundaries *dbi =
-                                          new avtCurvilinearDomainBoundaries();
+        avtStructuredDomainBoundaries *dbi = NULL;
+        avtMeshType mesh_type = FindDecomposedMeshType(dbfile);
+        if(mesh_type == AVT_RECTILINEAR_MESH)
+            dbi =new avtRectilinearDomainBoundaries();
+        else if(mesh_type == AVT_CURVILINEAR_MESH)
+            dbi =new avtCurvilinearDomainBoundaries();
+        else
+        {
+            // Error: Unknown connectivity type!
+            EXCEPTION1(InvalidVariableException,
+                  "Could not determine mesh type for Connectivity "
+                  "and Group information.");
+        }
+        
         dbi->SetNumDomains(ndomains);
 
         int l = 0;
