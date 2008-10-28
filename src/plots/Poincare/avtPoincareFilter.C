@@ -43,6 +43,13 @@
 #include <avtPoincareFilter.h>
 
 #include <vtkDataSet.h>
+#include <vtkSlicer.h>
+#include <vtkPolyData.h>
+
+#include <vtkPointData.h>
+#include <vtkAppendPolyData.h>
+#include <vtkSphereSource.h>
+#include <vtkFloatArray.h>
 
 
 // ****************************************************************************
@@ -55,7 +62,6 @@
 
 avtPoincareFilter::avtPoincareFilter()
 {
-    cout<<"poincareFilter ctor\n";
 }
 
 
@@ -69,6 +75,40 @@ avtPoincareFilter::avtPoincareFilter()
 
 avtPoincareFilter::~avtPoincareFilter()
 {
+}
+
+vtkPolyData *
+StartSphere(float val, double pt[3])
+{
+    // Create the sphere polydata.
+    vtkSphereSource *sphere = vtkSphereSource::New();
+    sphere->SetCenter(pt[0], pt[1], pt[2]);
+    sphere->SetRadius(0.015);
+    sphere->SetLatLongTessellation(1);
+    sphere->SetPhiResolution(8);
+    sphere->SetThetaResolution(8);
+    vtkPolyData *sphereData = sphere->GetOutput();
+    sphereData->Update();
+
+    // Set the sphere's scalar to val.
+    vtkFloatArray *arr = vtkFloatArray::New();
+    int npts = sphereData->GetNumberOfPoints();
+    arr->SetNumberOfTuples(npts);
+    for (int i = 0; i < npts; ++i)
+        arr->SetTuple1(i, val);
+
+    /*
+    // If we're not 3D, make the sphere be 2D.
+    if(dataSpatialDimension <= 2)
+        SetZToZero(sphereData);
+    */
+
+    sphereData->GetPointData()->SetScalars(arr);
+    arr->Delete();
+    sphereData->Register(NULL);
+    sphere->Delete();
+
+    return sphereData;
 }
 
 
@@ -93,10 +133,51 @@ avtPoincareFilter::~avtPoincareFilter()
 vtkDataSet *
 avtPoincareFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 {
-    cout<<"ExecuteData\n";
-    //THIS IS THE REAL VTK CODE
-    return inDS;
-    //    return NULL;
+    cout<<"avtPoincareFilter::ExecuteData\n";
+    vtkSlicer *slicer = vtkSlicer::New();
+
+    /*
+    cout<< "inDS Type= "<<inDS->GetDataObjectType()<<endl;
+    vtkPolyData *pd = (vtkPolyData *)inDS;
+    int nPts = pd->GetPointData()->GetNumberOfTuples();
+    for ( int i = 0; i < nPts; i++ )
+    {
+        cout<<i<<": "<<pd->GetPoints()->GetPoint(i)[0]<<" "<<pd->GetPoints()->GetPoint(i)[1]<<" "<<pd->GetPoints()->GetPoint(i)[2]<<endl;
+    }
+    */
+
+    slicer->SetInput(inDS);
+    slicer->SetNormal(0,1,0);
+    slicer->SetOrigin(0,0,0);
+    slicer->Update();
+
+    vtkDataSet *out_ds = slicer->GetOutput();
+
+    vtkPolyData *pd = (vtkPolyData *)out_ds;
+    int nPts = pd->GetPointData()->GetNumberOfTuples();
+
+    vtkAppendPolyData *append = vtkAppendPolyData::New();
+    append->AddInput((vtkPolyData *)inDS);
+
+    for ( int i = 0; i < nPts; i++ )
+    {
+        //cout<<i<<": "<<pd->GetPoints()->GetPoint(i)[0]<<" "<<pd->GetPoints()->GetPoint(i)[1]<<" "<<pd->GetPoints()->GetPoint(i)[2]<<endl;
+        double *pt = pd->GetPoints()->GetPoint(i);
+        vtkPolyData *ball = StartSphere(1.0, pt);
+            
+        append->AddInput(ball);
+        ball->Delete();
+    }
+    slicer->Delete();
+    slicer = NULL;
+    
+    append->Update();
+    vtkPolyData *outPD = append->GetOutput();
+    outPD->Register(NULL);
+    outPD->SetSource(NULL);
+    append->Delete();
+    
+    return outPD;
 }
 
 

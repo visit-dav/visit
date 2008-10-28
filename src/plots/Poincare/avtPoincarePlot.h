@@ -53,6 +53,8 @@ class     avtPoincareFilter;
 class     avtLookupTable;
 class     avtVariableLegend;
 class     avtVariableMapper;
+class     avtStreamlineFilter;
+class     avtPoincareFilter;
 
 // ****************************************************************************
 //  Class:  avtPoincarePlot
@@ -84,7 +86,8 @@ class avtPoincarePlot : public avtLineDataPlot
     avtVariableLegend          *varLegend;
     avtLegend_p                 varLegendRefPtr;
     avtLookupTable             *avtLUT;
-    avtPoincareFilter          *PoincareFilter;
+    avtPoincareFilter          *poincareFilter;
+    avtStreamlineFilter        *streamlineFilter;
 
     virtual avtMapper          *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);

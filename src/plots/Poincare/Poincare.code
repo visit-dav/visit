@@ -1,0 +1,84 @@
+Function: CopyAttributes
+Declaration: bool CopyAttributes(const AttributeGroup *atts);
+Definition:
+// ****************************************************************************
+// Method: PoincareAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the PoincareAttributes class.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tues Oct 21 14:22:17 EDT 2008
+//
+// ****************************************************************************
+
+bool
+PoincareAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const PoincareAttributes *tmp = (const PoincareAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "PointAttributes")
+    {
+        const PointAttributes *p = (PointAttributes *)atts;
+        SetPointSource(p->GetPoint());
+        retval = true;
+    } 
+    else if(atts->TypeName() == "PlaneAttributes")
+    {
+        const PlaneAttributes *plane = (const PlaneAttributes *)atts;
+        SetPlaneOrigin(plane->GetOrigin());
+        SetPlaneNormal(plane->GetNormal());
+        SetPlaneUpAxis(plane->GetUpAxis());
+        retval = true;
+    }
+    return retval;
+}
+
+Function: CreateCompatible
+Declaration: AttributeSubject *CreateCompatible(const std::string &tname) const
+Definition:
+// ****************************************************************************
+// Method: PoincareAttributes::CreateCompatible
+//
+// Purpose: 
+//   Creates a new state object of the desired type.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tues Oct 21 14:22:17 EDT 2008
+//
+// ****************************************************************************
+
+AttributeSubject *
+PoincareAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new PoincareAttributes(*this);
+    }
+    else if(tname == "PointAttributes")
+    {
+        PointAttributes *p = new PointAttributes;
+        p->SetPoint(GetPointSource());
+        retval = p;
+    }
+    else if(tname == "PlaneAttributes")
+    {
+        PlaneAttributes *p = new PlaneAttributes;
+        p->SetOrigin(GetPlaneOrigin());
+        p->SetNormal(GetPlaneNormal());
+        p->SetUpAxis(GetPlaneUpAxis());
+        retval = p;
+    }
+    
+    return retval;
+}
+
