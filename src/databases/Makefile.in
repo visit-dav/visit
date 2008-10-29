@@ -322,6 +322,9 @@
 #   someone may have been inadvertently editing or to remove the true
 #   source in the ITAPS_C directory.
 #
+#   Brad Whitlock, Wed Oct 29 15:13:15 PDT 2008
+#   Added Ralph Bruckschen's Gadget 2.0 reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -380,6 +383,7 @@ REQUIRED=\
  Dyna3D \
  EnSight \
  ExtrudedVol \
+ Gadget \
  GGCM \
  Fluent \
  Image \

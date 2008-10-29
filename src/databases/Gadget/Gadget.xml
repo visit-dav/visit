@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Plugin name="Gadget" type="database" label="Gadget 2.0 Reader" version="2.0a" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" specifiedFilenames="false">
+    <Extensions>
+      .gadget
+    </Extensions>
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
