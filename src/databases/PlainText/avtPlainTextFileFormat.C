@@ -71,6 +71,10 @@ using     std::vector;
 //  Programmer: Jeremy Meredith
 //  Creation:   January 24, 2008
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Oct 29 12:32:11 PDT 2008
+//    Made it possible for curves to have any column as the abscissa
 // ****************************************************************************
 
 avtPlainTextFileFormat::avtPlainTextFileFormat(const char *fn,
@@ -123,7 +127,15 @@ avtPlainTextFileFormat::avtPlainTextFileFormat(const char *fn,
         zcol = readOpts->GetInt("Column for Z coordinate (or -1 for none)");
     }
 
-    no_coordinates = (xcol<0 && ycol<0 && zcol<0);
+    acol = -2; // abscissa column for curves
+    if (xcol<0 && ycol<0 && zcol<0)
+        acol = -1;
+    else if (xcol>=0 && ycol<0  && zcol<0)
+        acol = xcol;
+    else if (xcol<0  && ycol>=0 && zcol<0)
+        acol = ycol;
+    else if (xcol<0  && ycol<0  && zcol>=0)
+        acol = zcol;
 }
 
 
@@ -161,6 +173,10 @@ avtPlainTextFileFormat::FreeUpResources(void)
 //  Programmer: Jeremy Meredith
 //  Creation:   January 24, 2008
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Oct 29 12:32:11 PDT 2008
+//    Made it possible for curves to have any column as the abscissa
 // ****************************************************************************
 
 void
@@ -177,11 +193,13 @@ avtPlainTextFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     else if (format == Columns)
     {
-        if (no_coordinates)
+        if (acol > -2)
         {
             // curves
             for (int i=0; i<ncolumns; i++)
             {
+                if (i == acol)
+                    continue;
                 avtCurveMetaData *curve = new avtCurveMetaData;
                 curve->name = variableNames[i];
                 md->Add(curve);
@@ -225,6 +243,8 @@ avtPlainTextFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Changed curves to be created as rectilinear grids instead of polydata
 //    (so that they work with expressions).
 //
+//    Mark C. Miller, Wed Oct 29 12:32:11 PDT 2008
+//    Made it possible for curves to have any column as the abscissa
 // ****************************************************************************
 
 vtkDataSet *
@@ -260,7 +280,7 @@ avtPlainTextFileFormat::GetMesh(const char *meshname)
     }
     else if (format == Columns)
     {
-        if (no_coordinates)
+        if (acol > -2)
         {
             // curves
             int index = -1;
@@ -285,7 +305,10 @@ avtPlainTextFileFormat::GetMesh(const char *meshname)
             vtkDataArray *xc = rg->GetXCoordinates();
             for (int j = 0 ; j < nrows ; j++)
             {
-                xc->SetComponent(j, 0, j);
+                if (acol == -1)
+                    xc->SetComponent(j, 0, j);
+                else
+                    xc->SetComponent(j, 0, data[j][acol]);
                 vals->SetValue(j, data[j][index]);
             }
             vals->Delete();
