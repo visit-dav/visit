@@ -1078,6 +1078,11 @@ FileServerList::SetFilter(const string &newFilter)
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interfaces to GetMetaData and GetSIL. Added timeStates arg.
+//
+//   Kathleen Bonnell, Wed Oct 29 12:50:17 PDT 2008
+//   Added a work-around for bad indexing into timeStates.  This fixes a crash
+//   on windows, but the use of timeStates here should be reworked.
+// 
 // ****************************************************************************
 
 void
@@ -1093,12 +1098,25 @@ FileServerList::SetAppliedFileList(const QualifiedFilenameVector &newFiles,
         if(appliedFileList[i].IsVirtual())
         {
             //
-            // If the virtual database has more time states than files, make sure
-            // we reopen it.
+            // If the virtual database has more time states than files, 
+            // make sure we reopen it.
             //
             bool forceReopen = false;
+        
+            // Work around possible bad indexing into timeStates, causing
+            // crash on Windows. 
+            // Old method for calculating time step to send with 
+            // GetMetaData and OpenFile calls:
+            // timeState.size() ? timeStates[i] : 0
+            // timeStates may not be same size as appliedFileList which we
+            // are looping on, so we cannot always index by the same value.
+            // Use of timeStates in this manner should be addressed.
+
+            int ts = (timeStates.size() && timeStates.size() > i) ? 
+                     timeStates[i] : 0;
+
             const avtDatabaseMetaData *md = GetMetaData(appliedFileList[i],
-                                                timeStates.size() ? timeStates[i] : 0,
+                                                ts,
                                                 ANY_STATE,
                                                 !GET_NEW_MD);
             if(md != 0 &&
@@ -1117,8 +1135,7 @@ FileServerList::SetAppliedFileList(const QualifiedFilenameVector &newFiles,
                 TRY
                 {
                     CloseFile();
-                    OpenFile(appliedFileList[i],
-                             timeStates.size() ? timeStates[i] : 0);
+                    OpenFile(appliedFileList[i], ts);
                 }
                 CATCH(VisItException)
                 {
