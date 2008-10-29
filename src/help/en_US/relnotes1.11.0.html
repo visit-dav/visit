@@ -76,6 +76,7 @@ enhancements and bug-fixes that were added to this release.</p>
 material entries are all set to "EMPTY".</li>
 <li>The PDB/Flash file reader has been changed so that it does not allow VisIt to
     cache data since the reader performs its own caching.</li>
+<li>The Silo reader now supports decomposed domain boundaries for Rectilinear meshes.</li>
 <li>Configuration for the ITAPS reader has changed to support multiple implementations
     of ITAPS libraries in one installation of VisIt. The new configuration switch
     is --with-itaps-impls=[very long string] which defines all the features of
@@ -87,6 +88,7 @@ material entries are all set to "EMPTY".</li>
     The reader still assumes data file is big-endian.  If this is not the case, 
     the user can tell VisIt this via the Database Options available when 
     opening the file.</li> 
+<li>PlainText reader now supports curves where any column can represent the abscissa.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -131,6 +133,9 @@ two dimensions.</li>
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 1.11</font></b></p>
 <ul>
+<li>Extra logic was added to the conn_components expression to to validate ghost zones before
+attempting to use the ghost zone neighbors optimization.
+</li>
 </ul>
 
 <a name="Query_changes"></a>
@@ -139,6 +144,8 @@ two dimensions.</li>
 <li>Fixed more cases of failure in the NumNodes query.</li>
 <li>VisIt no longer crashes when performing a query over time for the PickByNode 
     and PickByZone queries if you accidentally apply the queries to a Mesh plot.</li>
+<li>Fixed an error in the GUI with parsing the output file name for the "Connected Components 
+Summary" Query.</li>
 </ul>
 
 <a name="CLI_changes"></a>
@@ -191,7 +198,9 @@ two dimensions.</li>
 
       <li>A significant memory bloat was found and fixed for the case of 
           processing double precision data.</li>
-
+      <li>SIL correctness checking was modified to keep enumerated scalar selection from influencing material selection.
+      This resolves an issue with selecting materials when Nodelists are present.
+      </li>
       <li>Restoring sessions while running remotely via cygwin or XWin32 will
           no longer cause main GUI window to be un-sizeable.</li>
 </ul>

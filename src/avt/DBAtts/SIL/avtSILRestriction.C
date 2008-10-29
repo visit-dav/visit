@@ -405,6 +405,9 @@ avtSILRestriction::SuspendCorrectnessChecking(void)
 //    Brad Whitlock, Tue May 7 13:17:38 PST 2002
 //    Set the flag to false.
 //
+//    Cyrus Harrison, Tue Oct 28 14:00:39 PDT 2008
+//    Changed to call higher level EnsureRestrictionCorrectness().
+//
 // ****************************************************************************
 
 void
@@ -412,7 +415,7 @@ avtSILRestriction::EnableCorrectnessChecking(void)
 {
     suspendCorrectnessChecking = false;
     int timingsHandle = visitTimer->StartTimer();
-    EnsureRestrictionCorrectness(topSet);
+    EnsureRestrictionCorrectness();
     visitTimer->StopTimer(timingsHandle, "Ensuring restriction correctness");
 }
 
@@ -448,6 +451,10 @@ avtSILRestriction::EnableCorrectnessChecking(void)
 //
 //    Dave Bremer, Thu Dec 20 16:17:25 PST 2007
 //    Rewrote a bit of code, because the isWhole array was eliminated.
+//
+//    Cyrus Harrison, Tue Oct 28 14:00:39 PDT 2008
+//    Changed to call higher level EnsureRestrictionCorrectness().
+//
 // ****************************************************************************
 
 void
@@ -497,7 +504,7 @@ avtSILRestriction::SetTopSet(int ts)
     if (!suspendCorrectnessChecking)
     {
         int timingsHandle = visitTimer->StartTimer();
-        EnsureRestrictionCorrectness(topSet);
+        EnsureRestrictionCorrectness();
         visitTimer->StopTimer(timingsHandle, 
                                            "Ensuring restriction correctness");
     }
@@ -551,7 +558,76 @@ avtSILRestriction::SetTopSet(const char *meshname)
         EXCEPTION0(ImproperUseException);
     }
 }
+// ****************************************************************************
+// Method: avtSILRestriction::EnsureRestrictionCorrectness
+//
+// Purpose: 
+//   This is called after making some modification to the state of sets in
+//   the SIL restriction - It calls the recursive analog to propagate the 
+//   correct SIL state. It also ensures enumeration and material selection 
+//   are mutually exclusive operations.
+// 
+// Notes: 
+//   The enumeration/material selection enforcement feels a bit to specific 
+//   to live here but without an advanced way to make these selections mutally
+//   exclusive via the SIL API I feel this is our best course of action.
+// 
+// Programmer: Cyrus Harrison
+// Creation:   Tuesday October 28, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+SetState
+avtSILRestriction::EnsureRestrictionCorrectness()
+{
+    // Call workhorse to propagate the correct SIL state.
+    SetState res =  EnsureRestrictionCorrectness(topSet);
+    
+    // Enums & Material selection do not jive, make sure if some (not all) 
+    // materials are selected, any enums are fully selected.
+    
+    avtSILSet_p set = GetSILSet(topSet);
+    const vector<int> &mapsOut = set->GetMapsOut();
+ 
+    // see if a subset of materials are selected
+    bool  some_mats = false;
+    
+    for (int i = 0 ; i < mapsOut.size() && ! some_mats ; i++)
+    {
+        avtSILCollection_p coll = GetSILCollection(mapsOut[i]);
+        if (coll->GetRole() == SIL_MATERIAL)
+        {
+            // check if only some are used
+            if( useSet[mapsOut[i]] == SomeUsed)
+                some_mats = true;
+        }
+    }
+    
+    if(some_mats)
+    {
+        // b/c this case only happens when some mats are selected, we
+        // do not have to worry about changing the result of "res"
+        // by turning on enum sets, even though the TurnBoolSet
+        // calls will update the useSet vector.
+
+        intVector enum_indices;
+        for (int i = 0 ; i < mapsOut.size(); i++)
+        {
+            avtSILCollection_p coll = GetSILCollection(mapsOut[i]);
+            if (coll->GetRole() == SIL_ENUMERATION)
+            {
+                // if we have an enum turn on all subsets of this collection 
+                const vector<int> &subsets = coll->GetSubsetList();
+                for(int j = 0; j < subsets.size(); j++)
+                    TurnBoolSet(subsets[j], true);
+            }
+        }
+    }
+
+    return res;
+}
 
 // ****************************************************************************
 // Method: avtSILRestriction::EnsureRestrictionCorrectness
@@ -620,7 +696,7 @@ avtSILRestriction::EnsureRestrictionCorrectness(int setId)
             avtSILMatrix_p pMat;
             int newCollIndex = 0;
             EntryType t = GetCollectionSource(collIndex, pArray, pMat, newCollIndex);
-                                              
+
             if (t == avtSIL::COLLECTION || t == avtSIL::ARRAY)
             {
                 avtSILCollection_p coll = GetSILCollection(collIndex);
@@ -688,6 +764,9 @@ avtSILRestriction::EnsureRestrictionCorrectness(int setId)
 //    Hank Childs, Thu Feb  7 16:19:11 PST 2002
 //    Accounted for new style of suspending correctness inspections.
 //
+//    Cyrus Harrison, Tue Oct 28 14:00:39 PDT 2008
+//    Changed to call higher level EnsureRestrictionCorrectness method.
+//
 // ****************************************************************************
 
 void
@@ -697,7 +776,7 @@ avtSILRestriction::TurnOnSet(int ind)
 
     if (!suspendCorrectnessChecking)
     {
-        EnsureRestrictionCorrectness(topSet);
+        EnsureRestrictionCorrectness();
     }
 }
 
@@ -722,6 +801,9 @@ avtSILRestriction::TurnOnSet(int ind)
 //    Hank Childs, Thu Feb  7 16:19:11 PST 2002
 //    Accounted for new style of suspending correctness inspections.
 //
+//    Cyrus Harrison, Tue Oct 28 14:00:39 PDT 2008
+//    Changed to call higher level EnsureRestrictionCorrectness().
+//
 // ****************************************************************************
 
 void
@@ -731,7 +813,7 @@ avtSILRestriction::TurnOffSet(int ind)
 
     if (!suspendCorrectnessChecking)
     {
-        EnsureRestrictionCorrectness(topSet);
+        EnsureRestrictionCorrectness();
     }
 }
 
@@ -749,7 +831,9 @@ avtSILRestriction::TurnOffSet(int ind)
 // Creation:   Fri Jul 30 14:52:58 PST 2004
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Tue Oct 28 14:00:39 PDT 2008
+//    Changed to call higher level EnsureRestrictionCorrectness().
+//
 // ****************************************************************************
 
 void
@@ -793,7 +877,7 @@ avtSILRestriction::ReverseSet(int ind)
 
     if (!suspendCorrectnessChecking)
     {
-        EnsureRestrictionCorrectness(topSet);
+        EnsureRestrictionCorrectness();
     }
 }
 
@@ -912,6 +996,9 @@ avtSILRestriction::TurnOffAll(void)
 //    Moved code to 'FastIntersect' (see accompanying comment in its header for
 //    more details).  Blew away previous comments.
 //
+//    Cyrus Harrison, Tue Oct 28 14:00:39 PDT 2008
+//    Changed to call higher level EnsureRestrictionCorrectness().
+//
 // ****************************************************************************
 
 void
@@ -926,7 +1013,7 @@ avtSILRestriction::Intersect(avtSILRestriction_p silr)
     //
     if (!suspendCorrectnessChecking)
     {
-        EnsureRestrictionCorrectness(topSet);
+        EnsureRestrictionCorrectness();
     }
 }
 
@@ -1013,6 +1100,9 @@ avtSILRestriction::FastIntersect(avtSILRestriction_p silr)
 //    Hank Childs, Fri Nov 14 08:13:58 PST 2003
 //    Account for AllUsedOnOtherProc designation.
 //
+//    Cyrus Harrison, Tue Oct 28 14:00:39 PDT 2008
+//    Changed to call higher level EnsureRestrictionCorrectness().
+//
 // ****************************************************************************
 
 void
@@ -1049,7 +1139,7 @@ avtSILRestriction::Union(avtSILRestriction_p silr)
     //
     if (!suspendCorrectnessChecking)
     {
-        EnsureRestrictionCorrectness(topSet);
+        EnsureRestrictionCorrectness();
     }
 }
 

@@ -108,6 +108,10 @@ typedef ref_ptr<avtSILRestriction> avtSILRestriction_p;
 //    Added ReverseSet to reverse the selection of a set and all of its
 //    subsets.
 //
+//    Cyrus Harrison, Tue Oct 28 14:34:26 PDT 2008
+//    Added higher level EnsureRestrictionCorrectness wrapper to help keep
+//    enum & material selection mutually exclusive. 
+//
 // ****************************************************************************
 
 class DBATTS_API avtSILRestriction : public avtSIL
@@ -157,6 +161,7 @@ class DBATTS_API avtSILRestriction : public avtSIL
     bool                      suspendCorrectnessChecking;
 
     void                      TurnBoolSet(int, bool);
+    SetState                  EnsureRestrictionCorrectness();
     SetState                  EnsureRestrictionCorrectness(int setId);
 
     void                      GetLeafSets(int, std::vector<int> &) const;
