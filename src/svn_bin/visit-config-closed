@@ -7,118 +7,13 @@
                 <Field name="cloneWindowOnFirstRef" type="bool">true</Field>
             </Object>
             <Object name="PluginManagerAttributes">
-                <Field name="name" type="stringVector">Streamline InverseGhostZone </Field>
-                <Field name="type" type="stringVector">plot operator </Field>
-                <Field name="version" type="stringVector">1.0 1.0 </Field>
-                <Field name="id" type="stringVector">Streamline_1.0 InverseGhostZone_1.0 </Field>
-                <Field name="enabled" type="intVector">0 0 </Field>
+                <Field name="name" type="stringVector">InverseGhostZone </Field>
+                <Field name="type" type="stringVector">operator </Field>
+                <Field name="version" type="stringVector">1.0 </Field>
+                <Field name="id" type="stringVector">InverseGhostZone_1.0 </Field>
+                <Field name="enabled" type="intVector">0 </Field>
             </Object>
             <Object name="HostProfileList">
-                <Object name="HostProfile">
-                    <Field name="shareOneBatchJob" type="bool">true</Field>
-                    <Field name="profileName" type="string">Q-LANL parallel ldevq</Field>
-                    <Field name="host" type="string">qfe1.lanl.gov qfe2.lanl.gov</Field>
-                    <Field name="hostAliases" type="string">qfe# q# q## q### q####</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">4</Field>
-                    <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">ldevq</Field>
-                    <Field name="bankSet" type="bool">false</Field>
-                    <Field name="bank" type="string"></Field>
-                    <Field name="timeLimitSet" type="bool">false</Field>
-                    <Field name="timeLimit" type="string"></Field>
-                    <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">bsub</Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">true</Field>
-                    <Field name="arguments" type="stringVector">"-pl" "prun" "-dir" "/usr/projects/llnl_b/visit" </Field>
-                    <Field name="parallel" type="bool">true</Field>
-                </Object>
-                <Object name="HostProfile">
-                    <Field name="shareOneBatchJob" type="bool">true</Field>
-                    <Field name="profileName" type="string">Q-LANL parallel lsmallq</Field>
-                    <Field name="host" type="string">qfe1.lanl.gov qfe2.lanl.gov</Field>
-                    <Field name="hostAliases" type="string">qfe# q# q## q### q####</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">4</Field>
-                    <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">lsmallq</Field>
-                    <Field name="bankSet" type="bool">false</Field>
-                    <Field name="bank" type="string"></Field>
-                    <Field name="timeLimitSet" type="bool">false</Field>
-                    <Field name="timeLimit" type="string"></Field>
-                    <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">bsub</Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-pl" "prun" "-dir" "/usr/projects/llnl_b/visit" </Field>
-                    <Field name="parallel" type="bool">true</Field>
-                </Object>
-                <Object name="HostProfile">
-                    <Field name="shareOneBatchJob" type="bool">true</Field>
-                    <Field name="profileName" type="string">Q-LANL parallel lvizq</Field>
-                    <Field name="host" type="string">qfe1.lanl.gov qfe2.lanl.gov</Field>
-                    <Field name="hostAliases" type="string">qfe# q# q## q### q####</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">4</Field>
-                    <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">lvizq</Field>
-                    <Field name="bankSet" type="bool">false</Field>
-                    <Field name="bank" type="string"></Field>
-                    <Field name="timeLimitSet" type="bool">false</Field>
-                    <Field name="timeLimit" type="string"></Field>
-                    <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">bsub</Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-pl" "prun" "-dir" "/usr/projects/llnl_b/visit" </Field>
-                    <Field name="parallel" type="bool">true</Field>
-                </Object>
-                <Object name="HostProfile">
-                    <Field name="shareOneBatchJob" type="bool">true</Field>
-                    <Field name="profileName" type="string">Q-LANL parallel llargeq</Field>
-                    <Field name="host" type="string">qfe1.lanl.gov qfe2.lanl.gov</Field>
-                    <Field name="hostAliases" type="string">qfe# q# q## q### q####</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">4</Field>
-                    <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">llargeq</Field>
-                    <Field name="bankSet" type="bool">false</Field>
-                    <Field name="bank" type="string"></Field>
-                    <Field name="timeLimitSet" type="bool">false</Field>
-                    <Field name="timeLimit" type="string"></Field>
-                    <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">bsub</Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-pl" "prun" "-dir" "/usr/projects/llnl_b/visit" </Field>
-                    <Field name="parallel" type="bool">true</Field>
-                </Object>
-                <Object name="HostProfile">
-                    <Field name="shareOneBatchJob" type="bool">true</Field>
-                    <Field name="profileName" type="string">Q-LANL parallel lhighq</Field>
-                    <Field name="host" type="string">qfe1.lanl.gov qfe2.lanl.gov</Field>
-                    <Field name="hostAliases" type="string">qfe# q# q## q### q####</Field>
-                    <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">4</Field>
-                    <Field name="partitionSet" type="bool">true</Field>
-                    <Field name="partition" type="string">lhighq</Field>
-                    <Field name="bankSet" type="bool">false</Field>
-                    <Field name="bank" type="string"></Field>
-                    <Field name="timeLimitSet" type="bool">false</Field>
-                    <Field name="timeLimit" type="string"></Field>
-                    <Field name="launchMethodSet" type="bool">true</Field>
-                    <Field name="launchMethod" type="string">bsub</Field>
-                    <Field name="forceStatic" type="bool">true</Field>
-                    <Field name="forceDynamic" type="bool">false</Field>
-                    <Field name="active" type="bool">false</Field>
-                    <Field name="arguments" type="stringVector">"-pl" "prun" "-dir" "/usr/projects/llnl_b/visit" </Field>
-                    <Field name="parallel" type="bool">true</Field>
-                </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
                     <Field name="host" type="string">redrose1.sandia.gov redrose2.sandia.gov</Field>
