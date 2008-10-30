@@ -386,13 +386,15 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     aLayout->addWidget(singleColorLabel,6,0);
     aLayout->addWidget(singleColor, 6,1, Qt::AlignLeft);
 
+#if 0
+// This is unfinished. A) you would not declare the widget locally and B) there's no varChanged slot.
     QvisVariableButton *var = new QvisVariableButton(true, true, true,
                                                      QvisVariableButton::Scalars, pageAppearance, "nm");
     connect(var, SIGNAL(activated(const QString &)),
             this, SLOT(varChanged(const QString&)));
     aLayout->addWidget(var,7,0);
     //    aLayout->addStretch(5);
-
+#endif
 
     //
     // Create advanced widgets.
