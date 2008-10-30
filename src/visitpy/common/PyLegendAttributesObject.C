@@ -591,6 +591,32 @@ LegendAttributesObject_GetFontShadow(PyObject *self, PyObject *args)
     return retval;
 }
 
+static PyObject *
+LegendAttributesObject_SetFontHeight(PyObject *self, PyObject *args)
+{
+    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the font height in the object.
+/*CUSTOM*/
+    obj->data->SetDoubleAttribute1(dval);
+    UpdateAnnotationHelper(obj->data);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject *
+LegendAttributesObject_GetFontHeight(PyObject *self, PyObject *args)
+{
+    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+/*CUSTOM*/
+    return PyFloat_FromDouble(obj->data->GetDoubleAttribute1());
+}
+
 // Create some set/get functions for the bits from IntAttribute1.
 SETGET_FLAG(ManagePosition,  LEGEND_MANAGE_POSITION)
 SETGET_FLAG(DrawBoundingBox, LEGEND_DRAW_BOX)
@@ -604,32 +630,48 @@ LegendAttributesObject_SetOrientation(PyObject *self, PyObject *args)
     LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
 
     char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    int oIndex = -1;
+    if(PyArg_ParseTuple(args, "s", &str))
+    {
+        const char *oNames[] = {"VerticalRight", "VerticalLeft", "HorizontalTop", "HorizontalBottom"};
+        for(int i = 0; i < 4; i++)
+            if (strcmp(str, oNames[i])==0)
+            {
+                oIndex = i;
+                break;
+            }
+    }
+    else
+    {
+        if(PyArg_ParseTuple(args, "i", &oIndex))
+            PyErr_Clear();
+        else
+            return NULL;
+    }
 
-    if (strcmp(str, "VerticalRight")==0)
+    if (oIndex == 0)
     {
         SetBool(obj->data, LEGEND_ORIENTATION0, 0);
         SetBool(obj->data, LEGEND_ORIENTATION1, 0);
     }
-    else if (strcmp(str, "VerticalLeft")==0)
+    else if (oIndex == 1)
     {
         SetBool(obj->data, LEGEND_ORIENTATION0, 0);
         SetBool(obj->data, LEGEND_ORIENTATION1, 1);
     }
-    else if (strcmp(str, "HorizontalTop")==0)
+    else if (oIndex == 2)
     {
         SetBool(obj->data, LEGEND_ORIENTATION0, 1);
         SetBool(obj->data, LEGEND_ORIENTATION1, 0);
     }
-    else if (strcmp(str, "HorizontalBottom")==0)
+    else if (oIndex == 3)
     {
         SetBool(obj->data, LEGEND_ORIENTATION0, 1);
         SetBool(obj->data, LEGEND_ORIENTATION1, 1);
     }
     else
         return NULL;
-
+/*CUSTOM*/
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -647,13 +689,13 @@ LegendAttributesObject_GetOrientation(PyObject *self, PyObject *args)
     int or1 = GetBool(obj->data, LEGEND_ORIENTATION1);
 
     if (!or0 && !or1)
-        retval = PyString_FromString("VerticalRight");
+        retval = PyInt_FromLong(0L); // VerticalRight
     else if (!or0 && or1)
-        retval = PyString_FromString("VerticalLeft");
+        retval = PyInt_FromLong(1L); // VerticalLeft
     else if (or0 && !or1)
-        retval = PyString_FromString("HorizontalTop");
+        retval = PyInt_FromLong(2L); // HorizontalTop
     else if (or0 && or1)
-        retval = PyString_FromString("HorizontalBottom");
+        retval = PyInt_FromLong(3L); // HorizontalBottom
 
     return retval;
 }
@@ -695,6 +737,8 @@ static struct PyMethodDef LegendAttributesObject_methods[] = {
     {"GetFontItalic", LegendAttributesObject_GetFontItalic, METH_VARARGS},
     {"SetFontShadow", LegendAttributesObject_SetFontShadow, METH_VARARGS},
     {"GetFontShadow", LegendAttributesObject_GetFontShadow, METH_VARARGS},
+    {"SetFontHeight", LegendAttributesObject_SetFontHeight, METH_VARARGS},
+    {"GetFontHeight", LegendAttributesObject_GetFontHeight, METH_VARARGS},
     {"SetManagePosition", LegendAttributesObject_SetManagePosition, METH_VARARGS},
     {"GetManagePosition", LegendAttributesObject_GetManagePosition, METH_VARARGS},
     {"SetDrawBoundingBox", LegendAttributesObject_SetDrawBoundingBox, METH_VARARGS},
@@ -763,6 +807,8 @@ LegendAttributesObject_getattr(PyObject *self, char *name)
         return LegendAttributesObject_GetFontItalic(self, NULL);
     if(strcmp(name, "fontShadow") == 0)
         return LegendAttributesObject_GetFontShadow(self, NULL);
+    if(strcmp(name, "fontHeight") == 0)
+        return LegendAttributesObject_GetFontHeight(self, NULL);
 
     if(strcmp(name, "managePosition") == 0)
         return LegendAttributesObject_GetManagePosition(self, NULL);
@@ -772,8 +818,17 @@ LegendAttributesObject_getattr(PyObject *self, char *name)
         return LegendAttributesObject_GetDrawLabels(self, NULL);
     if(strcmp(name, "drawTitle") == 0)
         return LegendAttributesObject_GetDrawTitle(self, NULL);
+
     if(strcmp(name, "orientation") == 0)
         return LegendAttributesObject_GetOrientation(self, NULL);
+    if(strcmp(name, "VerticalRight") == 0)
+        return PyInt_FromLong(0L);
+    else if(strcmp(name, "VerticalLeft") == 0)
+        return PyInt_FromLong(1L);
+    else if(strcmp(name, "HorizontalTop") == 0)
+        return PyInt_FromLong(2L);
+    else if(strcmp(name, "HorizontalBottom") == 0)
+        return PyInt_FromLong(3L);
 
     return Py_FindMethod(LegendAttributesObject_methods, self, name);
 }
@@ -812,6 +867,8 @@ LegendAttributesObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (LegendAttributesObject_SetFontItalic(self, tuple) != NULL);
     else if(strcmp(name, "fontShadow") == 0)
         retval = (LegendAttributesObject_SetFontShadow(self, tuple) != NULL);
+    else if(strcmp(name, "fontHeight") == 0)
+        retval = (LegendAttributesObject_SetFontHeight(self, tuple) != NULL);
     else if(strcmp(name, "managePosition") == 0)
         retval = (LegendAttributesObject_SetManagePosition(self, tuple) != NULL);
     else if(strcmp(name, "drawBoundingBox") == 0)
@@ -881,22 +938,26 @@ LegendAttributesObject_print(PyObject *v, FILE *fp, int flags)
     else
         fprintf(fp, "fontShadow = 0\n");
 
+    fprintf(fp, "fontHeight = %g\n", 
+            obj->data->GetDoubleAttribute1());
+
     fprintf(fp, "drawLabels = %d\n", 
         GetBool(obj->data, LEGEND_DRAW_LABELS)?1:0);
 
     fprintf(fp, "drawTitle = %d\n", 
         GetBool(obj->data, LEGEND_DRAW_TITLE)?1:0);
 
+    const char *orientationNames = "VerticalRight, VerticalLeft, HorizontalTop, HorizontalBottom";
     if (!GetBool(obj->data, LEGEND_ORIENTATION0))
         if (!GetBool(obj->data, LEGEND_ORIENTATION1))
-            fprintf(fp, "orientation = VerticalRight\n"); 
+            fprintf(fp, "orientation = VerticalRight  # %s\n", orientationNames); 
         else
-            fprintf(fp, "orientation = VerticalLeft\n"); 
+            fprintf(fp, "orientation = VerticalLeft  # %s\n", orientationNames); 
     else
         if (!GetBool(obj->data, LEGEND_ORIENTATION1))
-            fprintf(fp, "orientation = HorizontalTop\n"); 
+            fprintf(fp, "orientation = HorizontalTop  # %s\n", orientationNames); 
         else
-            fprintf(fp, "orientation = HorizontalBottom\n"); 
+            fprintf(fp, "orientation = HorizontalBottom  # %s\n", orientationNames); 
 
 
     return 0;
