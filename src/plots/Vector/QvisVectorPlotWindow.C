@@ -164,6 +164,9 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 //   Jeremy Meredith, Tue Jul  8 16:56:25 EDT 2008
 //   Changed the phrasing for the "limit to original" toggle.
 //
+//   Dave Pugmire, Thu Oct 30 08:40:26 EDT 2008
+//   Switch the order of the min/max.
+//
 // ****************************************************************************
 #define TABS
 void
@@ -388,25 +391,26 @@ QvisVectorPlotWindow::CreateWindowContents()
     limitsLayout->addWidget(limitsLabel, 0, 0);
     limitsLayout->addMultiCellWidget(limitsSelect, 0, 0, 1, 2, AlignLeft);
 
-    // Create the min toggle and line edit
-    minToggle = new QCheckBox(tr("Min"), limitsGroupBox, "minToggle");
-    limitsLayout->addWidget(minToggle, 1, 1);
-    connect(minToggle, SIGNAL(toggled(bool)),
-            this, SLOT(minToggled(bool)));
-    minLineEdit = new QLineEdit(limitsGroupBox, "minLineEdit");
-    connect(minLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMinLimitText())); 
-    limitsLayout->addWidget(minLineEdit, 1, 2);
-
     // Create the max toggle and line edit
     maxToggle = new QCheckBox(tr("Max"), limitsGroupBox, "maxToggle");
-    limitsLayout->addWidget(maxToggle, 2, 1);
+    limitsLayout->addWidget(maxToggle, 1, 1);
     connect(maxToggle, SIGNAL(toggled(bool)),
             this, SLOT(maxToggled(bool)));
     maxLineEdit = new QLineEdit(limitsGroupBox, "maxLineEdit");
     connect(maxLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processMaxLimitText())); 
-    limitsLayout->addWidget(maxLineEdit, 2, 2);
+    limitsLayout->addWidget(maxLineEdit, 1, 2);
+
+    // Create the min toggle and line edit
+    minToggle = new QCheckBox(tr("Min"), limitsGroupBox, "minToggle");
+    limitsLayout->addWidget(minToggle, 2, 1);
+    connect(minToggle, SIGNAL(toggled(bool)),
+            this, SLOT(minToggled(bool)));
+    minLineEdit = new QLineEdit(limitsGroupBox, "minLineEdit");
+    connect(minLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMinLimitText())); 
+    limitsLayout->addWidget(minLineEdit, 2, 2);
+
 
     //
     // Create the scale-related widgets.

@@ -119,6 +119,9 @@ QvisIsovolumeWindow::~QvisIsovolumeWindow()
 //   Brad Whitlock, Fri Apr 25 09:03:49 PDT 2008
 //   Added tr()'s
 //
+//   Dave Pugmire, Thu Oct 30 08:40:26 EDT 2008
+//   Swapped the min/max.
+//
 // ****************************************************************************
 
 void
@@ -127,19 +130,19 @@ QvisIsovolumeWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 3,2,  10, "mainLayout");
 
 
-    lboundLabel = new QLabel(tr("Lower bound"), central, "lboundLabel");
-    mainLayout->addWidget(lboundLabel,0,0);
-    lbound = new QLineEdit(central, "lbound");
-    connect(lbound, SIGNAL(returnPressed()),
-            this, SLOT(lboundProcessText()));
-    mainLayout->addWidget(lbound, 0,1);
-
     uboundLabel = new QLabel(tr("Upper bound"), central, "uboundLabel");
-    mainLayout->addWidget(uboundLabel,1,0);
+    mainLayout->addWidget(uboundLabel, 0,0);
     ubound = new QLineEdit(central, "ubound");
     connect(ubound, SIGNAL(returnPressed()),
             this, SLOT(uboundProcessText()));
-    mainLayout->addWidget(ubound, 1,1);
+    mainLayout->addWidget(ubound, 0,1);
+
+    lboundLabel = new QLabel(tr("Lower bound"), central, "lboundLabel");
+    mainLayout->addWidget(lboundLabel, 1,0);
+    lbound = new QLineEdit(central, "lbound");
+    connect(lbound, SIGNAL(returnPressed()),
+            this, SLOT(lboundProcessText()));
+    mainLayout->addWidget(lbound, 1,1);
 
     variableLabel = new QLabel(tr("Variable"), central, "variableLabel");
     mainLayout->addWidget(variableLabel,2,0);

@@ -123,6 +123,9 @@ QvisIsosurfaceWindow::~QvisIsosurfaceWindow()
 //   Brad Whitlock, Fri Apr 25 09:05:45 PDT 2008
 //   Added tr()'s
 //
+//   Dave Pugmire, Thu Oct 30 08:40:26 EDT 2008
+//   Swapped the min/max fields.
+//
 // ****************************************************************************
 
 void
@@ -181,26 +184,27 @@ QvisIsosurfaceWindow::CreateWindowContents()
     //
     QLabel *limitsLabel = new QLabel(tr("Limits"), central, "limitsLabel");
     limitsLayout->addWidget(limitsLabel, 1, 0);
-    // Create the min toggle and line edit
-    minToggle = new QCheckBox(tr("Min"), central, "minToggle");
-    limitsLayout->addWidget(minToggle, 1, 1);
-    connect(minToggle, SIGNAL(toggled(bool)),
-            this, SLOT(minToggled(bool)));
-    minLineEdit = new QLineEdit(central, "minLineEdit");
-    connect(minLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMinLimitText()));
-    limitsLayout->addWidget(minLineEdit, 1, 2);
- 
+
     // Create the max toggle and line edit
     maxToggle = new QCheckBox(tr("Max"), central, "maxToggle");
-    limitsLayout->addWidget(maxToggle, 2, 1);
+    limitsLayout->addWidget(maxToggle, 1, 1);
     connect(maxToggle, SIGNAL(toggled(bool)),
             this, SLOT(maxToggled(bool)));
     maxLineEdit = new QLineEdit(central, "maxLineEdit");
     connect(maxLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processMaxLimitText()));
-    limitsLayout->addWidget(maxLineEdit, 2, 2);
+    limitsLayout->addWidget(maxLineEdit, 1, 2);
 
+    // Create the min toggle and line edit
+    minToggle = new QCheckBox(tr("Min"), central, "minToggle");
+    limitsLayout->addWidget(minToggle, 2, 1);
+    connect(minToggle, SIGNAL(toggled(bool)),
+            this, SLOT(minToggled(bool)));
+    minLineEdit = new QLineEdit(central, "minLineEdit");
+    connect(minLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMinLimitText()));
+    limitsLayout->addWidget(minLineEdit, 2, 2);
+ 
     limitsLayout->addWidget(new QLabel(tr("Variable"), central, "variableLabel"),3,0);
     variable = new QvisVariableButton(true, true, true, 
         QvisVariableButton::Scalars, central, "variable");
