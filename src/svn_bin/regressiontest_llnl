@@ -62,6 +62,9 @@
 #
 #    Mark C. Miller, Thu Oct 23 09:50:31 PDT 2008
 #    Found and fixed another issue handling output from wc correctly.
+#
+#    Mark C. Miller, Fri Oct 31 17:00:45 PDT 2008
+#    Added some itaps tests to the skip list
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -385,7 +388,10 @@ skipList_dueTo_temporaryBugs="\
 	  nersc,scalable,parallel:tests/operators/transform.py:ops_transform05 \
 	  nersc,serial:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
 	  nersc,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
-	  nersc,scalable,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05"
+	  nersc,scalable,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
+          nersc,serial:tests/databases/itaps.py:itaps_02,itaps_03,itaps_04,itaps_05 \
+          nersc,parallel:tests/databases/itaps.py:itaps_02,itaps_03,itaps_04,itaps_05 \
+          nersc,scalable,parallel:tests/databases/itaps.py:itaps_02,itaps_03,itaps_04,itaps_05"
 
 skipList="$skipList_dueTo_clientServer $skipList_dueTo_parallelRendering $skipList_dueTo_temporaryBugs"
 
