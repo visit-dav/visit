@@ -131,6 +131,9 @@ QvisScatterPlotWindow::~QvisScatterPlotWindow()
 //   Brad Whitlock, Wed Apr 23 10:32:06 PDT 2008
 //   Added tr()'s
 //
+//   Dave Pugmire, Wed Oct 29 16:00:48 EDT 2008
+//   Swap the min/max in the gui.
+//
 // ****************************************************************************
 
 void
@@ -187,25 +190,25 @@ QvisScatterPlotWindow::CreateWindowContents()
     QLabel *var1RoleLabel = new QLabel(var1Role, tr("Role"), var1Top, "var1RoleLabel");
     var1TopLayout->addWidget(var1RoleLabel,1,0);
 
-    // var1 Min
-    var1MinFlag = new QCheckBox(tr("Min"), var1Top, "var1MinFlag");
-    connect(var1MinFlag, SIGNAL(toggled(bool)),
-            this, SLOT(var1MinFlagChanged(bool)));
-    var1TopLayout->addWidget(var1MinFlag, 2,0);
-    var1Min = new QLineEdit(var1Top, "var1Min");
-    connect(var1Min, SIGNAL(returnPressed()),
-            this, SLOT(var1MinProcessText()));
-    var1TopLayout->addWidget(var1Min, 2,1);
-
     // var1 Max
     var1MaxFlag = new QCheckBox(tr("Max"), var1Top, "var1MaxFlag");
     connect(var1MaxFlag, SIGNAL(toggled(bool)),
             this, SLOT(var1MaxFlagChanged(bool)));
-    var1TopLayout->addWidget(var1MaxFlag, 3,0);
+    var1TopLayout->addWidget(var1MaxFlag, 2,0);
     var1Max = new QLineEdit(var1Top, "var1Max");
     connect(var1Max, SIGNAL(returnPressed()),
             this, SLOT(var1MaxProcessText()));
-    var1TopLayout->addWidget(var1Max, 3,1);
+    var1TopLayout->addWidget(var1Max, 2,1);
+
+    // var1 Min
+    var1MinFlag = new QCheckBox(tr("Min"), var1Top, "var1MinFlag");
+    connect(var1MinFlag, SIGNAL(toggled(bool)),
+            this, SLOT(var1MinFlagChanged(bool)));
+    var1TopLayout->addWidget(var1MinFlag, 3,0);
+    var1Min = new QLineEdit(var1Top, "var1Min");
+    connect(var1Min, SIGNAL(returnPressed()),
+            this, SLOT(var1MinProcessText()));
+    var1TopLayout->addWidget(var1Min, 3,1);
 
     var1ScalingLabel = new QLabel(tr("Scale"), var1Top, "var1ScalingLabel");
     var1TopLayout->addWidget(var1ScalingLabel,4,0);
