@@ -157,6 +157,9 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 //   Brad Whitlock, Wed Apr 23 10:16:57 PDT 2008
 //   Added tr()'s
 //
+//   Dave Pugmire, Wed Oct 29 16:00:48 EDT 2008
+//   Swap the min/max in the gui.
+//
 // ****************************************************************************
 
 void
@@ -206,25 +209,26 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     limitsLayout->addWidget(limitsLabel, 0, 0);
     limitsLayout->addMultiCellWidget(limitsSelect, 0, 0, 1, 2, AlignLeft);
 
-    // Create the min toggle and line edit
-    minToggle = new QCheckBox(tr("Min"), central, "minToggle");
-    limitsLayout->addWidget(minToggle, 1, 1);
-    connect(minToggle, SIGNAL(toggled(bool)),
-            this, SLOT(minToggled(bool)));
-    minLineEdit = new QLineEdit(central, "minLineEdit");
-    connect(minLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processMinLimitText())); 
-    limitsLayout->addWidget(minLineEdit, 1, 2);
 
     // Create the max toggle and line edit
     maxToggle = new QCheckBox(tr("Max"), central, "maxToggle");
-    limitsLayout->addWidget(maxToggle, 2, 1);
+    limitsLayout->addWidget(maxToggle, 1, 1);
     connect(maxToggle, SIGNAL(toggled(bool)),
             this, SLOT(maxToggled(bool)));
     maxLineEdit = new QLineEdit(central, "maxLineEdit");
     connect(maxLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processMaxLimitText())); 
-    limitsLayout->addWidget(maxLineEdit, 2, 2);
+    limitsLayout->addWidget(maxLineEdit, 1, 2);
+
+    // Create the min toggle and line edit
+    minToggle = new QCheckBox(tr("Min"), central, "minToggle");
+    limitsLayout->addWidget(minToggle, 2, 1);
+    connect(minToggle, SIGNAL(toggled(bool)),
+            this, SLOT(minToggled(bool)));
+    minLineEdit = new QLineEdit(central, "minLineEdit");
+    connect(minLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processMinLimitText())); 
+    limitsLayout->addWidget(minLineEdit, 2, 2);
 
     //
     // Create the scale radio buttons

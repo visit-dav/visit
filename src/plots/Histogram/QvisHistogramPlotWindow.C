@@ -125,6 +125,9 @@ QvisHistogramPlotWindow::~QvisHistogramPlotWindow()
 //    Brad Whitlock, Tue Apr 22 16:48:22 PDT 2008
 //    Added tr()'s
 //
+//   Dave Pugmire, Wed Oct 29 16:00:48 EDT 2008
+//   Swap the min/max in the gui.
+//
 // ****************************************************************************
 
 void
@@ -224,20 +227,19 @@ QvisHistogramPlotWindow::CreateWindowContents()
             this, SLOT(specifyRangeChanged(bool)));
     hgLayout->addWidget(specifyRange, 4,0);
 
-
-    minLabel = new QLabel(tr("Minimum"), histGroupBox, "minLabel");
-    hgLayout->addWidget(minLabel,5,0);
-    min = new QLineEdit(histGroupBox, "min");
-    connect(min, SIGNAL(returnPressed()),
-            this, SLOT(minProcessText()));
-    hgLayout->addWidget(min,5,1);
-
     maxLabel = new QLabel(tr("Maximum"), histGroupBox, "maxLabel");
-    hgLayout->addWidget(maxLabel,6,0);
+    hgLayout->addWidget(maxLabel,5,0);
     max = new QLineEdit(histGroupBox, "max");
     connect(max, SIGNAL(returnPressed()),
             this, SLOT(maxProcessText()));
-    hgLayout->addWidget(max, 6,1);
+    hgLayout->addWidget(max, 5,1);
+
+    minLabel = new QLabel(tr("Minimum"), histGroupBox, "minLabel");
+    hgLayout->addWidget(minLabel,6,0);
+    min = new QLineEdit(histGroupBox, "min");
+    connect(min, SIGNAL(returnPressed()),
+            this, SLOT(minProcessText()));
+    hgLayout->addWidget(min,6,1);
 
     numBinsLabel = new QLabel(tr("Number of Bins"), histGroupBox, "numBinsLabel");
     hgLayout->addWidget(numBinsLabel,7,0);

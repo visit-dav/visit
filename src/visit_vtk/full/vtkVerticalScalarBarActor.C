@@ -83,6 +83,12 @@ vtkStandardNewMacro(vtkVerticalScalarBarActor);
 //    Brad Whitlock, Wed Mar 21 16:02:00 PST 2007
 //    Added BoundingBox.
 //
+//    Dave Pugmire, Wed Oct 29 14:31:20 EDT 2008
+//    Change the range to Min Max.
+//
+//    Dave Pugmire, Wed Oct 29 14:31:20 EDT 2008
+//    Undo previous change.
+//
 //------------------------------------------------------------------------------
 vtkVerticalScalarBarActor::vtkVerticalScalarBarActor() : definedLabels(), definedDoubleLabels(), labelColorMap()
 {
@@ -374,6 +380,12 @@ int vtkVerticalScalarBarActor::RenderOverlay(vtkViewport *viewport)
 //
 //    Eric Brugger, Mon Jul 14 11:59:40 PDT 2003
 //    I changed the way the title is built.
+//
+//    Dave Pugmire, Wed Oct 29 14:31:20 EDT 2008
+//    Change the range to Min Max.
+//
+//    Dave Pugmire, Wed Oct 29 14:31:20 EDT 2008
+//    Undo previous change.
 //
 // ****************************************************************************
 
@@ -1683,6 +1695,12 @@ void vtkVerticalScalarBarActor::SetLabelColorMap(const LevelColorMap &cmap)
 //  Modifications:
 //    Kathleen Bonnell, Thu Jun 12 11:05:18 PDT 2003
 //    Removed 'f' from pow(10.f, ...).
+//
+//    Dave Pugmire, Wed Oct 29 14:31:20 EDT 2008
+//    Change the range to Min Max.
+//
+//    Dave Pugmire, Wed Oct 29 14:31:20 EDT 2008
+//    Undo previous change.
 //
 // ****************************************************************************
 
