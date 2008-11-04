@@ -105,7 +105,6 @@ do
    $cmd visit$version2.aix64.tar.gz                >> $output
    $cmd visit$version2.darwin-ppc.tar.gz           >> $output
    $cmd visit$version2.darwin-i386.tar.gz          >> $output
-   $cmd visit$version2.irix6.tar.gz                >> $output
    $cmd visit$version2.linux-altix.tar.gz          >> $output
    $cmd visit$version2.linux-ellipse.tar.gz        >> $output
    $cmd visit$version2.linux-ia64.tar.gz           >> $output
@@ -124,6 +123,7 @@ do
    $cmd visitdev$version.exe                       >> $output
    cd ../visit_third_party
    $cmd boxlib.tar.gz                              >> ../visit$version/$output
+   $cmd libccmio-2.6.1.tar.gz                      >> ../visit$version/$output
    $cmd cfitsio3006.tar.gz                         >> ../visit$version/$output
    $cmd cgnslib_2.4-3.tar.gz                       >> ../visit$version/$output
    $cmd cmake-2.2.3.tar.gz                         >> ../visit$version/$output
@@ -133,6 +133,7 @@ do
    $cmd H5Part-20070711.tar.gz                     >> ../visit$version/$output
    $cmd HDF4.2r1.tar.gz                            >> ../visit$version/$output
    $cmd hdf5-1.6.5.tar.gz                          >> ../visit$version/$output
+   $cmd hdf5-1.8.1.tar.gz                          >> ../visit$version/$output
    $cmd Imaging-1.1.6.tar.gz                       >> ../visit$version/$output
    $cmd Mesa-5.0-mangled.tar.gz                    >> ../visit$version/$output
    $cmd MesaLib-6.4.2.tar.gz                       >> ../visit$version/$output
@@ -141,6 +142,8 @@ do
    $cmd qt-mac-free-3.3.8.tar.gz                   >> ../visit$version/$output
    $cmd qt-x11-free-3.3.2.tar.gz                   >> ../visit$version/$output
    $cmd qt-x11-free-3.3.8.tar.gz                   >> ../visit$version/$output
+   $cmd silo-4.6.1.tar.gz                          >> ../visit$version/$output
+   $cmd silo-4.6.2.tar.gz                          >> ../visit$version/$output
    $cmd silo060605.sh                              >> ../visit$version/$output
    $cmd szip-2.1.tar.gz                            >> ../visit$version/$output
    $cmd vtk-5.0.0c.tar.gz                          >> ../visit$version/$output
