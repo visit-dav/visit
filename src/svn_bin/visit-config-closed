@@ -104,7 +104,7 @@
                     <Field name="host" type="string">eos.llnl.gov</Field>
                     <Field name="hostAliases" type="string">eos#.llnl.gov eos##.llnl.gov eos###.llnl.gov eos# eos## eos###</Field>
                     <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">16</Field>
+                    <Field name="numProcessors" type="int">32</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
                     <Field name="numNodes" type="int">2</Field>
                     <Field name="partitionSet" type="bool">true</Field>
@@ -285,7 +285,7 @@
                     <Field name="host" type="string">juno.llnl.gov</Field>
                     <Field name="hostAliases" type="string">juno#.llnl.gov juno##.llnl.gov juno###.llnl.gov juno# juno## juno###</Field>
                     <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">8</Field>
+                    <Field name="numProcessors" type="int">16</Field>
                     <Field name="numNodesSet" type="bool">false</Field>
                     <Field name="numNodes" type="int">0</Field>
                     <Field name="partitionSet" type="bool">true</Field>
@@ -307,7 +307,7 @@
                     <Field name="host" type="string">juno.llnl.gov</Field>
                     <Field name="hostAliases" type="string">juno#.llnl.gov juno##.llnl.gov juno###.llnl.gov juno# juno## juno###</Field>
                     <Field name="timeout" type="int">480</Field>
-                    <Field name="numProcessors" type="int">16</Field>
+                    <Field name="numProcessors" type="int">32</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
                     <Field name="numNodes" type="int">2</Field>
                     <Field name="partitionSet" type="bool">true</Field>
