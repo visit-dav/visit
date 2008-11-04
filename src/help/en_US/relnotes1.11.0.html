@@ -14,6 +14,13 @@
 <p>Welcome to VisIt's release notes page. This page describes the important
 enhancements and bug-fixes that were added to this release.</p>
 
+<p><b><font size="4">Announcements</font></b></p>
+<ul>
+   <li>The VisIt 1.11 release was made on an abbreviated schedule.  Our project decided to make this release early to 
+       catch up to our regular release schedule, which had slipped with the 1.10 release.  We strive to have four major
+       releases per year.</li>
+</ul>
+
 <!--
 <p><b><font size="4">Announcements</font></b></p>
 <ul>
@@ -54,6 +61,12 @@ enhancements and bug-fixes that were added to this release.</p>
       to the traditional vertical orientation.  To access the controls (as
       well as other legend controls), go to Controls->Annotations in the main
       GUI and look under the Objects tab.</li>
+  <li>The 3d axes have been enhanced to allow the user to specify the major
+      and minor tick mark locations for each of the axes. In order to set
+      them bring up the <i>Annotation</i> window, select the <i>3D</i> tab,
+      turn off the <i>Auto set ticks</i> button, and then specify the major
+      tick mark minimum, major tick mark maxium, minor tick mark spacing and
+      major tick mark spacing for each of the axes.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -67,11 +80,15 @@ enhancements and bug-fixes that were added to this release.</p>
         For full information, see the wiki page:
         http://www.visitusers.org/index.php?title=Parallel_Hardware_Acceleration.
     </li>
+    <li>Libsim.a is now being compiled with the flags "-fPIC", so that it is
+        possible to build a shared library from it.</li>
 </ul>
 
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 1.11</font></b></p>
 <ul>
+<li>Ralph Bruckschen contributed the new Gadget file reader for data from the Gadget 2
+    cosmological N-body/SPH simulation code. Thank you, Ralph!</li>
 <li>The Silo reader causes a crash when reading multimat objects whose
 material entries are all set to "EMPTY".</li>
 <li>The PDB/Flash file reader has been changed so that it does not allow VisIt to
@@ -89,8 +106,7 @@ material entries are all set to "EMPTY".</li>
     the user can tell VisIt this via the Database Options available when 
     opening the file.</li> 
 <li>PlainText reader now supports curves where any column can represent the abscissa.</li>
-<li>Ralph Bruckschen contributed the new Gadget file reader for data from the Gadget 2
-    cosmological N-body/SPH simulation code. Thank you, Ralph!</li>
+<li>The Tecplot file format now supports cell-centered variables (through the VARLOCATION keyword).</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -109,6 +125,7 @@ material entries are all set to "EMPTY".</li>
           in the file differs from what is shown in</li>
       <li>The Volume plot can now directly volume render unsigned character data with no intermediate
           representations, meaning that the memory footprint will now be lower in this case.</li>
+      <li>The Molecule plot no longer shortens bonds in degenerate cases.</li>
 </ul>
 
 <a name="Operator_changes"></a>
@@ -123,6 +140,7 @@ though those were not the true axes.  It will now label the axes with
 the true axes, for example the <i>0.707,0,-0.707 Axis</i>.</li>
 <li>Deleting an operator by clicking the red X in the plot list now works for
 plots that are not selected.</li>
+<li>The Tube operator can now scale the tube by a scalar variable.</li>
 <li>The Tube operator now successfully works on line segments that form loops,
 where these segments would previously be ignored.</li>
 <li>The Threshold operator now issues a warning if you are thresholding by the
@@ -138,6 +156,7 @@ two dimensions.</li>
 <li>Extra logic was added to the conn_components expression to to validate ghost zones before
 attempting to use the ghost zone neighbors optimization.
 </li>
+<li>Recursive expressions no longer kill the engine.</li>
 </ul>
 
 <a name="Query_changes"></a>
@@ -214,9 +233,12 @@ Summary" Query.</li>
 <ul>
       <li>The host profiles for ORNL's visualization cluster, lens, was updated
           to include support for launching multi-GPU parallel engines.</li>
-      <li>The LANL Q machine host profile was removed from the LLNL-closed host profiles since the
-          Q machine no longer exists.</li>
-      <li>Host profiles for LLNL's tempest machine were added.</li>
+      <li>Host profiles for LLNL's juno and eos systems have been added.</li>
+      <li>Host profiles for LLNL's tempest machine have been added.</li>
+      <li>The host profiles for LLNL's purple, um and uv systems have been
+          modified to use SLURM and Moab.</li>
+      <li>The host profiles for the LANL Q machine were removed since it no
+          longer exists.</li>
 </ul>
 
 <a name="Dev_changes"></a>
