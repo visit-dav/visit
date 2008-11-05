@@ -42,7 +42,6 @@ enhancements and bug-fixes that were added to this release.</p>
     <li><a href="#Operator_changes">Changes to operators</a></li>
     <li><a href="#Expression_changes">Changes to expressions</a></li>
     <li><a href="#Query_changes">Changes to picks and queries</a></li>
-    <li><a href="#CLI_changes">Changes to the command line interface</a></li>
     <li><a href="#Bugs_fixed">Other bug fixes</a></li>
     <li><a href="#Config_changes">Changes to machine configuration files</a></li>
     <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
@@ -51,16 +50,17 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 1.11</font></b></p>
 <ul>
-  <li>Mesh plots were greatly tuned for rectilinear meshes, including 
-      AMR rectilinear meshes.  You should see considerable improvement in 
+  <li>The mesh plot was greatly tuned for rectilinear meshes, including 
+      AMR rectilinear meshes. You should see considerable improvement in 
       both performance and memory footprint.</li>
-  <li>Material interface reconstruction was tuned for the case of a domain
-      that has only a single material.  Again, you should see considerable
+  <li>The material interface reconstruction was tuned for the case of a domain
+      that has only a single material. Again, you should see considerable
       improvement in both performance and memory footprint.</li>
   <li>You can now change legends to have a horizontal orientation, as opposed
-      to the traditional vertical orientation.  To access the controls (as
-      well as other legend controls), go to Controls->Annotations in the main
-      GUI and look under the Objects tab.</li>
+      to the traditional vertical orientation. To access the controls (as
+      well as other legend controls), bring up the <i>Annotation</i> window
+      by selecting the <i>Controls->Annotation</i> menu entry in the main
+      GUI and look under the <i>Objects</i> tab.</li>
   <li>The 3d axes have been enhanced to allow the user to specify the major
       and minor tick mark locations for each of the axes. In order to set
       them bring up the <i>Annotation</i> window, select the <i>3D</i> tab,
@@ -72,199 +72,195 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 1.11</font></b></p>
 <ul>
-    <li>VisIt now supports hardware based rendering for clusters with
-        multiple GPUs per node.  The previous <tt>-hw-accel</tt>
-        interface is preserved.  Therefore no host profile
-        modifications will be necessary, but you must update your VisIt
-        host profiles if you'd like to use more than one GPU.
-        For full information, see the wiki page:
-        http://www.visitusers.org/index.php?title=Parallel_Hardware_Acceleration.
-    </li>
-    <li>Libsim.a is now being compiled with the flags "-fPIC", so that it is
-        possible to build a shared library from it.</li>
+  <li>VisIt now supports hardware based rendering for clusters with
+      multiple GPUs per node. The previous <tt>-hw-accel</tt> interface
+      is preserved. Therefore no host profile modifications will be
+      necessary, but you must update your VisIt host profiles if you'd
+      like to use more than one GPU. For full information, see the wiki
+      page: http://www.visitusers.org/index.php?title=Parallel_Hardware_Acceleration.
+  </li>
+  <li>Libsim.a is now being compiled with the flags "-fPIC", so that it is
+      possible to build a shared library from it.</li>
 </ul>
 
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 1.11</font></b></p>
 <ul>
-<li>Ralph Bruckschen contributed the new Gadget file reader for data from the Gadget 2
-    cosmological N-body/SPH simulation code. Thank you, Ralph!</li>
-<li>The Silo reader causes a crash when reading multimat objects whose
-material entries are all set to "EMPTY".</li>
-<li>The PDB/Flash file reader has been changed so that it does not allow VisIt to
-    cache data since the reader performs its own caching.</li>
-<li>The Silo reader now supports decomposed domain boundaries for Rectilinear meshes.</li>
-<li>Configuration for the ITAPS reader has changed to support multiple implementations
-    of ITAPS libraries in one installation of VisIt. The new configuration switch
-    is --with-itaps-impls=[very long string] which defines all the features of
-    each ITAPS implementation VisIt is to be compiled with. Each implementation leads
-    to an ITAPS database reader plugin with a different name. See DEFAULT_ITAPS_IMPLS
-    specification in config-site/hoth.llnl.gov for further explanation and example.
-    cache data since the reader performs its own caching.</li>
-<li>The MFIX reader will now work correctly when run on a big-endian machine.  
-    The reader still assumes data file is big-endian.  If this is not the case, 
-    the user can tell VisIt this via the Database Options available when 
-    opening the file.</li> 
-<li>PlainText reader now supports curves where any column can represent the abscissa.</li>
-<li>The Tecplot file format now supports cell-centered variables (through the VARLOCATION keyword).</li>
-<li>The SAMRAI reader now works on Windows.</li>
+  <li>Ralph Bruckschen contributed the new Gadget file reader for data from
+      the Gadget 2 cosmological N-body/SPH simulation code. Thank you, Ralph!</li>
+  <li>The Silo reader no longer crashes when reading multimat objects whose
+      material entries are all set to "EMPTY".</li>
+  <li>The PDB/Flash file reader has been changed so that it does not allow
+      VisIt to cache data since the reader performs its own caching.</li>
+  <li>The Silo reader now supports decomposed domain boundaries for
+      Rectilinear meshes.</li>
+  <li>The configuration for the ITAPS reader has changed to support multiple
+      implementations of ITAPS libraries in one installation of VisIt. The
+      new configuration switch is --with-itaps-impls=[very long string]
+      which defines all the features of each ITAPS implementation VisIt is
+      to be compiled with. Each implementation leads to an ITAPS database
+      reader plugin with a different name. See DEFAULT_ITAPS_IMPLS
+      specification in config-site/hoth.llnl.gov for further explanation
+      and an example.</li>
+  <li>The MFIX reader will now work correctly when run on a big-endian
+      machine. The reader still assumes the data file is big-endian. If this is
+      not the case, the user can tell VisIt this via the Database Options
+      available when opening the file.</li> 
+  <li>The PlainText reader now supports curves where any column can
+      represent the abscissa.</li>
+  <li>The Tecplot file format now supports cell-centered variables (through
+      the VARLOCATION keyword).</li>
+  <li>The SAMRAI reader now works on Windows.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 1.11</font></b></p>
 <ul>
-      <li>The Volume plot's ray-casting option now has a lighting model.  This 
-          results in significantly higher quality pictures, at the cost of more 
-          computation time.  To use the old (faster) way, disable lighting
-          in the plot options.</li>
-      <li>The Streamline plot has three new color by options: time, arc
-          length and seed point id.</li>
-      <li>The Volume plot's ray-casting option no longer has additional, unnecessary
-          executions when making its first image.</li>
-      <li>The Spreadsheet plot now prints an informational message in text files
-          that it saves so the user knows that the vertical ordering of data
-          in the file differs from what is shown in</li>
-      <li>The Volume plot can now directly volume render unsigned character data with no intermediate
-          representations, meaning that the memory footprint will now be lower in this case.</li>
-      <li>The Molecule plot no longer shortens bonds in degenerate cases.</li>
+  <li>The Volume plot's ray-casting option now has a lighting model. This 
+      results in significantly higher quality pictures, at the cost of more 
+      computation time. To use the old (faster) way, disable lighting in the
+      plot options.</li>
+  <li>The Streamline plot has three new color by options: time, arc length
+      and seed point id.</li>
+  <li>The Volume plot's ray-casting option no longer has additional,
+      unnecessary executions when making its first image.</li>
+  <li>The Spreadsheet plot now prints an informational message in text files
+      that it saves so the user knows that the vertical ordering of data
+      in the file differs from what is shown in the plot.</li>
+  <li>The Volume plot can now directly volume render unsigned character data
+      with no intermediate representations, meaning that the memory footprint
+      will now be lower in this case.</li>
+  <li>The Molecule plot no longer shortens bonds in degenerate cases.</li>
 </ul>
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 1.11</font></b></p>
 <ul>
-<li>The InverseGhostZone operator now operates correctly on blocks that have
-no ghost zones.</li>
-<li>The Slice operator now labels axes differently when projecting to two dimensions.
-It has always correctly labeled the axes when doing orthogonal slices.  However, for
-non-orthogonal slices, it was consistently labeling the axes as <i>X</i> and <i>Y</i>, even
-though those were not the true axes.  It will now label the axes with
-the true axes, for example the <i>0.707,0,-0.707 Axis</i>.</li>
-<li>Deleting an operator by clicking the red X in the plot list now works for
-plots that are not selected.</li>
-<li>The Tube operator can now scale the tube by a scalar variable.</li>
-<li>The Tube operator now successfully works on line segments that form loops,
-where these segments would previously be ignored.</li>
-<li>The Threshold operator now issues a warning if you are thresholding by the
-<i>default</i> variable and that variable is not a scalar.</li>
-<li>When the Slice operator is projecting to two dimensions and the slice plane is
-set using the theta-phi method, users can now set the up-axis for projection to
-two dimensions.</li>
+  <li>The InverseGhostZone operator now operates correctly on blocks that
+      have no ghost zones.</li>
+  <li>The Slice operator now labels axes differently when projecting to two
+      dimensions. It has always correctly labeled the axes when doing
+      orthogonal slices. However, for non-orthogonal slices, it was
+      consistently labeling the axes as <i>X</i> and <i>Y</i>, even though
+      those were not the true axes. It will now label the axes with the true
+      axes, for example the <i>0.707,0,-0.707 Axis</i>.</li>
+  <li>Deleting an operator by clicking the red X in the plot list now works
+      for plots that are not selected.</li>
+  <li>The Tube operator can now scale the tube by a scalar variable.</li>
+  <li>The Tube operator now successfully works on line segments that form
+      loops, where these segments would previously be ignored.</li>
+  <li>The Threshold operator now issues a warning if you are thresholding by
+      the <i>default</i> variable and that variable is not a scalar.</li>
+  <li>When the Slice operator is projecting to two dimensions and the slice
+      plane is set using the theta-phi method, users can now set the up-axis
+      for projection to two dimensions.</li>
 </ul>
 
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 1.11</font></b></p>
 <ul>
-<li>Extra logic was added to the conn_components expression to to validate ghost zones before
-attempting to use the ghost zone neighbors optimization.
-</li>
-<li>Recursive expressions no longer kill the engine.</li>
+  <li>Extra logic was added to the conn_components expression to to validate
+      ghost zones before attempting to use the ghost zone neighbors
+      optimization.</li>
+  <li>Recursive expressions no longer kill the engine.</li>
 </ul>
 
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 1.11</font></b></p>
 <ul>
-<li>Fixed more cases of failure in the NumNodes query.</li>
-<li>VisIt no longer crashes when performing a query over time for the PickByNode 
-    and PickByZone queries if you accidentally apply the queries to a Mesh plot.</li>
-<li>Fixed an error in the GUI with parsing the output file name for the "Connected Components 
-Summary" Query.</li>
-</ul>
-
-<a name="CLI_changes"></a>
-<p><b><font size="4">Changes to VisIt's command-line interface in version 1.11</font></b></p>
-<ul>
+  <li>Fixed more cases of failure in the NumNodes query.</li>
+  <li>VisIt no longer crashes when performing a query over time for the
+      PickByNode and PickByZone queries if you accidentally apply the queries
+      to a Mesh plot.</li>
+  <li>Fixed an error in the GUI with parsing the output file name for the
+      "Connected Components Summary" Query.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 1.11</font></b></p>
 <ul>
-      <li>VisIt should be significantly better at cleaning up runaway parallel engines.</li>
-
-      <li>A bug was fixed with Fedora Core 9 where "Save Window" and images from
-          "Scalable rendering mode" ("SR mode")
-          were coming out corrupted.</li>
-
-      <li>SR mode now detects when only the root process creates an image, and
-          adjusts composition appropriately.  This fixes a bug which caused the
-          volume plot to create images with visible slices.</li>
-
-      <li>If file grouping is set to <i>off</i> and you connect to a remote host,
-          the files on the remote machine now display correctly, where previously
-          it would appear as an empty list.</li>
-      <li>Fixed the usage of the loopback device (127.0.0.1) for Windows.</li>
-
-      <li>Fixed a small memory leak on Windows platfrom.</li>
-
-      <li>The parallel compute engine wrapper library has been linked with the cognomen library, allowing it to work in parallel with libsim once more.</li>
-
-      <li>VisIt's expression evaluator frees up more problem-sized memory as it evaluates expressions, making it less likely that the compute engine will run out of memory.</li>
-
-      <li>The CLI's OpenGUI() function causes the viewer to crash when the viewer is run without a window using the <i>-nowin</i> command line argument.</li>
-
-      <li>The "visit -movie" script does not properly handle engine launch arguments.</li>
-
-      <li>VisIt's Save Movie wizard no longer presents "Streaming movie" as an option unless the img2sm encoding software exists in your path.</li>
-
-      <li>Modified the component launcher code on windows to not override
-          VISITSSH or VISITSSHARGS if set in the users's environment.</li>
-
-      <li>Made available once again the ability for the windows installer
-          to copy over old config files to the new version</li>
-
-      <li>VisIt no longer reverts to displaying files from your home directory when the
-          <i>-launchengine</i> argument is added to the command line as a result of adding
-          parallel command line arguments such as <i>-np, -nn</i>.</li>
-
-      <li>Replaced use of bzip2 compression with libz compression for data sent from engine
-          to viewer. Empirical results show better compression and performance with libz.</li>
-
-      <li>A significant memory bloat was found and fixed for the case of 
-          processing double precision data.</li>
-      <li>SIL correctness checking was modified to keep enumerated scalar selection from influencing material selection.
-      This resolves an issue with selecting materials when Nodelists are present.
-      </li>
-      <li>Restoring sessions while running remotely via cygwin or XWin32 will
-          no longer cause main GUI window to be un-sizeable.</li>
-
-      <li>Legend font height cannot be set using the Python interface's legend annotation object.</li>
-      <li>Windows version no longer missing some LLNL host profiles.</li>
+  <li>VisIt should be significantly better at cleaning up runaway parallel
+      engines.</li>
+  <li>A bug was fixed with Fedora Core 9 where "Save Window" and images from
+      "Scalable rendering mode" ("SR mode") were coming out corrupted.</li>
+  <li>SR mode now detects when only the root process creates an image, and
+      adjusts composition appropriately. This fixes a bug which caused the
+      volume plot to create images with visible slices.</li>
+  <li>If file grouping is set to <i>off</i> and you connect to a remote host,
+      the files on the remote machine now display correctly, where previously
+      it would appear as an empty list.</li>
+  <li>Fixed the usage of the loopback device (127.0.0.1) for Windows.</li>
+  <li>Fixed a small memory leak on the Windows platfrom.</li>
+  <li>The parallel compute engine wrapper library has been linked with the
+      cognomen library, allowing it to work in parallel with libsim once
+      more.</li>
+  <li>VisIt's expression evaluator frees up more problem-sized memory as it
+      evaluates expressions, making it less likely that the compute engine
+      will run out of memory.</li>
+  <li>The CLI's OpenGUI() function no longer causes the viewer to crash when
+      the viewer is run without a window using the <i>-nowin</i> command line
+      argument.</li>
+  <li>The "visit -movie" script now properly handles engine launch
+      arguments.</li>
+  <li>VisIt's Save Movie wizard no longer presents "Streaming movie" as an
+      option unless the img2sm encoding software exists in your path.</li>
+  <li>Modified the component launcher code on windows to not override
+      VISITSSH or VISITSSHARGS if set in the users's environment.</li>
+  <li>The windows installer once again allows the user to copy over old
+      config files to the new version.</li>
+  <li>VisIt no longer reverts to displaying files from your home directory
+      when the <i>-launchengine</i> argument is added to the command line as
+      a result of adding parallel command line arguments such as <i>-np, -nn</i>.</li>
+  <li>Replaced the use of bzip2 compression with libz compression for data sent
+      from engine to viewer. Empirical results show better compression and
+      performance with libz.</li>
+  <li>A significant memory bloat was found and fixed for the case of 
+      processing double precision data.</li>
+  <li>SIL correctness checking was modified to keep enumerated scalar
+      selection from influencing material selection. This resolves an issue
+      with selecting materials when Nodelists are present.  </li>
+  <li>Restoring sessions while running remotely via cygwin or XWin32 will
+      no longer cause the main GUI window to be un-sizeable.</li>
+  <li>The legend font height can now be set using the Python interface's legend
+      annotation object.</li>
+  <li>The Windows version is no longer missing some LLNL host profiles.</li>
 </ul>
 
 <a name="Config_changes"></a>
 <p><b><font size="4">Changes to configuration files in version 1.11</font></b></p>
 <ul>
-      <li>The host profiles for ORNL's visualization cluster, lens, was updated
-          to include support for launching multi-GPU parallel engines.</li>
-      <li>Host profiles for LLNL's juno and eos systems have been added.</li>
-      <li>Host profiles for LLNL's tempest machine have been added.</li>
-      <li>The host profiles for LLNL's purple, um and uv systems have been
-          modified to use SLURM and Moab.</li>
-      <li>The host profiles for the LANL Q machine were removed since it no
-          longer exists.</li>
+  <li>The host profiles for ORNL's visualization cluster, lens, was updated
+      to include support for launching multi-GPU parallel engines.</li>
+  <li>Host profiles for LLNL's juno and eos systems have been added.</li>
+  <li>Host profiles for LLNL's tempest machine have been added.</li>
+  <li>The host profiles for LLNL's purple, um and uv systems have been
+      modified to use SLURM and Moab.</li>
+  <li>The host profiles for the LANL Q machine were removed since it no
+      longer exists.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 1.11</font></b></p>
 <ul>
-      <li>Project files for VC 8 were updated to allow successful compilation
-          in parallel.</li>
-      <li>VisIt now tries to compile and link with a shared hdf5 library.</li>
-      <li>VisIt binary distributions will use a shared hdf5 library.</li>
-      <li>VisIt no longer requires Silo in order to compile.</li>
-      <li>--with-szip configuration option has been removed because VisIt does
-          not directly depend on the szip library. It may, however, depend on
-          szip indirectly (see below).</li>
-      <li>--with-hdf5 option supports specification of additional libraries upon
-            which hdf5 depends by using a colon (':') separator followed by a
-            comma separated list of flags to link against hdf5.</li>
-      <li>Config site file symbols for HDF5 changed to DEFAULT_HDF5_LIBLOC and,
-          optionally, DEFAULT_HDF5_LIBDEP. See confit-site/hoth.llnl.gov.conf
-          for an example.</li>
-      <li>New VAC_ARG_WITH3RD autoconf macro should be used to handle third
-          party libraries.</li>
-      <li>libz was added as a third party builtin and bzip2 was removed.</li>
-      <li>The build_visit script was refactored so that all patch code is now cleanly isolated 
-          into their own separate function.</li>
+  <li>Project files for VC 8 were updated to allow successful compilation
+      in parallel.</li>
+  <li>VisIt now tries to compile and link with a shared hdf5 library.</li>
+  <li>VisIt binary distributions will use a shared hdf5 library.</li>
+  <li>VisIt no longer requires Silo in order to compile.</li>
+  <li>--with-szip configuration option has been removed because VisIt does
+      not directly depend on the szip library. It may, however, depend on
+      szip indirectly (see below).</li>
+  <li>--with-hdf5 option supports specification of additional libraries upon
+        which hdf5 depends by using a colon (':') separator followed by a
+        comma separated list of flags to link against hdf5.</li>
+  <li>Config site file symbols for HDF5 changed to DEFAULT_HDF5_LIBLOC and,
+      optionally, DEFAULT_HDF5_LIBDEP. See confit-site/hoth.llnl.gov.conf
+      for an example.</li>
+  <li>New VAC_ARG_WITH3RD autoconf macro should be used to handle third
+      party libraries.</li>
+  <li>libz was added as a third party builtin and bzip2 was removed.</li>
+  <li>The build_visit script was refactored so that all patch code is now
+      cleanly isolated into their own separate function.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
