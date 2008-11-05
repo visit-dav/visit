@@ -103,7 +103,7 @@
                         <Field name="launchMethodSet" type="bool">true</Field>
                         <Field name="launchMethod" type="string">qsub/mpirun</Field>
                         <Field name="active" type="bool">true</Field>
-                        <Field name="arguments" type="stringVector">"-dir" "/apps/visit/ewok" </Field>
+                        <Field name="arguments" type="stringVector">"-dir" "/sw/ewok/visit" </Field>
                         <Field name="parallel" type="bool">true</Field>
                         <Field name="hostAliases" type="string">ewok*.ccs.ornl.gov</Field>
                         <Field name="tunnelSSH" type="bool">true</Field>
