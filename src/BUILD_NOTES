@@ -129,6 +129,7 @@ include:
 setenv VISITARCH aix_5_ll_xlc_32
 setenv VISITARCH aix_5_fed_64_xlc_64
 setenv VISITARCH altix_gcc_3.3.3
+setenv VISITARCH altix_gcc_4.1.2
 setenv VISITARCH chaos_3_ia64_elan4_gcc_3.2.3
 setenv VISITARCH chaos_3_x86_64_ib_gcc_3.4.4
 setenv VISITARCH chaos_3_x86_elan3_gcc_3.2.3
