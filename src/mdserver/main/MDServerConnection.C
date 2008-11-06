@@ -1143,6 +1143,9 @@ MDServerConnection::ExpandPath(const std::string &path)
 //   Brad Whitlock, Thu Feb 17 15:05:34 PST 2005
 //   Moved some code into the utility library, callable from ExpandUserPath.
 //
+//   Kathleen Bonnell, Wed Nov 5 18:59:26 PST 2008  
+//   Modified how absolute path is determined on Windows. 
+//
 // ****************************************************************************
 
 std::string
@@ -1152,19 +1155,17 @@ MDServerConnection::ExpandPathHelper(const std::string &path,
     std::string newPath;
 
 #if defined(_WIN32)
-    char driveLetter;
 
     if(path[0] == '~')
     {
         newPath = ExpandUserPath(path);
     }
-    else if(sscanf(path.c_str(), "My Computer\\%c:", &driveLetter) == 1)
+    else if(path.substr(0, 12) == "My Computer\\" && path[13] == ':')
     {
         // Filter out the "My Computer" part of the path.
-        char tmp[2] = {driveLetter, '\0'};
-        newPath = std::string(tmp) + ":\\";
+        newPath = path.substr(12);
     }
-    else if(sscanf(path.c_str(), "%c:\\", &driveLetter) == 1)
+    else if(path[1] == ':')
     {
         // absolute path. do nothing
         newPath = path;

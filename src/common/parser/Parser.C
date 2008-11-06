@@ -135,6 +135,10 @@ Parser::Shift(Token *t, int s)
 //    Jeremy Meredith, Wed Jul 23 13:26:26 EDT 2008
 //    Add the rule index to the debug info.
 //
+//    Kathleen Bonnell,  Thu Nov 6 11:57:28 PST 2008
+//    To prevent a crash on windows for referencing (from GetParseTree)
+//    elems[0] when elems is empty, don't pop elems if rule->index is 0. 
+//
 // ****************************************************************************
 void
 Parser::Reduce(int r)
@@ -178,7 +182,10 @@ Parser::Reduce(int r)
     for (i=0; i<len; i++)
     {
         states.pop_back();
-        elems.pop_back();
+#ifdef WIN32
+        if (rule->GetIndex() != 0)
+#endif
+            elems.pop_back();
     }
 
     State &state = G->GetState(states.back());

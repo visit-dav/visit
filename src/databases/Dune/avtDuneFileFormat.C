@@ -117,6 +117,9 @@ dune_getline(std::ifstream &ifile, std::string &str)
 //      Hank Childs, Thu Jan 26 11:06:59 PST 2006
 //      NULL terminate ostrstreams.
 //
+//      Kathleen Bonnell, Wed Nov 5 9:09:27 PST 2008 
+//      Open the file as binary, so this reader will work on windows.
+//
 // ****************************************************************************
 
 avtDuneFileFormat::avtDuneFileFormat(const char *filename)
@@ -124,7 +127,7 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
 {
   // INITIALIZE DATA MEMBERS
 
-  ifile.open(filename);
+  ifile.open(filename, ios::binary);
   if (!ifile)
     EXCEPTION1(InvalidFilesException, filename);
 
@@ -851,6 +854,10 @@ avtDuneFileFormat::GetVectorVar(int timestate, const char *varname)
 //      Hank Childs, Mon Nov 21 11:25:48 PST 2005
 //      Replace getline with dune_getline.
 //
+//      Kathleen Bonnell, Wed Nov 5 9:09:27 PST 2008 
+//      Open the file as binary, so this reader will work on Windows. Fixed
+//      crash on Windows when searching species.
+//
 // ****************************************************************************
 
 void
@@ -861,7 +868,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
   }
 
   if (ifile.bad()) {
-    ifile.open(fname.c_str());
+      ifile.open(fname.c_str(), ios::binary);
     if (!ifile) {
       EXCEPTION1(InvalidFilesException, fname.c_str());
     }
@@ -899,12 +906,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
   const string q = "Q(";
   const string w = "W(";
   const string r = "R(";
-#if defined(_WIN32)
-  const double pi = 3.14159265358979323846;
-#else
-  const double pi = M_PI;
-#endif
-  const double volume_factor = 4.0/3.0 * pi;
+  const double volume_factor = 4.0/3.0 * M_PI;
   const string species = "Species(";
   const string material = "Material(";
   double rho;
@@ -982,7 +984,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
               get_tokens(buffer, species, tokens);
               rho = density[species_to_matname[tokens[0]]];
               vector<string>::iterator ndx = find(species_names.begin(), species_names.end(), tokens[0]);
-              if (ndx == matnames.end()) {
+              if (ndx == species_names.end()) {
                 EXCEPTION1(InvalidVariableException, "Species");
               }
               else {
@@ -1218,22 +1220,20 @@ void *avtDuneFileFormat::GetAuxiliaryData(const char *var, int domain,
 //  Programmer: dslone --
 //  Creation:   Fri Sep 16 09:20:59 PDT 2005
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Nov 5 10:23:15 PST 2008
+//    Removed unncessary creation of empty std::vectors, which when 
+//    dereferenced via [0] causes crash on Windows.
+//
 // ****************************************************************************
 
 void *avtDuneFileFormat::GetMaterial()
 {
-  int mixed_size = 0;
-  vector<int> mix_mat(mixed_size);
-  vector<int> mix_next(mixed_size);
-  vector<int> mix_zone(mixed_size);
-  vector<float> mix_vf(mixed_size);
+    avtMaterial *mat = new avtMaterial(matnames.size(), matnames, nparticles,
+                                       &(species_list[0]), 0,
+                                       NULL, NULL, NULL, NULL);
 
-  avtMaterial *mat = new avtMaterial(matnames.size(), matnames, nparticles,
-                                     &(species_list[0]), mixed_size,
-                                     &(mix_mat[0]), &(mix_next[0]),
-                                     &(mix_zone[0]), &(mix_vf[0]));
-
-  return (void*) mat;    
+    return (void*) mat;    
 }
 
 
@@ -1257,5 +1257,5 @@ void *avtDuneFileFormat::GetMaterial()
 
 int avtDuneFileFormat::MAX(const int a, const int b)
 {
-  return ((a) > (b) ? a : b);
-};
+    return ((a) > (b) ? a : b);
+}
