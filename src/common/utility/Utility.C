@@ -56,6 +56,7 @@ using std::vector;
 
 #if defined(_WIN32)
 #include <windows.h>
+#include <userenv.h> // for GetProfilesDirectory
 #else
 #include <unistd.h>
 #include <sys/types.h>
@@ -1203,6 +1204,10 @@ ConfigStateIncrementRunCount(ConfigStateEnum &code)
 // Creation:   Thu Feb 17 14:57:57 PST 2005
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Nov 6 11:04:15 PST 2008
+//   Change how homeDir is determined on Windows, to allow for roaming profiles
+//   (where it may not be on C:) and for Vista, where the default profiles
+//   directory is C:\Users not C:\Documents and Settings.
 //   
 // ****************************************************************************
 
@@ -1230,10 +1235,15 @@ ExpandUserPath(const std::string &path)
             DWORD s = 256;
             GetUserName(username, &s);
         }
+        // Get 'home' directory
+        char *profDir = new char[MAX_PATH];
+        DWORD size = 256;
+        GetProfilesDirectory(profDir, &size);
+        std::string homeDir(profDir);
+        delete [] profDir;    
 
         // Append the rest of the path to the home directory.
         std::string restOfPath(path.substr(i, path.length() - i + 1));
-        std::string homeDir("C:\\Documents and Settings\\");
         newPath = homeDir + std::string(username) + restOfPath;
 #else
         // Check if the user specified '~' or '~name'.
