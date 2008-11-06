@@ -293,7 +293,12 @@ int wrndec(unsigned char *in_string, int *out_array)
  *   n   -- number of elements [returned value?] (called "data->number")
  *   cid -- type of data (called "data->wrn2_cid" here)
  *   it  -- [no longer used] (was timecode)
- *   rid -- [not used] */
+ *   rid -- [not used]
+ *
+ * Modifications:
+ *   Mark C. Miller, Thu Nov  6 11:12:56 PST 2008
+ *   Fixed compilation warning on line ~389 converting double to int
+ **/
 int readRLEData(MHDdata *data)
 {
     unsigned char buffer[128];    /* buffer for input string -- from wrndec()         */
@@ -386,7 +391,7 @@ int readRLEData(MHDdata *data)
             }
 
             /* reconstruct the unsigned integer value */
-            int_value = lsbits[count] + 94.0 * msbits[count];
+            int_value = (int) (lsbits[count] + 94.0 * msbits[count]);
 
             /* reconstruct the original floating point value from the range information & sign */
             /* Note that the following expression uses float(exp()) instead */
