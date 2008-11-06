@@ -1724,6 +1724,9 @@ QvisWellBorePlotWindow::WritePoint(FILE *file, int p1[3], int p2[3])
 // Creation:   October 1, 2008
 //
 // Modifications:
+//   Eric Brugger, Thu Nov  6 13:21:36 PST 2008
+//   I corrected an error processing illegal characters that caused an
+//   infinite loop.
 //
 // ****************************************************************************
 
@@ -1857,9 +1860,6 @@ QvisWellBorePlotWindow::GetToken(FILE *file)
     }
     else
     {
-        while (chr != EOF && isspace(chr))
-            chr = fgetc(file);
-        if (chr != EOF) ungetc(chr, file);
         token = TOKEN_ERROR;
     }
 
