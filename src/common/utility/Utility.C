@@ -1209,6 +1209,9 @@ ConfigStateIncrementRunCount(ConfigStateEnum &code)
 //   (where it may not be on C:) and for Vista, where the default profiles
 //   directory is C:\Users not C:\Documents and Settings.
 //   
+//   Kathleen Bonnell, Fri Nov 7 15:46:33 PST 2008
+//   Forgot path separator between homeDir and username. 
+//
 // ****************************************************************************
 
 std::string
@@ -1244,7 +1247,7 @@ ExpandUserPath(const std::string &path)
 
         // Append the rest of the path to the home directory.
         std::string restOfPath(path.substr(i, path.length() - i + 1));
-        newPath = homeDir + std::string(username) + restOfPath;
+        newPath = homeDir + "\\" + std::string(username) + restOfPath;
 #else
         // Check if the user specified '~' or '~name'.
         struct passwd *users_passwd_entry = NULL;

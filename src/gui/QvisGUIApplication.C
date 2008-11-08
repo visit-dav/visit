@@ -1293,6 +1293,11 @@ QvisGUIApplication::Synchronize(int tag)
 //   sync REDO_PICK_TAG, pick, sync RESTORE_PICK_ATTS_TAG, change attributes
 //   back.
 //
+//   Kathleen Bonnell, Fri Nov 7 10:10:14 PST 2008 
+//   On Windows, if 'user directory' is not being used for session file, use
+//   current path from fileServer instead of '.', as '.' evaluates to the
+//   install dir on Windows, and users may not have write access. 
+//
 // ****************************************************************************
 
 void
@@ -1339,7 +1344,11 @@ QvisGUIApplication::HandleSynchronize(int val)
         if(GetViewerState()->GetGlobalAttributes()->GetUserDirForSessionFiles())
             sessionDir = GetUserVisItDirectory();
         else
+#ifndef WIN32
             sessionDir = std::string(QString(QDir(".").absPath() + SLASH_STRING).latin1());
+#else
+            sessionDir = fileServer->GetPath();
+#endif
         debug5 << "Session dir: " << sessionDir.c_str() << endl;
     }
     else if(val == DELAYED_LOAD_FILE_TAG)
