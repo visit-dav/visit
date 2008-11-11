@@ -58,7 +58,7 @@ esac
 hoth=true
 sunspot=true
 up=true
-pengra=true
+alc=true
 thunder=true
 yana=true
 xchem=true
@@ -79,7 +79,7 @@ do
          hoth=false
          sunspot=false
          up=false
-         pengra=false
+         alc=false
          thunder=false
          yana=false
          xchem=false
@@ -111,12 +111,12 @@ do
          up=true
          shift
          ;;
-      -pengra)
-         pengra=false
+      -alc)
+         alc=false
          shift
          ;;
-      +pengra)
-         pengra=true
+      +alc)
+         alc=true
          shift
          ;;
       -thunder)
@@ -304,24 +304,24 @@ then
    then
       scp up:/p/gup1/$user/up/visitbuild/visit$ver2.aix.tar.gz .
       scp up:/p/gup1/$user/up/visitbuild/visit$ver2.aix64.tar.gz .
-      scp visit$ver2.aix.tar.gz pengra2:
-      scp visit$ver2.aix64.tar.gz pengra2:
-      scp visit-install pengra2:
-      scp up pengra2:up_install
-      ssh pengra2 "chmod 750 up_install;./up_install"
+      scp visit$ver2.aix.tar.gz yana:
+      scp visit$ver2.aix64.tar.gz yana:
+      scp visit-install yana:
+      scp up yana:up_install
+      ssh yana "chmod 750 up_install;./up_install"
    fi
 fi
 
 #
-# Install on pengra.
+# Install on alc.
 #
-rm -f pengra
-cat <<EOF > pengra
+rm -f alc
+cat <<EOF > alc
 #!/bin/sh
 ./visit-install -private -c open -g visit -b bdivp -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
-echo "        install of visit on pengra"          > resultlog 2>&1
-echo "       ----------------------------"         >> resultlog 2>&1
+echo "         install of visit on alc"            > resultlog 2>&1
+echo "        -------------------------"           >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -333,18 +333,18 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): pengra" $emailName < resultlog
+mail -s "VisIt install ($ver): alc" $emailName < resultlog
 EOF
 
-if [ $pengra = true ]
+if [ $alc = true ]
 then
    if [ $test = no ]
    then
-      scp pengra1:/usr/tmp/$user/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
-      scp visit$ver2.linux_chaos.tar.gz pengra2:
-      scp visit-install pengra2:
-      scp pengra pengra2:pengra_install
-      ssh pengra2 "chmod 750 pengra_install;./pengra_install"
+      scp alc1:/usr/tmp/$user/alc/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
+      scp visit$ver2.linux_chaos.tar.gz yana:
+      scp visit-install yana:
+      scp alc yana:alc_install
+      ssh yana "chmod 750 alc_install;./alc_install"
    fi
 fi
 
@@ -377,10 +377,10 @@ then
    if [ $test = no ]
    then
       scp thunder2:/usr/tmp/$user/thunder/visitbuild/visit$ver2.linux-ia64.tar.gz .
-      scp visit$ver2.linux-ia64.tar.gz pengra2:
-      scp visit-install pengra2:
-      scp thunder pengra2:thunder_install
-      ssh pengra2 "chmod 750 thunder_install;./thunder_install"
+      scp visit$ver2.linux-ia64.tar.gz yana:
+      scp visit-install yana:
+      scp thunder yana:thunder_install
+      ssh yana "chmod 750 thunder_install;./thunder_install"
    fi
 fi
 
@@ -413,10 +413,10 @@ then
    if [ $test = no ]
    then
       scp yana3:/usr/tmp/$user/yana/visitbuild/visit$ver2.linux-x86_64.tar.gz .
-      scp visit$ver2.linux-x86_64.tar.gz pengra2:
-      scp visit-install pengra2:
-      scp yana pengra2:yana_install
-      ssh pengra2 "chmod 750 yana_install;./yana_install"
+      scp visit$ver2.linux-x86_64.tar.gz yana:
+      scp visit-install yana:
+      scp yana yana:yana_install
+      ssh yana "chmod 750 yana_install;./yana_install"
    fi
 fi
 
@@ -533,5 +533,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot up pengra thunder yana xchem davinci ellipse
+   rm -f hoth sunspot up alc thunder yana xchem davinci ellipse
 fi
