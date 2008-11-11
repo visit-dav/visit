@@ -42,7 +42,6 @@
 
 #ifndef AVT_WELLBORENAME_MAPPER_H
 #define AVT_WELLBORENAME_MAPPER_H
-#include <plotter_exports.h>
 
 
 #include <avtDecorationsMapper.h>
@@ -62,7 +61,7 @@ class     vtkDataSet;
 //
 // ****************************************************************************
 
-class PLOTTER_API  avtWellBoreNameMapper : public avtDecorationsMapper
+class avtWellBoreNameMapper : public avtDecorationsMapper
 {
   public:
                                avtWellBoreNameMapper();
