@@ -80,6 +80,13 @@ public:
         ColorByMultipleColors,
         ColorByColorTable
     };
+    enum WellAnnotation
+    {
+        None,
+        StemOnly,
+        NameOnly,
+        StemAndName
+    };
 
     WellBoreAttributes();
     WellBoreAttributes(const WellBoreAttributes &obj);
@@ -116,6 +123,9 @@ public:
     void SetWellRadius(float wellRadius_);
     void SetWellLineWidth(int wellLineWidth_);
     void SetWellLineStyle(int wellLineStyle_);
+    void SetWellAnnotation(WellAnnotation wellAnnotation_);
+    void SetWellStemHeight(float wellStemHeight_);
+    void SetWellNameScale(float wellNameScale_);
     void SetLegendFlag(bool legendFlag_);
     void SetNWellBores(int nWellBores_);
     void SetWellBores(const intVector &wellBores_);
@@ -138,6 +148,9 @@ public:
     float                       GetWellRadius() const;
     int                         GetWellLineWidth() const;
     int                         GetWellLineStyle() const;
+    WellAnnotation              GetWellAnnotation() const;
+    float                       GetWellStemHeight() const;
+    float                       GetWellNameScale() const;
     bool                        GetLegendFlag() const;
     int                         GetNWellBores() const;
     const intVector             &GetWellBores() const;
@@ -165,6 +178,11 @@ public:
 protected:
     static std::string ColoringMethod_ToString(int);
 public:
+    static std::string WellAnnotation_ToString(WellAnnotation);
+    static bool WellAnnotation_FromString(const std::string &, WellAnnotation &);
+protected:
+    static std::string WellAnnotation_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -191,6 +209,9 @@ public:
         ID_wellRadius,
         ID_wellLineWidth,
         ID_wellLineStyle,
+        ID_wellAnnotation,
+        ID_wellStemHeight,
+        ID_wellNameScale,
         ID_legendFlag,
         ID_nWellBores,
         ID_wellBores,
@@ -209,6 +230,9 @@ private:
     float                 wellRadius;
     int                   wellLineWidth;
     int                   wellLineStyle;
+    int                   wellAnnotation;
+    float                 wellStemHeight;
+    float                 wellNameScale;
     bool                  legendFlag;
     int                   nWellBores;
     intVector             wellBores;

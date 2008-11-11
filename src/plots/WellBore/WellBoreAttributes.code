@@ -156,6 +156,8 @@ WellBoreAttributes::ChangesRequireRecalculation(const WellBoreAttributes &obj)
     if (nWellBores != obj.nWellBores) return true;
     if (wellBores != obj.wellBores) return true;
     if (wellNames != obj.wellNames) return true;
+    if (wellAnnotation != obj.wellAnnotation) return true;
+    if (wellStemHeight != obj.wellStemHeight) return true;
 
     return false;
 }

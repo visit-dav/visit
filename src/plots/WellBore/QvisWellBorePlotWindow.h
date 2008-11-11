@@ -70,6 +70,8 @@ class QvisOpacitySlider;
 // Creation:   omitted
 //
 // Modifications:
+//     Eric Brugger, Mon Nov 10 13:16:16 PST 2008
+//     Added the ability to display well bore names and stems.
 //   
 // ****************************************************************************
 
@@ -119,6 +121,9 @@ class QvisWellBorePlotWindow : public QvisPostableWindowObserver
     void wellRadiusProcessText();
     void wellLineWidthChanged(int style);
     void wellLineStyleChanged(int style);
+    void wellAnnotationChanged(int val);
+    void wellStemHeightProcessText();
+    void wellNameScaleProcessText();
     void legendFlagChanged(bool val);
   private:
     int                     plotType;
@@ -150,6 +155,12 @@ class QvisWellBorePlotWindow : public QvisPostableWindowObserver
     QvisLineWidthWidget    *wellLineWidth;
     QLabel                 *wellLineStyleLabel;
     QvisLineStyleWidget    *wellLineStyle;
+    QLabel                 *wellAnnotationLabel;
+    QComboBox              *wellAnnotation;
+    QLabel                 *wellStemHeightLabel;
+    QLineEdit              *wellStemHeight;
+    QLabel                 *wellNameScaleLabel;
+    QLineEdit              *wellNameScale;
     QCheckBox              *legendFlag;
 
     WellBoreAttributes     *atts;
