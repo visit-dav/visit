@@ -74,7 +74,7 @@ esac
 hoth=true
 sunspot=true
 up=true
-pengra=true
+alc=true
 thunder=true
 yana=true
 xchem=true
@@ -95,7 +95,7 @@ do
          hoth=false
          sunspot=false
          up=false
-         pengra=false
+         alc=false
          thunder=false
          yana=false
          xchem=false
@@ -127,12 +127,12 @@ do
          up=true
          shift
          ;;
-      -pengra)
-         pengra=false
+      -alc)
+         alc=false
          shift
          ;;
-      +pengra)
-         pengra=true
+      +alc)
+         alc=true
          shift
          ;;
       -thunder)
@@ -192,7 +192,7 @@ then
    echo "    hoth (B-Div, Linux),"
    echo "    sunspot (B-Div, Solaris),"
    echo "    up (LC, AIX),"
-   echo "    pengra (LC, Linux, x86_64),"
+   echo "    alc (LC, Linux, x86),"
    echo "    thunder (LC, Linux, ia64),"
    echo "    yana (LC, Linux, x86_64),"
    echo "    xchem (HEAF, Linux),"
@@ -401,21 +401,21 @@ then
 fi
 
 #
-# Build on pengra.
+# Build on alc.
 #
-rm -f pengra
-cat <<EOF > pengra
+rm -f alc
+cat <<EOF > alc
 #!/bin/sh
 if test ! -d /usr/tmp/$user ; then
    mkdir /usr/tmp/$user
 fi
-if test ! -d /usr/tmp/$user/pengra ; then
-   mkdir /usr/tmp/$user/pengra
+if test ! -d /usr/tmp/$user/alc ; then
+   mkdir /usr/tmp/$user/alc
 fi
-rm -rf /usr/tmp/$user/pengra/visitbuild
-mkdir /usr/tmp/$user/pengra/visitbuild
-mv pengra_$dist.tar.gz /usr/tmp/$user/pengra/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/pengra/visitbuild
+rm -rf /usr/tmp/$user/alc/visitbuild
+mkdir /usr/tmp/$user/alc/visitbuild
+mv alc_$dist.tar.gz /usr/tmp/$user/alc/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/alc/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
@@ -426,8 +426,8 @@ svn_bin/visit-bin-dist >> ../../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ../..
 cd ../..
 rm -f resultlog
-echo "        build of visit on pengra"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
+echo "          build of visit on alc"        > resultlog 2>&1
+echo "         -----------------------"       >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -437,17 +437,17 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): pengra" $emailName < resultlog
+mail  -s "VisIt build ($dist): alc" $emailName < resultlog
 EOF
 
-if [ $pengra = true ]
+if [ $alc = true ]
 then
    if [ $test = no ]
    then
-      echo "Building on pengra"
-      scp pengra pengra1:pengra_buildit
-      scp $dist.tar.gz pengra1:pengra_$dist.tar.gz
-      ssh pengra1 "chmod 750 pengra_buildit;./pengra_buildit" &
+      echo "Building on alc"
+      scp alc alc1:alc_buildit
+      scp $dist.tar.gz alc1:alc_$dist.tar.gz
+      ssh alc1 "chmod 750 alc_buildit;./alc_buildit" &
    fi
 fi
 
@@ -728,5 +728,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot up pengra thunder yana xchem davinci ellipse
+   rm -f hoth sunspot up alc thunder yana xchem davinci ellipse
 fi
