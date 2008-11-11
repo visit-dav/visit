@@ -6,9 +6,11 @@
     </LIBS>
     <Files components="V">
       avtWellBoreFilter.C
+      avtWellBoreNameMapper.C
     </Files>
     <Files components="E">
       avtWellBoreFilter.C
+      avtWellBoreNameMapper.C
     </Files>
     <Attribute name="WellBoreAttributes" purpose="This class contains the plot attributes for the well bore plot." persistent="true" codefile="WellBoreAttributes.code">
       <Enum name="WellRenderingMode">
@@ -25,6 +27,12 @@
         ColorBySingleColor
         ColorByMultipleColors
         ColorByColorTable
+      </Enum>
+      <Enum name="WellAnnotation">
+        None
+        StemOnly
+        NameOnly
+        StemAndName
       </Enum>
       <Field name="defaultPalette" label="Default palette" type="att" subtype="ColorControlPointList" ignoreeq="true">
       </Field>
@@ -58,6 +66,15 @@
       </Field>
       <Field name="wellLineStyle" label="Well line style" type="linestyle" enabler="drawWellsAs:Lines">
         0
+      </Field>
+      <Field name="wellAnnotation" label="Well annotation" type="enum" subtype="WellAnnotation">
+        StemAndName
+      </Field>
+      <Field name="wellStemHeight" label="Well stem height" type="float">
+        10.0
+      </Field>
+      <Field name="wellNameScale" label="Well name scale" type="float">
+        0.2
       </Field>
       <Field name="legendFlag" label="Legend" type="bool">
         true

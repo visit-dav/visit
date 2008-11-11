@@ -153,8 +153,46 @@ WellBoreAttributes::ColoringMethod_FromString(const std::string &s, WellBoreAttr
     return false;
 }
 
+//
+// Enum conversion methods for WellBoreAttributes::WellAnnotation
+//
+
+static const char *WellAnnotation_strings[] = {
+"None", "StemOnly", "NameOnly", 
+"StemAndName"};
+
+std::string
+WellBoreAttributes::WellAnnotation_ToString(WellBoreAttributes::WellAnnotation t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 4) index = 0;
+    return WellAnnotation_strings[index];
+}
+
+std::string
+WellBoreAttributes::WellAnnotation_ToString(int t)
+{
+    int index = (t < 0 || t >= 4) ? 0 : t;
+    return WellAnnotation_strings[index];
+}
+
+bool
+WellBoreAttributes::WellAnnotation_FromString(const std::string &s, WellBoreAttributes::WellAnnotation &val)
+{
+    val = WellBoreAttributes::None;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(s == WellAnnotation_strings[i])
+        {
+            val = (WellAnnotation)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // Type map format string
-const char *WellBoreAttributes::TypeMapFormatString = "au*isaaiifiibii*s*";
+const char *WellBoreAttributes::TypeMapFormatString = "au*isaaiifiiiffbii*s*";
 
 // ****************************************************************************
 // Method: WellBoreAttributes::WellBoreAttributes
@@ -181,6 +219,9 @@ WellBoreAttributes::WellBoreAttributes() :
     wellRadius = 0.12;
     wellLineWidth = 0;
     wellLineStyle = 0;
+    wellAnnotation = StemAndName;
+    wellStemHeight = 10;
+    wellNameScale = 0.2;
     legendFlag = true;
     nWellBores = 0;
 }
@@ -214,6 +255,9 @@ WellBoreAttributes::WellBoreAttributes(const WellBoreAttributes &obj) :
     wellRadius = obj.wellRadius;
     wellLineWidth = obj.wellLineWidth;
     wellLineStyle = obj.wellLineStyle;
+    wellAnnotation = obj.wellAnnotation;
+    wellStemHeight = obj.wellStemHeight;
+    wellNameScale = obj.wellNameScale;
     legendFlag = obj.legendFlag;
     nWellBores = obj.nWellBores;
     wellBores = obj.wellBores;
@@ -272,6 +316,9 @@ WellBoreAttributes::operator = (const WellBoreAttributes &obj)
     wellRadius = obj.wellRadius;
     wellLineWidth = obj.wellLineWidth;
     wellLineStyle = obj.wellLineStyle;
+    wellAnnotation = obj.wellAnnotation;
+    wellStemHeight = obj.wellStemHeight;
+    wellNameScale = obj.wellNameScale;
     legendFlag = obj.legendFlag;
     nWellBores = obj.nWellBores;
     wellBores = obj.wellBores;
@@ -311,6 +358,9 @@ WellBoreAttributes::operator == (const WellBoreAttributes &obj) const
             (wellRadius == obj.wellRadius) &&
             (wellLineWidth == obj.wellLineWidth) &&
             (wellLineStyle == obj.wellLineStyle) &&
+            (wellAnnotation == obj.wellAnnotation) &&
+            (wellStemHeight == obj.wellStemHeight) &&
+            (wellNameScale == obj.wellNameScale) &&
             (legendFlag == obj.legendFlag) &&
             (nWellBores == obj.nWellBores) &&
             (wellBores == obj.wellBores) &&
@@ -469,6 +519,9 @@ WellBoreAttributes::SelectAll()
     Select(ID_wellRadius,          (void *)&wellRadius);
     Select(ID_wellLineWidth,       (void *)&wellLineWidth);
     Select(ID_wellLineStyle,       (void *)&wellLineStyle);
+    Select(ID_wellAnnotation,      (void *)&wellAnnotation);
+    Select(ID_wellStemHeight,      (void *)&wellStemHeight);
+    Select(ID_wellNameScale,       (void *)&wellNameScale);
     Select(ID_legendFlag,          (void *)&legendFlag);
     Select(ID_nWellBores,          (void *)&nWellBores);
     Select(ID_wellBores,           (void *)&wellBores);
@@ -583,6 +636,24 @@ WellBoreAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("wellLineStyle", wellLineStyle));
+    }
+
+    if(completeSave || !FieldsEqual(ID_wellAnnotation, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("wellAnnotation", WellAnnotation_ToString(wellAnnotation)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_wellStemHeight, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("wellStemHeight", wellStemHeight));
+    }
+
+    if(completeSave || !FieldsEqual(ID_wellNameScale, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("wellNameScale", wellNameScale));
     }
 
     if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
@@ -709,6 +780,26 @@ WellBoreAttributes::SetFromNode(DataNode *parentNode)
         SetWellLineWidth(node->AsInt());
     if((node = searchNode->GetNode("wellLineStyle")) != 0)
         SetWellLineStyle(node->AsInt());
+    if((node = searchNode->GetNode("wellAnnotation")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 4)
+                SetWellAnnotation(WellAnnotation(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            WellAnnotation value;
+            if(WellAnnotation_FromString(node->AsString(), value))
+                SetWellAnnotation(value);
+        }
+    }
+    if((node = searchNode->GetNode("wellStemHeight")) != 0)
+        SetWellStemHeight(node->AsFloat());
+    if((node = searchNode->GetNode("wellNameScale")) != 0)
+        SetWellNameScale(node->AsFloat());
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
     if((node = searchNode->GetNode("nWellBores")) != 0)
@@ -798,6 +889,27 @@ WellBoreAttributes::SetWellLineStyle(int wellLineStyle_)
 {
     wellLineStyle = wellLineStyle_;
     Select(ID_wellLineStyle, (void *)&wellLineStyle);
+}
+
+void
+WellBoreAttributes::SetWellAnnotation(WellBoreAttributes::WellAnnotation wellAnnotation_)
+{
+    wellAnnotation = wellAnnotation_;
+    Select(ID_wellAnnotation, (void *)&wellAnnotation);
+}
+
+void
+WellBoreAttributes::SetWellStemHeight(float wellStemHeight_)
+{
+    wellStemHeight = wellStemHeight_;
+    Select(ID_wellStemHeight, (void *)&wellStemHeight);
+}
+
+void
+WellBoreAttributes::SetWellNameScale(float wellNameScale_)
+{
+    wellNameScale = wellNameScale_;
+    Select(ID_wellNameScale, (void *)&wellNameScale);
 }
 
 void
@@ -931,6 +1043,24 @@ WellBoreAttributes::GetWellLineStyle() const
     return wellLineStyle;
 }
 
+WellBoreAttributes::WellAnnotation
+WellBoreAttributes::GetWellAnnotation() const
+{
+    return WellAnnotation(wellAnnotation);
+}
+
+float
+WellBoreAttributes::GetWellStemHeight() const
+{
+    return wellStemHeight;
+}
+
+float
+WellBoreAttributes::GetWellNameScale() const
+{
+    return wellNameScale;
+}
+
 bool
 WellBoreAttributes::GetLegendFlag() const
 {
@@ -1048,6 +1178,9 @@ WellBoreAttributes::GetFieldName(int index) const
     case ID_wellRadius:          return "wellRadius";
     case ID_wellLineWidth:       return "wellLineWidth";
     case ID_wellLineStyle:       return "wellLineStyle";
+    case ID_wellAnnotation:      return "wellAnnotation";
+    case ID_wellStemHeight:      return "wellStemHeight";
+    case ID_wellNameScale:       return "wellNameScale";
     case ID_legendFlag:          return "legendFlag";
     case ID_nWellBores:          return "nWellBores";
     case ID_wellBores:           return "wellBores";
@@ -1087,6 +1220,9 @@ WellBoreAttributes::GetFieldType(int index) const
     case ID_wellRadius:          return FieldType_float;
     case ID_wellLineWidth:       return FieldType_linewidth;
     case ID_wellLineStyle:       return FieldType_linestyle;
+    case ID_wellAnnotation:      return FieldType_enum;
+    case ID_wellStemHeight:      return FieldType_float;
+    case ID_wellNameScale:       return FieldType_float;
     case ID_legendFlag:          return FieldType_bool;
     case ID_nWellBores:          return FieldType_int;
     case ID_wellBores:           return FieldType_intVector;
@@ -1126,6 +1262,9 @@ WellBoreAttributes::GetFieldTypeName(int index) const
     case ID_wellRadius:          return "float";
     case ID_wellLineWidth:       return "linewidth";
     case ID_wellLineStyle:       return "linestyle";
+    case ID_wellAnnotation:      return "enum";
+    case ID_wellStemHeight:      return "float";
+    case ID_wellNameScale:       return "float";
     case ID_legendFlag:          return "bool";
     case ID_nWellBores:          return "int";
     case ID_wellBores:           return "intVector";
@@ -1209,6 +1348,21 @@ WellBoreAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_wellLineStyle:
         {  // new scope
         retval = (wellLineStyle == obj.wellLineStyle);
+        }
+        break;
+    case ID_wellAnnotation:
+        {  // new scope
+        retval = (wellAnnotation == obj.wellAnnotation);
+        }
+        break;
+    case ID_wellStemHeight:
+        {  // new scope
+        retval = (wellStemHeight == obj.wellStemHeight);
+        }
+        break;
+    case ID_wellNameScale:
+        {  // new scope
+        retval = (wellNameScale == obj.wellNameScale);
         }
         break;
     case ID_legendFlag:
@@ -1381,6 +1535,8 @@ WellBoreAttributes::ChangesRequireRecalculation(const WellBoreAttributes &obj)
     if (nWellBores != obj.nWellBores) return true;
     if (wellBores != obj.wellBores) return true;
     if (wellNames != obj.wellNames) return true;
+    if (wellAnnotation != obj.wellAnnotation) return true;
+    if (wellStemHeight != obj.wellStemHeight) return true;
 
     return false;
 }

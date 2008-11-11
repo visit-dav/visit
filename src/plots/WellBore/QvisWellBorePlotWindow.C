@@ -127,6 +127,8 @@ QvisWellBorePlotWindow::~QvisWellBorePlotWindow()
 // Creation:   omitted
 //
 // Modifications:
+//   Eric Brugger, Mon Nov 10 13:18:02 PST 2008
+//   Added the ability to display well bore names and stems.
 //   
 // ****************************************************************************
 
@@ -260,7 +262,11 @@ QvisWellBorePlotWindow::CreateWindowContents()
     innerColorLayout->addMultiCellWidget(colorTableButton, 0, 0, 1, 2,
         AlignLeft | AlignVCenter);
 
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 6, 2, 10, "mainLayout");
+#ifdef FIX_WELL_NAME_SCALE
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 9, 2, 10, "mainLayout");
+#else
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 8, 2, 10, "mainLayout");
+#endif
 
     // Create the draw wells as widget.
     drawWellsAsLabel = new QLabel(tr("Draw wells as"), central, "drawWellsAsLabel");
@@ -306,10 +312,44 @@ QvisWellBorePlotWindow::CreateWindowContents()
             this, SLOT(wellLineStyleChanged(int)));
     mainLayout->addWidget(wellLineStyle, 4,1);
 
+    // Create the well annotation widget.
+    wellAnnotationLabel = new QLabel(tr("Well annotation"), central, "wellAnnotationLabel");
+    mainLayout->addWidget(wellAnnotationLabel,5,0);
+    wellAnnotation = new QComboBox(central, "wellAnnotation");
+    wellAnnotation->insertItem(tr("None"));
+    wellAnnotation->insertItem(tr("Stem only"));
+    wellAnnotation->insertItem(tr("Name only"));
+    wellAnnotation->insertItem(tr("Stem and name"));
+    connect(wellAnnotation, SIGNAL(activated(int)),
+            this, SLOT(wellAnnotationChanged(int)));
+    mainLayout->addWidget(wellAnnotation, 5,1);
+
+    // Create the well name scale widget.
+    wellStemHeightLabel = new QLabel(tr("Well stem height"), central, "wellStemHeightLabel");
+    mainLayout->addWidget(wellStemHeightLabel,6,0);
+    wellStemHeight = new QLineEdit(central, "wellStemHeight");
+    connect(wellStemHeight, SIGNAL(returnPressed()),
+            this, SLOT(wellStemHeightProcessText()));
+    mainLayout->addWidget(wellStemHeight, 6,1);
+
+#ifdef FIX_WELL_NAME_SCALE
+    // Create the well name scale widget.
+    wellNameScaleLabel = new QLabel(tr("Well name scale"), central, "wellNameScaleLabel");
+    mainLayout->addWidget(wellNameScaleLabel,7,0);
+    wellNameScale = new QLineEdit(central, "wellNameScale");
+    connect(wellNameScale, SIGNAL(returnPressed()),
+            this, SLOT(wellNameScaleProcessText()));
+    mainLayout->addWidget(wellNameScale, 7,1);
+#endif
+
     legendFlag = new QCheckBox(tr("Legend"), central, "legendFlag");
     connect(legendFlag, SIGNAL(toggled(bool)),
             this, SLOT(legendFlagChanged(bool)));
-    mainLayout->addWidget(legendFlag, 5,0);
+#ifdef FIX_WELL_NAME_SCALE
+    mainLayout->addWidget(legendFlag, 8,0);
+#else
+    mainLayout->addWidget(legendFlag, 7,0);
+#endif
 }
 
 
@@ -325,6 +365,8 @@ QvisWellBorePlotWindow::CreateWindowContents()
 // Creation:   omitted
 //
 // Modifications:
+//   Eric Brugger, Mon Nov 10 13:18:02 PST 2008
+//   Added the ability to display well bore names and stems.
 //   
 // ****************************************************************************
 
@@ -456,6 +498,53 @@ QvisWellBorePlotWindow::UpdateWindow(bool doAll)
             wellLineStyle->blockSignals(true);
             wellLineStyle->SetLineStyle(atts->GetWellLineStyle());
             wellLineStyle->blockSignals(false);
+            break;
+          case WellBoreAttributes::ID_wellAnnotation:
+            if (atts->GetWellAnnotation() == WellBoreAttributes::StemOnly ||
+                atts->GetWellAnnotation() == WellBoreAttributes::StemAndName)
+            {
+                wellStemHeight->setEnabled(true);
+                if(wellStemHeightLabel)
+                    wellStemHeightLabel->setEnabled(true);
+            }
+            else
+            {
+                wellStemHeight->setEnabled(false);
+                if(wellStemHeightLabel)
+                    wellStemHeightLabel->setEnabled(false);
+            }
+#ifdef FIX_WELL_NAME_SCALE
+            if (atts->GetWellAnnotation() == WellBoreAttributes::NameOnly ||
+                atts->GetWellAnnotation() == WellBoreAttributes::StemAndName)
+            {
+                wellNameScale->setEnabled(true);
+                if(wellNameScaleLabel)
+                    wellNameScaleLabel->setEnabled(true);
+            }
+            else
+            {
+                wellNameScale->setEnabled(false);
+                if(wellNameScaleLabel)
+                    wellNameScaleLabel->setEnabled(false);
+            }
+#endif
+            wellAnnotation->blockSignals(true);
+            wellAnnotation->setCurrentItem(atts->GetWellAnnotation());
+            wellAnnotation->blockSignals(false);
+            break;
+          case WellBoreAttributes::ID_wellStemHeight:
+            wellStemHeight->blockSignals(true);
+            temp.setNum(atts->GetWellStemHeight());
+            wellStemHeight->setText(temp);
+            wellStemHeight->blockSignals(false);
+            break;
+          case WellBoreAttributes::ID_wellNameScale:
+#ifdef FIX_WELL_NAME_SCALE
+            wellNameScale->blockSignals(true);
+            temp.setNum(atts->GetWellNameScale());
+            wellNameScale->setText(temp);
+            wellNameScale->blockSignals(false);
+#endif
             break;
           case WellBoreAttributes::ID_legendFlag:
             legendFlag->blockSignals(true);
@@ -805,6 +894,8 @@ QvisWellBorePlotWindow::UpdateWellDefinition(int index)
 // Creation:   omitted
 //
 // Modifications:
+//   Eric Brugger, Mon Nov 10 13:18:02 PST 2008
+//   Added the ability to display well bore names and stems.
 //   
 // ****************************************************************************
 
@@ -835,6 +926,52 @@ QvisWellBorePlotWindow::GetCurrentValues(int which_widget)
             atts->SetWellRadius(atts->GetWellRadius());
         }
     }
+
+    // Do wellStemHeight
+    if(which_widget == WellBoreAttributes::ID_wellStemHeight || doAll)
+    {
+        temp = wellStemHeight->displayText().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            float val = temp.toFloat(&okay);
+            if(okay)
+                atts->SetWellStemHeight(val);
+        }
+
+        if(!okay)
+        {
+            msg = tr("The value of wellStemHeight was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetWellStemHeight());
+            Message(msg);
+            atts->SetWellStemHeight(atts->GetWellStemHeight());
+        }
+    }
+
+#ifdef FIX_WELL_NAME_SCALE
+    // Do wellNameScale
+    if(which_widget == WellBoreAttributes::ID_wellNameScale || doAll)
+    {
+        temp = wellNameScale->displayText().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            float val = temp.toFloat(&okay);
+            if(okay)
+                atts->SetWellNameScale(val);
+        }
+
+        if(!okay)
+        {
+            msg = tr("The value of wellNameScale was invalid. "
+                     "Resetting to the last good value of %1.").
+                  arg(atts->GetWellNameScale());
+            Message(msg);
+            atts->SetWellNameScale(atts->GetWellNameScale());
+        }
+    }
+#endif
 }
 
 
@@ -1606,6 +1743,33 @@ QvisWellBorePlotWindow::wellLineStyleChanged(int style)
 {
     atts->SetWellLineStyle(style);
     SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisWellBorePlotWindow::wellAnnotationChanged(int val)
+{
+    if(val != atts->GetWellAnnotation())
+    {
+        atts->SetWellAnnotation(WellBoreAttributes::WellAnnotation(val));
+        Apply();
+    }
+}
+
+
+void
+QvisWellBorePlotWindow::wellStemHeightProcessText()
+{
+    GetCurrentValues(WellBoreAttributes::ID_wellStemHeight);
+    Apply();
+}
+
+
+void
+QvisWellBorePlotWindow::wellNameScaleProcessText()
+{
+    GetCurrentValues(WellBoreAttributes::ID_wellNameScale);
     Apply();
 }
 
