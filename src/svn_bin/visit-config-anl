@@ -62,6 +62,35 @@
                     <Field name="visitSetsUpEnv" type="bool">true</Field>
                     <Field name="tunnelSSH" type="bool">true</Field>
                 </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">parallel</Field>
+                    <Field name="host" type="string">login1.eureka.alcf.anl.gov</Field>
+                    <Field name="numProcessors" type="int">16</Field>
+                    <Field name="numNodesSet" type="bool">true</Field>
+                    <Field name="numNodes" type="int">8</Field>
+                    <Field name="timeLimitSet" type="bool">true</Field>
+                    <Field name="timeLimit" type="string">60</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">qsub/mpirun</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="launchArgsSet" type="bool">true</Field>
+                    <Field name="launchArgs" type="string">-nolocal</Field>
+                    <Field name="hostAliases" type="string">login1.eureka.alcf.anl.gov vs##-mgmt.alcf.anl.gov vs##-mgmt vs##</Field>
+                    <Field name="clientHostDetermination" type="string">ManuallySpecified</Field>
+                    <Field name="manualClientHostName" type="string">login1-mgmt.eureka</Field>
+                    <Field name="machinefileSet" type="bool">true</Field>
+                    <Field name="machinefile" type="string">$COBALT_NODEFILE</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">serial</Field>
+                    <Field name="host" type="string">login1.eureka.alcf.anl.gov</Field>
+                    <Field name="hostAliases" type="string">login1.eureka.alcf.anl.gov vs##-mgmt.alcf.anl.gov vs##-mgmt vs##</Field>
+                    <Field name="clientHostDetermination" type="string">ManuallySpecified</Field>
+                    <Field name="manualClientHostName" type="string">login1-mgmt.eureka</Field>
+                    <Field name="machinefileSet" type="bool">true</Field>
+                    <Field name="machinefile" type="string">$COBALT_NODEFILE</Field>
+                </Object>
             </Object>
         </Object>
     </Object>
