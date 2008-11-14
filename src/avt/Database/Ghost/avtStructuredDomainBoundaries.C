@@ -1344,10 +1344,15 @@ BoundaryHelperFunctions<T>::FakeNonexistentBoundaryData(int  d1,
 //  Creation:    October 25, 2001
 //
 //  Modifications:
+//
 //    Mark C. Miller, Mon Jan 12 17:29:19 PST 2004
 //    Added optional bool, canComputeNeighborsFromExtents
 //
+//    Hank Childs, Fri Nov 14 10:49:42 PST 2008
+//    Initialize new data members for efficient calculation of AMR boundaries.
+//
 // ****************************************************************************
+
 avtStructuredDomainBoundaries::avtStructuredDomainBoundaries(
    bool canComputeNeighborsFromExtents)
 {
@@ -1355,6 +1360,8 @@ avtStructuredDomainBoundaries::avtStructuredDomainBoundaries(
     bhf_float = new BoundaryHelperFunctions<float>(this);
     bhf_uchar = new BoundaryHelperFunctions<unsigned char>(this);
     shouldComputeNeighborsFromExtents = canComputeNeighborsFromExtents; 
+    haveCalculatedBoundaries = false;
+    maxAMRLevel = 1;
 }
 
 // ****************************************************************************
@@ -2972,6 +2979,9 @@ avtStructuredDomainBoundaries::SetIndicesForRectGrid(int domain, int e[6])
 //    Kathleen Bonnell, Tue Jan 20 17:26:40 PST 2004
 //    Reversed order of Exceptions, per Mark Miller's request.
 // 
+//    Hank Childs, Fri Nov 14 10:50:06 PST 2008
+//    Set data member for tracking maximum AMR level.
+//
 // ****************************************************************************
 
 void
@@ -2993,6 +3003,7 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
 
 
     levels[domain] = level;
+    maxAMRLevel = (maxAMRLevel > level+1 ? maxAMRLevel : level+1);
     extents[6*domain+0] = e[0];
     extents[6*domain+1] = e[1];
     extents[6*domain+2] = e[2];
@@ -3038,12 +3049,22 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
 //    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
 //    API change for avtIntervalTree.
 //
+//    Hank Childs, Fri Nov 14 10:50:35 PST 2008
+//    Wrote routine to make multiple passes, one for each AMR level.  This
+//    greatly speeds up the execution time of AMR hierarchies with lots
+//    of levels.
+//
 // ****************************************************************************
 
 void
 avtStructuredDomainBoundaries::CalculateBoundaries(void)
 {
-    int i, j;
+    if (haveCalculatedBoundaries)
+        return;
+
+    int t0 = visitTimer->StartTimer();
+
+    int i, j, l;
 
     if (!shouldComputeNeighborsFromExtents)
     {
@@ -3053,82 +3074,109 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                    "computation of neighbors from index extents");
     }
 
-    int t0 = visitTimer->StartTimer();
-    int ndoms = levels.size();
-    avtIntervalTree itree(ndoms, 3);
-    double extf[6];
-    for (i = 0 ; i < ndoms ; i++)
+    for (l = 0 ; l < maxAMRLevel ; l++)
     {
-        for (j = 0 ; j < 6 ; j++)
-            extf[j] = (double) extents[6*i+j];
-        itree.AddElement(i, extf);
-    }
-    itree.Calculate(true);
-
-    vector<int> neighbors(ndoms, 0);
-    for (i = 0 ; i < ndoms ; i++)
-    {
-        double min_vec[3], max_vec[3];
-        min_vec[0] = (double) extents[6*i+0];
-        min_vec[1] = (double) extents[6*i+2];
-        min_vec[2] = (double) extents[6*i+4];
-        max_vec[0] = (double) extents[6*i+1];
-        max_vec[1] = (double) extents[6*i+3];
-        max_vec[2] = (double) extents[6*i+5];
-        vector<int> list;
-        itree.GetElementsListFromRange(min_vec, max_vec, list);
-
-        // To get the "match" entry correct, we have to sort the list.  This
-        // will ensure that we can predict what a domain's match number will be
-        // for its neighbor.
-        sort(list.begin(), list.end());
-
-        for (size_t j = 0 ; j < list.size() ; j++)
+        vector<int> doms_at_this_level;
+        int ndoms;
+        bool renumberForEachAMRLevel = false;
+        if (maxAMRLevel == 1)
         {
-            if (i == list[j])
-                continue; // Not interested in self-intersection.
+            renumberForEachAMRLevel = false;
+            ndoms = levels.size();
+        }
+        else
+        {
+            renumberForEachAMRLevel = true;
+            int totalNDoms = levels.size();
+            for (i = 0 ; i < totalNDoms ; i++)
+            {
+                if (levels[i] == l)
+                    doms_at_this_level.push_back(i);
+            }
+            ndoms = doms_at_this_level.size();
+        }
 
-            int orientation[3] = { 1, 2, 3 }; // this doesn't really
-                                              // apply for rectilinear.
-            int d1 = i;
-            int d2 = list[j];
-            if (levels[d1] != levels[d2])
-                continue;
-            int e[6];
-            e[0] = (extents[6*d1+0] > extents[6*d2+0] ? extents[6*d1+0] 
-                                                      : extents[6*d2+0]);
-            e[0] -= extents[6*d1+0] - 1;
-            e[1] = (extents[6*d1+1] < extents[6*d2+1] ? extents[6*d1+1] 
-                                                      : extents[6*d2+1]);
-            e[1] -= extents[6*d1+0] - 1;
-            e[2] = (extents[6*d1+2] > extents[6*d2+2] ? extents[6*d1+2] 
-                                                      : extents[6*d2+2]);
-            e[2] -= extents[6*d1+2] - 1;
-            e[3] = (extents[6*d1+3] < extents[6*d2+3] ? extents[6*d1+3] 
-                                                      : extents[6*d2+3]);
-            e[3] -= extents[6*d1+2] - 1;
-            e[4] = (extents[6*d1+4] > extents[6*d2+4] ? extents[6*d1+4] 
-                                                      : extents[6*d2+4]);
-            e[4] -= extents[6*d1+4] - 1;
-            e[5] = (extents[6*d1+5] < extents[6*d2+5] ? extents[6*d1+5] 
-                                                      : extents[6*d2+5]);
-            e[5] -= extents[6*d1+4] - 1;
-            int index = neighbors[d2];
-            neighbors[d2]++;
-            AddNeighbor(d1, d2, index, orientation, e);
+        avtIntervalTree itree(ndoms, 3);
+        double extf[6];
+        for (i = 0 ; i < ndoms ; i++)
+        {
+            for (j = 0 ; j < 6 ; j++)
+            {
+                int dom = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
+                extf[j] = (double) extents[6*dom+j];
+            }
+            itree.AddElement(i, extf);
+        }
+        itree.Calculate(true);
+
+        vector<int> neighbors(ndoms, 0);
+        for (i = 0 ; i < ndoms ; i++)
+        {
+            double min_vec[3], max_vec[3];
+            int dom = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
+            min_vec[0] = (double) extents[6*dom+0];
+            min_vec[1] = (double) extents[6*dom+2];
+            min_vec[2] = (double) extents[6*dom+4];
+            max_vec[0] = (double) extents[6*dom+1];
+            max_vec[1] = (double) extents[6*dom+3];
+            max_vec[2] = (double) extents[6*dom+5];
+            vector<int> list;
+            itree.GetElementsListFromRange(min_vec, max_vec, list);
+
+            // To get the "match" entry correct, we have to sort the list.  This
+            // will ensure that we can predict what a domain's match number will be
+            // for its neighbor.
+
+            sort(list.begin(), list.end());
+
+            for (size_t j = 0 ; j < list.size() ; j++)
+            {
+                if (i == list[j])
+                    continue; // Not interested in self-intersection.
+
+                int orientation[3] = { 1, 2, 3 }; // this doesn't really
+                                                  // apply for rectilinear.
+                int d1 = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
+                int d2 = (renumberForEachAMRLevel ? doms_at_this_level[list[j]]
+                                                  : list[j]);
+                if (levels[d1] != levels[d2])
+                    continue;
+                int e[6];
+                e[0] = (extents[6*d1+0] > extents[6*d2+0] ? extents[6*d1+0]
+                                                          : extents[6*d2+0]);
+                e[0] -= extents[6*d1+0] - 1;
+                e[1] = (extents[6*d1+1] < extents[6*d2+1] ? extents[6*d1+1]
+                                                          : extents[6*d2+1]);
+                e[1] -= extents[6*d1+0] - 1;
+                e[2] = (extents[6*d1+2] > extents[6*d2+2] ? extents[6*d1+2]
+                                                          : extents[6*d2+2]);
+                e[2] -= extents[6*d1+2] - 1;
+                e[3] = (extents[6*d1+3] < extents[6*d2+3] ? extents[6*d1+3]
+                                                          : extents[6*d2+3]);
+                e[3] -= extents[6*d1+2] - 1;
+                e[4] = (extents[6*d1+4] > extents[6*d2+4] ? extents[6*d1+4]
+                                                          : extents[6*d2+4]);
+                e[4] -= extents[6*d1+4] - 1;
+                e[5] = (extents[6*d1+5] < extents[6*d2+5] ? extents[6*d1+5]
+                                                          : extents[6*d2+5]);
+                e[5] -= extents[6*d1+4] - 1;
+                int index = neighbors[list[j]];
+                neighbors[list[j]]++;
+                AddNeighbor(d1, d2, index, orientation, e);
+            }
         }
     }
 
-    //
     // This will perform some calculations that are necessary to do the actual
     // communication.
     //
-    for (i = 0 ; i < ndoms ; i++)
+    for (i = 0 ; i < levels.size() ; i++)
     {
         Finish(i);
     }
 
     visitTimer->StopTimer(t0, "avtStructuredDomainBoundaries::Calculate");
+    haveCalculatedBoundaries = true;
 }
 
 
