@@ -397,6 +397,10 @@ exec perl -x $0 ${1+"$@"};
 #    Fixed documentation for cycleregex which had a non-backslashed '$'
 #    character causing the process number to be inserted in the fullhelp string
 #
+#    Hank Childs, Wed Nov  5 15:48:09 PST 2008
+#    Add support for Eureka at Argonne.  Note that this sets up an environment
+#    variable (PYTHONPATH) that is likely to change.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1363,6 +1367,14 @@ if ($host =~ /^yana\d+$/ or $host =~ /^hopi\d+$/)
     $UseTTC = 1;
 }
 
+# ----
+# HACK for Eureka @ Argonne
+# ----
+$IsRunningOnEureka_ANL = 0;
+if ( ($parallel) and $exe_name eq "engine" and $host =~ /login1/ )
+{
+    $IsRunningOnEureka_ANL = 1;
+}
 
 #  We stripped off the "host" argument above, so put it back here.
 #  This allowed us to change it if needed, e.g. for the Q machine.
@@ -2125,7 +2137,12 @@ if ($procs_set or ($parallel and $parlaunch_set))
         $sublauncher = "" if (!defined $sublauncher);
         chomp($tdate = `date | cut -c 12-19`);
         chomp($tuser = `whoami`);
-        $tfilename = "/tmp/visit.$tuser.$tdate";
+        $script_dir="/tmp";
+        if ($IsRunningOnEureka_ANL)
+        {
+            $script_dir="/home/$tuser";
+        }
+        $tfilename = "$script_dir/visit.$tuser.$tdate";
         $tfile_opened = 1;
         open(TFILE, ">$tfilename") or $tfile_opened = 0;
         if ($tfile_opened)
@@ -2190,6 +2207,10 @@ if ($procs_set or ($parallel and $parlaunch_set))
             print TFILE "@sublaunchpostcmd", "\n", if $sublaunchpostcmd_set;
             close(TFILE);
            
+            if ($IsRunningOnEureka_ANL)
+            {
+                `chmod 755 $tfilename`;
+            }
             @parcmd = ($plauncher);
 
             # Add the env variables.
@@ -2247,6 +2268,15 @@ if ($procs_set or ($parallel and $parlaunch_set))
             push @printcmd, @mpicmd; 
             push @printcmd, @sublaunchpostcmd, "\n", if $sublaunchpostcmd_set;
             push @printcmd, ("\"".(pop @printcmd)."\"");
+            if ( $IsRunningOnEureka_ANL ) {
+               $ENV{PYTHONPATH} = "/home/buettner/python_lib:/usr/lib64/python:/usr/lib64/python2.4/lib-dynload";
+               @parcmd = "qsub";
+               push @parcmd, "-n";
+               push @parcmd, $nodes;
+               push @parcmd, "-t";
+               push @parcmd, $time;
+               push @parcmd, $tfilename;
+            }
         }
     }
     else
