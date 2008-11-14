@@ -35,82 +35,80 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#ifndef STREAKER_H
+#define STREAKER_H
+#include <string>
+#include <vector>
+#include <map>
 
-#ifndef PP_Z_MTSD_FILE_FORMAT_H
-#define PP_Z_MTSD_FILE_FORMAT_H
-#include <avtMTSDFileFormat.h>
-#include <Streaker.h>
-
-class avtFileFormatInterface;
-class PP_ZFileReader;
+class avtDatabaseMetaData;
 class PDBFileObject;
+class vtkDataSet;
+class vtkDataArray;
+class vtkFloatArray;
 
 // ****************************************************************************
-// Class: PP_Z_MTSD_FileFormat
+// Class: Streaker
 //
 // Purpose:
-//   This subclass of PP_ZFileFormat only works for PPZ files that have
-//   multiple time states per file.
+//   This class provides support for Streak plots coming from PDB files. A
+//   file is read that contains information needed to construct streak datasets.
+//   If all of the needed information is available, this class provides methods
+//   to add streak variables to metadata and to construct and return the 
+//   streak datasets using data from a vector of PDB files.
 //
 // Notes:      
 //
 // Programmer: Brad Whitlock
-// Creation:   Tue Sep 16 13:41:07 PST 2003
+// Creation:   Fri Nov  7 10:42:02 PST 2008
 //
 // Modifications:
-//   Brad Whitlock, Wed Sep 1 23:52:14 PST 2004
-//   Added FreeUpResourcesForTimeStep method, lastTimeState, and 
-//   timeFlowsForward members.
-//
-//   Brad Whitlock, Mon Sep 15 16:24:23 PST 2008
-//   Added override for CanCacheVariable so variables read from this file
-//   format are never cached in the database. We already do our own low-cost
-//   caching.
-//
+//   
 // ****************************************************************************
 
-class PP_Z_MTSD_FileFormat : public avtMTSDFileFormat
+class Streaker
 {
 public:
-    static avtFileFormatInterface *CreateInterface(PDBFileObject *pdb,
-         const char *const *filenames, int nList);
+    Streaker();
+    ~Streaker();
 
-    PP_Z_MTSD_FileFormat(const char *filename, const char * const *list, int nList);
-    PP_Z_MTSD_FileFormat(PDBFileObject *p, const char * const *list, int nList);
-    virtual ~PP_Z_MTSD_FileFormat();
+    typedef std::vector<PDBFileObject *> PDBFileObjectVector;
 
-    // Mimic PDBReader interface.
-    virtual bool Identify();
-    void SetOwnsPDBFile(bool);
+    void ReadStreakFile(const std::string &, PDBFileObject *pdb);
+    void PopulateDatabaseMetaData(avtDatabaseMetaData *md);
 
-    // MTSD file format methods.
-    virtual const char   *GetType();
-    virtual void          GetCycles(std::vector<int> &cycles);
-    virtual void          GetTimes(std::vector<double> &times);
-    virtual int           GetNTimesteps();
-    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
-    virtual void          GetTimeVaryingInformation(avtDatabaseMetaData *);
-    virtual void         *GetAuxiliaryData(const char *var,
-                                           int timeState,
-                                           const char *type,
-                                           void *args,
-                                           DestructorFunction &);
-    virtual bool          CanCacheVariable(const char *) { return false; }
+    vtkDataSet   *GetMesh(const std::string &mesh, const PDBFileObjectVector &pdb);
+    vtkDataArray *GetVar(const std::string &mesh, const PDBFileObjectVector &pdb);
 
-    virtual vtkDataSet   *GetMesh(int ts, const char *var);
-    virtual vtkDataArray *GetVar(int ts, const char *var);
-
-    void FreeUpResourcesForTimeStep(int ts);
+    void FreeUpResources();
 private:
-    void DetermineTimeFlow(int);
-    int  GetReaderIndexAndTimeStep(int ts, int &localTimeState);
+    struct StreakInfo
+    {
+        StreakInfo();
 
-    Streaker               streaker;
-    int                    nReaders;
-    PP_ZFileReader       **readers;
-    int                    nTotalTimeSteps;
-    int                    lastTimeState;
-    bool                   timeFlowsForward;
+        std::string xvar;
+        std::string yvar;
+        std::string zvar;
+        int         slice;
+        int         sliceIndex;
+        int         hsize;
+        bool        integrate;
+        bool        log;
+        float       y_scale;
+        float       y_translate;
+
+        vtkDataSet *dataset;
+    };
+
+    void AddStreak(const std::string &varname, StreakInfo &s, PDBFileObject *pdb);
+#ifndef MDSERVER
+    vtkDataSet *ConstructDataset(const std::string &, const StreakInfo &,
+                                 const PDBFileObjectVector &pdb);
+    vtkFloatArray *AssembleData(const std::string &var, int *sdims, int slice, 
+                                int sliceIndex, const PDBFileObjectVector &pdb) const;
+#endif
+
+    std::map<std::string, StreakInfo> streaks;
 };
 
 #endif

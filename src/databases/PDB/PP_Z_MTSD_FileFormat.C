@@ -44,6 +44,9 @@
 #include <vectortypes.h>
 #include <avtDatabaseMetaData.h>
 
+// Turn on streak plot support
+#define PDB_STREAK_PLOTS
+
 // ****************************************************************************
 // Class: PP_Z_MTSD_FileFormatInterface
 //
@@ -167,10 +170,13 @@ PP_Z_MTSD_FileFormat::CreateInterface(PDBFileObject *pdb,
 //   Brad Whitlock, Wed Sep 1 23:30:06 PST 2004
 //   Initialized the lastTimeState and timeFlowsForward members.
 //
+//   Brad Whitlock, Fri Nov  7 09:43:29 PST 2008
+//   Added streak plot support.
+//
 // ****************************************************************************
 
 PP_Z_MTSD_FileFormat::PP_Z_MTSD_FileFormat(const char *filename,
-    const char * const *list, int nList) : avtMTSDFileFormat(list, 1)
+    const char * const *list, int nList) : avtMTSDFileFormat(list, 1), streaker()
 {
     int i;
     nReaders = nList;
@@ -203,10 +209,13 @@ PP_Z_MTSD_FileFormat::PP_Z_MTSD_FileFormat(const char *filename,
 //   Brad Whitlock, Wed Sep 1 23:30:06 PST 2004
 //   Initialized the lastTimeState and timeFlowsForward members.
 //   
+//   Brad Whitlock, Fri Nov  7 09:43:29 PST 2008
+//   Added streak plot support.
+//
 // ****************************************************************************
 
 PP_Z_MTSD_FileFormat::PP_Z_MTSD_FileFormat(PDBFileObject *p,
-    const char * const *list, int nList) : avtMTSDFileFormat(list, 1)
+    const char * const *list, int nList) : avtMTSDFileFormat(list, 1), streaker()
 {
     int i;
     nReaders = nList;
@@ -443,7 +452,9 @@ PP_Z_MTSD_FileFormat::GetNTimesteps()
 // Creation:   Tue Sep 16 17:41:51 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Nov  7 09:47:58 PST 2008
+//   Added support for creating Streak plot data from the PDB data.
+//
 // ****************************************************************************
 
 void
@@ -460,6 +471,15 @@ PP_Z_MTSD_FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         avtDatabaseMetaData tmp;
         readers[i]->PopulateDatabaseMetaData(-1, &tmp);
     }
+
+#ifdef PDB_STREAK_PLOTS
+    // Optionally tack on streak plot data.
+    Streaker::PDBFileObjectVector pdbs;
+    for(int i = 0; i < nReaders; ++i)
+        pdbs.push_back(readers[i]->PDB());
+    streaker.ReadStreakFile(pdbs[0]->GetName() + ".streak", pdbs[0]);
+    streaker.PopulateDatabaseMetaData(md);
+#endif
 }
 
 // ****************************************************************************
@@ -596,12 +616,25 @@ PP_Z_MTSD_FileFormat::GetAuxiliaryData(const char *var, int ts,
 //    Brad Whitlock, Mon Dec 6 16:50:27 PST 2004
 //    Added code to set the reader's cache pointer.
 //
+//    Brad Whitlock, Fri Nov  7 09:57:16 PST 2008
+//    Call code to get the streak plot mesh.
+//
 // ****************************************************************************
 
 vtkDataSet *
 PP_Z_MTSD_FileFormat::GetMesh(int ts, const char *var)
 {
     vtkDataSet *retval = 0;
+
+#ifdef PDB_STREAK_PLOTS
+    // Try and get a streak mesh first. If none exists, return the mesh.
+    Streaker::PDBFileObjectVector pdbs;
+    for(int i = 0; i < nReaders; ++i)
+        pdbs.push_back(readers[i]->PDB());
+    retval = streaker.GetMesh(var, pdbs);
+    if(retval != 0)
+        return retval;
+#endif
 
     int localTimeState = 0;
     int index = GetReaderIndexAndTimeStep(ts, localTimeState);
@@ -638,12 +671,24 @@ PP_Z_MTSD_FileFormat::GetMesh(int ts, const char *var)
 //    Brad Whitlock, Mon Dec 6 16:50:27 PST 2004
 //    Added code to set the reader's cache pointer.
 //
+//    Brad Whitlock, Fri Nov  7 09:57:16 PST 2008
+//    Call code to get the streak plot mesh.
+//
 // ****************************************************************************
 
 vtkDataArray *
 PP_Z_MTSD_FileFormat::GetVar(int ts, const char *var)
 {
     vtkDataArray *retval = 0;
+#ifdef PDB_STREAK_PLOTS
+    // Try and get a streak data first. If none exists, return the mesh data.
+    Streaker::PDBFileObjectVector pdbs;
+    for(int i = 0; i < nReaders; ++i)
+        pdbs.push_back(readers[i]->PDB());
+    retval = streaker.GetVar(var, pdbs);
+    if(retval != 0)
+        return retval;
+#endif
 
     int localTimeState = 0;
     int index = GetReaderIndexAndTimeStep(ts, localTimeState);

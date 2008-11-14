@@ -1,0 +1,772 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-400142
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+#include <Streaker.h>
+#include <PP_ZFileReader.h>
+
+#include <math.h>
+
+#include <vtkStructuredGrid.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
+#include <vtkFloatArray.h>
+
+#include <visitstream.h>
+#include <avtDatabaseMetaData.h>
+#include <DebugStream.h>
+
+// ****************************************************************************
+// Method: Streaker::StreakInfo::StreakInfo
+//
+// Purpose: 
+//   Constructor.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 12 13:39:55 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+Streaker::StreakInfo::StreakInfo() : xvar(), yvar(), zvar(), slice(0), 
+    sliceIndex(0), hsize(0), dataset(0), integrate(false), log(false),
+    y_scale(1.), y_translate(0.)
+{
+}
+
+// ****************************************************************************
+// Method: Streaker::Streaker
+//
+// Purpose: 
+//   Constructor.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 12 13:40:10 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+Streaker::Streaker() : streaks()
+{
+}
+
+// ****************************************************************************
+// Method: Streaker::~Streaker
+//
+// Purpose: 
+//   Destructor
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 12 13:40:28 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+Streaker::~Streaker()
+{
+    FreeUpResources();
+}
+
+// ****************************************************************************
+// Method: Streaker::FreeUpResources
+//
+// Purpose: 
+//   Frees up resources, including the cached VTK datasets. The streak info
+//   is also cleared.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 12 13:40:56 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+Streaker::FreeUpResources()
+{
+    // Clear our caches, etc.
+    for(std::map<std::string, StreakInfo>::iterator it = streaks.begin();
+        it != streaks.end(); ++it)
+    {
+        if(it->second.dataset != 0)
+            it->second.dataset->Delete();
+    }
+    streaks.clear();
+}
+
+// ****************************************************************************
+// Method: Streaker::ReadStreakFile
+//
+// Purpose: 
+//   Reads the specified streak file that contains the "streakplot" commands.
+//
+// Arguments:
+//   filename : The streak file.
+//   pdb      : The PDB file object corresponding to the first real PDB file.
+//              The file is used to determine whether all of the information
+//              for the streak plot is available.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 12 13:41:37 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+Streaker::ReadStreakFile(const std::string &filename, PDBFileObject *pdb)
+{
+    FreeUpResources();
+
+    // Open the file.
+    ifstream ifile(filename.c_str());
+    if (ifile.fail())
+    {
+        debug4 << "Streaker::ReadStreakFile: Could not open streak file: "
+               << filename.c_str() << endl;
+        return;
+    }
+
+    // process the file.
+    char  line[1024];
+    for(int lineIndex = 0; !ifile.eof(); ++lineIndex)
+    {
+        // Get the line
+        ifile.getline(line, 1024);
+
+        if(line[0] == '#')
+            continue;
+        else if(strncmp(line, "streakplot", 10) == 0)
+        {
+            bool invalidStreak = false;
+            char varname[100];
+            char xvar[100];
+            char yvar[100];
+            char zvar[100];
+            char slice[100];
+            char integrate[100];
+            char log[100];
+            char cs[100];
+            const char *ptr = line + 10;
+            int ci;
+            StreakInfo s;
+            if(sscanf(ptr, "%s %s %s %s %s %d %g %g %s %s", 
+                      varname, xvar, yvar, zvar, cs, &ci,
+                      &s.y_scale, &s.y_translate, integrate, log) == 10)
+            {
+                s.xvar = xvar;
+                s.yvar = yvar;
+                s.zvar = zvar;
+
+                if((strcmp(cs, "J")==0 || strcmp(cs, "j")==0) && (ci > 0))
+                {
+                    s.slice = 1;
+                    s.sliceIndex = ci-1;
+                }
+                else if((strcmp(cs, "I")==0 || strcmp(cs, "i")==0) && (ci > 0))
+                {
+                    s.slice = 0;
+                    s.sliceIndex = ci-1;
+                }
+                else
+                    invalidStreak = true;
+
+                s.integrate = (strcmp(integrate, "on") == 0 ||
+                               strcmp(integrate, "On") == 0 ||
+                               strcmp(integrate, "ON") == 0);
+                s.log       = (strcmp(log, "on") == 0 ||
+                               strcmp(log, "On") == 0 ||
+                               strcmp(log, "ON") == 0);
+            }
+            else
+                invalidStreak = true;
+
+            if(invalidStreak)
+            {
+                debug4 << "Streak file has an invalid line " << lineIndex << endl;
+                cerr << "Streak file has an invalid line " << lineIndex << endl;
+            }
+            else
+                AddStreak(varname, s, pdb);
+        }       
+    }
+}
+
+// ****************************************************************************
+// Method: Streaker::AddStreak
+//
+// Purpose: 
+//   Takes the input StreakInfo record and ensures that the file has the
+//   required variables to make the plot and that the arrays all have
+//   compatible sizes.
+//
+// Arguments:
+//   varname : The variable name we're creating.
+//   s       : The streak info needed to create the streak plot.
+//   pdb     : The PDB file to check for data.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 12 13:42:46 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+Streaker::AddStreak(const std::string &varname, StreakInfo &s, 
+    PDBFileObject *pdb)
+{
+    const char *mName = "Streaker::AddStreak: ";
+    // Make sure that all variables exist and that their sizes are good.
+    TypeEnum    t[3];
+    std::string typeString[3];
+    int         nTotalElements[3];
+    int        *dimensions[3];
+    int         nDims[3];
+    bool xExists = pdb->SymbolExists(s.xvar.c_str(), &t[0], typeString[0], 
+                       &nTotalElements[0], &dimensions[0], &nDims[0]);
+    bool yExists = pdb->SymbolExists(s.yvar.c_str(), &t[1], typeString[1], 
+                       &nTotalElements[1], &dimensions[1], &nDims[1]);
+    bool zExists = pdb->SymbolExists(s.zvar.c_str(), &t[2], typeString[2], 
+                       &nTotalElements[2], &dimensions[2], &nDims[2]);
+    if(xExists && yExists && zExists)
+    {
+        debug4 << mName << "All streakplot variables exist." << endl;
+
+        // Make sure that xvar is 1d and that the others are 2/3d (inc. time)
+        // and that yvar is the same size as zvar.
+        if(nDims[0] > 1)
+        {
+            debug4 << mName << "The time variable " << s.xvar.c_str() << " has "
+                   << nDims[0] << " dimensions instead of 1." << endl;
+            goto invalid;
+        }
+
+        if(nDims[1] == 1 || nDims[1] > 3)
+        {
+            debug4 << mName << "The yvar variable " << s.yvar.c_str() << " has "
+                   << nDims[1] << " dimensions; not 2 or 3." << endl;
+            goto invalid;
+        }
+
+        if(nDims[2] == 1 || nDims[2] > 3)
+        {
+            debug4 << mName << "The zvar variable " << s.zvar.c_str() << " has "
+                   << nDims[1] << " dimensions; not 2 or 3." << endl;
+            goto invalid;
+        }
+
+        if(nDims[1] != nDims[2])
+        {
+            debug4 << mName << "The yvar,zvar dimensions do not match." << endl;
+            goto invalid;
+        }
+
+        // Make sure that yvar's last dimension is the same size as xvar if
+        // we have an xvar is an array.
+        if(nDims[0] == 1 &&
+           dimensions[0][0] != dimensions[1][nDims[1]-1])
+        {
+            debug4 << mName << "Time dims: " << dimensions[0][0]
+                   << " are not the same as yvar's last dimension: "
+                   << dimensions[1][nDims[1]-1] << endl;
+            goto invalid;
+        }
+
+        // Make sure yvar, zvar are the same size.
+        for(int i = 0; i < nDims[1]; ++i)
+            if(dimensions[1][i] != dimensions[2][i])
+            {
+                debug4 << mName << "yvar's dim[" << i << "]=" << dimensions[1][i]
+                       << " and that is not equal to zvar's dim[" << i
+                       << "]=" << dimensions[2][i] << endl;
+                goto invalid;
+            }
+
+        // Make sure that the slice is valid.
+        if(s.slice == 0)
+        {
+            if(s.sliceIndex >= dimensions[1][0])
+            {
+                debug4 << mName << "X slice=" << s.sliceIndex 
+                       << " is larger than yvar's dim[0]=" << dimensions[1][0] << endl;
+                goto invalid;
+            }
+            s.hsize = dimensions[1][1];
+        }
+        else if(s.slice == 1)
+        {
+            if(s.sliceIndex >= dimensions[1][1])
+            {
+                debug4 << mName << "Y slice=" << s.sliceIndex 
+                       << " is larger than yvar's dim[1]=" << dimensions[1][1] << endl;
+                goto invalid;
+            }
+            s.hsize = dimensions[1][0];
+        }
+
+        // Okay, it looks good. Add the streak.
+        streaks[varname] = s;
+    }
+    else
+        debug4 << mName << "One or more streakplot variables is missing." << endl;
+invalid:
+    for(int i = 0; i < 3; ++i)
+        delete [] dimensions[i];    
+}
+
+// ****************************************************************************
+// Method: Streaker::PopulateDatabaseMetaData
+//
+// Purpose: 
+//   Populates metadata for the streak plot objects that we're creating.
+//
+// Arguments:
+//   md  : The metadata object to populate.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 12 13:45:03 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+Streaker::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+{
+    std::map<std::string, StreakInfo>::const_iterator it;
+    for(it = streaks.begin(); it != streaks.end(); ++it)
+    {
+        std::string meshName = it->first + "_mesh";
+
+        avtMeshMetaData *mmd = new avtMeshMetaData;
+        mmd->name = meshName;
+        mmd->meshType = AVT_CURVILINEAR_MESH;
+        mmd->spatialDimension = 2;
+        mmd->topologicalDimension = 2;
+        mmd->xLabel = it->second.xvar;
+        if(it->second.integrate && it->second.log)
+            mmd->yLabel = std::string("log(integrated ") + it->second.yvar + std::string(")");
+        else if(it->second.integrate)
+            mmd->yLabel = std::string("integrated ") +  it->second.yvar;
+        else if(it->second.log)
+            mmd->yLabel = std::string("log(") +  it->second.yvar + std::string(")");
+        else
+            mmd->yLabel = it->second.yvar;
+        md->Add(mmd);
+
+        avtScalarMetaData *smd = new avtScalarMetaData;
+        smd->name = it->first;
+        smd->meshName = meshName;
+        smd->centering = AVT_NODECENT;
+        md->Add(smd);
+    }
+}
+
+// ****************************************************************************
+// Method: Streaker::GetMesh
+//
+// Purpose: 
+//   Gets the streak plot mesh.
+//
+// Arguments:
+//   mesh : The name of the mesh to get.
+//   pdb  : The vector of PDB files that contain the data over time.
+//
+// Returns:    A VTK dataset
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 12 13:45:46 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkDataSet *
+Streaker::GetMesh(const std::string &mesh, const PDBFileObjectVector &pdb)
+{
+#ifdef MDSERVER
+    return 0;
+#else
+    if(mesh.size() <= 5)
+        return 0;
+    std::string varName(mesh.substr(0, mesh.size()-5));
+
+    std::map<std::string, StreakInfo>::iterator pos = streaks.find(varName);
+    if(pos == streaks.end())
+        return 0;
+
+    // Create the dataset if needed.
+    if(pos->second.dataset == 0)
+        pos->second.dataset = ConstructDataset(varName, pos->second, pdb);
+
+    // Increment the reference count.
+    pos->second.dataset->Register(NULL);
+
+    return pos->second.dataset;
+#endif
+}
+
+// ****************************************************************************
+// Method: Streaker::GetVar
+//
+// Purpose: 
+//   Gets the streak plot var.
+//
+// Arguments:
+//   var : The name of the var to get.
+//   pdb : The vector of PDB files that contain the data over time.
+//
+// Returns:    A VTK dataset
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 12 13:45:46 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkDataArray *
+Streaker::GetVar(const std::string &var, const PDBFileObjectVector &pdb)
+{
+#ifdef MDSERVER
+    return 0;
+#else
+    std::map<std::string, StreakInfo>::iterator pos = streaks.find(var);
+    if(pos == streaks.end())
+        return 0;
+
+    // Create the dataset if needed.
+    if(pos->second.dataset == 0)
+        pos->second.dataset = ConstructDataset(var, pos->second, pdb);
+
+    // Look up the variable in the node data.
+    vtkDataSet *ds = pos->second.dataset;
+    vtkDataArray *arr = ds->GetPointData()->GetArray(var.c_str());
+    if(arr != 0)
+        arr->Register(NULL);
+
+    return arr;
+#endif
+}
+
+#ifndef MDSERVER
+// ****************************************************************************
+// Method: StoreValues
+//
+// Purpose: 
+//   This function stores a slice of data from one array into a destination array.
+//
+// Arguments:
+//   dest : The destination array.
+//   src  : The source array.
+//   ti   : The starting "X" value in the destination array.
+//   sdims : The size of the destination array.
+//   dims  : The size of the source array.
+//   slice : The slice dimension in the source array.
+//   sliceIndex : The index of the slice in the source array.
+//
+// Returns:    The new X value in the destination array.
+//
+// Note:       We call this method to store the slice data from various source
+//             arrays into a single destination array where we write data
+//             into windows of the destination array.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 12 13:47:01 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template<class T>
+static int
+StoreValues(float *dest, const T * const src, int ti, const int * const sdims, 
+            const int * const dims, int ndims, int slice, int sliceIndex)
+{
+    int newTi = ti;
+    int nx = dims[0];
+    int ny = (ndims > 1) ? dims[1] : 1;
+    int nz = (ndims > 2) ? dims[2] : 1;
+    int nxny = nx*ny;
+    if(slice == 0)
+    {
+        int i = sliceIndex;
+        for(int k = 0; k < nz; ++k)
+        {
+            for(int j = 0; j < ny; ++j)
+            {
+                int srcindex = k*nxny + j*nx + i;
+                int destindex = j*sdims[0] + k + ti;
+                dest[destindex] = float(src[srcindex]);
+//                debug4 << "src[" << srcindex << "](" << src[srcindex] << ") -> dest[" << destindex << "]" << endl;
+            }
+        }
+        newTi += nz;
+    }
+    else if(slice == 1)
+    {
+        int j = sliceIndex;
+        for(int k = 0; k < nz; ++k)
+        {
+            for(int i = 0; i < nx; ++i)
+            {
+                int srcindex = k*nxny + j*nx + i;
+                int destindex = i*sdims[0] + k + ti;
+                dest[destindex] = float(src[srcindex]);
+//                debug4 << "src[" << srcindex << "](" << src[srcindex] << ") -> dest[" << destindex << "]" << endl;
+            }
+        }
+        newTi += nz;
+    }
+
+    return newTi;
+}
+
+// ****************************************************************************
+// Method: Streaker::AssembleData
+//
+// Purpose: 
+//   This method reads the values for a PDB variable for all of the PDB files
+//   and assembles the sliced values into a vtkFloatArray shaped like the
+//   final data.
+//
+// Arguments:
+//   var        : The variable to read.
+//   sdims      : The size of the destination array.
+//   slice      : The slice dimension.
+//   sliceIndex : The slice index.
+//   pdb        : A vector of PDB file objects from which to get data.
+//
+// Returns:    The assembled data array.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 12 13:50:02 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkFloatArray *
+Streaker::AssembleData(const std::string &var, int *sdims, int slice, int sliceIndex, 
+    const PDBFileObjectVector &pdb) const
+{
+    const char *mName = "Streaker::AssembleData: ";
+
+    // Let's assemble vtkDataArray from the slices over time.
+    debug4 << mName << "Creating new double array sized: "
+           << (sdims[0] * sdims[1] * sdims[2]) << endl;
+    vtkFloatArray *arr = vtkFloatArray::New();
+    arr->SetNumberOfTuples(sdims[0] * sdims[1] * sdims[2]);
+    arr->SetName(var.c_str());
+    float *dest = (float *)arr->GetVoidPointer(0);
+    memset(dest, 0, sizeof(float) * sdims[0] * sdims[1] * sdims[2]);
+    int ti = 0;
+    for(int r = 0; r < pdb.size(); ++r)
+    {
+        int *dims = 0;
+        int nDims = 0;
+        int length = 0;
+        TypeEnum t = NO_TYPE;
+        void *val = pdb[r]->ReadValues(var.c_str(), &t, &length, &dims, &nDims);
+        if(val)
+        {
+            debug4 << mName << "Read " << var.c_str() << " from " << pdb[r]->GetName().c_str() << endl;
+            debug4 << "\tdims = {";
+            for(int i = 0; i < nDims; ++i)
+                debug4 << dims[i] << " ";
+            debug4 << "}" << endl;
+            if(t == DOUBLEARRAY_TYPE)
+            {
+                debug4 << "Storing double values" << endl;
+                double *src = (double *)val;
+                ti = StoreValues<double>(dest, src, ti, sdims, dims, nDims, slice, sliceIndex);
+            }
+            else if(t == FLOATARRAY_TYPE)
+            {
+                debug4 << "Storing float values" << endl;
+                float *src = (float *)val;
+                ti = StoreValues<float>(dest, src, ti, sdims, dims, nDims, slice, sliceIndex);
+            }
+            else if(t == INTEGERARRAY_TYPE)
+            {
+                debug4 << "Storing int values" << endl;
+                int *src = (int *)val;
+                ti = StoreValues<int>(dest, src, ti, sdims, dims, nDims, slice, sliceIndex);
+            }
+            else
+                debug4 << "Unsupported type" << endl;
+
+            free_void_mem(val, t);
+            free_mem(dims);
+        }
+
+        // Close the file so we don't get too many files open.
+        pdb[r]->Close();
+    }
+
+    return arr;
+}
+
+// ****************************************************************************
+// Method: Streaker::ConstructDataset
+//
+// Purpose: 
+//   This method constructs the VTK dataset for the requested streak plot and
+//   caches the results.
+//
+// Arguments:
+//   var : The streak plot variable.
+//   s   : The information about the streak plot variable.
+//   pdb : The vector of PDB files from which to get the data.
+//
+// Returns:    The VTK dataset that makes up the streak plot.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 12 13:52:50 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkDataSet *
+Streaker::ConstructDataset(const std::string &var, const StreakInfo &s, const PDBFileObjectVector &pdb)
+{
+    const char *mName = "Streaker::ConstructDataset: ";
+
+    // Gather up the times so we know how wide the new mesh is.
+    std::vector<double> times;
+    debug4 << mName << "Times = " << endl;
+    for(size_t i = 0; i < pdb.size(); ++i)
+    {
+        double *vals = 0; int nvals = 0;
+        debug4 << "    ";
+        if(pdb[i]->GetDoubleArray(s.xvar.c_str(), &vals, &nvals))
+        {
+            for(int j = 0; j < nvals; ++j)
+            {
+                times.push_back(vals[j]);
+                debug4 << vals[j] << " ";
+            }
+            delete [] vals;
+        }
+        else
+             debug4 << "** Could not read times in " << pdb[i]->GetName().c_str() << " **";
+        debug4 << endl;
+    }
+
+    int sdims[3];
+    sdims[0] = (int)times.size();
+    sdims[1] = s.hsize;
+    sdims[2] = 1;
+    int nnodes = sdims[0] * sdims[1];
+    debug4 << mName << "sdims = {" << sdims[0] << ","<<sdims[1] <<","<<sdims[2]<<"}"<<endl;
+    // Let's assemble vtkDataArray for the y and "z" values.
+    vtkFloatArray *yvar = AssembleData(s.yvar, sdims, s.slice, s.sliceIndex, pdb);
+    vtkFloatArray *zvar = AssembleData(s.zvar, sdims, s.slice, s.sliceIndex, pdb);
+
+    // Use the yvar and time to create the points.
+    vtkPoints *points = vtkPoints::New();
+    points->SetNumberOfPoints(nnodes);
+    float *coords = (float *)points->GetVoidPointer(0);
+    float *yc = (float *)yvar->GetVoidPointer(0);
+    if(s.integrate)
+    {
+        double *ysum = new double[sdims[0]];
+        memset(ysum, 0, sizeof(double) * sdims[0]);
+        for(int j = 0; j < sdims[1]; ++j)
+            for(int i = 0; i < sdims[0]; ++i)
+            {
+                ysum[i] += (double)*yc++;
+                double yval = ysum[i];
+                yval *= s.y_scale;
+                yval += s.y_translate;
+                if(s.log)
+                    yval = log((yval > 0.) ? yval : 1.e-9);
+
+                *coords++ = (float)times[i];
+                *coords++ = (float)yval;
+                *coords++ = 0.;
+            }
+        delete [] ysum;
+    }
+    else
+    {
+        for(int j = 0; j < sdims[1]; ++j)
+            for(int i = 0; i < sdims[0]; ++i)
+            {
+                double yval = (double)*yc++;
+                yval *= s.y_scale;
+                yval += s.y_translate;
+                if(s.log)
+                    yval = log((yval > 0.) ? yval : 1.e-9);
+
+                *coords++ = (float)times[i];
+                *coords++ = (float)yval;
+                *coords++ = 0.;
+            }
+    }
+
+    vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
+    sgrid->SetPoints(points);
+    points->Delete();
+    sgrid->SetDimensions(sdims);
+
+    // Add the zvar array to the dataset.
+    zvar->SetName(var.c_str());
+    sgrid->GetPointData()->AddArray(zvar);
+
+    // cleanup
+    yvar->Delete();
+
+    return sgrid;
+}
+#endif
