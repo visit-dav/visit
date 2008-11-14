@@ -300,6 +300,9 @@
 #   Tom Fogal, Sat Oct 25 13:10:34 MDT 2008
 #   I qualified a couple paths so that a user does not need `.' in their PATH.
 #
+#   Brad Whitlock, Fri Nov  7 11:36:41 PST 2008
+#   Added streak.C
+# 
 ##############################################################################
 
 ##
@@ -317,7 +320,7 @@ EZ_TARGET=$(EZSRC:.C=)
 ##
 ## Optional programs.
 ##
-PDBSRC=pdbdatabase.C correlationtest.C pdbdatabase_link.C
+PDBSRC=pdbdatabase.C correlationtest.C streak.C pdbdatabase_link.C
 PDB_TARGET=$(PDBSRC:.C=)
 
 HDF5SRC=xdmf.C
@@ -419,7 +422,7 @@ test: $(EZ_TARGET)  @SILO_TARGET@ @HDF5_TARGET@ $(PDB_TARGET) $(BINSRC)
 	        ./$$f ;\
 	    fi \
 	done
-	-@for f in pdbdatabase correlationtest; do \
+	-@for f in pdbdatabase correlationtest streak; do \
 	    if test -x $$f; then \
 	        ./$$f ;\
 	    fi \
@@ -549,6 +552,9 @@ clean: bin_data_clean gen_data_clean src_clean
 
 ./correlationtest: correlationtest.o pdbdatabase_link.o
 	$(CXX) -o $@ correlationtest.o $(LDFLAGS) $(LIBS) @PDB_LIBS@ pdbdatabase_link.o
+
+./streak: streak.o pdbdatabase_link.o
+	$(CXX) -o $@ streak.o $(LDFLAGS) $(LIBS) @PDB_LIBS@ pdbdatabase_link.o
 
 ./csg:  csg.o
 	$(CXX) -o $@ csg.o $(LDFLAGS) $(LIBS)

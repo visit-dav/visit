@@ -460,7 +460,7 @@ public:
     {
         char formatString[100];
         if(nvals > 1)
-            sprintf(formatString, "%s(%d,1)", var.c_str(), nvals);
+            sprintf(formatString, "%s(%d)", var.c_str(), nvals);
         else
             strcpy(formatString, var.c_str());
         PD_write(pdb, formatString, "float", (void*)vals);
@@ -470,7 +470,7 @@ public:
     {
         char formatString[100];
         if(nvals > 1)
-            sprintf(formatString, "%s(%d,1)", var.c_str(), nvals);
+            sprintf(formatString, "%s(%d)", var.c_str(), nvals);
         else
             strcpy(formatString, var.c_str());
         PD_write(pdb, formatString, "double", (void*)vals);
@@ -539,6 +539,9 @@ private:
 //   Thomas R. Treadway, Thu Feb  8 14:35:45 PST 2007
 //   Corrected template syntax, required for gcc-4.x support
 //
+//   Brad Whitlock, Fri Nov  7 14:08:40 PST 2008
+//   Changed dimension ordering to match sim code dumps.
+//
 // ****************************************************************************
 
 template <> void
@@ -551,9 +554,9 @@ FieldWithData<int>::WriteData(FieldWriter &pdb, const string &var, int ts, int n
     if(nts > 1)
     {
         if (nc > 1)
-            sprintf(formatString, "%s(%d,%d,%d,%d)", var.c_str(), nts, nc, nx, ny);
+            sprintf(formatString, "%s(%d,%d,%d,%d)", var.c_str(), nc, nx, ny, nts);
         else
-            sprintf(formatString, "%s(%d,%d,%d)", var.c_str(), nts, nx, ny);
+            sprintf(formatString, "%s(%d,%d,%d)", var.c_str(), nx, ny, nts);
     }
     else
     {
@@ -576,9 +579,9 @@ FieldWithData<double>::WriteData(FieldWriter &pdb, const string &var, int ts, in
     if(nts > 1)
     {
         if (nc > 1)
-            sprintf(formatString, "%s(%d,%d,%d,%d)", var.c_str(), nts, nc, nx, ny);
+            sprintf(formatString, "%s(%d,%d,%d,%d)", var.c_str(), nc, nx, ny, nts);
         else
-            sprintf(formatString, "%s(%d,%d,%d)", var.c_str(), nts, nx, ny);
+            sprintf(formatString, "%s(%d,%d,%d)", var.c_str(), nx, ny, nts);
     }
     else
     {
@@ -602,9 +605,9 @@ FieldWithData<float>::WriteData(FieldWriter &pdb, const string &var, int ts, int
     if(nts > 1)
     {
         if (nc > 1)
-            sprintf(formatString, "%s(%d,%d,%d,%d)", var.c_str(), nts, nc, nx, ny);
+            sprintf(formatString, "%s(%d,%d,%d,%d)", var.c_str(), nc, nx, ny, nts);
         else
-            sprintf(formatString, "%s(%d,%d,%d)", var.c_str(), nts, nx, ny);
+            sprintf(formatString, "%s(%d,%d,%d)", var.c_str(), nx, ny, nts);
     }
     else
     {
