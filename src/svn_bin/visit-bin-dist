@@ -11,7 +11,7 @@
 #    visit-bin-dist [-c] [-g] [-h] [-make <make_command>] [-md <visit_dir>]
 #                   [-nd] [-nmesa] [-npython] [-nqt] [-nstrip] [-nvtk]
 #                   [-os <operating_system>] [-compiler <compiler>]
-#                   [-arch <architecture>]
+#                   [-arch <architecture>] [-max_silo_bytes <one> <tot>]
 #
 # Modifications:
 #    Jeremy Meredith, Fri May 11 14:15:01 PDT 2001
@@ -357,6 +357,12 @@
 #    I also removed a message that normally printed out that gave the
 #    impression that something had failed.
 #
+#    Mark C. Miller, Thu Nov 13 21:06:30 PST 2008
+#    Added -max_silo_bytes command-line argument. Improved logic to copy
+#    Silo files to distro to copy all files up to some maximum number of
+#    total bytes and to skip single files larger than some other maximum
+#    setting.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -375,6 +381,8 @@ set Strip = "TRUE"
 set Make = "make"
 set Help = "FALSE"
 set Configuration = "open"
+set max_one_silo_bytes = 2000000  #  2e6 bytes (about 2 megabytes)
+set max_tot_silo_bytes = 20000000 # 20e6 bytes (about 20 megabytes)
 
 #
 # Parse the argument list.
@@ -456,6 +464,13 @@ while ($#argv >= 1)
                shift
                set Configuration = $1
                breaksw
+
+      case -max_silo_bytes:
+               shift
+               set max_one_silo_bytes = $1
+               shift
+               set max_tot_silo_bytes = $1
+               breaksw
  
       default:
                echo " "
@@ -487,6 +502,7 @@ if ($Help == TRUE) then
    echo "       -os os         Operating system."
    echo "       -compiler cc   Compiler."
    echo "       -arch architecture Force architecture package."
+   echo "       -max_silo_bytes  <one-file> <total>"
    exit (1)
 endif
 
@@ -829,32 +845,54 @@ if ($DataFiles == "TRUE") then
    if ("$os" == "darwin") then
       setenv DYLD_LIBRARY_PATH $VisItDir/lib
    endif
-   ./globe -driver DB_HDF5
+   # try to do globe on HDF5 driver, fall back to PDB
+   ./globe -driver DB_HDF5 >& /dev/null
    if (! -e globe.silo) then
-       ./globe
+       ./globe >& /dev/null
    endif
-   ./multi_test -noHalfMesh -noTimeInvariantMultimesh -noCycles
-   ./testall
-   ./noise -driver DB_HDF5
+   ./multi_test -noHalfMesh -noTimeInvariantMultimesh -noCycles >& /dev/null
+   ./testall >& /dev/null
+   # try to do noise on HDF5 driver, fall back to PDB
+   ./noise -driver DB_HDF5 >& /dev/null
    if (! -e noise.silo) then
-      ./noise
+      ./noise >& /dev/null
    endif
-   ./tire
-   # we use '-d' here to NOT copy typically large linked files
-   cp -d *.silo $pwd/distribution/visit/data
-   rm -f $pwd/distribution/visit/data/largefile.silo
-   rm -f $pwd/distribution/visit/data/sesame.pdb
-   rm -f $pwd/distribution/visit/data/wave_1file.*
-   rm -f $pwd/distribution/visit/data/wave_tv_1file.*
-   rm -f $pwd/distribution/visit/data/multi_point*
-   rm -f $pwd/distribution/visit/data/multi_ucd*
-   rm -f $pwd/distribution/visit/data/multi_curv*
-   rm -f $pwd/distribution/visit/data/multipart*
-   rm -f $pwd/distribution/visit/data/wave*
-   rm -f $pwd/distribution/visit/data/global_node.silo
-   rm -f $pwd/distribution/visit/data/noise.silo
+   ./tire >& /dev/null
+
+   # Copy all silo files such that no single silo file is larger
+   # than max_one_silo_bytes and total size of all silo files
+   # is less than max_tot_silo_bytes. However, exclude known
+   # series such as wave* and multi*.
+   echo "Copying Silo files that fit in size limits..."
+   set silo_files = `ls -1rsSk *.silo | grep -v wave\\\|multi | sed -e 's/^ *//' | tr ' ' '@'`
+   set silo_bytes = 0
+   foreach f ($silo_files)
+       set fsize = `echo $f | cut -d'@' -f1`
+       set fsize = `expr $fsize \* 1000`
+       set fname = `echo $f | cut -d'@' -f2`
+       if ($silo_bytes > $max_tot_silo_bytes) then
+           echo "Over total silo bytes limit: not copying silo file $fname"
+       else
+           if ($fsize > $max_one_silo_bytes) then
+               echo "Over single silo byte limit: not copying silo file $fname"
+               continue
+           endif
+           cp $fname $pwd/distribution/visit/data
+           set silo_bytes = `expr $silo_bytes + $fsize`
+       endif
+   end
+
+   # Copy anything else important above loop won't catch
+   # The set echo = 1 is so that any specific files will
+   # will be printed to stdout
+   echo "Copying other specific Silo files..."
+   set echo = 1
+   cp noise.silo $pwd/distribution/visit/data
+   cp multi_ucd3d.silo $pwd/distribution/visit/data
+   unset echo
+
    if (-e ./correlationtest) then
-      ./correlationtest
+      ./correlationtest >& /dev/null
        cp db{A,B}00.pdb $pwd/distribution/visit/data
    endif
    if ("$os" == "darwin") then
@@ -1011,7 +1049,7 @@ endif
 #
 # Copy the VisIt libraries to the distribution.
 #
-cp `ls $VisItDir/lib/*.$SHLIB_SOEXT | grep -v libvtk\|libqt\|libqui\|libpython\|libMesaGL\|libOSMesa\|libhdf\|libsz` $libdir
+cp `ls $VisItDir/lib/*.$SHLIB_SOEXT | grep -v libvtk\\\|libqt\\\|libqui\\\|libpython\\\|libMesaGL\\\|libOSMesa\\\|libhdf\\\|libsz` $libdir
 cp $VisItDir/lib/libvtkqt.$SHLIB_SOEXT $libdir
 cp $VisItDir/lib/libqtviswindow.$SHLIB_SOEXT $libdir
 if("$os" == "darwin") then
