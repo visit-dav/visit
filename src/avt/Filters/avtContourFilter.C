@@ -233,6 +233,9 @@ avtContourFilter::~avtContourFilter()
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Fri Nov 14 09:05:04 PST 2008
+//    Make sure ghost data is not requested if we ultimately want ghost nodes.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -262,6 +265,8 @@ avtContourFilter::ModifyContract(avtContract_p in_spec)
         skipGhost = true;
     if (!skipGhost)
         spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    else if (spec->GetDataRequest()->GetDesiredGhostDataType() == GHOST_NODE_DATA)
+        spec->GetDataRequest()->SetDesiredGhostDataType(NO_GHOST_DATA);
 
     //
     // Get the interval tree of data extents.
@@ -554,6 +559,9 @@ avtContourFilter::PreExecute(void)
 //    Switch to our own version of the cd2pd filter, since it has
 //    optimizations for structured data.
 //
+//    Hank Childs, Fri Nov 14 09:03:58 PST 2008
+//    Remove ghost nodes, as they will make a bad picture.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -671,6 +679,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
             out_ds[i] = vtkPolyData::New();
             out_ds[i]->ShallowCopy(output);
 	    out_ds[i]->GetFieldData()->ShallowCopy(in_ds->GetFieldData());
+            out_ds[i]->GetPointData()->RemoveArray("avtGhostNodes");
         }
         visitTimer->StopTimer(id2, "Calculating isosurface");
         UpdateProgress(current_node*total + 2*nLevels+2+2*i, total*nnodes);
