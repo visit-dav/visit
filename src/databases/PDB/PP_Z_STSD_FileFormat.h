@@ -67,6 +67,9 @@ class avtFileFormatInterface;
 //   format are never cached in the database. We already do our own low-cost
 //   caching.
 //
+//   Brad Whitlock, Fri Nov  7 10:24:22 PST 2008
+//   Added PDB method.
+//
 // ****************************************************************************
 
 class PP_Z_STSD_FileFormat : public avtSTSDFileFormat
@@ -82,6 +85,7 @@ public:
     // Mimic PDBReader interface.
     bool Identify();
     void SetOwnsPDBFile(bool);
+    PDBFileObject *PDB();
 
     // Methods overrides for an STSD file format.
     virtual const char   *GetType();

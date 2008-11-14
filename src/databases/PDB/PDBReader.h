@@ -57,6 +57,9 @@
 //   Brad Whitlock, Thu Sep 2 00:06:54 PDT 2004
 //   Added the VariableData::FreeData method.
 //
+//   Brad Whitlock, Thu Nov  6 14:39:36 PST 2008
+//   Added method to get the PDB file.
+//
 // ****************************************************************************
 
 class PDBReader
@@ -69,6 +72,7 @@ public:
     void SetOwnsPDBFile(bool v);
 
     bool Identify();
+    PDBFileObject *PDB();
 protected:
     class VariableData
     {

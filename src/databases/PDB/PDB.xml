@@ -21,6 +21,7 @@
       PP_Z_MTSD_FileFormat.C
       LEOSFileReader.C
       LEOSFileFormat.C
+      Streaker.C
     </Files>
     <Files components="E">
       avtPDBFileFormat.C
@@ -33,6 +34,7 @@
       PP_Z_MTSD_FileFormat.C
       LEOSFileReader.C
       LEOSFileFormat.C
+      Streaker.C
     </Files>
     <Attribute name="" purpose="" persistent="true">
     </Attribute>
