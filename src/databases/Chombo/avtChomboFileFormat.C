@@ -944,6 +944,11 @@ avtChomboFileFormat::InitializeReader(void)
 //  Programmer: Hank Childs
 //  Creation:   January 22, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Nov 14 09:11:33 PST 2008
+//    Only create the domain boundaries object if we are not using ghost data.
+//
 // ****************************************************************************
 
 void
@@ -1010,31 +1015,34 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     // Now set up the data structure for patch boundaries.  The data 
     // does all the work ... it just needs to know the extents of each patch.
     //
-    int t2 = visitTimer->StartTimer();
-    avtRectilinearDomainBoundaries *rdb 
-                                    = new avtRectilinearDomainBoundaries(true);
-    rdb->SetNumDomains(totalPatches);
-    for (int patch = 0 ; patch < totalPatches ; patch++)
+    if (!useGhosts)
     {
-        int my_level, local_patch;
-        GetLevelAndLocalPatchNumber(patch, my_level, local_patch);
-
-        int e[6];
-        e[0] = lowI[patch];
-        e[1] = hiI[patch];
-        e[2] = lowJ[patch];
-        e[3] = hiJ[patch];
-        e[4] = (dimension == 2 ? 0 : lowK[patch]);
-        e[5] = (dimension == 2 ? 0 : hiK[patch]);
-
-        rdb->SetIndicesForAMRPatch(patch, my_level, e);
+        int t2 = visitTimer->StartTimer();
+        avtRectilinearDomainBoundaries *rdb 
+                                    = new avtRectilinearDomainBoundaries(true);
+        rdb->SetNumDomains(totalPatches);
+        for (int patch = 0 ; patch < totalPatches ; patch++)
+        {
+            int my_level, local_patch;
+            GetLevelAndLocalPatchNumber(patch, my_level, local_patch);
+    
+            int e[6];
+            e[0] = lowI[patch];
+            e[1] = hiI[patch];
+            e[2] = lowJ[patch];
+            e[3] = hiJ[patch];
+            e[4] = (dimension == 2 ? 0 : lowK[patch]);
+            e[5] = (dimension == 2 ? 0 : hiK[patch]);
+    
+            rdb->SetIndicesForAMRPatch(patch, my_level, e);
+        }
+        rdb->CalculateBoundaries();
+        void_ref_ptr vrdb = void_ref_ptr(rdb,
+                                       avtStructuredDomainBoundaries::Destruct);
+        cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                            timestep, -1, vrdb);
+        visitTimer->StopTimer(t2, "Chombo reader doing rect domain boundaries");
     }
-    rdb->CalculateBoundaries();
-    void_ref_ptr vrdb = void_ref_ptr(rdb,
-                                   avtStructuredDomainBoundaries::Destruct);
-    cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
-                        timestep, -1, vrdb);
-    visitTimer->StopTimer(t2, "Chombo reader doing rect domain boundaries");
 
     //
     // Calculate the child patches.

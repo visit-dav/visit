@@ -226,6 +226,10 @@ class BoundaryHelperFunctions
 //    Hank Childs, Tue Jul 31 15:41:17 PDT 2007
 //    Add support for getting boundary presence for individual domains.
 //
+//    Hank Childs, Fri Nov 14 10:49:08 PST 2008
+//    Add data members for creating domain boundaries for AMR data sets more
+//    efficiently.
+//
 // ****************************************************************************
 
 class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
@@ -302,6 +306,9 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     vector<int>   extents;
     vector<int>   levels;
     vector<int>   domain2proc;
+
+    int           maxAMRLevel;
+    bool          haveCalculatedBoundaries;
 
     friend class BoundaryHelperFunctions<int>;
     friend class BoundaryHelperFunctions<float>;
