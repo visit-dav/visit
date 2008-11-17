@@ -43,8 +43,8 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
-#ifdef PARALLEL
 #include <avtParallel.h>
+#ifdef PARALLEL
 #include <parallel.h>
 #endif
 
@@ -326,6 +326,7 @@ main(int argc, char *argv[])
                   << "networking problem.  The engine is exiting" << endl;
              cerr << "The engine could not connect to the viewer due to a"
                   << "networking problem.  The engine is exiting" << endl;
+        }
     }
 
     debug1 << "ENGINE exited." << endl;
