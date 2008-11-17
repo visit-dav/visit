@@ -37,6 +37,7 @@
 *****************************************************************************/
 #include <cerrno>
 #include <cstdlib>
+#include <cstring>
 #include <string>
 #include <sys/types.h>
 #include <sys/wait.h>

@@ -36,6 +36,7 @@
 *
 *****************************************************************************/
 #include <cerrno>
+#include <cstring>
 
 #include <MesaDisplay.h>
 
