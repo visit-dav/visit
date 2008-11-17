@@ -195,6 +195,10 @@ int ReadKey(const char *key, char **keyval);
  *   Added loopback support: it replaces the remote host name with 127.0.0.1
  *   unless the "-noloopback" flag is given by visit or by the user.
  *
+ *   Brad Whitlock, Mon Nov 17 12:11:35 PST 2008
+ *   I fixed a bug with host renaming that caused invalid security keys on
+ *   machines with short hostnames.
+ *
  *****************************************************************************/
 
 int
@@ -399,6 +403,16 @@ main(int argc, char *argv[])
     size = strlen(visitpath) + strlen(component) + 4;
     for(i = 0; i < nComponentArgs; ++i)
     {
+        /*
+         * Replace the host arg with the loopback instead before we
+         * calculate the size.
+         */
+        if(strcmp(componentArgs[i], "-host") == 0 && !noloopback)
+        {
+            free(componentArgs[i+1]);
+            componentArgs[i+1] = strdup("127.0.0.1"); 
+        }
+
         size += (strlen(componentArgs[i]) + 1);
         if (!BEGINSWITHQUOTE(componentArgs[i]) && HASSPACE(componentArgs[i]))
             size += 2;
@@ -446,14 +460,6 @@ main(int argc, char *argv[])
 
         if(strcmp(componentArgs[i], "-key") == 0)
             skipping = 1;
-
-        if(strcmp(componentArgs[i], "-host") == 0 && !noloopback)
-        {
-            /*
-             * Replace the host arg with the loopback instead.
-             */
-            strcpy(componentArgs[i+1], "127.0.0.1"); 
-        }
 
         if(skipping == 0) 
         {
