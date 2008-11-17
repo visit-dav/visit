@@ -74,6 +74,11 @@ Parser::Parser()
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Nov 17 17:08:46 EST 2008
+//    We're now storing the parse tree result directly instead of pretending
+//    it makes sense to leave it on the parse element stack.
+//
 // ****************************************************************************
 void
 Parser::Init()
@@ -82,6 +87,7 @@ Parser::Init()
     states.clear();
     states.push_back(0);
     accept = false;
+    parseTree = NULL;
 }
 
 // ****************************************************************************
@@ -142,12 +148,17 @@ Parser::Shift(Token *t, int s)
 //    To prevent a crash on windows for referencing (from GetParseTree)
 //    elems[0] when elems is empty, don't pop elems if rule->index is 0. 
 //
+//    Jeremy Meredith, Mon Nov 17 17:07:04 EST 2008
+//    The windows bug (see previous comment) was truly a multi-platform
+//    bug.  Now we store the result parse tree directly instead of
+//    trying to pretend it's still on the parse elem stack (which
+//    wasn't even happening anyway; it only worked due to a lot of luck!)...
+//
 // ****************************************************************************
 void
 Parser::Reduce(int r)
 {
 #ifdef MOREDEBUG
-    PrintState(cerr);
     cerr << "Reducing using rule " << G->GetRule(r)->GetIndex() << ": "
          << *(G->GetRule(r)) << endl;
 #endif
@@ -186,16 +197,14 @@ Parser::Reduce(int r)
     for (i=0; i<len; i++)
     {
         states.pop_back();
-#ifdef WIN32
-        if (rule->GetIndex() != 0)
-#endif
-            elems.pop_back();
+        elems.pop_back();
     }
 
     State &state = G->GetState(states.back());
 
     if (G->GetStartSymbol() == lhs)
     {
+        parseTree = node;
         PrintState(cerr);
 #ifdef MOREDEBUG
         cerr << "Accepting!\n\n";
