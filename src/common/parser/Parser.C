@@ -102,12 +102,15 @@ void
 Parser::Shift(Token *t, int s)
 {
 #ifdef MOREDEBUG
-    cerr << "Shifting token "; t->PrintNode(cerr); cerr << endl;
+    cerr << "Shifting token "; t->PrintNode(cerr);
 #endif
     elems.push_back(ParseElem(G->GetDictionary().Get(t->GetType()), t));
     states.push_back(s);
 
     PrintState(cerr);
+#ifdef MOREDEBUG
+    cerr << endl;
+#endif
 }
 
 // ****************************************************************************
@@ -144,6 +147,7 @@ void
 Parser::Reduce(int r)
 {
 #ifdef MOREDEBUG
+    PrintState(cerr);
     cerr << "Reducing using rule " << G->GetRule(r)->GetIndex() << ": "
          << *(G->GetRule(r)) << endl;
 #endif
