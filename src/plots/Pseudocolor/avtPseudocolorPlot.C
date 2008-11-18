@@ -87,22 +87,18 @@
 //    Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
 //    Replaced avtPointGlyphMapper with avtVariablePointGlyphMapper. 
 //
+//    Hank Childs, Tue Nov 18 11:58:46 PST 2008
+//    Remove the "NoOp" filter, which was almost certainly checked in by
+//    mistake.  (It was replacing the compact tree filter, and was causing
+//    performance degradation.)
+//
 // ****************************************************************************
-
-#include <avtCompactTreeFilter.h>
-
-class avtNoOpFilter : public avtCompactTreeFilter
-{
-     virtual void Execute(void) { SetOutputDataTree(GetInputDataTree()); };
-};
-
 
 avtPseudocolorPlot::avtPseudocolorPlot()
 {
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Pseudocolor");
     glyphMapper = new avtVariablePointGlyphMapper;
-compactTreeFilter = new avtNoOpFilter;
 
     colorsInitialized = false;
     topoDim = 3;
