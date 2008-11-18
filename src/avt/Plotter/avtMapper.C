@@ -375,6 +375,9 @@ avtMapper::GetDrawable(void)
 //    Allow display lists of 250,000 polygons or more again, since the display
 //    list generation was made much faster by breaking it into chunks.
 //
+//    Hank Childs, Tue Nov 18 05:46:45 PST 2008
+//    Do not assume the tree is going to be non-NULL.
+//
 // ****************************************************************************
 
 void
@@ -389,7 +392,8 @@ avtMapper::SetUpMappers(void)
     avtDataTree_p tree = GetInputDataTree();
    
     vector<string> labels;
-    tree->GetAllLabels(labels);
+    if (*tree != NULL)
+        tree->GetAllLabels(labels);
     if (!labels.empty() )
     {
         SetLabels(labels, true);
@@ -403,8 +407,11 @@ avtMapper::SetUpMappers(void)
         labels.clear();
     }
 
-    vtkDataSet **children;
-    children = tree->GetAllLeaves(nMappers);
+    vtkDataSet **children = NULL;
+    if (*tree != NULL)
+        children = tree->GetAllLeaves(nMappers);
+    else
+        nMappers = 0;
 
     mappers  = new vtkDataSetMapper*[nMappers];
     actors   = new vtkActor*[nMappers];
@@ -434,7 +441,8 @@ avtMapper::SetUpMappers(void)
         actors[i]->SetMapper(mappers[i]);
     }
     // this was allocated in GetAllLeaves, need to free it now
-    delete [] children;
+    if (children != NULL)
+        delete [] children;
 
     PrepareExtents();
 
