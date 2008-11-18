@@ -78,6 +78,8 @@
     <Field name="imageRepeatY" label="Image repeat Y" type="int">
       1
     </Field>
+    <Field name="axesArray" label="Array Axes" type="att" subtype="AxesArray">
+    </Field>
     <Function name="GetDiscernibleBackgroundColor" user="true" member="true">
     </Function>
     <Function name="ProcessOldVersions" user="true" member="true">

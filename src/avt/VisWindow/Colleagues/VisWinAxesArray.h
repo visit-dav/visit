@@ -66,6 +66,9 @@ class VisWindowColleagueProxy;
 //    Jeremy Meredith, Thu Feb  7 17:59:55 EST 2008
 //    Added support for array variables and bin-defined x positions.
 //
+//    Jeremy Meredith, Tue Nov 18 15:50:49 EST 2008
+//    Added support for a few missing features and new font attributes.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxesArray : public VisWinColleague
@@ -90,6 +93,7 @@ class VISWINDOW_API VisWinAxesArray : public VisWinColleague
     void                      SetLabelVisibility(int);
     void                      SetTitleVisibility(int);
     void                      SetVisibility(int);
+    void                      SetTickVisibility(bool,bool);
     void                      SetTickLocation(int);
     void                      SetGridVisibility(int);
     void                      SetAutoSetTicks(int);
@@ -100,27 +104,30 @@ class VISWINDOW_API VisWinAxesArray : public VisWinColleague
     void                      SetLabelFontHeight(double);
     void                      SetTitleFontHeight(double);
     void                      SetLineWidth(int);
-    void                      SetLabelScaling(bool, int, int);
+    void                      SetLabelScaling(bool, int);
+    void                      SetTitleTextAttributes(
+                                  const VisWinTextAttributes &atts);
+    void                      SetLabelTextAttributes(
+                                  const VisWinTextAttributes &atts);
   protected:
     struct AxisInfo {
         vtkVisItAxisActor2D *axis;
         int lastPow;
         int lastAxisDigits;
         int pow;
-        int userPow;
         char units[256];
         char title[256];
         double range[2];
         double xpos;
         AxisInfo()
-            : axis(NULL), lastPow(0), lastAxisDigits(3), pow(0), userPow(0)
+             : axis(NULL), lastPow(0), lastAxisDigits(3), pow(0)
         {
             xpos = 0;
             units[0] = '\0';
             title[0] = '\0';
         }
         AxisInfo(vtkVisItAxisActor2D *a, int lp, int lad, int p, int up)
-            : axis(a), lastPow(lp), lastAxisDigits(lad), pow(p), userPow(up)
+            : axis(a), lastPow(lp), lastAxisDigits(lad), pow(p)
         {
             xpos = 0;
             units[0] = '\0';
@@ -139,6 +146,8 @@ class VISWINDOW_API VisWinAxesArray : public VisWinColleague
     bool                      labelVisibility;
     bool                      titleVisibility;
     int                       tickLocation;
+    bool                      tickVisibility;
+    bool                      tickLabelVisibility;
     bool                      gridVisibility;
     bool                      autoSetTicks;
     double                    majorTickMinimum;
@@ -148,15 +157,19 @@ class VISWINDOW_API VisWinAxesArray : public VisWinColleague
     double                    labelFontHeight;
     double                    titleFontHeight; 
     int                       lineWidth;
+    VisWinTextAttributes      titleTextAttributes;
+    VisWinTextAttributes      labelTextAttributes;
+    int                       userPow;
 
     void                      SetNumberOfAxes(int);
-    void                      AdjustValues(double, double, double, double);
-    void                      AdjustRange(double, double, double, double);
+    bool                      AdjustValues(int, double, double);
+    void                      AdjustRange(int, double, double);
     void                      GetRange(double &, double &, double &, double &);
     void                      AddAxesToWindow(void);
     void                      RemoveAxesFromWindow(void);
     bool                      ShouldAddAxes(void);
-    void                      SetTitle(void);
+    void UpdateTitleTextAttributes(double fr, double fg, double fb);
+    void UpdateLabelTextAttributes(double fr, double fg, double fb);
 };
 
 

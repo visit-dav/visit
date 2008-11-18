@@ -324,6 +324,9 @@ QvisAnnotationWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Cyrus Harrison, Tue Sep 25 10:44:04 PDT 2007
 //   Moved general options to a new tab
 //
+//   Jeremy Meredith, Tue Nov 18 15:45:15 EST 2008
+//   Added options for AxisArray modality.
+//
 // ****************************************************************************
 
 void
@@ -342,6 +345,7 @@ QvisAnnotationWindow::CreateWindowContents()
     CreateGeneralTab();
     Create2DTab();
     Create3DTab();
+    CreateArrayTab();
     CreateColorTab();
     CreateObjectsTab();
 
@@ -354,6 +358,8 @@ QvisAnnotationWindow::CreateWindowContents()
     else if(activeTab == 2)
         tabs->showPage(page3D);
     else if(activeTab == 3)
+        tabs->showPage(pageArray);
+    else if(activeTab == 4)
         tabs->showPage(pageColor);
     else
         tabs->showPage(pageObjects);
@@ -814,6 +820,127 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
 }
 
 // ****************************************************************************
+// Method: QvisAnnotationWindow::CreateArrayTab
+//
+// Purpose: 
+//   Creates the AxisArray options tab.
+//
+// Programmer: Jeremy Meredith
+// Creation:   November 18, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::CreateArrayTab()
+{
+    //
+    // Create the group of axisarray-related widgets and add them as a tab.
+    //
+    pageArray = new QVBox(central, "pageArray");
+    pageArray->setSpacing(5);
+    pageArray->setMargin(10);
+    tabs->addTab(pageArray, tr("Array"));
+
+    axesFlagToggleArray = new QCheckBox(tr("Show axes"), pageArray,
+                                     "axesFlagToggleArray");
+    connect(axesFlagToggleArray, SIGNAL(toggled(bool)),
+            this, SLOT(axesFlagCheckedArray(bool)));
+
+    axesArrayGroup = new QGroupBox(pageArray, "axesGroupArray");
+    axesArrayGroup->setFrameStyle(QFrame::NoFrame);
+    QVBoxLayout *lLayout = new QVBoxLayout(axesArrayGroup);
+    lLayout->setSpacing(5);
+    QTabWidget *pageArrayTabs = new QTabWidget(axesArrayGroup, "pageArrayTabs");
+    lLayout->addWidget(pageArrayTabs);
+
+    // Create the general options page.
+    pageArrayTabs->addTab(CreateGeneralTabArray(pageArrayTabs), tr("General Array"));
+
+    // Add the X-axis page.
+    axesArray[0] = new QvisAxisAttributesWidget(pageArrayTabs, "axisArray", false, true);
+    connect(axesArray[0], SIGNAL(axisChanged(const AxisAttributes &)),
+            this, SLOT(axisChangedArray(const AxisAttributes &)));
+    pageArrayTabs->addTab(axesArray[0], tr("Axes"));
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::CreateGeneralTabArray
+//
+// Purpose: 
+//   Creates the options for the general AxisArray tab.
+//
+// Arguments:
+//   parentWidget : The parent of the widgets we'll create.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Jeremy Meredith
+// Creation:   November 18, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QWidget *
+QvisAnnotationWindow::CreateGeneralTabArray(QWidget *parentWidget)
+{
+    QWidget *top0 = new QWidget(parentWidget);
+    QVBoxLayout *top0Layout = new QVBoxLayout(top0);
+    top0Layout->addSpacing(10);
+    QGroupBox *top = new QGroupBox(top0, "CreateGeneralTabArray");
+    top->setFrameStyle(QFrame::NoFrame);
+    top0Layout->addWidget(top);
+    top0Layout->addStretch(10);
+    QGridLayout *lLayout = new QGridLayout(top, 5, 2);
+    lLayout->setSpacing(5);
+    lLayout->setMargin(5);
+    lLayout->setColStretch(1, 10);
+
+    int row = 0;
+
+    // Create ticks visible check box.
+    ticksToggleArray = new QCheckBox(tr("Tick marks visible"), top,
+                                         "ticksToggleArray");
+    connect(ticksToggleArray, SIGNAL(toggled(bool)),
+            this, SLOT(axesTicksChangedArray(bool)));
+    lLayout->addMultiCellWidget(ticksToggleArray, row, row, 0, 1);
+    ++row;
+
+    // Create auto set scaling check box.
+    labelAutoSetScalingToggleArray = new QCheckBox(tr("Auto scale label values"),
+        top, "labelAutoSetScalingToggleArray");
+    connect(labelAutoSetScalingToggleArray, SIGNAL(toggled(bool)),
+            this, SLOT(labelAutoSetScalingCheckedArray(bool)));
+    lLayout->addMultiCellWidget(labelAutoSetScalingToggleArray, row, row, 0, 1);
+    ++row;
+
+    // Create auto set ticks check box.
+    axesAutoSetTicksToggleArray = new QCheckBox(tr("Auto set ticks"), top,
+                                         "axesAutoSetTicksToggleArray");
+    connect(axesAutoSetTicksToggleArray, SIGNAL(toggled(bool)),
+            this, SLOT(axesAutoSetTicksCheckedArray(bool)));
+    lLayout->addMultiCellWidget(axesAutoSetTicksToggleArray, row, row, 0, 1);
+    ++row;
+
+    // Create the Array line width widget.
+    axesLineWidthArray = new QvisLineWidthWidget(0, top,
+        "axesLineWidthArray");
+    lLayout->addWidget(axesLineWidthArray, row, 1);
+    connect(axesLineWidthArray, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(axesLineWidthChangedArray(int)));
+    QLabel *l = new QLabel(tr("Line width"), top, "axesLineWidthLabelArray");
+    lLayout->addWidget(l, row, 0);
+    ++row;
+
+    return top0;
+}
+
+
+// ****************************************************************************
 // Method: QvisAnnotationWindow::CreateColorTab
 //
 // Purpose: 
@@ -1144,6 +1271,57 @@ QvisAnnotationWindow::UpdateWindow(bool doAll)
 }
 
 // ****************************************************************************
+// Method: QvisAnnotationWindow::UpdateAxesArray
+//
+// Purpose: 
+//   Updates the 2D axis settings in the window.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Jeremy Meredith
+// Creation:   November 18, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::UpdateAxesArray()
+{
+    const AxesArray &axes = annotationAtts->GetAxesArray();
+
+    axesFlagToggleArray->blockSignals(true);
+    axesFlagToggleArray->setChecked(axes.GetVisible());
+    axesFlagToggleArray->blockSignals(false);
+    axesArrayGroup->setEnabled(axes.GetVisible());
+
+    ticksToggleArray->blockSignals(true);
+    ticksToggleArray->setChecked(axes.GetTicksVisible());
+    ticksToggleArray->blockSignals(false);
+ 
+    axesAutoSetTicksToggleArray->blockSignals(true);
+    axesAutoSetTicksToggleArray->setChecked(axes.GetAutoSetTicks());
+    axesAutoSetTicksToggleArray->blockSignals(false);
+
+    labelAutoSetScalingToggleArray->blockSignals(true);
+    labelAutoSetScalingToggleArray->setChecked(axes.GetAutoSetScaling());
+    labelAutoSetScalingToggleArray->blockSignals(false);
+
+    axesLineWidthArray->blockSignals(true);
+    axesLineWidthArray->SetLineWidth(axes.GetLineWidth());
+    axesLineWidthArray->blockSignals(false);
+ 
+    // Update the controls in the axes.
+    axesArray[0]->setAutoScaling(axes.GetAutoSetScaling());
+    axesArray[0]->setAutoTickMarks(axes.GetAutoSetTicks());
+    axesArray[0]->setAxisAttributes(axes.GetAxes());
+}
+
+// ****************************************************************************
 // Method: QvisAnnotationWindow::UpdateAxes2D
 //
 // Purpose: 
@@ -1335,6 +1513,9 @@ QvisAnnotationWindow::UpdateAxes3D()
 //   Brad Whitlock, Thu Feb 7 17:43:01 PST 2008
 //   Updated to new AnnotationAttributes interface.
 //
+//   Jeremy Meredith, Tue Nov 18 15:45:15 EST 2008
+//   Added options for AxisArray modality.
+//
 // ****************************************************************************
 
 void
@@ -1362,6 +1543,9 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             break;
         case AnnotationAttributes::ID_axes3D:
             UpdateAxes3D();
+            break;
+        case AnnotationAttributes::ID_axesArray:
+            UpdateAxesArray();
             break;
         case AnnotationAttributes::ID_userInfoFlag:
             userInfo->blockSignals(true);
@@ -1591,6 +1775,9 @@ QvisAnnotationWindow::UpdateAnnotationObjectControls(bool doAll)
 //   Brad Whitlock, Fri Feb 8 10:47:31 PDT 2008
 //   Totally rewrote.
 //
+//   Jeremy Meredith, Tue Nov 18 15:45:15 EST 2008
+//   Added options for AxisArray modality.
+//
 // ****************************************************************************
 
 void
@@ -1611,6 +1798,12 @@ QvisAnnotationWindow::GetCurrentValues(int which_widget)
         annotationAtts->GetAxes3D().SetYAxis(axes3D[1]->getAxisAttributes());
         annotationAtts->GetAxes3D().SetZAxis(axes3D[2]->getAxisAttributes());
         annotationAtts->SelectAxes3D();
+    }
+
+    if(which_widget == AnnotationAttributes::ID_axesArray || doAll)
+    {
+        annotationAtts->GetAxesArray().SetAxes(axesArray[0]->getAxisAttributes());
+        annotationAtts->SelectAxesArray();
     }
 
     if(which_widget == AnnotationAttributes::ID_userInfoFont || doAll)
@@ -3194,3 +3387,144 @@ QvisAnnotationWindow::deleteActiveAnnotations()
     // Tell the viewer to delete the active annotations.
     GetViewerMethods()->DeleteActiveAnnotationObjects();
 }
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::axesLineWidthChangedArray
+//
+// Purpose:
+//   This is a Qt slot function that is called when the axesarray line width
+//   is changed.
+//
+// Arguments:
+//   index:    The new line width.
+//
+// Programmer: Jeremy Meredith
+// Creation:   November 18, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+ 
+void
+QvisAnnotationWindow::axesLineWidthChangedArray(int index)
+{
+    annotationAtts->GetAxesArray().SetLineWidth(index);
+    annotationAtts->SelectAxesArray();
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::axisChangedArray
+//
+// Purpose: 
+//   This is a Qt slot function that is called when anything in the axisarray
+//   page changes.
+//
+// Arguments:
+//   aa : The new axis attributes.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Jeremy Meredith
+// Creation:   November 18, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::axisChangedArray(const AxisAttributes &aa)
+{
+    annotationAtts->GetAxesArray().SetAxes(aa);
+    annotationAtts->SelectAxesArray();
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::axesFlagCheckedArray
+//
+// Purpose: 
+//   This is a Qt slot function that sets the axis array visibility
+//
+// Programmer: Jeremy Meredith
+// Creation:   November 18, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::axesFlagCheckedArray(bool val)
+{
+    annotationAtts->GetAxesArray().SetVisible(val);
+    annotationAtts->SelectAxesArray();
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisAnnotationWindow::axesTicksChangedArray
+//
+//  Purpose:
+//    Callback when the axisarray tick visibility changes.
+//
+//  Arguments:
+//    
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 18, 2008
+//
+// ****************************************************************************
+void
+QvisAnnotationWindow::axesTicksChangedArray(bool val)
+{
+    annotationAtts->GetAxesArray().SetTicksVisible(val);
+    annotationAtts->SelectAxesArray();
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisAnnotationWindow::labelAutoSetScalingCheckedArray
+//
+//  Purpose:
+//    Callback when the axisarray label autoscaling changes.
+//
+//  Arguments:
+//    
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 18, 2008
+//
+// ****************************************************************************
+void
+QvisAnnotationWindow::labelAutoSetScalingCheckedArray(bool val)
+{
+    annotationAtts->GetAxesArray().SetAutoSetScaling(val);
+    annotationAtts->SelectAxesArray();
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisAnnotationWindow::axesAutoSetTicksCheckedArray
+//
+//  Purpose:
+//    Callback when the axisarray tick autosetting changes.
+//
+//  Arguments:
+//    
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 18, 2008
+//
+// ****************************************************************************
+void
+QvisAnnotationWindow::axesAutoSetTicksCheckedArray(bool val)
+{
+    annotationAtts->GetAxesArray().SetAutoSetTicks(val);
+    annotationAtts->SelectAxesArray();
+    Apply();
+}
+

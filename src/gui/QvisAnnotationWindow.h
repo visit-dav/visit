@@ -125,6 +125,9 @@ class QvisLineWidthWidget;
 //   Brad Whitlock, Wed Apr  9 10:58:41 PDT 2008
 //   QString for caption, shortName.
 //
+//   Jeremy Meredith, Tue Nov 18 15:49:29 EST 2008
+//   Added AxisArray modality options.
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
@@ -148,6 +151,7 @@ protected:
     virtual void UpdateWindow(bool doAll);
     void UpdateAxes2D();
     void UpdateAxes3D();
+    void UpdateAxesArray();
     void UpdateAnnotationControls(bool doAll);
     void UpdateAnnotationObjectControls(bool doAll);
     void Apply(bool dontIgnore = false);
@@ -155,6 +159,8 @@ protected:
     void SetButtonGroup(QButtonGroup *bg, bool *vals);
     void GetCurrentValues(int which_widget);
     void CreateGeneralTab();
+    void CreateArrayTab();
+    QWidget *CreateGeneralTabArray(QWidget *);
     void Create2DTab();
     QWidget *CreateGeneralTab2D(QWidget *);
     void Create3DTab();
@@ -175,6 +181,14 @@ private slots:
     void databaseInfoFontChanged(const FontAttributes &);
     void legendChecked(bool val);
     void turnOffAllAnnotations();
+
+    // array option slots
+    void axesFlagCheckedArray(bool val);
+    void axesTicksChangedArray(bool val);
+    void axesAutoSetTicksCheckedArray(bool val);
+    void labelAutoSetScalingCheckedArray(bool val);
+    void axesLineWidthChangedArray(int index);
+    void axisChangedArray(const AxisAttributes &);
 
     // 2D option slots
     void axesFlagChecked2D(bool val);
@@ -239,6 +253,16 @@ private:
     QComboBox                *databasePathExpansionMode;
     QCheckBox                *legendInfo;
     QPushButton              *turnOffAllButton;
+
+    // axisarray tab widgets
+    QVBox                    *pageArray;
+    QGroupBox                *axesArrayGroup;
+    QCheckBox                *axesFlagToggleArray;
+    QCheckBox                *ticksToggleArray;
+    QCheckBox                *axesAutoSetTicksToggleArray;
+    QCheckBox                *labelAutoSetScalingToggleArray;
+    QvisLineWidthWidget      *axesLineWidthArray;
+    QvisAxisAttributesWidget *axesArray[1];
 
     // 2D tab widgets
     QVBox                    *page2D;
