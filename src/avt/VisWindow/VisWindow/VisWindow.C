@@ -3984,11 +3984,54 @@ VisWindow::UpdateAxes2D()
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Nov 18 16:02:50 EST 2008
+//    Populated with new axesarray settings.
+//
 // ****************************************************************************
 void
 VisWindow::UpdateAxesArray()
 {
-    axesArray->SetVisibility(true);
+    const AxesArray &atts = annotationAtts.GetAxesArray();
+
+    // visibility
+    axesArray->SetVisibility(atts.GetVisible());
+
+    // labels
+    int label = atts.GetAxes().GetLabel().GetVisible() ? 1 : 0;
+    axesArray->SetLabelVisibility(label);
+    axesArray->SetLabelScaling(atts.GetAutoSetScaling(), 
+                               atts.GetAxes().GetLabel().GetScaling());
+
+    // title
+    axesArray->SetTitleVisibility(atts.GetAxes().GetTitle().GetVisible());
+
+    // grid lines
+    axesArray->SetGridVisibility(atts.GetAxes().GetGrid());
+
+    // ticks
+    axesArray->SetTickVisibility(atts.GetTicksVisible(), label);
+    axesArray->SetAutoSetTicks(atts.GetAutoSetTicks());
+    axesArray->SetMajorTickMinimum(atts.GetAxes().GetTickMarks().GetMajorMinimum());
+    axesArray->SetMajorTickMaximum(atts.GetAxes().GetTickMarks().GetMajorMaximum());
+    axesArray->SetMajorTickSpacing(atts.GetAxes().GetTickMarks().GetMajorSpacing());
+    axesArray->SetMinorTickSpacing(atts.GetAxes().GetTickMarks().GetMinorSpacing());
+
+    // font size
+    axesArray->SetLabelFontHeight(atts.GetAxes().GetLabel().GetFont().GetScale()*0.02);
+    axesArray->SetTitleFontHeight(atts.GetAxes().GetTitle().GetFont().GetScale()*0.02);
+
+    // line width
+    axesArray->SetLineWidth(LineWidth2Int(Int2LineWidth(atts.GetLineWidth())));
+
+    // text attributes
+    VisWinTextAttributes titleAtts, labelAtts;
+    titleAtts = FontAttributes_To_VisWinTextAttributes(
+                       atts.GetAxes().GetTitle().GetFont());
+    labelAtts = FontAttributes_To_VisWinTextAttributes(
+                       atts.GetAxes().GetLabel().GetFont());
+    axesArray->SetTitleTextAttributes(titleAtts);
+    axesArray->SetLabelTextAttributes(labelAtts);
 }
 
 

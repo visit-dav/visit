@@ -287,6 +287,9 @@
 #    Removed ExtentsAttributes.  The Extents tool functionality has been
 #    subsumed by the Axis Restriction tool (and Parallel Coordinates plot).
 #
+#    Jeremy Meredith, Tue Nov 18 16:01:50 EST 2008
+#    Added AxesArray.
+#
 ##############################################################################
 
 ##
@@ -311,6 +314,7 @@ SRC=    AnimationAttributes.C \
         AttributeSubjectMap.C \
         Axes2D.C \
         Axes3D.C \
+        AxesArray.C \
         AxisAttributes.C \
         AxisLabels.C \
         AxisRestrictionAttributes.C \

@@ -77,7 +77,7 @@ public class AnnotationAttributes extends AttributeSubject
 
     public AnnotationAttributes()
     {
-        super(17);
+        super(18);
 
         axes2D = new Axes2D();
         axes3D = new Axes3D();
@@ -96,11 +96,12 @@ public class AnnotationAttributes extends AttributeSubject
         backgroundImage = new String("");
         imageRepeatX = 1;
         imageRepeatY = 1;
+        axesArray = new AxesArray();
     }
 
     public AnnotationAttributes(AnnotationAttributes obj)
     {
-        super(17);
+        super(18);
 
         axes2D = new Axes2D(obj.axes2D);
         axes3D = new Axes3D(obj.axes3D);
@@ -119,6 +120,7 @@ public class AnnotationAttributes extends AttributeSubject
         backgroundImage = new String(obj.backgroundImage);
         imageRepeatX = obj.imageRepeatX;
         imageRepeatY = obj.imageRepeatY;
+        axesArray = new AxesArray(obj.axesArray);
 
         SelectAll();
     }
@@ -142,7 +144,8 @@ public class AnnotationAttributes extends AttributeSubject
                 (backgroundMode == obj.backgroundMode) &&
                 (backgroundImage.equals(obj.backgroundImage)) &&
                 (imageRepeatX == obj.imageRepeatX) &&
-                (imageRepeatY == obj.imageRepeatY));
+                (imageRepeatY == obj.imageRepeatY) &&
+                (axesArray.equals(obj.axesArray)));
     }
 
     // Property setting methods
@@ -248,6 +251,12 @@ public class AnnotationAttributes extends AttributeSubject
         Select(16);
     }
 
+    public void SetAxesArray(AxesArray axesArray_)
+    {
+        axesArray = axesArray_;
+        Select(17);
+    }
+
     // Property getting methods
     public Axes2D         GetAxes2D() { return axes2D; }
     public Axes3D         GetAxes3D() { return axes3D; }
@@ -266,6 +275,7 @@ public class AnnotationAttributes extends AttributeSubject
     public String         GetBackgroundImage() { return backgroundImage; }
     public int            GetImageRepeatX() { return imageRepeatX; }
     public int            GetImageRepeatY() { return imageRepeatY; }
+    public AxesArray      GetAxesArray() { return axesArray; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -304,6 +314,8 @@ public class AnnotationAttributes extends AttributeSubject
             buf.WriteInt(imageRepeatX);
         if(WriteSelect(16, buf))
             buf.WriteInt(imageRepeatY);
+        if(WriteSelect(17, buf))
+            axesArray.Write(buf);
     }
 
     public void ReadAtts(int n, CommunicationBuffer buf)
@@ -372,6 +384,10 @@ public class AnnotationAttributes extends AttributeSubject
             case 16:
                 SetImageRepeatY(buf.ReadInt());
                 break;
+            case 17:
+                axesArray.Read(buf);
+                Select(17);
+                break;
             }
         }
     }
@@ -427,6 +443,7 @@ public class AnnotationAttributes extends AttributeSubject
         str = str + stringToString("backgroundImage", backgroundImage, indent) + "\n";
         str = str + intToString("imageRepeatX", imageRepeatX, indent) + "\n";
         str = str + intToString("imageRepeatY", imageRepeatY, indent) + "\n";
+        str = str + indent + "axesArray = {\n" + axesArray.toString(indent + "    ") + indent + "}\n";
         return str;
     }
 
@@ -449,5 +466,6 @@ public class AnnotationAttributes extends AttributeSubject
     private String         backgroundImage;
     private int            imageRepeatX;
     private int            imageRepeatY;
+    private AxesArray      axesArray;
 }
 

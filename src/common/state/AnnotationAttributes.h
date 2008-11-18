@@ -45,6 +45,7 @@
 #include <Axes3D.h>
 #include <FontAttributes.h>
 #include <ColorAttribute.h>
+#include <AxesArray.h>
 
 // ****************************************************************************
 // Class: AnnotationAttributes
@@ -112,6 +113,7 @@ public:
     void SelectGradientColor1();
     void SelectGradientColor2();
     void SelectBackgroundImage();
+    void SelectAxesArray();
 
     // Property setting methods
     void SetAxes2D(const Axes2D &axes2D_);
@@ -131,6 +133,7 @@ public:
     void SetBackgroundImage(const std::string &backgroundImage_);
     void SetImageRepeatX(int imageRepeatX_);
     void SetImageRepeatY(int imageRepeatY_);
+    void SetAxesArray(const AxesArray &axesArray_);
 
     // Property getting methods
     const Axes2D         &GetAxes2D() const;
@@ -159,6 +162,8 @@ public:
           std::string    &GetBackgroundImage();
     int                  GetImageRepeatX() const;
     int                  GetImageRepeatY() const;
+    const AxesArray      &GetAxesArray() const;
+          AxesArray      &GetAxesArray();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -209,7 +214,8 @@ public:
         ID_backgroundMode,
         ID_backgroundImage,
         ID_imageRepeatX,
-        ID_imageRepeatY
+        ID_imageRepeatY,
+        ID_axesArray
     };
 
 private:
@@ -230,6 +236,7 @@ private:
     std::string    backgroundImage;
     int            imageRepeatX;
     int            imageRepeatY;
+    AxesArray      axesArray;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

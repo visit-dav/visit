@@ -76,6 +76,8 @@ using   std::vector;
 //  Creation:   January 31, 2008
 //
 //  Modifications:
+//    Jeremy Meredith, Tue Nov 18 15:51:31 EST 2008
+//    Support setting some attributes that were previously hardcoded.
 //
 // ****************************************************************************
 
@@ -89,6 +91,8 @@ VisWinAxesArray::VisWinAxesArray(VisWindowColleagueProxy &p) : VisWinColleague(p
     labelFontHeight=0.02;
     titleFontHeight=0.02;
     gridVisibility=0;
+    tickVisibility = true;
+    tickLabelVisibility = true;
     tickLocation=2;
     majorTickMinimum=0;
     majorTickMaximum=1;
@@ -143,7 +147,6 @@ VisWinAxesArray::~VisWinAxesArray()
 void
 VisWinAxesArray::StartAxisArrayMode(void)
 {
-    //SetTitle();
     if (ShouldAddAxes())
     {
         AddAxesToWindow();
@@ -343,6 +346,9 @@ VisWinAxesArray::NoPlots(void)
 //    Jeremy Meredith, Thu Feb  7 17:59:55 EST 2008
 //    Added support for array variables and bin-defined x positions.
 //
+//    Jeremy Meredith, Tue Nov 18 15:52:17 EST 2008
+//    Add support for scaling the axis range exponent and digits.
+//
 // ****************************************************************************
 
 void
@@ -372,7 +378,8 @@ VisWinAxesArray::UpdateView(void)
             ymax = 1;
         }
     }
-        
+     
+    bool titlechange = false;
     int axisCount = axes.size();
     for (int i=0; i < axisCount; i++)
     {
@@ -382,6 +389,9 @@ VisWinAxesArray::UpdateView(void)
         double amin = axes[i].range[0];
         double amax = axes[i].range[1];
         double ra = amax - amin;
+
+        titlechange |= AdjustValues(i, amin, amax);
+        AdjustRange(i, amin, amax);
 
         double xpos = vl + (axes[i].xpos-xmin)*dx;
         if (xpos < vl-0.001 || xpos > vr+0.001 || ymin > 1 || ymax < 0)
@@ -393,6 +403,15 @@ VisWinAxesArray::UpdateView(void)
         axes[i].axis->SetRange(amin + ymin*ra,amin + ymax*ra);
         axes[i].axis->GetPoint1Coordinate()->SetValue(xpos, bottom);
         axes[i].axis->GetPoint2Coordinate()->SetValue(xpos, top);
+        if (axes[i].pow != 0)
+            axes[i].axis->SetMajorTickLabelScale(1./pow(10., axes[i].pow));
+        else
+            axes[i].axis->SetMajorTickLabelScale(1.);
+    }
+
+    if (titlechange)
+    {
+        SetTitles();
     }
 }
 
@@ -687,6 +706,10 @@ LabelExponent(double min, double max)
 //  Programmer: Jeremy Meredith
 //  Creation:   January 31, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Nov 18 15:52:49 EST 2008
+//    Update text colors, since they might be set to the foreground.
+//
 // ****************************************************************************
 
 void
@@ -700,6 +723,8 @@ VisWinAxesArray::SetForegroundColor(double fr_, double fg_, double fb_)
     {
         axes[i].axis->GetProperty()->SetColor(fr, fg, fb);
     }
+    UpdateTitleTextAttributes(fr, fg, fb);
+    UpdateLabelTextAttributes(fr, fg, fb);
 }
 
 
@@ -808,6 +833,34 @@ VisWinAxesArray::SetTickLocation(int loc)
     for (int i=0; i < axisCount; i++)
     {
         axes[i].axis->SetTickLocation(tickLocation);
+    }
+} 
+
+
+// ****************************************************************************
+//  Method: VisWinAxesArray::SetTickVisibility
+//
+//  Purpose:
+//      Sets the visibility of the ticks. 
+//
+//  Arguments:
+//      loc     The visibility of the ticks.  
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   November 18, 2008
+//
+// ****************************************************************************
+
+void
+VisWinAxesArray::SetTickVisibility(bool vis, bool labelvis)
+{
+    tickVisibility = vis;
+    tickLabelVisibility = labelvis;
+    int axisCount = axes.size();
+    for (int i=0; i < axisCount; i++)
+    {
+        axes[i].axis->SetMinorTicksVisible(tickVisibility);
+        axes[i].axis->SetTickVisibility(tickVisibility || tickLabelVisibility);
     }
 } 
 
@@ -1079,6 +1132,9 @@ VisWinAxesArray::SetLineWidth(int width)
 //    Made it default to all labels on the left, since axis restriction
 //    labels are always on the right, and this avoids conflicts.
 //
+//    Jeremy Meredith, Tue Nov 18 15:51:31 EST 2008
+//    Support setting some attributes that were previously hardcoded.
+//
 // ****************************************************************************
 
 void
@@ -1104,7 +1160,9 @@ VisWinAxesArray::SetNumberOfAxes(int n)
         {
             vtkVisItAxisActor2D *ax;
             ax = vtkVisItAxisActor2D::New();
-            ax->SetTickVisibility(1);
+            ax->SetTickVisibility(tickVisibility);
+            ax->SetMinorTicksVisible(tickVisibility);
+            ax->SetTickVisibility(tickVisibility || tickLabelVisibility);
             ax->SetFontFamilyToCourier();
             ax->SetShadow(0);
             ax->GetPoint1Coordinate()->SetCoordinateSystemToNormalizedViewport();
@@ -1148,6 +1206,7 @@ VisWinAxesArray::SetNumberOfAxes(int n)
             axes[i].axis->SetTitleFontHeight(titleFontHeight);
             axes[i].axis->GetProperty()->SetLineWidth(lineWidth);
             axes[i].axis->GetProperty()->SetColor(fr, fg, fb);
+            axes[i].axis->SetUseSeparateColors(1);
         }
     }
 
@@ -1155,6 +1214,9 @@ VisWinAxesArray::SetNumberOfAxes(int n)
     {
         AddAxesToWindow();
     }
+
+    UpdateLabelTextAttributes(fr,fg,fb);
+    UpdateTitleTextAttributes(fr,fg,fb);
 }
 
 
@@ -1198,4 +1260,221 @@ VisWinAxesArray::SetTitles(void)
         }
         axes[i].axis->SetTitle(buffer);
     }
+}
+
+
+// ****************************************************************************
+//  Method:  VisWinAxesArray::SetTitleTextAttributes
+//
+//  Purpose:
+//    Update text style for title
+//
+//  Arguments:
+//    att        the new text attributes
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 18, 2008
+//
+// ****************************************************************************
+
+void
+VisWinAxesArray::SetTitleTextAttributes(const VisWinTextAttributes &att)
+{
+    titleTextAttributes = att;
+
+    double rgb[3];
+    mediator.GetForegroundColor(rgb);
+    UpdateTitleTextAttributes(rgb[0], rgb[1], rgb[2]);
+}
+
+// ****************************************************************************
+//  Method:  VisWinAxesArray::SetLabelTextAttributes
+//
+//  Purpose:
+//    Update text style for labels
+//
+//  Arguments:
+//    att        the new text attributes
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 18, 2008
+//
+// ****************************************************************************
+
+void
+VisWinAxesArray::SetLabelTextAttributes(const VisWinTextAttributes &att)
+{
+    labelTextAttributes = att;
+
+    double rgb[3];
+    mediator.GetForegroundColor(rgb);
+    UpdateLabelTextAttributes(rgb[0], rgb[1], rgb[2]);
+}
+
+// ****************************************************************************
+//  Method:  VisWinAxesArray::UpdateTitleTextAttributes
+//
+//  Purpose:
+//    Update text style for titles
+//
+//  Arguments:
+//    fr,fg,fb   the new foreground color
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 18, 2008
+//
+// ****************************************************************************
+
+void
+VisWinAxesArray::UpdateTitleTextAttributes(double fr, double fg, double fb)
+{
+    for(int i = 0; i < axes.size(); ++i)
+    {
+        vtkVisItAxisActor2D *axis = axes[i].axis;
+        // Set the colors
+        if(titleTextAttributes.useForegroundColor)
+            axis->GetTitleTextProperty()->SetColor(fr, fg, fb);
+        else
+        {
+            axis->GetTitleTextProperty()->SetColor(
+                titleTextAttributes.color[0],
+                titleTextAttributes.color[1],
+                titleTextAttributes.color[2]);
+        }
+
+        axis->GetTitleTextProperty()->SetFontFamily((int)titleTextAttributes.font);
+        axis->GetTitleTextProperty()->SetBold(titleTextAttributes.bold?1:0);
+        axis->GetTitleTextProperty()->SetItalic(titleTextAttributes.italic?1:0);
+
+        // Pass the opacity in the line offset.
+        axis->GetTitleTextProperty()->SetLineOffset(titleTextAttributes.color[3]);
+    }
+}
+
+// ****************************************************************************
+//  Method:  VisWinAxesArray::UpdateLabelTextAttributes
+//
+//  Purpose:
+//    Update text style for labels
+//
+//  Arguments:
+//    fr,fg,fb   the new foreground color
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 18, 2008
+//
+// ****************************************************************************
+
+void
+VisWinAxesArray::UpdateLabelTextAttributes(double fr, double fg, double fb)
+{
+    for(int i = 0; i < axes.size(); ++i)
+    {
+        vtkVisItAxisActor2D *axis = axes[i].axis;
+        // Set the colors
+        if(labelTextAttributes.useForegroundColor)
+            axis->GetLabelTextProperty()->SetColor(fr, fg, fb);
+        else
+        {
+            axis->GetLabelTextProperty()->SetColor(
+                labelTextAttributes.color[0],
+                labelTextAttributes.color[1],
+                labelTextAttributes.color[2]);
+        }
+
+        axis->GetLabelTextProperty()->SetFontFamily((int)labelTextAttributes.font);
+        axis->GetLabelTextProperty()->SetBold(labelTextAttributes.bold?1:0);
+        axis->GetLabelTextProperty()->SetItalic(labelTextAttributes.italic?1:0);
+
+        // Pass the opacity in the line offset.
+        axis->GetLabelTextProperty()->SetLineOffset(labelTextAttributes.color[3]);
+    }
+}
+
+// ****************************************************************************
+//  Method:  VisWinAxesArray::SetLabelScaling
+//
+//  Purpose:
+//    Sets the attributes used to determine scaling for axis labels
+//
+//  Arguments:
+//    autoscale  true if we want to determine the scale automatically
+//    upow       the user-set pow to use if autoscale is false
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 18, 2008
+//
+// ****************************************************************************
+
+void
+VisWinAxesArray::SetLabelScaling(bool autoscale, int upow)
+{
+    autolabelScaling = autoscale;
+    userPow = upow;
+} 
+
+// ****************************************************************************
+//  Method:  VisWinAxesArray::AdjustValues
+//
+//  Purpose:
+//    Determine a good power scaling for the given axis.
+//
+//  Arguments:
+//    index            the axis
+//    minval,maxval    the range of the given axis
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 18, 2008
+//
+// ****************************************************************************
+
+bool
+VisWinAxesArray::AdjustValues(int index, double minval, double maxval)
+{
+    int curPow;
+    if (autolabelScaling) 
+    {
+        curPow = LabelExponent(minval, maxval);
+    }
+    else 
+    {
+        curPow = userPow;
+    }
+ 
+    if (curPow != axes[index].pow)
+    {
+        axes[index].pow = curPow;
+        return true;
+    }
+    return false;
+}
+
+
+// ****************************************************************************
+//  Method:  VisWinAxesArray::AdjustRange
+//
+//  Purpose:
+//    Determine a good format string for the given axis.
+//
+//  Arguments:
+//    index            the axis
+//    minval,maxval    the range of the given axis
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 18, 2008
+//
+// ****************************************************************************
+
+void
+VisWinAxesArray::AdjustRange(int index, double minval, double maxval)
+{
+    if (axes[index].pow != 0)
+    {
+        minval /= pow(10., axes[index].pow);
+        maxval /= pow(10., axes[index].pow);
+    }
+    int axisDigits = Digits(minval, maxval);
+    char  format[16];
+    SNPRINTF(format, 16, "%%.%df", axisDigits);
+    axes[index].axis->SetLabelFormat(format);
 }

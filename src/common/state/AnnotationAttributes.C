@@ -154,7 +154,7 @@ AnnotationAttributes::PathExpansionMode_FromString(const std::string &s, Annotat
 }
 
 // Type map format string
-const char *AnnotationAttributes::TypeMapFormatString = "aababaibaaiaaisii";
+const char *AnnotationAttributes::TypeMapFormatString = "aababaibaaiaaisiia";
 
 // ****************************************************************************
 // Method: AnnotationAttributes::AnnotationAttributes
@@ -221,6 +221,7 @@ AnnotationAttributes::AnnotationAttributes(const AnnotationAttributes &obj) :
     backgroundImage = obj.backgroundImage;
     imageRepeatX = obj.imageRepeatX;
     imageRepeatY = obj.imageRepeatY;
+    axesArray = obj.axesArray;
 
     SelectAll();
 }
@@ -281,6 +282,7 @@ AnnotationAttributes::operator = (const AnnotationAttributes &obj)
     backgroundImage = obj.backgroundImage;
     imageRepeatX = obj.imageRepeatX;
     imageRepeatY = obj.imageRepeatY;
+    axesArray = obj.axesArray;
 
     SelectAll();
     return *this;
@@ -321,7 +323,8 @@ AnnotationAttributes::operator == (const AnnotationAttributes &obj) const
             (backgroundMode == obj.backgroundMode) &&
             (backgroundImage == obj.backgroundImage) &&
             (imageRepeatX == obj.imageRepeatX) &&
-            (imageRepeatY == obj.imageRepeatY));
+            (imageRepeatY == obj.imageRepeatY) &&
+            (axesArray == obj.axesArray));
 }
 
 // ****************************************************************************
@@ -482,6 +485,7 @@ AnnotationAttributes::SelectAll()
     Select(ID_backgroundImage,           (void *)&backgroundImage);
     Select(ID_imageRepeatX,              (void *)&imageRepeatX);
     Select(ID_imageRepeatY,              (void *)&imageRepeatY);
+    Select(ID_axesArray,                 (void *)&axesArray);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -648,6 +652,18 @@ AnnotationAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("imageRepeatY", imageRepeatY));
     }
 
+    if(completeSave || !FieldsEqual(ID_axesArray, &defaultObject))
+    {
+        DataNode *axesArrayNode = new DataNode("axesArray");
+        if(axesArray.CreateNode(axesArrayNode, completeSave, false))
+        {
+            addToParent = true;
+            node->AddNode(axesArrayNode);
+        }
+        else
+            delete axesArrayNode;
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -760,6 +776,8 @@ AnnotationAttributes::SetFromNode(DataNode *parentNode)
         SetImageRepeatX(node->AsInt());
     if((node = searchNode->GetNode("imageRepeatY")) != 0)
         SetImageRepeatY(node->AsInt());
+    if((node = searchNode->GetNode("axesArray")) != 0)
+        axesArray.SetFromNode(node);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -883,6 +901,13 @@ AnnotationAttributes::SetImageRepeatY(int imageRepeatY_)
 {
     imageRepeatY = imageRepeatY_;
     Select(ID_imageRepeatY, (void *)&imageRepeatY);
+}
+
+void
+AnnotationAttributes::SetAxesArray(const AxesArray &axesArray_)
+{
+    axesArray = axesArray_;
+    Select(ID_axesArray, (void *)&axesArray);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1045,6 +1070,18 @@ AnnotationAttributes::GetImageRepeatY() const
     return imageRepeatY;
 }
 
+const AxesArray &
+AnnotationAttributes::GetAxesArray() const
+{
+    return axesArray;
+}
+
+AxesArray &
+AnnotationAttributes::GetAxesArray()
+{
+    return axesArray;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1103,6 +1140,12 @@ AnnotationAttributes::SelectBackgroundImage()
     Select(ID_backgroundImage, (void *)&backgroundImage);
 }
 
+void
+AnnotationAttributes::SelectAxesArray()
+{
+    Select(ID_axesArray, (void *)&axesArray);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1144,6 +1187,7 @@ AnnotationAttributes::GetFieldName(int index) const
     case ID_backgroundImage:           return "backgroundImage";
     case ID_imageRepeatX:              return "imageRepeatX";
     case ID_imageRepeatY:              return "imageRepeatY";
+    case ID_axesArray:                 return "axesArray";
     default:  return "invalid index";
     }
 }
@@ -1185,6 +1229,7 @@ AnnotationAttributes::GetFieldType(int index) const
     case ID_backgroundImage:           return FieldType_string;
     case ID_imageRepeatX:              return FieldType_int;
     case ID_imageRepeatY:              return FieldType_int;
+    case ID_axesArray:                 return FieldType_att;
     default:  return FieldType_unknown;
     }
 }
@@ -1226,6 +1271,7 @@ AnnotationAttributes::GetFieldTypeName(int index) const
     case ID_backgroundImage:           return "string";
     case ID_imageRepeatX:              return "int";
     case ID_imageRepeatY:              return "int";
+    case ID_axesArray:                 return "att";
     default:  return "invalid index";
     }
 }
@@ -1335,6 +1381,11 @@ AnnotationAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_imageRepeatY:
         {  // new scope
         retval = (imageRepeatY == obj.imageRepeatY);
+        }
+        break;
+    case ID_axesArray:
+        {  // new scope
+        retval = (axesArray == obj.axesArray);
         }
         break;
     default: retval = false;

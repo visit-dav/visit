@@ -45,6 +45,9 @@
 #    Jeremy Meredith, Mon Feb  4 10:05:44 EST 2008
 #    Added PyViewAxisArrayAttributes.
 #
+#    Jeremy Meredith, Tue Nov 18 16:00:53 EST 2008
+#    Added PyAxesArray.
+#
 ##############################################################################
 
 ##
@@ -81,6 +84,7 @@ WRAPPER_SRC= \
     PyAnnotationAttributes_Legacy.C \
     PyAxes2D.C \
     PyAxes3D.C \
+    PyAxesArray.C \
     PyAxisAttributes.C \
     PyAxisLabels.C \
     PyAxisTickMarks.C \
