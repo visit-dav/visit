@@ -177,6 +177,11 @@ avtDataset::~avtDataset()
 //  Programmer:  Mark C. Miller 
 //  Creation:    November 5, 2003 
 //
+//  Modifications:
+//    
+//    Hank Childs, Tue Nov 18 06:09:52 PST 2008
+//    Handle NULL data trees.
+// 
 // ****************************************************************************
 
 int
@@ -187,6 +192,9 @@ avtDataset::GetNumberOfCells(bool polysOnly) const
    // we only care about topoDim if we're counting polys-only
    if (polysOnly)
       topoDim = GetInfo().GetAttributes().GetTopologicalDimension();
+
+   if (*dataTree == NULL)
+       return 0;
 
    return dataTree->GetNumberOfCells(topoDim, polysOnly);
 }
