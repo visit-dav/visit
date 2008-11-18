@@ -48,7 +48,6 @@
 #          Python	Python-2.5.tgz
 #          VTK		vtk-5.0.0c.tar.gz
 #          CMake	cmake-2.4.5.tar.gz
-#          Silo		silo-4.6.1.tar.gz
 #
 #        The following optional libraries need to be in the current directory
 #        to be built. You must explicitly select which option library to
@@ -66,6 +65,7 @@
 #           HDF5     1.6.5    hdf5-1.6.5.tar.gz      -5
 #           Mili     1.10     mili-1.10a.tar.gz      -m (internal)
 #           NetCDF   3.6.0    netcdf.tar.gz          -n
+#           Silo     4.6.2    silo-4.6.2.tar.gz
 #           szip     2.1      szip-2.1.tar.gz
 #
 #         Experimental (internal)
@@ -441,6 +441,10 @@
 #
 #     Mark C. Miller, Tue Oct 28 11:14:17 PDT 2008
 #     Modified build of H5Part to use -DH5_USE_16_API. See notes in that func.
+#
+#     Mark C. Miller, Mon Nov 17 22:30:28 PST 2008
+#     Made Silo optional instead of required; removed Silo patching; upgraded
+#     Silo version to 4.6.2. Copied the pattern used for CCMIO.
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -632,6 +636,8 @@ export DO_CCMIO="no"
 export ON_CCMIO="off"
 export DO_ITAPS="no"
 export ON_ITAPS="off"
+export DO_SILO="no"
+export ON_SILO="off"
 export DO_SLIVR="no"
 export ON_SLIVR="off"
 export DO_VISUS="no"
@@ -786,6 +792,11 @@ export CCMIO_FILE=${CCMIO_FILE-"libccmio-2.6.1.tar.gz"}
 export CCMIO_VERSION=${CCMIO_VERSION-"2.6.1"}
 export CCMIO_COMPATIBILITY_VERSION=${CCMIO_COMPATIBILITY_VERSION-"2.0"}
 export CCMIO_DIR=${CCMIO_DIR-"libccmio-2.6.1"}
+
+export SILO_FILE=${SILO_FILE-"silo-4.6.2.tar.gz"}
+export SILO_VERSION=${SILO_VERSION-"4.6.2"}
+export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION-"4.6"}
+export SILO_DIR=${SILO_DIR-"silo-4.6.2"}
 
 export ITAPS_FILE=${ITAPS_FILE-"ITAPS-MOAB-26Jun07.tar.gz"}
 export ITAPS_VERSION=${ITAPS_VERSION-"1.0.0"}
@@ -1272,27 +1283,6 @@ function check_required_3rdparty
             return 1
         fi
     fi
-    
-    #
-    # Silo
-    #
-    HAVE_SILO_ALREADY="NO"
-    HAVE_SILO_TARBALL="NO"
-    if [[ -d "$VISITDIR/silo/$SILO_VERSION/$VISITARCH" || \
-       -d $SILO_DIR ]] ; then
-       HAVE_SILO_ALREADY="YES"
-    fi
-    if [[ -e $SILO_FILE ]] ; then
-       HAVE_SILO_TARBALL="YES"
-    fi
-
-    if [[ "$HAVE_SILO_ALREADY" = "NO" && "$HAVE_SILO_TARBALL" = "NO" ]] ; then
-        download_3rdparty $SILO_FILE
-        if [[ $? == 0 ]] ; then
-            echo "Unable to build VisIt.  Silo is not available."
-            return 1
-        fi
-    fi
 }
 
 # *************************************************************************** #
@@ -1637,6 +1627,28 @@ function check_optional_3rdparty
             if [[ $? == 0 ]] ; then
                 echo "Unable to build NetCDF.  ${NETCDF_FILE} not found."
                 DO_NETCDF="no"
+            fi
+        fi
+    fi
+    #
+    # SILO
+    #
+    if [[ "$DO_SILO" == "yes" ]] ; then
+        HAVE_SILO_ALREADY="NO"
+        HAVE_SILO_TARBALL="NO"
+        if [[ -d "$VISITDIR/ccmio/$SILO_VERSION/$VISITARCH" || \
+           -d $SILO_DIR ]] ; then
+           HAVE_SILO_ALREADY="YES"
+        fi
+        if [[ -e ${SILO_FILE%.gz} || -e ${SILO_FILE} ]] ; then
+           HAVE_SILO_TARBALL="YES"
+        fi
+        if [[ "$HAVE_SILO_ALREADY" = "NO" && \
+              "$HAVE_SILO_TARBALL" = "NO" ]] ; then
+            download_3rdparty ${SILO_FILE}
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build SILO.  ${SILO_FILE} not found."
+                DO_SILO="no"
             fi
         fi
     fi
@@ -4149,71 +4161,6 @@ function build_pil
 #                            Function 8, build_silo                           #
 # *************************************************************************** #
 
-function apply_generic_silo_patch
-{
-    # THESE PATCHES SHOULD BE REMOVED WHEN SILO IS PATCHED.
-    patch -p0 << \EOF
---- silo-4.6.1/tools/silex/SiloArrayView.cpp.orig       2008-08-18 12:37:47.000000000 -0600
-+++ silo-4.6.1/tools/silex/SiloArrayView.cpp    2008-08-18 12:38:01.000000000 -0600
-@@ -40,6 +40,7 @@
- #include <qlistbox.h>
- #include <qapplication.h>
- #include <iostream>
-+#include <stdlib.h>
- using std::cerr;
-
- // ----------------------------------------------------------------------------
-EOF
-    if [[ $? != 0 ]] ; then
-       echo "Unable to patch Silo. Wrong version?"
-       return 1
-    fi
-    patch -p0 << \EOF
---- silo-4.6.1/tools/silex/SiloObjectView.cpp.orig      2008-08-18 12:40:16.000000000 -0600
-+++ silo-4.6.1/tools/silex/SiloObjectView.cpp   2008-08-18 12:40:35.000000000 -0600
-@@ -41,6 +41,7 @@
- #include <qmessagebox.h>
- #include <iostream>
- #include <string>
-+#include <stdlib.h>
-
- // ----------------------------------------------------------------------------
- //                            Object View Window
-EOF
-    if [[ $? != 0 ]] ; then
-       echo "Unable to patch Silo. Wrong version?"
-       return 1
-    fi
-    patch -p0 << \EOF
---- silo-4.6.1/tools/silex/SiloValueView.cpp.orig       2008-08-18 12:38:19.000000000 -0600
-+++ silo-4.6.1/tools/silex/SiloValueView.cpp    2008-08-18 12:38:38.000000000 -0600
-@@ -39,6 +39,7 @@
- #include <SiloFile.h>
- #include <qlabel.h>
- #include <iostream>
-+#include <stdlib.h>
- using std::cerr;
-
- // ----------------------------------------------------------------------------
-EOF
-    if [[ $? != 0 ]] ; then
-       echo "Unable to patch Silo. Wrong version?"
-       return 1
-    fi
-
-   return 0
-}
-
-function apply_silo_patch
-{
-   apply_generic_silo_patch
-   if [[ $? != 0 ]] ; then
-       return 1
-   fi
-
-   return 0
-}
-
 function build_silo
 {
     #
@@ -4241,20 +4188,6 @@ function build_silo
 "Unable to untar ${SILO_FILE%.*}.  Corrupted file or out of space on device?"
           return 1
        fi
-    fi
-
-    #
-    # Apply patches
-    #
-    info_box "Patching Silo . . ." 1>&3
-    apply_silo_patch
-    if [[ $? != 0 ]] ; then
-       echo "Patch failed, but continuing.  I believe that this script "
-       echo "tried to apply a patch to an existing directory which had "
-       echo "already been patched ... that is, that the patch is "
-       echo "failing harmlessly on a second application."
-       echo "*OR* this is the wrong Silo version, so the patch may not be "
-       echo "necessary."
     fi
 
     #
@@ -7614,15 +7547,6 @@ function build_hostconf
     echo "PYDIR=\$VISITHOME/python/$PYTHON_VERSION/$VISITARCH" >> $HOSTCONF
     echo "PYVERSION=python$PYTHON_VERSION" >> $HOSTCONF
     echo >> $HOSTCONF
-    echo "##" >> $HOSTCONF
-    echo "## Silo" >> $HOSTCONF
-    echo "##" >> $HOSTCONF
-    echo \
-"DEFAULT_SILO_INCLUDES=\$VISITHOME/silo/$SILO_VERSION/$VISITARCH/include" \
-    >> $HOSTCONF
-    echo \
-"DEFAULT_SILO_LIBRARY=\$VISITHOME/silo/$SILO_VERSION/$VISITARCH/lib" \
-    >> $HOSTCONF
     echo >> $HOSTCONF
     echo "## Compiler flags." >> $HOSTCONF
     echo "##" >> $HOSTCONF
@@ -7781,6 +7705,17 @@ function build_hostconf
         >> $HOSTCONF
         echo \
 "DEFAULT_CCMIO_LIB=\$VISITHOME/ccmio/$CCMIO_VERSION/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    if [[ "$DO_SILO" == "yes" ]] ; then
+        echo "##" >> $HOSTCONF
+        echo "## Silo" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+"DEFAULT_SILO_INCLUDE=\$VISITHOME/ccmio/$SILO_VERSION/$VISITARCH/include" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_SILO_LIB=\$VISITHOME/ccmio/$SILO_VERSION/$VISITARCH/lib" \
         >> $HOSTCONF
     fi
     if [[ "$DO_VISUS" == "yes" ]] ; then
@@ -8134,6 +8069,7 @@ usage () {
   printf "%-15s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
   printf "%-15s %s [%s]\n" "--print-vars" "Display user settable environment variables" "false"
   printf "%-15s %s [%s]\n" "--python" "Build with the VisIt Python module" "$DO_MODULE"
+  printf "%-15s %s [%s]\n" "--silo" "Build Silo support" "$DO_SILO"
   printf "%-15s %s [%s]\n" "--slivr" "Build with SLIVR shader support" "$DO_SLIVR"
   printf "%-15s %s [%s]\n" "--stdout" "Write build log to stdout" "$LOG_FILE"
   printf "%-15s %s [%s]\n" "--tcmalloc" "Build tcmalloc from Google's perftools" "$DO_TCMALLOC"
@@ -8343,6 +8279,7 @@ for arg in "${arguments[@]}" ; do
         --parallel) parallel="yes"; ON_parallel="ON";;
         --print-vars) next_action="print-vars";;
         --python) DO_MODULE="yes"; ON_MODULE="on";;
+        --silo) DO_SILO="yes"; ON_SILO="on";;
         --szip) DO_SZIP="yes"; ON_SZIP="on";;
         --slivr) DO_SLIVR="yes"; ON_SLIVR="on";;
         --stdout) LOG_FILE="/dev/tty";;
@@ -8529,6 +8466,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
            "HDF5"     "1.6.5  $HDF5_FILE"      $ON_HDF5 \
            "Mili"     "1.10   $MILI_FILE (not available from the web)"      $ON_MILI \
            "TCMALLOC" "0.97   $TCMALLOC_FILE (not available from the web)"      $ON_TCMALLOC \
+           "Silo"     "4.6.2  $SILO_FILE"      $ON_SILO \
            "NetCDF"   "3.6.0  $NETCDF_FILE"    $ON_NETCDF 2> tmp$$
     retval=$?
 
@@ -8547,6 +8485,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         DO_HDF5="no"
         DO_MILI="no"
         DO_NETCDF="no"
+        DO_SILO="no"
         DO_SZIP="no"
         for OPTION in $choice
         do
@@ -8577,6 +8516,8 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
                  DO_MILI="yes";;
               NetCDF)
                  DO_NETCDF="yes";;
+              Silo)
+                 DO_SILO="yes";;
             esac
         done
         ;;
@@ -9097,7 +9038,7 @@ fi
 # Build Silo
 #
 cd "$START_DIR"
-if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
+if [[ "$DO_SILO" == "yes" ]] ; then
    if [[ -d "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping Silo build.  Silo is already installed."
    else
