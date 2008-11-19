@@ -37,173 +37,113 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtCurveComparisonQuery.C                        //
+//                          avtCurveCMFEExpression.C                         //
 // ************************************************************************* //
 
-#include <avtCurveComparisonQuery.h>
+#include <avtCurveCMFEExpression.h>
 
+#include <math.h>
+
+#include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkVisItUtility.h>
 
-#include <avtCurveConstructorFilter.h>
-#include <avtDatasetSink.h>
-#include <avtSourceFromAVTDataset.h>
-#include <avtOriginatingSource.h>
+#include <avtSILRestrictionTraverser.h>
 
 #include <DebugStream.h>
-#include <ImproperUseException.h>
-
+#include <InvalidMergeException.h>
+#include <Utility.h>
+#include <snprintf.h>
 
 
 // ****************************************************************************
-//  Method: avtCurveComparisonQuery::avtCurveComparisonQuery
+//  Method: avtCurveCMFEExpression constructor
 //
 //  Purpose:
-//      Construct an avtCurveComparisonQuery object.
+//      Defines the constructor.  Note: this should not be inlined in the
+//      header because it causes problems for certain compilers.
 //
-//  Programmer:   Hank Childs
-//  Creation:     October 2, 2003
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 18, 2008 
 //
 // ****************************************************************************
 
-avtCurveComparisonQuery::avtCurveComparisonQuery()
+avtCurveCMFEExpression::avtCurveCMFEExpression()
 {
-    //
-    // Tell one of our base types, avtMultipleInputSink, that there are
-    // exactly two inputs.
-    //
-    SetNumSinks(2);
-
-    curve1 = new avtDatasetSink;
-    SetSink(curve1, 0);
-    curve2 = new avtDatasetSink;
-    SetSink(curve2, 1);
+    ;
 }
 
 
 // ****************************************************************************
-//  Method: avtCurveComparisonQuery::~avtCurveComparisonQuery
+//  Method: avtCurveCMFEExpression destructor
 //
 //  Purpose:
-//      Destruct an avtCurveComparisonQuery object.
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
 //
-//  Programmer:   Hank Childs
-//  Creation:     October 2, 2003
-//
-//  Modifications:
-//    Kathleen Bonnell, Thu May 12 17:21:34 PDT 2005
-//    Fix memory leak.
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 18, 2008 
 //
 // ****************************************************************************
 
-avtCurveComparisonQuery::~avtCurveComparisonQuery()
+avtCurveCMFEExpression::~avtCurveCMFEExpression()
 {
-    if (curve1 != NULL)
-    {
-        delete curve1;
-        curve1 = NULL;
-    }
-    if (curve2 != NULL)
-    {
-        delete curve2;
-        curve2 = NULL;
-    }
+    ;
 }
 
 
 // ****************************************************************************
-//  Method: avtCurveComparisonQuery::Execute
+//  Method: avtCurveCMFEExpression::PerformCMFE
 //
 //  Purpose:
-//      Computes the CurveComparison number of the input curves.
+//      Performs a cross-mesh field evaluation based on placing curves
+//      in the same domain.
 //
-//  Arguments:
-//      inDS      The input dataset.
-//      dom       The domain number.
 //
-//  Programmer:   Hank Childs
-//  Creation:     October 2, 2003
-//
-//  Modifications:
-//    Kathleen Bonnell, Thu May 12 17:21:34 PDT 2005
-//    Fix memory leak.
-//
-//    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006 
-//    Curves now represented as 1D RectilinearGrids.
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 18, 2008 
 // 
-//    Hank Childs, Fri Feb 15 15:51:24 PST 2008
-//    Add extra error checking.
+// ****************************************************************************
+
+avtDataTree_p
+avtCurveCMFEExpression::PerformCMFE(avtDataTree_p in1, avtDataTree_p in2,
+                                   const std::string &invar,
+                                   const std::string &outvar)
+{
+    avtDataTree_p outtree = ExecuteTree(in1, in2, invar, outvar);
+    return outtree;
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveCMFEExpression::ExecuteTree
+// 
+//  Purpose:
+//      Executes a data tree for the CurveCMFE expression.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 18, 2008
+//
+//  Modifications:
 //
 // ****************************************************************************
 
-void 
-avtCurveComparisonQuery::Execute(void)
+avtDataTree_p
+avtCurveCMFEExpression::ExecuteTree(avtDataTree_p tree1, avtDataTree_p tree2,
+                                   const std::string &invar,
+                                   const std::string &outvar)
 {
-    //
-    // Some extreme ugliness here to do what we want to do.
-    // (1) First, we will have apply a filter that will properly construct
-    //     the curve and bring it to processor 0.  That's okay.
-    // (2) Second, we will have to feed it into our input sinks, so
-    // (3) We can exploit our base class' friend status to get the data tree.
-    // Once we have done that, we can
-    // (4) Assume that each output "data tree" has exactly one VTK dataset,
-    //     and it is a curve (this is because it went through the curve
-    //     construction filter.
-    //
-
-    //
-    // Go through the rigamorale above to construct the curve for input 1.
-    //
-    avtDataObject_p input = curve1->GetInput();
-    avtContract_p contract1 =
-        input->GetOriginatingSource()->GetGeneralContract();
-
-    avtDataset_p ds;
-    CopyTo(ds, input);
-    avtSourceFromAVTDataset termsrc1(ds);
-    avtDataObject_p dob1 = termsrc1.GetOutput();
-
-    avtCurveConstructorFilter ccf1;
-    ccf1.SetInput(dob1);
-    avtDataObject_p objOut1 = ccf1.GetOutput();
-
-    objOut1->Update(contract1);
-    curve1->SetInput(objOut1);
-
-    //
-    // Go through the rigamorale above to construct the curve for input 2.
-    //
-    input = curve2->GetInput();
-    avtContract_p contract2 =
-        input->GetOriginatingSource()->GetGeneralContract();
-
-    CopyTo(ds, input);
-    avtSourceFromAVTDataset termsrc2(ds);
-    avtDataObject_p dob2 = termsrc2.GetOutput();
-
-    avtCurveConstructorFilter ccf2;
-    ccf2.SetInput(dob2);
-    avtDataObject_p objOut2 = ccf2.GetOutput();
-
-    //
-    // Get the datasets.
-    //
-    avtDataTree_p tree1 = GetTreeFromSink(curve1);
-    avtDataTree_p tree2 = GetTreeFromSink(curve2);
-
-    //
-    // Make sure that the datasets are what we expect.  If we are running
-    // in parallel and not on processor 0, then there will be no data.
-    //
-    if (tree1->GetNumberOfLeaves() == 0)
-        return;
+   if (tree1->GetNumberOfLeaves() == 0)
+        return tree1;
     else if (tree1->GetNumberOfLeaves() != 1)
         EXCEPTION0(ImproperUseException);
 
     if (tree2->GetNumberOfLeaves() == 0)
-        return;
+        return tree1;
     else if (tree2->GetNumberOfLeaves() != 1)
         EXCEPTION0(ImproperUseException);
 
@@ -217,17 +157,16 @@ avtCurveComparisonQuery::Execute(void)
     if (curve2 == NULL)
         EXCEPTION0(ImproperUseException);
 
-    int  i;
-
     //
     // Construct the first curve.
     //
     vtkDataArray *xc = ((vtkRectilinearGrid*)curve1)->GetXCoordinates();
     vtkDataArray *sc = curve1->GetPointData()->GetScalars();
     int n1 = xc->GetNumberOfTuples();
+    string var1 = sc->GetName();
     float *n1x = new float[n1];
     float *n1y = new float[n1];
-    for (i = 0 ; i < n1 ; i++)
+    for (int i = 0 ; i < n1 ; i++)
     {
          n1x[i] = xc->GetTuple1(i);
          n1y[i] = sc->GetTuple1(i);
@@ -239,30 +178,53 @@ avtCurveComparisonQuery::Execute(void)
     xc = ((vtkRectilinearGrid*)curve2)->GetXCoordinates();
     sc = curve2->GetPointData()->GetScalars();
     int n2 = xc->GetNumberOfTuples();
+    string var2 = sc->GetName();
     float *n2x = new float[n2];
     float *n2y = new float[n2];
-    for (i = 0 ; i < n2 ; i++)
+    for (int i = 0 ; i < n2 ; i++)
     {
          n2x[i] = xc->GetTuple1(i);
          n2y[i] = sc->GetTuple1(i);
     }
 
-    //
-    // Now let the derived types worry about doing the "real" work.
-    //
-    double result = CompareCurves(n1, n1x, n1y, n2, n2x, n2y);
 
-    //
-    // Set the result with our output.
-    //
-    SetResultValue(result);
-    std::string msg = CreateMessage(result);
-    SetResultMessage(msg);
+    floatVector newC1Vals;
+    floatVector newC2Vals;
+    floatVector X;
+    PutOnSameXIntervals(n1, n1x, n1y, n2, n2x, n2y, X, newC1Vals, newC2Vals);
+    int nx = X.size(); 
 
+    vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nx, VTK_FLOAT);
+    xc = rg->GetXCoordinates();
+    vtkFloatArray *c1 = vtkFloatArray::New();
+    c1->SetNumberOfComponents(1);
+    c1->SetNumberOfTuples(nx);
+    c1->SetName(var1.c_str());
+    vtkFloatArray *c2 = vtkFloatArray::New();
+    c2->SetNumberOfComponents(1);
+    c2->SetNumberOfTuples(nx);
+    c2->SetName(outvar.c_str());
+    //c2->SetName(var2.c_str());
+    for (int i = 0; i < nx; ++i)
+    {
+        xc->SetTuple1(i, X[i]);
+        c1->SetValue(i, newC1Vals[i]);
+        c2->SetValue(i, newC2Vals[i]);
+    }
+     
+
+    rg->GetPointData()->AddArray(c1); 
+    rg->GetPointData()->AddArray(c2); 
+    avtDataTree_p output = new avtDataTree(rg, 1);
+
+    rg->Delete();
+    c1->Delete();
+    c2->Delete();
     delete [] n1x;
     delete [] n1y;
     delete [] n2x;
     delete [] n2y;
+    return output;
 }
 
 

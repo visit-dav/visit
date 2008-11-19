@@ -226,6 +226,9 @@
 #   Eric Brugger, Thu Jul 31 16:25:40 PDT 2008
 #   Updated for verdict 110.
 #
+#   Kathleen Bonnell, Tue Nov 18 08:01:45 PST 2008
+#   Added avtCurveCMFEExpression.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -262,6 +265,7 @@ Conditional_src= \
 CMFE_src= \
   CMFE/avtCMFEExpression.C \
   CMFE/avtConnCMFEExpression.C \
+  CMFE/avtCurveCMFEExpression.C \
   CMFE/avtEvalPointExpression.C \
   CMFE/avtEvalPlaneExpression.C \
   CMFE/avtEvalTransformExpression.C \

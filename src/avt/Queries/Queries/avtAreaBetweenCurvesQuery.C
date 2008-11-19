@@ -43,6 +43,7 @@
 #include <avtAreaBetweenCurvesQuery.h>
 
 #include <snprintf.h>
+#include <Utility.h>
 
 
 // ****************************************************************************

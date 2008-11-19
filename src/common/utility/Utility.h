@@ -44,8 +44,7 @@
 #define UTILITY_H
 #include <utility_exports.h>
 #include <visit-config.h>
-#include <string>
-#include <vector>
+#include <vectortypes.h>
 #include <map>
 
 #include <sys/types.h>
@@ -131,6 +130,14 @@ bool        UTILITY_API VisItInitExtentsToLimits(int *exts, int n);
 
 int  UTILITY_API GetVisItVersionFromString(const char*, int&, int&, int&);
 bool UTILITY_API VisItVersionsCompatible(const char*, const char*);
+
+void UTILITY_API PutOnSameXIntervals(int on1, const float *ox1, 
+        const float *oy1, int on2, const float *ox2, const float *oy2,
+        floatVector &usedX, floatVector &newCurve1Vals,
+        floatVector &newCurve2Vals);
+void UTILITY_API AverageYValsForDuplicateX(int n, const float *x, 
+        const float *y, floatVector &X, floatVector &Y);
+
 
 #if defined(PANTHERHACK)
 // Broken on Panther
