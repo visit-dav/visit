@@ -170,6 +170,10 @@
 //   Cyrus Harrison, Thu Sep 18 13:39:40 PDT 2008
 //   Changed code generation to include const qualifers for database info.
 //
+//   Jeremy Meredith, Wed Nov 19 15:48:21 EST 2008
+//   Account for NULL attributes for when an XML file is missing attributes
+//   (e.g. a database plugin).
+//
 // ****************************************************************************
 
 class InfoGeneratorPlugin : public Plugin
@@ -203,6 +207,9 @@ class InfoGeneratorPlugin : public Plugin
     // Returns true if we're replacing a required built-in function and write the definition.
     bool ReplaceBuiltin(ostream &c, const QString &funcName)
     {
+        if (!atts)
+            return false;
+
         bool retval = false;
         for (unsigned int n=0; n<atts->functions.size(); n++)
         {
@@ -223,6 +230,9 @@ class InfoGeneratorPlugin : public Plugin
     // Returns true if we're going to override an optional base-class method.
     bool OverrideBuiltin(const QString &qualifiedFunctionName) const
     {
+        if (!atts)
+            return false;
+
         for (unsigned int i=0; i<atts->functions.size(); i++)
         {
             if (atts->functions[i]->name == qualifiedFunctionName &&
@@ -240,6 +250,9 @@ class InfoGeneratorPlugin : public Plugin
     // Write the named method override definition.
     void WriteOverrideDefinition(ostream &c, const QString &qualifiedFunctionName) const
     {
+        if (!atts)
+            return;
+
         for (unsigned int i=0; i<atts->functions.size(); i++)
         {
             if (atts->functions[i]->name == qualifiedFunctionName &&
@@ -255,6 +268,9 @@ class InfoGeneratorPlugin : public Plugin
 
     void WriteUserDefinedFunctions(ostream &h, const QString &infoClass, bool writeDecl)
     {
+        if (!atts)
+            return;
+
         std::vector<int> publicFuncs, protectedFuncs, privateFuncs;
         for (unsigned int i=0; i<atts->functions.size(); i++)
         {
