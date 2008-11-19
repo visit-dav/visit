@@ -14,6 +14,9 @@
 #   Added a bypass/allow for modifying configure if you've modified any m4
 #   files.  Also, 's/\t/\ \ \ \ /g'
 #
+#   Mark C. Miller, Tue Nov 18 18:22:40 PST 2008
+#   Fixed typo in logic involving || for $m4_file
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -51,7 +54,7 @@ for f in ${files} ; do
 done
 
 # Check that both configure.in and configure are getting updated
-if test -n "$theConfigureDotInFile" || -n "$m4_file"; then
+if test -n "$theConfigureDotInFile" || test -n "$m4_file"; then
     if test -z "$theConfigureFile"; then
         log "Attempt to update \"configure.in\" without also updating \"configure\""
         exit 1
