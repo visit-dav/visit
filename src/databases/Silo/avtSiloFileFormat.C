@@ -74,9 +74,11 @@
 #include <avtIntervalTree.h>
 #include <avtIOInformation.h>
 #include <avtMaterial.h>
-#include <avtSpecies.h>
 #include <avtMixedVariable.h>
 #include <avtResampleSelection.h>
+#include <avtSpecies.h>
+#include <avtStructuredDomainBoundaries.h>
+#include <avtStructuredDomainNesting.h>
 #include <avtTypes.h>
 #include <avtVariableCache.h>
 
@@ -135,6 +137,13 @@ static void RemoveValuesForSkippedZones(vector<int>& zoneRangesSkipped,
 
 static string GuessCodeNameFromTopLevelVars(DBfile *dbfile);
 static void AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd);
+
+static void HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm,
+    const char *multimesh_name, avtMeshType *mt, int *num_groups,
+    vector<int> *group_ids, vector<string> *block_names);
+static void BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
+    const char *meshName, int timestate, int type, avtVariableCache *cache);
+
 
 // the maximum number of nodelists any given single node can be in
 static const int maxCoincidentNodelists = 12;
@@ -1158,6 +1167,11 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Prevent multimesh and multimat names from being printed when all entries
 //    are EMPTY since it was causing a crash (array out of bounds).
 //
+//    Mark C. Miller, Tue Nov 18 18:10:13 PST 2008
+//    Added support for Silo's mesh region grouping (mrg) trees for AMR
+//    meshes in Silo files. Also, added support for newer versions of Silo
+//    in which multivars directly indicate the multimesh they are defined
+//    on instead of our plugin having to work really hard to make a good guess.
 // ****************************************************************************
 
 void
@@ -1639,16 +1653,44 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             break;
         }
 
+        //
+        // Handle mrgtree on the multimesh
+        //
+        int num_amr_groups = 0;
+        vector<int> amr_group_ids;
+        vector<string> amr_block_names;
+#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,2)
+        if (mm->mrgtree_name != 0)
+        {
+            // So far, we've coded only for MRG trees representing AMR hierarchies
+            HandleMrgtreeForMultimesh(dbfile, mm, multimesh_names[i],
+                &mt, &num_amr_groups, &amr_group_ids, &amr_block_names);
+        }
+#endif
+
         char *name_w_dir = GenerateName(dirname, multimesh_names[i], topDir.c_str());
         avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir,
                                    mm?mm->nblocks:0, mm?mm->blockorigin:0, cellOrigin,
                                    groupOrigin, ndims, tdims, mt);
+
         mmd->hideFromGUI = mm->guihide;
         mmd->validVariable = valid_var;
         mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";
+#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,2)
+        if (mt == AVT_UNSTRUCTURED_MESH)
+            mmd->disjointElements = hasDisjointElements || mm->disjoint_mode != 0; 
+#else
         if (mt == AVT_UNSTRUCTURED_MESH)
             mmd->disjointElements = hasDisjointElements;
+#endif
+        if (num_amr_groups > 0)
+        {
+            mmd->numGroups = num_amr_groups;
+            mmd->groupTitle = "levels";
+            mmd->groupPieceName = "level";
+            mmd->blockNames = amr_block_names;
+        }
         mmd->xUnits = xUnits;
         mmd->yUnits = yUnits;
         mmd->zUnits = zUnits;
@@ -1657,6 +1699,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         mmd->zLabel = zLabel;
         mmd->meshCoordType = mct;
         md->Add(mmd);
+        if (num_amr_groups > 0)
+            md->AddGroupInformation(num_amr_groups, mm?mm->nblocks:0, amr_group_ids);
 
         // Store off the important info about this multimesh
         // so we can match other multi-objects to it later
@@ -2028,10 +2072,17 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 //       this variable.
                 if (valid_var)
                 {
-                    meshname = DetermineMultiMeshForSubVariable(dbfile,
-                                                                multivar_names[i],
-                                                                mv->varnames,
-                                                                mv->nvars, dirname);
+#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,2)
+                    if (mv->mmesh_name != 0)
+                    {
+                        meshname = mv->mmesh_name;
+                    }
+                    else
+#endif
+                    {
+                        meshname = DetermineMultiMeshForSubVariable(dbfile,
+                            multivar_names[i], mv->varnames, mv->nvars, dirname);
+                    }
                     debug5 << "Variable " << multivar_names[i] 
                            << " is defined on mesh " << meshname.c_str() << endl;
                 }
@@ -5233,6 +5284,9 @@ avtSiloFileFormat::GetCsgVectorVar(DBfile *dbfile, const char *vname)
 //    dir in the file. In this case, the location return had to be constructed
 //    and allocated. So, needed to add bool indicating that.
 //
+//    Mark C. Miller, Tue Nov 18 18:11:56 PST 2008
+//    Added support for mesh region grouping trees being used to spedify
+//    AMR representation in Silo.
 // ****************************************************************************
 
 vtkDataSet *
@@ -5333,8 +5387,10 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     {
         rv = GetUnstructuredMesh(domain_file, directory_mesh, domain, m);
     }
-    else if (type == DB_QUADMESH || type == DB_QUAD_RECT || type==DB_QUAD_CURV)
+    else if (type==DB_QUADMESH || type==DB_QUAD_RECT || type==DB_QUAD_CURV)
     {
+        if (metadata->GetMesh(m)->meshType == AVT_AMR_MESH)
+            BuildDomainAuxiliaryInfoForAMRMeshes(dbfile, mm, m, timestep, type, cache);
         rv = GetQuadMesh(domain_file, directory_mesh, domain);
     }
     else if (type == DB_POINTMESH)
@@ -5524,6 +5580,10 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added support for double precision quad vars (for testing xform mngr)
+//
+//    Mark C. Miller, Tue Nov 18 18:12:54 PST 2008
+//    Add some additional datatypes to test behavior for non-4-byte sized
+//    types.
 // ****************************************************************************
 
 template <class T>
@@ -5591,6 +5651,14 @@ avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
         int nz = qv->ndims == 3 ? qv->dims[2] : 1;
         if (qv->datatype == DB_DOUBLE)
             CopyAndReorderQuadVar((double *) var2, nx, ny, nz, var);
+        else if (qv->datatype == DB_LONG)
+            CopyAndReorderQuadVar((long *) var2, nx, ny, nz, var);
+        else if (qv->datatype == DB_INT)
+            CopyAndReorderQuadVar((int *) var2, nx, ny, nz, var);
+        else if (qv->datatype == DB_SHORT)
+            CopyAndReorderQuadVar((short *) var2, nx, ny, nz, var);
+        else if (qv->datatype == DB_CHAR)
+            CopyAndReorderQuadVar((char *) var2, nx, ny, nz, var);
         else
             CopyAndReorderQuadVar((float *) var2, nx, ny, nz, var);
     }
@@ -10298,4 +10366,597 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
     // Build the pascal triangle map for updating nodelist variable values
     //
     avtScalarMetaData::BuildEnumNChooseRMap(numNodeLists, maxCoincidentNodelists, pascalsTriangleMap);
+}
+
+#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,2)
+// ****************************************************************************
+//  Function: GetCondensedGroupelMap
+//
+//  Purpose:  Simplify handling groupel maps for levels/children. Whether the
+//  maps are stored on level/patches nodes, arrays of children of these nodes
+//  or individual children of these nodes, returns a single groupel map object
+//  representing the same information as the possibly one or more groupel maps
+//  in the database.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 18, 2008 
+//
+// ****************************************************************************
+
+static DBgroupelmap * 
+GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode)
+{
+    int i,j,k,q,pass;
+    DBgroupelmap *retval = 0;
+
+//#warning FIX SILO LIBRARY WHERE FORCE SINGLE IS CONCERNED
+    // We do this to prevent Silo for re-interpreting integer data in
+    // groupel maps
+    DBForceSingle(0);
+
+    if (rootNode->num_children == 1 && rootNode->children[0]->narray == 0)
+    {
+        retval = DBAllocGroupelmap(0, DB_NOTYPE);
+    }
+    else if ((rootNode->num_children == 1 && rootNode->children[0]->narray > 0) ||
+             (rootNode->num_children > 1 && rootNode->maps_name))
+    {
+        int nseg_mult = 1;
+        DBmrgtnode *mapNode;
+        if (rootNode->num_children == 1 && rootNode->children[0]->narray > 0)
+        {
+            nseg_mult = rootNode->children[0]->narray;
+            mapNode = rootNode->children[0];
+        }
+        else
+            mapNode = rootNode;
+            
+        //
+        // Get the groupel map.
+        //
+        string mapsName = mapNode->maps_name;
+        DBgroupelmap *gm = DBGetGroupelmap(dbfile, mapsName.c_str());
+
+        //
+        // One pass to count parts of map we'll be needing and a 2nd 
+        // pass to allocate and transfer those parts to the returned map.
+        //
+        for (pass = 0; pass < 2; pass++)
+        {
+            if (pass == 1) /* allocate on 2nd pass */
+            {
+                retval = DBAllocGroupelmap(q, DB_NOTYPE);
+                /* We won't need segment_ids because the map is condensed */ 
+                free(retval->segment_ids);
+                retval->segment_ids = 0;
+            }
+
+            q = 0;
+            for (k = 0; k < mapNode->nsegs * nseg_mult; k++)
+            {
+                for (i = 0; i < gm->num_segments; i++)
+                {
+                    int gm_seg_id = gm->segment_ids ? gm->segment_ids[i] : i;
+                    int tnode_seg_id = mapNode->seg_ids ? mapNode->seg_ids[k] : k;
+                    int gm_seg_type = gm->groupel_types[i];
+                    int tnode_seg_type = mapNode->seg_types[k];
+                    if (gm_seg_id != tnode_seg_id ||
+                        tnode_seg_type != DB_BLOCKCENT ||
+                        gm_seg_type != DB_BLOCKCENT)
+                        continue;
+
+                    if (pass == 1) /* populate on 2nd pass */
+                    {
+                        retval->groupel_types[q] = DB_BLOCKCENT;
+                        retval->segment_lengths[q] = gm->segment_lengths[tnode_seg_id];
+                        /* Transfer ownership of segment_data to the condensed map */
+                        retval->segment_data[q] = gm->segment_data[tnode_seg_id];
+                        gm->segment_data[tnode_seg_id] = 0;
+                    }
+
+                    q++;
+                }
+            }
+        }
+        DBFreeGroupelmap(gm);
+    }
+    else
+    {
+        //
+        // Multiple groupel maps are stored, one for each node
+        //
+        retval = DBAllocGroupelmap(rootNode->num_children, DB_NOTYPE);
+        for (q = 0; q < rootNode->num_children; q++)
+        {
+            DBmrgtnode *rootChild = rootNode->children[q];
+            string mapsName = rootChild->maps_name;
+            DBgroupelmap *gm = DBGetGroupelmap(dbfile, mapsName.c_str());
+            for (k = 0; k < rootChild->nsegs; k++)
+            {
+                for (i = 0; i < gm->num_segments; i++)
+                {
+                    int gm_seg_id = gm->segment_ids ? gm->segment_ids[i] : i;
+                    int tnode_seg_id = rootChild->seg_ids ? rootChild->seg_ids[k] : k;
+                    int gm_seg_type = gm->groupel_types[i];
+                    int tnode_seg_type = rootChild->seg_types[k];
+                    if (gm_seg_id != tnode_seg_id ||
+                        tnode_seg_type != DB_BLOCKCENT ||
+                        gm_seg_type != DB_BLOCKCENT)
+                        continue;
+
+                    retval->groupel_types[q] = DB_BLOCKCENT;
+                    retval->segment_lengths[q] = gm->segment_lengths[i];
+                    retval->segment_data[q] = gm->segment_data[i];
+                    gm->segment_data[i] = 0;
+                }
+            }
+            DBFreeGroupelmap(gm);
+        }
+    }
+
+    DBForceSingle(1);
+    return retval;
+}
+#endif
+
+// ****************************************************************************
+//  Function: HandleMrgtreeForMultimesh 
+//
+//  Purpose: Process the AMR parts of a mesh region grouping (mrg) tree. Also
+//  handles whatever naming scheme the database specifies for levels and
+//  patches.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 18, 2008 
+//
+// ****************************************************************************
+static void
+HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh_name,
+    avtMeshType *mt, int *num_groups, vector<int> *group_ids, vector<string> *block_names)
+{
+#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,2)
+    int i, j, k, q;
+    char tmpName[256];
+    bool probablyAnAMRMesh = true;
+    DBgroupelmap *gm = 0; 
+
+    if (mm == 0)
+        return;
+
+    if (*mt != AVT_CURVILINEAR_MESH && *mt != AVT_RECTILINEAR_MESH)
+        return;
+
+    //
+    // Get the mesh region grouping tree
+    //
+    if (mm->mrgtree_name == 0)
+    {
+        debug3 << "No mrgtree specified for mesh \"" << multimesh_name << "\"" << endl;
+        return;
+    }
+    DBmrgtree *mrgTree = DBGetMrgtree(dbfile, mm->mrgtree_name);
+    if (mrgTree == 0)
+    {
+        debug3 << "Unable to find mrgtree named \"" << mm->mrgtree_name << "\"" << endl;
+        return;
+    }
+
+    //
+    // Try to go to the amr_decomp node in the tree
+    //
+    if (DBSetCwr(mrgTree, "amr_decomp") < 0)
+    {
+        debug3 << "Although mrgtree \"" << mm->mrgtree_name << "\" exists, "
+               << "it does not contain node named \"amr_decomp\"." << endl;
+        DBFreeMrgtree(mrgTree);
+        return;
+    }
+
+    //
+    // Try to go to the 'levels' part of the amr_decomp
+    //
+    if (DBSetCwr(mrgTree, "levels") < 0)
+    {
+        debug3 << "Although a node named \"amr_decomp\" exists in \" "
+               << mm->mrgtree_name << "\", it does not contain a child node"
+               << "named \"levels\"." << endl;
+        DBFreeMrgtree(mrgTree);
+        return;
+    }
+    DBmrgtnode *levelsNode= mrgTree->cwr;
+
+    //
+    // Get level grouping information from the levels subtree
+    //
+    DBgroupelmap *lvlgm = GetCondensedGroupelMap(dbfile, levelsNode);
+    *num_groups = lvlgm->num_segments;
+    group_ids->resize(mm->nblocks,-1);
+    for (i = 0; i < lvlgm->num_segments; i++)
+    {
+        for (j = 0; j < lvlgm->segment_lengths[i]; j++)
+        {
+            int patch_no = ((int**) lvlgm->segment_data)[i][j];
+            (*group_ids)[patch_no] = i; 
+        }
+    }
+    DBFreeGroupelmap(lvlgm);
+
+    DBSetCwr(mrgTree, "..");
+    if (DBSetCwr(mrgTree, "patches") < 0)
+    {
+        debug3 << "Although a node named \"amr_decomp\" exists in \" "
+               << mm->mrgtree_name << "\", it does not contain a child node"
+               << "named \"patches\"." << endl;
+        *num_groups = 0;
+        group_ids->clear();
+        DBFreeMrgtree(mrgTree);
+        return;
+    }
+
+    //
+    // Override the mesh type to be an AMR mesh
+    //
+    *mt = AVT_AMR_MESH;
+
+    //
+    // Set the block names according to contents of MRG Tree
+    //
+    DBmrgtnode *patchesNode = mrgTree->cwr;
+    if (patchesNode->num_children == 1)
+    {
+        if (patchesNode->children[0]->narray > 0 &&
+            patchesNode->children[0]->names)
+        {
+            //
+            // Array-based representation for the patches 
+            //
+            DBmrgtnode *patchesArrayNode = patchesNode->children[0];
+
+            //
+            // Handle the names of the patches 
+            //
+            if (strchr(patchesArrayNode->names[0],'%') == 0)
+            {
+                // Explicitly stored names
+                for (i = 0; i < patchesArrayNode->narray; i++)
+                    block_names->push_back(patchesArrayNode->names[i]);
+            }
+            else
+            {
+                //
+                // Handle any array-refs in the naming scheme
+                //
+                int nrefs = 0;
+                char *p = strchr(patchesArrayNode->names[0],'$');
+                int *refs[] = {0,0,0,0,0,0,0,0,0,0};
+                DBmrgvar *vars[] = {0,0,0,0,0,0,0,0,0,0};
+                while (p != 0 && nrefs < sizeof(refs)/sizeof(refs[0]))
+                {
+                    char *p1 = strchr(p, '[');
+                    char tmpName[256];
+                    strncpy(tmpName,p+1,p1-p-1);
+                    vars[nrefs] = DBGetMrgvar(dbfile, tmpName);
+                    if (vars[nrefs])
+                    {
+                        // assume its an integer valued variable
+                        refs[nrefs] = (int*) (vars[nrefs]->data[0]);
+                        nrefs++;
+                    }
+                    p = strchr(p,'$');
+                }
+
+                //
+                // Construct the names using the namescheme
+                //
+                DBnamescheme *ns = DBMakeNamescheme(patchesArrayNode->names[0],
+                    refs[0],refs[1],refs[2],refs[3],refs[4]);
+                for (i = 0; i < patchesArrayNode->narray; i++)
+                    block_names->push_back(DBGetName(ns, i));
+
+                //
+                // Free up everything
+                //
+                DBFreeNamescheme(ns);
+                for (i = 0; i < nrefs; i++)
+                    DBFreeMrgvar(vars[i]);
+            }
+        }
+        else if (patchesNode->children[0]->narray == 0)
+        {
+            //
+            // Single block case.
+            //
+            block_names->push_back(patchesNode->children[0]->name);
+        }
+    }
+    else if (patchesNode->num_children > 1)
+    {
+        //
+        // Individual MRG Tree nodes for each patch 
+        //
+        for (q = 0; q < patchesNode->num_children; q++)
+        {
+            DBmrgtnode *patchChild = patchesNode->children[q];
+            block_names->push_back(patchChild->name);
+        }
+    }
+
+    DBFreeMrgtree(mrgTree);
+    return;
+#endif
+}
+
+// ****************************************************************************
+//  Function: BuildDomainAuxiliaryInfoForAMRMeshes 
+//
+//  Purpose: Builds domain nesting and boundary objects for AMR meshes. 
+//  patches.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 18, 2008 
+//
+// ****************************************************************************
+static void
+BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
+    const char *meshName, int timestate, int db_mesh_type,
+    avtVariableCache *cache)
+{
+#ifdef MDSERVER
+
+    return;
+
+#elif defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,2)
+
+    int i, j;
+    int num_levels = 0;
+    int num_patches = 0;
+    int num_dims = 0;
+
+    //
+    // First, look to see if we don't already have it cached
+    // Note that we compute BOTH domain nesting and domain boundary
+    // information here. However, we use only existance of domain
+    // nesting object in cache as trigger for whether to compute
+    // both objects or not.
+    //
+    void_ref_ptr vrTmp = cache->GetVoidRef("any_mesh",
+                                   AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                   timestate, -1);
+    if (*vrTmp != NULL)
+        return;
+
+    //
+    // Get the mesh region grouping tree
+    //
+    if (mm->mrgtree_name == 0)
+    {
+        debug3 << "No mrgtree specified for mesh \"" << meshName << "\"" << endl;
+        return;
+    }
+    DBmrgtree *mrgTree = DBGetMrgtree(dbfile, mm->mrgtree_name);
+    if (mrgTree == 0)
+    {
+        debug3 << "Unable to find mrgtree named \"" << mm->mrgtree_name << "\"" << endl;
+        return;
+    }
+
+    //
+    // Look through all the mrgtree's variable object names to see if
+    // any define 'ratios' or 'ijk' extents. They are needed to
+    // compute domain nesting and neighbor information.
+    //
+    char **vname = mrgTree->mrgvar_onames;
+    string ratioVarName;
+    string ijkExtsVarName;
+    while (vname && *vname != 0)
+    {
+        string vnameTmp = *vname;
+        for (size_t k = 0; k < vnameTmp.size(); k++)
+            vnameTmp[k] = tolower(vnameTmp[k]);
+
+        if (vnameTmp.find("ratio") != string::npos)
+            ratioVarName = *vname;
+        if (vnameTmp.find("ijk") != string::npos)
+            ijkExtsVarName = *vname;
+
+        vname++;
+    }
+    if (ratioVarName == "")
+    {
+        debug3 << "Although mrgtree \"" << mm->mrgtree_name << "\" exists, "
+               << "it does not appear to have either a ratios variable." << endl;
+        DBFreeMrgtree(mrgTree);
+        return;
+    }
+    if (ijkExtsVarName == "")
+    {
+        debug3 << "Although mrgtree \"" << mm->mrgtree_name << "\" exists, "
+               << "it does not appear to have either an ijk extents variable." << endl;
+        DBFreeMrgtree(mrgTree);
+        return;
+    }
+
+    //
+    // Try to go to the amr_decomp node in the tree
+    //
+    if (DBSetCwr(mrgTree, "amr_decomp") < 0)
+    {
+        debug3 << "Although mrgtree \"" << mm->mrgtree_name << "\" exists, "
+               << "it does not contain node named \"amr_decomp\"." << endl;
+        DBFreeMrgtree(mrgTree);
+        return;
+    }
+
+    //
+    // Try to go to the 'levels' part of the amr_decomp
+    //
+    if (DBSetCwr(mrgTree, "levels") < 0)
+    {
+        debug3 << "Although a node named \"amr_decomp\" exists in \" "
+               << mm->mrgtree_name << "\", it does not contain a child node"
+               << "named \"levels\"." << endl;
+        DBFreeMrgtree(mrgTree);
+        return;
+    }
+    DBmrgtnode *levelsNode = mrgTree->cwr;
+
+    //
+    // Get level grouping information from tree
+    //
+    DBgroupelmap *lvlgm = GetCondensedGroupelMap(dbfile, levelsNode);
+    num_levels = lvlgm->num_segments;
+    debug5 << "num_levels = " << num_levels << endl;
+    vector<int> levelId;
+    levelId.resize(mm->nblocks,-1);
+    for (i = 0; i < lvlgm->num_segments; i++)
+    {
+        for (j = 0; j < lvlgm->segment_lengths[i]; j++)
+        {
+            int patch_no = ((int**) lvlgm->segment_data)[i][j];
+            levelId[patch_no] = i; 
+        }
+    }
+    DBFreeGroupelmap(lvlgm);
+
+    //
+    // Try to go to the patches part of the amr_decomp
+    //
+    DBSetCwr(mrgTree, "..");
+    if (DBSetCwr(mrgTree, "patches") < 0)
+    {
+        debug3 << "Although a node named \"amr_decomp\" exists in \" "
+               << mm->mrgtree_name << "\", it does not contain a child node"
+               << "named \"patches\"." << endl;
+        DBFreeMrgtree(mrgTree);
+        return;
+    }
+    DBmrgtnode *childsNode = mrgTree->cwr;
+
+    //
+    // Get Parent/Child maps
+    //
+    DBgroupelmap *chldgm = GetCondensedGroupelMap(dbfile, childsNode);
+
+    //
+    // Read the ratios variable (on the levels) and the parent/child
+    // map.
+    //
+    DBForceSingle(0);
+    DBmrgvar *ratvar = DBGetMrgvar(dbfile, ratioVarName.c_str());
+    DBmrgvar *ijkvar = DBGetMrgvar(dbfile, ijkExtsVarName.c_str());
+    DBForceSingle(1);
+
+    //
+    // The number of patches can be inferred from the size of the child groupel map.
+    //
+    num_patches = chldgm->num_segments;
+    debug5 << "num_patches = " << num_patches << endl;
+
+    //
+    // The number of dimensions can be inferred from the number of components in
+    // the ratios variable.
+    // 
+    num_dims = ratvar->ncomps;
+    debug5 << "num_dims = " << num_dims << endl;
+
+    //
+    // build the avtDomainNesting object
+    //
+    avtStructuredDomainNesting *dn =
+        new avtStructuredDomainNesting(num_patches, num_levels);
+
+    dn->SetNumDimensions(num_dims);
+
+    //
+    // Set refinement level ratio information
+    //
+    vector<int> ratios(3,1);
+    dn->SetLevelRefinementRatios(0, ratios);
+    for (i = 1; i < num_levels; i++)
+    {
+        int **ratvar_data = (int **) ratvar->data;
+        ratios[0] = ratvar_data[0][i]; 
+        ratios[1] = ratvar_data[1][i];
+        ratios[2] = num_dims == 3 ? (int) ratvar_data[2][i]: 0;
+            debug5 << "ratios = " << ratios[0] << ", " << ratios[1] << ", " << ratios[2] << endl;
+        dn->SetLevelRefinementRatios(i, ratios);
+    }
+
+    //
+    // set each domain's level, children and logical extents
+    //
+    for (i = 0; i < num_patches; i++)
+    {
+        vector<int> childPatches;
+        for (j = 0; j < chldgm->segment_lengths[i]; j++)
+            childPatches.push_back(chldgm->segment_data[i][j]);
+
+        vector<int> logExts(6,0);
+        int **ijkvar_data = (int **) ijkvar->data;
+        logExts[0] = (int) ijkvar_data[0][i];
+        logExts[1] = (int) ijkvar_data[2][i];
+        logExts[2] = num_dims == 3 ? (int) ijkvar_data[4][i] : 0;
+        logExts[3] = (int) ijkvar_data[1][i];
+        logExts[4] = (int) ijkvar_data[3][i];
+        logExts[5] = num_dims == 3 ? (int) ijkvar_data[5][i] : 0;
+        debug5 << "logExts = " << logExts[0] << ", " << logExts[1] << ", " << logExts[2] << endl;
+        debug5 << "          " << logExts[3] << ", " << logExts[4] << ", " << logExts[5] << endl;
+
+        dn->SetNestingForDomain(i, levelId[i], childPatches, logExts);
+    }
+
+    //
+    // Cache the domain nesting object we've just created
+    //
+    void_ref_ptr vr = void_ref_ptr(dn, avtStructuredDomainNesting::Destruct);
+    cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+        timestate, -1, vr);
+
+    //
+    // Ok, now move on to compute domain boundary information
+    //
+    bool canComputeNeighborsFromExtents = true;
+    avtStructuredDomainBoundaries *sdb = 0;
+
+    if (db_mesh_type == DB_QUAD_CURV)
+    {
+        sdb = new avtCurvilinearDomainBoundaries(canComputeNeighborsFromExtents);
+        debug5 << "using curvilinear boundaries" << endl;
+    }
+    else
+    {
+        sdb = new avtRectilinearDomainBoundaries(canComputeNeighborsFromExtents);
+        debug5 << "using rectilinear boundaries" << endl;
+    }
+
+    sdb->SetNumDomains(num_patches);
+    for (int i = 0 ; i < num_patches ; i++)
+    {
+        int **ijkvar_data = (int **) ijkvar->data;
+        int e[6];
+        e[0] = (int) ijkvar_data[0][i];
+        e[1] = (int) ijkvar_data[1][i]+1;
+        e[2] = (int) ijkvar_data[2][i];
+        e[3] = (int) ijkvar_data[3][i]+1;
+        e[4] = num_dims == 3 ? (int) ijkvar_data[4][i] : 0;
+        e[5] = num_dims == 3 ? (int) ijkvar_data[5][i]+1 : 1;
+        sdb->SetIndicesForAMRPatch(i, levelId[i], e);
+    }
+    sdb->CalculateBoundaries();
+
+    //
+    // Cache the domain boundary object we've created
+    //
+    void_ref_ptr vsdb = void_ref_ptr(sdb,avtStructuredDomainBoundaries::Destruct);
+    cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+        timestate, -1, vsdb);
+
+    if (ratvar)
+       DBFreeMrgvar(ratvar);
+    if (ijkvar)
+       DBFreeMrgvar(ijkvar);
+    if (chldgm)
+       DBFreeGroupelmap(chldgm);
+
+#endif
 }
