@@ -145,6 +145,7 @@
 #include <avtMeanFilterExpression.h>
 #include <avtMedianFilterExpression.h>
 #include <avtConnCMFEExpression.h>
+#include <avtCurveCMFEExpression.h>
 #include <avtPosCMFEExpression.h>
 #include <avtExternalNodeExpression.h>
 #include <avtSurfaceNormalExpression.h>
@@ -508,6 +509,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Renamed smallest_angle to minimum_angle and largest_angle to
 //    maximum_angle.
 //
+//    Kathleen Bonnell, Tue Nov 18 08:10:04 PST 2008
+//    Added curve_cmfe.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -802,6 +806,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtAbelInversionExpression;
     if (functionName == "conn_cmfe")
         return new avtConnCMFEExpression;
+    if (functionName == "curve_cmfe")
+        return new avtCurveCMFEExpression;
     if (functionName == "pos_cmfe")
         return new avtPosCMFEExpression;
     if (functionName == "eval_transform")

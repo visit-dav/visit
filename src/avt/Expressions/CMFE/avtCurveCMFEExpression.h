@@ -37,54 +37,49 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                         avtCurveComparisonQuery.h                         //
+//                           avtCurveCMFEExpression.h                         //
 // ************************************************************************* //
 
-#ifndef AVT_CURVE_COMPARISON_QUERY_H
-#define AVT_CURVE_COMPARISON_QUERY_H
+#ifndef AVT_CURVE_CMFE_EXPRESSION_H
+#define AVT_CURVE_CMFE_EXPRESSION_H
 
-#include <query_exports.h>
+#include <avtCMFEExpression.h>
 
-#include <avtMultipleInputQuery.h>
-
-class     avtDatasetSink;
-
+class     vtkDataArray;
+class     ArgsExpr;
+class     ExprPipelineState;
+class     ConstExpr;
 
 // ****************************************************************************
-//  Class: avtCurveComparisonQuery
+//  Class: avtCurveCMFEExpression
 //
 //  Purpose:
-//      An abstract query that prepares curves for comparison.
-//
-//  Programmer: Hank Childs
-//  Creation:   October 4, 2003
+//      Does a connectivity based cross-mesh field evaluation.
+//          
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 18, 2008 
 //
 //  Modifications:
-//    Kathleen Bonnell, Thu Oct 14 17:19:01 PDT 2004
-//    Added method 'AverageYValsForDuplicateX'.
-//
-//    Kathleen Bonnell, Mon Nov 17 15:48:09 PST 2008
-//    Moved PutOnSameXIntervals and AverageYValsForDuplicateX to Utility.C 
 //
 // ****************************************************************************
 
-class QUERY_API avtCurveComparisonQuery : public avtMultipleInputQuery
+class EXPRESSION_API avtCurveCMFEExpression : public avtCMFEExpression
 {
   public:
-                              avtCurveComparisonQuery();
-    virtual                  ~avtCurveComparisonQuery();
+                              avtCurveCMFEExpression();
+    virtual                  ~avtCurveCMFEExpression();
 
+    virtual const char       *GetType(void){ return "avtCurveCMFEExpression"; };
+    virtual const char       *GetDescription(void)
+                                           {return "Evaluating field";};
   protected:
-    virtual void              Execute(void);
-
-    avtDatasetSink           *curve1;
-    avtDatasetSink           *curve2;
-
-    virtual double            CompareCurves(int, const float *x1, 
-                                            const float *y1, int,
-                                            const float *x2, const float *y2) 
-                                    = 0;
-    virtual std::string       CreateMessage(double) = 0;
+    virtual avtDataTree_p     PerformCMFE(avtDataTree_p, avtDataTree_p,
+                                          const std::string &,
+                                          const std::string &);
+    avtDataTree_p             ExecuteTree(avtDataTree_p, avtDataTree_p,
+                                          const std::string &,
+                                          const std::string &);
+    virtual bool              UseIdenticalSIL(void) { return true; };
 };
 
 

@@ -43,6 +43,7 @@
 #include <avtL2NormBetweenCurvesQuery.h>
 
 #include <snprintf.h>
+#include <Utility.h>
 
 
 // ****************************************************************************
