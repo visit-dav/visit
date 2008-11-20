@@ -4273,6 +4273,12 @@ BuildBlankImageVector(avtImage_p img)
 //  Programmer: Tom Fogal
 //  Creation:   October 17, 2008
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Nov 19 15:53:15 PST 2008
+//    Test was implemented to return true if *any* data had no data, which is 
+//    not what we wanted.
+//
 // ****************************************************************************
 
 static bool
@@ -4287,16 +4293,12 @@ OnlyRootNodeHasData(avtImage_p &img)
     // Starting from the 2nd element in the list, search for an element which
     // is greater than 0.  If we find one, than somebody else has data; we
     // don't really care who it is.
-    std::vector<int>::const_iterator it;
-    it = std::find_if(data.begin()+1, data.end(),
-                      std::bind2nd(std::greater<int>(), 0));
-    const bool others_are_blank = (it != data.end());
+    bool onlyRootNodeHasData = true;
+    for (unsigned int i = 1 ; i < data.size() ; i++)
+         if (data[i] == 0)
+            onlyRootNodeHasData = false;
 
-    if(!root_is_blank && others_are_blank)
-    {
-        return true;
-    }
-    return false;
+    return onlyRootNodeHasData;
 #endif
 }
 
