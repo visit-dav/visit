@@ -445,6 +445,10 @@
 #     Mark C. Miller, Mon Nov 17 22:30:28 PST 2008
 #     Made Silo optional instead of required; removed Silo patching; upgraded
 #     Silo version to 4.6.2. Copied the pattern used for CCMIO.
+#
+#     Mark C. Miller, Thu Nov 20 10:03:12 PST 2008
+#     Fixed typo in DEFAULT_SILO symbols put in generated config-site file.
+#     Updated DEFAULT_SILO symbols to use LIBLOC/LIBDEP form.
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -7712,10 +7716,10 @@ function build_hostconf
         echo "## Silo" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-"DEFAULT_SILO_INCLUDE=\$VISITHOME/ccmio/$SILO_VERSION/$VISITARCH/include" \
+"DEFAULT_SILO_LIBLOC=\$VISITHOME/$SILO_VERSION/$VISITARCH" \
         >> $HOSTCONF
         echo \
-"DEFAULT_SILO_LIB=\$VISITHOME/ccmio/$SILO_VERSION/$VISITARCH/lib" \
+"DEFAULT_SILO_LIBDEP=-L$DEFAULT_HDF5_LIBLOC,-lhdf5,$DEFAULT_HDF5_LIBDEP" \
         >> $HOSTCONF
     fi
     if [[ "$DO_VISUS" == "yes" ]] ; then
