@@ -8107,25 +8107,36 @@ _ACEOF
             deplib_links=
         fi
 
+        #
+        # Adjust these strings so they format better in the result message.
+        #
+        lib_links=`echo $lib_links | tr -s ' ' | tr '\n' ' ' | sed -e s'@ @\n    @'`
+        deplib_links=`echo $deplib_links | tr -s ' ' | tr '\n' ' ' | sed -e s'@ @\n    @'`
         if test -z "$deplib_links"; then
             echo "$as_me:$LINENO: result:
     HDF5_INCLUDE=$HDF5_INCLUDE
     HDF5_LIB=$HDF5_LIB
+    Library...
     $lib_links" >&5
 echo "${ECHO_T}
     HDF5_INCLUDE=$HDF5_INCLUDE
     HDF5_LIB=$HDF5_LIB
+    Library...
     $lib_links" >&6
         else
             echo "$as_me:$LINENO: result:
     HDF5_INCLUDE=$HDF5_INCLUDE
     HDF5_LIB=$HDF5_LIB
+    Library...
     $lib_links
+    Dependent libraries...
     $deplib_links" >&5
 echo "${ECHO_T}
     HDF5_INCLUDE=$HDF5_INCLUDE
     HDF5_LIB=$HDF5_LIB
+    Library...
     $lib_links
+    Dependent libraries...
     $deplib_links" >&6
         fi
 
@@ -8542,25 +8553,36 @@ _ACEOF
             deplib_links=
         fi
 
+        #
+        # Adjust these strings so they format better in the result message.
+        #
+        lib_links=`echo $lib_links | tr -s ' ' | tr '\n' ' ' | sed -e s'@ @\n    @'`
+        deplib_links=`echo $deplib_links | tr -s ' ' | tr '\n' ' ' | sed -e s'@ @\n    @'`
         if test -z "$deplib_links"; then
             echo "$as_me:$LINENO: result:
     SILO_INCLUDE=$SILO_INCLUDE
     SILO_LIB=$SILO_LIB
+    Library...
     $lib_links" >&5
 echo "${ECHO_T}
     SILO_INCLUDE=$SILO_INCLUDE
     SILO_LIB=$SILO_LIB
+    Library...
     $lib_links" >&6
         else
             echo "$as_me:$LINENO: result:
     SILO_INCLUDE=$SILO_INCLUDE
     SILO_LIB=$SILO_LIB
+    Library...
     $lib_links
+    Dependent libraries...
     $deplib_links" >&5
 echo "${ECHO_T}
     SILO_INCLUDE=$SILO_INCLUDE
     SILO_LIB=$SILO_LIB
+    Library...
     $lib_links
+    Dependent libraries...
     $deplib_links" >&6
         fi
 
@@ -9039,25 +9061,36 @@ _ACEOF
             deplib_links=
         fi
 
+        #
+        # Adjust these strings so they format better in the result message.
+        #
+        lib_links=`echo $lib_links | tr -s ' ' | tr '\n' ' ' | sed -e s'@ @\n    @'`
+        deplib_links=`echo $deplib_links | tr -s ' ' | tr '\n' ' ' | sed -e s'@ @\n    @'`
         if test -z "$deplib_links"; then
             echo "$as_me:$LINENO: result:
     PDB_INCLUDE=$PDB_INCLUDE
     PDB_LIB=$PDB_LIB
+    Library...
     $lib_links" >&5
 echo "${ECHO_T}
     PDB_INCLUDE=$PDB_INCLUDE
     PDB_LIB=$PDB_LIB
+    Library...
     $lib_links" >&6
         else
             echo "$as_me:$LINENO: result:
     PDB_INCLUDE=$PDB_INCLUDE
     PDB_LIB=$PDB_LIB
+    Library...
     $lib_links
+    Dependent libraries...
     $deplib_links" >&5
 echo "${ECHO_T}
     PDB_INCLUDE=$PDB_INCLUDE
     PDB_LIB=$PDB_LIB
+    Library...
     $lib_links
+    Dependent libraries...
     $deplib_links" >&6
         fi
 

@@ -299,16 +299,24 @@ AC_DEFUN(VAC_ARG_WITH3RD,
             deplib_links=
         fi
 
+        # 
+        # Adjust these strings so they format better in the result message.
+        # 
+        lib_links=`echo $lib_links | tr -s ' ' | sed -e s'@ @\n    @'`
+        deplib_links=`echo $deplib_links | tr -s ' ' | sed -e s'@ @\n    @'`
         if test -z "$deplib_links"; then
             AC_MSG_RESULT([
     m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_INCLUDE=$m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_INCLUDE
     m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIB=$m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIB
+    Library...
     $lib_links])
         else
             AC_MSG_RESULT([
     m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_INCLUDE=$m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_INCLUDE
     m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIB=$m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIB
+    Library...
     $lib_links
+    Dependent libraries...
     $deplib_links])
         fi
 
