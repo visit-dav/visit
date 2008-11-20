@@ -10368,7 +10368,6 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
     avtScalarMetaData::BuildEnumNChooseRMap(numNodeLists, maxCoincidentNodelists, pascalsTriangleMap);
 }
 
-#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,2)
 // ****************************************************************************
 //  Function: GetCondensedGroupelMap
 //
@@ -10381,8 +10380,12 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
 //  Programmer: Mark C. Miller 
 //  Creation:   November 18, 2008 
 //
+//  Modifications
+//    Mark C. Miller Wed Nov 19 20:30:19 PST 2008
+//    Changed conditional for Silo version to 4.6.3
 // ****************************************************************************
 
+#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
 static DBgroupelmap * 
 GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode)
 {
@@ -10509,12 +10512,15 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode)
 //  Programmer: Mark C. Miller 
 //  Creation:   November 18, 2008 
 //
+//  Modifications
+//    Mark C. Miller Wed Nov 19 20:30:19 PST 2008
+//    Changed conditional for Silo version to 4.6.3
 // ****************************************************************************
 static void
 HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh_name,
     avtMeshType *mt, int *num_groups, vector<int> *group_ids, vector<string> *block_names)
 {
-#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,2)
+#if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
     int i, j, k, q;
     char tmpName[256];
     bool probablyAnAMRMesh = true;
@@ -10695,6 +10701,9 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
 //  Programmer: Mark C. Miller 
 //  Creation:   November 18, 2008 
 //
+//  Modifications
+//    Mark C. Miller Wed Nov 19 20:30:19 PST 2008
+//    Changed conditional for Silo version to 4.6.3
 // ****************************************************************************
 static void
 BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
@@ -10705,7 +10714,7 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
 
     return;
 
-#elif defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,2)
+#elif defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
 
     int i, j;
     int num_levels = 0;
