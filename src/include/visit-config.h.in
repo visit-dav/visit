@@ -39,9 +39,6 @@
 /* Define if you have the GLEW library. */
 #undef HAVE_LIBGLEW
 
-/* Define if you have hdf4. */
-#undef HAVE_LIBHDF4
-
 /* Define if you have hdf5. */
 #undef HAVE_LIBHDF5
 
@@ -50,6 +47,12 @@
 
 /* Define if you have the netcdf library. */
 #undef HAVE_LIBNETCDF
+
+/* Define if you have pdb. */
+#undef HAVE_LIBPDB
+
+/* Define if you have silo. */
+#undef HAVE_LIBSILO
 
 /* Define if you have the SLIVR library. */
 #undef HAVE_LIBSLIVR
@@ -68,9 +71,6 @@
 
 /* Define if you have the netcdf header. */
 #undef HAVE_NETCDF_H
-
-/* Define if you are using PDB proper instead of PDB lite. */
-#undef HAVE_PDB_PROPER
 
 /* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT

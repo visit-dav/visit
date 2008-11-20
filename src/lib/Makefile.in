@@ -166,6 +166,10 @@
 #    Removed szip/hdf5 link ing stuff. That is handled during configure now
 #    in VAC_ARG_WITH3RD macro.
 #
+#    Mark C. Miller, Wed Nov 19 20:37:31 PST 2008
+#    Fixed logic to clean links so that 'make clean' cleans only the links
+#    created by this Makefile (and not those links created during configure)
+#    while 'make distclean' cleans those created by configure.
 ##############################################################################
 
 @SET_MAKE@
@@ -193,7 +197,6 @@ LIBGLU=libGLU.@SHLIB_LIBEXT@
 LIBOSMESA=libOSMesa.@SHLIB_LIBEXT@
 LIBQT=@LIBQT@.@SHLIB_LIBEXT@
 LIBQUI=libqui.@SHLIB_LIBEXT@
-LIBSILO=@LIBSILO@
 LIBPYTHON=lib@PYVERSION@.@SHLIB_LIBEXT@
 
 # The following targets were split up so that they would work properly
@@ -202,8 +205,8 @@ all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
      libvtkexpat libvtktiff libvtkfreetype libvtkftgl libvtksys \
      libvtkmpeg2encode libosmesa libmesagl libGLU libqt libqui pythondir \
-     @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ \
-     @CREATE_HDF4_LINK@ @CREATE_NETCDF_LINK@ \
+     create_config_links \
+     @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_NETCDF_LINK@ \
      @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@ \
      @CREATE_BOXLIB2D_LINK@ @CREATE_BOXLIB3D_LINK@ \
      @CREATE_CFITSIO_LINK@ @CREATE_H5PART_LINK@ \
@@ -316,10 +319,6 @@ pythondir:
 	    ln -s python/lib/@PYVERSION@/config/$(LIBPYTHON) . ;  \
 	fi
 
-create_silo_link:
-	$(RM) $(LIBSILO)
-	ln -s @SILO_LIBDIR@/$(LIBSILO) .
-
 create_mili_link:
 	$(RM) libmili.@SHLIB_LIBEXT@ libgahl.@SHLIB_LIBEXT@
 	ln -s @MILI_DIR@/libmili.@SHLIB_LIBEXT@ .
@@ -372,10 +371,20 @@ create_h5part_link:
 	$(RM) libH5Part.@SHLIB_LIBEXT@     
 	ln -s @H5PART_LIBDIR@/libH5Part.@SHLIB_LIBEXT@ .
 
-cleanlinks:
-	find . -type l -maxdepth 1 -exec $(RM) {} \;
+create_config_links:
+	@VAC_CV_LIBDIR_CREATE_LINKS@
 
-clean:
+clean_config_links:
+	@VAC_CV_LIBDIR_DESTROY_LINKS@
+
+#
+# Links created by this makefile should be newer than the Makefile
+# itself. So, those are the 'make_links'.
+#
+clean_make_links:
+	find . -type l -newer Makefile -maxdepth 1 -exec $(RM) {} \;
+
+clean: clean_make_links
 	$(RM) \
 	$(LIBMESAGL)* \
 	$(LIBGLU) \
@@ -400,13 +409,12 @@ clean:
 	$(LIBVTKEXPAT)* \
 	$(LIBVTKGRAPHICS)* \
 	$(LIBVTKRENDERING)* \
-	$(LIBSILO) \
 	libqt.a \
 	libqui.a \
 	visit.so \
 	visitmodule.so
 
-distclean: cleanlinks
+distclean: clean_make_links clean_config_links
 	$(RM) python Makefile
 
 install:

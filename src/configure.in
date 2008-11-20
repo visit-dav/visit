@@ -2058,64 +2058,9 @@ if test -n "$HDF5_LIB"; then
 fi
 
 #
-# Check for the public SILO includes since that's what we'll use.
+# Handle the Silo library
 #
-AC_ARG_WITH(silo_include,
-	[  --with-silo_include=<INC-DIR>     User-specified SILO include directory],
-	silo_include=$withval,
-	silo_include=$DEFAULT_SILO_INCLUDES)
-if test -n "$silo_include"; then
-    AC_MSG_CHECKING(for SILO include files)
-    SILO_INCLUDE="-I`echo $silo_include|sed 's/ 	*/ -I/g'`"
-    AC_MSG_RESULT(user specified ("$SILO_INCLUDE"))
-fi
-AC_SUBST(SILO_INCLUDE)
-
-#
-# Check for the public SILO library since that's what we'll use.
-#
-LIBSILO=
-SILO_LIBDIR=
-SILO_LIB=
-SILO_TARGET=
-AC_ARG_WITH(silo_library,
-	[  --with-silo_library=<LIB-DIR>     User-specified SILO library directory],
-	silo_library=$withval,
-	silo_library=$DEFAULT_SILO_LIBRARY)
-if test -n "$silo_library"; then
-    AC_MSG_CHECKING(for SILO library)
-    silo_names="siloxx siloh5 silo"
-    silo_extns="dylib so a"
-    for n in $silo_names; do
-        for e in $silo_extns; do
-            if test -r $silo_library/lib$n.$e; then
-                LIBSILO="lib$n.$e"
-                SILO_LIBDIR="$silo_library"
-                SILO_LIB="-L`echo $silo_library|sed 's/  */ -L/g'` -l$n"
-                SILO_TARGET="$""(SILO_TARGET)"
-                break 2
-            fi
-        done
-    done
-    if test -n "$SILO_LIB"; then
-        # check for possible dependence on hdf5
-        if test -n "`strings $silo_library/lib$n.$e | grep -i 'SILO built with HDF5 library version'`"; then
-            if test -z "$HDF5_LIB"; then
-                AC_MSG_ERROR(Silo appears to have a dependence on HDF5. Please use --with-hdf5 option to configure.)
-            fi
-            SILO_LIB="$SILO_LIB $HDF5_LIB"
-        fi
-        AC_MSG_RESULT(user specified ("$SILO_LIB"))
-    else
-        AC_MSG_RESULT(not found)
-        AC_MSG_ERROR(could not find a suitable silo library at $silo_library.)
-    fi
-fi
-# The name of the actual Silo library for use in lib/Makefile.in
-AC_SUBST(LIBSILO)
-AC_SUBST(SILO_LIBDIR)
-AC_SUBST(SILO_LIB)
-AC_SUBST(SILO_TARGET)
+VAC_ARG_WITH3RD(silo,,siloxx siloh5 silo)
 
 dnl
 dnl Check for exodus libraries
@@ -2205,40 +2150,22 @@ AC_SUBST(EXODUS_FLAGS)
 #
 # See of --with-pdb was specified. Use PDB lite otherwise.
 #
-AC_MSG_CHECKING(for PDB)
-PDB=""
-PDB_FLAGS=""
-PDB_LIBS=""
-PDB_EXEC=""
-AC_ARG_WITH(pdb,
-	    [  --with-pdb=INC-DIR,LIB-DIR      Location of PDB header and library],
-           pdb_specified="yes",
-           pdb_specified="no"
-           )
-if test "$pdb_specified" = "yes"; then
-   if test "$withval" != "no"; then
-      PDB_FLAGS="-I`echo $withval |cut -f1 -d,`"
-      PDB_LIBS="-L`echo $withval |cut -f2 -d, -s` -lpdb -lscore -lpml"
-      PDB="$""(PDB)"
-      PDB_EXEC="$""(PDBEXEC)"
-      AC_DEFINE(HAVE_PDB_PROPER, [1], [Define if you are using PDB proper instead of PDB lite.])
-      AC_MSG_RESULT(using PDB proper)
-   fi
+VAC_ARG_WITH3RD(pdb)
+if test -z "$PDB_LIB"; then
+    AC_MSG_CHECKING(for PDB lite (e.g Silo))
+    if test -n "$SILO_LIB"; then
+        PDB_INCLUDE="$SILO_INCLUDE"
+        PDB_LIB="$SILO_LIB"
+        PDB_TARGET="$""(PDB_TARGET)"
+        AC_MSG_RESULT(yes)
+        AC_SUBST(PDB_INCLUDE)
+        AC_SUBST(PDB_LIB)
+        AC_SUBST(PDB_TARGET)
+    fi
 else
-   if test -n "$SILO_LIB"; then
-       PDB_FLAGS="$SILO_INCLUDE"
-       PDB_LIBS="$SILO_LIB"
-       PDB="$""(PDB)"
-       PDB_EXEC="$""(PDBEXEC)"
-       AC_MSG_RESULT(using PDB lite)
-   else
-       AC_MSG_RESULT(no)
-   fi
+    PDB_LIB="$PDB_LIB -lpdb -lscore -lpml"
+    AC_SUBST(PDB_LIB)
 fi
-AC_SUBST(PDB)
-AC_SUBST(PDB_FLAGS)
-AC_SUBST(PDB_LIBS)
-AC_SUBST(PDB_EXEC)
 
 #
 # Look for Mili.
@@ -2979,14 +2906,6 @@ ENGINE_CPPFLAGS="$ENGINE_CPPFLAGS $VTK_INCLUDES"
 AC_SUBST(ENGINE_CPPFLAGS)
 
 #
-# Add Some include paths to the SiloObjVtkDB's CPPFLAGS.
-#
-SILOOBJVTK_CPPFLAGS="$SILOOBJVTK_CPPFLAGS $VTK_INCLUDES"
-SILOOBJVTK_CPPFLAGS="$SILOOBJVTK_CPPFLAGS -I$""(TOPDIR)/include/visit"
-SILOOBJVTK_CPPFLAGS="$SILOOBJVTK_CPPFLAGS $SILO_INCLUDE"
-AC_SUBST(SILOOBJVTK_CPPFLAGS)
-
-#
 # Add some include paths to the preprocessor's includes CPPFLAGS.
 # Also add the parallel source files when building in parallel.
 #
@@ -3558,7 +3477,6 @@ AC_SUBST(ENGINEWRAPPAR)
 # these libraries are statically linked into the database plugins 
 # and on MacOS X they are dynamically linked.
 #
-CREATE_SILO_LINK=""
 CREATE_MILI_LINK=""
 CREATE_HDF4_LINK=""
 CREATE_NETCDF_LINK=""
@@ -3572,9 +3490,6 @@ CREATE_H5PART_LINK=""
 CREATE_CCMIO_LINK=""
 case $UNAME in
   Darwin)
-    if test "$SILO_LIB" != "" ; then
-        CREATE_SILO_LINK="create_silo_link"
-    fi
     if test "$MILI_LIBS" != "" ; then
         CREATE_MILI_LINK="create_mili_link"
     fi
@@ -3610,7 +3525,6 @@ case $UNAME in
     fi
   ;;
 esac
-AC_SUBST(CREATE_SILO_LINK)
 AC_SUBST(CREATE_MILI_LINK)
 AC_SUBST(CREATE_HDF4_LINK)
 AC_SUBST(CREATE_NETCDF_LINK)
@@ -3622,6 +3536,8 @@ AC_SUBST(CREATE_BOXLIB3D_LINK)
 AC_SUBST(CREATE_CFITSIO_LINK)
 AC_SUBST(CREATE_H5PART_LINK)
 AC_SUBST(CREATE_CCMIO_LINK)
+AC_SUBST(VAC_CV_LIBDIR_CREATE_LINKS)
+AC_SUBST(VAC_CV_LIBDIR_DESTROY_LINKS)
 
 #
 # Check for library functions that can work around, or that we have

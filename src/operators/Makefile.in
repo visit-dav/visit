@@ -216,7 +216,9 @@
 all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
-OPTIONAL=Context ConnCompReduce MetricThreshold RemoveCells SiloDump \
+SILO_TARGET=SiloDump
+
+OPTIONAL=Context ConnCompReduce MetricThreshold RemoveCells @SILO_TARGET@ \
          SubdivideQuads SurfCompPrep 
 
 REQUIRED=BoundaryOp Box Clip Cone CoordSwap CracksClipper CreateBonds Cylinder \

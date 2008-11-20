@@ -147,7 +147,10 @@ OBJ_VW_POINT3D=vwpoint3d.o
 PROGRAM_VW_UCD2D=vwucd2d
 OBJ_VW_UCD2D=vwucd2d.o
 
-all: bovexamples rectmesh curvmesh pointmesh ucdmesh quadvar ucdvar pointvar defvarprogs multiobj @BUILD_FORTRAN@ visitwriter
+SILO_TARGET=bovexamples rectmesh curvmesh pointmesh ucdmesh quadvar ucdvar pointvar \
+            defvarprogs multiobj @BUILD_FORTRAN@
+
+all: @SILO_TARGET@ visitwriter
 
 bovexamples: $(PROGRAM_BOV)
 
