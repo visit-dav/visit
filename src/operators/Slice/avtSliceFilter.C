@@ -368,13 +368,12 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //  Method: avtSliceFilter::ModifyContract
 //
 //  Purpose:
-//      Calculates the restriction on the meta-data and the plane 
-//      equation of the cutter.
+//      Modifies the contract for the slice filter.
 //
 //  Arguments:
-//      spec    The current pipeline specification.
+//      spec    The current contract.
 //
-//  Returns:    The new specification.
+//  Returns:    The new contract
 //
 //  Programmer: Hank Childs
 //  Creation:   June 6, 2001
@@ -444,12 +443,16 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Thu Nov 20 14:07:56 PST 2008
+//    Making streaming be always disabled, because of the collective communication
+//    in PreExecute.
+//
 // ****************************************************************************
 
 avtContract_p
-avtSliceFilter::ModifyContract(avtContract_p spec)
+avtSliceFilter::ModifyContract(avtContract_p contract)
 {
-    avtContract_p rv = new avtContract(spec);
+    avtContract_p rv = new avtContract(contract);
 
     //
     // Pick returns wrong results (even with transform) when slice lies
@@ -464,7 +467,7 @@ avtSliceFilter::ModifyContract(avtContract_p spec)
     // the database can mark their output as non-pickable, which means
     // that we don't need the IDs after all...
     //
-    if (spec->GetDataRequest()->GetSimplifiedNestingRepresentation())
+    if (contract->GetDataRequest()->GetSimplifiedNestingRepresentation())
         needToTurnOnIds = false;
 
     if (needToTurnOnIds)
@@ -531,11 +534,12 @@ avtSliceFilter::ModifyContract(avtContract_p spec)
     }
 
     //
-    // If we need zone or node ids, we can't do streaming.
+    // We can't do streaming because:
+    //  (A) we do collective communication to get the bounding box
+    //      of the whole data set in PreExecute.
+    //  (B) if we need zone or node ids, we can't do streaming.
     //
-    if (atts.GetOriginType() == SliceAttributes::Zone ||
-        atts.GetOriginType() == SliceAttributes::Node)
-        rv->NoStreaming();
+    rv->NoStreaming();
 
     //
     // Get the interval tree.  If we can't use the interval tree, then exit
@@ -610,6 +614,13 @@ avtSliceFilter::ModifyContract(avtContract_p spec)
 //    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
 //    Normal is cached, so use that value instead.
 //
+//    Hank Childs, Thu Nov 20 13:58:50 PST 2008
+//    Get the spatial extents of the whole mesh and use that to set the
+//    plane orientation.  Previously, we were changing the plane orientation
+//    on a per domain basis, which could lead to inappropriate swaps of
+//    orientation (in some cases), which meant that if a plane was on a domain
+//    boundary, it would get contributions from both domains.
+//
 // ****************************************************************************
 
 void
@@ -634,6 +645,10 @@ avtSliceFilter::PreExecute(void)
 
     if (atts.GetProject2d())
         SetUpProjection();
+
+    double bounds[6];
+    GetSpatialExtents(bounds);
+    SetPlaneOrientation(bounds);
 }
 
 
@@ -1152,6 +1167,9 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 //    Added support for rectilinear to rectilinear slicing.  Also moved
 //    some logic into its own subroutine.
 //
+//    Hank Childs, Thu Nov 20 14:02:34 PST 2008
+//    No longer use the per-domain bounds to set the plane orientation.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1163,10 +1181,6 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
                << ", it does not intersect the plane." << endl;
         return NULL;
     }
-
-    double bounds[6];
-    in_ds->GetBounds(bounds);
-    SetPlaneOrientation(bounds);
 
     bool haveExecuted = false;
 
