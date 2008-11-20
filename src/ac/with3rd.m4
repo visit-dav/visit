@@ -47,6 +47,8 @@ dnl        XXX_LIB     (which should probably really be called XXX_LDFLAGS)
 dnl        XXX_TARGET  (used to identify make targets that depend on lib)
 dnl    For C Pre-Processor, it defines...
 dnl        HAVE_LIBXXX
+dnl    For internal configure logic, it defines...
+dnl        XXX_LIBFILE (the full path to actual lib file it selected)
 dnl C. Handles a variety of ways of formatting the argument to a
 dnl    --with-xxx=<withval> command line option to configure where <withval>
 dnl    can be any of the following...
@@ -70,11 +72,10 @@ dnl
 dnl The arguments are...
 dnl $1 = [REQ] library (short) name (e.g. 'hdf5' or 'zlib')
 dnl $2 = [OPT] name of (key) header file including its extension (default is $1.h)
-dnl $3 = [OPT] name of (key) library file NOT including leading 'lib' or trailing
+dnl $3 = [OPT] name(s) of (key) library file NOT including leading 'lib' or trailing
 dnl      extension (default is lib$1.{dylib|so|a})
 dnl $4 = [OPT] name of (key) function in library 
-dnl $5 = [OPT] help sub-string; the macro itself generates a pretty good default
-dnl      help string
+dnl $5 = [OPT] help string; the macro itself generates a default
 dnl
 dnl I would regard this as an m4-minimal/sh-maximal implementation of this
 dnl macro. All string processing that can actually be done at configure time
@@ -83,14 +84,29 @@ dnl autoconf time is done using m4. In addition, it relies very little on
 dnl other, pre-defined autoconf macros. This is primarily due to the
 dnl implementor's lack of experience with m4 ;).
 dnl
+dnl Modififications:
+dnl   Mark C. Miller, Thu Nov 20 09:29:37 PST 2008
+dnl   Added '0-9' characters to m4_translit invokation. In theory, this should
+dnl   NOT be necessary but m4_translit was NOT always getting the '5' in HDF5
+dnl   and this change appears to have fixed that. Also, instead of actually
+dnl   creating the links to libs here, we now stick the commands for doing that
+dnl   into a configure variable that gets substituted into lib/Makefile.in.
+dnl   Made it initialize withval to 'no' and initialize with_package. Added
+dnl   logic to the action-if-not-given part of AC_ARG_WITH to change withval
+dnl   only if DEFAULT specifications actually exist.
+dnl
 AC_DEFUN(VAC_ARG_WITH3RD,
 [
+    withval=no
     AC_ARG_WITH($1, AC_HELP_STRING([--with-$1],ifelse(,[$5],[use $1; build related plugin(s)/code],[$5])),,
-        withval=$DEFAULT_[]m4_translit([$1],[a-z-],[A-Z_])_LIBLOC:$DEFAULT_[]m4_translit([$1],[a-z-],[A-Z_])_LIBDEP)
+        if test -n "$DEFAULT_[]m4_translit([$1],[a-z0-9-],[A-Z0-9_])_LIBLOC"; then
+            withval=$DEFAULT_[]m4_translit([$1],[a-z0-9-],[A-Z0-9_])_LIBLOC:$DEFAULT_[]m4_translit([$1],[a-z0-9-],[A-Z0-9_])_LIBDEP
+        fi)
 
-    m4_translit([$1],[a-z-],[A-Z_])[]_INCLUDE=""
-    m4_translit([$1],[a-z-],[A-Z_])[]_LIB=""
-    m4_translit([$1],[a-z-],[A-Z_])[]_TARGET=""
+    with_[]m4_translit([$1],[A-Z0-9_],[a-z0-9-])=$withval
+    m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_INCLUDE=""
+    m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIB=""
+    m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_TARGET=""
     ifelse(,[$2],incfile=[$1].h,incfile=[$2])
     ifelse(,[$3],libtags="[$1]",libtags="[$3]")
     incdirs="include inc ."
@@ -118,9 +134,9 @@ AC_DEFUN(VAC_ARG_WITH3RD,
         for t in $libtags; do
             libs="$libs -l${t}"
         done
-        m4_translit([$1],[a-z-],[A-Z_])[]_LIB="$libs"
-        m4_translit([$1],[a-z-],[A-Z_])[]_TARGET="$""(m4_translit([$1],[a-z-],[A-Z_])[]_TARGET)"
-        AC_DEFINE(HAVE_LIB[]m4_translit([$1],[a-z-],[A-Z_]), [1], [Define if you have $1.])
+        m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIB="$libs"
+        m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_TARGET="$""(m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_TARGET)"
+        AC_DEFINE(HAVE_LIB[]m4_translit([$1],[a-z0-9-],[A-Z0-9_]), [1], [Define if you have $1.])
         AC_MSG_RESULT(builtin)
 
     elif test -n "$withval" && test $withval != no && test $withval != yes; then
@@ -194,7 +210,7 @@ AC_DEFUN(VAC_ARG_WITH3RD,
             AC_MSG_ERROR(cannot find or read lib file(s) $libtags from info in $withval)
         fi
 
-        m4_translit([$1],[a-z-],[A-Z_])[]_LIBFILE=$libdir/$libfile
+        m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIBFILE=$libdir/$libfile
 
         #
         # Make links for this lib in the lib dir
@@ -202,7 +218,13 @@ AC_DEFUN(VAC_ARG_WITH3RD,
         rm -rf lib/${libfile}*
         for f in $libdir/${libfile}*; do
             fb=`basename $f`
-            ln -s $f lib/$fb
+            if test -z "$VAC_CV_LIBDIR_CREATE_LINKS"; then
+                VAC_CV_LIBDIR_CREATE_LINKS="ln -sf $f $fb"
+                VAC_CV_LIBDIR_DESTROY_LINKS="rm -f $fb"
+            else
+                VAC_CV_LIBDIR_CREATE_LINKS="$VAC_CV_LIBDIR_CREATE_LINKS; ln -sf $f $fb"
+                VAC_CV_LIBDIR_DESTROY_LINKS="$VAC_CV_LIBDIR_DESTROY_LINKS; rm -f $fb"
+            fi
             lib_links="$lib_links $f"
         done
 
@@ -241,7 +263,13 @@ AC_DEFUN(VAC_ARG_WITH3RD,
                             rm -rf lib/lib${l}.${e}*
                             for lf in $libfiles; do
                                 lfb=`basename $lf`
-                                ln -s $lf lib/$lfb
+                                if test -z "$VAC_CV_LIBDIR_CREATE_LINKS"; then
+                                    VAC_CV_LIBDIR_CREATE_LINKS="ln -sf $lf $lfb"
+                                    VAC_CV_LIBDIR_DESTROY_LINKS="rm -f $lfb"
+                                else
+                                    VAC_CV_LIBDIR_CREATE_LINKS="$VAC_CV_LIBDIR_CREATE_LINKS; ln -sf $lf $lfb"
+                                    VAC_CV_LIBDIR_DESTROY_LINKS="$VAC_CV_LIBDIR_DESTROY_LINKS; rm -f $lfb"
+                                fi
                                 deplib_links="$deplib_links $lf"
                                 deplib_found="`echo $deplib_found | tr ' ' '\n' | grep -xve ${l}`"
                             done
@@ -258,10 +286,10 @@ AC_DEFUN(VAC_ARG_WITH3RD,
         fi
 
         deplib_flags="`echo $deplib_flags | tr -d '\n'`"
-        m4_translit([$1],[a-z-],[A-Z_])[]_INCLUDE="-I$incdir"
-        m4_translit([$1],[a-z-],[A-Z_])[]_LIB="-l${libtag} $deplib_flags"
-        m4_translit([$1],[a-z-],[A-Z_])[]_TARGET="$""(m4_translit([$1],[a-z-],[A-Z_])[]_TARGET)"
-        AC_DEFINE(HAVE_LIB[]m4_translit([$1],[a-z-],[A-Z_]), [1], [Define if you have $1.])
+        m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_INCLUDE="-I$incdir"
+        m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIB="-l${libtag} $deplib_flags"
+        m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_TARGET="$""(m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_TARGET)"
+        AC_DEFINE(HAVE_LIB[]m4_translit([$1],[a-z0-9-],[A-Z0-9_]), [1], [Define if you have $1.])
 
         # if these strings are all blank, then make them really so
         if test -z "`echo $lib_links | tr -d '[:space:]'`"; then
@@ -273,13 +301,13 @@ AC_DEFUN(VAC_ARG_WITH3RD,
 
         if test -z "$deplib_links"; then
             AC_MSG_RESULT([
-    m4_translit([$1],[a-z-],[A-Z_])[]_INCLUDE=$m4_translit([$1],[a-z-],[A-Z_])[]_INCLUDE
-    m4_translit([$1],[a-z-],[A-Z_])[]_LIB=$m4_translit([$1],[a-z-],[A-Z_])[]_LIB
+    m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_INCLUDE=$m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_INCLUDE
+    m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIB=$m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIB
     $lib_links])
         else
             AC_MSG_RESULT([
-    m4_translit([$1],[a-z-],[A-Z_])[]_INCLUDE=$m4_translit([$1],[a-z-],[A-Z_])[]_INCLUDE
-    m4_translit([$1],[a-z-],[A-Z_])[]_LIB=$m4_translit([$1],[a-z-],[A-Z_])[]_LIB
+    m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_INCLUDE=$m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_INCLUDE
+    m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIB=$m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIB
     $lib_links
     $deplib_links])
         fi
@@ -290,9 +318,9 @@ AC_DEFUN(VAC_ARG_WITH3RD,
 
     fi
 
-    AC_SUBST(m4_translit([$1],[a-z-],[A-Z_])[]_INCLUDE)
-    AC_SUBST(m4_translit([$1],[a-z-],[A-Z_])[]_LIB)
-    AC_SUBST(m4_translit([$1],[a-z-],[A-Z_])[]_TARGET)
+    AC_SUBST(m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_INCLUDE)
+    AC_SUBST(m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_LIB)
+    AC_SUBST(m4_translit([$1],[a-z0-9-],[A-Z0-9_])[]_TARGET)
 
 ]
 )
