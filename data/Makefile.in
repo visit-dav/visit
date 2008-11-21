@@ -358,7 +358,7 @@ LIBS=$(SILO_LIB) @LIBS@
 MATH_LIBS_ONLY=@LIBS@
 LDFLAGS=@LDFLAGS@ @DATA_EXE_LDFLAGS@
 CXXFLAGS=$(HDF5_INCLUDE) @CXXFLAGS@
-CPPFLAGS=@CPPFLAGS@ -I. -I@DATA_REL_VISIT_PATH@/include -I@DATA_REL_VISIT_PATH@/include/visit @SILO_INCLUDE@ @PDB_FLAGS@ @VTK_INCLUDES@
+CPPFLAGS=@CPPFLAGS@ -I. -I@DATA_REL_VISIT_PATH@/include -I@DATA_REL_VISIT_PATH@/include/visit @SILO_INCLUDE@ @PDB_INCLUDE@ @VTK_INCLUDES@
 
 ##
 ## Files...
@@ -548,13 +548,13 @@ clean: bin_data_clean gen_data_clean src_clean
 	
 
 ./pdbdatabase: pdbdatabase.o pdbdatabase_link.o
-	$(CXX) -I../include/visit -o $@ pdbdatabase.o $(LDFLAGS) $(LIBS) @PDB_LIBS@ pdbdatabase_link.o
+	$(CXX) -I../include/visit -o $@ pdbdatabase.o $(LDFLAGS) $(LIBS) @PDB_LIB@ pdbdatabase_link.o
 
 ./correlationtest: correlationtest.o pdbdatabase_link.o
-	$(CXX) -o $@ correlationtest.o $(LDFLAGS) $(LIBS) @PDB_LIBS@ pdbdatabase_link.o
+	$(CXX) -o $@ correlationtest.o $(LDFLAGS) $(LIBS) @PDB_LIB@ pdbdatabase_link.o
 
 ./streak: streak.o pdbdatabase_link.o
-	$(CXX) -o $@ streak.o $(LDFLAGS) $(LIBS) @PDB_LIBS@ pdbdatabase_link.o
+	$(CXX) -o $@ streak.o $(LDFLAGS) $(LIBS) @PDB_LIB@ pdbdatabase_link.o
 
 ./csg:  csg.o
 	$(CXX) -o $@ csg.o $(LDFLAGS) $(LIBS)
