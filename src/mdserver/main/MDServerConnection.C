@@ -1931,6 +1931,10 @@ MDServerConnection::SetFileGroupingOptions(const std::string &filter,
 //   Jeremy Meredith, Wed Aug  6 16:58:03 EDT 2008
 //   Fixing timer handle mismatch.
 //
+//   Brad Whitlock, Fri Nov 21 16:16:22 PST 2008
+//   I added a check for empty file lists in the virtual db definition, though
+//   I fixed a different bug so that should not be able to happen.
+//
 // ****************************************************************************
 
 void
@@ -2073,8 +2077,10 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                         files.access.push_back(currentFileList.access[i]);
 
                         // Add a new virtual filename.
+                        stringVector vfiles;
+                        vfiles.push_back(names[i]);
                         newVirtualFiles[pattern].path = currentWorkingDirectory;
-                        newVirtualFiles[pattern].files.push_back(names[i]);
+                        newVirtualFiles[pattern].files = vfiles; //.push_back(names[i]);
                         newVirtualFiles[pattern].digitLength = digitLength;
                     }
                 }
@@ -2164,7 +2170,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                 // considered to be a virtual database.
                 newVirtualFiles.erase(pos);
             }
-            else
+            else if(pos->second.files.size() > 1)
             {
                 virtualFilesToCheck.names.push_back(pos->second.files[0]);
                 virtualFilesToCheck.types.push_back(files.types[fileIndex]);
@@ -2174,6 +2180,11 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                 // Mark the file as virtual in the file list so we won't get the
                 // file type if we needed it.
                 files.types[fileIndex] = GetFileListRPC::VIRTUAL;
+            }
+            else
+            {
+                debug4 << "Virtual file contained NO files. This is not supposed to happen!"
+                       << files.names[fileIndex].c_str() << endl;
             }
         }
         visitTimer->StopTimer(stage3, "stage3: populating virtualFilesToCheck");
@@ -2997,16 +3008,14 @@ MDServerConnection::VirtualFileName::operator < (const MDServerConnection::Virtu
 // ****************************************************************************
 
 MDServerConnection::VirtualFileInformation::VirtualFileInformation() : path(),
-    files()
+    files(), digitLength(0), filterList()
 {
-    digitLength = 0;
 }
 
 MDServerConnection::VirtualFileInformation::VirtualFileInformation(
    const MDServerConnection::VirtualFileInformation &obj) : path(obj.path),
-   files(obj.files)
+   files(obj.files), digitLength(obj.digitLength), filterList(obj.filterList)
 {
-    digitLength = obj.digitLength;
 }
 
 MDServerConnection::VirtualFileInformation::~VirtualFileInformation()
@@ -3019,7 +3028,8 @@ MDServerConnection::VirtualFileInformation::operator = (
 {
     path = obj.path;
     files = obj.files;
-    digitLength = obj.digitLength;
+    digitLength = obj.digitLength; 
+    filterList = obj.filterList;
 }
 
 // ****************************************************************************

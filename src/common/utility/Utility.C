@@ -615,6 +615,9 @@ ReadAndProcessDirectory(const string &directory,
 //   Brad Whitlock, Mon Sep 15 14:52:12 PST 2003
 //   I fixed it so things sort correctly.
 //
+//   Brad Whitlock, Fri Nov 21 16:11:43 PST 2008
+//   Take the number of digits into account when the numbers are the same.
+//
 // ****************************************************************************
 
 bool
@@ -637,23 +640,31 @@ NumericStringCompare(const string &str1, const string &str2)
             p2++;
 
             // Walk along until we're out of numbers in each string.
+            int ndigs1 = 1;
             while ((*p1 != '\0') && isdigit(*p1))
             {
                 num1 *= 10;
                 num1 += (*p1) - '0';
                 p1++;
+                ndigs1++;
             }
+            int ndigs2 = 1;
             while ((*p2 != '\0') && isdigit(*p2))
             {
                 num2 *= 10;
                 num2 += (*p2) - '0';
                 p2++;
+                ndigs2++;
             }
 
             // Compare the numbers. If they're the same, keep going. If 
-            // they're different, return the difference.
+            // they're different, return the difference. If the numbers were
+            // the same but used a different number of characters then
+            // return the lesser number of digits.
             if (num1 != num2)
                 return ((num1 - num2) < 0);
+            else if(ndigs1 != ndigs2)
+                return ndigs1 < ndigs2;
         }
         else
         {
