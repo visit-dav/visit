@@ -56,6 +56,9 @@ for f in ${files} ; do
         *src/svn_bin/build_visit) 
             continue
             ;;
+        *src/svn_bin/hooks/check_gpl.sh) 
+            continue
+            ;;
     esac
 
     # check if the file we're trying to commit is empty (a deletion?) 
@@ -73,7 +76,7 @@ for f in ${files} ; do
     # that might appear between the lines and finally look for the
     # full phrase in the resulting catenation.
     #
-    if test -n "`${SVNLOOK} cat -t $TXN $REPOS $f | grep -A 3 -B 3 GNU | tr '\n' ' ' | tr -s ' ' | tr -d '/*#' | grep 'GNU General Public License'`"; then
+    if test -n "`${SVNLOOK} cat -t $TXN $REPOS $f | grep -A 3 -B 3 GNU | tr '\n' ' ' | tr -s ' ' | tr -d '/*#' | grep GNU[[:space:]]*General[[:space:]]*Public[[:space:]]*License`"; then
         log "File \"$f\" appears to contain a 'GNU General Public License' statement. "
         log "If this is 'ok', then to allow it to be committed, you may need to alter "
         log "the logic in src/svn_bin/hooks/check_gpl.sh, commit that hook and then "
