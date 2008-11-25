@@ -57,5 +57,8 @@ runhook_sh "check_dos.sh"
 # Check for #warning compiler directives
 runhook_sh "check_pound_warning.sh"
 
+# Check for GPL text
+runhook_sh "check_gpl.sh"
+
 # All checks passed, so allow the commit.
 exit 0
