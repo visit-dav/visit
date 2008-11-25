@@ -10385,7 +10385,11 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
 //    Changed conditional for Silo version to 4.6.3
 //
 //    Mark C. Miller, Mon Nov 24 17:33:20 PST 2008
-//    Testing commit hook
+//    Testing gpl commit hook
+//
+//    Mark C. Miller, Mon Nov 24 17:33:47 PST 2008
+//    Testing gpl commit hook with GNU Genera
+//    Public License text.
 // ****************************************************************************
 
 #if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
