@@ -77,8 +77,8 @@ Build Notes (if you still want to do it by hand)
                    http://www.llnl.gov/visit/3rd_party/Mesalib-6.4.2.tar.gz
     Python   2.5      Scripting Language    http://www.python.org
                    http://www.llnl.gov/visit/3rd_party/Python-2.5.tar.gz
-    Qt       3.3.8    GUI Toolkit           http://www.trolltech.com
-                   http://www.llnl.gov/visit/3rd_partyqt-/mac-free-3.3.8.tar.gz
+    Qt       4.4.3    GUI Toolkit           http://www.trolltech.com
+                   http://www.llnl.gov/visit/3rd_party/qt-mac-opensource-4.4.3.tar.gz
     VTK      5.0.0c   Visualization Toolkit http://www.vtk.org
                    http://www.llnl.gov/visit/3rd_party/vtk-5.0.0c.tar.gz
     cmake    2.4.5    Make file generation  http://www.cmake.org
@@ -383,39 +383,22 @@ directory.
 export MACOSX_DEPLOYMENT_TARGET=10.3
 
 ==============================================================================
-Building Qt library
+Building Qt 4 frameworks
 ==============================================================================
 
-Qt actually builds as a prebound dynamic library but we need to make sure
-that it sets an install_name that is relative to our VisIt executables. The
-Qt-4.x version promises to support universal builds, until then you'll
-need to build twice then lipo to combine the two build.
+Qt 4 builds as a set of frameworks.
 
 # Unzip the Qt source
-tar zxf qt-mac-free-3.3.8.tar.gz
-cd qt-mac-free-3.3.8
+tar zxf qt-mac-opensource-4.4.3.tar.gz
+cd qt-mac-opensource-4.4.3
 
-#
-export QTDIR=$(pwd)
-export DYLD_LIBRARY_PATH=$QTDIR/lib:$DYLD_LIBRARY_PATH
-./configure -thread -platform macx-g++ --prefix=$VISITPATH/qt
+# Build Qt 4
+./configure --prefix=$VISITPATH/qt -make libs -make tools -fast -no-separate-debug-info -no-qt3support -no-dbus -no-sql-mysql -no-sql-sqlite 
 make
 
-# Install headers Qt
+# Install Qt 4
 make install
-
-# Change the dynamic install names
-cd lib
-rm libqt.dylib
-cp libqt-mt.3.3.8.dylib libqt.dylib
-install_name_tool -id @executable_path/../lib/libqt.dylib libqt.dylib
-rm libqui.dylib
-cp libqui.1.0.0.dylib libqui.dylib
-install_name_tool -change libqt-mt.3.dylib @executable_path/../lib/libqt.dylib \
-libqui.dylib
-install_name_tool -id @executable_path/../lib/libqui.dylib libqui.dylib
-cp libqt.dylib libqui.dylib $VISITPATH/qt/lib
-cd ../..
+cd ..
 
 ==============================================================================
 Building Mesa 
@@ -1479,8 +1462,8 @@ More information about building VisIt follows after that.
 #
 # Unzipping VisIt's source code distribution
 #
-tar zxf visit070702.tar.gz
-cd visit070702/src
+tar zxf visit1.11.0.tar.gz
+cd visit1.11.0/src
 
 #
 # HDF5 and Silo
