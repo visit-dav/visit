@@ -3664,7 +3664,7 @@ function build_silo
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
         --prefix="$VISITDIR/silo/$SILO_VERSION/$VISITARCH" \
         "$WITHHDF5ARG" "$WITHSZIPARG" \
-        --without-readline --disable-fortran --disable-browser
+        --without-readline --disable-fortran --disable-browser --disable-silex
     if [[ $? != 0 ]] ; then
        warn "Silo configure failed.  Giving up"
        return 1
