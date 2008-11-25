@@ -10388,8 +10388,8 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
 //    Testing gpl commit hook
 //
 //    Mark C. Miller, Mon Nov 24 17:33:47 PST 2008
-//    Testing gpl commit hook with GNU General
-//    Public License text.
+//    Testing gpl commit hook with gnu general
+//    public      license text.
 // ****************************************************************************
 
 #if defined(SILO_VERSION_GE) && SILO_VERSION_GE(4,6,3)
